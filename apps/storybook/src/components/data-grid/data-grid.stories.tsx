@@ -9,7 +9,9 @@ import {
   LAZY_SCRIPT_SOURCE,
   largeScript,
   lazyScript,
+  SERVER_AGGREGATION_SCRIPT_SOURCE,
   SERVER_SCRIPT_SOURCE,
+  serverAggregationScript,
   serverScript,
   VALIDATION_SCRIPT_SOURCE,
   validationScript,
@@ -18,6 +20,8 @@ import { LargeDemo } from "./large-demo.js";
 import largeSource from "./large-demo.tsx?raw";
 import { LazyDemo } from "./lazy-demo.js";
 import lazySource from "./lazy-demo.tsx?raw";
+import { ServerAggregationDemo } from "./server-aggregation-demo.js";
+import serverAggregationSource from "./server-aggregation-demo.tsx?raw";
 import { ServerDemo } from "./server-demo.js";
 import serverSource from "./server-demo.tsx?raw";
 
@@ -128,6 +132,27 @@ export const Server: StoryObj = {
     ),
   }),
   name: "Server side",
+};
+
+export const ServerAggregation: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "server-aggregation",
+      [["Server-side aggregation", "group"]],
+      SETUP,
+      undefined,
+      {
+        group: { script: serverAggregationScript, scriptSource: SERVER_AGGREGATION_SCRIPT_SOURCE },
+      },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Server-side aggregation", content: <ServerAggregationDemo /> }],
+      undefined,
+      serverAggregationSource,
+    ),
+  }),
+  name: "Server-side aggregation",
 };
 
 export const TreeData: StoryObj = { ...story("tree"), name: "Tree data" };

@@ -577,12 +577,13 @@
     }
   }
 
-  /* Tree data: the group cell indents by depth; its toggle turns when open. */
+  /* Tree data and row grouping: the group cell indents by depth (one column per grouped field:
+     none); its toggle turns when open. */
   :where(
     [data-ok-data-grid-main]
       [role="gridcell"]:is(
         [data-ok-field="__tree_data_group__"],
-        [data-ok-field="__row_group_by_columns_group__"]
+        [data-ok-field^="__row_group_by_columns_group_"]
       )
   ) {
     display: flex;
@@ -818,6 +819,55 @@
   :where([data-ok-data-grid-pivot-field] > [data-ok-text-field]) {
     flex: 1 1 calc(var(--ok-spacing) * 32);
     min-width: 0;
+  }
+
+  /* Pivot sections: a drop zone each; a field drags by its handle (a line marks the drop). */
+  :where([data-ok-data-grid-pivot-section]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 2);
+    padding: calc(var(--ok-spacing) * 2);
+    border: 1px dashed var(--ok-divider);
+    border-radius: var(--ok-radius-sm);
+  }
+
+  :where([data-ok-data-grid-pivot-section][data-ok-drop-target]) {
+    border-color: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-data-grid-pivot-section-title]) {
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-data-grid-pivot-empty]) {
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-data-grid-pivot-empty][hidden], [data-ok-data-grid-pivot-move][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-data-grid-pivot-handle]) {
+    display: flex;
+    cursor: grab;
+    touch-action: none;
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-data-grid-pivot-handle] > svg) {
+    width: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-data-grid-pivot-field][data-ok-dragging]) {
+    opacity: 0.48;
+  }
+
+  :where([data-ok-data-grid-pivot-field][data-ok-drop="before"]) {
+    box-shadow: 0 -2px 0 var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-data-grid-pivot-field][data-ok-drop="after"]) {
+    box-shadow: 0 2px 0 var(--ok-palette-primary-main);
   }
 
   /* Charts integration: the chart under the rows. */

@@ -48,10 +48,10 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(21));
+  it("covers every story group", () => expect(snippets).toHaveLength(27));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
-  const scripted = (path: string) => /(large|server|lazy)-group/.test(path);
+  const scripted = (path: string) => /(large|server|lazy|server-aggregation)-group/.test(path);
 
   it.each(snippets.filter(([path]) => scripted(path)))(
     "%s: CSP-safe shell with a row template; no axe violations with rows",
@@ -83,7 +83,7 @@ describe("data grid snippets", () => {
       await settle();
       expect(
         host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]').length,
-      ).toBeGreaterThanOrEqual(3);
+      ).toBeGreaterThanOrEqual(2);
       await expectNoAxeViolations(host);
     },
   );

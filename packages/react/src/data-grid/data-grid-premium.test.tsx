@@ -319,6 +319,266 @@ describe("DataGrid row grouping and aggregation", () => {
     );
   });
 
+  it("shows one grouping column per grouped field (rowGroupingColumnMode)", async () => {
+    const colDef = vi.fn(({ fields }: { fields: string[] }) =>
+      fields[0] === "product" ? { headerName: "Item", hideDescendantCount: true } : {},
+    );
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingColumnMode="multiple"
+        rowGroupingModel={["region", "product"]}
+        groupingColDef={colDef}
+        defaultGroupingExpansionDepth={1}
+        hideFooter
+      />,
+    );
+    const g = grid();
+    expect(g.closest("[data-ok-data-grid]")?.getAttribute("data-ok-row-grouping-column-mode")).toBe(
+      "multiple",
+    );
+    const titles = [...g.querySelectorAll('[role="columnheader"]')]
+      .slice(0, 2)
+      .map((h) => [h.getAttribute("data-ok-field"), h.textContent]);
+    expect(titles).toEqual([
+      ["__row_group_by_columns_group_region__", "Region"],
+      ["__row_group_by_columns_group_product__", "Item"],
+    ]);
+    expect(colDef).toHaveBeenCalledWith({ fields: ["region"] });
+    // Each group names itself in its own field's column (no count for products).
+    expect(texts().map((r) => r.slice(0, 2))).toEqual([
+      ["North(2)", ""],
+      ["", "Tea"],
+      ["", "Coffee"],
+      ["South(1)", ""],
+      ["", "Tea"],
+      ["East(1)", ""],
+      ["", "Juice"],
+    ]);
+    // A grouping column sorts its own field's groups by name.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingColumnMode="multiple"
+        rowGroupingModel={["region", "product"]}
+        sortModel={[{ field: "__row_group_by_columns_group_product__", sort: "asc" }]}
+        defaultGroupingExpansionDepth={1}
+        hideFooter
+      />,
+    );
+    expect(texts().map((r) => r[0] || r[1])).toEqual([
+      "North(2)",
+      "Coffee(1)",
+      "Tea(1)",
+      "South(1)",
+      "Tea(1)",
+      "East(1)",
+      "Juice(1)",
+    ]);
+    await expectNoAxeViolations(document.body);
+    // Back to one column.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingModel={["region", "product"]}
+        hideFooter
+      />,
+    );
+    expect(
+      [...g.querySelectorAll('[role="columnheader"]')].map((h) => h.getAttribute("data-ok-field")),
+    ).toEqual(["__row_group_by_columns_group__", "region", "product", "year", "units", "date"]);
+  });
+
+  it("groups by groupingValueGetter, from the row's own value", () => {
+    const getter = vi.fn((value: unknown) => (Number(value) >= 20 ? "20 or more" : "Under 20"));
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS.map((c) =>
+          c.field === "units"
+            ? { ...c, valueGetter: (row: Sale) => row.units * 100, groupingValueGetter: getter }
+            : c,
+        )}
+        rowGroupingModel={["units"]}
+        hideFooter
+      />,
+    );
+    expect(texts().map((r) => r[0])).toEqual(["Under 20(2)", "20 or more(2)"]);
+    // The value is row[field], not the valueGetter's.
+    expect(getter).toHaveBeenCalledWith(10, SALES[0]);
+    // HTML groups by the attribute React writes.
+    expect(cell("1", "units").getAttribute("data-ok-grouping-value")).toBe("Under 20");
+    expect(cell("1", "region").hasAttribute("data-ok-grouping-value")).toBe(false);
+  });
+
+  it("shows group footers where getAggregationPosition says", async () => {
+    const position = vi.fn((group: { isRoot: boolean; groupingField?: string | undefined }) =>
+      group.isRoot ? null : group.groupingField === "region" ? ("footer" as const) : "inline",
+    );
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum" }}
+        getAggregationPosition={position}
+        defaultGroupingExpansionDepth={-1}
+        hideFooter
+      />,
+    );
+    expect(position).toHaveBeenCalledWith({
+      id: "auto-generated-row-region/North",
+      depth: 0,
+      isRoot: false,
+      groupingField: "region",
+      groupingKey: "North",
+    });
+    const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+    expect(JSON.parse(root.getAttribute("data-ok-aggregation-position") as string)).toEqual({
+      region: "footer",
+      root: null,
+    });
+    // The group row shows no value; its footer follows its rows; no root footer.
+    expect(texts().map((r) => [r[0], r[4]])).toEqual([
+      ["North(2)", ""],
+      ["", "10"],
+      ["", "5"],
+      ["", "15"],
+      ["South(1)", ""],
+      ["", "30"],
+      ["", "30"],
+      ["East(1)", ""],
+      ["", "20"],
+      ["", "20"],
+    ]);
+    const footer = bodyRows()[3] as HTMLElement;
+    expect(footer.getAttribute("data-ok-row-id")).toBe(
+      "auto-generated-group-footer-auto-generated-row-region/North",
+    );
+    expect(footer.hasAttribute("data-ok-data-grid-aggregation-row")).toBe(true);
+    expect(footer.getAttribute("aria-level")).toBe("2");
+    expect(footer.getAttribute("data-ok-parent")).toBe("auto-generated-row-region/North");
+    expect(footer.querySelector("[data-ok-data-grid-tree-toggle]")).toBeNull();
+    expect(document.querySelector("[data-ok-data-grid-pinned-rows]")).toBeNull();
+    await expectNoAxeViolations(document.body);
+    // A closed group hides its footer.
+    fireEvent.click(
+      document.querySelector(
+        '[data-ok-row-id="auto-generated-row-region/North"] [data-ok-data-grid-tree-toggle]',
+      ) as HTMLElement,
+    );
+    expect(texts()[1]?.[0]).toBe("South(1)");
+    expect((footer as HTMLElement).hidden).toBe(true);
+    // Pivoting ignores getAggregationPosition (MUI X).
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        pivotActive
+        pivotModel={{
+          rows: [{ field: "region" }],
+          columns: [],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        getAggregationPosition={position}
+        hideFooter
+      />,
+    );
+    expect(root.hasAttribute("data-ok-aggregation-position")).toBe(false);
+    expect(
+      document.querySelector("[data-ok-data-grid-pinned-rows] [data-ok-data-grid-aggregation-row]"),
+    ).not.toBeNull();
+  });
+
+  it("asks a data source for the aggregation and shows its values", async () => {
+    const asked: GridGetRowsParams[] = [];
+    const source: GridDataSource<Sale> = {
+      getRows: async (params) => {
+        asked.push(params);
+        return {
+          rows: SALES.slice(0, 2),
+          rowCount: 4,
+          aggregateRow: { units: { total: 65 } },
+        };
+      },
+      getAggregatedValue: (row, field) =>
+        ((row as Record<string, unknown>)[field] as { total?: number } | undefined)?.total ?? null,
+    };
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        rows={[]}
+        columns={COLUMNS}
+        dataSource={source}
+        dataSourceCache={null}
+        aggregationModel={{ units: "sum" }}
+      />,
+    );
+    const footer = await screen.findByText("65");
+    expect(footer.closest("[data-ok-data-grid-aggregation-row]")).not.toBeNull();
+    expect(asked[0]?.aggregationModel).toEqual({ units: "sum" });
+    // Without an aggregation the request has none.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        rows={[]}
+        columns={COLUMNS}
+        dataSource={source}
+        dataSourceCache={null}
+      />,
+    );
+    await act(async () => {});
+    expect(asked.at(-1)?.aggregationModel).toBeUndefined();
+    expect(document.querySelector("[data-ok-data-grid-aggregation-row]")).toBeNull();
+  });
+
+  it("shows a server group's aggregated values (getAggregatedValue)", async () => {
+    type Group = { id: string; region: string; units: number; count: number };
+    const source: GridDataSource<Group> = {
+      getRows: async (params) => ({
+        rows:
+          params.groupKeys?.length === 0
+            ? [{ id: "g-north", region: "North", units: 15, count: 2 }]
+            : [],
+        aggregateRow: { units: 65 },
+      }),
+      getChildrenCount: (row) => row.count,
+      getGroupKey: (row) => row.region,
+      getAggregatedValue: (row, field) => (field === "units" ? `${(row as Group).units}!` : null),
+    };
+    render(
+      <DataGrid
+        aria-label="Sales"
+        rows={[]}
+        columns={[
+          { field: "region", headerName: "Region" },
+          { field: "units", headerName: "Units", type: "number" },
+        ]}
+        dataSource={source}
+        dataSourceCache={null}
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum" }}
+      />,
+    );
+    expect(await screen.findByText("15!")).toBeTruthy();
+    expect(await screen.findByText("65!")).toBeTruthy();
+  });
+
   it("tree data generates rows for missing parents", () => {
     const files = [
       { id: "a", path: ["Docs", "A.txt"], size: 2 },
@@ -407,6 +667,173 @@ describe("DataGrid pivoting", () => {
     columns: [{ field: "year" }],
     values: [{ field: "units", aggFunc: "sum" }],
   };
+
+  it("pivots by derived columns: the year and quarter of dates, or your own", () => {
+    const { rerender } = render(
+      <DataGrid
+        id="d"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        pivotActive
+        pivotModel={{
+          rows: [{ field: "date-quarter" }],
+          columns: [{ field: "date-year" }],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        hideFooter
+      />,
+    );
+    expect(texts()).toEqual([["Q2", "65"]]);
+    expect(
+      [...grid().querySelectorAll('[data-ok-data-grid-group-row] [role="columnheader"]')].map(
+        (c) => c.textContent,
+      ),
+    ).toEqual(["2025"]);
+    // The panel lists them after the columns.
+    expect(
+      [...document.querySelectorAll("#d-pivot [data-ok-data-grid-pivot-field]")].map((f) =>
+        f.getAttribute("data-ok-field"),
+      ),
+    ).toEqual(["region", "product", "year", "date", "date-quarter", "date-year", "units"]);
+    expect(
+      within(document.getElementById("d-pivot") as HTMLElement).getByLabelText("Date (Year)"),
+    ).toBeTruthy();
+    rerender(
+      <DataGrid
+        id="d"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        pivotActive
+        getPivotDerivedColumns={(column) =>
+          column.field === "units"
+            ? [
+                {
+                  field: "units-band",
+                  headerName: "Units band",
+                  valueGetter: (row) => (row.units >= 20 ? "big" : "small"),
+                },
+              ]
+            : undefined
+        }
+        pivotModel={{
+          rows: [{ field: "units-band" }],
+          columns: [],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        hideFooter
+      />,
+    );
+    expect(texts()).toEqual([
+      ["small", "15"],
+      ["big", "50"],
+    ]);
+    expect(document.querySelector('#d-pivot [data-ok-field="date-year"]')).toBeNull();
+    rerender(
+      <DataGrid
+        id="d"
+        aria-label="Sales"
+        rows={SALES}
+        columns={COLUMNS}
+        getPivotDerivedColumns={null}
+        showToolbar
+        pivotModel={model}
+        hideFooter
+      />,
+    );
+    expect(document.querySelector('#d-pivot [data-ok-field="date-year"]')).toBeNull();
+  });
+
+  it("moves fields between sections by dragging, and in order by buttons", async () => {
+    const onModel = vi.fn();
+    render(
+      <DataGrid
+        id="m"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        initialState={{
+          pivoting: {
+            model: { ...model, rows: [{ field: "region" }, { field: "product" }] },
+            active: true,
+          },
+        }}
+        onPivotModelChange={onModel}
+        hideFooter
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Pivot" }));
+    const panel = document.getElementById("m-pivot") as HTMLElement;
+    const section = (name: string) =>
+      panel.querySelector(`[data-ok-data-grid-pivot-section="${name}"]`) as HTMLElement;
+    const fieldsOf = (name: string) =>
+      [...section(name).querySelectorAll("[data-ok-data-grid-pivot-field]")].map((f) =>
+        f.getAttribute("data-ok-field"),
+      );
+    expect(fieldsOf("rows")).toEqual(["region", "product"]);
+    expect(
+      section("rows").querySelector("[data-ok-data-grid-pivot-section-title]")?.textContent,
+    ).toBe("Rows");
+    expect(section("rows").getAttribute("aria-labelledby")).toBe("m-pivot-section-rows");
+    const hint = section("columns").querySelector("[data-ok-data-grid-pivot-empty]") as HTMLElement;
+    expect(hint.hidden).toBe(true);
+    // Move buttons: hidden for unused fields, disabled at the ends.
+    const button = (field: string, direction: string) =>
+      panel.querySelector(
+        `[data-ok-field="${field}"] [data-ok-data-grid-pivot-move="${direction}"]`,
+      ) as HTMLButtonElement;
+    expect(button("date", "up").hidden).toBe(true);
+    expect(button("region", "up").disabled).toBe(true);
+    expect(button("product", "down").disabled).toBe(true);
+    expect(button("region", "down").getAttribute("aria-label")).toBe("Move down: Region");
+    button("region", "down").focus();
+    fireEvent.click(button("region", "down"));
+    expect(onModel.mock.lastCall?.[0].rows).toEqual([{ field: "product" }, { field: "region" }]);
+    expect(fieldsOf("rows")).toEqual(["product", "region"]);
+    // At the end now: the other button keeps the focus.
+    expect(document.activeElement).toBe(button("region", "up"));
+    // Drag the year from Columns into Rows, before Product.
+    const handle = panel.querySelector(
+      '[data-ok-field="year"] [data-ok-data-grid-pivot-handle]',
+    ) as HTMLElement;
+    const box = (el: Element) => el.getBoundingClientRect();
+    const product = panel.querySelector('[data-ok-field="product"]') as HTMLElement;
+    const start = box(handle);
+    act(() => {
+      handle.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          bubbles: true,
+          button: 0,
+          pointerId: 1,
+          clientX: start.left + 2,
+          clientY: start.top + 2,
+        }),
+      );
+      const to = {
+        clientX: box(product).left + 4,
+        clientY: box(product).top + 2,
+        pointerId: 1,
+        bubbles: true,
+      };
+      document.dispatchEvent(new PointerEvent("pointermove", to));
+      document.dispatchEvent(new PointerEvent("pointerup", to));
+    });
+    expect(onModel.mock.lastCall?.[0]).toMatchObject({
+      rows: [{ field: "year" }, { field: "product" }, { field: "region" }],
+      columns: [],
+    });
+    expect(
+      (section("columns").querySelector("[data-ok-data-grid-pivot-empty]") as HTMLElement).hidden,
+    ).toBe(false);
+    await expectNoAxeViolations(panel);
+  });
 
   it("shows the pivot, edits it in the panel and turns it off", async () => {
     const onModel = vi.fn();
@@ -844,6 +1271,83 @@ describe("DataGrid header filters", () => {
 });
 
 describe("DataGrid charts integration and date filters", () => {
+  it("draws several charts, and the panel edits the one picked (MUI X)", async () => {
+    const onModels = vi.fn();
+    const onActive = vi.fn();
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(
+      <DataGrid
+        id="mc"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        showToolbar
+        chartsIntegration
+        rowGroupingModel={["region"]}
+        initialState={{
+          chartsIntegration: {
+            charts: {
+              units: { label: "Units", values: ["units"] },
+              years: { label: "Years", type: "line", values: ["year"] },
+            },
+          },
+        }}
+        onChartModelsChange={onModels}
+        onActiveChartIdChange={onActive}
+        hideFooter
+      />,
+    );
+    const regions = [...document.querySelectorAll<HTMLElement>("[data-ok-data-grid-chart]")];
+    expect(regions.map((r) => r.getAttribute("data-ok-chart-id"))).toEqual(["units", "years"]);
+    expect(regions.map((r) => r.querySelector("figure")?.id)).toEqual([
+      "mc-chart-units",
+      "mc-chart-years",
+    ]);
+    expect(regions[1]?.querySelector("figure")?.getAttribute("data-ok-type")).toBe("line");
+    expect(regions[0]?.querySelector("caption")?.textContent).toBe("Units");
+    const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+    expect(root.getAttribute("data-ok-active-chart-id")).toBe("units");
+    expect(JSON.parse(root.getAttribute("data-ok-chart-models") as string).years.type).toBe("line");
+    await userEvent.click(screen.getByRole("button", { name: "Chart" }));
+    const panel = document.getElementById("mc-charts") as HTMLElement;
+    const active = panel.querySelector("#mc-chart-active") as HTMLSelectElement;
+    expect([...active.options].map((o) => o.textContent)).toEqual(["Units", "Years"]);
+    fireEvent.change(within(panel).getByLabelText("Chart type"), { target: { value: "bar" } });
+    expect(onModels.mock.lastCall?.[0].units.type).toBe("bar");
+    expect(regions[0]?.querySelector("figure")?.hasAttribute("data-ok-horizontal")).toBe(true);
+    fireEvent.change(active, { target: { value: "years" } });
+    expect(onActive).toHaveBeenLastCalledWith("years");
+    expect((within(panel).getByLabelText("Chart type") as HTMLSelectElement).value).toBe("line");
+    act(() =>
+      (apiRef.current as GridApi<Sale>).setChartModel({
+        label: "Years",
+        type: "area",
+        values: ["year"],
+      }),
+    );
+    expect(regions[1]?.querySelector("figure")?.getAttribute("data-ok-type")).toBe("area");
+    expect((apiRef.current as GridApi<Sale>).exportState().chartsIntegration).toMatchObject({
+      activeChartId: "years",
+      charts: { years: { type: "area" } },
+    });
+    act(() => (apiRef.current as GridApi<Sale>).setActiveChartId("units"));
+    expect(root.getAttribute("data-ok-active-chart-id")).toBe("units");
+    act(() =>
+      (apiRef.current as GridApi<Sale>).setChartModels({
+        only: { values: ["units"] },
+        "bad id!": {},
+      }),
+    );
+    expect(
+      [...document.querySelectorAll("[data-ok-data-grid-chart]")].map((r) =>
+        r.getAttribute("data-ok-chart-id"),
+      ),
+    ).toEqual(["only"]);
+    await expectNoAxeViolations(document.body);
+  });
+
   it("charts the top-level groups or the page's rows", async () => {
     const onChart = vi.fn();
     const { rerender } = render(

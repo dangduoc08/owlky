@@ -147,6 +147,140 @@ describe("data grid row grouping and aggregation (HTML)", () => {
     await settle();
   });
 
+  it("shows one grouping column per grouped field, like React", async () => {
+    const { host, root, instance } = setup("grouping-multiple");
+    const fields = () =>
+      [...host.querySelectorAll('[data-ok-data-grid-header] [role="columnheader"]')]
+        .map((h) => h.getAttribute("data-ok-field") as string)
+        .filter((f) => f.startsWith("__"));
+    expect(fields()).toEqual([
+      "__row_group_by_columns_group_region__",
+      "__row_group_by_columns_group_product__",
+    ]);
+    const north = bodyRows(host)[0] as HTMLElement;
+    expect(shownCells(north).slice(0, 2)).toEqual(["North(6)", ""]);
+    (north.querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement).click();
+    expect(shownCells(bodyRows(host)[1] as HTMLElement).slice(0, 2)).toEqual(["", "Tea(2)"]);
+    // A grouping column sorts its field's groups by name.
+    instance.setSortModel([{ field: "__row_group_by_columns_group_product__", sort: "desc" }]);
+    expect(
+      bodyRows(host)
+        .slice(1, 4)
+        .map((r) => shownCells(r)[1]),
+    ).toEqual(["Tea(2)", "Juice(2)", "Coffee(2)"]);
+    // Grouping by another field adds its column, named after it.
+    menuSelect(host, "year", "group");
+    expect(fields()).toHaveLength(3);
+    expect(header(host, "__row_group_by_columns_group_year__").textContent).toBe("Year");
+    // One column again when the mode changes.
+    root.setAttribute("data-ok-row-grouping-column-mode", "single");
+    await settle();
+    expect(fields()).toEqual(["__row_group_by_columns_group__"]);
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)[0]).toBe("North(6)");
+    root.setAttribute("data-ok-row-grouping-column-mode", "multiple");
+    await settle();
+    expect(fields()).toHaveLength(3);
+    instance.setRowGroupingModel([]);
+    expect(fields()).toEqual([]);
+    expect(host.querySelector('[role="grid"]')).not.toBeNull();
+  });
+
+  it("groups by the grouping values React writes, or a getter", () => {
+    const { host, instance } = setup("grouping-value");
+    const names = () =>
+      bodyRows(host)
+        .filter((r) => r.hasAttribute("data-ok-generated"))
+        .map((r) => shownCells(r)[0]);
+    expect(names()).toEqual(["Under 50 units(11)", "50 units or more(13)"]);
+    instance.setGroupingValueGetter("units", (value) => (Number(value) % 2 ? "Odd" : "Even"));
+    expect(names().map((n) => n?.replace(/\(\d+\)/, ""))).toEqual(["Even", "Odd"]);
+    instance.setGroupingValueGetter(
+      "units",
+      (value) => new Date(2025, 0, Number(value) > 50 ? 2 : 1),
+    );
+    expect(names().map((n) => n?.replace(/\(\d+\)/, ""))).toEqual(["2025-01-01", "2025-01-02"]);
+    instance.setGroupingValueGetter("units", null);
+    expect(names()).toEqual(["Under 50 units(11)", "50 units or more(13)"]);
+  });
+
+  it("builds group footers from data-ok-aggregation-position, like React", async () => {
+    const { host, root, instance } = setup("grouping-footers");
+    const footers = () =>
+      bodyRows(host).filter((r) => r.hasAttribute("data-ok-data-grid-aggregation-row"));
+    // Every group open: a footer after each group's rows, none for the root.
+    expect(footers()).toHaveLength(4);
+    const north = footers()[0] as HTMLElement;
+    expect(north.getAttribute("data-ok-row-id")).toBe(
+      "auto-generated-group-footer-auto-generated-row-region/North",
+    );
+    expect(north.getAttribute("aria-level")).toBe("2");
+    expect(shownCells(north)).toEqual(["", "", "", "", "300", "1760"]);
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)).toEqual(["North(6)", "", "", "", "", ""]);
+    expect(bodyRows(host)[7]).toBe(north);
+    expect(host.querySelector("[data-ok-data-grid-pinned-rows]")).toBeNull();
+    // Closing a group drops its footer; the indexes follow.
+    (
+      (bodyRows(host)[0] as HTMLElement).querySelector(
+        "[data-ok-data-grid-tree-toggle]",
+      ) as HTMLElement
+    ).click();
+    expect(footers()).toHaveLength(3);
+    expect(bodyRows(host)[1]?.getAttribute("aria-rowindex")).toBe("3");
+    // Back to the defaults: values in the group rows, the root's in a footer row.
+    root.removeAttribute("data-ok-aggregation-position");
+    await settle();
+    expect(footers()).toHaveLength(0);
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)).toEqual([
+      "North(6)",
+      "",
+      "",
+      "",
+      "300",
+      "1760",
+    ]);
+    expect(
+      host.querySelector('[data-ok-row-id="auto-generated-group-footer-root"]'),
+    ).not.toBeNull();
+    root.setAttribute("data-ok-aggregation-position", '{"region":null,"root":"footer"}');
+    await settle();
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)[4]).toBe("");
+    instance.setAggregationModel({});
+    expect(host.querySelector("[data-ok-data-grid-aggregation-row]")).toBeNull();
+  });
+
+  it("asks a data source for the aggregation and shows its values", async () => {
+    const { host, root, instance } = setup("server-aggregation-group");
+    const asked: GridGetRowsParams[] = [];
+    let answer: (() => void) | undefined;
+    instance.setDataSource({
+      getRows: (params) =>
+        new Promise((resolve) => {
+          asked.push(params);
+          answer = () =>
+            resolve({
+              rows: [{ id: "c-1", firstName: "Ana", lastName: "Silva", age: 40, city: "Lima" }],
+              rowCount: 1,
+              aggregateRow: { age: { value: 40 }, id: { value: 1 } },
+            });
+        }),
+      getAggregatedValue: (row, field) =>
+        ((row as Record<string, { value?: number }>)[field] as { value?: number }).value,
+    });
+    expect(asked[0]?.aggregationModel).toEqual({ age: "avg", id: "size" });
+    answer?.();
+    await settle();
+    const footer = host.querySelector(
+      '[data-ok-row-id="auto-generated-group-footer-root"]',
+    ) as HTMLElement;
+    expect(cell(host, "auto-generated-group-footer-root", "age").textContent).toBe("40");
+    expect(cell(host, "auto-generated-group-footer-root", "id").textContent).toBe("1");
+    expect(footer).not.toBeNull();
+    // A new aggregation asks again.
+    instance.setAggregationModel({ age: "max" });
+    expect(asked.at(-1)?.aggregationModel).toEqual({ age: "max" });
+    expect(root.getAttribute("data-ok-aggregation-model")).toBe('{"age":"max"}');
+  });
+
   it("filters leaves, selects data rows, exports and keeps its state", () => {
     const { host, root, instance } = setup("grouping-group", (r) =>
       r.setAttribute("data-ok-aggregation-rows-scope", "all"),
@@ -245,6 +379,88 @@ describe("data grid row grouping and aggregation (HTML)", () => {
     });
     await vi.waitUntil(() => host.querySelector('[data-ok-row-id="g-lima"]'));
     expect(getRows.mock.calls[0]?.[0]).toMatchObject({ groupKeys: [], groupFields: ["city"] });
+  });
+});
+
+describe("data grid pivot panel and derived columns (HTML)", () => {
+  it("pivots by the year and quarter of a date, or by fields you derive", () => {
+    const { host, instance } = setup("pivot-derived");
+    const groups = () =>
+      [...host.querySelectorAll('[data-ok-data-grid-group-row] > [role="columnheader"]')].map((c) =>
+        c.textContent?.trim(),
+      );
+    expect(groups()).toEqual(["2024", "2025", "Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"]);
+    expect(texts(host).map((r) => r[0])).toEqual(["AAPL", "MSFT", "GOOGL"]);
+    // Fields you derive (null: none).
+    instance.setPivotDerivedColumns((column) =>
+      column.field === "date"
+        ? [
+            {
+              field: "date-year",
+              headerName: "Year",
+              valueGetter: (raw) => (String(raw).startsWith("2024") ? "Last year" : "This year"),
+            },
+          ]
+        : undefined,
+    );
+    expect(groups()).toEqual(["Last year", "This year"]);
+    instance.setPivotDerivedColumns(null);
+    expect(groups()).toEqual([]);
+  });
+
+  it("moves fields by dragging and by the Move buttons, like React", () => {
+    const { host, instance } = setup("pivot-group");
+    const panel = host.querySelector("#grid-pivot-pivot") as HTMLElement;
+    const section = (name: string) =>
+      panel.querySelector(`[data-ok-data-grid-pivot-section="${name}"]`) as HTMLElement;
+    const fieldsOf = (name: string) =>
+      [...section(name).querySelectorAll("[data-ok-data-grid-pivot-field]")].map((f) =>
+        f.getAttribute("data-ok-field"),
+      );
+    const button = (field: string, direction: string) =>
+      panel.querySelector(
+        `[data-ok-field="${field}"] [data-ok-data-grid-pivot-move="${direction}"]`,
+      ) as HTMLButtonElement;
+    // Open the panel (the test page has no popover runtime styles for it).
+    panel.setAttribute("data-ok-open", "");
+    panel.style.cssText = "display:block;position:static";
+    expect(fieldsOf("values")).toEqual(["revenue", "units"]);
+    button("revenue", "down").focus();
+    button("revenue", "down").click();
+    expect(instance.pivotModel.values.map((v) => v.field)).toEqual(["units", "revenue"]);
+    expect(fieldsOf("values")).toEqual(["units", "revenue"]);
+    expect(button("revenue", "down").disabled).toBe(true);
+    expect(document.activeElement).toBe(button("revenue", "up"));
+    expect(button("product", "up").hidden).toBe(true);
+    // Unused fields keep the columns' order.
+    expect(fieldsOf("none")).toEqual(["product"]);
+    // Drag the product into Rows, after Region.
+    const handle = panel.querySelector(
+      '[data-ok-field="product"] [data-ok-data-grid-pivot-handle]',
+    ) as HTMLElement;
+    const region = panel.querySelector(
+      '[data-ok-data-grid-pivot-section="rows"] [data-ok-field="region"]',
+    ) as HTMLElement;
+    const from = handle.getBoundingClientRect();
+    const to = region.getBoundingClientRect();
+    handle.dispatchEvent(
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        button: 0,
+        pointerId: 1,
+        clientX: from.left + 2,
+        clientY: from.top + 2,
+      }),
+    );
+    const at = { bubbles: true, pointerId: 1, clientX: to.left + 4, clientY: to.bottom - 2 };
+    document.dispatchEvent(new PointerEvent("pointermove", at));
+    expect(region.getAttribute("data-ok-drop")).toBe("after");
+    document.dispatchEvent(new PointerEvent("pointerup", at));
+    expect(instance.pivotModel.rows).toEqual([{ field: "region" }, { field: "product" }]);
+    expect(fieldsOf("rows")).toEqual(["region", "product"]);
+    expect(
+      (section("rows").querySelector("[data-ok-data-grid-pivot-empty]") as HTMLElement).hidden,
+    ).toBe(true);
   });
 });
 
@@ -645,6 +861,61 @@ describe("data grid charts integration (HTML)", () => {
     expect(instance.exportState().chartsIntegration).toEqual({ model: { values: [] } });
     instance.setChartModel({});
     expect(region.hidden).toBe(true);
+  });
+});
+
+describe("data grid several charts (HTML)", () => {
+  it("draws one chart per id and the panel edits the one picked, like React", () => {
+    const { host, root, instance } = setup("charts-multiple");
+    const regions = [...host.querySelectorAll<HTMLElement>("[data-ok-data-grid-chart]")];
+    expect(regions.map((r) => r.getAttribute("data-ok-chart-id"))).toEqual(["revenue", "units"]);
+    const figure = (i: number) => regions[i]?.querySelector("[data-ok-chart]") as HTMLElement;
+    expect(figure(1).getAttribute("data-ok-type")).toBe("line");
+    expect(regions.every((r) => !r.hidden)).toBe(true);
+    const onChart = vi.fn();
+    root.addEventListener("ok:data-grid:chart", onChart);
+    const type = host.querySelector<HTMLSelectElement>(
+      "#grid-charts-multiple-chart-type",
+    ) as HTMLSelectElement;
+    expect(type.value).toBe("column");
+    type.value = "area";
+    type.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(onChart.mock.lastCall?.[0].detail).toMatchObject({
+      id: "revenue",
+      model: { type: "area" },
+    });
+    expect(figure(0).getAttribute("data-ok-type")).toBe("area");
+    expect(JSON.parse(root.getAttribute("data-ok-chart-models") as string).revenue.type).toBe(
+      "area",
+    );
+    // Switching charts (cancelable) shows the other chart's model in the panel.
+    const active = host.querySelector<HTMLSelectElement>(
+      "#grid-charts-multiple-chart-active",
+    ) as HTMLSelectElement;
+    root.addEventListener("ok:data-grid:activechart", (e) => e.preventDefault(), { once: true });
+    active.value = "units";
+    active.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.activeChartId).toBe("revenue");
+    expect(active.value).toBe("revenue");
+    active.value = "units";
+    active.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.activeChartId).toBe("units");
+    expect(type.value).toBe("line");
+    expect(instance.chartModel.label).toBe("Units by product");
+    instance.setChartModel({ ...instance.chartModel, type: "bar" });
+    expect(figure(1).hasAttribute("data-ok-horizontal")).toBe(true);
+    expect(instance.exportState().chartsIntegration).toMatchObject({
+      activeChartId: "units",
+      charts: { units: { type: "bar" } },
+    });
+    instance.setChartModels({ revenue: { values: ["units"] } });
+    expect(instance.activeChartId).toBe("revenue");
+    instance.setActiveChartId("nope");
+    expect(instance.activeChartId).toBe("revenue");
+    instance.restoreState({
+      chartsIntegration: { charts: { units: { type: "pie" } }, activeChartId: "units" },
+    });
+    expect(instance.chartModels).toEqual({ units: { type: "pie" } });
   });
 });
 

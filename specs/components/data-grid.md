@@ -73,13 +73,21 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
   template[data-ok-data-grid-cell="<field>"]?    (HTML only: cell content, [data-ok-data-grid-value] slots)
   Phase 6:
     root [data-ok-row-grouping-model='["f"]']? [data-ok-aggregation-model='{"f":"sum"}']?
+      [data-ok-aggregation-position='{"root":null,"f":"footer"}']?
       [data-ok-pivot-model='{…}']? [data-ok-chart-model='{…}']? [data-ok-excel-options='{…}']? (JSON)
     rows grouped (role=treegrid): special column __row_group_by_columns_group__ (header
       [data-ok-width][data-ok-hide-descendant-count]?; data rows: an empty cell, --_ok-data-grid-depth)
+      [data-ok-row-grouping-column-mode=multiple]: one special column per grouped field instead,
+      __row_group_by_columns_group_<field>__ (header title: the field's header name; a group row
+      fills its field's column, the others stay empty; no indent)
+    data cells [data-ok-grouping-value]? (the group key; React writes it from groupingValueGetter)
       group rows: div[role=row][data-ok-row-id="auto-generated-row-<field>/<key>…"][data-ok-generated]
         [aria-level][aria-posinset][aria-setsize][aria-expanded]?[data-ok-parent]?
         › group cell (toggle | spacer, span[data-ok-data-grid-tree-label], span[data-ok-data-grid-tree-count]?)
         › one gridcell per column: the aggregated value as text (or empty)
+      group footers (position footer): div[role=row][data-ok-row-id="auto-generated-group-footer-<group id>"]
+        [data-ok-generated][data-ok-data-grid-aggregation-row][aria-level][data-ok-parent] after the
+        group's last shown row (open groups only) › empty special cells, one gridcell per column
       tree data: generated rows for missing parents (id auto-generated-row-<path…>, [data-ok-generated])
     header › span[data-ok-data-grid-aggregation-label] (after the title; not in the pivot)
     header columns [data-ok-groupable=false]? [data-ok-aggregable=false]?
@@ -97,13 +105,22 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     toolbar › Button (Pivot: pivot model given; Chart: chartsIntegration) › Popover#<id>-pivot | #<id>-charts
       › div[data-ok-data-grid-panel][data-ok-data-grid-form-panel][role=group]
         pivot: FormControlLabel(Switch[data-ok-data-grid-pivot-switch]),
-          div[data-ok-data-grid-pivot-field][data-ok-field] › TextField select #<id>-pivot-<field> (none|rows|columns|values),
-          TextField select #<id>-pivot-<field>-function
-        charts: TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value]),
+          div[data-ok-data-grid-pivot-section=none|rows|columns|values][role=group][aria-labelledby]
+            [data-ok-drop-target]? › span#<id>-pivot-section-<section>[data-ok-data-grid-pivot-section-title]
+          › div[data-ok-data-grid-pivot-field][data-ok-field][data-ok-dragging]?[data-ok-drop=before|after]? (model order;
+            not used: column order, derived fields after the columns)
+            › span[data-ok-data-grid-pivot-handle][aria-hidden] (pointer drag), TextField select
+            #<id>-pivot-<field> (none|rows|columns|values), TextField select #<id>-pivot-<field>-function,
+            IconButton[data-ok-data-grid-pivot-move=up|down][aria-label="Move up: <header>"][disabled]? ([hidden] when not used)
+          › span[data-ok-data-grid-pivot-empty][hidden]? ("Drag here to create rows"; not in none)
+        charts: (several charts) TextField select #<id>-chart-active (one option per chart, its label),
+          TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value]),
           FormControlLabel(Switch[data-ok-data-grid-chart-stacked][disabled]?), FormControlLabel(Switch[data-ok-data-grid-chart-item-label]),
           TextField select #<id>-chart-legend (top|right|bottom|none)
     div[data-ok-data-grid-chart][hidden]? › Chart#<id>-chart (HTML: figure › table[data-ok-chart-data]; the grid sets the
       figure's option attributes and calls the Chart's `updateSeries`, or writes the table without the chart runtime)
+    several charts (root [data-ok-chart-models='{"<chart id>":{…}}'][data-ok-active-chart-id]): one
+      div[data-ok-data-grid-chart][data-ok-chart-id=<chart id>][hidden]? › Chart#<id>-chart-<chart id> per model (in order)
     Popover#<id>-filters › template[data-ok-data-grid-date="<id>-filter-value"] › DatePicker (HTML only)
     Popover#<id>-filters › template[data-ok-data-grid-date-time="<id>-filter-value"] › DateTimePicker (HTML only)
   div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
@@ -158,6 +175,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `lazyLoading` | `data-ok-lazy-loading` | flag | boolean | off | With a data source and a row count: rows load in chunks as they scroll into view. |
 | `lazyLoadingRequestThrottleMs` | `data-ok-lazy-loading-request-throttle-ms="…"` | number | number | `500` | Least time between two lazy loading requests, ms. |
 | `disableRowGrouping` | `data-ok-disable-row-grouping` | flag | boolean | off | Columns can't be grouped by (no Group by in the column menu). |
+| `rowGroupingColumnMode` | `data-ok-row-grouping-column-mode="…"` | style | `single` `multiple` | `single` | Grouped rows show in one grouping column (`single`), or in one column per grouped field (`multiple`). |
 | `disableAggregation` | `data-ok-disable-aggregation` | flag | boolean | off | No aggregation (no Aggregation items in the column menu). |
 | `aggregationRowsScope` | `data-ok-aggregation-rows-scope="…"` | style | `filtered` `all` | `filtered` | Rows aggregated: the `filtered` ones, or `all` of them. |
 | `disablePivoting` | `data-ok-disable-pivoting` | flag | boolean | off | No pivot button in the toolbar. |
@@ -214,24 +232,36 @@ Autocomplete chips. Phase 6: `rowGroupingModel` / `onRowGroupingModelChange` /
 `initialState.rowGrouping.model`, `disableRowGrouping`, column `groupable`; `aggregationModel` /
 `onAggregationModelChange` / `initialState.aggregation.model`, `disableAggregation`,
 `aggregationFunctions` (`{ apply(values, column), columnTypes? }`), `aggregationRowsScope`,
-`getAggregationPosition` (groups `inline` | null, root `footer` | null), column `aggregable`,
+`getAggregationPosition` (`{ id, depth, isRoot, groupingField?, groupingKey? }` → `inline` |
+`footer` | null; ignored while pivoting), column `aggregable`, server-side aggregation (params
+`aggregationModel`, response `aggregateRow`, `dataSource.getAggregatedValue(row, field)`),
+`rowGroupingColumnMode` (`single` | `multiple`), column `groupingValueGetter(value, row)` (value:
+`row[field]`), `groupingColDef` as a function of `{ fields }` (one call per grouping column),
 `availableAggregationFunctions`; `pivotModel` / `onPivotModelChange`, `pivotActive` /
 `onPivotActiveChange`, `initialState.pivoting` (`model`, `active`), `disablePivoting`, column
-`pivotable`; `excelOptions` (`fileName`, `sheetName`, `fields`, `allColumns`, `includeHeaders`),
+`pivotable`; `getPivotDerivedColumns(column)` (default: `<field>-year` / `<field>-quarter` of `date`
+columns; `null`: none); `excelOptions` (`fileName`, `sheetName`, `fields`, `allColumns`, `includeHeaders`),
 `apiRef.getDataAsExcel` / `exportDataAsExcel`; `cellSelection`, `cellSelectionModel` /
 `onCellSelectionModelChange`; `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` /
 `onClipboardPasteEnd`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`,
 `ignoreValueFormatterDuringExport`; `headerFilters`; `chartsIntegration`, `chartModel` /
-`onChartModelChange` / `initialState.chartsIntegration.model`; data source `groupFields`; `apiRef`
+`onChartModelChange` / `initialState.chartsIntegration.model`; `chartModels` / `onChartModelsChange` /
+`initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` /
+`initialState.chartsIntegration.activeChartId`, `apiRef.setChartModels` / `setActiveChartId`; data source `groupFields`; `apiRef`
 row grouping, aggregation, pivot, cell selection and chart setters. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
 filters, column virtualization, lazy loading of row chunks). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
-Deferred (roadmap): `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, group footers
-(`getAggregationPosition` → `footer` for groups), server-side aggregation, `getPivotDerivedColumns`
-(year / quarter of dates), the pivot panel's drag and drop (selects instead), header filter operator
-menus, the AI assistant (needs a language model service).
+Deferred (roadmap): header filter operator menus, the AI assistant (needs a language model
+service). Pivot panel: no field search (MUI X: search fields) and no field menu (MUI X: Move to
+top / bottom, Add to …): the role select moves a field between sections, Move up / Move down
+within one (WCAG 2.5.7 alternatives to dragging). Server-side aggregation: `aggregationFunctions` keeps the built-in functions as the menu's
+choices (MUI X: none by default with a data source); grids without `getAggregatedValue` and without
+an `aggregateRow` in the response still aggregate the loaded rows.
+Row grouping gaps (not in a roadmap row): `leafField`, `mainGroupingCriteria`, rows with missing
+groups shown before the groups (`null` keys group under ""), sortable grouping column headers (the
+sort model accepts grouping fields).
 Renamed: the charts integration is one `chartModel` and a chart inside the grid (MUI X: a renderer
 proxy and a context provider around the grid). Its configuration is flat in the model (MUI X:
 `configuration`): kept `stacked`, `itemLabel` (`none` | `value`), `colors` (palette names, not MUI
@@ -242,7 +272,11 @@ palettes), `height`, `showMark`, `seriesAxisLabel`, `showToolbar`; renamed `inte
 `grid`, axis positions, `tickPlacement`, `tickLabelPlacement`, `seriesAxisReverse`,
 `categoriesAxisLabel`, `borderRadius`, gap ratios, `paddingAngle`, `cornerRadius`, `seriesGap`,
 `outerRadius`, `width`, tooltip placement / trigger, `onRender`. One dimension (MUI X: several, a
-grouped axis), one chart per grid (multiple renderer proxies: deferred). Beyond MUI X: `radar` and
+grouped axis). Several charts (MUI X: one `GridChartsRendererProxy` per id with a `label`, models in
+`initialState.chartsIntegration.charts`, `activeChartId`): renamed to `chartModels` (by chart id;
+ids letters, digits, `-`, `_`), the model's `label`, `activeChartId` / `onActiveChartIdChange`; the
+charts render inside the grid, one after the other, and the panel's Chart select picks the one it
+edits. Beyond MUI X: `radar` and
 `scatter` types. While pivoting, a value field of the pivot stands for its pivot columns (MUI X sets
 them with `updateChartValuesData` once the columns exist).
 
@@ -325,16 +359,33 @@ view): template = specials + left pins + spacer + visible tracks + spacer + righ
 omits the other cells, HTML hides them. Lazy loading: rows are placeholders until their chunk (50
 rows) loads; before the first measure only the first chunk renders. `updateRow` runs after an
 accepted edit; its answer is shown, a failure brings the old values back.
-Phase 6. Row grouping: one group per distinct cell text of each grouped field (nested in the model's
-order); groups count their filtered rows; the column menu groups and ungroups; data rows keep the
-group column empty. Sorting orders groups by key (sort on a grouped field or the group column), by
+Phase 6. Row grouping: one group per distinct cell text (or `groupingValueGetter` key) of each grouped
+field (nested in the model's order); groups count their filtered rows; the column menu groups and
+ungroups; data rows keep the group column empty. `rowGroupingColumnMode="multiple"`: one grouping
+column per grouped field (client-side grouping); a group row's toggle, name and count sit in its
+field's column; sorting on a field's grouping column orders that field's groups by key; the HTML
+runtime adds and removes the columns when the model or the mode attribute changes (markup headers
+are kept). Sorting orders groups by key (sort on a grouped field or the group column), by
 aggregated value (sort on an aggregated field), else by their first row. Aggregation: `sum` /
 `avg` (2 decimals) / `min` / `max` (numbers and dates) / `size`; values left out when a row has
 none (pivot buckets); groups show theirs inline, the footer row the filtered rows' (`all`: every
-row); a function that doesn't fit the column type is ignored. Pivot: groups of the `rows` fields,
+row); a function that doesn't fit the column type is ignored. Positions: `getAggregationPosition`
+(HTML: `data-ok-aggregation-position` by level, React writes each field's first group's answer and
+the root's) moves a group's values to a footer row after its last shown row (shown while the group
+is open; counted, paged and indexed like rows) or hides them; the root's `null` drops the footer
+row. Server-side aggregation (a data source and an aggregation): requests carry `aggregationModel`
+(a new model asks again); the footer row shows the response's `aggregateRow` and server parents
+(server grouping and tree rows with children) their own values, both through
+`getAggregatedValue(row, field)` (default `row[field]`); lazy grids show the footer row too. Pivot: groups of the `rows` fields,
 one column per distinct key tuple of the `columns` fields (sorted, `desc` per field) × value; column
 groups name the keys; leaves never show; filters run on the data first; exports keep the data
-columns and rows. Excel: core `gridToXlsx` (stored ZIP, inline strings, typed numbers, booleans and
+columns and rows. Derived fields (`getPivotDerivedColumns`, default year and `Q1`–`Q4` of `date`
+columns, `YYYY-MM-DD` read as local days) exist in the pivot and its panel only. Panel: sections in
+the model's order; dragging a field's handle past 4px moves it (the section under the pointer gets
+`data-ok-drop-target`, the field next to the drop `data-ok-drop`; Escape cancels) and reports the
+move (core `moveGridPivotField`: within a section a field keeps its sort / function, new values
+take the field's function select); Move up / Move down keep the focus on the pressed button (the
+other at an end). Excel: core `gridToXlsx` (stored ZIP, inline strings, typed numbers, booleans and
 dates, bold header, column widths); text never becomes a formula. Clipboard: Ctrl / Cmd + C copies
 the selected cells (else selected rows, else the focused cell) as TSV; Ctrl / Cmd + V pastes into
 editable cells from the selection's corner or the focused cell; one value fills the selection; each
@@ -405,8 +456,13 @@ known keys only; React writes them from `csvOptions` / `printOptions`).
 Phase 6: `ok:data-grid:rowgrouping | aggregation | cellselection | chart` (cancelable, `{ model }`),
 `ok:data-grid:pivot` (cancelable, `{ model, active }`), `ok:data-grid:clipboardcopy` (`{ data }`),
 `ok:data-grid:clipboardpaste` (cancelable, `{ data }`: the pasted cells); instance
+`setPivotDerivedColumns(getter | null)`, `setGroupingValueGetter(field, getter | null)` (getter of the cell's value and row; else
+`data-ok-grouping-value`, else the cell text);
 `rowGroupingModel`, `aggregationModel`, `pivotModel`, `pivotActive`, `cellSelectionModel`,
-`chartModel` with `set…` (no events; the chart panel's fields follow the model),
+`chartModel` with `set…` (no events; the chart panel's fields follow the model; several charts:
+the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
+`setActiveChartId(id)`; `ok:data-grid:chart` carries `id` with several charts;
+`ok:data-grid:activechart` (cancelable, `{ id }`);
 `toExcel(options)`, `exportExcel(options)`.
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
 
@@ -432,7 +488,7 @@ the detailed record of what is kept.
 | Column def: `cellClassName`, `headerClassName` | grid `getCellClassName` only | deferred | per column class names |
 | Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | — | deferred | per column opt-outs (grid-wide flags exist) |
 | Column def: `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | — | deferred | |
-| Column def: `groupingValueGetter` | — | deferred (4.15) | |
+| Column def: `groupingValueGetter` | same | kept | value is `row[field]`; HTML: `data-ok-grouping-value` (React writes it) or `setGroupingValueGetter` |
 | Column def: `allowFormulas`, `chartable`, `examples` | — | not applicable | formulas and AI not proposed (roadmap 2.4 notes); `chartable` = every column of `chartModel` |
 | Selection: `checkboxSelection`, `rowSelectionModel` (id array), `disableRowSelectionOnClick`, `disableMultipleRowSelection`, `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly` | same | kept | `rowSelectionModel` renamed shape (MUI v8 `{ type, ids }`) |
 | Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef`, `disableRowSelectionExcludeModel` | — | deferred | last one not applicable (id array model) |
@@ -457,13 +513,16 @@ the detailed record of what is kept.
 | Data source: `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`; `virtualizeColumnsWithAutoRowHeight` | — | deferred | |
 | Tree data / master-detail / row order / pinned rows: `treeData`, `getTreeDataPath`, `groupingColDef`, `defaultGroupingExpansionDepth`, `isGroupExpandedByDefault`, detail panel props, `rowReordering`, `onRowOrderChange`, `pinnedRows` | same | kept | |
 | Row order: `isRowReorderable`, `isValidRowReorder`, `setTreeDataPath` (reorder in tree data) | — | deferred | |
-| Row grouping / aggregation / pivot: models + callbacks, `disableRowGrouping`, `aggregationFunctions`, `aggregationRowsScope`, `getAggregationPosition` (root), `disablePivoting`, `pivotActive` | same | kept | |
-| `rowGroupingColumnMode`, `getPivotDerivedColumns`, group footers, server aggregation, pivot drag and drop | — | deferred (4.15) | |
+| Row grouping / aggregation / pivot: models + callbacks, `disableRowGrouping`, `aggregationFunctions`, `aggregationRowsScope`, `getAggregationPosition` (root and groups: `inline`, `footer`, `null`), `disablePivoting`, `pivotActive` | same | kept | HTML: `data-ok-aggregation-position` by level |
+| Server-side aggregation: params `aggregationModel`, response `aggregateRow`, `dataSource.getAggregatedValue` | same | kept | `aggregationFunctions` keeps the built-in choices with a data source |
+| `rowGroupingColumnMode`, `groupingColDef` callback | same | kept | callback params `{ fields }`; server-side grouping keeps one column |
+| `getPivotDerivedColumns` | same | kept | `null` turns the defaults off; HTML: `setPivotDerivedColumns(getter)` (value: the source cell's) |
+| Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef`, `pivotPanelOpen` / `onPivotPanelOpenChange` | — | deferred | |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
 | Charts: `chartsIntegration`, `chartModel` (renamed, see above) | same | kept | |
-| Charts: `activeChartId` / `onActiveChartIdChange` (several charts) | — | deferred (4.15) | |
+| Charts: several `GridChartsRendererProxy` (`id`, `label`), `initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` | `chartModels` (+ model `label`), `activeChartId` | renamed | charts inside the grid; HTML `data-ok-chart-models`, `data-ok-active-chart-id` |
 | Formulas / computed columns: `disableFormulas`, `formulaFunctions`, `formulaA1Notation`, `disableEval`, `disableFormulaAutocomplete`, `computedColumns`, `computedColDef`, `disableComputedColumns`, `onComputedColumnsChange` | — | not applicable | a formula engine (roadmap 2.4 notes); `valueGetter` covers derived columns |
 | AI assistant: `aiAssistant*`, `allowAiAssistantDataSampling`, `onPrompt` | — | not applicable | needs a model service (roadmap 2.4 notes) |
 | `rowsLoadingMode` | `lazyLoading`, `paginationMode` | not applicable | |
@@ -486,6 +545,7 @@ Phase 6: HTML builds group rows, the footer row and the pivot's headers itself f
 markup (the markup's generated group rows are dropped and built again; tree data keeps its
 generated parents). The pivot story's HTML is the grid's data with `data-ok-pivot-active` (so is the
 Charts integration story's "Pivot chart", whose chart table and panel hold the pivoted chart).
-React-only: `aggregationFunctions` (custom functions), `getAggregationPosition`,
+`getAggregationPosition` reaches HTML as `data-ok-aggregation-position` (by level, not by key).
+React-only: `aggregationFunctions` (custom functions),
 `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`
 (HTML: tab-separated, formatted text). The chart's SVG is the Chart runtime's (parity skips `<svg>`).

@@ -152,6 +152,15 @@ for (const impl of implementations) {
       await expect(grid).toHaveAttribute("aria-rowcount", "1001");
     });
 
+    test("server-side aggregation: the footer shows the server's values", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "server-aggregation"));
+      const footer = page.locator('[data-ok-row-id="auto-generated-group-footer-root"]');
+      await expect(footer.locator('[data-ok-field="id"]')).toHaveText("1000");
+      await expect(footer.locator('[data-ok-field="age"]')).toHaveText(/^\d+(\.\d+)?$/);
+      await page.getByRole("textbox", { name: "Search" }).fill("Lima");
+      await expect(footer.locator('[data-ok-field="id"]')).not.toHaveText("1000");
+    });
+
     test("layout: spans, single selection, autosize by double click", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "layout"));
       const north = page.locator('#grid-spans [data-ok-row-id="b-1"] [data-ok-field="region"]');
@@ -291,27 +300,101 @@ for (const impl of implementations) {
 
     test("row grouping, aggregation and pivoting", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "row-grouping"));
-      const north = page.locator('[data-ok-row-id="auto-generated-row-region/North"]').first();
+      const grouping = page.locator("#grid-grouping");
+      const north = grouping.locator('[data-ok-row-id="auto-generated-row-region/North"]');
       await expect(north).toContainText("North(6)");
       await north.locator("[data-ok-data-grid-tree-toggle]").click();
       await expect(north).toHaveAttribute("aria-expanded", "true");
-      await expect(page.locator('[data-ok-parent="auto-generated-row-region/North"]')).toHaveCount(
-        6,
-      );
-      await expect(page.locator("[data-ok-data-grid-aggregation-row]")).toHaveCount(1);
+      await expect(
+        grouping.locator('[data-ok-parent="auto-generated-row-region/North"]'),
+      ).toHaveCount(6);
+      await expect(grouping.locator("[data-ok-data-grid-aggregation-row]")).toHaveCount(1);
+      // One grouping column per field: a product group names itself in the second one.
+      const multiple = page.locator("#grid-grouping-multiple");
+      await multiple
+        .locator(
+          '[data-ok-row-id="auto-generated-row-region/North"] [data-ok-data-grid-tree-toggle]',
+        )
+        .click();
+      await expect(
+        multiple.locator(
+          '[data-ok-row-id="auto-generated-row-region/North/product/Tea"] [data-ok-field="__row_group_by_columns_group_product__"]',
+        ),
+      ).toHaveText("Tea(2)");
+      // Grouping values: two bands of units.
+      await expect(
+        page.locator('#grid-grouping-value [data-ok-generated][aria-level="1"]'),
+      ).toHaveText([/^Under 50 units\(11\)/, /^50 units or more\(13\)/]);
       // Tree data: generated parents.
       await expect(
         page.locator('[data-ok-row-id="auto-generated-row-Images/Photos"]'),
       ).toContainText("Photos");
 
       await openStory(page, storyId(impl, "datagrid", "pivoting"));
-      await expect(page.locator('[data-ok-data-grid-group-row] [role="columnheader"]')).toHaveText([
-        "2024",
-        "2025",
-      ]);
-      await page.getByRole("button", { name: "Pivot" }).click();
-      await page.getByRole("switch", { name: "Pivot" }).click();
+      await expect(
+        page.locator('#grid-pivot [data-ok-data-grid-group-row] [role="columnheader"]'),
+      ).toHaveText(["2024", "2025"]);
+      await page.locator('#grid-pivot [aria-controls="grid-pivot-pivot"]').click();
+      const panel = page.locator("#grid-pivot-pivot");
+      // Move up / Move down reorder the values (no dragging needed).
+      await panel.getByRole("button", { name: "Move down: Revenue" }).click();
+      await expect(
+        panel
+          .locator('[data-ok-data-grid-pivot-section="values"] [data-ok-data-grid-pivot-field]')
+          .first(),
+      ).toHaveAttribute("data-ok-field", "units");
+      await expect(
+        page
+          .locator(
+            '#grid-pivot [data-ok-data-grid-header] > [role="row"]:not([data-ok-data-grid-group-row]) > [role="columnheader"]',
+          )
+          .nth(1),
+      ).toHaveText(/^Units/);
+      // Drag the product from Not used into Rows (mouse and touch: pointer events).
+      const handle = panel.locator('[data-ok-field="product"] [data-ok-data-grid-pivot-handle]');
+      const region = panel.locator(
+        '[data-ok-data-grid-pivot-section="rows"] [data-ok-field="region"]',
+      );
+      const from = (await handle.boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      const to = (await region.boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      await handle.dispatchEvent("pointerdown", {
+        button: 0,
+        pointerId: 7,
+        clientX: from.x + 2,
+        clientY: from.y + 2,
+      });
+      await page.evaluate(
+        ({ x, y }) => {
+          for (const type of ["pointermove", "pointerup"])
+            document.dispatchEvent(
+              new PointerEvent(type, { bubbles: true, pointerId: 7, clientX: x, clientY: y }),
+            );
+        },
+        { x: to.x + 4, y: to.y + to.height - 2 },
+      );
+      await expect(
+        panel.locator('[data-ok-data-grid-pivot-section="rows"] [data-ok-data-grid-pivot-field]'),
+      ).toHaveCount(2);
+      await page.keyboard.press("Escape");
+      await page.locator('#grid-pivot [aria-controls="grid-pivot-pivot"]').click();
+      await panel.getByRole("switch", { name: "Pivot" }).click();
       await expect(page.getByRole("grid", { name: "Revenue by region and year" })).toBeVisible();
+      // Derived columns: the year and quarter of a date.
+      await expect(
+        page
+          .locator('#grid-pivot-derived [data-ok-data-grid-group-row] [role="columnheader"]')
+          .first(),
+      ).toHaveText("2024");
     });
 
     test("cell selection, clipboard and header filters", async ({ page, browserName, context }) => {
@@ -360,6 +443,17 @@ for (const impl of implementations) {
       const donut = page.locator("#grid-charts-donut [data-ok-data-grid-chart] [data-ok-chart]");
       await expect(donut.locator("[data-ok-chart-slice]")).toHaveCount(3);
       await expect(donut.locator("[data-ok-chart-data-label]")).toHaveCount(3);
+      // Several charts: the panel's Chart select picks the chart it edits.
+      await page.keyboard.press("Escape");
+      const several = page.locator("#grid-charts-multiple");
+      const charts = several.locator("[data-ok-data-grid-chart] [data-ok-chart]");
+      await expect(charts).toHaveCount(2);
+      await expect(charts.nth(1)).toHaveAttribute("data-ok-type", "line");
+      await several.getByRole("button", { name: "Chart" }).click();
+      await page.locator("#grid-charts-multiple-chart-active").selectOption("units");
+      await page.locator("#grid-charts-multiple-chart-type").selectOption("area");
+      await expect(charts.nth(1)).toHaveAttribute("data-ok-type", "area");
+      await expect(charts.nth(0)).toHaveAttribute("data-ok-type", "bar");
     });
   });
 }

@@ -1,4 +1,4 @@
-import { filterGridRows, type GridDataSource, sortGridRows } from "@owlky/core";
+import { filterGridRows, type GridDataSource, gridAggregate, sortGridRows } from "@owlky/core";
 import type { DataGridProps, GridColDef } from "@owlky/react";
 
 const FIRST = ["Ana", "Bao", "Chloe", "Diego", "Elif", "Farid", "Grace", "Hugo", "Ines", "Jonas"];
@@ -72,7 +72,7 @@ export const LARGE_TOTAL = 10_000;
 
 /**
  * A pretend server with 1,000 customers: it sorts, filters and pages with the grid's own engine,
- * after `delay` ms.
+ * after `delay` ms. Asked for an aggregation, it answers the values of every filtered row too.
  */
 export function createCustomerSource(total = 1000, delay = 400): GridDataSource<Customer> {
   const all = makeCustomers(0, total);
@@ -88,11 +88,33 @@ export function createCustomerSource(total = 1000, delay = 400): GridDataSource<
           resolve({
             rows: sorted.slice(page * pageSize, (page + 1) * pageSize),
             rowCount: sorted.length,
+            ...(params.aggregationModel
+              ? {
+                  aggregateRow: gridAggregate(
+                    filtered,
+                    params.aggregationModel,
+                    CUSTOMER_COLUMNS,
+                    value,
+                  ),
+                }
+              : {}),
           });
         }, delay);
       }),
+    getAggregatedValue: (row, field) => (row as Record<string, unknown>)[field],
   };
 }
+
+/** Props of the Server-side aggregation grid (React demo, HTML snippet). */
+export const SERVER_AGGREGATION_GRID: Omit<DataGridProps<Customer>, "rows"> = {
+  ...SERVER_GRID,
+  id: "grid-server-aggregation",
+  "aria-label": "Customers from the server, with their average age",
+  initialState: {
+    pagination: { paginationModel: { pageSize: 10 } },
+    aggregation: { model: { age: "avg", id: "size" } },
+  },
+};
 
 /** Props of the Lazy loading grid (React demo, HTML snippet). */
 export const LAZY_GRID: Omit<DataGridProps<Customer>, "rows"> = {

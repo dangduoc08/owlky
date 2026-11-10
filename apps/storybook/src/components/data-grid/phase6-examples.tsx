@@ -35,6 +35,40 @@ const salesColumns: GridColDef<Sale>[] = [
   { field: "revenue", headerName: "Revenue", type: "number", width: 130 },
 ];
 
+/* The same columns, with units grouped into two bands instead of one group per value. */
+const bandColumns: GridColDef<Sale>[] = salesColumns.map((column) =>
+  column.field === "units"
+    ? {
+        ...column,
+        groupingValueGetter: (value) =>
+          Number(value) >= 50 ? "50 units or more" : "Under 50 units",
+      }
+    : column,
+);
+
+/* Trades with a date: the pivot derives its year and quarter (story data, not from the reference). */
+export interface Trade {
+  id: string;
+  date: string;
+  ticker: string;
+  volume: number;
+}
+
+const TICKERS = ["AAPL", "MSFT", "GOOGL"];
+/** 18 trades over 2024 and 2025, deterministic. */
+export const TRADES: Trade[] = Array.from({ length: 18 }, (_, i) => ({
+  id: `t-${String(i + 1).padStart(2, "0")}`,
+  date: `${2024 + (i % 2)}-${String(1 + ((i * 5) % 12)).padStart(2, "0")}-${String(1 + ((i * 7) % 28)).padStart(2, "0")}`,
+  ticker: TICKERS[i % 3] as string,
+  volume: 1000 + ((i * 373) % 4000),
+}));
+
+const tradeColumns: GridColDef<Trade>[] = [
+  { field: "date", headerName: "Date", type: "date", width: 210 },
+  { field: "ticker", headerName: "Ticker", width: 120 },
+  { field: "volume", headerName: "Volume", type: "number", width: 120 },
+];
+
 /* Tree data with missing parents: the grid generates the "Docs" and "Images" folders. */
 export interface FileEntry {
   id: string;
@@ -122,6 +156,60 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
       ),
     },
     {
+      title: "Multiple grouping columns",
+      content: (
+        <DataGrid
+          id="grid-grouping-multiple"
+          aria-label="Sales by region and product"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          rowGroupingColumnMode="multiple"
+          initialState={{
+            rowGrouping: { model: ["region", "product"] },
+            aggregation: { model: { revenue: "sum" } },
+          }}
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Grouping value getter",
+      content: (
+        <DataGrid
+          id="grid-grouping-value"
+          aria-label="Sales by units"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={bandColumns}
+          initialState={{
+            rowGrouping: { model: ["units"] },
+            aggregation: { model: { revenue: "sum" } },
+          }}
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Group footers",
+      content: (
+        <DataGrid
+          id="grid-grouping-footers"
+          aria-label="Sales by region, with a total per region"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          initialState={{
+            rowGrouping: { model: ["region"] },
+            aggregation: { model: { units: "sum", revenue: "sum" } },
+          }}
+          defaultGroupingExpansionDepth={1}
+          getAggregationPosition={(group) => (group.isRoot ? null : "footer")}
+          hideFooter
+        />
+      ),
+    },
+    {
       title: "Generated parents",
       content: (
         <DataGrid
@@ -161,6 +249,30 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
                   { field: "revenue", aggFunc: "sum" },
                   { field: "units", aggFunc: "avg" },
                 ],
+              },
+            },
+          }}
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Derived columns",
+      content: (
+        <DataGrid
+          id="grid-pivot-derived"
+          aria-label="Volume by ticker and quarter"
+          className="sb-grid-wide"
+          rows={TRADES}
+          columns={tradeColumns}
+          showToolbar
+          initialState={{
+            pivoting: {
+              active: true,
+              model: {
+                rows: [{ field: "ticker" }],
+                columns: [{ field: "date-year" }, { field: "date-quarter" }],
+                values: [{ field: "volume", aggFunc: "sum" }],
               },
             },
           }}
@@ -238,6 +350,31 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
       ),
     },
     {
+      title: "Multiple charts",
+      content: (
+        <DataGrid
+          id="grid-charts-multiple"
+          aria-label="Sales by product"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          showToolbar
+          chartsIntegration
+          initialState={{
+            rowGrouping: { model: ["product"] },
+            aggregation: { model: { units: "sum", revenue: "sum" } },
+            chartsIntegration: {
+              charts: {
+                revenue: { label: "Revenue by product", type: "column", values: ["revenue"] },
+                units: { label: "Units by product", type: "line", values: ["units"] },
+              },
+            },
+          }}
+          hideFooter
+        />
+      ),
+    },
+    {
       title: "Donut chart",
       content: (
         <DataGrid
@@ -265,13 +402,20 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
 export const PHASE6_FILES = {
   grouping: [
     ["Row grouping and aggregation", "group"],
+    ["Multiple grouping columns", "multiple"],
+    ["Grouping value getter", "value"],
+    ["Group footers", "footers"],
     ["Generated parents", "tree"],
   ],
-  pivot: [["Pivoting", "group"]],
+  pivot: [
+    ["Pivoting", "group"],
+    ["Derived columns", "derived"],
+  ],
   cells: [["Cell selection, clipboard and header filters", "group"]],
   charts: [
     ["Charts integration", "group"],
     ["Pivot chart", "pivot"],
+    ["Multiple charts", "multiple"],
     ["Donut chart", "donut"],
   ],
 } as const;

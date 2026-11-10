@@ -125,12 +125,16 @@ export interface GridGetRowsParams {
   groupKeys?: string[] | undefined;
   /** Row grouping: the grouped fields (the server returns the groups of the next level). */
   groupFields?: string[] | undefined;
+  /** Server-side aggregation: field to function (only when the grid aggregates). */
+  aggregationModel?: Record<string, string> | undefined;
 }
 
 export interface GridGetRowsResponse<R> {
   rows: R[];
   /** Total rows on the server (for pagination). */
   rowCount?: number | undefined;
+  /** Server-side aggregation: the values of every row, for the footer row (MUI X). */
+  aggregateRow?: Record<string, unknown> | undefined;
 }
 
 /** A server data source (MUI X Pro `dataSource`). */
@@ -142,6 +146,11 @@ export interface GridDataSource<R> {
   getChildrenCount?(row: R): number;
   /** Tree data: the key of a row among its siblings (its part of the children's group keys). */
   getGroupKey?(row: R): string;
+  /**
+   * Server-side aggregation: the aggregated value of a parent row (a server group or tree parent)
+   * or of the response's `aggregateRow`. Default: `row[field]`.
+   */
+  getAggregatedValue?(row: R | Record<string, unknown>, field: string): unknown;
 }
 
 export interface GridDataSourceCache<R> {

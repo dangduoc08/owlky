@@ -21,12 +21,49 @@ import {
   gridCompare,
   gridSortValue,
 } from "./data-grid.js";
-import type { GridColumnGroup } from "./grid-structure.js";
+import type { GridColumnGroup, GridTreeRow } from "./grid-structure.js";
 
 /** The row grouping column (MUI X `GRID_ROW_GROUPING_SINGLE_GROUPING_FIELD`). */
 export const GRID_GROUPING_FIELD = "__row_group_by_columns_group__";
+const GROUPING_PREFIX = "__row_group_by_columns_group_";
+
+/**
+ * The grouping column of one grouped field (`rowGroupingColumnMode="multiple"`; MUI X
+ * `getRowGroupingFieldFromGroupingCriteria`), or the single one for `null`.
+ */
+export const gridGroupingField = (field: string | null): string =>
+  field === null ? GRID_GROUPING_FIELD : `${GROUPING_PREFIX}${field}__`;
+
+/** The grouped field of a grouping column (`null`: the single column; `undefined`: not one). */
+export function gridGroupingFieldOf(field: string): string | null | undefined {
+  if (field === GRID_GROUPING_FIELD) return null;
+  return field.startsWith(GROUPING_PREFIX) &&
+    field.endsWith("__") &&
+    field.length > GROUPING_PREFIX.length + 2
+    ? field.slice(GROUPING_PREFIX.length, -2)
+    : undefined;
+}
+
+/** Whether a field is a row grouping column (the single one, or one per grouped field). */
+export const isGridGroupingField = (field: string): boolean =>
+  gridGroupingFieldOf(field) !== undefined;
+
+/** A group key from a `groupingValueGetter` result (MUI X: a string, number, Date or nothing). */
+export function gridGroupingKey(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+  }
+  return String(value);
+}
 /** Id of the aggregation footer row (the root group). */
 export const GRID_AGGREGATION_ROOT_ID = "auto-generated-group-footer-root";
+
+/** Id of a group's footer row (`getAggregationPosition` → `footer`; MUI X ids). */
+export const gridGroupFooterId = (groupId: string): string =>
+  `auto-generated-group-footer-${groupId}`;
 
 /** Id of a generated row (a group, or a missing tree parent) from its path of keys. */
 export const gridGroupRowId = (path: readonly string[]): string =>
@@ -254,6 +291,83 @@ export function parseGridAggregationModel(
   return out;
 }
 
+/** Where a group shows its aggregated values (MUI X `GridAggregationPosition`; `null`: nowhere). */
+export type GridAggregationPosition = "inline" | "footer" | null;
+
+/**
+ * Positions by level (the HTML equivalent of `getAggregationPosition`): `root` for the footer of
+ * every row (default `footer`), a grouped field for its groups (default `inline`).
+ */
+export type GridAggregationPositions = Record<string, GridAggregationPosition>;
+
+/** Positions from untrusted input (JSON attributes): known values only. */
+export function parseGridAggregationPositions(json: string | null): GridAggregationPositions {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json ?? "null");
+  } catch {
+    return {};
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
+  const out: GridAggregationPositions = {};
+  for (const [key, value] of Object.entries(parsed as Record<string, unknown>))
+    if (
+      !["__proto__", "constructor", "prototype"].includes(key) &&
+      (value === "inline" || value === "footer" || value === null)
+    )
+      out[key] = value;
+  return out;
+}
+
+/** A group's position (`field` undefined: the root) from positions by level. */
+export const gridAggregationPositionOf = (
+  positions: GridAggregationPositions,
+  field: string | undefined,
+): GridAggregationPosition =>
+  field === undefined
+    ? Object.hasOwn(positions, "root")
+      ? (positions["root"] as GridAggregationPosition)
+      : "footer"
+    : Object.hasOwn(positions, field)
+      ? (positions[field] as GridAggregationPosition)
+      : "inline";
+
+/**
+ * The shown rows with a footer row after the last shown descendant of each open group that has
+ * one (`getAggregationPosition` → `footer`). Footers sit one level below their group.
+ */
+export function gridWithGroupFooters<R>(
+  list: readonly GridTreeRow<R>[],
+  hasFooter: (node: GridTreeRow<R>) => boolean,
+  footerOf: (node: GridTreeRow<R>) => R,
+): GridTreeRow<R>[] {
+  const out: GridTreeRow<R>[] = [];
+  const open: GridTreeRow<R>[] = [];
+  const close = (depth: number) => {
+    while (open.length && (open[open.length - 1] as GridTreeRow<R>).depth >= depth) {
+      const group = open.pop() as GridTreeRow<R>;
+      out.push({
+        row: footerOf(group),
+        id: gridGroupFooterId(group.id),
+        depth: group.depth + 1,
+        parentId: group.id,
+        childrenCount: 0,
+        descendantCount: 0,
+        expanded: false,
+        posInSet: 0,
+        setSize: 0,
+      });
+    }
+  };
+  for (const node of list) {
+    close(node.depth);
+    out.push(node);
+    if (node.expanded && hasFooter(node)) open.push(node);
+  }
+  close(0);
+  return out;
+}
+
 /* ------------------------------------------------------------------ order of grouped rows */
 
 export interface GridGroupOrderOptions<T> {
@@ -264,6 +378,8 @@ export interface GridGroupOrderOptions<T> {
   firstPlace(item: T): number;
   keyOf(item: T): string;
   aggregateOf(item: T, field: string): unknown;
+  /** A group's grouped field (a column of one grouped field sorts that field's groups). */
+  fieldOf?: ((item: T) => string | undefined) | undefined;
   sortModel: GridSortModel;
   columns: readonly GridColumn[];
   /** Fields grouped by (sorting one of them, or the grouping column, sorts the groups by key). */
@@ -273,8 +389,8 @@ export interface GridGroupOrderOptions<T> {
 
 /**
  * Sibling order under row grouping: data rows as sorted; groups by key when the sort is on a
- * grouped field (or the grouping column), by their aggregated value when it is on an aggregated
- * field, else in the order of their first row.
+ * grouped field or the grouping column (a column of one grouped field: that field's groups), by
+ * their aggregated value when it is on an aggregated field, else in the order of their first row.
  */
 export function gridGroupComparator<T>(o: GridGroupOrderOptions<T>): (a: T, b: T) => number {
   const first = o.sortModel[0];
@@ -282,7 +398,12 @@ export function gridGroupComparator<T>(o: GridGroupOrderOptions<T>): (a: T, b: T
     if (!o.isGroup(a) && !o.isGroup(b)) return o.place(a) - o.place(b);
     if (first && o.isGroup(a) && o.isGroup(b)) {
       const sign = first.sort === "asc" ? 1 : -1;
-      if (first.field === GRID_GROUPING_FIELD || o.groupFields.includes(first.field)) {
+      const own = gridGroupingFieldOf(first.field);
+      if (
+        own === null ||
+        o.groupFields.includes(first.field) ||
+        (own !== undefined && o.fieldOf?.(a) === own && o.fieldOf?.(b) === own)
+      ) {
         const order = o.keyOf(a).localeCompare(o.keyOf(b), undefined, { numeric: true });
         if (order !== 0) return sign * order;
       } else if (o.aggregated.includes(first.field)) {
@@ -507,6 +628,8 @@ const SLICED: readonly GridChartType[] = ["pie", "donut"];
 
 /** What the grid's chart shows (MUI X charts integration: dimension, values, configuration). */
 export interface GridChartModel {
+  /** Several charts: the chart's name in the panel and its accessible label (MUI X `label`). */
+  label?: string | undefined;
   /** Default `column`. */
   type?: GridChartType | undefined;
   /** The field whose texts are the categories (with row grouping: the top-level groups). */
@@ -686,6 +809,26 @@ export function gridChartOptions(
   return options;
 }
 
+/** Several charts of one grid (MUI X: one renderer proxy per id), by chart id. */
+export type GridChartModels = Record<string, GridChartModel>;
+
+/** Ids of several charts: letters, digits, `-` and `_` (they name elements). */
+const CHART_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+/** Chart models by id from untrusted input: safe ids and known model keys only. */
+export function sanitizeGridChartModels(input: unknown): GridChartModels {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return {};
+  const out: GridChartModels = {};
+  for (const [id, model] of Object.entries(input as Record<string, unknown>))
+    if (CHART_ID.test(id) && !["__proto__", "constructor", "prototype"].includes(id))
+      out[id] = sanitizeGridChartModel(model);
+  return out;
+}
+
+/** The chart the panel edits: `id` when it is one of the charts, else the first. */
+export const gridActiveChartId = (models: GridChartModels, id: string | null | undefined) =>
+  id && Object.hasOwn(models, id) ? id : (Object.keys(models)[0] ?? null);
+
 /** A chart model from untrusted input: known keys, types and values only. */
 export function sanitizeGridChartModel(input: unknown): GridChartModel {
   if (typeof input !== "object" || input === null || Array.isArray(input)) return {};
@@ -708,6 +851,7 @@ export function sanitizeGridChartModel(input: unknown): GridChartModel {
     );
   if (chartCurves.includes(value["curve"] as ChartCurve)) out.curve = value["curve"] as ChartCurve;
   if (typeof value["seriesAxisLabel"] === "string") out.seriesAxisLabel = value["seriesAxisLabel"];
+  if (typeof value["label"] === "string") out.label = value["label"];
   for (const key of ["height", "startAngle", "endAngle", "donutSize"] as const) {
     const n = value[key];
     if (typeof n === "number" && Number.isFinite(n)) out[key] = n;

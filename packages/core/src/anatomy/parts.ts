@@ -483,6 +483,11 @@ export interface DataGridParts {
   "data-ok-aggregable": Value<"false">;
   /** The aggregation (field to function), as JSON. */
   "data-ok-aggregation-model": Value<string>;
+  /**
+   * Where groups show their aggregated values, as JSON by level: `root` and each grouped field, to
+   * `inline`, `footer` or `null`. React writes it from `getAggregationPosition`.
+   */
+  "data-ok-aggregation-position": Value<string>;
   /** Set by the runtime on the first cell after the hidden columns of the column window. */
   "data-ok-col-start": State;
   /** The total number of rows. HTML: written by the grid. */
@@ -501,6 +506,12 @@ export interface DataGridParts {
   "data-ok-data-grid-body": Part<"div">;
   /** HTML only: the template of a column's custom cells, named by its field. */
   "data-ok-data-grid-cell": Part<"template">;
+  /** Several charts: the chart the panel edits. */
+  "data-ok-active-chart-id": Value<string>;
+  /** Several charts: a chart's id, on its `data-ok-data-grid-chart` region. */
+  "data-ok-chart-id": Value<string>;
+  /** Several charts: every chart's model, by chart id, as JSON. */
+  "data-ok-chart-models": Value<string>;
   /** The chart panel's chart. */
   "data-ok-data-grid-chart": Part<"div">;
   /** The chart panel's switch for item labels. */
@@ -565,8 +576,18 @@ export interface DataGridParts {
   "data-ok-data-grid-panel": Part<"div">;
   /** The rows pinned to the top or the bottom. */
   "data-ok-data-grid-pinned-rows": Value<"top" | "bottom">;
+  /** A pivot panel section's hint when it has no field, such as "Drag here to create rows". */
+  "data-ok-data-grid-pivot-empty": Part<"span">;
   /** One field of the pivot panel. */
   "data-ok-data-grid-pivot-field": Part<"div">;
+  /** The handle that drags a pivot field to another section or position (pointer only). */
+  "data-ok-data-grid-pivot-handle": Part<"span">;
+  /** The buttons that move a pivot field up or down in its section. */
+  "data-ok-data-grid-pivot-move": Value<"up" | "down">;
+  /** A section of the pivot panel: the fields not used, or the rows, columns or values. */
+  "data-ok-data-grid-pivot-section": Value<"none" | "rows" | "columns" | "values">;
+  /** The title of a pivot panel section. */
+  "data-ok-data-grid-pivot-section-title": Part<"span">;
   /** The switch that turns pivot mode on. */
   "data-ok-data-grid-pivot-switch": Part;
   /** The quick filter search field of the toolbar. */
@@ -601,8 +622,12 @@ export interface DataGridParts {
   "data-ok-detail-height": Value<string>;
   /** On a chart panel field: turns it off. */
   "data-ok-disable": Value<string>;
+  /** Set by the runtime on a pivot field while a pointer drags it. */
+  "data-ok-dragging": State;
   /** Set by the runtime on the row or column a drag would drop next to. */
   "data-ok-drop": Value<"before" | "after">;
+  /** Set by the runtime on the pivot panel section a dragged field would drop into. */
+  "data-ok-drop-target": State;
   /** Set by the runtime on a cell or row being edited. */
   "data-ok-editing": State;
   /** Options of the Excel export, as JSON. */
@@ -627,6 +652,8 @@ export interface DataGridParts {
   "data-ok-group-path": Value<string>;
   /** On a header cell: `false` keeps the column out of row grouping. */
   "data-ok-groupable": Value<"false">;
+  /** On a cell: the value its row is grouped by (React writes it from `groupingValueGetter`). */
+  "data-ok-grouping-value": Value<string>;
   /** Hides the number of children of tree rows. */
   "data-ok-hide-descendant-count": State;
   /** On a header cell: `false` keeps the column visible. */

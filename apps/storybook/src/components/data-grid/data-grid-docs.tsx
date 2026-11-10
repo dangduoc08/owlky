@@ -4,11 +4,17 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
+import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
+import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
+import groupingMultiple from "../../../../../packages/html/src/components/data-grid/examples/grouping-multiple.html?raw";
+import groupingValue from "../../../../../packages/html/src/components/data-grid/examples/grouping-value.html?raw";
 import largeGroup from "../../../../../packages/html/src/components/data-grid/examples/large-group.html?raw";
 import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
 import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
+import pivotDerived from "../../../../../packages/html/src/components/data-grid/examples/pivot-derived.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
+import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
 import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
 import validationGroup from "../../../../../packages/html/src/components/data-grid/examples/validation-group.html?raw";
 import { CDN, GuideDocs, type GuideSection } from "../../helpers/guide.js";
@@ -364,6 +370,59 @@ const columns = [{ field: "name", headerName: "Name", flex: 1 }];
 
 export function Customers() {
   return <DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} />;
+}`,
+  },
+  {
+    id: "server-aggregation",
+    title: "Aggregate on the server",
+    body: "With a data source, the server computes the aggregated values. When the grid aggregates, `getRows()` receives `aggregationModel` (field to function), and the response adds `aggregateRow`: the values of every row that passes the filters, for the footer row. For the rows of server-side grouping and tree data, `getAggregatedValue(row, field)` reads a parent row's value, and it also reads `aggregateRow`. By default the grid reads `row[field]`. A new aggregation asks the server again. In HTML, put the model in `data-ok-aggregation-model` and give the same data source to `setDataSource()`.",
+    html: `${gridElement(serverAggregation)}
+<script type="module">
+  const grid = window.Owlky.get(document.getElementById("grid-server-aggregation"), "data-grid");
+  grid.setDataSource({
+    // params: { sortModel, filterModel, paginationModel, aggregationModel }
+    async getRows(params) {
+      const response = await fetch("/api/customers", {
+        method: "POST",
+        body: JSON.stringify(params),
+      });
+      return response.json(); // { rows, rowCount, aggregateRow }
+    },
+    getAggregatedValue: (row, field) => row[field],
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+type Customer = { id: string; name: string; age: number };
+
+const customers = {
+  // params: { sortModel, filterModel, paginationModel, aggregationModel }
+  async getRows(params: object) {
+    const response = await fetch("/api/customers", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    return response.json(); // { rows, rowCount, aggregateRow }
+  },
+  getAggregatedValue: (row: Record<string, unknown>, field: string) => row[field],
+};
+
+const columns: GridColDef<Customer>[] = [
+  { field: "name", headerName: "Name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number" },
+];
+const noRows: Customer[] = [];
+
+export function CustomersWithTotals() {
+  return (
+    <DataGrid
+      aria-label="Customers, with their average age"
+      rows={noRows}
+      columns={columns}
+      dataSource={customers}
+      initialState={{ aggregation: { model: { age: "avg" } } }}
+    />
+  );
 }`,
   },
   {
@@ -810,9 +869,122 @@ export function DataGridGrouping() {
 }`,
   },
   {
+    id: "grouping-columns",
+    title: "Show a grouping column per field",
+    body: "By default, one grouping column holds the groups of every grouped field. Set `rowGroupingColumnMode` to `multiple` to give each grouped field its own grouping column, named after the field. Each group row shows its name in its field's column, so nested groups don't indent. `groupingColDef` can also be a function: the grid calls it for each grouping column with the fields that column groups by, so each column can have its own header name, width or `hideDescendantCount`. Sorting a grouping column, such as `__row_group_by_columns_group_region__`, orders the groups of its field by name. Server-side grouping keeps one column. In HTML, set `data-ok-row-grouping-column-mode=\"multiple\"`.",
+    html: `${gridOf(groupingMultiple, { rows: 4 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridGroupingColumns() {
+  return (
+    <DataGrid
+      aria-label="Sales by region and product"
+      rows={sales}
+      columns={columns}
+      rowGroupingColumnMode="multiple"
+      groupingColDef={({ fields }) => (fields[0] === "product" ? { hideDescendantCount: true } : {})}
+      initialState={{
+        rowGrouping: { model: ["region", "product"] },
+        aggregation: { model: { revenue: "sum" } },
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "grouping-values",
+    title: "Group by a computed value",
+    body: "A column's `groupingValueGetter` returns the value its rows are grouped by, such as a decade for a year or a band for an amount. It receives the row's own value (`row[field]`, even when the column has a `valueGetter`) and the row, and returns a string, a number, a date or nothing. The cells still show their own values. In HTML, the value is the cell's `data-ok-grouping-value` attribute, which React writes for you. For rows you build from data, give the runtime a function with `setGroupingValueGetter(field, getter)`.",
+    html: `${gridOf(groupingValue, { rows: 3 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  {
+    field: "units",
+    headerName: "Units",
+    type: "number",
+    // Two groups instead of one per number of units
+    groupingValueGetter: (value) => (Number(value) >= 100 ? "100 units or more" : "Under 100 units"),
+  },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridGroupingValues() {
+  return (
+    <DataGrid
+      aria-label="Sales by units"
+      rows={sales}
+      columns={columns}
+      initialState={{
+        rowGrouping: { model: ["units"] },
+        aggregation: { model: { revenue: "sum" } },
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "group-footers",
+    title: "Show totals in group footers",
+    body: '`getAggregationPosition` decides where each group shows its aggregated values: `"inline"` in the group row, `"footer"` in a footer row after the group\'s rows, or `null` for nowhere. It receives the group, with its `groupingField` and `groupingKey`, or the root (`isRoot`, depth -1) for the footer row of every row. By default, groups show their values inline and the root in the footer row. A group footer shows while its group is open. In HTML, set `data-ok-aggregation-position` to JSON by level: `root` for the footer row of every row, and each grouped field for its groups, such as `{"root": null, "region": "footer"}`. React writes the attribute for you. The pivot ignores the positions.',
+    html: `${gridOf(groupingFooters, { rows: 8 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridGroupFooters() {
+  return (
+    <DataGrid
+      aria-label="Sales by region, with a total per region"
+      rows={sales}
+      columns={columns}
+      defaultGroupingExpansionDepth={1}
+      // A footer row per group, no footer row for every row
+      getAggregationPosition={(group) => (group.isRoot ? null : "footer")}
+      initialState={{
+        rowGrouping: { model: ["region"] },
+        aggregation: { model: { units: "sum", revenue: "sum" } },
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "pivot",
     title: "Pivot the rows",
-    body: "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and, for each column, its place and function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
+    body: "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and four sections: **Not used**, **Rows**, **Columns** and **Values**. Drag a field by its handle to another section or to another place in its section. Without a mouse, pick a field's place in its list and move it with its **Move up** and **Move down** buttons, so you never need to drag. Each value field has a function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
     html: `${gridOf(pivotGroup, { rows: 6 })}`,
     react: `import { DataGrid, type GridColDef } from "@owlky/react";
 
@@ -844,6 +1016,63 @@ export function DataGridPivot() {
             rows: [{ field: "region" }],
             columns: [{ field: "year" }],
             values: [{ field: "revenue", aggFunc: "sum" }],
+          },
+        },
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "pivot-derived",
+    title: "Pivot by parts of a date",
+    body: 'To group a pivot by year or quarter, the grid derives fields from your columns. By default, every `date` column gets a year field (`<field>-year`) and a quarter field (`<field>-quarter`, `Q1` to `Q4`), named "Date (Year)" and "Date (Quarter)". They show in the pivot panel and work in the pivot model like other fields. `getPivotDerivedColumns` replaces them: the grid calls it for each column, and it returns the columns to derive (each with a `valueGetter`), or nothing. Pass `null` for none. In HTML, the defaults work the same way. Give the runtime your own function with `setPivotDerivedColumns(getter)`: each derived field\'s `valueGetter` receives the source cell\'s value.',
+    html: `${gridOf(pivotDerived, { rows: 4 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+type Trade = { id: number; date: string; ticker: string; volume: number };
+
+const trades: Trade[] = [
+  { id: 1, date: "2024-03-14", ticker: "AAPL", volume: 5500 },
+  { id: 2, date: "2024-08-02", ticker: "MSFT", volume: 3200 },
+  { id: 3, date: "2025-01-20", ticker: "AAPL", volume: 4100 },
+];
+
+const columns: GridColDef<Trade>[] = [
+  { field: "date", headerName: "Date", type: "date" },
+  { field: "ticker", headerName: "Ticker" },
+  { field: "volume", headerName: "Volume", type: "number" },
+];
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// A month field instead of the default year and quarter
+const monthOf = (column: GridColDef<Trade>): GridColDef<Trade>[] | undefined =>
+  column.type === "date"
+    ? [
+        {
+          field: \`\${column.field}-month\`,
+          headerName: \`\${column.headerName} (Month)\`,
+          valueGetter: (row) => months[Number(row.date.slice(5, 7)) - 1],
+        },
+      ]
+    : undefined;
+
+export function DataGridPivotDerived() {
+  return (
+    <DataGrid
+      aria-label="Volume by ticker and month"
+      rows={trades}
+      columns={columns}
+      showToolbar
+      getPivotDerivedColumns={monthOf}
+      initialState={{
+        pivoting: {
+          active: true,
+          model: {
+            rows: [{ field: "ticker" }],
+            columns: [{ field: "date-month" }],
+            values: [{ field: "volume", aggFunc: "sum" }],
           },
         },
       }}
@@ -977,6 +1206,48 @@ export function DataGridCharts() {
 }`,
   },
   {
+    id: "charts-multiple",
+    title: "Draw several charts",
+    body: "One grid can drive several charts. `chartModels` holds one chart model per chart id, and each model's `label` names its chart. The charts show one after the other under the grid. The **Chart** list at the top of the chart panel picks the chart the panel edits, which is `activeChartId` (`onActiveChartIdChange` reports a switch). Each chart keeps its own type, series and configuration. In HTML, put the models in `data-ok-chart-models` (JSON) with one chart region per id, and the active one in `data-ok-active-chart-id`. The grid fires `ok:data-grid:chart` with the chart's `id`, and the cancelable `ok:data-grid:activechart` when the panel switches charts.",
+    html: `${gridOf(chartsMultiple, { rows: 4 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridSeveralCharts() {
+  return (
+    <DataGrid
+      aria-label="Sales by product"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        rowGrouping: { model: ["product"] },
+        aggregation: { model: { units: "sum", revenue: "sum" } },
+        chartsIntegration: {
+          charts: {
+            revenue: { label: "Revenue by product", type: "column", values: ["revenue"] },
+            units: { label: "Units by product", type: "line", values: ["units"] },
+          },
+        },
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "charts-configuration",
     title: "Configure the chart",
     body: `The chart model also holds the chart's configuration. Each setting applies only to the types that use it.
@@ -1050,8 +1321,8 @@ export function DataGridChartsConfiguration() {
 - **Instance:** \`runtime.get(element, "data-grid")\` returns \`{ sortModel, filterModel, selection, columnVisibilityModel, columnOrder, pinnedColumns, columnWidths }\` with a setter for each (\`setSortModel(model)\`, \`setColumnWidth(field, width)\` and so on; setters fire no events), \`toCsv()\`, \`exportCsv()\`, \`setRows(rows)\` and \`setDataSource(source)\` (\`null\` stops it).
 - **\`ok:data-grid:rowclick\`**, **\`ok:data-grid:rowdoubleclick\`**, **\`ok:data-grid:cellclick\`**, **\`ok:data-grid:celldoubleclick\`** and **\`ok:data-grid:columnheaderclick\`** report the row id, the field and the value. **\`ok:data-grid:editstart\`** and **\`ok:data-grid:editstop\`** report the cell and the reason. **\`ok:data-grid:validate\`** asks for an error in \`detail.error\`.
 - **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
-- **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
-- **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
+- **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\`, \`setPivotDerivedColumns(getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
+- **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. **\`ok:data-grid:activechart\`** reports the chart the panel switches to in \`detail.id\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {

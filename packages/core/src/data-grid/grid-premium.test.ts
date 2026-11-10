@@ -3,23 +3,33 @@ import type { GridColumn } from "./data-grid.js";
 import { sanitizeGridState } from "./grid-layout.js";
 import {
   GRID_GROUPING_FIELD,
+  gridActiveChartId,
   gridAggregate,
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
+  gridAggregationPositionOf,
   gridChartData,
   gridChartFields,
   gridChartOptions,
   gridChartStacked,
   gridGroupComparator,
+  gridGroupFooterId,
+  gridGroupingField,
+  gridGroupingFieldOf,
+  gridGroupingKey,
   gridGroupRowId,
   gridPivot,
   gridPivotField,
   gridPivotRole,
   gridRowGroups,
   gridTreeGroups,
+  gridWithGroupFooters,
+  isGridGroupingField,
   isGridPivotField,
   parseGridAggregationModel,
+  parseGridAggregationPositions,
   sanitizeGridChartModel,
+  sanitizeGridChartModels,
   sanitizeGridPivotModel,
   setGridPivotRole,
 } from "./grid-premium.js";
@@ -71,6 +81,29 @@ describe("row grouping", () => {
     const { groups, parentOf } = gridRowGroups(SALES, [], (r) => r.id, text);
     expect(groups).toEqual([]);
     expect(parentOf.get("1")).toBeNull();
+  });
+});
+
+describe("grouping columns", () => {
+  it("names one column per grouped field and reads the field back", () => {
+    expect(gridGroupingField(null)).toBe(GRID_GROUPING_FIELD);
+    expect(gridGroupingField("region")).toBe("__row_group_by_columns_group_region__");
+    expect(gridGroupingFieldOf("__row_group_by_columns_group_region__")).toBe("region");
+    expect(gridGroupingFieldOf(GRID_GROUPING_FIELD)).toBeNull();
+    expect(gridGroupingFieldOf("region")).toBeUndefined();
+    expect(gridGroupingFieldOf("__row_group_by_columns_group_")).toBeUndefined();
+    expect(gridGroupingFieldOf("__row_group_by_columns_group___")).toBeUndefined();
+    expect(isGridGroupingField(gridGroupingField("a_b"))).toBe(true);
+    expect(isGridGroupingField("__tree_data_group__")).toBe(false);
+  });
+
+  it("turns grouping values into keys", () => {
+    expect(gridGroupingKey("North")).toBe("North");
+    expect(gridGroupingKey(1990)).toBe("1990");
+    expect(gridGroupingKey(null)).toBe("");
+    expect(gridGroupingKey(undefined)).toBe("");
+    expect(gridGroupingKey(new Date(2025, 4, 3))).toBe("2025-05-03");
+    expect(gridGroupingKey(new Date(Number.NaN))).toBe("");
   });
 });
 
@@ -174,6 +207,76 @@ describe("aggregation", () => {
   });
 });
 
+describe("aggregation positions and group footers", () => {
+  it("reads positions by level safely, with MUI X defaults", () => {
+    const positions = parseGridAggregationPositions(
+      '{"root":null,"region":"footer","product":"inline","x":"top","__proto__":"footer"}',
+    );
+    expect(positions).toEqual({ root: null, region: "footer", product: "inline" });
+    expect(({} as Record<string, unknown>)["footer"]).toBeUndefined();
+    expect(parseGridAggregationPositions("[1]")).toEqual({});
+    expect(parseGridAggregationPositions("{oops")).toEqual({});
+    expect(parseGridAggregationPositions(null)).toEqual({});
+    expect(gridAggregationPositionOf(positions, undefined)).toBeNull();
+    expect(gridAggregationPositionOf(positions, "region")).toBe("footer");
+    expect(gridAggregationPositionOf({}, undefined)).toBe("footer");
+    expect(gridAggregationPositionOf({}, "year")).toBe("inline");
+  });
+
+  it("adds a footer after the last shown row of each open group", () => {
+    type Node = Parameters<typeof gridWithGroupFooters<string>>[0][number];
+    const node = (id: string, depth: number, expanded = false, parentId: string | null = null) =>
+      ({
+        row: id,
+        id,
+        depth,
+        parentId,
+        childrenCount: expanded ? 1 : 0,
+        descendantCount: 0,
+        expanded,
+        posInSet: 1,
+        setSize: 1,
+      }) as Node;
+    const list = [
+      node("a", 0, true),
+      node("a/x", 1, true, "a"),
+      node("a/x/1", 2, false, "a/x"),
+      node("a/y", 1, false, "a"),
+      node("b", 0, true),
+      node("b/1", 1, false, "b"),
+      node("c", 0, false),
+    ];
+    const out = gridWithGroupFooters(
+      list,
+      (n) => n.id !== "a/y",
+      (n) => `footer of ${n.id}`,
+    );
+    expect(out.map((n) => n.row)).toEqual([
+      "a",
+      "a/x",
+      "a/x/1",
+      "footer of a/x",
+      "a/y",
+      "footer of a",
+      "b",
+      "b/1",
+      "footer of b",
+      "c",
+    ]);
+    const footer = out[3] as Node;
+    expect(footer).toMatchObject({ id: gridGroupFooterId("a/x"), depth: 2, parentId: "a/x" });
+    expect(gridGroupFooterId("g")).toBe("auto-generated-group-footer-g");
+    // Closed groups (and lists without footers) stay as they are.
+    expect(
+      gridWithGroupFooters(
+        list.slice(-1),
+        () => true,
+        () => "f",
+      ),
+    ).toHaveLength(1);
+  });
+});
+
 describe("group order", () => {
   type Item = { group: boolean; place: number; key: string; total: number | null };
   const items: Item[] = [
@@ -206,6 +309,27 @@ describe("group order", () => {
     expect(order([{ field: "total", sort: "asc" }])).toEqual(["b", "a", "c"]);
     expect(order([{ field: "total", sort: "desc" }])).toEqual(["a", "b", "c"]);
     expect(order([{ field: "other", sort: "asc" }])).toEqual(["a", "c", "b"]);
+  });
+
+  it("sorts the groups of one field from its own grouping column", () => {
+    const fieldOf = (i: Item) => (i.key === "c" ? "product" : "region");
+    const compare = gridGroupComparator<Item>({
+      isGroup: (i) => i.group,
+      place: (i) => i.place,
+      firstPlace: (i) => i.place,
+      keyOf: (i) => i.key,
+      aggregateOf: () => null,
+      fieldOf,
+      sortModel: [{ field: gridGroupingField("region"), sort: "desc" }],
+      columns: [],
+      groupFields: ["region", "product"],
+      aggregated: [],
+    });
+    const [b, a, c] = items as [Item, Item, Item];
+    // Two region groups: by key, descending; a product group against a region group: by place.
+    expect(compare(a, b)).toBeGreaterThan(0);
+    expect(compare(c, a)).toBeGreaterThan(0);
+    expect(compare(b, c)).toBeGreaterThan(0);
   });
 
   it("orders data rows by their place, and mixed siblings by first place", () => {
@@ -592,6 +716,28 @@ describe("charts", () => {
       type: "scatter",
       xType: "numeric",
     });
+  });
+});
+
+describe("several charts", () => {
+  it("reads chart models by safe ids and picks the active one", () => {
+    expect(
+      sanitizeGridChartModels({
+        a: { type: "line", label: "A", bogus: 1 },
+        "b-2_c": "x",
+        "bad id": {},
+        __proto__: { type: "bar" },
+      }),
+    ).toEqual({ a: { type: "line", label: "A" }, "b-2_c": {} });
+    expect(sanitizeGridChartModels([1])).toEqual({});
+    expect(sanitizeGridChartModels(null)).toEqual({});
+    expect(gridActiveChartId({ a: {}, b: {} }, "b")).toBe("b");
+    expect(gridActiveChartId({ a: {}, b: {} }, "c")).toBe("a");
+    expect(gridActiveChartId({}, "a")).toBeNull();
+    expect(
+      sanitizeGridState({ chartsIntegration: { charts: { a: { label: 2 } }, activeChartId: "a" } })
+        .chartsIntegration,
+    ).toEqual({ charts: { a: {} }, activeChartId: "a" });
   });
 });
 

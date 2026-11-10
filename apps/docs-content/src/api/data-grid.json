@@ -116,6 +116,12 @@
     "events": [
      {
       "cancelable": true,
+      "description": "Before the chart panel switches to another chart. Call `preventDefault()` to stay.",
+      "detail": "{ id: string; }",
+      "name": "ok:data-grid:activechart"
+     },
+     {
+      "cancelable": true,
       "description": "Before the aggregation changes (field to function). Call `preventDefault()` to keep it.",
       "detail": "{ model: Record<string, string>; }",
       "name": "ok:data-grid:aggregation"
@@ -140,8 +146,8 @@
      },
      {
       "cancelable": true,
-      "description": "Before the chart panel's model changes. Call `preventDefault()` to keep it.",
-      "detail": "{ model: GridChartModel; }",
+      "description": "Before a chart's model changes (`id`: which chart, with several). Call `preventDefault()` to keep it.",
+      "detail": "{ model: GridChartModel; id?: string | undefined; }",
       "name": "ok:data-grid:chart"
      },
      {
@@ -291,6 +297,12 @@
     ],
     "methods": [
      {
+      "description": "Several charts: the chart the panel edits (`data-ok-active-chart-id`).",
+      "kind": "property",
+      "name": "activeChartId",
+      "type": "string | null"
+     },
+     {
       "description": "The aggregation (field to function).",
       "kind": "property",
       "name": "aggregationModel",
@@ -309,10 +321,16 @@
       "type": "GridCellSelectionModel"
      },
      {
-      "description": "The chart panel's model.",
+      "description": "The chart panel's model (several charts: the active chart's).",
       "kind": "property",
       "name": "chartModel",
       "type": "GridChartModel"
+     },
+     {
+      "description": "Several charts: every chart's model, by chart id (`data-ok-chart-models`).",
+      "kind": "property",
+      "name": "chartModels",
+      "type": "GridChartModels"
      },
      {
       "description": "The fields in their display order.",
@@ -405,6 +423,12 @@
       "type": "string[]"
      },
      {
+      "description": "Several charts: the chart the panel edits (no events).",
+      "kind": "method",
+      "name": "setActiveChartId",
+      "type": "(id: string) => void"
+     },
+     {
       "description": "Sets the aggregation.",
       "kind": "method",
       "name": "setAggregationModel",
@@ -421,6 +445,12 @@
       "kind": "method",
       "name": "setChartModel",
       "type": "(model: GridChartModel) => void"
+     },
+     {
+      "description": "Several charts: sets every chart's model (no events).",
+      "kind": "method",
+      "name": "setChartModels",
+      "type": "(models: GridChartModels) => void"
      },
      {
       "description": "These setters don't emit events.",
@@ -459,10 +489,16 @@
       "type": "(field: string, operators: readonly GridFilterOperator<HTMLElement>[]) => void"
      },
      {
+      "description": "The value a column's rows are grouped by (MUI X `groupingValueGetter`), from the cell's value (`data-ok-value`, else its text); `null`: back to `data-ok-grouping-value`, else the text.",
+      "kind": "method",
+      "name": "setGroupingValueGetter",
+      "type": "(field: string, getter: ((value: unknown, row: HTMLElement) => string | number | Date | null | undefined) | null) => void"
+     },
+     {
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 87 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 95 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "Pins columns to the start and the end.",
@@ -475,6 +511,12 @@
       "kind": "method",
       "name": "setPivotActive",
       "type": "(active: boolean) => void"
+     },
+     {
+      "description": "Pivot fields derived from a column (MUI X `getPivotDerivedColumns`), from the source cell's value. Default: the year and quarter of `date` columns; `null`: none. The panel lists the fields its markup has.",
+      "kind": "method",
+      "name": "setPivotDerivedColumns",
+      "type": "(getter: ((column: GridColumn) => GridPivotDerivedField[] | undefined) | null) => void"
      },
      {
       "description": "Sets the pivot model.",
@@ -820,6 +862,17 @@
       "name": "disableRowGrouping"
      },
      {
+      "attr": "data-ok-row-grouping-column-mode",
+      "default": "single",
+      "description": "Grouped rows show in one grouping column (`single`), or in one column per grouped field (`multiple`).",
+      "kind": "style",
+      "name": "rowGroupingColumnMode",
+      "values": [
+       "single",
+       "multiple"
+      ]
+     },
+     {
       "attr": "data-ok-disable-aggregation",
       "description": "No aggregation (no Aggregation items in the column menu).",
       "kind": "flag",
@@ -875,6 +928,12 @@
     ],
     "parts": [
      {
+      "description": "Several charts: the chart the panel edits.",
+      "kind": "value",
+      "name": "data-ok-active-chart-id",
+      "value": "string"
+     },
+     {
       "description": "On a header cell: `false` keeps the column out of the aggregation menu.",
       "kind": "value",
       "name": "data-ok-aggregable",
@@ -886,6 +945,24 @@
       "description": "The aggregation (field to function), as JSON.",
       "kind": "value",
       "name": "data-ok-aggregation-model",
+      "value": "string"
+     },
+     {
+      "description": "Where groups show their aggregated values, as JSON by level: `root` and each grouped field, to `inline`, `footer` or `null`. React writes it from `getAggregationPosition`.",
+      "kind": "value",
+      "name": "data-ok-aggregation-position",
+      "value": "string"
+     },
+     {
+      "description": "Several charts: a chart's id, on its `data-ok-data-grid-chart` region.",
+      "kind": "value",
+      "name": "data-ok-chart-id",
+      "value": "string"
+     },
+     {
+      "description": "Several charts: every chart's model, by chart id, as JSON.",
+      "kind": "value",
+      "name": "data-ok-chart-models",
       "value": "string"
      },
      {
@@ -1190,12 +1267,56 @@
       ]
      },
      {
+      "description": "A pivot panel section's hint when it has no field, such as \"Drag here to create rows\".",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-empty"
+     },
+     {
       "description": "One field of the pivot panel.",
       "elements": [
        "div"
       ],
       "kind": "part",
       "name": "data-ok-data-grid-pivot-field"
+     },
+     {
+      "description": "The handle that drags a pivot field to another section or position (pointer only).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-handle"
+     },
+     {
+      "description": "The buttons that move a pivot field up or down in its section.",
+      "kind": "value",
+      "name": "data-ok-data-grid-pivot-move",
+      "value": [
+       "down",
+       "up"
+      ]
+     },
+     {
+      "description": "A section of the pivot panel: the fields not used, or the rows, columns or values.",
+      "kind": "value",
+      "name": "data-ok-data-grid-pivot-section",
+      "value": [
+       "columns",
+       "none",
+       "rows",
+       "values"
+      ]
+     },
+     {
+      "description": "The title of a pivot panel section.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-section-title"
      },
      {
       "description": "The switch that turns pivot mode on.",
@@ -1316,6 +1437,11 @@
       "value": "string"
      },
      {
+      "description": "Set by the runtime on a pivot field while a pointer drags it.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
       "description": "Set by the runtime on the row or column a drag would drop next to.",
       "kind": "value",
       "name": "data-ok-drop",
@@ -1323,6 +1449,11 @@
        "after",
        "before"
       ]
+     },
+     {
+      "description": "Set by the runtime on the pivot panel section a dragged field would drop into.",
+      "kind": "state",
+      "name": "data-ok-drop-target"
      },
      {
       "description": "Set by the runtime on a cell or row being edited.",
@@ -1403,6 +1534,12 @@
       "value": [
        "false"
       ]
+     },
+     {
+      "description": "On a cell: the value its row is grouped by (React writes it from `groupingValueGetter`).",
+      "kind": "value",
+      "name": "data-ok-grouping-value",
+      "value": "string"
      },
      {
       "description": "Hides the number of children of tree rows.",
@@ -1524,6 +1661,11 @@
     "native": "HTMLDivElement",
     "props": [
      {
+      "description": "Several charts: the one the chart panel edits (default: the first), controlled.",
+      "name": "activeChartId",
+      "type": "string"
+     },
+     {
       "description": "The functions offered (default: the built-in ones).",
       "name": "aggregationFunctions",
       "type": "Readonly<Record<string, GridAggregationFunction>>"
@@ -1567,6 +1709,11 @@
       "description": "The chart panel's model, controlled.",
       "name": "chartModel",
       "type": "GridChartModel"
+     },
+     {
+      "description": "Several charts of the grid, by chart id (MUI X: one renderer proxy per id), controlled. Each model's `label` names its chart. Replaces `chartModel`.",
+      "name": "chartModels",
+      "type": "GridChartModels"
      },
      {
       "description": "A chart of the rows (or top-level groups) under the grid.",
@@ -1757,9 +1904,9 @@
       "type": "GridFilterModel"
      },
      {
-      "description": "Where a group shows its values (default: groups inline, the root in a footer row).",
+      "description": "Where a group shows its values: in its row (`inline`), in a footer row after its rows (`footer`) or nowhere (`null`). Default: groups inline, the root (`depth` -1) in a footer row. Ignored while pivoting.",
       "name": "getAggregationPosition",
-      "type": "((group: { id: string; depth: number; isRoot: boolean; }) => GridAggregationPosition)"
+      "type": "((group: GridAggregationGroup) => GridAggregationPosition)"
      },
      {
       "description": "Returns a class name for a cell.",
@@ -1780,6 +1927,11 @@
       "description": "The height to assume for `\"auto\"` rows before they are measured.",
       "name": "getEstimatedRowHeight",
       "type": "((params: { id: string; model: R; }) => number)"
+     },
+     {
+      "description": "Pivot fields derived from a column, such as its year (MUI X). Default: the year and quarter of every `date` column (`<field>-year`, `<field>-quarter`); `null`: none.",
+      "name": "getPivotDerivedColumns",
+      "type": "((column: GridColDef<R>) => GridColDef<R>[] | undefined) | null"
      },
      {
       "description": "Returns a class name for a row.",
@@ -1808,9 +1960,9 @@
       "type": "((row: R) => readonly string[])"
      },
      {
-      "description": "Overrides the grouping column (header, width…).",
+      "description": "Overrides the grouping column (header, width…). A function is called for each grouping column with the fields it groups by (`rowGroupingColumnMode=\"multiple\"`: one each).",
       "name": "groupingColDef",
-      "type": "GridGroupingColDef"
+      "type": "GridGroupingColDef | ((params: { fields: string[]; }) => GridGroupingColDef)"
      },
      {
       "description": "A row of filter fields under the column headers.",
@@ -1894,6 +2046,11 @@
       "type": "Partial<GridLabels>"
      },
      {
+      "description": "Called when the chart panel switches to another chart.",
+      "name": "onActiveChartIdChange",
+      "type": "((id: string) => void)"
+     },
+     {
       "description": "Called when the aggregation changes.",
       "name": "onAggregationModelChange",
       "type": "((model: GridAggregationModel) => void)"
@@ -1932,6 +2089,11 @@
       "description": "Called when the chart panel's model changes.",
       "name": "onChartModelChange",
       "type": "((model: GridChartModel) => void)"
+     },
+     {
+      "description": "Called when a chart's model changes, with every chart's model.",
+      "name": "onChartModelsChange",
+      "type": "((models: GridChartModels) => void)"
      },
      {
       "description": "Called after cells were copied, with the copied text.",
@@ -2125,6 +2287,11 @@
       "type": "number"
      },
      {
+      "description": "One grouping column for every grouped field (`single`, default), or one column per grouped field (`multiple`). Server-side grouping keeps one column.",
+      "name": "rowGroupingColumnMode",
+      "type": "\"multiple\" | \"single\""
+     },
+     {
       "description": "Fields the rows are grouped by, outermost first (MUI X Premium).",
       "name": "rowGroupingModel",
       "type": "readonly string[]"
@@ -2204,8 +2371,16 @@
    "type": "{ [x: string]: string; }"
   },
   {
+   "name": "GridAggregationPosition",
+   "type": "\"footer\" | \"inline\" | null"
+  },
+  {
    "name": "GridCellSelectionModel",
    "type": "{ [x: string]: Record<string, boolean>; }"
+  },
+  {
+   "name": "GridChartModels",
+   "type": "{ [x: string]: GridChartModel; }"
   },
   {
    "name": "GridColumnVisibilityModel",

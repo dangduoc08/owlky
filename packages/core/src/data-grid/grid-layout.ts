@@ -15,9 +15,11 @@ import { gridDensities } from "./data-grid.js";
 import {
   type GridAggregationModel,
   type GridChartModel,
+  type GridChartModels,
   type GridPivotModel,
   parseGridAggregationModel,
   sanitizeGridChartModel,
+  sanitizeGridChartModels,
   sanitizeGridPivotModel,
 } from "./grid-premium.js";
 import type { GridRowWindow } from "./grid-virtual.js";
@@ -188,7 +190,15 @@ export interface GridState {
   rowGrouping?: { model?: string[] | undefined } | undefined;
   aggregation?: { model?: GridAggregationModel | undefined } | undefined;
   pivoting?: { model?: GridPivotModel | undefined; active?: boolean | undefined } | undefined;
-  chartsIntegration?: { model?: GridChartModel | undefined } | undefined;
+  chartsIntegration?:
+    | {
+        model?: GridChartModel | undefined;
+        /** Several charts, by id (MUI X `charts`). */
+        charts?: GridChartModels | undefined;
+        /** The chart the panel edits (MUI X `activeChartId`). */
+        activeChartId?: string | undefined;
+      }
+    | undefined;
 }
 
 const UNSAFE = new Set(["__proto__", "constructor", "prototype"]);
@@ -304,10 +314,17 @@ export function sanitizeGridState(input: unknown): GridState {
       ...(typeof pivoting["active"] === "boolean" ? { active: pivoting["active"] } : {}),
     };
   }
-  if (isRecord(input["chartsIntegration"]) && isRecord(input["chartsIntegration"]["model"]))
-    state.chartsIntegration = {
-      model: sanitizeGridChartModel(input["chartsIntegration"]["model"]),
+  if (isRecord(input["chartsIntegration"])) {
+    const charts = input["chartsIntegration"];
+    const kept = {
+      ...(isRecord(charts["model"]) ? { model: sanitizeGridChartModel(charts["model"]) } : {}),
+      ...(isRecord(charts["charts"]) ? { charts: sanitizeGridChartModels(charts["charts"]) } : {}),
+      ...(typeof charts["activeChartId"] === "string"
+        ? { activeChartId: charts["activeChartId"] }
+        : {}),
     };
+    if (Object.keys(kept).length) state.chartsIntegration = kept;
+  }
   return state;
 }
 
