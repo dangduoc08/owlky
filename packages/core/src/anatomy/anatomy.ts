@@ -1143,13 +1143,38 @@ export const avatarAttributes = (options: AvatarAnatomyOptions = {}): DataAttrib
   optionAttributes(avatarOptions, { ...options });
 
 export const avatarGroupOptions = defineOptions("avatar-group", "data-ok-avatar-group", {
-  spacing: style("data-ok-spacing", avatarGroupSpacings, "medium", "Overlap: 8 / 16px."),
+  spacing: number(
+    "data-ok-spacing",
+    undefined,
+    "Overlap between avatars: `medium` (8px, the default), `small` (16px) or a number in px.",
+    { min: 0 },
+  ),
 });
 
-/** `data-ok-*` attributes of an avatar group. */
+/**
+ * The group's overlap: a keyword (`medium` · `small`), or a number of px (MUI's numeric
+ * `spacing`). Anything else → `medium`.
+ */
+export const parseAvatarGroupSpacing = (value: unknown): AvatarGroupSpacing | number => {
+  if ((avatarGroupSpacings as readonly unknown[]).includes(value))
+    return value as AvatarGroupSpacing;
+  const amount = parseNumber(avatarGroupOptions.options.spacing, value);
+  return typeof amount === "number" ? amount : "medium";
+};
+
+/** The overlap a numeric spacing sets (`--_ok-overlap`, a negative length), else none. */
+export const avatarGroupStyle = (value: unknown): Partial<Record<"--_ok-overlap", string>> => {
+  const spacing = parseAvatarGroupSpacing(value);
+  return typeof spacing === "number" ? { "--_ok-overlap": `${-spacing}px` } : {};
+};
+
+/** `data-ok-*` attributes of an avatar group: the spacing is always written (keyword or px). */
 export const avatarGroupAttributes = (
-  options: { spacing?: AvatarGroupSpacing | undefined } = {},
-): DataAttributes => optionAttributes(avatarGroupOptions, { ...options });
+  options: { spacing?: AvatarGroupSpacing | number | undefined } = {},
+): DataAttributes => ({
+  "data-ok-avatar-group": "",
+  "data-ok-spacing": String(parseAvatarGroupSpacing(options.spacing)),
+});
 
 // --- Badge ------------------------------------------------------------------------------------
 

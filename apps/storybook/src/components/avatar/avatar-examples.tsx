@@ -105,6 +105,18 @@ export const withBadgeGroups: ReactGroup[] = [
   },
 ];
 
+/** MUI's "Spacing" demo: the keywords and a number of px. */
+export const spacingGroups: ReactGroup[] = [
+  {
+    title: "Spacing",
+    content: (["medium", "small", 24] as const).map((spacing) => (
+      <AvatarGroup key={spacing} spacing={spacing}>
+        {[1, 2, 3].map((i) => person(i))}
+      </AvatarGroup>
+    )),
+  },
+];
+
 export const sizeGroups: ReactGroup[] = [
   {
     title: "Sizes",

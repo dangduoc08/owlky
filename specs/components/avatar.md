@@ -31,27 +31,29 @@ Root: `data-ok-avatar-group`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `spacing` | `data-ok-spacing="…"` | style | `medium` `small` | `medium` | Overlap: 8 / 16px. |
+| `spacing` | `data-ok-spacing="…"` | number | number | — | Overlap between avatars: `medium` (8px, the default), `small` (16px) or a number in px. |
 <!-- /options:avatar-group -->
 
 React: `src`, `srcSet`, `sizes`, `alt`, `children`, `imgProps` (upstream `slotProps.img`);
 AvatarGroup `max` (5, at least 2), `total`, `renderSurplus(n)`, `variant` (cloned onto the
 children). Beyond MUI, from the reference: `color` (Minimals), `size` (the reference sizes with
-`sx`). Not applicable: `sx`, `classes`, `slots`, `slotProps`, `component`; AvatarGroup numeric
-`spacing` (deferred: `medium` / `small` only).
+`sx`). AvatarGroup `spacing`: `medium`, `small` or a number of px (MUI). Not applicable: `sx`,
+`classes`, `slots`, `slotProps`, `component`.
 
 ## Layout and tokens
 40px default (`--ok-spacing` × 10), `size` → `--_ok-avatar-size`; letters 0.45 × size,
 semibold; `rounded` `--ok-radius-lg`, `square` 0. Default background `--ok-palette-grey-300`
 with `--ok-palette-grey-700` letters (AA; the reference uses `text-secondary`); colors
-`--ok-c-main` / `--ok-c-contrast`. Group: 2px `--ok-bg-paper` border, overlap −8px (small −16px);
+`--ok-c-main` / `--ok-c-contrast`. Group: 2px `--ok-bg-paper` border, overlap −8px (small −16px;
+a number n → −n px through `--_ok-overlap`, core `avatarGroupStyle`);
 surplus `primary-lighter` / `primary-dark`, 0.32 × size.
 
 ## Behavior
 React: on image error, children → first letter of `alt` → a person icon. HTML runtime `avatar`:
 `data-ok-size` → `--_ok-avatar-size` (CSSOM, observed); `error` on an `img` (capture) → the image
 gets `hidden` and, if the avatar has no other content, a `span[data-ok-avatar-fallback]` with the
-alt's first letter (textContent).
+alt's first letter (textContent). HTML runtime `avatar-group` (behavior-only folder): a numeric
+`data-ok-spacing` → `--_ok-overlap` (CSSOM, observed); React writes the same property in `style`.
 
 ## Keyboard / Accessibility
 Not focusable. Image avatars are named by `alt`; letters / icons are decorative unless the author
@@ -71,7 +73,7 @@ Audit 2026-11-09 against MUI API pages Avatar, AvatarGroup.
 | `component` | — | not applicable | always `span` |
 | — | `color`, `size` | kept | beyond upstream (Minimals) |
 | `AvatarGroup` `max`, `total`, `renderSurplus`, `variant`, `children` | same (React); HTML writes the surplus | kept | |
-| `AvatarGroup` `spacing` (number) | `medium` / `small` only | deferred (4.12) | |
+| `AvatarGroup` `spacing` (`medium` · `small` · number) | same; HTML `data-ok-spacing="medium | small | <px>"` | kept | Phase 4 row 4.12 |
 | `AvatarGroup` `component`, `slots.surplus` | `renderSurplus` | not applicable | |
 | `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |
 

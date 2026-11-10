@@ -76,6 +76,27 @@ export function Team() {
 }`,
   },
   {
+    id: "spacing",
+    title: "Change the overlap",
+    body: "`spacing` sets how much each avatar covers the one before it. Use `medium` (8px, the default), `small` (16px, a tighter group), or a number of pixels for any other overlap, such as `24`. `0` lines the avatars up without overlap. In HTML, write the same value in `data-ok-spacing`: the script turns a number into the overlap.",
+    html: `<div data-ok-avatar-group data-ok-spacing="24">
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="secondary">D</span>
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="error">H</span>
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="info">R</span>
+</div>`,
+    react: `import { Avatar, AvatarGroup } from "@owlky/react";
+
+export function TightTeam() {
+  return (
+    <AvatarGroup spacing={24}>
+      <Avatar color="secondary">D</Avatar>
+      <Avatar color="error">H</Avatar>
+      <Avatar color="info">R</Avatar>
+    </AvatarGroup>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -132,6 +153,17 @@ const PREVIEWS = {
         <Avatar color="error">H</Avatar>
         <Avatar color="info">R</Avatar>
       </AvatarGroup>
+    </Preview>
+  ),
+  spacing: () => (
+    <Preview>
+      {(["medium", "small", 24] as const).map((spacing) => (
+        <AvatarGroup key={spacing} spacing={spacing}>
+          <Avatar color="secondary">D</Avatar>
+          <Avatar color="error">H</Avatar>
+          <Avatar color="info">R</Avatar>
+        </AvatarGroup>
+      ))}
     </Preview>
   ),
   options: () => (

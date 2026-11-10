@@ -36,7 +36,7 @@ const BROKEN = "data:image/png;base64,broken";
 const local = (html: string) => html.replaceAll(/src="avatars\/[^"]+"/g, `src="${PIXEL}"`);
 
 describe("avatar snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(7));
+  it("covers every story group", () => expect(snippets).toHaveLength(8));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));

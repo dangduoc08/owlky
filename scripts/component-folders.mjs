@@ -13,6 +13,7 @@ export const FOLDER_SPEC = {
   "table-pagination": "table",
   toaster: "snackbar",
   "toggle-group": "toggle-button",
+  "avatar-group": "avatar",
   utils: "date-picker",
   pickers: "date-picker",
   "localization-provider": "date-picker",

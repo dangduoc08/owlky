@@ -3468,16 +3468,13 @@
        "options": [
         {
          "attr": "data-ok-spacing",
-         "default": "medium",
-         "description": "Overlap: 8 / 16px.",
-         "kind": "style",
-         "name": "spacing",
-         "values": [
-          "medium",
-          "small"
-         ]
+         "description": "Overlap between avatars: `medium` (8px, the default), `small` (16px) or a number in px.",
+         "kind": "number",
+         "min": 0,
+         "name": "spacing"
         }
-       ]
+       ],
+       "runtime": "avatar-group"
       },
       "name": "AvatarGroup",
       "react": {
@@ -3497,9 +3494,9 @@
          "type": "((surplus: number) => ReactNode)"
         },
         {
-         "description": "Overlap: `medium` (8px, default) or `small` (16px).",
+         "description": "Overlap: `medium` (8px, default), `small` (16px) or a number in px.",
          "name": "spacing",
-         "type": "\"medium\" | \"small\""
+         "type": "number | \"medium\" | \"small\""
         },
         {
          "description": "Total count (default: the number of children), for the surplus.",
@@ -3581,14 +3578,10 @@
      "options": [
       {
        "attr": "data-ok-spacing",
-       "default": "medium",
-       "description": "Overlap: 8 / 16px.",
-       "kind": "style",
-       "name": "spacing",
-       "values": [
-        "medium",
-        "small"
-       ]
+       "description": "Overlap between avatars: `medium` (8px, the default), `small` (16px) or a number in px.",
+       "kind": "number",
+       "min": 0,
+       "name": "spacing"
       }
      ],
      "root": "data-ok-avatar-group"
@@ -3606,17 +3599,17 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `avatar`: listed under \"options\".)\n\n(Options of `avatar-group`: listed under \"options\".)\n\nReact: `src`, `srcSet`, `sizes`, `alt`, `children`, `imgProps` (upstream `slotProps.img`);\nAvatarGroup `max` (5, at least 2), `total`, `renderSurplus(n)`, `variant` (cloned onto the\nchildren). Beyond MUI, from the reference: `color` (Minimals), `size` (the reference sizes with\n`sx`). Not applicable: `sx`, `classes`, `slots`, `slotProps`, `component`; AvatarGroup numeric\n`spacing` (deferred: `medium` / `small` only).",
+     "body": "(Options of `avatar`: listed under \"options\".)\n\n(Options of `avatar-group`: listed under \"options\".)\n\nReact: `src`, `srcSet`, `sizes`, `alt`, `children`, `imgProps` (upstream `slotProps.img`);\nAvatarGroup `max` (5, at least 2), `total`, `renderSurplus(n)`, `variant` (cloned onto the\nchildren). Beyond MUI, from the reference: `color` (Minimals), `size` (the reference sizes with\n`sx`). AvatarGroup `spacing`: `medium`, `small` or a number of px (MUI). Not applicable: `sx`,\n`classes`, `slots`, `slotProps`, `component`.",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "40px default (`--ok-spacing` × 10), `size` → `--_ok-avatar-size`; letters 0.45 × size,\nsemibold; `rounded` `--ok-radius-lg`, `square` 0. Default background `--ok-palette-grey-300`\nwith `--ok-palette-grey-700` letters (AA; the reference uses `text-secondary`); colors\n`--ok-c-main` / `--ok-c-contrast`. Group: 2px `--ok-bg-paper` border, overlap −8px (small −16px);\nsurplus `primary-lighter` / `primary-dark`, 0.32 × size.",
+     "body": "40px default (`--ok-spacing` × 10), `size` → `--_ok-avatar-size`; letters 0.45 × size,\nsemibold; `rounded` `--ok-radius-lg`, `square` 0. Default background `--ok-palette-grey-300`\nwith `--ok-palette-grey-700` letters (AA; the reference uses `text-secondary`); colors\n`--ok-c-main` / `--ok-c-contrast`. Group: 2px `--ok-bg-paper` border, overlap −8px (small −16px;\na number n → −n px through `--_ok-overlap`, core `avatarGroupStyle`);\nsurplus `primary-lighter` / `primary-dark`, 0.32 × size.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "React: on image error, children → first letter of `alt` → a person icon. HTML runtime `avatar`:\n`data-ok-size` → `--_ok-avatar-size` (CSSOM, observed); `error` on an `img` (capture) → the image\ngets `hidden` and, if the avatar has no other content, a `span[data-ok-avatar-fallback]` with the\nalt's first letter (textContent).",
+     "body": "React: on image error, children → first letter of `alt` → a person icon. HTML runtime `avatar`:\n`data-ok-size` → `--_ok-avatar-size` (CSSOM, observed); `error` on an `img` (capture) → the image\ngets `hidden` and, if the avatar has no other content, a `span[data-ok-avatar-fallback]` with the\nalt's first letter (textContent). HTML runtime `avatar-group` (behavior-only folder): a numeric\n`data-ok-spacing` → `--_ok-overlap` (CSSOM, observed); React writes the same property in `style`.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -3631,7 +3624,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Avatar, AvatarGroup.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `src`, `srcSet`, `sizes`, `alt`, `children`, `variant` | same | kept | fallback order as upstream |\n| `slotProps.img` | `imgProps` | renamed | |\n| `slots.fallback` | built-in person icon / `span[data-ok-avatar-fallback]` | not applicable | composition: pass children |\n| `component` | — | not applicable | always `span` |\n| — | `color`, `size` | kept | beyond upstream (Minimals) |\n| `AvatarGroup` `max`, `total`, `renderSurplus`, `variant`, `children` | same (React); HTML writes the surplus | kept | |\n| `AvatarGroup` `spacing` (number) | `medium` / `small` only | deferred (4.12) | |\n| `AvatarGroup` `component`, `slots.surplus` | `renderSurplus` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "body": "Audit 2026-11-09 against MUI API pages Avatar, AvatarGroup.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `src`, `srcSet`, `sizes`, `alt`, `children`, `variant` | same | kept | fallback order as upstream |\n| `slotProps.img` | `imgProps` | renamed | |\n| `slots.fallback` | built-in person icon / `span[data-ok-avatar-fallback]` | not applicable | composition: pass children |\n| `component` | — | not applicable | always `span` |\n| — | `color`, `size` | kept | beyond upstream (Minimals) |\n| `AvatarGroup` `max`, `total`, `renderSurplus`, `variant`, `children` | same (React); HTML writes the surplus | kept | |\n| `AvatarGroup` `spacing` (`medium` · `small` · number) | same; HTML `data-ok-spacing=\"medium | small | <px>\"` | kept | Phase 4 row 4.12 |\n| `AvatarGroup` `component`, `slots.surplus` | `renderSurplus` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -3704,6 +3697,15 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { Avatar } from \"@owlky/react\";\n\n{/* Sizes */}\n<Avatar src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\" size={24} />\n<Avatar src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\" size={32} />\n<Avatar src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\" size={48} />\n<Avatar src=\"avatars/avatar-4.svg\" alt=\"Harrison Stein\" size={56} />\n<Avatar src=\"avatars/avatar-5.svg\" alt=\"Reece Chung\" size={64} />\n<Avatar src=\"avatars/avatar-6.svg\" alt=\"Lainey Davidson\" size={80} />\n<Avatar src=\"avatars/avatar-7.svg\" alt=\"Cristopher Cardenas\" size={128} />\n",
      "snippets": [
       "sizes-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/avatar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Spacing -->\n<div data-ok-avatar-group data-ok-spacing=\"medium\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\"></span>\n</div>\n<div data-ok-avatar-group data-ok-spacing=\"small\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\"></span>\n</div>\n<div data-ok-avatar-group data-ok-spacing=\"24\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\"></span>\n</div>",
+     "id": "components-avatar--spacing",
+     "name": "Spacing",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Avatar, AvatarGroup } from \"@owlky/react\";\n\n{/* Spacing */}\n<AvatarGroup spacing=\"medium\">\n  <Avatar src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\" />\n  <Avatar src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\" />\n  <Avatar src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\" />\n</AvatarGroup>\n<AvatarGroup spacing=\"small\">\n  <Avatar src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\" />\n  <Avatar src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\" />\n  <Avatar src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\" />\n</AvatarGroup>\n<AvatarGroup spacing={24}>\n  <Avatar src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\" />\n  <Avatar src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\" />\n  <Avatar src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\" />\n</AvatarGroup>\n",
+     "snippets": [
+      "spacing-group.html"
      ]
     }
    ],
@@ -62282,6 +62284,13 @@
      "id": "group",
      "react": "import { Avatar, AvatarGroup } from \"@owlky/react\";\n\nexport function Team() {\n  return (\n    <AvatarGroup max={3} total={7}>\n      <Avatar color=\"secondary\">D</Avatar>\n      <Avatar color=\"error\">H</Avatar>\n      <Avatar color=\"info\">R</Avatar>\n    </AvatarGroup>\n  );\n}",
      "title": "Group avatars"
+    },
+    {
+     "body": "`spacing` sets how much each avatar covers the one before it. Use `medium` (8px, the default), `small` (16px, a tighter group), or a number of pixels for any other overlap, such as `24`. `0` lines the avatars up without overlap. In HTML, write the same value in `data-ok-spacing`: the script turns a number into the overlap.",
+     "html": "<div data-ok-avatar-group data-ok-spacing=\"24\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"secondary\">D</span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"error\">H</span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"info\">R</span>\n</div>",
+     "id": "spacing",
+     "react": "import { Avatar, AvatarGroup } from \"@owlky/react\";\n\nexport function TightTeam() {\n  return (\n    <AvatarGroup spacing={24}>\n      <Avatar color=\"secondary\">D</Avatar>\n      <Avatar color=\"error\">H</Avatar>\n      <Avatar color=\"info\">R</Avatar>\n    </AvatarGroup>\n  );\n}",
+     "title": "Change the overlap"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

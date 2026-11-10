@@ -270,6 +270,7 @@ const pairs: [component: string, story: string][] = [
   ["avatar", "grouped"],
   ["avatar", "with-badge"],
   ["avatar", "sizes"],
+  ["avatar", "spacing"],
   ["badge", "standard"],
   ["badge", "dot"],
   ["badge", "status"],

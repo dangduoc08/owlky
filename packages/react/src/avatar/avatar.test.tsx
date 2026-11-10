@@ -158,6 +158,26 @@ describe("AvatarGroup", () => {
     expect((c as HTMLElement).children).toHaveLength(3);
   });
 
+  it("numeric spacing: the overlap in px, written as data-ok-spacing; author style kept", () => {
+    const { container } = render(
+      <>
+        <AvatarGroup spacing={12} style={{ color: "red" }}>
+          {people.slice(0, 2)}
+        </AvatarGroup>
+        <AvatarGroup spacing={0}>{people.slice(0, 2)}</AvatarGroup>
+        <AvatarGroup spacing={-4}>{people.slice(0, 2)}</AvatarGroup>
+      </>,
+    );
+    const [a, b, c] = container.children as unknown as HTMLElement[];
+    expect((a as HTMLElement).dataset["okSpacing"]).toBe("12");
+    expect(css((a as HTMLElement).children[1] as Element).marginLeft).toBe("-12px");
+    expect((a as HTMLElement).style.color).toBe("red");
+    expect((b as HTMLElement).dataset["okSpacing"]).toBe("0");
+    expect(css((b as HTMLElement).children[1] as Element).marginLeft).toBe("0px");
+    expect((c as HTMLElement).dataset["okSpacing"]).toBe("medium");
+    expect(css((c as HTMLElement).children[1] as Element).marginLeft).toBe("-8px");
+  });
+
   it("has no axe violations", async () => {
     const { container } = render(
       <>

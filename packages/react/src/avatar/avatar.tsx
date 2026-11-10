@@ -6,6 +6,7 @@ import {
   type AvatarVariant,
   avatarAttributes,
   avatarGroupAttributes,
+  avatarGroupStyle,
   avatarOptions,
   parseNumber,
   progressSize,
@@ -100,8 +101,8 @@ export interface AvatarGroupProps extends HTMLAttributes<HTMLDivElement> {
   max?: number | undefined;
   /** Total count (default: the number of children), for the surplus. */
   total?: number | undefined;
-  /** Overlap: `medium` (8px, default) or `small` (16px). */
-  spacing?: AvatarGroupSpacing | undefined;
+  /** Overlap: `medium` (8px, default), `small` (16px) or a number in px. */
+  spacing?: AvatarGroupSpacing | number | undefined;
   /** Shape of every avatar. */
   variant?: AvatarVariant | undefined;
   /** Content of the surplus avatar. Default `+N`. */
@@ -110,7 +111,7 @@ export interface AvatarGroupProps extends HTMLAttributes<HTMLDivElement> {
 
 /** AvatarGroup — overlapping avatars with a "+N" surplus when there are more than `max`. */
 export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(function AvatarGroup(
-  { max = 5, total, spacing, variant, renderSurplus, children, ...props },
+  { max = 5, total, spacing, variant, renderSurplus, children, style, ...props },
   ref,
 ) {
   const avatars = Children.toArray(children).filter(isValidElement) as ReactElement<AvatarProps>[];
@@ -120,7 +121,12 @@ export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(function
   const surplus = Math.max(0, count - shown);
   const first = avatars[0]?.props;
   return (
-    <div ref={ref} {...avatarGroupAttributes({ spacing })} {...props}>
+    <div
+      ref={ref}
+      {...avatarGroupAttributes({ spacing })}
+      style={{ ...(avatarGroupStyle(spacing) as CSSProperties), ...style }}
+      {...props}
+    >
       {avatars
         .slice(0, shown)
         .map((avatar) => (variant ? cloneElement(avatar, { variant }) : avatar))}

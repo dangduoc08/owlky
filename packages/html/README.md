@@ -18,7 +18,7 @@ and **Form control label** (CSS only: native checkbox with `role="switch"`;
 parts `label|legend[data-ok-form-label]` (› `span[data-ok-form-label-asterisk]`), `div[data-ok-form-group][data-ok-row]`,
 `p[data-ok-form-helper-text]`)
 **Avatar** (runtime `avatar`: `data-ok-size`, broken images fall back to the alt's letter; group:
-`data-ok-avatar-group`, surplus `data-ok-avatar-surplus`) **Badge** and **Label** (CSS only) **Chip**
+`data-ok-avatar-group`, `data-ok-spacing` `medium` · `small` · px (runtime `avatar-group`), surplus `data-ok-avatar-surplus`) **Badge** and **Label** (CSS only) **Chip**
 (runtime `chip`: delete button / Backspace → cancelable `ok:chip:delete`, then hidden)
 **Divider** (CSS only: `hr[data-ok-divider]`, with text `div[role=separator][data-ok-divider] › span[data-ok-divider-text]`)
 **Card** (CSS only, a Paper root: `data-ok-paper data-ok-card` + Paper's attributes, `data-ok-raised`; parts

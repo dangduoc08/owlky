@@ -8,6 +8,7 @@ import { accordion } from "./accordion/accordion.js";
 import { alert } from "./alert/alert.js";
 import { autocomplete } from "./autocomplete/autocomplete.js";
 import { avatar } from "./avatar/avatar.js";
+import { avatarGroup } from "./avatar-group/avatar-group.js";
 import { backdrop } from "./backdrop/backdrop.js";
 import { breadcrumbs } from "./breadcrumbs/breadcrumbs.js";
 import { carousel } from "./carousel/carousel.js";
@@ -74,6 +75,7 @@ export const components: readonly ComponentDefinition[] = [
   accordion as ComponentDefinition,
   alert as ComponentDefinition,
   avatar as ComponentDefinition,
+  avatarGroup as ComponentDefinition,
   chart as ComponentDefinition,
   gantt as ComponentDefinition,
   checkbox as ComponentDefinition,
