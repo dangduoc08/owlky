@@ -112,6 +112,35 @@ describe("LinearProgress", () => {
     expect(css(screen.getByRole("progressbar")).transform).toMatch(/^matrix\(-1, /);
   });
 
+  it("right to left: the bar fills from the right; nested ltr stays left to right", () => {
+    render(
+      <div style={{ width: 200 }}>
+        <div dir="rtl">
+          <LinearProgress variant="determinate" value={25} aria-label="rtl" />
+          <LinearProgress variant="query" aria-label="query" />
+          <div dir="ltr">
+            <LinearProgress variant="determinate" value={25} aria-label="ltr" />
+          </div>
+        </div>
+        <LinearProgress variant="determinate" value={25} dir="rtl" aria-label="own" />
+      </div>,
+    );
+    const filled = (name: string) => {
+      const root = screen.getByRole("progressbar", { name });
+      const box = root.getBoundingClientRect();
+      const bar = (root.firstElementChild as Element).getBoundingClientRect();
+      return { start: bar.left - box.left, end: box.right - bar.right, width: bar.width };
+    };
+    for (const name of ["rtl", "own"]) {
+      expect(filled(name).end).toBeCloseTo(-150, 0);
+      expect(css(screen.getByRole("progressbar", { name })).scale).toBe("-1 1");
+    }
+    // Painted part of the bar: the root clips it, so the visible 25% sits at the right edge.
+    expect(filled("ltr").start).toBeCloseTo(-150, 0);
+    expect(css(screen.getByRole("progressbar", { name: "ltr" })).scale).toBe("none");
+    expect(css(screen.getByRole("progressbar", { name: "query" })).scale).toBe("-1 1");
+  });
+
   it("invalid values fall back to the defaults", () => {
     render(
       <LinearProgress

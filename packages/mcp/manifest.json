@@ -40278,7 +40278,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "`role=\"progressbar\"`, named by the author. Determinate / buffer: `aria-valuenow` (clamped),\n`aria-valuemin`, `aria-valuemax`; the buffer is visual only. `aria-valuetext` passes through.\nBrand colors follow the reference (ADR-0014). Left to right only (right-to-left: backlog).",
+     "body": "`role=\"progressbar\"`, named by the author. Determinate / buffer: `aria-valuenow` (clamped),\n`aria-valuemin`, `aria-valuemax`; the buffer is visual only. `aria-valuetext` passes through.\nBrand colors follow the reference (ADR-0014). Right to left: under `dir=\"rtl\"` the root is\nmirrored (`scale: -1 1`, `:dir(rtl)`; without `:dir()` support, a `[dir=\"rtl\"]` ancestor or the\nbar's own `dir`), so every variant fills from the right.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -40288,7 +40288,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page LinearProgress.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`determinate` `indeterminate` `buffer` `query`), `value`, `valueBuffer`, `min`, `max` | same (HTML: `aria-value*`, `data-ok-value-buffer`) | kept | |\n| `color` | every palette color + `inherit` | kept | |\n| right to left (MUI flips the bars under `dir=\"rtl\"`) | left to right only | deferred (4.13) | |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "body": "Audit 2026-11-09 against MUI API page LinearProgress.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`determinate` `indeterminate` `buffer` `query`), `value`, `valueBuffer`, `min`, `max` | same (HTML: `aria-value*`, `data-ok-value-buffer`) | kept | |\n| `color` | every palette color + `inherit` | kept | |\n| right to left (MUI flips the bars under `dir=\"rtl\"`) | same: the bar mirrors under `dir=\"rtl\"` | kept | Phase 4 row 4.13 (CSS only) |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -65137,6 +65137,13 @@
      "title": "Show the value as text"
     },
     {
+     "body": "Set `dir=\"rtl\"` on the page, on a section or on the bar itself. Every variant then fills from the right, the way people read in languages such as Arabic and Hebrew. No option is needed, because the bar follows the direction of its text.",
+     "html": "<div dir=\"rtl\">\n  <span role=\"progressbar\" aria-label=\"Upload\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"60\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span data-ok-linear-progress-bar=\"1\"></span></span>\n</div>",
+     "id": "rtl",
+     "react": "import { LinearProgress } from \"@owlky/react\";\n\nexport function RightToLeftProgress() {\n  return (\n    <div dir=\"rtl\">\n      <LinearProgress variant=\"determinate\" value={60} aria-label=\"Upload\" />\n    </div>\n  );\n}",
+     "title": "Use right-to-left layouts"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed or aren't valid numbers fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -65157,7 +65164,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Each indicator has `role=\"progressbar\"`. Name it with `aria-label` or `aria-labelledby`.\n- Determinate and buffer indicators report their value with `aria-valuenow`, `aria-valuemin` and `aria-valuemax`. The buffer value is visual only.\n- When an indicator stands for a region that is loading, set `aria-busy=\"true\"` on that region until it's ready, and point the region's `aria-describedby` at the indicator.\n- With reduced motion turned on, the bars sweep at half speed, the dots stop and values change without easing.\n- Brand colors follow the design. Light colors such as `warning` have a contrast ratio below 3:1 on white, so don't rely on the bar alone to tell people something important.\n- The bar fills from left to right in every language.",
+     "body": "- Each indicator has `role=\"progressbar\"`. Name it with `aria-label` or `aria-labelledby`.\n- Determinate and buffer indicators report their value with `aria-valuenow`, `aria-valuemin` and `aria-valuemax`. The buffer value is visual only.\n- When an indicator stands for a region that is loading, set `aria-busy=\"true\"` on that region until it's ready, and point the region's `aria-describedby` at the indicator.\n- With reduced motion turned on, the bars sweep at half speed, the dots stop and values change without easing.\n- Brand colors follow the design. Light colors such as `warning` have a contrast ratio below 3:1 on white, so don't rely on the bar alone to tell people something important.\n- In a right-to-left page or section (`dir=\"rtl\"`), the bar fills from right to left.",
      "id": "accessibility",
      "title": "Accessibility"
     },

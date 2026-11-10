@@ -13,7 +13,8 @@
  *
  * Every part paints with currentColor; translucent parts use opacity (24 % track and buffer bar,
  * 48 % dots), so `inherit` works without channels. The loop timings (2.1s, 3s) and their curves
- * are animation choreography, not tokens. Left-to-right only (right-to-left is on the backlog).
+ * are animation choreography, not tokens. Right to left (`dir="rtl"` on the bar or an ancestor):
+ * the whole bar is mirrored with `scale`, so every variant fills from the right.
  * Single :where() selectors in @layer components (zero specificity).
  */
 @reference "../theme.css";
@@ -120,6 +121,22 @@
 
   :where([data-ok-linear-progress][data-ok-variant="query"]) {
     transform: rotate(180deg);
+  }
+
+  /* Right to left: mirror the bar (it composes with the query's rotation). */
+  :where([data-ok-linear-progress]:dir(rtl)) {
+    scale: -1 1;
+  }
+
+  /* Browsers without :dir() (before Chrome 120): an ancestor's or the bar's own dir attribute. */
+  @supports not selector(:dir(rtl)) {
+    :where([dir="rtl"] [data-ok-linear-progress], [data-ok-linear-progress][dir="rtl"]) {
+      scale: -1 1;
+    }
+
+    :where([dir="rtl"] [dir="ltr"] [data-ok-linear-progress]) {
+      scale: none;
+    }
   }
 
   @keyframes ok-linear-progress-bar-1 {
