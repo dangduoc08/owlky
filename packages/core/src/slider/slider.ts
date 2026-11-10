@@ -15,6 +15,8 @@ export interface SliderRange {
   /** `null`: only the marks are valid values. */
   step: number | null;
   marks?: readonly SliderMark[] | undefined;
+  /** How far Page Up / Page Down and Shift + arrows move. Default 10. */
+  shiftStep?: number | undefined;
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -26,6 +28,7 @@ export function sliderRange(
     max?: number | undefined;
     step?: number | null | undefined;
     marks?: readonly SliderMark[] | undefined;
+    shiftStep?: number | undefined;
   } = {},
 ): SliderRange {
   const min = Number.isFinite(input.min) ? (input.min as number) : 0;
@@ -37,8 +40,15 @@ export function sliderRange(
       : Number.isFinite(input.step) && (input.step as number) > 0
         ? (input.step as number)
         : 1;
-  return { min, max, step, marks: input.marks };
+  const shiftStep =
+    Number.isFinite(input.shiftStep) && (input.shiftStep as number) > 0
+      ? (input.shiftStep as number)
+      : SLIDER_SHIFT_STEP;
+  return { min, max, step, marks: input.marks, shiftStep };
 }
+
+/** Default distance of Page Up / Page Down and Shift + arrows (MUI `shiftStep`). */
+export const SLIDER_SHIFT_STEP = 10;
 
 /** Position of `value` in percent of the rail. */
 export const sliderPercent = (value: number, { min, max }: SliderRange): number =>
@@ -116,14 +126,15 @@ export function closestThumb(values: readonly number[], value: number): number {
 }
 
 /**
- * The value a key moves to: arrows ± step (or the next mark), Page Up / Down ± 10 steps, Home /
- * End. `null` = not a slider key.
+ * The value a key moves to: arrows ± step (or the next mark), Page Up / Down and Shift + arrows ±
+ * `shiftStep` (default 10), Home / End. `null` = not a slider key.
  */
 export function sliderKeyValue(
   key: string,
   value: number,
   range: SliderRange,
   rtl = false,
+  shift = false,
 ): number | null {
   const { min, max, step, marks = [] } = range;
   const forward = ["ArrowUp", rtl ? "ArrowLeft" : "ArrowRight"];
@@ -140,7 +151,22 @@ export function sliderKeyValue(
       sign > 0 ? values.find((v) => v > value) : [...values].reverse().find((v) => v < value);
     return target ?? value;
   }
-  return snapSliderValue(value + (direction * step || page * step * 10), range);
+  const far = range.shiftStep ?? SLIDER_SHIFT_STEP;
+  const delta = page !== 0 ? page * far : shift ? direction * far : direction * step;
+  return snapSliderValue(value + delta, range);
+}
+
+/**
+ * The value shown and announced for `value`: `scale(value)` (MUI `scale`), else the value.
+ * Invalid results fall back to the value.
+ */
+export function scaleSliderValue(
+  value: number,
+  scale: ((value: number) => number) | null | undefined,
+): number {
+  if (!scale) return value;
+  const scaled = scale(value);
+  return Number.isFinite(scaled) ? scaled : value;
 }
 
 /** Value at a pointer position over the rail box. */
@@ -259,7 +285,13 @@ export function createSliderController(
       if (index < 0) return;
       const state = options.read();
       if (state.disabled) return;
-      const value = sliderKeyValue(event.key, state.values[index] as number, state.range, rtl());
+      const value = sliderKeyValue(
+        event.key,
+        state.values[index] as number,
+        state.range,
+        rtl(),
+        event.shiftKey,
+      );
       if (value === null) return;
       event.preventDefault();
       const next = setSliderValue(state.values, index, value, state.disableSwap);

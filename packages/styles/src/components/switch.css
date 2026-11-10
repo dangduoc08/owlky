@@ -5,6 +5,7 @@
  *              › input[type=checkbox][role=switch][data-ok-switch-input]   (the control; covers the target)
  *              › span[data-ok-switch-track][aria-hidden]
  *              › span[data-ok-switch-thumb][aria-hidden]
+ *                  › span[data-ok-switch-icon]? · span[data-ok-switch-checked-icon]?   (icon / checkedIcon)
  * Modifiers: data-ok-color = primary (default) | default | secondary | info | success | warning | error
  *            data-ok-size  = medium (default) | small
  *            data-ok-edge  = start | end (negative margin)
@@ -77,6 +78,35 @@
     transition:
       transform var(--ok-duration-shortest) var(--ok-easing-standard),
       box-shadow var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  /* Icons in the thumb: `icon` shows while off (and on, alone), `checkedIcon` while on. */
+  :where([data-ok-switch-icon], [data-ok-switch-checked-icon]) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-switch-thumb] svg) {
+    width: 80%;
+    height: 80%;
+  }
+
+  :where([data-ok-switch]:has(> input:checked) [data-ok-switch-checked-icon]) {
+    color: var(--_ok-main);
+  }
+
+  :where(
+    [data-ok-switch]:has(> input:checked) [data-ok-switch-icon]:has(+ [data-ok-switch-checked-icon])
+  ) {
+    display: none;
+  }
+
+  :where([data-ok-switch]:not(:has(> input:checked)) [data-ok-switch-checked-icon]) {
+    display: none;
   }
 
   /* Sizes */

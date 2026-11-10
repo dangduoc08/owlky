@@ -66,6 +66,12 @@
      },
      {
       "cancelable": false,
+      "description": "After the highlighted option changed (keyboard, pointer or automatic). `value` is `null` when none is.",
+      "detail": "{ value: string | null; reason: string; }",
+      "name": "ok:autocomplete:highlight"
+     },
+     {
+      "cancelable": false,
       "description": "After the listbox opened.",
       "detail": "{ reason: string; }",
       "name": "ok:autocomplete:open"
@@ -89,6 +95,12 @@
       "kind": "method",
       "name": "open",
       "type": "() => void"
+     },
+     {
+      "description": ", group? }`), such as loaded ones.",
+      "kind": "method",
+      "name": "setOptions",
+      "type": "(options: readonly (string | AutocompleteOption)[]) => void"
      },
      {
       "description": "Sets the value without emitting events.",
@@ -148,6 +160,121 @@
       "name": "limitTags"
      },
      {
+      "attr": "data-ok-auto-complete",
+      "description": "Inline completion: the input shows the highlighted option, the rest of its label selected.",
+      "kind": "flag",
+      "name": "autoComplete"
+     },
+     {
+      "attr": "data-ok-auto-select",
+      "description": "Leaving the field picks the option highlighted by the keys or `autoHighlight` (free solo: the text).",
+      "kind": "flag",
+      "name": "autoSelect"
+     },
+     {
+      "attr": "data-ok-blur-on-select",
+      "default": "true",
+      "description": "The input loses focus after a pick: always (`true`), or only after a mouse or touch pick.",
+      "kind": "style",
+      "name": "blurOnSelect",
+      "optional": true,
+      "values": [
+       "true",
+       "mouse",
+       "touch"
+      ]
+     },
+     {
+      "attr": "data-ok-clear-on-blur",
+      "default": "true",
+      "description": "Leaving the field puts back the chosen label (or empties the text). Default: on, off in free solo.",
+      "kind": "style",
+      "name": "clearOnBlur",
+      "optional": true,
+      "values": [
+       "true",
+       "false"
+      ]
+     },
+     {
+      "attr": "data-ok-clear-on-escape",
+      "description": "Escape on a closed list clears the value and the text.",
+      "kind": "flag",
+      "name": "clearOnEscape"
+     },
+     {
+      "attr": "data-ok-disabled-items-focusable",
+      "description": "Disabled options can be highlighted (not picked).",
+      "kind": "flag",
+      "name": "disabledItemsFocusable"
+     },
+     {
+      "attr": "data-ok-disable-list-wrap",
+      "description": "The arrows stop at the first and last options instead of wrapping.",
+      "kind": "flag",
+      "name": "disableListWrap"
+     },
+     {
+      "attr": "data-ok-filter-selected-options",
+      "description": "Chosen options are left out of the list.",
+      "kind": "flag",
+      "name": "filterSelectedOptions"
+     },
+     {
+      "attr": "data-ok-handle-home-end-keys",
+      "default": "true",
+      "description": "Home and End highlight the first and last options. Default: on, off in free solo.",
+      "kind": "style",
+      "name": "handleHomeEndKeys",
+      "optional": true,
+      "values": [
+       "true",
+       "false"
+      ]
+     },
+     {
+      "attr": "data-ok-include-input-in-list",
+      "description": "The arrows move from the last or first option back to the input.",
+      "kind": "flag",
+      "name": "includeInputInList"
+     },
+     {
+      "attr": "data-ok-loading",
+      "description": "Options are loading: the list shows the loading text while it has no options.",
+      "kind": "flag",
+      "name": "loading"
+     },
+     {
+      "attr": "data-ok-read-only",
+      "description": "The value can't change: the list doesn't open and chips have no remove button.",
+      "kind": "flag",
+      "name": "readOnly"
+     },
+     {
+      "attr": "data-ok-reset-highlight-on-mouse-leave",
+      "description": "The pointer leaving the list removes the highlight it made.",
+      "kind": "flag",
+      "name": "resetHighlightOnMouseLeave"
+     },
+     {
+      "attr": "data-ok-select-on-focus",
+      "default": "true",
+      "description": "The first click in the field selects its text. Default: on, off in free solo.",
+      "kind": "style",
+      "name": "selectOnFocus",
+      "optional": true,
+      "values": [
+       "true",
+       "false"
+      ]
+     },
+     {
+      "attr": "data-ok-virtualize",
+      "description": "Long lists draw only the options in view (groups aren't shown).",
+      "kind": "flag",
+      "name": "virtualize"
+     },
+     {
       "attr": "aria-selected",
       "description": "Chosen option(s) (`value` / `defaultValue`).",
       "event": "ok:autocomplete:change",
@@ -163,6 +290,14 @@
       "value": [
        ""
       ]
+     },
+     {
+      "description": "The text shown while options load (`loading`).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-autocomplete-loading"
      },
      {
       "description": "The \"+n\" text after the visible chips when `limitTags` hides some.",
@@ -202,6 +337,12 @@
       ]
      },
      {
+      "description": "The index of a chip in the value, from `getItemProps` (`renderValue`).",
+      "kind": "value",
+      "name": "data-ok-item-index",
+      "value": "string"
+     },
+     {
       "description": "The accessible name of the toggle button while the listbox is open. Default \"Close\".",
       "kind": "value",
       "name": "data-ok-label-close",
@@ -218,29 +359,65 @@
    },
    "name": "Autocomplete",
    "react": {
-    "description": "A text field with a list of suggestions (WAI-ARIA combobox), built from TextField, Chip, IconButton and Popover. Keys, clicks and blur are core's `createComboboxController`; this component owns the value, the text and the list.",
+    "description": "A text field with a list of suggestions (WAI-ARIA combobox), built from TextField, Chip, IconButton and Popover.",
     "native": "HTMLDivElement",
     "props": [
+     {
+      "default": "\"ul\"",
+      "description": "The element of the listbox (it gets the listbox props, a `ref` and the options).",
+      "name": "ListboxComponent",
+      "type": "ElementType"
+     },
+     {
+      "description": "Inline completion: the input shows the highlighted option, the rest of its label selected.",
+      "name": "autoComplete",
+      "type": "boolean"
+     },
      {
       "description": "Highlight the first option while typing.",
       "name": "autoHighlight",
       "type": "boolean"
      },
      {
-      "description": "Names of the end buttons.",
+      "description": "Leaving the field picks the option highlighted by the keys or `autoHighlight` (free solo: the text).",
+      "name": "autoSelect",
+      "type": "boolean"
+     },
+     {
+      "description": "Blur the input after a pick: always (`true`), or only after a `\"mouse\"` or `\"touch\"` pick.",
+      "name": "blurOnSelect",
+      "type": "\"mouse\" | \"touch\" | boolean"
+     },
+     {
+      "description": "Icon of the clear button. Default: a cross.",
+      "name": "clearIcon",
+      "type": "ReactNode"
+     },
+     {
+      "default": "!freeSolo",
+      "description": "Leaving the field puts back the chosen label (or empties the text).",
+      "name": "clearOnBlur",
+      "type": "boolean"
+     },
+     {
+      "description": "Escape on a closed list clears the value and the text.",
+      "name": "clearOnEscape",
+      "type": "boolean"
+     },
+     {
+      "description": "Name of the clear button. Default \"Clear\".",
       "name": "clearText",
       "type": "string"
      },
      {
-      "default": "\"Close\"",
-      "description": "Label of the button that closes the list.",
+      "description": "Name of the open button while the list is open. Default \"Close\".",
       "name": "closeText",
       "type": "string"
      },
      {
       "description": "Uncontrolled initial value.",
       "name": "defaultValue",
-      "type": "AutocompleteValue"
+      "type": "AutocompleteValue<V>"
      },
      {
       "description": "No clear button.",
@@ -253,19 +430,40 @@
       "type": "boolean"
      },
      {
+      "description": "The arrows stop at the first and last options instead of wrapping.",
+      "name": "disableListWrap",
+      "type": "boolean"
+     },
+     {
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
      },
      {
-      "description": "Shows the field in the error state.",
+      "description": "Disabled options can be highlighted (not picked).",
+      "name": "disabledItemsFocusable",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors and `aria-invalid`.",
       "name": "error",
       "type": "boolean"
      },
      {
       "description": "Which options match the text. Default: label contains the text (case and accents ignored).",
       "name": "filterOptions",
-      "type": "((options: AutocompleteOption[], inputValue: string) => AutocompleteOption[])"
+      "type": "((options: AutocompleteOptionOf<T>[], inputValue: string) => AutocompleteOptionOf<T>[])"
+     },
+     {
+      "description": "Leave the chosen options out of the list.",
+      "name": "filterSelectedOptions",
+      "type": "boolean"
+     },
+     {
+      "default": "\"auto\"",
+      "description": "Show (`true`) or hide (`false`) the open button; `\"auto\"` hides it in free solo fields.",
+      "name": "forcePopupIcon",
+      "type": "\"auto\" | boolean"
      },
      {
       "description": "Any text is a value; Enter commits it.",
@@ -278,6 +476,37 @@
       "type": "((more: number) => string)"
      },
      {
+      "description": "Whether an option is disabled. Default: its `disabled` field.",
+      "name": "getOptionDisabled",
+      "type": "((option: AutocompleteOptionOf<T>) => boolean)"
+     },
+     {
+      "description": "A unique key of an option (`data-ok-value`), when labels aren't unique.",
+      "name": "getOptionKey",
+      "type": "((option: AutocompleteOptionOf<T>) => string | number)"
+     },
+     {
+      "description": "The text of an option (input text, chips, matching). Default: its `label`, or the string itself.",
+      "name": "getOptionLabel",
+      "type": "((option: AutocompleteOptionOf<T>) => string)"
+     },
+     {
+      "description": "The value an option stands for (`value`, `onChange`). Default: the option's `value`, or the option itself with `getOptionLabel`.",
+      "name": "getOptionValue",
+      "type": "((option: AutocompleteOptionOf<T>) => V)"
+     },
+     {
+      "description": "Groups the options under the returned heading (sort the options by it first).",
+      "name": "groupBy",
+      "type": "((option: AutocompleteOptionOf<T>) => string)"
+     },
+     {
+      "default": "!freeSolo",
+      "description": "Home and End highlight the first and last options.",
+      "name": "handleHomeEndKeys",
+      "type": "boolean"
+     },
+     {
       "description": "Text under the field, such as a hint or an error message.",
       "name": "helperText",
       "type": "ReactNode"
@@ -288,12 +517,22 @@
       "type": "string"
      },
      {
+      "description": "The arrows move from the last or first option back to the input.",
+      "name": "includeInputInList",
+      "type": "boolean"
+     },
+     {
       "description": "Controlled text of the input.",
       "name": "inputValue",
       "type": "string"
      },
      {
-      "description": "TextField props.",
+      "description": "Whether an option is the given value. is`).",
+      "name": "isOptionEqualToValue",
+      "type": "((option: AutocompleteOptionOf<T>, value: V) => boolean)"
+     },
+     {
+      "description": "The floating label; it names the field and the list.",
       "name": "label",
       "type": "ReactNode"
      },
@@ -301,6 +540,16 @@
       "description": "Multiple: chips shown when the field isn't focused. Default: all.",
       "name": "limitTags",
       "type": "number"
+     },
+     {
+      "description": "Options are loading: the list shows `loadingText` while it has no options.",
+      "name": "loading",
+      "type": "boolean"
+     },
+     {
+      "description": "Shown while `loading` and there are no options. Default \"Loading…\".",
+      "name": "loadingText",
+      "type": "ReactNode"
      },
      {
       "description": "Several values, shown as chips.",
@@ -320,7 +569,12 @@
      {
       "description": "Called with the new value.",
       "name": "onChange",
-      "type": "((value: AutocompleteValue) => void)"
+      "type": "((value: AutocompleteValue<V>) => void)"
+     },
+     {
+      "description": "Called when the highlighted option changes (`null`: none), with what moved it.",
+      "name": "onHighlightChange",
+      "type": "((option: AutocompleteOptionOf<T> | null, reason: AutocompleteHighlightReason) => void)"
      },
      {
       "description": "Called with the input's text as it changes.",
@@ -330,7 +584,7 @@
      {
       "description": "Called when the list opens or closes, with the reason.",
       "name": "onOpenChange",
-      "type": "((open: boolean, reason?: \"focus\" | \"input\" | \"keyboard\" | AutocompleteCloseReason | undefined) => void)"
+      "type": "((open: boolean, reason?: AutocompleteOpenReason | undefined) => void)"
      },
      {
       "description": "Controlled open state of the list.",
@@ -343,41 +597,78 @@
       "type": "boolean"
      },
      {
-      "default": "\"Open\"",
-      "description": "Label of the button that opens the list.",
+      "description": "Name of the open button while the list is closed. Default \"Open\".",
       "name": "openText",
       "type": "string"
      },
      {
-      "description": "The choices: strings, or `{ value, label, disabled? }`.",
+      "description": "The choices: strings or `{ value, label, disabled? }`, or any objects with `getOptionLabel`.",
       "name": "options",
       "required": true,
-      "type": "readonly (string | AutocompleteOption)[]"
+      "type": "readonly (string | AutocompleteOptionOf<T>)[] & readonly (string | T)[]"
      },
      {
-      "description": "Placeholder of the input.",
+      "description": "Text shown in the empty input.",
       "name": "placeholder",
       "type": "string"
      },
      {
-      "description": "Content of an option (default: its label).",
-      "name": "renderOption",
-      "type": "((option: AutocompleteOption, state: { selected: boolean; }) => ReactNode)"
+      "description": "Icon of the open button (it turns while open). Default: a chevron.",
+      "name": "popupIcon",
+      "type": "ReactNode"
      },
      {
-      "description": "The field's size.",
+      "description": "The value can't change: the list doesn't open and chips have no remove button.",
+      "name": "readOnly",
+      "type": "boolean"
+     },
+     {
+      "description": "Draws a group of options (default: a `ListSubheader` with the heading, then the options).",
+      "name": "renderGroup",
+      "type": "((params: AutocompleteRenderGroupParams) => ReactNode)"
+     },
+     {
+      "description": "Content of an option (default: its label).",
+      "name": "renderOption",
+      "type": "((option: AutocompleteOptionOf<T>, state: { selected: boolean; }) => ReactNode)"
+     },
+     {
+      "description": "Draws the chosen value(s) in the field instead of the built-in chips; spread `getItemProps({ index })` on each item. A single value drawn this way leaves the input empty.",
+      "name": "renderValue",
+      "type": "((value: V | V[], getItemProps: (args: { index: number; }) => AutocompleteItemProps) => ReactNode)"
+     },
+     {
+      "description": "The pointer leaving the list removes the highlight it made.",
+      "name": "resetHighlightOnMouseLeave",
+      "type": "boolean"
+     },
+     {
+      "default": "!freeSolo",
+      "description": "The first click in the field selects its text.",
+      "name": "selectOnFocus",
+      "type": "boolean"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` or `small` (dense).",
       "name": "size",
       "type": "\"medium\" | \"small\""
      },
      {
-      "description": "Controlled value: an option value (or typed text with `freeSolo`), values with `multiple`, or `null`.",
+      "description": "Controlled value: an option's value (or typed text with `freeSolo`), values with `multiple`, or `null`.",
       "name": "value",
-      "type": "AutocompleteValue"
+      "type": "AutocompleteValue<V>"
      },
      {
-      "description": "The field's variant: `outlined`, `filled` or `standard`.",
+      "default": "\"outlined\"",
+      "description": "Outline, tinted fill or underline.",
       "name": "variant",
       "type": "\"filled\" | \"outlined\" | \"standard\""
+     },
+     {
+      "description": "Draw only the options in view, for long lists (groups aren't shown).",
+      "name": "virtualize",
+      "type": "boolean"
      }
     ]
    }
@@ -390,6 +681,22 @@
   {
    "name": "AutocompleteCloseReason",
    "type": "\"blur\" | \"escape\" | \"outside\" | \"select\" | \"toggle\""
+  },
+  {
+   "name": "AutocompleteHighlightReason",
+   "type": "\"auto\" | \"keyboard\" | \"mouse\" | \"touch\""
+  },
+  {
+   "name": "AutocompleteOpenReason",
+   "type": "\"focus\" | \"input\" | \"keyboard\" | AutocompleteCloseReason"
+  },
+  {
+   "name": "AutocompleteOptionOf",
+   "type": "T extends string ? AutocompleteOption : T"
+  },
+  {
+   "name": "AutocompleteValue",
+   "type": "V | V[] | null"
   }
  ]
 }

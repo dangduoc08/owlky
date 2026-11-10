@@ -5,6 +5,7 @@ import {
   readStyle,
   type SliderMark,
   type SliderRange,
+  scaleSliderValue,
   setSliderValue,
   sliderLayout,
   sliderOptions,
@@ -29,9 +30,17 @@ export interface SliderInstance extends ComponentInstance {
   readonly value: number[];
   /** Moves the thumbs to `value` (snapped to the steps), without emitting events. */
   setValue(value: number | readonly number[]): void;
+  /**
+   * A non-linear scale (React `scale`): `scale(value)` is shown and announced (`aria-valuenow`),
+   * formatted by `format` (else `data-ok-label-value`). `null` removes it.
+   */
+  setScale(
+    scale: ((value: number) => number) | null,
+    format?: ((value: number, index: number) => string) | null,
+  ): void;
 }
 
-const { min, max, step, track, disabled, disableSwap } = sliderOptions.options;
+const { min, max, step, shiftStep, track, disabled, disableSwap } = sliderOptions.options;
 
 /**
  * Slider — spec: specs/components/slider.md
@@ -66,6 +75,7 @@ export const slider = defineComponent<SliderInstance, SliderEvents>({
           min: readNumber(element, min) as number,
           max: readNumber(element, max) as number,
           step: stepValue === 0 ? null : stepValue,
+          shiftStep: readNumber(element, shiftStep) as number,
         }),
         marks,
       };
@@ -76,6 +86,8 @@ export const slider = defineComponent<SliderInstance, SliderEvents>({
     );
     const values = () => [...current];
     const template = () => element.getAttribute("data-ok-label-value");
+    let scale: ((value: number) => number) | null = null;
+    let format: ((value: number, index: number) => string) | null = null;
     let written: string[] = [];
     const written2 = new WeakMap<Element, string[]>();
 
@@ -113,9 +125,13 @@ export const slider = defineComponent<SliderInstance, SliderEvents>({
         input.value = String(value);
         input.setAttribute("value", String(value));
         input.disabled = element.hasAttribute(disabled.attr);
-        if (template()) input.setAttribute("aria-valuetext", formatSliderValue(value, template()));
+        const shown = scaleSliderValue(value, scale);
+        const text = format ? format(shown, i) : formatSliderValue(shown, template());
+        if (template() || format) input.setAttribute("aria-valuetext", text);
+        if (scale) input.setAttribute("aria-valuenow", String(shown));
+        else input.removeAttribute("aria-valuenow");
         const label = thumb.querySelector("[data-ok-slider-value-label]");
-        if (label) label.textContent = formatSliderValue(value, template());
+        if (label) label.textContent = text;
       });
     };
 
@@ -155,6 +171,11 @@ export const slider = defineComponent<SliderInstance, SliderEvents>({
       setValue(value) {
         const list = typeof value === "number" ? [value] : [...value];
         apply(list.map((v) => snapSliderValue(v, range())));
+      },
+      setScale(next, nextFormat) {
+        scale = next;
+        format = nextFormat ?? null;
+        apply(values());
       },
       destroy() {
         controller.destroy();

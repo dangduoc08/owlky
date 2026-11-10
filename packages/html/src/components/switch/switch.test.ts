@@ -10,7 +10,7 @@ const snippets = Object.entries(
 afterEach(resetPage);
 
 describe("switch snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(5));
+  it("covers every story group", () => expect(snippets).toHaveLength(6));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
@@ -49,5 +49,23 @@ describe("switch CSS without JavaScript", () => {
     getComputedStyle(track).backgroundColor;
     await Promise.all(track.getAnimations().map((a) => a.finished));
     expect(getComputedStyle(track).backgroundColor).toBe("rgb(0, 167, 111)");
+  });
+});
+
+describe("switch thumb icons", () => {
+  it("the icon for the state shows; an icon alone shows in both states", async () => {
+    const host = mount(snippets.find(([path]) => path.includes("customization"))?.[1] as string);
+    const [both, , alone] = [...host.querySelectorAll<HTMLElement>("[data-ok-switch]")];
+    const shown = (root: Element | undefined, part: string) =>
+      getComputedStyle(root?.querySelector(`[data-ok-switch-${part}]`) as Element).display !==
+      "none";
+    expect(shown(both, "icon")).toBe(false);
+    expect(shown(both, "checked-icon")).toBe(true);
+    await userEvent.click(both?.querySelector("input") as HTMLInputElement);
+    expect(shown(both, "icon")).toBe(true);
+    expect(shown(both, "checked-icon")).toBe(false);
+    expect(shown(alone, "icon")).toBe(true);
+    const svg = alone?.querySelector("svg") as SVGElement;
+    expect(svg.getBoundingClientRect().width).toBeGreaterThan(0);
   });
 });

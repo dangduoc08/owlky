@@ -164,6 +164,51 @@ export function Attachments() {
   );
 }`,
   },
+  {
+    id: "drag-rejections",
+    title: "Explain a rejection while dragging",
+    body: "While files are over the zone, the browser tells only their types and their count. `dragFileRejections` lists the dragged files that would be rejected, each with its `index`, `type` and `errors` (`file-invalid-type` or `too-many-files`), so the zone can say why before the drop. In React, read it from the state that `placeholder` receives, or from `useDropzone`. In HTML, read `detail.rejections` of the `ok:upload:drag` event, or the instance's `dragState.rejections`. File names and sizes are only known at drop time, so the other checks run then.",
+    react: `import { Upload } from "@owlky/react";
+
+export function Images() {
+  return (
+    <Upload
+      accept="image/*"
+      placeholder={({ isDragReject, dragFileRejections }) =>
+        isDragReject
+          ? \`\${dragFileRejections.length} file(s) can't be added: \${dragFileRejections[0]?.errors[0]?.message ?? ""}\`
+          : "Drop images here"
+      }
+    />
+  );
+}`,
+  },
+  {
+    id: "hook",
+    title: "Build your own drop zone",
+    body: "In React, `useDropzone(options)` gives the upload's behavior without its look: spread `getRootProps()` on your drop target and `getInputProps()` on a file input inside it. The root opens the file dialog on a press, Enter or Space, takes dropped and pasted files, and reports them to `onDrop(accepted, rejections)`. The hook returns the same drag state as the zone (`isDragActive`, `isDragAccept`, `isDragReject`, `dragFileRejections`), plus `isFocused`, `acceptedFiles`, `fileRejections` and `open()`. `Dropzone` is the same hook as a component that takes a render function. Give the root a name and a role, as in the example: the input is hidden, so the root is the control people reach. In HTML, the `upload` runtime is the behavior, and `createUploadController` from `@owlky/core` drives markup of your own.",
+    react: `import { useDropzone } from "@owlky/react";
+import { useState } from "react";
+
+export function DropTarget() {
+  const [names, setNames] = useState<string[]>([]);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { "image/*": [] },
+    onDrop: (accepted) => setNames(accepted.map((file) => file.name)),
+  });
+  return (
+    <div {...getRootProps({ role: "button", "aria-label": "Add images" })}>
+      <input {...getInputProps()} />
+      {isDragActive ? "Drop the images here" : "Add images"}
+      <ul>
+        {names.map((name) => (
+          <li key={name}>{name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}`,
+  },
   { id: "options", title: "Options", body: "Every option, as a React prop and an HTML attribute." },
   {
     id: "props",

@@ -65,6 +65,8 @@ export interface AutocompleteParts {
   "data-ok-autocomplete-clear": Trigger<"">;
   /** The "+n" text after the visible chips when `limitTags` hides some. */
   "data-ok-autocomplete-more": Part<"span">;
+  /** The text shown while options load (`loading`). */
+  "data-ok-autocomplete-loading": Part<"div">;
   /** The text shown when no option matches. */
   "data-ok-autocomplete-no-options": Part<"div">;
   /** The popover surface that holds the listbox. */
@@ -77,6 +79,8 @@ export interface AutocompleteParts {
   "data-ok-label-close": Value<string>;
   /** The accessible name of the toggle button while the listbox is closed. Default "Open". */
   "data-ok-label-open": Value<string>;
+  /** The index of a chip in the value, from `getItemProps` (`renderValue`). */
+  "data-ok-item-index": Value<string>;
 }
 
 /** Avatar: parts, states, values and triggers. */
@@ -1549,6 +1553,10 @@ export interface SwitchParts {
   "data-ok-switch-input": Part<"input">;
   /** The thumb. */
   "data-ok-switch-thumb": Part<"span">;
+  /** The icon in the thumb while off (`icon`). */
+  "data-ok-switch-icon": Part<"span">;
+  /** The icon in the thumb while on (`checkedIcon`). */
+  "data-ok-switch-checked-icon": Part<"span">;
   /** The track. */
   "data-ok-switch-track": Part<"span">;
 }

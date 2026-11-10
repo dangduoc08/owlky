@@ -166,3 +166,34 @@ describe("Switch", () => {
     await expectNoAxeViolations(container);
   });
 });
+
+describe("Switch icons", () => {
+  it("icon and checkedIcon go in the thumb; CSS shows the one for the state", async () => {
+    render(
+      <>
+        <Switch
+          aria-label="Both"
+          icon={<svg aria-hidden="true" data-testid="off" />}
+          checkedIcon={<svg aria-hidden="true" data-testid="on" />}
+        />
+        <Switch
+          aria-label="One"
+          defaultChecked
+          icon={<svg aria-hidden="true" data-testid="one" />}
+        />
+      </>,
+    );
+    const shown = (id: string) =>
+      getComputedStyle(screen.getByTestId(id).parentElement as HTMLElement).display !== "none";
+    const thumb = screen.getByTestId("off").closest("[data-ok-switch-thumb]");
+    expect(thumb?.getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByTestId("off").parentElement?.hasAttribute("data-ok-switch-icon")).toBe(true);
+    expect(shown("off")).toBe(true);
+    expect(shown("on")).toBe(false);
+    await userEvent.click(screen.getByRole("switch", { name: "Both" }));
+    expect(shown("off")).toBe(false);
+    expect(shown("on")).toBe(true);
+    expect(shown("one")).toBe(true);
+    await expectNoAxeViolations();
+  });
+});

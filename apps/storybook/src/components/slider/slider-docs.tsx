@@ -122,6 +122,42 @@ export function Level() {
 }`,
   },
   {
+    id: "scale",
+    title: "Use a non-linear scale",
+    body: "In React, `scale` turns the value into the one people see and hear, such as a power of two for a storage size. The value label, `getAriaValueText` and `aria-valuenow` get the scaled value, while `onChange` keeps the plain one. In HTML, call `setScale(scale, format)` on the instance: `format` writes the value label and `aria-valuetext`.",
+    html: `<!-- The slider of the "Non-linear scale" story -->
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const slider = getRuntime().get(document.querySelector("[data-ok-slider]"), "slider");
+  slider.setScale(
+    (value) => 2 ** value,
+    (bytes) => \`\${bytes / 1024} KB\`,
+  );
+</script>`,
+    react: `import { Slider } from "@owlky/react";
+
+export function Storage() {
+  return (
+    <Slider
+      aria-label="Storage"
+      defaultValue={10}
+      min={5}
+      max={30}
+      scale={(value) => 2 ** value}
+      valueLabelDisplay="auto"
+      valueLabelFormat={(bytes) => \`\${bytes / 1024} KB\`}
+      getAriaValueText={(bytes) => \`\${bytes / 1024} KB\`}
+    />
+  );
+}`,
+  },
+  {
+    id: "keys",
+    title: "Set the keyboard steps",
+    body: "The arrow keys move a thumb by one `step`. Page Up, Page Down and the arrow keys with Shift move it by `shiftStep`, 10 by default (HTML `data-ok-shift-step`). In React, `tabIndex` sets the tab order of the thumbs' inputs. In HTML, write `tabindex` on the inputs.",
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't valid fall back to the default.",
@@ -233,7 +269,8 @@ const PREVIEWS = {
         ["Tab", "Moves focus to the next thumb."],
         ["Right arrow / Up arrow", "Increases the value by one step."],
         ["Left arrow / Down arrow", "Decreases the value by one step."],
-        ["Page Up / Page Down", "Increases / decreases the value by ten steps."],
+        ["Page Up / Page Down", "Increases / decreases the value by `shiftStep` (10 by default)."],
+        ["Shift + arrow keys", "Increases / decreases the value by `shiftStep`."],
         ["Home / End", "Sets the lowest / highest value."],
       ]}
     />

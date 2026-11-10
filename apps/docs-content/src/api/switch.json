@@ -56,6 +56,11 @@
    "dark": "#FFFFFF",
    "light": "#1C252E",
    "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
   }
  ],
  "entries": [
@@ -119,6 +124,22 @@
     ],
     "parts": [
      {
+      "description": "The icon in the thumb while on (`checkedIcon`).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-switch-checked-icon"
+     },
+     {
+      "description": "The icon in the thumb while off (`icon`).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-switch-icon"
+     },
+     {
       "description": "The native checkbox (`role=\"switch\"`). It covers the control, invisible.",
       "elements": [
        "input"
@@ -150,6 +171,11 @@
     "native": "HTMLInputElement",
     "props": [
      {
+      "description": "Content of the thumb while the switch is on.",
+      "name": "checkedIcon",
+      "type": "ReactNode"
+     },
+     {
       "description": "Class of the root span (other props go to the input).",
       "name": "className",
       "type": "string"
@@ -164,6 +190,11 @@
       "description": "Negative margin on that side, to align the track with content.",
       "name": "edge",
       "type": "\"end\" | \"start\" | false"
+     },
+     {
+      "description": "Content of the thumb (such as an icon); also shown when on unless `checkedIcon` is set.",
+      "name": "icon",
+      "type": "ReactNode"
      },
      {
       "description": "Called with the new checked state.",

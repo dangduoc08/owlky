@@ -116,9 +116,11 @@ describe("createUploadController: drag and drop", () => {
     expect(root.hasAttribute("data-ok-drag")).toBe(false);
     zone.dispatchEvent(drag("dragenter", [file("a.txt", "text/plain")]));
     expect(root.getAttribute("data-ok-drag")).toBe("reject");
+    expect((states.at(-1) as { rejections: unknown[] }).rejections).toHaveLength(1);
     root.dispatchEvent(drag("drop", []));
     expect(root.hasAttribute("data-ok-drag")).toBe(false);
     expect(states.length).toBeGreaterThanOrEqual(4);
+    expect((states.at(-1) as { rejections: unknown[] }).rejections).toEqual([]);
   });
 
   it("forgets targets that left the zone (removed nodes)", () => {
@@ -434,7 +436,12 @@ describe("createUploadController: input and dialog", () => {
     controllers.push(controller);
     controller.open();
     controller.sync([file("a")]);
-    expect(controller.drag).toEqual({ active: false, verdict: null, global: false });
+    expect(controller.drag).toEqual({
+      active: false,
+      verdict: null,
+      global: false,
+      rejections: [],
+    });
   });
 
   it("reports a form reset after the native reset", async () => {

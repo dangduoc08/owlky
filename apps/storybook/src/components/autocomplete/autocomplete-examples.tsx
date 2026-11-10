@@ -1,5 +1,5 @@
 import { autocompleteOptions } from "@owlky/core";
-import { Autocomplete, type AutocompleteOption, Checkbox } from "@owlky/react";
+import { Autocomplete, type AutocompleteOption, Checkbox, Chip } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
@@ -17,6 +17,9 @@ export const FRUITS = [
   "Peach",
   "Pear",
 ];
+
+/** 10,000 options for the virtualized list: "Option 1" to "Option 10000". */
+export const MANY_OPTIONS = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);
 
 /** An option with a checkbox that mirrors its selection (decorative: the option is selected). */
 export function checkboxOption(option: AutocompleteOption, { selected }: { selected: boolean }) {
@@ -121,9 +124,61 @@ export const autocompleteStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  grouped: [
+    {
+      title: "With categories",
+      content: (
+        <div className="sb-autocomplete">
+          <Autocomplete
+            id="ac-grouped"
+            label="With categories"
+            options={FRUITS}
+            groupBy={(option) => option.label.charAt(0)}
+          />
+        </div>
+      ),
+    },
+  ],
+  single: [
+    {
+      title: "Single value rendering",
+      content: (
+        <div className="sb-autocomplete">
+          <Autocomplete
+            id="ac-single-chip"
+            label="Fruit"
+            options={FRUITS}
+            defaultValue="Mango"
+            renderValue={(value, getItemProps) => (
+              <Chip
+                size="small"
+                variant="soft"
+                label={value as string}
+                {...getItemProps({ index: 0 })}
+              />
+            )}
+          />
+        </div>
+      ),
+    },
+  ],
+  virtualization: [
+    {
+      title: "10,000 options",
+      content: (
+        <div className="sb-autocomplete">
+          <Autocomplete id="ac-virtual" label="10,000 options" virtualize options={MANY_OPTIONS} />
+        </div>
+      ),
+    },
+  ],
 };
 
 export const AUTOCOMPLETE_FILES: Record<string, GroupFiles> = {
+  grouped: [["With categories", "categories"]],
+  async: [["Load on open", "load-on-open"]],
+  single: [["Single value rendering", "chip"]],
+  virtualization: [["10,000 options", "list"]],
   playground: [
     ["Combo box", "combo"],
     ["Controllable states", "controllable"],

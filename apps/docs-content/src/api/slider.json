@@ -151,6 +151,12 @@
     ],
     "methods": [
      {
+      "description": "A non-linear scale (React `scale`): `scale(value)` is shown and announced (`aria-valuenow`), formatted by `format` (else `data-ok-label-value`). `null` removes it.",
+      "kind": "method",
+      "name": "setScale",
+      "type": "(scale: ((value: number) => number) | null, format?: ((value: number, index: number) => string) | null | undefined) => void"
+     },
+     {
       "description": "Moves the thumbs to `value` (snapped to the steps), without emitting events.",
       "kind": "method",
       "name": "setValue",
@@ -259,6 +265,14 @@
       "kind": "number",
       "min": 0,
       "name": "step"
+     },
+     {
+      "attr": "data-ok-shift-step",
+      "default": 10,
+      "description": "How far Page Up / Page Down and Shift + arrow keys move the thumb.",
+      "kind": "number",
+      "min": 0,
+      "name": "shiftStep"
      },
      {
       "attr": "value",
@@ -416,6 +430,16 @@
       "type": "\"horizontal\" | \"vertical\""
      },
      {
+      "description": "Turns a value into the one shown and announced (non-linear scales); `onChange` keeps the plain value.",
+      "name": "scale",
+      "type": "((value: number) => number)"
+     },
+     {
+      "description": "How far Page Up / Page Down and Shift + arrow keys move the thumb. Default 10.",
+      "name": "shiftStep",
+      "type": "number"
+     },
+     {
       "default": "\"medium\"",
       "description": "Rail 10 / 6px, thumb 20 / 16px.",
       "name": "size",
@@ -425,6 +449,11 @@
       "description": "Default 1; `null`: only the marks are valid values.",
       "name": "step",
       "type": "number | null"
+     },
+     {
+      "description": "Tab order of the thumbs' inputs.",
+      "name": "tabIndex",
+      "type": "number"
      },
      {
       "description": "`\"normal\"` (default), `\"inverted\"` or `false` (no track).",

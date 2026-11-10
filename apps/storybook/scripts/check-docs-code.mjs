@@ -150,6 +150,7 @@ const LUCIDE = [
   "Underline",
   "User",
   "Wifi",
+  "X",
 ];
 writeFileSync(
   join(out, "icons.d.ts"),

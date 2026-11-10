@@ -37,6 +37,7 @@
   "data-ok-annotation",
   "data-ok-arrow",
   "data-ok-attribution",
+  "data-ok-auto-complete",
   "data-ok-auto-height",
   "data-ok-auto-hide",
   "data-ok-auto-highlight",
@@ -45,9 +46,11 @@
   "data-ok-auto-scroll-speed",
   "data-ok-auto-scroll-start-delay",
   "data-ok-auto-scrolling",
+  "data-ok-auto-select",
   "data-ok-auto-width",
   "data-ok-autocomplete",
   "data-ok-autocomplete-clear",
+  "data-ok-autocomplete-loading",
   "data-ok-autocomplete-more",
   "data-ok-autocomplete-no-options",
   "data-ok-autocomplete-paper",
@@ -76,6 +79,7 @@
   "data-ok-bearing",
   "data-ok-before-id",
   "data-ok-between",
+  "data-ok-blur-on-select",
   "data-ok-boundary-count",
   "data-ok-bounds",
   "data-ok-box-lower-color",
@@ -233,6 +237,8 @@
   "data-ok-circular-progress",
   "data-ok-circular-progress-circle",
   "data-ok-circular-progress-svg",
+  "data-ok-clear-on-blur",
+  "data-ok-clear-on-escape",
   "data-ok-clearable",
   "data-ok-close-button",
   "data-ok-close-on-backdrop-click",
@@ -420,6 +426,7 @@
   "data-ok-disable-gutters",
   "data-ok-disable-highlight-today",
   "data-ok-disable-ignoring-date-part-for-time-validation",
+  "data-ok-disable-list-wrap",
   "data-ok-disable-multiple-columns-filtering",
   "data-ok-disable-multiple-columns-sorting",
   "data-ok-disable-multiple-row-selection",
@@ -447,6 +454,7 @@
   "data-ok-disable-virtualization",
   "data-ok-disable-zoom",
   "data-ok-disabled",
+  "data-ok-disabled-items-focusable",
   "data-ok-disallowed-elements",
   "data-ok-display-empty",
   "data-ok-display-week-number",
@@ -523,6 +531,7 @@
   "data-ok-filter",
   "data-ok-filter-field",
   "data-ok-filter-mode",
+  "data-ok-filter-selected-options",
   "data-ok-filterable",
   "data-ok-finite",
   "data-ok-fit",
@@ -600,6 +609,7 @@
   "data-ok-group-path",
   "data-ok-groupable",
   "data-ok-gutter-bottom",
+  "data-ok-handle-home-end-keys",
   "data-ok-header-filters",
   "data-ok-height",
   "data-ok-height-event",
@@ -632,6 +642,7 @@
   "data-ok-in-range",
   "data-ok-in-view",
   "data-ok-in-view-threshold",
+  "data-ok-include-input-in-list",
   "data-ok-indeterminate",
   "data-ok-index",
   "data-ok-indicator",
@@ -644,6 +655,7 @@
   "data-ok-interactive-layer-ids",
   "data-ok-invisible",
   "data-ok-item-id",
+  "data-ok-item-index",
   "data-ok-items-after-collapse",
   "data-ok-items-before-collapse",
   "data-ok-just-dragged",
@@ -956,6 +968,7 @@
   "data-ok-reduce-animations",
   "data-ok-render-world-copies",
   "data-ok-required",
+  "data-ok-reset-highlight-on-mouse-leave",
   "data-ok-resizable",
   "data-ok-rotate",
   "data-ok-rotate-buttons",
@@ -994,6 +1007,7 @@
   "data-ok-select-input",
   "data-ok-select-listbox",
   "data-ok-select-native",
+  "data-ok-select-on-focus",
   "data-ok-select-open",
   "data-ok-select-outline",
   "data-ok-select-placeholder",
@@ -1007,6 +1021,7 @@
   "data-ok-share-text",
   "data-ok-share-title",
   "data-ok-share-url",
+  "data-ok-shift-step",
   "data-ok-show-accuracy",
   "data-ok-show-accuracy-circle",
   "data-ok-show-days-outside-current-month",
@@ -1094,6 +1109,8 @@
   "data-ok-stop-on-mouse-enter",
   "data-ok-stroke",
   "data-ok-switch",
+  "data-ok-switch-checked-icon",
+  "data-ok-switch-icon",
   "data-ok-switch-input",
   "data-ok-switch-thumb",
   "data-ok-switch-track",
@@ -1281,6 +1298,7 @@
   "data-ok-vertical",
   "data-ok-view",
   "data-ok-views",
+  "data-ok-virtualize",
   "data-ok-visible-by-default",
   "data-ok-visible-scrollbar",
   "data-ok-visible-toasts",
@@ -2303,6 +2321,12 @@
         },
         {
          "cancelable": false,
+         "description": "After the highlighted option changed (keyboard, pointer or automatic). `value` is `null` when none is.",
+         "detail": "{ value: string | null; reason: string; }",
+         "name": "ok:autocomplete:highlight"
+        },
+        {
+         "cancelable": false,
          "description": "After the listbox opened.",
          "detail": "{ reason: string; }",
          "name": "ok:autocomplete:open"
@@ -2326,6 +2350,12 @@
          "kind": "method",
          "name": "open",
          "type": "() => void"
+        },
+        {
+         "description": ", group? }`), such as loaded ones.",
+         "kind": "method",
+         "name": "setOptions",
+         "type": "(options: readonly (string | AutocompleteOption)[]) => void"
         },
         {
          "description": "Sets the value without emitting events.",
@@ -2385,6 +2415,121 @@
          "name": "limitTags"
         },
         {
+         "attr": "data-ok-auto-complete",
+         "description": "Inline completion: the input shows the highlighted option, the rest of its label selected.",
+         "kind": "flag",
+         "name": "autoComplete"
+        },
+        {
+         "attr": "data-ok-auto-select",
+         "description": "Leaving the field picks the option highlighted by the keys or `autoHighlight` (free solo: the text).",
+         "kind": "flag",
+         "name": "autoSelect"
+        },
+        {
+         "attr": "data-ok-blur-on-select",
+         "default": "true",
+         "description": "The input loses focus after a pick: always (`true`), or only after a mouse or touch pick.",
+         "kind": "style",
+         "name": "blurOnSelect",
+         "optional": true,
+         "values": [
+          "true",
+          "mouse",
+          "touch"
+         ]
+        },
+        {
+         "attr": "data-ok-clear-on-blur",
+         "default": "true",
+         "description": "Leaving the field puts back the chosen label (or empties the text). Default: on, off in free solo.",
+         "kind": "style",
+         "name": "clearOnBlur",
+         "optional": true,
+         "values": [
+          "true",
+          "false"
+         ]
+        },
+        {
+         "attr": "data-ok-clear-on-escape",
+         "description": "Escape on a closed list clears the value and the text.",
+         "kind": "flag",
+         "name": "clearOnEscape"
+        },
+        {
+         "attr": "data-ok-disabled-items-focusable",
+         "description": "Disabled options can be highlighted (not picked).",
+         "kind": "flag",
+         "name": "disabledItemsFocusable"
+        },
+        {
+         "attr": "data-ok-disable-list-wrap",
+         "description": "The arrows stop at the first and last options instead of wrapping.",
+         "kind": "flag",
+         "name": "disableListWrap"
+        },
+        {
+         "attr": "data-ok-filter-selected-options",
+         "description": "Chosen options are left out of the list.",
+         "kind": "flag",
+         "name": "filterSelectedOptions"
+        },
+        {
+         "attr": "data-ok-handle-home-end-keys",
+         "default": "true",
+         "description": "Home and End highlight the first and last options. Default: on, off in free solo.",
+         "kind": "style",
+         "name": "handleHomeEndKeys",
+         "optional": true,
+         "values": [
+          "true",
+          "false"
+         ]
+        },
+        {
+         "attr": "data-ok-include-input-in-list",
+         "description": "The arrows move from the last or first option back to the input.",
+         "kind": "flag",
+         "name": "includeInputInList"
+        },
+        {
+         "attr": "data-ok-loading",
+         "description": "Options are loading: the list shows the loading text while it has no options.",
+         "kind": "flag",
+         "name": "loading"
+        },
+        {
+         "attr": "data-ok-read-only",
+         "description": "The value can't change: the list doesn't open and chips have no remove button.",
+         "kind": "flag",
+         "name": "readOnly"
+        },
+        {
+         "attr": "data-ok-reset-highlight-on-mouse-leave",
+         "description": "The pointer leaving the list removes the highlight it made.",
+         "kind": "flag",
+         "name": "resetHighlightOnMouseLeave"
+        },
+        {
+         "attr": "data-ok-select-on-focus",
+         "default": "true",
+         "description": "The first click in the field selects its text. Default: on, off in free solo.",
+         "kind": "style",
+         "name": "selectOnFocus",
+         "optional": true,
+         "values": [
+          "true",
+          "false"
+         ]
+        },
+        {
+         "attr": "data-ok-virtualize",
+         "description": "Long lists draw only the options in view (groups aren't shown).",
+         "kind": "flag",
+         "name": "virtualize"
+        },
+        {
          "attr": "aria-selected",
          "description": "Chosen option(s) (`value` / `defaultValue`).",
          "event": "ok:autocomplete:change",
@@ -2400,6 +2545,14 @@
          "value": [
           ""
          ]
+        },
+        {
+         "description": "The text shown while options load (`loading`).",
+         "elements": [
+          "div"
+         ],
+         "kind": "part",
+         "name": "data-ok-autocomplete-loading"
         },
         {
          "description": "The \"+n\" text after the visible chips when `limitTags` hides some.",
@@ -2439,6 +2592,12 @@
          ]
         },
         {
+         "description": "The index of a chip in the value, from `getItemProps` (`renderValue`).",
+         "kind": "value",
+         "name": "data-ok-item-index",
+         "value": "string"
+        },
+        {
          "description": "The accessible name of the toggle button while the listbox is open. Default \"Close\".",
          "kind": "value",
          "name": "data-ok-label-close",
@@ -2455,29 +2614,65 @@
       },
       "name": "Autocomplete",
       "react": {
-       "description": "A text field with a list of suggestions (WAI-ARIA combobox), built from TextField, Chip, IconButton and Popover. Keys, clicks and blur are core's `createComboboxController`; this component owns the value, the text and the list.",
+       "description": "A text field with a list of suggestions (WAI-ARIA combobox), built from TextField, Chip, IconButton and Popover.",
        "native": "HTMLDivElement",
        "props": [
+        {
+         "default": "\"ul\"",
+         "description": "The element of the listbox (it gets the listbox props, a `ref` and the options).",
+         "name": "ListboxComponent",
+         "type": "ElementType"
+        },
+        {
+         "description": "Inline completion: the input shows the highlighted option, the rest of its label selected.",
+         "name": "autoComplete",
+         "type": "boolean"
+        },
         {
          "description": "Highlight the first option while typing.",
          "name": "autoHighlight",
          "type": "boolean"
         },
         {
-         "description": "Names of the end buttons.",
+         "description": "Leaving the field picks the option highlighted by the keys or `autoHighlight` (free solo: the text).",
+         "name": "autoSelect",
+         "type": "boolean"
+        },
+        {
+         "description": "Blur the input after a pick: always (`true`), or only after a `\"mouse\"` or `\"touch\"` pick.",
+         "name": "blurOnSelect",
+         "type": "\"mouse\" | \"touch\" | boolean"
+        },
+        {
+         "description": "Icon of the clear button. Default: a cross.",
+         "name": "clearIcon",
+         "type": "ReactNode"
+        },
+        {
+         "default": "!freeSolo",
+         "description": "Leaving the field puts back the chosen label (or empties the text).",
+         "name": "clearOnBlur",
+         "type": "boolean"
+        },
+        {
+         "description": "Escape on a closed list clears the value and the text.",
+         "name": "clearOnEscape",
+         "type": "boolean"
+        },
+        {
+         "description": "Name of the clear button. Default \"Clear\".",
          "name": "clearText",
          "type": "string"
         },
         {
-         "default": "\"Close\"",
-         "description": "Label of the button that closes the list.",
+         "description": "Name of the open button while the list is open. Default \"Close\".",
          "name": "closeText",
          "type": "string"
         },
         {
          "description": "Uncontrolled initial value.",
          "name": "defaultValue",
-         "type": "AutocompleteValue"
+         "type": "AutocompleteValue<V>"
         },
         {
          "description": "No clear button.",
@@ -2490,19 +2685,40 @@
          "type": "boolean"
         },
         {
+         "description": "The arrows stop at the first and last options instead of wrapping.",
+         "name": "disableListWrap",
+         "type": "boolean"
+        },
+        {
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
         },
         {
-         "description": "Shows the field in the error state.",
+         "description": "Disabled options can be highlighted (not picked).",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
+         "description": "Error colors and `aria-invalid`.",
          "name": "error",
          "type": "boolean"
         },
         {
          "description": "Which options match the text. Default: label contains the text (case and accents ignored).",
          "name": "filterOptions",
-         "type": "((options: AutocompleteOption[], inputValue: string) => AutocompleteOption[])"
+         "type": "((options: AutocompleteOptionOf<T>[], inputValue: string) => AutocompleteOptionOf<T>[])"
+        },
+        {
+         "description": "Leave the chosen options out of the list.",
+         "name": "filterSelectedOptions",
+         "type": "boolean"
+        },
+        {
+         "default": "\"auto\"",
+         "description": "Show (`true`) or hide (`false`) the open button; `\"auto\"` hides it in free solo fields.",
+         "name": "forcePopupIcon",
+         "type": "\"auto\" | boolean"
         },
         {
          "description": "Any text is a value; Enter commits it.",
@@ -2515,6 +2731,37 @@
          "type": "((more: number) => string)"
         },
         {
+         "description": "Whether an option is disabled. Default: its `disabled` field.",
+         "name": "getOptionDisabled",
+         "type": "((option: AutocompleteOptionOf<T>) => boolean)"
+        },
+        {
+         "description": "A unique key of an option (`data-ok-value`), when labels aren't unique.",
+         "name": "getOptionKey",
+         "type": "((option: AutocompleteOptionOf<T>) => string | number)"
+        },
+        {
+         "description": "The text of an option (input text, chips, matching). Default: its `label`, or the string itself.",
+         "name": "getOptionLabel",
+         "type": "((option: AutocompleteOptionOf<T>) => string)"
+        },
+        {
+         "description": "The value an option stands for (`value`, `onChange`). Default: the option's `value`, or the option itself with `getOptionLabel`.",
+         "name": "getOptionValue",
+         "type": "((option: AutocompleteOptionOf<T>) => V)"
+        },
+        {
+         "description": "Groups the options under the returned heading (sort the options by it first).",
+         "name": "groupBy",
+         "type": "((option: AutocompleteOptionOf<T>) => string)"
+        },
+        {
+         "default": "!freeSolo",
+         "description": "Home and End highlight the first and last options.",
+         "name": "handleHomeEndKeys",
+         "type": "boolean"
+        },
+        {
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
@@ -2525,12 +2772,22 @@
          "type": "string"
         },
         {
+         "description": "The arrows move from the last or first option back to the input.",
+         "name": "includeInputInList",
+         "type": "boolean"
+        },
+        {
          "description": "Controlled text of the input.",
          "name": "inputValue",
          "type": "string"
         },
         {
-         "description": "TextField props.",
+         "description": "Whether an option is the given value. is`).",
+         "name": "isOptionEqualToValue",
+         "type": "((option: AutocompleteOptionOf<T>, value: V) => boolean)"
+        },
+        {
+         "description": "The floating label; it names the field and the list.",
          "name": "label",
          "type": "ReactNode"
         },
@@ -2538,6 +2795,16 @@
          "description": "Multiple: chips shown when the field isn't focused. Default: all.",
          "name": "limitTags",
          "type": "number"
+        },
+        {
+         "description": "Options are loading: the list shows `loadingText` while it has no options.",
+         "name": "loading",
+         "type": "boolean"
+        },
+        {
+         "description": "Shown while `loading` and there are no options. Default \"Loading…\".",
+         "name": "loadingText",
+         "type": "ReactNode"
         },
         {
          "description": "Several values, shown as chips.",
@@ -2557,7 +2824,12 @@
         {
          "description": "Called with the new value.",
          "name": "onChange",
-         "type": "((value: AutocompleteValue) => void)"
+         "type": "((value: AutocompleteValue<V>) => void)"
+        },
+        {
+         "description": "Called when the highlighted option changes (`null`: none), with what moved it.",
+         "name": "onHighlightChange",
+         "type": "((option: AutocompleteOptionOf<T> | null, reason: AutocompleteHighlightReason) => void)"
         },
         {
          "description": "Called with the input's text as it changes.",
@@ -2567,7 +2839,7 @@
         {
          "description": "Called when the list opens or closes, with the reason.",
          "name": "onOpenChange",
-         "type": "((open: boolean, reason?: \"focus\" | \"input\" | \"keyboard\" | AutocompleteCloseReason | undefined) => void)"
+         "type": "((open: boolean, reason?: AutocompleteOpenReason | undefined) => void)"
         },
         {
          "description": "Controlled open state of the list.",
@@ -2580,41 +2852,78 @@
          "type": "boolean"
         },
         {
-         "default": "\"Open\"",
-         "description": "Label of the button that opens the list.",
+         "description": "Name of the open button while the list is closed. Default \"Open\".",
          "name": "openText",
          "type": "string"
         },
         {
-         "description": "The choices: strings, or `{ value, label, disabled? }`.",
+         "description": "The choices: strings or `{ value, label, disabled? }`, or any objects with `getOptionLabel`.",
          "name": "options",
          "required": true,
-         "type": "readonly (string | AutocompleteOption)[]"
+         "type": "readonly (string | AutocompleteOptionOf<T>)[] & readonly (string | T)[]"
         },
         {
-         "description": "Placeholder of the input.",
+         "description": "Text shown in the empty input.",
          "name": "placeholder",
          "type": "string"
         },
         {
-         "description": "Content of an option (default: its label).",
-         "name": "renderOption",
-         "type": "((option: AutocompleteOption, state: { selected: boolean; }) => ReactNode)"
+         "description": "Icon of the open button (it turns while open). Default: a chevron.",
+         "name": "popupIcon",
+         "type": "ReactNode"
         },
         {
-         "description": "The field's size.",
+         "description": "The value can't change: the list doesn't open and chips have no remove button.",
+         "name": "readOnly",
+         "type": "boolean"
+        },
+        {
+         "description": "Draws a group of options (default: a `ListSubheader` with the heading, then the options).",
+         "name": "renderGroup",
+         "type": "((params: AutocompleteRenderGroupParams) => ReactNode)"
+        },
+        {
+         "description": "Content of an option (default: its label).",
+         "name": "renderOption",
+         "type": "((option: AutocompleteOptionOf<T>, state: { selected: boolean; }) => ReactNode)"
+        },
+        {
+         "description": "Draws the chosen value(s) in the field instead of the built-in chips; spread `getItemProps({ index })` on each item. A single value drawn this way leaves the input empty.",
+         "name": "renderValue",
+         "type": "((value: V | V[], getItemProps: (args: { index: number; }) => AutocompleteItemProps) => ReactNode)"
+        },
+        {
+         "description": "The pointer leaving the list removes the highlight it made.",
+         "name": "resetHighlightOnMouseLeave",
+         "type": "boolean"
+        },
+        {
+         "default": "!freeSolo",
+         "description": "The first click in the field selects its text.",
+         "name": "selectOnFocus",
+         "type": "boolean"
+        },
+        {
+         "default": "\"medium\"",
+         "description": "`medium` or `small` (dense).",
          "name": "size",
          "type": "\"medium\" | \"small\""
         },
         {
-         "description": "Controlled value: an option value (or typed text with `freeSolo`), values with `multiple`, or `null`.",
+         "description": "Controlled value: an option's value (or typed text with `freeSolo`), values with `multiple`, or `null`.",
          "name": "value",
-         "type": "AutocompleteValue"
+         "type": "AutocompleteValue<V>"
         },
         {
-         "description": "The field's variant: `outlined`, `filled` or `standard`.",
+         "default": "\"outlined\"",
+         "description": "Outline, tinted fill or underline.",
          "name": "variant",
          "type": "\"filled\" | \"outlined\" | \"standard\""
+        },
+        {
+         "description": "Draw only the options in view, for long lists (groups aren't shown).",
+         "name": "virtualize",
+         "type": "boolean"
         }
        ]
       }
@@ -2624,13 +2933,30 @@
      {
       "name": "AutocompleteCloseReason",
       "type": "\"blur\" | \"escape\" | \"outside\" | \"select\" | \"toggle\""
+     },
+     {
+      "name": "AutocompleteHighlightReason",
+      "type": "\"auto\" | \"keyboard\" | \"mouse\" | \"touch\""
+     },
+     {
+      "name": "AutocompleteOpenReason",
+      "type": "\"focus\" | \"input\" | \"keyboard\" | AutocompleteCloseReason"
+     },
+     {
+      "name": "AutocompleteOptionOf",
+      "type": "T extends string ? AutocompleteOption : T"
+     },
+     {
+      "name": "AutocompleteValue",
+      "type": "V | V[] | null"
      }
     ]
    },
    "guide": "autocomplete",
    "name": "autocomplete",
    "react": [
-    "Autocomplete"
+    "Autocomplete",
+    "useAutocomplete"
    ],
    "referenceUrl": "https://minimals.cc/components/mui/autocomplete",
    "related": [
@@ -2638,6 +2964,7 @@
     "chip",
     "icon-button",
     "label",
+    "list",
     "popover",
     "text-field",
     "typography"
@@ -2692,6 +3019,121 @@
        "name": "limitTags"
       },
       {
+       "attr": "data-ok-auto-complete",
+       "description": "Inline completion: the input shows the highlighted option, the rest of its label selected.",
+       "kind": "flag",
+       "name": "autoComplete"
+      },
+      {
+       "attr": "data-ok-auto-select",
+       "description": "Leaving the field picks the option highlighted by the keys or `autoHighlight` (free solo: the text).",
+       "kind": "flag",
+       "name": "autoSelect"
+      },
+      {
+       "attr": "data-ok-blur-on-select",
+       "default": "true",
+       "description": "The input loses focus after a pick: always (`true`), or only after a mouse or touch pick.",
+       "kind": "style",
+       "name": "blurOnSelect",
+       "optional": true,
+       "values": [
+        "true",
+        "mouse",
+        "touch"
+       ]
+      },
+      {
+       "attr": "data-ok-clear-on-blur",
+       "default": "true",
+       "description": "Leaving the field puts back the chosen label (or empties the text). Default: on, off in free solo.",
+       "kind": "style",
+       "name": "clearOnBlur",
+       "optional": true,
+       "values": [
+        "true",
+        "false"
+       ]
+      },
+      {
+       "attr": "data-ok-clear-on-escape",
+       "description": "Escape on a closed list clears the value and the text.",
+       "kind": "flag",
+       "name": "clearOnEscape"
+      },
+      {
+       "attr": "data-ok-disabled-items-focusable",
+       "description": "Disabled options can be highlighted (not picked).",
+       "kind": "flag",
+       "name": "disabledItemsFocusable"
+      },
+      {
+       "attr": "data-ok-disable-list-wrap",
+       "description": "The arrows stop at the first and last options instead of wrapping.",
+       "kind": "flag",
+       "name": "disableListWrap"
+      },
+      {
+       "attr": "data-ok-filter-selected-options",
+       "description": "Chosen options are left out of the list.",
+       "kind": "flag",
+       "name": "filterSelectedOptions"
+      },
+      {
+       "attr": "data-ok-handle-home-end-keys",
+       "default": "true",
+       "description": "Home and End highlight the first and last options. Default: on, off in free solo.",
+       "kind": "style",
+       "name": "handleHomeEndKeys",
+       "optional": true,
+       "values": [
+        "true",
+        "false"
+       ]
+      },
+      {
+       "attr": "data-ok-include-input-in-list",
+       "description": "The arrows move from the last or first option back to the input.",
+       "kind": "flag",
+       "name": "includeInputInList"
+      },
+      {
+       "attr": "data-ok-loading",
+       "description": "Options are loading: the list shows the loading text while it has no options.",
+       "kind": "flag",
+       "name": "loading"
+      },
+      {
+       "attr": "data-ok-read-only",
+       "description": "The value can't change: the list doesn't open and chips have no remove button.",
+       "kind": "flag",
+       "name": "readOnly"
+      },
+      {
+       "attr": "data-ok-reset-highlight-on-mouse-leave",
+       "description": "The pointer leaving the list removes the highlight it made.",
+       "kind": "flag",
+       "name": "resetHighlightOnMouseLeave"
+      },
+      {
+       "attr": "data-ok-select-on-focus",
+       "default": "true",
+       "description": "The first click in the field selects its text. Default: on, off in free solo.",
+       "kind": "style",
+       "name": "selectOnFocus",
+       "optional": true,
+       "values": [
+        "true",
+        "false"
+       ]
+      },
+      {
+       "attr": "data-ok-virtualize",
+       "description": "Long lists draw only the options in view (groups aren't shown).",
+       "kind": "flag",
+       "name": "virtualize"
+      },
+      {
        "attr": "aria-selected",
        "description": "Chosen option(s) (`value` / `defaultValue`).",
        "event": "ok:autocomplete:change",
@@ -2709,12 +3151,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-autocomplete][data-ok-multiple]?[data-ok-free-solo]?[data-ok-disable-close-on-select]?\n    [data-ok-disable-clearable]?[data-ok-open-on-focus]?[data-ok-auto-highlight]?[data-ok-limit-tags]?[data-ok-open]?\n  div[data-ok-text-field] (TextField, fullWidth)\n    label[data-ok-text-field-label][for]\n    div[data-ok-text-field-control]\n      span[data-ok-text-field-adornment=\"start\"]?                       (multiple, with values)\n        span[data-ok-chip][data-ok-variant=soft][data-ok-size=small][data-ok-value][hidden]? … · span[data-ok-autocomplete-more]?\n      input[data-ok-text-field-input][role=combobox][aria-autocomplete=list][aria-expanded][aria-controls]\n           [aria-activedescendant]?[autocomplete=off]\n      span[data-ok-text-field-adornment=\"end\"]\n        button[data-ok-icon-button][data-ok-autocomplete-clear][aria-label][tabindex=-1][hidden]?   (not disableClearable)\n        button[data-ok-icon-button][data-ok-autocomplete-toggle][aria-label][data-ok-label-open|close][tabindex=-1]  (not freeSolo)\n      fieldset (outlined)\n  template[data-ok-autocomplete-tag]                                   (HTML, multiple: a chip)\n  div[data-ok-popover][popover=manual][data-ok-placement=bottom-start][data-ok-disable-auto-focus]\n     [data-ok-disable-restore-focus][data-ok-autocomplete-paper]            (--_ok-autocomplete-width)\n    ul[role=listbox][id][aria-label]\n      li[role=option][id][data-ok-value][aria-selected][aria-disabled]?[hidden]?[data-ok-focused]?\n    div[data-ok-autocomplete-no-options][hidden]?\n```",
+     "body": "```\ndiv[data-ok-autocomplete][data-ok-multiple]?[data-ok-free-solo]?[data-ok-disable-close-on-select]?\n    [data-ok-disable-clearable]?[data-ok-open-on-focus]?[data-ok-auto-highlight]?[data-ok-limit-tags]?[data-ok-open]?\n    [data-ok-auto-complete]?[data-ok-auto-select]?[data-ok-blur-on-select]?[data-ok-clear-on-blur]?\n    [data-ok-clear-on-escape]?[data-ok-disabled-items-focusable]?[data-ok-disable-list-wrap]?\n    [data-ok-filter-selected-options]?[data-ok-handle-home-end-keys]?[data-ok-include-input-in-list]?\n    [data-ok-loading]?[data-ok-read-only]?[data-ok-reset-highlight-on-mouse-leave]?[data-ok-select-on-focus]?\n    [data-ok-virtualize]?\n  div[data-ok-text-field] (TextField, fullWidth)\n    label[data-ok-text-field-label][for]\n    div[data-ok-text-field-control]\n      span[data-ok-text-field-adornment=\"start\"]?                       (multiple, with values)\n        span[data-ok-chip][data-ok-variant=soft][data-ok-size=small][data-ok-value][hidden]? … · span[data-ok-autocomplete-more]?\n      input[data-ok-text-field-input][role=combobox][aria-autocomplete=list|both][aria-expanded][aria-controls]\n           [aria-activedescendant]?[autocomplete=off][readonly]?\n      span[data-ok-text-field-adornment=\"end\"]\n        button[data-ok-icon-button][data-ok-autocomplete-clear][aria-label][tabindex=-1][hidden]?   (not disableClearable)\n        button[data-ok-icon-button][data-ok-autocomplete-toggle][aria-label][data-ok-label-open|close][tabindex=-1][hidden]?\n              (not freeSolo, or forcePopupIcon; hidden while read only)\n      fieldset (outlined)\n  template[data-ok-autocomplete-tag]                (HTML: the chip of a value; multiple, or a single value drawn as a chip)\n  div[data-ok-popover][popover=manual][data-ok-placement=bottom-start][data-ok-disable-auto-focus]\n     [data-ok-disable-restore-focus][data-ok-autocomplete-paper]            (--_ok-autocomplete-width)\n    ul[role=listbox][id][aria-label]                        (virtualized: --_ok-autocomplete-before|after)\n      li[data-ok-list-subheader][role=presentation][hidden]?   (groupBy: ListSubheader before its options)\n      li[role=option][id][data-ok-value][aria-selected][aria-disabled]?[hidden]?[data-ok-focused]?\n        [aria-setsize][aria-posinset]                          (virtualized: the window in view only)\n    div[data-ok-autocomplete-loading][hidden]?              (React: when `loading` is given)\n    div[data-ok-autocomplete-no-options][hidden]?\n```",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `autocomplete`: listed under \"options\".)\n\nOther props: `options` (`(string | { value, label, disabled? })[]`), `value` / `defaultValue` /\n`onChange(value)` (`string | null`, `string[]` multiple), `inputValue` / `onInputChange(text)`,\n`open` / `onOpenChange(open, reason)`, `getLimitTagsText(more)`, `filterOptions(options, text)`,\n`renderOption(option, { selected })`, `noOptionsText`, `clearText`, `openText`, `closeText`, and\nTextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,\n`id`, `name`.\n\nAPI mapping: see \"Upstream API mapping\" below.",
+     "body": "(Options of `autocomplete`: listed under \"options\".)\n\nOther props: `options` (`(string | { value, label, disabled? })[]`, or any objects with\n`getOptionLabel`), `value` / `defaultValue` / `onChange(value)` (`V | null`, `V[]` multiple; `V` is\nthe option's `value`, the option itself with `getOptionLabel`, or `getOptionValue(option)`),\n`inputValue` / `onInputChange(text)`, `open` / `onOpenChange(open, reason)`,\n`onHighlightChange(option | null, reason)` (`keyboard` · `mouse` · `touch` · `auto`),\n`getLimitTagsText(more)`, `filterOptions(options, text)` (`createFilterOptions(config)` makes one),\n`getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled`,\n`groupBy(option)`, `renderGroup({ key, group, children })`, `renderOption(option, { selected })`,\n`renderValue(value, getItemProps)`, `noOptionsText`, `loadingText`, `clearText`, `openText`,\n`closeText`, `clearIcon`, `popupIcon`, `forcePopupIcon` (`\"auto\"`), `ListboxComponent`, and\nTextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,\n`id`, `name`. React-only by nature (functions, elements); their HTML equivalents: groups are\n`li[data-ok-list-subheader]` in the markup (or `group` in `setOptions`), `renderValue` is the chip\ntemplate, icons and the open button are markup. `filterOptions` / `createFilterOptions` and object\nvalues have no HTML equivalent: HTML values are the options' `data-ok-value` strings and the runtime\nfilters with the default rule. `useAutocomplete(props)` is the component's state as a hook (prop\ngetters `getRootProps`, `getInputLabelProps`, `getInputProps`, `getListboxProps`,\n`getOptionProps({ option })`, `getClearProps`, `getPopupIndicatorProps`, `getItemProps({ index })`;\n`groupedOptions`, `filteredOptions`, `popupOpen`, `value`, `inputValue`, `highlightedIndex`); HTML\nhas no hook (the runtime is the behavior).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -2724,7 +3166,7 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "Typing filters (label contains the text, case and accents ignored), opens and resets the highlight\n(`autoHighlight`: first). Arrow keys open a closed list, then move the highlight (wrapping,\nskipping disabled); Page keys move 5; Home / End (not free solo). Enter picks the highlighted\noption or commits free text. A pick replaces the value (single, text = label) or toggles it\n(multiple, text cleared); the list closes unless `disableCloseOnSelect` (multiple). Escape closes.\nBackspace in an empty multiple field removes the last chip; chip delete buttons remove theirs.\nThe clear button empties value and text; the toggle opens / closes; a press on a closed field\nopens it. Blur closes and (not free solo) puts back the chosen label (multiple: empty). An outside\npress closes (Popover). `limitTags`: extra chips `hidden` while the field isn't focused, \"+N\".",
+     "body": "Typing filters (label contains the text, case and accents ignored), opens and resets the highlight\n(`autoHighlight`: first). Arrow keys open a closed list, then move the highlight (wrapping,\nskipping disabled); Page keys move 5; Home / End (not free solo). Enter picks the highlighted\noption or commits free text. A pick replaces the value (single, text = label) or toggles it\n(multiple, text cleared); the list closes unless `disableCloseOnSelect` (multiple). Escape closes.\nBackspace in an empty multiple field removes the last chip; chip delete buttons remove theirs.\nThe clear button empties value and text; the toggle opens / closes; a press on a closed field\nopens it. Blur closes and (not free solo) puts back the chosen label (multiple: empty). An outside\npress closes (Popover). `limitTags`: extra chips `hidden` while the field isn't focused, \"+N\".\n\nPhase 4 options: `autoComplete` shows the highlighted option's label in the input (arrow keys, or\ntyping with `autoHighlight` when the label starts with the text) with the untyped rest selected\n(`aria-autocomplete=both`); deleting never completes. `autoSelect`: blur picks the option highlighted\nby keys / `autoHighlight` (free solo: commits the text). `clearOnBlur` (default `!freeSolo`) is the\nblur reset above. `blurOnSelect` (`true` · `mouse` · `touch`) blurs after a pick by that pointer.\n`clearOnEscape`: Escape on a closed list clears. `selectOnFocus` (default `!freeSolo`): the first\nclick after focus selects the text. `includeInputInList`: the arrows go back to the input (-1) past\nan end; `disableListWrap`: they stop. `disabledItemsFocusable`: disabled options take the highlight,\nEnter does nothing. `handleHomeEndKeys` (default `!freeSolo`). `resetHighlightOnMouseLeave`: the\npointer leaving the listbox removes a highlight it made. `filterSelectedOptions` hides chosen\noptions. `readOnly`: the list never opens, no clear, toggle `hidden`, chips without delete buttons,\nno Backspace removal. `loading`: the loading text shows while no option is visible (no options\nhidden then). Groups: consecutive options with the same `groupBy` key share a heading, hidden\nwhile none of them is visible. `virtualize`: only the visible options in view are drawn (overscan\n4), padded by `::before` / `::after` spacers of the rows above and below (stride measured from the\nfirst drawn option, 38px by default); a keyboard highlight scrolls its row into the window; groups\naren't shown; React draws none while closed, the HTML runtime keeps the option elements in memory.\nA single value drawn by `renderValue` (HTML: a single field with a chip template) leaves the input\nempty; Backspace on the empty input removes it.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -2739,7 +3181,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML `ok:autocomplete:change` (cancelable, `{ value }`), `ok:autocomplete:open` / `close`\n(`{ reason }`). Instance `{ value, setValue(value), isOpen, open(), close() }`.\nReact `onChange`, `onInputChange`, `onOpenChange(open, reason)`.",
+     "body": "HTML `ok:autocomplete:change` (cancelable, `{ value }`), `ok:autocomplete:open` / `close`\n(`{ reason }`), `ok:autocomplete:highlight` (`{ value, reason }`). Instance `{ value,\nsetValue(value), setOptions(options), isOpen, open(), close() }`; `setOptions` takes strings or\n`{ value, label, disabled?, group? }` and builds plain text options (and headings unless\nvirtualized). `data-ok-loading` and `data-ok-read-only` may change at any time (observed).\nReact `onChange`, `onInputChange`, `onOpenChange(open, reason)`, `onHighlightChange(option, reason)`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -2749,12 +3191,12 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Autocomplete`, mui.com/material-ui/api/autocomplete/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `options`, `value`, `defaultValue`, `inputValue`, `open`, `multiple`, `freeSolo`, `disableCloseOnSelect`, `disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`, `getLimitTagsText`, `filterOptions`, `renderOption`, `noOptionsText`, `clearText`, `openText`, `closeText`, `disabled`, `id`, `size` | same | kept | `options`: strings or `{ value, label, disabled? }` |\n| `onChange(event, value, reason, details)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `onInputChange(event, value, reason)` | `onInputChange(text)` | renamed | |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | |\n| `renderInput` | TextField props (`label`, `placeholder`, `helperText`, `error`, `variant`, `name`) | renamed | the field is built in |\n| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | options as `{ value, label, disabled? }` | renamed | string values only; object values deferred |\n| `fullWidth` | — | not applicable | the field always fills its container (reference) |\n| `groupBy`, `renderGroup` | — | deferred (4.1) | `renderGroup` goes with `groupBy` |\n| `loading`, `loadingText` | — | deferred (4.1) | |\n| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | — | deferred (4.1) | |\n| virtualization, `slots.listbox` (`ListboxComponent`) | — | deferred (4.1) | |\n| `readOnly` | — | deferred | |\n| `onHighlightChange(event, option, reason)` | — | deferred | |\n| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | — | deferred | `handleHomeEndKeys` follows MUI's default (on unless free solo), not configurable |\n| `renderValue` (MUI `renderTags`) | — | deferred | chips are built in |\n| `clearIcon`, `popupIcon`, `forcePopupIcon` | — | deferred | |\n| `useAutocomplete`, `createFilterOptions` | core `filterOptions` / `nextAutocompleteValue` | deferred | no public hook / filter factory |\n| `slots.paper`, `slots.popper`, `disablePortal` (`PaperComponent`, `PopperComponent`) | Popover | not applicable | top layer, no portal |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Autocomplete`, mui.com/material-ui/api/autocomplete/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `options`, `value`, `defaultValue`, `inputValue`, `open`, `multiple`, `freeSolo`, `disableCloseOnSelect`, `disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`, `getLimitTagsText`, `filterOptions`, `renderOption`, `noOptionsText`, `clearText`, `openText`, `closeText`, `disabled`, `id`, `size` | same | kept | `options`: strings or `{ value, label, disabled? }` |\n| `onChange(event, value, reason, details)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `onInputChange(event, value, reason)` | `onInputChange(text)` | renamed | |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | |\n| `renderInput` | TextField props (`label`, `placeholder`, `helperText`, `error`, `variant`, `name`) | renamed | the field is built in |\n| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | same | kept | React: object options and values (4.18.24); without them options stay `{ value, label, disabled? }` with string values; HTML values are `data-ok-value` strings |\n| `fullWidth` | — | not applicable | the field always fills its container (reference) |\n| `groupBy`, `renderGroup` | same | kept | React functions; HTML: `li[data-ok-list-subheader]` headings in the markup or `group` in `setOptions` |\n| `loading`, `loadingText` | same | kept | HTML `data-ok-loading` + `[data-ok-autocomplete-loading]` |\n| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | same | kept | `selectOnFocus` defaults to `!freeSolo` (MUI) |\n| virtualization | `virtualize` | renamed | MUI virtualizes through a react-window `ListboxComponent`; Owlky draws the window itself in both implementations |\n| `slots.listbox` (`ListboxComponent`) | `ListboxComponent` | kept | React only (an element type); HTML writes its own listbox element |\n| `readOnly` | same | kept | HTML `data-ok-read-only` (+ `readonly` on the input) |\n| `onHighlightChange(event, option, reason)` | `onHighlightChange(option, reason)` | renamed | value-first; HTML `ok:autocomplete:highlight` |\n| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | same | kept | `clearOnBlur`, `handleHomeEndKeys` default to `!freeSolo` (HTML `\"true\"` / `\"false\"`, absent = that default) |\n| `renderValue` (MUI `renderTags`) | same | kept | `renderValue(value, getItemProps)`; HTML: the chip `<template data-ok-autocomplete-tag>` (single fields too) |\n| `clearIcon`, `popupIcon`, `forcePopupIcon` | same | kept | React nodes; HTML: the buttons' markup (an omitted toggle = `forcePopupIcon={false}`) |\n| `useAutocomplete`, `createFilterOptions` | same | kept | `useAutocomplete` in `@owlky/react` (React only, a hook); `createFilterOptions` in core (React `filterOptions`; HTML filters with the default rule) |\n| `slots.paper`, `slots.popper`, `disablePortal` (`PaperComponent`, `PopperComponent`) | Popover | not applicable | top layer, no portal |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
     {
-     "body": "React renders `data-ok-runtime=\"off\"` on the root and the Popover. The chip `<template>` is\nHTML-only (parity skips templates); hidden chips / options / no-options are skipped by parity.\nCountry flags of the reference are not reproduced: options show the country code on a Label.",
+     "body": "Snippets of the Grouped, Asynchronous requests, Single value rendering and Virtualization stories are\ngenerated from the React examples: `pnpm build && node apps/storybook/scripts/autocomplete-snippets.mjs`\n(the Playground and Country select snippets are written by hand). A virtualized listbox is empty\nwhile closed in both implementations.\nReact renders `data-ok-runtime=\"off\"` on the root and the Popover. The chip `<template>` is\nHTML-only (parity skips templates); hidden chips / options / no-options are skipped by parity.\nCountry flags of the reference are not reproduced: options show the country code on a Label.",
      "id": "parity-notes",
      "title": "Parity notes"
     }
@@ -2784,6 +3226,42 @@
       "country-code.html",
       "country-label.html",
       "country-variants.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/list.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- With categories -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-grouped\">With categories</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-grouped-listbox\" autocomplete=\"off\" id=\"ac-grouped\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>With categories</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-grouped-listbox\" aria-label=\"With categories\">\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">A</li>\n        <li role=\"option\" id=\"ac-grouped-option-0\" data-ok-value=\"Apple\" aria-selected=\"false\">Apple</li>\n        <li role=\"option\" id=\"ac-grouped-option-1\" data-ok-value=\"Apricot\" aria-selected=\"false\">Apricot</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">B</li>\n        <li role=\"option\" id=\"ac-grouped-option-2\" data-ok-value=\"Banana\" aria-selected=\"false\">Banana</li>\n        <li role=\"option\" id=\"ac-grouped-option-3\" data-ok-value=\"Blueberry\" aria-selected=\"false\">Blueberry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">C</li>\n        <li role=\"option\" id=\"ac-grouped-option-4\" data-ok-value=\"Cherry\" aria-selected=\"false\">Cherry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">G</li>\n        <li role=\"option\" id=\"ac-grouped-option-5\" data-ok-value=\"Grape\" aria-selected=\"false\">Grape</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">K</li>\n        <li role=\"option\" id=\"ac-grouped-option-6\" data-ok-value=\"Kiwi\" aria-selected=\"false\">Kiwi</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">L</li>\n        <li role=\"option\" id=\"ac-grouped-option-7\" data-ok-value=\"Lemon\" aria-selected=\"false\">Lemon</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">M</li>\n        <li role=\"option\" id=\"ac-grouped-option-8\" data-ok-value=\"Mango\" aria-selected=\"false\">Mango</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">O</li>\n        <li role=\"option\" id=\"ac-grouped-option-9\" data-ok-value=\"Orange\" aria-selected=\"false\">Orange</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">P</li>\n        <li role=\"option\" id=\"ac-grouped-option-10\" data-ok-value=\"Peach\" aria-selected=\"false\">Peach</li>\n        <li role=\"option\" id=\"ac-grouped-option-11\" data-ok-value=\"Pear\" aria-selected=\"false\">Pear</li>\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>",
+     "id": "components-autocomplete--grouped",
+     "name": "Grouped",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Apricot\", \"Banana\", \"Blueberry\", \"Cherry\", \"Grape\", \"Kiwi\", \"Lemon\", \"Mango\", \"Orange\", \"Peach\", \"Pear\"];\n\nexport function Grouped() {\n  // Sort the options by the same key as groupBy, or a heading shows twice\n  return (\n    <Autocomplete\n      id=\"ac-grouped\"\n      label=\"With categories\"\n      options={fruits}\n      groupBy={(option) => option.label.charAt(0)}\n    />\n  );\n}",
+     "snippets": [
+      "grouped-categories.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/checkbox.css + components/label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Load on open -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-async\">Asynchronous</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-async-listbox\" autocomplete=\"off\" id=\"ac-async\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>Asynchronous</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-async-listbox\" aria-label=\"Asynchronous\">\n      </ul>\n      <div data-ok-autocomplete-loading hidden>Loading…</div>\n      <div data-ok-autocomplete-no-options>No options</div>\n    </div>\n  </div>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\nconst element = document.getElementById(\"ac-async\").closest(\"[data-ok-autocomplete]\");\nconst autocomplete = getRuntime().get(element, \"autocomplete\");\n\n// Load the options the first time the list opens; \"Loading…\" shows meanwhile\nelement.addEventListener(\n  \"ok:autocomplete:open\",\n  async () => {\n    element.setAttribute(\"data-ok-loading\", \"\");\n    autocomplete.setOptions(await fetchFilms());\n    element.removeAttribute(\"data-ok-loading\");\n  },\n  { once: true },\n);\n</script>",
+     "id": "components-autocomplete--asynchronous",
+     "name": "Asynchronous requests",
+     "react": "import { Autocomplete } from \"@owlky/react\";\nimport { useEffect, useState } from \"react\";\n\nconst FILMS = [\n  \"Alien\",\n  \"Amélie\",\n  \"Casablanca\",\n  \"City of God\",\n  \"Inception\",\n  \"Parasite\",\n  \"Spirited Away\",\n  \"The Matrix\",\n];\n\n/** Waits like a request to a server would. */\nconst wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));\n\n/** Loads the options the first time the list opens, and shows \"Loading…\" meanwhile. */\nexport function LoadOnOpenDemo() {\n  const [open, setOpen] = useState(false);\n  const [options, setOptions] = useState<string[]>([]);\n  const loading = open && options.length === 0;\n\n  useEffect(() => {\n    if (!loading) return;\n    let active = true;\n    wait(1000).then(() => {\n      if (active) setOptions(FILMS);\n    });\n    return () => {\n      active = false;\n    };\n  }, [loading]);\n\n  return (\n    <div className=\"sb-autocomplete\">\n      <Autocomplete\n        id=\"ac-async\"\n        label=\"Asynchronous\"\n        options={options}\n        loading={loading}\n        open={open}\n        onOpenChange={setOpen}\n      />\n    </div>\n  );\n}\n",
+     "snippets": [
+      "async-load-on-open.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/checkbox.css + components/label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Single value rendering -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <template data-ok-autocomplete-tag><span data-ok-chip data-ok-variant=\"soft\" data-ok-color=\"default\" data-ok-size=\"small\" data-ok-item-index=\"0\" tabindex=\"-1\"><span data-ok-chip-action><span data-ok-chip-label></span></span><button type=\"button\" data-ok-chip-delete aria-label=\"Remove\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></button></span></template>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-single-chip\">Fruit</label>\n      <div data-ok-text-field-control>\n        <span data-ok-text-field-adornment=\"start\">\n          <span data-ok-chip data-ok-variant=\"soft\" data-ok-color=\"default\" data-ok-size=\"small\" data-ok-value=\"Mango\" data-ok-item-index=\"0\" tabindex=\"-1\">\n            <span data-ok-chip-action>\n              <span data-ok-chip-label>Mango</span>\n            </span>\n            <button type=\"button\" data-ok-chip-delete aria-label=\"Remove Mango\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></button>\n          </span>\n        </span>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-single-chip-listbox\" autocomplete=\"off\" id=\"ac-single-chip\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>Fruit</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-single-chip-listbox\" aria-label=\"Fruit\">\n        <li role=\"option\" id=\"ac-single-chip-option-0\" data-ok-value=\"Apple\" aria-selected=\"false\">Apple</li>\n        <li role=\"option\" id=\"ac-single-chip-option-1\" data-ok-value=\"Apricot\" aria-selected=\"false\">Apricot</li>\n        <li role=\"option\" id=\"ac-single-chip-option-2\" data-ok-value=\"Banana\" aria-selected=\"false\">Banana</li>\n        <li role=\"option\" id=\"ac-single-chip-option-3\" data-ok-value=\"Blueberry\" aria-selected=\"false\">Blueberry</li>\n        <li role=\"option\" id=\"ac-single-chip-option-4\" data-ok-value=\"Cherry\" aria-selected=\"false\">Cherry</li>\n        <li role=\"option\" id=\"ac-single-chip-option-5\" data-ok-value=\"Grape\" aria-selected=\"false\">Grape</li>\n        <li role=\"option\" id=\"ac-single-chip-option-6\" data-ok-value=\"Kiwi\" aria-selected=\"false\">Kiwi</li>\n        <li role=\"option\" id=\"ac-single-chip-option-7\" data-ok-value=\"Lemon\" aria-selected=\"false\">Lemon</li>\n        <li role=\"option\" id=\"ac-single-chip-option-8\" data-ok-value=\"Mango\" aria-selected=\"true\">Mango</li>\n        <li role=\"option\" id=\"ac-single-chip-option-9\" data-ok-value=\"Orange\" aria-selected=\"false\">Orange</li>\n        <li role=\"option\" id=\"ac-single-chip-option-10\" data-ok-value=\"Peach\" aria-selected=\"false\">Peach</li>\n        <li role=\"option\" id=\"ac-single-chip-option-11\" data-ok-value=\"Pear\" aria-selected=\"false\">Pear</li>\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>",
+     "id": "components-autocomplete--single-value",
+     "name": "Single value rendering",
+     "react": "import { Autocomplete, Chip } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Banana\", \"Cherry\", \"Mango\"];\n\nexport function SingleValue() {\n  return (\n    <Autocomplete\n      id=\"ac-single-chip\"\n      label=\"Fruit\"\n      options={fruits}\n      defaultValue=\"Mango\"\n      renderValue={(value, getItemProps) => (\n        <Chip size=\"small\" variant=\"soft\" label={value} {...getItemProps({ index: 0 })} />\n      )}\n    />\n  );\n}",
+     "snippets": [
+      "single-chip.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/checkbox.css + components/label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- 10,000 options -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete data-ok-virtualize>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-virtual\">10,000 options</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-virtual-listbox\" autocomplete=\"off\" id=\"ac-virtual\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>10,000 options</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-virtual-listbox\" aria-label=\"10,000 options\">\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\nconst element = document.getElementById(\"ac-virtual\").closest(\"[data-ok-autocomplete]\");\nconst options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n\n// The list draws only the options in view (data-ok-virtualize)\ngetRuntime().get(element, \"autocomplete\").setOptions(options);\n</script>",
+     "id": "components-autocomplete--virtualization",
+     "name": "Virtualization",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n\nexport function Virtualized() {\n  // The list draws only the options in view\n  return <Autocomplete id=\"ac-virtual\" label=\"10,000 options\" virtualize options={options} />;\n}",
+     "snippets": [
+      "virtualization-list.html"
      ]
     }
    ],
@@ -50389,6 +50867,12 @@
        ],
        "methods": [
         {
+         "description": "A non-linear scale (React `scale`): `scale(value)` is shown and announced (`aria-valuenow`), formatted by `format` (else `data-ok-label-value`). `null` removes it.",
+         "kind": "method",
+         "name": "setScale",
+         "type": "(scale: ((value: number) => number) | null, format?: ((value: number, index: number) => string) | null | undefined) => void"
+        },
+        {
          "description": "Moves the thumbs to `value` (snapped to the steps), without emitting events.",
          "kind": "method",
          "name": "setValue",
@@ -50497,6 +50981,14 @@
          "kind": "number",
          "min": 0,
          "name": "step"
+        },
+        {
+         "attr": "data-ok-shift-step",
+         "default": 10,
+         "description": "How far Page Up / Page Down and Shift + arrow keys move the thumb.",
+         "kind": "number",
+         "min": 0,
+         "name": "shiftStep"
         },
         {
          "attr": "value",
@@ -50654,6 +51146,16 @@
          "type": "\"horizontal\" | \"vertical\""
         },
         {
+         "description": "Turns a value into the one shown and announced (non-linear scales); `onChange` keeps the plain value.",
+         "name": "scale",
+         "type": "((value: number) => number)"
+        },
+        {
+         "description": "How far Page Up / Page Down and Shift + arrow keys move the thumb. Default 10.",
+         "name": "shiftStep",
+         "type": "number"
+        },
+        {
          "default": "\"medium\"",
          "description": "Rail 10 / 6px, thumb 20 / 16px.",
          "name": "size",
@@ -50663,6 +51165,11 @@
          "description": "Default 1; `null`: only the marks are valid values.",
          "name": "step",
          "type": "number | null"
+        },
+        {
+         "description": "Tab order of the thumbs' inputs.",
+         "name": "tabIndex",
+         "type": "number"
         },
         {
          "description": "`\"normal\"` (default), `\"inverted\"` or `false` (no track).",
@@ -50807,6 +51314,14 @@
        "name": "step"
       },
       {
+       "attr": "data-ok-shift-step",
+       "default": 10,
+       "description": "How far Page Up / Page Down and Shift + arrow keys move the thumb.",
+       "kind": "number",
+       "min": 0,
+       "name": "shiftStep"
+      },
+      {
        "attr": "value",
        "description": "Value of each thumb (`value` / `defaultValue`).",
        "event": "ok:slider:change",
@@ -50824,12 +51339,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-slider][data-ok-color][data-ok-size][data-ok-orientation][data-ok-track][data-ok-value-label-display]\n    [data-ok-min]?[data-ok-max]?[data-ok-step]?[data-ok-disabled]?[data-ok-disable-swap]?[data-ok-label-value]?\n  span[data-ok-slider-rail]\n  span[data-ok-slider-track]                                 (--_ok-slider-start / -end)\n  span[data-ok-slider-mark][data-ok-value][data-ok-active]?   (--_ok-slider-at)\n  span[data-ok-slider-mark-label][data-ok-value][aria-hidden]\n  span[data-ok-slider-thumb][data-ok-index][data-ok-active]?   (--_ok-slider-at)\n    input[type=range][min][max][step][value][aria-label|aria-labelledby][aria-valuetext]?[aria-orientation]?[name]?\n    span[data-ok-slider-value-label][aria-hidden]?\n```\nPositions are private custom properties (React `style`; HTML runtime CSSOM). Snippets carry none.",
+     "body": "```\nspan[data-ok-slider][data-ok-color][data-ok-size][data-ok-orientation][data-ok-track][data-ok-value-label-display]\n    [data-ok-min]?[data-ok-max]?[data-ok-step]?[data-ok-disabled]?[data-ok-disable-swap]?[data-ok-label-value]?\n  span[data-ok-slider-rail]\n  span[data-ok-slider-track]                                 (--_ok-slider-start / -end)\n  span[data-ok-slider-mark][data-ok-value][data-ok-active]?   (--_ok-slider-at)\n  span[data-ok-slider-mark-label][data-ok-value][aria-hidden]\n  span[data-ok-slider-thumb][data-ok-index][data-ok-active]?   (--_ok-slider-at)\n    input[type=range][min][max][step][value][aria-label|aria-labelledby][aria-valuetext]?[aria-valuenow]?\n         [aria-orientation]?[name]?[tabindex]?      (aria-valuenow: the scaled value, with `scale` only)\n    span[data-ok-slider-value-label][aria-hidden]?\n```\nPositions are private custom properties (React `style`; HTML runtime CSSOM). Snippets carry none.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `slider`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, activeThumb)`,\n`onChangeCommitted(value)`, `marks` (`true` · `{ value, label? }[]`; HTML: mark parts), `step`\n`null` (HTML `data-ok-step=\"0\"`), `valueLabelFormat(value, index)`, `getAriaValueText(value,\nindex)` (HTML `data-ok-label-value=\"{value}°C\"` for both), `getAriaLabel(index)`, `aria-label`,\n`aria-labelledby`, `name`.\n\nAPI mapping: see \"Upstream API mapping\" below.",
+     "body": "(Options of `slider`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, activeThumb)`,\n`onChangeCommitted(value)`, `marks` (`true` · `{ value, label? }[]`; HTML: mark parts), `step`\n`null` (HTML `data-ok-step=\"0\"`), `valueLabelFormat(value, index)`, `getAriaValueText(value,\nindex)` (HTML `data-ok-label-value=\"{value}°C\"` for both), `getAriaLabel(index)`, `aria-label`,\n`aria-labelledby`, `name`, `scale(value)` (the shown and announced value: value label,\n`getAriaValueText`, `aria-valuenow`; `onChange` keeps the plain value; HTML instance\n`setScale(scale, format?)`, a function by nature), `tabIndex` (on each thumb's input; HTML: write\n`tabindex` on the inputs).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -50839,12 +51354,12 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "Press on the rail moves the closest thumb there and starts a drag (Pointer Events, captured);\n`onCommit` on release. Thumbs swap when crossing (`disableSwap`: stop at the neighbour). Keys\n(on the focused input, handled by the controller): arrows ± step (marks only: next mark),\nPage Up / Down ± 10 steps, Home / End; RTL mirrors Left / Right. Native `input` events\n(assistive technologies) are applied too.",
+     "body": "Press on the rail moves the closest thumb there and starts a drag (Pointer Events, captured);\n`onCommit` on release. Thumbs swap when crossing (`disableSwap`: stop at the neighbour). Keys\n(on the focused input, handled by the controller): arrows ± step (marks only: next mark),\nPage Up / Down and Shift + arrows ± `shiftStep` (default 10, snapped to the step), Home / End; RTL mirrors Left / Right. Native `input` events\n(assistive technologies) are applied too.",
      "id": "behavior",
      "title": "Behavior"
     },
     {
-     "body": "| Key | Action |\n|---|---|\n| → / ↑, ← / ↓ | ± one step (or to the next mark) |\n| Page Up / Page Down | ± ten steps |\n| Home / End | min / max |",
+     "body": "| Key | Action |\n|---|---|\n| → / ↑, ← / ↓ | ± one step (or to the next mark) |\n| Page Up / Page Down, Shift + arrows | ± `shiftStep` (default 10) |\n| Home / End | min / max |",
      "id": "keyboard",
      "title": "Keyboard"
     },
@@ -50854,7 +51369,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML `ok:slider:change` (cancelable, `{ value: number[], activeThumb }`), `ok:slider:commit`\n(`{ value }`). Instance `{ value, setValue(value) }`.",
+     "body": "HTML `ok:slider:change` (cancelable, `{ value: number[], activeThumb }`), `ok:slider:commit`\n(`{ value }`). Instance `{ value, setValue(value), setScale(scale, format?) }`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -50864,7 +51379,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Slider`, mui.com/material-ui/api/slider/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `defaultValue`, `min`, `max`, `step` (incl. `null`), `marks`, `orientation`, `size`, `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`, `aria-label`, `aria-labelledby`, `disabled`, `disableSwap`, `name` | same | kept | |\n| `color` | `color` | kept | + `inherit` and every palette color (reference) |\n| `onChange(event, value, activeThumb)` | `onChange(value, activeThumb)` | renamed | value-first (ADR-0015) |\n| `onChangeCommitted(event, value)` | `onChangeCommitted(value)` | renamed | |\n| `aria-valuetext` | `getAriaValueText` | renamed | per thumb |\n| `scale`, `shiftStep` | — | deferred (4.2) | |\n| `tabIndex` | — | deferred | thumbs' inputs keep the default tab order |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 (custom thumbs / labels by composition) |",
+     "body": "Upstream: MUI `Slider`, mui.com/material-ui/api/slider/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `defaultValue`, `min`, `max`, `step` (incl. `null`), `marks`, `orientation`, `size`, `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`, `aria-label`, `aria-labelledby`, `disabled`, `disableSwap`, `name` | same | kept | |\n| `color` | `color` | kept | + `inherit` and every palette color (reference) |\n| `onChange(event, value, activeThumb)` | `onChange(value, activeThumb)` | renamed | value-first (ADR-0015) |\n| `onChangeCommitted(event, value)` | `onChangeCommitted(value)` | renamed | |\n| `aria-valuetext` | `getAriaValueText` | renamed | per thumb |\n| `scale` | same | kept | React function; HTML `setScale(scale, format?)` on the instance (a function can't be an attribute) |\n| `shiftStep` | same | kept | HTML `data-ok-shift-step`; Page keys now move by it (they moved 10 steps) |\n| `tabIndex` | same | kept | on each thumb's input; HTML: `tabindex` on the inputs |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 (custom thumbs / labels by composition) |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -50946,6 +51461,15 @@
      "react": "import { Slider, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst MARKS = [0, 250, 500, 750, 1000].map((value) => ({ value, label: `$${value}` }));\nconst price = (value: number) => `$${value}`;\n\n/** A price range with its bounds shown below. */\nexport function RangeDemo() {\n  const [value, setValue] = useState<number | number[]>([200, 370]);\n  const [low, high] = value as number[];\n  return (\n    <div className=\"sb-slider-range\">\n      <Slider\n        getAriaLabel={(index) => (index === 0 ? \"Minimum price\" : \"Maximum price\")}\n        value={value}\n        onChange={setValue}\n        min={0}\n        max={1000}\n        step={10}\n        marks={MARKS}\n        valueLabelDisplay=\"on\"\n        valueLabelFormat={price}\n        getAriaValueText={price}\n        data-ok-label-value={\"$\" + \"{value}\"}\n      />\n      <Typography\n        variant=\"subtitle2\"\n        component=\"p\"\n      >{`Min: ${price(low as number)} · Max: ${price(high as number)}`}</Typography>\n    </div>\n  );\n}\n",
      "snippets": [
       "range-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/slider.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Non-linear scale -->\n<span data-ok-slider data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-orientation=\"horizontal\" data-ok-track=\"normal\" data-ok-value-label-display=\"auto\" data-ok-min=\"5\" data-ok-max=\"30\">\n  <span data-ok-slider-rail></span>\n  <span data-ok-slider-track></span>\n  <span data-ok-slider-thumb data-ok-index=\"0\">\n    <input type=\"range\" min=\"5\" max=\"30\" step=\"1\" aria-label=\"Storage\" aria-valuenow=\"1024\" aria-valuetext=\"1 KB\" value=\"10\">\n    <span data-ok-slider-value-label aria-hidden=\"true\">1 KB</span>\n  </span>\n</span>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\nfunction bytes(value) {\n  const units = [\"B\", \"KB\", \"MB\", \"GB\", \"TB\"];\n  let size = value;\n  let unit = 0;\n  while (size >= 1024 && unit < units.length - 1) {\n    size /= 1024;\n    unit += 1;\n  }\n  return `${size} ${units[unit]}`;\n}\n\n// Show and announce 2 to the value, as a size in bytes\nconst slider = getRuntime().get(document.querySelector(\"[data-ok-slider]\"), \"slider\");\nslider.setScale((value) => 2 ** value, bytes);\n</script>",
+     "id": "components-slider--non-linear",
+     "name": "Non-linear scale",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Slider } from \"@owlky/react\";\n\n{/* Non-linear scale */}\n<Slider aria-label=\"Storage\" defaultValue={10} min={5} max={30} scale={undefined} valueLabelDisplay=\"auto\" valueLabelFormat={undefined} getAriaValueText={undefined} />\n",
+     "snippets": [
+      "non-linear-group.html"
      ]
     },
     {
@@ -52799,6 +53323,11 @@
       "dark": "#FFFFFF",
       "light": "#1C252E",
       "name": "--ok-text-primary"
+     },
+     {
+      "dark": "#919EAB",
+      "light": "#637381",
+      "name": "--ok-text-secondary"
      }
     ],
     "entries": [
@@ -52862,6 +53391,22 @@
        ],
        "parts": [
         {
+         "description": "The icon in the thumb while on (`checkedIcon`).",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-switch-checked-icon"
+        },
+        {
+         "description": "The icon in the thumb while off (`icon`).",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-switch-icon"
+        },
+        {
          "description": "The native checkbox (`role=\"switch\"`). It covers the control, invisible.",
          "elements": [
           "input"
@@ -52893,6 +53438,11 @@
        "native": "HTMLInputElement",
        "props": [
         {
+         "description": "Content of the thumb while the switch is on.",
+         "name": "checkedIcon",
+         "type": "ReactNode"
+        },
+        {
          "description": "Class of the root span (other props go to the input).",
          "name": "className",
          "type": "string"
@@ -52907,6 +53457,11 @@
          "description": "Negative margin on that side, to align the track with content.",
          "name": "edge",
          "type": "\"end\" | \"start\" | false"
+        },
+        {
+         "description": "Content of the thumb (such as an icon); also shown when on unless `checkedIcon` is set.",
+         "name": "icon",
+         "type": "ReactNode"
         },
         {
          "description": "Called with the new checked state.",
@@ -53014,12 +53569,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-switch][data-ok-color][data-ok-size][data-ok-edge]?\n  input[type=checkbox][role=switch][data-ok-switch-input]   (covers the target, opacity 0)\n  span[data-ok-switch-track][aria-hidden=\"true\"]\n  span[data-ok-switch-thumb][aria-hidden=\"true\"]\n```\nReact `ref` and the remaining props go to the **input**; `className` / `style` to the root.",
+     "body": "```\nspan[data-ok-switch][data-ok-color][data-ok-size][data-ok-edge]?\n  input[type=checkbox][role=switch][data-ok-switch-input]   (covers the target, opacity 0)\n  span[data-ok-switch-track][aria-hidden=\"true\"]\n  span[data-ok-switch-thumb][aria-hidden=\"true\"]\n    span[data-ok-switch-icon]?            (icon: shown while off, and while on without a checked icon)\n    span[data-ok-switch-checked-icon]?    (checkedIcon: shown while on)\n```\nReact `ref` and the remaining props go to the **input**; `className` / `style` to the root.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `switch`: listed under \"options\".)\n\nReact only: `onChange(checked)`. Deferred: `icon` / `checkedIcon` (thumb content; not on the\nreference — backlog). Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.",
+     "body": "(Options of `switch`: listed under \"options\".)\n\nReact only: `onChange(checked)`. `icon` / `checkedIcon` (React nodes) render the thumb's\nicon parts; HTML writes the same parts in the thumb. CSS picks the one for the state (`:has(> input:checked)`):\nicons are centered in the thumb at 80% of its size, `--ok-text-secondary`, the checked icon in the\ntrack color (`--_ok-main`). Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.",
      "id": "options",
      "title": "Options"
     },
@@ -53059,7 +53614,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Switch`, mui.com/material-ui/api/switch/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color`, `size`, `edge` | same | kept | `color` + `default` |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| `icon`, `checkedIcon` | — | deferred (4.3) | thumb content |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Switch`, mui.com/material-ui/api/switch/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color`, `size`, `edge` | same | kept | `color` + `default` |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| `icon`, `checkedIcon` | same | kept | thumb content (`data-ok-switch-icon` / `-checked-icon`); the thumb stays (MUI's icon replaces it) |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -53106,6 +53661,15 @@
      "snippets": [
       "colors-default.html",
       "colors-disabled.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/switch.css from @owlky/styles); no JavaScript needed. -->\n\n<!-- Thumb icons -->\n<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Icons\" checked>\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18\"></path><path d=\"M6 6l12 12\"></path></svg></span>\n    <span data-ok-switch-checked-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"></path></svg></span>\n  </span>\n</span>\n<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Icons off\">\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18\"></path><path d=\"M6 6l12 12\"></path></svg></span>\n    <span data-ok-switch-checked-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"></path></svg></span>\n  </span>\n</span>\n<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Daylight\" checked>\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z\"></path><path d=\"M12 2v2\"></path><path d=\"M12 20v2\"></path><path d=\"M2 12h2\"></path><path d=\"M20 12h2\"></path><path d=\"m4.9 4.9 1.4 1.4\"></path><path d=\"m17.7 17.7 1.4 1.4\"></path><path d=\"m4.9 19.1 1.4-1.4\"></path><path d=\"m17.7 6.3 1.4-1.4\"></path></svg></span>\n  </span>\n</span>",
+     "id": "components-switch--customization",
+     "name": "Customization",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Switch } from \"@owlky/react\";\n// DemoIcon: your own decorative SVG icons (aria-hidden=\"true\").\n\n{/* Thumb icons */}\n<Switch aria-label=\"Icons\" icon={<DemoIcon name=\"close\" />} checkedIcon={<DemoIcon name=\"check\" />} defaultChecked />\n<Switch aria-label=\"Icons off\" icon={<DemoIcon name=\"close\" />} checkedIcon={<DemoIcon name=\"check\" />} />\n<Switch aria-label=\"Daylight\" icon={<DemoIcon name=\"sun\" />} defaultChecked />\n",
+     "snippets": [
+      "customization-group.html"
      ]
     }
    ],
@@ -59535,6 +60099,133 @@
       }
      },
      {
+      "name": "Dropzone",
+      "react": {
+       "description": "`useDropzone` as a component with a render function (react-dropzone's `Dropzone`).",
+       "native": "HTMLElement",
+       "props": [
+        {
+         "description": "jpg\"] }` or labeled groups.",
+         "name": "accept",
+         "type": "UploadAccept"
+        },
+        {
+         "description": "Draws the drop target from the dropzone's state and prop getters.",
+         "name": "children",
+         "required": true,
+         "type": "(state: DropzoneState) => ReactNode"
+        },
+        {
+         "description": "Nothing can be dropped or picked.",
+         "name": "disabled",
+         "type": "boolean"
+        },
+        {
+         "description": "Rewrites the message of an error (localization).",
+         "name": "getErrorMessage",
+         "type": "UploadErrorMessage"
+        },
+        {
+         "description": "Reads the files of a drop, a pick or a paste (folders, for example).",
+         "name": "getFilesFromEvent",
+         "type": "UploadFilesFromEvent"
+        },
+        {
+         "description": "Most files per drop (multiple; 0 = no limit).",
+         "name": "maxFiles",
+         "type": "number"
+        },
+        {
+         "description": "Largest file in bytes.",
+         "name": "maxSize",
+         "type": "number"
+        },
+        {
+         "description": "Smallest file in bytes.",
+         "name": "minSize",
+         "type": "number"
+        },
+        {
+         "default": "true",
+         "description": "Several files per drop. (react-dropzone).",
+         "name": "multiple",
+         "type": "boolean"
+        },
+        {
+         "description": "A press on the root doesn't open the file dialog.",
+         "name": "noClick",
+         "type": "boolean"
+        },
+        {
+         "description": "Files can't be dropped.",
+         "name": "noDrag",
+         "type": "boolean"
+        },
+        {
+         "description": "Drag events stop at this root: outer dropzones and uploads ignore them.",
+         "name": "noDragEventsBubbling",
+         "type": "boolean"
+        },
+        {
+         "description": "Enter and Space on the root don't open the file dialog, and the root isn't focusable.",
+         "name": "noKeyboard",
+         "type": "boolean"
+        },
+        {
+         "description": "Pasted files are ignored.",
+         "name": "noPaste",
+         "type": "boolean"
+        },
+        {
+         "description": "Every drop, pick or paste: the accepted and the rejected files.",
+         "name": "onDrop",
+         "type": "((accepted: File[], rejections: UploadRejection[]) => void)"
+        },
+        {
+         "description": "Called with the accepted files of a drop, when there are some.",
+         "name": "onDropAccepted",
+         "type": "((files: File[]) => void)"
+        },
+        {
+         "description": "Called with the rejected files of a drop, when there are some.",
+         "name": "onDropRejected",
+         "type": "((rejections: UploadRejection[]) => void)"
+        },
+        {
+         "description": "A validator or `getFilesFromEvent` threw; the drop is discarded.",
+         "name": "onError",
+         "type": "((error: unknown) => void)"
+        },
+        {
+         "description": "The file dialog closed without files.",
+         "name": "onFileDialogCancel",
+         "type": "(() => void)"
+        },
+        {
+         "description": "The file dialog opened.",
+         "name": "onFileDialogOpen",
+         "type": "(() => void)"
+        },
+        {
+         "default": "true",
+         "description": "Files dropped outside the root don't open in the browser.",
+         "name": "preventDropOnDocument",
+         "type": "boolean"
+        },
+        {
+         "description": "Use the File System Access picker where the browser has it.",
+         "name": "useFsAccessApi",
+         "type": "boolean"
+        },
+        {
+         "description": "Checks each file; returns `null`, an error or a list of errors.",
+         "name": "validator",
+         "type": "UploadValidator"
+        }
+       ]
+      }
+     },
+     {
       "name": "UploadAvatar",
       "react": {
        "description": "A round photo picker: one image, shown in the circle.",
@@ -60024,10 +60715,12 @@
    "guide": "upload",
    "name": "upload",
    "react": [
+    "Dropzone",
     "Upload",
     "UploadAvatar",
     "UploadBox",
-    "UploadCloudIcon"
+    "UploadCloudIcon",
+    "useDropzone"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/upload",
    "related": [
@@ -60210,7 +60903,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML events (on the root): `ok:upload:drop` (cancelable, `{ accepted, rejections }`),\n`ok:upload:change` (`{ files, reason }`), `ok:upload:remove` (cancelable, `{ file }`),\n`ok:upload:upload` (`{ files }`), `ok:upload:dialogopen`, `ok:upload:dialogcancel`,\n`ok:upload:drag` (`{ active, verdict, global }`), `ok:upload:error` (`{ error }`).\nInstance: `files`, `rejections`, `dragState`, `isFileDialogActive`, `isProcessing`, `open()`,\n`setFiles()`, `removeFile()`, `clearFiles()`, `setValidator()`, `setErrorMessage()`,\n`setFilesFromEvent()`.",
+     "body": "HTML events (on the root): `ok:upload:drop` (cancelable, `{ accepted, rejections }`),\n`ok:upload:change` (`{ files, reason }`), `ok:upload:remove` (cancelable, `{ file }`),\n`ok:upload:upload` (`{ files }`), `ok:upload:dialogopen`, `ok:upload:dialogcancel`,\n`ok:upload:drag` (`{ active, verdict, global, rejections }`), `ok:upload:error` (`{ error }`).\nInstance: `files`, `rejections`, `dragState`, `isFileDialogActive`, `isProcessing`, `open()`,\n`setFiles()`, `removeFile()`, `clearFiles()`, `setValidator()`, `setErrorMessage()`,\n`setFilesFromEvent()`.\nReact also exports `useDropzone(options)` and `Dropzone` (react-dropzone's hook and render prop, see the mapping).",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -60220,7 +60913,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: react-dropzone 20 (`useDropzone`, `Dropzone`) and the Minimals `Upload` wrapper.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `accept` (incl. `AcceptGroup[]`), `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | same | kept | `multiple` default `false` (Minimals' Upload); `maxFiles` counts the files held |\n| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | same | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |\n| `validator` (sync or async), `getFilesFromEvent`, `getErrorMessage`, `onError` | same | kept | |\n| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | renamed | value-first (ADR-0015) |\n| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | same | kept | cancel from the native `cancel` event |\n| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | kept | state via `placeholder(state)` / `data-ok-drag` |\n| `isDragActive` / `isDragAccept` / `isDragReject` / `isDragUnknown` / `isDragGlobal`, `isFileDialogActive`, `isProcessing` | `UploadState` | kept | |\n| `isFocused` | CSS `:focus-visible` | renamed | |\n| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | renamed | |\n| `dragFileRejections` | — | deferred | MIME / surplus rejections during a drag |\n| `getRootProps` / `getInputProps` / `rootRef` / `inputRef`, `Dropzone` (render prop `children(state)`) | the component; `inputRef` | deferred (4.4) | hook form |\n| `refKey` | — | not applicable | no prop getters |\n| Minimals `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | same | kept | |\n| Minimals \"Horizontal layout\" | `layout` | renamed | |",
+     "body": "Upstream: react-dropzone 20 (`useDropzone`, `Dropzone`) and the Minimals `Upload` wrapper.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `accept` (incl. `AcceptGroup[]`), `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | same | kept | `multiple` default `false` (Minimals' Upload); `maxFiles` counts the files held |\n| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | same | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |\n| `validator` (sync or async), `getFilesFromEvent`, `getErrorMessage`, `onError` | same | kept | |\n| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | renamed | value-first (ADR-0015) |\n| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | same | kept | cancel from the native `cancel` event |\n| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | kept | state via `placeholder(state)` / `data-ok-drag` |\n| `isDragActive` / `isDragAccept` / `isDragReject` / `isDragUnknown` / `isDragGlobal`, `isFileDialogActive`, `isProcessing` | `UploadState` | kept | |\n| `isFocused` | CSS `:focus-visible` | renamed | |\n| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | renamed | |\n| `dragFileRejections` | same | kept | `{ index, type, errors }[]` from the MIME types and the count (core `uploadDragRejections`): `file-invalid-type` for a known type outside `accept`'s MIME types, `too-many-files` past the limit; React `UploadState` / `useDropzone`, HTML `ok:upload:drag` `detail.rejections` and `dragState.rejections` |\n| `useDropzone` (`getRootProps` / `getInputProps` / `rootRef` / `inputRef` / `open`, `isFocused`, `acceptedFiles`, `fileRejections`), `Dropzone` (render prop `children(state)`, ref `{ open }`) | same | kept | React only (a hook). The root is focusable (`tabIndex` 0 unless `noKeyboard`), opens the dialog on a press, Enter or Space; the input is `hidden`. Your handlers run first; `preventDefault()` keeps the dropzone's off. The input's own click never reaches your root handler (no `stopPropagation`). `multiple` defaults to `true` (react-dropzone). HTML: the `upload` runtime, or core `createUploadController` on markup of your own |\n| `refKey` | — | not applicable | the getters always return `ref` |\n| Minimals `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | same | kept | |\n| Minimals \"Horizontal layout\" | `layout` | renamed | |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -61389,6 +62082,50 @@
      "body": "`variant` (`outlined`, `filled`, `standard`), `size` (`medium`, `small`), `label`, `placeholder`, `helperText` and `error` work as on a TextField. `renderOption` draws richer options, such as a code on a **Label** next to each country.",
      "id": "look",
      "title": "Change the look"
+    },
+    {
+     "body": "In React, `groupBy` returns the heading of each option. Sort the options by the same key first: a new heading starts each time the key changes. Each heading is a **ListSubheader** before its options, and it hides while none of its options match the text. `renderGroup` draws a group yourself from its `group` name and its `children`. In HTML, write each heading as an `li[data-ok-list-subheader][role=presentation]` before its options.",
+     "html": "<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-grouped\">With categories</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-grouped-listbox\" autocomplete=\"off\" id=\"ac-grouped\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>With categories</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-grouped-listbox\" aria-label=\"With categories\">\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">A</li>\n        <li role=\"option\" id=\"ac-grouped-option-0\" data-ok-value=\"Apple\" aria-selected=\"false\">Apple</li>\n        <li role=\"option\" id=\"ac-grouped-option-1\" data-ok-value=\"Apricot\" aria-selected=\"false\">Apricot</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">B</li>\n        <li role=\"option\" id=\"ac-grouped-option-2\" data-ok-value=\"Banana\" aria-selected=\"false\">Banana</li>\n        <li role=\"option\" id=\"ac-grouped-option-3\" data-ok-value=\"Blueberry\" aria-selected=\"false\">Blueberry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">C</li>\n        <li role=\"option\" id=\"ac-grouped-option-4\" data-ok-value=\"Cherry\" aria-selected=\"false\">Cherry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">G</li>\n        <li role=\"option\" id=\"ac-grouped-option-5\" data-ok-value=\"Grape\" aria-selected=\"false\">Grape</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">K</li>\n        <li role=\"option\" id=\"ac-grouped-option-6\" data-ok-value=\"Kiwi\" aria-selected=\"false\">Kiwi</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">L</li>\n        <li role=\"option\" id=\"ac-grouped-option-7\" data-ok-value=\"Lemon\" aria-selected=\"false\">Lemon</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">M</li>\n        <li role=\"option\" id=\"ac-grouped-option-8\" data-ok-value=\"Mango\" aria-selected=\"false\">Mango</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">O</li>\n        <li role=\"option\" id=\"ac-grouped-option-9\" data-ok-value=\"Orange\" aria-selected=\"false\">Orange</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">P</li>\n        <li role=\"option\" id=\"ac-grouped-option-10\" data-ok-value=\"Peach\" aria-selected=\"false\">Peach</li>\n        <li role=\"option\" id=\"ac-grouped-option-11\" data-ok-value=\"Pear\" aria-selected=\"false\">Pear</li>\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>\n",
+     "id": "groups",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Apricot\", \"Banana\", \"Blueberry\", \"Cherry\", \"Grape\", \"Kiwi\", \"Lemon\", \"Mango\", \"Orange\", \"Peach\", \"Pear\"];\n\nexport function Grouped() {\n  return (\n    <Autocomplete\n      id=\"ac-grouped\"\n      label=\"With categories\"\n      options={fruits}\n      groupBy={(option) => option.label.charAt(0)}\n    />\n  );\n}",
+     "title": "Group options"
+    },
+    {
+     "body": "Set `loading` while the options load: the list shows `loadingText` (\"Loading…\") as long as it has no options. In React, pass the loaded options to `options`. In HTML, set `data-ok-loading` on the root and call `setOptions(options)` on the instance with strings or `{ value, label, disabled?, group? }` objects. `setOptions` builds plain text options and a heading for each new `group`.",
+     "html": "<!-- The field of the \"Asynchronous requests\" story, with an empty listbox and the loading text -->\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  const element = document.getElementById(\"ac-async\").closest(\"[data-ok-autocomplete]\");\n  const autocomplete = getRuntime().get(element, \"autocomplete\");\n\n  element.addEventListener(\n    \"ok:autocomplete:open\",\n    async () => {\n      element.setAttribute(\"data-ok-loading\", \"\");\n      const response = await fetch(\"/films.json\");\n      autocomplete.setOptions(await response.json());\n      element.removeAttribute(\"data-ok-loading\");\n    },\n    { once: true },\n  );\n</script>",
+     "id": "loading",
+     "react": "import { Autocomplete } from \"@owlky/react\";\nimport { useEffect, useState } from \"react\";\n\nexport function Films() {\n  const [open, setOpen] = useState(false);\n  const [options, setOptions] = useState<string[]>([]);\n  const loading = open && options.length === 0;\n\n  useEffect(() => {\n    if (!loading) return;\n    fetch(\"/films.json\")\n      .then((response) => response.json())\n      .then(setOptions);\n  }, [loading]);\n\n  return (\n    <Autocomplete\n      label=\"Film\"\n      options={options}\n      loading={loading}\n      open={open}\n      onOpenChange={setOpen}\n    />\n  );\n}",
+     "title": "Load options from a server"
+    },
+    {
+     "body": "Set `virtualize` for lists of thousands of options. The list then draws only the options in view and moves them as people scroll or press the arrow keys, so typing stays fast. Each drawn option carries `aria-setsize` and `aria-posinset`, so screen readers still announce its position. Options are one line high, and groups aren't shown. In React, `ListboxComponent` replaces the list element if you bring your own virtualization.",
+     "html": "<!-- The field of the \"Virtualization\" story, with data-ok-virtualize on the root -->\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  const element = document.getElementById(\"ac-virtual\").closest(\"[data-ok-autocomplete]\");\n  const options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n  getRuntime().get(element, \"autocomplete\").setOptions(options);\n</script>",
+     "id": "virtualize",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n\nexport function Virtualized() {\n  return <Autocomplete label=\"10,000 options\" virtualize options={options} />;\n}",
+     "title": "Show long lists"
+    },
+    {
+     "body": "In React, options can be any objects. `getOptionLabel` returns the text of an option, `getOptionKey` a unique key when labels repeat, and `getOptionDisabled` whether it is disabled. The value is the option itself, compared with `isOptionEqualToValue`, or what `getOptionValue` returns, such as an id. In HTML, values are always the options' `data-ok-value` strings.",
+     "id": "objects",
+     "react": "import { Autocomplete } from \"@owlky/react\";\nimport { useState } from \"react\";\n\ntype Film = { id: number; title: string; year: number };\n\nconst films: Film[] = [\n  { id: 1, title: \"Heat\", year: 1995 },\n  { id: 2, title: \"Heat\", year: 1986 },\n  { id: 3, title: \"Alien\", year: 1979 },\n];\n\nexport function FilmPicker() {\n  const [filmId, setFilmId] = useState<number | number[] | null>(1);\n  return (\n    <Autocomplete<Film, number>\n      label=\"Film\"\n      options={films}\n      getOptionLabel={(film) => `${film.title} (${film.year})`}\n      getOptionValue={(film) => film.id}\n      value={filmId}\n      onChange={setFilmId}\n    />\n  );\n}",
+     "title": "Use objects as options"
+    },
+    {
+     "body": "In React, `renderValue` draws the chosen values instead of the built-in chips. Spread `getItemProps({ index })` on each item: it sets the value, the remove action and its name. A single value drawn this way leaves the input empty, and Backspace removes it. In HTML, the `<template data-ok-autocomplete-tag>` holds the chip of each value, and a single field with a template draws its value the same way. `clearIcon` and `popupIcon` replace the button icons. `forcePopupIcon` shows or hides the open button.",
+     "id": "render-value",
+     "react": "import { Autocomplete, Chip } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Banana\", \"Cherry\", \"Mango\"];\n\nexport function SingleValue() {\n  return (\n    <Autocomplete\n      label=\"Fruit\"\n      options={fruits}\n      defaultValue=\"Mango\"\n      renderValue={(value, getItemProps) => (\n        <Chip size=\"small\" variant=\"soft\" label={String(value)} {...getItemProps({ index: 0 })} />\n      )}\n    />\n  );\n}",
+     "title": "Draw the chosen value"
+    },
+    {
+     "body": "- **Typing:** `autoComplete` completes the text with the highlighted option and selects the rest, so Enter accepts it. `filterSelectedOptions` leaves the chosen options out.\n- **Keys:** `disableListWrap` stops the arrows at the ends, `includeInputInList` moves the highlight back to the text, `handleHomeEndKeys` turns Home and End off, and `clearOnEscape` clears the field when Escape is pressed on a closed list. `disabledItemsFocusable` lets the keys reach disabled options.\n- **Focus and blur:** `selectOnFocus` selects the text on the first click, `autoSelect` picks the highlighted option when focus leaves, and `clearOnBlur` puts back the chosen label. `blurOnSelect` moves focus out after a pick, for example only after a touch.\n- **Pointer:** `resetHighlightOnMouseLeave` removes a highlight the pointer made when it leaves the list.\n- **Read only:** `readOnly` shows the value without letting people change it.\n- **Highlight:** React `onHighlightChange(option, reason)` and HTML `ok:autocomplete:highlight` (`detail.value`, `detail.reason`) report the highlighted option, with `keyboard`, `mouse`, `touch` or `auto`.",
+     "id": "behavior",
+     "title": "Fine-tune keys, focus and blur"
+    },
+    {
+     "body": "`useAutocomplete` gives the state and behavior of an Autocomplete without its look. Spread its prop getters on your own elements: `getRootProps`, `getInputLabelProps`, `getInputProps`, `getListboxProps`, `getOptionProps({ option })`, `getClearProps`, `getPopupIndicatorProps` and `getItemProps({ index })`. `groupedOptions` holds the options that match, and `popupOpen` whether the list shows. `createFilterOptions` makes a filter with other rules: `matchFrom` (`any` or `start`), `limit`, `ignoreCase`, `ignoreAccents`, `trim` and `stringify`. HTML has no hook: its runtime is the behavior, and the markup is yours.",
+     "id": "hook",
+     "react": "import { type AutocompleteOption, createFilterOptions, useAutocomplete } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Apricot\", \"Banana\", \"Cherry\"];\nconst startsWith = createFilterOptions<AutocompleteOption>({ matchFrom: \"start\" });\n\nexport function FruitField() {\n  const autocomplete = useAutocomplete({ id: \"fruit\", options: fruits, filterOptions: startsWith });\n  return (\n    <div {...autocomplete.getRootProps()}>\n      <label {...autocomplete.getInputLabelProps()}>Fruit</label>\n      <input {...autocomplete.getInputProps()} />\n      {autocomplete.popupOpen && (\n        <ul {...autocomplete.getListboxProps()}>\n          {autocomplete.filteredOptions.map((option) => (\n            <li key={option.value} {...autocomplete.getOptionProps({ option })}>\n              {option.label}\n            </li>\n          ))}\n        </ul>\n      )}\n    </div>\n  );\n}",
+     "title": "Build your own field"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -65419,6 +66156,18 @@
      "title": "Change the look"
     },
     {
+     "body": "In React, `scale` turns the value into the one people see and hear, such as a power of two for a storage size. The value label, `getAriaValueText` and `aria-valuenow` get the scaled value, while `onChange` keeps the plain one. In HTML, call `setScale(scale, format)` on the instance: `format` writes the value label and `aria-valuetext`.",
+     "html": "<!-- The slider of the \"Non-linear scale\" story -->\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  const slider = getRuntime().get(document.querySelector(\"[data-ok-slider]\"), \"slider\");\n  slider.setScale(\n    (value) => 2 ** value,\n    (bytes) => `${bytes / 1024} KB`,\n  );\n</script>",
+     "id": "scale",
+     "react": "import { Slider } from \"@owlky/react\";\n\nexport function Storage() {\n  return (\n    <Slider\n      aria-label=\"Storage\"\n      defaultValue={10}\n      min={5}\n      max={30}\n      scale={(value) => 2 ** value}\n      valueLabelDisplay=\"auto\"\n      valueLabelFormat={(bytes) => `${bytes / 1024} KB`}\n      getAriaValueText={(bytes) => `${bytes / 1024} KB`}\n    />\n  );\n}",
+     "title": "Use a non-linear scale"
+    },
+    {
+     "body": "The arrow keys move a thumb by one `step`. Page Up, Page Down and the arrow keys with Shift move it by `shiftStep`, 10 by default (HTML `data-ok-shift-step`). In React, `tabIndex` sets the tab order of the thumbs' inputs. In HTML, write `tabindex` on the inputs.",
+     "id": "keys",
+     "title": "Set the keyboard steps"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't valid fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -65688,6 +66437,13 @@
      "id": "placement",
      "react": "import { FormControlLabel, Switch } from \"@owlky/react\";\n\nexport function SwitchPlacement() {\n  return <FormControlLabel label=\"Start\" labelPlacement=\"start\" control={<Switch />} />;\n}",
      "title": "Place the label"
+    },
+    {
+     "body": "Pass `icon` to draw an icon in the thumb, and `checkedIcon` for the one shown while the switch is on. Without `checkedIcon`, the `icon` shows in both states. In HTML, put the icons in the thumb as a `span[data-ok-switch-icon]` and a `span[data-ok-switch-checked-icon]`: CSS shows the one for the state, so no JavaScript is needed. The thumb is hidden from screen readers, so the icons are decorative: the label still names the switch.",
+     "html": "<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Icons\" checked>\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18\"></path><path d=\"M6 6l12 12\"></path></svg></span>\n    <span data-ok-switch-checked-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"></path></svg></span>\n  </span>\n</span>",
+     "id": "icons",
+     "react": "import { Switch } from \"@owlky/react\";\nimport { Check, X } from \"lucide-react\";\n\nexport function SwitchIcons() {\n  return <Switch aria-label=\"Icons\" icon={<X />} checkedIcon={<Check />} defaultChecked />;\n}",
+     "title": "Show an icon in the thumb"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The form control label has its own options.",
@@ -66412,6 +67168,18 @@
      "title": "Send the files"
     },
     {
+     "body": "While files are over the zone, the browser tells only their types and their count. `dragFileRejections` lists the dragged files that would be rejected, each with its `index`, `type` and `errors` (`file-invalid-type` or `too-many-files`), so the zone can say why before the drop. In React, read it from the state that `placeholder` receives, or from `useDropzone`. In HTML, read `detail.rejections` of the `ok:upload:drag` event, or the instance's `dragState.rejections`. File names and sizes are only known at drop time, so the other checks run then.",
+     "id": "drag-rejections",
+     "react": "import { Upload } from \"@owlky/react\";\n\nexport function Images() {\n  return (\n    <Upload\n      accept=\"image/*\"\n      placeholder={({ isDragReject, dragFileRejections }) =>\n        isDragReject\n          ? `${dragFileRejections.length} file(s) can't be added: ${dragFileRejections[0]?.errors[0]?.message ?? \"\"}`\n          : \"Drop images here\"\n      }\n    />\n  );\n}",
+     "title": "Explain a rejection while dragging"
+    },
+    {
+     "body": "In React, `useDropzone(options)` gives the upload's behavior without its look: spread `getRootProps()` on your drop target and `getInputProps()` on a file input inside it. The root opens the file dialog on a press, Enter or Space, takes dropped and pasted files, and reports them to `onDrop(accepted, rejections)`. The hook returns the same drag state as the zone (`isDragActive`, `isDragAccept`, `isDragReject`, `dragFileRejections`), plus `isFocused`, `acceptedFiles`, `fileRejections` and `open()`. `Dropzone` is the same hook as a component that takes a render function. Give the root a name and a role, as in the example: the input is hidden, so the root is the control people reach. In HTML, the `upload` runtime is the behavior, and `createUploadController` from `@owlky/core` drives markup of your own.",
+     "id": "hook",
+     "react": "import { useDropzone } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function DropTarget() {\n  const [names, setNames] = useState<string[]>([]);\n  const { getRootProps, getInputProps, isDragActive } = useDropzone({\n    accept: { \"image/*\": [] },\n    onDrop: (accepted) => setNames(accepted.map((file) => file.name)),\n  });\n  return (\n    <div {...getRootProps({ role: \"button\", \"aria-label\": \"Add images\" })}>\n      <input {...getInputProps()} />\n      {isDragActive ? \"Drop the images here\" : \"Add images\"}\n      <ul>\n        {names.map((name) => (\n          <li key={name}>{name}</li>\n        ))}\n      </ul>\n    </div>\n  );\n}",
+     "title": "Build your own drop zone"
+    },
+    {
      "body": "Every option, as a React prop and an HTML attribute.",
      "id": "options",
      "title": "Options"
@@ -66537,6 +67305,7 @@
   "data-ok-alert-message": "data-ok-alert",
   "data-ok-alert-title": "data-ok-alert",
   "data-ok-autocomplete-clear": "data-ok-autocomplete",
+  "data-ok-autocomplete-loading": "data-ok-autocomplete",
   "data-ok-autocomplete-more": "data-ok-autocomplete",
   "data-ok-autocomplete-no-options": "data-ok-autocomplete",
   "data-ok-autocomplete-paper": "data-ok-autocomplete",
@@ -66792,6 +67561,8 @@
   "data-ok-step-label-optional": "data-ok-step-label",
   "data-ok-step-label-text": "data-ok-step-label",
   "data-ok-step-label-title": "data-ok-step-label",
+  "data-ok-switch-checked-icon": "data-ok-switch",
+  "data-ok-switch-icon": "data-ok-switch",
   "data-ok-switch-input": "data-ok-switch",
   "data-ok-switch-thumb": "data-ok-switch",
   "data-ok-switch-track": "data-ok-switch",

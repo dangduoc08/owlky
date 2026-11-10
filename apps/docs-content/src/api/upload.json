@@ -956,6 +956,133 @@
    }
   },
   {
+   "name": "Dropzone",
+   "react": {
+    "description": "`useDropzone` as a component with a render function (react-dropzone's `Dropzone`).",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "jpg\"] }` or labeled groups.",
+      "name": "accept",
+      "type": "UploadAccept"
+     },
+     {
+      "description": "Draws the drop target from the dropzone's state and prop getters.",
+      "name": "children",
+      "required": true,
+      "type": "(state: DropzoneState) => ReactNode"
+     },
+     {
+      "description": "Nothing can be dropped or picked.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Rewrites the message of an error (localization).",
+      "name": "getErrorMessage",
+      "type": "UploadErrorMessage"
+     },
+     {
+      "description": "Reads the files of a drop, a pick or a paste (folders, for example).",
+      "name": "getFilesFromEvent",
+      "type": "UploadFilesFromEvent"
+     },
+     {
+      "description": "Most files per drop (multiple; 0 = no limit).",
+      "name": "maxFiles",
+      "type": "number"
+     },
+     {
+      "description": "Largest file in bytes.",
+      "name": "maxSize",
+      "type": "number"
+     },
+     {
+      "description": "Smallest file in bytes.",
+      "name": "minSize",
+      "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "Several files per drop. (react-dropzone).",
+      "name": "multiple",
+      "type": "boolean"
+     },
+     {
+      "description": "A press on the root doesn't open the file dialog.",
+      "name": "noClick",
+      "type": "boolean"
+     },
+     {
+      "description": "Files can't be dropped.",
+      "name": "noDrag",
+      "type": "boolean"
+     },
+     {
+      "description": "Drag events stop at this root: outer dropzones and uploads ignore them.",
+      "name": "noDragEventsBubbling",
+      "type": "boolean"
+     },
+     {
+      "description": "Enter and Space on the root don't open the file dialog, and the root isn't focusable.",
+      "name": "noKeyboard",
+      "type": "boolean"
+     },
+     {
+      "description": "Pasted files are ignored.",
+      "name": "noPaste",
+      "type": "boolean"
+     },
+     {
+      "description": "Every drop, pick or paste: the accepted and the rejected files.",
+      "name": "onDrop",
+      "type": "((accepted: File[], rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "Called with the accepted files of a drop, when there are some.",
+      "name": "onDropAccepted",
+      "type": "((files: File[]) => void)"
+     },
+     {
+      "description": "Called with the rejected files of a drop, when there are some.",
+      "name": "onDropRejected",
+      "type": "((rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "A validator or `getFilesFromEvent` threw; the drop is discarded.",
+      "name": "onError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "The file dialog closed without files.",
+      "name": "onFileDialogCancel",
+      "type": "(() => void)"
+     },
+     {
+      "description": "The file dialog opened.",
+      "name": "onFileDialogOpen",
+      "type": "(() => void)"
+     },
+     {
+      "default": "true",
+      "description": "Files dropped outside the root don't open in the browser.",
+      "name": "preventDropOnDocument",
+      "type": "boolean"
+     },
+     {
+      "description": "Use the File System Access picker where the browser has it.",
+      "name": "useFsAccessApi",
+      "type": "boolean"
+     },
+     {
+      "description": "Checks each file; returns `null`, an error or a list of errors.",
+      "name": "validator",
+      "type": "UploadValidator"
+     }
+    ]
+   }
+  },
+  {
    "name": "UploadAvatar",
    "react": {
     "description": "A round photo picker: one image, shown in the circle.",

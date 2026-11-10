@@ -312,3 +312,52 @@ describe("Slider", () => {
     expect(client.firstElementChild?.isEqualNode(server.firstElementChild)).toBe(true);
   });
 });
+
+describe("Slider scale, shiftStep and tabIndex", () => {
+  it("scale: label, aria-valuenow and aria-valuetext show the scaled value; onChange the plain one", async () => {
+    const onChange = vi.fn();
+    render(
+      <Slider
+        aria-label="Storage"
+        defaultValue={10}
+        min={5}
+        max={30}
+        scale={(x) => 2 ** x}
+        valueLabelDisplay="on"
+        valueLabelFormat={(v) => `${v} B`}
+        getAriaValueText={(v) => `${v} bytes`}
+        onChange={onChange}
+      />,
+    );
+    const input = screen.getByRole("slider") as HTMLInputElement;
+    expect(input.getAttribute("aria-valuenow")).toBe("1024");
+    expect(input.getAttribute("aria-valuetext")).toBe("1024 bytes");
+    expect(document.querySelector("[data-ok-slider-value-label]")?.textContent).toBe("1024 B");
+    input.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(onChange).toHaveBeenLastCalledWith(11, 0);
+    expect(input.getAttribute("aria-valuenow")).toBe("2048");
+  });
+
+  it("shiftStep moves Page keys and Shift + arrows; tabIndex goes to the inputs", async () => {
+    const onChange = vi.fn();
+    render(
+      <Slider
+        aria-label="Volume"
+        defaultValue={[20, 60]}
+        shiftStep={15}
+        tabIndex={-1}
+        onChange={onChange}
+      />,
+    );
+    expect(root().dataset["okShiftStep"]).toBe("15");
+    const [first] = screen.getAllByRole("slider") as HTMLInputElement[];
+    expect(first?.tabIndex).toBe(-1);
+    expect(root().hasAttribute("tabindex")).toBe(false);
+    first?.focus();
+    await userEvent.keyboard("{PageUp}");
+    expect(onChange).toHaveBeenLastCalledWith([35, 60], 0);
+    await userEvent.keyboard("{Shift>}{ArrowRight}{/Shift}");
+    expect(onChange).toHaveBeenLastCalledWith([50, 60], 0);
+  });
+});

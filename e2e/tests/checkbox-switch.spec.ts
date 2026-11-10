@@ -22,6 +22,17 @@ for (const impl of implementations) {
       ).toHaveJSProperty("indeterminate", true);
     });
 
+    test("switch: the thumb shows the icon for the state", async ({ page }) => {
+      await openStory(page, storyId(impl, "switch", "customization"));
+      const control = page.getByRole("switch", { name: "Icons", exact: true });
+      const root = page.locator("[data-ok-switch]").filter({ has: control });
+      await expect(root.locator("[data-ok-switch-checked-icon]")).toBeVisible();
+      await expect(root.locator("[data-ok-switch-icon]")).toBeHidden();
+      await control.click();
+      await expect(root.locator("[data-ok-switch-icon]")).toBeVisible();
+      await expect(root.locator("[data-ok-switch-checked-icon]")).toBeHidden();
+    });
+
     test("checkbox: the parent selects all and shows mixed", async ({ page }) => {
       await openStory(page, storyId(impl, "checkbox", "indeterminate"));
       const parent = page.getByRole("checkbox", { name: "Parent" });

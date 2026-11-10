@@ -8,6 +8,7 @@ import {
   type SliderMark,
   type SliderSize,
   type SliderValueLabelDisplay,
+  scaleSliderValue,
   setSliderValue,
   sliderAttributes,
   sliderLayout,
@@ -72,6 +73,12 @@ export interface SliderProps
   disableSwap?: boolean | undefined;
   /** Form field name of the input(s). */
   name?: string | undefined;
+  /** Turns a value into the one shown and announced (non-linear scales); `onChange` keeps the plain value. */
+  scale?: ((value: number) => number) | undefined;
+  /** How far Page Up / Page Down and Shift + arrow keys move the thumb. Default 10. */
+  shiftStep?: number | undefined;
+  /** Tab order of the thumbs' inputs. */
+  tabIndex?: number | undefined;
 }
 
 const toArray = (value: SliderValue): number[] => (Array.isArray(value) ? [...value] : [value]);
@@ -103,12 +110,15 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
     disabled,
     disableSwap,
     name,
+    scale,
+    shiftStep,
+    tabIndex,
     style,
     ...props
   },
   ref,
 ) {
-  const range = sliderRange({ min, max, step });
+  const range = sliderRange({ min, max, step, shiftStep });
   const marks: SliderMark[] =
     marksProp === true ? stepMarks(range) : marksProp ? [...marksProp] : [];
   const full = { ...range, marks };
@@ -164,6 +174,7 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
         min,
         max,
         step: step === null ? 0 : step,
+        shiftStep,
       })}
       data-ok-runtime="off"
       style={
@@ -197,44 +208,49 @@ export const Slider = forwardRef<HTMLSpanElement, SliderProps>(function Slider(
           </span>
         ),
       ])}
-      {values.map((thumb, index) => (
-        <span
-          // biome-ignore lint/suspicious/noArrayIndexKey: thumbs are positions in the range.
-          key={index}
-          data-ok-slider-thumb=""
-          data-ok-index={index}
-          style={position(layout.thumbs[index] as number)}
-        >
-          <input
-            type="range"
-            min={range.min}
-            max={range.max}
-            step={range.step ?? "any"}
-            value={thumb}
-            name={name}
-            disabled={disabled}
-            aria-label={getAriaLabel ? getAriaLabel(index) : ariaLabel}
-            aria-labelledby={ariaLabelledBy}
-            aria-valuetext={getAriaValueText?.(thumb, index)}
-            aria-orientation={orientation === "vertical" ? "vertical" : undefined}
-            onChange={(event) => {
-              // Assistive technologies adjust the native input directly.
-              const next = setSliderValue(
-                values,
-                index,
-                snapSliderValue(Number(event.target.value), full),
-                disableSwap,
-              );
-              emit(next.values, next.index);
-            }}
-          />
-          {valueLabelDisplay !== "off" && (
-            <span data-ok-slider-value-label="" aria-hidden="true">
-              {valueLabelFormat ? valueLabelFormat(thumb, index) : thumb}
-            </span>
-          )}
-        </span>
-      ))}
+      {values.map((thumb, index) => {
+        const shown = scaleSliderValue(thumb, scale);
+        return (
+          <span
+            // biome-ignore lint/suspicious/noArrayIndexKey: thumbs are positions in the range.
+            key={index}
+            data-ok-slider-thumb=""
+            data-ok-index={index}
+            style={position(layout.thumbs[index] as number)}
+          >
+            <input
+              type="range"
+              min={range.min}
+              max={range.max}
+              step={range.step ?? "any"}
+              value={thumb}
+              name={name}
+              disabled={disabled}
+              aria-label={getAriaLabel ? getAriaLabel(index) : ariaLabel}
+              aria-labelledby={ariaLabelledBy}
+              tabIndex={tabIndex}
+              aria-valuenow={scale ? shown : undefined}
+              aria-valuetext={getAriaValueText?.(shown, index)}
+              aria-orientation={orientation === "vertical" ? "vertical" : undefined}
+              onChange={(event) => {
+                // Assistive technologies adjust the native input directly.
+                const next = setSliderValue(
+                  values,
+                  index,
+                  snapSliderValue(Number(event.target.value), full),
+                  disableSwap,
+                );
+                emit(next.values, next.index);
+              }}
+            />
+            {valueLabelDisplay !== "off" && (
+              <span data-ok-slider-value-label="" aria-hidden="true">
+                {valueLabelFormat ? valueLabelFormat(shown, index) : shown}
+              </span>
+            )}
+          </span>
+        );
+      })}
     </span>
   );
 });

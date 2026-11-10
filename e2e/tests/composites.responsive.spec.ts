@@ -21,6 +21,7 @@ export const STORIES: [component: string, story: string][] = [
     "range",
     "vertical",
     "colors",
+    "non-linear",
   ].map((s) => ["slider", s] as [string, string]),
   ...["simple", "enhanced"].map((s) => ["transfer-list", s] as [string, string]),
   ...["simple", "rich", "custom-icons", "checkbox", "custom-styling"].map(
@@ -28,6 +29,9 @@ export const STORIES: [component: string, story: string][] = [
   ),
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
+  ...["grouped", "asynchronous", "single-value", "virtualization"].map(
+    (s) => ["autocomplete", s] as [string, string],
+  ),
   ...[
     "in-view",
     "text",

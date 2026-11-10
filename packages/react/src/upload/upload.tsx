@@ -5,6 +5,7 @@ import {
   formatUploadSize,
   type UploadAccept,
   type UploadController,
+  type UploadDragRejection,
   type UploadDragState,
   type UploadErrorMessage,
   type UploadFilesFromEvent,
@@ -54,6 +55,8 @@ export interface UploadState {
   isDragGlobal: boolean;
   isFileDialogActive: boolean;
   isProcessing: boolean;
+  /** The dragged files that would be rejected, known by their MIME type only. */
+  dragFileRejections: readonly UploadDragRejection[];
 }
 
 /** Imperative API (`apiRef`), like react-dropzone's `open` and `removeFile` / `clearFiles`. */
@@ -88,7 +91,7 @@ const LABELS: UploadLabels = {
   updatePhoto: "Update photo",
 };
 const EMPTY: readonly UploadValue[] = [];
-const NO_DRAG: UploadDragState = { active: false, verdict: null, global: false };
+const NO_DRAG: UploadDragState = { active: false, verdict: null, global: false, rejections: [] };
 
 export interface UploadProps
   extends Omit<
@@ -455,6 +458,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
     isDragGlobal: drag.global,
     isFileDialogActive: dialogActive,
     isProcessing: processing,
+    dragFileRejections: drag.rejections,
   };
 
   const titleId = `${id}-title`;

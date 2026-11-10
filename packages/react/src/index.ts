@@ -2,6 +2,7 @@ export type {
   AccordionVariant,
   AlertSeverity,
   AlertVariant,
+  AutocompleteHighlightReason,
   AutocompleteOption,
   AvatarColor,
   AvatarGroupSpacing,
@@ -49,6 +50,7 @@ export type {
   FabColor,
   FabSize,
   FabVariant,
+  FilterOptionsConfig,
   GanttBarLabel,
   GanttColor,
   GanttColumnKey,
@@ -130,6 +132,7 @@ export type {
 } from "@owlky/core";
 export {
   applyThemeSettings,
+  createFilterOptions,
   defaultThemeSettings,
   normalizeThemeSettings,
   readThemeSettings,
@@ -147,7 +150,21 @@ export {
   type AccordionSummaryProps,
 } from "./accordion/accordion.js";
 export { Alert, type AlertProps, AlertTitle } from "./alert/alert.js";
-export { Autocomplete, type AutocompleteProps } from "./autocomplete/autocomplete.js";
+export {
+  Autocomplete,
+  type AutocompleteProps,
+  type AutocompleteRenderGroupParams,
+} from "./autocomplete/autocomplete.js";
+export {
+  type AutocompleteGroup,
+  type AutocompleteItemProps,
+  type AutocompleteOpenReason,
+  type AutocompleteOptionOf,
+  type AutocompleteValue,
+  type UseAutocompleteProps,
+  type UseAutocompleteReturn,
+  useAutocomplete,
+} from "./autocomplete/use-autocomplete.js";
 export {
   Avatar,
   AvatarGroup,
@@ -663,6 +680,16 @@ export {
   type UploadValue,
 } from "./upload/upload.js";
 export { UploadCloudIcon } from "./upload/upload-icons.js";
+export {
+  Dropzone,
+  type DropzoneInputProps,
+  type DropzoneProps,
+  type DropzoneRef,
+  type DropzoneRootProps,
+  type DropzoneState,
+  type UseDropzoneOptions,
+  useDropzone,
+} from "./upload/use-dropzone.js";
 export {
   type AdaptDate,
   type AdaptedProps,

@@ -106,6 +106,20 @@ for (const impl of implementations) {
       await expect(input).toHaveAttribute("aria-valuetext", "37°C");
     });
 
+    test("non-linear scale: the announced value is scaled; Shift + arrow moves by shiftStep", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "slider", "non-linear"));
+      const input = page.getByRole("slider", { name: "Storage" });
+      await expect(input).toHaveAttribute("aria-valuetext", "1 KB");
+      await input.press("ArrowRight");
+      await expect(input).toHaveValue("11");
+      await expect(input).toHaveAttribute("aria-valuenow", "2048");
+      await expect(input).toHaveAttribute("aria-valuetext", "2 KB");
+      await input.press("Shift+ArrowRight");
+      await expect(input).toHaveValue("21");
+    });
+
     test("range: pressing the track moves the closest thumb", async ({ page }) => {
       await openStory(page, storyId(impl, "slider", "range"));
       const rail = page.locator("[data-ok-slider-rail]");
@@ -227,6 +241,51 @@ for (const impl of implementations) {
       await page.getByRole("combobox", { name: "Combo box" }).tap();
       await page.getByRole("option", { name: "Banana" }).tap();
       await expect(page.getByRole("combobox", { name: "Combo box" })).toHaveValue("Banana");
+    });
+
+    test("grouped: headings follow the filter", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "grouped"));
+      const input = page.getByRole("combobox", { name: "With categories" });
+      await input.click();
+      await input.pressSequentially("pea");
+      await expect(
+        page.locator("#ac-grouped-listbox [data-ok-list-subheader]:not([hidden])"),
+      ).toHaveText(["P"]);
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Enter");
+      await expect(input).toHaveValue("Peach");
+    });
+
+    test("asynchronous: loading text, then the loaded options", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "asynchronous"));
+      const input = page.getByRole("combobox", { name: "Asynchronous" });
+      await input.click();
+      await expect(page.getByText("Loading…")).toBeVisible();
+      await expect(page.getByRole("option", { name: "Inception" })).toBeVisible();
+      await expect(page.getByText("Loading…")).toBeHidden();
+    });
+
+    test("single value rendering: the value is a chip, the input stays empty", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "single-value"));
+      const input = page.getByRole("combobox", { name: "Fruit" });
+      await expect(input).toHaveValue("");
+      await input.click();
+      await page.getByRole("option", { name: "Kiwi" }).click();
+      await expect(page.getByRole("button", { name: "Remove Kiwi" })).toBeVisible();
+      await expect(input).toHaveValue("");
+    });
+
+    test("virtualization: few options drawn, End reaches the last", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "virtualization"));
+      const input = page.getByRole("combobox", { name: "10,000 options" });
+      await input.click();
+      const drawn = page.locator("#ac-virtual-listbox [role=option]");
+      await expect(drawn.first()).toHaveText("Option 1");
+      expect(await drawn.count()).toBeLessThan(40);
+      await page.keyboard.press("End");
+      await expect(page.locator("#ac-virtual-option-9999")).toBeVisible();
+      await page.keyboard.press("Enter");
+      await expect(input).toHaveValue("Option 10000");
     });
   });
 }
