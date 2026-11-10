@@ -9,7 +9,8 @@
  * States:    [data-ok-open] (written by the core popover controller, both paths);
  *            [data-ok-current-placement] (the side used after a flip); [data-ok-fallback]
  *            without the Popover API (ADR-0006): fixed + z-index instead of the top layer.
- * Private:   --_ok-popover-x / -y / -arrow / -w / -h (px, set through CSSOM by the controller)
+ * Private:   --_ok-popover-x / -y / -arrow / -w / -h (px), --_ok-popover-duration (ms), set
+ *            through CSSOM by the controller
  *
  * Translucent paper with a blur and two soft color glows (info top-right, error bottom-left).
  * Single :where() selectors in @layer components.
@@ -76,7 +77,8 @@
 
   :where([data-ok-popover][data-ok-open]) {
     display: block;
-    animation: ok-popover-in var(--ok-duration-shorter) var(--ok-easing-decelerate);
+    animation: ok-popover-in var(--_ok-popover-duration, var(--ok-duration-shorter))
+      var(--ok-easing-decelerate);
   }
 
   :where([data-ok-popover])::backdrop {

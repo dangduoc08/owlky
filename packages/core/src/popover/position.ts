@@ -20,6 +20,25 @@ export const placements = [
   "right",
   "right-end",
 ] as const;
+/** Which reference positions a popover (MUI `anchorReference`). */
+export const popoverAnchorReferences = ["anchorEl", "anchorPosition", "none"] as const;
+export type PopoverAnchorReference = (typeof popoverAnchorReferences)[number];
+
+/** A point in the viewport, in px (MUI `anchorPosition`). */
+export interface PopoverAnchorPosition {
+  top: number;
+  left: number;
+}
+
+/** `"120,240"` (top, left in px) → a point; anything else → `undefined`. */
+export function parseAnchorPosition(value: unknown): PopoverAnchorPosition | undefined {
+  if (typeof value !== "string" || value.length > 64) return undefined;
+  const match = /^\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*$/.exec(value);
+  const top = Number(match?.[1]);
+  const left = Number(match?.[2]);
+  return match && Number.isFinite(top) && Number.isFinite(left) ? { top, left } : undefined;
+}
+
 export type PlacementSide = (typeof placementSides)[number];
 export type Placement = (typeof placements)[number];
 export type PlacementAlign = "start" | "center" | "end";

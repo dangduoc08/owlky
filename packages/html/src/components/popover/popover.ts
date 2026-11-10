@@ -1,4 +1,12 @@
-import { createPopoverController, initialMenuItem, popoverOptions } from "@owlky/core";
+import {
+  createPopoverController,
+  initialMenuItem,
+  type PopoverAnchorTarget,
+  parseAnchorPosition,
+  popoverOptions,
+  readNumber,
+  readStyle,
+} from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance, EventSpec, Runtime } from "../../runtime/types.js";
 
@@ -8,9 +16,9 @@ export type PopoverCloseReason = "escape" | "backdrop" | "trigger" | "select" | 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface PopoverEvents {
   /** Before the popover opens. Call `preventDefault()` to keep it closed. */
-  beforeopen: EventSpec<{ anchor: Element }, true>;
+  beforeopen: EventSpec<{ anchor: PopoverAnchorTarget }, true>;
   /** After the popover opened next to `anchor`. */
-  open: EventSpec<{ anchor: Element }>;
+  open: EventSpec<{ anchor: PopoverAnchorTarget }>;
   /** Before the popover closes. Call `preventDefault()` to keep it open. */
   beforeclose: EventSpec<{ reason: PopoverCloseReason }, true>;
   /** After the popover closed, with what closed it. */
@@ -20,8 +28,11 @@ export interface PopoverEvents {
 export interface PopoverInstance extends ComponentInstance {
   /** Whether the popover is open. */
   readonly isOpen: boolean;
-  /** Opens next to `anchor`. Returns `false` if `ok:popover:beforeopen` was prevented. */
-  open(anchor: Element): boolean;
+  /**
+   * Opens next to `anchor`: an element or a virtual anchor (`getBoundingClientRect()`, such as a
+   * text selection). Returns `false` if `ok:popover:beforeopen` was prevented.
+   */
+  open(anchor: PopoverAnchorTarget): boolean;
   /** Returns `false` if `ok:popover:beforeclose` was prevented. */
   close(reason?: PopoverCloseReason): boolean;
   /** Opens the popover next to `anchor` when it is closed, and closes it otherwise. */
@@ -30,8 +41,15 @@ export interface PopoverInstance extends ComponentInstance {
 
 /** Arrow size in px (`--_ok-arrow-size` in popover.css). */
 const ARROW = 24;
-const { arrow, disableEscapeKeyDown, disableAutoFocus, disableRestoreFocus } =
-  popoverOptions.options;
+const {
+  arrow,
+  disableEscapeKeyDown,
+  disableAutoFocus,
+  disableRestoreFocus,
+  anchorReference,
+  marginThreshold,
+  transitionDuration,
+} = popoverOptions.options;
 const OPEN = "data-ok-popover-open";
 const HOVER = "data-ok-popover-hover";
 
@@ -53,7 +71,9 @@ function triggersOf(element: Element): Element[] {
  *           hover and focus, closes on leave and blur (without moving focus). Both carry
  *           `aria-expanded`, kept in sync.
  * Options:  data-ok-placement, data-ok-arrow, data-ok-disable-escape-key-down,
- *           data-ok-disable-auto-focus, data-ok-disable-restore-focus (re-read on every open)
+ *           data-ok-disable-auto-focus, data-ok-disable-restore-focus, data-ok-anchor-reference
+ *           (+ data-ok-anchor-position="top,left"), data-ok-margin-threshold,
+ *           data-ok-transition-duration (re-read on every open)
  * Events:   ok:popover:beforeopen (cancelable, detail.anchor), ok:popover:open,
  *           ok:popover:beforeclose (cancelable, detail.reason), ok:popover:close (detail.reason)
  * A popover holding a `[role=menu]` focuses its selected (or first) item when it opens.
@@ -65,6 +85,10 @@ export const popover = defineComponent<PopoverInstance, PopoverEvents>({
   setup(element, { emit }) {
     let hovered = false;
     const options = () => ({
+      anchorReference: readStyle(element, anchorReference),
+      anchorPosition: parseAnchorPosition(element.getAttribute("data-ok-anchor-position")),
+      marginThreshold: readNumber(element, marginThreshold) as number,
+      transitionDuration: readNumber(element, transitionDuration) as number | undefined,
       arrow: element.hasAttribute(arrow.attr) ? ARROW : 0,
       offset: element.hasAttribute(arrow.attr) ? 14 : 8,
       closeOnEscape: !element.hasAttribute(disableEscapeKeyDown.attr),

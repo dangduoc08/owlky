@@ -316,6 +316,8 @@ const pairs: [component: string, story: string][] = [
   ["list", "switch"],
   ["popover", "click-hover"],
   ["popover", "custom-arrow"],
+  ["popover", "anchor-playground"],
+  ["popover", "virtual-element"],
   ["tooltip", "simple"],
   ["tooltip", "arrow"],
   ["tooltip", "variable-width"],

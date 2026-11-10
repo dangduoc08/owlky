@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe("popover snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(2));
+  it("covers every story group", () => expect(snippets).toHaveLength(4));
 
   it.each(snippets)("%s: valid anatomy; every trigger names a popover", (_, html) => {
     const host = mount(html);
@@ -60,7 +60,7 @@ describe("popover snippets", () => {
     const host = mount(html);
     start();
     await expectNoAxeViolations(host);
-    (host.querySelector("[data-ok-popover-open]") as HTMLElement).click();
+    (host.querySelector("[data-ok-popover-open]") as HTMLElement | null)?.click();
     await settle();
     await expectNoAxeViolations(host);
   });
@@ -141,6 +141,31 @@ describe("popover runtime", () => {
     expect(instance.isOpen).toBe(true);
     instance.toggle(trigger);
     expect(instance.isOpen).toBe(false);
+  });
+
+  it("anchor reference, anchor position, margin threshold and transition duration options", () => {
+    const host = mount(markup);
+    const rt = start();
+    const popover = host.querySelector("#p2") as HTMLElement;
+    const instance = rt.get<PopoverInstance>(popover, "popover") as PopoverInstance;
+    popover.setAttribute("data-ok-anchor-reference", "anchorPosition");
+    popover.setAttribute("data-ok-anchor-position", "200,0");
+    popover.setAttribute("data-ok-margin-threshold", "2");
+    popover.setAttribute("data-ok-transition-duration", "80");
+    instance.open(host.querySelector("#outside") as HTMLElement);
+    expect(popover.style.getPropertyValue("--_ok-popover-x")).toBe("2px");
+    expect(popover.style.getPropertyValue("--_ok-popover-duration")).toBe("80ms");
+    instance.close();
+    popover.setAttribute("data-ok-anchor-reference", "none");
+    instance.open({ getBoundingClientRect: () => new DOMRect(5, 5, 0, 0) });
+    expect(popover.style.getPropertyValue("--_ok-popover-x")).toBe("");
+    instance.close();
+    popover.setAttribute("data-ok-anchor-reference", "bogus");
+    popover.setAttribute("data-ok-margin-threshold", "-3");
+    popover.removeAttribute("data-ok-transition-duration");
+    instance.open({ getBoundingClientRect: () => new DOMRect(0, 300, 0, 0) });
+    expect(popover.style.getPropertyValue("--_ok-popover-x")).toBe("16px");
+    expect(popover.style.getPropertyValue("--_ok-popover-duration")).toBe("");
   });
 
   it("hover triggers open without moving focus and close on leave or blur", async () => {

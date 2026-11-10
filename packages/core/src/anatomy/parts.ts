@@ -1359,6 +1359,8 @@ export interface PaginationParts {
 
 /** Popover: parts, states, values and triggers. */
 export interface PopoverParts {
+  /** The point the popover opens at with `data-ok-anchor-reference="anchorPosition"`: `top,left` in px from the viewport's top left corner. */
+  "data-ok-anchor-position": Value<string>;
   /** Set by the runtime: the side the popover opened on after flipping. */
   "data-ok-current-placement": Value<string>;
   /** Set by the runtime when the browser lacks the Popover API. */

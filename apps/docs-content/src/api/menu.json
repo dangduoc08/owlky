@@ -206,7 +206,11 @@
   },
   {
    "name": "PopoverAnchor",
-   "type": "Element | (() => Element | null | undefined) | null"
+   "type": "(() => PopoverAnchorTarget | null | undefined) | PopoverAnchorTarget | null"
+  },
+  {
+   "name": "PopoverAnchorTarget",
+   "type": "Element | PopoverVirtualAnchor"
   },
   {
    "name": "PopoverDismissReason",

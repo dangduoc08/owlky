@@ -29,6 +29,8 @@
   "data-ok-ampm",
   "data-ok-ampm-in-clock",
   "data-ok-anchor",
+  "data-ok-anchor-position",
+  "data-ok-anchor-reference",
   "data-ok-animate",
   "data-ok-animation-fade",
   "data-ok-animation-swipe",
@@ -788,6 +790,7 @@
   "data-ok-map-user-location",
   "data-ok-map-view",
   "data-ok-margin",
+  "data-ok-margin-threshold",
   "data-ok-markdown",
   "data-ok-markdown-source",
   "data-ok-marker-size",
@@ -1236,6 +1239,7 @@
   "data-ok-transfer-list-panel",
   "data-ok-transfer-list-title",
   "data-ok-transition",
+  "data-ok-transition-duration",
   "data-ok-tree-chevron",
   "data-ok-tree-collapse-icon",
   "data-ok-tree-data",
@@ -44910,7 +44914,11 @@
      },
      {
       "name": "PopoverAnchor",
-      "type": "Element | (() => Element | null | undefined) | null"
+      "type": "(() => PopoverAnchorTarget | null | undefined) | PopoverAnchorTarget | null"
+     },
+     {
+      "name": "PopoverAnchorTarget",
+      "type": "Element | PopoverVirtualAnchor"
      },
      {
       "name": "PopoverDismissReason",
@@ -48345,7 +48353,7 @@
         {
          "cancelable": true,
          "description": "Before the popover opens. Call `preventDefault()` to keep it closed.",
-         "detail": "{ anchor: Element; }",
+         "detail": "{ anchor: PopoverAnchorTarget; }",
          "name": "ok:popover:beforeopen"
         },
         {
@@ -48357,7 +48365,7 @@
         {
          "cancelable": false,
          "description": "After the popover opened next to `anchor`.",
-         "detail": "{ anchor: Element; }",
+         "detail": "{ anchor: PopoverAnchorTarget; }",
          "name": "ok:popover:open"
         }
        ],
@@ -48375,10 +48383,10 @@
          "type": "boolean"
         },
         {
-         "description": "Opens next to `anchor`. Returns `false` if `ok:popover:beforeopen` was prevented.",
+         "description": "Opens next to `anchor`: an element or a virtual anchor (`getBoundingClientRect()`, such as a text selection). Returns `false` if `ok:popover:beforeopen` was prevented.",
          "kind": "method",
          "name": "open",
-         "type": "(anchor: Element) => boolean"
+         "type": "(anchor: PopoverAnchorTarget) => boolean"
         },
         {
          "description": "Opens the popover next to `anchor` when it is closed, and closes it otherwise.",
@@ -48434,6 +48442,34 @@
          "name": "disableRestoreFocus"
         },
         {
+         "attr": "data-ok-anchor-reference",
+         "default": "anchorEl",
+         "description": "What positions it: `anchorEl` (the anchor), `anchorPosition` (a point, `anchorPosition` / `data-ok-anchor-position`) or `none` (your CSS).",
+         "kind": "style",
+         "name": "anchorReference",
+         "optional": true,
+         "values": [
+          "anchorEl",
+          "anchorPosition",
+          "none"
+         ]
+        },
+        {
+         "attr": "data-ok-margin-threshold",
+         "default": 16,
+         "description": "Minimum distance to the viewport edges (px).",
+         "kind": "number",
+         "min": 0,
+         "name": "marginThreshold"
+        },
+        {
+         "attr": "data-ok-transition-duration",
+         "description": "Length of the opening animation (ms). Default: the theme's shorter duration.",
+         "kind": "number",
+         "min": 0,
+         "name": "transitionDuration"
+        },
+        {
          "attr": "data-ok-open",
          "description": "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
          "event": "ok:popover:close",
@@ -48442,6 +48478,12 @@
         }
        ],
        "parts": [
+        {
+         "description": "The point the popover opens at with `data-ok-anchor-reference=\"anchorPosition\"`: `top,left` in px from the viewport's top left corner.",
+         "kind": "value",
+         "name": "data-ok-anchor-position",
+         "value": "string"
+        },
         {
          "description": "Set by the runtime: the side the popover opened on after flipping.",
          "kind": "value",
@@ -48492,6 +48534,16 @@
          "type": "PopoverAnchor"
         },
         {
+         "description": "The point, in px from the viewport's top left corner, used with `anchorReference=\"anchorPosition\"`.",
+         "name": "anchorPosition",
+         "type": "PopoverAnchorPosition"
+        },
+        {
+         "description": "What positions the popover: `\"anchorEl\"` (default), `\"anchorPosition\"` (the point in `anchorPosition`; `anchorEl` may then be left out) or `\"none\"` (your own CSS).",
+         "name": "anchorReference",
+         "type": "\"anchorEl\" | \"anchorPosition\" | \"none\""
+        },
+        {
          "description": "Draws an arrow pointing at the anchor.",
          "name": "arrow",
          "type": "boolean"
@@ -48522,6 +48574,11 @@
          "type": "(() => HTMLElement | null | undefined)"
         },
         {
+         "description": "Minimum distance to the viewport edges, in px. Default 16.",
+         "name": "marginThreshold",
+         "type": "number"
+        },
+        {
          "description": "Called when the user asks to close: `\"escape\"` or `\"backdrop\"` (a press outside).",
          "name": "onOpenChange",
          "type": "((open: boolean, reason?: PopoverDismissReason | undefined) => void)"
@@ -48537,6 +48594,11 @@
          "description": "Side of the anchor and alignment. Flips when there is no room.",
          "name": "placement",
          "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+        },
+        {
+         "description": "Length of the opening animation, in ms. Default: the theme's shorter duration.",
+         "name": "transitionDuration",
+         "type": "number"
         }
        ]
       }
@@ -48545,7 +48607,11 @@
     "types": [
      {
       "name": "PopoverAnchor",
-      "type": "Element | (() => Element | null | undefined) | null"
+      "type": "(() => PopoverAnchorTarget | null | undefined) | PopoverAnchorTarget | null"
+     },
+     {
+      "name": "PopoverAnchorTarget",
+      "type": "Element | PopoverVirtualAnchor"
      },
      {
       "name": "PopoverCloseReason",
@@ -48565,6 +48631,8 @@
    "referenceUrl": "https://minimals.cc/components/mui/popover",
    "related": [
     "button",
+    "form-control-label",
+    "radio",
     "typography"
    ],
    "requiredParts": {},
@@ -48619,6 +48687,34 @@
        "name": "disableRestoreFocus"
       },
       {
+       "attr": "data-ok-anchor-reference",
+       "default": "anchorEl",
+       "description": "What positions it: `anchorEl` (the anchor), `anchorPosition` (a point, `anchorPosition` / `data-ok-anchor-position`) or `none` (your CSS).",
+       "kind": "style",
+       "name": "anchorReference",
+       "optional": true,
+       "values": [
+        "anchorEl",
+        "anchorPosition",
+        "none"
+       ]
+      },
+      {
+       "attr": "data-ok-margin-threshold",
+       "default": 16,
+       "description": "Minimum distance to the viewport edges (px).",
+       "kind": "number",
+       "min": 0,
+       "name": "marginThreshold"
+      },
+      {
+       "attr": "data-ok-transition-duration",
+       "description": "Length of the opening animation (ms). Default: the theme's shorter duration.",
+       "kind": "number",
+       "min": 0,
+       "name": "transitionDuration"
+      },
+      {
        "attr": "data-ok-open",
        "description": "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
        "event": "ok:popover:close",
@@ -48636,12 +48732,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup][aria-expanded][aria-controls]   (HTML trigger; or data-ok-popover-hover)\ndiv[data-ok-popover][popover=manual][id][data-ok-placement][data-ok-arrow]?[role=dialog]?\n  › span[data-ok-popover-arrow][aria-hidden]       (always rendered; shown with data-ok-arrow)\n  › content\n```\nStates written by the controller: `data-ok-open`, `data-ok-current-placement` (after a flip),\n`data-ok-fallback` (no Popover API), CSSOM `--_ok-popover-x|y|arrow`.",
+     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup][aria-expanded][aria-controls]   (HTML trigger; or data-ok-popover-hover)\ndiv[data-ok-popover][popover=manual][id][data-ok-placement][data-ok-arrow]?[role=dialog]?\n  › span[data-ok-popover-arrow][aria-hidden]       (always rendered; shown with data-ok-arrow)\n  › content\n```\nStates written by the controller: `data-ok-open`, `data-ok-current-placement` (after a flip),\n`data-ok-fallback` (no Popover API), CSSOM `--_ok-popover-x|y|arrow|duration` (no `x` / `y`\nwith `anchorReference=\"none\"`).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `popover`: listed under \"options\".)\n\nReact: `open` + `anchorEl` (element or function) + `onOpenChange(open, reason)`, `initialFocus`,\n`children`. Renamed: `anchorOrigin` / `transformOrigin` → `placement` (one vocabulary for\nPopover, Menu and Tooltip: side + start/center/end; the controller flips and shifts);\n`onClose(event, reason)` → `onOpenChange(false, reason)` with `escape` | `backdrop`; the\nMinimals arrow (`slotProps.arrow.placement`) → `arrow` (it follows the placement).\nDeferred: `anchorPosition` / `anchorReference` (anchoring to a point), `marginThreshold` (16px\nfixed), `container` (top layer). Not applicable: `TransitionComponent`, `slots`, `slotProps`,\n`sx`, `elevation` (one dropdown shadow), `disableScrollLock` (non-modal: the page stays scrollable;\nthe popover follows its anchor), `disablePortal` (top layer).",
+     "body": "(Options of `popover`: listed under \"options\".)\n\nReact: `open` + `anchorEl` (element or function) + `onOpenChange(open, reason)`, `initialFocus`,\n`children`. Renamed: `anchorOrigin` / `transformOrigin` → `placement` (one vocabulary for\nPopover, Menu and Tooltip: side + start/center/end; the controller flips and shifts);\n`onClose(event, reason)` → `onOpenChange(false, reason)` with `escape` | `backdrop`; the\nMinimals arrow (`slotProps.arrow.placement`) → `arrow` (it follows the placement).\nKept (Phase 4.7): `anchorReference` (`anchorEl` · `anchorPosition` · `none`; HTML\n`data-ok-anchor-reference`), `anchorPosition` (`{ top, left }`; HTML\n`data-ok-anchor-position=\"top,left\"`, written by React too), `marginThreshold`\n(`data-ok-margin-threshold`), `transitionDuration` (ms, the opening animation;\n`data-ok-transition-duration` → `--_ok-popover-duration` through CSSOM by the controller).\n`anchorEl` also takes a virtual anchor (`{ getBoundingClientRect(), contextElement? }`, MUI\n`PopoverVirtualElement`); HTML: `instance.open(virtualAnchor)`. `none` writes no coordinates:\nthe author's CSS positions the paper. Not applicable: `container` (top layer), `TransitionComponent`, `slots`, `slotProps`,\n`sx`, `elevation` (one dropdown shadow), `disableScrollLock` (non-modal: the page stays scrollable;\nthe popover follows its anchor), `disablePortal` (top layer).",
      "id": "options",
      "title": "Options"
     },
@@ -48666,7 +48762,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Popover (inherits Modal).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl` (element or function), `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop`) | renamed | |\n| `anchorOrigin` / `transformOrigin` | `placement` (side + start / center / end; flip and shift) | renamed | overlapping origins not expressible |\n| Minimals `slotProps.arrow.placement` | `arrow` | renamed | follows the placement |\n| `anchorReference`, `anchorPosition` | — | deferred (4.7) | |\n| `marginThreshold` | 16px fixed | deferred (4.7) | |\n| `transitionDuration` | — (`--ok-duration-shorter`) | deferred | new batch E row (with Menu) |\n| `action` (`updatePosition`) | controller repositions on scroll / resize | not applicable | |\n| `elevation` | `--ok-shadow-dropdown` | not applicable | one dropdown shadow |\n| `container`, Modal `disablePortal` | — | not applicable | top layer |\n| `disableScrollLock` | — | not applicable | non-modal: page stays scrollable |\n| Modal `disableEscapeKeyDown`, `disableAutoFocus`, `disableRestoreFocus` | same | kept | |\n| Modal `keepMounted` | always mounted | kept | |\n| Modal `disableEnforceFocus`, `hideBackdrop`, `BackdropProps` | — | not applicable | no focus trap, no backdrop element |\n| — | `initialFocus` | kept | beyond upstream |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API page Popover (inherits Modal).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl` (element or function), `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop`) | renamed | |\n| `anchorOrigin` / `transformOrigin` | `placement` (side + start / center / end; flip and shift) | renamed | overlapping origins not expressible |\n| Minimals `slotProps.arrow.placement` | `arrow` | renamed | follows the placement |\n| `anchorReference`, `anchorPosition` | same; HTML `data-ok-anchor-reference`, `data-ok-anchor-position=\"top,left\"` | kept (4.7) | |\n| `anchorEl` virtual element (`PopoverVirtualElement`) | same (`PopoverVirtualAnchor`); HTML `open(virtualAnchor)` | kept (4.7) | |\n| `marginThreshold` | same (`data-ok-margin-threshold`, default 16; `0` = none) | kept (4.7) | MUI `null` → `0` |\n| `transitionDuration` | same, a number of ms for the opening animation | kept (4.18.43) | `auto` and `{ enter, exit }` not applicable: no exit animation (Phase 5.1) |\n| `action` (`updatePosition`) | controller repositions on scroll / resize | not applicable | |\n| `elevation` | `--ok-shadow-dropdown` | not applicable | one dropdown shadow |\n| `container`, Modal `disablePortal` | — | not applicable | top layer |\n| `disableScrollLock` | — | not applicable | non-modal: page stays scrollable |\n| Modal `disableEscapeKeyDown`, `disableAutoFocus`, `disableRestoreFocus` | same | kept | |\n| Modal `keepMounted` | always mounted | kept | |\n| Modal `disableEnforceFocus`, `hideBackdrop`, `BackdropProps` | — | not applicable | no focus trap, no backdrop element |\n| — | `initialFocus` | kept | beyond upstream |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -48689,6 +48785,24 @@
      "react": "import type { Placement } from \"@owlky/core\";\nimport { Button, Popover, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/**\n * Each button is named after where its arrow sits on the popover: `top-left` puts the arrow on\n * the top edge, near the left, so the popover opens below the button (`placement=\"bottom-start\"`).\n */\nconst ARROWS: [string, [arrow: string, placement: Placement][]][] = [\n  [\n    \"top\",\n    [\n      [\"top-left\", \"bottom-start\"],\n      [\"top-center\", \"bottom\"],\n      [\"top-right\", \"bottom-end\"],\n    ],\n  ],\n  [\n    \"bottom\",\n    [\n      [\"bottom-left\", \"top-start\"],\n      [\"bottom-center\", \"top\"],\n      [\"bottom-right\", \"top-end\"],\n    ],\n  ],\n  [\n    \"left\",\n    [\n      [\"left-top\", \"right-start\"],\n      [\"left-center\", \"right\"],\n      [\"left-bottom\", \"right-end\"],\n    ],\n  ],\n  [\n    \"right\",\n    [\n      [\"right-top\", \"left-start\"],\n      [\"right-center\", \"left\"],\n      [\"right-bottom\", \"left-end\"],\n    ],\n  ],\n];\n\n/** Every arrow position: the popover opens on the opposite side of its button. */\nexport function CustomArrowDemo() {\n  const [open, setOpen] = useState<{ arrow: string; anchor: HTMLElement } | null>(null);\n  const all = ARROWS.flatMap(([, items]) => items);\n  return (\n    <>\n      {ARROWS.map(([side, items]) => (\n        <div key={side}>\n          {items.map(([arrow]) => (\n            <Button\n              key={arrow}\n              variant=\"outlined\"\n              aria-haspopup=\"dialog\"\n              aria-expanded={open?.arrow === arrow}\n              aria-controls={`popover-arrow-${arrow}`}\n              onClick={(event) =>\n                setOpen(open?.arrow === arrow ? null : { arrow, anchor: event.currentTarget })\n              }\n            >\n              {arrow}\n            </Button>\n          ))}\n        </div>\n      ))}\n      {all.map(([arrow, placement]) => (\n        <Popover\n          key={arrow}\n          id={`popover-arrow-${arrow}`}\n          role=\"dialog\"\n          aria-label={`Arrow ${arrow}`}\n          placement={placement}\n          arrow\n          open={open?.arrow === arrow}\n          anchorEl={open?.arrow === arrow ? open.anchor : null}\n          onOpenChange={() => setOpen(null)}\n        >\n          <div>\n            <Typography variant=\"subtitle1\">Arrow {arrow}</Typography>\n            <Typography variant=\"body2\" color=\"textSecondary\">\n              The arrow points at the button that opened this popover.\n            </Typography>\n          </div>\n        </Popover>\n      ))}\n    </>\n  );\n}\n",
      "snippets": [
       "custom-arrow-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/popover.css + components/radio.css + components/form-control-label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Anchor playground -->\n<div role=\"radiogroup\" data-ok-radio-group data-ok-row aria-label=\"Anchor reference\">\n  <label data-ok-form-control-label data-ok-label-placement=\"end\"><span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\"><input type=\"radio\" data-ok-radio-input name=\"anchor-reference\" checked value=\"anchorEl\"><span data-ok-radio-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"9.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></circle></svg></span><span data-ok-radio-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></span></span><span data-ok-form-control-label-text>Anchor element</span></label>\n  <label data-ok-form-control-label data-ok-label-placement=\"end\"><span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\"><input type=\"radio\" data-ok-radio-input name=\"anchor-reference\" value=\"anchorPosition\"><span data-ok-radio-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"9.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></circle></svg></span><span data-ok-radio-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></span></span><span data-ok-form-control-label-text>Anchor position</span></label>\n</div>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"popover-playground\" data-ok-popover-open=\"popover-playground\"><span data-ok-button-label>Open popover</span></button>\n<div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-anchor-reference=\"anchorEl\" data-ok-anchor-position=\"200,400\" id=\"popover-playground\" role=\"dialog\" aria-label=\"Playground\">\n  <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n  <p data-ok-typography data-ok-variant=\"body2\">With an anchor position, the popover opens 200px from the top and 400px from the left.</p>\n</div>\n\n<script type=\"module\">\n// The radios pick what positions the popover.\nconst popover = document.getElementById(\"popover-playground\");\nfor (const radio of document.querySelectorAll('input[name=\"anchor-reference\"]')) {\n  radio.addEventListener(\"change\", () => {\n    popover.setAttribute(\"data-ok-anchor-reference\", radio.value);\n  });\n}\n</script>",
+     "id": "components-popover--anchor-playground",
+     "name": "Anchor playground",
+     "react": "import {\n  Button,\n  FormControlLabel,\n  Popover,\n  type PopoverAnchorReference,\n  Radio,\n  RadioGroup,\n  Typography,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/** One popover, positioned by its anchor element or by a point in the viewport. */\nexport function AnchorPlaygroundDemo() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  const [reference, setReference] = useState<PopoverAnchorReference>(\"anchorEl\");\n  return (\n    <>\n      <RadioGroup\n        row\n        name=\"anchor-reference\"\n        aria-label=\"Anchor reference\"\n        value={reference}\n        onChange={(value) => setReference(value as PopoverAnchorReference)}\n      >\n        <FormControlLabel value=\"anchorEl\" control={<Radio />} label=\"Anchor element\" />\n        <FormControlLabel value=\"anchorPosition\" control={<Radio />} label=\"Anchor position\" />\n      </RadioGroup>\n      <Button\n        variant=\"contained\"\n        aria-haspopup=\"dialog\"\n        aria-expanded={anchor !== null}\n        aria-controls=\"popover-playground\"\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Open popover\n      </Button>\n      <Popover\n        id=\"popover-playground\"\n        role=\"dialog\"\n        aria-label=\"Playground\"\n        placement=\"bottom-start\"\n        anchorReference={reference}\n        anchorPosition={{ top: 200, left: 400 }}\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        <Typography variant=\"body2\">\n          With an anchor position, the popover opens 200px from the top and 400px from the left.\n        </Typography>\n      </Popover>\n    </>\n  );\n}\n",
+     "snippets": [
+      "anchor-playground-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/popover.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Virtual element -->\n<p data-ok-typography data-ok-variant=\"body2\">Select some words of this sentence: a popover opens next to the selection.</p>\n<div popover=\"manual\" data-ok-popover data-ok-placement=\"top\" data-ok-arrow data-ok-disable-auto-focus data-ok-disable-restore-focus id=\"popover-selection\">\n  <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n  <p data-ok-typography data-ok-variant=\"body2\">You selected some text.</p>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\n// A virtual anchor: the selection's rectangle places the popover next to the selected text.\nconst text = document.querySelector(\"[data-ok-typography]\");\nconst popover = document.getElementById(\"popover-selection\");\n\nfunction selected() {\n  const selection = document.getSelection();\n  const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;\n  return range && !range.collapsed && text.contains(range.commonAncestorContainer) ? range : null;\n}\n\n// Open once the selection is made, close as soon as it is gone.\nfunction onSelected() {\n  const instance = getRuntime().get(popover, \"popover\");\n  const range = selected();\n  instance.close();\n  if (range) instance.open({ getBoundingClientRect: () => range.getBoundingClientRect() });\n}\ndocument.addEventListener(\"pointerup\", onSelected);\ndocument.addEventListener(\"keyup\", onSelected);\ndocument.addEventListener(\"selectionchange\", () => {\n  if (!selected()) getRuntime().get(popover, \"popover\").close();\n});\n</script>",
+     "id": "components-popover--virtual-element",
+     "name": "Virtual element",
+     "react": "import { Popover, type PopoverVirtualAnchor, Typography } from \"@owlky/react\";\nimport { useEffect, useRef, useState } from \"react\";\n\n/** Select text in the paragraph: a popover opens next to the selection, a virtual anchor. */\nexport function VirtualElementDemo() {\n  const text = useRef<HTMLElement>(null);\n  const [anchor, setAnchor] = useState<PopoverVirtualAnchor | null>(null);\n  useEffect(() => {\n    // The selected range, when it lies in the paragraph.\n    const selected = () => {\n      const selection = document.getSelection();\n      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;\n      const inside =\n        range && !range.collapsed && text.current?.contains(range.commonAncestorContainer);\n      return inside ? range : null;\n    };\n    // Open once the selection is made, close as soon as it is gone.\n    const onSelected = () => {\n      const range = selected();\n      setAnchor(range ? { getBoundingClientRect: () => range.getBoundingClientRect() } : null);\n    };\n    const onChange = () => {\n      if (!selected()) setAnchor(null);\n    };\n    document.addEventListener(\"pointerup\", onSelected);\n    document.addEventListener(\"keyup\", onSelected);\n    document.addEventListener(\"selectionchange\", onChange);\n    return () => {\n      document.removeEventListener(\"pointerup\", onSelected);\n      document.removeEventListener(\"keyup\", onSelected);\n      document.removeEventListener(\"selectionchange\", onChange);\n    };\n  }, []);\n  return (\n    <>\n      <Typography ref={text} variant=\"body2\">\n        Select some words of this sentence: a popover opens next to the selection.\n      </Typography>\n      <Popover\n        id=\"popover-selection\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        placement=\"top\"\n        arrow\n        disableAutoFocus\n        disableRestoreFocus\n      >\n        <Typography variant=\"body2\">You selected some text.</Typography>\n      </Popover>\n    </>\n  );\n}\n",
+     "snippets": [
+      "virtual-element-group.html"
      ]
     }
    ],
@@ -65780,6 +65894,20 @@
      "id": "hover",
      "react": "import { Button, Popover, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function PopoverHover() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onPointerEnter={(event) => setAnchor(event.currentTarget)}\n        onPointerLeave={() => setAnchor(null)}\n        onFocus={(event) => setAnchor(event.currentTarget)}\n        onBlur={() => setAnchor(null)}\n      >\n        Hover me\n      </Button>\n      <Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>\n        <Typography variant=\"body2\">The popover follows the pointer and the focus.</Typography>\n      </Popover>\n    </>\n  );\n}",
      "title": "Show a popover on hover"
+    },
+    {
+     "body": "Set `anchorReference` to `anchorPosition` and give the point in `anchorPosition`, in pixels from the top left corner of the viewport. In HTML, write the point as `data-ok-anchor-position=\"top,left\"`. Use it for context menus that open where the user pressed. With `anchorReference=\"none\"`, the popover isn't positioned at all, so your own CSS places it. `marginThreshold` keeps the popover that many pixels inside the viewport (16 by default).",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"point\" data-ok-popover-open=\"point\">\n  <span data-ok-button-label>Open at a point</span>\n</button>\n<div id=\"point\" popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\"\n  data-ok-anchor-reference=\"anchorPosition\" data-ok-anchor-position=\"200,400\" data-ok-margin-threshold=\"8\"\n  role=\"dialog\" aria-label=\"Point\">\n  <p data-ok-typography data-ok-variant=\"body2\">This popover opens 200px from the top and 400px from the left.</p>\n</div>",
+     "id": "anchor-position",
+     "react": "import { Button, Popover, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function PopoverAtPoint() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(!open)}>\n        Open at a point\n      </Button>\n      <Popover\n        role=\"dialog\"\n        aria-label=\"Point\"\n        open={open}\n        anchorEl={null}\n        anchorReference=\"anchorPosition\"\n        anchorPosition={{ top: 200, left: 400 }}\n        marginThreshold={8}\n        placement=\"bottom-start\"\n        onOpenChange={() => setOpen(false)}\n      >\n        <Typography variant=\"body2\">This popover opens 200px from the top and 400px from the left.</Typography>\n      </Popover>\n    </>\n  );\n}",
+     "title": "Open the popover at a point"
+    },
+    {
+     "body": "The anchor doesn't have to be an element. Any object with a `getBoundingClientRect()` method works, such as a text selection's range. In React, pass it as `anchorEl`. In HTML, pass it to the instance's `open()` method. The popover reads the rectangle again when the page scrolls or resizes.",
+     "html": "<!-- Load once per page: the styles and the runtime -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<p data-ok-typography data-ok-variant=\"body2\" id=\"text\">Select some words of this sentence.</p>\n<div id=\"selection\" popover=\"manual\" data-ok-popover data-ok-placement=\"top\" data-ok-disable-auto-focus\n  data-ok-disable-restore-focus>\n  <p data-ok-typography data-ok-variant=\"body2\">You selected some text.</p>\n</div>\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  // Open the popover next to the selection once it is made.\n  const text = document.getElementById(\"text\");\n  document.addEventListener(\"pointerup\", () => {\n    const popover = getRuntime().get(document.getElementById(\"selection\"), \"popover\");\n    const range = document.getSelection().rangeCount ? document.getSelection().getRangeAt(0) : null;\n    popover.close();\n    if (range && !range.collapsed && text.contains(range.commonAncestorContainer)) {\n      popover.open({ getBoundingClientRect: () => range.getBoundingClientRect() });\n    }\n  });\n</script>",
+     "id": "virtual-element",
+     "react": "import { Popover, type PopoverVirtualAnchor, Typography } from \"@owlky/react\";\nimport { useEffect, useRef, useState } from \"react\";\n\nexport function SelectionPopover() {\n  const text = useRef<HTMLElement>(null);\n  const [anchor, setAnchor] = useState<PopoverVirtualAnchor | null>(null);\n  useEffect(() => {\n    // Open the popover next to the selection once it is made.\n    const onPointerUp = () => {\n      const selection = document.getSelection();\n      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;\n      const inside = range && !range.collapsed && text.current?.contains(range.commonAncestorContainer);\n      setAnchor(inside ? { getBoundingClientRect: () => range.getBoundingClientRect() } : null);\n    };\n    document.addEventListener(\"pointerup\", onPointerUp);\n    return () => document.removeEventListener(\"pointerup\", onPointerUp);\n  }, []);\n  return (\n    <>\n      <Typography ref={text} variant=\"body2\">\n        Select some words of this sentence.\n      </Typography>\n      <Popover open={anchor !== null} anchorEl={anchor} placement=\"top\" disableAutoFocus disableRestoreFocus>\n        <Typography variant=\"body2\">You selected some text.</Typography>\n      </Popover>\n    </>\n  );\n}",
+     "title": "Anchor the popover to a virtual element"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

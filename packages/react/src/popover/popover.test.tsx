@@ -131,6 +131,46 @@ describe("Popover", () => {
     expect(screen.getByTestId("q").hasAttribute("data-ok-open")).toBe(false);
   });
 
+  it("anchorReference, anchorPosition, marginThreshold, transitionDuration; a virtual anchor", () => {
+    const { rerender } = render(
+      <Popover
+        open
+        anchorEl={null}
+        anchorReference="anchorPosition"
+        anchorPosition={{ top: 40, left: 60 }}
+        marginThreshold={4}
+        transitionDuration={120}
+        data-testid="p"
+      >
+        x
+      </Popover>,
+    );
+    const popover = screen.getByTestId("p");
+    expect(popover.dataset).toMatchObject({
+      okAnchorReference: "anchorPosition",
+      okAnchorPosition: "40,60",
+      okMarginThreshold: "4",
+      okTransitionDuration: "120",
+    });
+    expect(popover.hasAttribute("data-ok-open")).toBe(true);
+    expect(popover.style.getPropertyValue("--_ok-popover-y")).toBe("48px");
+    expect(popover.style.getPropertyValue("--_ok-popover-duration")).toBe("120ms");
+    rerender(
+      <Popover open anchorEl={null} anchorReference="none" data-testid="p">
+        x
+      </Popover>,
+    );
+    expect(popover.hasAttribute("data-ok-open")).toBe(true);
+    expect(popover.style.getPropertyValue("--_ok-popover-x")).toBe("");
+    const virtual = { getBoundingClientRect: () => new DOMRect(30, 20, 0, 10) };
+    rerender(
+      <Popover open anchorEl={virtual} data-testid="p" placement="bottom-start">
+        x
+      </Popover>,
+    );
+    expect(popover.style.getPropertyValue("--_ok-popover-y")).toBe("38px");
+  });
+
   it("forwards refs; server-renders closed", () => {
     const ref = createRef<HTMLDivElement>();
     render(

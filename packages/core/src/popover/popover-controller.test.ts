@@ -201,3 +201,60 @@ it("native: adds popover=manual when missing; doesn't restore focus taken elsewh
   controller.close();
   expect(document.activeElement).toBe(outside);
 });
+
+describe("anchor references", () => {
+  it("anchorPosition opens at a point; none writes no coordinates; marginThreshold", () => {
+    const { element, anchor, controller } = setup({
+      anchorReference: "anchorPosition",
+      anchorPosition: { top: 50, left: 120 },
+    });
+    controller.open(anchor);
+    expect(element.style.getPropertyValue("--_ok-popover-x")).toBe("120px");
+    expect(element.style.getPropertyValue("--_ok-popover-y")).toBe("58px");
+    controller.setOptions({
+      anchorReference: "anchorPosition",
+      anchorPosition: { top: 0, left: 0 },
+    });
+    expect(element.style.getPropertyValue("--_ok-popover-x")).toBe("16px");
+    controller.setOptions({
+      anchorReference: "anchorPosition",
+      anchorPosition: { top: 0, left: 0 },
+      marginThreshold: 0,
+    });
+    expect(element.style.getPropertyValue("--_ok-popover-x")).toBe("0px");
+    // Without a point, the anchor positions it.
+    controller.setOptions({ anchorReference: "anchorPosition" });
+    expect(element.style.getPropertyValue("--_ok-popover-x")).toBe("100px");
+    controller.setOptions({ anchorReference: "none" });
+    expect(element.style.getPropertyValue("--_ok-popover-x")).toBe("");
+    expect(element.style.getPropertyValue("--_ok-popover-y")).toBe("");
+    expect(element.getAttribute("data-ok-current-placement")).toBe("bottom-start");
+  });
+
+  it("a virtual anchor: positions from its rectangle, every press outside the popover dismisses", async () => {
+    const { element, controller, onDismiss } = setup();
+    const context = document.getElementById("outside") as HTMLElement;
+    const virtual = {
+      getBoundingClientRect: () => new DOMRect(40, 60, 0, 20),
+      contextElement: context,
+    };
+    controller.open(virtual);
+    expect(element.style.getPropertyValue("--_ok-popover-x")).toBe("40px");
+    expect(element.style.getPropertyValue("--_ok-popover-y")).toBe("88px");
+    await userEvent.click(context);
+    expect(onDismiss).toHaveBeenCalledWith("backdrop");
+    controller.close();
+    controller.open({ getBoundingClientRect: () => new DOMRect(10, 10, 0, 0) });
+    expect(controller.isOpen).toBe(true);
+  });
+
+  it("transitionDuration writes --_ok-popover-duration on open; invalid or absent removes it", () => {
+    const { element, anchor, controller } = setup({ transitionDuration: 50 });
+    controller.open(anchor);
+    expect(element.style.getPropertyValue("--_ok-popover-duration")).toBe("50ms");
+    controller.close();
+    controller.setOptions({ transitionDuration: -1 });
+    controller.open(anchor);
+    expect(element.style.getPropertyValue("--_ok-popover-duration")).toBe("");
+  });
+});

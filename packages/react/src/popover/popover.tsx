@@ -3,18 +3,32 @@
 import {
   createPopoverController,
   type Placement,
+  type PopoverAnchorPosition,
+  type PopoverAnchorReference,
+  type PopoverAnchorTarget,
   type PopoverController,
   type PopoverDismissReason,
+  type PopoverVirtualAnchor,
   popoverAttributes,
 } from "@owlky/core";
 import { forwardRef, type HTMLAttributes, type ReactNode, useEffect, useRef } from "react";
 import { useMergedRefs } from "../utils/refs.js";
 
-/** An element, or a function returning one (read when the popover opens). */
-export type PopoverAnchor = Element | null | undefined | (() => Element | null | undefined);
+/**
+ * An element or a virtual anchor (anything with `getBoundingClientRect()`, such as a text
+ * selection), or a function returning one (read when the popover opens).
+ */
+export type PopoverAnchor =
+  | PopoverAnchorTarget
+  | null
+  | undefined
+  | (() => PopoverAnchorTarget | null | undefined);
 
-export const resolveAnchor = (anchor: PopoverAnchor): Element | null =>
+export const resolveAnchor = (anchor: PopoverAnchor): PopoverAnchorTarget | null =>
   (typeof anchor === "function" ? anchor() : anchor) ?? null;
+
+/** Stands in for a missing `anchorEl` when a point or the author's CSS positions the popover. */
+const NO_ANCHOR: PopoverVirtualAnchor = { getBoundingClientRect: () => new DOMRect() };
 
 /** Arrow size in px (`--_ok-arrow-size` in popover.css: 24px). */
 export const POPOVER_ARROW = 24;
@@ -28,6 +42,17 @@ export interface PopoverProps extends Omit<HTMLAttributes<HTMLDivElement>, "popo
   onOpenChange?: ((open: boolean, reason?: PopoverDismissReason) => void) | undefined;
   /** Side of the anchor and alignment. Default `"bottom"`. Flips when there is no room. */
   placement?: Placement | undefined;
+  /**
+   * What positions the popover: `"anchorEl"` (default), `"anchorPosition"` (the point in
+   * `anchorPosition`; `anchorEl` may then be left out) or `"none"` (your own CSS).
+   */
+  anchorReference?: PopoverAnchorReference | undefined;
+  /** The point, in px from the viewport's top left corner, used with `anchorReference="anchorPosition"`. */
+  anchorPosition?: PopoverAnchorPosition | undefined;
+  /** Minimum distance to the viewport edges, in px. Default 16. */
+  marginThreshold?: number | undefined;
+  /** Length of the opening animation, in ms. Default: the theme's shorter duration. */
+  transitionDuration?: number | undefined;
   /** Draws an arrow pointing at the anchor. */
   arrow?: boolean | undefined;
   /** Escape doesn't ask to close. */
@@ -52,6 +77,10 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
     anchorEl,
     onOpenChange,
     placement,
+    anchorReference,
+    anchorPosition,
+    marginThreshold,
+    transitionDuration,
     arrow,
     disableEscapeKeyDown,
     disableAutoFocus,
@@ -78,6 +107,10 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
   useEffect(() => {
     controllerRef.current?.setOptions({
       placement,
+      anchorReference,
+      anchorPosition,
+      marginThreshold,
+      transitionDuration,
       arrow: arrow ? POPOVER_ARROW : 0,
       offset: arrow ? 14 : 8,
       closeOnEscape: disableEscapeKeyDown !== true,
@@ -90,10 +123,12 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
 
   useEffect(() => {
     const controller = controllerRef.current as PopoverController;
-    const anchor = resolveAnchor(anchorEl);
+    const anchor =
+      resolveAnchor(anchorEl) ??
+      (anchorReference === "anchorPosition" || anchorReference === "none" ? NO_ANCHOR : null);
     if (open && anchor) controller.open(anchor);
     else controller.close();
-  }, [open, anchorEl]);
+  }, [open, anchorEl, anchorReference]);
 
   return (
     <div
@@ -101,11 +136,17 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
       popover="manual"
       {...popoverAttributes({
         placement,
+        anchorReference,
+        marginThreshold,
+        transitionDuration,
         arrow,
         disableEscapeKeyDown,
         disableAutoFocus,
         disableRestoreFocus,
       })}
+      data-ok-anchor-position={
+        anchorPosition ? `${anchorPosition.top},${anchorPosition.left}` : undefined
+      }
       data-ok-runtime="off"
       {...props}
     >

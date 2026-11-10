@@ -77,7 +77,12 @@ import {
   state,
   style,
 } from "../options/define.js";
-import { type Placement, placements } from "../popover/position.js";
+import {
+  type Placement,
+  type PopoverAnchorReference,
+  placements,
+  popoverAnchorReferences,
+} from "../popover/position.js";
 import { type ToastPosition, toastPositions } from "../toast/toast-store.js";
 import { type WalktourPlacement, walktourPlacements } from "../walktour/walktour-model.js";
 
@@ -1560,6 +1565,25 @@ export const popoverOptions = defineOptions("popover", "data-ok-popover", {
     "data-ok-disable-restore-focus",
     "Focus isn't moved back to the anchor on close.",
   ),
+  anchorReference: style(
+    "data-ok-anchor-reference",
+    popoverAnchorReferences,
+    "anchorEl",
+    "What positions it: `anchorEl` (the anchor), `anchorPosition` (a point, `anchorPosition` / `data-ok-anchor-position`) or `none` (your CSS).",
+    { optional: true },
+  ),
+  marginThreshold: number(
+    "data-ok-margin-threshold",
+    16,
+    "Minimum distance to the viewport edges (px).",
+    { min: 0 },
+  ),
+  transitionDuration: number(
+    "data-ok-transition-duration",
+    undefined,
+    "Length of the opening animation (ms). Default: the theme's shorter duration.",
+    { min: 0 },
+  ),
   open: state(
     "data-ok-open",
     "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
@@ -1568,6 +1592,9 @@ export const popoverOptions = defineOptions("popover", "data-ok-popover", {
 });
 
 export interface PopoverAnatomyOptions {
+  anchorReference?: PopoverAnchorReference | undefined;
+  marginThreshold?: number | undefined;
+  transitionDuration?: number | undefined;
   placement?: Placement | undefined;
   arrow?: boolean | undefined;
   disableEscapeKeyDown?: boolean | undefined;

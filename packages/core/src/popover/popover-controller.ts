@@ -1,16 +1,45 @@
 import { focusInitial, isFocusable } from "../dom/focus.js";
 import { supports } from "../dom/support.js";
 import { layerStack } from "../overlay/layer-stack.js";
-import { computePosition, type Placement, parsePlacement } from "./position.js";
+import {
+  computePosition,
+  type Placement,
+  type PopoverAnchorPosition,
+  type PopoverAnchorReference,
+  parsePlacement,
+} from "./position.js";
 
 /** Why a close was requested: Escape, or a press outside the popover and its anchor. */
 export type PopoverDismissReason = "escape" | "backdrop";
+
+/**
+ * An anchor that isn't an element (MUI `PopoverVirtualElement`): anything with a bounding
+ * rectangle, such as a text selection's range. `contextElement` is watched for size changes.
+ */
+export interface PopoverVirtualAnchor {
+  getBoundingClientRect(): DOMRect;
+  contextElement?: Element | undefined;
+}
+
+/** What a popover opens next to: an element or a virtual anchor. */
+export type PopoverAnchorTarget = Element | PopoverVirtualAnchor;
 
 export interface PopoverControllerOptions {
   /** Requested side and alignment. Default `"bottom"`. */
   placement?: Placement | undefined;
   /** Gap to the anchor in px. Default 8. */
   offset?: number | undefined;
+  /**
+   * What positions the popover: the anchor (default), `anchorPosition` (a point), or `none` (the
+   * author's CSS: the controller writes no coordinates).
+   */
+  anchorReference?: PopoverAnchorReference | undefined;
+  /** The point used with `anchorReference: "anchorPosition"`. */
+  anchorPosition?: PopoverAnchorPosition | undefined;
+  /** Minimum distance to the viewport edges in px (MUI `marginThreshold`). Default 16. */
+  marginThreshold?: number | undefined;
+  /** Opening animation length in ms (`--_ok-popover-duration`); default: the theme's. */
+  transitionDuration?: number | undefined;
   /** Arrow size in px when the popover draws one (`[data-ok-popover-arrow]`); 0 = none. */
   arrow?: number | undefined;
   /** Move focus into the popover on open (MUI `disableAutoFocus` = false). Default `true`. */
@@ -36,8 +65,8 @@ export interface PopoverController {
   readonly isOpen: boolean;
   /** `true` without the Popover API (ADR-0006): `data-ok-fallback`, fixed + z-index. */
   readonly isFallback: boolean;
-  /** Shows the popover next to `anchor`. */
-  open(anchor: Element): void;
+  /** Shows the popover next to `anchor` (an element or a virtual anchor). */
+  open(anchor: PopoverAnchorTarget): void;
   close(): void;
   /** Recomputes the position (called automatically on scroll, resize and size changes). */
   update(): void;
@@ -73,14 +102,19 @@ export function createPopoverController(
   const listeners = new AbortController();
   let openListeners: AbortController | null = null;
   let resize: ResizeObserver | null = null;
-  let anchor: Element | null = null;
+  let anchor: PopoverAnchorTarget | null = null;
   let isOpen = false;
   let frame = 0;
   let returnFocus: HTMLElement | null = null;
 
   function update() {
     if (!isOpen || !anchor) return;
-    const rect = anchor.getBoundingClientRect();
+    const reference = options.anchorReference;
+    const point = options.anchorPosition;
+    const rect =
+      reference === "anchorPosition" && point
+        ? { x: point.left, y: point.top, width: 0, height: 0 }
+        : anchor.getBoundingClientRect();
     const position = computePosition({
       anchor: rect,
       floating: { width: element.offsetWidth, height: element.offsetHeight },
@@ -90,12 +124,18 @@ export function createPopoverController(
         "bottom",
       ),
       offset: options.offset,
+      margin: options.marginThreshold,
       arrow: options.arrow,
     });
     element.style.setProperty("--_ok-popover-w", px(element.offsetWidth));
     element.style.setProperty("--_ok-popover-h", px(element.offsetHeight));
-    element.style.setProperty("--_ok-popover-x", px(position.x));
-    element.style.setProperty("--_ok-popover-y", px(position.y));
+    for (const [name, value] of [
+      ["--_ok-popover-x", position.x],
+      ["--_ok-popover-y", position.y],
+    ] as const) {
+      if (reference === "none") element.style.removeProperty(name);
+      else element.style.setProperty(name, px(value));
+    }
     if (position.arrow === undefined) element.style.removeProperty("--_ok-popover-arrow");
     else element.style.setProperty("--_ok-popover-arrow", px(position.arrow));
     element.setAttribute(POPOVER_PLACEMENT_ATTRIBUTE, position.placement);
@@ -150,6 +190,10 @@ export function createPopoverController(
       }
       anchor = target;
       isOpen = true;
+      const duration = options.transitionDuration;
+      if (duration === undefined || !(duration >= 0))
+        element.style.removeProperty("--_ok-popover-duration");
+      else element.style.setProperty("--_ok-popover-duration", `${duration}ms`);
       const autoFocus = options.autoFocus !== false;
       returnFocus =
         options.restoreFocus !== false
@@ -174,13 +218,15 @@ export function createPopoverController(
       win.addEventListener("scroll", schedule, { signal, capture: true, passive: true });
       resize = new ResizeObserver(schedule);
       resize.observe(element);
-      resize.observe(target);
+      const watched = target instanceof Element ? target : target.contextElement;
+      if (watched) resize.observe(watched);
       // Outside press: in the capture phase, so content that stops propagation can't hide it.
       doc.addEventListener(
         "pointerdown",
         (event) => {
           const node = event.target as Node | null;
-          if (!node || element.contains(node) || anchor?.contains(node)) return;
+          if (!node || element.contains(node) || (anchor instanceof Node && anchor.contains(node)))
+            return;
           if (layerStack.isTop(element)) dismiss("backdrop");
         },
         { signal, capture: true },

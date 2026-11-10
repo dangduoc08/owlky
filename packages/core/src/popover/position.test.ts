@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { computePosition, parsePlacement, placements, splitPlacement } from "./position.js";
+import {
+  computePosition,
+  parseAnchorPosition,
+  parsePlacement,
+  placements,
+  splitPlacement,
+} from "./position.js";
+
+it("parseAnchorPosition reads `top,left`; anything else is undefined", () => {
+  expect(parseAnchorPosition("120, 240")).toEqual({ top: 120, left: 240 });
+  expect(parseAnchorPosition("-4.5,0")).toEqual({ top: -4.5, left: 0 });
+  for (const value of [null, "", "1", "1,2,3", "a,b", "1..2,3", "1,", "x".repeat(65)])
+    expect(parseAnchorPosition(value), String(value)).toBeUndefined();
+});
 
 const viewport = { width: 1000, height: 800 };
 const anchor = { x: 400, y: 300, width: 100, height: 40 };
