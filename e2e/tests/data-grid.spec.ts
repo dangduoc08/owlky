@@ -495,5 +495,42 @@ for (const impl of implementations) {
       expect((await visible(page, "due")).slice(-2)).toEqual(["", ""]);
       expect((await visible(page, "due"))[0]).toBe("2025-07-01");
     });
+
+    test("custom editors: a slider edits by keyboard; a list filters the header", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "editors"));
+      const points = page.locator(
+        '[data-ok-row-id="is-1"] [role="gridcell"][data-ok-field="points"]',
+      );
+      await points.click();
+      await page.keyboard.press("Enter");
+      const slider = page.getByRole("slider", { name: "Points" });
+      await expect(slider).toBeFocused();
+      // Keyboard alternative to dragging: arrows move the thumb, Enter saves.
+      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("Enter");
+      await expect(points).toHaveText("5");
+      await expect(points).toBeFocused();
+      await page.locator("#grid-editors-points-filter").selectOption("5");
+      expect(await visible(page, "points")).toEqual(["5", "8", "5"]);
+    });
+
+    test("edit modes: Edit, Save and Cancel buttons drive row editing", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "edit-modes"));
+      const hours = page.locator('[data-ok-row-id="m-2"] [data-ok-field="hours"]');
+      await page.getByRole("button", { name: "Edit Bao Tran" }).click();
+      const field = page.getByRole("spinbutton", { name: "Edit Hours" });
+      await field.fill("38");
+      await page.getByRole("button", { name: "Save Bao Tran" }).click();
+      await expect(hours).toHaveText("38");
+      await expect(page.getByRole("button", { name: "Edit Bao Tran" })).toBeVisible();
+      await page.getByRole("button", { name: "Edit Bao Tran" }).click();
+      await page.getByRole("spinbutton", { name: "Edit Hours" }).fill("10");
+      await page.getByRole("button", { name: "Cancel Bao Tran" }).click();
+      await expect(hours).toHaveText("38");
+      await expect(page.getByRole("button", { name: "Save Bao Tran" })).toBeHidden();
+    });
   });
 }

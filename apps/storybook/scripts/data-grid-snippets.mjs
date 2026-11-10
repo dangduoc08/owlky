@@ -184,6 +184,14 @@ function templates(text) {
   return found;
 }
 
+/** The custom editor `<template>` blocks of a snippet (with their indentation). */
+function editTemplates(text) {
+  const found = [];
+  const re = /^( *)<template data-ok-data-grid-edit-cell="[^"]+"[^>]*>[\s\S]*?^\1<\/template>\n/gm;
+  for (let m = re.exec(text); m; m = re.exec(text)) found.push(m[0]);
+  return found;
+}
+
 const previous = (name) => {
   const path = resolve(out, `${name}.html`);
   return existsSync(path) ? readFileSync(path, "utf8") : null;
@@ -232,6 +240,12 @@ for (const [name, markup] of Object.entries(html)) {
     const start = snippet.indexOf("\n", at) + 1;
     const blocks = templates(source).map((block) => block.replaceAll(oldId, id));
     snippet = snippet.slice(0, start) + blocks.join("") + snippet.slice(start);
+  }
+  // Custom editors (renderEditCell) are hand-written templates at the end of the grid: kept.
+  const editors = old ? editTemplates(old) : [];
+  if (editors.length) {
+    const end = snippet.lastIndexOf("\n</div>");
+    snippet = `${snippet.slice(0, end + 1)}${editors.join("")}${snippet.slice(end + 1)}`;
   }
   writeFileSync(resolve(out, `${name}.html`), `${snippet}\n`);
   console.log(`${name}.html`);

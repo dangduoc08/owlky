@@ -774,6 +774,19 @@ export {
   printGridContent,
 } from "./data-grid/grid-columns.js";
 export {
+  type GridCellModeEntry,
+  type GridCellModesModel,
+  type GridEditModeValue,
+  type GridEditTarget,
+  type GridRowModeEntry,
+  type GridRowModesModel,
+  gridEditModeOf,
+  gridEditModes,
+  gridEditTarget,
+  sanitizeGridCellModes,
+  sanitizeGridRowModes,
+} from "./data-grid/grid-editing.js";
+export {
   GRID_XLSX_TYPE,
   type GridExcelOptions,
   gridCrc32,

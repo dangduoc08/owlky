@@ -24,6 +24,7 @@ import {
   GRID_XLSX_TYPE,
   type GridAggregationFunction,
   type GridAggregationModel,
+  type GridCellModesModel,
   type GridCellSelectionModel,
   type GridChartModel,
   type GridChartModels,
@@ -47,6 +48,7 @@ import {
   type GridPinnedColumns,
   type GridPivotModel,
   type GridPivotSection,
+  type GridRowModesModel,
   type GridRowWindow,
   type GridSortDirection,
   type GridSortingOrder,
@@ -76,6 +78,8 @@ import {
   gridDirectedComparator,
   gridDisplayedRows,
   gridEditInputType,
+  gridEditModes,
+  gridEditTarget,
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
@@ -149,6 +153,7 @@ import {
 } from "@owlky/core";
 import {
   type CSSProperties,
+  type FocusEvent,
   Fragment,
   forwardRef,
   type HTMLAttributes,
@@ -228,6 +233,30 @@ export interface GridPreProcessEditCellProps<R> {
   hasChanged: boolean;
 }
 
+/** What `renderEditCell` gets (MUI X `GridRenderEditCellParams`). */
+export interface GridRenderEditCellParams<R> {
+  id: string;
+  field: string;
+  row: R;
+  /** The value being edited (what `setEditCellValue` set, else the typed text parsed). */
+  value: unknown;
+  /** `true` or a message while the value is invalid (`preProcessEditCellProps`). */
+  error: boolean | string;
+  colDef: GridColDef<R>;
+  /** The grid's methods: `api.setEditCellValue({ id, field, value })` sets the edited value. */
+  api: GridApi<R>;
+}
+
+/** What `renderHeaderFilter` gets (MUI X `GridHeaderFilterCellProps`). */
+export interface GridRenderHeaderFilterParams<R> {
+  field: string;
+  colDef: GridColDef<R>;
+  /** The column's filter item (or a new one with the type's first operator). */
+  item: GridFilterItem;
+  /** Sets the column's filter item; an empty `value` removes it. */
+  applyFilterChanges(item: GridFilterItem): void;
+}
+
 /** A column (MUI X `GridColDef`). */
 export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   /** The raw value of a row for this column (default: `row[field]`). */
@@ -245,6 +274,14 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   getSortComparator?:
     | ((sortDirection: GridSortDirection) => GridComparatorFn<R> | undefined)
     | undefined;
+  /**
+   * A custom editor for the cell being edited. Call `api.setEditCellValue` with its value; Enter
+   * saves, Escape cancels, leaving the cell saves. The first control (or the one marked
+   * `data-ok-data-grid-edit-input`) takes the focus.
+   */
+  renderEditCell?: ((params: GridRenderEditCellParams<R>) => ReactNode) | undefined;
+  /** A custom field for the column's header filter (`headerFilters`). */
+  renderHeaderFilter?: ((params: GridRenderHeaderFilterParams<R>) => ReactNode) | undefined;
   /** Custom header content (the header name still labels the column). */
   renderHeader?: ((params: { field: string; colDef: GridColDef<R> }) => ReactNode) | undefined;
   /** Columns a cell spans (a number, or per cell). */
@@ -355,6 +392,20 @@ export interface GridApi<R> {
   /** The .xlsx file of the filtered, sorted rows (bytes). */
   getDataAsExcel(options?: GridExcelOptions): Uint8Array;
   exportDataAsExcel(options?: GridExcelOptions): void;
+  /** Sets the value of a cell being edited (custom editors). */
+  setEditCellValue(params: { id: string; field: string; value: unknown }): void;
+  /** The cells in edit mode. */
+  getCellModesModel(): GridCellModesModel;
+  /** The rows in edit mode. */
+  getRowModesModel(): GridRowModesModel;
+  /** Opens a cell's editor (cell mode). */
+  startCellEditMode(params: { id: string; field: string }): void;
+  /** Closes the cell's editor, saving unless `ignoreModifications`. */
+  stopCellEditMode(params: { id: string; field: string; ignoreModifications?: boolean }): void;
+  /** Opens a row's editors (row mode). */
+  startRowEditMode(params: { id: string; fieldToFocus?: string }): void;
+  /** Closes the row's editors, saving unless `ignoreModifications`. */
+  stopRowEditMode(params: { id: string; ignoreModifications?: boolean }): void;
 }
 
 export interface GridAutosizeOptions {
@@ -471,6 +522,21 @@ export interface DataGridProps<R>
   processRowUpdate?: ((newRow: R, oldRow: R) => R | Promise<R>) | undefined;
   /** Called when `processRowUpdate` throws or rejects. */
   onProcessRowUpdateError?: ((error: unknown) => void) | undefined;
+  /**
+   * Which cells are in edit mode (`editMode="cell"`), controlled: `{ [id]: { [field]: { mode } } }`
+   * with `mode` `"edit"` or `"view"` (`ignoreModifications: true` leaves without saving). The
+   * grid edits one cell at a time: the first `edit` entry.
+   */
+  cellModesModel?: GridCellModesModel | undefined;
+  /** Called when a cell starts or stops editing, with the next cell modes model. */
+  onCellModesModelChange?: ((model: GridCellModesModel) => void) | undefined;
+  /**
+   * Which rows are in edit mode (`editMode="row"`), controlled: `{ [id]: { mode, fieldToFocus? } }`.
+   * The grid edits one row at a time: the first `edit` entry.
+   */
+  rowModesModel?: GridRowModesModel | undefined;
+  /** Called when a row starts or stops editing, with the next row modes model. */
+  onRowModesModelChange?: ((model: GridRowModesModel) => void) | undefined;
   /** Render every row of the page instead of the visible ones. */
   disableVirtualization?: boolean | undefined;
   /** `server`: report the model and show `rows` as given. Default `client`. */
@@ -798,6 +864,8 @@ const REORDER_FIELD = "__reorder__";
 const DETAIL_FIELD = "__detail_panel_toggle__";
 /** Lazy loading asks for rows in chunks of this many. */
 const LAZY_CHUNK = 50;
+/** Controls a custom editor (`renderEditCell`) may hold, the first takes the focus. */
+const EDIT_FOCUSABLE = "input, select, textarea, button, [contenteditable], [tabindex]";
 /** Rows of a lazy grid that haven't loaded yet. */
 const HOLE = Symbol("row not loaded");
 type Hole = { [HOLE]: number };
@@ -911,6 +979,10 @@ function DataGridInner<R>(
     onPinnedColumnsChange,
     editMode = "cell",
     processRowUpdate,
+    cellModesModel,
+    onCellModesModelChange,
+    rowModesModel,
+    onRowModesModelChange,
     onProcessRowUpdateError,
     disableVirtualization,
     sortingMode = "client",
@@ -2063,10 +2135,12 @@ function DataGridInner<R>(
   useEffect(() => {
     if (editing) {
       const grid = gridRef.current as HTMLDivElement;
+      // The field's input; with `renderEditCell`, its marked input or its first control.
+      const at = `[data-ok-field="${CSS.escape(editing.focus)}"][data-ok-editing]`;
       const input =
-        grid.querySelector<HTMLInputElement>(
-          `[data-ok-field="${CSS.escape(editing.focus)}"] > [data-ok-data-grid-edit-input]`,
-        ) ?? grid.querySelector<HTMLInputElement>("[data-ok-data-grid-edit-input]");
+        grid.querySelector<HTMLInputElement>(`${at} [data-ok-data-grid-edit-input]`) ??
+        grid.querySelector<HTMLInputElement>(`${at} :is(${EDIT_FOCUSABLE})`) ??
+        grid.querySelector<HTMLInputElement>("[data-ok-data-grid-edit-input]");
       input?.focus();
       if (editing.typed && input?.type === "text")
         input.setSelectionRange(input.value.length, input.value.length);
@@ -2190,10 +2264,27 @@ function DataGridInner<R>(
     editable(column) && (isCellEditable?.(cellParams(column, row)) ?? true);
   const parse = (column: GridColDef<R>, text: string, row: R) =>
     column.valueParser ? column.valueParser(text, row) : parseGridEditValue(text, column.type);
-  const startEdit = useRef<
-    (rowId: string, field: string, reason: GridEditStartReason, key?: string) => void
-  >(undefined as never);
-  startEdit.current = (rowId, field, reason, key) => {
+  // Edit modes: controlled through `cellModesModel` (cell mode) or `rowModesModel` (row mode).
+  // Controlled, a start or a stop only reports the next model; the edit follows the prop.
+  const modesControlled =
+    editMode === "row" ? rowModesModel !== undefined : cellModesModel !== undefined;
+  const reportModes = (rowId: string, field: string, mode: "edit" | "view", cancel = false) => {
+    const next = gridEditModes(editMode, rowId, field, mode, cancel);
+    if (editMode === "row") onRowModesModelChange?.(next.rows);
+    else onCellModesModelChange?.(next.cells);
+  };
+  /** A user start or stop waiting for the controlled model (its reason, key and field). */
+  const pendingStart = useRef<{ reason: GridEditStartReason; key?: string | undefined } | null>(
+    null,
+  );
+  const pendingStop = useRef<{ field: string; reason: GridEditStopReason } | null>(null);
+  const canEdit = (rowId: string, field: string) => {
+    const column = columns.find((c) => c.field === field);
+    const row = view.find((r) => idOf(r) === rowId);
+    return !!column && !!row && cellEditable(column, row);
+  };
+  /** Opens the editors of a cell (or its row); `reason` undefined: from the modes model. */
+  const beginEdit = (rowId: string, field: string, reason?: GridEditStartReason, key?: string) => {
     const column = columns.find((c) => c.field === field);
     const row = view.find((r) => idOf(r) === rowId);
     if (!column || !row || !cellEditable(column, row)) return;
@@ -2202,6 +2293,7 @@ function DataGridInner<R>(
       targets.map((c) => [c.field, gridEditText(rawValue(c, row), c.type)]),
     );
     initialDrafts.current = start;
+    draftValues.current = {};
     // A typed character replaces the value (text-like fields only).
     const typed = key !== undefined && !["boolean", "singleSelect"].includes(column.type ?? "");
     setDrafts(typed ? { ...start, [field]: key as string } : start);
@@ -2209,16 +2301,30 @@ function DataGridInner<R>(
     // The typed character is checked like any change.
     if (typed) check(column, key as string, row);
     setEditing({ rowId, field: editMode === "row" ? null : field, focus: field, typed });
+    if (reason === undefined) return;
     if (editMode === "row") onRowEditStart?.({ id: rowId, row }, reason);
     else onCellEditStart?.(cellParams(column, row), reason);
   };
-  /** Runs a column's check on an edited text and keeps its error. */
-  const check = (column: GridColDef<R>, text: string, row: R) => {
+  const startEdit = useRef<
+    (rowId: string, field: string, reason: GridEditStartReason, key?: string) => void
+  >(undefined as never);
+  startEdit.current = (rowId, field, reason, key) => {
+    if (!canEdit(rowId, field)) return;
+    if (modesControlled) {
+      pendingStart.current = { reason, key };
+      reportModes(rowId, field, "edit");
+      return;
+    }
+    beginEdit(rowId, field, reason, key);
+    reportModes(rowId, field, "edit");
+  };
+  /** Runs a column's check on an edited text (or a value set by an editor) and keeps its error. */
+  const check = (column: GridColDef<R>, text: string, row: R, value?: { value: unknown }) => {
     if (!column.preProcessEditCellProps) return;
     const { error } = column.preProcessEditCellProps({
       id: idOf(row),
       row,
-      props: { value: parse(column, text, row) },
+      props: { value: value ? value.value : parse(column, text, row) },
       hasChanged: text !== initialDrafts.current[column.field],
     });
     setErrors((current) => {
@@ -2228,33 +2334,118 @@ function DataGridInner<R>(
       return next;
     });
   };
+  /** Values custom editors set (`setEditCellValue`), by field: used as they are, not parsed. */
+  const draftValues = useRef<Record<string, unknown>>({});
   const changeDraft = (column: GridColDef<R>, text: string) => {
+    delete draftValues.current[column.field];
     setDrafts((current) => ({ ...current, [column.field]: text }));
     const row = view.find((r) => idOf(r) === editing?.rowId);
     if (row) check(column, text, row);
   };
-  const stopEdit = (commit: boolean, field: string, reason: GridEditStopReason) => {
+  /** MUI X `setEditCellValue`: the value of a cell being edited. */
+  const setEditCellValue = ({
+    id: rowId,
+    field,
+    value,
+  }: {
+    id: string;
+    field: string;
+    value: unknown;
+  }) => {
+    if (!editing || editing.rowId !== rowId || !(field in drafts)) return;
+    const column = columnOf(field);
+    const text = gridEditText(value, column.type);
+    draftValues.current = { ...draftValues.current, [field]: value };
+    setDrafts((current) => ({ ...current, [field]: text }));
+    const row = view.find((r) => idOf(r) === rowId);
+    if (row) check(column, text, row, { value });
+  };
+  /** The value of a field being edited: the value an editor set, else the parsed text. */
+  const draftValue = (column: GridColDef<R>, row: R) =>
+    column.field in draftValues.current
+      ? draftValues.current[column.field]
+      : parse(column, drafts[column.field] ?? "", row);
+  /** Closes the editors; `commit` saves the row. `reason` undefined: from the modes model. */
+  const endEdit = (commit: boolean, field: string, reason?: GridEditStopReason) => {
     if (!editing) return;
-    // A value with an error keeps the cell open (Escape still cancels).
-    if (commit && Object.keys(errors).length > 0) return;
     const { rowId } = editing;
     refocus.current = { rowId, field };
     setEditing(null);
     setErrors({});
     const oldRow = view.find((r) => idOf(r) === rowId) as R;
-    if (editMode === "row") onRowEditStop?.({ id: rowId, row: oldRow }, reason);
-    else onCellEditStop?.(cellParams(columnOf(field), oldRow), reason);
-    if (!commit) return;
+    if (reason !== undefined) {
+      if (editMode === "row") onRowEditStop?.({ id: rowId, row: oldRow }, reason);
+      else onCellEditStop?.(cellParams(columnOf(field), oldRow), reason);
+    }
+    if (!commit || !oldRow) return;
     let newRow = { ...oldRow } as R;
-    for (const [f, text] of Object.entries(drafts)) {
+    for (const f of Object.keys(drafts)) {
       const column = columnOf(f);
-      const value = parse(column, text, oldRow);
+      const value = draftValue(column, oldRow);
       newRow = column.valueSetter
         ? column.valueSetter(value, newRow)
         : ({ ...newRow, [f]: value } as R);
     }
     commitRow(rowId, oldRow, newRow);
   };
+  /** `apiRef` starts and stops: no reasons (MUI X fires no edit start / stop events for them). */
+  const apiStart = (rowId: string, field: string) => {
+    if (!canEdit(rowId, field)) return;
+    if (!modesControlled) beginEdit(rowId, field);
+    reportModes(rowId, field, "edit");
+  };
+  const apiStop = (rowId: string, field: string, commit: boolean) => {
+    if (!editing || editing.rowId !== rowId) return;
+    if (commit && Object.keys(errors).length > 0) return;
+    const at = editing.field ?? editing.focus;
+    if (!modesControlled) endEdit(commit, field || at);
+    reportModes(rowId, at, "view", !commit);
+  };
+  const stopEdit = (commit: boolean, field: string, reason: GridEditStopReason) => {
+    if (!editing) return;
+    // A value with an error keeps the cell open (Escape still cancels).
+    if (commit && Object.keys(errors).length > 0) return;
+    const at = editing.field ?? editing.focus;
+    if (modesControlled) {
+      pendingStop.current = { field, reason };
+      reportModes(editing.rowId, at, "view", !commit);
+      return;
+    }
+    endEdit(commit, field, reason);
+    reportModes(editing.rowId, at, "view", !commit);
+  };
+  // Controlled modes: the edit follows the model (one cell or row at a time).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when a model or the edit changes.
+  useEffect(() => {
+    if (!modesControlled) return;
+    const target = gridEditTarget(cellModesModel, rowModesModel, editMode);
+    if (editing) {
+      if (target && target.id === editing.rowId && (target.field ?? null) === editing.field) return;
+      const entry =
+        editMode === "row"
+          ? rowModesModel?.[editing.rowId]
+          : cellModesModel?.[editing.rowId]?.[editing.field ?? ""];
+      const cancel = entry?.ignoreModifications === true;
+      // An invalid value stays open until it's fixed or cancelled.
+      if (!cancel && Object.keys(errors).length > 0) return;
+      const stop = pendingStop.current;
+      pendingStop.current = null;
+      endEdit(!cancel, stop?.field ?? editing.focus, stop?.reason);
+      return;
+    }
+    if (!target) return;
+    const begin = pendingStart.current;
+    pendingStart.current = null;
+    const row = view.find((r) => idOf(r) === target.id);
+    const field =
+      target.field ??
+      (target.fieldToFocus && row && cellEditable(columnOf(target.fieldToFocus), row)
+        ? target.fieldToFocus
+        : row
+          ? shown.find((c) => cellEditable(c, row))?.field
+          : undefined);
+    if (field) beginEdit(target.id, field, begin?.reason, begin?.key);
+  }, [cellModesModel, rowModesModel, editing]);
   /** An edited (or pasted) row: `processRowUpdate`, then the data source's `updateRow`. */
   const commitRow = (rowId: string, oldRow: R, newRow: R) =>
     Promise.resolve(processRowUpdate ? processRowUpdate(newRow, oldRow) : newRow)
@@ -2593,6 +2784,26 @@ function DataGridInner<R>(
     setActiveChartId,
     getDataAsExcel: getExcel,
     exportDataAsExcel: exportExcel,
+    setEditCellValue,
+    getCellModesModel: () =>
+      cellModesModel ??
+      (editing?.field ? gridEditModes("cell", editing.rowId, editing.field, "edit").cells : {}),
+    getRowModesModel: () =>
+      rowModesModel ??
+      (editing && editing.field === null
+        ? gridEditModes("row", editing.rowId, editing.focus, "edit").rows
+        : {}),
+    startCellEditMode: ({ id: rowId, field }) => apiStart(rowId, field),
+    stopCellEditMode: ({ id: rowId, field, ignoreModifications }) =>
+      apiStop(rowId, field, !ignoreModifications),
+    startRowEditMode: ({ id: rowId, fieldToFocus }) => {
+      const row = view.find((r) => idOf(r) === rowId);
+      const field =
+        fieldToFocus ?? (row ? shown.find((c) => cellEditable(c, row))?.field : undefined);
+      if (field) apiStart(rowId, field);
+    },
+    stopRowEditMode: ({ id: rowId, ignoreModifications }) =>
+      apiStop(rowId, editing?.focus ?? "", !ignoreModifications),
   };
   useLayoutEffect(() => {
     if (!apiRef) return;
@@ -3408,6 +3619,23 @@ function DataGridInner<R>(
           : filterModel.items.map((other, i) => (i === index ? item : other));
     setFilterItems(items);
   };
+  /** `renderHeaderFilter`: a field's own filter item (an empty value removes it). */
+  const applyHeaderFilter = (column: GridColDef<R>, next: GridFilterItem) => {
+    const index = filterModel.items.findIndex((item) => item.field === column.field);
+    const item = { ...next, field: column.field };
+    const empty =
+      gridOperatorNeedsValue(item.operator) &&
+      (item.value === undefined ||
+        item.value === "" ||
+        (Array.isArray(item.value) && item.value.length === 0));
+    setFilterItems(
+      empty
+        ? filterModel.items.filter((_, i) => i !== index)
+        : index < 0
+          ? [...filterModel.items, item]
+          : filterModel.items.map((other, i) => (i === index ? item : other)),
+    );
+  };
   const headerFilterCell = (column: GridColDef<R>, c: number) => {
     if (!renders(column)) return null;
     const side = gridPinSide(pinned, column.field);
@@ -3451,7 +3679,14 @@ function DataGridInner<R>(
         data-ok-data-grid-header-filter=""
         tabIndex={-1}
       >
-        {choices ? (
+        {column.renderHeaderFilter ? (
+          column.renderHeaderFilter({
+            field: column.field,
+            colDef: column,
+            item: item ?? { field: column.field, operator },
+            applyFilterChanges: (next) => applyHeaderFilter(column, next),
+          })
+        ) : choices ? (
           <TextField
             id={fieldId}
             select
@@ -3636,7 +3871,35 @@ function DataGridInner<R>(
             if (!scope?.contains(event.relatedTarget as Node | null))
               stopEdit(true, column.field, "cellFocusOut");
           };
-          const editor = !inEdit ? null : column.type === "singleSelect" ? (
+          // A custom editor: the cell handles its keys and the focus leaving it.
+          const customEditor =
+            inEdit && column.renderEditCell
+              ? column.renderEditCell({
+                  id: rowId,
+                  field: column.field,
+                  row,
+                  value: draftValue(column, row),
+                  error: error ?? false,
+                  colDef: column,
+                  api,
+                })
+              : null;
+          const customHandlers =
+            inEdit && column.renderEditCell
+              ? {
+                  onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+                    onCellKeyDown?.(params, event);
+                    if (event.target !== event.currentTarget) editKeys(event);
+                  },
+                  onBlur: (event: FocusEvent<HTMLDivElement>) => {
+                    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+                    editBlur(event);
+                  },
+                }
+              : {};
+          const editor = !inEdit ? null : column.renderEditCell ? (
+            customEditor
+          ) : column.type === "singleSelect" ? (
             <select
               data-ok-data-grid-edit-input=""
               aria-label={`${labels.editLabel} ${name}`}
@@ -3740,6 +4003,7 @@ function DataGridInner<R>(
                 startEdit.current(rowId, column.field, "cellDoubleClick");
               }}
               onKeyDown={(event) => onCellKeyDown?.(params, event)}
+              {...customHandlers}
             >
               {editor ?? (column.renderCell ? custom : text)}
               {typeof error === "string" && (

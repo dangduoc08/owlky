@@ -6,6 +6,7 @@ import cellsGroup from "../../../../../packages/html/src/components/data-grid/ex
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
+import editorsGroup from "../../../../../packages/html/src/components/data-grid/examples/editors-group.html?raw";
 import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
 import groupingMultiple from "../../../../../packages/html/src/components/data-grid/examples/grouping-multiple.html?raw";
@@ -13,6 +14,7 @@ import groupingValue from "../../../../../packages/html/src/components/data-grid
 import largeGroup from "../../../../../packages/html/src/components/data-grid/examples/large-group.html?raw";
 import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
 import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
+import modesGroup from "../../../../../packages/html/src/components/data-grid/examples/modes-group.html?raw";
 import pivotDerived from "../../../../../packages/html/src/components/data-grid/examples/pivot-derived.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
 import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
@@ -1306,6 +1308,143 @@ export function DataGridChartsConfiguration() {
 }`,
   },
   {
+    id: "custom-editors",
+    title: "Use your own editors and filter fields",
+    body: 'A column\'s `renderEditCell` replaces the field that edits its cells, for example with a slider. The editor gets the edited `value`, the `error` of the value, and `api`: call `api.setEditCellValue({ id, field, value })` when the value changes. Enter saves, Escape cancels, and moving the focus out of the cell saves, like the built-in fields. The first control of the editor takes the focus. In HTML, write the editor in `<template data-ok-data-grid-edit-cell="<field>">` at the end of the grid. The grid copies it into the cell. A field marked `data-ok-data-grid-edit-input` holds the value, or call `setEditCellValue()` from a script. With `headerFilters`, a column\'s `renderHeaderFilter` replaces its filter field: call `applyFilterChanges(item)` with the column\'s filter item. In HTML, write that field in the header filter cell, and name its operator with `data-ok-filter-operator`, such as `">="`.',
+    html: `${gridOf(editorsGroup)}
+<script type="module">
+  const element = document.getElementById("grid-editors");
+  const grid = window.Owlky.get(element, "data-grid");
+  const sliderOf = (id) =>
+    element.querySelector(\`[data-ok-row-id="\${id}"] [data-ok-field="points"] [data-ok-slider]\`);
+  // The template's Slider starts at the cell's value
+  element.addEventListener("ok:data-grid:editstart", (event) => {
+    const { id, field } = event.detail;
+    if (field !== "points") return;
+    const cell = sliderOf(id).closest("[data-ok-field]");
+    window.Owlky.getOrCreate(sliderOf(id), "slider").setValue(Number(cell.dataset.okValue));
+  });
+  // Each move sets the edited value
+  element.addEventListener("ok:slider:change", (event) => {
+    const id = event.target.closest("[data-ok-row-id]").dataset.okRowId;
+    grid.setEditCellValue({ id, field: "points", value: event.detail.value[0] });
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef, Slider, TextField } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", points: 3 },
+  { id: 2, title: "Add dark mode", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1, editable: true },
+  {
+    field: "points",
+    headerName: "Points",
+    type: "number",
+    width: 200,
+    editable: true,
+    renderEditCell: ({ id, field, value, api }) => (
+      <Slider
+        aria-label="Points"
+        min={0}
+        max={13}
+        value={Number(value)}
+        onChange={(next) => api.setEditCellValue({ id, field, value: next })}
+      />
+    ),
+    renderHeaderFilter: ({ item, applyFilterChanges }) => (
+      <TextField
+        select
+        size="small"
+        label="At least"
+        value={String(item.value ?? "")}
+        onChange={(next) => applyFilterChanges({ ...item, operator: ">=", value: next })}
+      >
+        <option value="">any</option>
+        <option value="5">5</option>
+        <option value="8">8</option>
+      </TextField>
+    ),
+  },
+];
+
+export function Issues() {
+  return <DataGrid aria-label="Issues" rows={issues} columns={columns} headerFilters />;
+}`,
+  },
+  {
+    id: "edit-modes",
+    title: "Start and stop editing from your code",
+    body: '`cellModesModel` (cell editing) and `rowModesModel` (row editing) tell which cell or row is in edit mode. Set an entry\'s `mode` to `"edit"` to open it and to `"view"` to close it. Closing saves the values, unless the entry also has `ignoreModifications: true`. With `rowModesModel`, `fieldToFocus` picks the field that takes the focus. When people start or stop editing, the grid calls `onCellModesModelChange` or `onRowModesModelChange` with the next model. While you control the model, nothing changes until you pass it back, so you can refuse or delay an edit. The grid edits one cell or one row at a time. `apiRef` has `startCellEditMode`, `stopCellEditMode`, `startRowEditMode` and `stopRowEditMode` too. In HTML, call `setCellModesModel(model)` or `setRowModesModel(model)`, and read `cellModesModel` or `rowModesModel` on the instance. The cancelable `ok:data-grid:cellmodes` and `ok:data-grid:rowmodes` events report the starts and stops people make.',
+    html: `${gridOf(modesGroup)}
+<script type="module">
+  const element = document.getElementById("grid-edit-modes");
+  const grid = window.Owlky.get(element, "data-grid");
+  // The Edit, Save and Cancel buttons of each row set the row modes model
+  element.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-ok-field=actions] button");
+    if (!button) return;
+    const id = button.closest("[data-ok-row-id]").dataset.okRowId;
+    const label = button.getAttribute("aria-label");
+    if (label.startsWith("Edit")) grid.setRowModesModel({ [id]: { mode: "edit" } });
+    else if (label.startsWith("Save")) grid.setRowModesModel({ [id]: { mode: "view" } });
+    else grid.setRowModesModel({ [id]: { mode: "view", ignoreModifications: true } });
+  });
+</script>`,
+    react: `import type { GridRowModesModel } from "@owlky/core";
+import { Button, DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
+
+const members = [
+  { id: "1", name: "Ana Silva", hours: 32 },
+  { id: "2", name: "Bao Tran", hours: 40 },
+];
+
+export function Members() {
+  const [modes, setModes] = useState<GridRowModesModel>({});
+  const columns: GridColDef<(typeof members)[number]>[] = [
+    { field: "name", headerName: "Name", flex: 1, editable: true },
+    { field: "hours", headerName: "Hours", type: "number", editable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      type: "actions",
+      width: 200,
+      renderCell: ({ row }) =>
+        modes[row.id]?.mode === "edit" ? (
+          <>
+            <Button size="sm" onClick={() => setModes({ [row.id]: { mode: "view" } })}>
+              Save
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setModes({ [row.id]: { mode: "view", ignoreModifications: true } })}
+            >
+              Cancel
+            </Button>
+          </>
+        ) : (
+          <Button size="sm" onClick={() => setModes({ [row.id]: { mode: "edit" } })}>
+            Edit
+          </Button>
+        ),
+    },
+  ];
+  return (
+    <DataGrid
+      aria-label="Team members"
+      rows={members}
+      columns={columns}
+      editMode="row"
+      rowModesModel={modes}
+      onRowModesModelChange={setModes}
+    />
+  );
+}`,
+  },
+  {
     id: "status-bar",
     title: "Show figures of the selected cells",
     body: 'With `cellSelection` and `statusBar`, a bar under the grid shows figures of the selected cells, like a spreadsheet. **Count** is the number of selected cells with a value. With numbers in `number` columns, the bar also shows their **Sum**, **Average**, **Min** and **Max**, with at most 2 decimals. The figures come from the aggregation functions of those names, so a `sum` in React\'s `aggregationFunctions` changes the bar too. The bar is a polite live region (`role="status"`): screen readers read the new figures once the selection stops changing. Rename the figures with the locale keys `statusBarCount`, `statusBarSum`, `statusBarAvg`, `statusBarMin` and `statusBarMax`.',
@@ -1413,6 +1552,7 @@ export function Issues() {
 - **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
 - **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setSortComparator(field, comparators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\`, \`setPivotDerivedColumns(getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
 - **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. **\`ok:data-grid:activechart\`** reports the chart the panel switches to in \`detail.id\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
+- **\`ok:data-grid:cellmodes\`** and **\`ok:data-grid:rowmodes\`** fire when people start or stop editing, with the next modes model in \`detail.model\`. They're cancelable. The instance has \`cellModesModel\` and \`rowModesModel\` with their setters, and \`setEditCellValue({ id, field, value })\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {
@@ -1575,6 +1715,18 @@ const PREVIEWS = {
           html: "data-ok-editable · ok:data-grid:validate",
           type: "functions",
           description: "Read-only cells, checks while typing, and how edits become values.",
+        },
+        {
+          react: "renderEditCell · renderHeaderFilter (column)",
+          html: "template[data-ok-data-grid-edit-cell] · data-ok-filter-operator",
+          type: "(params) => ReactNode",
+          description: "Your own editor of a cell, and your own header filter field.",
+        },
+        {
+          react: "cellModesModel · rowModesModel (+ on…Change)",
+          html: "setCellModesModel() · setRowModesModel() · ok:data-grid:cellmodes · rowmodes",
+          type: "{ [id]: { [field]: { mode } } } · { [id]: { mode } }",
+          description: "Which cell or row is being edited, controlled.",
         },
         {
           react: "onCellEditStart · onCellEditStop · onRowEditStart · onRowEditStop",

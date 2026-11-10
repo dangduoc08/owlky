@@ -2620,4 +2620,234 @@ describe("DataGrid", () => {
       expect(names()).toEqual(["Diego", "Ana", "Bao", "Chloe"]);
     });
   });
+
+  describe("custom editors and edit modes", () => {
+    interface Item {
+      id: number;
+      name: string;
+      qty: number;
+    }
+    const ITEMS: Item[] = [
+      { id: 1, name: "Bolt", qty: 4 },
+      { id: 2, name: "Nut", qty: 9 },
+    ];
+    const cellOf = (rowId: string, field: string) =>
+      grid().querySelector(`[data-ok-row-id="${rowId}"] [data-ok-field="${field}"]`) as HTMLElement;
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+    /** A slider editor that sets its value through the API. */
+    const QTY_SLIDER: GridColDef<Item> = {
+      field: "qty",
+      headerName: "Qty",
+      type: "number",
+      editable: true,
+      renderEditCell: ({ id, field, value, error, api }) => (
+        <span>
+          <input
+            type="range"
+            aria-label="Quantity"
+            min={0}
+            max={20}
+            value={Number(value)}
+            onChange={(event) =>
+              api.setEditCellValue({ id, field, value: Number(event.target.value) })
+            }
+          />
+          <button type="button">Reset</button>
+          {error ? <span>Invalid</span> : null}
+        </span>
+      ),
+      preProcessEditCellProps: ({ props }) => ({ error: Number(props.value) > 15 }),
+    };
+
+    it("renderEditCell: a custom editor sets the value, keys and focus leaving end it", async () => {
+      const processRowUpdate = vi.fn((row: Item) => row);
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={[{ field: "name", headerName: "Name", editable: true }, QTY_SLIDER]}
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      await userEvent.dblClick(cellOf("1", "qty"));
+      const slider = screen.getByRole("slider", { name: "Quantity" }) as HTMLInputElement;
+      expect(document.activeElement).toBe(slider);
+      expect(cellOf("1", "qty").hasAttribute("data-ok-editing")).toBe(true);
+      fireEvent.change(slider, { target: { value: "18" } });
+      expect(cellOf("1", "qty").textContent).toContain("Invalid");
+      // An invalid value keeps the cell open; moving inside the cell keeps it too.
+      fireEvent.keyDown(slider, { key: "Enter" });
+      expect(cellOf("1", "qty").hasAttribute("data-ok-editing")).toBe(true);
+      act(() => (within(cellOf("1", "qty")).getByRole("button") as HTMLElement).focus());
+      expect(cellOf("1", "qty").hasAttribute("data-ok-editing")).toBe(true);
+      fireEvent.change(slider, { target: { value: "12" } });
+      fireEvent.keyDown(slider, { key: "Enter" });
+      await act(settle);
+      expect(processRowUpdate).toHaveBeenLastCalledWith({ id: 1, name: "Bolt", qty: 12 }, ITEMS[0]);
+      expect(cellOf("1", "qty").textContent).toBe("12");
+      // Escape cancels; leaving the cell saves.
+      await userEvent.dblClick(cellOf("2", "qty"));
+      fireEvent.change(screen.getByRole("slider"), { target: { value: "3" } });
+      fireEvent.keyDown(screen.getByRole("slider"), { key: "Escape" });
+      expect(cellOf("2", "qty").textContent).toBe("9");
+      await userEvent.dblClick(cellOf("2", "qty"));
+      fireEvent.change(screen.getByRole("slider"), { target: { value: "5" } });
+      act(() => cellOf("1", "name").focus());
+      await act(settle);
+      expect(cellOf("2", "qty").textContent).toBe("5");
+    });
+
+    it("cellModesModel: controlled starts and stops; ignoreModifications cancels", async () => {
+      const onCellModesModelChange = vi.fn();
+      const processRowUpdate = vi.fn((row: Item) => row);
+      const columns: GridColDef<Item>[] = [
+        { field: "name", headerName: "Name", editable: true },
+        { field: "qty", headerName: "Qty", type: "number", editable: true },
+      ];
+      const view = (model: Record<string, Record<string, { mode: "edit" | "view" }>>) => (
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={columns}
+          cellModesModel={model}
+          onCellModesModelChange={onCellModesModelChange}
+          processRowUpdate={processRowUpdate}
+        />
+      );
+      const { rerender } = render(view({}));
+      // A double click asks; the cell opens only when the model says so.
+      await userEvent.dblClick(cellOf("1", "name"));
+      expect(onCellModesModelChange).toHaveBeenLastCalledWith({ "1": { name: { mode: "edit" } } });
+      expect(cellOf("1", "name").hasAttribute("data-ok-editing")).toBe(false);
+      rerender(view({ "1": { name: { mode: "edit" } } }));
+      const input = screen.getByRole("textbox", { name: "Edit Name" }) as HTMLInputElement;
+      await userEvent.clear(input);
+      await userEvent.type(input, "Screw");
+      fireEvent.keyDown(input, { key: "Enter" });
+      expect(onCellModesModelChange).toHaveBeenLastCalledWith({ "1": { name: { mode: "view" } } });
+      expect(cellOf("1", "name").hasAttribute("data-ok-editing")).toBe(true);
+      rerender(view({ "1": { name: { mode: "view" } } }));
+      await act(settle);
+      expect(processRowUpdate).toHaveBeenLastCalledWith({ id: 1, name: "Screw", qty: 4 }, ITEMS[0]);
+      // Escape reports ignoreModifications; the model's cancel drops the edit.
+      rerender(view({ "2": { qty: { mode: "edit" } } }));
+      const qty = screen.getByRole("spinbutton", { name: "Edit Qty" }) as HTMLInputElement;
+      fireEvent.change(qty, { target: { value: "1" } });
+      fireEvent.keyDown(qty, { key: "Escape" });
+      expect(onCellModesModelChange).toHaveBeenLastCalledWith({
+        "2": { qty: { mode: "view", ignoreModifications: true } },
+      });
+      rerender(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={columns}
+          cellModesModel={{ "2": { qty: { mode: "view", ignoreModifications: true } } }}
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      expect(cellOf("2", "qty").textContent).toBe("9");
+      expect(processRowUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it("rowModesModel and the API's edit methods (uncontrolled)", async () => {
+      const onRowModesModelChange = vi.fn();
+      const onCellModesModelChange = vi.fn();
+      const processRowUpdate = vi.fn((row: Item) => row);
+      const columns: GridColDef<Item>[] = [
+        { field: "name", headerName: "Name", editable: true },
+        { field: "qty", headerName: "Qty", type: "number", editable: true },
+      ];
+      const apiRef = createRef<GridApi<Item> | null>() as { current: GridApi<Item> | null };
+      const { rerender } = render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={columns}
+          apiRef={apiRef}
+          onCellModesModelChange={onCellModesModelChange}
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      const api = () => apiRef.current as GridApi<Item>;
+      act(() => api().startCellEditMode({ id: "2", field: "qty" }));
+      expect(onCellModesModelChange).toHaveBeenLastCalledWith({ "2": { qty: { mode: "edit" } } });
+      expect(api().getCellModesModel()).toEqual({ "2": { qty: { mode: "edit" } } });
+      act(() => api().setEditCellValue({ id: "2", field: "qty", value: 7 }));
+      expect((screen.getByRole("spinbutton") as HTMLInputElement).value).toBe("7");
+      // Another cell's value is ignored.
+      act(() => api().setEditCellValue({ id: "1", field: "qty", value: 1 }));
+      act(() => api().stopCellEditMode({ id: "2", field: "qty" }));
+      await act(settle);
+      expect(processRowUpdate).toHaveBeenLastCalledWith({ id: 2, name: "Nut", qty: 7 }, ITEMS[1]);
+      expect(api().getCellModesModel()).toEqual({});
+      act(() => api().startCellEditMode({ id: "1", field: "name" }));
+      act(() => api().stopCellEditMode({ id: "1", field: "name", ignoreModifications: true }));
+      expect(processRowUpdate).toHaveBeenCalledTimes(1);
+      // Row mode, controlled: fieldToFocus.
+      rerender(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={columns}
+          editMode="row"
+          apiRef={apiRef}
+          rowModesModel={{ "1": { mode: "edit", fieldToFocus: "qty" } }}
+          onRowModesModelChange={onRowModesModelChange}
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      expect(grid().querySelector('[data-ok-row-id="1"]')?.hasAttribute("data-ok-editing")).toBe(
+        true,
+      );
+      expect(document.activeElement).toBe(screen.getByRole("spinbutton", { name: "Edit Qty" }));
+      expect(api().getRowModesModel()).toEqual({ "1": { mode: "edit", fieldToFocus: "qty" } });
+      act(() => api().stopRowEditMode({ id: "1" }));
+      expect(onRowModesModelChange).toHaveBeenLastCalledWith({ "1": { mode: "view" } });
+      act(() => api().startRowEditMode({ id: "2" }));
+      expect(onRowModesModelChange).toHaveBeenLastCalledWith({
+        "2": { mode: "edit", fieldToFocus: "name" },
+      });
+    });
+
+    it("renderHeaderFilter: a custom field applies the column's filter item", async () => {
+      const onFilterModelChange = vi.fn();
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          headerFilters
+          onFilterModelChange={onFilterModelChange}
+          columns={[
+            { field: "name", headerName: "Name" },
+            {
+              field: "qty",
+              headerName: "Qty",
+              type: "number",
+              renderHeaderFilter: ({ item, applyFilterChanges }) => (
+                <input
+                  type="number"
+                  aria-label="At least"
+                  value={String(item.value ?? "")}
+                  onChange={(event) =>
+                    applyFilterChanges({ ...item, operator: ">=", value: event.target.value })
+                  }
+                />
+              ),
+            },
+          ]}
+        />,
+      );
+      const field = screen.getByRole("spinbutton", { name: "At least" });
+      expect(field.closest("[data-ok-data-grid-header-filter]")).not.toBeNull();
+      fireEvent.change(field, { target: { value: "5" } });
+      expect(onFilterModelChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ items: [{ field: "qty", operator: ">=", value: "5" }] }),
+      );
+      expect(names()).toEqual(["Nut"]);
+      fireEvent.change(field, { target: { value: "" } });
+      expect(onFilterModelChange).toHaveBeenLastCalledWith(expect.objectContaining({ items: [] }));
+      await expectNoAxeViolations(document.body);
+    });
+  });
 });

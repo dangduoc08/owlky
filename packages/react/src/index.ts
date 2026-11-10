@@ -261,6 +261,8 @@ export {
   type GridInitialState,
   type GridPaginationModel,
   type GridRenderCellParams,
+  type GridRenderEditCellParams,
+  type GridRenderHeaderFilterParams,
   useGridApiRef,
 } from "./data-grid/data-grid.js";
 export {

@@ -534,7 +534,9 @@ export interface DataGridParts {
   "data-ok-data-grid-detail-toggle": Part;
   /** The error message of an invalid edited value. */
   "data-ok-data-grid-edit-error": Part<"span">;
-  /** The input of an edited cell. */
+  /** HTML only: a column's own editor (renderEditCell), named by its field; copied into the edited cell. */
+  "data-ok-data-grid-edit-cell": Part<"template">;
+  /** The input of an edited cell (in an editor template: the field that holds the value). */
   "data-ok-data-grid-edit-input": Part<"select">;
   /** An export button in the toolbar and its format. */
   "data-ok-data-grid-export": Value<"csv" | "print" | "excel">;
@@ -640,6 +642,8 @@ export interface DataGridParts {
   "data-ok-field": Value<string>;
   /** On a filter row: the field it filters. */
   "data-ok-filter-field": Value<string>;
+  /** On a custom header filter field (or its parent): the operator of its filter, such as `>=`. */
+  "data-ok-filter-operator": Value<string>;
   /** On a header cell: `false` turns filtering off for the column. */
   "data-ok-filterable": Value<"false">;
   /** On a header cell: the column's share of the free width. */

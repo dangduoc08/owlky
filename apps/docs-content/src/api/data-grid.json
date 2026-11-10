@@ -140,6 +140,12 @@
      },
      {
       "cancelable": true,
+      "description": "Before a cell starts or stops editing (cell mode), with the next cell modes model. Call `preventDefault()` to refuse.",
+      "detail": "{ model: GridCellModesModel; }",
+      "name": "ok:data-grid:cellmodes"
+     },
+     {
+      "cancelable": true,
       "description": "Before the cell selection changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: GridCellSelectionModel; }",
       "name": "ok:data-grid:cellselection"
@@ -266,6 +272,12 @@
      },
      {
       "cancelable": true,
+      "description": "Before a row starts or stops editing (row mode), with the next row modes model. Call `preventDefault()` to refuse.",
+      "detail": "{ model: GridRowModesModel; }",
+      "name": "ok:data-grid:rowmodes"
+     },
+     {
+      "cancelable": true,
       "description": "Before a dragged row moves to `targetIndex`. Call `preventDefault()` to keep the order.",
       "detail": "{ id: string; oldIndex: number; targetIndex: number; }",
       "name": "ok:data-grid:roworder"
@@ -313,6 +325,12 @@
       "kind": "method",
       "name": "autosizeColumns",
       "type": "(options?: { columns?: readonly string[]; includeHeaders?: boolean; } | undefined) => void"
+     },
+     {
+      "description": "The cell being edited (cell mode), as a cell modes model.",
+      "kind": "property",
+      "name": "cellModesModel",
+      "type": "GridCellModesModel"
      },
      {
       "description": "The selected cells.",
@@ -411,6 +429,12 @@
       "type": "string[]"
      },
      {
+      "description": "The row being edited (row mode), as a row modes model.",
+      "kind": "property",
+      "name": "rowModesModel",
+      "type": "GridRowModesModel"
+     },
+     {
       "description": "Scrolls a row (index on the current page) and / or a column (shown index) into view.",
       "kind": "method",
       "name": "scrollToIndexes",
@@ -433,6 +457,12 @@
       "kind": "method",
       "name": "setAggregationModel",
       "type": "(model: GridAggregationModel) => void"
+     },
+     {
+      "description": "Starts or stops editing a cell (cell mode; no events): the first `edit` entry opens, a cell left out (or `view`) closes, saving unless `ignoreModifications`.",
+      "kind": "method",
+      "name": "setCellModesModel",
+      "type": "(model: GridCellModesModel) => void"
      },
      {
       "description": "Selects these cells.",
@@ -475,6 +505,12 @@
       "kind": "method",
       "name": "setDataSource",
       "type": "(source: GridDataSource<DataRow> | null) => void"
+     },
+     {
+      "description": "Sets the value of a field being edited, such as from a custom editor's widget.",
+      "kind": "method",
+      "name": "setEditCellValue",
+      "type": "(params: { id: string; field: string; value: unknown; }) => void"
      },
      {
       "description": "Filters the rows (no event).",
@@ -535,6 +571,12 @@
       "kind": "method",
       "name": "setRowGroupingModel",
       "type": "(model: readonly string[]) => void"
+     },
+     {
+      "description": "Starts or stops editing a row (row mode; no events), like `setCellModesModel`.",
+      "kind": "method",
+      "name": "setRowModesModel",
+      "type": "(model: GridRowModesModel) => void"
      },
      {
       "description": "Replaces the rows with data: each row is a copy of `<template data-ok-data-grid-row>`, its cells filled as text (or from `<template data-ok-data-grid-cell=\"<field>\">`, whose `[data-ok-data-grid-value]` elements get the value). Needs `id` on each row.",
@@ -1121,6 +1163,14 @@
       "name": "data-ok-data-grid-detail-toggle"
      },
      {
+      "description": "HTML only: a column's own editor (renderEditCell), named by its field; copied into the edited cell.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-edit-cell"
+     },
+     {
       "description": "The error message of an invalid edited value.",
       "elements": [
        "span"
@@ -1129,7 +1179,7 @@
       "name": "data-ok-data-grid-edit-error"
      },
      {
-      "description": "The input of an edited cell.",
+      "description": "The input of an edited cell (in an editor template: the field that holds the value).",
       "elements": [
        "select"
       ],
@@ -1523,6 +1573,12 @@
       "value": "string"
      },
      {
+      "description": "On a custom header filter field (or its parent): the operator of its filter, such as `>=`.",
+      "kind": "value",
+      "name": "data-ok-filter-operator",
+      "value": "string"
+     },
+     {
       "description": "On a header cell: `false` turns filtering off for the column.",
       "kind": "value",
       "name": "data-ok-filterable",
@@ -1744,6 +1800,11 @@
       "description": "How `autosizeColumns` measures (columns, header, outliers, extra width).",
       "name": "autosizeOptions",
       "type": "GridAutosizeOptions"
+     },
+     {
+      "description": "Which cells are in edit mode (`editMode=\"cell\"`), controlled: `{ [id]: { [field]: { mode } } }` with `mode` `\"edit\"` or `\"view\"` (`ignoreModifications: true` leaves without saving). The grid edits one cell at a time: the first `edit` entry.",
+      "name": "cellModesModel",
+      "type": "GridCellModesModel"
      },
      {
       "description": "Cells are selected in ranges (press, drag, Shift + click, Shift + arrows).",
@@ -2137,6 +2198,11 @@
       "type": "((params: GridCellParams<R>, event: KeyboardEvent<HTMLElement>) => void)"
      },
      {
+      "description": "Called when a cell starts or stops editing, with the next cell modes model.",
+      "name": "onCellModesModelChange",
+      "type": "((model: GridCellModesModel) => void)"
+     },
+     {
       "description": "Called when the cell selection changes.",
       "name": "onCellSelectionModelChange",
       "type": "((model: GridCellSelectionModel) => void)"
@@ -2257,6 +2323,11 @@
       "type": "((model: string[]) => void)"
      },
      {
+      "description": "Called when a row starts or stops editing, with the next row modes model.",
+      "name": "onRowModesModelChange",
+      "type": "((model: GridRowModesModel) => void)"
+     },
+     {
       "description": "Called when a dragged row moves.",
       "name": "onRowOrderChange",
       "type": "((params: { row: R; oldIndex: number; targetIndex: number; }) => void)"
@@ -2358,6 +2429,11 @@
       "type": "number"
      },
      {
+      "description": "Which rows are in edit mode (`editMode=\"row\"`), controlled: `{ [id]: { mode, fieldToFocus? } }`. The grid edits one row at a time: the first `edit` entry.",
+      "name": "rowModesModel",
+      "type": "GridRowModesModel"
+     },
+     {
       "description": "Rows move by dragging their handle (or Alt + Up / Down on it).",
       "name": "rowReordering",
       "type": "boolean"
@@ -2442,6 +2518,10 @@
    "type": "\"footer\" | \"inline\" | null"
   },
   {
+   "name": "GridCellModesModel",
+   "type": "{ [x: string]: Record<string, GridCellModeEntry>; }"
+  },
+  {
    "name": "GridCellSelectionModel",
    "type": "{ [x: string]: Record<string, boolean>; }"
   },
@@ -2460,6 +2540,10 @@
   {
    "name": "GridEditStartReason",
    "type": "\"cellDoubleClick\" | \"enterKeyDown\" | \"f2KeyDown\" | \"printableKeyDown\""
+  },
+  {
+   "name": "GridRowModesModel",
+   "type": "{ [x: string]: GridRowModeEntry; }"
   },
   {
    "name": "GridSortDirection",

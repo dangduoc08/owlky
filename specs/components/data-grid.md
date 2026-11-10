@@ -72,6 +72,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     div[role=rowgroup][data-ok-data-grid-pinned-rows=top|bottom] › rows (sticky)
     cells after a column window spacer: [data-ok-col-start] (--_ok-data-grid-col-start)
   template[data-ok-data-grid-cell="<field>"]?    (HTML only: cell content, [data-ok-data-grid-value] slots)
+  template[data-ok-data-grid-edit-cell="<field>"]? (HTML only: a custom editor; [data-ok-data-grid-edit-input]?)
+  header filter cell › custom field [data-ok-filter-operator]? (renderHeaderFilter)
   Phase 6:
     root [data-ok-row-grouping-model='["f"]']? [data-ok-aggregation-model='{"f":"sum"}']?
       [data-ok-aggregation-position='{"root":null,"f":"footer"}']?
@@ -255,7 +257,10 @@ columns; `null`: none); `excelOptions` (`fileName`, `sheetName`, `fields`, `allC
 `initialState.chartsIntegration.activeChartId`, `apiRef.setChartModels` / `setActiveChartId`; data source `groupFields`; `apiRef`
 row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roadmap 4.18.49): grid
 `sortingOrder`, `multipleColumnsSortingMode` (`withModifierKey` | `always`), column `sortingOrder`,
-`sortComparator(v1, v2, params1, params2)`, `getSortComparator(direction)`. Beyond MUI X (4.18.11,
+`sortComparator(v1, v2, params1, params2)`, `getSortComparator(direction)`; (4.18.50) column
+`renderEditCell`, `renderHeaderFilter`, `cellModesModel` / `onCellModesModelChange`, `rowModesModel` /
+`onRowModesModelChange`, apiRef `setEditCellValue`, `getCellModesModel`, `getRowModesModel`,
+`startCellEditMode`, `stopCellEditMode`, `startRowEditMode`, `stopRowEditMode`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -425,6 +430,22 @@ hides the sort items outside the cycle. `sortComparator` compares ascending (rev
 a 0 or NaN goes on to the next sort key. `multipleColumnsSortingMode="always"` adds every clicked
 column to the sort (Shift not needed; `disableMultipleColumnsSorting` still wins). Grouped rows and
 the pivot order groups as before (by key or aggregated value).
+Custom editors and edit modes (4.18.50): `renderEditCell` replaces the editor of the cell being
+edited; the first control (or the one marked `data-ok-data-grid-edit-input`) takes the focus; Enter
+saves, Escape cancels, focus leaving the cell (row mode: the row) saves; keys and focus moves inside
+the cell stay with the editor. A value set by `setEditCellValue` is used as it is (not parsed) and
+checked like a typed one (`preProcessEditCellProps`, HTML `ok:data-grid:validate`). HTML editors are
+copies of `template[data-ok-data-grid-edit-cell]`; their `[data-ok-data-grid-edit-input]` field gets
+the cell's text and its `input` / `change` update the value. `renderHeaderFilter` renders inside
+the header filter cell; `applyFilterChanges(item)` sets the field's item (an empty value with an
+operator that needs one removes it); HTML custom fields report `input` (selects `change`) with the
+operator of `data-ok-filter-operator` (else the item's, else the type's first). Modes: uncontrolled,
+the grid reports each start (`{ [id]: { [field]: { mode: "edit" } } }`, row mode `{ [id]: { mode:
+"edit", fieldToFocus } }`) and stop (`mode: "view"`, `ignoreModifications: true` on Escape);
+controlled, a start or stop only reports, and the edit follows the prop (an entry that leaves edit
+mode saves unless `ignoreModifications`; an invalid value stays open). Cells hide controls with
+`hidden` (a CSS rule beats the controls' own `display`).
+
 Status bar (4.18.11): with `statusBar` and `cellSelection`, the selected cells of the page (data
 rows, shown columns) give Count (cells with a value) and, with numbers in `number` columns, Sum,
 Average, Min and Max through the aggregation functions of those names (core `gridSelectionStats`,
@@ -488,7 +509,10 @@ the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
 `setActiveChartId(id)`; `ok:data-grid:chart` carries `id` with several charts;
 `ok:data-grid:activechart` (cancelable, `{ id }`);
 `toExcel(options)`, `exportExcel(options)`.
-Batch E: instance `setSortComparator(field, { sortComparator?, getSortComparator? } | null)`
+Batch E: `ok:data-grid:cellmodes` / `rowmodes` (cancelable, `{ model }`: the next modes model of a
+start or stop people make); instance `cellModesModel`, `rowModesModel`, `setCellModesModel(model)`,
+`setRowModesModel(model)` (no events), `setEditCellValue({ id, field, value })`;
+`setSortComparator(field, { sortComparator?, getSortComparator? } | null)`
 (values: `data-ok-value`, else the cell text; rows: the row elements).
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`,
 `data-ok-sorting-order` (root and headers, JSON).
@@ -511,7 +535,7 @@ the detailed record of what is kept.
 | Data: `rows`, `columns`, `getRowId`, `initialState`, `localeText`, `apiRef` | same | kept | `apiRef` covers the setters / getters listed above |
 | Column def: `field`, `headerName`, `type`, `width` / `minWidth` / `maxWidth` / `flex`, `align` / `headerAlign`, `description`, `sortable`, `filterable`, `hideable`, `resizable`, `editable`, `valueOptions`, `valueGetter` / `valueFormatter` / `valueParser` / `valueSetter`, `renderCell`, `renderHeader`, `colSpan`, `filterOperators`, `getApplyQuickFilterFn`, `preProcessEditCellProps`, `groupable`, `aggregable`, `availableAggregationFunctions`, `pivotable` | same | kept | |
 | Column def: `sortComparator`, `getSortComparator`, `sortingOrder`; grid `sortingOrder`, `multipleColumnsSortingMode` | same | kept (4.18.49) | comparators get `{ id, field, row, value }` params (MUI X: `{ id, field, value, rowNode, api }`); HTML: `data-ok-sorting-order` (root, header), `data-ok-multiple-columns-sorting-mode`, `setSortComparator(field, { sortComparator, getSortComparator })` (values as text); grouped rows keep ordering groups by key |
-| Column def: `renderEditCell`, `renderHeaderFilter` | — | deferred | custom editors / header filter inputs (header filter operator menus: spec Deferred) |
+| Column def: `renderEditCell`, `renderHeaderFilter` | same | kept (4.18.50) | params `{ id, field, row, value, error, colDef, api }` (`api.setEditCellValue`) / `{ field, colDef, item, applyFilterChanges }`; HTML: `template[data-ok-data-grid-edit-cell="<field>"]` (+ `setEditCellValue`), custom header filter markup with `data-ok-filter-operator`; header filter operator menus: spec Deferred |
 | Column def: `cellClassName`, `headerClassName` | grid `getCellClassName` only | deferred | per column class names |
 | Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | — | deferred | per column opt-outs (grid-wide flags exist) |
 | Column def: `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | — | deferred | |
@@ -529,7 +553,7 @@ the detailed record of what is kept.
 | Columns: resize, reorder, pinning, visibility props + callbacks, `columnGroupingModel`, `autosizeOnMount`, `autosizeOptions` | same | kept | |
 | Columns: `disableAutosize`, `onColumnResize`, `keepColumnPositionIfDraggedOutside`, `pinnedColumnsSectionSeparator`, `pinnedRowsSectionSeparator` | — | deferred | |
 | Editing: `editMode`, `processRowUpdate`, `onProcessRowUpdateError`, `isCellEditable`, `onCellEditStart` / `Stop`, `onRowEditStart` / `Stop` | same | kept | |
-| Editing: `cellModesModel` / `rowModesModel` + change callbacks | — | deferred | controlled edit modes |
+| Editing: `cellModesModel` / `rowModesModel` + change callbacks; apiRef `setEditCellValue`, `startCellEditMode` / `stopCellEditMode`, `startRowEditMode` / `stopRowEditMode` | same (+ `getCellModesModel` / `getRowModesModel`) | kept (4.18.50) | one cell or row at a time (the first `edit` entry); callbacks get the model only (MUI X: `details` too); apiRef starts and stops fire no edit start / stop callbacks; HTML: `cellModesModel` / `rowModesModel`, `setCellModesModel` / `setRowModesModel` (no events), cancelable `ok:data-grid:cellmodes` / `rowmodes` |
 | Undo / redo: `historyStackSize`, `historyEventHandlers`, `historyValidationEvents`, `onUndo`, `onRedo` | — | deferred (4.18.9) | |
 | Toolbar / footer: `showToolbar`, `hideFooter`, `disableColumnSelector`, `disableDensitySelector`, `disableColumnMenu` | same | kept | `toolbarVariant` added |
 | Toolbar / footer: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label` (toolbar title) | — | deferred | |

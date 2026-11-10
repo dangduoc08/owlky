@@ -22,6 +22,7 @@ import {
   GRID_TREE_FIELD,
   GRID_XLSX_TYPE,
   type GridAggregationModel,
+  type GridCellModesModel,
   type GridCellSelectionModel,
   type GridChartModel,
   type GridChartModels,
@@ -36,6 +37,7 @@ import {
   type GridDataSource,
   type GridDensity,
   type GridEditStartReason,
+  type GridEditTarget,
   type GridExcelOptions,
   type GridFilterModel,
   type GridFilterOperator,
@@ -49,6 +51,7 @@ import {
   type GridPivotResult,
   type GridPivotSection,
   type GridPrintLayout,
+  type GridRowModesModel,
   type GridRowWindow,
   type GridSortDirection,
   type GridSortModel,
@@ -74,6 +77,8 @@ import {
   gridDensityFactor,
   gridDirectedComparator,
   gridEditInputType,
+  gridEditModes,
+  gridEditTarget,
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
@@ -138,10 +143,12 @@ import {
   readNumber,
   readStyle,
   renderChart,
+  sanitizeGridCellModes,
   sanitizeGridCellSelection,
   sanitizeGridChartModel,
   sanitizeGridChartModels,
   sanitizeGridPivotModel,
+  sanitizeGridRowModes,
   sanitizeGridState,
   selectGridRow,
   setGridPivotRole,
@@ -211,6 +218,10 @@ export interface DataGridEvents {
   editstart: EventSpec<{ id: string; field?: string; reason: string }>;
   /** After editing stopped. */
   editstop: EventSpec<{ id: string; field?: string; reason: string }>;
+  /** Before a cell starts or stops editing (cell mode), with the next cell modes model. Call `preventDefault()` to refuse. */
+  cellmodes: EventSpec<{ model: GridCellModesModel }, true>;
+  /** Before a row starts or stops editing (row mode), with the next row modes model. Call `preventDefault()` to refuse. */
+  rowmodes: EventSpec<{ model: GridRowModesModel }, true>;
   /** While a cell is edited: set `detail.error` to `true` or a message to mark the value invalid. */
   validate: EventSpec<{ id: string; field: string; value: unknown; error?: string | boolean }>;
   /** After the rows were scrolled to the end (load more rows here). */
@@ -289,6 +300,19 @@ export interface DataGridInstance extends ComponentInstance {
    * (`data-ok-value`, else the text) and rows. `null`: back to sorting by the column type.
    */
   setSortComparator(field: string, comparators: GridComparators<HTMLElement> | null): void;
+  /** The cell being edited (cell mode), as a cell modes model. */
+  readonly cellModesModel: GridCellModesModel;
+  /** The row being edited (row mode), as a row modes model. */
+  readonly rowModesModel: GridRowModesModel;
+  /**
+   * Starts or stops editing a cell (cell mode; no events): the first `edit` entry opens, a cell
+   * left out (or `view`) closes, saving unless `ignoreModifications`.
+   */
+  setCellModesModel(model: GridCellModesModel): void;
+  /** Starts or stops editing a row (row mode; no events), like `setCellModesModel`. */
+  setRowModesModel(model: GridRowModesModel): void;
+  /** Sets the value of a field being edited, such as from a custom editor's widget. */
+  setEditCellValue(params: { id: string; field: string; value: unknown }): void;
   /** The text of a column's values in `setRows` and after editing (`null`: back to the default). */
   setValueFormatter(field: string, format: ((value: unknown) => string) | null): void;
   /**
@@ -2591,10 +2615,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const type = columns.find((c) => c.field === field)?.type;
       return operators[field]?.[0]?.value ?? (gridFilterOperators(type)[0] as string);
     };
-    const setHeaderFilter = (field: string, input: string) => {
+    const setHeaderFilter = (field: string, input: string, operator?: string | null) => {
       const index = filterModel.items.findIndex((item) => item.field === field);
       const current = filterModel.items[index];
-      const item = { field, operator: current?.operator ?? operatorOf(field), value: input };
+      const item = {
+        field,
+        operator: operator || current?.operator || operatorOf(field),
+        value: input,
+      };
       setFilter({
         ...filterModel,
         items:
@@ -2609,7 +2637,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const target = event.target as HTMLInputElement;
       if (target.closest("[data-ok-date-picker]")) return;
       const cell = target.closest("[data-ok-filter-field]") as Element;
-      setHeaderFilter(cell.getAttribute("data-ok-filter-field") as string, target.value);
+      // A custom field (renderHeaderFilter) may name its operator.
+      setHeaderFilter(
+        cell.getAttribute("data-ok-filter-field") as string,
+        target.value,
+        target.closest("[data-ok-filter-operator]")?.getAttribute("data-ok-filter-operator"),
+      );
     };
     headerGroup.addEventListener(
       "input",
@@ -3426,12 +3459,19 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       layout();
     };
 
-    // Editing: inputs replace the cell content; Enter commits, Escape cancels.
+    // Editing: inputs replace the cell content; Enter commits, Escape cancels. A column's
+    // `<template data-ok-data-grid-edit-cell="<field>">` is its own editor (renderEditCell).
+    type EditInput = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
     interface Edit {
       cell: HTMLElement;
       column: GridColumn;
-      input: HTMLInputElement | HTMLSelectElement;
+      /** The field that holds the value (a custom editor may have none: `setEditCellValue`). */
+      input: EditInput | null;
       content: Node[];
+      /** A value set by `setEditCellValue`, used as it is. */
+      value?: { value: unknown } | undefined;
+      /** From the column's editor template. */
+      custom: boolean;
     }
     let edits: Edit[] = [];
     let editRow: HTMLElement | null = null;
@@ -3440,66 +3480,120 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       !!column.editable &&
       !row.hasAttribute("data-ok-generated") &&
       cellOf(row, column.field)?.getAttribute("data-ok-editable") !== "false";
+    const rowMode = () => element.getAttribute(editMode.attr) === "row";
+    const EDIT_FOCUSABLE = "input, select, textarea, button, [contenteditable], [tabindex]";
+    /** A column's editor from its template, with its value field. */
+    const customEditor = (field: string) => {
+      const template = element.querySelector<HTMLTemplateElement>(
+        `:scope > template[data-ok-data-grid-edit-cell="${CSS.escape(field)}"]`,
+      );
+      if (!template) return null;
+      const content = template.content.cloneNode(true) as DocumentFragment;
+      const input = content.querySelector<EditInput>(
+        "input[data-ok-data-grid-edit-input], select[data-ok-data-grid-edit-input], textarea[data-ok-data-grid-edit-input]",
+      );
+      return { content, input };
+    };
+    /** The modes models of the edit in progress (MUI X `cellModesModel` / `rowModesModel`). */
+    const editModes = () =>
+      editRow && edits.length
+        ? gridEditModes(
+            rowMode() ? "row" : "cell",
+            idOf(editRow),
+            (edits[0] as Edit).column.field,
+            "edit",
+          )
+        : { cells: {}, rows: {} };
+    /** Reports a start or a stop (`ok:data-grid:cellmodes` | `rowmodes`); false: refused. */
+    let silentModes = false;
+    const reportModes = (
+      row: HTMLElement,
+      field: string,
+      mode: "edit" | "view",
+      cancel = false,
+    ) => {
+      if (silentModes) return true;
+      const next = gridEditModes(rowMode() ? "row" : "cell", idOf(row), field, mode, cancel);
+      return rowMode()
+        ? emit("rowmodes", { model: next.rows }, { cancelable: true })
+        : emit("cellmodes", { model: next.cells }, { cancelable: true });
+    };
     const startEdit = (
       row: HTMLElement,
       field: string,
-      reason: GridEditStartReason = "cellDoubleClick",
+      reason?: GridEditStartReason,
       key?: string,
     ) => {
       const column = columns.find((c) => c.field === field);
       if (edits.length || !column || !cellEditable(row, column)) return;
-      const rowMode = element.getAttribute(editMode.attr) === "row";
-      const targets = rowMode
+      if (!reportModes(row, field, "edit")) return;
+      const targets = rowMode()
         ? visibleGridColumns(columns, visibility).filter((c) => cellEditable(row, c))
         : [column];
       errors.clear();
       editRow = row;
-      if (rowMode) row.setAttribute("data-ok-editing", "");
+      if (rowMode()) row.setAttribute("data-ok-editing", "");
       edits = targets.map((c) => {
         const cell = cellOf(row, c.field) as HTMLElement;
         const name = c.headerName as string;
         const start = gridEditText(value(row, c.field), c.type);
-        let input: HTMLInputElement | HTMLSelectElement;
-        if (c.type === "singleSelect") {
-          input = document.createElement("select");
+        const custom = customEditor(c.field);
+        let input: EditInput | null;
+        if (custom) input = custom.input;
+        else if (c.type === "singleSelect") {
+          const select = document.createElement("select");
           for (const choice of c.valueOptions ?? []) {
             const option = document.createElement("option");
             option.value = choice;
             option.textContent = choice;
-            input.append(option);
+            select.append(option);
           }
-          input.value = start;
+          input = select;
         } else {
-          input = document.createElement("input");
-          input.type = gridEditInputType(c.type);
-          if (c.type === "boolean") input.checked = start === "true";
-          else input.value = start;
+          const text = document.createElement("input");
+          text.type = gridEditInputType(c.type);
+          input = text;
         }
+        if (input instanceof HTMLInputElement && input.type === "checkbox")
+          input.checked = start === "true";
+        else if (input) input.value = start;
         // A typed character replaces the value (text-like fields only).
         if (key !== undefined && c.field === field && input instanceof HTMLInputElement)
           if (input.type !== "checkbox") input.value = key;
-        input.setAttribute("data-ok-data-grid-edit-input", "");
-        input.setAttribute("aria-label", `${labels.editLabel} ${name}`);
+        if (!custom && input) {
+          input.setAttribute("data-ok-data-grid-edit-input", "");
+          input.setAttribute("aria-label", `${labels.editLabel} ${name}`);
+        }
         const content = [...cell.childNodes];
-        cell.replaceChildren(input);
+        if (custom) cell.replaceChildren(custom.content);
+        else cell.replaceChildren(input as EditInput);
         cell.setAttribute("data-ok-editing", "");
-        return { cell, column: c, input, content };
+        return { cell, column: c, input, content, custom: !!custom };
       });
       // The started cell is always among the edits (shown and editable).
       const first = edits.find((e) => e.column.field === field) as Edit;
-      first.input.focus();
+      const focus = first.input ?? first.cell.querySelector<HTMLElement>(EDIT_FOCUSABLE);
+      focus?.focus();
       if (
         key !== undefined &&
         first.input instanceof HTMLInputElement &&
         first.input.type === "text"
       )
         first.input.setSelectionRange(first.input.value.length, first.input.value.length);
-      emit("editstart", rowMode ? { id: idOf(row), reason } : { id: idOf(row), field, reason });
+      if (reason !== undefined)
+        emit("editstart", rowMode() ? { id: idOf(row), reason } : { id: idOf(row), field, reason });
     };
-    const editText = (input: HTMLInputElement | HTMLSelectElement) =>
+    const editText = (input: EditInput) =>
       input instanceof HTMLInputElement && input.type === "checkbox"
         ? String(input.checked)
         : input.value;
+    /** The value of an edited field: the one `setEditCellValue` set, else the field's, parsed. */
+    const editValue = (edit: Edit) =>
+      edit.value
+        ? edit.value.value
+        : edit.input
+          ? parseGridEditValue(editText(edit.input), edit.column.type)
+          : value(editRow as HTMLElement, edit.column.field);
     /** Cells of a row from a data row (text, formatted). */
     const fillCells = (row: HTMLElement, item: DataRow) => {
       for (const column of columns) {
@@ -3516,21 +3610,21 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const detail: { id: string; field: string; value: unknown; error?: string | boolean } = {
         id: idOf(editRow as HTMLElement),
         field: edit.column.field,
-        value: parseGridEditValue(editText(edit.input), edit.column.type),
+        value: editValue(edit),
       };
       emit("validate", detail);
       const message = edit.cell.querySelector<HTMLElement>("[data-ok-data-grid-edit-error]");
       if (detail.error) {
         errors.set(edit.column.field, detail.error === true ? true : String(detail.error));
-        edit.input.setAttribute("aria-invalid", "true");
+        edit.input?.setAttribute("aria-invalid", "true");
       } else {
         errors.delete(edit.column.field);
-        edit.input.removeAttribute("aria-invalid");
+        edit.input?.removeAttribute("aria-invalid");
       }
       const text = typeof detail.error === "string" ? detail.error : "";
       if (!text) {
         message?.remove();
-        edit.input.removeAttribute("aria-describedby");
+        edit.input?.removeAttribute("aria-describedby");
         return;
       }
       const errorId = `${id || "grid"}-${idOf(editRow as HTMLElement)}-${edit.column.field}-error`;
@@ -3540,38 +3634,34 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       span.id = errorId;
       span.textContent = text;
       if (!message) edit.cell.append(span);
-      edit.input.setAttribute("aria-describedby", errorId);
+      edit.input?.setAttribute("aria-describedby", errorId);
     };
     const stopEdit = (
       commit: boolean,
       focusField?: string,
-      reason: "enterKeyDown" | "escapeKeyDown" | "cellFocusOut" = "cellFocusOut",
+      reason?: "enterKeyDown" | "escapeKeyDown" | "cellFocusOut",
     ) => {
       // A value with an error keeps the cell open (Escape still cancels).
       if (commit && errors.size > 0) return;
       const done = edits;
       const row = editRow as HTMLElement;
+      if (!reportModes(row, (done[0] as Edit).column.field, "view", !commit)) return;
       errors.clear();
       const previousRow: DataRow = {
         id: idOf(row),
         ...Object.fromEntries(columns.map((c) => [c.field, value(row, c.field)])),
       };
+      const values = Object.fromEntries(done.map((edit) => [edit.column.field, editValue(edit)]));
       edits = [];
       editRow = null;
       row.removeAttribute("data-ok-editing");
-      const values = Object.fromEntries(
-        done.map(({ column, input }) => [
-          column.field,
-          parseGridEditValue(editText(input), column.type),
-        ]),
-      );
-      const rowMode = element.getAttribute(editMode.attr) === "row";
-      emit(
-        "editstop",
-        rowMode
-          ? { id: idOf(row), reason }
-          : { id: idOf(row), field: (done[0] as Edit).column.field, reason },
-      );
+      if (reason !== undefined)
+        emit(
+          "editstop",
+          rowMode()
+            ? { id: idOf(row), reason }
+            : { id: idOf(row), field: (done[0] as Edit).column.field, reason },
+        );
       const accepted = commit && emit("edit", { id: idOf(row), row: values }, { cancelable: true });
       for (const { cell, column, content } of done) {
         cell.removeAttribute("data-ok-editing");
@@ -3601,6 +3691,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (accepted) apply();
       (cellOf(row, focusField ?? (done[0] as Edit).column.field) as HTMLElement).focus();
     };
+    /** The edit whose editor an event happened in (inside the cell, not on the cell itself). */
+    const editAt = (target: EventTarget | null) =>
+      target instanceof Node
+        ? edits.find((edit) => edit.cell !== target && edit.cell.contains(target))
+        : undefined;
     main.addEventListener(
       "dblclick",
       (event) => {
@@ -3610,27 +3705,32 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const field = cell.getAttribute("data-ok-field") as string;
         emit("rowdoubleclick", { id: idOf(row) });
         emit("celldoubleclick", { id: idOf(row), field, value: value(row, field) });
-        startEdit(row, field, "cellDoubleClick");
+        if (!cell.hasAttribute("data-ok-editing")) startEdit(row, field, "cellDoubleClick");
       },
       { signal },
     );
-    main.addEventListener(
-      "input",
-      (event) => {
-        const edit = edits.find((e) => e.input === event.target);
-        if (edit) validate(edit);
-      },
-      { signal },
-    );
+    for (const type of ["input", "change"])
+      main.addEventListener(
+        type,
+        (event) => {
+          const edit = editAt(event.target);
+          // Built-in fields report every change as `input`; custom editors may only fire `change`.
+          if (!edit || (type === "change" && !edit.custom)) return;
+          // A custom editor's own field: its typed value replaces one set from code.
+          if (edit.input && event.target === edit.input) edit.value = undefined;
+          validate(edit);
+        },
+        { signal },
+      );
     main.addEventListener(
       "keydown",
       (event) => {
-        const input = (event.target as Element).closest("[data-ok-data-grid-edit-input]");
-        if (!input || (event.key !== "Enter" && event.key !== "Escape")) return;
+        const edit = editAt(event.target);
+        if (!edit || (event.key !== "Enter" && event.key !== "Escape")) return;
         event.preventDefault();
         stopEdit(
           event.key === "Enter",
-          (input.closest("[data-ok-field]") as Element).getAttribute("data-ok-field") as string,
+          edit.column.field,
           event.key === "Enter" ? "enterKeyDown" : "escapeKeyDown",
         );
       },
@@ -3639,14 +3739,45 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     main.addEventListener(
       "focusout",
       (event) => {
-        if (!edits.length || !(event.target as Element).closest("[data-ok-data-grid-edit-input]"))
-          return;
+        const edit = editAt(event.target);
+        if (!edit) return;
         const next = event.relatedTarget as Node | null;
-        const scope = element.getAttribute(editMode.attr) === "row" ? editRow : null;
-        if (!scope?.contains(next)) stopEdit(true);
+        // Row mode ends when the focus leaves the row, cell mode when it leaves the cell.
+        const scope = rowMode() ? editRow : edit.cell;
+        if (!scope?.contains(next)) stopEdit(true, undefined, "cellFocusOut");
       },
       { signal },
     );
+    /** Starts or stops an edit from code (no reasons; refused like a user's). */
+    const editFromModes = (target: GridEditTarget | null, cancelled: (id: string) => boolean) => {
+      const current = editRow;
+      if (
+        current &&
+        (!target ||
+          target.id !== idOf(current) ||
+          (target.field !== null && target.field !== (edits[0] as Edit).column.field))
+      )
+        stopEdit(!cancelled(idOf(current)));
+      if (!target || edits.length) return;
+      const row = rowEls.find((r) => idOf(r) === target.id && r.isConnected);
+      if (!row) return;
+      const field =
+        target.field ??
+        (target.fieldToFocus &&
+        columns.some((c) => c.field === target.fieldToFocus && cellEditable(row, c))
+          ? target.fieldToFocus
+          : visibleGridColumns(columns, visibility).find((c) => cellEditable(row, c))?.field);
+      if (field) startEdit(row, field);
+    };
+    /** `setCellModesModel` / `setRowModesModel`: no events. */
+    const applyModes = (target: GridEditTarget | null, cancelled: (id: string) => boolean) => {
+      silentModes = true;
+      try {
+        editFromModes(target, cancelled);
+      } finally {
+        silentModes = false;
+      }
+    };
 
     // Column menu: one menu, anchored to the header's button.
     const columnMenu = byId("column-menu");
@@ -4106,6 +4237,40 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         for (const row of filterRows())
           if (partsOf(row).field.value === field) fillOperators(partsOf(row).operator, field);
         apply();
+      },
+      get cellModesModel() {
+        return rowMode() ? {} : editModes().cells;
+      },
+      get rowModesModel() {
+        return rowMode() && editRow && edits.length
+          ? { [idOf(editRow)]: { mode: "edit" as const } }
+          : {};
+      },
+      setCellModesModel(model) {
+        if (rowMode()) return;
+        const cells = sanitizeGridCellModes(model);
+        applyModes(gridEditTarget(cells, {}, "cell"), (rowId) =>
+          Object.values(cells[rowId] ?? {}).some((entry) => entry.ignoreModifications === true),
+        );
+      },
+      setRowModesModel(model) {
+        if (!rowMode()) return;
+        const rowsModel = sanitizeGridRowModes(model);
+        applyModes(
+          gridEditTarget({}, rowsModel, "row"),
+          (rowId) => rowsModel[rowId]?.ignoreModifications === true,
+        );
+      },
+      setEditCellValue({ id: rowId, field, value: next }) {
+        if (!editRow || idOf(editRow) !== rowId) return;
+        const edit = edits.find((e) => e.column.field === field);
+        if (!edit) return;
+        edit.value = { value: next };
+        const text = gridEditText(next, edit.column.type);
+        if (edit.input instanceof HTMLInputElement && edit.input.type === "checkbox")
+          edit.input.checked = text === "true";
+        else if (edit.input) edit.input.value = text;
+        validate(edit);
       },
       setSortComparator(field, own) {
         if (own) comparators.set(field, own);

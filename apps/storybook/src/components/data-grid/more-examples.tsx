@@ -1,5 +1,6 @@
-import { DataGrid, type GridColDef } from "@owlky/react";
+import { DataGrid, type GridColDef, Slider, TextField } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
+import { EditModesDemo } from "./edit-modes-demo.js";
 
 /* Issues with a priority and an optional due date (story data, not from the reference). */
 export interface Issue {
@@ -52,6 +53,54 @@ const issueColumns: GridColDef<Issue>[] = [
   },
 ];
 
+/* The same issues, with a slider to edit the points and a list to filter them. */
+const editorColumns: GridColDef<Issue>[] = [
+  { field: "title", headerName: "Title", flex: 1, minWidth: 180, editable: true },
+  {
+    field: "priority",
+    headerName: "Priority",
+    type: "singleSelect",
+    valueOptions: ["High", "Medium", "Low"],
+    width: 140,
+    editable: true,
+  },
+  {
+    field: "points",
+    headerName: "Points",
+    type: "number",
+    width: 200,
+    editable: true,
+    // A slider edits the points (Enter saves, Escape cancels).
+    renderEditCell: ({ id, field, value, api }) => (
+      <Slider
+        aria-label="Points"
+        min={0}
+        max={13}
+        size="small"
+        value={Number(value)}
+        onChange={(next) => api.setEditCellValue({ id, field, value: next })}
+      />
+    ),
+    // "At least": a list of minimums instead of the number field.
+    renderHeaderFilter: ({ item, applyFilterChanges }) => (
+      <TextField
+        id="grid-editors-points-filter"
+        select
+        size="small"
+        label="At least"
+        data-ok-filter-operator=">="
+        value={String(item.value ?? "")}
+        onChange={(next) => applyFilterChanges({ ...item, operator: ">=", value: next })}
+      >
+        <option value="">any</option>
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="8">8</option>
+      </TextField>
+    ),
+  },
+];
+
 /**
  * Story groups beyond the reference's sections (roadmap batch E). Snippets: `node
  * apps/storybook/scripts/data-grid-snippets.mjs`.
@@ -74,8 +123,27 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  editors: [
+    {
+      title: "Custom edit and filter fields",
+      content: (
+        <DataGrid
+          id="grid-editors"
+          aria-label="Issues"
+          className="sb-grid"
+          rows={ISSUES}
+          columns={editorColumns}
+          headerFilters
+          hideFooter
+        />
+      ),
+    },
+  ],
+  modes: [{ title: "Edit modes", content: <EditModesDemo /> }],
 };
 
 export const MORE_FILES = {
   sorting: [["Sort order and comparators", "group"]],
+  editors: [["Custom edit and filter fields", "group"]],
+  modes: [["Edit modes", "group"]],
 } as const;

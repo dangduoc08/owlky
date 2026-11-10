@@ -48,7 +48,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(29));
+  it("covers every story group", () => expect(snippets).toHaveLength(31));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
   const scripted = (path: string) => /(large|server|lazy|server-aggregation)-group/.test(path);
@@ -72,7 +72,7 @@ describe("data grid snippets", () => {
 
   // Layout and validation grids: their own rows, no pages.
   const unpaged = (path: string) =>
-    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting)-/.test(
+    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting|editors|modes)-/.test(
       path,
     );
 
@@ -2002,5 +2002,164 @@ describe("data grid sorting options", () => {
     instance.setSortModel([{ field: "age", sort: "asc" }]);
     const plain = visible(host, "age").map(Number);
     expect(plain).toEqual([...plain].sort((x, y) => x - y));
+  });
+});
+
+describe("data grid custom editors and edit modes", () => {
+  const snippet = (name: string) =>
+    snippets.find(([path]) => path.endsWith(`${name}.html`))?.[1] as string;
+  const open = (name: string, edit?: (root: HTMLElement) => void) => {
+    const host = mount(snippet(name));
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    edit?.(root);
+    start();
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const cell = (id: string, field: string) =>
+      host.querySelector<HTMLElement>(
+        `[data-ok-row-id="${id}"] [role="gridcell"][data-ok-field="${field}"]`,
+      ) as HTMLElement;
+    return { host, root, instance, cell };
+  };
+  const key = (target: Element, k: string) =>
+    target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: k }));
+
+  it("a template editor: cloned into the cell, setEditCellValue, keys and focus", async () => {
+    const { root, instance, cell } = open("editors-group");
+    const edits: unknown[] = [];
+    root.addEventListener("ok:data-grid:edit", (event) =>
+      edits.push((event as CustomEvent).detail),
+    );
+    cell("is-1", "points").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const slider = cell("is-1", "points").querySelector("[data-ok-slider]") as HTMLElement;
+    expect(slider).not.toBeNull();
+    expect(document.activeElement).toBe(slider.querySelector("input"));
+    instance.setEditCellValue({ id: "is-1", field: "points", value: 8 });
+    // Another cell or row is ignored.
+    instance.setEditCellValue({ id: "is-1", field: "title", value: "x" });
+    instance.setEditCellValue({ id: "is-2", field: "points", value: 1 });
+    key(slider.querySelector("input") as HTMLElement, "Enter");
+    expect(edits.at(-1)).toEqual({ id: "is-1", row: { points: 8 } });
+    expect(cell("is-1", "points").textContent).toBe("8");
+    expect(cell("is-1", "points").getAttribute("data-ok-value")).toBe("8");
+    // Escape restores the cell; focus moving inside the cell keeps the edit.
+    cell("is-4", "points").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const input = cell("is-4", "points").querySelector("input") as HTMLInputElement;
+    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: input }));
+    expect(cell("is-4", "points").hasAttribute("data-ok-editing")).toBe(true);
+    key(input, "Escape");
+    expect(cell("is-4", "points").textContent).toBe("5");
+    // A built-in editor still works next to it, and a checkbox value can be set.
+    cell("is-4", "priority").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    instance.setEditCellValue({ id: "is-4", field: "priority", value: "Low" });
+    expect((cell("is-4", "priority").querySelector("select") as HTMLSelectElement).value).toBe(
+      "Low",
+    );
+    cell("is-4", "priority")
+      .querySelector("select")
+      ?.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    expect(cell("is-4", "priority").textContent).toBe("Low");
+    await settle();
+  });
+
+  it("a template's own field holds the value; validation marks it", () => {
+    const { root, instance, cell } = open("editors-group", (r) => {
+      const template = r.querySelector(
+        'template[data-ok-data-grid-edit-cell="points"]',
+      ) as HTMLTemplateElement;
+      const field = document.createElement("input");
+      field.type = "number";
+      field.setAttribute("data-ok-data-grid-edit-input", "");
+      field.setAttribute("aria-label", "Points");
+      template.content.replaceChildren(field);
+    });
+    root.addEventListener("ok:data-grid:validate", (event) => {
+      const detail = (event as CustomEvent<{ value: unknown; error?: string }>).detail;
+      if (Number(detail.value) > 13) detail.error = "At most 13";
+    });
+    cell("is-2", "points").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const field = cell("is-2", "points").querySelector("input") as HTMLInputElement;
+    expect(field.value).toBe("2");
+    field.value = "20";
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(field.getAttribute("aria-invalid")).toBe("true");
+    key(field, "Enter");
+    expect(cell("is-2", "points").hasAttribute("data-ok-editing")).toBe(true);
+    field.value = "6";
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    key(field, "Enter");
+    expect(cell("is-2", "points").textContent).toBe("6");
+    expect(instance.cellModesModel).toEqual({});
+  });
+
+  it("a custom header filter names its operator", () => {
+    const { host, instance } = open("editors-group");
+    const select = host.querySelector("#grid-editors-points-filter") as HTMLSelectElement;
+    expect(select.getAttribute("data-ok-filter-operator")).toBe(">=");
+    select.value = "5";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.filterModel.items).toEqual([{ field: "points", operator: ">=", value: "5" }]);
+    expect(visible(host, "points")).toEqual(["8", "5"]);
+  });
+
+  it("cell and row modes: events, setters without events, refusals", () => {
+    const { root, instance, cell } = open("editors-group");
+    const modes: unknown[] = [];
+    root.addEventListener("ok:data-grid:cellmodes", (event) =>
+      modes.push((event as CustomEvent).detail.model),
+    );
+    cell("is-1", "title").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(modes.at(-1)).toEqual({ "is-1": { title: { mode: "edit" } } });
+    expect(instance.cellModesModel).toEqual({ "is-1": { title: { mode: "edit" } } });
+    expect(instance.rowModesModel).toEqual({});
+    key(cell("is-1", "title").querySelector("input") as HTMLElement, "Escape");
+    expect(modes.at(-1)).toEqual({
+      "is-1": { title: { mode: "view", ignoreModifications: true } },
+    });
+    // Refused: the cell doesn't open (or doesn't close).
+    root.addEventListener("ok:data-grid:cellmodes", (event) => event.preventDefault(), {
+      once: true,
+    });
+    cell("is-2", "title").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(cell("is-2", "title").hasAttribute("data-ok-editing")).toBe(false);
+    // Setters: no events; ignoreModifications cancels; another cell moves the edit.
+    const count = modes.length;
+    instance.setCellModesModel({ "is-2": { title: { mode: "edit" } } });
+    const input = cell("is-2", "title").querySelector("input") as HTMLInputElement;
+    input.value = "Changed";
+    instance.setCellModesModel({ "is-2": { title: { mode: "view", ignoreModifications: true } } });
+    expect(cell("is-2", "title").textContent).toBe("Update the docs");
+    instance.setCellModesModel({ "is-2": { title: { mode: "edit" } } });
+    (cell("is-2", "title").querySelector("input") as HTMLInputElement).value = "Docs";
+    instance.setCellModesModel({ "is-3": { title: { mode: "edit" } } });
+    expect(cell("is-2", "title").textContent).toBe("Docs");
+    expect(cell("is-3", "title").hasAttribute("data-ok-editing")).toBe(true);
+    instance.setCellModesModel({});
+    expect(cell("is-3", "title").hasAttribute("data-ok-editing")).toBe(false);
+    expect(modes).toHaveLength(count);
+    // Row setters only work in row mode (and the reverse).
+    instance.setRowModesModel({ "is-1": { mode: "edit" } });
+    expect(instance.rowModesModel).toEqual({});
+    root.setAttribute("data-ok-edit-mode", "row");
+    instance.setCellModesModel({ "is-1": { title: { mode: "edit" } } });
+    expect(instance.cellModesModel).toEqual({});
+    instance.setRowModesModel({ "is-1": { mode: "edit", fieldToFocus: "priority" } });
+    expect(document.activeElement).toBe(cell("is-1", "priority").querySelector("select"));
+    expect(instance.rowModesModel).toEqual({
+      "is-1": { mode: "edit" },
+    });
+    instance.setRowModesModel({ "is-1": { mode: "view" } });
+    expect(root.querySelector('[data-ok-row-id="is-1"]')?.hasAttribute("data-ok-editing")).toBe(
+      false,
+    );
+  });
+
+  it("edit modes story: the row buttons drive the row modes model", async () => {
+    const { host, cell } = open("modes-group");
+    const edit = host.querySelector('[aria-label="Edit Ana Silva"]') as HTMLButtonElement;
+    const save = host.querySelector('[aria-label="Save Ana Silva"]') as HTMLButtonElement;
+    expect(save.hidden).toBe(true);
+    expect(getComputedStyle(save).display).toBe("none");
+    await expectNoAxeViolations(host);
+    expect(cell("m-1", "hours").textContent).toBe("32");
   });
 });
