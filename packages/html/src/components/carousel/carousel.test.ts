@@ -276,4 +276,66 @@ describe("carousel runtime", () => {
     expect(host.querySelector("img")).toBeNull();
     expect(instance(host).scrollSnapList().length).toBeGreaterThan(0);
   });
+
+  it("has the Embla v9 aliases and reports resizes, slide changes and pointer moves", async () => {
+    const host = mount(markup());
+    const root = rootOf(host);
+    const events: string[] = [];
+    let refuseMove = false;
+    root.addEventListener("ok:carousel:resize", (event) => {
+      const { entries } = (event as CustomEvent<{ entries: ResizeObserverEntry[] }>).detail;
+      events.push(`resize:${entries.length > 0}`);
+    });
+    root.addEventListener("ok:carousel:slideschanged", (event) => {
+      const { records } = (event as CustomEvent<{ records: MutationRecord[] }>).detail;
+      events.push(`slideschanged:${records[0]?.addedNodes.length}`);
+    });
+    root.addEventListener("ok:carousel:pointermove", (event) => {
+      events.push("pointermove");
+      if (refuseMove) event.preventDefault();
+    });
+    start();
+    await settle();
+    const api = instance(host);
+    api.goTo(2, true);
+    expect(api.selectedSnap()).toBe(2);
+    expect(api.snapIndex(-1)).toBe(1);
+    expect(api.canGoToNext()).toBe(false);
+    api.goToPrev(true);
+    expect(api.previousSnap()).toBe(2);
+    expect(api.snapList()).toEqual([0, 0.5, 1]);
+    // Pointer moves while pressed; a prevented one doesn't drag.
+    const viewport = host.querySelector("[data-ok-carousel-viewport]") as HTMLElement;
+    const press = (type: string, x: number) =>
+      viewport.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          clientX: x,
+          clientY: 10,
+          pointerId: 4,
+          pointerType: "mouse",
+          button: 0,
+        }),
+      );
+    press("pointerdown", 300);
+    const before = viewport.scrollLeft;
+    refuseMove = true;
+    press("pointermove", 250);
+    expect(viewport.scrollLeft).toBe(before);
+    press("pointerup", 250);
+    expect(events).toEqual(["pointermove"]);
+    // A slide added: the carousel measures again, after the event.
+    const container = host.querySelector("[data-ok-carousel-container]") as HTMLElement;
+    container.append((container.lastElementChild as HTMLElement).cloneNode(true));
+    await settle();
+    expect(events).toContain("slideschanged:1");
+    viewport.style.width = "300px";
+    // Resolves on the first frame that has seen the resize event.
+    await new Promise<void>((resolve) => {
+      const tick = () => (events.includes("resize:true") ? resolve() : requestAnimationFrame(tick));
+      tick();
+    });
+    expect(events).toContain("resize:true");
+  });
 });

@@ -34,10 +34,14 @@ dialog#<id>[data-ok-lightbox][data-ok-theme="dark"][aria-label="Lightbox"]  …o
              [data-ok-download="false|<url>"]?[data-ok-download-filename]?[data-ok-share="false"]?
              [data-ok-share-url|-title|-text]?               (inert unless current: controller)
             div[data-ok-lightbox-zoom]                       (the zoom and pan frame)
+                                                             (React render.slideContainer / HTML markup may wrap the
+                                                              slide's content: the slide's parts are found as descendants)
               img[data-ok-lightbox-image][src][alt][width][height][srcset]?[sizes]?[loading="lazy"][draggable="false"]
               | video[data-ok-lightbox-video][poster][width][height][controls][playsinline][data-ok-autoplay]?
                   › source[src][type][media]? …, track[src][kind][srclang][label] …
               | div[data-ok-lightbox-media][data-ok-zoomable]?   (custom slides)
+              span[data-ok-lightbox-loading][aria-hidden="true"]?  (image slides; React render.iconLoading,
+              span[data-ok-lightbox-error][aria-hidden="true"]?     HTML template[data-ok-lightbox-icon="loading|error"])
             h2[data-ok-lightbox-caption="title"]?
             div[data-ok-lightbox-caption="description"]? › div[data-ok-lightbox-description-text]
         span[data-ok-carousel-live][aria-live="polite"][aria-atomic="true"]
@@ -65,6 +69,14 @@ dialog#<id>[data-ok-lightbox][data-ok-theme="dark"][aria-label="Lightbox"]  …o
         › img[alt=""] (+ span[data-ok-lightbox-thumbnail-play] › svg for videos)
     span[data-ok-lightbox-live][aria-live="polite"][aria-atomic="true"]   (visually hidden)
 ```
+`template[data-ok-lightbox-icon="loading|error"]` (HTML only, direct children of the root): the
+runtime copies each into every image slide's zoom frame as the matching span (DOM methods, also for
+slides added later). The controller writes `data-ok-status` (`loading` · `complete` · `error`) on
+image slides, from the image's `complete` / natural size and its `load` / `error` events; CSS shows
+the matching part over the frame (absolute, centered; the frame's transform contains it). Without
+the parts nothing shows while an image loads (yet-another-react-lightbox shows a spinner by
+default: here it is opt-in, so existing markup is unchanged).
+
 Every toolbar button is always in the markup; the options show or hide them with CSS (so Controls
 and parity only change attributes). React parts: `Lightbox`, `LightboxTrigger`.
 
@@ -277,7 +289,9 @@ Upstream: yet-another-react-lightbox props and its 11 plugins
 | `controller.ref`, plugin refs | `apiRef` / HTML instance | renamed | |
 | `controller.focus`, `.aria`, `.touchAction`, `portal.*`, `noScroll.disabled`, `styles.*` | — | not applicable | top layer, modal scroll lock, CSS |
 | `render.slide`, `.slideHeader`, `.slideFooter`, `.controls`, `.thumbnail`, `.iconPrev` / `Next` / `Close`, plugin icons | same | kept | |
-| `render.slideContainer`, `.buttonPrev` / `.buttonNext` / `.buttonClose` (and plugin `button*`), `.iconLoading`, `.iconError` | — | deferred | |
+| `render.slideContainer` | same (`{ slide, index, children }`) · HTML: a wrapper in the slide's markup | kept | the wrapper should fill the slide (`display: contents` or a full-size flex box) |
+| `render.buttonPrev` / `.buttonNext` / `.buttonClose`, plugin `buttonZoom` (both zoom buttons), `buttonSlideshow`, `buttonFullscreen`, `buttonDownload`, `buttonShare`, `buttonCaptions`, `buttonThumbnails` | same, called with `LightboxButtonAttributes` (the `data-ok-*` part and, for fixed names, `aria-label`) to spread; `null` leaves the button out · HTML: your button with the same attribute | kept | the controller finds buttons by attribute; rotate buttons have no upstream render function |
+| `render.iconLoading`, `.iconError` | same · HTML `template[data-ok-lightbox-icon]` | kept | opt-in, decorative (`aria-hidden`); shown by `data-ok-status` |
 | Captions, Counter, Download, Fullscreen, Inline, Rotate, Share, Slideshow, Thumbnails, Video, Zoom | options above | kept | see the table above for plugin props |
 
 ## Parity notes

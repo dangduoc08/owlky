@@ -270,6 +270,14 @@
       "name": "spotlightRadius"
      },
      {
+      "attr": "data-ok-offset",
+      "default": 8,
+      "description": "Distance between the spotlight's edge and the tooltip, or the tip of its arrow (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "offset"
+     },
+     {
       "attr": "data-ok-scroll-offset",
       "default": 20,
       "description": "Space kept above a target scrolled into view (px).",
@@ -388,6 +396,18 @@
        "skipped",
        "waiting"
       ]
+     },
+     {
+      "description": "data`.",
+      "kind": "value",
+      "name": "data-ok-step-data",
+      "value": "string"
+     },
+     {
+      "description": "id`.",
+      "kind": "value",
+      "name": "data-ok-step-id",
+      "value": "string"
      },
      {
       "description": "On a step: a CSS selector of the element it points at (`body` centers it).",
@@ -607,6 +627,12 @@
       "type": "Partial<WalktourLocale>"
      },
      {
+      "default": "8",
+      "description": "Distance between the spotlight's edge and the tooltip, or the tip of its arrow (px).",
+      "name": "offset",
+      "type": "number"
+     },
+     {
       "description": "Every tour event, in order (react-joyride's `callback`).",
       "name": "onEvent",
       "type": "((type: WalktourEventType, data: WalktourEventData) => void)"
@@ -731,6 +757,13 @@
       "kind": "number",
       "min": 0,
       "name": "width"
+     },
+     {
+      "attr": "data-ok-offset",
+      "description": "This step's distance between the spotlight and the tooltip (px); default: the tour's.",
+      "kind": "number",
+      "min": 0,
+      "name": "offset"
      },
      {
       "attr": "data-ok-beacon-placement",

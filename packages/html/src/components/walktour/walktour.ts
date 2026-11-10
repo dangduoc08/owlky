@@ -64,11 +64,13 @@ function readIndex(element: Element, attr: string): number {
  *            </div> …
  *            <span data-ok-walktour-live aria-live="polite" data-ok-format="Step {current} of {total}">
  *          </div>
+ * Steps:   data-ok-step-id and data-ok-step-data (JSON) come back as `step: { id, data }` in
+ *          ok:walktour:event and ok:walktour:beforestep.
  * Triggers: [data-ok-walktour-start="<id>"] (+ data-ok-index) starts the tour over.
  * State:   data-ok-run (present: running; removing it pauses), data-ok-step-index (first step).
  * Events:  ok:walktour:beforechange (cancelable, detail { index, previousIndex, action, origin }),
  *          ok:walktour:change (detail: the state + previousIndex),
- *          ok:walktour:event (detail: { type, action, origin, index, status, lifecycle, size }),
+ *          ok:walktour:event (detail: { type, action, origin, index, status, lifecycle, size, step? }),
  *          ok:walktour:beforestep (the step's data + waitUntil(promise): the `before` hook).
  */
 export const walktour = defineComponent<WalktourInstance, WalktourEvents>({
@@ -102,6 +104,7 @@ export const walktour = defineComponent<WalktourInstance, WalktourEvents>({
       emit: (event) => {
         emit("event", event);
       },
+      step: (index) => controller.stepInfo(index),
       // The `before` hook: listeners hand the tour a promise to wait for.
       before(data) {
         const pending: PromiseLike<unknown>[] = [];

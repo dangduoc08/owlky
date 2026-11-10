@@ -291,7 +291,7 @@ export function WalktourBeacons() {
   {
     id: "overlay",
     title: "Configure the overlay and the spotlight",
-    body: "The overlay blocks the page while a step is open, so the step is a modal dialog. `spotlightClicks` lets people use the element in the spotlight, and `disableOverlay` removes the overlay: in both cases the step is no longer modal. `disableOverlayClose` keeps a click on the overlay from closing the step. `spotlightPadding` sets the space around the target and `spotlightRadius` the spotlight's corners, in pixels. When a target is out of view, the tour scrolls it into view and keeps `scrollOffset` pixels above it. `disableScrolling` turns that off, and `scrollToFirstStep` scrolls for the first step too.",
+    body: "The overlay blocks the page while a step is open, so the step is a modal dialog. `spotlightClicks` lets people use the element in the spotlight, and `disableOverlay` removes the overlay: in both cases the step is no longer modal. `disableOverlayClose` keeps a click on the overlay from closing the step. `spotlightPadding` sets the space around the target and `spotlightRadius` the spotlight's corners, in pixels. `offset` sets the distance between the spotlight and the step, or the tip of its arrow: 8 pixels by default, and a step can set its own. When a target is out of view, the tour scrolls it into view and keeps `scrollOffset` pixels above it. `disableScrolling` turns that off, and `scrollToFirstStep` scrolls for the first step too.",
     html: `<section id="inbox">
   <h2>Inbox</h2>
   <p>3 new messages</p>
@@ -299,7 +299,7 @@ export function WalktourBeacons() {
 <button type="button" id="compose" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Compose</span></button>
 
 <div id="tour" data-ok-walktour data-ok-spotlight-clicks data-ok-spotlight-padding="12"
-  data-ok-spotlight-radius="16" data-ok-scroll-offset="80">
+  data-ok-spotlight-radius="16" data-ok-offset="16" data-ok-scroll-offset="80">
   <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover="manual" aria-hidden="true">
     <svg data-ok-walktour-spotlight aria-hidden="true" focusable="false">
       <path data-ok-walktour-mask fill-rule="evenodd"></path>
@@ -354,7 +354,14 @@ const steps: WalktourStep[] = [
 
 export function WalktourOverlay() {
   return (
-    <Walktour steps={steps} spotlightClicks spotlightPadding={12} spotlightRadius={16} scrollOffset={80} />
+    <Walktour
+      steps={steps}
+      spotlightClicks
+      spotlightPadding={12}
+      spotlightRadius={16}
+      offset={16}
+      scrollOffset={80}
+    />
   );
 }`,
   },
@@ -507,6 +514,61 @@ export function HoverTour() {
 }`,
   },
   {
+    id: "step-identity",
+    title: "Identify the steps in events",
+    body: "Give a step an `id`, and any `data` your code needs, such as an analytics name. Every event and hook about that step receives them as `step.id` and `step.data`, so your code doesn't depend on the step's position in the tour. In React, set `id` and `data` on the step. In HTML, add `data-ok-step-id` and `data-ok-step-data` to the step, with the data as JSON.",
+    html: `${htmlTour("data-ok-continuous", [
+      htmlStep(
+        1,
+        2,
+        `data-ok-target="#inbox" data-ok-step-id="inbox" data-ok-step-data='{"section":"mail"}'`,
+        "Your inbox",
+        "New messages arrive here.",
+        true,
+      ),
+      htmlStep(
+        2,
+        2,
+        'data-ok-target="#compose" data-ok-step-id="compose"',
+        "Write",
+        "Start a new message.",
+        true,
+      ),
+    ])}
+
+<script type="module">
+  document.getElementById("tour").addEventListener("ok:walktour:event", (event) => {
+    const { type, step } = event.detail;
+    if (type === "step:after" && step) console.log("Seen:", step.id, step.data);
+  });
+</script>`,
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+
+const steps: WalktourStep[] = [
+  {
+    target: "#inbox",
+    title: "Your inbox",
+    content: "New messages arrive here.",
+    id: "inbox",
+    data: { section: "mail" },
+  },
+  { target: "#compose", title: "Write", content: "Start a new message.", id: "compose" },
+];
+
+export function WalktourStepIds() {
+  return (
+    <Walktour
+      steps={steps}
+      run
+      continuous
+      onEvent={(type, data) => {
+        if (type === "step:after" && data.step) console.log("Seen:", data.step.id, data.step.data);
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Options of the tour. In React, pass them as props. In HTML, write the attributes on the `data-ok-walktour` element. Every boolean option can also go on a step.",
@@ -524,7 +586,7 @@ export function HoverTour() {
   {
     id: "events",
     title: "Events and methods",
-    body: "React reports changes with `onStepChange(index, details)`, `onStatusChange(status, details)` and `onEvent(type, data)`. `onEvent` receives every event of the tour in order: `tour:start`, `step:before-hook`, `step:before`, `beacon`, `tooltip`, `step:after`, `step:after-hook`, `tour:end`, `tour:status`, `error:target-not-found` and `error`. Each comes with the action, the control that asked for it, the step, the status and the number of steps, and `error` events also carry the `error`. In HTML, listen for `ok:walktour:change` (the new state), `ok:walktour:event` (the same events as `onEvent`), `ok:walktour:beforestep` (a step is about to show) and `ok:walktour:beforechange`, which you can cancel to keep the current step. A step whose target doesn't appear in time is skipped.",
+    body: "React reports changes with `onStepChange(index, details)`, `onStatusChange(status, details)` and `onEvent(type, data)`. `onEvent` receives every event of the tour in order: `tour:start`, `step:before-hook`, `step:before`, `beacon`, `tooltip`, `step:after`, `step:after-hook`, `tour:end`, `tour:status`, `error:target-not-found` and `error`. Each comes with the action, the control that asked for it, the step's index, the status and the number of steps. Events about a step with an `id` or `data` also carry them in `step`, and `error` events carry the `error`. In HTML, listen for `ok:walktour:change` (the new state), `ok:walktour:event` (the same events as `onEvent`), `ok:walktour:beforestep` (a step is about to show) and `ok:walktour:beforechange`, which you can cancel to keep the current step. A step whose target doesn't appear in time is skipped.",
     html: `<script type="module">
   const root = document.getElementById("tour");
   root.addEventListener("ok:walktour:event", (event) => {
@@ -636,6 +698,12 @@ const PREVIEWS = {
           type: "selector | element | ref | () => element",
           description:
             "The element to scroll to, and the one to put in the spotlight, instead of the target.",
+        },
+        {
+          react: "step.id / step.data",
+          html: "data-ok-step-id / data-ok-step-data (JSON)",
+          type: "string / unknown",
+          description: "The step's identifier and your data, passed in events and hooks as `step`.",
         },
         {
           react: "before / step.before",

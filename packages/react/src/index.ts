@@ -104,8 +104,10 @@ export type {
   SliderMark,
   SliderSize,
   SliderValueLabelDisplay,
+  SortableActivator,
   SortableLayout,
   SortableMessages,
+  SortableStrategy,
   SortableTransferTarget,
   StepperVariant,
   SwitchEdge,
@@ -376,6 +378,7 @@ export { Label, type LabelProps } from "./label/label.js";
 export {
   Lightbox,
   type LightboxApi,
+  type LightboxButtonAttributes,
   type LightboxCloseReason,
   type LightboxCustomSlide,
   type LightboxImageSlide,
@@ -631,6 +634,7 @@ export {
 } from "./snackbar/snackbar.js";
 export {
   arrayMove,
+  arraySwap,
   moveBetweenLists,
   Sortable,
   type SortableDragEvent,

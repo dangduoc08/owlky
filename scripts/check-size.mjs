@@ -16,6 +16,8 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 230 kB since the batch E coulds (sortable swap, Embla v9 names, lightbox render functions,
+  // walktour offset) on top of the chart types and crossfilter: 225.7 kB.
   // 225 kB since the sortable and data grid shoulds merged together: 221.0 kB.
   // 221 kB since Phase 4 batch E's sortable shoulds (4.18.75-76, ADR-0053: moves between lists,
   // one session per document, move-to triggers; auto scroll, disabled items, drag events, HTML
@@ -83,7 +85,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 225_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 230_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables

@@ -333,3 +333,52 @@ describe("lightbox runtime", () => {
     expect(instance.isOpen).toBe(true);
   });
 });
+
+describe("lightbox icon templates (roadmap 4.18.81)", () => {
+  it("copies the loading and error templates into every image slide", async () => {
+    const templates =
+      '<template data-ok-lightbox-icon="loading"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /></svg></template>' +
+      '<template data-ok-lightbox-icon="error"><span>Not available</span></template>';
+    const html = lightboxSnippet
+      .replace(/(<dialog [^>]*>)/, `$1${templates}`)
+      .replace(/(<img data-ok-lightbox-image[^>]*src=")[^"]+"/, '$1data:image/png;base64,broken"');
+    const { root, instance } = await setup(html);
+    const frames = [
+      ...root.querySelectorAll<HTMLElement>("[data-ok-lightbox-slide] [data-ok-lightbox-zoom]"),
+    ];
+    const images = frames.filter((frame) =>
+      frame.querySelector(":scope > [data-ok-lightbox-image]"),
+    );
+    expect(images.length).toBeGreaterThan(0);
+    for (const frame of images) {
+      const loading = frame.querySelector(":scope > [data-ok-lightbox-loading]") as HTMLElement;
+      const error = frame.querySelector(":scope > [data-ok-lightbox-error]") as HTMLElement;
+      expect(loading.getAttribute("aria-hidden")).toBe("true");
+      expect(loading.querySelector("svg circle")).not.toBeNull();
+      expect(error.textContent).toBe("Not available");
+      // In React's order: after the media.
+      expect(error.previousElementSibling).toBe(loading);
+    }
+    const others = frames.filter((frame) => !images.includes(frame));
+    for (const frame of others)
+      expect(frame.querySelector("[data-ok-lightbox-loading]")).toBeNull();
+    const first = images[0]?.closest("[data-ok-lightbox-slide]") as HTMLElement;
+    // A closed dialog doesn't render its lazy pictures: open it to load the first one.
+    instance.open(0);
+    await until(() => first.getAttribute("data-ok-status") === "error");
+    // A slide added later gets them too.
+    const container = root.querySelector("[data-ok-carousel-container]") as HTMLElement;
+    const copy = first.cloneNode(true) as HTMLElement;
+    for (const part of copy.querySelectorAll(
+      "[data-ok-lightbox-loading], [data-ok-lightbox-error]",
+    ))
+      part.remove();
+    container.append(copy);
+    await until(() => copy.querySelector("[data-ok-lightbox-error]") !== null);
+  });
+
+  it("does nothing without templates", async () => {
+    const { root } = await setup();
+    expect(root.querySelector("[data-ok-lightbox-loading], [data-ok-lightbox-error]")).toBeNull();
+  });
+});

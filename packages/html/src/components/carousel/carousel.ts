@@ -31,9 +31,21 @@ export interface CarouselEvents {
   pointerdown: EventSpec;
   /** When the pointer was released. */
   pointerup: EventSpec;
+  /** While the pressed pointer moves. Call `preventDefault()` to skip the drag step. */
+  pointermove: EventSpec<undefined, true>;
+  /**
+   * After the viewport or a slide changed size, with the observer entries of the elements that
+   * changed. Call `preventDefault()` to keep the carousel from measuring again.
+   */
+  resize: EventSpec<{ entries: ResizeObserverEntry[] }, true>;
+  /**
+   * After slides were added or removed, with the mutation records. Call `preventDefault()` to
+   * keep the carousel from measuring again.
+   */
+  slideschanged: EventSpec<{ records: MutationRecord[] }, true>;
 }
 
-/** The carousel instance: Embla's API (v8 names) on the root element. */
+/** The carousel instance: Embla's API (v8 names and their v9 aliases) on the root element. */
 export interface CarouselInstance extends ComponentInstance, CarouselApi {}
 
 const SIZE_ATTRIBUTES = [
@@ -95,7 +107,8 @@ function syncDots(root: HTMLElement, count: number) {
  *          per snap.
  * Events:  ok:carousel:select `{ index, previous }`, settle `{ index }`, scroll `{ progress }`,
  *          slidesinview `{ indexes }`, reinit `{ snapCount }`, autoplay / autoscroll `{ playing }`,
- *          slidefocus `{ index }`, pointerdown, pointerup.
+ *          slidefocus `{ index }`, pointerdown, pointerup, pointermove (cancelable),
+ *          resize `{ entries }` (cancelable), slideschanged `{ records }` (cancelable).
  */
 export const carousel = defineComponent<CarouselInstance, CarouselEvents>({
   name: "carousel",
@@ -131,6 +144,12 @@ export const carousel = defineComponent<CarouselInstance, CarouselEvents>({
       onSlideFocus: (index) => emit("slidefocus", { index }),
       onPointerDown: () => emit("pointerdown"),
       onPointerUp: () => emit("pointerup"),
+      onPointerMove: () =>
+        emit("pointermove", undefined, { cancelable: true }) ? undefined : false,
+      onResize: (entries) =>
+        emit("resize", { entries }, { cancelable: true }) ? undefined : false,
+      onSlidesChanged: (records) =>
+        emit("slideschanged", { records }, { cancelable: true }) ? undefined : false,
     });
 
     const { destroy, ...api } = controller;

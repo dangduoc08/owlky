@@ -1299,6 +1299,14 @@ export interface LightboxParts {
   "data-ok-lightbox-fullscreen": Part;
   /** The picture of a slide. */
   "data-ok-lightbox-image": Part<"img">;
+  /** Optional: the icon shown over an image slide while its image loads. */
+  "data-ok-lightbox-loading": Part<"span">;
+  /** Optional: the icon shown over an image slide whose image failed to load. */
+  "data-ok-lightbox-error": Part<"span">;
+  /** HTML only: a template of the loading or error icon, copied into every image slide. */
+  "data-ok-lightbox-icon": Value<"loading" | "error">;
+  /** Set by the runtime on an image slide: whether its image is loading, complete or failed. */
+  "data-ok-status": Value<"loading" | "complete" | "error">;
   /** One of the full screen button's two labels. */
   "data-ok-lightbox-label": Value<"enter" | "exit">;
   /** A visually hidden live region that announces the slide. */
@@ -1779,6 +1787,8 @@ export interface SortableParts {
   "data-ok-sortable-move-to": Value<string>;
   /** On an item: it can't move and isn't a target (its handle is `disabled` too). */
   "data-ok-disabled": State;
+  /** Set by the runtime, swap lists: on the item the moved one would trade places with. */
+  "data-ok-swap-target": State;
   /** HTML: on the list, the announcement when an item is grabbed (`{position}`, `{total}`, `{list}`). */
   "data-ok-message-grabbed": Value<string>;
   /** HTML: on the list, the announcement when an item moves (`{position}`, `{total}`, `{list}`). */
@@ -2133,6 +2143,10 @@ export interface WalktourParts {
   "data-ok-scroll-target": Value<string>;
   /** On a step: a CSS selector of the element to put in the spotlight instead of the target. */
   "data-ok-spotlight-target": Value<string>;
+  /** On a step: its identifier, passed in the tour's events as `step.id`. */
+  "data-ok-step-id": Value<string>;
+  /** HTML: on a step, JSON passed in the tour's events as `step.data`. */
+  "data-ok-step-data": Value<string>;
   /** A step button and what it does. */
   "data-ok-walktour-action": Value<"back" | "close" | "primary" | "skip">;
   /** The pulsing button that opens a step. */

@@ -315,6 +315,70 @@ export function CarouselDirection() {
 }`,
   },
   {
+    id: "api",
+    title: "Control the carousel from code",
+    body: `The carousel's methods follow Embla Carousel. Both the version 8 names (\`scrollNext()\`, \`scrollTo()\`, \`selectedScrollSnap()\`) and the version 9 names work, so code written for either version runs unchanged:
+
+- **Move:** \`goToNext()\`, \`goToPrev()\` and \`goTo(index)\`. Pass \`true\` as the second argument to jump without animation. In a looping carousel, \`goTo(index, false, "forward")\` or \`"backward"\` picks the way round; without it, the carousel takes the shortest way.
+- **Read:** \`canGoToNext()\`, \`canGoToPrev()\`, \`selectedSnap()\`, \`previousSnap()\` and \`snapList()\`. \`snapIndex(offset)\` returns the selected snap moved by \`offset\`, such as \`snapIndex(1)\` for the next one. It wraps around in a looping carousel.
+
+Three events report changes around the slides. **Resize** fires when the viewport or a slide changes size, **slides changed** when slides are added or removed, and **pointer move** while a pressed pointer moves. Cancel one to skip what the carousel does next: it doesn't measure again after a cancelled resize or slide change, and it doesn't scroll for a cancelled pointer move. In React, pass \`onResize\` or \`onSlidesChanged\` and return \`false\` to cancel; use the native \`onPointerMove\` for pointer moves. In HTML, listen for \`ok:carousel:resize\`, \`ok:carousel:slideschanged\` or \`ok:carousel:pointermove\` and call \`preventDefault()\`.`,
+    html: `${snippetElement(yAxisExample, "data-ok-carousel ").replace("data-ok-carousel ", 'id="stories" data-ok-carousel ')}
+<button type="button" id="stories-next">Next story</button>
+<p id="stories-status" role="status"></p>
+
+<script type="module">
+  const root = document.getElementById("stories");
+  const status = document.getElementById("stories-status");
+  document.getElementById("stories-next").addEventListener("click", () => {
+    const carousel = window.Owlky.get(root, "carousel");
+    carousel.goTo(carousel.snapIndex(1));
+  });
+  root.addEventListener("ok:carousel:resize", (event) => {
+    status.textContent = \`\${event.detail.entries.length} parts changed size.\`;
+  });
+</script>`,
+    react: `import { Carousel, type CarouselApi, CarouselSlide, CarouselViewport } from "@owlky/react";
+import { useRef, useState } from "react";
+
+const photos = [
+  { src: "photo-1.jpg", alt: "Mountain lake" },
+  { src: "photo-2.jpg", alt: "Forest in the fog" },
+  { src: "photo-3.jpg", alt: "Desert road" },
+];
+
+export function CarouselControls() {
+  const apiRef = useRef<CarouselApi>(null);
+  const [status, setStatus] = useState("");
+  const next = () => {
+    const api = apiRef.current;
+    if (api) api.goTo(api.snapIndex(1));
+  };
+  return (
+    <>
+      <Carousel
+        aria-label="Stories"
+        loop
+        apiRef={apiRef}
+        onResize={(entries) => setStatus(\`\${entries.length} parts changed size.\`)}
+      >
+        <CarouselViewport>
+          {photos.map((photo) => (
+            <CarouselSlide key={photo.src}>
+              <img src={photo.src} alt={photo.alt} />
+            </CarouselSlide>
+          ))}
+        </CarouselViewport>
+      </Carousel>
+      <button type="button" onClick={next}>
+        Next story
+      </button>
+      <p role="status">{status}</p>
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: 'Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren\'t listed fall back to the default. The first table lists the options of `Carousel`, the next ones those of the arrows, dots, progress bar and thumbnails. `breakpoints` changes behavior options per media query, such as `{ "(min-width: 900px)": { loop: true } }` (in HTML, the same JSON in `data-ok-breakpoints`).',
@@ -328,9 +392,9 @@ export function CarouselDirection() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:carousel:select\`** fires on the root when the selected slide changes, with \`detail.index\` and \`detail.previous\`. **\`ok:carousel:settle\`** fires when scrolling stops.
-- **Other events:** \`scroll\` (\`detail.progress\`), \`slidesinview\` (\`detail.indexes\`), \`reinit\` (\`detail.snapCount\`), \`autoplay\` and \`autoscroll\` (\`detail.playing\`), \`slidefocus\` (\`detail.index\`), \`pointerdown\` and \`pointerup\`.
-- **Instance:** \`runtime.get(element, "carousel")\` returns \`scrollNext()\`, \`scrollPrev()\`, \`scrollTo(index)\` (pass \`true\` as the last argument to jump without animation), \`canScrollNext()\`, \`canScrollPrev()\`, \`selectedScrollSnap()\`, \`scrollSnapList()\`, \`scrollProgress()\`, \`slidesInView()\`, \`reInit()\`, and \`autoplay\` and \`autoScroll\` with \`play()\`, \`stop()\`, \`reset()\` and \`isPlaying()\`.
-- **React:** \`apiRef\` receives the same methods. Callbacks are \`onSelect(index, previous)\`, \`onSettle(index)\`, \`onScroll(progress)\`, \`onSlidesInView(indexes)\`, \`onReInit(snapCount)\`, \`onAutoplayChange(playing)\`, \`onAutoScrollChange(playing)\` and \`onSlideFocus(index)\`.`,
+- **Other events:** \`scroll\` (\`detail.progress\`), \`slidesinview\` (\`detail.indexes\`), \`reinit\` (\`detail.snapCount\`), \`autoplay\` and \`autoscroll\` (\`detail.playing\`), \`slidefocus\` (\`detail.index\`), \`pointerdown\` and \`pointerup\`. The cancelable \`pointermove\`, \`resize\` (\`detail.entries\`) and \`slideschanged\` (\`detail.records\`) skip what the carousel does next when you call \`preventDefault()\`.
+- **Instance:** \`runtime.get(element, "carousel")\` returns \`scrollNext()\`, \`scrollPrev()\`, \`scrollTo(index)\` (pass \`true\` as the second argument to jump without animation), \`canScrollNext()\`, \`canScrollPrev()\`, \`selectedScrollSnap()\`, \`previousScrollSnap()\`, \`scrollSnapList()\`, \`scrollProgress()\`, \`slidesInView()\`, \`reInit()\`, and \`autoplay\` and \`autoScroll\` with \`play()\`, \`stop()\`, \`reset()\` and \`isPlaying()\`. The Embla version 9 names work too: \`goToNext()\`, \`goToPrev()\`, \`goTo(index, jump, direction)\`, \`canGoToNext()\`, \`canGoToPrev()\`, \`selectedSnap()\`, \`previousSnap()\`, \`snapList()\` and \`snapIndex(offset)\`.
+- **React:** \`apiRef\` receives the same methods. Callbacks are \`onSelect(index, previous)\`, \`onSettle(index)\`, \`onScroll(progress)\`, \`onSlidesInView(indexes)\`, \`onReInit(snapCount)\`, \`onAutoplayChange(playing)\`, \`onAutoScrollChange(playing)\`, \`onSlideFocus(index)\`, \`onResize(entries)\` and \`onSlidesChanged(records)\` (return \`false\` to skip the measure that follows).`,
   },
   {
     id: "keyboard",

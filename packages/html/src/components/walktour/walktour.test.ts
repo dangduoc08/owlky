@@ -306,3 +306,56 @@ describe("walktour snippets", () => {
     });
   }
 });
+
+describe("walktour offset and step identity (roadmap 4.18.82)", () => {
+  it("passes data-ok-step-id and data-ok-step-data in events and beforestep", () => {
+    const host = mount(
+      TOUR.replace("ROOT", "data-ok-continuous data-ok-disable-beacon").replace(
+        'data-ok-target="#a"',
+        `data-ok-target="#a" data-ok-step-id="intro" data-ok-step-data='{"section":"cards"}'`,
+      ),
+    );
+    const element = host.querySelector("[data-ok-walktour]") as HTMLElement;
+    const seen: unknown[] = [];
+    element.addEventListener("ok:walktour:event", (event) => {
+      const detail = (event as CustomEvent).detail;
+      seen.push([detail.type, detail.index, detail.step]);
+    });
+    element.addEventListener("ok:walktour:beforestep", (event) => {
+      const detail = (event as CustomEvent).detail;
+      seen.push(["beforestep", detail.index, detail.step]);
+    });
+    start();
+    const instance = runtime?.get<WalktourInstance>(element, "walktour") as WalktourInstance;
+    instance.start();
+    const step = { id: "intro", data: { section: "cards" } };
+    expect(seen).toContainEqual(["beforestep", 0, step]);
+    expect(seen).toContainEqual(["step:before", 0, step]);
+    instance.next();
+    expect(seen).toContainEqual(["step:after", 0, step]);
+    expect(seen).toContainEqual(["step:before", 1, undefined]);
+  });
+
+  it("places the tooltip by data-ok-offset (the tour's, or the step's)", async () => {
+    const { element, open } = setup(
+      "data-ok-run data-ok-continuous data-ok-disable-beacon data-ok-offset='40'",
+    );
+    // Measured from the target, so a scroll still in progress (the tour scrolls to its target)
+    // can't move one reading against the other.
+    const top = () =>
+      (open() as HTMLElement).getBoundingClientRect().top -
+      (document.querySelector("#a") as HTMLElement).getBoundingClientRect().top;
+    await settle();
+    const far = top();
+    // The runtime shows option changes at once.
+    element.setAttribute("data-ok-offset", "8");
+    await settle();
+    // WebKit lays the popover out a fraction of a pixel apart.
+    expect(Math.abs(far - top() - 32)).toBeLessThan(1.5);
+    const first = element.querySelector("[data-ok-walktour-step]") as HTMLElement;
+    first.setAttribute("data-ok-offset", "0");
+    element.setAttribute("data-ok-offset", "20");
+    await settle();
+    expect(Math.abs(far - top() - 40)).toBeLessThan(1.5);
+  });
+});

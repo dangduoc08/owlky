@@ -562,3 +562,43 @@ describe("Walktour", () => {
     expect(open()).toBeNull();
   });
 });
+
+describe("Walktour offset and step identity (roadmap 4.18.82)", () => {
+  it("passes each step's id and data in events and hooks, and writes the id and offsets", () => {
+    const onEvent = vi.fn();
+    const before = vi.fn();
+    const steps: WalktourStep[] = [
+      { target: "#first", title: "First", content: "One", id: "intro", data: { section: 1 } },
+      { target: "#third", title: "Third", content: "Three", offset: 0 },
+    ];
+    render(
+      <Page
+        run
+        continuous
+        disableBeacon
+        offset={24}
+        steps={steps}
+        onEvent={onEvent}
+        before={before}
+      />,
+    );
+    const root = document.getElementById("tour") as HTMLElement;
+    expect(root.getAttribute("data-ok-offset")).toBe("24");
+    const [first, second] = [...root.querySelectorAll("[data-ok-walktour-step]")];
+    expect(first?.getAttribute("data-ok-step-id")).toBe("intro");
+    expect(first?.hasAttribute("data-ok-offset")).toBe(false);
+    expect(second?.getAttribute("data-ok-offset")).toBe("0");
+    expect(second?.hasAttribute("data-ok-step-id")).toBe(false);
+    expect(before).toHaveBeenCalledWith(
+      expect.objectContaining({ index: 0, step: { id: "intro", data: { section: 1 } } }),
+    );
+    expect(onEvent).toHaveBeenCalledWith(
+      "step:before",
+      expect.objectContaining({ step: { id: "intro", data: { section: 1 } } }),
+    );
+    press(button("primary"));
+    const later = onEvent.mock.calls.filter(([, data]) => data.index === 1);
+    expect(later.length).toBeGreaterThan(0);
+    for (const [, data] of later) expect(data).not.toHaveProperty("step");
+  });
+});

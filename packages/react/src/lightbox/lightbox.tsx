@@ -146,8 +146,52 @@ export interface LightboxCustomSlide extends LightboxSlideBase {
 
 export type LightboxSlide = LightboxImageSlide | LightboxVideoSlide | LightboxCustomSlide;
 
+/**
+ * The attributes that give a replacement button its behavior (`render.button*`): spread them on
+ * your button, such as an `IconButton`.
+ */
+export type LightboxButtonAttributes = { [key: `data-ok-${string}`]: string } & {
+  "aria-label"?: string;
+};
+
 /** Custom renderers (yet-another-react-lightbox `render`). */
 export interface LightboxRender {
+  /**
+   * Wraps the content of each slide (header, media, captions and footer) in your element. Give
+   * it the slide's full size, such as `display: contents` or a 100% flex box.
+   */
+  slideContainer?:
+    | ((props: { slide: LightboxSlide; index: number; children: ReactNode }) => ReactNode)
+    | undefined;
+  /** Replaces the previous button (`null` hides it). Spread the attributes on your button. */
+  buttonPrev?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces the next button (`null` hides it). Spread the attributes on your button. */
+  buttonNext?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces the close button (`null` hides it). Spread the attributes on your button. */
+  buttonClose?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces both zoom buttons. Spread `zoomIn` and `zoomOut` on your two buttons. */
+  buttonZoom?:
+    | ((attributes: {
+        zoomIn: LightboxButtonAttributes;
+        zoomOut: LightboxButtonAttributes;
+      }) => ReactNode)
+    | undefined;
+  /** Replaces the slideshow (play and pause) button. Name your button yourself. */
+  buttonSlideshow?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces the full screen button. Name your button yourself. */
+  buttonFullscreen?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces the download button. */
+  buttonDownload?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces the share button. */
+  buttonShare?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces the button that shows and hides the captions. Name your button yourself. */
+  buttonCaptions?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Replaces the button that shows and hides the thumbnails. Name your button yourself. */
+  buttonThumbnails?: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined;
+  /** Shown over an image slide while its image loads (none by default). Decorative. */
+  iconLoading?: (() => ReactNode) | undefined;
+  /** Shown over an image slide whose image failed to load (none by default). Decorative. */
+  iconError?: (() => ReactNode) | undefined;
   /** Renders a custom slide type (or replaces an image / video slide when it returns a node). */
   slide?: ((props: { slide: LightboxSlide; index: number }) => ReactNode) | undefined;
   /** Added before / after the slide's content (position it yourself). */
@@ -646,6 +690,43 @@ export const Lightbox = forwardRef<HTMLElement, LightboxProps>(function Lightbox
     return null;
   };
 
+  /** A default button, or its `render.button*` replacement (rendered with its attributes). */
+  const button = (
+    replace: ((attributes: LightboxButtonAttributes) => ReactNode) | undefined,
+    attributes: LightboxButtonAttributes,
+    fallback: (attributes: LightboxButtonAttributes) => ReactNode,
+  ) => (replace ? replace(attributes) : fallback(attributes));
+  const zoomIn: LightboxButtonAttributes = {
+    "data-ok-lightbox-zoom-in": "",
+    "aria-label": labels["Zoom in"],
+  };
+  const zoomOut: LightboxButtonAttributes = {
+    "data-ok-lightbox-zoom-out": "",
+    "aria-label": labels["Zoom out"],
+  };
+  /** Wraps a slide's content (`render.slideContainer`). */
+  const wrapSlide = (slide: LightboxSlide, index: number, children: ReactNode) =>
+    render?.slideContainer ? render.slideContainer({ slide, index, children }) : children;
+  /**
+   * The optional loading and error parts of an image slide (shown by its `data-ok-status`, which
+   * a custom `render.slide` without the image never gets).
+   */
+  const statusParts = (slide: LightboxSlide) =>
+    isImage(slide) ? (
+      <>
+        {render?.iconLoading && (
+          <span data-ok-lightbox-loading="" aria-hidden="true">
+            {render.iconLoading()}
+          </span>
+        )}
+        {render?.iconError && (
+          <span data-ok-lightbox-error="" aria-hidden="true">
+            {render.iconError()}
+          </span>
+        )}
+      </>
+    ) : null;
+
   const Root = (inline ? "div" : "dialog") as "dialog";
   return (
     <LightboxContext.Provider value={context}>
@@ -698,29 +779,40 @@ export const Lightbox = forwardRef<HTMLElement, LightboxProps>(function Lightbox
                   data-ok-lightbox-slide=""
                   {...slideAttributes(slide)}
                 >
-                  {render?.slideHeader?.({ slide, index: i })}
-                  <div data-ok-lightbox-zoom="">{media(slide, i)}</div>
-                  {slide.title !== undefined && slide.title !== null && slide.title !== "" && (
-                    <h2 data-ok-lightbox-caption="title">{slide.title}</h2>
-                  )}
-                  {slide.description !== undefined &&
-                    slide.description !== null &&
-                    slide.description !== "" && (
-                      <div data-ok-lightbox-caption="description">
-                        <div data-ok-lightbox-description-text="">{slide.description}</div>
+                  {wrapSlide(
+                    slide,
+                    i,
+                    <>
+                      {render?.slideHeader?.({ slide, index: i })}
+                      <div data-ok-lightbox-zoom="">
+                        {media(slide, i)}
+                        {statusParts(slide)}
                       </div>
-                    )}
-                  {render?.slideFooter?.({ slide, index: i })}
+                      {slide.title !== undefined && slide.title !== null && slide.title !== "" && (
+                        <h2 data-ok-lightbox-caption="title">{slide.title}</h2>
+                      )}
+                      {slide.description !== undefined &&
+                        slide.description !== null &&
+                        slide.description !== "" && (
+                          <div data-ok-lightbox-caption="description">
+                            <div data-ok-lightbox-description-text="">{slide.description}</div>
+                          </div>
+                        )}
+                      {render?.slideFooter?.({ slide, index: i })}
+                    </>,
+                  )}
                 </CarouselSlide>
               ))}
             </CarouselViewport>
             <div data-ok-lightbox-toolbar="">
-              <IconButton data-ok-lightbox-zoom-in="" aria-label={labels["Zoom in"]}>
-                {render?.iconZoomIn?.() ?? <ZoomInIcon />}
-              </IconButton>
-              <IconButton data-ok-lightbox-zoom-out="" aria-label={labels["Zoom out"]}>
-                {render?.iconZoomOut?.() ?? <ZoomOutIcon />}
-              </IconButton>
+              {render?.buttonZoom ? (
+                render.buttonZoom({ zoomIn, zoomOut })
+              ) : (
+                <>
+                  <IconButton {...zoomIn}>{render?.iconZoomIn?.() ?? <ZoomInIcon />}</IconButton>
+                  <IconButton {...zoomOut}>{render?.iconZoomOut?.() ?? <ZoomOutIcon />}</IconButton>
+                </>
+              )}
               <IconButton
                 data-ok-lightbox-rotate-ccw=""
                 aria-label={labels["Rotate counterclockwise"]}
@@ -730,66 +822,118 @@ export const Lightbox = forwardRef<HTMLElement, LightboxProps>(function Lightbox
               <IconButton data-ok-lightbox-rotate-cw="" aria-label={labels["Rotate clockwise"]}>
                 {render?.iconRotateClockwise?.() ?? <RotateClockwiseIcon />}
               </IconButton>
-              <IconButton data-ok-carousel-play="" data-ok-lightbox-slideshow="">
-                {render?.iconSlideshowPlay?.() ?? <PlayIcon data-ok-carousel-play-label="play" />}
-                {render?.iconSlideshowPause?.() ?? (
-                  <PauseIcon data-ok-carousel-play-label="pause" />
-                )}
-                <span data-ok-carousel-play-label="play">{labels.Play}</span>
-                <span data-ok-carousel-play-label="pause">{labels.Pause}</span>
-              </IconButton>
-              <IconButton data-ok-lightbox-fullscreen="">
-                {render?.iconEnterFullscreen?.() ?? (
-                  <EnterFullscreenIcon data-ok-lightbox-label="enter" />
-                )}
-                {render?.iconExitFullscreen?.() ?? (
-                  <ExitFullscreenIcon data-ok-lightbox-label="exit" />
-                )}
-                <span data-ok-lightbox-label="enter">{labels["Enter Fullscreen"]}</span>
-                <span data-ok-lightbox-label="exit">{labels["Exit Fullscreen"]}</span>
-              </IconButton>
-              <IconButton data-ok-lightbox-download="" aria-label={labels.Download}>
-                {render?.iconDownload?.() ?? <DownloadIcon />}
-              </IconButton>
-              <IconButton data-ok-lightbox-share="" aria-label={labels.Share}>
-                {render?.iconShare?.() ?? <ShareIcon />}
-              </IconButton>
-              <IconButton data-ok-lightbox-captions="">
-                {render?.iconCaptions?.() ?? <CaptionsIcon />}
-                <span data-ok-lightbox-label="hide">{labels["Hide captions"]}</span>
-                <span data-ok-lightbox-label="show">{labels["Show captions"]}</span>
-              </IconButton>
-              <IconButton data-ok-lightbox-thumbnails-toggle="">
-                {render?.iconThumbnails?.() ?? <ThumbnailsIcon />}
-                <span data-ok-lightbox-label="hide">{labels["Hide thumbnails"]}</span>
-                <span data-ok-lightbox-label="show">{labels["Show thumbnails"]}</span>
-              </IconButton>
+              {button(
+                render?.buttonSlideshow,
+                { "data-ok-carousel-play": "", "data-ok-lightbox-slideshow": "" },
+                (attributes) => (
+                  <IconButton {...attributes}>
+                    {render?.iconSlideshowPlay?.() ?? (
+                      <PlayIcon data-ok-carousel-play-label="play" />
+                    )}
+                    {render?.iconSlideshowPause?.() ?? (
+                      <PauseIcon data-ok-carousel-play-label="pause" />
+                    )}
+                    <span data-ok-carousel-play-label="play">{labels.Play}</span>
+                    <span data-ok-carousel-play-label="pause">{labels.Pause}</span>
+                  </IconButton>
+                ),
+              )}
+              {button(
+                render?.buttonFullscreen,
+                { "data-ok-lightbox-fullscreen": "" },
+                (attributes) => (
+                  <IconButton {...attributes}>
+                    {render?.iconEnterFullscreen?.() ?? (
+                      <EnterFullscreenIcon data-ok-lightbox-label="enter" />
+                    )}
+                    {render?.iconExitFullscreen?.() ?? (
+                      <ExitFullscreenIcon data-ok-lightbox-label="exit" />
+                    )}
+                    <span data-ok-lightbox-label="enter">{labels["Enter Fullscreen"]}</span>
+                    <span data-ok-lightbox-label="exit">{labels["Exit Fullscreen"]}</span>
+                  </IconButton>
+                ),
+              )}
+              {button(
+                render?.buttonDownload,
+                { "data-ok-lightbox-download": "", "aria-label": labels.Download },
+                (attributes) => (
+                  <IconButton {...attributes}>
+                    {render?.iconDownload?.() ?? <DownloadIcon />}
+                  </IconButton>
+                ),
+              )}
+              {button(
+                render?.buttonShare,
+                { "data-ok-lightbox-share": "", "aria-label": labels.Share },
+                (attributes) => (
+                  <IconButton {...attributes}>{render?.iconShare?.() ?? <ShareIcon />}</IconButton>
+                ),
+              )}
+              {button(render?.buttonCaptions, { "data-ok-lightbox-captions": "" }, (attributes) => (
+                <IconButton {...attributes}>
+                  {render?.iconCaptions?.() ?? <CaptionsIcon />}
+                  <span data-ok-lightbox-label="hide">{labels["Hide captions"]}</span>
+                  <span data-ok-lightbox-label="show">{labels["Show captions"]}</span>
+                </IconButton>
+              ))}
+              {button(
+                render?.buttonThumbnails,
+                { "data-ok-lightbox-thumbnails-toggle": "" },
+                (attributes) => (
+                  <IconButton {...attributes}>
+                    {render?.iconThumbnails?.() ?? <ThumbnailsIcon />}
+                    <span data-ok-lightbox-label="hide">{labels["Hide thumbnails"]}</span>
+                    <span data-ok-lightbox-label="show">{labels["Show thumbnails"]}</span>
+                  </IconButton>
+                ),
+              )}
               {toolbarButtons}
               <span data-ok-lightbox-counter="">
                 <span data-ok-lightbox-counter-current="">{total > 0 ? startIndex + 1 : 0}</span>
                 {counterSeparator}
                 <span data-ok-lightbox-counter-total="">{total}</span>
               </span>
-              <IconButton data-ok-lightbox-close="" aria-label={labels.Close}>
-                {render?.iconClose?.() ?? <CloseIcon />}
-              </IconButton>
+              {button(
+                render?.buttonClose,
+                { "data-ok-lightbox-close": "", "aria-label": labels.Close },
+                (attributes) => (
+                  <IconButton {...attributes}>{render?.iconClose?.() ?? <CloseIcon />}</IconButton>
+                ),
+              )}
             </div>
-            <IconButton
-              data-ok-carousel-prev=""
-              data-ok-lightbox-nav=""
-              aria-label={labels.Previous}
-              aria-disabled={finite && startIndex <= 0 ? "true" : undefined}
-            >
-              {render?.iconPrev?.() ?? <PrevIcon />}
-            </IconButton>
-            <IconButton
-              data-ok-carousel-next=""
-              data-ok-lightbox-nav=""
-              aria-label={labels.Next}
-              aria-disabled={finite && startIndex >= total - 1 ? "true" : undefined}
-            >
-              {render?.iconNext?.() ?? <NextIcon />}
-            </IconButton>
+            {button(
+              render?.buttonPrev,
+              {
+                "data-ok-carousel-prev": "",
+                "data-ok-lightbox-nav": "",
+                "aria-label": labels.Previous,
+              },
+              (attributes) => (
+                <IconButton
+                  {...attributes}
+                  aria-disabled={finite && startIndex <= 0 ? "true" : undefined}
+                >
+                  {render?.iconPrev?.() ?? <PrevIcon />}
+                </IconButton>
+              ),
+            )}
+            {button(
+              render?.buttonNext,
+              {
+                "data-ok-carousel-next": "",
+                "data-ok-lightbox-nav": "",
+                "aria-label": labels.Next,
+              },
+              (attributes) => (
+                <IconButton
+                  {...attributes}
+                  aria-disabled={finite && startIndex >= total - 1 ? "true" : undefined}
+                >
+                  {render?.iconNext?.() ?? <NextIcon />}
+                </IconButton>
+              ),
+            )}
             {render?.controls?.()}
           </CarouselStage>
           <CarouselThumbs

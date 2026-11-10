@@ -430,7 +430,9 @@ export {
   type SliderSize,
   type SliderTrack,
   type SliderValueLabelDisplay,
+  type SortableActivator,
   type SortableLayout,
+  type SortableStrategy,
   type StepAnatomyOptions,
   type StepperAnatomyOptions,
   type StepperVariant,
@@ -449,9 +451,11 @@ export {
   sliderSizes,
   sliderTracks,
   sliderValueLabelDisplays,
+  sortableActivators,
   sortableAttributes,
   sortableLayouts,
   sortableOptions,
+  sortableStrategies,
   stepAttributes,
   stepLabelAttributes,
   stepLabelOptions,
@@ -617,6 +621,7 @@ export {
   type CarouselAutoScrollApi,
   type CarouselController,
   type CarouselControllerOptions,
+  type CarouselDirection,
   createCarouselController,
   readCarouselSettings,
 } from "./carousel/carousel-controller.js";
@@ -1221,6 +1226,7 @@ export {
 } from "./slider/slider.js";
 export {
   arrayMove,
+  arraySwap,
   createSortableController,
   defaultSortableMessages,
   moveBetweenLists,
@@ -1403,6 +1409,7 @@ export {
   type WalktourStepFlag,
   type WalktourTargetKind,
   walktourStepFlags,
+  walktourStepInfo,
 } from "./walktour/walktour-controller.js";
 export {
   createWalktourFlow,
@@ -1432,6 +1439,7 @@ export {
   type WalktourPlacement,
   type WalktourState,
   type WalktourStatus,
+  type WalktourStepInfo,
   type WalktourTransition,
   walktourActions,
   walktourBeaconTriggers,

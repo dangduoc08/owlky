@@ -477,6 +477,10 @@ export function backdropStyle(options: {
 
 export const sortableLayouts = ["grid", "vertical", "horizontal"] as const;
 export type SortableLayout = (typeof sortableLayouts)[number];
+export const sortableStrategies = ["sort", "swap"] as const;
+export type SortableStrategy = (typeof sortableStrategies)[number];
+export const sortableActivators = ["handle", "item"] as const;
+export type SortableActivator = (typeof sortableActivators)[number];
 
 export const sortableOptions = defineOptions("sortable", "data-ok-sortable", {
   layout: style(
@@ -491,13 +495,36 @@ export const sortableOptions = defineOptions("sortable", "data-ok-sortable", {
     true,
     "While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off.",
   ),
+  strategy: style(
+    "data-ok-strategy",
+    sortableStrategies,
+    "sort",
+    "`sort` shifts the items between the old and the new position; `swap` trades the places of two items.",
+    { optional: true },
+  ),
+  activator: style(
+    "data-ok-activator",
+    sortableActivators,
+    "handle",
+    "Where a pointer drag starts: the `handle`, or anywhere on the `item` (the handle stays for keys and taps).",
+    { optional: true },
+  ),
 });
 
 /** `data-ok-*` attributes of a sortable list (`autoScroll` is written only when turned off). */
 export const sortableAttributes = (
-  options: { layout?: SortableLayout | undefined; autoScroll?: boolean | undefined } = {},
+  options: {
+    layout?: SortableLayout | undefined;
+    autoScroll?: boolean | undefined;
+    strategy?: SortableStrategy | undefined;
+    activator?: SortableActivator | undefined;
+  } = {},
 ): DataAttributes => ({
-  ...optionAttributes(sortableOptions, { layout: options.layout }),
+  ...optionAttributes(sortableOptions, {
+    layout: options.layout,
+    strategy: options.strategy,
+    activator: options.activator,
+  }),
   ...(options.autoScroll === false ? { [sortableOptions.options.autoScroll.attr]: "false" } : {}),
 });
 
@@ -5854,6 +5881,12 @@ export const walktourOptions = defineOptions("walktour", "data-ok-walktour", {
   spotlightRadius: number("data-ok-spotlight-radius", 16, "Corner radius of the spotlight (px).", {
     min: 0,
   }),
+  offset: number(
+    "data-ok-offset",
+    8,
+    "Distance between the spotlight's edge and the tooltip, or the tip of its arrow (px).",
+    { min: 0 },
+  ),
   scrollOffset: number(
     "data-ok-scroll-offset",
     20,
@@ -5919,6 +5952,7 @@ export interface WalktourAnatomyOptions {
   scrollToFirstStep?: boolean | undefined;
   spotlightPadding?: number | undefined;
   spotlightRadius?: number | undefined;
+  offset?: number | undefined;
   scrollOffset?: number | undefined;
   scrollDuration?: number | undefined;
   beaconTrigger?: WalktourBeaconTrigger | undefined;
@@ -5946,6 +5980,12 @@ export const walktourStepOptions = defineOptions("walktour-step", "data-ok-walkt
     { min: 0 },
   ),
   width: number("data-ok-width", undefined, "Tooltip width (px). Default 360px.", { min: 0 }),
+  offset: number(
+    "data-ok-offset",
+    undefined,
+    "This step's distance between the spotlight and the tooltip (px); default: the tour's.",
+    { min: 0 },
+  ),
   beaconPlacement: style(
     "data-ok-beacon-placement",
     placements,
@@ -6013,6 +6053,7 @@ export interface WalktourStepAnatomyOptions
   placement?: WalktourPlacement | undefined;
   spotlightPadding?: number | undefined;
   width?: number | undefined;
+  offset?: number | undefined;
   beaconPlacement?: Placement | undefined;
   isFixed?: boolean | undefined;
   beaconTrigger?: WalktourBeaconTrigger | undefined;
@@ -6026,6 +6067,8 @@ export interface WalktourStepAnatomyOptions
   scrollTarget?: string | undefined;
   /** A CSS selector of the element to put in the spotlight instead (`data-ok-spotlight-target`). */
   spotlightTarget?: string | undefined;
+  /** The step's identifier (`data-ok-step-id`), passed in the tour's events. */
+  id?: string | undefined;
 }
 
 /**
@@ -6044,6 +6087,7 @@ export function walktourStepAttributes(options: WalktourStepAnatomyOptions = {})
     attributes["data-ok-scroll-target"] = options.scrollTarget;
   if (typeof options.spotlightTarget === "string" && options.spotlightTarget)
     attributes["data-ok-spotlight-target"] = options.spotlightTarget;
+  if (typeof options.id === "string" && options.id) attributes["data-ok-step-id"] = options.id;
   return attributes;
 }
 

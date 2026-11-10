@@ -4,8 +4,10 @@
  * controller adds what a lightbox needs on top: opening at a slide, the toolbar (zoom, rotate,
  * fullscreen, download, share, captions and thumbnails toggles, counter, close), zoom and pan
  * gestures, pull to close, videos, and the state it writes into the DOM for both owners (current
- * slide `inert` on the others, zoom offsets, rotation, button states). App state stays with the
- * owner: the controller reports intent through callbacks (`onDismiss`).
+ * slide `inert` on the others, zoom offsets, rotation, button states, each image slide's
+ * `data-ok-status`: `loading` · `complete` · `error`, which shows the optional loading and error
+ * parts). App state stays with the owner: the controller reports intent through callbacks
+ * (`onDismiss`).
  */
 
 import {
@@ -141,6 +143,8 @@ const TITLE_ROOM = 96;
 const CAROUSEL = "[data-ok-lightbox-carousel]";
 const SLIDE = "[data-ok-carousel-slide]";
 const ZOOM = "[data-ok-lightbox-zoom]";
+/** On image slides: `loading`, `complete` or `error` (written by the controller). */
+const STATUS = "data-ok-status";
 const MEDIA = "[data-ok-lightbox-image], [data-ok-lightbox-video], [data-ok-lightbox-media]";
 const FIELD =
   "input, textarea, select, video, audio, [contenteditable]:not([contenteditable='false'])";
@@ -921,10 +925,37 @@ export function createLightboxController(
   root.addEventListener(
     "load",
     (event) => {
-      if (event.target instanceof HTMLImageElement && own(event.target)) syncButtons();
+      if (!(event.target instanceof HTMLImageElement) || !own(event.target)) return;
+      syncStatus();
+      syncButtons();
     },
     { signal, capture: true },
   );
+  root.addEventListener(
+    "error",
+    (event) => {
+      if (event.target instanceof HTMLImageElement && own(event.target)) syncStatus();
+    },
+    { signal, capture: true },
+  );
+
+  // --- Loading state -------------------------------------------------------------------------------
+
+  /** Each image slide's `data-ok-status`, from its image (the loading and error parts read it). */
+  function syncStatus() {
+    for (const slide of slides()) {
+      const image = slide.querySelector<HTMLImageElement>("[data-ok-lightbox-image]");
+      const status = !image
+        ? null
+        : !image.complete
+          ? "loading"
+          : image.naturalWidth > 0 || image.naturalHeight > 0
+            ? "complete"
+            : "error";
+      if (status === null) slide.removeAttribute(STATUS);
+      else if (slide.getAttribute(STATUS) !== status) slide.setAttribute(STATUS, status);
+    }
+  }
 
   // --- Observers -----------------------------------------------------------------------------------
 
@@ -938,6 +969,7 @@ export function createLightboxController(
       else if (record.type === "childList") selection = true;
     }
     if (optionsChanged) syncOptions();
+    if (selection) syncStatus();
     if (selection) {
       const index = snappedIndex();
       // A closed lightbox's carousel re-measures as the dialog hides: that is no view change.
@@ -1106,6 +1138,7 @@ export function createLightboxController(
       if (open) cleanupOnClose();
       modal?.destroy();
       for (const flag of Object.values(LIGHTBOX_FLAGS)) root.removeAttribute(flag);
+      for (const slide of slides()) slide.removeAttribute(STATUS);
       root.style.removeProperty("--_ok-lightbox-toolbar-width");
       root.style.removeProperty("--_ok-lightbox-title-top");
     },
@@ -1114,6 +1147,7 @@ export function createLightboxController(
   current = snappedIndex();
   syncOptions();
   syncSupport();
+  syncStatus();
   writeCurrent();
   root.setAttribute(LIGHTBOX_FLAGS.ready, "");
   // Inline lightboxes are always open (yet-another-react-lightbox Inline plugin).

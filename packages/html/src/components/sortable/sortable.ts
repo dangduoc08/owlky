@@ -11,6 +11,11 @@ import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 export interface SortableEvents {
   /** Before an item moves from index `from` to `to`. Call `preventDefault()` to keep the order. */
   move: EventSpec<{ from: number; to: number; item: HTMLElement }, true>;
+  /**
+   * Before two items trade places (lists with `data-ok-strategy="swap"`): the item at `from` and
+   * `target` at `to`. Call `preventDefault()` to keep the order.
+   */
+  swap: EventSpec<{ from: number; to: number; item: HTMLElement; target: HTMLElement }, true>;
   /** Before an item is removed. Call `preventDefault()` to keep it. */
   remove: EventSpec<{ index: number; item: HTMLElement }, true>;
   /** After a copy of the new-item template was added: fill in its content here. */
@@ -36,6 +41,11 @@ export interface SortableEvents {
 export interface SortableInstance extends ComponentInstance {
   /** Moves an item. Returns `false` if out of range or `ok:sortable:move` was prevented. */
   move(from: number, to: number): boolean;
+  /**
+   * Swaps two items (the `swap` strategy's move). Returns `false` if out of range or
+   * `ok:sortable:swap` was prevented.
+   */
+  swap(from: number, to: number): boolean;
   /** Removes an item. Returns `false` if out of range or `ok:sortable:remove` was prevented. */
   remove(index: number): boolean;
   /** Appends a clone of `template[data-ok-sortable-template]`; returns it (or `null`). */
@@ -73,8 +83,11 @@ const MESSAGES: [keyof SortableMessages, string][] = [
  * Messages: data-ok-message-<grabbed|moved|moved-to-list|dropped|cancelled|removed> on the list,
  *          with {position}, {total} and {list} (read when announced).
  * Disabled: li[data-ok-disabled] (+ the handle's `disabled`) never moves and isn't a target.
+ * Options: data-ok-strategy="swap" (two items trade places), data-ok-activator="item" (drag from
+ *          anywhere on an item; the handle stays for keys and taps).
  * Events:  ok:sortable:dragstart / dragover / dragend / dragcancel (detail: { item, index, list }),
  *          ok:sortable:move (cancelable, detail: { from, to, item }),
+ *          ok:sortable:swap (cancelable, detail: { from, to, item, target }),
  *          ok:sortable:transfer (cancelable, detail: { item, from, to, index }) on the list it leaves,
  *          ok:sortable:remove (cancelable, detail: { index, item }),
  *          ok:sortable:add (detail: { item, index }) after a template clone is inserted.
@@ -95,6 +108,20 @@ export const sortable = defineComponent<SortableInstance, SortableEvents>({
         if (!item || !target || from === to) return false;
         if (!emit("move", { from, to, item }, { cancelable: true })) return false;
         list.insertBefore(item, to > from ? target.nextSibling : target);
+        return true;
+      },
+      swap(from, to) {
+        const all = items();
+        const item = all[from];
+        const target = all[to];
+        if (!item || !target || from === to) return false;
+        if (!emit("swap", { from, to, item, target }, { cancelable: true })) return false;
+        const next = item.nextSibling;
+        if (next === target) list.insertBefore(target, item);
+        else {
+          list.insertBefore(item, target);
+          list.insertBefore(target, next);
+        }
         return true;
       },
       remove(index) {
@@ -144,6 +171,7 @@ export const sortable = defineComponent<SortableInstance, SortableEvents>({
     const controller = createSortableController(list, {
       messages,
       onMove: (from, to) => instance.move(from, to),
+      onSwap: (from, to) => instance.swap(from, to),
       onRemove: (index) => instance.remove(index),
       onTransfer: ({ fromIndex, to, index }) => instance.transfer(fromIndex, to, index),
       onDragStart: relay("dragstart"),

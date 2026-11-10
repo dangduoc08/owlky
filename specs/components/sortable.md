@@ -10,8 +10,9 @@ removes.
 
 ## Anatomy
 ```
-ul[data-ok-sortable][data-ok-layout][aria-label][id]?[data-ok-group]?[data-ok-accept]?   React: + data-ok-runtime="off"
-  li[data-ok-sortable-item][data-ok-dragging | data-ok-grabbed]?[data-ok-disabled]?
+ul[data-ok-sortable][data-ok-layout][aria-label][id]?[data-ok-group]?[data-ok-accept]?
+   [data-ok-strategy="swap"]?[data-ok-activator="item"]?      React: + data-ok-runtime="off"
+  li[data-ok-sortable-item][data-ok-dragging | data-ok-grabbed]?[data-ok-disabled]?[data-ok-swap-target]?
     … content (yours), may hold [data-ok-sortable-move-to="<list id>"] triggers (buttons, menu items)
     div[data-ok-sortable-actions]
       button[data-ok-icon-button][data-ok-size="sm"][data-ok-sortable-remove][aria-label]?  (optional)
@@ -34,6 +35,8 @@ Root: `data-ok-sortable`. Unknown values fall back to the default.
 | `layout` | `data-ok-layout="…"` | style | `grid` `vertical` `horizontal` | `grid` | Grid, one column or one scrolling row. |
 | `items` | `data-ok-sortable-item` · event `ok:sortable:move` | state | — | — | Item order (`items` + `onReorder`). |
 | `autoScroll` | `data-ok-auto-scroll="false"` turns it off | behavior | boolean | on | While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off. |
+| `strategy` | `data-ok-strategy="…"` | style | `sort` `swap` | — | `sort` shifts the items between the old and the new position; `swap` trades the places of two items. |
+| `activator` | `data-ok-activator="…"` | style | `handle` `item` | — | Where a pointer drag starts: the `handle`, or anywhere on the `item` (the handle stays for keys and taps). |
 <!-- /options:sortable -->
 
 Other props (not options):
@@ -52,6 +55,7 @@ Other props (not options):
 | `li[data-ok-disabled]` + the handle's `disabled` | `isItemDisabled(item, index)` | the item never moves and isn't a target |
 | `ok:sortable:dragstart` · `dragover` · `dragend` · `dragcancel` (`detail: { item, index, list }`) | `onDragStart` · `onDragOver` · `onDragEnd` · `onDragCancel` (`{ item, index, list }`, `list` = id) | to the owner of the list holding the item |
 | `data-ok-message-<grabbed\|moved\|moved-to-list\|dropped\|cancelled\|removed>` (`{position}`, `{total}`, `{list}`) | `messages` | announcement texts |
+| `ok:sortable:swap` (cancelable, `detail: { from, to, item, target }`) · instance `swap(from, to)` | `onReorder(arraySwap(items, from, to))` | swap lists (`strategy="swap"`) |
 
 ## Layout and tokens
 - Items: background `channel(grey-500)` 4 %, 1px border 16 %, radius `--ok-radius-lg`; actions at the
@@ -62,6 +66,11 @@ Other props (not options):
 - An empty list with a group keeps a block size of 80px (a drop target).
 - Dragging: the item follows the pointer above the others (`--ok-shadow-z16`); grabbed (keyboard /
   tap): `--ok-shadow-z8` and a 2px outline in `--ok-text-secondary`.
+- Swap target (`data-ok-swap-target`): a 2px dashed outline in `--ok-text-secondary`; previewed
+  items slide (`transform`, `--ok-duration-short`) while a target exists, never when the swap is
+  applied.
+- `activator="item"`: items show `cursor: grab`, `touch-action: none` and `user-select: none`
+  (touch drags start on the item, so the page scrolls only outside the items on touch screens).
 
 ## Behavior (`core` `createSortableController`)
 The controller reports intent (`onMove(from, to)`, `onRemove(index)`); the owner reorders its state
@@ -97,6 +106,20 @@ The controller reports intent (`onMove(from, to)`, `onRemove(index)`); the owner
 - **Drag events:** `onDragStart` on a grab or once a drag starts; `onDragOver` before each move
   (the target index and list); `onDragEnd` on a drop (where it landed); `onDragCancel` before the
   item goes back. Each goes to the owner of the list holding the item.
+- **Swap strategy** (`data-ok-strategy="swap"`, dnd-kit `rectSwappingStrategy` + `arraySwap`):
+  nothing moves in the DOM while dragging. The target (the item under the pointer, hit-tested on
+  the items' resting boxes; or the arrow keys' target, moved from the last one and skipping
+  disabled items) gets `data-ok-swap-target` and a transform onto the item's place; without a
+  pointer the item moves onto the target's place too. Back over the item's own place (or keys
+  back to it) clears the preview. Drop (pointer up, Space / Enter, focus leaving, a tap on
+  another handle) reports `onSwap(from, to)`; Escape and `pointercancel` clear it. Moves to other
+  lists of a group still insert (the preview is cleared first). Announcements reuse `moved` /
+  `dropped` with the target's position.
+- **Whole-item drags** (`data-ok-activator="item"`, dnd-kit without `setActivatorNodeRef`): a
+  pointer press anywhere on an item starts the drag, except on controls inside it (links,
+  buttons, fields, `label`, `summary`, editable content, `[tabindex]`), which keep their presses.
+  Mouse presses are `preventDefault()`ed (no text selection, no native image drag). The handle
+  stays the keyboard path and the single-pointer alternative (two taps).
 - **Auto scroll** (on unless `data-ok-auto-scroll="false"`): while a pointer drag is near an edge
   (a fifth of the container, at most 80px) of a scrolling ancestor of the item, or of the window,
   the nearest one that can scroll on that axis scrolls up to 20px per frame (full speed past the
@@ -118,11 +141,12 @@ grabbed. Dragging has single-pointer and keyboard alternatives (WCAG 2.5.7, 2.1.
 name (`aria-label`).
 
 ## Events / API
-HTML: `ok:sortable:move` (cancelable, `detail: { from, to, item }`), `ok:sortable:transfer`
+HTML: `ok:sortable:move` (cancelable, `detail: { from, to, item }`), `ok:sortable:swap`
+(cancelable, `detail: { from, to, item, target }`, swap lists), `ok:sortable:transfer`
 (cancelable, `detail: { item, from, to, index }`, on the list it leaves), `ok:sortable:remove`
 (cancelable, `detail: { index, item }`), `ok:sortable:add` (after a template clone is inserted,
-`detail: { item, index }` — fill its content here). Instance: `move(from, to)`, `remove(index)`, `transfer(index, to, toIndex?)`.
-React: `onReorder`, `onRemove`; helper `arrayMove(items, from, to)`; `messages?:
+`detail: { item, index }` — fill its content here). Instance: `move(from, to)`, `swap(from, to)`, `remove(index)`, `transfer(index, to, toIndex?)`.
+React: `onReorder`, `onRemove`; helpers `arrayMove(items, from, to)`, `arraySwap(items, from, to)`; `messages?:
 Partial<SortableMessages>` localizes the announcements (`grabbed`, `moved`, `dropped`, `cancelled`,
 `removed`, `movedToList`, each `(position, total, list) => string`, `list` = the list's
 `aria-label`; defaults from `defaultSortableMessages`). React: `group`, `accept`, `onTransfer`,
@@ -143,9 +167,10 @@ Upstream: Minimals "Dnd" on dnd-kit — `DndContext`, `SortableContext`, `useSor
 | `SortableContext items`, `arrayMove`, `onDragEnd` reorder | `items` + `onReorder(items)`, `arrayMove` · `ok:sortable:move` | renamed | controlled list |
 | `useSortable id`, `index` | `getKey(item)`, position | renamed | |
 | `strategy` `rectSortingStrategy` / `verticalList…` / `horizontalList…` | `layout` (`grid` · `vertical` · `horizontal`) | renamed | |
-| `strategy` `rectSwappingStrategy` | — | deferred | swap instead of shift |
+| `strategy` `rectSwappingStrategy`, `arraySwap` | `strategy="swap"` · `data-ok-strategy="swap"`, `arraySwap` · `ok:sortable:swap` | renamed | one strategy per list; moves between lists still insert |
 | `sensors` (Pointer, Keyboard, `sortableKeyboardCoordinates`) | pointer + keyboard + two taps, built in | kept | activation distance fixed (4px) |
-| `useSortable handle` / `handleRef` | handle button (always) | kept | drag by the whole item: deferred |
+| `useSortable handle` / `handleRef` | handle button (always) | kept | |
+| `setActivatorNodeRef` omitted (the whole item drags) | `activator="item"` · `data-ok-activator="item"` | renamed | the handle stays for keys and taps (WCAG 2.1.1, 2.5.7); controls inside an item keep their presses |
 | `accessibility.announcements` | `messages` (React), `data-ok-message-*` (HTML) | renamed | `screenReaderInstructions`: part of `grabbed` |
 | `useSortable disabled` (`true`) | `isItemDisabled` · `li[data-ok-disabled]` | renamed | the `{ draggable, droppable }` object form: not offered |
 | `onDragStart`, `onDragOver`, `onDragEnd`, `onDragCancel` | same names · `ok:sortable:dragstart` / `dragover` / `dragend` / `dragcancel` | kept | the React ones replace the `ul`'s native HTML drag handlers |

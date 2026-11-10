@@ -97,6 +97,16 @@ export interface WalktourEventData {
   readonly size: number;
   /** `error` events: what failed (a `before` hook that threw, rejected or timed out). */
   readonly error?: Error | undefined;
+  /** The step's `id` and `data` (react-joyride's `step`), when the owner knows the step. */
+  readonly step?: WalktourStepInfo | undefined;
+}
+
+/** A step's identity and custom data, passed in events and hooks (react-joyride step `id`, `data`). */
+export interface WalktourStepInfo {
+  /** The step's `id` (`data-ok-step-id`). */
+  readonly id?: string | undefined;
+  /** The step's `data` (HTML: the JSON of `data-ok-step-data`). */
+  readonly data?: unknown;
 }
 
 /** What the transition needs to know about the tour (read from the options when it runs). */

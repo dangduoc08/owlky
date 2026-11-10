@@ -68,6 +68,7 @@ Root: `data-ok-walktour`. Unknown values fall back to the default.
 | `scrollToFirstStep` | `data-ok-scroll-to-first-step` | flag | boolean | off | Scrolls to the first step's target too (only later steps scroll otherwise). |
 | `spotlightPadding` | `data-ok-spotlight-padding="…"` | number | number | `10` | Space between the target and the edge of the spotlight (px). |
 | `spotlightRadius` | `data-ok-spotlight-radius="…"` | number | number | `16` | Corner radius of the spotlight (px). |
+| `offset` | `data-ok-offset="…"` | number | number | `8` | Distance between the spotlight's edge and the tooltip, or the tip of its arrow (px). |
 | `scrollOffset` | `data-ok-scroll-offset="…"` | number | number | `20` | Space kept above a target scrolled into view (px). |
 | `scrollDuration` | `data-ok-scroll-duration="…"` | number | number | `300` | How long scrolling to a target takes (ms); `0` jumps. Instant with reduced motion. |
 | `beaconTrigger` | `data-ok-beacon-trigger="…"` | style | `click` `hover` | — | What opens a step from its beacon: `click`, or `hover` (a mouse over it; keys and taps still select it). |
@@ -88,6 +89,7 @@ Root: `data-ok-walktour-step`. Unknown values fall back to the default.
 | `placement` | `data-ok-placement="…"` | style | `top-start` `top` `top-end` `bottom-start` `bottom` `bottom-end` `left-start` `left` `left-end` `right-start` `right` `right-end` `auto` `center` | `bottom` | Side of the target and alignment, `auto` (the side with the most room) or `center` (the middle of the screen, no target needed). |
 | `spotlightPadding` | `data-ok-spotlight-padding="…"` | number | number | — | This step's spotlight padding (px); default: the tour's. |
 | `width` | `data-ok-width="…"` | number | number | — | Tooltip width (px). Default 360px. |
+| `offset` | `data-ok-offset="…"` | number | number | — | This step's distance between the spotlight and the tooltip (px); default: the tour's. |
 | `beaconPlacement` | `data-ok-beacon-placement="…"` | style | `top-start` `top` `top-end` `bottom-start` `bottom` `bottom-end` `left-start` `left` `left-end` `right-start` `right` `right-end` | — | Side and alignment of the beacon on the target; default: the step's placement. |
 | `isFixed` | `data-ok-is-fixed` | flag | boolean | off | The target doesn't move when the page scrolls (it is found on its own for fixed elements): the tour doesn't scroll to it. |
 | `beaconTrigger` | `data-ok-beacon-trigger="…"` | style | `click` `hover` | — | This step's beacon trigger; default: the tour's. |
@@ -188,8 +190,11 @@ Core `walktourTransition` (react-joyride's rules):
   `onStatusChange(status, { action, index })`, `onEvent(type, data)` with `type` in
   `tour:start`, `step:before-hook`, `step:before`, `beacon`, `tooltip`, `step:after`,
   `step:after-hook`, `tour:end`, `tour:status`, `error:target-not-found`, `error` and `data` =
-  `{ type, action, origin, index, status, lifecycle, size, error? }` (react-joyride's `callback`,
-  value first). `step:after` of the step that showed comes before the next step's change
+  `{ type, action, origin, index, status, lifecycle, size, error?, step? }` (react-joyride's
+  `callback`, value first). `step` is `{ id, data }` of the step at `index` when it has an `id` or
+  `data` (React: the step's props; HTML: `data-ok-step-id` and the JSON of `data-ok-step-data`,
+  ignored when longer than 10 000 characters or invalid); the flow adds it (`WalktourFlowHost.step`)
+  to every event and to the `before` / `after` hook arguments. `step:after` of the step that showed comes before the next step's change
   (`onStepChange`, `ok:walktour:change`), so an `after` runs before the next `before`.
 - HTML: `ok:walktour:beforechange` (cancelable; `{ index, previousIndex, action, origin }`),
   `ok:walktour:change` (the state + `previousIndex`), `ok:walktour:event` (the same data as
@@ -228,11 +233,12 @@ status per row.
 | Options `closeButtonAction` (`close` · `skip`), `beaconTrigger`, `disableFocusTrap`, `scrollDuration`, `targetWaitTimeout`, `beforeTimeout` | same (`data-ok-close-button-action`, `-beacon-trigger`, `-disable-focus-trap`, `-scroll-duration`, `-target-wait-timeout`, `-before-timeout`) | kept | tour and step; `closeButtonAction: "replay"` deferred |
 | Options `before` / `after` | same (React, tour and step) · HTML `ok:walktour:beforestep` (`waitUntil`) / the `step:after` event | kept | events `step:before-hook`, `step:after-hook`, `error` |
 | Options `loaderDelay`, `loaderComponent` | — | deferred | nothing shows while the tour waits |
-| Event data `controlled`, `scroll`, `scrolling`, `step`; events `scroll:start` / `scroll:end` | `waiting` on the state | deferred | |
-| Options `offset` (tooltip distance from the target) | fixed | deferred | |
+| Event data `controlled`, `scroll`, `scrolling`; events `scroll:start` / `scroll:end` | `waiting` on the state | deferred | |
+| Event data `step` | `step: { id, data }` | renamed | the step's identity and data, not the whole step object (React elements, HTML markup) |
+| Options `offset` (tooltip distance from the target) | `offset` · `data-ok-offset` (tour and step) | kept | measured from the spotlight's edge to the tooltip or its arrow's tip; default 8 (the reference's spacing; react-joyride: 10) |
 | Options `backgroundColor`, `primaryColor`, `textColor`, `overlayColor`, `arrowColor`, `arrowBase`, `arrowSize`, `arrowSpacing`, `beaconSize`, `zIndex` | — | not applicable | tokens, top layer |
 | Step `target`, `content`, `title`, `placement` (`auto`, `center`) | same | kept | |
-| Step `id`, `data` | — | deferred | step identity and custom data in events |
+| Step `id`, `data` | same · `data-ok-step-id`, `data-ok-step-data` (JSON) | kept | in events and hooks as `step` |
 | Step `isFixed`, `scrollTarget`, `spotlightTarget`, `beaconPlacement` | same · HTML `data-ok-is-fixed`, `-scroll-target`, `-spotlight-target` (selectors), `-beacon-placement` | kept | fixed targets are also found on their own |
 | Step option overrides | every boolean option on a step | kept | |
 | `styles`, `floatingOptions`, `tooltipComponent`, `beaconComponent`, `arrowComponent`, `portalElement`, `nonce`, `debug` | — | not applicable | CSS tokens, `data-ok-theme`; HTML markup is the component |

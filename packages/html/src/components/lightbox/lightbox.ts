@@ -85,6 +85,43 @@ function readLabels(element: Element): Partial<LightboxLabels> {
   }
 }
 
+/** The optional status parts, in the order React renders them after the media. */
+const STATUS_PARTS = [
+  ["loading", "data-ok-lightbox-loading"],
+  ["error", "data-ok-lightbox-error"],
+] as const;
+
+/**
+ * Copies `template[data-ok-lightbox-icon="loading|error"]` (direct children of the root) into
+ * every image slide's zoom frame that lacks the part (DOM methods; React renders the same parts
+ * from `render.iconLoading` / `iconError`).
+ */
+function fillStatusParts(root: HTMLElement) {
+  const templates = STATUS_PARTS.map(([name, attr]) => {
+    const template = [...root.children].find(
+      (child): child is HTMLTemplateElement =>
+        child instanceof HTMLTemplateElement &&
+        child.getAttribute("data-ok-lightbox-icon") === name,
+    );
+    return [attr, template] as const;
+  });
+  if (templates.every(([, template]) => !template)) return;
+  for (const frame of root.querySelectorAll<HTMLElement>(
+    "[data-ok-lightbox-slide] [data-ok-lightbox-zoom]",
+  )) {
+    if (frame.closest("[data-ok-lightbox]") !== root) continue;
+    if (!frame.querySelector(":scope > [data-ok-lightbox-image]")) continue;
+    for (const [attr, template] of templates) {
+      if (!template || frame.querySelector(`:scope > [${attr}]`)) continue;
+      const part = document.createElement("span");
+      part.setAttribute(attr, "");
+      part.setAttribute("aria-hidden", "true");
+      part.append(template.content.cloneNode(true));
+      frame.append(part);
+    }
+  }
+}
+
 /**
  * Lightbox — spec: specs/components/lightbox.md (ADR-0032)
  *
@@ -105,6 +142,8 @@ function readLabels(element: Element): Partial<LightboxLabels> {
  *              <span data-ok-lightbox-live aria-live="polite"></span>
  *            </section>
  *          </dialog>
+ * Icons:   <template data-ok-lightbox-icon="loading|error"> (root children): copied into every
+ *          image slide as span[data-ok-lightbox-loading|-error], shown by the slide's data-ok-status.
  * Triggers: [data-ok-lightbox-open="id"] (+ data-ok-index), [data-ok-lightbox-close] inside.
  * Behavior: core `createLightboxController` over the Carousel instance; the runtime writes the
  *          sizes of the numeric options (CSSOM). `data-ok-inline` on a `div` root: always open.
@@ -133,6 +172,13 @@ export const lightbox = defineComponent<LightboxInstance, LightboxEvents>({
       attributes: true,
       attributeFilter: SIZE_OPTIONS.map((key) => o[key].attr),
     });
+
+    fillStatusParts(element);
+    const slidesObserver = new MutationObserver(() => fillStatusParts(element));
+    const slidesBox = element.querySelector(
+      "[data-ok-lightbox-carousel] [data-ok-carousel-container]",
+    );
+    if (slidesBox) slidesObserver.observe(slidesBox, { childList: true });
 
     const carouselElement = element.querySelector("[data-ok-lightbox-carousel]");
     const carousel = () =>
@@ -193,6 +239,7 @@ export const lightbox = defineComponent<LightboxInstance, LightboxEvents>({
       destroy: {
         value() {
           observer.disconnect();
+          slidesObserver.disconnect();
           carouselElement?.removeEventListener("ok:carousel:autoplay", onAutoplay);
           destroy();
           syncCustomProperties(element, {}, written);

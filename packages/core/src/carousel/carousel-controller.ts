@@ -55,7 +55,19 @@ export interface CarouselControllerOptions {
   /** A pointer went down on / up from the viewport. */
   onPointerDown?(): void;
   onPointerUp?(): void;
+  /** The pressed pointer moved (Embla `pointermove`). Return `false` to skip the drag step. */
+  onPointerMove?(event: PointerEvent): unknown;
+  /**
+   * The viewport or a slide changed size (Embla `resize`, sizes that really changed). Return
+   * `false` to skip the measure that follows.
+   */
+  onResize?(entries: ResizeObserverEntry[]): unknown;
+  /** Slides were added or removed (Embla `slideschanged`). Return `false` to skip the measure. */
+  onSlidesChanged?(records: MutationRecord[]): unknown;
 }
+
+/** Which way `goTo` scrolls a looping carousel (Embla v9). */
+export type CarouselDirection = "forward" | "backward";
 
 /** Autoplay methods (Embla Autoplay plugin). */
 export interface CarouselAutoplayApi {
@@ -75,8 +87,32 @@ export interface CarouselAutoScrollApi {
   isPlaying(): boolean;
 }
 
-/** The carousel API (Embla's methods, v8 names). */
+/** The carousel API: Embla's methods, with the v8 names and their v9 aliases. */
 export interface CarouselApi {
+  /** Embla v9 name of `scrollNext`. */
+  goToNext(jump?: boolean): void;
+  /** Embla v9 name of `scrollPrev`. */
+  goToPrev(jump?: boolean): void;
+  /**
+   * Embla v9 name of `scrollTo`. With `loop`, `direction` forces the way round (`forward` or
+   * `backward`); without it, the shortest way.
+   */
+  goTo(index: number, jump?: boolean, direction?: CarouselDirection): void;
+  /** Embla v9 name of `canScrollNext`. */
+  canGoToNext(): boolean;
+  /** Embla v9 name of `canScrollPrev`. */
+  canGoToPrev(): boolean;
+  /** Embla v9 name of `selectedScrollSnap`. */
+  selectedSnap(): number;
+  /** Embla v9 name of `previousScrollSnap`. */
+  previousSnap(): number;
+  /** Embla v9 name of `scrollSnapList`. */
+  snapList(): number[];
+  /**
+   * The selected snap moved by `offset` (Embla v9): `1` is the next snap, `-1` the previous one.
+   * Wraps around with `loop`, otherwise stops at the first and last snaps. Default `0`.
+   */
+  snapIndex(offset?: number): number;
   /** Scrolls to the next snap point (`jump`: without animation). */
   scrollNext(jump?: boolean): void;
   /** Scrolls to the previous snap point (`jump`: without animation). */
@@ -547,7 +583,7 @@ export function createCarouselController(
     animation = requestAnimationFrame(step);
   };
 
-  const scrollTo = (index: number, jump = false) => {
+  const scrollTo = (index: number, jump = false, direction?: CarouselDirection) => {
     if (!settings.active || count() === 0) return;
     const total = count();
     const target = looping
@@ -562,7 +598,8 @@ export function createCarouselController(
     // way, so both ends are within the scroll range.
     if (looping) {
       let delta = (target - selected + total) % total;
-      if (delta > total / 2) delta -= total;
+      if (direction === "backward" ? delta > 0 : direction !== "forward" && delta > total / 2)
+        delta -= total;
       recenter(jump ? target : (selected + Math.trunc(delta / 2) + total) % total);
     }
     select(target);
@@ -749,7 +786,10 @@ export function createCarouselController(
     }
   };
   const onPointerMove = (event: PointerEvent) => {
-    if (!drag || event.pointerId !== drag.pointer || drag.native) return;
+    if (!root.hasAttribute(CAROUSEL_FLAGS.pointerDown)) return;
+    if (drag && event.pointerId !== drag.pointer) return;
+    if (options.onPointerMove?.(event) === false) return;
+    if (!drag || drag.native) return;
     const point = axisPoint(event);
     const delta = point - drag.start;
     drag.moved = Math.max(drag.moved, Math.abs(delta));
@@ -1230,24 +1270,44 @@ export function createCarouselController(
   };
   const reInit = () => remeasure(false);
 
-  const resizeObserver = new ResizeObserver(() => {
+  /** Sizes per observed element (Embla's resize handler): a report is a change only if they differ. */
+  const sizesSeen = new WeakMap<Element, { width: number; height: number }>();
+  const sizeOf = (element: Element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return { width, height };
+  };
+  const resizeObserver = new ResizeObserver((entries) => {
+    const changed = entries.filter((entry) => {
+      const size = sizeOf(entry.target);
+      const before = sizesSeen.get(entry.target);
+      sizesSeen.set(entry.target, size);
+      return (
+        before !== undefined &&
+        (Math.abs(before.width - size.width) >= 0.5 || Math.abs(before.height - size.height) >= 0.5)
+      );
+    });
+    if (changed.length > 0 && options.onResize?.(changed) === false) return;
     requestAnimationFrame(() => {
       if (!signal.aborted && !drag) reInit();
     });
   });
   const observeSizes = () => {
     resizeObserver.disconnect();
-    resizeObserver.observe(area);
-    for (const slide of slideList) resizeObserver.observe(slide);
+    for (const element of [area, ...slideList]) {
+      if (!sizesSeen.has(element)) sizesSeen.set(element, sizeOf(element));
+      resizeObserver.observe(element);
+    }
   };
 
   const mutations = new MutationObserver((records) => {
-    let structure = false;
     let options_ = false;
+    const slides: MutationRecord[] = [];
     for (const record of records) {
       if (record.type === "attributes") options_ ||= record.target === root;
-      else if (record.target === box) structure = true;
+      else if (record.target === box) slides.push(record);
     }
+    let structure = slides.length > 0;
+    if (structure && options.onSlidesChanged?.(slides) === false) structure = false;
     if (options_) watchBreakpoints();
     if (structure || options_) {
       reInit();
@@ -1271,21 +1331,40 @@ export function createCarouselController(
     }
   };
 
+  const next = (jump?: boolean) => {
+    if (canNext()) scrollTo(selected + 1, jump);
+  };
+  const prev = (jump?: boolean) => {
+    if (canPrev()) scrollTo(selected - 1, jump);
+  };
+  const snapList = () => {
+    if (fade() || looping) return positions.map((_, i) => i / Math.max(count() - 1, 1));
+    return positions.map((position) => scrollProgress(position, maxScroll));
+  };
   const api: CarouselController = {
-    scrollNext(jump) {
-      if (canNext()) scrollTo(selected + 1, jump);
-    },
-    scrollPrev(jump) {
-      if (canPrev()) scrollTo(selected - 1, jump);
-    },
+    scrollNext: next,
+    scrollPrev: prev,
     scrollTo: (index, jump) => scrollTo(index, jump),
+    goToNext: next,
+    goToPrev: prev,
+    goTo: (index, jump, direction) => scrollTo(index, jump, direction),
     canScrollNext: canNext,
     canScrollPrev: canPrev,
+    canGoToNext: canNext,
+    canGoToPrev: canPrev,
     selectedScrollSnap: () => selected,
     previousScrollSnap: () => previous,
-    scrollSnapList: () => {
-      if (fade() || looping) return positions.map((_, i) => i / Math.max(count() - 1, 1));
-      return positions.map((position) => scrollProgress(position, maxScroll));
+    selectedSnap: () => selected,
+    previousSnap: () => previous,
+    scrollSnapList: snapList,
+    snapList,
+    snapIndex(offset = 0) {
+      const total = count();
+      if (total === 0) return 0;
+      const target = selected + Math.trunc(Number(offset) || 0);
+      return looping
+        ? ((target % total) + total) % total
+        : Math.min(Math.max(target, 0), total - 1);
     },
     scrollProgress: progressValue,
     slidesInView: () => [...inView].sort((a, b) => a - b),

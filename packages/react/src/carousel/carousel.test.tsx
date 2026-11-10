@@ -410,4 +410,39 @@ describe("Carousel", () => {
     expect(({} as Record<string, unknown>)["x"]).toBeUndefined();
     expect(document.querySelector("img")).toBeNull();
   });
+
+  it("has the Embla v9 aliases and reports resizes and slide changes", async () => {
+    const apiRef = createRef<CarouselApi>();
+    const onResize = vi.fn();
+    const onSlidesChanged = vi.fn();
+    const { rerender } = render(
+      <Demo apiRef={apiRef} onResize={onResize} onSlidesChanged={onSlidesChanged} />,
+    );
+    const api = apiRef.current as CarouselApi;
+    act(() => api.goTo(2, true));
+    expect(api.selectedSnap()).toBe(2);
+    expect(api.snapIndex(-1)).toBe(1);
+    expect(api.canGoToNext()).toBe(false);
+    expect(api.canGoToPrev()).toBe(true);
+    act(() => api.goToPrev(true));
+    expect(api.previousSnap()).toBe(2);
+    act(() => api.goToNext(true));
+    expect(api.snapList()).toEqual([0, 0.5, 1]);
+    rerender(
+      <Demo apiRef={apiRef} count={5} onResize={onResize} onSlidesChanged={onSlidesChanged} />,
+    );
+    await new Promise<void>((resolve) => {
+      const observer = new MutationObserver(() => {
+        if (onSlidesChanged.mock.calls.length > 0) {
+          observer.disconnect();
+          resolve();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+      if (onSlidesChanged.mock.calls.length > 0) resolve();
+    });
+    expect(onSlidesChanged.mock.calls[0]?.[0]?.[0]?.type).toBe("childList");
+    // The `onResize` prop is the carousel's, not React's media event.
+    expect(root().getAttribute("onresize")).toBeNull();
+  });
 });

@@ -10,6 +10,8 @@
  *                     div[data-ok-lightbox-zoom] › img[data-ok-lightbox-image]
  *                                                  | video[data-ok-lightbox-video]
  *                                                  | [data-ok-lightbox-media] (custom slides)
+ *                                                  + span[data-ok-lightbox-loading | -error]?
+ *                     (React render.slideContainer / HTML markup may wrap the slide's content)
  *                     div[data-ok-lightbox-caption="title|description"]?
  *                 div[data-ok-lightbox-toolbar] › button[data-ok-icon-button][data-ok-lightbox-…]…,
  *                                                 span[data-ok-lightbox-counter]
@@ -22,7 +24,8 @@
  *            data-ok-thumbnails-show-toggle, data-ok-inline
  * States (controller): data-ok-captions-hidden, data-ok-thumbnails-hidden, data-ok-zoomed,
  *            data-ok-zooming, data-ok-pulling, data-ok-fullscreen, data-ok-ready (root); inert on
- *            other slides; aria-disabled on buttons. CSSOM: --_ok-lightbox-scale / -x / -y (zoom
+ *            other slides; data-ok-status (loading | complete | error) on image slides;
+ *            aria-disabled on buttons. CSSOM: --_ok-lightbox-scale / -x / -y (zoom
  *            frame), -pull and -toolbar-width (root), and the sizes of the numeric options (root).
  *
  * Load after carousel.css (same zero specificity: the later stylesheet wins).
@@ -198,9 +201,28 @@
     touch-action: none;
   }
 
-  :where([data-ok-lightbox][data-ok-pulling] [data-ok-snapped] > [data-ok-lightbox-zoom]) {
+  /* A descendant: render.slideContainer may wrap the slide's content. */
+  :where([data-ok-lightbox][data-ok-pulling] [data-ok-snapped] [data-ok-lightbox-zoom]) {
     transition: none;
     translate: 0 var(--_ok-lightbox-pull, 0px);
+  }
+
+  /* Optional loading and error icons over an image slide (the zoom frame's transform contains them). */
+  :where([data-ok-lightbox-loading], [data-ok-lightbox-error]) {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--ok-text-secondary);
+    pointer-events: none;
+  }
+
+  :where(
+    [data-ok-lightbox-slide][data-ok-status="loading"] [data-ok-lightbox-loading],
+    [data-ok-lightbox-slide][data-ok-status="error"] [data-ok-lightbox-error]
+  ) {
+    display: flex;
   }
 
   :where([data-ok-lightbox-image]) {
