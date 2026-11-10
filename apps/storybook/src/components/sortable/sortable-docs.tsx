@@ -1,7 +1,7 @@
 import { sortableOptions } from "@owlky/core";
 import sortableApi from "@owlky/docs-content/api/sortable.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { Scrollbar, Sortable } from "@owlky/react";
+import { moveBetweenLists, Scrollbar, Sortable } from "@owlky/react";
 import { useState } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -22,6 +22,14 @@ const htmlItem = (label: string, removable = true) => `    <li data-ok-sortable-
     </li>`;
 
 const TASKS = ["Design", "Build", "Test", "Release"];
+
+/** A vertical list of the "board" group (docs examples). */
+const htmlList = (id: string, label: string, items: string[]) =>
+  `<ul id="${id}" data-ok-sortable data-ok-layout="vertical" data-ok-group="board" aria-label="${label}">
+${items.map((item) => htmlItem(item, false)).join("\n")}
+</ul>`;
+
+const MOVE_BUTTON = `<button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" data-ok-sortable-move-to="done" aria-label="Move Design to Done"><span data-ok-button-label>Move to Done</span></button>`;
 
 export const sortableSections: GuideSection[] = [
   {
@@ -162,6 +170,102 @@ export function GrowingTasks() {
 }`,
   },
   {
+    id: "lists",
+    title: "Move items between lists",
+    body: `Give lists the same group to let people move items between them, such as tasks on a board. In HTML, add \`data-ok-group\` and an \`id\` to each list; the script moves the items. In React, pass \`group\` and \`id\`, and update your data in \`onTransfer\`. The \`moveBetweenLists(lists, event)\` helper updates data kept as an object of arrays by list id.
+
+People drag an item onto another list, even an empty one. With the keyboard, they grab an item, then press the Left or Right arrow key in vertical lists, or the Up or Down arrow key in horizontal lists. In a grid, the arrow keys move past the first or last item into the previous or next list. Focus stays on the moved item, and screen readers hear the list's name, such as "Moved to Done, position 1 of 2".
+
+To limit where items go, set \`accept\` (\`data-ok-accept\` in HTML) to the groups a list takes items from. For example, a list in the group \`archive\` with \`accept="board"\` takes items from the board but gives none back.`,
+    html: `<div>
+${htmlList("todo", "To do", ["Design", "Build"])}
+${htmlList("done", "Done", ["Test"])}
+</div>`,
+    react: `import { moveBetweenLists, Sortable } from "@owlky/react";
+import { useState } from "react";
+
+const LISTS = [
+  { id: "todo", label: "To do" },
+  { id: "done", label: "Done" },
+];
+
+export function Board() {
+  const [lists, setLists] = useState<Record<string, string[]>>({
+    todo: ["Design", "Build"],
+    done: ["Test"],
+  });
+  return (
+    <div>
+      {LISTS.map((list) => (
+        <Sortable
+          key={list.id}
+          id={list.id}
+          group="board"
+          layout="vertical"
+          aria-label={list.label}
+          items={lists[list.id] ?? []}
+          getKey={(task) => task}
+          getItemLabel={(task) => task}
+          renderItem={(task) => <span>{task}</span>}
+          onReorder={(items) => setLists((all) => ({ ...all, [list.id]: items }))}
+          onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}
+        />
+      ))}
+    </div>
+  );
+}`,
+  },
+  {
+    id: "move-to",
+    title: "Move items without dragging",
+    body: `Some people can't drag, or use a screen reader on a touch screen. Give them a control that moves an item in one tap: a button or menu item inside the item with \`data-ok-sortable-move-to="<list id>"\` moves the item to the end of that list, in HTML and in React. For example, the **Kanban** story puts a **Move** menu on every card. Two taps also work: tap an item's handle, then a handle in another list.`,
+    html: `<ul id="todo" data-ok-sortable data-ok-layout="vertical" data-ok-group="board" aria-label="To do">
+${htmlItem("Design", false).replace("<span>Design</span>", `<span>Design</span>\n      ${MOVE_BUTTON}`)}
+</ul>
+<ul id="done" data-ok-sortable data-ok-layout="vertical" data-ok-group="board" aria-label="Done"></ul>`,
+    react: `import { Button, moveBetweenLists, Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function MoveToDone() {
+  const [lists, setLists] = useState<Record<string, string[]>>({ todo: ["Design"], done: [] });
+  return (
+    <>
+      <Sortable
+        id="todo"
+        group="board"
+        layout="vertical"
+        aria-label="To do"
+        items={lists["todo"] ?? []}
+        getKey={(task) => task}
+        getItemLabel={(task) => task}
+        renderItem={(task) => (
+          <>
+            <span>{task}</span>
+            <Button size="sm" data-ok-sortable-move-to="done" aria-label={\`Move \${task} to Done\`}>
+              Move to Done
+            </Button>
+          </>
+        )}
+        onReorder={(items) => setLists((all) => ({ ...all, todo: items }))}
+        onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}
+      />
+      <Sortable
+        id="done"
+        group="board"
+        layout="vertical"
+        aria-label="Done"
+        items={lists["done"] ?? []}
+        getKey={(task) => task}
+        getItemLabel={(task) => task}
+        renderItem={(task) => <span>{task}</span>}
+        onReorder={(items) => setLists((all) => ({ ...all, done: items }))}
+        onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}
+      />
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML.",
@@ -175,10 +279,11 @@ export function GrowingTasks() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:sortable:move\`** (cancelable) fires before an item moves, with \`detail: { from, to, item }\`.
+- **\`ok:sortable:transfer\`** (cancelable) fires on the list an item leaves, before the item moves to another list, with \`detail: { item, from, to, index }\`. \`from\` and \`to\` are the lists.
 - **\`ok:sortable:remove\`** (cancelable) fires before an item is removed, with \`detail: { index, item }\`.
 - **\`ok:sortable:add\`** fires after a new item is added from the template, with \`detail: { item, index }\`. Fill in its content here.
-- **Instance:** \`runtime.get(element, "sortable")\` returns \`{ move(from, to), remove(index) }\`.
-- **React:** \`onReorder(items)\` and \`onRemove(item, index)\`. The \`arrayMove(items, from, to)\` helper is exported too.`,
+- **Instance:** \`runtime.get(element, "sortable")\` returns \`{ move(from, to), remove(index), add(), transfer(index, to, toIndex) }\`. \`to\` is a list or its \`id\`. Without \`toIndex\`, the item goes to the end.
+- **React:** \`onReorder(items)\`, \`onRemove(item, index)\` and \`onTransfer({ item, from, to, fromIndex, index })\`, where \`from\` and \`to\` are list ids. The \`arrayMove(items, from, to)\` and \`moveBetweenLists(lists, event)\` helpers are exported too.`,
   },
   {
     id: "keyboard",
@@ -188,7 +293,7 @@ export function GrowingTasks() {
   {
     id: "accessibility",
     title: "Accessibility",
-    body: `- Every drag has a keyboard and a tap alternative, so people who can't drag can still reorder (WCAG 2.2, success criteria 2.1.1 and 2.5.7).
+    body: `- Every drag has a keyboard and a tap alternative, so people who can't drag can still reorder (WCAG 2.2, success criteria 2.1.1 and 2.5.7). Between lists, add a \`data-ok-sortable-move-to\` control, such as a **Move** menu, so that one tap is enough.
 - Name the list with \`aria-label\`. Handles and remove buttons are named from each item, such as "Reorder Design"; set the item's label with \`getItemLabel\` in React or the buttons' \`aria-label\` in HTML.
 - The handle has \`aria-pressed="true"\` while its item is grabbed.
 - Moves are announced in a polite live region. Translate the messages with \`messages\` in React.`,
@@ -216,8 +321,40 @@ function TasksPreview() {
   );
 }
 
+const BOARD = [
+  { id: "docs-todo", label: "To do" },
+  { id: "docs-done", label: "Done" },
+];
+
+function BoardPreview() {
+  const [lists, setLists] = useState<Record<string, string[]>>({
+    "docs-todo": ["Design", "Build"],
+    "docs-done": ["Test"],
+  });
+  return (
+    <Preview>
+      {BOARD.map((list) => (
+        <Sortable
+          key={list.id}
+          id={list.id}
+          group="docs-board"
+          layout="vertical"
+          aria-label={list.label}
+          items={lists[list.id] ?? []}
+          getKey={(task) => task}
+          getItemLabel={(task) => task}
+          renderItem={(task) => <span>{task}</span>}
+          onReorder={(items) => setLists((all) => ({ ...all, [list.id]: items }))}
+          onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}
+        />
+      ))}
+    </Preview>
+  );
+}
+
 const PREVIEWS = {
   overview: TasksPreview,
+  lists: BoardPreview,
   options: () => <OptionsTable schema={sortableOptions} />,
   props: () => (
     <PropsTable
@@ -258,7 +395,33 @@ const PREVIEWS = {
           react: "messages",
           type: "Partial<SortableMessages>",
           description:
-            "Translates the announcements: `grabbed`, `moved`, `dropped`, `cancelled` and `removed`.",
+            "Translates the announcements: `grabbed`, `moved`, `movedToList`, `dropped`, `cancelled` and `removed`. Each gets the position, the number of items and the list's name.",
+        },
+        {
+          react: "group",
+          html: "data-ok-group",
+          type: "string",
+          description: "Connects lists: items move between lists of the same group.",
+        },
+        {
+          react: "accept",
+          html: "data-ok-accept",
+          type: "string | string[]",
+          description:
+            "The groups the list takes items from, separated by spaces in HTML. Default: its own group.",
+        },
+        {
+          react: "id",
+          html: "id",
+          type: "string",
+          description: "Names the list in transfers and in `data-ok-sortable-move-to`.",
+        },
+        {
+          react: "onTransfer",
+          html: "ok:sortable:transfer",
+          type: "(event: SortableTransferEvent<T>) => void",
+          description:
+            "Called when an item moves to another list. Without it, items never leave a React list.",
         },
       ]}
     />
@@ -271,7 +434,11 @@ const PREVIEWS = {
           "Arrow keys",
           "Move the grabbed item: up and down in a column, left and right in a row, both in a grid.",
         ],
-        ["Escape", "Cancels the move and puts the item back."],
+        [
+          "Left / Right arrow (vertical lists), Up / Down arrow (horizontal lists)",
+          "Move the grabbed item to the previous or next list of its group.",
+        ],
+        ["Escape", "Cancels the move and puts the item back, in its first list."],
         ["Tab", "Leaves the list; a grabbed item is dropped where it is."],
       ]}
     />

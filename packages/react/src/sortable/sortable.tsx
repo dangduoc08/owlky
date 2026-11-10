@@ -4,9 +4,11 @@ import {
   arrayMove,
   createSortableController,
   iconButtonAttributes,
+  moveBetweenLists,
   type SortableController,
   type SortableLayout,
   type SortableMessages,
+  type SortableTransferTarget,
   sortableAttributes,
 } from "@owlky/core";
 import {
@@ -16,6 +18,7 @@ import {
   type ReactNode,
   type Ref,
   useEffect,
+  useId,
   useRef,
 } from "react";
 import { useMergedRefs } from "../utils/refs.js";
@@ -47,6 +50,12 @@ const HandleIcon = () => (
   </svg>
 );
 
+/** A move of an item to another list of its group (`onTransfer`). */
+export interface SortableTransferEvent<T> extends SortableTransferTarget {
+  /** The item that moves. */
+  item: T;
+}
+
 export interface SortableProps<T> extends Omit<ComponentPropsWithoutRef<"ul">, "children"> {
   /** The items, in display order. */
   items: readonly T[];
@@ -64,6 +73,21 @@ export interface SortableProps<T> extends Omit<ComponentPropsWithoutRef<"ul">, "
   layout?: SortableLayout | undefined;
   /** Screen reader announcements (localization). */
   messages?: Partial<SortableMessages> | undefined;
+  /**
+   * Connects lists: items move between lists of the page with the same group (drag, keys, taps,
+   * move-to triggers). Give each list an `id`.
+   */
+  group?: string | undefined;
+  /**
+   * The groups this list takes items from (default: its own `group`). Set it to take items from
+   * other groups, such as a "Done" list that takes tasks but gives none back.
+   */
+  accept?: string | readonly string[] | undefined;
+  /**
+   * Called when an item of this list moves to another list. Update both lists, for example with
+   * `moveBetweenLists(lists, event)`. Without it, items never leave the list.
+   */
+  onTransfer?: ((event: SortableTransferEvent<T>) => void) | undefined;
 }
 
 function SortableInner<T>(
@@ -76,6 +100,10 @@ function SortableInner<T>(
     getItemLabel,
     layout,
     messages,
+    group,
+    accept,
+    onTransfer,
+    id,
     ...props
   }: SortableProps<T>,
   forwardedRef: Ref<HTMLUListElement>,
@@ -84,8 +112,11 @@ function SortableInner<T>(
   const ref = useMergedRefs(listRef, forwardedRef);
   const controllerRef = useRef<SortableController | null>(null);
   // The controller outlives renders: it reads the latest items and callbacks through refs.
-  const latest = useRef({ items, onReorder, onRemove });
-  latest.current = { items, onReorder, onRemove };
+  const latest = useRef({ items, onReorder, onRemove, onTransfer });
+  latest.current = { items, onReorder, onRemove, onTransfer };
+  // Transfers name lists by id: a list in a group always has one.
+  const generatedId = useId();
+  const listId = id ?? (group ? generatedId : undefined);
 
   useEffect(() => {
     const controller = createSortableController(listRef.current as HTMLUListElement);
@@ -98,11 +129,31 @@ function SortableInner<T>(
       messages,
       onMove: (from, to) => latest.current.onReorder(arrayMove(latest.current.items, from, to)),
       onRemove: (index) => latest.current.onRemove?.(latest.current.items[index] as T, index),
+      onTransfer: ({ from, to, fromIndex, index }) => {
+        const handler = latest.current.onTransfer;
+        if (!handler) return false;
+        handler({
+          item: latest.current.items[fromIndex] as T,
+          from: from.id,
+          to: to.id,
+          fromIndex,
+          index,
+        });
+        return true;
+      },
     });
   });
 
   return (
-    <ul ref={ref} {...sortableAttributes({ layout })} data-ok-runtime="off" {...props}>
+    <ul
+      ref={ref}
+      id={listId}
+      {...sortableAttributes({ layout })}
+      data-ok-group={group || undefined}
+      data-ok-accept={accept === undefined ? undefined : [accept].flat().join(" ")}
+      data-ok-runtime="off"
+      {...props}
+    >
       {items.map((item, index) => {
         const label = getItemLabel ? getItemLabel(item, index) : `Item ${index + 1}`;
         return (
@@ -144,4 +195,4 @@ export const Sortable = forwardRef(SortableInner) as <T>(
   props: SortableProps<T> & { ref?: Ref<HTMLUListElement> },
 ) => ReturnType<typeof SortableInner>;
 
-export { arrayMove };
+export { arrayMove, moveBetweenLists };

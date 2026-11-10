@@ -10,6 +10,14 @@ export interface SortableEvents {
   remove: EventSpec<{ index: number; item: HTMLElement }, true>;
   /** After a copy of the new-item template was added: fill in its content here. */
   add: EventSpec<{ item: HTMLElement; index: number }>;
+  /**
+   * Before an item moves to another list of its group (`data-ok-group`), at `index` in `to`.
+   * Fires on the list it leaves. Call `preventDefault()` to keep it.
+   */
+  transfer: EventSpec<
+    { item: HTMLElement; from: HTMLElement; to: HTMLElement; index: number },
+    true
+  >;
 }
 
 export interface SortableInstance extends ComponentInstance {
@@ -19,9 +27,15 @@ export interface SortableInstance extends ComponentInstance {
   remove(index: number): boolean;
   /** Appends a clone of `template[data-ok-sortable-template]`; returns it (or `null`). */
   add(): HTMLElement | null;
+  /**
+   * Moves the item at `index` to another sortable list (an element or its `id`), at `toIndex`
+   * (default: its end). Returns `false` if out of range or `ok:sortable:transfer` was prevented.
+   */
+  transfer(index: number, to: HTMLElement | string, toIndex?: number): boolean;
 }
 
 const ITEM = "[data-ok-sortable-item]";
+const TEMPLATE = ":scope > template[data-ok-sortable-template]";
 
 /**
  * Sortable — spec: specs/components/sortable.md
@@ -31,7 +45,11 @@ const ITEM = "[data-ok-sortable-item]";
  *              <button data-ok-sortable-remove aria-label="Remove …">? <button data-ok-sortable-handle …>
  *            <template data-ok-sortable-template>…</template>?
  *          <button data-ok-sortable-add="<list id>">
+ * Several lists (ADR-0053): data-ok-group="<name>" connects lists, data-ok-accept="<names>"
+ *          widens or narrows what a list takes; [data-ok-sortable-move-to="<list id>"] in an item
+ *          moves it to that list.
  * Events:  ok:sortable:move (cancelable, detail: { from, to, item }),
+ *          ok:sortable:transfer (cancelable, detail: { item, from, to, index }) on the list it leaves,
  *          ok:sortable:remove (cancelable, detail: { index, item }),
  *          ok:sortable:add (detail: { item, index }) after a template clone is inserted.
  */
@@ -60,10 +78,20 @@ export const sortable = defineComponent<SortableInstance, SortableEvents>({
         item.remove();
         return true;
       },
+      transfer(index, to, toIndex) {
+        const item = items()[index];
+        const target =
+          typeof to === "string" ? (list.ownerDocument.getElementById(to) as HTMLElement) : to;
+        if (!item || !target?.matches("[data-ok-sortable]") || target === list) return false;
+        const others = Array.from(target.children).filter((child) => child.matches(ITEM));
+        const at = Math.max(0, Math.min(others.length, toIndex ?? others.length));
+        if (!emit("transfer", { item, from: list, to: target, index: at }, { cancelable: true }))
+          return false;
+        target.insertBefore(item, others[at] ?? target.querySelector(TEMPLATE));
+        return true;
+      },
       add() {
-        const template = list.querySelector<HTMLTemplateElement>(
-          ":scope > template[data-ok-sortable-template]",
-        );
+        const template = list.querySelector<HTMLTemplateElement>(TEMPLATE);
         const clone = template?.content.firstElementChild?.cloneNode(true);
         if (!(clone instanceof HTMLElement)) return null;
         list.insertBefore(clone, template as HTMLTemplateElement);
@@ -75,6 +103,7 @@ export const sortable = defineComponent<SortableInstance, SortableEvents>({
     const controller = createSortableController(list, {
       onMove: (from, to) => instance.move(from, to),
       onRemove: (index) => instance.remove(index),
+      onTransfer: ({ fromIndex, to, index }) => instance.transfer(fromIndex, to, index),
     });
     return { ...instance, destroy: () => controller.destroy() };
   },

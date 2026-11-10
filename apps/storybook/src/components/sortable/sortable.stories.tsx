@@ -2,6 +2,8 @@ import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect } from "react";
 import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { KanbanDemo } from "./kanban-demo.js";
+import kanbanSource from "./kanban-demo.tsx?raw";
 import { SortableDocs } from "./sortable-docs.js";
 import {
   SORTABLE_CONTROLS,
@@ -85,3 +87,26 @@ export default meta;
 export const Grid: StoryObj = story("grid", "Grid");
 export const Vertical: StoryObj = story("vertical", "Vertical");
 export const Horizontal: StoryObj = story("horizontal", "Horizontal");
+
+/** Several lists in one group (no Controls: the demo keeps the board's state). */
+export const Kanban: StoryObj = frameworkStory({
+  html: snippetStory(
+    snippets,
+    "kanban",
+    [["Kanban", "group"]],
+    htmlSetup(
+      [
+        "button.css",
+        "icon-button.css",
+        "list.css",
+        "popover.css",
+        "menu.css",
+        "scrollbar.css",
+        "sortable.css",
+        "typography.css",
+      ],
+      true,
+    ),
+  ),
+  react: reactGroupsStory([{ title: "Kanban", content: <KanbanDemo /> }], undefined, kanbanSource),
+});

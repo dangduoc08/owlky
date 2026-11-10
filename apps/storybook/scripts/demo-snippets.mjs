@@ -82,6 +82,7 @@ const DEMOS = [
   ["menu", "nested-demo.tsx", "NestedMenuDemo", "nested-group", popoverTriggers],
   ["menu", "menu-list-demo.tsx", "MenuListDemo", "menu-list-group"],
   ["tabs", "nav-demo.tsx", "NavTabsDemo", "nav-group"],
+  ["sortable", "kanban-demo.tsx", "KanbanDemo", "kanban-group", popoverTriggers],
   [
     "editor",
     "bubble-menu-demo.tsx",

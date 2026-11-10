@@ -56,5 +56,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0050](0050-editor-tables-mentions-bubble-menu.md) | Editor: tables, mentions and a bubble menu (new Tiptap extensions, opt-in), Tiptap settings passed through, a form value | Accepted |
 | [0051](0051-organization-chart-collapsible-nodes.md) | Organization chart: collapsible nodes, a toggle per branch, lazy children (supersedes part of ADR-0036) | Accepted |
 | [0052](0052-organization-chart-direction.md) | Organization chart: direction (top, bottom, left, right) in CSS only, toggles follow it (supersedes part of ADR-0036) | Accepted |
+| [0053](0053-sortable-multiple-lists.md) | Sortable: items move between lists of a group (one session per document, intent to the holding list's owner, move-to triggers) | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

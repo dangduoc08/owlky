@@ -1706,6 +1706,12 @@ export interface SortableParts {
   "data-ok-sortable-remove": Part;
   /** HTML only: the markup of new items. */
   "data-ok-sortable-template": Part<"template">;
+  /** On the list: the group it belongs to. Items move between lists of the same group. */
+  "data-ok-group": Value<string>;
+  /** On the list: the groups it takes items from, separated by spaces (default: its own group). */
+  "data-ok-accept": Value<string>;
+  /** On a button or menu item inside an item: the `id` of the list it moves the item to (its end). */
+  "data-ok-sortable-move-to": Value<string>;
 }
 
 /** Stepper: parts, states, values and triggers. */

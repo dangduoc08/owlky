@@ -1,7 +1,7 @@
 # Sortable
 
 Reference: Minimal UI kit "Dnd" page, sections "Grid", "Vertical", "Horizontal" (content only).
-Created with `/component`.
+Created with `/component`. Several lists: ADR-0053.
 Reference URL: https://minimals.cc/components/extra/dnd
 
 ## Purpose
@@ -10,9 +10,9 @@ removes.
 
 ## Anatomy
 ```
-ul[data-ok-sortable][data-ok-layout][aria-label]                React: + data-ok-runtime="off"
+ul[data-ok-sortable][data-ok-layout][aria-label][id]?[data-ok-group]?[data-ok-accept]?   React: + data-ok-runtime="off"
   li[data-ok-sortable-item][data-ok-dragging | data-ok-grabbed]?
-    … content (yours)
+    … content (yours), may hold [data-ok-sortable-move-to="<list id>"] triggers (buttons, menu items)
     div[data-ok-sortable-actions]
       button[data-ok-icon-button][data-ok-size="sm"][data-ok-sortable-remove][aria-label]?  (optional)
       button[data-ok-icon-button][data-ok-size="sm"][data-ok-sortable-handle][aria-label][aria-pressed]
@@ -43,6 +43,11 @@ Other props (not options):
 | move handling | `onReorder(items)` (controlled) | |
 | `data-ok-sortable-remove` buttons | `onRemove(item, index)` (renders the buttons) | none |
 | handle / remove names | `getItemLabel(item, index)` → `Reorder …` / `Remove …` | `Item <n>` |
+| `data-ok-group="<name>"` on the list | `group` | lists of the same group exchange items (ADR-0053) |
+| `data-ok-accept="<names>"` (spaces) | `accept` (string or array) | groups the list takes from; default its own |
+| `id` on the list | `id` (falls back to `useId()` with a group) | names lists in transfers and move-to triggers |
+| `ok:sortable:transfer` (cancelable) · instance `transfer` | `onTransfer({ item, from, to, fromIndex, index })` + `moveBetweenLists(lists, event)` | without `onTransfer` a React list never gives items |
+| `[data-ok-sortable-move-to="<list id>"]` inside an item | same attribute (in `renderItem`) | moves the item to that list's end |
 
 ## Layout and tokens
 - Items: background `channel(grey-500)` 4 %, 1px border 16 %, radius `--ok-radius-lg`; actions at the
@@ -50,6 +55,7 @@ Other props (not options):
 - `grid`: columns of at least 160px (`auto-fill`), gap 20px.
 - `vertical`: one column, at most 480px wide and 560px tall (scrolls), dashed frame, padding 20px.
 - `horizontal`: one row of 144px items that scrolls horizontally, dashed frame, padding 20px.
+- An empty list with a group keeps a block size of 80px (a drop target).
 - Dragging: the item follows the pointer above the others (`--ok-shadow-z16`); grabbed (keyboard /
   tap): `--ok-shadow-z8` and a 2px outline in `--ok-text-secondary`.
 
@@ -64,6 +70,19 @@ The controller reports intent (`onMove(from, to)`, `onRemove(index)`); the owner
   focus leaving the list drops. Clicking another item's handle while one is grabbed moves it there.
   Focus stays on the moved handle.
 - **Remove:** reported for the item; focus moves to the next item's handle (or the previous one).
+- **Several lists** (ADR-0053): lists with the same `data-ok-group` (or a target whose
+  `data-ok-accept` names the source's group) exchange items. Controllers register in a
+  module-scoped registry per document; the grab / drag is one session per document, continued by
+  the controller of the list holding the item, and every intent goes to that list's owner
+  (`onTransfer({ item, from, to, fromIndex, index })`, `false` refuses). React may render the moved
+  item as a new element: the session resolves to it (same node in the target, or the target's item
+  at `index` once the old one is gone; refused after 8 frames) and moves its flags and focus there.
+  Pointer: over another list's item → its index; over another list's box (or its Scrollbar) → its
+  end. Keys: vertical ←/→, horizontal ↑/↓ go to the previous / next accepting list (document
+  order, index kept); grids go there when ←/→ pass the first / last item. Taps: a grabbed item
+  goes to the tapped handle's position in another list. `[data-ok-sortable-move-to]` moves an item
+  to that list's end (single-pointer alternative; the Kanban story composes a Menu). Escape puts it
+  back in its start list. Announced with `movedToList` (the list's `aria-label`).
 - **Announcements** (polite live region): grabbed, moved, dropped, cancelled, removed — with
   positions ("position 3 of 12").
 
@@ -72,6 +91,7 @@ The controller reports intent (`onMove(from, to)`, `onRemove(index)`); the owner
 |---|---|
 | Space / Enter | grab · drop |
 | Arrow keys (grabbed) | move by one (grid: ↑↓ by a row) |
+| ←/→ (vertical) · ↑/↓ (horizontal) · ←/→ past the ends (grid) | move to the previous / next list of the group |
 | Escape (grabbed) | cancel, back to the start position |
 | Tab (grabbed) | drop, then move focus |
 
@@ -81,12 +101,15 @@ grabbed. Dragging has single-pointer and keyboard alternatives (WCAG 2.5.7, 2.1.
 name (`aria-label`).
 
 ## Events / API
-HTML: `ok:sortable:move` (cancelable, `detail: { from, to, item }`), `ok:sortable:remove`
+HTML: `ok:sortable:move` (cancelable, `detail: { from, to, item }`), `ok:sortable:transfer`
+(cancelable, `detail: { item, from, to, index }`, on the list it leaves), `ok:sortable:remove`
 (cancelable, `detail: { index, item }`), `ok:sortable:add` (after a template clone is inserted,
-`detail: { item, index }` — fill its content here). Instance: `move(from, to)`, `remove(index)`.
+`detail: { item, index }` — fill its content here). Instance: `move(from, to)`, `remove(index)`, `transfer(index, to, toIndex?)`.
 React: `onReorder`, `onRemove`; helper `arrayMove(items, from, to)`; `messages?:
 Partial<SortableMessages>` localizes the announcements (`grabbed`, `moved`, `dropped`, `cancelled`,
-`removed`, each `(position, total) => string`; defaults from `defaultSortableMessages`).
+`removed`, `movedToList`, each `(position, total, list) => string`, `list` = the list's
+`aria-label`; defaults from `defaultSortableMessages`). React: `group`, `accept`, `onTransfer`,
+helper `moveBetweenLists`.
 
 ## Responsive
 Grid columns follow the width (one column at 320px). Vertical and horizontal lists scroll inside the
@@ -113,7 +136,10 @@ Upstream: Minimals "Dnd" on dnd-kit — `DndContext`, `SortableContext`, `useSor
 | `autoScroll` | — | deferred | scroll the Scrollbar / page near its edges while dragging |
 | `modifiers` (restrict to an axis, to the parent) | layout axis | not applicable | the item follows the pointer inside the list |
 | `DragOverlay` | the dragged item itself (`data-ok-dragging`) | not applicable | |
-| several lists: `group`, `accept`, `type`, multiple `SortableContext`s, `onDragOver` between containers | — | deferred | move items between lists (kanban) |
+| several lists: `group`, `accept`, multiple `SortableContext`s / one `DragDropProvider`, `onDragOver` between containers | `group`, `accept` on the list · `onTransfer` · `ok:sortable:transfer` | renamed | ADR-0053: list attributes, not per item; groups connect lists of the page |
+| `move(items, event)` (`@dnd-kit/helpers`) | `moveBetweenLists(lists, event)` | renamed | record of arrays keyed by list id |
+| `useDroppable` columns (empty lists) | empty lists of a group are drop targets (min block size) | kept | |
+| `type`, `accept` predicate `(source) => boolean` | — | deferred | one kind of item per list; HTML can't express a predicate |
 | `collisionDetection`, `collisionPriority`, `layoutMeasuring`, `plugins`, `effects`, `transition`, `target`, `element`, returned refs / flags | — | not applicable | engine internals; `data-ok-dragging` / `data-ok-grabbed` are the flags |
 | — | `onRemove`, remove buttons, HTML add template | kept | Owlky additions (reference) |
 
@@ -121,3 +147,6 @@ Upstream: Minimals "Dnd" on dnd-kit — `DndContext`, `SortableContext`, `useSor
 - "Add item" is app logic: React adds to `items`; HTML clones `template[data-ok-sortable-template]`
   on `[data-ok-sortable-add]` and emits `ok:sortable:add`.
 - Announcements: React accepts `messages`; the HTML runtime uses the English defaults.
+- Moves between lists: React lists need `onTransfer` (state); HTML moves the node. React and HTML
+  lists can't be mixed in one group. The Kanban story's "Move" menus list every column (choosing
+  the current one does nothing), so both stay equal after moves.

@@ -65,6 +65,12 @@
       "description": "Before an item is removed. Call `preventDefault()` to keep it.",
       "detail": "{ index: number; item: HTMLElement; }",
       "name": "ok:sortable:remove"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an item moves to another list of its group (`data-ok-group`), at `index` in `to`. Fires on the list it leaves. Call `preventDefault()` to keep it.",
+      "detail": "{ item: HTMLElement; from: HTMLElement; to: HTMLElement; index: number; }",
+      "name": "ok:sortable:transfer"
      }
     ],
     "methods": [
@@ -85,6 +91,12 @@
       "kind": "method",
       "name": "remove",
       "type": "(index: number) => boolean"
+     },
+     {
+      "description": "Moves the item at `index` to another sortable list (an element or its `id`), at `toIndex` (default: its end). Returns `false` if out of range or `ok:sortable:transfer` was prevented.",
+      "kind": "method",
+      "name": "transfer",
+      "type": "(index: number, to: string | HTMLElement, toIndex?: number | undefined) => boolean"
      }
     ],
     "options": [
@@ -110,6 +122,12 @@
     ],
     "parts": [
      {
+      "description": "On the list: the groups it takes items from, separated by spaces (default: its own group).",
+      "kind": "value",
+      "name": "data-ok-accept",
+      "value": "string"
+     },
+     {
       "description": "Set by the runtime on the item being dragged.",
       "kind": "state",
       "name": "data-ok-dragging"
@@ -118,6 +136,12 @@
       "description": "Set by the runtime on the item grabbed with the keyboard.",
       "kind": "state",
       "name": "data-ok-grabbed"
+     },
+     {
+      "description": "On the list: the group it belongs to. Items move between lists of the same group.",
+      "kind": "value",
+      "name": "data-ok-group",
+      "value": "string"
      },
      {
       "description": "The buttons at the end of an item.",
@@ -152,6 +176,12 @@
       "name": "data-ok-sortable-handle"
      },
      {
+      "description": "On a button or menu item inside an item: the `id` of the list it moves the item to (its end).",
+      "kind": "value",
+      "name": "data-ok-sortable-move-to",
+      "value": "string"
+     },
+     {
       "description": "The button that removes its item.",
       "kind": "part",
       "name": "data-ok-sortable-remove"
@@ -173,6 +203,11 @@
     "native": "HTMLUListElement",
     "props": [
      {
+      "description": "The groups this list takes items from (default: its own `group`). Set it to take items from other groups, such as a \"Done\" list that takes tasks but gives none back.",
+      "name": "accept",
+      "type": "string | readonly string[]"
+     },
+     {
       "default": "Item <n>",
       "description": "Name used in the handle / remove labels (\"Reorder …\", \"Remove …\").",
       "name": "getItemLabel",
@@ -183,6 +218,11 @@
       "name": "getKey",
       "required": true,
       "type": "(item: T) => Key"
+     },
+     {
+      "description": "Connects lists: items move between lists of the page with the same group (drag, keys, taps, move-to triggers). Give each list an `id`.",
+      "name": "group",
+      "type": "string"
      },
      {
       "description": "The items, in display order.",
@@ -211,6 +251,11 @@
       "name": "onReorder",
       "required": true,
       "type": "(items: T[]) => void"
+     },
+     {
+      "description": "Called when an item of this list moves to another list. Update both lists, for example with `moveBetweenLists(lists, event)`. Without it, items never leave the list.",
+      "name": "onTransfer",
+      "type": "((event: SortableTransferEvent<T>) => void)"
      },
      {
       "description": "Content of an item.",

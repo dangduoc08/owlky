@@ -49,6 +49,11 @@
     overflow: auto;
   }
 
+  /* An empty list of a group stays a drop target: it keeps the height of a short item. */
+  :where([data-ok-sortable][data-ok-group]:not(:has(> [data-ok-sortable-item]))) {
+    min-block-size: calc(var(--ok-spacing) * 20);
+  }
+
   /* In a Scrollbar: the Scrollbar scrolls and carries the frame; the list grows freely. */
   :where([data-ok-scrollbar]:has(> [data-ok-sortable])) {
     width: 100%;
