@@ -9,7 +9,7 @@ import { ListSubheader } from "../list/list.js";
 import { MenuItem } from "../menu/menu.js";
 import { TablePagination } from "../table/table.js";
 import { expectNoAxeViolations, settled } from "../test-utils.js";
-import { TextField } from "../text-field/text-field.js";
+import { InputAdornment, TextField } from "../text-field/text-field.js";
 import { InputLabel, Select, type SelectCloseReason } from "./select.js";
 
 const AGES = [
@@ -312,6 +312,60 @@ describe("Select", () => {
     combobox().blur();
     await settled(label);
     expect(transform()).not.toBe(rest);
+  });
+
+  it("startAdornment / endAdornment: inside the box, the end one before the arrow; the label floats", async () => {
+    const { container } = render(
+      <>
+        <Age
+          defaultValue=""
+          startAdornment={<InputAdornment position="start">$</InputAdornment>}
+          endAdornment={<InputAdornment position="end">kg</InputAdornment>}
+        />
+        <Select
+          aria-label="Native"
+          native
+          startAdornment={<InputAdornment position="start">#</InputAdornment>}
+        >
+          <option value="a">A</option>
+        </Select>
+      </>,
+    );
+    const box = container.querySelector("[data-ok-select]") as HTMLElement;
+    const parts = [...box.children].map(
+      (child) =>
+        child.getAttribute("data-ok-text-field-adornment") ??
+        [...child.attributes].find((a) => a.name.startsWith("data-ok-select"))?.name,
+    );
+    expect(parts.slice(0, 6)).toEqual([
+      "start",
+      "data-ok-select-display",
+      "data-ok-select-input",
+      "data-ok-select-icon",
+      "end",
+      "data-ok-select-outline",
+    ]);
+    const start = box.querySelector('[data-ok-text-field-adornment="start"]') as HTMLElement;
+    const end = box.querySelector('[data-ok-text-field-adornment="end"]') as HTMLElement;
+    const icon = box.querySelector("[data-ok-select-icon]") as HTMLElement;
+    const trigger = screen.getByRole("combobox", { name: "Age" });
+    const r = (element: Element) => element.getBoundingClientRect();
+    expect(r(start).right).toBeLessThanOrEqual(r(trigger).left + 0.5);
+    expect(r(end).left).toBeGreaterThanOrEqual(r(trigger).right - 0.5);
+    expect(r(end).right).toBeLessThanOrEqual(r(icon).left + 0.5);
+    // A start adornment floats the label and opens the notch, as in TextField.
+    const label = container.querySelector("label") as HTMLElement;
+    await settled(label);
+    expect(new DOMMatrix(getComputedStyle(label).transform).a).toBe(0.75);
+    const legend = box.querySelector("legend") as HTMLElement;
+    expect(legend.getBoundingClientRect().width).toBeGreaterThan(1);
+    const native = screen.getByRole("combobox", { name: "Native" });
+    expect(native.previousElementSibling?.getAttribute("data-ok-text-field-adornment")).toBe(
+      "start",
+    );
+    await userEvent.click(trigger);
+    expect(isOpen()).toBe(true);
+    await expectNoAxeViolations(container);
   });
 
   it("grouping: ListSubheaders are presentational, skipped by the keys", async () => {

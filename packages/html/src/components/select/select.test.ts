@@ -100,6 +100,37 @@ describe("select runtime", () => {
     expect(instance(rt, host, "select-error").value).toBe("20");
   });
 
+  it("adornments in the field box: the start one before the value, the end one before the arrow", async () => {
+    const host = mount(snippet("other-group"));
+    const root = rootOf(host, "select-error");
+    const adornment = (position: string, text: string) => {
+      const span = document.createElement("span");
+      span.setAttribute("data-ok-text-field-adornment", position);
+      span.textContent = text;
+      return span;
+    };
+    const box = trigger(host, "select-error");
+    root.insertBefore(adornment("start", "$"), box);
+    root.querySelector("[data-ok-select-icon]")?.after(adornment("end", "kg"));
+    start();
+    const r = (selector: string) =>
+      (root.querySelector(selector) as HTMLElement).getBoundingClientRect();
+    expect(r('[data-ok-text-field-adornment="start"]').right).toBeLessThanOrEqual(
+      box.getBoundingClientRect().left + 0.5,
+    );
+    expect(r('[data-ok-text-field-adornment="end"]').left).toBeGreaterThanOrEqual(
+      box.getBoundingClientRect().right - 0.5,
+    );
+    expect(r('[data-ok-text-field-adornment="end"]').right).toBeLessThanOrEqual(
+      r("[data-ok-select-icon]").left + 0.5,
+    );
+    await userEvent.click(box);
+    expect(paperOpen(host, "select-error")).toBe(true);
+    await userEvent.click(option(host, "select-error", "Twenty"));
+    expect(box.textContent).toBe("Twenty");
+    await expectNoAxeViolations(host);
+  });
+
   it("the empty option clears the field; the label floats only with a value", async () => {
     const host = mount(snippet("small-group"));
     start();

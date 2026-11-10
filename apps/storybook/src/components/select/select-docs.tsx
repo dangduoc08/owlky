@@ -5,6 +5,7 @@ import {
   Chip,
   FormControl,
   FormHelperText,
+  InputAdornment,
   InputLabel,
   ListSubheader,
   MenuItem,
@@ -30,8 +31,10 @@ interface HtmlSelectOptions {
   attrs?: string;
   /** Extra attributes on the trigger. */
   trigger?: string;
-  /** Markup before the trigger (templates). */
+  /** Markup before the trigger (templates, a start adornment). */
   before?: string;
+  /** Markup after the arrow (an end adornment). */
+  after?: string;
   indent?: string;
 }
 
@@ -48,6 +51,7 @@ function htmlSelect({
   attrs = "",
   trigger = "",
   before = "",
+  after = "",
   indent = "  ",
 }: HtmlSelectOptions): string {
   const text =
@@ -63,6 +67,7 @@ function htmlSelect({
     `  <div data-ok-select-display role="combobox" tabindex="0" id="${id}" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}-listbox"${labelled}${trigger}>${text}</div>`,
     `  <input data-ok-select-input aria-hidden="true" tabindex="-1" placeholder=" " value="${value.join(",")}">`,
     `  ${ICON}`,
+    ...(after ? [`  ${after}`] : []),
     ...(variant === "outlined"
       ? [
           `  <fieldset data-ok-select-outline aria-hidden="true">${label ? `<legend><span>${label}</span></legend>` : ""}</fieldset>`,
@@ -86,6 +91,12 @@ const AGES = [
   ["10", "Ten"],
   ["20", "Twenty"],
   ["30", "Thirty"],
+] as const;
+
+const WEIGHTS = [
+  ["1", "1"],
+  ["5", "5"],
+  ["10", "10"],
 ] as const;
 
 const NAMES = [
@@ -235,6 +246,36 @@ export function Plan() {
         <MenuItem value="pro">Pro</MenuItem>
       </Select>
       <FormHelperText id="plan-helper">Choose a plan to continue</FormHelperText>
+    </FormControl>
+  );
+}`,
+  },
+  {
+    id: "adornments",
+    title: "Add a prefix or a unit",
+    body: "Pass an `InputAdornment` in `startAdornment` or `endAdornment` to show an icon, a prefix or a unit inside the field. The start adornment comes before the value and keeps the label above the field. The end adornment comes before the arrow. In HTML, put the adornment element before the trigger or after the arrow icon.",
+    html: `<div data-ok-form-control>
+  <label data-ok-form-label data-ok-input-label id="weight-label">Weight</label>
+${htmlSelect({ id: "weight", label: "Weight", options: WEIGHTS, value: ["5"], before: '<span data-ok-text-field-adornment="start">≈</span>', after: '<span data-ok-text-field-adornment="end">kg</span>' })}
+</div>`,
+    react: `import { FormControl, InputAdornment, InputLabel, MenuItem, Select } from "@owlky/react";
+
+export function Weight() {
+  return (
+    <FormControl>
+      <InputLabel id="weight-label">Weight</InputLabel>
+      <Select
+        labelId="weight-label"
+        id="weight"
+        label="Weight"
+        defaultValue={5}
+        startAdornment={<InputAdornment position="start">≈</InputAdornment>}
+        endAdornment={<InputAdornment position="end">kg</InputAdornment>}
+      >
+        <MenuItem value={1}>1</MenuItem>
+        <MenuItem value={5}>5</MenuItem>
+        <MenuItem value={10}>10</MenuItem>
+      </Select>
     </FormControl>
   );
 }`,
@@ -489,6 +530,25 @@ export function Size() {
 ];
 
 const PREVIEWS = {
+  adornments: () => (
+    <Preview>
+      <FormControl className="sb-select">
+        <InputLabel id="docs-weight-label">Weight</InputLabel>
+        <Select
+          labelId="docs-weight-label"
+          id="docs-weight"
+          label="Weight"
+          defaultValue={5}
+          startAdornment={<InputAdornment position="start">≈</InputAdornment>}
+          endAdornment={<InputAdornment position="end">kg</InputAdornment>}
+        >
+          <MenuItem value={1}>1</MenuItem>
+          <MenuItem value={5}>5</MenuItem>
+          <MenuItem value={10}>10</MenuItem>
+        </Select>
+      </FormControl>
+    </Preview>
+  ),
   overview: () => (
     <Preview>
       <FormControl className="sb-select">
@@ -653,6 +713,13 @@ const PREVIEWS = {
           html: "the popover's attributes",
           type: "{ placement, paperProps, listProps }",
           description: "Where the menu opens (default `bottom-start`) and the props of its parts.",
+        },
+        {
+          react: "startAdornment / endAdornment",
+          html: 'data-ok-text-field-adornment="start | end"',
+          type: "ReactNode",
+          description:
+            "An `InputAdornment` inside the field: before the value, or before the arrow.",
         },
         {
           react: "displayProps",

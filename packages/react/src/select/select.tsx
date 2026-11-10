@@ -134,6 +134,10 @@ export interface SelectProps<V extends SelectValueType = SelectValueType>
   inputRef?: Ref<HTMLInputElement & HTMLSelectElement> | undefined;
   /** Props of the trigger (`[role=combobox]`; MUI `SelectDisplayProps`). */
   displayProps?: HTMLAttributes<HTMLDivElement> | undefined;
+  /** An `InputAdornment` with `position="start"`, inside the field before the value. */
+  startAdornment?: ReactNode;
+  /** An `InputAdornment` with `position="end"`, inside the field before the arrow. */
+  endAdornment?: ReactNode;
   /** `MenuItem`s (and `ListSubheader`s), or `<option>`s with `native`. */
   children?: ReactNode;
 }
@@ -168,7 +172,7 @@ interface SelectRootProps extends SelectBehaviorProps {
   displayProps?: HTMLAttributes<HTMLDivElement> | undefined;
   inputProps?: InputHTMLAttributes<HTMLInputElement> | undefined;
   inputRef?: Ref<HTMLInputElement> | undefined;
-  /** TextField: adornments around the trigger and its outline after it. */
+  /** Adornments around the trigger, and the outline after them. */
   start?: ReactNode;
   end?: ReactNode;
   outline?: ReactNode;
@@ -426,6 +430,8 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(
     inputProps,
     inputRef,
     displayProps,
+    startAdornment,
+    endAdornment,
     value,
     defaultValue,
     onChange,
@@ -478,6 +484,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(
   if (native) {
     return (
       <div ref={ref} {...attributes} {...props}>
+        {startAdornment}
         <select
           ref={inputRef}
           data-ok-select-native=""
@@ -504,6 +511,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(
           {children}
         </select>
         {multiple ? null : <SelectIcon data-ok-select-icon="" />}
+        {endAdornment}
         {outline}
       </div>
     );
@@ -529,6 +537,8 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(
       displayProps={displayProps}
       inputProps={inputProps}
       inputRef={inputRef}
+      start={startAdornment}
+      end={endAdornment}
       outline={outline}
       value={value}
       defaultValue={defaultValue}

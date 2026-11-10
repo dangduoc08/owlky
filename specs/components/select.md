@@ -21,11 +21,13 @@ Choose one or more values from a list. The field shows the value; the list opens
                      [data-ok-multiple]?[data-ok-auto-width]?[data-ok-display-empty]?
     template[data-ok-select-chip]?          (HTML: a Chip per value, multiple)
     template[data-ok-select-placeholder]?   (HTML: what an empty value shows, displayEmpty)
+    [data-ok-text-field-adornment="start"]?   (InputAdornment)
     div[data-ok-select-display][role=combobox][tabindex=0|-1][id][aria-haspopup=listbox]
        [aria-expanded][aria-controls=<id>-listbox][aria-labelledby]?[aria-label]?[aria-describedby]?
        [aria-disabled]?[aria-readonly]?[aria-invalid]?[aria-required]?   › the value's content
     input[data-ok-select-input][aria-hidden=true][tabindex=-1][name]?[value][placeholder=" "][disabled]?[required]?
     svg[data-ok-select-icon][aria-hidden]
+    [data-ok-text-field-adornment="end"]?   (InputAdornment, before the arrow on screen)
     fieldset[data-ok-select-outline][aria-hidden] › legend › span (label + " *")   (outlined)
     div[data-ok-popover][popover=manual][id=<id>-menu][data-ok-placement=bottom-start][tabindex=-1]
       span[data-ok-popover-arrow]
@@ -161,7 +163,7 @@ mui.com/material-ui/api/select/.
 | `MenuProps` | `menuProps` (`placement`, `paperProps`, `listProps`) | renamed | |
 | `SelectDisplayProps` | `displayProps` | renamed | |
 | `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant="standard"` for its look |
-| InputBase `startAdornment` / `endAdornment` | — | deferred | adornments inside the field box |
+| InputBase `startAdornment` / `endAdornment` | same | kept | 4.18.27: an `InputAdornment` (`[data-ok-text-field-adornment]`) inside the field box: the start one before the trigger (it floats the InputLabel and opens the notch, as in TextField), the end one after the arrow icon in the DOM and drawn before it (the box keeps the arrow's space); native selects too |
 | `IconComponent` | — | not applicable | the arrow is part of the anatomy |
 | `input` | — | not applicable | the field box is the Select |
 | InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |
