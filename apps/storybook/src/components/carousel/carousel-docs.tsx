@@ -19,8 +19,18 @@ import {
   CarouselThumbs,
   CarouselViewport,
 } from "@owlky/react";
+import alignExample from "../../../../../packages/html/src/components/carousel/examples/align-example.html?raw";
+import autoplayExample from "../../../../../packages/html/src/components/carousel/examples/autoplay-example.html?raw";
+import customExample from "../../../../../packages/html/src/components/carousel/examples/custom-example.html?raw";
+import dragFreeExample from "../../../../../packages/html/src/components/carousel/examples/drag-free-example.html?raw";
+import parallaxExample from "../../../../../packages/html/src/components/carousel/examples/parallax-example.html?raw";
+import rtlExample from "../../../../../packages/html/src/components/carousel/examples/right-to-left-example.html?raw";
+import slidesToScrollExample from "../../../../../packages/html/src/components/carousel/examples/slides-to-scroll-example.html?raw";
+import thumbsExample from "../../../../../packages/html/src/components/carousel/examples/thumbs-x-example.html?raw";
+import yAxisExample from "../../../../../packages/html/src/components/carousel/examples/y-axis-example.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
 import { SLIDES } from "./carousel-examples.js";
 
 const PICTURES = [0, 1, 2, 3, 4];
@@ -49,9 +59,9 @@ export const carouselSections: GuideSection[] = [
   data-ok-loop data-ok-slides-to-show="70%" data-ok-slide-spacing="20">
   <div data-ok-carousel-viewport tabindex="0">
     <div data-ok-carousel-container>
-      <div role="group" aria-roledescription="slide" aria-label="1 of 3" data-ok-carousel-slide data-ok-snapped>…</div>
-      <div role="group" aria-roledescription="slide" aria-label="2 of 3" data-ok-carousel-slide>…</div>
-      <div role="group" aria-roledescription="slide" aria-label="3 of 3" data-ok-carousel-slide>…</div>
+      <div role="group" aria-roledescription="slide" aria-label="1 of 3" data-ok-carousel-slide data-ok-snapped><img src="photo-1.jpg" alt="Mountain lake"></div>
+      <div role="group" aria-roledescription="slide" aria-label="2 of 3" data-ok-carousel-slide><img src="photo-2.jpg" alt="Forest in the fog"></div>
+      <div role="group" aria-roledescription="slide" aria-label="3 of 3" data-ok-carousel-slide><img src="photo-3.jpg" alt="Desert road"></div>
     </div>
     <span data-ok-carousel-live aria-live="polite" aria-atomic="true"></span>
   </div>
@@ -63,7 +73,7 @@ export const carouselSections: GuideSection[] = [
 </section>`,
     react: `import { Carousel, CarouselDots, CarouselSlide, CarouselViewport } from "@owlky/react";
 
-export function FeaturedPhotos({ photos }) {
+export function FeaturedPhotos({ photos }: { photos: { src: string; alt: string }[] }) {
   return (
     <Carousel aria-label="Featured photos" loop slidesToShow="70%" slideSpacing={20}>
       <CarouselViewport>
@@ -82,27 +92,34 @@ export function FeaturedPhotos({ photos }) {
     id: "anatomy",
     title: "Build a carousel from its parts",
     body: "`Carousel` is a labelled `section` that holds every part. `CarouselViewport` is the scroll container and holds the `CarouselSlide`s. Add the controls you need anywhere inside the carousel: `CarouselArrows`, `CarouselDots`, `CarouselProgress`, `CarouselThumbs` with a `CarouselThumb` per slide, and `CarouselPlayButton`. You can use several sets at once, for example arrows on the slides and dots under them. To lay controls over the slides, wrap the viewport and those controls in a `CarouselStage` and give each control a `placement`, such as `bottom-end`.",
-    html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Gallery">
-  <div data-ok-carousel-stage>
-    <div data-ok-carousel-viewport tabindex="0">…</div>
-    <div data-ok-carousel-arrows data-ok-variant="number" data-ok-placement="bottom-end">
-      <button type="button" data-ok-icon-button data-ok-size="sm" data-ok-carousel-prev aria-label="Previous slide">…</button>
-      <span data-ok-carousel-counter>1/5</span>
-      <button type="button" data-ok-icon-button data-ok-size="sm" data-ok-carousel-next aria-label="Next slide">…</button>
-    </div>
-  </div>
-  <div data-ok-carousel-thumbs data-ok-orientation="horizontal">
-    <button type="button" data-ok-carousel-thumb aria-label="Go to slide 1" aria-current="true"><img src="…" alt=""></button>
-    …
-  </div>
-</section>`,
-    react: `import { Carousel, CarouselArrows, CarouselStage, CarouselThumb, CarouselThumbs, CarouselViewport } from "@owlky/react";
+    html: `${snippetElement(thumbsExample, "data-ok-carousel ")}`,
+    react: `import {
+  Carousel,
+  CarouselArrows,
+  CarouselSlide,
+  CarouselStage,
+  CarouselThumb,
+  CarouselThumbs,
+  CarouselViewport,
+} from "@owlky/react";
+
+const photos = [
+  { src: "photo-1.jpg", alt: "Mountain lake" },
+  { src: "photo-2.jpg", alt: "Forest in the fog" },
+  { src: "photo-3.jpg", alt: "Desert road" },
+];
 
 export function CarouselAnatomy() {
   return (
     <Carousel aria-label="Gallery">
       <CarouselStage>
-        <CarouselViewport>{slides}</CarouselViewport>
+        <CarouselViewport>
+          {photos.map((photo) => (
+            <CarouselSlide key={photo.src}>
+              <img src={photo.src} alt={photo.alt} />
+            </CarouselSlide>
+          ))}
+        </CarouselViewport>
         <CarouselArrows variant="number" placement="bottom-end" />
       </CarouselStage>
       <CarouselThumbs>
@@ -120,10 +137,14 @@ export function CarouselAnatomy() {
     id: "sizes",
     title: "Size and space the slides",
     body: 'By default each slide fills the view. Set `slidesToShow` to a number of slides (`3`, `1.5`), a share of the view (`"70%"`) or `auto` to keep each slide\'s own width. Pass one value per breakpoint for responsive carousels, such as `{ xs: 1, sm: 2, md: 3 }`: in HTML, write `data-ok-slides-to-show`, `data-ok-slides-to-show-sm` and so on. `slideSpacing` sets the gap between slides in pixels. `slidesToScroll` moves several slides per step, or as many as fit with `auto`.',
-    html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Articles"
-  data-ok-slides-to-show="1" data-ok-slides-to-show-sm="2" data-ok-slides-to-show-md="3"
-  data-ok-slide-spacing="20" data-ok-slides-to-scroll="auto">…</section>`,
-    react: `import { Carousel } from "@owlky/react";
+    html: `${snippetElement(slidesToScrollExample, "data-ok-carousel ")}`,
+    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+
+const photos = [
+  { src: "photo-1.jpg", alt: "Mountain lake" },
+  { src: "photo-2.jpg", alt: "Forest in the fog" },
+  { src: "photo-3.jpg", alt: "Desert road" },
+];
 
 export function CarouselSizes() {
   return (
@@ -133,7 +154,13 @@ export function CarouselSizes() {
       slideSpacing={20}
       slidesToScroll="auto"
     >
-      …
+      <CarouselViewport>
+        {photos.map((photo) => (
+          <CarouselSlide key={photo.src}>
+            <img src={photo.src} alt={photo.alt} />
+          </CarouselSlide>
+        ))}
+      </CarouselViewport>
     </Carousel>
   );
 }`,
@@ -142,13 +169,26 @@ export function CarouselSizes() {
     id: "align",
     title: "Align and contain the slides",
     body: "`align` places the selected slides at the `start`, `center` (the default) or `end` of the view, or at a fraction of it, such as `0.1`. `containScroll` decides what happens at both ends: `trimSnaps` (the default) stops at the first and last slide without empty space, `keepSnaps` keeps a stop for every slide, and `false` leaves space so that even the first and last slides can reach their alignment. `startIndex` selects a slide when the carousel loads.",
-    html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Centered"
-  data-ok-align="center" data-ok-contain-scroll="false" data-ok-start-index="1">…</section>`,
-    react: `import { Carousel } from "@owlky/react";
+    html: `${snippetElement(alignExample, "data-ok-carousel ")}`,
+    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+
+const photos = [
+  { src: "photo-1.jpg", alt: "Mountain lake" },
+  { src: "photo-2.jpg", alt: "Forest in the fog" },
+  { src: "photo-3.jpg", alt: "Desert road" },
+];
 
 export function CarouselAlign() {
   return (
-    <Carousel aria-label="Centered" align="center" containScroll={false} startIndex={1}>…</Carousel>
+    <Carousel aria-label="Centered" align="center" containScroll={false} startIndex={1}>
+      <CarouselViewport>
+        {photos.map((photo) => (
+          <CarouselSlide key={photo.src}>
+            <img src={photo.src} alt={photo.alt} />
+          </CarouselSlide>
+        ))}
+      </CarouselViewport>
+    </Carousel>
   );
 }`,
   },
@@ -156,13 +196,26 @@ export function CarouselAlign() {
     id: "loop",
     title: "Loop, drag and scroll",
     body: "Set `loop` to make the first slide follow the last one. The carousel reorders the slides visually instead of copying them, so screen readers and the Tab key still meet each slide once, in order. Loops need content at least one view and two steps long; shorter carousels stop at their ends. `dragFree` lets slides glide with momentum instead of snapping, `skipSnaps` lets a strong swipe pass several slides, `draggable` turns dragging off, and `wheelGestures` moves one slide per mouse wheel or trackpad gesture.",
-    html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Products"
-  data-ok-loop data-ok-drag-free data-ok-wheel-gestures>…</section>`,
-    react: `import { Carousel } from "@owlky/react";
+    html: `${snippetElement(dragFreeExample, "data-ok-carousel ")}`,
+    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+
+const photos = [
+  { src: "photo-1.jpg", alt: "Mountain lake" },
+  { src: "photo-2.jpg", alt: "Forest in the fog" },
+  { src: "photo-3.jpg", alt: "Desert road" },
+];
 
 export function CarouselLoop() {
   return (
-    <Carousel aria-label="Products" loop dragFree wheelGestures>…</Carousel>
+    <Carousel aria-label="Products" loop dragFree wheelGestures>
+      <CarouselViewport>
+        {photos.map((photo) => (
+          <CarouselSlide key={photo.src}>
+            <img src={photo.src} alt={photo.alt} />
+          </CarouselSlide>
+        ))}
+      </CarouselViewport>
+    </Carousel>
   );
 }`,
   },
@@ -170,14 +223,7 @@ export function CarouselLoop() {
     id: "effects",
     title: "Add an effect",
     body: "`effect` changes how slides move. `fade` stacks the slides and cross-fades between them. `opacity` and `scale` dim or shrink the slides away from the selected one while you scroll. `parallax` moves a layer inside each slide more slowly than the slide: mark that layer with `data-ok-carousel-parallax`, inside a box that clips it. `autoHeight` makes the carousel as tall as the selected slide.",
-    html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Parallax"
-  data-ok-loop data-ok-effect="parallax" data-ok-slides-to-show="70%">
-  …
-  <div role="group" aria-roledescription="slide" aria-label="1 of 4" data-ok-carousel-slide>
-    <div class="frame"><img data-ok-carousel-parallax src="…" alt="…"></div>
-  </div>
-  …
-</section>`,
+    html: `${snippetElement(parallaxExample, "data-ok-carousel ")}`,
     react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
 
 export function CarouselEffects() {
@@ -186,7 +232,7 @@ export function CarouselEffects() {
       <CarouselViewport>
         <CarouselSlide>
           <div className="frame">
-            <img data-ok-carousel-parallax="" src="…" alt="…" />
+            <img data-ok-carousel-parallax="" src="photo-1.jpg" alt="Mountain lake" />
           </div>
         </CarouselSlide>
       </CarouselViewport>
@@ -198,25 +244,26 @@ export function CarouselEffects() {
     id: "autoplay",
     title: "Play slides automatically",
     body: "`autoplay` moves to the next slide every `autoplayDelay` milliseconds, and `autoScroll` scrolls continuously at `autoScrollSpeed` pixels per frame. Both pause while the pointer is over the carousel, and stop when a swipe, a drag or keyboard focus reaches it, so people can read at their own pace. Always add a `CarouselPlayButton`: its label switches between **Play** and **Pause**. Neither starts on its own when the system asks for reduced motion. Set `playOnInit` to `false` to wait for the button.",
-    html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="News"
-  data-ok-loop data-ok-autoplay data-ok-autoplay-delay="5000">
-  <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary"
-    data-ok-size="sm" data-ok-carousel-play>
-    <span data-ok-button-icon="start" aria-hidden="true">…</span>
-    <span data-ok-button-label>
-      <span data-ok-carousel-play-label="play">Play</span>
-      <span data-ok-carousel-play-label="pause">Pause</span>
-    </span>
-  </button>
-  …
-</section>`,
-    react: `import { Carousel, CarouselPlayButton } from "@owlky/react";
+    html: `${snippetElement(autoplayExample, "data-ok-carousel ")}`,
+    react: `import { Carousel, CarouselPlayButton, CarouselSlide, CarouselViewport } from "@owlky/react";
+
+const photos = [
+  { src: "photo-1.jpg", alt: "Mountain lake" },
+  { src: "photo-2.jpg", alt: "Forest in the fog" },
+  { src: "photo-3.jpg", alt: "Desert road" },
+];
 
 export function CarouselAutoplay() {
   return (
     <Carousel aria-label="News" loop autoplay autoplayDelay={5000}>
       <CarouselPlayButton />
-      …
+      <CarouselViewport>
+        {photos.map((photo) => (
+          <CarouselSlide key={photo.src}>
+            <img src={photo.src} alt={photo.alt} />
+          </CarouselSlide>
+        ))}
+      </CarouselViewport>
     </Carousel>
   );
 }`,
@@ -225,9 +272,7 @@ export function CarouselAutoplay() {
     id: "controls",
     title: "Style the controls",
     body: 'Arrows come in three variants: `basic` icon buttons, `floating` square buttons on both sides of the slides, and `number`, with a counter such as **2/8** between them. Dots are `circular`, `rounded` (the selected dot stretches) or `number`. Give any control a `color` from the palette, or `white` over pictures. `CarouselProgress` shows the scroll position, or the time until the next slide with `variant="autoplay"`. Thumbnails scroll to keep the selected one in view, in a row or a column (`orientation`).',
-    html: `<div data-ok-carousel-arrows data-ok-variant="floating" data-ok-color="primary">…</div>
-<div data-ok-carousel-dots data-ok-variant="number" data-ok-color="warning">…</div>
-<span data-ok-carousel-progress data-ok-variant="autoplay" data-ok-color="info" aria-hidden="true"></span>`,
+    html: `${snippetElement(customExample, "data-ok-carousel ")}`,
     react: `import { CarouselArrows, CarouselDots, CarouselProgress } from "@owlky/react";
 
 export function CarouselControls() {
@@ -244,13 +289,28 @@ export function CarouselControls() {
     id: "direction",
     title: "Scroll vertically or right to left",
     body: 'Set `axis` to `y` for a vertical carousel and give it a height, for example with a class. The arrows turn to point up and down, and the Up and Down arrow keys move it. Right to left needs nothing: put the carousel in an element with `dir="rtl"`, and swipes, arrow keys and arrows follow the reading direction.',
-    html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Stories"
-  data-ok-axis="y" class="stories">…</section>`,
-    react: `import { Carousel } from "@owlky/react";
+    html: `${snippetElement(yAxisExample, "data-ok-carousel ")}
+
+${snippetElement(rtlExample, "data-ok-carousel ")}`,
+    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+
+const photos = [
+  { src: "photo-1.jpg", alt: "Mountain lake" },
+  { src: "photo-2.jpg", alt: "Forest in the fog" },
+  { src: "photo-3.jpg", alt: "Desert road" },
+];
 
 export function CarouselDirection() {
   return (
-    <Carousel aria-label="Stories" axis="y" className="stories">…</Carousel>
+    <Carousel aria-label="Stories" axis="y" className="stories">
+      <CarouselViewport>
+        {photos.map((photo) => (
+          <CarouselSlide key={photo.src}>
+            <img src={photo.src} alt={photo.alt} />
+          </CarouselSlide>
+        ))}
+      </CarouselViewport>
+    </Carousel>
   );
 }`,
   },
