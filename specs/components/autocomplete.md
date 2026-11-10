@@ -2,7 +2,8 @@
 
 Reference: Minimal UI kit "Autocomplete" page, sections Playground (Combo box, Controllable
 states, Free solo, Multiple values, Checkboxes, Sizes) and Country select (Output label, Output
-code, Variants) (content only). Upstream: MUI `Autocomplete` (ADR-0015). Created with `/component`.
+code, Variants) (content only); MUI demo sections Grouped, Asynchronous requests (Load on open),
+Single value rendering and Virtualization. Upstream: MUI `Autocomplete` (ADR-0015). Created with `/component`.
 Reference URL: https://minimals.cc/components/mui/autocomplete
 
 ## Purpose
@@ -15,22 +16,31 @@ React owns value, text, open and highlight; the HTML runtime `autocomplete` keep
 ```
 div[data-ok-autocomplete][data-ok-multiple]?[data-ok-free-solo]?[data-ok-disable-close-on-select]?
     [data-ok-disable-clearable]?[data-ok-open-on-focus]?[data-ok-auto-highlight]?[data-ok-limit-tags]?[data-ok-open]?
+    [data-ok-auto-complete]?[data-ok-auto-select]?[data-ok-blur-on-select]?[data-ok-clear-on-blur]?
+    [data-ok-clear-on-escape]?[data-ok-disabled-items-focusable]?[data-ok-disable-list-wrap]?
+    [data-ok-filter-selected-options]?[data-ok-handle-home-end-keys]?[data-ok-include-input-in-list]?
+    [data-ok-loading]?[data-ok-read-only]?[data-ok-reset-highlight-on-mouse-leave]?[data-ok-select-on-focus]?
+    [data-ok-virtualize]?
   div[data-ok-text-field] (TextField, fullWidth)
     label[data-ok-text-field-label][for]
     div[data-ok-text-field-control]
       span[data-ok-text-field-adornment="start"]?                       (multiple, with values)
         span[data-ok-chip][data-ok-variant=soft][data-ok-size=small][data-ok-value][hidden]? … · span[data-ok-autocomplete-more]?
-      input[data-ok-text-field-input][role=combobox][aria-autocomplete=list][aria-expanded][aria-controls]
-           [aria-activedescendant]?[autocomplete=off]
+      input[data-ok-text-field-input][role=combobox][aria-autocomplete=list|both][aria-expanded][aria-controls]
+           [aria-activedescendant]?[autocomplete=off][readonly]?
       span[data-ok-text-field-adornment="end"]
         button[data-ok-icon-button][data-ok-autocomplete-clear][aria-label][tabindex=-1][hidden]?   (not disableClearable)
-        button[data-ok-icon-button][data-ok-autocomplete-toggle][aria-label][data-ok-label-open|close][tabindex=-1]  (not freeSolo)
+        button[data-ok-icon-button][data-ok-autocomplete-toggle][aria-label][data-ok-label-open|close][tabindex=-1][hidden]?
+              (not freeSolo, or forcePopupIcon; hidden while read only)
       fieldset (outlined)
-  template[data-ok-autocomplete-tag]                                   (HTML, multiple: a chip)
+  template[data-ok-autocomplete-tag]                (HTML: the chip of a value; multiple, or a single value drawn as a chip)
   div[data-ok-popover][popover=manual][data-ok-placement=bottom-start][data-ok-disable-auto-focus]
      [data-ok-disable-restore-focus][data-ok-autocomplete-paper]            (--_ok-autocomplete-width)
-    ul[role=listbox][id][aria-label]
+    ul[role=listbox][id][aria-label]                        (virtualized: --_ok-autocomplete-before|after)
+      li[data-ok-list-subheader][role=presentation][hidden]?   (groupBy: ListSubheader before its options)
       li[role=option][id][data-ok-value][aria-selected][aria-disabled]?[hidden]?[data-ok-focused]?
+        [aria-setsize][aria-posinset]                          (virtualized: the window in view only)
+    div[data-ok-autocomplete-loading][hidden]?              (React: when `loading` is given)
     div[data-ok-autocomplete-no-options][hidden]?
 ```
 
@@ -47,15 +57,44 @@ Root: `data-ok-autocomplete`. Unknown values fall back to the default.
 | `openOnFocus` | `data-ok-open-on-focus` | flag | boolean | off | The list opens when the field gets focus. |
 | `autoHighlight` | `data-ok-auto-highlight` | flag | boolean | off | The first option is highlighted while typing. |
 | `limitTags` | `data-ok-limit-tags="…"` | number | number | — | Multiple: chips shown when the field isn't focused (the rest as "+3"). |
+| `autoComplete` | `data-ok-auto-complete` | flag | boolean | off | Inline completion: the input shows the highlighted option, the rest of its label selected. |
+| `autoSelect` | `data-ok-auto-select` | flag | boolean | off | Leaving the field picks the option highlighted by the keys or `autoHighlight` (free solo: the text). |
+| `blurOnSelect` | `data-ok-blur-on-select="…"` | style | `true` `mouse` `touch` | — | The input loses focus after a pick: always (`true`), or only after a mouse or touch pick. |
+| `clearOnBlur` | `data-ok-clear-on-blur="…"` | style | `true` `false` | — | Leaving the field puts back the chosen label (or empties the text). Default: on, off in free solo. |
+| `clearOnEscape` | `data-ok-clear-on-escape` | flag | boolean | off | Escape on a closed list clears the value and the text. |
+| `disabledItemsFocusable` | `data-ok-disabled-items-focusable` | flag | boolean | off | Disabled options can be highlighted (not picked). |
+| `disableListWrap` | `data-ok-disable-list-wrap` | flag | boolean | off | The arrows stop at the first and last options instead of wrapping. |
+| `filterSelectedOptions` | `data-ok-filter-selected-options` | flag | boolean | off | Chosen options are left out of the list. |
+| `handleHomeEndKeys` | `data-ok-handle-home-end-keys="…"` | style | `true` `false` | — | Home and End highlight the first and last options. Default: on, off in free solo. |
+| `includeInputInList` | `data-ok-include-input-in-list` | flag | boolean | off | The arrows move from the last or first option back to the input. |
+| `loading` | `data-ok-loading` | flag | boolean | off | Options are loading: the list shows the loading text while it has no options. |
+| `readOnly` | `data-ok-read-only` | flag | boolean | off | The value can't change: the list doesn't open and chips have no remove button. |
+| `resetHighlightOnMouseLeave` | `data-ok-reset-highlight-on-mouse-leave` | flag | boolean | off | The pointer leaving the list removes the highlight it made. |
+| `selectOnFocus` | `data-ok-select-on-focus="…"` | style | `true` `false` | — | The first click in the field selects its text. Default: on, off in free solo. |
+| `virtualize` | `data-ok-virtualize` | flag | boolean | off | Long lists draw only the options in view (groups aren't shown). |
 | `value` | `aria-selected` · event `ok:autocomplete:change` | state | — | — | Chosen option(s) (`value` / `defaultValue`). |
 <!-- /options:autocomplete -->
 
-Other props: `options` (`(string | { value, label, disabled? })[]`), `value` / `defaultValue` /
-`onChange(value)` (`string | null`, `string[]` multiple), `inputValue` / `onInputChange(text)`,
-`open` / `onOpenChange(open, reason)`, `getLimitTagsText(more)`, `filterOptions(options, text)`,
-`renderOption(option, { selected })`, `noOptionsText`, `clearText`, `openText`, `closeText`, and
+Other props: `options` (`(string | { value, label, disabled? })[]`, or any objects with
+`getOptionLabel`), `value` / `defaultValue` / `onChange(value)` (`V | null`, `V[]` multiple; `V` is
+the option's `value`, the option itself with `getOptionLabel`, or `getOptionValue(option)`),
+`inputValue` / `onInputChange(text)`, `open` / `onOpenChange(open, reason)`,
+`onHighlightChange(option | null, reason)` (`keyboard` · `mouse` · `touch` · `auto`),
+`getLimitTagsText(more)`, `filterOptions(options, text)` (`createFilterOptions(config)` makes one),
+`getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled`,
+`groupBy(option)`, `renderGroup({ key, group, children })`, `renderOption(option, { selected })`,
+`renderValue(value, getItemProps)`, `noOptionsText`, `loadingText`, `clearText`, `openText`,
+`closeText`, `clearIcon`, `popupIcon`, `forcePopupIcon` (`"auto"`), `ListboxComponent`, and
 TextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,
-`id`, `name`.
+`id`, `name`. React-only by nature (functions, elements); their HTML equivalents: groups are
+`li[data-ok-list-subheader]` in the markup (or `group` in `setOptions`), `renderValue` is the chip
+template, icons and the open button are markup. `filterOptions` / `createFilterOptions` and object
+values have no HTML equivalent: HTML values are the options' `data-ok-value` strings and the runtime
+filters with the default rule. `useAutocomplete(props)` is the component's state as a hook (prop
+getters `getRootProps`, `getInputLabelProps`, `getInputProps`, `getListboxProps`,
+`getOptionProps({ option })`, `getClearProps`, `getPopupIndicatorProps`, `getItemProps({ index })`;
+`groupedOptions`, `filteredOptions`, `popupOpen`, `value`, `inputValue`, `highlightedIndex`); HTML
+has no hook (the runtime is the behavior).
 
 API mapping: see "Upstream API mapping" below.
 
@@ -81,6 +120,26 @@ The clear button empties value and text; the toggle opens / closes; a press on a
 opens it. Blur closes and (not free solo) puts back the chosen label (multiple: empty). An outside
 press closes (Popover). `limitTags`: extra chips `hidden` while the field isn't focused, "+N".
 
+Phase 4 options: `autoComplete` shows the highlighted option's label in the input (arrow keys, or
+typing with `autoHighlight` when the label starts with the text) with the untyped rest selected
+(`aria-autocomplete=both`); deleting never completes. `autoSelect`: blur picks the option highlighted
+by keys / `autoHighlight` (free solo: commits the text). `clearOnBlur` (default `!freeSolo`) is the
+blur reset above. `blurOnSelect` (`true` · `mouse` · `touch`) blurs after a pick by that pointer.
+`clearOnEscape`: Escape on a closed list clears. `selectOnFocus` (default `!freeSolo`): the first
+click after focus selects the text. `includeInputInList`: the arrows go back to the input (-1) past
+an end; `disableListWrap`: they stop. `disabledItemsFocusable`: disabled options take the highlight,
+Enter does nothing. `handleHomeEndKeys` (default `!freeSolo`). `resetHighlightOnMouseLeave`: the
+pointer leaving the listbox removes a highlight it made. `filterSelectedOptions` hides chosen
+options. `readOnly`: the list never opens, no clear, toggle `hidden`, chips without delete buttons,
+no Backspace removal. `loading`: the loading text shows while no option is visible (no options
+hidden then). Groups: consecutive options with the same `groupBy` key share a heading, hidden
+while none of them is visible. `virtualize`: only the visible options in view are drawn (overscan
+4), padded by `::before` / `::after` spacers of the rows above and below (stride measured from the
+first drawn option, 38px by default); a keyboard highlight scrolls its row into the window; groups
+aren't shown; React draws none while closed, the HTML runtime keeps the option elements in memory.
+A single value drawn by `renderValue` (HTML: a single field with a chip template) leaves the input
+empty; Backspace on the empty input removes it.
+
 ## Keyboard
 | Key | Action |
 |---|---|
@@ -99,8 +158,11 @@ the tab order; chips' remove buttons named "Remove <label>"; checkbox options de
 
 ## Events / API
 HTML `ok:autocomplete:change` (cancelable, `{ value }`), `ok:autocomplete:open` / `close`
-(`{ reason }`). Instance `{ value, setValue(value), isOpen, open(), close() }`.
-React `onChange`, `onInputChange`, `onOpenChange(open, reason)`.
+(`{ reason }`), `ok:autocomplete:highlight` (`{ value, reason }`). Instance `{ value,
+setValue(value), setOptions(options), isOpen, open(), close() }`; `setOptions` takes strings or
+`{ value, label, disabled?, group? }` and builds plain text options (and headings unless
+virtualized). `data-ok-loading` and `data-ok-read-only` may change at any time (observed).
+React `onChange`, `onInputChange`, `onOpenChange(open, reason)`, `onHighlightChange(option, reason)`.
 
 ## Responsive
 The field fills its container; the paper follows the field's width (min 160px) in the top layer.
@@ -115,22 +177,27 @@ Upstream: MUI `Autocomplete`, mui.com/material-ui/api/autocomplete/.
 | `onInputChange(event, value, reason)` | `onInputChange(text)` | renamed | |
 | `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | |
 | `renderInput` | TextField props (`label`, `placeholder`, `helperText`, `error`, `variant`, `name`) | renamed | the field is built in |
-| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | options as `{ value, label, disabled? }` | renamed | string values only; object values deferred |
+| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | same | kept | React: object options and values (4.18.24); without them options stay `{ value, label, disabled? }` with string values; HTML values are `data-ok-value` strings |
 | `fullWidth` | — | not applicable | the field always fills its container (reference) |
-| `groupBy`, `renderGroup` | — | deferred (4.1) | `renderGroup` goes with `groupBy` |
-| `loading`, `loadingText` | — | deferred (4.1) | |
-| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | — | deferred (4.1) | |
-| virtualization, `slots.listbox` (`ListboxComponent`) | — | deferred (4.1) | |
-| `readOnly` | — | deferred | |
-| `onHighlightChange(event, option, reason)` | — | deferred | |
-| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | — | deferred | `handleHomeEndKeys` follows MUI's default (on unless free solo), not configurable |
-| `renderValue` (MUI `renderTags`) | — | deferred | chips are built in |
-| `clearIcon`, `popupIcon`, `forcePopupIcon` | — | deferred | |
-| `useAutocomplete`, `createFilterOptions` | core `filterOptions` / `nextAutocompleteValue` | deferred | no public hook / filter factory |
+| `groupBy`, `renderGroup` | same | kept | React functions; HTML: `li[data-ok-list-subheader]` headings in the markup or `group` in `setOptions` |
+| `loading`, `loadingText` | same | kept | HTML `data-ok-loading` + `[data-ok-autocomplete-loading]` |
+| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | same | kept | `selectOnFocus` defaults to `!freeSolo` (MUI) |
+| virtualization | `virtualize` | renamed | MUI virtualizes through a react-window `ListboxComponent`; Owlky draws the window itself in both implementations |
+| `slots.listbox` (`ListboxComponent`) | `ListboxComponent` | kept | React only (an element type); HTML writes its own listbox element |
+| `readOnly` | same | kept | HTML `data-ok-read-only` (+ `readonly` on the input) |
+| `onHighlightChange(event, option, reason)` | `onHighlightChange(option, reason)` | renamed | value-first; HTML `ok:autocomplete:highlight` |
+| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | same | kept | `clearOnBlur`, `handleHomeEndKeys` default to `!freeSolo` (HTML `"true"` / `"false"`, absent = that default) |
+| `renderValue` (MUI `renderTags`) | same | kept | `renderValue(value, getItemProps)`; HTML: the chip `<template data-ok-autocomplete-tag>` (single fields too) |
+| `clearIcon`, `popupIcon`, `forcePopupIcon` | same | kept | React nodes; HTML: the buttons' markup (an omitted toggle = `forcePopupIcon={false}`) |
+| `useAutocomplete`, `createFilterOptions` | same | kept | `useAutocomplete` in `@owlky/react` (React only, a hook); `createFilterOptions` in core (React `filterOptions`; HTML filters with the default rule) |
 | `slots.paper`, `slots.popper`, `disablePortal` (`PaperComponent`, `PopperComponent`) | Popover | not applicable | top layer, no portal |
 | `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
 
 ## Parity notes
+Snippets of the Grouped, Asynchronous requests, Single value rendering and Virtualization stories are
+generated from the React examples: `pnpm build && node apps/storybook/scripts/autocomplete-snippets.mjs`
+(the Playground and Country select snippets are written by hand). A virtualized listbox is empty
+while closed in both implementations.
 React renders `data-ok-runtime="off"` on the root and the Popover. The chip `<template>` is
 HTML-only (parity skips templates); hidden chips / options / no-options are skipped by parity.
 Country flags of the reference are not reproduced: options show the country code on a Label.

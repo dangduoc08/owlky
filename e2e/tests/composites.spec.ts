@@ -228,5 +228,50 @@ for (const impl of implementations) {
       await page.getByRole("option", { name: "Banana" }).tap();
       await expect(page.getByRole("combobox", { name: "Combo box" })).toHaveValue("Banana");
     });
+
+    test("grouped: headings follow the filter", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "grouped"));
+      const input = page.getByRole("combobox", { name: "With categories" });
+      await input.click();
+      await input.pressSequentially("pea");
+      await expect(
+        page.locator("#ac-grouped-listbox [data-ok-list-subheader]:not([hidden])"),
+      ).toHaveText(["P"]);
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Enter");
+      await expect(input).toHaveValue("Peach");
+    });
+
+    test("asynchronous: loading text, then the loaded options", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "asynchronous"));
+      const input = page.getByRole("combobox", { name: "Asynchronous" });
+      await input.click();
+      await expect(page.getByText("Loading…")).toBeVisible();
+      await expect(page.getByRole("option", { name: "Inception" })).toBeVisible();
+      await expect(page.getByText("Loading…")).toBeHidden();
+    });
+
+    test("single value rendering: the value is a chip, the input stays empty", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "single-value"));
+      const input = page.getByRole("combobox", { name: "Fruit" });
+      await expect(input).toHaveValue("");
+      await input.click();
+      await page.getByRole("option", { name: "Kiwi" }).click();
+      await expect(page.getByRole("button", { name: "Remove Kiwi" })).toBeVisible();
+      await expect(input).toHaveValue("");
+    });
+
+    test("virtualization: few options drawn, End reaches the last", async ({ page }) => {
+      await openStory(page, storyId(impl, "autocomplete", "virtualization"));
+      const input = page.getByRole("combobox", { name: "10,000 options" });
+      await input.click();
+      const drawn = page.locator("#ac-virtual-listbox [role=option]");
+      await expect(drawn.first()).toHaveText("Option 1");
+      expect(await drawn.count()).toBeLessThan(40);
+      await page.keyboard.press("End");
+      await expect(page.locator("#ac-virtual-option-9999")).toBeVisible();
+      await page.keyboard.press("Enter");
+      await expect(input).toHaveValue("Option 10000");
+    });
   });
 }

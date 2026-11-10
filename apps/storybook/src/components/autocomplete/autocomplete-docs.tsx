@@ -1,8 +1,9 @@
 import { autocompleteOptions } from "@owlky/core";
 import { Autocomplete } from "@owlky/react";
+import groupedSnippet from "../../../../../packages/html/src/components/autocomplete/examples/grouped-categories.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
-import { checkboxOption, FRUITS } from "./autocomplete-examples.js";
+import { checkboxOption, FRUITS, MANY_OPTIONS } from "./autocomplete-examples.js";
 import { ControllableDemo } from "./controllable-demo.js";
 
 export const autocompleteSections: GuideSection[] = [
@@ -111,6 +112,182 @@ export function Favorites() {
     body: "`variant` (`outlined`, `filled`, `standard`), `size` (`medium`, `small`), `label`, `placeholder`, `helperText` and `error` work as on a TextField. `renderOption` draws richer options, such as a code on a **Label** next to each country.",
   },
   {
+    id: "groups",
+    title: "Group options",
+    body: "In React, `groupBy` returns the heading of each option. Sort the options by the same key first: a new heading starts each time the key changes. Each heading is a **ListSubheader** before its options, and it hides while none of its options match the text. `renderGroup` draws a group yourself from its `group` name and its `children`. In HTML, write each heading as an `li[data-ok-list-subheader][role=presentation]` before its options.",
+    html: groupedSnippet,
+    react: `import { Autocomplete } from "@owlky/react";
+
+const fruits = ["Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Grape", "Kiwi", "Lemon", "Mango", "Orange", "Peach", "Pear"];
+
+export function Grouped() {
+  return (
+    <Autocomplete
+      id="ac-grouped"
+      label="With categories"
+      options={fruits}
+      groupBy={(option) => option.label.charAt(0)}
+    />
+  );
+}`,
+  },
+  {
+    id: "loading",
+    title: "Load options from a server",
+    body: 'Set `loading` while the options load: the list shows `loadingText` ("Loading…") as long as it has no options. In React, pass the loaded options to `options`. In HTML, set `data-ok-loading` on the root and call `setOptions(options)` on the instance with strings or `{ value, label, disabled?, group? }` objects. `setOptions` builds plain text options and a heading for each new `group`.',
+    html: `<!-- The field of the "Asynchronous requests" story, with an empty listbox and the loading text -->
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.getElementById("ac-async").closest("[data-ok-autocomplete]");
+  const autocomplete = getRuntime().get(element, "autocomplete");
+
+  element.addEventListener(
+    "ok:autocomplete:open",
+    async () => {
+      element.setAttribute("data-ok-loading", "");
+      const response = await fetch("/films.json");
+      autocomplete.setOptions(await response.json());
+      element.removeAttribute("data-ok-loading");
+    },
+    { once: true },
+  );
+</script>`,
+    react: `import { Autocomplete } from "@owlky/react";
+import { useEffect, useState } from "react";
+
+export function Films() {
+  const [open, setOpen] = useState(false);
+  const [options, setOptions] = useState<string[]>([]);
+  const loading = open && options.length === 0;
+
+  useEffect(() => {
+    if (!loading) return;
+    fetch("/films.json")
+      .then((response) => response.json())
+      .then(setOptions);
+  }, [loading]);
+
+  return (
+    <Autocomplete
+      label="Film"
+      options={options}
+      loading={loading}
+      open={open}
+      onOpenChange={setOpen}
+    />
+  );
+}`,
+  },
+  {
+    id: "virtualize",
+    title: "Show long lists",
+    body: "Set `virtualize` for lists of thousands of options. The list then draws only the options in view and moves them as people scroll or press the arrow keys, so typing stays fast. Each drawn option carries `aria-setsize` and `aria-posinset`, so screen readers still announce its position. Options are one line high, and groups aren't shown. In React, `ListboxComponent` replaces the list element if you bring your own virtualization.",
+    html: `<!-- The field of the "Virtualization" story, with data-ok-virtualize on the root -->
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.getElementById("ac-virtual").closest("[data-ok-autocomplete]");
+  const options = Array.from({ length: 10000 }, (_, index) => \`Option \${index + 1}\`);
+  getRuntime().get(element, "autocomplete").setOptions(options);
+</script>`,
+    react: `import { Autocomplete } from "@owlky/react";
+
+const options = Array.from({ length: 10000 }, (_, index) => \`Option \${index + 1}\`);
+
+export function Virtualized() {
+  return <Autocomplete label="10,000 options" virtualize options={options} />;
+}`,
+  },
+  {
+    id: "objects",
+    title: "Use objects as options",
+    body: "In React, options can be any objects. `getOptionLabel` returns the text of an option, `getOptionKey` a unique key when labels repeat, and `getOptionDisabled` whether it is disabled. The value is the option itself, compared with `isOptionEqualToValue`, or what `getOptionValue` returns, such as an id. In HTML, values are always the options' `data-ok-value` strings.",
+    react: `import { Autocomplete } from "@owlky/react";
+import { useState } from "react";
+
+type Film = { id: number; title: string; year: number };
+
+const films: Film[] = [
+  { id: 1, title: "Heat", year: 1995 },
+  { id: 2, title: "Heat", year: 1986 },
+  { id: 3, title: "Alien", year: 1979 },
+];
+
+export function FilmPicker() {
+  const [filmId, setFilmId] = useState<number | number[] | null>(1);
+  return (
+    <Autocomplete<Film, number>
+      label="Film"
+      options={films}
+      getOptionLabel={(film) => \`\${film.title} (\${film.year})\`}
+      getOptionValue={(film) => film.id}
+      value={filmId}
+      onChange={setFilmId}
+    />
+  );
+}`,
+  },
+  {
+    id: "render-value",
+    title: "Draw the chosen value",
+    body: "In React, `renderValue` draws the chosen values instead of the built-in chips. Spread `getItemProps({ index })` on each item: it sets the value, the remove action and its name. A single value drawn this way leaves the input empty, and Backspace removes it. In HTML, the `<template data-ok-autocomplete-tag>` holds the chip of each value, and a single field with a template draws its value the same way. `clearIcon` and `popupIcon` replace the button icons. `forcePopupIcon` shows or hides the open button.",
+    react: `import { Autocomplete, Chip } from "@owlky/react";
+
+const fruits = ["Apple", "Banana", "Cherry", "Mango"];
+
+export function SingleValue() {
+  return (
+    <Autocomplete
+      label="Fruit"
+      options={fruits}
+      defaultValue="Mango"
+      renderValue={(value, getItemProps) => (
+        <Chip size="small" variant="soft" label={String(value)} {...getItemProps({ index: 0 })} />
+      )}
+    />
+  );
+}`,
+  },
+  {
+    id: "behavior",
+    title: "Fine-tune keys, focus and blur",
+    body: `- **Typing:** \`autoComplete\` completes the text with the highlighted option and selects the rest, so Enter accepts it. \`filterSelectedOptions\` leaves the chosen options out.
+- **Keys:** \`disableListWrap\` stops the arrows at the ends, \`includeInputInList\` moves the highlight back to the text, \`handleHomeEndKeys\` turns Home and End off, and \`clearOnEscape\` clears the field when Escape is pressed on a closed list. \`disabledItemsFocusable\` lets the keys reach disabled options.
+- **Focus and blur:** \`selectOnFocus\` selects the text on the first click, \`autoSelect\` picks the highlighted option when focus leaves, and \`clearOnBlur\` puts back the chosen label. \`blurOnSelect\` moves focus out after a pick, for example only after a touch.
+- **Pointer:** \`resetHighlightOnMouseLeave\` removes a highlight the pointer made when it leaves the list.
+- **Read only:** \`readOnly\` shows the value without letting people change it.
+- **Highlight:** React \`onHighlightChange(option, reason)\` and HTML \`ok:autocomplete:highlight\` (\`detail.value\`, \`detail.reason\`) report the highlighted option, with \`keyboard\`, \`mouse\`, \`touch\` or \`auto\`.`,
+  },
+  {
+    id: "hook",
+    title: "Build your own field",
+    body: "`useAutocomplete` gives the state and behavior of an Autocomplete without its look. Spread its prop getters on your own elements: `getRootProps`, `getInputLabelProps`, `getInputProps`, `getListboxProps`, `getOptionProps({ option })`, `getClearProps`, `getPopupIndicatorProps` and `getItemProps({ index })`. `groupedOptions` holds the options that match, and `popupOpen` whether the list shows. `createFilterOptions` makes a filter with other rules: `matchFrom` (`any` or `start`), `limit`, `ignoreCase`, `ignoreAccents`, `trim` and `stringify`. HTML has no hook: its runtime is the behavior, and the markup is yours.",
+    react: `import { type AutocompleteOption, createFilterOptions, useAutocomplete } from "@owlky/react";
+
+const fruits = ["Apple", "Apricot", "Banana", "Cherry"];
+const startsWith = createFilterOptions<AutocompleteOption>({ matchFrom: "start" });
+
+export function FruitField() {
+  const autocomplete = useAutocomplete({ id: "fruit", options: fruits, filterOptions: startsWith });
+  return (
+    <div {...autocomplete.getRootProps()}>
+      <label {...autocomplete.getInputLabelProps()}>Fruit</label>
+      <input {...autocomplete.getInputProps()} />
+      {autocomplete.popupOpen && (
+        <ul {...autocomplete.getListboxProps()}>
+          {autocomplete.filteredOptions.map((option) => (
+            <li key={option.value} {...autocomplete.getOptionProps({ option })}>
+              {option.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -170,6 +347,25 @@ const PREVIEWS = {
           defaultValue={FRUITS.slice(0, 3)}
           renderOption={checkboxOption}
         />
+      </div>
+    </Preview>
+  ),
+  groups: () => (
+    <Preview>
+      <div className="sb-autocomplete">
+        <Autocomplete
+          id="docs-grouped"
+          label="Fruit"
+          options={FRUITS}
+          groupBy={(option) => option.label.charAt(0)}
+        />
+      </div>
+    </Preview>
+  ),
+  virtualize: () => (
+    <Preview>
+      <div className="sb-autocomplete">
+        <Autocomplete id="docs-virtual" label="10,000 options" virtualize options={MANY_OPTIONS} />
       </div>
     </Preview>
   ),

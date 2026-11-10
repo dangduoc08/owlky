@@ -36,6 +36,9 @@ const pairs: [component: string, story: string][] = [
   ["motion", "border"],
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
+  ...["grouped", "asynchronous", "single-value", "virtualization"].map(
+    (s) => ["autocomplete", s] as [string, string],
+  ),
   ["date-pickers", "date-story"],
   ["date-pickers", "calendars"],
   ["date-pickers", "validation"],

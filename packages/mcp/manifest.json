@@ -37,6 +37,7 @@
   "data-ok-annotation",
   "data-ok-arrow",
   "data-ok-attribution",
+  "data-ok-auto-complete",
   "data-ok-auto-height",
   "data-ok-auto-hide",
   "data-ok-auto-highlight",
@@ -45,9 +46,11 @@
   "data-ok-auto-scroll-speed",
   "data-ok-auto-scroll-start-delay",
   "data-ok-auto-scrolling",
+  "data-ok-auto-select",
   "data-ok-auto-width",
   "data-ok-autocomplete",
   "data-ok-autocomplete-clear",
+  "data-ok-autocomplete-loading",
   "data-ok-autocomplete-more",
   "data-ok-autocomplete-no-options",
   "data-ok-autocomplete-paper",
@@ -76,6 +79,7 @@
   "data-ok-bearing",
   "data-ok-before-id",
   "data-ok-between",
+  "data-ok-blur-on-select",
   "data-ok-boundary-count",
   "data-ok-bounds",
   "data-ok-box-lower-color",
@@ -233,6 +237,8 @@
   "data-ok-circular-progress",
   "data-ok-circular-progress-circle",
   "data-ok-circular-progress-svg",
+  "data-ok-clear-on-blur",
+  "data-ok-clear-on-escape",
   "data-ok-clearable",
   "data-ok-close-button",
   "data-ok-close-on-backdrop-click",
@@ -420,6 +426,7 @@
   "data-ok-disable-gutters",
   "data-ok-disable-highlight-today",
   "data-ok-disable-ignoring-date-part-for-time-validation",
+  "data-ok-disable-list-wrap",
   "data-ok-disable-multiple-columns-filtering",
   "data-ok-disable-multiple-columns-sorting",
   "data-ok-disable-multiple-row-selection",
@@ -447,6 +454,7 @@
   "data-ok-disable-virtualization",
   "data-ok-disable-zoom",
   "data-ok-disabled",
+  "data-ok-disabled-items-focusable",
   "data-ok-disallowed-elements",
   "data-ok-display-empty",
   "data-ok-display-week-number",
@@ -523,6 +531,7 @@
   "data-ok-filter",
   "data-ok-filter-field",
   "data-ok-filter-mode",
+  "data-ok-filter-selected-options",
   "data-ok-filterable",
   "data-ok-finite",
   "data-ok-fit",
@@ -600,6 +609,7 @@
   "data-ok-group-path",
   "data-ok-groupable",
   "data-ok-gutter-bottom",
+  "data-ok-handle-home-end-keys",
   "data-ok-header-filters",
   "data-ok-height",
   "data-ok-height-event",
@@ -632,6 +642,7 @@
   "data-ok-in-range",
   "data-ok-in-view",
   "data-ok-in-view-threshold",
+  "data-ok-include-input-in-list",
   "data-ok-indeterminate",
   "data-ok-index",
   "data-ok-indicator",
@@ -644,6 +655,7 @@
   "data-ok-interactive-layer-ids",
   "data-ok-invisible",
   "data-ok-item-id",
+  "data-ok-item-index",
   "data-ok-items-after-collapse",
   "data-ok-items-before-collapse",
   "data-ok-just-dragged",
@@ -955,6 +967,7 @@
   "data-ok-reduce-animations",
   "data-ok-render-world-copies",
   "data-ok-required",
+  "data-ok-reset-highlight-on-mouse-leave",
   "data-ok-resizable",
   "data-ok-rotate",
   "data-ok-rotate-buttons",
@@ -993,6 +1006,7 @@
   "data-ok-select-input",
   "data-ok-select-listbox",
   "data-ok-select-native",
+  "data-ok-select-on-focus",
   "data-ok-select-open",
   "data-ok-select-outline",
   "data-ok-select-placeholder",
@@ -1280,6 +1294,7 @@
   "data-ok-vertical",
   "data-ok-view",
   "data-ok-views",
+  "data-ok-virtualize",
   "data-ok-visible-by-default",
   "data-ok-visible-scrollbar",
   "data-ok-visible-toasts",
@@ -1663,7 +1678,8 @@
    "guide": "autocomplete",
    "name": "autocomplete",
    "react": [
-    "Autocomplete"
+    "Autocomplete",
+    "useAutocomplete"
    ],
    "referenceUrl": "https://minimals.cc/components/mui/autocomplete",
    "related": [
@@ -1671,6 +1687,7 @@
     "chip",
     "icon-button",
     "label",
+    "list",
     "popover",
     "text-field",
     "typography"
@@ -1725,6 +1742,121 @@
        "name": "limitTags"
       },
       {
+       "attr": "data-ok-auto-complete",
+       "description": "Inline completion: the input shows the highlighted option, the rest of its label selected.",
+       "kind": "flag",
+       "name": "autoComplete"
+      },
+      {
+       "attr": "data-ok-auto-select",
+       "description": "Leaving the field picks the option highlighted by the keys or `autoHighlight` (free solo: the text).",
+       "kind": "flag",
+       "name": "autoSelect"
+      },
+      {
+       "attr": "data-ok-blur-on-select",
+       "default": "true",
+       "description": "The input loses focus after a pick: always (`true`), or only after a mouse or touch pick.",
+       "kind": "style",
+       "name": "blurOnSelect",
+       "optional": true,
+       "values": [
+        "true",
+        "mouse",
+        "touch"
+       ]
+      },
+      {
+       "attr": "data-ok-clear-on-blur",
+       "default": "true",
+       "description": "Leaving the field puts back the chosen label (or empties the text). Default: on, off in free solo.",
+       "kind": "style",
+       "name": "clearOnBlur",
+       "optional": true,
+       "values": [
+        "true",
+        "false"
+       ]
+      },
+      {
+       "attr": "data-ok-clear-on-escape",
+       "description": "Escape on a closed list clears the value and the text.",
+       "kind": "flag",
+       "name": "clearOnEscape"
+      },
+      {
+       "attr": "data-ok-disabled-items-focusable",
+       "description": "Disabled options can be highlighted (not picked).",
+       "kind": "flag",
+       "name": "disabledItemsFocusable"
+      },
+      {
+       "attr": "data-ok-disable-list-wrap",
+       "description": "The arrows stop at the first and last options instead of wrapping.",
+       "kind": "flag",
+       "name": "disableListWrap"
+      },
+      {
+       "attr": "data-ok-filter-selected-options",
+       "description": "Chosen options are left out of the list.",
+       "kind": "flag",
+       "name": "filterSelectedOptions"
+      },
+      {
+       "attr": "data-ok-handle-home-end-keys",
+       "default": "true",
+       "description": "Home and End highlight the first and last options. Default: on, off in free solo.",
+       "kind": "style",
+       "name": "handleHomeEndKeys",
+       "optional": true,
+       "values": [
+        "true",
+        "false"
+       ]
+      },
+      {
+       "attr": "data-ok-include-input-in-list",
+       "description": "The arrows move from the last or first option back to the input.",
+       "kind": "flag",
+       "name": "includeInputInList"
+      },
+      {
+       "attr": "data-ok-loading",
+       "description": "Options are loading: the list shows the loading text while it has no options.",
+       "kind": "flag",
+       "name": "loading"
+      },
+      {
+       "attr": "data-ok-read-only",
+       "description": "The value can't change: the list doesn't open and chips have no remove button.",
+       "kind": "flag",
+       "name": "readOnly"
+      },
+      {
+       "attr": "data-ok-reset-highlight-on-mouse-leave",
+       "description": "The pointer leaving the list removes the highlight it made.",
+       "kind": "flag",
+       "name": "resetHighlightOnMouseLeave"
+      },
+      {
+       "attr": "data-ok-select-on-focus",
+       "default": "true",
+       "description": "The first click in the field selects its text. Default: on, off in free solo.",
+       "kind": "style",
+       "name": "selectOnFocus",
+       "optional": true,
+       "values": [
+        "true",
+        "false"
+       ]
+      },
+      {
+       "attr": "data-ok-virtualize",
+       "description": "Long lists draw only the options in view (groups aren't shown).",
+       "kind": "flag",
+       "name": "virtualize"
+      },
+      {
        "attr": "aria-selected",
        "description": "Chosen option(s) (`value` / `defaultValue`).",
        "event": "ok:autocomplete:change",
@@ -1742,12 +1874,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-autocomplete][data-ok-multiple]?[data-ok-free-solo]?[data-ok-disable-close-on-select]?\n    [data-ok-disable-clearable]?[data-ok-open-on-focus]?[data-ok-auto-highlight]?[data-ok-limit-tags]?[data-ok-open]?\n  div[data-ok-text-field] (TextField, fullWidth)\n    label[data-ok-text-field-label][for]\n    div[data-ok-text-field-control]\n      span[data-ok-text-field-adornment=\"start\"]?                       (multiple, with values)\n        span[data-ok-chip][data-ok-variant=soft][data-ok-size=small][data-ok-value][hidden]? … · span[data-ok-autocomplete-more]?\n      input[data-ok-text-field-input][role=combobox][aria-autocomplete=list][aria-expanded][aria-controls]\n           [aria-activedescendant]?[autocomplete=off]\n      span[data-ok-text-field-adornment=\"end\"]\n        button[data-ok-icon-button][data-ok-autocomplete-clear][aria-label][tabindex=-1][hidden]?   (not disableClearable)\n        button[data-ok-icon-button][data-ok-autocomplete-toggle][aria-label][data-ok-label-open|close][tabindex=-1]  (not freeSolo)\n      fieldset (outlined)\n  template[data-ok-autocomplete-tag]                                   (HTML, multiple: a chip)\n  div[data-ok-popover][popover=manual][data-ok-placement=bottom-start][data-ok-disable-auto-focus]\n     [data-ok-disable-restore-focus][data-ok-autocomplete-paper]            (--_ok-autocomplete-width)\n    ul[role=listbox][id][aria-label]\n      li[role=option][id][data-ok-value][aria-selected][aria-disabled]?[hidden]?[data-ok-focused]?\n    div[data-ok-autocomplete-no-options][hidden]?\n```",
+     "body": "```\ndiv[data-ok-autocomplete][data-ok-multiple]?[data-ok-free-solo]?[data-ok-disable-close-on-select]?\n    [data-ok-disable-clearable]?[data-ok-open-on-focus]?[data-ok-auto-highlight]?[data-ok-limit-tags]?[data-ok-open]?\n    [data-ok-auto-complete]?[data-ok-auto-select]?[data-ok-blur-on-select]?[data-ok-clear-on-blur]?\n    [data-ok-clear-on-escape]?[data-ok-disabled-items-focusable]?[data-ok-disable-list-wrap]?\n    [data-ok-filter-selected-options]?[data-ok-handle-home-end-keys]?[data-ok-include-input-in-list]?\n    [data-ok-loading]?[data-ok-read-only]?[data-ok-reset-highlight-on-mouse-leave]?[data-ok-select-on-focus]?\n    [data-ok-virtualize]?\n  div[data-ok-text-field] (TextField, fullWidth)\n    label[data-ok-text-field-label][for]\n    div[data-ok-text-field-control]\n      span[data-ok-text-field-adornment=\"start\"]?                       (multiple, with values)\n        span[data-ok-chip][data-ok-variant=soft][data-ok-size=small][data-ok-value][hidden]? … · span[data-ok-autocomplete-more]?\n      input[data-ok-text-field-input][role=combobox][aria-autocomplete=list|both][aria-expanded][aria-controls]\n           [aria-activedescendant]?[autocomplete=off][readonly]?\n      span[data-ok-text-field-adornment=\"end\"]\n        button[data-ok-icon-button][data-ok-autocomplete-clear][aria-label][tabindex=-1][hidden]?   (not disableClearable)\n        button[data-ok-icon-button][data-ok-autocomplete-toggle][aria-label][data-ok-label-open|close][tabindex=-1][hidden]?\n              (not freeSolo, or forcePopupIcon; hidden while read only)\n      fieldset (outlined)\n  template[data-ok-autocomplete-tag]                (HTML: the chip of a value; multiple, or a single value drawn as a chip)\n  div[data-ok-popover][popover=manual][data-ok-placement=bottom-start][data-ok-disable-auto-focus]\n     [data-ok-disable-restore-focus][data-ok-autocomplete-paper]            (--_ok-autocomplete-width)\n    ul[role=listbox][id][aria-label]                        (virtualized: --_ok-autocomplete-before|after)\n      li[data-ok-list-subheader][role=presentation][hidden]?   (groupBy: ListSubheader before its options)\n      li[role=option][id][data-ok-value][aria-selected][aria-disabled]?[hidden]?[data-ok-focused]?\n        [aria-setsize][aria-posinset]                          (virtualized: the window in view only)\n    div[data-ok-autocomplete-loading][hidden]?              (React: when `loading` is given)\n    div[data-ok-autocomplete-no-options][hidden]?\n```",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `autocomplete`: listed under \"options\".)\n\nOther props: `options` (`(string | { value, label, disabled? })[]`), `value` / `defaultValue` /\n`onChange(value)` (`string | null`, `string[]` multiple), `inputValue` / `onInputChange(text)`,\n`open` / `onOpenChange(open, reason)`, `getLimitTagsText(more)`, `filterOptions(options, text)`,\n`renderOption(option, { selected })`, `noOptionsText`, `clearText`, `openText`, `closeText`, and\nTextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,\n`id`, `name`.\n\nAPI mapping: see \"Upstream API mapping\" below.",
+     "body": "(Options of `autocomplete`: listed under \"options\".)\n\nOther props: `options` (`(string | { value, label, disabled? })[]`, or any objects with\n`getOptionLabel`), `value` / `defaultValue` / `onChange(value)` (`V | null`, `V[]` multiple; `V` is\nthe option's `value`, the option itself with `getOptionLabel`, or `getOptionValue(option)`),\n`inputValue` / `onInputChange(text)`, `open` / `onOpenChange(open, reason)`,\n`onHighlightChange(option | null, reason)` (`keyboard` · `mouse` · `touch` · `auto`),\n`getLimitTagsText(more)`, `filterOptions(options, text)` (`createFilterOptions(config)` makes one),\n`getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled`,\n`groupBy(option)`, `renderGroup({ key, group, children })`, `renderOption(option, { selected })`,\n`renderValue(value, getItemProps)`, `noOptionsText`, `loadingText`, `clearText`, `openText`,\n`closeText`, `clearIcon`, `popupIcon`, `forcePopupIcon` (`\"auto\"`), `ListboxComponent`, and\nTextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,\n`id`, `name`. React-only by nature (functions, elements); their HTML equivalents: groups are\n`li[data-ok-list-subheader]` in the markup (or `group` in `setOptions`), `renderValue` is the chip\ntemplate, icons and the open button are markup. `filterOptions` / `createFilterOptions` and object\nvalues have no HTML equivalent: HTML values are the options' `data-ok-value` strings and the runtime\nfilters with the default rule. `useAutocomplete(props)` is the component's state as a hook (prop\ngetters `getRootProps`, `getInputLabelProps`, `getInputProps`, `getListboxProps`,\n`getOptionProps({ option })`, `getClearProps`, `getPopupIndicatorProps`, `getItemProps({ index })`;\n`groupedOptions`, `filteredOptions`, `popupOpen`, `value`, `inputValue`, `highlightedIndex`); HTML\nhas no hook (the runtime is the behavior).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -1757,7 +1889,7 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "Typing filters (label contains the text, case and accents ignored), opens and resets the highlight\n(`autoHighlight`: first). Arrow keys open a closed list, then move the highlight (wrapping,\nskipping disabled); Page keys move 5; Home / End (not free solo). Enter picks the highlighted\noption or commits free text. A pick replaces the value (single, text = label) or toggles it\n(multiple, text cleared); the list closes unless `disableCloseOnSelect` (multiple). Escape closes.\nBackspace in an empty multiple field removes the last chip; chip delete buttons remove theirs.\nThe clear button empties value and text; the toggle opens / closes; a press on a closed field\nopens it. Blur closes and (not free solo) puts back the chosen label (multiple: empty). An outside\npress closes (Popover). `limitTags`: extra chips `hidden` while the field isn't focused, \"+N\".",
+     "body": "Typing filters (label contains the text, case and accents ignored), opens and resets the highlight\n(`autoHighlight`: first). Arrow keys open a closed list, then move the highlight (wrapping,\nskipping disabled); Page keys move 5; Home / End (not free solo). Enter picks the highlighted\noption or commits free text. A pick replaces the value (single, text = label) or toggles it\n(multiple, text cleared); the list closes unless `disableCloseOnSelect` (multiple). Escape closes.\nBackspace in an empty multiple field removes the last chip; chip delete buttons remove theirs.\nThe clear button empties value and text; the toggle opens / closes; a press on a closed field\nopens it. Blur closes and (not free solo) puts back the chosen label (multiple: empty). An outside\npress closes (Popover). `limitTags`: extra chips `hidden` while the field isn't focused, \"+N\".\n\nPhase 4 options: `autoComplete` shows the highlighted option's label in the input (arrow keys, or\ntyping with `autoHighlight` when the label starts with the text) with the untyped rest selected\n(`aria-autocomplete=both`); deleting never completes. `autoSelect`: blur picks the option highlighted\nby keys / `autoHighlight` (free solo: commits the text). `clearOnBlur` (default `!freeSolo`) is the\nblur reset above. `blurOnSelect` (`true` · `mouse` · `touch`) blurs after a pick by that pointer.\n`clearOnEscape`: Escape on a closed list clears. `selectOnFocus` (default `!freeSolo`): the first\nclick after focus selects the text. `includeInputInList`: the arrows go back to the input (-1) past\nan end; `disableListWrap`: they stop. `disabledItemsFocusable`: disabled options take the highlight,\nEnter does nothing. `handleHomeEndKeys` (default `!freeSolo`). `resetHighlightOnMouseLeave`: the\npointer leaving the listbox removes a highlight it made. `filterSelectedOptions` hides chosen\noptions. `readOnly`: the list never opens, no clear, toggle `hidden`, chips without delete buttons,\nno Backspace removal. `loading`: the loading text shows while no option is visible (no options\nhidden then). Groups: consecutive options with the same `groupBy` key share a heading, hidden\nwhile none of them is visible. `virtualize`: only the visible options in view are drawn (overscan\n4), padded by `::before` / `::after` spacers of the rows above and below (stride measured from the\nfirst drawn option, 38px by default); a keyboard highlight scrolls its row into the window; groups\naren't shown; React draws none while closed, the HTML runtime keeps the option elements in memory.\nA single value drawn by `renderValue` (HTML: a single field with a chip template) leaves the input\nempty; Backspace on the empty input removes it.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -1772,7 +1904,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML `ok:autocomplete:change` (cancelable, `{ value }`), `ok:autocomplete:open` / `close`\n(`{ reason }`). Instance `{ value, setValue(value), isOpen, open(), close() }`.\nReact `onChange`, `onInputChange`, `onOpenChange(open, reason)`.",
+     "body": "HTML `ok:autocomplete:change` (cancelable, `{ value }`), `ok:autocomplete:open` / `close`\n(`{ reason }`), `ok:autocomplete:highlight` (`{ value, reason }`). Instance `{ value,\nsetValue(value), setOptions(options), isOpen, open(), close() }`; `setOptions` takes strings or\n`{ value, label, disabled?, group? }` and builds plain text options (and headings unless\nvirtualized). `data-ok-loading` and `data-ok-read-only` may change at any time (observed).\nReact `onChange`, `onInputChange`, `onOpenChange(open, reason)`, `onHighlightChange(option, reason)`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -1782,12 +1914,12 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Autocomplete`, mui.com/material-ui/api/autocomplete/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `options`, `value`, `defaultValue`, `inputValue`, `open`, `multiple`, `freeSolo`, `disableCloseOnSelect`, `disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`, `getLimitTagsText`, `filterOptions`, `renderOption`, `noOptionsText`, `clearText`, `openText`, `closeText`, `disabled`, `id`, `size` | same | kept | `options`: strings or `{ value, label, disabled? }` |\n| `onChange(event, value, reason, details)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `onInputChange(event, value, reason)` | `onInputChange(text)` | renamed | |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | |\n| `renderInput` | TextField props (`label`, `placeholder`, `helperText`, `error`, `variant`, `name`) | renamed | the field is built in |\n| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | options as `{ value, label, disabled? }` | renamed | string values only; object values deferred |\n| `fullWidth` | — | not applicable | the field always fills its container (reference) |\n| `groupBy`, `renderGroup` | — | deferred (4.1) | `renderGroup` goes with `groupBy` |\n| `loading`, `loadingText` | — | deferred (4.1) | |\n| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | — | deferred (4.1) | |\n| virtualization, `slots.listbox` (`ListboxComponent`) | — | deferred (4.1) | |\n| `readOnly` | — | deferred | |\n| `onHighlightChange(event, option, reason)` | — | deferred | |\n| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | — | deferred | `handleHomeEndKeys` follows MUI's default (on unless free solo), not configurable |\n| `renderValue` (MUI `renderTags`) | — | deferred | chips are built in |\n| `clearIcon`, `popupIcon`, `forcePopupIcon` | — | deferred | |\n| `useAutocomplete`, `createFilterOptions` | core `filterOptions` / `nextAutocompleteValue` | deferred | no public hook / filter factory |\n| `slots.paper`, `slots.popper`, `disablePortal` (`PaperComponent`, `PopperComponent`) | Popover | not applicable | top layer, no portal |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Autocomplete`, mui.com/material-ui/api/autocomplete/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `options`, `value`, `defaultValue`, `inputValue`, `open`, `multiple`, `freeSolo`, `disableCloseOnSelect`, `disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`, `getLimitTagsText`, `filterOptions`, `renderOption`, `noOptionsText`, `clearText`, `openText`, `closeText`, `disabled`, `id`, `size` | same | kept | `options`: strings or `{ value, label, disabled? }` |\n| `onChange(event, value, reason, details)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `onInputChange(event, value, reason)` | `onInputChange(text)` | renamed | |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | |\n| `renderInput` | TextField props (`label`, `placeholder`, `helperText`, `error`, `variant`, `name`) | renamed | the field is built in |\n| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | same | kept | React: object options and values (4.18.24); without them options stay `{ value, label, disabled? }` with string values; HTML values are `data-ok-value` strings |\n| `fullWidth` | — | not applicable | the field always fills its container (reference) |\n| `groupBy`, `renderGroup` | same | kept | React functions; HTML: `li[data-ok-list-subheader]` headings in the markup or `group` in `setOptions` |\n| `loading`, `loadingText` | same | kept | HTML `data-ok-loading` + `[data-ok-autocomplete-loading]` |\n| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | same | kept | `selectOnFocus` defaults to `!freeSolo` (MUI) |\n| virtualization | `virtualize` | renamed | MUI virtualizes through a react-window `ListboxComponent`; Owlky draws the window itself in both implementations |\n| `slots.listbox` (`ListboxComponent`) | `ListboxComponent` | kept | React only (an element type); HTML writes its own listbox element |\n| `readOnly` | same | kept | HTML `data-ok-read-only` (+ `readonly` on the input) |\n| `onHighlightChange(event, option, reason)` | `onHighlightChange(option, reason)` | renamed | value-first; HTML `ok:autocomplete:highlight` |\n| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | same | kept | `clearOnBlur`, `handleHomeEndKeys` default to `!freeSolo` (HTML `\"true\"` / `\"false\"`, absent = that default) |\n| `renderValue` (MUI `renderTags`) | same | kept | `renderValue(value, getItemProps)`; HTML: the chip `<template data-ok-autocomplete-tag>` (single fields too) |\n| `clearIcon`, `popupIcon`, `forcePopupIcon` | same | kept | React nodes; HTML: the buttons' markup (an omitted toggle = `forcePopupIcon={false}`) |\n| `useAutocomplete`, `createFilterOptions` | same | kept | `useAutocomplete` in `@owlky/react` (React only, a hook); `createFilterOptions` in core (React `filterOptions`; HTML filters with the default rule) |\n| `slots.paper`, `slots.popper`, `disablePortal` (`PaperComponent`, `PopperComponent`) | Popover | not applicable | top layer, no portal |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
     {
-     "body": "React renders `data-ok-runtime=\"off\"` on the root and the Popover. The chip `<template>` is\nHTML-only (parity skips templates); hidden chips / options / no-options are skipped by parity.\nCountry flags of the reference are not reproduced: options show the country code on a Label.",
+     "body": "Snippets of the Grouped, Asynchronous requests, Single value rendering and Virtualization stories are\ngenerated from the React examples: `pnpm build && node apps/storybook/scripts/autocomplete-snippets.mjs`\n(the Playground and Country select snippets are written by hand). A virtualized listbox is empty\nwhile closed in both implementations.\nReact renders `data-ok-runtime=\"off\"` on the root and the Popover. The chip `<template>` is\nHTML-only (parity skips templates); hidden chips / options / no-options are skipped by parity.\nCountry flags of the reference are not reproduced: options show the country code on a Label.",
      "id": "parity-notes",
      "title": "Parity notes"
     }
@@ -1817,6 +1949,42 @@
       "country-code.html",
       "country-label.html",
       "country-variants.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/list.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- With categories -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-grouped\">With categories</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-grouped-listbox\" autocomplete=\"off\" id=\"ac-grouped\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>With categories</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-grouped-listbox\" aria-label=\"With categories\">\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">A</li>\n        <li role=\"option\" id=\"ac-grouped-option-0\" data-ok-value=\"Apple\" aria-selected=\"false\">Apple</li>\n        <li role=\"option\" id=\"ac-grouped-option-1\" data-ok-value=\"Apricot\" aria-selected=\"false\">Apricot</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">B</li>\n        <li role=\"option\" id=\"ac-grouped-option-2\" data-ok-value=\"Banana\" aria-selected=\"false\">Banana</li>\n        <li role=\"option\" id=\"ac-grouped-option-3\" data-ok-value=\"Blueberry\" aria-selected=\"false\">Blueberry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">C</li>\n        <li role=\"option\" id=\"ac-grouped-option-4\" data-ok-value=\"Cherry\" aria-selected=\"false\">Cherry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">G</li>\n        <li role=\"option\" id=\"ac-grouped-option-5\" data-ok-value=\"Grape\" aria-selected=\"false\">Grape</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">K</li>\n        <li role=\"option\" id=\"ac-grouped-option-6\" data-ok-value=\"Kiwi\" aria-selected=\"false\">Kiwi</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">L</li>\n        <li role=\"option\" id=\"ac-grouped-option-7\" data-ok-value=\"Lemon\" aria-selected=\"false\">Lemon</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">M</li>\n        <li role=\"option\" id=\"ac-grouped-option-8\" data-ok-value=\"Mango\" aria-selected=\"false\">Mango</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">O</li>\n        <li role=\"option\" id=\"ac-grouped-option-9\" data-ok-value=\"Orange\" aria-selected=\"false\">Orange</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">P</li>\n        <li role=\"option\" id=\"ac-grouped-option-10\" data-ok-value=\"Peach\" aria-selected=\"false\">Peach</li>\n        <li role=\"option\" id=\"ac-grouped-option-11\" data-ok-value=\"Pear\" aria-selected=\"false\">Pear</li>\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>",
+     "id": "components-autocomplete--grouped",
+     "name": "Grouped",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Apricot\", \"Banana\", \"Blueberry\", \"Cherry\", \"Grape\", \"Kiwi\", \"Lemon\", \"Mango\", \"Orange\", \"Peach\", \"Pear\"];\n\nexport function Grouped() {\n  // Sort the options by the same key as groupBy, or a heading shows twice\n  return (\n    <Autocomplete\n      id=\"ac-grouped\"\n      label=\"With categories\"\n      options={fruits}\n      groupBy={(option) => option.label.charAt(0)}\n    />\n  );\n}",
+     "snippets": [
+      "grouped-categories.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/checkbox.css + components/label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Load on open -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-async\">Asynchronous</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-async-listbox\" autocomplete=\"off\" id=\"ac-async\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>Asynchronous</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-async-listbox\" aria-label=\"Asynchronous\">\n      </ul>\n      <div data-ok-autocomplete-loading hidden>Loading…</div>\n      <div data-ok-autocomplete-no-options>No options</div>\n    </div>\n  </div>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\nconst element = document.getElementById(\"ac-async\").closest(\"[data-ok-autocomplete]\");\nconst autocomplete = getRuntime().get(element, \"autocomplete\");\n\n// Load the options the first time the list opens; \"Loading…\" shows meanwhile\nelement.addEventListener(\n  \"ok:autocomplete:open\",\n  async () => {\n    element.setAttribute(\"data-ok-loading\", \"\");\n    autocomplete.setOptions(await fetchFilms());\n    element.removeAttribute(\"data-ok-loading\");\n  },\n  { once: true },\n);\n</script>",
+     "id": "components-autocomplete--asynchronous",
+     "name": "Asynchronous requests",
+     "react": "import { Autocomplete } from \"@owlky/react\";\nimport { useEffect, useState } from \"react\";\n\nconst FILMS = [\n  \"Alien\",\n  \"Amélie\",\n  \"Casablanca\",\n  \"City of God\",\n  \"Inception\",\n  \"Parasite\",\n  \"Spirited Away\",\n  \"The Matrix\",\n];\n\n/** Waits like a request to a server would. */\nconst wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));\n\n/** Loads the options the first time the list opens, and shows \"Loading…\" meanwhile. */\nexport function LoadOnOpenDemo() {\n  const [open, setOpen] = useState(false);\n  const [options, setOptions] = useState<string[]>([]);\n  const loading = open && options.length === 0;\n\n  useEffect(() => {\n    if (!loading) return;\n    let active = true;\n    wait(1000).then(() => {\n      if (active) setOptions(FILMS);\n    });\n    return () => {\n      active = false;\n    };\n  }, [loading]);\n\n  return (\n    <div className=\"sb-autocomplete\">\n      <Autocomplete\n        id=\"ac-async\"\n        label=\"Asynchronous\"\n        options={options}\n        loading={loading}\n        open={open}\n        onOpenChange={setOpen}\n      />\n    </div>\n  );\n}\n",
+     "snippets": [
+      "async-load-on-open.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/checkbox.css + components/label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Single value rendering -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <template data-ok-autocomplete-tag><span data-ok-chip data-ok-variant=\"soft\" data-ok-color=\"default\" data-ok-size=\"small\" data-ok-item-index=\"0\" tabindex=\"-1\"><span data-ok-chip-action><span data-ok-chip-label></span></span><button type=\"button\" data-ok-chip-delete aria-label=\"Remove\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></button></span></template>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-single-chip\">Fruit</label>\n      <div data-ok-text-field-control>\n        <span data-ok-text-field-adornment=\"start\">\n          <span data-ok-chip data-ok-variant=\"soft\" data-ok-color=\"default\" data-ok-size=\"small\" data-ok-value=\"Mango\" data-ok-item-index=\"0\" tabindex=\"-1\">\n            <span data-ok-chip-action>\n              <span data-ok-chip-label>Mango</span>\n            </span>\n            <button type=\"button\" data-ok-chip-delete aria-label=\"Remove Mango\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></button>\n          </span>\n        </span>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-single-chip-listbox\" autocomplete=\"off\" id=\"ac-single-chip\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>Fruit</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-single-chip-listbox\" aria-label=\"Fruit\">\n        <li role=\"option\" id=\"ac-single-chip-option-0\" data-ok-value=\"Apple\" aria-selected=\"false\">Apple</li>\n        <li role=\"option\" id=\"ac-single-chip-option-1\" data-ok-value=\"Apricot\" aria-selected=\"false\">Apricot</li>\n        <li role=\"option\" id=\"ac-single-chip-option-2\" data-ok-value=\"Banana\" aria-selected=\"false\">Banana</li>\n        <li role=\"option\" id=\"ac-single-chip-option-3\" data-ok-value=\"Blueberry\" aria-selected=\"false\">Blueberry</li>\n        <li role=\"option\" id=\"ac-single-chip-option-4\" data-ok-value=\"Cherry\" aria-selected=\"false\">Cherry</li>\n        <li role=\"option\" id=\"ac-single-chip-option-5\" data-ok-value=\"Grape\" aria-selected=\"false\">Grape</li>\n        <li role=\"option\" id=\"ac-single-chip-option-6\" data-ok-value=\"Kiwi\" aria-selected=\"false\">Kiwi</li>\n        <li role=\"option\" id=\"ac-single-chip-option-7\" data-ok-value=\"Lemon\" aria-selected=\"false\">Lemon</li>\n        <li role=\"option\" id=\"ac-single-chip-option-8\" data-ok-value=\"Mango\" aria-selected=\"true\">Mango</li>\n        <li role=\"option\" id=\"ac-single-chip-option-9\" data-ok-value=\"Orange\" aria-selected=\"false\">Orange</li>\n        <li role=\"option\" id=\"ac-single-chip-option-10\" data-ok-value=\"Peach\" aria-selected=\"false\">Peach</li>\n        <li role=\"option\" id=\"ac-single-chip-option-11\" data-ok-value=\"Pear\" aria-selected=\"false\">Pear</li>\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>",
+     "id": "components-autocomplete--single-value",
+     "name": "Single value rendering",
+     "react": "import { Autocomplete, Chip } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Banana\", \"Cherry\", \"Mango\"];\n\nexport function SingleValue() {\n  return (\n    <Autocomplete\n      id=\"ac-single-chip\"\n      label=\"Fruit\"\n      options={fruits}\n      defaultValue=\"Mango\"\n      renderValue={(value, getItemProps) => (\n        <Chip size=\"small\" variant=\"soft\" label={value} {...getItemProps({ index: 0 })} />\n      )}\n    />\n  );\n}",
+     "snippets": [
+      "single-chip.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/autocomplete.css + components/text-field.css + components/chip.css + components/icon-button.css + components/popover.css + components/checkbox.css + components/label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- 10,000 options -->\n<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete data-ok-virtualize>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-virtual\">10,000 options</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-virtual-listbox\" autocomplete=\"off\" id=\"ac-virtual\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>10,000 options</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-virtual-listbox\" aria-label=\"10,000 options\">\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\nconst element = document.getElementById(\"ac-virtual\").closest(\"[data-ok-autocomplete]\");\nconst options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n\n// The list draws only the options in view (data-ok-virtualize)\ngetRuntime().get(element, \"autocomplete\").setOptions(options);\n</script>",
+     "id": "components-autocomplete--virtualization",
+     "name": "Virtualization",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n\nexport function Virtualized() {\n  // The list draws only the options in view\n  return <Autocomplete id=\"ac-virtual\" label=\"10,000 options\" virtualize options={options} />;\n}",
+     "snippets": [
+      "virtualization-list.html"
      ]
     }
    ],
@@ -18391,6 +18559,50 @@
      "title": "Change the look"
     },
     {
+     "body": "In React, `groupBy` returns the heading of each option. Sort the options by the same key first: a new heading starts each time the key changes. Each heading is a **ListSubheader** before its options, and it hides while none of its options match the text. `renderGroup` draws a group yourself from its `group` name and its `children`. In HTML, write each heading as an `li[data-ok-list-subheader][role=presentation]` before its options.",
+     "html": "<div class=\"sb-autocomplete\">\n  <div data-ok-autocomplete>\n    <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n      <label data-ok-text-field-label for=\"ac-grouped\">With categories</label>\n      <div data-ok-text-field-control>\n        <input role=\"combobox\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"ac-grouped-listbox\" autocomplete=\"off\" id=\"ac-grouped\" data-ok-text-field-input placeholder=\" \" value=\"\">\n        <span data-ok-text-field-adornment=\"end\">\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-clear tabindex=\"-1\" hidden aria-label=\"Clear\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"></path></svg></button>\n          <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-autocomplete-toggle tabindex=\"-1\" aria-label=\"Open\" data-ok-label-open=\"Open\" data-ok-label-close=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>\n        </span>\n        <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n          <legend><span>With categories</span></legend>\n        </fieldset>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"listbox\" id=\"ac-grouped-listbox\" aria-label=\"With categories\">\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">A</li>\n        <li role=\"option\" id=\"ac-grouped-option-0\" data-ok-value=\"Apple\" aria-selected=\"false\">Apple</li>\n        <li role=\"option\" id=\"ac-grouped-option-1\" data-ok-value=\"Apricot\" aria-selected=\"false\">Apricot</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">B</li>\n        <li role=\"option\" id=\"ac-grouped-option-2\" data-ok-value=\"Banana\" aria-selected=\"false\">Banana</li>\n        <li role=\"option\" id=\"ac-grouped-option-3\" data-ok-value=\"Blueberry\" aria-selected=\"false\">Blueberry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">C</li>\n        <li role=\"option\" id=\"ac-grouped-option-4\" data-ok-value=\"Cherry\" aria-selected=\"false\">Cherry</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">G</li>\n        <li role=\"option\" id=\"ac-grouped-option-5\" data-ok-value=\"Grape\" aria-selected=\"false\">Grape</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">K</li>\n        <li role=\"option\" id=\"ac-grouped-option-6\" data-ok-value=\"Kiwi\" aria-selected=\"false\">Kiwi</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">L</li>\n        <li role=\"option\" id=\"ac-grouped-option-7\" data-ok-value=\"Lemon\" aria-selected=\"false\">Lemon</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">M</li>\n        <li role=\"option\" id=\"ac-grouped-option-8\" data-ok-value=\"Mango\" aria-selected=\"false\">Mango</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">O</li>\n        <li role=\"option\" id=\"ac-grouped-option-9\" data-ok-value=\"Orange\" aria-selected=\"false\">Orange</li>\n        <li data-ok-list-subheader data-ok-color=\"default\" role=\"presentation\">P</li>\n        <li role=\"option\" id=\"ac-grouped-option-10\" data-ok-value=\"Peach\" aria-selected=\"false\">Peach</li>\n        <li role=\"option\" id=\"ac-grouped-option-11\" data-ok-value=\"Pear\" aria-selected=\"false\">Pear</li>\n      </ul>\n      <div data-ok-autocomplete-no-options hidden>No options</div>\n    </div>\n  </div>\n</div>\n",
+     "id": "groups",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Apricot\", \"Banana\", \"Blueberry\", \"Cherry\", \"Grape\", \"Kiwi\", \"Lemon\", \"Mango\", \"Orange\", \"Peach\", \"Pear\"];\n\nexport function Grouped() {\n  return (\n    <Autocomplete\n      id=\"ac-grouped\"\n      label=\"With categories\"\n      options={fruits}\n      groupBy={(option) => option.label.charAt(0)}\n    />\n  );\n}",
+     "title": "Group options"
+    },
+    {
+     "body": "Set `loading` while the options load: the list shows `loadingText` (\"Loading…\") as long as it has no options. In React, pass the loaded options to `options`. In HTML, set `data-ok-loading` on the root and call `setOptions(options)` on the instance with strings or `{ value, label, disabled?, group? }` objects. `setOptions` builds plain text options and a heading for each new `group`.",
+     "html": "<!-- The field of the \"Asynchronous requests\" story, with an empty listbox and the loading text -->\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  const element = document.getElementById(\"ac-async\").closest(\"[data-ok-autocomplete]\");\n  const autocomplete = getRuntime().get(element, \"autocomplete\");\n\n  element.addEventListener(\n    \"ok:autocomplete:open\",\n    async () => {\n      element.setAttribute(\"data-ok-loading\", \"\");\n      const response = await fetch(\"/films.json\");\n      autocomplete.setOptions(await response.json());\n      element.removeAttribute(\"data-ok-loading\");\n    },\n    { once: true },\n  );\n</script>",
+     "id": "loading",
+     "react": "import { Autocomplete } from \"@owlky/react\";\nimport { useEffect, useState } from \"react\";\n\nexport function Films() {\n  const [open, setOpen] = useState(false);\n  const [options, setOptions] = useState<string[]>([]);\n  const loading = open && options.length === 0;\n\n  useEffect(() => {\n    if (!loading) return;\n    fetch(\"/films.json\")\n      .then((response) => response.json())\n      .then(setOptions);\n  }, [loading]);\n\n  return (\n    <Autocomplete\n      label=\"Film\"\n      options={options}\n      loading={loading}\n      open={open}\n      onOpenChange={setOpen}\n    />\n  );\n}",
+     "title": "Load options from a server"
+    },
+    {
+     "body": "Set `virtualize` for lists of thousands of options. The list then draws only the options in view and moves them as people scroll or press the arrow keys, so typing stays fast. Each drawn option carries `aria-setsize` and `aria-posinset`, so screen readers still announce its position. Options are one line high, and groups aren't shown. In React, `ListboxComponent` replaces the list element if you bring your own virtualization.",
+     "html": "<!-- The field of the \"Virtualization\" story, with data-ok-virtualize on the root -->\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  const element = document.getElementById(\"ac-virtual\").closest(\"[data-ok-autocomplete]\");\n  const options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n  getRuntime().get(element, \"autocomplete\").setOptions(options);\n</script>",
+     "id": "virtualize",
+     "react": "import { Autocomplete } from \"@owlky/react\";\n\nconst options = Array.from({ length: 10000 }, (_, index) => `Option ${index + 1}`);\n\nexport function Virtualized() {\n  return <Autocomplete label=\"10,000 options\" virtualize options={options} />;\n}",
+     "title": "Show long lists"
+    },
+    {
+     "body": "In React, options can be any objects. `getOptionLabel` returns the text of an option, `getOptionKey` a unique key when labels repeat, and `getOptionDisabled` whether it is disabled. The value is the option itself, compared with `isOptionEqualToValue`, or what `getOptionValue` returns, such as an id. In HTML, values are always the options' `data-ok-value` strings.",
+     "id": "objects",
+     "react": "import { Autocomplete } from \"@owlky/react\";\nimport { useState } from \"react\";\n\ntype Film = { id: number; title: string; year: number };\n\nconst films: Film[] = [\n  { id: 1, title: \"Heat\", year: 1995 },\n  { id: 2, title: \"Heat\", year: 1986 },\n  { id: 3, title: \"Alien\", year: 1979 },\n];\n\nexport function FilmPicker() {\n  const [filmId, setFilmId] = useState<number | number[] | null>(1);\n  return (\n    <Autocomplete<Film, number>\n      label=\"Film\"\n      options={films}\n      getOptionLabel={(film) => `${film.title} (${film.year})`}\n      getOptionValue={(film) => film.id}\n      value={filmId}\n      onChange={setFilmId}\n    />\n  );\n}",
+     "title": "Use objects as options"
+    },
+    {
+     "body": "In React, `renderValue` draws the chosen values instead of the built-in chips. Spread `getItemProps({ index })` on each item: it sets the value, the remove action and its name. A single value drawn this way leaves the input empty, and Backspace removes it. In HTML, the `<template data-ok-autocomplete-tag>` holds the chip of each value, and a single field with a template draws its value the same way. `clearIcon` and `popupIcon` replace the button icons. `forcePopupIcon` shows or hides the open button.",
+     "id": "render-value",
+     "react": "import { Autocomplete, Chip } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Banana\", \"Cherry\", \"Mango\"];\n\nexport function SingleValue() {\n  return (\n    <Autocomplete\n      label=\"Fruit\"\n      options={fruits}\n      defaultValue=\"Mango\"\n      renderValue={(value, getItemProps) => (\n        <Chip size=\"small\" variant=\"soft\" label={String(value)} {...getItemProps({ index: 0 })} />\n      )}\n    />\n  );\n}",
+     "title": "Draw the chosen value"
+    },
+    {
+     "body": "- **Typing:** `autoComplete` completes the text with the highlighted option and selects the rest, so Enter accepts it. `filterSelectedOptions` leaves the chosen options out.\n- **Keys:** `disableListWrap` stops the arrows at the ends, `includeInputInList` moves the highlight back to the text, `handleHomeEndKeys` turns Home and End off, and `clearOnEscape` clears the field when Escape is pressed on a closed list. `disabledItemsFocusable` lets the keys reach disabled options.\n- **Focus and blur:** `selectOnFocus` selects the text on the first click, `autoSelect` picks the highlighted option when focus leaves, and `clearOnBlur` puts back the chosen label. `blurOnSelect` moves focus out after a pick, for example only after a touch.\n- **Pointer:** `resetHighlightOnMouseLeave` removes a highlight the pointer made when it leaves the list.\n- **Read only:** `readOnly` shows the value without letting people change it.\n- **Highlight:** React `onHighlightChange(option, reason)` and HTML `ok:autocomplete:highlight` (`detail.value`, `detail.reason`) report the highlighted option, with `keyboard`, `mouse`, `touch` or `auto`.",
+     "id": "behavior",
+     "title": "Fine-tune keys, focus and blur"
+    },
+    {
+     "body": "`useAutocomplete` gives the state and behavior of an Autocomplete without its look. Spread its prop getters on your own elements: `getRootProps`, `getInputLabelProps`, `getInputProps`, `getListboxProps`, `getOptionProps({ option })`, `getClearProps`, `getPopupIndicatorProps` and `getItemProps({ index })`. `groupedOptions` holds the options that match, and `popupOpen` whether the list shows. `createFilterOptions` makes a filter with other rules: `matchFrom` (`any` or `start`), `limit`, `ignoreCase`, `ignoreAccents`, `trim` and `stringify`. HTML has no hook: its runtime is the behavior, and the markup is yours.",
+     "id": "hook",
+     "react": "import { type AutocompleteOption, createFilterOptions, useAutocomplete } from \"@owlky/react\";\n\nconst fruits = [\"Apple\", \"Apricot\", \"Banana\", \"Cherry\"];\nconst startsWith = createFilterOptions<AutocompleteOption>({ matchFrom: \"start\" });\n\nexport function FruitField() {\n  const autocomplete = useAutocomplete({ id: \"fruit\", options: fruits, filterOptions: startsWith });\n  return (\n    <div {...autocomplete.getRootProps()}>\n      <label {...autocomplete.getInputLabelProps()}>Fruit</label>\n      <input {...autocomplete.getInputProps()} />\n      {autocomplete.popupOpen && (\n        <ul {...autocomplete.getListboxProps()}>\n          {autocomplete.filteredOptions.map((option) => (\n            <li key={option.value} {...autocomplete.getOptionProps({ option })}>\n              {option.label}\n            </li>\n          ))}\n        </ul>\n      )}\n    </div>\n  );\n}",
+     "title": "Build your own field"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -23222,6 +23434,7 @@
   "data-ok-alert-message": "data-ok-alert",
   "data-ok-alert-title": "data-ok-alert",
   "data-ok-autocomplete-clear": "data-ok-autocomplete",
+  "data-ok-autocomplete-loading": "data-ok-autocomplete",
   "data-ok-autocomplete-more": "data-ok-autocomplete",
   "data-ok-autocomplete-no-options": "data-ok-autocomplete",
   "data-ok-autocomplete-paper": "data-ok-autocomplete",

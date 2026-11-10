@@ -28,6 +28,9 @@ export const STORIES: [component: string, story: string][] = [
   ),
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
+  ...["grouped", "asynchronous", "single-value", "virtualization"].map(
+    (s) => ["autocomplete", s] as [string, string],
+  ),
   ...[
     "in-view",
     "text",
