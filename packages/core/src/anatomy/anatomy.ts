@@ -41,7 +41,9 @@ import {
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartFill,
+  type ChartGrid,
   type ChartLegend,
+  type ChartLegendAlign,
   type ChartMarkerShape,
   type ChartPattern,
   type ChartStackType,
@@ -53,6 +55,8 @@ import {
   chartCurves,
   chartDataLabelPositions,
   chartFills,
+  chartGrids,
+  chartLegendAligns,
   chartLegends,
   chartMarkerShapes,
   chartPatterns,
@@ -4496,6 +4500,40 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "The tooltip stays in a corner of the plot: `topLeft`, `topRight`, `bottomLeft` or `bottomRight` (default beside the value).",
     { optional: true },
   ),
+  legendAlign: style(
+    "data-ok-legend-align",
+    chartLegendAligns,
+    "right",
+    "Legend items line up `left`, `center` or `right` (default right above the plot, centered below it and around circular charts).",
+    { optional: true },
+  ),
+  showForSingleSeries: flag(
+    "data-ok-show-for-single-series",
+    "Shows the legend for a single series too.",
+  ),
+  disableLegendToggle: flag(
+    "data-ok-disable-legend-toggle",
+    "Legend items are plain labels: clicks don't hide series.",
+  ),
+  grid: style(
+    "data-ok-grid",
+    chartGrids,
+    "y",
+    "Grid lines: `y` horizontal (along the value ticks, or between the bars of horizontal bar charts), `x` vertical, `both` or `none`.",
+    { optional: true },
+  ),
+  gridRowOpacity: number(
+    "data-ok-grid-row-opacity",
+    undefined,
+    "Opacity of the row stripes (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
+  gridColumnOpacity: number(
+    "data-ok-grid-column-opacity",
+    undefined,
+    "Opacity of the column stripes (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -4564,6 +4602,12 @@ export interface ChartAnatomyOptions {
   colorBlindMode?: boolean | undefined;
   tooltip?: ChartTooltipMode | undefined;
   tooltipFixed?: ChartTooltipCorner | undefined;
+  legendAlign?: ChartLegendAlign | undefined;
+  showForSingleSeries?: boolean | undefined;
+  disableLegendToggle?: boolean | undefined;
+  grid?: ChartGrid | undefined;
+  gridRowOpacity?: number | undefined;
+  gridColumnOpacity?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

@@ -13,8 +13,10 @@ import {
   type ChartDataLabelPosition,
   type ChartDataSeries,
   type ChartFill,
+  type ChartGrid,
   type ChartMarkerShape,
   type ChartStackType,
+  type ChartStripeColor,
   type ChartType,
   lighterTone,
 } from "./chart-model.js";
@@ -150,6 +152,18 @@ export interface ChartLayoutOptions {
   readonly slicePatterns?: readonly (ChartPattern | undefined)[] | undefined;
   /** Line width of every series in px (series may set their own). */
   readonly strokeWidth?: number | undefined;
+  /**
+   * Grid lines (4.18.64): `y` horizontal (default: along the value ticks, or between the
+   * categories of horizontal bars), `x` vertical, `both` or `none`.
+   */
+  readonly grid?: ChartGrid | undefined;
+  /** Stripes between the horizontal grid lines, colors in turn (`grey`, a palette color, `transparent`). */
+  readonly gridRowColors?: readonly ChartStripeColor[] | undefined;
+  /** Stripes between the vertical grid positions. */
+  readonly gridColumnColors?: readonly ChartStripeColor[] | undefined;
+  /** Stripe opacity (0 to 1; an attribute). Default 0.5. */
+  readonly gridRowOpacity?: number | undefined;
+  readonly gridColumnOpacity?: number | undefined;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -733,6 +747,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   let xMax = 1;
 
   const grid: ChartNode[] = [];
+  // Grid positions (4.18.64): horizontal lines (y px) and vertical ones (x px).
+  let gridRows: number[] = [];
+  let gridColumns: number[] = [];
   const axisX: ChartNode[] = [];
   const axisY: ChartNode[] = [];
   /** Value axis groups (vertical charts: one per drawn axis) and their titles. */
@@ -820,18 +837,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     valuePx = [plot.x, plot.x + plot.width];
     toValue = toValueOf(0);
     toCat = (index) => plot.y + band * (index + 0.5);
-    for (let i = 0; i <= count; i++) {
-      const y = fmt(plot.y + band * i);
-      grid.push(
-        node("line", {
-          x1: fmt(plot.x),
-          x2: fmt(plot.x + plot.width),
-          y1: y,
-          y2: y,
-          "data-ok-chart-grid-line": "",
-        }),
-      );
-    }
+    // Between the categories; vertical lines along the value ticks.
+    gridRows = Array.from({ length: count + 1 }, (_, i) => plot.y + band * i);
+    gridColumns = valueScale.ticks.map((tick) => toValue(tick));
     valueScale.ticks.forEach((tick, i) => {
       axisX.push(
         tickNode(
@@ -926,18 +934,13 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           : plot.x + plot.width / 2;
     // Grid lines follow the primary axis (the first one drawn); the others share its intervals.
     const gridAt = toValueOf(primary);
-    for (const tick of (scales[primary] as ChartValueScale).ticks) {
-      const y = fmt(gridAt(tick));
-      grid.push(
-        node("line", {
-          x1: fmt(plot.x),
-          x2: fmt(plot.x + plot.width),
-          y1: y,
-          y2: y,
-          "data-ok-chart-grid-line": "",
-        }),
-      );
-    }
+    gridRows = (scales[primary] as ChartValueScale).ticks.map((tick) => gridAt(tick));
+    // Vertical lines: through the x ticks, between bands, or through the categories.
+    gridColumns = numeric
+      ? xTicks.map((tick) => toX(tick))
+      : banded
+        ? Array.from({ length: shown + 1 }, (_, i) => plot.x + band * i)
+        : Array.from({ length: shown }, (_, i) => toCat(first + i));
     yAxisNodes = [];
     const middle = plot.y + plot.height / 2;
     for (const side of sides) {
@@ -1646,6 +1649,61 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       }
     }
   }
+
+  // Grid (4.18.64): stripes, then horizontal and vertical lines as asked (horizontal by default).
+  const gridMode = options.grid;
+  const stripes = (
+    positions: readonly number[],
+    colors: readonly ChartStripeColor[] | undefined,
+    opacity: number | undefined,
+    kind: "row" | "column",
+  ) => {
+    if (!colors?.length) return;
+    const sorted = [...positions].sort((a, b) => a - b);
+    for (let i = 0; i + 1 < sorted.length; i++) {
+      const color = colors[i % colors.length] as ChartStripeColor;
+      if (color === "transparent") continue;
+      const [a, b] = [sorted[i] as number, sorted[i + 1] as number];
+      grid.push(
+        node("rect", {
+          ...(kind === "row"
+            ? { x: fmt(plot.x), y: fmt(a), width: fmt(plot.width), height: fmt(b - a) }
+            : { x: fmt(a), y: fmt(plot.y), width: fmt(b - a), height: fmt(plot.height) }),
+          "fill-opacity": fmt(clamp(opacity ?? 0.5, 0, 1)),
+          "data-ok-chart-stripe": kind,
+          ...(color === "grey" ? {} : { "data-ok-color": color }),
+        }),
+      );
+    }
+  };
+  stripes(gridRows, options.gridRowColors, options.gridRowOpacity, "row");
+  stripes(gridColumns, options.gridColumnColors, options.gridColumnOpacity, "column");
+  if (gridMode === undefined || gridMode === "y" || gridMode === "both")
+    for (const at of gridRows) {
+      const y = fmt(at);
+      grid.push(
+        node("line", {
+          x1: fmt(plot.x),
+          x2: fmt(plot.x + plot.width),
+          y1: y,
+          y2: y,
+          "data-ok-chart-grid-line": "",
+        }),
+      );
+    }
+  if (gridMode === "x" || gridMode === "both")
+    for (const at of gridColumns) {
+      const x = fmt(at);
+      grid.push(
+        node("line", {
+          x1: x,
+          x2: x,
+          y1: fmt(plot.y),
+          y2: fmt(plot.y + plot.height),
+          "data-ok-chart-grid-line": "",
+        }),
+      );
+    }
 
   defs.push(...patterns.nodes());
   if (defs.length) nodes.push(node("defs", {}, defs));

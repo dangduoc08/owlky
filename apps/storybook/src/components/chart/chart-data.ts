@@ -1297,6 +1297,58 @@ export const chartExamples: Record<string, ChartExample> = {
       "  </template>",
     ],
   },
+  // Roadmap 4.18.64: legend alignment, single series, toggle opt-out, custom items; grid options.
+  legend: {
+    title: "Legend options",
+    props: {
+      label: "Monthly net profit (one series, legend on the left)",
+      type: "bar",
+      legendAlign: "left",
+      showForSingleSeries: true,
+      categories: MONTHS,
+      series: [{ name: "Net profit", data: [33, 47, 29, 51, 62, 72, 54, 81, 99] }],
+    },
+    more: [
+      {
+        label: "Income and spending (fixed legend with custom names)",
+        type: "line",
+        legend: "bottom",
+        legendAlign: "center",
+        disableLegendToggle: true,
+        customLegendItems: ["Income (after tax)", "Spending (all accounts)"],
+        colors: ["success", "error"],
+        categories: MONTHS,
+        series: [
+          { name: "Income", data: [42, 48, 45, 51, 49, 56, 58, 61, 64] },
+          { name: "Spending", data: [38, 40, 47, 44, 46, 49, 52, 50, 55] },
+        ],
+      },
+    ],
+  },
+  grid: {
+    title: "Grid lines and stripes",
+    props: {
+      label: "Monthly visits (row stripes, every grid line)",
+      type: "line",
+      curve: "straight",
+      markerSize: 4,
+      grid: "both",
+      gridRowColors: ["grey", "transparent"],
+      categories: MONTHS,
+      series: [{ name: "Visits", data: [10, 41, 35, 51, 49, 62, 69, 91, 148] }],
+    },
+    more: [
+      {
+        label: "Weekly orders (column stripes, no grid lines)",
+        type: "bar",
+        grid: "none",
+        gridColumnColors: ["info", "transparent"],
+        gridColumnOpacity: 0.12,
+        categories: ["W1", "W2", "W3", "W4", "W5", "W6"],
+        series: [{ name: "Orders", data: [44, 55, 41, 67, 22, 43] }],
+      },
+    ],
+  },
   // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.
   stock: {
     title: "Stock chart",

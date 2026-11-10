@@ -28,16 +28,19 @@ import {
   type ChartData,
   type ChartDataLabelPosition,
   type ChartFill,
+  type ChartGrid,
   type ChartLegend,
   type ChartMarkerShape,
   type ChartPattern,
   type ChartSeries,
   type ChartStackType,
+  type ChartStripeColor,
   type ChartTableModel,
   type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   chartData,
+  chartDefaultColors,
   chartTable,
   isCircularChart,
   isWholeChart,
@@ -120,6 +123,18 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
   /** Tooltips (4.18.63): `point` gives index charts one tooltip per point (block or nearest point). */
   readonly tooltip?: ChartTooltipMode | undefined;
+  /** Legend (4.18.64): shown for a single series too. */
+  readonly showForSingleSeries?: boolean | undefined;
+  /** Legend: these names instead of the series' (item n stands for series n and its color). */
+  readonly customLegendItems?: readonly string[] | undefined;
+  /** Grid lines (4.18.64): `y` (default), `x`, `both` or `none`. */
+  readonly grid?: ChartGrid | undefined;
+  /** Stripes between the horizontal / vertical grid positions, colors in turn. */
+  readonly gridRowColors?: readonly ChartStripeColor[] | undefined;
+  readonly gridColumnColors?: readonly ChartStripeColor[] | undefined;
+  /** Stripe opacity (0 to 1). Default 0.5. */
+  readonly gridRowOpacity?: number | undefined;
+  readonly gridColumnOpacity?: number | undefined;
   readonly horizontal?: boolean | undefined;
   readonly markerSize?: number | undefined;
   readonly columnWidth?: number | undefined;
@@ -314,6 +329,11 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     donutSize: input.donutSize,
     colorRanges: input.colorRanges,
     discreteMarkers: chartDiscreteMarkers(input.discreteMarkers),
+    grid: input.grid,
+    gridRowColors: input.gridRowColors,
+    gridColumnColors: input.gridColumnColors,
+    gridRowOpacity: input.gridRowOpacity,
+    gridColumnOpacity: input.gridColumnOpacity,
     cueMarkers: input.colorBlindMode,
     strokeWidth: input.strokeWidth,
     slicePatterns: circular
@@ -373,7 +393,26 @@ export function renderChart(input: ChartRenderInput): ChartRender {
           ...(series.pattern ? { pattern: series.pattern } : {}),
         };
       });
-  const legend = input.legend === "none" || input.sparkline || items.length < 2 ? null : items;
+  // Custom items (4.18.64): their names, each standing for the series (or slice) at its position.
+  const custom = input.customLegendItems?.length
+    ? input.customLegendItems.slice(0, 100).map(
+        (name, index): ChartLegendItem =>
+          items[index]
+            ? { ...items[index], name: String(name) }
+            : {
+                index,
+                name: String(name),
+                color: chartDefaultColors[index % chartDefaultColors.length] as ChartColor,
+                hidden: hidden.has(index),
+              },
+      )
+    : items;
+  const legend =
+    input.legend === "none" ||
+    input.sparkline ||
+    custom.length < (input.showForSingleSeries ? 1 : 2)
+      ? null
+      : custom;
   const xLabel =
     input.xLabel ??
     input.xTitle ??

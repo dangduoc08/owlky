@@ -8,6 +8,7 @@ import {
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
+  type ChartGrid,
   type ChartLegend,
   type ChartLegendItem,
   type ChartLink,
@@ -59,6 +60,7 @@ import {
   parseChartDiscreteMarkers,
   parseChartIndicators,
   parseChartList,
+  parseChartStripeColors,
   parseChartYAxes,
   placeChartTooltip,
   readChartAnnotations,
@@ -394,19 +396,23 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         created.push(box);
       }
       const buttons = [
-        ...box.querySelectorAll<HTMLButtonElement>(":scope > [data-ok-chart-legend-item]"),
+        ...box.querySelectorAll<HTMLElement>(":scope > [data-ok-chart-legend-item]"),
       ];
+      // Without toggling (4.18.64), items are labels (`span`), not buttons.
+      const tag = element.hasAttribute(o.disableLegendToggle.attr) ? "span" : "button";
       // Update in place: the button being clicked keeps its focus.
       items.forEach((item, index) => {
         let button = buttons[index];
-        if (!button) {
-          button = document.createElement("button");
-          button.type = "button";
-          button.setAttribute("data-ok-chart-legend-item", "");
-          (box as HTMLElement).append(button);
+        if (!button || button.localName !== tag) {
+          const fresh = document.createElement(tag);
+          if (fresh instanceof HTMLButtonElement) fresh.type = "button";
+          fresh.setAttribute("data-ok-chart-legend-item", "");
+          if (button) button.replaceWith(fresh);
+          else (box as HTMLElement).append(fresh);
+          button = fresh;
         }
         button.setAttribute("data-ok-color", item.color);
-        button.setAttribute("aria-pressed", String(!item.hidden));
+        if (tag === "button") button.setAttribute("aria-pressed", String(!item.hidden));
         const current = button.firstElementChild;
         if (
           button.textContent !== item.name + (item.value ?? "") ||
@@ -605,6 +611,21 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         strokeWidth: readNumber(element, o.strokeWidth) as number | undefined,
         colorBlindMode: element.hasAttribute(o.colorBlindMode.attr),
         tooltip: readStyle(element, o.tooltip) as ChartTooltipMode,
+        showForSingleSeries: element.hasAttribute(o.showForSingleSeries.attr),
+        customLegendItems: parseChartList(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.customLegendItems),
+        ),
+        grid: element.hasAttribute(o.grid.attr)
+          ? (readStyle(element, o.grid) as ChartGrid)
+          : undefined,
+        gridRowColors: parseChartStripeColors(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.gridRowColors),
+        ),
+        gridColumnColors: parseChartStripeColors(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.gridColumnColors),
+        ),
+        gridRowOpacity: readNumber(element, o.gridRowOpacity) as number | undefined,
+        gridColumnOpacity: readNumber(element, o.gridColumnOpacity) as number | undefined,
         discreteMarkers: parseChartDiscreteMarkers(
           element.getAttribute(CHART_TEXT_ATTRIBUTES.discreteMarkers),
         ),
@@ -940,7 +961,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           if (chartTools.includes(name)) runTool(name);
           return;
         }
-        const item = (event.target as Element).closest?.("[data-ok-chart-legend-item]");
+        const item = (event.target as Element).closest?.("button[data-ok-chart-legend-item]");
         // Only this chart's own legend (not nested charts or look-alike buttons elsewhere).
         const box = element.querySelector(":scope > [data-ok-chart-legend]");
         if (!item || item.parentElement !== box) return;

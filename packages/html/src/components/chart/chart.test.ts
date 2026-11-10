@@ -94,7 +94,7 @@ const DEEP: MutationObserverInit = {
 };
 
 describe("chart snippets", () => {
-  it("covers every story", () => expect(snippets).toHaveLength(61));
+  it("covers every story", () => expect(snippets).toHaveLength(63));
 
   it.each(snippets)(
     "%s: a figure with a data table, CSP-safe; readable without JavaScript",

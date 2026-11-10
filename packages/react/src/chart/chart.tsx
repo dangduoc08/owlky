@@ -14,8 +14,10 @@ import {
   type ChartFill,
   type ChartGestureMode,
   type ChartGestures,
+  type ChartGrid,
   type ChartIndicator,
   type ChartLegend,
+  type ChartLegendAlign,
   type ChartLink,
   type ChartLocaleText,
   type ChartMarkerShape,
@@ -27,6 +29,7 @@ import {
   type ChartSelectionDetail,
   type ChartSeries,
   type ChartStackType,
+  type ChartStripeColor,
   type ChartTool,
   type ChartTooltipContext,
   type ChartTooltipCorner,
@@ -170,6 +173,27 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
    * item is selected and its data points; returns what the tooltip shows.
    */
   tooltipContent?: ((context: ChartTooltipContext) => ReactNode) | undefined;
+  /** Legend items line up `"left"`, `"center"` or `"right"` (default right above the plot, centered below it). */
+  legendAlign?: ChartLegendAlign | undefined;
+  /** Shows the legend for a single series too. */
+  showForSingleSeries?: boolean | undefined;
+  /** Legend items are plain labels: clicks don't hide series. */
+  disableLegendToggle?: boolean | undefined;
+  /** Legend names instead of the series' names: item n stands for series n (its color and toggle). */
+  customLegendItems?: readonly string[] | undefined;
+  /**
+   * Grid lines: `"y"` (default) horizontal, along the value ticks (between the bars of horizontal
+   * bar charts); `"x"` vertical; `"both"` or `"none"`.
+   */
+  grid?: ChartGrid | undefined;
+  /** Stripes between the horizontal grid lines: colors in turn (palette names, `"grey"` or `"transparent"`). */
+  gridRowColors?: readonly ChartStripeColor[] | undefined;
+  /** Stripes between the vertical grid positions: colors in turn. */
+  gridColumnColors?: readonly ChartStripeColor[] | undefined;
+  /** Opacity of the row stripes (0 to 1). Default 0.5. */
+  gridRowOpacity?: number | undefined;
+  /** Opacity of the column stripes (0 to 1). Default 0.5. */
+  gridColumnOpacity?: number | undefined;
   /** Stacks the series on each other (bars, lines, areas). */
   stacked?: boolean | undefined;
   /**
@@ -427,6 +451,15 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     tooltip: tooltipMode,
     tooltipFixed,
     tooltipContent,
+    legendAlign,
+    showForSingleSeries,
+    disableLegendToggle,
+    customLegendItems,
+    grid,
+    gridRowColors,
+    gridColumnColors,
+    gridRowOpacity,
+    gridColumnOpacity,
     ...rest
   },
   ref,
@@ -482,6 +515,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     colorBlindMode,
     tooltip: tooltipMode,
     tooltipFixed,
+    legendAlign,
+    showForSingleSeries,
+    disableLegendToggle,
+    grid,
+    gridRowOpacity,
+    gridColumnOpacity,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -545,6 +584,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const blind = attributes["data-ok-color-blind-mode"] !== undefined;
   const validTooltip = attributes["data-ok-tooltip"] as ChartTooltipMode | undefined;
   const validCorner = attributes["data-ok-tooltip-fixed"] as ChartTooltipCorner | undefined;
+  const validGrid = attributes["data-ok-grid"] as ChartGrid | undefined;
+  const validRowOpacity = number("data-ok-grid-row-opacity");
+  const validColumnOpacity = number("data-ok-grid-column-opacity");
+  const single = attributes["data-ok-show-for-single-series"] !== undefined;
+  const legendToggle = attributes["data-ok-disable-legend-toggle"] === undefined;
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -600,6 +644,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         colorBlindMode: blind,
         discreteMarkers,
         tooltip: validTooltip,
+        showForSingleSeries: single,
+        customLegendItems,
+        grid: validGrid,
+        gridRowColors,
+        gridColumnColors,
+        gridRowOpacity: validRowOpacity,
+        gridColumnOpacity: validColumnOpacity,
         horizontal,
         markerSize: validMarkerSize,
         columnWidth: validColumnWidth,
@@ -678,6 +729,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       blind,
       discreteMarkers,
       validTooltip,
+      single,
+      customLegendItems,
+      validGrid,
+      gridRowColors,
+      gridColumnColors,
+      validRowOpacity,
+      validColumnOpacity,
       horizontal,
       validMarkerSize,
       validColumnWidth,
@@ -1001,6 +1059,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         xTitle,
         backgroundBarColors,
         discreteMarkers,
+        customLegendItems,
+        gridRowColors,
+        gridColumnColors,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
@@ -1033,24 +1094,38 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       )}
       {render.legend && (
         <div data-ok-chart-legend="">
-          {render.legend.map((item) => (
-            <button
-              key={item.index}
-              type="button"
-              data-ok-chart-legend-item=""
-              data-ok-color={item.color}
-              aria-pressed={!item.hidden}
-              onClick={() => toggle(item.index)}
-            >
-              <span
-                data-ok-chart-legend-marker=""
-                data-ok-shape={item.shape}
-                data-ok-pattern={item.pattern}
-              />
-              {item.name}
-              {item.value !== undefined && <span data-ok-chart-legend-value="">{item.value}</span>}
-            </button>
-          ))}
+          {render.legend.map((item) => {
+            const content = (
+              <>
+                <span
+                  data-ok-chart-legend-marker=""
+                  data-ok-shape={item.shape}
+                  data-ok-pattern={item.pattern}
+                />
+                {item.name}
+                {item.value !== undefined && (
+                  <span data-ok-chart-legend-value="">{item.value}</span>
+                )}
+              </>
+            );
+            // Without toggling (4.18.64), items are labels, not buttons.
+            return legendToggle ? (
+              <button
+                key={item.index}
+                type="button"
+                data-ok-chart-legend-item=""
+                data-ok-color={item.color}
+                aria-pressed={!item.hidden}
+                onClick={() => toggle(item.index)}
+              >
+                {content}
+              </button>
+            ) : (
+              <span key={item.index} data-ok-chart-legend-item="" data-ok-color={item.color}>
+                {content}
+              </span>
+            );
+          })}
         </div>
       )}
       {/* A focusable group (biome.json override): arrow keys move through the chart's values. */}

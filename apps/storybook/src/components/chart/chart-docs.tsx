@@ -12,6 +12,8 @@ import columnRangesGroup from "../../../../../packages/html/src/components/chart
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
+import gridGroup from "../../../../../packages/html/src/components/chart/examples/grid-group.html?raw";
+import legendGroup from "../../../../../packages/html/src/components/chart/examples/legend-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
 import markerShapesGroup from "../../../../../packages/html/src/components/chart/examples/marker-shapes-group.html?raw";
 import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
@@ -991,7 +993,54 @@ export function ChartSelection() {
   {
     id: "legend",
     title: "Use the legend",
-    body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart. Set `legendValues` to show each item's value next to its name: the slice or ring value, or the last value of a series. `donutSize` sets the size of a donut's hole in percent of its radius (72 by default).",
+    body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend, unless you set `showForSingleSeries`. On screens narrower than 600px, a right legend moves below the chart. Set `legendValues` to show each item's value next to its name: the slice or ring value, or the last value of a series. `donutSize` sets the size of a donut's hole in percent of its radius (72 by default).",
+  },
+  {
+    id: "legend-grid",
+    title: "Customize the legend and the grid",
+    body: `Change how the legend looks and works:
+
+- **Alignment:** \`legendAlign\` (\`data-ok-legend-align\`) lines the items up on the \`left\`, in the \`center\` or on the \`right\`.
+- **Names:** \`customLegendItems\` shows these names instead of the series names. The first name stands for the first series, with its color and its button. In HTML, separate the names with semicolons in \`data-ok-custom-legend-items\`.
+- **Fixed series:** \`disableLegendToggle\` (\`data-ok-disable-legend-toggle\`) turns the items into labels, for charts whose series must always show.
+
+The grid draws horizontal lines along the value ticks by default. \`grid\` (\`data-ok-grid\`) draws \`x\` (vertical) lines, \`both\` or \`none\`. Stripes make rows or columns easier to follow: \`gridRowColors\` and \`gridColumnColors\` take colors in turn, such as palette names, \`grey\` or \`transparent\` (in HTML, separated by spaces in \`data-ok-grid-row-colors\` and \`data-ok-grid-column-colors\`). \`gridRowOpacity\` and \`gridColumnOpacity\` set their opacity, 0.5 by default.`,
+    html: `${snippetElement(legendGroup, "data-ok-chart ", 1)}
+${snippetElement(gridGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const money = [
+  { name: "Income", data: [42, 48, 45, 51, 49, 56] },
+  { name: "Spending", data: [38, 40, 47, 44, 46, 49] },
+];
+const visits = [{ name: "Visits", data: [10, 41, 35, 51, 49, 62] }];
+
+export function ChartLegendGrid() {
+  return (
+    <>
+      <Chart
+        label="Income and spending"
+        legend="bottom"
+        legendAlign="center"
+        disableLegendToggle
+        customLegendItems={["Income (after tax)", "Spending (all accounts)"]}
+        colors={["success", "error"]}
+        categories={months}
+        series={money}
+      />
+      <Chart
+        label="Monthly visits"
+        curve="straight"
+        markerSize={4}
+        grid="both"
+        gridRowColors={["grey", "transparent"]}
+        categories={months}
+        series={visits}
+      />
+    </>
+  );
+}`,
   },
   {
     id: "size",
@@ -1178,6 +1227,22 @@ const PREVIEWS = {
         height={240}
         categories={MONTHS}
         series={SALES}
+      />
+    </Preview>
+  ),
+  "legend-grid": () => (
+    <Preview>
+      <Chart
+        label="Monthly visits"
+        height={240}
+        curve="straight"
+        markerSize={4}
+        grid="both"
+        gridRowColors={["grey", "transparent"]}
+        showForSingleSeries
+        legendAlign="left"
+        categories={MONTHS}
+        series={[{ name: "Visits", data: [10, 41, 35, 51, 49, 62] }]}
       />
     </Preview>
   ),

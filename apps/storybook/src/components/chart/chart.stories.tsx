@@ -124,6 +124,9 @@ export const ColorBlind: StoryObj = story("color-blind");
 // Roadmap 4.18.63: tooltip modes, fixed tooltips and custom content.
 export const Tooltip: StoryObj = story("tooltip");
 export const TooltipCustom: StoryObj = customStory("tooltip-custom", tooltipSource);
+// Roadmap 4.18.64: legend and grid options.
+export const Legend: StoryObj = story("legend");
+export const Grid: StoryObj = story("grid");
 // Phase 2.1 (ADR-0047): Sankey charts.
 export const Sankey: StoryObj = story("sankey");
 export const SankeyVertical: StoryObj = story("sankey-vertical");

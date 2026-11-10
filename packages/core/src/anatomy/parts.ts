@@ -265,6 +265,8 @@ export interface ChartParts {
   "data-ok-chart-background-bar": Part<"rect">;
   /** The group of tracks behind the bars, before the crosshair. */
   "data-ok-chart-background-bars": Part<"g">;
+  /** A grid stripe between two horizontal (\`row\`) or vertical (\`column\`) grid positions. */
+  "data-ok-chart-stripe": Value<"row" | "column">;
   /** The selected window of a brush chart. */
   "data-ok-chart-brush": Part<"g">;
   /** One bubble. */
@@ -303,8 +305,8 @@ export interface ChartParts {
   "data-ok-chart-handle": Part<"rect">;
   /** The legend. Absent with one series or `legend="none"`. */
   "data-ok-chart-legend": Part<"div">;
-  /** One legend item: a button that hides or shows its series. */
-  "data-ok-chart-legend-item": Part<"button">;
+  /** One legend item: a button that hides or shows its series, or a label with \`disableLegendToggle\`. */
+  "data-ok-chart-legend-item": Part<"button" | "span">;
   /** The color marker of a legend item. */
   "data-ok-chart-legend-marker": Part<"span">;
   /** The value next to a legend item. */
@@ -419,6 +421,12 @@ export interface ChartParts {
   "data-ok-major": State;
   /** On a value axis group: the axis is on the right of the plot. */
   "data-ok-opposite": State;
+  /** Legend names instead of the series' names, separated by \`;\`. */
+  "data-ok-custom-legend-items": Value<string>;
+  /** Row stripe colors separated by spaces: palette names, \`grey\` or \`transparent\`. */
+  "data-ok-grid-row-colors": Value<string>;
+  /** Column stripe colors separated by spaces: palette names, \`grey\` or \`transparent\`. */
+  "data-ok-grid-column-colors": Value<string>;
   /** Markers on single points, such as \`0 3 error star 8; 1 2\`. */
   "data-ok-discrete-markers": Value<string>;
   /** On a data table column header: the series' marker shape. */

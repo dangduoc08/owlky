@@ -78,6 +78,14 @@ export type ChartTooltipMode = (typeof chartTooltipModes)[number];
 /** Corners of the plot a fixed tooltip sits in (ApexCharts `tooltip.fixed.position`). */
 export const chartTooltipCorners = ["topLeft", "topRight", "bottomLeft", "bottomRight"] as const;
 export type ChartTooltipCorner = (typeof chartTooltipCorners)[number];
+/** Grid lines (4.18.64): horizontal (`y`), vertical (`x`), both or none. */
+export const chartGrids = ["y", "x", "both", "none"] as const;
+export type ChartGrid = (typeof chartGrids)[number];
+/** Legend alignment (4.18.64, ApexCharts `legend.horizontalAlign`). */
+export const chartLegendAligns = ["left", "center", "right"] as const;
+export type ChartLegendAlign = (typeof chartLegendAligns)[number];
+/** A grid stripe color: a palette color, the neutral `grey`, or `transparent` (no stripe). */
+export type ChartStripeColor = ChartColor | "grey" | "transparent";
 type Palette = (typeof paletteColorNames)[number];
 export type ChartCircularType = (typeof chartCircularTypes)[number];
 

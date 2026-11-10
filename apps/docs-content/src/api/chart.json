@@ -946,6 +946,59 @@
       ]
      },
      {
+      "attr": "data-ok-legend-align",
+      "default": "right",
+      "description": "Legend items line up `left`, `center` or `right` (default right above the plot, centered below it and around circular charts).",
+      "kind": "style",
+      "name": "legendAlign",
+      "optional": true,
+      "values": [
+       "left",
+       "center",
+       "right"
+      ]
+     },
+     {
+      "attr": "data-ok-show-for-single-series",
+      "description": "Shows the legend for a single series too.",
+      "kind": "flag",
+      "name": "showForSingleSeries"
+     },
+     {
+      "attr": "data-ok-disable-legend-toggle",
+      "description": "Legend items are plain labels: clicks don't hide series.",
+      "kind": "flag",
+      "name": "disableLegendToggle"
+     },
+     {
+      "attr": "data-ok-grid",
+      "default": "y",
+      "description": "Grid lines: `y` horizontal (along the value ticks, or between the bars of horizontal bar charts), `x` vertical, `both` or `none`.",
+      "kind": "style",
+      "name": "grid",
+      "optional": true,
+      "values": [
+       "y",
+       "x",
+       "both",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-grid-row-opacity",
+      "description": "Opacity of the row stripes (0 to 1; default 0.5).",
+      "kind": "number",
+      "min": 0,
+      "name": "gridRowOpacity"
+     },
+     {
+      "attr": "data-ok-grid-column-opacity",
+      "description": "Opacity of the column stripes (0 to 1; default 0.5).",
+      "kind": "number",
+      "min": 0,
+      "name": "gridColumnOpacity"
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
@@ -1328,9 +1381,10 @@
       "name": "data-ok-chart-legend"
      },
      {
-      "description": "One legend item: a button that hides or shows its series.",
+      "description": "One legend item: a button that hides or shows its series, or a label with \\`disableLegendToggle\\`.",
       "elements": [
-       "button"
+       "button",
+       "span"
       ],
       "kind": "part",
       "name": "data-ok-chart-legend-item"
@@ -1556,6 +1610,15 @@
       "name": "data-ok-chart-stop"
      },
      {
+      "description": "A grid stripe between two horizontal (\\`row\\`) or vertical (\\`column\\`) grid positions.",
+      "kind": "value",
+      "name": "data-ok-chart-stripe",
+      "value": [
+       "column",
+       "row"
+      ]
+     },
+     {
       "description": "The drawing.",
       "elements": [
        "svg"
@@ -1734,6 +1797,12 @@
       "value": "string"
      },
      {
+      "description": "Legend names instead of the series' names, separated by \\`;\\`.",
+      "kind": "value",
+      "name": "data-ok-custom-legend-items",
+      "value": "string"
+     },
+     {
       "description": "On a data table column header: the series' dash length in px.",
       "kind": "value",
       "name": "data-ok-dash-array",
@@ -1761,6 +1830,18 @@
        "squares",
        "verticalLines"
       ]
+     },
+     {
+      "description": "Column stripe colors separated by spaces: palette names, \\`grey\\` or \\`transparent\\`.",
+      "kind": "value",
+      "name": "data-ok-grid-column-colors",
+      "value": "string"
+     },
+     {
+      "description": "Row stripe colors separated by spaces: palette names, \\`grey\\` or \\`transparent\\`.",
+      "kind": "value",
+      "name": "data-ok-grid-row-colors",
+      "value": "string"
      },
      {
       "description": "The group of linked charts this chart belongs to: they share the hover and the zoom.",
@@ -2046,6 +2127,11 @@
       "type": "\"smooth\" | \"stepline\" | \"straight\""
      },
      {
+      "description": "Legend names instead of the series' names: item n stands for series n (its color and toggle).",
+      "name": "customLegendItems",
+      "type": "readonly string[]"
+     },
+     {
       "description": "Dash length of lines and radial bars in px (default solid).",
       "name": "dashArray",
       "type": "number"
@@ -2087,6 +2173,11 @@
       "type": "ChartZoom | null"
      },
      {
+      "description": "Legend items are plain labels: clicks don't hide series.",
+      "name": "disableLegendToggle",
+      "type": "boolean"
+     },
+     {
       "description": "Markers on single points (`{ seriesIndex, dataPointIndex, color, size, shape }`), also on series without markers.",
       "name": "discreteMarkers",
       "type": "readonly ChartDiscreteMarker[]"
@@ -2121,6 +2212,31 @@
       "description": "Pattern of every bar, area and slice (turns patterns on): `\"slantedLines\"`, `\"squares\"`, `\"circles\"`, `\"horizontalLines\"` or `\"verticalLines\"`. Series may set `fillPattern`.",
       "name": "fillPattern",
       "type": "\"circles\" | \"horizontalLines\" | \"slantedLines\" | \"squares\" | \"verticalLines\""
+     },
+     {
+      "description": "Grid lines: `\"y\"` (default) horizontal, along the value ticks (between the bars of horizontal bar charts); `\"x\"` vertical; `\"both\"` or `\"none\"`.",
+      "name": "grid",
+      "type": "\"both\" | \"none\" | \"x\" | \"y\""
+     },
+     {
+      "description": "Stripes between the vertical grid positions: colors in turn.",
+      "name": "gridColumnColors",
+      "type": "readonly ChartStripeColor[]"
+     },
+     {
+      "description": "Opacity of the column stripes (0 to 1). 5.",
+      "name": "gridColumnOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Stripes between the horizontal grid lines: colors in turn (palette names, `\"grey\"` or `\"transparent\"`).",
+      "name": "gridRowColors",
+      "type": "readonly ChartStripeColor[]"
+     },
+     {
+      "description": "Opacity of the row stripes (0 to 1). 5.",
+      "name": "gridRowOpacity",
+      "type": "number"
      },
      {
       "description": "Synchronized charts: charts of one group share the active category and the zoom.",
@@ -2163,6 +2279,11 @@
       "description": "Never shown for a single series.",
       "name": "legend",
       "type": "\"bottom\" | \"none\" | \"right\" | \"top\""
+     },
+     {
+      "description": "Legend items line up `\"left\"`, `\"center\"` or `\"right\"` (default right above the plot, centered below it).",
+      "name": "legendAlign",
+      "type": "\"center\" | \"left\" | \"right\""
      },
      {
       "description": "Legend items show a value: the slice's or ring's, or the series' last one.",
@@ -2244,6 +2365,11 @@
       "description": "Series: values per category, `[x, y]` pairs (scatter, dates) or `{ x, y, color }`. Every type but `sankey` (which takes `nodes` and `edges`).",
       "name": "series",
       "type": "readonly ChartSeries[]"
+     },
+     {
+      "description": "Shows the legend for a single series too.",
+      "name": "showForSingleSeries",
+      "type": "boolean"
      },
      {
       "description": "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
@@ -2419,6 +2545,10 @@
   {
    "name": "ChartRangeValue",
    "type": "string | number | Date"
+  },
+  {
+   "name": "ChartStripeColor",
+   "type": "\"grey\" | \"transparent\" | ChartColor"
   },
   {
    "name": "ChartTool",

@@ -225,6 +225,33 @@
     justify-content: center;
   }
 
+  /* Legend alignment (4.18.64), for top and bottom legends. */
+  :where([data-ok-chart][data-ok-legend-align="left"] > [data-ok-chart-legend]) {
+    justify-content: flex-start;
+  }
+
+  :where([data-ok-chart][data-ok-legend-align="center"] > [data-ok-chart-legend]) {
+    justify-content: center;
+  }
+
+  :where([data-ok-chart][data-ok-legend-align="right"] > [data-ok-chart-legend]) {
+    justify-content: flex-end;
+  }
+
+  /* Legend items without toggling are labels. */
+  :where(span[data-ok-chart-legend-item]) {
+    cursor: default;
+  }
+
+  /* Grid stripes (4.18.64): grey, or the palette color they name; the opacity is an attribute. */
+  :where([data-ok-chart-stripe]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+  }
+
+  :where([data-ok-chart-stripe][data-ok-color]) {
+    fill: var(--_ok-chart-c);
+  }
+
   /* Right legends sit below the plot on phones and beside it from 600px. */
   :where([data-ok-chart][data-ok-legend="right"] > [data-ok-chart-legend]) {
     order: 1;
@@ -435,7 +462,7 @@
   }
 
   @media (hover: hover) {
-    :where([data-ok-chart-legend-item]:hover) {
+    :where(button[data-ok-chart-legend-item]:hover) {
       background-color: var(--ok-action-hover);
     }
   }
