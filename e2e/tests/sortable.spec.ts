@@ -176,6 +176,75 @@ for (const impl of implementations) {
   });
 }
 
+test.describe("sortable swap strategy and whole-item drags (docs preview)", () => {
+  const open = async (page: Page) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(
+      "/apps/storybook/storybook-static/iframe.html?id=components-sortable--docs&viewMode=docs&globals=a11y.manual:!true",
+    );
+    const list = page.getByRole("list", { name: "Dashboard slots" }).first();
+    await list.waitFor();
+    // The preview sits far down the docs page: mouse moves need it in the middle of the viewport
+    // (near an edge, the drag would scroll the page under the pointer).
+    // The docs page renders its other previews and code blocks after a while, which grows the
+    // page above the list: wait until its height holds still for half a second.
+    await page.waitForFunction(
+      () => {
+        const w = window as unknown as { __height?: number; __since?: number };
+        const height = document.documentElement.scrollHeight;
+        if (w.__height !== height) {
+          w.__height = height;
+          w.__since = performance.now();
+        }
+        return performance.now() - (w.__since ?? 0) > 500;
+      },
+      undefined,
+      { polling: 100, timeout: 15_000 },
+    );
+    await list.evaluate((element) => element.scrollIntoView({ block: "center" }));
+    return list;
+  };
+  const slots = (list: ReturnType<Page["locator"]>) =>
+    list
+      .locator(":scope > [data-ok-sortable-item] > span")
+      .evaluateAll((spans) => spans.map((span) => span.textContent).join(","));
+
+  test("drags an item by its content onto another: the two trade places", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Mouse drags; taps are covered by the keyboard and tap tests.");
+    const list = await open(page);
+    const from = await list.locator("[data-ok-sortable-item] > span").first().boundingBox();
+    const to = await list.locator("[data-ok-sortable-item]").nth(3).boundingBox();
+    if (!from || !to) throw new Error("no boxes");
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 12 });
+    await expect(list.locator("[data-ok-swap-target]")).toHaveCount(1);
+    await page.mouse.up();
+    await expect(list.locator("[data-ok-swap-target]")).toHaveCount(0);
+    await expect.poll(() => slots(list)).toBe("Revenue,Orders,Visitors,Sales");
+  });
+
+  test("swaps with the keyboard and two taps", async ({ page, isMobile }) => {
+    const list = await open(page);
+    const handle = (name: string) => list.getByRole("button", { name: `Reorder ${name}` });
+    await handle("Sales").focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Space");
+    await expect.poll(() => slots(list)).toBe("Visitors,Orders,Sales,Revenue");
+    await expect(handle("Sales")).toBeFocused();
+    const press = (locator: ReturnType<typeof handle>) =>
+      isMobile ? locator.tap() : locator.click();
+    await press(handle("Orders"));
+    await press(handle("Revenue"));
+    await expect.poll(() => slots(list)).toBe("Visitors,Revenue,Sales,Orders");
+  });
+});
+
 for (const viewport of viewports) {
   test.describe(`sortable responsive @ ${viewport.name} ${viewport.width}×${viewport.height}`, () => {
     for (const story of STORIES) {

@@ -1757,6 +1757,8 @@ export interface SortableParts {
   "data-ok-sortable-move-to": Value<string>;
   /** On an item: it can't move and isn't a target (its handle is `disabled` too). */
   "data-ok-disabled": State;
+  /** Set by the runtime, swap lists: on the item the moved one would trade places with. */
+  "data-ok-swap-target": State;
   /** HTML: on the list, the announcement when an item is grabbed (`{position}`, `{total}`, `{list}`). */
   "data-ok-message-grabbed": Value<string>;
   /** HTML: on the list, the announcement when an item moves (`{position}`, `{total}`, `{list}`). */

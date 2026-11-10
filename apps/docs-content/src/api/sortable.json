@@ -92,6 +92,12 @@
      },
      {
       "cancelable": true,
+      "description": "Before two items trade places (lists with `data-ok-strategy=\"swap\"`): the item at `from` and `target` at `to`. Call `preventDefault()` to keep the order.",
+      "detail": "{ from: number; to: number; item: HTMLElement; target: HTMLElement; }",
+      "name": "ok:sortable:swap"
+     },
+     {
+      "cancelable": true,
       "description": "Before an item moves to another list of its group (`data-ok-group`), at `index` in `to`. Fires on the list it leaves. Call `preventDefault()` to keep it.",
       "detail": "{ item: HTMLElement; from: HTMLElement; to: HTMLElement; index: number; }",
       "name": "ok:sortable:transfer"
@@ -115,6 +121,12 @@
       "kind": "method",
       "name": "remove",
       "type": "(index: number) => boolean"
+     },
+     {
+      "description": "Swaps two items (the `swap` strategy's move). Returns `false` if out of range or `ok:sortable:swap` was prevented.",
+      "kind": "method",
+      "name": "swap",
+      "type": "(from: number, to: number) => boolean"
      },
      {
       "description": "Moves the item at `index` to another sortable list (an element or its `id`), at `toIndex` (default: its end). Returns `false` if out of range or `ok:sortable:transfer` was prevented.",
@@ -149,6 +161,30 @@
       "description": "While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off.",
       "kind": "behavior",
       "name": "autoScroll"
+     },
+     {
+      "attr": "data-ok-strategy",
+      "default": "sort",
+      "description": "`sort` shifts the items between the old and the new position; `swap` trades the places of two items.",
+      "kind": "style",
+      "name": "strategy",
+      "optional": true,
+      "values": [
+       "sort",
+       "swap"
+      ]
+     },
+     {
+      "attr": "data-ok-activator",
+      "default": "handle",
+      "description": "Where a pointer drag starts: the `handle`, or anywhere on the `item` (the handle stays for keys and taps).",
+      "kind": "style",
+      "name": "activator",
+      "optional": true,
+      "values": [
+       "handle",
+       "item"
+      ]
      }
     ],
     "parts": [
@@ -265,6 +301,11 @@
       ],
       "kind": "part",
       "name": "data-ok-sortable-template"
+     },
+     {
+      "description": "Set by the runtime, swap lists: on the item the moved one would trade places with.",
+      "kind": "state",
+      "name": "data-ok-swap-target"
      }
     ],
     "runtime": "sortable"
@@ -278,6 +319,12 @@
       "description": "The groups this list takes items from (default: its own `group`). Set it to take items from other groups, such as a \"Done\" list that takes tasks but gives none back.",
       "name": "accept",
       "type": "string | readonly string[]"
+     },
+     {
+      "default": "\"handle\"",
+      "description": "Where a pointer drag starts: `\"handle\"`, or anywhere on the `\"item\"` except the controls in it. The handle stays for the keyboard and for taps.",
+      "name": "activator",
+      "type": "\"handle\" | \"item\""
      },
      {
       "default": "true",
@@ -365,6 +412,12 @@
       "name": "renderItem",
       "required": true,
       "type": "(item: T, index: number) => ReactNode"
+     },
+     {
+      "default": "\"sort\"",
+      "description": "How a move rearranges the list: `\"sort\"` shifts the items between the old and the new position, `\"swap\"` trades the places of the moved item and the one it is dropped on (the others stay). `onReorder` gets the result either way.",
+      "name": "strategy",
+      "type": "\"sort\" | \"swap\""
      }
     ]
    }

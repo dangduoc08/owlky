@@ -3,7 +3,10 @@
  * intent (`onMove`, `onTransfer`, `onRemove`) and drag events (`onDragStart` …); the owner changes
  * its state (React) or the DOM (HTML runtime). Every step re-reads the DOM, so owners that update
  * asynchronously work too. Items with `data-ok-disabled` don't move and aren't targets; lists
- * with `data-ok-auto-scroll="false"` don't scroll their containers while dragging.
+ * with `data-ok-auto-scroll="false"` don't scroll their containers while dragging. Lists with
+ * `data-ok-strategy="swap"` preview a swap with the item under the pointer (or the arrow keys'
+ * target) through transforms and report one `onSwap` on drop; `data-ok-activator="item"` starts
+ * pointer drags anywhere on an item (the handle stays the keyboard and tap path).
  *
  * Lists register in a module-scoped registry per document; the grab or drag in progress is one
  * session per document, continued by the controller of whichever list holds the item. Intents go
@@ -15,6 +18,9 @@ const LIST = "[data-ok-sortable]";
 const HANDLE = "[data-ok-sortable-handle]";
 const REMOVE = "[data-ok-sortable-remove]";
 const MOVE_TO = "[data-ok-sortable-move-to]";
+/** Content of an item that keeps its own presses when the whole item drags (`activator`). */
+const INTERACTIVE =
+  "a[href], button, input, select, textarea, label, summary, [contenteditable]:not([contenteditable='false']), [tabindex]";
 /** Pointer travel (px) before a press on the handle becomes a drag; shorter presses are clicks. */
 const DRAG_THRESHOLD = 4;
 /** Frames an owner has to apply a transfer before it counts as refused. */
@@ -28,6 +34,14 @@ export function arrayMove<T>(items: readonly T[], from: number, to: number): T[]
   const next = [...items];
   const [moved] = next.splice(from, 1);
   next.splice(to, 0, moved as T);
+  return next;
+}
+
+/** Swaps two elements of a copy of `items` (dnd-kit `arraySwap`, the `swap` strategy). */
+export function arraySwap<T>(items: readonly T[], from: number, to: number): T[] {
+  const next = [...items];
+  if (from < 0 || to < 0 || from >= next.length || to >= next.length) return next;
+  [next[from], next[to]] = [next[to] as T, next[from] as T];
   return next;
 }
 
@@ -117,6 +131,8 @@ export interface SortableDragEvent {
 export interface SortableControllerOptions {
   /** The user asked to move the item at `from` to `to` (indexes among the items). */
   onMove?: ((from: number, to: number) => void) | undefined;
+  /** A list with `data-ok-strategy="swap"`: the items at `from` and `to` trade places. */
+  onSwap?: ((from: number, to: number) => void) | undefined;
   /**
    * The user asked to move an item of this list to another list of its group. Return `false` to
    * refuse; without this option, items never leave the list.
@@ -167,6 +183,8 @@ interface Session {
   drag: Drag | null;
   /** A transfer the owner hasn't applied yet: returns true once it is resolved. */
   pending: (() => boolean) | null;
+  /** Swap lists: the item the session's item would trade places with (previewed). */
+  swap: HTMLElement | null;
 }
 
 interface Entry {
@@ -226,6 +244,15 @@ const itemsOf = (list: Element) =>
   Array.from(list.children).filter((child): child is HTMLElement => child.matches(ITEM));
 const handleOf = (item: HTMLElement) => item.querySelector<HTMLElement>(HANDLE);
 const isDisabled = (item: Element) => item.hasAttribute("data-ok-disabled");
+const swaps = (list: Element) => list.getAttribute("data-ok-strategy") === "swap";
+/** An element's box without the transform the controller gave it. */
+function restingBox(element: HTMLElement): DOMRect {
+  const transform = element.style.transform;
+  element.style.transform = "";
+  const box = element.getBoundingClientRect();
+  element.style.transform = transform;
+  return box;
+}
 
 /** Pixels per frame toward the edge `position` is close to, signed (0 outside the zones). */
 function edgeSpeed(position: number, start: number, end: number): number {
@@ -397,6 +424,7 @@ export function createSortableController(
   }
 
   function unmark(session: Session) {
+    preview(session, null);
     session.item.removeAttribute("data-ok-grabbed");
     session.item.removeAttribute("data-ok-dragging");
     session.item.style.transform = "";
@@ -413,6 +441,7 @@ export function createSortableController(
       startIndex: indexOf(item),
       drag: null,
       pending: null,
+      swap: null,
     };
     shared.session = session;
     mark(session);
@@ -430,13 +459,58 @@ export function createSortableController(
   }
 
   function drop(session: Session) {
+    const swapped = commitSwap(session);
     release();
-    say(session.list, "dropped", indexOf(session.item) + 1);
-    ended(session.item);
+    if (swapped !== -1) keepFocus(session.item);
+    finish(session, swapped);
+  }
+
+  /** Announces the drop and reports `onDragEnd` (at `swapped` after a swap). */
+  function finish(session: Session, swapped: number) {
+    const index = swapped === -1 ? indexOf(session.item) : swapped;
+    say(session.list, "dropped", index + 1);
+    notify(session.list, "onDragEnd", { item: session.item, index, list: session.list });
+  }
+
+  // --- swap strategy ----------------------------------------------------------------------------
+
+  /**
+   * Previews the swap of the session's item with `target` (`null`: none): the target moves to
+   * the item's place and, without a pointer drag, the item to the target's.
+   */
+  function preview(session: Session, target: HTMLElement | null) {
+    const previous = session.swap;
+    if (previous === target) return;
+    if (previous) {
+      previous.style.transform = "";
+      previous.removeAttribute("data-ok-swap-target");
+    }
+    session.swap = target;
+    if (!session.drag) session.item.style.transform = "";
+    if (!target) return;
+    const a = restingBox(session.item);
+    const b = target.getBoundingClientRect();
+    target.setAttribute("data-ok-swap-target", "");
+    target.style.transform = `translate(${a.left - b.left}px, ${a.top - b.top}px)`;
+    if (!session.drag)
+      session.item.style.transform = `translate(${b.left - a.left}px, ${b.top - a.top}px)`;
+  }
+
+  /** Asks the owner to apply the previewed swap. Returns the item's new index, or -1. */
+  function commitSwap(session: Session): number {
+    const target = session.swap;
+    if (!target || target.parentElement !== session.list) return -1;
+    const from = indexOf(session.item);
+    const to = indexOf(target);
+    preview(session, null);
+    holdFocus();
+    entryOf(session.list)?.options().onSwap?.(from, to);
+    return to;
   }
 
   /** Moves the session's item to `to` at `index`; it stays grabbed (or dragged) there. */
   function transferSession(session: Session, to: HTMLElement, index: number, focus: boolean) {
+    preview(session, null);
     notify(session.list, "onDragOver", { item: session.item, index, list: to });
     const pending = transfer(session.item, session.list, to, index, (moved) => {
       if (shared.session !== session) return;
@@ -518,6 +592,19 @@ export function createSortableController(
     const over = itemIn(owner, under);
     // Disabled items are never targets (dnd-kit `disabled`).
     if (over && isDisabled(over)) return;
+    if (owner === session.list && swaps(owner)) {
+      // Hit test on resting boxes: the previewed target covers the item's own place.
+      const hit = itemsOf(owner).find((element) => {
+        const box = restingBox(element);
+        return drag.x >= box.left && drag.x < box.right && drag.y >= box.top && drag.y < box.bottom;
+      });
+      if (!hit || hit === session.swap || isDisabled(hit)) return;
+      const target = hit === session.item ? null : hit;
+      if (!target && !session.swap) return;
+      notify(owner, "onDragOver", { item: session.item, index: indexOf(hit), list: owner });
+      preview(session, target);
+      return;
+    }
     if (owner === session.list) {
       if (!over || over === session.item) return;
       notify(owner, "onDragOver", { item: session.item, index: indexOf(over), list: owner });
@@ -531,9 +618,9 @@ export function createSortableController(
   function endDrag(session: Session) {
     press?.abort();
     press = null;
+    const swapped = commitSwap(session);
     release();
-    say(session.list, "dropped", indexOf(session.item) + 1);
-    ended(session.item);
+    finish(session, swapped);
   }
 
   function cancelDrag(session: Session) {
@@ -612,10 +699,20 @@ export function createSortableController(
     (event) => {
       shared.suppressClick = false;
       shared.pressing = true;
-      const handle = (event.target as Element).closest(HANDLE);
-      const item = itemIn(list, handle);
+      const target = event.target as Element;
+      let handle: Element | null = target.closest(HANDLE);
+      let item = itemIn(list, handle);
+      if (!item && list.getAttribute("data-ok-activator") === "item") {
+        // The whole item drags, except from controls inside it (they keep their presses).
+        item = itemIn(list, target);
+        const control = target.closest(INTERACTIVE);
+        if (item && control && item.contains(control)) item = null;
+        handle = item;
+      }
       if (!item || isDisabled(item) || event.button !== 0 || !event.isPrimary) return;
       if (shared.session?.drag) return;
+      // No text selection or native image drag from the item's content.
+      if (handle === item && event.pointerType === "mouse") event.preventDefault();
       const box = item.getBoundingClientRect();
       const drag: Drag = {
         limits: new Map(),
@@ -655,6 +752,7 @@ export function createSortableController(
               startIndex: indexOf(item),
               drag,
               pending: null,
+              swap: null,
             };
             shared.session = session;
             mark(session);
@@ -763,6 +861,10 @@ export function createSortableController(
         return;
       } else if (session.item === item) {
         drop(session);
+      } else if (session.list === list && swaps(list)) {
+        notify(list, "onDragOver", { item: session.item, index: indexOf(item), list });
+        preview(session, item);
+        drop(session);
       } else if (session.list === list) {
         release();
         notify(list, "onDragOver", { item: session.item, index: indexOf(item), list });
@@ -841,9 +943,12 @@ export function createSortableController(
             : {};
       const index = indexOf(session.item);
       const last = itemsOf(list).length - 1;
+      const swap = swaps(list);
+      // Swap lists: the keys move the previewed target; the item stays in its place.
+      const at = swap && session.swap ? indexOf(session.swap) : index;
       let direction = across[event.key];
-      if (grid && event.key === "ArrowLeft" && index === 0) direction = -1;
-      if (grid && event.key === "ArrowRight" && index === last) direction = 1;
+      if (grid && event.key === "ArrowLeft" && at === 0) direction = -1;
+      if (grid && event.key === "ArrowRight" && at === last) direction = 1;
       const delta = deltas[event.key];
       if (direction === undefined && delta === undefined) return;
       event.preventDefault();
@@ -851,18 +956,22 @@ export function createSortableController(
       if (direction !== undefined) {
         const to = neighbor(session, direction);
         if (!to) return;
-        const at = grid ? (direction === 1 ? 0 : itemsOf(to).length) : index;
-        transferSession(session, to, at, true);
+        transferSession(session, to, grid ? (direction === 1 ? 0 : itemsOf(to).length) : at, true);
         return;
       }
       // Disabled items are skipped: the item jumps past them (or stays when none is left).
       const all = itemsOf(list);
       const sign = Math.sign(delta as number);
-      let target = Math.max(0, Math.min(last, index + (delta as number)));
-      const blocked = (at: number) => at >= 0 && at <= last && isDisabled(all[at] as HTMLElement);
-      while (target !== index && blocked(target)) target += sign;
-      if (target < 0 || target > last || target === index) return;
+      let target = Math.max(0, Math.min(last, at + (delta as number)));
+      const blocked = (i: number) => i >= 0 && i <= last && isDisabled(all[i] as HTMLElement);
+      while (target !== at && target !== index && blocked(target)) target += sign;
+      if (target < 0 || target > last || target === at) return;
       notify(list, "onDragOver", { item: session.item, index: target, list });
+      if (swap) {
+        preview(session, target === index ? null : (all[target] as HTMLElement));
+        say(list, "moved", target + 1);
+        return;
+      }
       const to = moveWithin(list, session.item, target);
       keepFocus(session.item);
       say(list, "moved", to + 1);

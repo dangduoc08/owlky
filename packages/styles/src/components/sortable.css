@@ -5,9 +5,11 @@
  *             › button[data-ok-sortable-remove]? + button[data-ok-sortable-handle]
  *           (handles and remove buttons are Icon buttons: icon-button.css)
  *           div[data-ok-sortable-announcer]   live region, created by the controller
- * Modifiers: data-ok-layout = grid (default) | vertical | horizontal
+ * Modifiers: data-ok-layout = grid (default) | vertical | horizontal; data-ok-strategy = swap;
+ *            data-ok-activator = item (drags start anywhere on an item)
  * States:    [data-ok-dragging] on the list and the dragged item, [data-ok-grabbed] on an item,
- *            [data-ok-disabled] on an item that can't move
+ *            [data-ok-disabled] on an item that can't move, [data-ok-swap-target] on the item a
+ *            swap would trade places with (moved there by the controller's transform)
  *
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
  * channels, never color-mix() (AGENTS.md).
@@ -127,6 +129,30 @@
 
   :where([data-ok-sortable-item][data-ok-disabled] [data-ok-sortable-handle]) {
     cursor: default;
+  }
+
+  /* The whole item starts a pointer drag (the handle stays for keys and taps). */
+  :where(
+    [data-ok-sortable][data-ok-activator="item"] > [data-ok-sortable-item]:not([data-ok-disabled])
+  ) {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  /* Swap: the previewed items slide to their new places (not when the swap is applied). */
+  :where(
+    [data-ok-sortable][data-ok-strategy="swap"]:has(> [data-ok-swap-target])
+      > [data-ok-sortable-item]
+  ) {
+    transition:
+      box-shadow var(--ok-duration-short) var(--ok-easing-standard),
+      transform var(--ok-duration-short) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-sortable-item][data-ok-swap-target]) {
+    outline: 2px dashed var(--ok-text-secondary);
+    outline-offset: 2px;
   }
 
   /* Remove buttons appear on item hover or keyboard focus; always on touch screens. */

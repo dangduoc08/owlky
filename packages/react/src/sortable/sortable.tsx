@@ -2,12 +2,15 @@
 
 import {
   arrayMove,
+  arraySwap,
   createSortableController,
   iconButtonAttributes,
   moveBetweenLists,
+  type SortableActivator,
   type SortableController,
   type SortableLayout,
   type SortableMessages,
+  type SortableStrategy,
   type SortableTransferTarget,
   sortableAttributes,
 } from "@owlky/core";
@@ -86,6 +89,17 @@ export interface SortableProps<T>
   getItemLabel?: ((item: T, index: number) => string) | undefined;
   /** Default `"grid"`. */
   layout?: SortableLayout | undefined;
+  /**
+   * How a move rearranges the list: `"sort"` shifts the items between the old and the new
+   * position, `"swap"` trades the places of the moved item and the one it is dropped on (the
+   * others stay). `onReorder` gets the result either way. Default `"sort"`.
+   */
+  strategy?: SortableStrategy | undefined;
+  /**
+   * Where a pointer drag starts: `"handle"`, or anywhere on the `"item"` except the controls in
+   * it. The handle stays for the keyboard and for taps. Default `"handle"`.
+   */
+  activator?: SortableActivator | undefined;
   /** Screen reader announcements (localization). */
   messages?: Partial<SortableMessages> | undefined;
   /**
@@ -129,6 +143,8 @@ function SortableInner<T>(
     onRemove,
     getItemLabel,
     layout,
+    strategy,
+    activator,
     messages,
     group,
     accept,
@@ -179,6 +195,7 @@ function SortableInner<T>(
       onDragEnd: drag("onDragEnd"),
       onDragCancel: drag("onDragCancel"),
       onMove: (from, to) => latest.current.onReorder(arrayMove(latest.current.items, from, to)),
+      onSwap: (from, to) => latest.current.onReorder(arraySwap(latest.current.items, from, to)),
       onRemove: (index) => latest.current.onRemove?.(latest.current.items[index] as T, index),
       onTransfer: ({ from, to, fromIndex, index }) => {
         const handler = latest.current.onTransfer;
@@ -199,7 +216,7 @@ function SortableInner<T>(
     <ul
       ref={ref}
       id={listId}
-      {...sortableAttributes({ layout, autoScroll })}
+      {...sortableAttributes({ layout, autoScroll, strategy, activator })}
       data-ok-group={group || undefined}
       data-ok-accept={accept === undefined ? undefined : [accept].flat().join(" ")}
       data-ok-runtime="off"
@@ -252,4 +269,4 @@ export const Sortable = forwardRef(SortableInner) as <T>(
   props: SortableProps<T> & { ref?: Ref<HTMLUListElement> },
 ) => ReturnType<typeof SortableInner>;
 
-export { arrayMove, moveBetweenLists };
+export { arrayMove, arraySwap, moveBetweenLists };

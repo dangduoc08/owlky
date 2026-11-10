@@ -294,6 +294,63 @@ export function PinnedWidgets() {
 }`,
   },
   {
+    id: "swap",
+    title: "Swap two items",
+    body: `By default, a moved item pushes the items between its old and its new position by one place. With the swap strategy, the moved item and the item it is dropped on trade places, and every other item stays where it is. This suits layouts where each position means something, such as the slots of a dashboard.
+
+While people drag, or choose a target with the arrow keys, the target slides to the item's place and gets a dashed outline. Nothing changes until the item is dropped. Moving back to the item's own place cancels the swap. In React, set \`strategy="swap"\`: \`onReorder\` gets the swapped items, the same result as \`arraySwap(items, from, to)\`. In HTML, add \`data-ok-strategy="swap"\` to the list. The script swaps the two items and fires \`ok:sortable:swap\` first.`,
+    html: `<ul id="slots" data-ok-sortable data-ok-strategy="swap" aria-label="Dashboard slots">
+${["Sales", "Orders", "Visitors", "Revenue"].map((t) => htmlItem(t, false)).join("\n")}
+</ul>`,
+    react: `import { Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function DashboardSlots() {
+  const [widgets, setWidgets] = useState(["Sales", "Orders", "Visitors", "Revenue"]);
+  return (
+    <Sortable
+      strategy="swap"
+      aria-label="Dashboard slots"
+      items={widgets}
+      getKey={(widget) => widget}
+      getItemLabel={(widget) => widget}
+      renderItem={(widget) => <span>{widget}</span>}
+      onReorder={setWidgets}
+    />
+  );
+}`,
+  },
+  {
+    id: "activator",
+    title: "Drag from anywhere on an item",
+    body: `By default, only the handle starts a drag, so the rest of an item stays free for its content, such as text people select or a page that scrolls on touch screens. To let people grab an item anywhere, set \`activator="item"\` in React or \`data-ok-activator="item"\` in HTML. Links, buttons and fields inside the item keep their own clicks. The handle stays: it is how keyboard users and people who tap instead of drag move the item.
+
+On touch screens, a press on an item now starts a drag instead of scrolling the page. Leave room around the items, or keep the default, in long lists that people scroll with a finger.`,
+    html: `<ul id="tasks" data-ok-sortable data-ok-layout="vertical" data-ok-activator="item" aria-label="Tasks">
+${TASKS.slice(0, 3)
+  .map((t) => htmlItem(t, false))
+  .join("\n")}
+</ul>`,
+    react: `import { Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function GrabbableTasks() {
+  const [tasks, setTasks] = useState(["Design", "Build", "Test"]);
+  return (
+    <Sortable
+      layout="vertical"
+      activator="item"
+      aria-label="Tasks"
+      items={tasks}
+      getKey={(task) => task}
+      getItemLabel={(task) => task}
+      renderItem={(task) => <span>{task}</span>}
+      onReorder={setTasks}
+    />
+  );
+}`,
+  },
+  {
     id: "auto-scroll",
     title: "Scroll while dragging",
     body: 'When people drag an item near the edge of a scroll area, such as the **Scrollbar** around a list, or near the edge of the window, it scrolls. The closer the pointer gets to the edge, the faster it scrolls. To turn it off, set `autoScroll={false}` in React or `data-ok-auto-scroll="false"` in HTML. The keyboard always scrolls the moved item into view.',
@@ -422,12 +479,13 @@ export function FrenchTasks() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:sortable:move\`** (cancelable) fires before an item moves, with \`detail: { from, to, item }\`.
+- **\`ok:sortable:swap\`** (cancelable) fires before two items trade places in a list with \`data-ok-strategy="swap"\`, with \`detail: { from, to, item, target }\`. \`item\` is the moved item and \`target\` the one it is dropped on.
 - **\`ok:sortable:dragstart\`**, **\`ok:sortable:dragover\`**, **\`ok:sortable:dragend\`** and **\`ok:sortable:dragcancel\`** follow a drag, with \`detail: { item, index, list }\`. They fire on the list that holds the item.
 - **\`ok:sortable:transfer\`** (cancelable) fires on the list an item leaves, before the item moves to another list, with \`detail: { item, from, to, index }\`. \`from\` and \`to\` are the lists.
 - **\`ok:sortable:remove\`** (cancelable) fires before an item is removed, with \`detail: { index, item }\`.
 - **\`ok:sortable:add\`** fires after a new item is added from the template, with \`detail: { item, index }\`. Fill in its content here.
-- **Instance:** \`runtime.get(element, "sortable")\` returns \`{ move(from, to), remove(index), add(), transfer(index, to, toIndex) }\`. \`to\` is a list or its \`id\`. Without \`toIndex\`, the item goes to the end.
-- **React:** \`onDragStart\`, \`onDragOver\`, \`onDragEnd\` and \`onDragCancel\` get \`{ item, index, list }\`. They replace the native HTML drag and drop handlers of the list element. \`onReorder(items)\`, \`onRemove(item, index)\` and \`onTransfer({ item, from, to, fromIndex, index })\`, where \`from\` and \`to\` are list ids. The \`arrayMove(items, from, to)\` and \`moveBetweenLists(lists, event)\` helpers are exported too.`,
+- **Instance:** \`runtime.get(element, "sortable")\` returns \`{ move(from, to), swap(from, to), remove(index), add(), transfer(index, to, toIndex) }\`. \`to\` is a list or its \`id\`. Without \`toIndex\`, the item goes to the end.
+- **React:** \`onDragStart\`, \`onDragOver\`, \`onDragEnd\` and \`onDragCancel\` get \`{ item, index, list }\`. They replace the native HTML drag and drop handlers of the list element. \`onReorder(items)\`, \`onRemove(item, index)\` and \`onTransfer({ item, from, to, fromIndex, index })\`, where \`from\` and \`to\` are list ids. The \`arrayMove(items, from, to)\`, \`arraySwap(items, from, to)\` and \`moveBetweenLists(lists, event)\` helpers are exported too.`,
   },
   {
     id: "keyboard",
@@ -440,11 +498,30 @@ export function FrenchTasks() {
     body: `- Every drag has a keyboard and a tap alternative, so people who can't drag can still reorder (WCAG 2.2, success criteria 2.1.1 and 2.5.7). Between lists, add a \`data-ok-sortable-move-to\` control, such as a **Move** menu, so that one tap is enough.
 - Name the list with \`aria-label\`. Handles and remove buttons are named from each item, such as "Reorder Design"; set the item's label with \`getItemLabel\` in React or the buttons' \`aria-label\` in HTML.
 - The handle has \`aria-pressed="true"\` while its item is grabbed.
+- When the whole item starts a drag, keep the handle: it is the keyboard and single-tap path.
 - Moves are announced in a polite live region. Translate the messages with \`messages\` in React or the \`data-ok-message-*\` attributes in HTML.
 - A disabled item's handle is \`disabled\`, so it leaves the tab order and screen readers report it as unavailable.`,
   },
   apiReferenceSection(sortableApi),
 ];
+
+function SlotsPreview() {
+  const [widgets, setWidgets] = useState(["Sales", "Orders", "Visitors", "Revenue"]);
+  return (
+    <Preview className="block!">
+      <Sortable
+        strategy="swap"
+        activator="item"
+        aria-label="Dashboard slots"
+        items={widgets}
+        getKey={(widget) => widget}
+        getItemLabel={(widget) => widget}
+        renderItem={(widget) => <span>{widget}</span>}
+        onReorder={setWidgets}
+      />
+    </Preview>
+  );
+}
 
 function TasksPreview() {
   const [tasks, setTasks] = useState(TASKS);
@@ -499,6 +576,7 @@ function BoardPreview() {
 
 const PREVIEWS = {
   overview: TasksPreview,
+  swap: SlotsPreview,
   lists: BoardPreview,
   options: () => <OptionsTable schema={sortableOptions} />,
   props: () => (
@@ -595,6 +673,10 @@ const PREVIEWS = {
         [
           "Left / Right arrow (vertical lists), Up / Down arrow (horizontal lists)",
           "Move the grabbed item to the previous or next list of its group.",
+        ],
+        [
+          "Arrow keys (swap lists)",
+          "Choose the item to trade places with. Back on the item's own place, nothing is swapped.",
         ],
         ["Escape", "Cancels the move and puts the item back, in its first list."],
         ["Tab", "Leaves the list; a grabbed item is dropped where it is."],

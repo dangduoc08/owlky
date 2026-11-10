@@ -104,8 +104,10 @@ export type {
   SliderMark,
   SliderSize,
   SliderValueLabelDisplay,
+  SortableActivator,
   SortableLayout,
   SortableMessages,
+  SortableStrategy,
   SortableTransferTarget,
   StepperVariant,
   SwitchEdge,
@@ -631,6 +633,7 @@ export {
 } from "./snackbar/snackbar.js";
 export {
   arrayMove,
+  arraySwap,
   moveBetweenLists,
   Sortable,
   type SortableDragEvent,
