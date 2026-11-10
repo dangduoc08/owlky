@@ -40,9 +40,15 @@ export function DeleteButton() {
   <span data-ok-button-label>Save</span>
 </button>
 <div id="save-tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom">Saves a draft</div>`,
-    react: `<Tooltip title="Saves a draft" describeChild>
-  <Button variant="outlined" color="info">Save</Button>
-</Tooltip>`,
+    react: `import { Button, Tooltip } from "@owlky/react";
+
+export function TooltipName() {
+  return (
+    <Tooltip title="Saves a draft" describeChild>
+      <Button variant="outlined" color="info">Save</Button>
+    </Tooltip>
+  );
+}`,
   },
   {
     id: "placement",
@@ -52,9 +58,15 @@ export function DeleteButton() {
   <span data-ok-tooltip-arrow aria-hidden="true"></span>
   Add
 </div>`,
-    react: `<Tooltip title="Add" placement="top" arrow transition="fade">
-  <Fab color="primary"><AddIcon /></Fab>
-</Tooltip>`,
+    react: `import { Fab, Tooltip } from "@owlky/react";
+
+export function TooltipPlacement() {
+  return (
+    <Tooltip title="Add" placement="top" arrow transition="fade">
+      <Fab color="primary"><AddIcon /></Fab>
+    </Tooltip>
+  );
+}`,
   },
   {
     id: "timing",
@@ -62,7 +74,13 @@ export function DeleteButton() {
     body: "A tooltip opens 100 ms after the pointer enters its trigger (`enterDelay`) and closes when it leaves (`leaveDelay`, 0 ms). Keyboard focus opens it at once. On touch screens, a press held for 700 ms opens it, and it closes 1.5 seconds after you lift your finger. The pointer can move onto the tooltip without closing it.",
     html: `<div id="tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom"
   data-ok-enter-delay="500" data-ok-leave-delay="200">…</div>`,
-    react: `<Tooltip title="Add" enterDelay={500} leaveDelay={200}>…</Tooltip>`,
+    react: `import { Tooltip } from "@owlky/react";
+
+export function TooltipTiming() {
+  return (
+    <Tooltip title="Add" enterDelay={500} leaveDelay={200}>…</Tooltip>
+  );
+}`,
   },
   {
     id: "options",

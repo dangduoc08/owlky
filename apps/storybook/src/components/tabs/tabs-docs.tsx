@@ -64,17 +64,30 @@ export function Account() {
 <button type="button" role="tab" data-ok-tab aria-label="Favorites" aria-selected="false" tabindex="-1">
   <svg aria-hidden="true" viewBox="0 0 24 24">…</svg>
 </button>`,
-    react: `<Tabs aria-label="Contacts">
-  <Tab icon={<PhoneIcon />} iconPosition="start" label="Calls" />
-  <Tab icon={<HeartIcon />} aria-label="Favorites" />
-</Tabs>`,
+    react: `import { Tab, Tabs } from "@owlky/react";
+import { HeartIcon, PhoneIcon } from "lucide-react";
+
+export function TabsIcons() {
+  return (
+    <Tabs aria-label="Contacts">
+      <Tab icon={<PhoneIcon />} iconPosition="start" label="Calls" />
+      <Tab icon={<HeartIcon />} aria-label="Favorites" />
+    </Tabs>
+  );
+}`,
   },
   {
     id: "colors",
     title: "Color the selected tab",
     body: "`textColor` sets the color of the selected tab's text, and `indicatorColor` the color of the line. Both default to `inherit`, the text color. Use `primary` or `secondary` to match your brand. Tabs that aren't selected keep the secondary text color, which has a contrast ratio of at least 4.5:1 in both themes.",
     html: `<div data-ok-tabs data-ok-text-color="primary" data-ok-indicator-color="primary">…</div>`,
-    react: `<Tabs textColor="primary" indicatorColor="primary" aria-label="Contacts">…</Tabs>`,
+    react: `import { Tabs } from "@owlky/react";
+
+export function TabsColors() {
+  return (
+    <Tabs textColor="primary" indicatorColor="primary" aria-label="Contacts">…</Tabs>
+  );
+}`,
   },
   {
     id: "scrollable",
@@ -85,11 +98,17 @@ export function Account() {
   <div data-ok-tabs-scroller>…</div>
   <div data-ok-tabs-scroll-button="end" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></div>
 </div>`,
-    react: `<Tabs variant="scrollable" aria-label="Topics">
-  {topics.map((topic) => (
-    <Tab key={topic} value={topic} label={topic} />
-  ))}
-</Tabs>`,
+    react: `import { Tab, Tabs } from "@owlky/react";
+
+export function TabsScrollable() {
+  return (
+    <Tabs variant="scrollable" aria-label="Topics">
+      {topics.map((topic) => (
+        <Tab key={topic} value={topic} label={topic} />
+      ))}
+    </Tabs>
+  );
+}`,
   },
   {
     id: "layout",
@@ -101,18 +120,30 @@ export function Account() {
     <span data-ok-tabs-indicator></span>
   </div>
 </div>`,
-    react: `<Tabs orientation="vertical" value={tab} onChange={setTab} aria-label="Settings">…</Tabs>`,
+    react: `import { Tabs } from "@owlky/react";
+
+export function TabsLayout() {
+  return (
+    <Tabs orientation="vertical" value={tab} onChange={setTab} aria-label="Settings">…</Tabs>
+  );
+}`,
   },
   {
     id: "segmented",
     title: "Use the segmented look",
     body: "Set `segmented` to draw the tabs on a filled bar, with the selected tab on a raised pill instead of a line. The pill slides like the line does. It works with every variant and both orientations, for example as a compact switch between two or three views.",
     html: `<div data-ok-tabs data-ok-segmented data-ok-variant="fullWidth">…</div>`,
-    react: `<Tabs segmented variant="fullWidth" aria-label="View">
-  <Tab label="Day" />
-  <Tab label="Week" />
-  <Tab label="Month" />
-</Tabs>`,
+    react: `import { Tab, Tabs } from "@owlky/react";
+
+export function TabsSegmented() {
+  return (
+    <Tabs segmented variant="fullWidth" aria-label="View">
+      <Tab label="Day" />
+      <Tab label="Week" />
+      <Tab label="Month" />
+    </Tabs>
+  );
+}`,
   },
   {
     id: "options",

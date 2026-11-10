@@ -63,7 +63,11 @@ export function Post() {
     title: "Choose the toolbar",
     body: "The default toolbar has the heading menu, text styles, lists, alignment, links, images, line breaks, clear formatting and fullscreen. Turn on `fullItem` to add code, code blocks, quotes, horizontal rules, undo and redo.\n\nThe Fullscreen button makes the editor fill the window over a backdrop that dims the page. While it is fullscreen, the page doesn't scroll and Tab stays inside the editor. Press Escape or the button again to leave. In React, `onFullscreenChange` reports the change. In HTML, listen to `ok:editor:fullscreen`, and put a `div[data-ok-backdrop]` first in the editor so that the page is dimmed.",
     html: `<div data-ok-editor data-ok-full-item>…</div>`,
-    react: `<Editor aria-label="Article" fullItem />`,
+    react: `import { Editor } from "@owlky/react";
+
+export function EditorToolbar() {
+  return <Editor aria-label="Article" fullItem />;
+}`,
   },
   {
     id: "text-transform",
@@ -125,8 +129,16 @@ export function Snippet() {
 </div>
 
 <div data-ok-editor data-ok-editable="false">…</div>`,
-    react: `<Editor aria-label="Summary" error helperText="Write at least one sentence." />
-<Editor aria-label="Preview" editable={false} value={html} />`,
+    react: `import { Editor } from "@owlky/react";
+
+export function EditorStates() {
+  return (
+    <>
+      <Editor aria-label="Summary" error helperText="Write at least one sentence." />
+      <Editor aria-label="Preview" editable={false} value={html} />
+    </>
+  );
+}`,
   },
   {
     id: "options",

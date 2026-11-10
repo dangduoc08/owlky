@@ -95,17 +95,33 @@ export function DueDate() {
 - **\`DateField\`** and **\`DateCalendar\`:** the field or the calendar on their own.
 
 In HTML, \`data-ok-picker-variant\` picks the form: \`responsive\`, \`desktop\`, \`mobile\` or \`static\`.`,
-    react: `<DesktopDatePicker label="Start" />
-<MobileDatePicker label="End" />
-<StaticDatePicker defaultValue={new Date(2025, 4, 25)} />`,
+    react: `import { DesktopDatePicker, MobileDatePicker, StaticDatePicker } from "@owlky/react";
+
+export function DatePickerForms() {
+  return (
+    <>
+      <DesktopDatePicker label="Start" />
+      <MobileDatePicker label="End" />
+      <StaticDatePicker defaultValue={new Date(2025, 4, 25)} />
+    </>
+  );
+}`,
   },
   {
     id: "views",
     title: "Pick years, months and days",
     body: `\`views\` sets what people pick, from \`year\`, \`month\` and \`day\`. The default is \`["year", "day"]\`. The header's switch button opens the year view, and picking a year moves on to the next view. \`openTo\` sets the first view. The field's format follows the views: \`["month", "year"]\` shows "May 2025", and \`["day"]\` shows "25". Set \`format\` with Day.js tokens, such as \`DD/MM/YYYY\`, to choose another one. Text in square brackets is literal.`,
-    react: `<DatePicker label="Month and year" views={["month", "year"]} />
-<DatePicker label="Day" views={["day"]} />
-<DateField label="Date" format="DD.MM.YYYY" />`,
+    react: `import { DateField, DatePicker } from "@owlky/react";
+
+export function DatePickerViews() {
+  return (
+    <>
+      <DatePicker label="Month and year" views={["month", "year"]} />
+      <DatePicker label="Day" views={["day"]} />
+      <DateField label="Date" format="DD.MM.YYYY" />
+    </>
+  );
+}`,
   },
   {
     id: "calendar",
@@ -116,25 +132,37 @@ In HTML, \`data-ok-picker-variant\` picks the form: \`responsive\`, \`desktop\`,
     id: "actions",
     title: "Add actions and shortcuts",
     body: `\`actions\` sets the buttons under the calendar: \`clear\`, \`today\`, \`cancel\`, \`accept\` and \`nextOrAccept\`. Desktop pickers have none by default, because picking a day accepts it. \`shortcuts\` adds chips that set a value and close the picker. Each shortcut has a \`label\` and a \`getValue\` function. In HTML, give each shortcut chip a fixed \`data-ok-value\`, or call \`setShortcuts()\` on the instance for computed dates.`,
-    react: `<StaticDatePicker
-  actions={["clear", "today", "cancel", "accept"]}
-  shortcuts={[
-    { label: "Christmas", getValue: () => new Date(2025, 11, 25) },
-    { label: "New Year", getValue: () => new Date(2026, 0, 1) },
-  ]}
-/>`,
+    react: `import { StaticDatePicker } from "@owlky/react";
+
+export function DatePickerActions() {
+  return (
+    <StaticDatePicker
+      actions={["clear", "today", "cancel", "accept"]}
+      shortcuts={[
+        { label: "Christmas", getValue: () => new Date(2025, 11, 25) },
+        { label: "New Year", getValue: () => new Date(2026, 0, 1) },
+      ]}
+    />
+  );
+}`,
   },
   {
     id: "validation",
     title: "Validate dates",
     body: `\`minDate\` and \`maxDate\` limit the range (by default, 1 January 1900 to 31 December 2099). \`disablePast\` and \`disableFuture\` compare with today. \`shouldDisableDate\`, \`shouldDisableMonth\` and \`shouldDisableYear\` disable more dates with a function. In HTML, set these functions with the instance methods of the same name, because functions have no attribute. The calendar disables the days people can't pick. The field shows an error when its value breaks a rule, and \`onError\` (HTML: \`validationError\` in the events) tells you which rule.`,
-    react: `<DatePicker
-  label="Appointment"
-  minDate={new Date(2025, 4, 10)}
-  maxDate={new Date(2025, 5, 20)}
-  shouldDisableDate={(day) => day.getDay() === 0 || day.getDay() === 6}
-  onError={(error) => console.warn(error)}
-/>`,
+    react: `import { DatePicker } from "@owlky/react";
+
+export function DatePickerValidation() {
+  return (
+    <DatePicker
+      label="Appointment"
+      minDate={new Date(2025, 4, 10)}
+      maxDate={new Date(2025, 5, 20)}
+      shouldDisableDate={(day) => day.getDay() === 0 || day.getDay() === 6}
+      onError={(error) => console.warn(error)}
+    />
+  );
+}`,
   },
   {
     id: "time",
@@ -169,22 +197,36 @@ export function Alarm() {
     id: "date-time",
     title: "Pick a date and time",
     body: `\`DateTimePicker\` edits a date and a time in one field. On devices with a mouse, the popover shows the calendar beside the digital clocks, and a picked day keeps the time. On touch screens, the dialog shows a toolbar, **date** and **time** tabs, the calendar and then the analog clock. **Next** moves to the next view, and **OK** accepts the value on the last one. \`views\` mixes date and time views, such as \`["day", "hours"]\`. In HTML, the value is an ISO date and time, such as \`2025-05-25T09:30:00\`.`,
-    react: `<DateTimePicker label="Meeting" />
-<MobileDateTimePicker label="Departure" views={["year", "day", "hours", "minutes"]} />
-<StaticDateTimePicker orientation="landscape" />`,
+    react: `import { DateTimePicker, MobileDateTimePicker, StaticDateTimePicker } from "@owlky/react";
+
+export function DatePickerDateTime() {
+  return (
+    <>
+      <DateTimePicker label="Meeting" />
+      <MobileDateTimePicker label="Departure" views={["year", "day", "hours", "minutes"]} />
+      <StaticDateTimePicker orientation="landscape" />
+    </>
+  );
+}`,
   },
   {
     id: "time-validation",
     title: "Validate times",
     body: `\`minTime\` and \`maxTime\` limit the time of day. The date part doesn't count, unless you set \`disableIgnoringDatePartForTimeValidation\`. Date time pickers also take \`minDateTime\` and \`maxDateTime\`. \`minutesStep\` accepts only multiples of a number of minutes. \`shouldDisableTime(value, view)\` disables more times with a function. In HTML, call \`setShouldDisableTime()\` on the instance. \`disablePast\` and \`disableFuture\` compare with the current time. The clocks disable the options that break a rule, and \`skipDisabled\` leaves them out of the digital clocks.`,
-    react: `<TimePicker
-  label="Office hours"
-  minTime={new Date(2025, 4, 25, 9)}
-  maxTime={new Date(2025, 4, 25, 17, 30)}
-  minutesStep={15}
-  timeSteps={{ minutes: 15 }}
-  skipDisabled
-/>`,
+    react: `import { TimePicker } from "@owlky/react";
+
+export function DatePickerTimeValidation() {
+  return (
+    <TimePicker
+      label="Office hours"
+      minTime={new Date(2025, 4, 25, 9)}
+      maxTime={new Date(2025, 4, 25, 17, 30)}
+      minutesStep={15}
+      timeSteps={{ minutes: 15 }}
+      skipDisabled
+    />
+  );
+}`,
   },
   {
     id: "range",
@@ -272,9 +314,17 @@ export function ReportPeriod() {
     id: "time-range",
     title: "Pick a time or date time range",
     body: `\`TimeRangePicker\` edits a start and an end time, and \`DateTimeRangePicker\` a start and an end date with times. **Start** and **End** tabs pick the edited end. On devices with a mouse, the popover shows digital clocks, beside one month for date times. On touch screens, the dialog shows the analog clock, after the calendar for date times. Finishing the start's last view moves on to the end. **OK** accepts the range and **Cancel** restores the one from opening. The fields work on their own as \`SingleInputTimeRangeField\`, \`MultiInputTimeRangeField\`, \`SingleInputDateTimeRangeField\` and \`MultiInputDateTimeRangeField\`. In HTML, the value is an interval of ISO times, such as \`09:00:00/17:30:00\`.`,
-    react: `<TimeRangePicker label="Opening hours" minutesStep={15} timeSteps={{ minutes: 15 }} />
-<DateTimeRangePicker label="Event" disablePast />
-<MultiInputDateRangeField startLabel="From" endLabel="To" />`,
+    react: `import { DateTimeRangePicker, MultiInputDateRangeField, TimeRangePicker } from "@owlky/react";
+
+export function DatePickerTimeRange() {
+  return (
+    <>
+      <TimeRangePicker label="Opening hours" minutesStep={15} timeSteps={{ minutes: 15 }} />
+      <DateTimeRangePicker label="Event" disablePast />
+      <MultiInputDateRangeField startLabel="From" endLabel="To" />
+    </>
+  );
+}`,
   },
   {
     id: "localization",
@@ -376,11 +426,17 @@ export function PersianDate() {
     html: `<html lang="ar" dir="rtl">
   …date pickers…
 </html>`,
-    react: `<LocalizationProvider adapterLocale="ar" localeText={pickersArSD}>
-  <div dir="rtl">
-    <DateRangeCalendar />
-  </div>
-</LocalizationProvider>`,
+    react: `import { DateRangeCalendar, LocalizationProvider } from "@owlky/react";
+
+export function DatePickerRightToLeft() {
+  return (
+    <LocalizationProvider adapterLocale="ar" localeText={pickersArSD}>
+      <div dir="rtl">
+        <DateRangeCalendar />
+      </div>
+    </LocalizationProvider>
+  );
+}`,
   },
   {
     id: "customization",

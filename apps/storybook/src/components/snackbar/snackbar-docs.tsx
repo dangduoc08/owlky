@@ -46,10 +46,26 @@ export function App() {
     html: `<script type="module">
   const toaster = window.Owlky.get(document.querySelector("[data-ok-toaster]"), "toaster");
   toaster.show({ type: "success", title: "Event created", description: "Monday at 6:00 PM" });
-  toaster.promise(fetch("/api/save"), { loading: "Saving…", success: "Saved", error: "Not saved" });
+  toaster.promise(fetch("/api/save"), { loading: "Saving", success: "Saved", error: "Not saved" });
 </script>`,
-    react: `toast.success("Event created", { description: "Monday at 6:00 PM" });
-toast.promise(save(), { loading: "Saving…", success: "Saved", error: "Not saved" });`,
+    react: `import { Button, Toaster, toast } from "@owlky/react";
+
+export function SaveEvent() {
+  const save = () => {
+    toast.success("Event created", { description: "Monday at 6:00 PM" });
+    toast.promise(fetch("/api/save", { method: "POST" }), {
+      loading: "Saving",
+      success: "Saved",
+      error: "Not saved",
+    });
+  };
+  return (
+    <>
+      <Button onClick={save}>Create event</Button>
+      <Toaster />
+    </>
+  );
+}`,
   },
   {
     id: "actions",
@@ -61,14 +77,37 @@ toast.promise(save(), { loading: "Saving…", success: "Saved", error: "Not save
     <button type="button" data-ok-toast-action>Undo</button>
   </li>
 </template>`,
-    react: `toast("Message deleted", { action: { label: "Undo", onClick: restore } });`,
+    react: `import { Button, Toaster, toast } from "@owlky/react";
+import { useState } from "react";
+
+export function DeleteMessage() {
+  const [deleted, setDeleted] = useState(false);
+  const remove = () => {
+    setDeleted(true);
+    toast("Message deleted", { action: { label: "Undo", onClick: () => setDeleted(false) } });
+  };
+  return (
+    <>
+      <Button onClick={remove} disabled={deleted}>
+        Delete message
+      </Button>
+      <Toaster />
+    </>
+  );
+}`,
   },
   {
     id: "position",
     title: "Move the toaster",
     body: "Set `position` to a corner or the center of the top or bottom edge. At the bottom, the newest toast sits nearest to the edge. In HTML, a trigger with `data-ok-toaster-position` moves the toaster before it shows its toast.",
-    html: `<section data-ok-toaster data-ok-position="bottom-center" aria-label="Notifications">…</section>`,
-    react: `<Toaster position="bottom-center" />`,
+    html: `<section data-ok-toaster data-ok-position="bottom-center" aria-label="Notifications">
+  <ol data-ok-toaster-list aria-live="polite"></ol>
+</section>`,
+    react: `import { Toaster } from "@owlky/react";
+
+export function SnackbarPosition() {
+  return <Toaster position="bottom-center" />;
+}`,
   },
   {
     id: "options",

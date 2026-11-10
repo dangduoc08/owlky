@@ -59,7 +59,13 @@ export function Filters() {
     html: `<dialog id="menu" data-ok-drawer data-ok-anchor="bottom" data-ok-variant="temporary" aria-label="Menu">
   <div data-ok-drawer-content>…</div>
 </dialog>`,
-    react: `<DrawerContent anchor="bottom" aria-label="Menu">…</DrawerContent>`,
+    react: `import { DrawerContent, Menu } from "@owlky/react";
+
+export function DrawerAnchor() {
+  return (
+    <DrawerContent anchor="bottom" aria-label="Menu">…</DrawerContent>
+  );
+}`,
   },
   {
     id: "close",
@@ -73,12 +79,18 @@ export function Filters() {
     </button>
   </div>
 </dialog>`,
-    react: `<DrawerContent anchor="right" aria-label="Filters">
-  …
-  <DrawerClose variant="contained" color="primary">
-    Apply
-  </DrawerClose>
-</DrawerContent>`,
+    react: `import { DrawerClose, DrawerContent } from "@owlky/react";
+
+export function DrawerClose() {
+  return (
+    <DrawerContent anchor="right" aria-label="Filters">
+      …
+      <DrawerClose variant="contained" color="primary">
+        Apply
+      </DrawerClose>
+    </DrawerContent>
+  );
+}`,
   },
   {
     id: "controlled",
@@ -117,12 +129,18 @@ export function EditPanel() {
   </aside>
   <main>…</main>
 </div>`,
-    react: `<div style={{ display: "flex" }}>
-  <Drawer variant="permanent">
-    <DrawerContent aria-label="Navigation">…</DrawerContent>
-  </Drawer>
-  <main>…</main>
-</div>`,
+    react: `import { Drawer, DrawerContent } from "@owlky/react";
+
+export function DrawerDocked() {
+  return (
+    <div style={{ display: "flex" }}>
+      <Drawer variant="permanent">
+        <DrawerContent aria-label="Navigation">…</DrawerContent>
+      </Drawer>
+      <main>…</main>
+    </div>
+  );
+}`,
   },
   {
     id: "options",

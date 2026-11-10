@@ -43,7 +43,13 @@ export function PlansHeading() {
 
 \`duration\` sets the length of an entrance in milliseconds (640 by default), \`delay\` waits before it starts, and \`distance\` sets how far directional animations travel in pixels.`,
     html: `<div data-ok-motion data-ok-variant="zoomInLeft" data-ok-duration="800" data-ok-distance="80">…</div>`,
-    react: `<Motion variant="zoomInLeft" duration={800} distance={80}>…</Motion>`,
+    react: `import { Motion } from "@owlky/react";
+
+export function MotionVariants() {
+  return (
+    <Motion variant="zoomInLeft" duration={800} distance={80}>…</Motion>
+  );
+}`,
   },
   {
     id: "trigger",
@@ -116,7 +122,13 @@ export function Title() {
     …
   </div>
 </dialog>`,
-    react: `<Dialog open={open} onOpenChange={setOpen} transition="slideInUp">…</Dialog>`,
+    react: `import { Dialog } from "@owlky/react";
+
+export function MotionDialog() {
+  return (
+    <Dialog open={open} onOpenChange={setOpen} transition="slideInUp">…</Dialog>
+  );
+}`,
   },
   {
     id: "pause",
@@ -130,9 +142,15 @@ export function Title() {
   // Your pause button toggles the attribute
   document.getElementById("hero").toggleAttribute("data-ok-paused", true);
 </script>`,
-    react: `<Motion variant="kenburnsTop" paused={paused}>
-  <img src="hero.jpg" alt="Mountain lake at sunrise" />
-</Motion>`,
+    react: `import { Motion } from "@owlky/react";
+
+export function MotionPause() {
+  return (
+    <Motion variant="kenburnsTop" paused={paused}>
+      <img src="hero.jpg" alt="Mountain lake at sunrise" />
+    </Motion>
+  );
+}`,
   },
   {
     id: "effects",

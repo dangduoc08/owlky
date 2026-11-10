@@ -70,14 +70,24 @@ export function OrderHistory() {
     title: "Place the content",
     body: "`position` sets the side of the content: `right` (the default), `left`, or `alternate` and `alternate-reverse` to switch sides from one event to the next. Set `position` on a single item to override the timeline. Leave out the connector on the last event, so the line ends at its dot.",
     html: `<ul data-ok-timeline data-ok-position="alternate">…</ul>`,
-    react: `<Timeline position="alternate">…</Timeline>`,
+    react: `import { Timeline } from "@owlky/react";
+
+export function TimelinePosition() {
+  return (
+    <Timeline position="alternate">…</Timeline>
+  );
+}`,
   },
   {
     id: "dots",
     title: "Color the dots",
     body: '`TimelineDot` is grey by default. Set `color` to a palette color, or to `inherit` for the text color, and `variant` to `outlined` for a ring. A dot can hold a 24px icon. Add `aria-hidden="true"` to the icon: the content says what happened.',
     html: `<span data-ok-timeline-dot data-ok-variant="outlined" data-ok-color="primary"></span>`,
-    react: `<TimelineDot variant="outlined" color="primary" />`,
+    react: `import { TimelineDot } from "@owlky/react";
+
+export function TimelineDots() {
+  return <TimelineDot variant="outlined" color="primary" />;
+}`,
   },
   {
     id: "opposite",
@@ -88,11 +98,17 @@ export function OrderHistory() {
   <div data-ok-timeline-separator>…</div>
   <div data-ok-timeline-content>Kickoff</div>
 </li>`,
-    react: `<TimelineItem>
-  <TimelineOppositeContent>09:30 am</TimelineOppositeContent>
-  <TimelineSeparator>…</TimelineSeparator>
-  <TimelineContent>Kickoff</TimelineContent>
-</TimelineItem>`,
+    react: `import { TimelineContent, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@owlky/react";
+
+export function TimelineOpposite() {
+  return (
+    <TimelineItem>
+      <TimelineOppositeContent>09:30 am</TimelineOppositeContent>
+      <TimelineSeparator>…</TimelineSeparator>
+      <TimelineContent>Kickoff</TimelineContent>
+    </TimelineItem>
+  );
+}`,
   },
   {
     id: "options",

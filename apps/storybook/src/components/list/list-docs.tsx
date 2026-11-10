@@ -83,14 +83,21 @@ Set \`alignItems\` to \`flex-start\` when the text wraps to several lines, so th
     <span data-ok-list-item-text-secondary>Jan 9, 2014</span>
   </span>
 </li>`,
-    react: `<ListItem>
-  <ListItemAvatar>
-    <Avatar>
-      <ImageIcon />
-    </Avatar>
-  </ListItemAvatar>
-  <ListItemText primary="Photos" secondary="Jan 9, 2014" />
-</ListItem>`,
+    react: `import { Avatar, ListItem, ListItemAvatar, ListItemText } from "@owlky/react";
+import { ImageIcon } from "lucide-react";
+
+export function ListRows() {
+  return (
+    <ListItem>
+      <ListItemAvatar>
+        <Avatar>
+          <ImageIcon />
+        </Avatar>
+      </ListItemAvatar>
+      <ListItemText primary="Photos" secondary="Jan 9, 2014" />
+    </ListItem>
+  );
+}`,
   },
   {
     id: "buttons",
@@ -103,11 +110,17 @@ Set \`alignItems\` to \`flex-start\` when the text wraps to several lines, so th
     </span>
   </a>
 </li>`,
-    react: `<ListItem disablePadding>
-  <ListItemButton href="/drafts" selected aria-current="page">
-    <ListItemText primary="Drafts" />
-  </ListItemButton>
-</ListItem>`,
+    react: `import { ListItem, ListItemButton, ListItemText } from "@owlky/react";
+
+export function ListButtons() {
+  return (
+    <ListItem disablePadding>
+      <ListItemButton href="/drafts" selected aria-current="page">
+        <ListItemText primary="Drafts" />
+      </ListItemButton>
+    </ListItem>
+  );
+}`,
   },
   {
     id: "subheader",
@@ -117,12 +130,18 @@ Set \`alignItems\` to \`flex-start\` when the text wraps to several lines, so th
   <li data-ok-list-subheader data-ok-color="default" id="settings-title">Settings</li>
   …
 </ul>`,
-    react: `<List
-  aria-labelledby="settings-title"
-  subheader={<ListSubheader id="settings-title">Settings</ListSubheader>}
->
-  …
-</List>`,
+    react: `import { List, ListSubheader } from "@owlky/react";
+
+export function ListSubheader() {
+  return (
+    <List
+      aria-labelledby="settings-title"
+      subheader={<ListSubheader id="settings-title">Settings</ListSubheader>}
+    >
+      …
+    </List>
+  );
+}`,
   },
   {
     id: "nested",
@@ -191,13 +210,20 @@ export function Inbox() {
     <span data-ok-switch-thumb aria-hidden="true"></span>
   </span>
 </li>`,
-    react: `<ListItem>
-  <ListItemIcon>
-    <WifiIcon />
-  </ListItemIcon>
-  <ListItemText id="wifi-label" primary="Wi-Fi" />
-  <Switch edge="end" aria-labelledby="wifi-label" defaultChecked />
-</ListItem>`,
+    react: `import { ListItem, ListItemIcon, ListItemText, Switch } from "@owlky/react";
+import { WifiIcon } from "lucide-react";
+
+export function ListControls() {
+  return (
+    <ListItem>
+      <ListItemIcon>
+        <WifiIcon />
+      </ListItemIcon>
+      <ListItemText id="wifi-label" primary="Wi-Fi" />
+      <Switch edge="end" aria-labelledby="wifi-label" defaultChecked />
+    </ListItem>
+  );
+}`,
   },
   {
     id: "options",

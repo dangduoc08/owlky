@@ -96,16 +96,22 @@ To mix types in line, area, bar, scatter, box plot, bubble and range area charts
     <tbody>…</tbody>
   </table>
 </figure>`,
-    react: `<Chart
-  label="Points per month"
-  type="bar"
-  yTitle="Points"
-  categories={["Jan", "Feb", "Mar"]}
-  series={[
-    { name: "Team A", type: "bar", data: [22, 12, 21] },
-    { name: "Team B", type: "line", data: [31, 26, 35] },
-  ]}
-/>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartTypes() {
+  return (
+    <Chart
+      label="Points per month"
+      type="bar"
+      yTitle="Points"
+      categories={["Jan", "Feb", "Mar"]}
+      series={[
+        { name: "Team A", type: "bar", data: [22, 12, 21] },
+        { name: "Team B", type: "line", data: [31, 26, 35] },
+      ]}
+    />
+  );
+}`,
   },
   {
     id: "data",
@@ -119,14 +125,20 @@ To mix types in line, area, bar, scatter, box plot, bubble and range area charts
 Cells may show formatted text, such as "12%". Put the raw number in \`data-ok-value\` when the text isn't a plain number.`,
     html: `<!-- Dates: the raw date in data-ok-value, readable text in the cell -->
 <tr><th scope="row" data-ok-value="2012-01-01">Jan 2012</th><td data-ok-value="-12.5">-12.5%</td></tr>`,
-    react: `<Chart
-  label="Cash flow"
-  type="bar"
-  xType="datetime"
-  valueSuffix="%"
-  categories={["2012-01-01", "2012-02-01", "2012-03-01"]}
-  series={[{ name: "Cash flow", data: [-12.5, 3.2, 7.1] }]}
-/>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartData() {
+  return (
+    <Chart
+      label="Cash flow"
+      type="bar"
+      xType="datetime"
+      valueSuffix="%"
+      categories={["2012-01-01", "2012-02-01", "2012-03-01"]}
+      series={[{ name: "Cash flow", data: [-12.5, 3.2, 7.1] }]}
+    />
+  );
+}`,
   },
   {
     id: "colors",
@@ -283,14 +295,20 @@ export function BuildTimes() {
     </tbody>
   </table>
 </figure>`,
-    react: `<Chart
-  label="Visits by page and device"
-  type="treemap"
-  series={[
-    { name: "Desktops", data: [{ x: "Home", y: 60 }, { x: "Pricing", y: 41 }] },
-    { name: "Mobile", data: [{ x: "Docs", y: 51 }, { x: "Blog", y: 30 }] },
-  ]}
-/>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartCells() {
+  return (
+    <Chart
+      label="Visits by page and device"
+      type="treemap"
+      series={[
+        { name: "Desktops", data: [{ x: "Home", y: 60 }, { x: "Pricing", y: 41 }] },
+        { name: "Mobile", data: [{ x: "Docs", y: 51 }, { x: "Blog", y: 30 }] },
+      ]}
+    />
+  );
+}`,
   },
   {
     id: "stages",
@@ -298,7 +316,13 @@ export function BuildTimes() {
     body: `- **Funnels:** \`funnel\` draws the first series as bars centered on one axis, each as long as its share of the largest value, such as the stages of a sign-up flow. For a pyramid, order the values from the smallest to the largest. \`barHeight\` sets the thickness (80% by default).
 - **Slopes:** \`slope\` joins each series' values across a few categories, usually two, such as before and after. The values print beside the first and last points, and the scale fits the data.`,
     html: `<figure data-ok-chart data-ok-type="funnel" … data-ok-data-labels>`,
-    react: `<Chart label="Sign-ups" type="funnel" dataLabels categories={steps} series={[{ name: "People", data: [1380, 990, 548, 200] }]} />`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartStages() {
+  return (
+    <Chart label="Sign-ups" type="funnel" dataLabels categories={steps} series={[{ name: "People", data: [1380, 990, 548, 200] }]} />
+  );
+}`,
   },
   {
     id: "sparklines",
@@ -310,7 +334,13 @@ export function BuildTimes() {
     <table data-ok-chart-data>…</table>
   </figure>
 </div>`,
-    react: `<Chart label="Visits this week" type="area" sparkline height={48} categories={days} series={visits} />`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartSparklines() {
+  return (
+    <Chart label="Visits this week" type="area" sparkline height={48} categories={days} series={visits} />
+  );
+}`,
   },
   {
     id: "live",
@@ -362,7 +392,13 @@ Set \`toolbar\` (\`data-ok-toolbar\`) to add buttons for zooming in and out, res
     html: `<figure data-ok-chart data-ok-type="area" data-ok-x-type="datetime" … data-ok-zoom data-ok-toolbar>
   <table data-ok-chart-data>…</table>
 </figure>`,
-    react: `<Chart label="Daily active users" type="area" xType="datetime" zoom toolbar categories={days} series={users} />`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartZoom() {
+  return (
+    <Chart label="Daily active users" type="area" xType="datetime" zoom toolbar categories={days} series={users} />
+  );
+}`,
   },
   {
     id: "sync",
@@ -370,10 +406,18 @@ Set \`toolbar\` (\`data-ok-toolbar\`) to add buttons for zooming in and out, res
     body: "Give charts the same `group` (`data-ok-group` in HTML) to synchronize them, such as requests, errors and latency of one service. Moving the pointer or the keyboard over one chart shows the same category in all of them, and zooming one zooms the others. Synchronized charts should share their categories.",
     html: `<figure data-ok-chart data-ok-group="service" data-ok-zoom …>…</figure>
 <figure data-ok-chart data-ok-group="service" data-ok-type="bar" …>…</figure>`,
-    react: `<>
-  <Chart label="Requests" group="service" zoom categories={minutes} series={requests} />
-  <Chart label="Errors" group="service" type="bar" categories={minutes} series={errors} />
-</>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartSync() {
+  return (
+    <>
+      <>
+        <Chart label="Requests" group="service" zoom categories={minutes} series={requests} />
+        <Chart label="Errors" group="service" type="bar" categories={minutes} series={errors} />
+      </>
+    </>
+  );
+}`,
   },
   {
     id: "brush",
@@ -381,10 +425,18 @@ Set \`toolbar\` (\`data-ok-toolbar\`) to add buttons for zooming in and out, res
     body: "A brush chart is a small overview that zooms another chart. Give the main chart an `id`, then set `brushTarget` (`data-ok-brush-target` in HTML) on the overview to that id. Drag across the overview to select a range, drag the selection to move it, or drag its handles to resize it. The keys of a zoomable chart work on the overview too. The selection follows the main chart when it zooms by itself.",
     html: `<figure id="builds" data-ok-chart data-ok-type="area" …>…</figure>
 <figure data-ok-chart data-ok-type="bar" data-ok-brush-target="builds" data-ok-height="120" …>…</figure>`,
-    react: `<>
-  <Chart id="builds" label="Builds per day" type="area" categories={days} series={builds} />
-  <Chart label="Builds, overview" type="bar" brushTarget="builds" height={120} categories={days} series={builds} />
-</>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartBrush() {
+  return (
+    <>
+      <>
+        <Chart id="builds" label="Builds per day" type="area" categories={days} series={builds} />
+        <Chart label="Builds, overview" type="bar" brushTarget="builds" height={120} categories={days} series={builds} />
+      </>
+    </>
+  );
+}`,
   },
   {
     id: "annotations",
@@ -403,15 +455,21 @@ Each annotation takes a \`color\` (\`info\` by default). The list stays readable
     <li data-ok-annotation="y" data-ok-y="2" data-ok-color="error">Threshold</li>
   </ul>
 </figure>`,
-    react: `<Chart
-  label="Error rate"
-  categories={minutes}
-  series={errors}
-  annotations={[
-    { axis: "x", x: "10:04", label: "Deploy", color: "warning" },
-    { axis: "y", y: 2, label: "Threshold", color: "error" },
-  ]}
-/>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartAnnotations() {
+  return (
+    <Chart
+      label="Error rate"
+      categories={minutes}
+      series={errors}
+      annotations={[
+        { axis: "x", x: "10:04", label: "Deploy", color: "warning" },
+        { axis: "y", y: 2, label: "Threshold", color: "error" },
+      ]}
+    />
+  );
+}`,
   },
   {
     id: "finance",
@@ -433,11 +491,17 @@ In the data table, each value gets its own column under a second header row, suc
     </tbody>
   </table>
 </figure>`,
-    react: `<Chart
-  label="Release plan"
-  type="timeline"
-  series={[{ name: "Release", data: [{ x: "Design", y: ["2026-03-02", "2026-03-13"] }] }]}
-/>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartFinance() {
+  return (
+    <Chart
+      label="Release plan"
+      type="timeline"
+      series={[{ name: "Release", data: [{ x: "Design", y: ["2026-03-02", "2026-03-13"] }] }]}
+    />
+  );
+}`,
   },
   {
     id: "stock",
@@ -556,7 +620,13 @@ export function EnergyUse() {
     title: "Animate charts",
     body: "Set `animations` (`data-ok-animations` in HTML) to grow the series in when the chart first draws, and to move bars, points and lines to their new values when the data changes. Animations never play when the system asks for reduced motion. Live charts that update often read better without them.",
     html: `<figure data-ok-chart data-ok-type="bar" data-ok-animations …>…</figure>`,
-    react: `<Chart label="Deploys per weekday" type="bar" animations categories={days} series={deploys} />`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartAnimations() {
+  return (
+    <Chart label="Deploys per weekday" type="bar" animations categories={days} series={deploys} />
+  );
+}`,
   },
   {
     id: "localize",
@@ -567,14 +637,26 @@ export function EnergyUse() {
   import { getRuntime } from "@owlky/html";
   getRuntime().get(element, "chart").setLocaleText({ zoomIn: "Phóng to", svg: "Tải SVG" });
 </script>`,
-    react: `<Chart label="Thời gian phản hồi" type="boxPlot" locale="vi-VN" localeText={{ min: "Nhỏ nhất", median: "Trung vị", zoomIn: "Phóng to" }} series={series} />`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartLocalize() {
+  return (
+    <Chart label="Thời gian phản hồi" type="boxPlot" locale="vi-VN" localeText={{ min: "Nhỏ nhất", median: "Trung vị", zoomIn: "Phóng to" }} series={series} />
+  );
+}`,
   },
   {
     id: "labels",
     title: "Print values on the chart",
     body: "Set `dataLabels` (`data-ok-data-labels` in HTML) to print values on the chart: percentages on pie and donut slices, values inside columns and bars, and values above the points of lines, areas and radars. A label is left out where it doesn't fit, such as on a short column. The tooltip and the data table still show every value. Set `dataLabelBackground` to put the labels above points on a badge, which keeps them readable over lines. For your own text, pass `dataLabelFormatter(value, series, index)` in React, or call `setFormatters({ dataLabel })` on the HTML instance. Pie and donut labels get the percentage.",
     html: `<figure data-ok-chart data-ok-type="pie" … data-ok-data-labels>`,
-    react: `<Chart label="Share of visits" type="pie" dataLabels categories={devices} series={visits} />`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartLabels() {
+  return (
+    <Chart label="Share of visits" type="pie" dataLabels categories={devices} series={visits} />
+  );
+}`,
   },
   {
     id: "stacked",
@@ -586,7 +668,13 @@ export function EnergyUse() {
     title: "Format values and axes",
     body: "`valuePrefix` and `valueSuffix` add text around every value, such as a currency or a percent sign. `locale` sets the number format and the month names. `yMin` and `yMax` fix the value axis, and `yTitle` names it. For anything else, pass `valueFormatter(value, series)` and `labelFormatter(x)` in React, or call `setFormatters({ value, label })` on the HTML instance. The axis gets `series` -1.",
     html: `<figure data-ok-chart … data-ok-value-prefix="$" data-ok-locale="de-DE" data-ok-y-min="0" data-ok-y-max="100">`,
-    react: `<Chart label="Revenue" valuePrefix="$" locale="de-DE" yMin={0} yMax={100} series={series} />`,
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartValues() {
+  return (
+    <Chart label="Revenue" valuePrefix="$" locale="de-DE" yMin={0} yMax={100} series={series} />
+  );
+}`,
   },
   {
     id: "legend",

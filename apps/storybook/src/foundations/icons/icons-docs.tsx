@@ -54,7 +54,11 @@ export function SendActions() {
 
 Inside components, the size is set for you. For your own icons, set \`width\` and \`height\`.`,
     html: `<svg aria-hidden="true" width="20" height="20" ${SVG_ATTRS}>${MAIL_PATHS}</svg>`,
-    react: `<Mail aria-hidden="true" width={20} height={20} />`,
+    react: `import { Mail } from "lucide-react";
+
+export function IconsSize() {
+  return <Mail aria-hidden="true" width={20} height={20} />;
+}`,
   },
   {
     id: "color",
@@ -63,7 +67,11 @@ Inside components, the size is set for you. For your own icons, set \`width\` an
     html: `<span style="color: var(--ok-palette-success-main)">
   <svg aria-hidden="true" width="24" height="24" ${SVG_ATTRS}>${MAIL_PATHS}</svg>
 </span>`,
-    react: `<Mail aria-hidden="true" style={{ color: "var(--ok-palette-success-main)" }} />`,
+    react: `import { Mail } from "lucide-react";
+
+export function IconsColor() {
+  return <Mail aria-hidden="true" style={{ color: "var(--ok-palette-success-main)" }} />;
+}`,
   },
   {
     id: "accessibility",
@@ -77,11 +85,20 @@ Inside components, the size is set for you. For your own icons, set \`width\` an
 
 <!-- Meaningful on its own: give it a name -->
 <svg role="img" aria-label="3 new messages" width="24" height="24" ${SVG_ATTRS}>${MAIL_PATHS}</svg>`,
-    react: `{/* Decorative: next to visible text */}
-<Mail aria-hidden="true" width={20} height={20} /> Messages
+    react: `import { Mail } from "lucide-react";
 
-{/* Meaningful on its own: give it a name */}
-<Mail role="img" aria-label="3 new messages" width={24} height={24} />`,
+export function MessageIcons() {
+  return (
+    <>
+      {/* Decorative: next to visible text */}
+      <span>
+        <Mail aria-hidden="true" width={20} height={20} /> Messages
+      </span>
+      {/* Meaningful on its own: give it a name */}
+      <Mail role="img" aria-label="3 new messages" width={24} height={24} />
+    </>
+  );
+}`,
   },
 ];
 

@@ -59,21 +59,39 @@ export function DiscardDraft() {
     title: "Size the dialog",
     body: "The paper is as wide as its content, up to `maxWidth`: `xs` (444px), `sm` (600px, the default), `md` (900px), `lg` (1200px), `xl` (1536px) or `none`. Add `fullWidth` to always take that width. On phones the paper keeps 16px from the edges, and 32px from 600px up. `fullScreen` covers the whole viewport.",
     html: `<dialog id="settings" data-ok-dialog data-ok-max-width="md" data-ok-full-width data-ok-scroll="paper" aria-labelledby="settings-title">…</dialog>`,
-    react: `<Dialog open={open} onOpenChange={setOpen} maxWidth="md" fullWidth>…</Dialog>`,
+    react: `import { Dialog } from "@owlky/react";
+
+export function DialogSize() {
+  return (
+    <Dialog open={open} onOpenChange={setOpen} maxWidth="md" fullWidth>…</Dialog>
+  );
+}`,
   },
   {
     id: "scroll",
     title: "Scroll long content",
     body: 'With `scroll` set to `paper` (default), the title and actions stay in view and the content scrolls. Make the content focusable (`tabindex="0"` and a name) so keyboard users can scroll it. With `body`, the whole dialog scrolls with the page. Add `dividers` to draw lines above and below the content.',
     html: `<div data-ok-dialog-content data-ok-dividers tabindex="0" aria-label="Terms">…</div>`,
-    react: `<DialogContent dividers tabIndex={0} aria-label="Terms">…</DialogContent>`,
+    react: `import { DialogContent } from "@owlky/react";
+
+export function DialogScroll() {
+  return (
+    <DialogContent dividers tabIndex={0} aria-label="Terms">…</DialogContent>
+  );
+}`,
   },
   {
     id: "transition",
     title: "Animate the entrance",
     body: "By default, the paper fades and scales in briefly. Set `transition` to a Motion entrance, such as `slideInUp` or `zoomIn`, to play that animation instead. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles. With reduced motion, the dialog appears at once.",
     html: `<div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">…</div>`,
-    react: `<Dialog open={open} onOpenChange={setOpen} transition="slideInUp">…</Dialog>`,
+    react: `import { Dialog } from "@owlky/react";
+
+export function DialogTransition() {
+  return (
+    <Dialog open={open} onOpenChange={setOpen} transition="slideInUp">…</Dialog>
+  );
+}`,
   },
   {
     id: "options",

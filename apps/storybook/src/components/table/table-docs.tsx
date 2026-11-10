@@ -86,11 +86,17 @@ export function Orders({ orders }) {
     <table data-ok-table data-ok-size="medium" data-ok-padding="normal" data-ok-sticky-header>…</table>
   </section>
 </section>`,
-    react: `<TableContainer>
-  <Scrollbar aria-label="Countries" style={{ maxHeight: 440 }}>
-    <Table stickyHeader>…</Table>
-  </Scrollbar>
-</TableContainer>`,
+    react: `import { Scrollbar, Table, TableContainer } from "@owlky/react";
+
+export function TableScroll() {
+  return (
+    <TableContainer>
+      <Scrollbar aria-label="Countries" style={{ maxHeight: 440 }}>
+        <Table stickyHeader>…</Table>
+      </Scrollbar>
+    </TableContainer>
+  );
+}`,
   },
   {
     id: "sort",
@@ -112,15 +118,21 @@ For selection, add a column of small **Checkbox** components: put \`data-ok-tabl
     </tr>
   </tbody>
 </table>`,
-    react: `<TableCell sortDirection={orderBy === "name" ? order : false}>
-  <TableSortLabel
-    active={orderBy === "name"}
-    direction={orderBy === "name" ? order : "asc"}
-    onClick={() => sortBy("name")}
-  >
-    Dessert
-  </TableSortLabel>
-</TableCell>`,
+    react: `import { TableCell, TableSortLabel } from "@owlky/react";
+
+export function TableSort() {
+  return (
+    <TableCell sortDirection={orderBy === "name" ? order : false}>
+      <TableSortLabel
+        active={orderBy === "name"}
+        direction={orderBy === "name" ? order : "asc"}
+        onClick={() => sortBy("name")}
+      >
+        Dessert
+      </TableSortLabel>
+    </TableCell>
+  );
+}`,
   },
   {
     id: "expand",
@@ -135,20 +147,28 @@ For selection, add a column of small **Checkbox** components: put \`data-ok-tabl
 <tr id="eclair-details" data-ok-table-detail hidden>
   <td colspan="2">…</td>
 </tr>`,
-    react: `<TableRow>
-  <TableCell padding="checkbox">
-    <TableExpandButton
-      expanded={open}
-      controls="eclair-details"
-      aria-label="Purchase history of Eclair"
-      onClick={() => setOpen(!open)}
-    />
-  </TableCell>
-  <TableCell>Eclair</TableCell>
-</TableRow>
-<TableDetailRow id="eclair-details" open={open} colSpan={2}>
-  …
-</TableDetailRow>`,
+    react: `import { TableCell, TableDetailRow, TableExpandButton, TableRow } from "@owlky/react";
+
+export function TableExpand() {
+  return (
+    <>
+      <TableRow>
+        <TableCell padding="checkbox">
+          <TableExpandButton
+            expanded={open}
+            controls="eclair-details"
+            aria-label="Purchase history of Eclair"
+            onClick={() => setOpen(!open)}
+          />
+        </TableCell>
+        <TableCell>Eclair</TableCell>
+      </TableRow>
+      <TableDetailRow id="eclair-details" open={open} colSpan={2}>
+        …
+      </TableDetailRow>
+    </>
+  );
+}`,
   },
   {
     id: "paginate",
@@ -159,17 +179,23 @@ For selection, add a column of small **Checkbox** components: put \`data-ok-tabl
   <span data-ok-table-pagination-displayed aria-live="polite">1–5 of 12</span>
   <div data-ok-table-pagination-actions>…</div>
 </div>`,
-    react: `<TablePagination
-  count={desserts.length}
-  page={page}
-  rowsPerPage={rowsPerPage}
-  rowsPerPageOptions={[5, 10, 25]}
-  onPageChange={setPage}
-  onRowsPerPageChange={(next) => {
-    setRowsPerPage(next);
-    setPage(0);
-  }}
-/>`,
+    react: `import { TablePagination } from "@owlky/react";
+
+export function TablePaginate() {
+  return (
+    <TablePagination
+      count={desserts.length}
+      page={page}
+      rowsPerPage={rowsPerPage}
+      rowsPerPageOptions={[5, 10, 25]}
+      onPageChange={setPage}
+      onRowsPerPageChange={(next) => {
+        setRowsPerPage(next);
+        setPage(0);
+      }}
+    />
+  );
+}`,
   },
   {
     id: "options",

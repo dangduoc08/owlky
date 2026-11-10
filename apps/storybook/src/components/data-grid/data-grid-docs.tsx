@@ -41,7 +41,13 @@ export function People({ rows }: { rows: Person[] }) {
     title: "Add a toolbar",
     body: "`showToolbar` adds a search field and buttons that open the column list, the filter panel, the row height menu and the export menu. Search matches every word you type in any column. Export downloads a CSV file or prints the grid as shown. Each feature can be turned off, for example with `disableColumnFilter`.",
     html: `<div data-ok-data-grid-toolbar>…</div>`,
-    react: `<DataGrid aria-label="People" rows={rows} columns={columns} showToolbar disableDensitySelector />`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridToolbar() {
+  return (
+    <DataGrid aria-label="People" rows={rows} columns={columns} showToolbar disableDensitySelector />
+  );
+}`,
   },
   {
     id: "state",
@@ -57,18 +63,24 @@ export function People({ rows }: { rows: Person[] }) {
     title: "Combine filters",
     body: "**Add filter** in the filter panel adds another condition. From the second row, choose **And** (every condition must match, the default) or **Or** (any one is enough). The remove button deletes a condition. Set `disableMultipleColumnsFiltering` to keep a single condition.",
     html: `<!-- The filter panel's Add filter button copies the first row, with an And / Or field. -->`,
-    react: `<DataGrid
-  aria-label="People"
-  rows={rows}
-  columns={columns}
-  filterModel={{
-    logicOperator: "or",
-    items: [
-      { field: "age", operator: "<", value: "20" },
-      { field: "age", operator: ">", value: "60" },
-    ],
-  }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridFilters() {
+  return (
+    <DataGrid
+      aria-label="People"
+      rows={rows}
+      columns={columns}
+      filterModel={{
+        logicOperator: "or",
+        items: [
+          { field: "age", operator: "<", value: "20" },
+          { field: "age", operator: ">", value: "60" },
+        ],
+      }}
+    />
+  );
+}`,
   },
   {
     id: "layout",
@@ -78,12 +90,18 @@ export function People({ rows }: { rows: Person[] }) {
 - **Pin:** choose **Pin to left** or **Pin to right** in the column menu. Pinned columns stay in view while the others scroll. Use \`pinnedColumns\` to pin columns from the start.`,
     html: `<!-- Pinned cells carry data-ok-pinned; the script keeps their offsets. -->
 <div role="columnheader" data-ok-field="firstName" data-ok-pinned="left" tabindex="-1">…</div>`,
-    react: `<DataGrid
-  aria-label="Employees"
-  rows={rows}
-  columns={columns}
-  initialState={{ pinnedColumns: { left: ["firstName"], right: ["actions"] } }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridLayout() {
+  return (
+    <DataGrid
+      aria-label="Employees"
+      rows={rows}
+      columns={columns}
+      initialState={{ pinnedColumns: { left: ["firstName"], right: ["actions"] } }}
+    />
+  );
+}`,
   },
   {
     id: "editing",
@@ -95,12 +113,18 @@ export function People({ rows }: { rows: Person[] }) {
     if (event.detail.row.age > 120) event.preventDefault();
   });
 </script>`,
-    react: `<DataGrid
-  aria-label="Employees"
-  rows={rows}
-  columns={[{ field: "age", headerName: "Age", type: "number", editable: true }]}
-  processRowUpdate={async (row) => saveEmployee(row)}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridEditing() {
+  return (
+    <DataGrid
+      aria-label="Employees"
+      rows={rows}
+      columns={[{ field: "age", headerName: "Age", type: "number", editable: true }]}
+      processRowUpdate={async (row) => saveEmployee(row)}
+    />
+  );
+}`,
   },
   {
     id: "large",
@@ -202,14 +226,20 @@ export function Customers() {
   …
   <div role="row" data-ok-row-id="t-2" data-ok-selectable="false" aria-selected="false">…</div>
 </div>`,
-    react: `<DataGrid
-  aria-label="Tasks"
-  rows={tasks}
-  columns={columns}
-  checkboxSelection
-  disableMultipleRowSelection
-  isRowSelectable={({ row }) => row.status !== "Done"}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridSelection() {
+  return (
+    <DataGrid
+      aria-label="Tasks"
+      rows={tasks}
+      columns={columns}
+      checkboxSelection
+      disableMultipleRowSelection
+      isRowSelectable={({ row }) => row.status !== "Done"}
+    />
+  );
+}`,
   },
   {
     id: "spans",
@@ -221,18 +251,24 @@ export function Customers() {
 
 <!-- Rows that grow with their text -->
 <div role="row" data-ok-row-id="t-3" data-ok-row-height="auto">…</div>`,
-    react: `<DataGrid
-  aria-label="Budget"
-  rows={lines}
-  columns={[
-    { field: "region", headerName: "Region", colSpan: ({ row }) => (row.id === "total" ? 3 : 1) },
-    { field: "team", headerName: "Team" },
-    { field: "item", headerName: "Item" },
-    { field: "amount", headerName: "Amount", type: "number" },
-  ]}
-  rowSpanning
-  getRowHeight={({ model }) => (model.notes.length > 40 ? "auto" : null)}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridSpans() {
+  return (
+    <DataGrid
+      aria-label="Budget"
+      rows={lines}
+      columns={[
+        { field: "region", headerName: "Region", colSpan: ({ row }) => (row.id === "total" ? 3 : 1) },
+        { field: "team", headerName: "Team" },
+        { field: "item", headerName: "Item" },
+        { field: "amount", headerName: "Amount", type: "number" },
+      ]}
+      rowSpanning
+      getRowHeight={({ model }) => (model.notes.length > 40 ? "auto" : null)}
+    />
+  );
+}`,
   },
   {
     id: "api",
@@ -285,13 +321,19 @@ export function Customers() {
     title: "Tune filtering and search",
     body: 'The **is any of** operator keeps rows whose value is one of several values: type them separated by commas. A column\'s `filterOperators` replaces the operators of its type, for example with a range. Each operator returns a test for a value. In HTML, set them with `setFilterOperators(field, operators)`. Set `ignoreDiacritics` so that searches and filters ignore accents: "ha noi" finds "Hà Nội". `quickFilterLogicOperator="or"` keeps rows that match any word instead of every word. `quickFilterExcludeHiddenColumns` leaves hidden columns out of the search. To leave one column out, set its `getApplyQuickFilterFn` to `null` in React, or `data-ok-searchable="false"` on its header in HTML.',
     html: `<div data-ok-data-grid data-ok-ignore-diacritics data-ok-quick-filter-logic-operator="or">…</div>`,
-    react: `<DataGrid
-  aria-label="Places"
-  rows={places}
-  columns={columns}
-  ignoreDiacritics
-  quickFilterLogicOperator="or"
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridFilterOptions() {
+  return (
+    <DataGrid
+      aria-label="Places"
+      rows={places}
+      columns={columns}
+      ignoreDiacritics
+      quickFilterLogicOperator="or"
+    />
+  );
+}`,
   },
   {
     id: "export-options",
@@ -302,14 +344,20 @@ export function Customers() {
   const grid = window.Owlky.get(document.getElementById("products"), "data-grid");
   grid.exportCsv({ delimiter: ";", fileName: "products" });
 </script>`,
-    react: `<DataGrid
-  aria-label="Products"
-  rows={rows}
-  columns={columns}
-  showToolbar
-  csvOptions={{ delimiter: ";", fileName: "products" }}
-  printOptions={{ hideFooter: false }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridExportOptions() {
+  return (
+    <DataGrid
+      aria-label="Products"
+      rows={rows}
+      columns={columns}
+      showToolbar
+      csvOptions={{ delimiter: ";", fileName: "products" }}
+      printOptions={{ hideFooter: false }}
+    />
+  );
+}`,
   },
   {
     id: "languages",
@@ -328,15 +376,21 @@ export function Customers() {
     title: "Show rows as a tree",
     body: "Set `treeData` and return each row's path from `getTreeDataPath`: the names of its ancestors, then its own. Parents that a path names without a row of their own get a generated row. A group column shows the names with a button that opens and closes the children. Right and Left open and close a row when its group cell has the focus. `defaultGroupingExpansionDepth` sets how many levels are open at first. Filters keep the parents of the rows that match, and sorting orders rows among their siblings. In HTML, rows carry `aria-level` and `data-ok-parent`, and the grid fires `ok:data-grid:expand`. With a data source, `getChildrenCount` and `getGroupKey` let the grid load children when a row opens.",
     html: `<div role="row" data-ok-row-id="m-2" data-ok-parent="m-1" aria-level="2" aria-expanded="false">…</div>`,
-    react: `<DataGrid
-  aria-label="Team"
-  rows={team}
-  columns={columns}
-  treeData
-  getTreeDataPath={(row) => row.path}
-  groupingColDef={{ headerName: "Name" }}
-  defaultGroupingExpansionDepth={1}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridTree() {
+  return (
+    <DataGrid
+      aria-label="Team"
+      rows={team}
+      columns={columns}
+      treeData
+      getTreeDataPath={(row) => row.path}
+      groupingColDef={{ headerName: "Name" }}
+      defaultGroupingExpansionDepth={1}
+    />
+  );
+}`,
   },
   {
     id: "detail",
@@ -345,39 +399,57 @@ export function Customers() {
     html: `<template data-ok-data-grid-detail="o-1001">
   <p>Order o-1001 for Ana Silva.</p>
 </template>`,
-    react: `<DataGrid
-  aria-label="Orders"
-  rows={orders}
-  columns={columns}
-  getDetailPanelContent={({ row }) => <OrderLines order={row} />}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridDetail() {
+  return (
+    <DataGrid
+      aria-label="Orders"
+      rows={orders}
+      columns={columns}
+      getDetailPanelContent={({ row }) => <OrderLines order={row} />}
+    />
+  );
+}`,
   },
   {
     id: "ordering",
     title: "Move and pin rows",
     body: 'With `rowReordering`, each row gets a handle: drag it onto another row, or press Alt + Up or Alt + Down on it. A screen reader hears the new position. Moving is off while the rows are sorted or filtered. React reports moves with `onRowOrderChange`; HTML fires `ok:data-grid:roworder`, which you can cancel. `pinnedRows` keeps rows above or below the others while they scroll. Pinned rows aren\'t sorted, filtered or paged. In HTML, put them in `<div role="rowgroup" data-ok-data-grid-pinned-rows="top">` (or `bottom`).',
-    react: `<DataGrid
-  aria-label="Agenda"
-  rows={items}
-  columns={columns}
-  rowReordering
-  onRowOrderChange={({ oldIndex, targetIndex }) => save(oldIndex, targetIndex)}
-  pinnedRows={{ top: [welcome], bottom: [questions] }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridOrdering() {
+  return (
+    <DataGrid
+      aria-label="Agenda"
+      rows={items}
+      columns={columns}
+      rowReordering
+      onRowOrderChange={({ oldIndex, targetIndex }) => save(oldIndex, targetIndex)}
+      pinnedRows={{ top: [welcome], bottom: [questions] }}
+    />
+  );
+}`,
   },
   {
     id: "groups",
     title: "Group column headers and show a list",
     body: "`columnGroupingModel` puts headers over groups of columns, on as many levels as you need. A group's `description` shows as its tooltip. When a column is hidden or moved, its group splits around it. Columns can't move out of their group. `listView` shows each row as one cell, such as a card on a small screen. `listViewColumn` says which field it shows, and `renderCell` builds its content. The headers and the other cells are hidden in list view.",
-    react: `<DataGrid
-  aria-label="Contacts"
-  rows={contacts}
-  columns={columns}
-  columnGroupingModel={[
-    { groupId: "person", headerName: "Person", children: [{ field: "firstName" }, { field: "lastName" }] },
-    { groupId: "contact", headerName: "Contact", children: [{ field: "email" }] },
-  ]}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridGroups() {
+  return (
+    <DataGrid
+      aria-label="Contacts"
+      rows={contacts}
+      columns={columns}
+      columnGroupingModel={[
+        { groupId: "person", headerName: "Person", children: [{ field: "firstName" }, { field: "lastName" }] },
+        { groupId: "contact", headerName: "Contact", children: [{ field: "email" }] },
+      ]}
+    />
+  );
+}`,
   },
   {
     id: "lazy",
@@ -393,7 +465,13 @@ export function Customers() {
     },
   });
 </script>`,
-    react: `<DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} lazyLoading />`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridLazy() {
+  return (
+    <DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} lazyLoading />
+  );
+}`,
   },
   {
     id: "grouping",
@@ -402,15 +480,21 @@ export function Customers() {
     html: `<div data-ok-data-grid id="sales"
   data-ok-row-grouping-model='["region"]'
   data-ok-aggregation-model='{"revenue":"sum"}'>…</div>`,
-    react: `<DataGrid
-  aria-label="Sales"
-  rows={sales}
-  columns={columns}
-  initialState={{
-    rowGrouping: { model: ["region"] },
-    aggregation: { model: { units: "sum", revenue: "sum" } },
-  }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridGrouping() {
+  return (
+    <DataGrid
+      aria-label="Sales"
+      rows={sales}
+      columns={columns}
+      initialState={{
+        rowGrouping: { model: ["region"] },
+        aggregation: { model: { units: "sum", revenue: "sum" } },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "pivot",
@@ -418,69 +502,97 @@ export function Customers() {
     body: "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and, for each column, its place and function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
     html: `<div data-ok-data-grid id="sales" data-ok-pivot-active
   data-ok-pivot-model='{"rows":[{"field":"region"}],"columns":[{"field":"year"}],"values":[{"field":"revenue","aggFunc":"sum"}]}'>…</div>`,
-    react: `<DataGrid
-  aria-label="Revenue by region and year"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  initialState={{
-    pivoting: {
-      active: true,
-      model: {
-        rows: [{ field: "region" }],
-        columns: [{ field: "year" }],
-        values: [{ field: "revenue", aggFunc: "sum" }],
-      },
-    },
-  }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridPivot() {
+  return (
+    <DataGrid
+      aria-label="Revenue by region and year"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      initialState={{
+        pivoting: {
+          active: true,
+          model: {
+            rows: [{ field: "region" }],
+            columns: [{ field: "year" }],
+            values: [{ field: "revenue", aggFunc: "sum" }],
+          },
+        },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "cells",
     title: "Select cells and use the clipboard",
     body: "With `cellSelection`, people select cells in ranges: press a cell and drag, press another cell with Shift, or hold Shift and use the arrow keys. Ctrl or Cmd adds a range, or toggles one cell. Ctrl + A selects every cell of the page. Ctrl + C copies the selected cells as tab-separated text, which spreadsheets read. Without selected cells it copies the selected rows, or the focused cell. Ctrl + V pastes text into editable cells, from the selection's first cell or the focused cell. One copied value fills every selected cell. Each pasted row goes through `processRowUpdate` (HTML: a cancelable `ok:data-grid:edit`). `disableClipboardPaste` turns pasting off. The grid uses the browser's own copy and paste for these keys, so it never asks for clipboard permissions.",
     html: `<div data-ok-data-grid id="inventory" data-ok-cell-selection>…</div>`,
-    react: `<DataGrid
-  aria-label="Inventory"
-  rows={items}
-  columns={columns}
-  cellSelection
-  processRowUpdate={(row) => save(row)}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridCells() {
+  return (
+    <DataGrid
+      aria-label="Inventory"
+      rows={items}
+      columns={columns}
+      cellSelection
+      processRowUpdate={(row) => save(row)}
+    />
+  );
+}`,
   },
   {
     id: "header-filters",
     title: "Filter from the headers",
     body: "`headerFilters` adds a row of fields under the column headers. Each field filters its column with the column type's first operator, and shows that operator as its label: text contains, a number equals, a date is. Booleans and choices get a list, dates get a date picker, and date times (`dateTime` columns) get a date time picker. The fields and the filter panel share one filter model. Up and Down move from a field to the cells. Date and date time filters in the filter panel use the same pickers.",
-    react: `<DataGrid aria-label="Inventory" rows={items} columns={columns} headerFilters />`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridHeaderFilters() {
+  return <DataGrid aria-label="Inventory" rows={items} columns={columns} headerFilters />;
+}`,
   },
   {
     id: "export-excel",
     title: "Export to Excel",
     body: "The **Export** menu downloads the filtered, sorted rows as an Excel workbook. Numbers, booleans and dates keep their type, with a date format. Text is written as text, never as a formula, because exported data may come from users. `excelOptions` sets the file name, the sheet name, the fields and whether to include the headers. In React, `apiRef.current.getDataAsExcel()` returns the file's bytes. In HTML, use `toExcel()` and `exportExcel()`, or the attribute `data-ok-excel-options` (JSON).",
-    react: `<DataGrid
-  aria-label="Sales"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  excelOptions={{ fileName: "sales", sheetName: "2025" }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridExportExcel() {
+  return (
+    <DataGrid
+      aria-label="Sales"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      excelOptions={{ fileName: "sales", sheetName: "2025" }}
+    />
+  );
+}`,
   },
   {
     id: "charts",
     title: "Chart the rows",
     body: "With `chartsIntegration`, a chart follows the grid. `chartModel` sets its `type`, its `dimension` (the field that names the categories) and its `values` (number fields drawn as series). The types are `column`, `bar`, `line`, `area`, `pie`, `donut`, `radar` and `scatter`. When the rows are grouped, the chart shows the top-level groups with the aggregated values of the rows that pass the filters. Otherwise it shows the rows of the page. A scatter chart of rows whose category is a number column places each row at that number. The **Chart** button in the toolbar opens a panel to change the type, the category, the series, the stacking, the value labels and the legend. In HTML, the chart is a Chart component inside the grid, and the grid updates it through the chart's `updateSeries()` method.",
-    react: `<DataGrid
-  aria-label="Sales"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  chartsIntegration
-  initialState={{
-    rowGrouping: { model: ["product"] },
-    chartsIntegration: { model: { type: "column", values: ["revenue"] } },
-  }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridCharts() {
+  return (
+    <DataGrid
+      aria-label="Sales"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        rowGrouping: { model: ["product"] },
+        chartsIntegration: { model: { type: "column", values: ["revenue"] } },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "charts-configuration",
@@ -503,26 +615,32 @@ When the grid is pivoted, a value field of the pivot draws one series per pivot 
     <figure data-ok-chart id="sales-chart">…</figure>
   </div>
 </div>`,
-    react: `<DataGrid
-  aria-label="Revenue by region and product"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  chartsIntegration
-  initialState={{
-    pivoting: {
-      active: true,
-      model: {
-        rows: [{ field: "region" }],
-        columns: [{ field: "product" }],
-        values: [{ field: "revenue", aggFunc: "sum" }],
-      },
-    },
-    chartsIntegration: {
-      model: { type: "column", values: ["revenue"], stacked: true, legend: "bottom" },
-    },
-  }}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+export function DataGridChartsConfiguration() {
+  return (
+    <DataGrid
+      aria-label="Revenue by region and product"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        pivoting: {
+          active: true,
+          model: {
+            rows: [{ field: "region" }],
+            columns: [{ field: "product" }],
+            values: [{ field: "revenue", aggFunc: "sum" }],
+          },
+        },
+        chartsIntegration: {
+          model: { type: "column", values: ["revenue"], stacked: true, legend: "bottom" },
+        },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "options",

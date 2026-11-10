@@ -190,11 +190,19 @@ export function Notes() {
 </div>
 
 <div data-ok-code-editor data-ok-monaco-theme="hc-black">…</div>`,
-    react: `<div data-ok-theme="dark">
-  <CodeEditor aria-label="Dark editor" />
-</div>
+    react: `import { CodeEditor } from "@owlky/react";
 
-<CodeEditor aria-label="High contrast" theme="hc-black" />`,
+export function CodeEditorThemes() {
+  return (
+    <>
+      <div data-ok-theme="dark">
+        <CodeEditor aria-label="Dark editor" />
+      </div>
+
+      <CodeEditor aria-label="High contrast" theme="hc-black" />
+    </>
+  );
+}`,
   },
   {
     id: "loading",

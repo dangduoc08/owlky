@@ -70,23 +70,38 @@ export function Setup() {
 <p data-ok-stepper-panel="setup" hidden>Invite the people who will work on it.</p>
 <!-- A panel for one step only -->
 <div data-ok-stepper-panel="setup" data-ok-stepper-panel-step="3" hidden>All steps completed.</div>`,
-    react: `<Stepper activeStep={active}>
-  <Step>
-    <StepLabel>Choose a plan</StepLabel>
-  </Step>
-  {/* Skipped: not completed although it comes before the active step */}
-  <Step completed={false}>
-    <StepLabel optional="Optional">Add details</StepLabel>
-  </Step>
-</Stepper>`,
+    react: `import { Step, StepLabel, Stepper } from "@owlky/react";
+
+export function StepperState() {
+  return (
+    <Stepper activeStep={active}>
+      <Step>
+        <StepLabel>Choose a plan</StepLabel>
+      </Step>
+      {/* Skipped: not completed although it comes before the active step */}
+      <Step completed={false}>
+        <StepLabel optional="Optional">Add details</StepLabel>
+      </Step>
+    </Stepper>
+  );
+}`,
   },
   {
     id: "labels",
     title: "Write step labels",
     body: 'Keep titles short, two or three words. `optional` adds a second line, such as "Optional". Set `error` on a `StepLabel` to show that a step failed: the icon turns into an exclamation mark and the text takes the error color. `icon` replaces the number with other text, or with any node such as an `svg`.',
-    react: `<StepLabel optional="Optional">Add details</StepLabel>
-<StepLabel error optional="Card declined">Payment</StepLabel>
-<StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>`,
+    react: `import { Card, StepLabel } from "@owlky/react";
+import { SettingsIcon } from "lucide-react";
+
+export function StepperLabels() {
+  return (
+    <>
+      <StepLabel optional="Optional">Add details</StepLabel>
+      <StepLabel error optional="Card declined">Payment</StepLabel>
+      <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
+    </>
+  );
+}`,
     html: `<span data-ok-step-label data-ok-error>…</span>
 <span data-ok-step-label-optional>Card declined</span>`,
   },
@@ -100,23 +115,36 @@ export function Setup() {
     <div data-ok-collapse data-ok-timeout="auto" data-ok-step-content>…</div>
   </li>
 </ol>`,
-    react: `<Stepper activeStep={active} orientation="vertical">
-  <Step>
-    <StepLabel>Choose a plan</StepLabel>
-    <StepContent>…</StepContent>
-  </Step>
-</Stepper>`,
+    react: `import { Step, StepContent, StepLabel, Stepper } from "@owlky/react";
+
+export function StepperLayout() {
+  return (
+    <Stepper activeStep={active} orientation="vertical">
+      <Step>
+        <StepLabel>Choose a plan</StepLabel>
+        <StepContent>…</StepContent>
+      </Step>
+    </Stepper>
+  );
+}`,
   },
   {
     id: "variants",
     title: "Change the look",
     body: "`variant` sets how the steps look. `standard` shows numbered icons. `dot` shows small dots and thicker lines in the primary color. `circle` shows large circles that hold an icon (pass one per step with `icon`), with a gradient on the active and completed steps. To draw a line of your own, pass `connector`, or `null` for no line.",
     html: `<ol data-ok-stepper data-ok-variant="dot" data-ok-alternative-label …>…</ol>`,
-    react: `<Stepper activeStep={active} alternativeLabel variant="circle">
-  <Step>
-    <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
-  </Step>
-</Stepper>`,
+    react: `import { Step, StepLabel, Stepper } from "@owlky/react";
+import { SettingsIcon } from "lucide-react";
+
+export function StepperVariants() {
+  return (
+    <Stepper activeStep={active} alternativeLabel variant="circle">
+      <Step>
+        <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
+      </Step>
+    </Stepper>
+  );
+}`,
   },
   {
     id: "mobile",
@@ -129,13 +157,19 @@ export function Setup() {
   </span>
   <button type="button" data-ok-button data-ok-mobile-stepper-next>…Next…</button>
 </div>`,
-    react: `<MobileStepper
-  steps={3}
-  activeStep={active}
-  position="static"
-  backButton={<Button onClick={() => setActive(active - 1)} disabled={active === 0}>Back</Button>}
-  nextButton={<Button onClick={() => setActive(active + 1)} disabled={active === 2}>Next</Button>}
-/>`,
+    react: `import { Button, MobileStepper } from "@owlky/react";
+
+export function StepperMobile() {
+  return (
+    <MobileStepper
+      steps={3}
+      activeStep={active}
+      position="static"
+      backButton={<Button onClick={() => setActive(active - 1)} disabled={active === 0}>Back</Button>}
+      nextButton={<Button onClick={() => setActive(active + 1)} disabled={active === 2}>Next</Button>}
+    />
+  );
+}`,
   },
   {
     id: "options",

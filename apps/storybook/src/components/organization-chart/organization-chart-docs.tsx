@@ -52,9 +52,15 @@ export function Company() {
     </li>
   </ul>
 </li>`,
-    react: `<OrganizationChartNode label="Priya Raman">
-  <OrganizationChartNode label="Elias Novak" />
-</OrganizationChartNode>`,
+    react: `import { OrganizationChartNode } from "@owlky/react";
+
+export function OrganizationChartNodes() {
+  return (
+    <OrganizationChartNode label="Priya Raman">
+      <OrganizationChartNode label="Elias Novak" />
+    </OrganizationChartNode>
+  );
+}`,
   },
   {
     id: "lines",
@@ -67,16 +73,22 @@ export function Company() {
     data-ok-line-height="20" data-ok-line-border-radius="8" aria-label="Company">
   …
 </ul>`,
-    react: `<OrganizationChart
-  aria-label="Company"
-  label="Maya Lindqvist"
-  lineColor="primary"
-  lineStyle="dashed"
-  lineHeight={20}
-  lineBorderRadius={8}
->
-  …
-</OrganizationChart>`,
+    react: `import { OrganizationChart } from "@owlky/react";
+
+export function OrganizationChartLines() {
+  return (
+    <OrganizationChart
+      aria-label="Company"
+      label="Maya Lindqvist"
+      lineColor="primary"
+      lineStyle="dashed"
+      lineHeight={20}
+      lineBorderRadius={8}
+    >
+      …
+    </OrganizationChart>
+  );
+}`,
   },
   {
     id: "scroll",

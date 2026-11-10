@@ -138,10 +138,16 @@ export function Quakes() {
     console.log(event.detail.features[0]?.properties.name);
   });
 </script>`,
-    react: `<MapView
-  interactiveLayerIds={["states-fill"]}
-  onMouseMove={(event) => console.log(event.features?.[0]?.properties.name)}
-/>`,
+    react: `import { MapView } from "@owlky/react";
+
+export function MapEvents() {
+  return (
+    <MapView
+      interactiveLayerIds={["states-fill"]}
+      onMouseMove={(event) => console.log(event.features?.[0]?.properties.name)}
+    />
+  );
+}`,
   },
   {
     id: "view",
@@ -170,11 +176,17 @@ export function Quakes() {
   </div>
   <div data-ok-map-scale data-ok-unit="metric"></div>
 </div>`,
-    react: `<MapView …>
-  <NavigationControl position="bottom-left" />
-  <ScaleControl position="bottom-left" />
-  <FullscreenControl position="top-left" />
-</MapView>`,
+    react: `import { FullscreenControl, MapView, NavigationControl, ScaleControl } from "@owlky/react";
+
+export function MapControls() {
+  return (
+    <MapView …>
+      <NavigationControl position="bottom-left" />
+      <ScaleControl position="bottom-left" />
+      <FullscreenControl position="top-left" />
+    </MapView>
+  );
+}`,
   },
   {
     id: "security",

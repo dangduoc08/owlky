@@ -51,9 +51,7 @@ export function DejaAvatar() {
     react: `import { Avatar } from "@owlky/react";
 
 export function LargeAvatar() {
-  return (
-    <Avatar variant="rounded" size={56} src="/people/lucian.jpg" alt="Lucian Obrien" />
-  );
+  return <Avatar variant="rounded" size={56} src="/people/lucian.jpg" alt="Lucian Obrien" />;
 }`,
   },
   {

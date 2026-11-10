@@ -132,15 +132,21 @@ export function Controlled({ slides }) {
     html: `<dialog id="photos" data-ok-lightbox data-ok-theme="dark" aria-label="Lightbox"
   data-ok-download data-ok-share data-ok-rotate data-ok-disable-slideshow
   data-ok-captions-show-toggle data-ok-thumbnails-show-toggle>…</dialog>`,
-    react: `<Lightbox
-  slides={slides}
-  download
-  share
-  rotate
-  disableSlideshow
-  captionsShowToggle
-  thumbnailsShowToggle
-/>`,
+    react: `import { Lightbox } from "@owlky/react";
+
+export function LightboxToolbar() {
+  return (
+    <Lightbox
+      slides={slides}
+      download
+      share
+      rotate
+      disableSlideshow
+      captionsShowToggle
+      thumbnailsShowToggle
+    />
+  );
+}`,
   },
   {
     id: "zoom",
@@ -148,7 +154,11 @@ export function Controlled({ slides }) {
     body: "Zoom in with the toolbar, the plus and minus keys, a double click or double tap, a pinch, or Ctrl and the mouse wheel. Then drag, use the arrow keys or the wheel to move around the image. An image zooms until one image pixel covers one screen pixel (`maxZoomPixelRatio`), so give images their natural `width` and `height`. `zoomInMultiplier` sets the size of each step, `doubleClickMaxStops` how many steps a double click goes through, and `scrollToZoom` lets the wheel zoom without Ctrl. Images that are no larger than the screen don't zoom.",
     html: `<dialog id="photos" data-ok-lightbox … data-ok-max-zoom-pixel-ratio="2"
   data-ok-zoom-in-multiplier="1.5" data-ok-scroll-to-zoom>…</dialog>`,
-    react: `<Lightbox slides={slides} maxZoomPixelRatio={2} zoomInMultiplier={1.5} scrollToZoom />`,
+    react: `import { Lightbox } from "@owlky/react";
+
+export function LightboxZoom() {
+  return <Lightbox slides={slides} maxZoomPixelRatio={2} zoomInMultiplier={1.5} scrollToZoom />;
+}`,
   },
   {
     id: "thumbnails",
@@ -156,7 +166,13 @@ export function Controlled({ slides }) {
     body: "Thumbnails sit at the `bottom` by default. Set `thumbnailsPosition` to `top`, `start` or `end` to move them, and change their size with `thumbnailsWidth`, `thumbnailsHeight`, `thumbnailsBorder`, `thumbnailsBorderRadius`, `thumbnailsPadding` and `thumbnailsGap` (in pixels). `thumbnailsImageFit` crops them to fill (`cover`) or shows the whole picture (`contain`). The row fades out at its edges unless `thumbnailsVignette` is `false`.",
     html: `<dialog id="photos" data-ok-lightbox … data-ok-thumbnails-position="end"
   data-ok-thumbnails-width="96" data-ok-thumbnails-height="64">…</dialog>`,
-    react: `<Lightbox slides={slides} thumbnailsPosition="end" thumbnailsWidth={96} thumbnailsHeight={64} />`,
+    react: `import { Lightbox } from "@owlky/react";
+
+export function LightboxThumbnails() {
+  return (
+    <Lightbox slides={slides} thumbnailsPosition="end" thumbnailsWidth={96} thumbnailsHeight={64} />
+  );
+}`,
   },
   {
     id: "inline",
@@ -165,7 +181,11 @@ export function Controlled({ slides }) {
     html: `<div data-ok-lightbox data-ok-inline data-ok-theme="dark">
   <section data-ok-carousel data-ok-lightbox-carousel aria-roledescription="carousel" aria-label="Photo gallery">…</section>
 </div>`,
-    react: `<Lightbox slides={slides} inline />`,
+    react: `import { Lightbox } from "@owlky/react";
+
+export function LightboxInline() {
+  return <Lightbox slides={slides} inline />;
+}`,
   },
   {
     id: "close",
@@ -173,7 +193,11 @@ export function Controlled({ slides }) {
     body: "Escape and the close button always close the lightbox, unless you set `closeOnEscape` to `false`. Set `closeOnBackdropClick` to close it with a click beside the image, and `closeOnPullDown` or `closeOnPullUp` to close it when people pull the slide down or up. `finite` stops the slides at both ends instead of looping, and `disableSwipeNavigation` keeps swipes from changing slides.",
     html: `<dialog id="photos" data-ok-lightbox … data-ok-close-on-backdrop-click
   data-ok-close-on-pull-down data-ok-finite>…</dialog>`,
-    react: `<Lightbox slides={slides} closeOnBackdropClick closeOnPullDown finite />`,
+    react: `import { Lightbox } from "@owlky/react";
+
+export function LightboxClose() {
+  return <Lightbox slides={slides} closeOnBackdropClick closeOnPullDown finite />;
+}`,
   },
   {
     id: "options",

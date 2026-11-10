@@ -58,22 +58,35 @@ export function Projects() {
     id: "select",
     title: "Select items",
     body: "A click selects the item. Set `multiSelect` to select several: Ctrl or ⌘ click adds or removes one, and Shift click selects a range. `checkboxSelection` shows a checkbox on each item and implies `multiSelect`. Use `selectedItems` and `onSelectedItemsChange` to control the selection, or `disableSelection` when items are only for browsing.",
-    react: `<SimpleTreeView aria-label="Export" multiSelect checkboxSelection defaultSelectedItems={["design"]}>
-  …
-</SimpleTreeView>`,
+    react: `import { SimpleTreeView } from "@owlky/react";
+
+export function TreeViewSelect() {
+  return (
+    <SimpleTreeView aria-label="Export" multiSelect checkboxSelection defaultSelectedItems={["design"]}>
+      …
+    </SimpleTreeView>
+  );
+}`,
   },
   {
     id: "icons",
     title: "Change the icons and the look",
     body: "By default, items with children show a chevron that turns when they open. Pass `expandIcon` and `collapseIcon` for your own pair, and `endIcon` for items without children. Set `variant` to `lines` for dashed guides beside nested items, round tinted expand icons and compact rows.",
-    react: `<SimpleTreeView
-  aria-label="Outline"
-  variant="lines"
-  expandIcon={<PlusIcon />}
-  collapseIcon={<MinusIcon />}
->
-  …
-</SimpleTreeView>`,
+    react: `import { SimpleTreeView } from "@owlky/react";
+import { MinusIcon, PlusIcon } from "lucide-react";
+
+export function TreeViewIcons() {
+  return (
+    <SimpleTreeView
+      aria-label="Outline"
+      variant="lines"
+      expandIcon={<PlusIcon />}
+      collapseIcon={<MinusIcon />}
+    >
+      …
+    </SimpleTreeView>
+  );
+}`,
   },
   {
     id: "options",

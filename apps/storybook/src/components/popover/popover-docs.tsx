@@ -57,9 +57,15 @@ export function Summary() {
   <span data-ok-popover-arrow aria-hidden="true"></span>
   …
 </div>`,
-    react: `<Popover open={open} anchorEl={anchor} placement="right-start" arrow>
-  …
-</Popover>`,
+    react: `import { Popover } from "@owlky/react";
+
+export function PopoverPlacement() {
+  return (
+    <Popover open={open} anchorEl={anchor} placement="right-start" arrow>
+      …
+    </Popover>
+  );
+}`,
   },
   {
     id: "hover",
@@ -70,18 +76,26 @@ export function Summary() {
   <span data-ok-button-label>Hover me</span>
 </button>
 <div id="hint" popover="manual" data-ok-popover data-ok-placement="bottom">…</div>`,
-    react: `<Button
-  variant="outlined"
-  onPointerEnter={(event) => setAnchor(event.currentTarget)}
-  onPointerLeave={() => setAnchor(null)}
-  onFocus={(event) => setAnchor(event.currentTarget)}
-  onBlur={() => setAnchor(null)}
->
-  Hover me
-</Button>
-<Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>
-  …
-</Popover>`,
+    react: `import { Button, Popover } from "@owlky/react";
+
+export function PopoverHover() {
+  return (
+    <>
+      <Button
+        variant="outlined"
+        onPointerEnter={(event) => setAnchor(event.currentTarget)}
+        onPointerLeave={() => setAnchor(null)}
+        onFocus={(event) => setAnchor(event.currentTarget)}
+        onBlur={() => setAnchor(null)}
+      >
+        Hover me
+      </Button>
+      <Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>
+        …
+      </Popover>
+    </>
+  );
+}`,
   },
   {
     id: "options",

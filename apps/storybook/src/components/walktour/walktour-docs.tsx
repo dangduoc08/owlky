@@ -124,7 +124,11 @@ export function ControlledTour({ steps }) {
     title: "Use beacons",
     body: "Without `continuous`, the primary button reads **Close**: it closes the step and shows a beacon on the next target. People select the beacon to open that step. In a continuous tour, **Next** and **Back** go from step to step without beacons, and closing a step with the close button, Escape or the overlay shows the next step's beacon. `disableBeacon` opens steps at once, for the whole tour or for one step.",
     html: `<div id="tour" data-ok-walktour data-ok-run data-ok-show-skip-button>…</div>`,
-    react: `<Walktour steps={steps} run showSkipButton />`,
+    react: `import { Walktour } from "@owlky/react";
+
+export function WalktourBeacons() {
+  return <Walktour steps={steps} run showSkipButton />;
+}`,
   },
   {
     id: "overlay",
@@ -132,7 +136,13 @@ export function ControlledTour({ steps }) {
     body: "The overlay blocks the page while a step is open, so the step is a modal dialog. `spotlightClicks` lets people use the element in the spotlight, and `disableOverlay` removes the overlay: in both cases the step is no longer modal. `disableOverlayClose` keeps a click on the overlay from closing the step. `spotlightPadding` sets the space around the target and `spotlightRadius` the spotlight's corners, in pixels. When a target is out of view, the tour scrolls it into view and keeps `scrollOffset` pixels above it. `disableScrolling` turns that off, and `scrollToFirstStep` scrolls for the first step too.",
     html: `<div id="tour" data-ok-walktour data-ok-spotlight-clicks data-ok-spotlight-padding="12"
   data-ok-spotlight-radius="16" data-ok-scroll-offset="80">…</div>`,
-    react: `<Walktour steps={steps} spotlightClicks spotlightPadding={12} spotlightRadius={16} scrollOffset={80} />`,
+    react: `import { Walktour } from "@owlky/react";
+
+export function WalktourOverlay() {
+  return (
+    <Walktour steps={steps} spotlightClicks spotlightPadding={12} spotlightRadius={16} scrollOffset={80} />
+  );
+}`,
   },
   {
     id: "options",
@@ -159,13 +169,19 @@ export function ControlledTour({ steps }) {
     if (event.detail.type === "tour:end") console.log("Tour ended:", event.detail.status);
   });
 </script>`,
-    react: `<Walktour
-  steps={steps}
-  run
-  onEvent={(type, data) => {
-    if (type === "tour:end") console.log("Tour ended:", data.status);
-  }}
-/>`,
+    react: `import { Walktour } from "@owlky/react";
+
+export function WalktourEvents() {
+  return (
+    <Walktour
+      steps={steps}
+      run
+      onEvent={(type, data) => {
+        if (type === "tour:end") console.log("Tour ended:", data.status);
+      }}
+    />
+  );
+}`,
   },
   {
     id: "keyboard",

@@ -34,7 +34,11 @@ const toolbar = {
     title: "Use Tailwind CSS spacing",
     body: "The Owlky theme for Tailwind CSS v4 sets Tailwind's spacing unit to `--ok-spacing`, so every spacing utility follows it. For example, `gap-2` is 8px and `p-4` is 16px.",
     html: `<div class="flex gap-2 p-4">…</div>`,
-    react: `<div className="flex gap-2 p-4">…</div>`,
+    react: `export function GridTailwind() {
+  return (
+    <div className="flex gap-2 p-4">…</div>
+  );
+}`,
   },
   {
     id: "breakpoints",

@@ -61445,7 +61445,7 @@
      "body": "Set `variant` to `rounded` (12px corners) or `square`. The default size is 40px. Set `size` to a number of pixels, or to a length in `px`, `rem` or `em`. In HTML, the script turns `data-ok-size` into the avatar's size.",
      "html": "<span data-ok-avatar data-ok-variant=\"rounded\" data-ok-color=\"default\" data-ok-size=\"56\">\n  <img src=\"/people/lucian.jpg\" alt=\"Lucian Obrien\">\n</span>",
      "id": "size",
-     "react": "import { Avatar } from \"@owlky/react\";\n\nexport function LargeAvatar() {\n  return (\n    <Avatar variant=\"rounded\" size={56} src=\"/people/lucian.jpg\" alt=\"Lucian Obrien\" />\n  );\n}",
+     "react": "import { Avatar } from \"@owlky/react\";\n\nexport function LargeAvatar() {\n  return <Avatar variant=\"rounded\" size={56} src=\"/people/lucian.jpg\" alt=\"Lucian Obrien\" />;\n}",
      "title": "Change the shape and size"
     },
     {
@@ -61905,56 +61905,56 @@
      "body": "`Carousel` is a labelled `section` that holds every part. `CarouselViewport` is the scroll container and holds the `CarouselSlide`s. Add the controls you need anywhere inside the carousel: `CarouselArrows`, `CarouselDots`, `CarouselProgress`, `CarouselThumbs` with a `CarouselThumb` per slide, and `CarouselPlayButton`. You can use several sets at once, for example arrows on the slides and dots under them. To lay controls over the slides, wrap the viewport and those controls in a `CarouselStage` and give each control a `placement`, such as `bottom-end`.",
      "html": "<section data-ok-carousel aria-roledescription=\"carousel\" aria-label=\"Gallery\">\n  <div data-ok-carousel-stage>\n    <div data-ok-carousel-viewport tabindex=\"0\">…</div>\n    <div data-ok-carousel-arrows data-ok-variant=\"number\" data-ok-placement=\"bottom-end\">\n      <button type=\"button\" data-ok-icon-button data-ok-size=\"sm\" data-ok-carousel-prev aria-label=\"Previous slide\">…</button>\n      <span data-ok-carousel-counter>1/5</span>\n      <button type=\"button\" data-ok-icon-button data-ok-size=\"sm\" data-ok-carousel-next aria-label=\"Next slide\">…</button>\n    </div>\n  </div>\n  <div data-ok-carousel-thumbs data-ok-orientation=\"horizontal\">\n    <button type=\"button\" data-ok-carousel-thumb aria-label=\"Go to slide 1\" aria-current=\"true\"><img src=\"…\" alt=\"\"></button>\n    …\n  </div>\n</section>",
      "id": "anatomy",
-     "react": "<Carousel aria-label=\"Gallery\">\n  <CarouselStage>\n    <CarouselViewport>{slides}</CarouselViewport>\n    <CarouselArrows variant=\"number\" placement=\"bottom-end\" />\n  </CarouselStage>\n  <CarouselThumbs>\n    {photos.map((photo) => (\n      <CarouselThumb key={photo.src}>\n        <img src={photo.src} alt=\"\" />\n      </CarouselThumb>\n    ))}\n  </CarouselThumbs>\n</Carousel>",
+     "react": "import { Carousel, CarouselArrows, CarouselStage, CarouselThumb, CarouselThumbs, CarouselViewport } from \"@owlky/react\";\n\nexport function CarouselAnatomy() {\n  return (\n    <Carousel aria-label=\"Gallery\">\n      <CarouselStage>\n        <CarouselViewport>{slides}</CarouselViewport>\n        <CarouselArrows variant=\"number\" placement=\"bottom-end\" />\n      </CarouselStage>\n      <CarouselThumbs>\n        {photos.map((photo) => (\n          <CarouselThumb key={photo.src}>\n            <img src={photo.src} alt=\"\" />\n          </CarouselThumb>\n        ))}\n      </CarouselThumbs>\n    </Carousel>\n  );\n}",
      "title": "Build a carousel from its parts"
     },
     {
      "body": "By default each slide fills the view. Set `slidesToShow` to a number of slides (`3`, `1.5`), a share of the view (`\"70%\"`) or `auto` to keep each slide's own width. Pass one value per breakpoint for responsive carousels, such as `{ xs: 1, sm: 2, md: 3 }`: in HTML, write `data-ok-slides-to-show`, `data-ok-slides-to-show-sm` and so on. `slideSpacing` sets the gap between slides in pixels. `slidesToScroll` moves several slides per step, or as many as fit with `auto`.",
      "html": "<section data-ok-carousel aria-roledescription=\"carousel\" aria-label=\"Articles\"\n  data-ok-slides-to-show=\"1\" data-ok-slides-to-show-sm=\"2\" data-ok-slides-to-show-md=\"3\"\n  data-ok-slide-spacing=\"20\" data-ok-slides-to-scroll=\"auto\">…</section>",
      "id": "sizes",
-     "react": "<Carousel\n  aria-label=\"Articles\"\n  slidesToShow={{ xs: 1, sm: 2, md: 3 }}\n  slideSpacing={20}\n  slidesToScroll=\"auto\"\n>\n  …\n</Carousel>",
+     "react": "import { Carousel } from \"@owlky/react\";\n\nexport function CarouselSizes() {\n  return (\n    <Carousel\n      aria-label=\"Articles\"\n      slidesToShow={{ xs: 1, sm: 2, md: 3 }}\n      slideSpacing={20}\n      slidesToScroll=\"auto\"\n    >\n      …\n    </Carousel>\n  );\n}",
      "title": "Size and space the slides"
     },
     {
      "body": "`align` places the selected slides at the `start`, `center` (the default) or `end` of the view, or at a fraction of it, such as `0.1`. `containScroll` decides what happens at both ends: `trimSnaps` (the default) stops at the first and last slide without empty space, `keepSnaps` keeps a stop for every slide, and `false` leaves space so that even the first and last slides can reach their alignment. `startIndex` selects a slide when the carousel loads.",
      "html": "<section data-ok-carousel aria-roledescription=\"carousel\" aria-label=\"Centered\"\n  data-ok-align=\"center\" data-ok-contain-scroll=\"false\" data-ok-start-index=\"1\">…</section>",
      "id": "align",
-     "react": "<Carousel aria-label=\"Centered\" align=\"center\" containScroll={false} startIndex={1}>…</Carousel>",
+     "react": "import { Carousel } from \"@owlky/react\";\n\nexport function CarouselAlign() {\n  return (\n    <Carousel aria-label=\"Centered\" align=\"center\" containScroll={false} startIndex={1}>…</Carousel>\n  );\n}",
      "title": "Align and contain the slides"
     },
     {
      "body": "Set `loop` to make the first slide follow the last one. The carousel reorders the slides visually instead of copying them, so screen readers and the Tab key still meet each slide once, in order. Loops need content at least one view and two steps long; shorter carousels stop at their ends. `dragFree` lets slides glide with momentum instead of snapping, `skipSnaps` lets a strong swipe pass several slides, `draggable` turns dragging off, and `wheelGestures` moves one slide per mouse wheel or trackpad gesture.",
      "html": "<section data-ok-carousel aria-roledescription=\"carousel\" aria-label=\"Products\"\n  data-ok-loop data-ok-drag-free data-ok-wheel-gestures>…</section>",
      "id": "loop",
-     "react": "<Carousel aria-label=\"Products\" loop dragFree wheelGestures>…</Carousel>",
+     "react": "import { Carousel } from \"@owlky/react\";\n\nexport function CarouselLoop() {\n  return (\n    <Carousel aria-label=\"Products\" loop dragFree wheelGestures>…</Carousel>\n  );\n}",
      "title": "Loop, drag and scroll"
     },
     {
      "body": "`effect` changes how slides move. `fade` stacks the slides and cross-fades between them. `opacity` and `scale` dim or shrink the slides away from the selected one while you scroll. `parallax` moves a layer inside each slide more slowly than the slide: mark that layer with `data-ok-carousel-parallax`, inside a box that clips it. `autoHeight` makes the carousel as tall as the selected slide.",
      "html": "<section data-ok-carousel aria-roledescription=\"carousel\" aria-label=\"Parallax\"\n  data-ok-loop data-ok-effect=\"parallax\" data-ok-slides-to-show=\"70%\">\n  …\n  <div role=\"group\" aria-roledescription=\"slide\" aria-label=\"1 of 4\" data-ok-carousel-slide>\n    <div class=\"frame\"><img data-ok-carousel-parallax src=\"…\" alt=\"…\"></div>\n  </div>\n  …\n</section>",
      "id": "effects",
-     "react": "<Carousel aria-label=\"Parallax\" loop effect=\"parallax\" slidesToShow=\"70%\">\n  <CarouselViewport>\n    <CarouselSlide>\n      <div className=\"frame\">\n        <img data-ok-carousel-parallax=\"\" src=\"…\" alt=\"…\" />\n      </div>\n    </CarouselSlide>\n  </CarouselViewport>\n</Carousel>",
+     "react": "import { Carousel, CarouselSlide, CarouselViewport } from \"@owlky/react\";\n\nexport function CarouselEffects() {\n  return (\n    <Carousel aria-label=\"Parallax\" loop effect=\"parallax\" slidesToShow=\"70%\">\n      <CarouselViewport>\n        <CarouselSlide>\n          <div className=\"frame\">\n            <img data-ok-carousel-parallax=\"\" src=\"…\" alt=\"…\" />\n          </div>\n        </CarouselSlide>\n      </CarouselViewport>\n    </Carousel>\n  );\n}",
      "title": "Add an effect"
     },
     {
      "body": "`autoplay` moves to the next slide every `autoplayDelay` milliseconds, and `autoScroll` scrolls continuously at `autoScrollSpeed` pixels per frame. Both pause while the pointer is over the carousel, and stop when a swipe, a drag or keyboard focus reaches it, so people can read at their own pace. Always add a `CarouselPlayButton`: its label switches between **Play** and **Pause**. Neither starts on its own when the system asks for reduced motion. Set `playOnInit` to `false` to wait for the button.",
      "html": "<section data-ok-carousel aria-roledescription=\"carousel\" aria-label=\"News\"\n  data-ok-loop data-ok-autoplay data-ok-autoplay-delay=\"5000\">\n  <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\"\n    data-ok-size=\"sm\" data-ok-carousel-play>\n    <span data-ok-button-icon=\"start\" aria-hidden=\"true\">…</span>\n    <span data-ok-button-label>\n      <span data-ok-carousel-play-label=\"play\">Play</span>\n      <span data-ok-carousel-play-label=\"pause\">Pause</span>\n    </span>\n  </button>\n  …\n</section>",
      "id": "autoplay",
-     "react": "<Carousel aria-label=\"News\" loop autoplay autoplayDelay={5000}>\n  <CarouselPlayButton />\n  …\n</Carousel>",
+     "react": "import { Carousel, CarouselPlayButton } from \"@owlky/react\";\n\nexport function CarouselAutoplay() {\n  return (\n    <Carousel aria-label=\"News\" loop autoplay autoplayDelay={5000}>\n      <CarouselPlayButton />\n      …\n    </Carousel>\n  );\n}",
      "title": "Play slides automatically"
     },
     {
      "body": "Arrows come in three variants: `basic` icon buttons, `floating` square buttons on both sides of the slides, and `number`, with a counter such as **2/8** between them. Dots are `circular`, `rounded` (the selected dot stretches) or `number`. Give any control a `color` from the palette, or `white` over pictures. `CarouselProgress` shows the scroll position, or the time until the next slide with `variant=\"autoplay\"`. Thumbnails scroll to keep the selected one in view, in a row or a column (`orientation`).",
      "html": "<div data-ok-carousel-arrows data-ok-variant=\"floating\" data-ok-color=\"primary\">…</div>\n<div data-ok-carousel-dots data-ok-variant=\"number\" data-ok-color=\"warning\">…</div>\n<span data-ok-carousel-progress data-ok-variant=\"autoplay\" data-ok-color=\"info\" aria-hidden=\"true\"></span>",
      "id": "controls",
-     "react": "<CarouselArrows variant=\"floating\" color=\"primary\" />\n<CarouselDots variant=\"number\" color=\"warning\" />\n<CarouselProgress variant=\"autoplay\" color=\"info\" />",
+     "react": "import { CarouselArrows, CarouselDots, CarouselProgress } from \"@owlky/react\";\n\nexport function CarouselControls() {\n  return (\n    <>\n      <CarouselArrows variant=\"floating\" color=\"primary\" />\n      <CarouselDots variant=\"number\" color=\"warning\" />\n      <CarouselProgress variant=\"autoplay\" color=\"info\" />\n    </>\n  );\n}",
      "title": "Style the controls"
     },
     {
      "body": "Set `axis` to `y` for a vertical carousel and give it a height, for example with a class. The arrows turn to point up and down, and the Up and Down arrow keys move it. Right to left needs nothing: put the carousel in an element with `dir=\"rtl\"`, and swipes, arrow keys and arrows follow the reading direction.",
      "html": "<section data-ok-carousel aria-roledescription=\"carousel\" aria-label=\"Stories\"\n  data-ok-axis=\"y\" class=\"stories\">…</section>",
      "id": "direction",
-     "react": "<Carousel aria-label=\"Stories\" axis=\"y\" className=\"stories\">…</Carousel>",
+     "react": "import { Carousel } from \"@owlky/react\";\n\nexport function CarouselDirection() {\n  return (\n    <Carousel aria-label=\"Stories\" axis=\"y\" className=\"stories\">…</Carousel>\n  );\n}",
      "title": "Scroll vertically or right to left"
     },
     {
@@ -62006,14 +62006,14 @@
      "body": "Set `type` to choose how the values are drawn:\n\n- **`line`:** values joined by a line. `curve` sets its shape: `smooth` (the default), `straight` or `stepline`. `markerSize` adds a dot on each value.\n- **`area`:** a line with the area below it filled. `fill` sets a fading `gradient` (the default) or a `solid` tint.\n- **`bar`:** columns. Add `horizontal` for bars that run left to right, which suits long category names. `columnWidth` and `barHeight` set their thickness as a percentage of a category.\n- **`scatter`:** points placed by two numbers. The x axis is numeric.\n- **`pie` and `donut`:** one slice per category, sized by its share of the total. See \"Show parts of a whole\".\n- **`radialBar`:** one ring per category, filled to its value. With one category, it is a gauge. See \"Show progress as rings and gauges\".\n- **`radar`:** one axis per category around a center, and one shape per series.\n- **`boxPlot` and `rangeArea`:** the spread of values in each category. See \"Show ranges and distributions\".\n- **`heatmap` and `treemap`:** values as shaded cells. See \"Show values as cells\".\n- **`bubble`:** points placed by two numbers and sized by a third.\n- **`funnel` and `slope`:** stages that narrow, or the change between a few categories. See \"Show stages and changes\".\n- **Stock charts:** add `indicators`, panes and a `navigator` to a candlestick, line, area or column chart of dates. See \"Show stock prices with indicators\".\n- **`sankey`:** flows between nodes, each as wide as its value. See \"Show flows between stages\".\n\nTo mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own `type`. In HTML, set `data-ok-type` on the column header of the series.",
      "html": "<figure data-ok-chart data-ok-type=\"bar\" data-ok-x-type=\"category\" data-ok-curve=\"smooth\"\n  data-ok-legend=\"top\" data-ok-fill=\"gradient\" data-ok-y-title=\"Points\">\n  <table data-ok-chart-data>\n    <caption>Points per month</caption>\n    <thead>\n      <tr>\n        <th scope=\"col\">Month</th>\n        <th scope=\"col\" data-ok-type=\"bar\" data-ok-color=\"primary-dark\">Team A</th>\n        <th scope=\"col\" data-ok-type=\"line\" data-ok-color=\"info\">Team B</th>\n      </tr>\n    </thead>\n    <tbody>…</tbody>\n  </table>\n</figure>",
      "id": "types",
-     "react": "<Chart\n  label=\"Points per month\"\n  type=\"bar\"\n  yTitle=\"Points\"\n  categories={[\"Jan\", \"Feb\", \"Mar\"]}\n  series={[\n    { name: \"Team A\", type: \"bar\", data: [22, 12, 21] },\n    { name: \"Team B\", type: \"line\", data: [31, 26, 35] },\n  ]}\n/>",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartTypes() {\n  return (\n    <Chart\n      label=\"Points per month\"\n      type=\"bar\"\n      yTitle=\"Points\"\n      categories={[\"Jan\", \"Feb\", \"Mar\"]}\n      series={[\n        { name: \"Team A\", type: \"bar\", data: [22, 12, 21] },\n        { name: \"Team B\", type: \"line\", data: [31, 26, 35] },\n      ]}\n    />\n  );\n}",
      "title": "Choose a chart type"
     },
     {
      "body": "Each series is a column of the table and each category is a row. A row header holds the category, and an empty cell is a gap in the line.\n\n- **Categories:** text labels, such as months. In React, pass them in `categories`.\n- **Dates:** set `xType` to `datetime` and give each row header an ISO 8601 date in `data-ok-value`, such as `2012-01-01`. In React, pass dates or ISO strings in `categories`. Axis labels then mark new years and months.\n- **Numbers:** scatter charts use `xType=\"numeric\"`. Each row header is an x value, and each cell holds a y value. In React, pass `[x, y]` pairs.\n\nCells may show formatted text, such as \"12%\". Put the raw number in `data-ok-value` when the text isn't a plain number.",
      "html": "<!-- Dates: the raw date in data-ok-value, readable text in the cell -->\n<tr><th scope=\"row\" data-ok-value=\"2012-01-01\">Jan 2012</th><td data-ok-value=\"-12.5\">-12.5%</td></tr>",
      "id": "data",
-     "react": "<Chart\n  label=\"Cash flow\"\n  type=\"bar\"\n  xType=\"datetime\"\n  valueSuffix=\"%\"\n  categories={[\"2012-01-01\", \"2012-02-01\", \"2012-03-01\"]}\n  series={[{ name: \"Cash flow\", data: [-12.5, 3.2, 7.1] }]}\n/>",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartData() {\n  return (\n    <Chart\n      label=\"Cash flow\"\n      type=\"bar\"\n      xType=\"datetime\"\n      valueSuffix=\"%\"\n      categories={[\"2012-01-01\", \"2012-02-01\", \"2012-03-01\"]}\n      series={[{ name: \"Cash flow\", data: [-12.5, 3.2, 7.1] }]}\n    />\n  );\n}",
      "title": "Write the data"
     },
     {
@@ -62048,21 +62048,21 @@
      "body": "Heatmaps and treemaps draw each value as a cell in the color of its series. A larger value gets a stronger shade, so the colors still follow the theme. Selecting a cell, or moving to it with the arrow keys, shows its value.\n\n- **Heatmaps:** one row per series and one column per category, such as metrics over time. The first series is the bottom row.\n- **Treemaps:** one group per series, with one rectangle per category sized by its value. Each series lists its own categories: in React, give each point an `x` name. In HTML, write one row per category and leave the cells of the other series empty. Names print in the cells that fit them.",
      "html": "<figure data-ok-chart data-ok-type=\"treemap\" data-ok-x-type=\"category\" data-ok-curve=\"smooth\"\n  data-ok-legend=\"top\" data-ok-fill=\"gradient\">\n  <table data-ok-chart-data>\n    <caption>Visits by page and device</caption>\n    <thead>\n      <tr><th scope=\"col\">Page</th><th scope=\"col\">Desktops</th><th scope=\"col\">Mobile</th></tr>\n    </thead>\n    <tbody>\n      <tr><th scope=\"row\">Home</th><td>60</td><td></td></tr>\n      <tr><th scope=\"row\">Docs</th><td></td><td>51</td></tr>\n    </tbody>\n  </table>\n</figure>",
      "id": "cells",
-     "react": "<Chart\n  label=\"Visits by page and device\"\n  type=\"treemap\"\n  series={[\n    { name: \"Desktops\", data: [{ x: \"Home\", y: 60 }, { x: \"Pricing\", y: 41 }] },\n    { name: \"Mobile\", data: [{ x: \"Docs\", y: 51 }, { x: \"Blog\", y: 30 }] },\n  ]}\n/>",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartCells() {\n  return (\n    <Chart\n      label=\"Visits by page and device\"\n      type=\"treemap\"\n      series={[\n        { name: \"Desktops\", data: [{ x: \"Home\", y: 60 }, { x: \"Pricing\", y: 41 }] },\n        { name: \"Mobile\", data: [{ x: \"Docs\", y: 51 }, { x: \"Blog\", y: 30 }] },\n      ]}\n    />\n  );\n}",
      "title": "Show values as cells"
     },
     {
      "body": "- **Funnels:** `funnel` draws the first series as bars centered on one axis, each as long as its share of the largest value, such as the stages of a sign-up flow. For a pyramid, order the values from the smallest to the largest. `barHeight` sets the thickness (80% by default).\n- **Slopes:** `slope` joins each series' values across a few categories, usually two, such as before and after. The values print beside the first and last points, and the scale fits the data.",
      "html": "<figure data-ok-chart data-ok-type=\"funnel\" … data-ok-data-labels>",
      "id": "stages",
-     "react": "<Chart label=\"Sign-ups\" type=\"funnel\" dataLabels categories={steps} series={[{ name: \"People\", data: [1380, 990, 548, 200] }]} />",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartStages() {\n  return (\n    <Chart label=\"Sign-ups\" type=\"funnel\" dataLabels categories={steps} series={[{ name: \"People\", data: [1380, 990, 548, 200] }]} />\n  );\n}",
      "title": "Show stages and changes"
     },
     {
      "body": "Set `sparkline` (`data-ok-sparkline` in HTML) to draw a chart without axes, grid or legend, such as a trend in a dashboard card or a table cell. A sparkline fills its container: give the container a height, or set `height` for the least height (40px by default). The tooltip, the keyboard and the data table still work.",
      "html": "<div class=\"card-trend\">\n  <figure data-ok-chart data-ok-type=\"area\" data-ok-x-type=\"category\" data-ok-curve=\"smooth\"\n    data-ok-legend=\"top\" data-ok-fill=\"gradient\" data-ok-sparkline data-ok-height=\"48\">\n    <table data-ok-chart-data>…</table>\n  </figure>\n</div>",
      "id": "sparklines",
-     "react": "<Chart label=\"Visits this week\" type=\"area\" sparkline height={48} categories={days} series={visits} />",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartSparklines() {\n  return (\n    <Chart label=\"Visits this week\" type=\"area\" sparkline height={48} categories={days} series={visits} />\n  );\n}",
      "title": "Fit charts in cards and table cells"
     },
     {
@@ -62076,35 +62076,35 @@
      "body": "Set `zoom` (`data-ok-zoom` in HTML) to let people zoom into the x axis of line, area, column, scatter, candlestick and other charts drawn from left to right. The value axis keeps its scale, so values stay comparable while you move.\n\n- **Mouse:** drag across the plot to zoom to that range. Hold Ctrl (or ⌘ on a Mac) and use the wheel to zoom around the pointer. A plain wheel still scrolls the page.\n- **Touch:** pinch with two fingers. On a zoomed chart, drag with one finger to pan. A tap still shows the tooltip.\n- **Keyboard:** `+` and `-` zoom, Shift with the Left or Right arrow pans, `0` resets. Escape hides the tooltip first, then resets the zoom.\n\nSet `toolbar` (`data-ok-toolbar`) to add buttons for zooming in and out, resetting, panning with the mouse, and downloading the chart as SVG, PNG or CSV. Downloads start only when someone selects a button or presses a key, and a failure is announced to screen readers. In React, `zoomRange` and `onZoomRangeChange(range, reason)` control the zoom. A zoom that reaches the newest point keeps following new points, so a live dashboard stays on its latest data.",
      "html": "<figure data-ok-chart data-ok-type=\"area\" data-ok-x-type=\"datetime\" … data-ok-zoom data-ok-toolbar>\n  <table data-ok-chart-data>…</table>\n</figure>",
      "id": "zoom",
-     "react": "<Chart label=\"Daily active users\" type=\"area\" xType=\"datetime\" zoom toolbar categories={days} series={users} />",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartZoom() {\n  return (\n    <Chart label=\"Daily active users\" type=\"area\" xType=\"datetime\" zoom toolbar categories={days} series={users} />\n  );\n}",
      "title": "Zoom, pan and export"
     },
     {
      "body": "Give charts the same `group` (`data-ok-group` in HTML) to synchronize them, such as requests, errors and latency of one service. Moving the pointer or the keyboard over one chart shows the same category in all of them, and zooming one zooms the others. Synchronized charts should share their categories.",
      "html": "<figure data-ok-chart data-ok-group=\"service\" data-ok-zoom …>…</figure>\n<figure data-ok-chart data-ok-group=\"service\" data-ok-type=\"bar\" …>…</figure>",
      "id": "sync",
-     "react": "<>\n  <Chart label=\"Requests\" group=\"service\" zoom categories={minutes} series={requests} />\n  <Chart label=\"Errors\" group=\"service\" type=\"bar\" categories={minutes} series={errors} />\n</>",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartSync() {\n  return (\n    <>\n      <>\n        <Chart label=\"Requests\" group=\"service\" zoom categories={minutes} series={requests} />\n        <Chart label=\"Errors\" group=\"service\" type=\"bar\" categories={minutes} series={errors} />\n      </>\n    </>\n  );\n}",
      "title": "Synchronize charts"
     },
     {
      "body": "A brush chart is a small overview that zooms another chart. Give the main chart an `id`, then set `brushTarget` (`data-ok-brush-target` in HTML) on the overview to that id. Drag across the overview to select a range, drag the selection to move it, or drag its handles to resize it. The keys of a zoomable chart work on the overview too. The selection follows the main chart when it zooms by itself.",
      "html": "<figure id=\"builds\" data-ok-chart data-ok-type=\"area\" …>…</figure>\n<figure data-ok-chart data-ok-type=\"bar\" data-ok-brush-target=\"builds\" data-ok-height=\"120\" …>…</figure>",
      "id": "brush",
-     "react": "<>\n  <Chart id=\"builds\" label=\"Builds per day\" type=\"area\" categories={days} series={builds} />\n  <Chart label=\"Builds, overview\" type=\"bar\" brushTarget=\"builds\" height={120} categories={days} series={builds} />\n</>",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartBrush() {\n  return (\n    <>\n      <>\n        <Chart id=\"builds\" label=\"Builds per day\" type=\"area\" categories={days} series={builds} />\n        <Chart label=\"Builds, overview\" type=\"bar\" brushTarget=\"builds\" height={120} categories={days} series={builds} />\n      </>\n    </>\n  );\n}",
      "title": "Brush a chart"
     },
     {
      "body": "Annotations mark a moment, a range, a threshold or a point, such as a deploy or an incident. In React, pass `annotations`. In HTML, list them after the data table in `ul[data-ok-chart-annotations]`, one `li` each, with its label as text.\n\n- **`x`:** a vertical line at a category, a date or a number, or a band up to `x2`.\n- **`y`:** a horizontal line at a value, or a band up to `y2`.\n- **`point`:** a marker at `x` and `y`.\n\nEach annotation takes a `color` (`info` by default). The list stays readable by screen readers once the chart is drawn.",
      "html": "<figure data-ok-chart …>\n  <table data-ok-chart-data>…</table>\n  <ul data-ok-chart-annotations>\n    <li data-ok-annotation=\"x\" data-ok-x=\"10:04\" data-ok-color=\"warning\">Deploy</li>\n    <li data-ok-annotation=\"y\" data-ok-y=\"2\" data-ok-color=\"error\">Threshold</li>\n  </ul>\n</figure>",
      "id": "annotations",
-     "react": "<Chart\n  label=\"Error rate\"\n  categories={minutes}\n  series={errors}\n  annotations={[\n    { axis: \"x\", x: \"10:04\", label: \"Deploy\", color: \"warning\" },\n    { axis: \"y\", y: 2, label: \"Threshold\", color: \"error\" },\n  ]}\n/>",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartAnnotations() {\n  return (\n    <Chart\n      label=\"Error rate\"\n      categories={minutes}\n      series={errors}\n      annotations={[\n        { axis: \"x\", x: \"10:04\", label: \"Deploy\", color: \"warning\" },\n        { axis: \"y\", y: 2, label: \"Threshold\", color: \"error\" },\n      ]}\n    />\n  );\n}",
      "title": "Annotate charts"
     },
     {
      "body": "- **Candlesticks:** `candlestick` takes four values per point in `y`: open, high, low and close. Rising candles use `candleUpColor` (`success` by default), falling ones `candleDownColor` (`error`). Add a `line` series for an average.\n- **Range bars:** `rangeBar` takes a start and an end value per point, such as the fastest and slowest response of a service. Set `horizontal` to draw them from left to right.\n- **Timelines:** `timeline` draws tasks from their start date to their end date, one row per task. Give each point a text `x` (the task) and two dates in `y`. The axis shows minutes, hours, days, months or years, depending on the span.\n\nIn the data table, each value gets its own column under a second header row, such as Open, High, Low and Close.",
      "html": "<figure data-ok-chart data-ok-type=\"timeline\" …>\n  <table data-ok-chart-data>\n    <caption>Release plan</caption>\n    <thead>\n      <tr><th scope=\"col\" rowspan=\"2\">Task</th><th scope=\"colgroup\" colspan=\"2\">Release</th></tr>\n      <tr><th scope=\"col\" data-ok-part=\"start\">Start</th><th scope=\"col\" data-ok-part=\"end\">End</th></tr>\n    </thead>\n    <tbody>\n      <tr><th scope=\"row\">Design</th><td data-ok-value=\"2026-03-02\">02 Mar 2026</td><td data-ok-value=\"2026-03-13\">13 Mar 2026</td></tr>\n    </tbody>\n  </table>\n</figure>",
      "id": "finance",
-     "react": "<Chart\n  label=\"Release plan\"\n  type=\"timeline\"\n  series={[{ name: \"Release\", data: [{ x: \"Design\", y: [\"2026-03-02\", \"2026-03-13\"] }] }]}\n/>",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartFinance() {\n  return (\n    <Chart\n      label=\"Release plan\"\n      type=\"timeline\"\n      series={[{ name: \"Release\", data: [{ x: \"Design\", y: [\"2026-03-02\", \"2026-03-13\"] }] }]}\n    />\n  );\n}",
      "title": "Show prices, ranges and plans"
     },
     {
@@ -62125,21 +62125,21 @@
      "body": "Set `animations` (`data-ok-animations` in HTML) to grow the series in when the chart first draws, and to move bars, points and lines to their new values when the data changes. Animations never play when the system asks for reduced motion. Live charts that update often read better without them.",
      "html": "<figure data-ok-chart data-ok-type=\"bar\" data-ok-animations …>…</figure>",
      "id": "animations",
-     "react": "<Chart label=\"Deploys per weekday\" type=\"bar\" animations categories={days} series={deploys} />",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartAnimations() {\n  return (\n    <Chart label=\"Deploys per weekday\" type=\"bar\" animations categories={days} series={deploys} />\n  );\n}",
      "title": "Animate charts"
     },
     {
      "body": "`locale` formats numbers and month names. The names of the values in tables and tooltips, such as Minimum or Open, come from the second header row of the HTML table. In React, pass them in `localeText`, together with the toolbar's button names and the download error. In HTML, call `setLocaleText(text)` on the instance for the toolbar.",
      "html": "<tr><th scope=\"col\" data-ok-part=\"min\">Nhỏ nhất</th>…</tr>\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n  getRuntime().get(element, \"chart\").setLocaleText({ zoomIn: \"Phóng to\", svg: \"Tải SVG\" });\n</script>",
      "id": "localize",
-     "react": "<Chart label=\"Thời gian phản hồi\" type=\"boxPlot\" locale=\"vi-VN\" localeText={{ min: \"Nhỏ nhất\", median: \"Trung vị\", zoomIn: \"Phóng to\" }} series={series} />",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartLocalize() {\n  return (\n    <Chart label=\"Thời gian phản hồi\" type=\"boxPlot\" locale=\"vi-VN\" localeText={{ min: \"Nhỏ nhất\", median: \"Trung vị\", zoomIn: \"Phóng to\" }} series={series} />\n  );\n}",
      "title": "Localize texts"
     },
     {
      "body": "Set `dataLabels` (`data-ok-data-labels` in HTML) to print values on the chart: percentages on pie and donut slices, values inside columns and bars, and values above the points of lines, areas and radars. A label is left out where it doesn't fit, such as on a short column. The tooltip and the data table still show every value. Set `dataLabelBackground` to put the labels above points on a badge, which keeps them readable over lines. For your own text, pass `dataLabelFormatter(value, series, index)` in React, or call `setFormatters({ dataLabel })` on the HTML instance. Pie and donut labels get the percentage.",
      "html": "<figure data-ok-chart data-ok-type=\"pie\" … data-ok-data-labels>",
      "id": "labels",
-     "react": "<Chart label=\"Share of visits\" type=\"pie\" dataLabels categories={devices} series={visits} />",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartLabels() {\n  return (\n    <Chart label=\"Share of visits\" type=\"pie\" dataLabels categories={devices} series={visits} />\n  );\n}",
      "title": "Print values on the chart"
     },
     {
@@ -62151,7 +62151,7 @@
      "body": "`valuePrefix` and `valueSuffix` add text around every value, such as a currency or a percent sign. `locale` sets the number format and the month names. `yMin` and `yMax` fix the value axis, and `yTitle` names it. For anything else, pass `valueFormatter(value, series)` and `labelFormatter(x)` in React, or call `setFormatters({ value, label })` on the HTML instance. The axis gets `series` -1.",
      "html": "<figure data-ok-chart … data-ok-value-prefix=\"$\" data-ok-locale=\"de-DE\" data-ok-y-min=\"0\" data-ok-y-max=\"100\">",
      "id": "values",
-     "react": "<Chart label=\"Revenue\" valuePrefix=\"$\" locale=\"de-DE\" yMin={0} yMax={100} series={series} />",
+     "react": "import { Chart } from \"@owlky/react\";\n\nexport function ChartValues() {\n  return (\n    <Chart label=\"Revenue\" valuePrefix=\"$\" locale=\"de-DE\" yMin={0} yMax={100} series={series} />\n  );\n}",
      "title": "Format values and axes"
     },
     {
@@ -62364,28 +62364,28 @@
      "body": "The default color is `primary`. Use another palette color, such as `success` or `error`, to match the context. Use `inherit` to take the text color of the surrounding element, for example inside a button.",
      "html": "<span role=\"progressbar\" aria-label=\"Loading\" data-ok-circular-progress data-ok-variant=\"indeterminate\" data-ok-color=\"inherit\">\n  <svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\" /></svg>\n</span>",
      "id": "colors",
-     "react": "<CircularProgress color=\"inherit\" aria-label=\"Loading\" />",
+     "react": "import { CircularProgress } from \"@owlky/react\";\n\nexport function CircularProgressColors() {\n  return <CircularProgress color=\"inherit\" aria-label=\"Loading\" />;\n}",
      "title": "Choose a color"
     },
     {
      "body": "The default size is 40px. Set `size` to a number of pixels, or to a CSS length in `px`, `rem` or `em` so the indicator scales with the text. `thickness` sets the stroke width, as a fraction of 44 units of the size (default 3.6). Set `enableTrackSlot` to draw a faint full circle behind the arc.",
      "html": "<span role=\"progressbar\" aria-label=\"Storage used\" data-ok-circular-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" data-ok-size=\"3rem\" data-ok-thickness=\"5\" data-ok-track-slot aria-valuenow=\"70\" aria-valuemin=\"0\" aria-valuemax=\"100\">\n  <svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\" /></svg>\n</span>",
      "id": "size",
-     "react": "<CircularProgress\n  variant=\"determinate\"\n  value={70}\n  size=\"3rem\"\n  thickness={5}\n  enableTrackSlot\n  aria-label=\"Storage used\"\n/>",
+     "react": "import { CircularProgress } from \"@owlky/react\";\n\nexport function CircularProgressSize() {\n  return (\n    <CircularProgress\n      variant=\"determinate\"\n      value={70}\n      size=\"3rem\"\n      thickness={5}\n      enableTrackSlot\n      aria-label=\"Storage used\"\n    />\n  );\n}",
      "title": "Change the size and thickness"
     },
     {
      "body": "Put the value next to the indicator when people need the exact number. Keep the text outside the indicator, and point `aria-labelledby` or `aria-describedby` at it if it names the task.",
      "html": "<div style=\"display: flex; align-items: center; gap: 8px\">\n  <span role=\"progressbar\" aria-label=\"Upload\" data-ok-circular-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"45\" aria-valuemin=\"0\" aria-valuemax=\"100\">\n    <svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\" /></svg>\n  </span>\n  <span>45%</span>\n</div>",
      "id": "label",
-     "react": "<div style={{ display: \"flex\", alignItems: \"center\", gap: 8 }}>\n  <CircularProgress variant=\"determinate\" value={45} aria-label=\"Upload\" />\n  <span>45%</span>\n</div>",
+     "react": "import { CircularProgress, Upload } from \"@owlky/react\";\n\nexport function CircularProgressLabel() {\n  return (\n    <div style={{ display: \"flex\", alignItems: \"center\", gap: 8 }}>\n      <CircularProgress variant=\"determinate\" value={45} aria-label=\"Upload\" />\n      <span>45%</span>\n    </div>\n  );\n}",
      "title": "Show the value as text"
     },
     {
      "body": "If a task usually finishes in less than a second, wait about a second before showing the indicator. Fast tasks then don't flash a spinner. Under heavy load on the main thread, the shrinking arc can stutter: set `disableShrink` to keep a fixed arc that only spins.",
      "html": "<span role=\"progressbar\" aria-label=\"Loading\" data-ok-circular-progress data-ok-variant=\"indeterminate\" data-ok-color=\"primary\" data-ok-disable-shrink>\n  <svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\" /></svg>\n</span>",
      "id": "delay",
-     "react": "<CircularProgress disableShrink aria-label=\"Loading\" />",
+     "react": "import { CircularProgress } from \"@owlky/react\";\n\nexport function CircularProgressDelay() {\n  return <CircularProgress disableShrink aria-label=\"Loading\" />;\n}",
      "title": "Avoid flashing for fast tasks"
     },
     {
@@ -62472,7 +62472,7 @@
      "body": "With the default `theme` of `auto`, the editor uses Owlky's light or dark theme, whichever its scope uses through `data-ok-theme`. The colors come from your tokens and presets: the paper background, the text colors, and syntax colors that keep a contrast ratio of at least 4.5:1. The editor follows when the theme or preset changes.\n\nMonaco shows one theme on a page at a time. When editors sit in scopes with different themes, the editor that people used last decides. Set `theme` to a Monaco theme such as `vs-dark` or `hc-black`, or to a theme you define in `beforeMount`, to use it instead.",
      "html": "<div data-ok-theme=\"dark\">\n  <div data-ok-code-editor>…</div>\n</div>\n\n<div data-ok-code-editor data-ok-monaco-theme=\"hc-black\">…</div>",
      "id": "themes",
-     "react": "<div data-ok-theme=\"dark\">\n  <CodeEditor aria-label=\"Dark editor\" />\n</div>\n\n<CodeEditor aria-label=\"High contrast\" theme=\"hc-black\" />",
+     "react": "import { CodeEditor } from \"@owlky/react\";\n\nexport function CodeEditorThemes() {\n  return (\n    <>\n      <div data-ok-theme=\"dark\">\n        <CodeEditor aria-label=\"Dark editor\" />\n      </div>\n\n      <CodeEditor aria-label=\"High contrast\" theme=\"hc-black\" />\n    </>\n  );\n}",
      "title": "Match the theme"
     },
     {
@@ -62617,7 +62617,7 @@
      "body": "`showToolbar` adds a search field and buttons that open the column list, the filter panel, the row height menu and the export menu. Search matches every word you type in any column. Export downloads a CSV file or prints the grid as shown. Each feature can be turned off, for example with `disableColumnFilter`.",
      "html": "<div data-ok-data-grid-toolbar>…</div>",
      "id": "toolbar",
-     "react": "<DataGrid aria-label=\"People\" rows={rows} columns={columns} showToolbar disableDensitySelector />",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridToolbar() {\n  return (\n    <DataGrid aria-label=\"People\" rows={rows} columns={columns} showToolbar disableDensitySelector />\n  );\n}",
      "title": "Add a toolbar"
     },
     {
@@ -62631,21 +62631,21 @@
      "body": "**Add filter** in the filter panel adds another condition. From the second row, choose **And** (every condition must match, the default) or **Or** (any one is enough). The remove button deletes a condition. Set `disableMultipleColumnsFiltering` to keep a single condition.",
      "html": "<!-- The filter panel's Add filter button copies the first row, with an And / Or field. -->",
      "id": "filters",
-     "react": "<DataGrid\n  aria-label=\"People\"\n  rows={rows}\n  columns={columns}\n  filterModel={{\n    logicOperator: \"or\",\n    items: [\n      { field: \"age\", operator: \"<\", value: \"20\" },\n      { field: \"age\", operator: \">\", value: \"60\" },\n    ],\n  }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridFilters() {\n  return (\n    <DataGrid\n      aria-label=\"People\"\n      rows={rows}\n      columns={columns}\n      filterModel={{\n        logicOperator: \"or\",\n        items: [\n          { field: \"age\", operator: \"<\", value: \"20\" },\n          { field: \"age\", operator: \">\", value: \"60\" },\n        ],\n      }}\n    />\n  );\n}",
      "title": "Combine filters"
     },
     {
      "body": "- **Resize:** drag the end edge of a header, or press Alt + Left or Alt + Right on a focused header. A column never gets narrower than its `minWidth`. Set `resizable: false` on a column, or `disableColumnResize` on the grid, to turn it off.\n- **Move:** drag a header onto another one, or choose **Move left** or **Move right** in the column menu. `columnOrder` and `onColumnOrderChange` control the order.\n- **Pin:** choose **Pin to left** or **Pin to right** in the column menu. Pinned columns stay in view while the others scroll. Use `pinnedColumns` to pin columns from the start.",
      "html": "<!-- Pinned cells carry data-ok-pinned; the script keeps their offsets. -->\n<div role=\"columnheader\" data-ok-field=\"firstName\" data-ok-pinned=\"left\" tabindex=\"-1\">…</div>",
      "id": "layout",
-     "react": "<DataGrid\n  aria-label=\"Employees\"\n  rows={rows}\n  columns={columns}\n  initialState={{ pinnedColumns: { left: [\"firstName\"], right: [\"actions\"] } }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridLayout() {\n  return (\n    <DataGrid\n      aria-label=\"Employees\"\n      rows={rows}\n      columns={columns}\n      initialState={{ pinnedColumns: { left: [\"firstName\"], right: [\"actions\"] } }}\n    />\n  );\n}",
      "title": "Resize, move and pin columns"
     },
     {
      "body": "Set `editable` on a column to let people change its cells: double-click a cell, or press Enter or F2. The field matches the column type: text, a number, a date, a list for `singleSelect` or a checkbox for `boolean`. Enter saves, Escape cancels, and leaving the cell saves. With `editMode=\"row\"`, every editable cell of the row opens together. In React, `processRowUpdate` receives the new row: return it, or return a changed row. Throw or reject to refuse it. In HTML, listen to `ok:data-grid:edit` and call `preventDefault()` to refuse.",
      "html": "<script>\n  // Refuse ages above 120\n  grid.addEventListener(\"ok:data-grid:edit\", (event) => {\n    if (event.detail.row.age > 120) event.preventDefault();\n  });\n</script>",
      "id": "editing",
-     "react": "<DataGrid\n  aria-label=\"Employees\"\n  rows={rows}\n  columns={[{ field: \"age\", headerName: \"Age\", type: \"number\", editable: true }]}\n  processRowUpdate={async (row) => saveEmployee(row)}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridEditing() {\n  return (\n    <DataGrid\n      aria-label=\"Employees\"\n      rows={rows}\n      columns={[{ field: \"age\", headerName: \"Age\", type: \"number\", editable: true }]}\n      processRowUpdate={async (row) => saveEmployee(row)}\n    />\n  );\n}",
      "title": "Edit cells and rows"
     },
     {
@@ -62672,14 +62672,14 @@
      "body": "With `checkboxSelection`, people select rows with checkboxes, a click on the row, Space and Ctrl + A. Set `disableMultipleRowSelection` to allow one row at a time: selecting a row clears the others, and the header has no **Select all** checkbox. To keep some rows from being selected, return `false` from `isRowSelectable` in React, or put `data-ok-selectable=\"false\"` on the row in HTML. Their checkbox is disabled. `checkboxSelectionVisibleOnly` makes **Select all** select the current page only. When rows go away, their ids leave the selection, unless you set `keepNonExistentRowsSelected`. Use it with server pagination, where the rows of other pages aren't loaded.",
      "html": "<div data-ok-data-grid data-ok-checkbox-selection data-ok-disable-multiple-row-selection>\n  …\n  <div role=\"row\" data-ok-row-id=\"t-2\" data-ok-selectable=\"false\" aria-selected=\"false\">…</div>\n</div>",
      "id": "selection",
-     "react": "<DataGrid\n  aria-label=\"Tasks\"\n  rows={tasks}\n  columns={columns}\n  checkboxSelection\n  disableMultipleRowSelection\n  isRowSelectable={({ row }) => row.status !== \"Done\"}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridSelection() {\n  return (\n    <DataGrid\n      aria-label=\"Tasks\"\n      rows={tasks}\n      columns={columns}\n      checkboxSelection\n      disableMultipleRowSelection\n      isRowSelectable={({ row }) => row.status !== \"Done\"}\n    />\n  );\n}",
      "title": "Choose how rows are selected"
     },
     {
      "body": "A cell can cover the next columns with `colSpan` on its column: a number, or a function of the cell, such as a total that spans three columns. With `rowSpanning`, neighbouring cells of a column with the same text merge into one tall cell. Rows are 52 pixels tall by default. Change it with `rowHeight`; the density still scales it. In React, `getRowHeight` sets the height of each row: a number, or `\"auto\"` to let long text wrap and the row grow. `getRowSpacing` adds space above and below rows. In HTML, put `data-ok-row-height` and `data-ok-spacing-top` / `data-ok-spacing-bottom` on the rows. Columns can fit their content: double-click the edge of a header, set `autosizeOnMount`, or call `autosizeColumns()`.",
      "html": "<!-- A cell that spans the next two columns hides them -->\n<div role=\"gridcell\" aria-colindex=\"1\" aria-colspan=\"3\" data-ok-field=\"region\">Total</div>\n<div role=\"gridcell\" aria-colindex=\"2\" data-ok-field=\"team\" hidden data-ok-covered></div>\n\n<!-- Rows that grow with their text -->\n<div role=\"row\" data-ok-row-id=\"t-3\" data-ok-row-height=\"auto\">…</div>",
      "id": "spans",
-     "react": "<DataGrid\n  aria-label=\"Budget\"\n  rows={lines}\n  columns={[\n    { field: \"region\", headerName: \"Region\", colSpan: ({ row }) => (row.id === \"total\" ? 3 : 1) },\n    { field: \"team\", headerName: \"Team\" },\n    { field: \"item\", headerName: \"Item\" },\n    { field: \"amount\", headerName: \"Amount\", type: \"number\" },\n  ]}\n  rowSpanning\n  getRowHeight={({ model }) => (model.notes.length > 40 ? \"auto\" : null)}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridSpans() {\n  return (\n    <DataGrid\n      aria-label=\"Budget\"\n      rows={lines}\n      columns={[\n        { field: \"region\", headerName: \"Region\", colSpan: ({ row }) => (row.id === \"total\" ? 3 : 1) },\n        { field: \"team\", headerName: \"Team\" },\n        { field: \"item\", headerName: \"Item\" },\n        { field: \"amount\", headerName: \"Amount\", type: \"number\" },\n      ]}\n      rowSpanning\n      getRowHeight={({ model }) => (model.notes.length > 40 ? \"auto\" : null)}\n    />\n  );\n}",
      "title": "Span cells and size rows"
     },
     {
@@ -62700,14 +62700,14 @@
      "body": "The **is any of** operator keeps rows whose value is one of several values: type them separated by commas. A column's `filterOperators` replaces the operators of its type, for example with a range. Each operator returns a test for a value. In HTML, set them with `setFilterOperators(field, operators)`. Set `ignoreDiacritics` so that searches and filters ignore accents: \"ha noi\" finds \"Hà Nội\". `quickFilterLogicOperator=\"or\"` keeps rows that match any word instead of every word. `quickFilterExcludeHiddenColumns` leaves hidden columns out of the search. To leave one column out, set its `getApplyQuickFilterFn` to `null` in React, or `data-ok-searchable=\"false\"` on its header in HTML.",
      "html": "<div data-ok-data-grid data-ok-ignore-diacritics data-ok-quick-filter-logic-operator=\"or\">…</div>",
      "id": "filter-options",
-     "react": "<DataGrid\n  aria-label=\"Places\"\n  rows={places}\n  columns={columns}\n  ignoreDiacritics\n  quickFilterLogicOperator=\"or\"\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridFilterOptions() {\n  return (\n    <DataGrid\n      aria-label=\"Places\"\n      rows={places}\n      columns={columns}\n      ignoreDiacritics\n      quickFilterLogicOperator=\"or\"\n    />\n  );\n}",
      "title": "Tune filtering and search"
     },
     {
      "body": "**Download as CSV** exports the filtered, sorted rows of every page and the shown columns. `csvOptions` changes the delimiter, the columns (`fields`, `allColumns`), the header line and the file name. **Print** prints every filtered row on its own page, without the toolbar, footer and checkboxes. `printOptions` keeps them or picks the columns. In HTML, pass the same options to `exportCsv(options)` and `print(options)`. Values in an HTML column can be formatted with `data-ok-format` on its header (`number`, `currency`, `percent`, `date` or `datetime`) and `Intl` options in `data-ok-format-options`, or with `setValueFormatter(field, format)`.",
      "html": "<div role=\"columnheader\" data-ok-field=\"price\" data-ok-format=\"currency\" data-ok-format-options='{\"currency\":\"EUR\"}'>…</div>\n<script type=\"module\">\n  const grid = window.Owlky.get(document.getElementById(\"products\"), \"data-grid\");\n  grid.exportCsv({ delimiter: \";\", fileName: \"products\" });\n</script>",
      "id": "export-options",
-     "react": "<DataGrid\n  aria-label=\"Products\"\n  rows={rows}\n  columns={columns}\n  showToolbar\n  csvOptions={{ delimiter: \";\", fileName: \"products\" }}\n  printOptions={{ hideFooter: false }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridExportOptions() {\n  return (\n    <DataGrid\n      aria-label=\"Products\"\n      rows={rows}\n      columns={columns}\n      showToolbar\n      csvOptions={{ delimiter: \";\", fileName: \"products\" }}\n      printOptions={{ hideFooter: false }}\n    />\n  );\n}",
      "title": "Export and print"
     },
     {
@@ -62721,79 +62721,79 @@
      "body": "Set `treeData` and return each row's path from `getTreeDataPath`: the names of its ancestors, then its own. Parents that a path names without a row of their own get a generated row. A group column shows the names with a button that opens and closes the children. Right and Left open and close a row when its group cell has the focus. `defaultGroupingExpansionDepth` sets how many levels are open at first. Filters keep the parents of the rows that match, and sorting orders rows among their siblings. In HTML, rows carry `aria-level` and `data-ok-parent`, and the grid fires `ok:data-grid:expand`. With a data source, `getChildrenCount` and `getGroupKey` let the grid load children when a row opens.",
      "html": "<div role=\"row\" data-ok-row-id=\"m-2\" data-ok-parent=\"m-1\" aria-level=\"2\" aria-expanded=\"false\">…</div>",
      "id": "tree",
-     "react": "<DataGrid\n  aria-label=\"Team\"\n  rows={team}\n  columns={columns}\n  treeData\n  getTreeDataPath={(row) => row.path}\n  groupingColDef={{ headerName: \"Name\" }}\n  defaultGroupingExpansionDepth={1}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridTree() {\n  return (\n    <DataGrid\n      aria-label=\"Team\"\n      rows={team}\n      columns={columns}\n      treeData\n      getTreeDataPath={(row) => row.path}\n      groupingColDef={{ headerName: \"Name\" }}\n      defaultGroupingExpansionDepth={1}\n    />\n  );\n}",
      "title": "Show rows as a tree"
     },
     {
      "body": "`getDetailPanelContent` returns what shows under a row when people open it, or `null` for rows without details. A button in the first column opens and closes the panel. `getDetailPanelHeight` sets a height in pixels; by default the content decides. In HTML, put each row's content in a `<template data-ok-data-grid-detail=\"<row id>\">` inside the grid. The grid copies it when the panel opens and fires `ok:data-grid:detailpanel`.",
      "html": "<template data-ok-data-grid-detail=\"o-1001\">\n  <p>Order o-1001 for Ana Silva.</p>\n</template>",
      "id": "detail",
-     "react": "<DataGrid\n  aria-label=\"Orders\"\n  rows={orders}\n  columns={columns}\n  getDetailPanelContent={({ row }) => <OrderLines order={row} />}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridDetail() {\n  return (\n    <DataGrid\n      aria-label=\"Orders\"\n      rows={orders}\n      columns={columns}\n      getDetailPanelContent={({ row }) => <OrderLines order={row} />}\n    />\n  );\n}",
      "title": "Show details under a row"
     },
     {
      "body": "With `rowReordering`, each row gets a handle: drag it onto another row, or press Alt + Up or Alt + Down on it. A screen reader hears the new position. Moving is off while the rows are sorted or filtered. React reports moves with `onRowOrderChange`; HTML fires `ok:data-grid:roworder`, which you can cancel. `pinnedRows` keeps rows above or below the others while they scroll. Pinned rows aren't sorted, filtered or paged. In HTML, put them in `<div role=\"rowgroup\" data-ok-data-grid-pinned-rows=\"top\">` (or `bottom`).",
      "id": "ordering",
-     "react": "<DataGrid\n  aria-label=\"Agenda\"\n  rows={items}\n  columns={columns}\n  rowReordering\n  onRowOrderChange={({ oldIndex, targetIndex }) => save(oldIndex, targetIndex)}\n  pinnedRows={{ top: [welcome], bottom: [questions] }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridOrdering() {\n  return (\n    <DataGrid\n      aria-label=\"Agenda\"\n      rows={items}\n      columns={columns}\n      rowReordering\n      onRowOrderChange={({ oldIndex, targetIndex }) => save(oldIndex, targetIndex)}\n      pinnedRows={{ top: [welcome], bottom: [questions] }}\n    />\n  );\n}",
      "title": "Move and pin rows"
     },
     {
      "body": "`columnGroupingModel` puts headers over groups of columns, on as many levels as you need. A group's `description` shows as its tooltip. When a column is hidden or moved, its group splits around it. Columns can't move out of their group. `listView` shows each row as one cell, such as a card on a small screen. `listViewColumn` says which field it shows, and `renderCell` builds its content. The headers and the other cells are hidden in list view.",
      "id": "groups",
-     "react": "<DataGrid\n  aria-label=\"Contacts\"\n  rows={contacts}\n  columns={columns}\n  columnGroupingModel={[\n    { groupId: \"person\", headerName: \"Person\", children: [{ field: \"firstName\" }, { field: \"lastName\" }] },\n    { groupId: \"contact\", headerName: \"Contact\", children: [{ field: \"email\" }] },\n  ]}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridGroups() {\n  return (\n    <DataGrid\n      aria-label=\"Contacts\"\n      rows={contacts}\n      columns={columns}\n      columnGroupingModel={[\n        { groupId: \"person\", headerName: \"Person\", children: [{ field: \"firstName\" }, { field: \"lastName\" }] },\n        { groupId: \"contact\", headerName: \"Contact\", children: [{ field: \"email\" }] },\n      ]}\n    />\n  );\n}",
      "title": "Group column headers and show a list"
     },
     {
      "body": "With `lazyLoading` and a data source, the grid asks for the rows that come into view, 50 at a time. Rows that haven't arrived show as placeholders. The data source answers `start` and `end`, and returns the total in `rowCount`. `lazyLoadingRequestThrottleMs` spaces the requests. Wide grids also render only the columns in view, when the columns have fixed widths. `rowBufferPx` and `columnBufferPx` set how much renders beyond the visible area. A data source's `updateRow` saves edited rows. Its answer is shown, and a failure brings the old values back. The cache keeps answers for five minutes, or for the `ttl` you pass to `createGridDataSourceCache`.",
      "html": "<div data-ok-data-grid id=\"customers\" data-ok-lazy-loading>…</div>\n<script type=\"module\">\n  const grid = window.Owlky.get(document.getElementById(\"customers\"), \"data-grid\");\n  grid.setDataSource({\n    async getRows({ start, end }) {\n      const response = await fetch(`/api/customers?start=${start}&end=${end}`);\n      return response.json(); // { rows, rowCount }\n    },\n  });\n</script>",
      "id": "lazy",
-     "react": "<DataGrid aria-label=\"Customers\" rows={[]} columns={columns} dataSource={customers} lazyLoading />",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridLazy() {\n  return (\n    <DataGrid aria-label=\"Customers\" rows={[]} columns={columns} dataSource={customers} lazyLoading />\n  );\n}",
      "title": "Load rows as they scroll into view"
     },
     {
      "body": "`rowGroupingModel` lists the fields that group the rows, outermost first. The grid adds a row for each group, with the group's name, its number of rows and a button that opens it. People group and ungroup columns from the column menu. `aggregationModel` gives fields a function: `sum`, `avg` (rounded to two decimals), `min`, `max` or `size` (the number of rows). Group rows show their values, and a footer row shows the values of every filtered row. The column menu offers the functions that fit each column's type, and the header names the function in use. Sorting an aggregated column orders the groups by their values. Sorting a grouped column orders them by name. With a data source, the grid passes `groupFields` and `groupKeys`, and the server returns the groups of each level. In HTML, the models are the attributes `data-ok-row-grouping-model` and `data-ok-aggregation-model` (JSON), and the grid builds the group rows from the rows in the markup. In tree data, the grid adds a row for each parent that a path names without a row of its own.",
      "html": "<div data-ok-data-grid id=\"sales\"\n  data-ok-row-grouping-model='[\"region\"]'\n  data-ok-aggregation-model='{\"revenue\":\"sum\"}'>…</div>",
      "id": "grouping",
-     "react": "<DataGrid\n  aria-label=\"Sales\"\n  rows={sales}\n  columns={columns}\n  initialState={{\n    rowGrouping: { model: [\"region\"] },\n    aggregation: { model: { units: \"sum\", revenue: \"sum\" } },\n  }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridGrouping() {\n  return (\n    <DataGrid\n      aria-label=\"Sales\"\n      rows={sales}\n      columns={columns}\n      initialState={{\n        rowGrouping: { model: [\"region\"] },\n        aggregation: { model: { units: \"sum\", revenue: \"sum\" } },\n      }}\n    />\n  );\n}",
      "title": "Group rows and aggregate values"
     },
     {
      "body": "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and, for each column, its place and function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
      "html": "<div data-ok-data-grid id=\"sales\" data-ok-pivot-active\n  data-ok-pivot-model='{\"rows\":[{\"field\":\"region\"}],\"columns\":[{\"field\":\"year\"}],\"values\":[{\"field\":\"revenue\",\"aggFunc\":\"sum\"}]}'>…</div>",
      "id": "pivot",
-     "react": "<DataGrid\n  aria-label=\"Revenue by region and year\"\n  rows={sales}\n  columns={columns}\n  showToolbar\n  initialState={{\n    pivoting: {\n      active: true,\n      model: {\n        rows: [{ field: \"region\" }],\n        columns: [{ field: \"year\" }],\n        values: [{ field: \"revenue\", aggFunc: \"sum\" }],\n      },\n    },\n  }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridPivot() {\n  return (\n    <DataGrid\n      aria-label=\"Revenue by region and year\"\n      rows={sales}\n      columns={columns}\n      showToolbar\n      initialState={{\n        pivoting: {\n          active: true,\n          model: {\n            rows: [{ field: \"region\" }],\n            columns: [{ field: \"year\" }],\n            values: [{ field: \"revenue\", aggFunc: \"sum\" }],\n          },\n        },\n      }}\n    />\n  );\n}",
      "title": "Pivot the rows"
     },
     {
      "body": "With `cellSelection`, people select cells in ranges: press a cell and drag, press another cell with Shift, or hold Shift and use the arrow keys. Ctrl or Cmd adds a range, or toggles one cell. Ctrl + A selects every cell of the page. Ctrl + C copies the selected cells as tab-separated text, which spreadsheets read. Without selected cells it copies the selected rows, or the focused cell. Ctrl + V pastes text into editable cells, from the selection's first cell or the focused cell. One copied value fills every selected cell. Each pasted row goes through `processRowUpdate` (HTML: a cancelable `ok:data-grid:edit`). `disableClipboardPaste` turns pasting off. The grid uses the browser's own copy and paste for these keys, so it never asks for clipboard permissions.",
      "html": "<div data-ok-data-grid id=\"inventory\" data-ok-cell-selection>…</div>",
      "id": "cells",
-     "react": "<DataGrid\n  aria-label=\"Inventory\"\n  rows={items}\n  columns={columns}\n  cellSelection\n  processRowUpdate={(row) => save(row)}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridCells() {\n  return (\n    <DataGrid\n      aria-label=\"Inventory\"\n      rows={items}\n      columns={columns}\n      cellSelection\n      processRowUpdate={(row) => save(row)}\n    />\n  );\n}",
      "title": "Select cells and use the clipboard"
     },
     {
      "body": "`headerFilters` adds a row of fields under the column headers. Each field filters its column with the column type's first operator, and shows that operator as its label: text contains, a number equals, a date is. Booleans and choices get a list, dates get a date picker, and date times (`dateTime` columns) get a date time picker. The fields and the filter panel share one filter model. Up and Down move from a field to the cells. Date and date time filters in the filter panel use the same pickers.",
      "id": "header-filters",
-     "react": "<DataGrid aria-label=\"Inventory\" rows={items} columns={columns} headerFilters />",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridHeaderFilters() {\n  return <DataGrid aria-label=\"Inventory\" rows={items} columns={columns} headerFilters />;\n}",
      "title": "Filter from the headers"
     },
     {
      "body": "The **Export** menu downloads the filtered, sorted rows as an Excel workbook. Numbers, booleans and dates keep their type, with a date format. Text is written as text, never as a formula, because exported data may come from users. `excelOptions` sets the file name, the sheet name, the fields and whether to include the headers. In React, `apiRef.current.getDataAsExcel()` returns the file's bytes. In HTML, use `toExcel()` and `exportExcel()`, or the attribute `data-ok-excel-options` (JSON).",
      "id": "export-excel",
-     "react": "<DataGrid\n  aria-label=\"Sales\"\n  rows={sales}\n  columns={columns}\n  showToolbar\n  excelOptions={{ fileName: \"sales\", sheetName: \"2025\" }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridExportExcel() {\n  return (\n    <DataGrid\n      aria-label=\"Sales\"\n      rows={sales}\n      columns={columns}\n      showToolbar\n      excelOptions={{ fileName: \"sales\", sheetName: \"2025\" }}\n    />\n  );\n}",
      "title": "Export to Excel"
     },
     {
      "body": "With `chartsIntegration`, a chart follows the grid. `chartModel` sets its `type`, its `dimension` (the field that names the categories) and its `values` (number fields drawn as series). The types are `column`, `bar`, `line`, `area`, `pie`, `donut`, `radar` and `scatter`. When the rows are grouped, the chart shows the top-level groups with the aggregated values of the rows that pass the filters. Otherwise it shows the rows of the page. A scatter chart of rows whose category is a number column places each row at that number. The **Chart** button in the toolbar opens a panel to change the type, the category, the series, the stacking, the value labels and the legend. In HTML, the chart is a Chart component inside the grid, and the grid updates it through the chart's `updateSeries()` method.",
      "id": "charts",
-     "react": "<DataGrid\n  aria-label=\"Sales\"\n  rows={sales}\n  columns={columns}\n  showToolbar\n  chartsIntegration\n  initialState={{\n    rowGrouping: { model: [\"product\"] },\n    chartsIntegration: { model: { type: \"column\", values: [\"revenue\"] } },\n  }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridCharts() {\n  return (\n    <DataGrid\n      aria-label=\"Sales\"\n      rows={sales}\n      columns={columns}\n      showToolbar\n      chartsIntegration\n      initialState={{\n        rowGrouping: { model: [\"product\"] },\n        chartsIntegration: { model: { type: \"column\", values: [\"revenue\"] } },\n      }}\n    />\n  );\n}",
      "title": "Chart the rows"
     },
     {
      "body": "The chart model also holds the chart's configuration. Each setting applies only to the types that use it.\n\n- **`stacked`:** stacks the series of a column, bar, line or area chart. It needs two series or more.\n- **`itemLabel`:** `\"value\"` prints the values on the chart, such as the percentages on pie slices.\n- **`legend`:** places the legend at the `top`, `right` or `bottom`, or hides it with `none`. A chart with one series has no legend.\n- **`colors`:** palette names or shades, such as `\"info\"` or `\"primary-dark\"`, for the series in order. Pie and donut charts use them for the slices.\n- **`height`, `curve`, `showMark`, `seriesAxisLabel`, `showToolbar` and `animations`:** the plot height in pixels, the line shape, point markers, the value axis title, a toolbar with downloads and animated updates.\n- **`startAngle`, `endAngle` and `donutSize`:** the angles of pie and donut slices, and the size of the donut hole in percent.\n\nWhen the grid is pivoted, a value field of the pivot draws one series per pivot column, named by its keys. Grouping, filtering, pivoting and editing redraw the chart, so it always shows what the grid shows.",
      "html": "<!-- The chart model is JSON. The instance's setChartModel(model) changes it from code. -->\n<div data-ok-data-grid data-ok-charts-integration data-ok-row-grouping-model='[\"product\"]'\n  data-ok-chart-model='{\"type\":\"donut\",\"values\":[\"units\"],\"itemLabel\":\"value\",\"legend\":\"right\"}'>\n  …\n  <div data-ok-data-grid-chart>\n    <figure data-ok-chart id=\"sales-chart\">…</figure>\n  </div>\n</div>",
      "id": "charts-configuration",
-     "react": "<DataGrid\n  aria-label=\"Revenue by region and product\"\n  rows={sales}\n  columns={columns}\n  showToolbar\n  chartsIntegration\n  initialState={{\n    pivoting: {\n      active: true,\n      model: {\n        rows: [{ field: \"region\" }],\n        columns: [{ field: \"product\" }],\n        values: [{ field: \"revenue\", aggFunc: \"sum\" }],\n      },\n    },\n    chartsIntegration: {\n      model: { type: \"column\", values: [\"revenue\"], stacked: true, legend: \"bottom\" },\n    },\n  }}\n/>",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nexport function DataGridChartsConfiguration() {\n  return (\n    <DataGrid\n      aria-label=\"Revenue by region and product\"\n      rows={sales}\n      columns={columns}\n      showToolbar\n      chartsIntegration\n      initialState={{\n        pivoting: {\n          active: true,\n          model: {\n            rows: [{ field: \"region\" }],\n            columns: [{ field: \"product\" }],\n            values: [{ field: \"revenue\", aggFunc: \"sum\" }],\n          },\n        },\n        chartsIntegration: {\n          model: { type: \"column\", values: [\"revenue\"], stacked: true, legend: \"bottom\" },\n        },\n      }}\n    />\n  );\n}",
      "title": "Configure the chart"
     },
     {
@@ -62850,13 +62850,13 @@
     {
      "body": "- **`DatePicker`:** a popover on devices with a precise pointer and a dialog on touch screens. It decides when it opens, with `desktopModeMediaQuery` (default `@media (pointer: fine)`).\n- **`DesktopDatePicker`:** always a popover. Picking a day closes it.\n- **`MobileDatePicker`:** always a dialog, with a toolbar and **Cancel** and **OK** buttons.\n- **`StaticDatePicker`:** the toolbar, the calendar and the buttons inline, without a field.\n- **`DateField`** and **`DateCalendar`:** the field or the calendar on their own.\n\nIn HTML, `data-ok-picker-variant` picks the form: `responsive`, `desktop`, `mobile` or `static`.",
      "id": "forms",
-     "react": "<DesktopDatePicker label=\"Start\" />\n<MobileDatePicker label=\"End\" />\n<StaticDatePicker defaultValue={new Date(2025, 4, 25)} />",
+     "react": "import { DesktopDatePicker, MobileDatePicker, StaticDatePicker } from \"@owlky/react\";\n\nexport function DatePickerForms() {\n  return (\n    <>\n      <DesktopDatePicker label=\"Start\" />\n      <MobileDatePicker label=\"End\" />\n      <StaticDatePicker defaultValue={new Date(2025, 4, 25)} />\n    </>\n  );\n}",
      "title": "Choose desktop, mobile or static"
     },
     {
      "body": "`views` sets what people pick, from `year`, `month` and `day`. The default is `[\"year\", \"day\"]`. The header's switch button opens the year view, and picking a year moves on to the next view. `openTo` sets the first view. The field's format follows the views: `[\"month\", \"year\"]` shows \"May 2025\", and `[\"day\"]` shows \"25\". Set `format` with Day.js tokens, such as `DD/MM/YYYY`, to choose another one. Text in square brackets is literal.",
      "id": "views",
-     "react": "<DatePicker label=\"Month and year\" views={[\"month\", \"year\"]} />\n<DatePicker label=\"Day\" views={[\"day\"]} />\n<DateField label=\"Date\" format=\"DD.MM.YYYY\" />",
+     "react": "import { DateField, DatePicker } from \"@owlky/react\";\n\nexport function DatePickerViews() {\n  return (\n    <>\n      <DatePicker label=\"Month and year\" views={[\"month\", \"year\"]} />\n      <DatePicker label=\"Day\" views={[\"day\"]} />\n      <DateField label=\"Date\" format=\"DD.MM.YYYY\" />\n    </>\n  );\n}",
      "title": "Pick years, months and days"
     },
     {
@@ -62867,13 +62867,13 @@
     {
      "body": "`actions` sets the buttons under the calendar: `clear`, `today`, `cancel`, `accept` and `nextOrAccept`. Desktop pickers have none by default, because picking a day accepts it. `shortcuts` adds chips that set a value and close the picker. Each shortcut has a `label` and a `getValue` function. In HTML, give each shortcut chip a fixed `data-ok-value`, or call `setShortcuts()` on the instance for computed dates.",
      "id": "actions",
-     "react": "<StaticDatePicker\n  actions={[\"clear\", \"today\", \"cancel\", \"accept\"]}\n  shortcuts={[\n    { label: \"Christmas\", getValue: () => new Date(2025, 11, 25) },\n    { label: \"New Year\", getValue: () => new Date(2026, 0, 1) },\n  ]}\n/>",
+     "react": "import { StaticDatePicker } from \"@owlky/react\";\n\nexport function DatePickerActions() {\n  return (\n    <StaticDatePicker\n      actions={[\"clear\", \"today\", \"cancel\", \"accept\"]}\n      shortcuts={[\n        { label: \"Christmas\", getValue: () => new Date(2025, 11, 25) },\n        { label: \"New Year\", getValue: () => new Date(2026, 0, 1) },\n      ]}\n    />\n  );\n}",
      "title": "Add actions and shortcuts"
     },
     {
      "body": "`minDate` and `maxDate` limit the range (by default, 1 January 1900 to 31 December 2099). `disablePast` and `disableFuture` compare with today. `shouldDisableDate`, `shouldDisableMonth` and `shouldDisableYear` disable more dates with a function. In HTML, set these functions with the instance methods of the same name, because functions have no attribute. The calendar disables the days people can't pick. The field shows an error when its value breaks a rule, and `onError` (HTML: `validationError` in the events) tells you which rule.",
      "id": "validation",
-     "react": "<DatePicker\n  label=\"Appointment\"\n  minDate={new Date(2025, 4, 10)}\n  maxDate={new Date(2025, 5, 20)}\n  shouldDisableDate={(day) => day.getDay() === 0 || day.getDay() === 6}\n  onError={(error) => console.warn(error)}\n/>",
+     "react": "import { DatePicker } from \"@owlky/react\";\n\nexport function DatePickerValidation() {\n  return (\n    <DatePicker\n      label=\"Appointment\"\n      minDate={new Date(2025, 4, 10)}\n      maxDate={new Date(2025, 5, 20)}\n      shouldDisableDate={(day) => day.getDay() === 0 || day.getDay() === 6}\n      onError={(error) => console.warn(error)}\n    />\n  );\n}",
      "title": "Validate dates"
     },
     {
@@ -62886,13 +62886,13 @@
     {
      "body": "`DateTimePicker` edits a date and a time in one field. On devices with a mouse, the popover shows the calendar beside the digital clocks, and a picked day keeps the time. On touch screens, the dialog shows a toolbar, **date** and **time** tabs, the calendar and then the analog clock. **Next** moves to the next view, and **OK** accepts the value on the last one. `views` mixes date and time views, such as `[\"day\", \"hours\"]`. In HTML, the value is an ISO date and time, such as `2025-05-25T09:30:00`.",
      "id": "date-time",
-     "react": "<DateTimePicker label=\"Meeting\" />\n<MobileDateTimePicker label=\"Departure\" views={[\"year\", \"day\", \"hours\", \"minutes\"]} />\n<StaticDateTimePicker orientation=\"landscape\" />",
+     "react": "import { DateTimePicker, MobileDateTimePicker, StaticDateTimePicker } from \"@owlky/react\";\n\nexport function DatePickerDateTime() {\n  return (\n    <>\n      <DateTimePicker label=\"Meeting\" />\n      <MobileDateTimePicker label=\"Departure\" views={[\"year\", \"day\", \"hours\", \"minutes\"]} />\n      <StaticDateTimePicker orientation=\"landscape\" />\n    </>\n  );\n}",
      "title": "Pick a date and time"
     },
     {
      "body": "`minTime` and `maxTime` limit the time of day. The date part doesn't count, unless you set `disableIgnoringDatePartForTimeValidation`. Date time pickers also take `minDateTime` and `maxDateTime`. `minutesStep` accepts only multiples of a number of minutes. `shouldDisableTime(value, view)` disables more times with a function. In HTML, call `setShouldDisableTime()` on the instance. `disablePast` and `disableFuture` compare with the current time. The clocks disable the options that break a rule, and `skipDisabled` leaves them out of the digital clocks.",
      "id": "time-validation",
-     "react": "<TimePicker\n  label=\"Office hours\"\n  minTime={new Date(2025, 4, 25, 9)}\n  maxTime={new Date(2025, 4, 25, 17, 30)}\n  minutesStep={15}\n  timeSteps={{ minutes: 15 }}\n  skipDisabled\n/>",
+     "react": "import { TimePicker } from \"@owlky/react\";\n\nexport function DatePickerTimeValidation() {\n  return (\n    <TimePicker\n      label=\"Office hours\"\n      minTime={new Date(2025, 4, 25, 9)}\n      maxTime={new Date(2025, 4, 25, 17, 30)}\n      minutesStep={15}\n      timeSteps={{ minutes: 15 }}\n      skipDisabled\n    />\n  );\n}",
      "title": "Validate times"
     },
     {
@@ -62912,7 +62912,7 @@
     {
      "body": "`TimeRangePicker` edits a start and an end time, and `DateTimeRangePicker` a start and an end date with times. **Start** and **End** tabs pick the edited end. On devices with a mouse, the popover shows digital clocks, beside one month for date times. On touch screens, the dialog shows the analog clock, after the calendar for date times. Finishing the start's last view moves on to the end. **OK** accepts the range and **Cancel** restores the one from opening. The fields work on their own as `SingleInputTimeRangeField`, `MultiInputTimeRangeField`, `SingleInputDateTimeRangeField` and `MultiInputDateTimeRangeField`. In HTML, the value is an interval of ISO times, such as `09:00:00/17:30:00`.",
      "id": "time-range",
-     "react": "<TimeRangePicker label=\"Opening hours\" minutesStep={15} timeSteps={{ minutes: 15 }} />\n<DateTimeRangePicker label=\"Event\" disablePast />\n<MultiInputDateRangeField startLabel=\"From\" endLabel=\"To\" />",
+     "react": "import { DateTimeRangePicker, MultiInputDateRangeField, TimeRangePicker } from \"@owlky/react\";\n\nexport function DatePickerTimeRange() {\n  return (\n    <>\n      <TimeRangePicker label=\"Opening hours\" minutesStep={15} timeSteps={{ minutes: 15 }} />\n      <DateTimeRangePicker label=\"Event\" disablePast />\n      <MultiInputDateRangeField startLabel=\"From\" endLabel=\"To\" />\n    </>\n  );\n}",
      "title": "Pick a time or date time range"
     },
     {
@@ -62947,7 +62947,7 @@
      "body": "Put the pickers in an element with `dir=\"rtl\"`, or set it on `<html>`. The layout mirrors: the field's sections, the calendar's weekdays and the month arrows run from right to left. The Left arrow and Right arrow keys follow the reading direction, so the Left arrow moves to the next section and the next day. The analog clock keeps its face, as clocks do.",
      "html": "<html lang=\"ar\" dir=\"rtl\">\n  …date pickers…\n</html>",
      "id": "right-to-left",
-     "react": "<LocalizationProvider adapterLocale=\"ar\" localeText={pickersArSD}>\n  <div dir=\"rtl\">\n    <DateRangeCalendar />\n  </div>\n</LocalizationProvider>",
+     "react": "import { DateRangeCalendar, LocalizationProvider } from \"@owlky/react\";\n\nexport function DatePickerRightToLeft() {\n  return (\n    <LocalizationProvider adapterLocale=\"ar\" localeText={pickersArSD}>\n      <div dir=\"rtl\">\n        <DateRangeCalendar />\n      </div>\n    </LocalizationProvider>\n  );\n}",
      "title": "Lay out right to left"
     },
     {
@@ -63005,21 +63005,21 @@
      "body": "The paper is as wide as its content, up to `maxWidth`: `xs` (444px), `sm` (600px, the default), `md` (900px), `lg` (1200px), `xl` (1536px) or `none`. Add `fullWidth` to always take that width. On phones the paper keeps 16px from the edges, and 32px from 600px up. `fullScreen` covers the whole viewport.",
      "html": "<dialog id=\"settings\" data-ok-dialog data-ok-max-width=\"md\" data-ok-full-width data-ok-scroll=\"paper\" aria-labelledby=\"settings-title\">…</dialog>",
      "id": "size",
-     "react": "<Dialog open={open} onOpenChange={setOpen} maxWidth=\"md\" fullWidth>…</Dialog>",
+     "react": "import { Dialog } from \"@owlky/react\";\n\nexport function DialogSize() {\n  return (\n    <Dialog open={open} onOpenChange={setOpen} maxWidth=\"md\" fullWidth>…</Dialog>\n  );\n}",
      "title": "Size the dialog"
     },
     {
      "body": "With `scroll` set to `paper` (default), the title and actions stay in view and the content scrolls. Make the content focusable (`tabindex=\"0\"` and a name) so keyboard users can scroll it. With `body`, the whole dialog scrolls with the page. Add `dividers` to draw lines above and below the content.",
      "html": "<div data-ok-dialog-content data-ok-dividers tabindex=\"0\" aria-label=\"Terms\">…</div>",
      "id": "scroll",
-     "react": "<DialogContent dividers tabIndex={0} aria-label=\"Terms\">…</DialogContent>",
+     "react": "import { DialogContent } from \"@owlky/react\";\n\nexport function DialogScroll() {\n  return (\n    <DialogContent dividers tabIndex={0} aria-label=\"Terms\">…</DialogContent>\n  );\n}",
      "title": "Scroll long content"
     },
     {
      "body": "By default, the paper fades and scales in briefly. Set `transition` to a Motion entrance, such as `slideInUp` or `zoomIn`, to play that animation instead. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles. With reduced motion, the dialog appears at once.",
      "html": "<div data-ok-dialog-paper data-ok-motion data-ok-variant=\"slideInUp\" data-ok-trigger=\"mount\">…</div>",
      "id": "transition",
-     "react": "<Dialog open={open} onOpenChange={setOpen} transition=\"slideInUp\">…</Dialog>",
+     "react": "import { Dialog } from \"@owlky/react\";\n\nexport function DialogTransition() {\n  return (\n    <Dialog open={open} onOpenChange={setOpen} transition=\"slideInUp\">…</Dialog>\n  );\n}",
      "title": "Animate the entrance"
     },
     {
@@ -63137,14 +63137,14 @@
      "body": "Set `anchor` to `left` (the default), `right`, `top` or `bottom`. Side drawers take the full height; top and bottom drawers take the full width. A drawer never covers the whole screen: a 56px gap keeps the backdrop visible, so people can tap it to close the drawer.",
      "html": "<dialog id=\"menu\" data-ok-drawer data-ok-anchor=\"bottom\" data-ok-variant=\"temporary\" aria-label=\"Menu\">\n  <div data-ok-drawer-content>…</div>\n</dialog>",
      "id": "anchor",
-     "react": "<DrawerContent anchor=\"bottom\" aria-label=\"Menu\">…</DrawerContent>",
+     "react": "import { DrawerContent, Menu } from \"@owlky/react\";\n\nexport function DrawerAnchor() {\n  return (\n    <DrawerContent anchor=\"bottom\" aria-label=\"Menu\">…</DrawerContent>\n  );\n}",
      "title": "Choose the edge"
     },
     {
      "body": "Escape and a click on the backdrop ask the drawer to close. Add your own close button with `DrawerClose` in React, or `data-ok-drawer-close` in HTML. Set `disableEscapeKeyDown` or `hideBackdrop` to turn those ways off.",
      "html": "<dialog id=\"filters\" data-ok-drawer data-ok-anchor=\"right\" data-ok-variant=\"temporary\" aria-label=\"Filters\">\n  <div data-ok-drawer-content>\n    …\n    <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\" data-ok-drawer-close>\n      <span data-ok-button-label>Apply</span>\n    </button>\n  </div>\n</dialog>",
      "id": "close",
-     "react": "<DrawerContent anchor=\"right\" aria-label=\"Filters\">\n  …\n  <DrawerClose variant=\"contained\" color=\"primary\">\n    Apply\n  </DrawerClose>\n</DrawerContent>",
+     "react": "import { DrawerClose, DrawerContent } from \"@owlky/react\";\n\nexport function DrawerClose() {\n  return (\n    <DrawerContent anchor=\"right\" aria-label=\"Filters\">\n      …\n      <DrawerClose variant=\"contained\" color=\"primary\">\n        Apply\n      </DrawerClose>\n    </DrawerContent>\n  );\n}",
      "title": "Close the drawer"
     },
     {
@@ -63158,7 +63158,7 @@
      "body": "Set `variant` to `persistent` for a drawer that people can show and hide next to the content, or `permanent` for one that is always visible. Docked drawers have no backdrop and don't trap focus. Place the drawer and the page area in a flex row (left and right) or column (top and bottom).",
      "html": "<div style=\"display: flex\">\n  <aside data-ok-drawer data-ok-anchor=\"left\" data-ok-variant=\"permanent\" aria-label=\"Navigation\">\n    <div data-ok-drawer-content>…</div>\n  </aside>\n  <main>…</main>\n</div>",
      "id": "docked",
-     "react": "<div style={{ display: \"flex\" }}>\n  <Drawer variant=\"permanent\">\n    <DrawerContent aria-label=\"Navigation\">…</DrawerContent>\n  </Drawer>\n  <main>…</main>\n</div>",
+     "react": "import { Drawer, DrawerContent } from \"@owlky/react\";\n\nexport function DrawerDocked() {\n  return (\n    <div style={{ display: \"flex\" }}>\n      <Drawer variant=\"permanent\">\n        <DrawerContent aria-label=\"Navigation\">…</DrawerContent>\n      </Drawer>\n      <main>…</main>\n    </div>\n  );\n}",
      "title": "Dock the drawer next to the page"
     },
     {
@@ -63217,7 +63217,7 @@
      "body": "The default toolbar has the heading menu, text styles, lists, alignment, links, images, line breaks, clear formatting and fullscreen. Turn on `fullItem` to add code, code blocks, quotes, horizontal rules, undo and redo.\n\nThe Fullscreen button makes the editor fill the window over a backdrop that dims the page. While it is fullscreen, the page doesn't scroll and Tab stays inside the editor. Press Escape or the button again to leave. In React, `onFullscreenChange` reports the change. In HTML, listen to `ok:editor:fullscreen`, and put a `div[data-ok-backdrop]` first in the editor so that the page is dimmed.",
      "html": "<div data-ok-editor data-ok-full-item>…</div>",
      "id": "toolbar",
-     "react": "<Editor aria-label=\"Article\" fullItem />",
+     "react": "import { Editor } from \"@owlky/react\";\n\nexport function EditorToolbar() {\n  return <Editor aria-label=\"Article\" fullItem />;\n}",
      "title": "Choose the toolbar"
     },
     {
@@ -63238,7 +63238,7 @@
      "body": "Set `error` for a red border and red helper text, and `helperText` for the text under the editor. The helper text describes the text box for screen readers. Set `editable` to `false` to show content without the toolbar, for example a preview.",
      "html": "<div data-ok-editor data-ok-error>\n  …\n  <div data-ok-editor-body>\n    <div data-ok-editor-content role=\"textbox\" aria-multiline=\"true\" aria-label=\"Summary\" aria-describedby=\"summary-help\" aria-invalid=\"true\">…</div>\n  </div>\n  <p data-ok-editor-helper id=\"summary-help\">Write at least one sentence.</p>\n</div>\n\n<div data-ok-editor data-ok-editable=\"false\">…</div>",
      "id": "states",
-     "react": "<Editor aria-label=\"Summary\" error helperText=\"Write at least one sentence.\" />\n<Editor aria-label=\"Preview\" editable={false} value={html} />",
+     "react": "import { Editor } from \"@owlky/react\";\n\nexport function EditorStates() {\n  return (\n    <>\n      <Editor aria-label=\"Summary\" error helperText=\"Write at least one sentence.\" />\n      <Editor aria-label=\"Preview\" editable={false} value={html} />\n    </>\n  );\n}",
      "title": "Show errors and read-only content"
     },
     {
@@ -63454,7 +63454,7 @@
      "body": "If your project uses Tailwind CSS v4, import the Owlky theme after Tailwind. Every palette shade and theme color then becomes a utility class, such as `bg-primary`, `text-primary-dark`, `bg-grey-200`, `text-text-secondary`, `bg-paper` and `border-divider`.",
      "html": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n<!-- In your HTML -->\n<p class=\"rounded-md bg-primary-lighter px-2 text-primary-darker\">Tailwind + Owlky colors</p>",
      "id": "tailwind",
-     "react": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n// In your component\n<p className=\"rounded-md bg-primary-lighter px-2 text-primary-darker\">Tailwind + Owlky colors</p>",
+     "react": "// Set up Tailwind once, in your main CSS file:\n//   @import \"tailwindcss\";\n//   @import \"@owlky/styles/owlky.css\";\n//   @import \"@owlky/styles/theme.css\";\n\nexport function ColorTag() {\n  return (\n    <p className=\"rounded-md bg-primary-lighter px-2 text-primary-darker\">Tailwind + Owlky colors</p>\n  );\n}",
      "title": "Use Tailwind CSS utilities"
     },
     {
@@ -63466,9 +63466,9 @@
     },
     {
      "body": "Two attributes control the colors of a page or a part of it:\n\n- `data-ok-theme` sets the theme: `light` or `dark`.\n- `data-ok-preset` changes the primary color, for example to `cyan`.\n\nPut them on the `<html>` element to style the whole page, or on any element to style only its content. You can nest them, for example to show a light panel inside a dark page.\n\nTo change them from code, call `applyThemeSettings()`. Pass a storage, such as `localStorage`, to remember the user's choice.",
-     "html": "<html data-ok-theme=\"dark\" data-ok-preset=\"cyan\">\n  <body>\n    <!-- A light panel inside the dark page -->\n    <section data-ok-theme=\"light\">…</section>\n  </body>\n</html>\n\n<script type=\"module\">\n  import { applyThemeSettings } from \"@owlky/html\";\n\n  applyThemeSettings({ mode: \"dark\", preset: \"cyan\" }, { storage: localStorage });\n</script>",
+     "html": "<html data-ok-theme=\"dark\" data-ok-preset=\"cyan\">\n  <body>\n    <!-- A light panel inside the dark page -->\n    <section data-ok-theme=\"light\">\n      <h2>Light panel</h2>\n      <p>This panel keeps the light colors on a dark page.</p>\n    </section>\n  </body>\n</html>\n\n<script type=\"module\">\n  import { applyThemeSettings } from \"@owlky/html\";\n\n  applyThemeSettings({ mode: \"dark\", preset: \"cyan\" }, { storage: localStorage });\n</script>",
      "id": "themes",
-     "react": "import { applyThemeSettings } from \"@owlky/react\";\n\n// For example, in the click handler of a theme switch\napplyThemeSettings({ mode: \"dark\", preset: \"cyan\" }, { storage: localStorage });\n\n// A light panel with its own primary color\nexport function Panel() {\n  return <section data-ok-theme=\"light\" data-ok-preset=\"purple\">…</section>;\n}",
+     "react": "import { applyThemeSettings, Button } from \"@owlky/react\";\n\n// A switch to the dark theme, and a light panel with its own primary color\nexport function ThemedPage() {\n  return (\n    <>\n      <Button onClick={() => applyThemeSettings({ mode: \"dark\", preset: \"cyan\" }, { storage: localStorage })}>\n        Use the dark theme\n      </Button>\n      <section data-ok-theme=\"light\" data-ok-preset=\"purple\">\n        <h2>Light panel</h2>\n        <p>This panel keeps the light colors and a purple primary color.</p>\n      </section>\n    </>\n  );\n}",
      "title": "Switch themes and presets"
     },
     {
@@ -63494,7 +63494,7 @@
      "body": "The Owlky theme for Tailwind CSS v4 sets Tailwind's spacing unit to `--ok-spacing`, so every spacing utility follows it. For example, `gap-2` is 8px and `p-4` is 16px.",
      "html": "<div class=\"flex gap-2 p-4\">…</div>",
      "id": "tailwind",
-     "react": "<div className=\"flex gap-2 p-4\">…</div>",
+     "react": "export function GridTailwind() {\n  return (\n    <div className=\"flex gap-2 p-4\">…</div>\n  );\n}",
      "title": "Use Tailwind CSS spacing"
     },
     {
@@ -63539,21 +63539,21 @@
      "body": "Draw icons on a 24 × 24 grid and display them at one of these sizes:\n\n- **16px:** dense interfaces and next to caption text.\n- **20px:** inside buttons, inputs and menus.\n- **24px:** standalone icons and icon buttons.\n- **32px:** empty states and feature highlights.\n\nInside components, the size is set for you. For your own icons, set `width` and `height`.",
      "html": "<svg aria-hidden=\"true\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" /><path d=\"m3 7 9 6 9-6\" /></svg>",
      "id": "size",
-     "react": "<Mail aria-hidden=\"true\" width={20} height={20} />",
+     "react": "import { Mail } from \"lucide-react\";\n\nexport function IconsSize() {\n  return <Mail aria-hidden=\"true\" width={20} height={20} />;\n}",
      "title": "Choose a size"
     },
     {
      "body": "Draw icons with `currentColor`. They then take the text color of their parent, so they follow the theme and component colors automatically. To color an icon yourself, set `color` on the icon or its parent.",
      "html": "<span style=\"color: var(--ok-palette-success-main)\">\n  <svg aria-hidden=\"true\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" /><path d=\"m3 7 9 6 9-6\" /></svg>\n</span>",
      "id": "color",
-     "react": "<Mail aria-hidden=\"true\" style={{ color: \"var(--ok-palette-success-main)\" }} />",
+     "react": "import { Mail } from \"lucide-react\";\n\nexport function IconsColor() {\n  return <Mail aria-hidden=\"true\" style={{ color: \"var(--ok-palette-success-main)\" }} />;\n}",
      "title": "Color an icon"
     },
     {
      "body": "- **Decorative icons** sit next to visible text that says the same thing. Hide them from assistive technology with `aria-hidden=\"true\"`.\n- **Meaningful icons** stand alone and carry information. Give them a name with `role=\"img\"` and `aria-label`.\n- **Icon-only buttons** need a name on the button, not on the icon: set `aria-label` on the button and hide the icon.\n- Make sure an icon that conveys meaning has a contrast ratio of at least 3:1 with its background (WCAG 2.2, success criterion 1.4.11).",
      "html": "<!-- Decorative: next to visible text -->\n<svg aria-hidden=\"true\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" /><path d=\"m3 7 9 6 9-6\" /></svg> Messages\n\n<!-- Meaningful on its own: give it a name -->\n<svg role=\"img\" aria-label=\"3 new messages\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" /><path d=\"m3 7 9 6 9-6\" /></svg>",
      "id": "accessibility",
-     "react": "{/* Decorative: next to visible text */}\n<Mail aria-hidden=\"true\" width={20} height={20} /> Messages\n\n{/* Meaningful on its own: give it a name */}\n<Mail role=\"img\" aria-label=\"3 new messages\" width={24} height={24} />",
+     "react": "import { Mail } from \"lucide-react\";\n\nexport function MessageIcons() {\n  return (\n    <>\n      {/* Decorative: next to visible text */}\n      <span>\n        <Mail aria-hidden=\"true\" width={20} height={20} /> Messages\n      </span>\n      {/* Meaningful on its own: give it a name */}\n      <Mail role=\"img\" aria-label=\"3 new messages\" width={24} height={24} />\n    </>\n  );\n}",
      "title": "Accessibility"
     }
    ],
@@ -63700,7 +63700,7 @@
      "body": "With the Owlky theme for Tailwind CSS v4, every shadow is a utility: `shadow-card`, `shadow-dropdown`, `shadow-dialog`, `shadow-dialog-start`, `shadow-z1` to `shadow-z24` and `shadow-elevation-1` to `shadow-elevation-24`.",
      "html": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n<!-- In your HTML -->\n<article class=\"rounded-2xl bg-paper p-6 shadow-card\">Weekly sales</article>",
      "id": "tailwind",
-     "react": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n// In your component\n<article className=\"rounded-2xl bg-paper p-6 shadow-card\">Weekly sales</article>",
+     "react": "// Set up Tailwind once, in your main CSS file:\n//   @import \"tailwindcss\";\n//   @import \"@owlky/styles/owlky.css\";\n//   @import \"@owlky/styles/theme.css\";\n\nexport function WeeklySales() {\n  return (\n    <article className=\"rounded-2xl bg-paper p-6 shadow-card\">Weekly sales</article>\n  );\n}",
      "title": "Use Tailwind CSS utilities"
     },
     {
@@ -63755,7 +63755,7 @@
      "body": "With the Owlky theme for Tailwind CSS v4, each variant from `h1` to `caption` is a `text-<variant>` utility that sets the size, weight and line height. Add `font-display` for the display font. The `overline` and `button` variants have no utility: use their CSS variables instead.",
      "html": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n<!-- In your HTML -->\n<h1 class=\"font-display text-h3\">Monthly report</h1>\n<p class=\"text-body2 text-text-secondary\">Updated 5 minutes ago</p>",
      "id": "tailwind",
-     "react": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n// In your component\n<h1 className=\"font-display text-h3\">Monthly report</h1>\n<p className=\"text-body2 text-text-secondary\">Updated 5 minutes ago</p>",
+     "react": "// Set up Tailwind once, in your main CSS file:\n//   @import \"tailwindcss\";\n//   @import \"@owlky/styles/owlky.css\";\n//   @import \"@owlky/styles/theme.css\";\n\nexport function ReportHeading() {\n  return (\n    <>\n      <h1 className=\"font-display text-h3\">Monthly report</h1>\n      <p className=\"text-body2 text-text-secondary\">Updated 5 minutes ago</p>\n    </>\n  );\n}",
      "title": "Use Tailwind CSS utilities"
     },
     {
@@ -63765,7 +63765,7 @@
     },
     {
      "body": "To use another font, set `data-ok-font` to `public-sans`, `inter`, `dm-sans` and `nunito-sans`. To make all text larger or smaller, change the root font size: every size is in `rem`. Load the fonts yourself, for example from Fontsource. The **Settings** page explains both options.",
-     "html": "<html data-ok-font=\"inter\" style=\"font-size: 18px\">\n  …\n</html>",
+     "html": "<html data-ok-font=\"inter\" style=\"font-size: 18px\">\n  <body>\n    <h1 data-ok-typography data-ok-variant=\"h3\">Monthly report</h1>\n    <p data-ok-typography data-ok-variant=\"body1\">Every size follows the root font size.</p>\n  </body>\n</html>",
      "id": "fonts",
      "react": "import \"@fontsource-variable/inter\";\nimport { applyThemeSettings } from \"@owlky/react\";\n\napplyThemeSettings({ font: \"inter\", fontSize: 18 });",
      "title": "Change the font and text size"
@@ -64174,35 +64174,35 @@
      "body": "The zoom buttons, the slideshow button, the fullscreen button, the counter and the close button are on by default, like the thumbnails and the captions. Turn each one off with `disableZoom`, `disableSlideshow`, `disableFullscreen`, `disableTotal`, `disableThumbnails` and `disableCaptions`. Turn on more buttons with `download`, `share` and `rotate`, and add toggles for the captions and the thumbnails with `captionsShowToggle` and `thumbnailsShowToggle`. The share button uses the browser's share sheet and only shows where the browser offers one, and the fullscreen button only shows where fullscreen is available. In React, add your own buttons with `toolbarButtons`.",
      "html": "<dialog id=\"photos\" data-ok-lightbox data-ok-theme=\"dark\" aria-label=\"Lightbox\"\n  data-ok-download data-ok-share data-ok-rotate data-ok-disable-slideshow\n  data-ok-captions-show-toggle data-ok-thumbnails-show-toggle>…</dialog>",
      "id": "toolbar",
-     "react": "<Lightbox\n  slides={slides}\n  download\n  share\n  rotate\n  disableSlideshow\n  captionsShowToggle\n  thumbnailsShowToggle\n/>",
+     "react": "import { Lightbox } from \"@owlky/react\";\n\nexport function LightboxToolbar() {\n  return (\n    <Lightbox\n      slides={slides}\n      download\n      share\n      rotate\n      disableSlideshow\n      captionsShowToggle\n      thumbnailsShowToggle\n    />\n  );\n}",
      "title": "Choose the toolbar buttons"
     },
     {
      "body": "Zoom in with the toolbar, the plus and minus keys, a double click or double tap, a pinch, or Ctrl and the mouse wheel. Then drag, use the arrow keys or the wheel to move around the image. An image zooms until one image pixel covers one screen pixel (`maxZoomPixelRatio`), so give images their natural `width` and `height`. `zoomInMultiplier` sets the size of each step, `doubleClickMaxStops` how many steps a double click goes through, and `scrollToZoom` lets the wheel zoom without Ctrl. Images that are no larger than the screen don't zoom.",
      "html": "<dialog id=\"photos\" data-ok-lightbox … data-ok-max-zoom-pixel-ratio=\"2\"\n  data-ok-zoom-in-multiplier=\"1.5\" data-ok-scroll-to-zoom>…</dialog>",
      "id": "zoom",
-     "react": "<Lightbox slides={slides} maxZoomPixelRatio={2} zoomInMultiplier={1.5} scrollToZoom />",
+     "react": "import { Lightbox } from \"@owlky/react\";\n\nexport function LightboxZoom() {\n  return <Lightbox slides={slides} maxZoomPixelRatio={2} zoomInMultiplier={1.5} scrollToZoom />;\n}",
      "title": "Zoom and pan"
     },
     {
      "body": "Thumbnails sit at the `bottom` by default. Set `thumbnailsPosition` to `top`, `start` or `end` to move them, and change their size with `thumbnailsWidth`, `thumbnailsHeight`, `thumbnailsBorder`, `thumbnailsBorderRadius`, `thumbnailsPadding` and `thumbnailsGap` (in pixels). `thumbnailsImageFit` crops them to fill (`cover`) or shows the whole picture (`contain`). The row fades out at its edges unless `thumbnailsVignette` is `false`.",
      "html": "<dialog id=\"photos\" data-ok-lightbox … data-ok-thumbnails-position=\"end\"\n  data-ok-thumbnails-width=\"96\" data-ok-thumbnails-height=\"64\">…</dialog>",
      "id": "thumbnails",
-     "react": "<Lightbox slides={slides} thumbnailsPosition=\"end\" thumbnailsWidth={96} thumbnailsHeight={64} />",
+     "react": "import { Lightbox } from \"@owlky/react\";\n\nexport function LightboxThumbnails() {\n  return (\n    <Lightbox slides={slides} thumbnailsPosition=\"end\" thumbnailsWidth={96} thumbnailsHeight={64} />\n  );\n}",
      "title": "Place the thumbnails"
     },
     {
      "body": "Set `inline` to place the lightbox in the page as a carousel, with the same toolbar, captions and thumbnails but no close button. In HTML, use a `div` with `data-ok-inline` instead of the dialog. It is 3:2 by default: change the size with your own CSS.",
      "html": "<div data-ok-lightbox data-ok-inline data-ok-theme=\"dark\">\n  <section data-ok-carousel data-ok-lightbox-carousel aria-roledescription=\"carousel\" aria-label=\"Photo gallery\">…</section>\n</div>",
      "id": "inline",
-     "react": "<Lightbox slides={slides} inline />",
+     "react": "import { Lightbox } from \"@owlky/react\";\n\nexport function LightboxInline() {\n  return <Lightbox slides={slides} inline />;\n}",
      "title": "Show it inline"
     },
     {
      "body": "Escape and the close button always close the lightbox, unless you set `closeOnEscape` to `false`. Set `closeOnBackdropClick` to close it with a click beside the image, and `closeOnPullDown` or `closeOnPullUp` to close it when people pull the slide down or up. `finite` stops the slides at both ends instead of looping, and `disableSwipeNavigation` keeps swipes from changing slides.",
      "html": "<dialog id=\"photos\" data-ok-lightbox … data-ok-close-on-backdrop-click\n  data-ok-close-on-pull-down data-ok-finite>…</dialog>",
      "id": "close",
-     "react": "<Lightbox slides={slides} closeOnBackdropClick closeOnPullDown finite />",
+     "react": "import { Lightbox } from \"@owlky/react\";\n\nexport function LightboxClose() {\n  return <Lightbox slides={slides} closeOnBackdropClick closeOnPullDown finite />;\n}",
      "title": "Close the lightbox"
     },
     {
@@ -64261,28 +64261,28 @@
      "body": "The `buffer` variant shows two values: `value` (how far playback or processing has got) and `valueBuffer` (how far loading has got). Dots move along the rest of the bar. In HTML, the buffer is the `data-ok-value-buffer` attribute, and the markup starts with a `data-ok-linear-progress-dashed` part.",
      "html": "<span role=\"progressbar\" aria-label=\"Video\" data-ok-linear-progress data-ok-variant=\"buffer\" data-ok-color=\"primary\" aria-valuenow=\"30\" aria-valuemin=\"0\" aria-valuemax=\"100\" data-ok-value-buffer=\"45\"><span data-ok-linear-progress-dashed></span><span data-ok-linear-progress-bar=\"1\"></span><span data-ok-linear-progress-bar=\"2\"></span></span>",
      "id": "buffer",
-     "react": "<LinearProgress variant=\"buffer\" value={30} valueBuffer={45} aria-label=\"Video\" />",
+     "react": "import { LinearProgress } from \"@owlky/react\";\n\nexport function LinearProgressBuffer() {\n  return <LinearProgress variant=\"buffer\" value={30} valueBuffer={45} aria-label=\"Video\" />;\n}",
      "title": "Show what is buffered"
     },
     {
      "body": "The `query` variant moves from the end to the start. Use it while a request waits for an answer, then switch to `determinate` once the progress is known.",
      "html": "<span role=\"progressbar\" aria-label=\"Searching\" data-ok-linear-progress data-ok-variant=\"query\" data-ok-color=\"primary\"><span data-ok-linear-progress-bar=\"1\"></span><span data-ok-linear-progress-bar=\"2\"></span></span>",
      "id": "query",
-     "react": "<LinearProgress variant=\"query\" aria-label=\"Searching\" />",
+     "react": "import { LinearProgress } from \"@owlky/react\";\n\nexport function LinearProgressQuery() {\n  return <LinearProgress variant=\"query\" aria-label=\"Searching\" />;\n}",
      "title": "Show a request before loading starts"
     },
     {
      "body": "The default color is `primary`. Use another palette color, such as `success` or `error`, to match the context. Use `inherit` to take the text color of the surrounding element. The track behind the bar is the same color at 24% opacity.",
      "html": "<span role=\"progressbar\" aria-label=\"Loading\" data-ok-linear-progress data-ok-variant=\"indeterminate\" data-ok-color=\"inherit\"><span data-ok-linear-progress-bar=\"1\"></span><span data-ok-linear-progress-bar=\"2\"></span></span>",
      "id": "colors",
-     "react": "<LinearProgress color=\"inherit\" aria-label=\"Loading\" />",
+     "react": "import { LinearProgress } from \"@owlky/react\";\n\nexport function LinearProgressColors() {\n  return <LinearProgress color=\"inherit\" aria-label=\"Loading\" />;\n}",
      "title": "Choose a color"
     },
     {
      "body": "Put the value next to the bar when people need the exact number. For values that aren't percentages, such as floors or steps, set `aria-valuetext` so assistive technology reads the same text.",
      "html": "<div style=\"display: flex; align-items: center; gap: 8px\">\n  <span role=\"progressbar\" aria-label=\"Setup\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"3\" aria-valuemin=\"0\" aria-valuemax=\"5\" aria-valuetext=\"Step 3 of 5\"><span data-ok-linear-progress-bar=\"1\"></span></span>\n  <span>Step 3 of 5</span>\n</div>",
      "id": "label",
-     "react": "<div style={{ display: \"flex\", alignItems: \"center\", gap: 8 }}>\n  <LinearProgress\n    variant=\"determinate\"\n    value={3}\n    max={5}\n    aria-valuetext=\"Step 3 of 5\"\n    aria-label=\"Setup\"\n  />\n  <span>Step 3 of 5</span>\n</div>",
+     "react": "import { LinearProgress, Step } from \"@owlky/react\";\n\nexport function LinearProgressLabel() {\n  return (\n    <div style={{ display: \"flex\", alignItems: \"center\", gap: 8 }}>\n      <LinearProgress\n        variant=\"determinate\"\n        value={3}\n        max={5}\n        aria-valuetext=\"Step 3 of 5\"\n        aria-label=\"Setup\"\n      />\n      <span>Step 3 of 5</span>\n    </div>\n  );\n}",
      "title": "Show the value as text"
     },
     {
@@ -64407,21 +64407,21 @@
      "body": "A row is a list item with up to four parts, in this order:\n\n- **Icon or avatar:** `ListItemIcon` or `ListItemAvatar`, 16px before the text.\n- **Text:** `ListItemText` with a `primary` line and an optional `secondary` line in the secondary text color.\n- **Control:** a switch or another control at the end of the row.\n- **End action:** `secondaryAction`, such as an icon button, placed 16px from the end.\n\nSet `alignItems` to `flex-start` when the text wraps to several lines, so the icon or avatar stays next to the first line.",
      "html": "<li data-ok-list-item>\n  <span data-ok-list-item-avatar>…</span>\n  <span data-ok-list-item-text>\n    <span data-ok-list-item-text-primary>Photos</span>\n    <span data-ok-list-item-text-secondary>Jan 9, 2014</span>\n  </span>\n</li>",
      "id": "rows",
-     "react": "<ListItem>\n  <ListItemAvatar>\n    <Avatar>\n      <ImageIcon />\n    </Avatar>\n  </ListItemAvatar>\n  <ListItemText primary=\"Photos\" secondary=\"Jan 9, 2014\" />\n</ListItem>",
+     "react": "import { Avatar, ListItem, ListItemAvatar, ListItemText } from \"@owlky/react\";\nimport { ImageIcon } from \"lucide-react\";\n\nexport function ListRows() {\n  return (\n    <ListItem>\n      <ListItemAvatar>\n        <Avatar>\n          <ImageIcon />\n        </Avatar>\n      </ListItemAvatar>\n      <ListItemText primary=\"Photos\" secondary=\"Jan 9, 2014\" />\n    </ListItem>\n  );\n}",
      "title": "Build a row"
     },
     {
      "body": "Put a `ListItemButton` in a list item with `disablePadding`: the button then fills the row. It is a native `<button type=\"button\">`, or an `<a>` when you set `href`. Use `selected` to highlight the current choice with a primary tint. Because the tint is color only, also set `aria-current`: `\"page\"` in navigation, `\"true\"` otherwise.",
      "html": "<li data-ok-list-item data-ok-disable-padding>\n  <a href=\"/drafts\" data-ok-list-item-button data-ok-selected aria-current=\"page\">\n    <span data-ok-list-item-text>\n      <span data-ok-list-item-text-primary>Drafts</span>\n    </span>\n  </a>\n</li>",
      "id": "buttons",
-     "react": "<ListItem disablePadding>\n  <ListItemButton href=\"/drafts\" selected aria-current=\"page\">\n    <ListItemText primary=\"Drafts\" />\n  </ListItemButton>\n</ListItem>",
+     "react": "import { ListItem, ListItemButton, ListItemText } from \"@owlky/react\";\n\nexport function ListButtons() {\n  return (\n    <ListItem disablePadding>\n      <ListItemButton href=\"/drafts\" selected aria-current=\"page\">\n        <ListItemText primary=\"Drafts\" />\n      </ListItemButton>\n    </ListItem>\n  );\n}",
      "title": "Make rows clickable"
     },
     {
      "body": "A subheader names the list. It is the first list item and sticks to the top while the list scrolls. Give it an `id` and point the list's `aria-labelledby` at it. Set `disableSticky` to let it scroll away.",
      "html": "<ul data-ok-list aria-labelledby=\"settings-title\">\n  <li data-ok-list-subheader data-ok-color=\"default\" id=\"settings-title\">Settings</li>\n  …\n</ul>",
      "id": "subheader",
-     "react": "<List\n  aria-labelledby=\"settings-title\"\n  subheader={<ListSubheader id=\"settings-title\">Settings</ListSubheader>}\n>\n  …\n</List>",
+     "react": "import { List, ListSubheader } from \"@owlky/react\";\n\nexport function ListSubheader() {\n  return (\n    <List\n      aria-labelledby=\"settings-title\"\n      subheader={<ListSubheader id=\"settings-title\">Settings</ListSubheader>}\n    >\n      …\n    </List>\n  );\n}",
      "title": "Add a subheader"
     },
     {
@@ -64435,7 +64435,7 @@
      "body": "A row can hold a checkbox or a switch. Don't put a control inside a `ListItemButton`: a control inside a button can't be reached or announced reliably. Instead, label the control with the row's text: a `<label>` around the text for a checkbox at the start, or `aria-labelledby` with the text's `id` for a switch at the end.",
      "html": "<li data-ok-list-item>\n  <span data-ok-list-item-icon>…</span>\n  <span data-ok-list-item-text id=\"wifi-label\">\n    <span data-ok-list-item-text-primary>Wi-Fi</span>\n  </span>\n  <span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-edge=\"end\">\n    <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-labelledby=\"wifi-label\" checked>\n    <span data-ok-switch-track aria-hidden=\"true\"></span>\n    <span data-ok-switch-thumb aria-hidden=\"true\"></span>\n  </span>\n</li>",
      "id": "controls",
-     "react": "<ListItem>\n  <ListItemIcon>\n    <WifiIcon />\n  </ListItemIcon>\n  <ListItemText id=\"wifi-label\" primary=\"Wi-Fi\" />\n  <Switch edge=\"end\" aria-labelledby=\"wifi-label\" defaultChecked />\n</ListItem>",
+     "react": "import { ListItem, ListItemIcon, ListItemText, Switch } from \"@owlky/react\";\nimport { WifiIcon } from \"lucide-react\";\n\nexport function ListControls() {\n  return (\n    <ListItem>\n      <ListItemIcon>\n        <WifiIcon />\n      </ListItemIcon>\n      <ListItemText id=\"wifi-label\" primary=\"Wi-Fi\" />\n      <Switch edge=\"end\" aria-labelledby=\"wifi-label\" defaultChecked />\n    </ListItem>\n  );\n}",
      "title": "Add controls to rows"
     },
     {
@@ -64508,7 +64508,7 @@
      "body": "List the layers people can point at in `interactiveLayerIds` (HTML: `data-ok-interactive-layer-ids`, separated by spaces). Mouse events then report the features under the pointer in `features`, and the cursor turns into a pointer over them. `onMouseEnter` and `onMouseLeave` fire when the pointer enters or leaves those features. Use them for highlights and hover popups. Give a hover popup `closeButton={false}`, `closeOnClick={false}` and `focusAfterOpen={false}`.",
      "html": "<div data-ok-map id=\"states\" data-ok-interactive-layer-ids=\"states-fill\">…</div>\n<script type=\"module\">\n  const map = document.querySelector(\"#states\");\n  map.addEventListener(\"ok:map:mousemove\", (event) => {\n    console.log(event.detail.features[0]?.properties.name);\n  });\n</script>",
      "id": "events",
-     "react": "<MapView\n  interactiveLayerIds={[\"states-fill\"]}\n  onMouseMove={(event) => console.log(event.features?.[0]?.properties.name)}\n/>",
+     "react": "import { MapView } from \"@owlky/react\";\n\nexport function MapEvents() {\n  return (\n    <MapView\n      interactiveLayerIds={[\"states-fill\"]}\n      onMouseMove={(event) => console.log(event.features?.[0]?.properties.name)}\n    />\n  );\n}",
      "title": "Respond to the pointer"
     },
     {
@@ -64522,7 +64522,7 @@
      "body": "Controls sit in the corners of the map: `NavigationControl` (zoom and a compass you can drag to turn the map), `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `GlobeControl`, `TerrainControl` and `AttributionControl`, which every map shows unless you turn it off with `attributionControl={false}`. Place them with `position`, and add your own buttons in a `MapControl`. In HTML, write the controls inside the four corner elements.\n\nPut settings and readouts in a `MapPanel`: a dark, translucent card in a corner of the map.",
      "html": "<div data-ok-map-corner=\"bottom-left\">\n  <div data-ok-map-control data-ok-map-navigation>\n    <button type=\"button\" data-ok-map-action=\"zoom-in\" aria-label=\"Zoom in\">…</button>\n    <button type=\"button\" data-ok-map-action=\"zoom-out\" aria-label=\"Zoom out\">…</button>\n    <button type=\"button\" data-ok-map-action=\"compass\" aria-label=\"Reset north\">…</button>\n  </div>\n  <div data-ok-map-scale data-ok-unit=\"metric\"></div>\n</div>",
      "id": "controls",
-     "react": "<MapView …>\n  <NavigationControl position=\"bottom-left\" />\n  <ScaleControl position=\"bottom-left\" />\n  <FullscreenControl position=\"top-left\" />\n</MapView>",
+     "react": "import { FullscreenControl, MapView, NavigationControl, ScaleControl } from \"@owlky/react\";\n\nexport function MapControls() {\n  return (\n    <MapView …>\n      <NavigationControl position=\"bottom-left\" />\n      <ScaleControl position=\"bottom-left\" />\n      <FullscreenControl position=\"top-left\" />\n    </MapView>\n  );\n}",
      "title": "Add controls"
     },
     {
@@ -64725,7 +64725,7 @@
      "body": "`variant` names the animation. Entrances end with the content in place, and exits end with it hidden.\n- **Slide, fade, zoom and bounce:** `slideInUp`, `fadeIn`, `zoomOutLeft`, `bounceInDown` and more. `Up` and `Down` name the movement, `Left` and `Right` the side it comes from or goes to.\n- **Flip, scale and rotate:** `flipInX`, `flipOutY`, `scaleInX`, `scaleOutY`, `rotateIn` and `rotateOut`.\n- **Backgrounds:** `kenburnsTop` and the other Ken Burns directions zoom slowly into an image. `panTop` and the other pan directions move a gradient background. `color2x` to `color5x` paint text with a moving gradient. These loop until you pause them.\n\n`duration` sets the length of an entrance in milliseconds (640 by default), `delay` waits before it starts, and `distance` sets how far directional animations travel in pixels.",
      "html": "<div data-ok-motion data-ok-variant=\"zoomInLeft\" data-ok-duration=\"800\" data-ok-distance=\"80\">…</div>",
      "id": "variants",
-     "react": "<Motion variant=\"zoomInLeft\" duration={800} distance={80}>…</Motion>",
+     "react": "import { Motion } from \"@owlky/react\";\n\nexport function MotionVariants() {\n  return (\n    <Motion variant=\"zoomInLeft\" duration={800} distance={80}>…</Motion>\n  );\n}",
      "title": "Choose an animation"
     },
     {
@@ -64753,14 +64753,14 @@
      "body": "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. Without it, the paper fades and scales in briefly.",
      "html": "<dialog id=\"share\" data-ok-dialog data-ok-max-width=\"sm\" aria-labelledby=\"share-title\">\n  <div data-ok-dialog-paper data-ok-motion data-ok-variant=\"slideInUp\" data-ok-trigger=\"mount\">\n    <h2 id=\"share-title\" data-ok-dialog-title>Share your location?</h2>\n    …\n  </div>\n</dialog>",
      "id": "dialog",
-     "react": "<Dialog open={open} onOpenChange={setOpen} transition=\"slideInUp\">…</Dialog>",
+     "react": "import { Dialog } from \"@owlky/react\";\n\nexport function MotionDialog() {\n  return (\n    <Dialog open={open} onOpenChange={setOpen} transition=\"slideInUp\">…</Dialog>\n  );\n}",
      "title": "Animate a dialog"
     },
     {
      "body": "Ken Burns, pan and color animations keep moving. Give your users a way to pause them, because moving content that lasts more than five seconds distracts many people. Set `paused` from your own control, such as a switch or a button.",
      "html": "<div id=\"hero\" data-ok-motion data-ok-variant=\"kenburnsTop\">\n  <img src=\"hero.jpg\" alt=\"Mountain lake at sunrise\">\n</div>\n\n<script>\n  // Your pause button toggles the attribute\n  document.getElementById(\"hero\").toggleAttribute(\"data-ok-paused\", true);\n</script>",
      "id": "pause",
-     "react": "<Motion variant=\"kenburnsTop\" paused={paused}>\n  <img src=\"hero.jpg\" alt=\"Mountain lake at sunrise\" />\n</Motion>",
+     "react": "import { Motion } from \"@owlky/react\";\n\nexport function MotionPause() {\n  return (\n    <Motion variant=\"kenburnsTop\" paused={paused}>\n      <img src=\"hero.jpg\" alt=\"Mountain lake at sunrise\" />\n    </Motion>\n  );\n}",
      "title": "Pause looping animations"
     },
     {
@@ -64833,14 +64833,14 @@
      "body": "`OrganizationChart` is the root: its `label` is the top node and its children are the next level. Each `OrganizationChartNode` has a `label` and may hold more nodes, at any depth. In HTML, a node is an `li` with a label `div` and, when it has children, a `ul` of child nodes. Leave out the children list on nodes without children, so no line hangs below them. Labels take any content, such as cards with an avatar, a name, a role and a menu button.",
      "html": "<li data-ok-organization-chart-node>\n  <div data-ok-organization-chart-label>Priya Raman</div>\n  <ul data-ok-organization-chart-children>\n    <li data-ok-organization-chart-node>\n      <div data-ok-organization-chart-label>Elias Novak</div>\n    </li>\n  </ul>\n</li>",
      "id": "nodes",
-     "react": "<OrganizationChartNode label=\"Priya Raman\">\n  <OrganizationChartNode label=\"Elias Novak\" />\n</OrganizationChartNode>",
+     "react": "import { OrganizationChartNode } from \"@owlky/react\";\n\nexport function OrganizationChartNodes() {\n  return (\n    <OrganizationChartNode label=\"Priya Raman\">\n      <OrganizationChartNode label=\"Elias Novak\" />\n    </OrganizationChartNode>\n  );\n}",
      "title": "Build the tree"
     },
     {
      "body": "The line options are set on the root and apply to the whole chart. `lineColor` is `divider` by default. Set it to a palette color for its light tone, or to `inherit` to use the chart's text color, which you can set with the `color` property. `lineStyle` draws `solid`, `dashed` or `dotted` lines. Lengths are numbers in pixels, or strings with a unit such as `\"1.5rem\"`: `lineHeight` (40 by default) is the height of the lines between two levels, `lineWidth` (1) their thickness, `lineBorderRadius` (24) the corner radius where they turn and `nodePadding` (4) the space on each side of every node. In HTML, the lengths need the script: it turns the attributes into private CSS properties, because CSS can't read lengths from attributes. Without the script, the default lengths apply.",
      "html": "<!-- The lengths need the script (once per page) -->\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<ul data-ok-organization-chart data-ok-line-color=\"primary\" data-ok-line-style=\"dashed\"\n    data-ok-line-height=\"20\" data-ok-line-border-radius=\"8\" aria-label=\"Company\">\n  …\n</ul>",
      "id": "lines",
-     "react": "<OrganizationChart\n  aria-label=\"Company\"\n  label=\"Maya Lindqvist\"\n  lineColor=\"primary\"\n  lineStyle=\"dashed\"\n  lineHeight={20}\n  lineBorderRadius={8}\n>\n  …\n</OrganizationChart>",
+     "react": "import { OrganizationChart } from \"@owlky/react\";\n\nexport function OrganizationChartLines() {\n  return (\n    <OrganizationChart\n      aria-label=\"Company\"\n      label=\"Maya Lindqvist\"\n      lineColor=\"primary\"\n      lineStyle=\"dashed\"\n      lineHeight={20}\n      lineBorderRadius={8}\n    >\n      …\n    </OrganizationChart>\n  );\n}",
      "title": "Style the lines"
     },
     {
@@ -64894,21 +64894,21 @@
      "body": "Choose how the current page stands out with `variant` (`text`, `outlined` or `soft`) and `color`. Set `shape` to `rounded` for square corners, and `size` to `sm`, `md` or `lg`.",
      "html": "<nav aria-label=\"pagination navigation\" data-ok-pagination data-ok-variant=\"outlined\" data-ok-color=\"primary\" data-ok-shape=\"rounded\" data-ok-size=\"md\" data-ok-count=\"10\" data-ok-page=\"1\">\n  <ul>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"previous\" aria-label=\"Go to previous page\" disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"page\" value=\"1\" aria-label=\"page 1\" aria-current=\"page\">1</button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"next\" aria-label=\"Go to next page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></button></li>\n  </ul>\n</nav>",
      "id": "style",
-     "react": "<Pagination count={10} variant=\"outlined\" color=\"primary\" shape=\"rounded\" />",
+     "react": "import { Pagination } from \"@owlky/react\";\n\nexport function PaginationStyle() {\n  return <Pagination count={10} variant=\"outlined\" color=\"primary\" shape=\"rounded\" />;\n}",
      "title": "Style the pages"
     },
     {
      "body": "`siblingCount` sets how many pages appear on each side of the current page, and `boundaryCount` how many appear at each end. Both default to 1. Add first and last buttons with `showFirstButton` and `showLastButton` in React, or by writing those buttons in the HTML.",
      "html": "<nav aria-label=\"pagination navigation\" data-ok-pagination data-ok-variant=\"text\" data-ok-color=\"standard\" data-ok-shape=\"circular\" data-ok-size=\"md\" data-ok-count=\"20\" data-ok-page=\"10\" data-ok-sibling-count=\"2\" data-ok-boundary-count=\"1\">\n  <ul>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"first\" aria-label=\"Go to first page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m11 17-5-5 5-5M18 17l-5-5 5-5\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"previous\" aria-label=\"Go to previous page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"next\" aria-label=\"Go to next page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"last\" aria-label=\"Go to last page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m13 17 5-5-5-5M6 17l5-5-5-5\" /></svg></button></li>\n  </ul>\n</nav>",
      "id": "ranges",
-     "react": "<Pagination count={20} defaultPage={10} siblingCount={2} showFirstButton showLastButton />",
+     "react": "import { Pagination } from \"@owlky/react\";\n\nexport function PaginationRanges() {\n  return <Pagination count={20} defaultPage={10} siblingCount={2} showFirstButton showLastButton />;\n}",
      "title": "Control which pages are shown"
     },
     {
      "body": "In React, slice your rows for the current page. In HTML, point the pagination at a table with `data-ok-pagination=\"<table id>\"` and set `data-ok-rows-per-page`: the script shows only that page's rows and counts the pages for you. For a rows-per-page menu and a \"1–5 of 12\" label, use the table's own `TablePagination` instead.",
-     "html": "<table id=\"orders\" data-ok-table data-ok-size=\"medium\" data-ok-padding=\"normal\">…</table>\n\n<nav aria-label=\"Orders pages\" data-ok-pagination=\"orders\" data-ok-variant=\"text\" data-ok-color=\"standard\" data-ok-shape=\"circular\" data-ok-size=\"md\" data-ok-rows-per-page=\"5\" data-ok-page=\"1\">\n  <ul>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"previous\" aria-label=\"Go to previous page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"next\" aria-label=\"Go to next page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></button></li>\n  </ul>\n</nav>",
+     "html": "<table id=\"orders\" data-ok-table data-ok-size=\"medium\" data-ok-padding=\"normal\">\n  <caption>Orders</caption>\n  <thead>\n    <tr><th scope=\"col\">Order</th><th scope=\"col\" data-ok-align=\"right\">Total ($)</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>#1001</td><td data-ok-align=\"right\">57.00</td></tr>\n    <tr><td>#1002</td><td data-ok-align=\"right\">94.00</td></tr>\n    <tr><td>#1003</td><td data-ok-align=\"right\">131.00</td></tr>\n    <tr><td>#1004</td><td data-ok-align=\"right\">168.00</td></tr>\n    <tr><td>#1005</td><td data-ok-align=\"right\">205.00</td></tr>\n    <tr><td>#1006</td><td data-ok-align=\"right\">42.00</td></tr>\n    <tr><td>#1007</td><td data-ok-align=\"right\">79.00</td></tr>\n    <tr><td>#1008</td><td data-ok-align=\"right\">116.00</td></tr>\n    <tr><td>#1009</td><td data-ok-align=\"right\">153.00</td></tr>\n    <tr><td>#1010</td><td data-ok-align=\"right\">190.00</td></tr>\n    <tr><td>#1011</td><td data-ok-align=\"right\">27.00</td></tr>\n    <tr><td>#1012</td><td data-ok-align=\"right\">64.00</td></tr>\n  </tbody>\n</table>\n\n<nav aria-label=\"Orders pages\" data-ok-pagination=\"orders\" data-ok-variant=\"text\" data-ok-color=\"standard\" data-ok-shape=\"circular\" data-ok-size=\"md\" data-ok-rows-per-page=\"5\" data-ok-page=\"1\">\n  <ul>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"previous\" aria-label=\"Go to previous page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"next\" aria-label=\"Go to next page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></button></li>\n  </ul>\n</nav>",
      "id": "table",
-     "react": "const ROWS_PER_PAGE = 5;\nconst [page, setPage] = useState(1);\nconst rows = orders.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);\n\n<Pagination\n  count={Math.ceil(orders.length / ROWS_PER_PAGE)}\n  page={page}\n  onChange={setPage}\n  aria-label=\"Orders pages\"\n/>",
+     "react": "import { Pagination, Table, TableBody, TableCell, TableHead, TableRow } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst ROWS_PER_PAGE = 5;\nconst orders = Array.from({ length: 12 }, (_, i) => ({ id: 1001 + i, total: ((i * 37) % 200) + 20 }));\n\nexport function Orders() {\n  const [page, setPage] = useState(1);\n  const rows = orders.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);\n  return (\n    <>\n      <Table>\n        <TableHead>\n          <TableRow>\n            <TableCell>Order</TableCell>\n            <TableCell align=\"right\">Total ($)</TableCell>\n          </TableRow>\n        </TableHead>\n        <TableBody>\n          {rows.map((order) => (\n            <TableRow key={order.id}>\n              <TableCell>#{order.id}</TableCell>\n              <TableCell align=\"right\">{order.total.toFixed(2)}</TableCell>\n            </TableRow>\n          ))}\n        </TableBody>\n      </Table>\n      <Pagination\n        count={Math.ceil(orders.length / ROWS_PER_PAGE)}\n        page={page}\n        onChange={setPage}\n        aria-label=\"Orders pages\"\n      />\n    </>\n  );\n}",
      "title": "Page a table"
     },
     {
@@ -65033,14 +65033,14 @@
      "body": "Set `placement` to a side of the anchor (`top`, `bottom`, `left` or `right`) and, optionally, an alignment (`-start` or `-end`). The default is `bottom`, centered. Add `arrow` to point at the anchor. The arrow sits on the side that faces the anchor and follows the anchor's center, even after a flip. For example, `bottom-start` opens the popover below its anchor with the arrow at the top left, and `top-end` opens it above with the arrow at the bottom right.",
      "html": "<div id=\"info\" popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\" data-ok-arrow>\n  <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n  …\n</div>",
      "id": "placement",
-     "react": "<Popover open={open} anchorEl={anchor} placement=\"right-start\" arrow>\n  …\n</Popover>",
+     "react": "import { Popover } from \"@owlky/react\";\n\nexport function PopoverPlacement() {\n  return (\n    <Popover open={open} anchorEl={anchor} placement=\"right-start\" arrow>\n      …\n    </Popover>\n  );\n}",
      "title": "Place the popover"
     },
     {
      "body": "In HTML, point `data-ok-popover-hover` at the popover instead of `data-ok-popover-open`: it opens while the pointer or keyboard focus is on the trigger, and focus stays on the trigger. In React, set the anchor from the pointer and focus events, and add `disableAutoFocus` and `disableRestoreFocus`.",
      "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  aria-expanded=\"false\" aria-controls=\"hint\" data-ok-popover-hover=\"hint\">\n  <span data-ok-button-label>Hover me</span>\n</button>\n<div id=\"hint\" popover=\"manual\" data-ok-popover data-ok-placement=\"bottom\">…</div>",
      "id": "hover",
-     "react": "<Button\n  variant=\"outlined\"\n  onPointerEnter={(event) => setAnchor(event.currentTarget)}\n  onPointerLeave={() => setAnchor(null)}\n  onFocus={(event) => setAnchor(event.currentTarget)}\n  onBlur={() => setAnchor(null)}\n>\n  Hover me\n</Button>\n<Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>\n  …\n</Popover>",
+     "react": "import { Button, Popover } from \"@owlky/react\";\n\nexport function PopoverHover() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onPointerEnter={(event) => setAnchor(event.currentTarget)}\n        onPointerLeave={() => setAnchor(null)}\n        onFocus={(event) => setAnchor(event.currentTarget)}\n        onBlur={() => setAnchor(null)}\n      >\n        Hover me\n      </Button>\n      <Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>\n        …\n      </Popover>\n    </>\n  );\n}",
      "title": "Show a popover on hover"
     },
     {
@@ -65232,14 +65232,14 @@
      "body": "By default, the scrollbar appears when the pointer rests on the area or when focus is inside it. On touch screens it's always visible. Set `autoHide` to `false` to always show it, for example when people might not notice that the area scrolls.",
      "html": "<section data-ok-scrollbar data-ok-auto-hide=\"false\" aria-label=\"Release notes\" tabindex=\"0\">\n  …\n</section>",
      "id": "visibility",
-     "react": "<Scrollbar autoHide={false} aria-label=\"Release notes\">…</Scrollbar>",
+     "react": "import { Scrollbar } from \"@owlky/react\";\n\nexport function ScrollbarVisibility() {\n  return (\n    <Scrollbar autoHide={false} aria-label=\"Release notes\">…</Scrollbar>\n  );\n}",
      "title": "Keep the scrollbar visible"
     },
     {
      "body": "Other components scroll by wrapping their content in a scrollbar area. Put a **Table** inside one within its `TableContainer`, place one inside a **Drawer**'s content, or wrap a **Sortable** list. The component around it stops scrolling by itself, and the scrollbar area takes over.",
      "html": "<section data-ok-table-container>\n  <section data-ok-scrollbar aria-label=\"Orders\" tabindex=\"0\">\n    <table data-ok-table data-ok-size=\"medium\" data-ok-padding=\"normal\">…</table>\n  </section>\n</section>",
      "id": "compose",
-     "react": "<TableContainer>\n  <Scrollbar aria-label=\"Orders\">\n    <Table>…</Table>\n  </Scrollbar>\n</TableContainer>",
+     "react": "import { Scrollbar, Table, TableContainer } from \"@owlky/react\";\n\nexport function ScrollbarCompose() {\n  return (\n    <TableContainer>\n      <Scrollbar aria-label=\"Orders\">\n        <Table>…</Table>\n      </Scrollbar>\n    </TableContainer>\n  );\n}",
      "title": "Scroll other components"
     },
     {
@@ -65464,23 +65464,23 @@
     },
     {
      "body": "Use `toast.info`, `toast.success`, `toast.warning` or `toast.error` for a toast with a colored icon. `toast.promise` shows a loading toast and replaces it with the result. In HTML, set `data-ok-type` on the toast; a loading toast with `data-ok-then` is replaced by another template when its time (`data-ok-duration`) runs out, and the instance's `promise()` method follows a real promise.",
-     "html": "<script type=\"module\">\n  const toaster = window.Owlky.get(document.querySelector(\"[data-ok-toaster]\"), \"toaster\");\n  toaster.show({ type: \"success\", title: \"Event created\", description: \"Monday at 6:00 PM\" });\n  toaster.promise(fetch(\"/api/save\"), { loading: \"Saving…\", success: \"Saved\", error: \"Not saved\" });\n</script>",
+     "html": "<script type=\"module\">\n  const toaster = window.Owlky.get(document.querySelector(\"[data-ok-toaster]\"), \"toaster\");\n  toaster.show({ type: \"success\", title: \"Event created\", description: \"Monday at 6:00 PM\" });\n  toaster.promise(fetch(\"/api/save\"), { loading: \"Saving\", success: \"Saved\", error: \"Not saved\" });\n</script>",
      "id": "types",
-     "react": "toast.success(\"Event created\", { description: \"Monday at 6:00 PM\" });\ntoast.promise(save(), { loading: \"Saving…\", success: \"Saved\", error: \"Not saved\" });",
+     "react": "import { Button, Toaster, toast } from \"@owlky/react\";\n\nexport function SaveEvent() {\n  const save = () => {\n    toast.success(\"Event created\", { description: \"Monday at 6:00 PM\" });\n    toast.promise(fetch(\"/api/save\", { method: \"POST\" }), {\n      loading: \"Saving\",\n      success: \"Saved\",\n      error: \"Not saved\",\n    });\n  };\n  return (\n    <>\n      <Button onClick={save}>Create event</Button>\n      <Toaster />\n    </>\n  );\n}",
      "title": "Show the status"
     },
     {
      "body": "Pass `action: { label, onClick }` to add a button, such as **Undo**. The toast closes when it is clicked, unless the handler calls `preventDefault()`. Pass your own nodes as `action` for several buttons. Toasts with an action have no close button.",
      "html": "<template id=\"deleted\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content><div data-ok-toast-title>Message deleted</div></div>\n    <button type=\"button\" data-ok-toast-action>Undo</button>\n  </li>\n</template>",
      "id": "actions",
-     "react": "toast(\"Message deleted\", { action: { label: \"Undo\", onClick: restore } });",
+     "react": "import { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function DeleteMessage() {\n  const [deleted, setDeleted] = useState(false);\n  const remove = () => {\n    setDeleted(true);\n    toast(\"Message deleted\", { action: { label: \"Undo\", onClick: () => setDeleted(false) } });\n  };\n  return (\n    <>\n      <Button onClick={remove} disabled={deleted}>\n        Delete message\n      </Button>\n      <Toaster />\n    </>\n  );\n}",
      "title": "Add an action"
     },
     {
      "body": "Set `position` to a corner or the center of the top or bottom edge. At the bottom, the newest toast sits nearest to the edge. In HTML, a trigger with `data-ok-toaster-position` moves the toaster before it shows its toast.",
-     "html": "<section data-ok-toaster data-ok-position=\"bottom-center\" aria-label=\"Notifications\">…</section>",
+     "html": "<section data-ok-toaster data-ok-position=\"bottom-center\" aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>",
      "id": "position",
-     "react": "<Toaster position=\"bottom-center\" />",
+     "react": "import { Toaster } from \"@owlky/react\";\n\nexport function SnackbarPosition() {\n  return <Toaster position=\"bottom-center\" />;\n}",
      "title": "Move the toaster"
     },
     {
@@ -65532,14 +65532,14 @@
      "body": "`grid` (the default) arranges items in columns that fit the width, `vertical` stacks them in one column and `horizontal` puts them in one row. Wrap a vertical or horizontal list in a **Scrollbar**: it scrolls the list and draws its frame.",
      "html": "<section data-ok-scrollbar aria-label=\"Widgets list\" tabindex=\"0\">\n  <ul id=\"widgets\" data-ok-sortable data-ok-layout=\"horizontal\" aria-label=\"Widgets\">\n    …\n  </ul>\n</section>",
      "id": "layout",
-     "react": "<Scrollbar aria-label=\"Widgets list\">\n  <Sortable layout=\"horizontal\" aria-label=\"Widgets\" … />\n</Scrollbar>",
+     "react": "import { Scrollbar, Sortable } from \"@owlky/react\";\n\nexport function SortableLayout() {\n  return (\n    <Scrollbar aria-label=\"Widgets list\">\n      <Sortable layout=\"horizontal\" aria-label=\"Widgets\" … />\n    </Scrollbar>\n  );\n}",
      "title": "Choose a layout"
     },
     {
      "body": "In React, pass `onRemove`: every item gets a remove button, and you update your data. In HTML, add a `data-ok-sortable-remove` button to each item; the script removes the item. Remove buttons appear when the pointer rests on an item or focus is inside it, and are always visible on touch screens.",
      "html": "<ul id=\"tasks\" data-ok-sortable data-ok-layout=\"vertical\" aria-label=\"Tasks\">\n    <li data-ok-sortable-item>\n      <span>Design</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-remove aria-label=\"Remove Design\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M7 7l10 10M17 7 7 17\" /></svg></button>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n</ul>",
      "id": "remove",
-     "react": "<Sortable\n  …\n  onRemove={(task) => setTasks((all) => all.filter((t) => t !== task))}\n/>",
+     "react": "import { Sortable } from \"@owlky/react\";\n\nexport function SortableRemove() {\n  return (\n    <Sortable\n      …\n      onRemove={(task) => setTasks((all) => all.filter((t) => t !== task))}\n    />\n  );\n}",
      "title": "Let people remove items"
     },
     {
@@ -65598,35 +65598,35 @@
      "body": "In React, pass `activeStep` (0-based) and change it from your buttons. Each `Step` gets its state from it: the active step, completed steps before it, not reached steps after it. Set `active`, `completed` or `disabled` on a `Step` to override the state, for example to leave a skipped step uncompleted. Once `activeStep` equals the number of steps, every step is completed. In HTML, the runtime keeps every step's state in line with `data-ok-active-step`. Buttons with `data-ok-stepper-next`, `data-ok-stepper-back` or `data-ok-stepper-reset` move the stepper they name. Back buttons are disabled on the first step.",
      "html": "<!-- The panel at the active step shows, the others get hidden -->\n<p data-ok-stepper-panel=\"setup\">Pick the plan that suits your team.</p>\n<p data-ok-stepper-panel=\"setup\" hidden>Invite the people who will work on it.</p>\n<!-- A panel for one step only -->\n<div data-ok-stepper-panel=\"setup\" data-ok-stepper-panel-step=\"3\" hidden>All steps completed.</div>",
      "id": "state",
-     "react": "<Stepper activeStep={active}>\n  <Step>\n    <StepLabel>Choose a plan</StepLabel>\n  </Step>\n  {/* Skipped: not completed although it comes before the active step */}\n  <Step completed={false}>\n    <StepLabel optional=\"Optional\">Add details</StepLabel>\n  </Step>\n</Stepper>",
+     "react": "import { Step, StepLabel, Stepper } from \"@owlky/react\";\n\nexport function StepperState() {\n  return (\n    <Stepper activeStep={active}>\n      <Step>\n        <StepLabel>Choose a plan</StepLabel>\n      </Step>\n      {/* Skipped: not completed although it comes before the active step */}\n      <Step completed={false}>\n        <StepLabel optional=\"Optional\">Add details</StepLabel>\n      </Step>\n    </Stepper>\n  );\n}",
      "title": "Move between steps"
     },
     {
      "body": "Keep titles short, two or three words. `optional` adds a second line, such as \"Optional\". Set `error` on a `StepLabel` to show that a step failed: the icon turns into an exclamation mark and the text takes the error color. `icon` replaces the number with other text, or with any node such as an `svg`.",
      "html": "<span data-ok-step-label data-ok-error>…</span>\n<span data-ok-step-label-optional>Card declined</span>",
      "id": "labels",
-     "react": "<StepLabel optional=\"Optional\">Add details</StepLabel>\n<StepLabel error optional=\"Card declined\">Payment</StepLabel>\n<StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>",
+     "react": "import { Card, StepLabel } from \"@owlky/react\";\nimport { SettingsIcon } from \"lucide-react\";\n\nexport function StepperLabels() {\n  return (\n    <>\n      <StepLabel optional=\"Optional\">Add details</StepLabel>\n      <StepLabel error optional=\"Card declined\">Payment</StepLabel>\n      <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>\n    </>\n  );\n}",
      "title": "Write step labels"
     },
     {
      "body": "Steps sit in a row, joined by lines. Set `alternativeLabel` to put the labels below the icons, and the steps share the width. Set `orientation` to `vertical` to stack the steps. In a vertical stepper, `StepContent` holds what the active step shows below its title, such as a form and its buttons. It is a Collapse: it opens with a height animation on the active step and carries `hidden` on the others. On narrow screens, the titles wrap inside their steps so the row never overflows. A vertical stepper or a mobile stepper reads better on phones.",
      "html": "<ol data-ok-stepper data-ok-orientation=\"vertical\" data-ok-active-step=\"0\">\n  <li data-ok-step>\n    <span data-ok-step-label>…</span>\n    <div data-ok-collapse data-ok-timeout=\"auto\" data-ok-step-content>…</div>\n  </li>\n</ol>",
      "id": "layout",
-     "react": "<Stepper activeStep={active} orientation=\"vertical\">\n  <Step>\n    <StepLabel>Choose a plan</StepLabel>\n    <StepContent>…</StepContent>\n  </Step>\n</Stepper>",
+     "react": "import { Step, StepContent, StepLabel, Stepper } from \"@owlky/react\";\n\nexport function StepperLayout() {\n  return (\n    <Stepper activeStep={active} orientation=\"vertical\">\n      <Step>\n        <StepLabel>Choose a plan</StepLabel>\n        <StepContent>…</StepContent>\n      </Step>\n    </Stepper>\n  );\n}",
      "title": "Lay out the steps"
     },
     {
      "body": "`variant` sets how the steps look. `standard` shows numbered icons. `dot` shows small dots and thicker lines in the primary color. `circle` shows large circles that hold an icon (pass one per step with `icon`), with a gradient on the active and completed steps. To draw a line of your own, pass `connector`, or `null` for no line.",
      "html": "<ol data-ok-stepper data-ok-variant=\"dot\" data-ok-alternative-label …>…</ol>",
      "id": "variants",
-     "react": "<Stepper activeStep={active} alternativeLabel variant=\"circle\">\n  <Step>\n    <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>\n  </Step>\n</Stepper>",
+     "react": "import { Step, StepLabel, Stepper } from \"@owlky/react\";\nimport { SettingsIcon } from \"lucide-react\";\n\nexport function StepperVariants() {\n  return (\n    <Stepper activeStep={active} alternativeLabel variant=\"circle\">\n      <Step>\n        <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>\n      </Step>\n    </Stepper>\n  );\n}",
      "title": "Change the look"
     },
     {
      "body": "`MobileStepper` is a compact bar for small screens: a Back button, the progress, and a Next button. The progress is a text such as \"2 / 3\" (`text`), a row of dots (`dots`, the default) or a bar (`progress`). By default the bar is fixed to the bottom of the viewport. Set `position` to `top`, or to `static` to keep it in the page. In HTML, Back and Next buttons inside the bar move it, and the runtime disables them at the ends.",
      "html": "<div data-ok-mobile-stepper data-ok-variant=\"dots\" data-ok-position=\"static\" data-ok-steps=\"3\" data-ok-active-step=\"0\">\n  <button type=\"button\" data-ok-button data-ok-mobile-stepper-back>…Back…</button>\n  <span data-ok-mobile-stepper-dots role=\"img\" aria-label=\"Step 1 of 3\">\n    <span data-ok-mobile-stepper-dot data-ok-active></span><span data-ok-mobile-stepper-dot></span><span data-ok-mobile-stepper-dot></span>\n  </span>\n  <button type=\"button\" data-ok-button data-ok-mobile-stepper-next>…Next…</button>\n</div>",
      "id": "mobile",
-     "react": "<MobileStepper\n  steps={3}\n  activeStep={active}\n  position=\"static\"\n  backButton={<Button onClick={() => setActive(active - 1)} disabled={active === 0}>Back</Button>}\n  nextButton={<Button onClick={() => setActive(active + 1)} disabled={active === 2}>Next</Button>}\n/>",
+     "react": "import { Button, MobileStepper } from \"@owlky/react\";\n\nexport function StepperMobile() {\n  return (\n    <MobileStepper\n      steps={3}\n      activeStep={active}\n      position=\"static\"\n      backButton={<Button onClick={() => setActive(active - 1)} disabled={active === 0}>Back</Button>}\n      nextButton={<Button onClick={() => setActive(active + 1)} disabled={active === 2}>Next</Button>}\n    />\n  );\n}",
      "title": "Use a mobile stepper"
     },
     {
@@ -65742,28 +65742,28 @@
      "body": "Put the table in a **Scrollbar** inside its `TableContainer`. Wide tables then scroll sideways instead of stretching the page, and the scrollbar area is a named region keyboard users can scroll. To keep the header visible while a tall table scrolls, set `stickyHeader` and limit the scrollbar area's height.",
      "html": "<section data-ok-table-container>\n  <section data-ok-scrollbar aria-label=\"Countries\" tabindex=\"0\" style=\"max-height: 440px\">\n    <table data-ok-table data-ok-size=\"medium\" data-ok-padding=\"normal\" data-ok-sticky-header>…</table>\n  </section>\n</section>",
      "id": "scroll",
-     "react": "<TableContainer>\n  <Scrollbar aria-label=\"Countries\" style={{ maxHeight: 440 }}>\n    <Table stickyHeader>…</Table>\n  </Scrollbar>\n</TableContainer>",
+     "react": "import { Scrollbar, Table, TableContainer } from \"@owlky/react\";\n\nexport function TableScroll() {\n  return (\n    <TableContainer>\n      <Scrollbar aria-label=\"Countries\" style={{ maxHeight: 440 }}>\n        <Table stickyHeader>…</Table>\n      </Scrollbar>\n    </TableContainer>\n  );\n}",
      "title": "Scroll wide or long tables"
     },
     {
      "body": "Put a `TableSortLabel` in a header cell to make the column sortable. In React, keep the column and direction in state and sort your data; `compareCellValues` and `nextSortDirection` from `@owlky/core` help. In HTML, the script sorts the rows when a label is pressed.\n\nFor selection, add a column of small **Checkbox** components: put `data-ok-table-select` on each row's input and `data-ok-table-select-all` on the header's input. Selected rows are highlighted. To offer dense rows, add a **Switch** under the table; in HTML, give its input `data-ok-table-dense` with the table's id. Try sorting and selecting below.",
      "html": "<table id=\"desserts\" data-ok-table data-ok-size=\"medium\" data-ok-padding=\"normal\">\n  <thead>\n    <tr>\n      <th scope=\"col\" data-ok-padding=\"checkbox\"><span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\"><input type=\"checkbox\" data-ok-checkbox-input data-ok-table-select-all aria-label=\"Select all desserts\"><!-- the three icon spans of a Checkbox --></span></th>\n      <th scope=\"col\" aria-sort=\"ascending\"><button type=\"button\" data-ok-table-sort-label data-ok-direction=\"asc\" data-ok-active>Dessert<span data-ok-table-sort-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 5v14M6 13l6 6 6-6\" /></svg></span></button></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td data-ok-padding=\"checkbox\"><span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\"><input type=\"checkbox\" data-ok-checkbox-input data-ok-table-select aria-label=\"Select Eclair\"><!-- the three icon spans of a Checkbox --></span></td>\n      <td>Eclair</td>\n    </tr>\n  </tbody>\n</table>",
      "id": "sort",
-     "react": "<TableCell sortDirection={orderBy === \"name\" ? order : false}>\n  <TableSortLabel\n    active={orderBy === \"name\"}\n    direction={orderBy === \"name\" ? order : \"asc\"}\n    onClick={() => sortBy(\"name\")}\n  >\n    Dessert\n  </TableSortLabel>\n</TableCell>",
+     "react": "import { TableCell, TableSortLabel } from \"@owlky/react\";\n\nexport function TableSort() {\n  return (\n    <TableCell sortDirection={orderBy === \"name\" ? order : false}>\n      <TableSortLabel\n        active={orderBy === \"name\"}\n        direction={orderBy === \"name\" ? order : \"asc\"}\n        onClick={() => sortBy(\"name\")}\n      >\n        Dessert\n      </TableSortLabel>\n    </TableCell>\n  );\n}",
      "title": "Sort and select rows"
     },
     {
      "body": "A `TableExpandButton` opens a `TableDetailRow` below its row, for details that don't fit in the columns. In React, keep the open state in your component. In HTML, point the button at the detail row's `id`; the script opens and closes it.",
      "html": "<tr>\n  <td data-ok-padding=\"checkbox\">\n    <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-table-expand=\"eclair-details\" aria-expanded=\"false\" aria-controls=\"eclair-details\" aria-label=\"Purchase history of Eclair\">…</button>\n  </td>\n  <td>Eclair</td>\n</tr>\n<tr id=\"eclair-details\" data-ok-table-detail hidden>\n  <td colspan=\"2\">…</td>\n</tr>",
      "id": "expand",
-     "react": "<TableRow>\n  <TableCell padding=\"checkbox\">\n    <TableExpandButton\n      expanded={open}\n      controls=\"eclair-details\"\n      aria-label=\"Purchase history of Eclair\"\n      onClick={() => setOpen(!open)}\n    />\n  </TableCell>\n  <TableCell>Eclair</TableCell>\n</TableRow>\n<TableDetailRow id=\"eclair-details\" open={open} colSpan={2}>\n  …\n</TableDetailRow>",
+     "react": "import { TableCell, TableDetailRow, TableExpandButton, TableRow } from \"@owlky/react\";\n\nexport function TableExpand() {\n  return (\n    <>\n      <TableRow>\n        <TableCell padding=\"checkbox\">\n          <TableExpandButton\n            expanded={open}\n            controls=\"eclair-details\"\n            aria-label=\"Purchase history of Eclair\"\n            onClick={() => setOpen(!open)}\n          />\n        </TableCell>\n        <TableCell>Eclair</TableCell>\n      </TableRow>\n      <TableDetailRow id=\"eclair-details\" open={open} colSpan={2}>\n        …\n      </TableDetailRow>\n    </>\n  );\n}",
      "title": "Show details in an expandable row"
     },
     {
      "body": "Place a `TablePagination` after the container for a rows-per-page menu, a \"1–5 of 12\" label and previous and next buttons. In HTML, link it to the table with `data-ok-table-pagination=\"<table id>\"` and the script pages the rows. The rows-per-page menu is a native `<select>`. Set `selectProps` to `{ native: false }` for a **Select** styled like the other fields. For numbered pages, use a **Pagination** instead.",
      "html": "<div data-ok-table-pagination=\"desserts\">\n  <label data-ok-table-pagination-rows>Rows per page:<select><option value=\"5\" selected>5</option><option value=\"10\">10</option></select></label>\n  <span data-ok-table-pagination-displayed aria-live=\"polite\">1–5 of 12</span>\n  <div data-ok-table-pagination-actions>…</div>\n</div>",
      "id": "paginate",
-     "react": "<TablePagination\n  count={desserts.length}\n  page={page}\n  rowsPerPage={rowsPerPage}\n  rowsPerPageOptions={[5, 10, 25]}\n  onPageChange={setPage}\n  onRowsPerPageChange={(next) => {\n    setRowsPerPage(next);\n    setPage(0);\n  }}\n/>",
+     "react": "import { TablePagination } from \"@owlky/react\";\n\nexport function TablePaginate() {\n  return (\n    <TablePagination\n      count={desserts.length}\n      page={page}\n      rowsPerPage={rowsPerPage}\n      rowsPerPageOptions={[5, 10, 25]}\n      onPageChange={setPage}\n      onRowsPerPageChange={(next) => {\n        setRowsPerPage(next);\n        setPage(0);\n      }}\n    />\n  );\n}",
      "title": "Split rows into pages"
     },
     {
@@ -65820,35 +65820,35 @@
      "body": "Pass an icon with `icon`. With a label, `iconPosition` puts the icon above (`top`, the default), below (`bottom`), before (`start`) or after (`end`) the label. Tabs with an icon above or below are 72px tall. Icon-only tabs have no visible text, so give each one an `aria-label`.",
      "html": "<button type=\"button\" role=\"tab\" data-ok-tab data-ok-icon-position=\"start\" aria-selected=\"true\" tabindex=\"0\">\n  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg>\n  <span data-ok-tab-label>Calls</span>\n</button>\n<!-- Icon only: name the tab -->\n<button type=\"button\" role=\"tab\" data-ok-tab aria-label=\"Favorites\" aria-selected=\"false\" tabindex=\"-1\">\n  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg>\n</button>",
      "id": "icons",
-     "react": "<Tabs aria-label=\"Contacts\">\n  <Tab icon={<PhoneIcon />} iconPosition=\"start\" label=\"Calls\" />\n  <Tab icon={<HeartIcon />} aria-label=\"Favorites\" />\n</Tabs>",
+     "react": "import { Tab, Tabs } from \"@owlky/react\";\nimport { HeartIcon, PhoneIcon } from \"lucide-react\";\n\nexport function TabsIcons() {\n  return (\n    <Tabs aria-label=\"Contacts\">\n      <Tab icon={<PhoneIcon />} iconPosition=\"start\" label=\"Calls\" />\n      <Tab icon={<HeartIcon />} aria-label=\"Favorites\" />\n    </Tabs>\n  );\n}",
      "title": "Add icons to tabs"
     },
     {
      "body": "`textColor` sets the color of the selected tab's text, and `indicatorColor` the color of the line. Both default to `inherit`, the text color. Use `primary` or `secondary` to match your brand. Tabs that aren't selected keep the secondary text color, which has a contrast ratio of at least 4.5:1 in both themes.",
      "html": "<div data-ok-tabs data-ok-text-color=\"primary\" data-ok-indicator-color=\"primary\">…</div>",
      "id": "colors",
-     "react": "<Tabs textColor=\"primary\" indicatorColor=\"primary\" aria-label=\"Contacts\">…</Tabs>",
+     "react": "import { Tabs } from \"@owlky/react\";\n\nexport function TabsColors() {\n  return (\n    <Tabs textColor=\"primary\" indicatorColor=\"primary\" aria-label=\"Contacts\">…</Tabs>\n  );\n}",
      "title": "Color the selected tab"
     },
     {
      "body": "When tabs don't fit, set `variant` to `scrollable`. The tabs scroll inside their bar, and selecting a tab scrolls it into view. Scroll buttons appear at the edges that have more tabs. By default (`scrollButtons=\"auto\"`) they show only when the tabs overflow, and only from 600px up: on phones, people swipe. Set `allowScrollButtonsMobile` to show them on phones too, `scrollButtons` to `false` to hide them, or `visibleScrollbar` to keep the scrollbar. In HTML, add the scroll buttons to the markup as the stories show.",
      "html": "<div data-ok-tabs data-ok-variant=\"scrollable\" data-ok-scroll-buttons=\"auto\">\n  <div data-ok-tabs-scroll-button=\"start\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></div>\n  <div data-ok-tabs-scroller>…</div>\n  <div data-ok-tabs-scroll-button=\"end\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></div>\n</div>",
      "id": "scrollable",
-     "react": "<Tabs variant=\"scrollable\" aria-label=\"Topics\">\n  {topics.map((topic) => (\n    <Tab key={topic} value={topic} label={topic} />\n  ))}\n</Tabs>",
+     "react": "import { Tab, Tabs } from \"@owlky/react\";\n\nexport function TabsScrollable() {\n  return (\n    <Tabs variant=\"scrollable\" aria-label=\"Topics\">\n      {topics.map((topic) => (\n        <Tab key={topic} value={topic} label={topic} />\n      ))}\n    </Tabs>\n  );\n}",
      "title": "Scroll many tabs"
     },
     {
      "body": "Set `variant` to `fullWidth` to share the width between the tabs, or `centered` to center them. Set `orientation` to `vertical` to stack the tabs in a column, with the line on their right. Vertical tabs answer the Up and Down arrow keys. Long labels stay on one line, unless you set `wrapped` on the tab.",
      "html": "<div data-ok-tabs data-ok-orientation=\"vertical\">\n  <div data-ok-tabs-scroller>\n    <div role=\"tablist\" data-ok-tabs-list aria-label=\"Settings\" aria-orientation=\"vertical\">…</div>\n    <span data-ok-tabs-indicator></span>\n  </div>\n</div>",
      "id": "layout",
-     "react": "<Tabs orientation=\"vertical\" value={tab} onChange={setTab} aria-label=\"Settings\">…</Tabs>",
+     "react": "import { Tabs } from \"@owlky/react\";\n\nexport function TabsLayout() {\n  return (\n    <Tabs orientation=\"vertical\" value={tab} onChange={setTab} aria-label=\"Settings\">…</Tabs>\n  );\n}",
      "title": "Fill the width or stack the tabs"
     },
     {
      "body": "Set `segmented` to draw the tabs on a filled bar, with the selected tab on a raised pill instead of a line. The pill slides like the line does. It works with every variant and both orientations, for example as a compact switch between two or three views.",
      "html": "<div data-ok-tabs data-ok-segmented data-ok-variant=\"fullWidth\">…</div>",
      "id": "segmented",
-     "react": "<Tabs segmented variant=\"fullWidth\" aria-label=\"View\">\n  <Tab label=\"Day\" />\n  <Tab label=\"Week\" />\n  <Tab label=\"Month\" />\n</Tabs>",
+     "react": "import { Tab, Tabs } from \"@owlky/react\";\n\nexport function TabsSegmented() {\n  return (\n    <Tabs segmented variant=\"fullWidth\" aria-label=\"View\">\n      <Tab label=\"Day\" />\n      <Tab label=\"Week\" />\n      <Tab label=\"Month\" />\n    </Tabs>\n  );\n}",
      "title": "Use the segmented look"
     },
     {
@@ -65980,21 +65980,21 @@
      "body": "`position` sets the side of the content: `right` (the default), `left`, or `alternate` and `alternate-reverse` to switch sides from one event to the next. Set `position` on a single item to override the timeline. Leave out the connector on the last event, so the line ends at its dot.",
      "html": "<ul data-ok-timeline data-ok-position=\"alternate\">…</ul>",
      "id": "position",
-     "react": "<Timeline position=\"alternate\">…</Timeline>",
+     "react": "import { Timeline } from \"@owlky/react\";\n\nexport function TimelinePosition() {\n  return (\n    <Timeline position=\"alternate\">…</Timeline>\n  );\n}",
      "title": "Place the content"
     },
     {
      "body": "`TimelineDot` is grey by default. Set `color` to a palette color, or to `inherit` for the text color, and `variant` to `outlined` for a ring. A dot can hold a 24px icon. Add `aria-hidden=\"true\"` to the icon: the content says what happened.",
      "html": "<span data-ok-timeline-dot data-ok-variant=\"outlined\" data-ok-color=\"primary\"></span>",
      "id": "dots",
-     "react": "<TimelineDot variant=\"outlined\" color=\"primary\" />",
+     "react": "import { TimelineDot } from \"@owlky/react\";\n\nexport function TimelineDots() {\n  return <TimelineDot variant=\"outlined\" color=\"primary\" />;\n}",
      "title": "Color the dots"
     },
     {
      "body": "`TimelineOppositeContent` goes on the other side of the line, for example the time of the event. Without it, the content still takes one half of the width, so the line stays in the middle.",
      "html": "<li data-ok-timeline-item>\n  <div data-ok-timeline-opposite-content>09:30 am</div>\n  <div data-ok-timeline-separator>…</div>\n  <div data-ok-timeline-content>Kickoff</div>\n</li>",
      "id": "opposite",
-     "react": "<TimelineItem>\n  <TimelineOppositeContent>09:30 am</TimelineOppositeContent>\n  <TimelineSeparator>…</TimelineSeparator>\n  <TimelineContent>Kickoff</TimelineContent>\n</TimelineItem>",
+     "react": "import { TimelineContent, TimelineItem, TimelineOppositeContent, TimelineSeparator } from \"@owlky/react\";\n\nexport function TimelineOpposite() {\n  return (\n    <TimelineItem>\n      <TimelineOppositeContent>09:30 am</TimelineOppositeContent>\n      <TimelineSeparator>…</TimelineSeparator>\n      <TimelineContent>Kickoff</TimelineContent>\n    </TimelineItem>\n  );\n}",
      "title": "Add opposite content"
     },
     {
@@ -66107,21 +66107,21 @@
      "body": "By default the tooltip names its trigger (`aria-labelledby`): use this for icon-only buttons, which have no visible text. For a trigger that already has a name, such as a button with text, set `describeChild`: the tooltip then describes it (`aria-describedby`) instead.",
      "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"info\" data-ok-size=\"md\"\n  aria-describedby=\"save-tip\">\n  <span data-ok-button-label>Save</span>\n</button>\n<div id=\"save-tip\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\">Saves a draft</div>",
      "id": "name",
-     "react": "<Tooltip title=\"Saves a draft\" describeChild>\n  <Button variant=\"outlined\" color=\"info\">Save</Button>\n</Tooltip>",
+     "react": "import { Button, Tooltip } from \"@owlky/react\";\n\nexport function TooltipName() {\n  return (\n    <Tooltip title=\"Saves a draft\" describeChild>\n      <Button variant=\"outlined\" color=\"info\">Save</Button>\n    </Tooltip>\n  );\n}",
      "title": "Name or describe the trigger"
     },
     {
      "body": "Set `placement` to a side and an optional alignment, such as `top-start`. Add `arrow` to point at the trigger. Choose the opening animation with `transition`: `grow` (default), `fade` or `zoom`.",
      "html": "<div id=\"tip\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"top\" data-ok-arrow data-ok-transition=\"fade\">\n  <span data-ok-tooltip-arrow aria-hidden=\"true\"></span>\n  Add\n</div>",
      "id": "placement",
-     "react": "<Tooltip title=\"Add\" placement=\"top\" arrow transition=\"fade\">\n  <Fab color=\"primary\"><AddIcon /></Fab>\n</Tooltip>",
+     "react": "import { Fab, Tooltip } from \"@owlky/react\";\n\nexport function TooltipPlacement() {\n  return (\n    <Tooltip title=\"Add\" placement=\"top\" arrow transition=\"fade\">\n      <Fab color=\"primary\"><AddIcon /></Fab>\n    </Tooltip>\n  );\n}",
      "title": "Place the tooltip"
     },
     {
      "body": "A tooltip opens 100 ms after the pointer enters its trigger (`enterDelay`) and closes when it leaves (`leaveDelay`, 0 ms). Keyboard focus opens it at once. On touch screens, a press held for 700 ms opens it, and it closes 1.5 seconds after you lift your finger. The pointer can move onto the tooltip without closing it.",
      "html": "<div id=\"tip\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\"\n  data-ok-enter-delay=\"500\" data-ok-leave-delay=\"200\">…</div>",
      "id": "timing",
-     "react": "<Tooltip title=\"Add\" enterDelay={500} leaveDelay={200}>…</Tooltip>",
+     "react": "import { Tooltip } from \"@owlky/react\";\n\nexport function TooltipTiming() {\n  return (\n    <Tooltip title=\"Add\" enterDelay={500} leaveDelay={200}>…</Tooltip>\n  );\n}",
      "title": "Change the timing"
     },
     {
@@ -66234,13 +66234,13 @@
     {
      "body": "A click selects the item. Set `multiSelect` to select several: Ctrl or ⌘ click adds or removes one, and Shift click selects a range. `checkboxSelection` shows a checkbox on each item and implies `multiSelect`. Use `selectedItems` and `onSelectedItemsChange` to control the selection, or `disableSelection` when items are only for browsing.",
      "id": "select",
-     "react": "<SimpleTreeView aria-label=\"Export\" multiSelect checkboxSelection defaultSelectedItems={[\"design\"]}>\n  …\n</SimpleTreeView>",
+     "react": "import { SimpleTreeView } from \"@owlky/react\";\n\nexport function TreeViewSelect() {\n  return (\n    <SimpleTreeView aria-label=\"Export\" multiSelect checkboxSelection defaultSelectedItems={[\"design\"]}>\n      …\n    </SimpleTreeView>\n  );\n}",
      "title": "Select items"
     },
     {
      "body": "By default, items with children show a chevron that turns when they open. Pass `expandIcon` and `collapseIcon` for your own pair, and `endIcon` for items without children. Set `variant` to `lines` for dashed guides beside nested items, round tinted expand icons and compact rows.",
      "id": "icons",
-     "react": "<SimpleTreeView\n  aria-label=\"Outline\"\n  variant=\"lines\"\n  expandIcon={<PlusIcon />}\n  collapseIcon={<MinusIcon />}\n>\n  …\n</SimpleTreeView>",
+     "react": "import { SimpleTreeView } from \"@owlky/react\";\nimport { MinusIcon, PlusIcon } from \"lucide-react\";\n\nexport function TreeViewIcons() {\n  return (\n    <SimpleTreeView\n      aria-label=\"Outline\"\n      variant=\"lines\"\n      expandIcon={<PlusIcon />}\n      collapseIcon={<MinusIcon />}\n    >\n      …\n    </SimpleTreeView>\n  );\n}",
      "title": "Change the icons and the look"
     },
     {
@@ -66473,14 +66473,14 @@
      "body": "Without `continuous`, the primary button reads **Close**: it closes the step and shows a beacon on the next target. People select the beacon to open that step. In a continuous tour, **Next** and **Back** go from step to step without beacons, and closing a step with the close button, Escape or the overlay shows the next step's beacon. `disableBeacon` opens steps at once, for the whole tour or for one step.",
      "html": "<div id=\"tour\" data-ok-walktour data-ok-run data-ok-show-skip-button>…</div>",
      "id": "beacons",
-     "react": "<Walktour steps={steps} run showSkipButton />",
+     "react": "import { Walktour } from \"@owlky/react\";\n\nexport function WalktourBeacons() {\n  return <Walktour steps={steps} run showSkipButton />;\n}",
      "title": "Use beacons"
     },
     {
      "body": "The overlay blocks the page while a step is open, so the step is a modal dialog. `spotlightClicks` lets people use the element in the spotlight, and `disableOverlay` removes the overlay: in both cases the step is no longer modal. `disableOverlayClose` keeps a click on the overlay from closing the step. `spotlightPadding` sets the space around the target and `spotlightRadius` the spotlight's corners, in pixels. When a target is out of view, the tour scrolls it into view and keeps `scrollOffset` pixels above it. `disableScrolling` turns that off, and `scrollToFirstStep` scrolls for the first step too.",
      "html": "<div id=\"tour\" data-ok-walktour data-ok-spotlight-clicks data-ok-spotlight-padding=\"12\"\n  data-ok-spotlight-radius=\"16\" data-ok-scroll-offset=\"80\">…</div>",
      "id": "overlay",
-     "react": "<Walktour steps={steps} spotlightClicks spotlightPadding={12} spotlightRadius={16} scrollOffset={80} />",
+     "react": "import { Walktour } from \"@owlky/react\";\n\nexport function WalktourOverlay() {\n  return (\n    <Walktour steps={steps} spotlightClicks spotlightPadding={12} spotlightRadius={16} scrollOffset={80} />\n  );\n}",
      "title": "Configure the overlay and the spotlight"
     },
     {
@@ -66502,7 +66502,7 @@
      "body": "React reports changes with `onStepChange(index, details)`, `onStatusChange(status, details)` and `onEvent(type, data)`. `onEvent` receives every event of the tour in order: `tour:start`, `step:before`, `beacon`, `tooltip`, `step:after`, `tour:end`, `tour:status` and `error:target-not-found`. Each comes with the action, the control that asked for it, the step, the status and the number of steps. In HTML, listen for `ok:walktour:change` (the new state), `ok:walktour:event` (the same events as `onEvent`) and `ok:walktour:beforechange`, which you can cancel to keep the current step. A step whose target isn't in the page is skipped.",
      "html": "<script type=\"module\">\n  const root = document.getElementById(\"tour\");\n  root.addEventListener(\"ok:walktour:event\", (event) => {\n    if (event.detail.type === \"tour:end\") console.log(\"Tour ended:\", event.detail.status);\n  });\n</script>",
      "id": "events",
-     "react": "<Walktour\n  steps={steps}\n  run\n  onEvent={(type, data) => {\n    if (type === \"tour:end\") console.log(\"Tour ended:\", data.status);\n  }}\n/>",
+     "react": "import { Walktour } from \"@owlky/react\";\n\nexport function WalktourEvents() {\n  return (\n    <Walktour\n      steps={steps}\n      run\n      onEvent={(type, data) => {\n        if (type === \"tour:end\") console.log(\"Tour ended:\", data.status);\n      }}\n    />\n  );\n}",
      "title": "Events and methods"
     },
     {

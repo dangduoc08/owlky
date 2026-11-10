@@ -96,19 +96,25 @@ export function FeaturedPhotos({ photos }) {
     …
   </div>
 </section>`,
-    react: `<Carousel aria-label="Gallery">
-  <CarouselStage>
-    <CarouselViewport>{slides}</CarouselViewport>
-    <CarouselArrows variant="number" placement="bottom-end" />
-  </CarouselStage>
-  <CarouselThumbs>
-    {photos.map((photo) => (
-      <CarouselThumb key={photo.src}>
-        <img src={photo.src} alt="" />
-      </CarouselThumb>
-    ))}
-  </CarouselThumbs>
-</Carousel>`,
+    react: `import { Carousel, CarouselArrows, CarouselStage, CarouselThumb, CarouselThumbs, CarouselViewport } from "@owlky/react";
+
+export function CarouselAnatomy() {
+  return (
+    <Carousel aria-label="Gallery">
+      <CarouselStage>
+        <CarouselViewport>{slides}</CarouselViewport>
+        <CarouselArrows variant="number" placement="bottom-end" />
+      </CarouselStage>
+      <CarouselThumbs>
+        {photos.map((photo) => (
+          <CarouselThumb key={photo.src}>
+            <img src={photo.src} alt="" />
+          </CarouselThumb>
+        ))}
+      </CarouselThumbs>
+    </Carousel>
+  );
+}`,
   },
   {
     id: "sizes",
@@ -117,14 +123,20 @@ export function FeaturedPhotos({ photos }) {
     html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Articles"
   data-ok-slides-to-show="1" data-ok-slides-to-show-sm="2" data-ok-slides-to-show-md="3"
   data-ok-slide-spacing="20" data-ok-slides-to-scroll="auto">…</section>`,
-    react: `<Carousel
-  aria-label="Articles"
-  slidesToShow={{ xs: 1, sm: 2, md: 3 }}
-  slideSpacing={20}
-  slidesToScroll="auto"
->
-  …
-</Carousel>`,
+    react: `import { Carousel } from "@owlky/react";
+
+export function CarouselSizes() {
+  return (
+    <Carousel
+      aria-label="Articles"
+      slidesToShow={{ xs: 1, sm: 2, md: 3 }}
+      slideSpacing={20}
+      slidesToScroll="auto"
+    >
+      …
+    </Carousel>
+  );
+}`,
   },
   {
     id: "align",
@@ -132,7 +144,13 @@ export function FeaturedPhotos({ photos }) {
     body: "`align` places the selected slides at the `start`, `center` (the default) or `end` of the view, or at a fraction of it, such as `0.1`. `containScroll` decides what happens at both ends: `trimSnaps` (the default) stops at the first and last slide without empty space, `keepSnaps` keeps a stop for every slide, and `false` leaves space so that even the first and last slides can reach their alignment. `startIndex` selects a slide when the carousel loads.",
     html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Centered"
   data-ok-align="center" data-ok-contain-scroll="false" data-ok-start-index="1">…</section>`,
-    react: `<Carousel aria-label="Centered" align="center" containScroll={false} startIndex={1}>…</Carousel>`,
+    react: `import { Carousel } from "@owlky/react";
+
+export function CarouselAlign() {
+  return (
+    <Carousel aria-label="Centered" align="center" containScroll={false} startIndex={1}>…</Carousel>
+  );
+}`,
   },
   {
     id: "loop",
@@ -140,7 +158,13 @@ export function FeaturedPhotos({ photos }) {
     body: "Set `loop` to make the first slide follow the last one. The carousel reorders the slides visually instead of copying them, so screen readers and the Tab key still meet each slide once, in order. Loops need content at least one view and two steps long; shorter carousels stop at their ends. `dragFree` lets slides glide with momentum instead of snapping, `skipSnaps` lets a strong swipe pass several slides, `draggable` turns dragging off, and `wheelGestures` moves one slide per mouse wheel or trackpad gesture.",
     html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Products"
   data-ok-loop data-ok-drag-free data-ok-wheel-gestures>…</section>`,
-    react: `<Carousel aria-label="Products" loop dragFree wheelGestures>…</Carousel>`,
+    react: `import { Carousel } from "@owlky/react";
+
+export function CarouselLoop() {
+  return (
+    <Carousel aria-label="Products" loop dragFree wheelGestures>…</Carousel>
+  );
+}`,
   },
   {
     id: "effects",
@@ -154,15 +178,21 @@ export function FeaturedPhotos({ photos }) {
   </div>
   …
 </section>`,
-    react: `<Carousel aria-label="Parallax" loop effect="parallax" slidesToShow="70%">
-  <CarouselViewport>
-    <CarouselSlide>
-      <div className="frame">
-        <img data-ok-carousel-parallax="" src="…" alt="…" />
-      </div>
-    </CarouselSlide>
-  </CarouselViewport>
-</Carousel>`,
+    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+
+export function CarouselEffects() {
+  return (
+    <Carousel aria-label="Parallax" loop effect="parallax" slidesToShow="70%">
+      <CarouselViewport>
+        <CarouselSlide>
+          <div className="frame">
+            <img data-ok-carousel-parallax="" src="…" alt="…" />
+          </div>
+        </CarouselSlide>
+      </CarouselViewport>
+    </Carousel>
+  );
+}`,
   },
   {
     id: "autoplay",
@@ -180,10 +210,16 @@ export function FeaturedPhotos({ photos }) {
   </button>
   …
 </section>`,
-    react: `<Carousel aria-label="News" loop autoplay autoplayDelay={5000}>
-  <CarouselPlayButton />
-  …
-</Carousel>`,
+    react: `import { Carousel, CarouselPlayButton } from "@owlky/react";
+
+export function CarouselAutoplay() {
+  return (
+    <Carousel aria-label="News" loop autoplay autoplayDelay={5000}>
+      <CarouselPlayButton />
+      …
+    </Carousel>
+  );
+}`,
   },
   {
     id: "controls",
@@ -192,9 +228,17 @@ export function FeaturedPhotos({ photos }) {
     html: `<div data-ok-carousel-arrows data-ok-variant="floating" data-ok-color="primary">…</div>
 <div data-ok-carousel-dots data-ok-variant="number" data-ok-color="warning">…</div>
 <span data-ok-carousel-progress data-ok-variant="autoplay" data-ok-color="info" aria-hidden="true"></span>`,
-    react: `<CarouselArrows variant="floating" color="primary" />
-<CarouselDots variant="number" color="warning" />
-<CarouselProgress variant="autoplay" color="info" />`,
+    react: `import { CarouselArrows, CarouselDots, CarouselProgress } from "@owlky/react";
+
+export function CarouselControls() {
+  return (
+    <>
+      <CarouselArrows variant="floating" color="primary" />
+      <CarouselDots variant="number" color="warning" />
+      <CarouselProgress variant="autoplay" color="info" />
+    </>
+  );
+}`,
   },
   {
     id: "direction",
@@ -202,7 +246,13 @@ export function FeaturedPhotos({ photos }) {
     body: 'Set `axis` to `y` for a vertical carousel and give it a height, for example with a class. The arrows turn to point up and down, and the Up and Down arrow keys move it. Right to left needs nothing: put the carousel in an element with `dir="rtl"`, and swipes, arrow keys and arrows follow the reading direction.',
     html: `<section data-ok-carousel aria-roledescription="carousel" aria-label="Stories"
   data-ok-axis="y" class="stories">…</section>`,
-    react: `<Carousel aria-label="Stories" axis="y" className="stories">…</Carousel>`,
+    react: `import { Carousel } from "@owlky/react";
+
+export function CarouselDirection() {
+  return (
+    <Carousel aria-label="Stories" axis="y" className="stories">…</Carousel>
+  );
+}`,
   },
   {
     id: "options",

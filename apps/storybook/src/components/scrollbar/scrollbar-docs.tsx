@@ -36,7 +36,13 @@ export function ReleaseNotes() {
     html: `<section data-ok-scrollbar data-ok-auto-hide="false" aria-label="Release notes" tabindex="0">
   …
 </section>`,
-    react: `<Scrollbar autoHide={false} aria-label="Release notes">…</Scrollbar>`,
+    react: `import { Scrollbar } from "@owlky/react";
+
+export function ScrollbarVisibility() {
+  return (
+    <Scrollbar autoHide={false} aria-label="Release notes">…</Scrollbar>
+  );
+}`,
   },
   {
     id: "compose",
@@ -47,11 +53,17 @@ export function ReleaseNotes() {
     <table data-ok-table data-ok-size="medium" data-ok-padding="normal">…</table>
   </section>
 </section>`,
-    react: `<TableContainer>
-  <Scrollbar aria-label="Orders">
-    <Table>…</Table>
-  </Scrollbar>
-</TableContainer>`,
+    react: `import { Scrollbar, Table, TableContainer } from "@owlky/react";
+
+export function ScrollbarCompose() {
+  return (
+    <TableContainer>
+      <Scrollbar aria-label="Orders">
+        <Table>…</Table>
+      </Scrollbar>
+    </TableContainer>
+  );
+}`,
   },
   {
     id: "options",

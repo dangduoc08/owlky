@@ -72,9 +72,15 @@ export function Tasks() {
     …
   </ul>
 </section>`,
-    react: `<Scrollbar aria-label="Widgets list">
-  <Sortable layout="horizontal" aria-label="Widgets" … />
-</Scrollbar>`,
+    react: `import { Scrollbar, Sortable } from "@owlky/react";
+
+export function SortableLayout() {
+  return (
+    <Scrollbar aria-label="Widgets list">
+      <Sortable layout="horizontal" aria-label="Widgets" … />
+    </Scrollbar>
+  );
+}`,
   },
   {
     id: "remove",
@@ -83,10 +89,16 @@ export function Tasks() {
     html: `<ul id="tasks" data-ok-sortable data-ok-layout="vertical" aria-label="Tasks">
 ${htmlItem("Design")}
 </ul>`,
-    react: `<Sortable
-  …
-  onRemove={(task) => setTasks((all) => all.filter((t) => t !== task))}
-/>`,
+    react: `import { Sortable } from "@owlky/react";
+
+export function SortableRemove() {
+  return (
+    <Sortable
+      …
+      onRemove={(task) => setTasks((all) => all.filter((t) => t !== task))}
+    />
+  );
+}`,
   },
   {
     id: "add",
