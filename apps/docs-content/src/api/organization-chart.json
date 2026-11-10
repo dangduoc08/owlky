@@ -156,6 +156,20 @@
     ],
     "options": [
      {
+      "attr": "data-ok-direction",
+      "default": "top",
+      "description": "Where the root sits: `top` (default, children below), `bottom`, `left` (at the inline start) or `right`.",
+      "kind": "style",
+      "name": "direction",
+      "optional": true,
+      "values": [
+       "top",
+       "bottom",
+       "left",
+       "right"
+      ]
+     },
+     {
       "attr": "data-ok-line-height",
       "default": 40,
       "description": "Height of the connectors between two levels: a number in px, or a CSS length.",
@@ -359,6 +373,12 @@
       "description": "Ids of the nodes collapsed at first (uncontrolled). Default none: every node is expanded.",
       "name": "defaultCollapsedNodes",
       "type": "readonly string[]"
+     },
+     {
+      "default": "\"top\"",
+      "description": "Where the root sits and which way the chart grows: `top` (children below), `bottom`, `left` (the root at the inline start, so on the right of a right-to-left page) or `right`.",
+      "name": "direction",
+      "type": "\"bottom\" | \"left\" | \"right\" | \"top\""
      },
      {
       "default": "false",

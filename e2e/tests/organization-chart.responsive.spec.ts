@@ -3,7 +3,7 @@ import { implementations, openStory, storyId } from "./helpers.js";
 import { viewports } from "./viewports.js";
 
 /** One entry per reference section, plus the line options. */
-const STORIES = ["simple", "standard", "group", "lines"];
+const STORIES = ["simple", "standard", "group", "lines", "direction"];
 
 interface Box {
   x: number;

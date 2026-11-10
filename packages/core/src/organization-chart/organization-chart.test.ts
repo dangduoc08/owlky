@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   organizationChartAttributes,
+  organizationChartDirections,
   organizationChartOptions,
   readNumber,
   readStyle,
@@ -89,6 +90,19 @@ describe("organizationChartAttributes", () => {
     element.setAttribute("data-ok-line-color", "warning");
     expect(readNumber(element, options.lineHeight)).toBe("3em");
     expect(readStyle(element, options.lineColor)).toBe("warning");
+  });
+
+  it("writes a direction only when one is given and valid (ADR-0052)", () => {
+    expect(organizationChartAttributes()["data-ok-direction"]).toBeUndefined();
+    for (const direction of organizationChartDirections)
+      expect(organizationChartAttributes({ direction })["data-ok-direction"]).toBe(direction);
+    expect(
+      organizationChartAttributes({ direction: HOSTILE as never })["data-ok-direction"],
+    ).toBeUndefined();
+    const element = document.createElement("ul");
+    expect(readStyle(element, organizationChartOptions.options.direction)).toBe("top");
+    element.setAttribute("data-ok-direction", "right");
+    expect(readStyle(element, organizationChartOptions.options.direction)).toBe("right");
   });
 });
 

@@ -669,3 +669,185 @@ describe("OrganizationChart expand and collapse", () => {
     );
   });
 });
+
+// --- Direction (ADR-0052) -----------------------------------------------------------------------
+
+/**
+ * Lines that miss their labels: each visible children list's line from its parent and each
+ * child's line to its label sit on that label's center, across the bar's axis.
+ */
+function connectorMisses(root: Element, vertical: boolean): string[] {
+  const misses: string[] = [];
+  const center = (element: Element) => {
+    const rect = (element.firstElementChild ?? element).getBoundingClientRect();
+    return vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+  };
+  /** Centers of the lines a pseudo-element draws toward a label. */
+  const lines = (element: Element, which: "::before" | "::after") => {
+    const style = getComputedStyle(element, which);
+    if (style.content === "none") return [];
+    const host = element.getBoundingClientRect();
+    const start = vertical
+      ? host.left + Number.parseFloat(style.left)
+      : host.top + Number.parseFloat(style.top);
+    const size = Number.parseFloat(vertical ? style.width : style.height);
+    const sides: [number, number][] = vertical
+      ? [
+          [Number.parseFloat(style.borderLeftWidth), start],
+          [-Number.parseFloat(style.borderRightWidth), start + size],
+        ]
+      : [
+          [Number.parseFloat(style.borderTopWidth), start],
+          [-Number.parseFloat(style.borderBottomWidth), start + size],
+        ];
+    return sides.filter(([width]) => width !== 0).map(([width, edge]) => edge + width / 2);
+  };
+  const near = (values: number[], target: number) =>
+    values.some((value) => Math.abs(value - target) < 1.5);
+  for (const list of root.querySelectorAll("[data-ok-organization-chart-children]")) {
+    if (list.getClientRects().length === 0) continue;
+    const parent = list.parentElement as Element;
+    const label = parent.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
+    if (!near(lines(list, "::before"), center(label)))
+      misses.push(`line from ${label.textContent}`);
+    for (const child of list.children) {
+      const own = child.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
+      if (!near([...lines(child, "::before"), ...lines(child, "::after")], center(own)))
+        misses.push(`line to ${own.textContent}`);
+    }
+  }
+  return misses;
+}
+
+describe("OrganizationChart direction", () => {
+  const labelBox = (text: string) => box(screen.getByText(text));
+
+  it("is top by default: no attribute, the same markup as before", () => {
+    render(<Team />);
+    expect(chart().hasAttribute("data-ok-direction")).toBe(false);
+    expect(connectorMisses(chart(), true)).toEqual([]);
+  });
+
+  it("writes valid directions only", () => {
+    const { unmount } = render(<Team direction="top" />);
+    expect(chart().getAttribute("data-ok-direction")).toBe("top");
+    unmount();
+    render(<Team direction={HOSTILE} />);
+    expect(chart().hasAttribute("data-ok-direction")).toBe(false);
+  });
+
+  it("bottom: children above their parent, lines on the labels' centers", () => {
+    render(
+      <div style={{ width: 800 }}>
+        <Team direction="bottom" />
+      </div>,
+    );
+    expect(chart().getAttribute("data-ok-direction")).toBe("bottom");
+    expect(labelBox("Middle").bottom).toBeLessThan(labelBox("Lead").top);
+    expect(labelBox("Report").bottom).toBeLessThan(labelBox("Middle").top);
+    // Siblings keep their order.
+    expect(labelBox("First").left).toBeLessThan(labelBox("Last").left);
+    expect(connectorMisses(chart(), true)).toEqual([]);
+    const first = pseudo(nodeOf("First"), "::after");
+    expect(first.borderBottomWidth).toBe("1px");
+    expect(first.borderTopWidth).toBe("0px");
+    expect(first.borderBottomLeftRadius).toBe("24px");
+  });
+
+  it("left: children at the inline end, a vertical bar between siblings", () => {
+    render(
+      <div style={{ width: 800 }}>
+        <Team direction="left" />
+      </div>,
+    );
+    expect(labelBox("Middle").left).toBeGreaterThan(labelBox("Lead").right);
+    expect(labelBox("Report").left).toBeGreaterThan(labelBox("Middle").right);
+    expect(labelBox("First").top).toBeLessThan(labelBox("Last").top);
+    expect(connectorMisses(chart(), false)).toEqual([]);
+    const first = pseudo(nodeOf("First"), "::after");
+    expect(first.borderTopLeftRadius).toBe("24px");
+    expect(first.width).toBe("40px");
+    expect(getComputedStyle(nodeOf("First")).padding).toBe("4px 0px 4px 40px");
+  });
+
+  it("right: children at the inline start", () => {
+    render(
+      <div style={{ width: 800 }}>
+        <Team direction="right" lineWidth={2} />
+      </div>,
+    );
+    expect(labelBox("Middle").right).toBeLessThan(labelBox("Lead").left);
+    expect(labelBox("Report").right).toBeLessThan(labelBox("Middle").left);
+    expect(connectorMisses(chart(), false)).toEqual([]);
+    expect(pseudo(nodeOf("First"), "::after").borderTopRightRadius).toBe("24px");
+    expect(pseudo(nodeOf("Last"), "::before").borderBottomRightRadius).toBe("24px");
+  });
+
+  it("left mirrors in right-to-left pages: the root on the right", () => {
+    render(
+      <div dir="rtl" style={{ width: 800 }}>
+        <Team direction="left" />
+      </div>,
+    );
+    expect(labelBox("Middle").right).toBeLessThan(labelBox("Lead").left);
+    expect(connectorMisses(chart(), false)).toEqual([]);
+    expect(pseudo(nodeOf("First"), "::after").borderTopRightRadius).toBe("24px");
+  });
+
+  it("keeps the tree's reading and focus order in every direction", () => {
+    for (const direction of ["bottom", "left", "right"] as const) {
+      const { unmount } = render(<Collapsible direction={direction} />);
+      const order = [...chart().querySelectorAll("button")].map(
+        (button) => button.querySelector("[data-ok-organization-chart-toggle-label]")?.textContent,
+      );
+      expect(order).toEqual(["Lead's reports", "B's reports", "Child nodes", "Lazy reports"]);
+      unmount();
+    }
+  });
+
+  it("toggles straddle the edge that faces the children; the chevron points at them", () => {
+    const turn = (id: string) =>
+      getComputedStyle(
+        toggleOf(id).querySelector("[data-ok-organization-chart-toggle-icon]") as Element,
+      ).rotate;
+    const cases = [
+      ["bottom", "180deg", "360deg"],
+      ["left", "-90deg", "90deg"],
+      ["right", "90deg", "270deg"],
+    ] as const;
+    for (const [direction, collapsed, expanded] of cases) {
+      const { unmount } = render(
+        <div style={{ width: 900 }}>
+          <Collapsible direction={direction} defaultCollapsedNodes={["b"]} />
+        </div>,
+      );
+      expect(turn("b")).toBe(collapsed);
+      expect(turn("lead")).toBe(expanded);
+      const label = box(node("b").firstElementChild as Element);
+      const toggle = box(toggleOf("b"));
+      const half = toggle.height / 2;
+      if (direction === "bottom") expect(toggle.top + half).toBeCloseTo(label.top, 0);
+      if (direction === "left") expect(toggle.left + half).toBeCloseTo(label.right, 0);
+      if (direction === "right") expect(toggle.right - half).toBeCloseTo(label.left, 0);
+      expect(connectorMisses(chart(), direction === "bottom")).toEqual([]);
+      unmount();
+    }
+    // Right to left: horizontal chevrons turn the other way.
+    render(
+      <div dir="rtl">
+        <Collapsible direction="left" defaultCollapsedNodes={["b"]} />
+      </div>,
+    );
+    expect(turn("b")).toBe("90deg");
+  });
+
+  it("has no axe violations in every direction", async () => {
+    for (const direction of ["bottom", "left", "right"] as const) {
+      const { unmount } = render(
+        <Collapsible direction={direction} defaultCollapsedNodes={["b"]} />,
+      );
+      await expectNoAxeViolations(document.body);
+      unmount();
+    }
+  });
+});

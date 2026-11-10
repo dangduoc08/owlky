@@ -4,6 +4,7 @@ import {
   createOrganizationChartController,
   type OrganizationChartAction,
   type OrganizationChartController,
+  type OrganizationChartDirection,
   type OrganizationChartLineColor,
   type OrganizationChartLineStyle,
   organizationChartAttributes,
@@ -172,6 +173,12 @@ export interface OrganizationChartProps
   label: ReactNode;
   /** The root's children: `OrganizationChartNode` elements. */
   children?: ReactNode;
+  /**
+   * Where the root sits and which way the chart grows: `top` (children below), `bottom`, `left`
+   * (the root at the inline start, so on the right of a right-to-left page) or `right`.
+   * Default `"top"`.
+   */
+  direction?: OrganizationChartDirection | undefined;
   /** Height of the connectors between two levels: px, or a CSS length. Default `40`. */
   lineHeight?: number | string | undefined;
   /** Thickness of the connectors: px, or a CSS length. Default `1`. */
@@ -222,6 +229,7 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
     {
       label,
       children,
+      direction,
       lineHeight,
       lineWidth,
       lineColor,
@@ -396,6 +404,7 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       <ul
         ref={merged}
         {...organizationChartAttributes({
+          direction,
           ...lengths,
           lineColor,
           lineStyle,

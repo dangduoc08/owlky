@@ -2426,9 +2426,11 @@ export const timelineDotAttributes = (options: TimelineDotAnatomyOptions = {}): 
 
 export const organizationChartLineColors = ["divider", "inherit", ...paletteColorNames] as const;
 export const organizationChartLineStyles = ["solid", "dashed", "dotted"] as const;
+export const organizationChartDirections = ["top", "bottom", "left", "right"] as const;
 
 export type OrganizationChartLineColor = (typeof organizationChartLineColors)[number];
 export type OrganizationChartLineStyle = (typeof organizationChartLineStyles)[number];
+export type OrganizationChartDirection = (typeof organizationChartDirections)[number];
 
 const CHART_LENGTH = { min: 0, units: ["px", "rem", "em"] } as const;
 
@@ -2436,6 +2438,13 @@ export const organizationChartOptions = defineOptions(
   "organization-chart",
   "data-ok-organization-chart",
   {
+    direction: style(
+      "data-ok-direction",
+      organizationChartDirections,
+      "top",
+      "Where the root sits: `top` (default, children below), `bottom`, `left` (at the inline start) or `right`.",
+      { optional: true },
+    ),
     lineHeight: number(
       "data-ok-line-height",
       40,
@@ -2490,6 +2499,7 @@ export const organizationChartOptions = defineOptions(
 );
 
 export interface OrganizationChartAnatomyOptions {
+  direction?: OrganizationChartDirection | undefined;
   lineHeight?: number | string | undefined;
   lineWidth?: number | string | undefined;
   lineColor?: OrganizationChartLineColor | undefined;

@@ -135,6 +135,42 @@ export function CompanyChart() {
 }`,
   },
   {
+    id: "direction",
+    title: "Choose a direction",
+    body: `\`direction\` sets the side the top node sits on, and the chart grows away from it:
+
+- **\`top\`:** the default. Children sit below their parent.
+- **\`bottom\`:** children sit above their parent.
+- **\`left\`:** the top node sits at the start of the line, and children follow toward the end. In a right-to-left page, the chart mirrors and grows toward the left.
+- **\`right\`:** the reverse of \`left\`.
+
+Horizontal charts suit deep trees with short labels: each level adds width instead of height. Every direction keeps the same markup, so screen readers, the reading order and the **Tab** order follow the tree, parent before children, whatever the layout. Toggle buttons sit on the side of the label that faces the children, and their arrow points at them. The direction doesn't change with the screen width. To use another direction on small screens, change the prop or the attribute from your own code, for example after \`matchMedia("(max-width: 600px)")\` matches.`,
+    html: `<ul data-ok-organization-chart data-ok-direction="left" data-ok-line-color="divider"
+    data-ok-line-style="solid" aria-label="Company">
+  <li data-ok-organization-chart-node>
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+      </li>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Priya Raman, development</div>
+      </li>
+    </ul>
+  </li>
+</ul>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function SidewaysCompany() {
+  return (
+    <OrganizationChart aria-label="Company" direction="left" label="Maya Lindqvist, CEO">
+      <OrganizationChartNode label="Jonah Pereira, design" />
+      <OrganizationChartNode label="Priya Raman, development" />
+    </OrganizationChart>
+  );
+}`,
+  },
+  {
     id: "collapse",
     title: "Collapse and expand nodes",
     body: 'Set `enableExpandCollapse` to give every node with children a toggle button on the bottom edge of its label. The button collapses the node\'s children and expands them again, with an animation. A collapsed node draws no lines below it, and its button shows how many nodes it hides. Every node starts expanded: list the ids of the nodes to collapse at first in `defaultCollapsedNodes`, or control them with `collapsedNodes` and `onCollapsedNodesChange`. Give each node a `nodeId` and a `toggleLabel`, such as "Priya Raman\'s reports", which names its button for screen readers. Set `expandCollapseOnNodeClick` to also toggle a node when someone clicks its label, outside its own buttons and links. In HTML, the markup holds the state: a collapsed node\'s children list has `hidden` and its button has `aria-expanded="false"`. The script toggles both.',
@@ -337,7 +373,8 @@ export function LazyCompany() {
 - Name the chart with \`aria-label\` or \`aria-labelledby\`, such as the name of the team it shows.
 - Lines are decorative: the list structure carries the hierarchy. Don't rely on a line color alone to convey meaning.
 - Text in labels needs a contrast ratio of at least 4.5:1, like any other text.
-- In right-to-left pages, the chart mirrors: the first child is on the right.
+- In right-to-left pages, the chart mirrors: the first child is on the right, and a \`left\` chart grows toward the left.
+- Every \`direction\` keeps the tree's reading order: a node, then its children.
 - Toggle buttons have \`aria-expanded\` and \`aria-controls\`. Their name is the hidden \`toggleLabel\` followed by the visible number of hidden nodes, so that speech input users can say what they see. Make each \`toggleLabel\` unique, such as the person's name and "reports".
 - Collapsed children are hidden from screen readers too. While children load, the toggle has \`aria-busy="true"\`.
 - A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.`,
@@ -383,6 +420,19 @@ const PREVIEWS = {
               </OrganizationChartNode>
             ),
           )}
+        </OrganizationChart>
+      </Scrollbar>
+    </Preview>
+  ),
+  direction: () => (
+    <Preview>
+      <Scrollbar aria-label="Sideways company chart, scrollable" style={{ width: "100%" }}>
+        <OrganizationChart aria-label="Company" direction="left" label="Maya Lindqvist, CEO">
+          <OrganizationChartNode label="Jonah Pereira, design">
+            <OrganizationChartNode label="Aiko Tanaka" />
+          </OrganizationChartNode>
+          <OrganizationChartNode label="Priya Raman, development" />
+          <OrganizationChartNode label="Leila Haddad, marketing" />
         </OrganizationChart>
       </Scrollbar>
     </Preview>

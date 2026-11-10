@@ -1,7 +1,11 @@
 import { expect, type Page, test } from "@playwright/test";
 import { implementations, openStory, storyId } from "./helpers.js";
 
-/** Pixel columns where each children list's line down meets its children's lines. */
+/**
+ * For every visible children list, how far its line from the parent and its children's lines to
+ * their labels are from those labels' centers, across the bar's axis (x for top and bottom
+ * charts, y for left and right ones, ADR-0052). The smallest distance per line counts.
+ */
 function connectorGaps(page: Page) {
   return page.evaluate(() => {
     const gaps: number[] = [];
@@ -10,15 +14,41 @@ function connectorGaps(page: Page) {
     )) {
       // Collapsed children (and lists inside them) draw no lines.
       if (list.getClientRects().length === 0) continue;
-      const down = getComputedStyle(list, "::before");
-      const listBox = list.getBoundingClientRect();
-      const x = listBox.left + Number.parseFloat(down.left);
-      // The label's center above the list.
-      const label = (list.parentElement as Element).querySelector(
-        ":scope > [data-ok-organization-chart-label] > *",
-      ) as Element;
-      const box = label.getBoundingClientRect();
-      gaps.push(Math.abs(x - (box.left + box.width / 2)));
+      const root = list.closest("[data-ok-organization-chart]") as Element;
+      const direction = root.getAttribute("data-ok-direction");
+      const vertical = direction !== "left" && direction !== "right";
+      const center = (label: Element) => {
+        const box = (label.firstElementChild ?? label).getBoundingClientRect();
+        return vertical ? box.left + box.width / 2 : box.top + box.height / 2;
+      };
+      const lines = (element: Element, which: string) => {
+        const style = getComputedStyle(element, which);
+        if (style.content === "none") return [];
+        const host = element.getBoundingClientRect();
+        const start = vertical
+          ? host.left + Number.parseFloat(style.left)
+          : host.top + Number.parseFloat(style.top);
+        const size = Number.parseFloat(vertical ? style.width : style.height);
+        const sides: [number, number][] = vertical
+          ? [
+              [Number.parseFloat(style.borderLeftWidth), start],
+              [-Number.parseFloat(style.borderRightWidth), start + size],
+            ]
+          : [
+              [Number.parseFloat(style.borderTopWidth), start],
+              [-Number.parseFloat(style.borderBottomWidth), start + size],
+            ];
+        return sides.filter(([width]) => width !== 0).map(([width, edge]) => edge + width / 2);
+      };
+      const gap = (values: number[], target: number) =>
+        Math.min(Number.POSITIVE_INFINITY, ...values.map((value) => Math.abs(value - target)));
+      const labelOf = (node: Element) =>
+        node.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
+      gaps.push(gap(lines(list, "::before"), center(labelOf(list.parentElement as Element))));
+      for (const child of list.children)
+        gaps.push(
+          gap([...lines(child, "::before"), ...lines(child, "::after")], center(labelOf(child))),
+        );
     }
     return gaps;
   });
@@ -36,6 +66,7 @@ for (const impl of implementations) {
         "standard",
         "group",
         "lines",
+        "direction",
         "collapsible",
         "lazy-children",
       ]) {
@@ -140,6 +171,67 @@ for (const impl of implementations) {
       await expect(page.getByText("Elias Novak", { exact: true })).toBeHidden();
       await page.getByRole("button", { name: "Expand all" }).click();
       await expect(page.getByText("Tomás Rivera", { exact: true })).toBeVisible();
+      const gaps = await connectorGaps(page);
+      for (const gap of gaps) expect(gap).toBeLessThan(1.5);
+    });
+
+    test("every direction lays the tree out from its side, in tree order", async ({ page }) => {
+      await openStory(page, storyId(impl, "organization-chart", "direction"));
+      const boxes = await page.evaluate(() =>
+        [...document.querySelectorAll("[data-ok-organization-chart]")].map((chart) => {
+          const box = (text: string) => {
+            const label = [...chart.querySelectorAll("[data-ok-organization-chart-label]")].find(
+              (element) => element.textContent?.includes(text),
+            ) as Element;
+            const rect = label.getBoundingClientRect();
+            return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+          };
+          return {
+            name: chart.getAttribute("aria-label"),
+            lead: box("Team lead"),
+            engineer: box("Engineer"),
+            designer: box("Designer"),
+            writer: box("Writer"),
+          };
+        }),
+      );
+      const by = (name: string) => boxes.find((entry) => entry.name === name) as (typeof boxes)[0];
+      const up = by("Chart growing upward");
+      expect(up.engineer.bottom).toBeLessThan(up.lead.top);
+      expect(up.designer.left).toBeLessThan(up.writer.left);
+      const right = by("Chart growing to the right");
+      expect(right.engineer.left).toBeGreaterThan(right.lead.right);
+      expect(right.designer.top).toBeLessThan(right.writer.top);
+      const left = by("Chart growing to the left");
+      expect(left.engineer.right).toBeLessThan(left.lead.left);
+      // Right to left mirrors the inline axis: "left" grows toward the left.
+      const rtl = by("Right-to-left chart");
+      expect(rtl.engineer.right).toBeLessThan(rtl.lead.left);
+      // Reading order stays the tree order.
+      const chart = page.getByRole("list", { name: "Chart growing upward" });
+      await expect(chart.getByRole("listitem").first()).toContainText("Team lead");
+    });
+
+    test("a collapsible left-to-right chart toggles toward its children", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "direction"));
+      const chart = page.getByRole("list", { name: "Collapsible chart growing to the right" });
+      const engineer = chart.locator('[data-ok-node-id="b"] > [data-ok-organization-chart-toggle]');
+      await expect(engineer).toHaveAccessibleName("Engineer's reports 1");
+      await expect(engineer).toHaveAttribute("aria-expanded", "false");
+      await engineer.scrollIntoViewIfNeeded();
+      if (isMobile) await engineer.tap();
+      else await engineer.click();
+      const intern = chart.getByText("Intern", { exact: true });
+      await expect(intern).toBeVisible();
+      const [toggleBox, internBox] = [await engineer.boundingBox(), await intern.boundingBox()];
+      expect(internBox?.x).toBeGreaterThan((toggleBox?.x ?? 0) + (toggleBox?.width ?? 0));
+      await engineer.focus();
+      await page.keyboard.press("Enter");
+      await expect(intern).toBeHidden();
+      await expect(engineer).toBeFocused();
       const gaps = await connectorGaps(page);
       for (const gap of gaps) expect(gap).toBeLessThan(1.5);
     });

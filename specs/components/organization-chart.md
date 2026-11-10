@@ -2,21 +2,21 @@
 
 Reference: Minimal UI kit "Organization chart" page, sections Simple, Standard, Group (content
 only). Upstream: `react-organizational-chart` (`Tree`, `TreeNode`; ADR-0015, ADR-0036); expand and
-collapse after ApexTree (ADR-0051).
+collapse after ApexTree (ADR-0051); direction after ApexTree (ADR-0052).
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/organization-chart
 HTML source: written by us (the upstream is React only)
 
 ## Purpose
-A hierarchy (people of a company, parts of a product) as a top-down tree of nodes joined by
-connector lines. Node content is free (cards in the stories). CSS only; a small runtime turns the
+A hierarchy (people of a company, parts of a product) as a tree of nodes joined by connector
+lines, top-down by default or grown from another side (`direction`, ADR-0052). Node content is free (cards in the stories). CSS only; a small runtime turns the
 length options into private custom properties in HTML. Opt-in (`enableExpandCollapse`): branches
 collapse and expand with a toggle button, their children list is a Collapse, children can load on
 demand.
 
 ## Anatomy
 ```
-ul[data-ok-organization-chart][data-ok-line-color][data-ok-line-style]
+ul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-line-style]
   [data-ok-line-height]? [data-ok-line-width]? [data-ok-line-border-radius]? [data-ok-node-padding]?
   [data-ok-enable-expand-collapse]? [data-ok-expand-collapse-on-node-click]?
   [data-ok-collapse-badge-threshold]?
@@ -45,6 +45,7 @@ Root: `data-ok-organization-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
+| `direction` | `data-ok-direction="…"` | style | `top` `bottom` `left` `right` | — | Where the root sits: `top` (default, children below), `bottom`, `left` (at the inline start) or `right`. |
 | `lineHeight` | `data-ok-line-height="…"` | number | number (px) or `px` `rem` `em` length | `40` | Height of the connectors between two levels: a number in px, or a CSS length. |
 | `lineWidth` | `data-ok-line-width="…"` | number | number (px) or `px` `rem` `em` length | `1` | Thickness of the connectors: a number in px, or a CSS length. |
 | `lineColor` | `data-ok-line-color="…"` | style | `divider` `inherit` `primary` `secondary` `info` `success` `warning` `error` | `divider` | `divider` (default), `inherit` (the text color) or a palette color (its light tone). |
@@ -97,6 +98,17 @@ untrusted CSS. `lineStyle` keeps `solid` / `dashed` / `dotted` (other border sty
   `--_ok-org-node-padding` (`--ok-spacing` = 4px), `--_ok-org-line-color`, `--_ok-org-line-style`,
   `--_ok-org-line`; all declared on every root, so nested charts don't inherit them.
 - Logical properties throughout: right-to-left charts mirror.
+- Direction (ADR-0052, CSS only, same markup): `bottom` → nodes `column-reverse`, lists pad the
+  block end, connector borders and radii move from the block start to the block end; `left` /
+  `right` → nodes are rows, lists columns (`padding-inline-start: lineHeight`), the line from the
+  parent runs along the inline axis at the list's block center, each child's bar halves along
+  its inline start (`inline-size: lineHeight`, `block-size: 50%`) and its line to the label along
+  its block center; `right` reverses the inline axis (`row-reverse`, borders on the inline end).
+  `left` is logical: in a right-to-left scope the chart grows toward the left. Toggles move to
+  the edge facing the children; the chevron's angle is `--_ok-org-chevron` on the root (0 /
+  180deg / -90deg / 90deg, horizontal ones swapped under `[dir="rtl"]`), plus 180deg when
+  expanded. A chart nested in a label of a chart with another direction picks up the outer
+  direction's rules (descendant selectors): give nested charts the same direction.
 
 ## States
 Static unless `data-ok-enable-expand-collapse`. Then per branch: expanded (list without `hidden`,
@@ -130,7 +142,8 @@ fragment or nothing), appends them and expands, or removes toggle and list when 
 Batch methods (`organizationChartPlan`) change loaded nodes only and emit nothing.
 
 ## Keyboard
-None of its own. Controls in labels follow DOM order: a node, its toggle, then its children.
+None of its own. Controls in labels follow DOM order: a node, its toggle, then its children, in
+every direction (only flex directions change, never the DOM).
 Toggles are native buttons (Enter / Space). Label clicks are a pointer shortcut only.
 
 ## Accessibility
@@ -140,6 +153,8 @@ charts go in a named, focusable Scrollbar (keyboard scrolling). Toggles: `aria-e
 `aria-controls` (the list's id), the name from the visually hidden label plus the visible count
 (label in name, WCAG 2.5.3), `aria-busy` while loading, a 24px target, a focus ring. Collapsed
 children are `hidden` (out of the accessibility tree).
+In every direction the children list's Collapse animates its block size (left / right charts:
+the column folds toward its center; ADR-0052).
 
 ## Events / API
 HTML events (user intent only): `ok:organization-chart:expand` / `collapse` (cancelable, `{ nodeId,
@@ -149,7 +164,8 @@ node }`), `ok:organization-chart:loadchildren` (`{ nodeId, node, respondWith }`)
 `destroy()`. React: the same methods on `apiRef`.
 
 ## Responsive
-Same layout at every breakpoint: the chart never wraps (a tree keeps its shape). Narrower than its
+Same layout at every breakpoint: the chart never wraps (a tree keeps its shape) and keeps its
+`direction` (apps switch it themselves, for example from `matchMedia`; ADR-0052). Narrower than its
 container: centered. Wider: overflows to the inline end; the Scrollbar wrapper scrolls it from the
 first node (the reference centers with `justify-content: center` and cuts off the start on phones).
 
@@ -185,7 +201,10 @@ checked 2026-11-10; ADR-0051):
 | `enableExpandCollapseZoom`, `maxZoomNodeSpan` | — | deferred (4.18.5) | zoom / fit |
 | `enableAnimation`, `motion.stagger`, `motion.spring` | Collapse timing tokens | not applicable | reduced motion respected |
 | `onNodeClick`, `cardExpansion`, `expandCard` / `collapseCard` / `toggleCard` | — | not applicable | labels hold the app's content and handlers |
-| direction, grouped leaves, highlight / search, zoom / pan, per-node lines | — | deferred (4.18.2–4.18.6) | |
+| `direction` `top` · `bottom` · `left` · `right` | `direction` (default `top`, not written) | kept | CSS only; `left` / `right` are logical (ADR-0052) |
+| `direction: "radial"` | — | deferred (4.18.7) | rings need measured positions (Chart engine) |
+| `locale.direction` (`ltr` · `rtl` · `auto`) | the page's `dir` | not applicable | logical properties mirror the chart |
+| grouped leaves, highlight / search, zoom / pan, per-node lines | — | deferred (4.18.3–4.18.6) | |
 
 ## Parity notes
 None: the same markup; React's `style` and the runtime's CSSOM properties are equal (parity

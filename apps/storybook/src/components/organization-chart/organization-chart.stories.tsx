@@ -103,6 +103,17 @@ export const Standard: StoryObj = demoStory(
 export const Group: StoryObj = demoStory("group", "Group", <GroupChartDemo />, groupSource);
 export const Lines: StoryObj = story("lines");
 
+/** Directions (ADR-0052): each group sets its own `direction`, so no Controls here. */
+export const Direction: StoryObj = frameworkStory({
+  html: snippetStory(
+    snippets,
+    "direction",
+    ORGANIZATION_CHART_FILES["direction"] ?? [],
+    htmlSetup(COLLAPSIBLE, true),
+  ),
+  react: reactGroupsStory(organizationChartStories["direction"] ?? []),
+});
+
 /** Expand and collapse (ADR-0051): stateful in React (`apiRef`), a page script in HTML. */
 export const Collapsible: StoryObj = {
   ...frameworkStory({

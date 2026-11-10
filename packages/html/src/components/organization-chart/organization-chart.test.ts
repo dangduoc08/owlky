@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(9));
+  it("covers every story group", () => expect(snippets).toHaveLength(14));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -148,6 +148,88 @@ describe("organization chart CSS without JavaScript", () => {
     expect(after.borderTopLeftRadius).toBe("24px");
     const child = host.querySelector("[data-ok-organization-chart-children] > li") as Element;
     expect(getComputedStyle(child).padding).toBe("40px 4px 0px");
+  });
+});
+
+/**
+ * Lines that miss their labels (ADR-0052): each visible children list's line from its parent and
+ * each child's line to its label sit on that label's center, across the bar's axis.
+ */
+function connectorMisses(root: Element, vertical: boolean): string[] {
+  const misses: string[] = [];
+  const center = (element: Element) => {
+    const rect = (element.firstElementChild ?? element).getBoundingClientRect();
+    return vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+  };
+  const lines = (element: Element, which: "::before" | "::after") => {
+    const style = getComputedStyle(element, which);
+    if (style.content === "none") return [];
+    const host = element.getBoundingClientRect();
+    const start = vertical
+      ? host.left + Number.parseFloat(style.left)
+      : host.top + Number.parseFloat(style.top);
+    const size = Number.parseFloat(vertical ? style.width : style.height);
+    const sides: [number, number][] = vertical
+      ? [
+          [Number.parseFloat(style.borderLeftWidth), start],
+          [-Number.parseFloat(style.borderRightWidth), start + size],
+        ]
+      : [
+          [Number.parseFloat(style.borderTopWidth), start],
+          [-Number.parseFloat(style.borderBottomWidth), start + size],
+        ];
+    return sides.filter(([width]) => width !== 0).map(([width, edge]) => edge + width / 2);
+  };
+  const near = (values: number[], target: number) =>
+    values.some((value) => Math.abs(value - target) < 1.5);
+  for (const list of root.querySelectorAll("[data-ok-organization-chart-children]")) {
+    if (list.getClientRects().length === 0) continue;
+    const parent = list.parentElement as Element;
+    const label = parent.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
+    if (!near(lines(list, "::before"), center(label)))
+      misses.push(`line from ${label.textContent?.trim()}`);
+    for (const child of list.children) {
+      const own = child.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
+      if (!near([...lines(child, "::before"), ...lines(child, "::after")], center(own)))
+        misses.push(`line to ${own.textContent?.trim()}`);
+    }
+  }
+  return misses;
+}
+
+describe("organization chart directions (CSS only)", () => {
+  const label = (host: Element, text: string) =>
+    [...host.querySelectorAll("[data-ok-organization-chart-label]")]
+      .find((element) => element.textContent?.includes(text))
+      ?.getBoundingClientRect() as DOMRect;
+
+  it.each([
+    ["bottom", true],
+    ["left", false],
+    ["right", false],
+    ["rtl", false],
+    ["collapsible", false],
+  ] as const)("direction-%s: every line sits on its label's center", (name, vertical) => {
+    const html = snippets.find(([path]) => path.endsWith(`/direction-${name}.html`))?.[1] as string;
+    const host = mount(html);
+    expect(connectorMisses(rootOf(host), vertical)).toEqual([]);
+    const lead = label(host, "Team lead");
+    const engineer = label(host, "Engineer");
+    if (name === "bottom") expect(engineer.bottom).toBeLessThan(lead.top);
+    else if (name === "right" || name === "rtl") expect(engineer.right).toBeLessThan(lead.left);
+    else expect(engineer.left).toBeGreaterThan(lead.right);
+  });
+
+  it("a hand-written chart follows data-ok-direction changes", () => {
+    const host = mount(chart('data-ok-direction="left"'));
+    const root = rootOf(host);
+    expect(connectorMisses(root, false)).toEqual([]);
+    root.setAttribute("data-ok-direction", "bottom");
+    expect(connectorMisses(root, true)).toEqual([]);
+    root.setAttribute("data-ok-direction", "sideways");
+    // Unknown values draw the default (top) chart.
+    expect(firstAfter(host).borderTopWidth).toBe("1px");
+    expect(connectorMisses(root, true)).toEqual([]);
   });
 });
 

@@ -7,7 +7,8 @@
  *               ul[data-ok-organization-chart-children]?
  *                 li[data-ok-organization-chart-node] … (nested at any depth)
  * Modifiers: data-ok-line-color = divider (default) | inherit | palette (light tone);
- *            data-ok-line-style = solid (default) | dashed | dotted.
+ *            data-ok-line-style = solid (default) | dashed | dotted;
+ *            data-ok-direction = top (default, no attribute) | bottom | left | right (ADR-0052).
  * Lengths:   --_ok-org-line-height | -line-width | -line-radius | -node-padding, written on the
  *            root by React (`style`) or the HTML runtime (CSSOM) from data-ok-line-height,
  *            data-ok-line-width, data-ok-line-border-radius and data-ok-node-padding.
@@ -20,7 +21,9 @@
  *
  * Connectors: each child list draws the line down from its parent (`::before`); each child node
  * draws its half of the horizontal bar on both sides (`::before` / `::after`) and the line down
- * to its label. Logical properties, so right-to-left charts mirror. CSS only.
+ * to its label. Logical properties, so right-to-left charts mirror. CSS only. Other directions
+ * (ADR-0052) swap the axes (left / right: nodes are rows, children lists columns) or reverse
+ * them (bottom / right), and move the same borders to the matching sides.
  * Single :where() selectors in @layer components (zero specificity).
  */
 @reference "../theme.css";
@@ -36,6 +39,8 @@
     --_ok-org-line-color: var(--ok-divider);
     --_ok-org-line-style: solid;
     --_ok-org-line: var(--_ok-org-line-width) var(--_ok-org-line-style) var(--_ok-org-line-color);
+    /* Where a collapsed toggle's chevron points: toward the children (ADR-0052). */
+    --_ok-org-chevron: 0deg;
 
     display: flex;
     justify-content: center;
@@ -254,6 +259,7 @@
     inline-size: calc(var(--ok-spacing) * 4);
     block-size: calc(var(--ok-spacing) * 4);
     margin-inline: calc(var(--ok-spacing) * -1);
+    rotate: var(--_ok-org-chevron);
     transition: rotate var(--ok-duration-shortest) var(--ok-easing-standard);
   }
 
@@ -261,7 +267,7 @@
     [data-ok-organization-chart-toggle][aria-expanded="true"]
       > [data-ok-organization-chart-toggle-icon]
   ) {
-    rotate: 180deg;
+    rotate: calc(var(--_ok-org-chevron) + 180deg);
   }
 
   /* The hidden count: written while collapsed, empty otherwise. */
@@ -301,6 +307,362 @@
       [data-ok-organization-chart-label]:has(+ [data-ok-organization-chart-toggle])
   ) {
     cursor: pointer;
+  }
+
+  /* Directions (ADR-0052). Bottom: the block axis reversed, children above their parent. */
+  :where([data-ok-organization-chart][data-ok-direction="bottom"]) {
+    --_ok-org-chevron: 180deg;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"] [data-ok-organization-chart-node]
+  ) {
+    flex-direction: column-reverse;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"] [data-ok-organization-chart-children]
+  ) {
+    padding: 0 0 var(--_ok-org-line-height);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"] [data-ok-organization-chart-children]
+  )::before {
+    inset-block: auto 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  ) {
+    padding: 0 var(--_ok-org-node-padding) var(--_ok-org-line-height);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  )::before {
+    inset-block: auto 0;
+    border-block-start: 0;
+    border-block-end: var(--_ok-org-line);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  )::after {
+    inset-block: auto 0;
+    border-block-start: 0;
+    border-block-end: var(--_ok-org-line);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:first-child
+  )::before {
+    border-block-end: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:first-child
+  )::after {
+    border-start-start-radius: 0;
+    border-end-start-radius: var(--_ok-org-line-radius);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:last-child
+  )::before {
+    border-start-end-radius: 0;
+    border-end-end-radius: var(--_ok-org-line-radius);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:last-child
+  )::after {
+    border: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:only-child
+  )::before {
+    border: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:only-child
+  )::after {
+    border-block-end: 0;
+    border-inline-start: var(--_ok-org-line);
+    border-end-start-radius: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"] [data-ok-organization-chart-toggle]
+  ) {
+    margin: 0 0 calc(var(--_ok-org-toggle-size) / -2);
+  }
+
+  /* Left and right: the axes swap. A node is a row (its label, then its children), a children
+     list is a column, and the bar between siblings runs along the block axis. */
+  :where([data-ok-organization-chart][data-ok-direction="left"]) {
+    --_ok-org-chevron: -90deg;
+  }
+
+  :where([data-ok-organization-chart][data-ok-direction="right"]) {
+    --_ok-org-chevron: 90deg;
+  }
+
+  /* Right to left: the inline axis is mirrored, so the chevrons turn the other way. */
+  :where(
+    [dir="rtl"] [data-ok-organization-chart][data-ok-direction="left"],
+    [data-ok-organization-chart][data-ok-direction="left"][dir="rtl"]
+  ) {
+    --_ok-org-chevron: 90deg;
+  }
+
+  :where(
+    [dir="rtl"] [data-ok-organization-chart][data-ok-direction="right"],
+    [data-ok-organization-chart][data-ok-direction="right"][dir="rtl"]
+  ) {
+    --_ok-org-chevron: -90deg;
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-node]
+  ) {
+    flex-direction: row;
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-label]
+  ) {
+    flex-shrink: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+  ) {
+    flex-direction: column;
+    padding-block: 0;
+    padding-inline: var(--_ok-org-line-height) 0;
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+  )::before {
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: var(--_ok-org-line-height);
+    block-size: 0;
+    border-inline-start: 0;
+    border-block-start: var(--_ok-org-line);
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  ) {
+    padding-block: var(--_ok-org-node-padding);
+    padding-inline: var(--_ok-org-line-height) 0;
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  )::before {
+    inset: auto;
+    inset-block-end: 50%;
+    inset-inline-start: 0;
+    inline-size: var(--_ok-org-line-height);
+    block-size: 50%;
+    border-block-start: 0;
+    border-inline-start: var(--_ok-org-line);
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  )::after {
+    inset: auto;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: var(--_ok-org-line-height);
+    block-size: 50%;
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:first-child
+  )::before {
+    border-inline-start: 0;
+  }
+
+  /* Last child: the start half turns toward the label (on the same pixels as the others). */
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:last-child
+  )::before {
+    inset-block-end: calc(50% - var(--_ok-org-line-width));
+    block-size: calc(50% + var(--_ok-org-line-width));
+    border-inline-end: 0;
+    border-block-end: var(--_ok-org-line);
+    border-start-end-radius: 0;
+    border-end-start-radius: var(--_ok-org-line-radius);
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:only-child
+  )::before {
+    border: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:only-child
+  )::after {
+    border-block-start: var(--_ok-org-line);
+    border-inline-start: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="left"] [data-ok-organization-chart-toggle]
+  ) {
+    margin: 0;
+    margin-inline-start: calc(var(--_ok-org-toggle-size) / -2);
+  }
+
+  /* Right: the inline axis reversed, children at the inline start of their parent. */
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"] [data-ok-organization-chart-node]
+  ) {
+    flex-direction: row-reverse;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"] [data-ok-organization-chart-children]
+  ) {
+    padding-inline: 0 var(--_ok-org-line-height);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"] [data-ok-organization-chart-children]
+  )::before {
+    inset-inline: auto 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  ) {
+    padding-inline: 0 var(--_ok-org-line-height);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  )::before {
+    inset-inline: auto 0;
+    border-inline-start: 0;
+    border-inline-end: var(--_ok-org-line);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+  )::after {
+    inset-inline: auto 0;
+    border-inline-start: 0;
+    border-inline-end: var(--_ok-org-line);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:first-child
+  )::before {
+    border-inline-end: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:first-child
+  )::after {
+    border-start-start-radius: 0;
+    border-start-end-radius: var(--_ok-org-line-radius);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:last-child
+  )::before {
+    border-end-start-radius: 0;
+    border-end-end-radius: var(--_ok-org-line-radius);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:last-child
+  )::after {
+    border: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:only-child
+  )::before {
+    border: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:only-child
+  )::after {
+    border-block-start: var(--_ok-org-line);
+    border-inline-end: 0;
+    border-start-end-radius: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"] [data-ok-organization-chart-toggle]
+  ) {
+    margin: 0;
+    margin-inline-end: calc(var(--_ok-org-toggle-size) / -2);
   }
 
   @media (prefers-reduced-motion: reduce) {
