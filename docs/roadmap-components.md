@@ -85,7 +85,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.4 | E (should) | Organization chart | lineage highlight on hover and focus (`highlightOnHover`, `dimOpacity`, path to the root through `:has()`), search that scrolls to and highlights a node (composed Autocomplete) | ✅ |
 | 4.18.5 | E (must, owner 2026-11-10, **ADR**) | Organization chart | zoom / fit / center (`enableZoomPan`, `fitScreen`, `zoom`, `centerOnNode`, a toolbar), beyond the Scrollbar's pan | ✅ |
 | 4.18.6 | E (must, owner 2026-11-10) | Organization chart | per-node line options (`edgeColorMode: "node"`: `lineColor` / `lineStyle` on a node) | ✅ |
-| 4.18.7 | E (must, owner 2026-11-10, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | ⬜ |
+| 4.18.7 | E (must, owner 2026-11-10, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | 🔄 |
 | 4.18.8 | E (should) | Tree view | `expandAll` / `collapseAll` / `expandToDepth(depth)` / `expandSubtree(id)` (instance, React `apiRef`), search highlight of matching items and their ancestors | ✅ |
 | 4.18.9 | E — ApexGrid (must) | Data grid | undo / redo of edits (`history: { enabled, stackSize }`, MUI X undo-redo): Ctrl / Cmd + Z, Ctrl / Cmd + Shift + Z, a paste or bulk edit is one step, `processRowUpdate` on each | ✅ |
 | 4.18.10 | E (should) | Data grid | set filter: a checklist of the column's distinct values with search and "Select all", on the `isAnyOf` model | ✅ |
@@ -98,7 +98,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.17 | E (must, owner 2026-11-10, **ADR**) | Chart or a new component | offline SVG geo maps without a tile style: projection (Equal Earth), regions as SVG with the chart's legend, tooltip and keyboard, hex tile layouts | ⬜ |
 | 4.18.19 | E — ApexCharts Premium (should) | Chart | crossfilter between charts of a `group` (a slice click or a brush filters the others; Linked Views / Highlight Filter) | ✅ |
 | 4.18.20 | E (could) | Chart | measure ruler (span · free, keyboard alternative, pinned rulers, `clearMeasures`), draggable annotations that report data coordinates (Ink) | ⬜ |
-| 4.18.21 | E — ApexCharts v8 (should: waterfall, dumbbell first) | Chart | new types (waterfall and dumbbell done 2026-11-10; the others open) `waterfall`, `dumbbell`, `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` (prop-level mapping in 3.1) | ⬜ |
+| 4.18.21 | E — ApexCharts v8 (should: waterfall, dumbbell first) | Chart | new types (waterfall and dumbbell done 2026-11-10; the others open) `waterfall`, `dumbbell`, `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` (prop-level mapping in 3.1) | 🔄 |
 | 4.18.22 | E — audit 3.1 (should) | Button, Icon button, Fab (+ Button group) | polymorphic `component` / `LinkComponent` (router links); Icon button `href` (icon links); Button group `component` | ✅ |
 | 4.18.23 | E — audit 3.1 (should) | Autocomplete | `readOnly`, `onHighlightChange`, `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, configurable `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | ✅ |
 | 4.18.24 | E — audit 3.1 (could) | Autocomplete | `renderValue` (custom chips), `clearIcon` / `popupIcon` / `forcePopupIcon`, object values (`getOptionLabel` / `isOptionEqualToValue` / `getOptionKey` / `getOptionValue`), public `useAutocomplete` / `createFilterOptions` | ✅ |
