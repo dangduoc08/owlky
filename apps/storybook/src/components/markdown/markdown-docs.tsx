@@ -120,13 +120,13 @@ export function Article({ text }: { text: string }) {
   // Register this definition instead of loading owlky-markdown.js
   getRuntime().register(createMarkdown({ remarkPlugins: [remarkMath] })).start();
 </script>`,
-    react: `import { Markdown } from "@owlky/react";
+    react: `import { Markdown, type MarkdownComponents } from "@owlky/react";
 
-// Headings one level down, and links with your router's component
-const components = {
+// Headings one level down, and links with your own class (or your router's component)
+const components: MarkdownComponents = {
   h1: "h2",
-  a: ({ node, ...props }) => <a {...props} className="article-link" />,
-} as const;
+  a: ({ node: _node, ...props }) => <a {...props} className="article-link" />,
+};
 
 export function Article({ text }: { text: string }) {
   return <Markdown components={components}>{text}</Markdown>;

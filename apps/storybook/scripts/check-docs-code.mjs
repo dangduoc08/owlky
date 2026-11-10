@@ -127,6 +127,7 @@ const LUCIDE = [
   "ChevronDown",
   "ChevronRight",
   "Copy",
+  "EllipsisVertical",
   "Eye",
   "EyeOff",
   "Heart",
