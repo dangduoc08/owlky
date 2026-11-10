@@ -71,10 +71,10 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.8 | B | Dialog | `keepMounted` (exit transitions come with Phase 5) | 🔄 |
 | 4.9 | B | Drawer, Backdrop | `elevation`, `transitionDuration` | 🔄 |
 | 4.10 | B | Stepper | `nonLinear`, `StepButton`, Step `expanded` / `last` | 🔄 |
-| 4.11 | C — data display | Tree view | drag and drop (`itemsReordering`), lazy loading, label editing, `selectionPropagation`, `apiRef`, `getItemId` / `getItemLabel` | ⬜ |
-| 4.12 | C | Avatar group | any `spacing` (today `medium` / `small`) | ⬜ |
-| 4.13 | C | Linear progress | right to left | ⬜ |
-| 4.14 | C | Snackbar | swipe to dismiss, `expand` / stacked collapse, `richColors`, `hotkey`, `offset` / `gap`, per-toast `position` | ⬜ |
+| 4.11 | C — data display | Tree view | drag and drop (`itemsReordering`), lazy loading, label editing, `selectionPropagation`, `apiRef`, `getItemId` / `getItemLabel` | 🔄 |
+| 4.12 | C | Avatar group | any `spacing` (today `medium` / `small`) | 🔄 |
+| 4.13 | C | Linear progress | right to left | 🔄 |
+| 4.14 | C | Snackbar | swipe to dismiss, `expand` / stacked collapse, `richColors`, `hotkey`, `offset` / `gap`, per-toast `position` | 🔄 |
 | 4.15 | D — heavy | Data grid | `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, group footers, server-side aggregation, `getPivotDerivedColumns`, pivot panel drag and drop, one chart per grid | ⬜ |
 | 4.16 | D | Editor | Tiptap `extensions` / `editorProps` pass-through, bubble menus, tables, mentions, a form `name` | ⬜ |
 | 4.17 | D | Walktour | `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | ⬜ |
@@ -86,7 +86,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.5 | E (could, **ADR**) | Organization chart | zoom / fit / center (`enableZoomPan`, `fitScreen`, `zoom`, `centerOnNode`, a toolbar), beyond the Scrollbar's pan | ⬜ |
 | 4.18.6 | E (could) | Organization chart | per-node line options (`edgeColorMode: "node"`: `lineColor` / `lineStyle` on a node) | ⬜ |
 | 4.18.7 | E (could, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | ⬜ |
-| 4.18.8 | E (should) | Tree view | `expandAll` / `collapseAll` / `expandToDepth(depth)` / `expandSubtree(id)` (instance, React `apiRef`), search highlight of matching items and their ancestors | ⬜ |
+| 4.18.8 | E (should) | Tree view | `expandAll` / `collapseAll` / `expandToDepth(depth)` / `expandSubtree(id)` (instance, React `apiRef`), search highlight of matching items and their ancestors | 🔄 |
 | 4.18.9 | E — ApexGrid (must) | Data grid | undo / redo of edits (`history: { enabled, stackSize }`, MUI X undo-redo): Ctrl / Cmd + Z, Ctrl / Cmd + Shift + Z, a paste or bulk edit is one step, `processRowUpdate` on each | ⬜ |
 | 4.18.10 | E (should) | Data grid | set filter: a checklist of the column's distinct values with search and "Select all", on the `isAnyOf` model | ⬜ |
 | 4.18.11 | E (must) | Data grid | status bar for `cellSelection`: count, sum, average, min, max of the selected cells, a polite live region, with `aggregationFunctions` | ⬜ |
@@ -114,19 +114,19 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.33 | E — audit 3.1 (should) | Editor | React access to the Tiptap editor (`onCreate` / editor ref) and Tiptap events (`create`, `focus`, `blur`, `selectionUpdate`, `transaction`, `paste`, `drop`, `delete`, `contentError`); `getJSON()` / `getText()` | ⬜ |
 | 4.18.34 | E — audit 3.1 (could) | Editor | `editorProps`, `parseOptions`, `enableInputRules` / `enablePasteRules`, `textDirection`, `autofocus`; form `name` (hidden input) (with 4.16) | ⬜ |
 | 4.18.35 | E — audit 3.1 (could, **ADR**) | Editor | `extensions` pass-through (tables, mentions), `BubbleMenu` / `FloatingMenu` / `useEditor` (with 4.16: new Tiptap extension dependencies, schema and sanitizer impact) | ⬜ |
-| 4.18.36 | E — audit 3.1 (should) | Chip | link chips: `component="a"` / `href` on the action (clickable) | ⬜ |
-| 4.18.37 | E — audit 3.1 (should) | Snackbar | right to left: Toaster `dir`, logical properties in `snackbar.css` (with 4.13) | ⬜ |
-| 4.18.38 | E — audit 3.1 (should) | Snackbar | per-toast `closeButton` / `invert`, Toaster `invert`, `toastOptions` (defaults for every toast), `icons` | ⬜ |
+| 4.18.36 | E — audit 3.1 (should) | Chip | link chips: `component="a"` / `href` on the action (clickable) | 🔄 |
+| 4.18.37 | E — audit 3.1 (should) | Snackbar | right to left: Toaster `dir`, logical properties in `snackbar.css` (with 4.13) | 🔄 |
+| 4.18.38 | E — audit 3.1 (should) | Snackbar | per-toast `closeButton` / `invert`, Toaster `invert`, `toastOptions` (defaults for every toast), `icons` | 🔄 |
 | 4.18.39 | E — audit 3.1 (should) | Menu | React `MenuList` without a Popover (`autoFocus`, `autoFocusItem`, `variant`); Menu `disableAutoFocusItem` | 🔄 |
-| 4.18.40 | E — audit 3.1 (could) | Snackbar | several toasters: Toaster `id` + toast `toasterId` | ⬜ |
-| 4.18.41 | E — audit 3.1 (could) | Snackbar | `toast.promise` `unwrap()`, `finally`, toast options; `toast.getHistory()` / `getToasts()`, `useSonner()` | ⬜ |
+| 4.18.40 | E — audit 3.1 (could) | Snackbar | several toasters: Toaster `id` + toast `toasterId` | 🔄 |
+| 4.18.41 | E — audit 3.1 (could) | Snackbar | `toast.promise` `unwrap()`, `finally`, toast options; `toast.getHistory()` / `getToasts()`, `useSonner()` | 🔄 |
 | 4.18.42 | E — audit 3.1 (could) | Menu | `MenuList` `disabledItemsFocusable`, `disableListWrap` | 🔄 |
 | 4.18.43 | E — audit 3.1 (could) | Popover, Menu | `transitionDuration` | 🔄 |
 | 4.18.44 | E — audit 3.1 (could) | Dialog | `transitionDuration` (with 5.1 exit transitions) | ⬜ |
 | 4.18.45 | E — audit 3.1 (could) | Dialog, Drawer | Modal props `disableRestoreFocus`, `disableScrollLock`; Drawer `ModalProps.keepMounted` (with 4.8) | 🔄 |
 | 4.18.46 | E — audit 3.1 (could) | Drawer | `SwipeableDrawer`: `onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`; a button to open and close stays (WCAG 2.5.7); shares a core swipe helper with 4.14 | 🔄 |
-| 4.18.47 | E — audit 3.1 (could) | Accordion | `AccordionActions` `disableSpacing` | ⬜ |
-| 4.18.48 | E — audit 3.1 (could) | Label | `disabled` | ⬜ |
+| 4.18.47 | E — audit 3.1 (could) | Accordion | `AccordionActions` `disableSpacing` | 🔄 |
+| 4.18.48 | E — audit 3.1 (could) | Label | `disabled` | 🔄 |
 | 4.18.49 | E — audit 3.1 (must) | Data grid | column `sortComparator` / `getSortComparator` / `sortingOrder`, grid `sortingOrder`, `multipleColumnsSortingMode` | ⬜ |
 | 4.18.50 | E — audit 3.1 (must) | Data grid | column `renderEditCell`, `renderHeaderFilter`; controlled `cellModesModel` / `rowModesModel` | ⬜ |
 | 4.18.51 | E — audit 3.1 (should) | Data grid | per-column hooks and opt-outs: `cellClassName`, `headerClassName`, `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | ⬜ |
@@ -147,8 +147,8 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.66 | E — audit 3.1 (could) | Chart | `dataReducer` (LTTB downsampling of the drawing) | ⬜ |
 | 4.18.67 | E — audit 3.1 (could) | Chart | timeline `rangeBarGroupRows` / `rangeBarOverlap`, `hideZeroBarsWhenGrouped` | ⬜ |
 | 4.18.68 | E — audit 3.1 (could, **ADR**) | Chart | drilldown (`drillDown` / `drillUp` / `drillToRoot`, back control, events); trellis small multiples | ⬜ |
-| 4.18.69 | E — audit 3.1 (should) | Tree view | `onItemSelectionToggle`, `onItemClick`, `onItemFocus`; `isItemDisabled`, `isItemSelectionDisabled` / TreeItem `disableSelection`, `disabledItemsFocusable`, `getItemChildren` (with 4.11) | ⬜ |
-| 4.18.70 | E — audit 3.1 (could, **ADR**) | Tree view | `itemChildrenIndentation`; virtualization (`itemHeight`, flat DOM `domStructure`) | ⬜ |
+| 4.18.69 | E — audit 3.1 (should) | Tree view | `onItemSelectionToggle`, `onItemClick`, `onItemFocus`; `isItemDisabled`, `isItemSelectionDisabled` / TreeItem `disableSelection`, `disabledItemsFocusable`, `getItemChildren` (with 4.11) | 🔄 |
+| 4.18.70 | E — audit 3.1 (could, **ADR**) | Tree view | `itemChildrenIndentation`; virtualization (`itemHeight`, flat DOM `domStructure`) | 🔄 |
 | 4.18.71 | E — audit 3.1 (should) | Tabs | link tabs (Tab `href` / `component`, navigation pattern with `aria-current`) | 🔄 |
 | 4.18.72 | E — audit 3.1 (could) | Tabs | `TabPanel value` from the Tabs context (hides itself, `keepMounted`), like MUI Lab `TabContext` | 🔄 |
 | 4.18.73 | E — audit 3.1 (could) | Pagination | PaginationItem `component` (router link as the item) | 🔄 |
