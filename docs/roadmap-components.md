@@ -153,8 +153,8 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.72 | E — audit 3.1 (could) | Tabs | `TabPanel value` from the Tabs context (hides itself, `keepMounted`), like MUI Lab `TabContext` | ✅ |
 | 4.18.73 | E — audit 3.1 (could) | Pagination | PaginationItem `component` (router link as the item) | ✅ |
 | 4.18.74 | E — audit 3.1 (could) | Stepper | StepContent `transitionDuration` (Collapse `timeout` pass-through) | ✅ |
-| 4.18.75 | E — audit 3.1 (should, **ADR**) | Sortable | move between lists (`group` / `accept`, a kanban story), keyboard and announcements across lists | ⬜ |
-| 4.18.76 | E — audit 3.1 (should) | Sortable | auto scroll near Scrollbar / page edges while dragging; disabled items; `onDragStart` / `onDragOver` / `onDragCancel`; HTML `messages` | ⬜ |
+| 4.18.75 | E — audit 3.1 (should, **ADR**) | Sortable | move between lists (`group` / `accept`, a kanban story), keyboard and announcements across lists | 🔄 |
+| 4.18.76 | E — audit 3.1 (should) | Sortable | auto scroll near Scrollbar / page edges while dragging; disabled items; `onDragStart` / `onDragOver` / `onDragCancel`; HTML `messages` | 🔄 |
 | 4.18.77 | E — audit 3.1 (could) | Sortable | swapping strategy; drag by the whole item (no handle) | ⬜ |
 | 4.18.78 | E — audit 3.1 (should) | Motion | `component` (any element); `viewport.margin` / `root`; in-view events (`onViewportEnter` / `Leave`, `ok:motion:enter` / `leave`) | ⬜ |
 | 4.18.79 | E — audit 3.1 (could) | Map | reactive `light` / `sky`, `styleDiffing`, camera `padding`; Marker `scale`, `clickTolerance` | ⬜ |
