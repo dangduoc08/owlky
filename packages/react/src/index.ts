@@ -679,6 +679,16 @@ export {
 } from "./upload/upload.js";
 export { UploadCloudIcon } from "./upload/upload-icons.js";
 export {
+  Dropzone,
+  type DropzoneInputProps,
+  type DropzoneProps,
+  type DropzoneRef,
+  type DropzoneRootProps,
+  type DropzoneState,
+  type UseDropzoneOptions,
+  useDropzone,
+} from "./upload/use-dropzone.js";
+export {
   type AdaptDate,
   type AdaptedProps,
   usePickerDateConverter,

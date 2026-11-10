@@ -1,14 +1,19 @@
 import {
   evaluateUploadFiles,
   type UploadAccept,
+  type UploadDragRejection,
   type UploadDragVerdict,
   type UploadErrorMessage,
   type UploadEvaluation,
   type UploadLimits,
   type UploadValidatorResult,
+  uploadDragRejections,
   uploadDragVerdict,
   uploadPickerTypes,
 } from "./upload-model.js";
+
+/** No dragged file rejected (a shared empty list). */
+const NONE: readonly UploadDragRejection[] = [];
 
 /** Where files came from. */
 export type UploadSource = "drop" | "input" | "paste" | "picker";
@@ -48,6 +53,8 @@ export interface UploadDragState {
   active: boolean;
   verdict: UploadDragVerdict | null;
   global: boolean;
+  /** The dragged files that would be rejected (react-dropzone's `dragFileRejections`). */
+  rejections: readonly UploadDragRejection[];
 }
 
 export interface UploadControllerOptions {
@@ -160,7 +167,7 @@ export function createUploadController(
   const abort = new AbortController();
   const { signal } = abort;
   const config = () => options.config();
-  const drag: UploadDragState = { active: false, verdict: null, global: false };
+  const drag: UploadDragState = { active: false, verdict: null, global: false, rejections: NONE };
   const targets = new Set<EventTarget>();
   let globalDepth = 0;
   let dialogActive = false;
@@ -179,7 +186,8 @@ export function createUploadController(
     const changed =
       (next.active !== undefined && next.active !== drag.active) ||
       (next.verdict !== undefined && next.verdict !== drag.verdict) ||
-      (next.global !== undefined && next.global !== drag.global);
+      (next.global !== undefined && next.global !== drag.global) ||
+      (next.rejections !== undefined && next.rejections !== drag.rejections);
     Object.assign(drag, next);
     if (changed) writeDrag();
   };
@@ -408,12 +416,16 @@ export function createUploadController(
       if (blocked()) return;
       targets.add(event.target as EventTarget);
       const cfg = config();
+      const types = dragTypes(event);
+      const verdict = uploadDragVerdict(types, limits(cfg), {
+        existing: cfg.existing,
+        validator: cfg.validator !== undefined,
+      });
+      const same = drag.active && drag.verdict === verdict;
       setDrag({
         active: true,
-        verdict: uploadDragVerdict(dragTypes(event), limits(cfg), {
-          existing: cfg.existing,
-          validator: cfg.validator !== undefined,
-        }),
+        verdict,
+        ...(same ? {} : { rejections: uploadDragRejections(types, limits(cfg), cfg.existing) }),
       });
     },
     { signal },
@@ -433,7 +445,7 @@ export function createUploadController(
       if (!hasFiles(event) || skip(event)) return;
       targets.delete(event.target as EventTarget);
       for (const target of targets) if (!root.contains(target as Node)) targets.delete(target);
-      if (targets.size === 0) setDrag({ active: false, verdict: null });
+      if (targets.size === 0) setDrag({ active: false, verdict: null, rejections: NONE });
     },
     { signal },
   );
@@ -445,7 +457,7 @@ export function createUploadController(
       event.preventDefault();
       targets.clear();
       globalDepth = 0;
-      setDrag({ active: false, verdict: null, global: false });
+      setDrag({ active: false, verdict: null, global: false, rejections: NONE });
       if (blocked()) return;
       process(
         "drop",
@@ -508,7 +520,7 @@ export function createUploadController(
       () => {
         globalDepth = 0;
         targets.clear();
-        setDrag({ active: false, verdict: null, global: false });
+        setDrag({ active: false, verdict: null, global: false, rejections: NONE });
       },
       { signal },
     );

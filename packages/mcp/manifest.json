@@ -17868,10 +17868,12 @@
    "guide": "upload",
    "name": "upload",
    "react": [
+    "Dropzone",
     "Upload",
     "UploadAvatar",
     "UploadBox",
-    "UploadCloudIcon"
+    "UploadCloudIcon",
+    "useDropzone"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/upload",
    "related": [
@@ -18054,7 +18056,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML events (on the root): `ok:upload:drop` (cancelable, `{ accepted, rejections }`),\n`ok:upload:change` (`{ files, reason }`), `ok:upload:remove` (cancelable, `{ file }`),\n`ok:upload:upload` (`{ files }`), `ok:upload:dialogopen`, `ok:upload:dialogcancel`,\n`ok:upload:drag` (`{ active, verdict, global }`), `ok:upload:error` (`{ error }`).\nInstance: `files`, `rejections`, `dragState`, `isFileDialogActive`, `isProcessing`, `open()`,\n`setFiles()`, `removeFile()`, `clearFiles()`, `setValidator()`, `setErrorMessage()`,\n`setFilesFromEvent()`.",
+     "body": "HTML events (on the root): `ok:upload:drop` (cancelable, `{ accepted, rejections }`),\n`ok:upload:change` (`{ files, reason }`), `ok:upload:remove` (cancelable, `{ file }`),\n`ok:upload:upload` (`{ files }`), `ok:upload:dialogopen`, `ok:upload:dialogcancel`,\n`ok:upload:drag` (`{ active, verdict, global, rejections }`), `ok:upload:error` (`{ error }`).\nInstance: `files`, `rejections`, `dragState`, `isFileDialogActive`, `isProcessing`, `open()`,\n`setFiles()`, `removeFile()`, `clearFiles()`, `setValidator()`, `setErrorMessage()`,\n`setFilesFromEvent()`.\nReact also exports `useDropzone(options)` and `Dropzone` (react-dropzone's hook and render prop, see the mapping).",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -18064,7 +18066,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: react-dropzone 20 (`useDropzone`, `Dropzone`) and the Minimals `Upload` wrapper.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `accept` (incl. `AcceptGroup[]`), `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | same | kept | `multiple` default `false` (Minimals' Upload); `maxFiles` counts the files held |\n| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | same | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |\n| `validator` (sync or async), `getFilesFromEvent`, `getErrorMessage`, `onError` | same | kept | |\n| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | renamed | value-first (ADR-0015) |\n| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | same | kept | cancel from the native `cancel` event |\n| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | kept | state via `placeholder(state)` / `data-ok-drag` |\n| `isDragActive` / `isDragAccept` / `isDragReject` / `isDragUnknown` / `isDragGlobal`, `isFileDialogActive`, `isProcessing` | `UploadState` | kept | |\n| `isFocused` | CSS `:focus-visible` | renamed | |\n| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | renamed | |\n| `dragFileRejections` | — | deferred | MIME / surplus rejections during a drag |\n| `getRootProps` / `getInputProps` / `rootRef` / `inputRef`, `Dropzone` (render prop `children(state)`) | the component; `inputRef` | deferred (4.4) | hook form |\n| `refKey` | — | not applicable | no prop getters |\n| Minimals `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | same | kept | |\n| Minimals \"Horizontal layout\" | `layout` | renamed | |",
+     "body": "Upstream: react-dropzone 20 (`useDropzone`, `Dropzone`) and the Minimals `Upload` wrapper.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `accept` (incl. `AcceptGroup[]`), `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | same | kept | `multiple` default `false` (Minimals' Upload); `maxFiles` counts the files held |\n| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | same | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |\n| `validator` (sync or async), `getFilesFromEvent`, `getErrorMessage`, `onError` | same | kept | |\n| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | renamed | value-first (ADR-0015) |\n| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | same | kept | cancel from the native `cancel` event |\n| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | kept | state via `placeholder(state)` / `data-ok-drag` |\n| `isDragActive` / `isDragAccept` / `isDragReject` / `isDragUnknown` / `isDragGlobal`, `isFileDialogActive`, `isProcessing` | `UploadState` | kept | |\n| `isFocused` | CSS `:focus-visible` | renamed | |\n| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | renamed | |\n| `dragFileRejections` | same | kept | `{ index, type, errors }[]` from the MIME types and the count (core `uploadDragRejections`): `file-invalid-type` for a known type outside `accept`'s MIME types, `too-many-files` past the limit; React `UploadState` / `useDropzone`, HTML `ok:upload:drag` `detail.rejections` and `dragState.rejections` |\n| `useDropzone` (`getRootProps` / `getInputProps` / `rootRef` / `inputRef` / `open`, `isFocused`, `acceptedFiles`, `fileRejections`), `Dropzone` (render prop `children(state)`, ref `{ open }`) | same | kept | React only (a hook). The root is focusable (`tabIndex` 0 unless `noKeyboard`), opens the dialog on a press, Enter or Space; the input is `hidden`. Your handlers run first; `preventDefault()` keeps the dropzone's off. The input's own click never reaches your root handler (no `stopPropagation`). `multiple` defaults to `true` (react-dropzone). HTML: the `upload` runtime, or core `createUploadController` on markup of your own |\n| `refKey` | — | not applicable | the getters always return `ref` |\n| Minimals `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | same | kept | |\n| Minimals \"Horizontal layout\" | `layout` | renamed | |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -23365,6 +23367,18 @@
      "id": "send",
      "react": "<Upload\n  multiple\n  onUpload={async (files) => {\n    const body = new FormData();\n    for (const file of files) if (file instanceof File) body.append(\"attachments\", file);\n    await fetch(\"/attachments\", { method: \"POST\", body });\n  }}\n/>",
      "title": "Send the files"
+    },
+    {
+     "body": "While files are over the zone, the browser tells only their types and their count. `dragFileRejections` lists the dragged files that would be rejected, each with its `index`, `type` and `errors` (`file-invalid-type` or `too-many-files`), so the zone can say why before the drop. In React, read it from the state that `placeholder` receives, or from `useDropzone`. In HTML, read `detail.rejections` of the `ok:upload:drag` event, or the instance's `dragState.rejections`. File names and sizes are only known at drop time, so the other checks run then.",
+     "id": "drag-rejections",
+     "react": "import { Upload } from \"@owlky/react\";\n\nexport function Images() {\n  return (\n    <Upload\n      accept=\"image/*\"\n      placeholder={({ isDragReject, dragFileRejections }) =>\n        isDragReject\n          ? `${dragFileRejections.length} file(s) can't be added: ${dragFileRejections[0]?.errors[0]?.message ?? \"\"}`\n          : \"Drop images here\"\n      }\n    />\n  );\n}",
+     "title": "Explain a rejection while dragging"
+    },
+    {
+     "body": "In React, `useDropzone(options)` gives the upload's behavior without its look: spread `getRootProps()` on your drop target and `getInputProps()` on a file input inside it. The root opens the file dialog on a press, Enter or Space, takes dropped and pasted files, and reports them to `onDrop(accepted, rejections)`. The hook returns the same drag state as the zone (`isDragActive`, `isDragAccept`, `isDragReject`, `dragFileRejections`), plus `isFocused`, `acceptedFiles`, `fileRejections` and `open()`. `Dropzone` is the same hook as a component that takes a render function. Give the root a name and a role, as in the example: the input is hidden, so the root is the control people reach. In HTML, the `upload` runtime is the behavior, and `createUploadController` from `@owlky/core` drives markup of your own.",
+     "id": "hook",
+     "react": "import { useDropzone } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function DropTarget() {\n  const [names, setNames] = useState<string[]>([]);\n  const { getRootProps, getInputProps, isDragActive } = useDropzone({\n    accept: { \"image/*\": [] },\n    onDrop: (accepted) => setNames(accepted.map((file) => file.name)),\n  });\n  return (\n    <div {...getRootProps({ role: \"button\", \"aria-label\": \"Add images\" })}>\n      <input {...getInputProps()} />\n      {isDragActive ? \"Drop the images here\" : \"Add images\"}\n      <ul>\n        {names.map((name) => (\n          <li key={name}>{name}</li>\n        ))}\n      </ul>\n    </div>\n  );\n}",
+     "title": "Build your own drop zone"
     },
     {
      "body": "Every option, as a React prop and an HTML attribute.",

@@ -6,6 +6,7 @@ import {
   formatUploadSize,
   uploadAcceptAttr,
   uploadAcceptPatterns,
+  uploadDragRejections,
   uploadDragVerdict,
   uploadError,
   uploadFileAccepted,
@@ -232,6 +233,38 @@ describe("evaluateUploadFiles", () => {
     expect(rejections[0]?.errors[0]?.message).toBe("Nope: file-invalid-type");
     const many = evaluateUploadFiles([png, png], {}, { getErrorMessage: () => "Max" });
     expect(many.rejections[0]?.errors[0]?.message).toBe("Max");
+  });
+});
+
+describe("uploadDragRejections", () => {
+  it("rejects known types outside the MIME types and the files past the limit", () => {
+    const codes = (list: ReturnType<typeof uploadDragRejections>) =>
+      list.map((r) => [r.index, r.type, r.errors.map((e) => e.code).join()]);
+    expect(
+      codes(
+        uploadDragRejections(
+          ["image/png", "text/plain", "image/gif", "image/jpeg"],
+          {
+            accept: "image/*",
+            multiple: true,
+            maxFiles: 3,
+          },
+          1,
+        ),
+      ),
+    ).toEqual([
+      [1, "text/plain", "file-invalid-type"],
+      [3, "image/jpeg", "too-many-files"],
+    ]);
+    // Unknown types and extension patterns are only checked at drop time.
+    expect(
+      uploadDragRejections(["", "text/plain"], { accept: "image/*,.txt", multiple: true }),
+    ).toEqual([]);
+    expect(codes(uploadDragRejections(["a/b", "c/d"], {}))).toEqual([[1, "c/d", "too-many-files"]]);
+    expect(uploadDragRejections(["a/b", "c/d"], { multiple: true })).toEqual([]);
+    expect(uploadDragRejections(["text/plain"], { accept: "image/*" })[0]?.errors[0]?.message).toBe(
+      "File type must be image/*",
+    );
   });
 });
 

@@ -263,6 +263,42 @@ export function evaluateUploadFiles(
 /** What the zone shows while files are dragged over it. */
 export type UploadDragVerdict = "accept" | "reject" | "unknown";
 
+/** A dragged file that would be rejected, known by its MIME type only (react-dropzone's `dragFileRejections`). */
+export interface UploadDragRejection {
+  /** Position among the dragged files. */
+  index: number;
+  /** MIME type (empty when the browser doesn't tell). */
+  type: string;
+  errors: readonly UploadFileError[];
+}
+
+/**
+ * The dragged files that would be rejected, while only their MIME types and count are known:
+ * `file-invalid-type` when a known type matches none of the MIME types of `accept` (extension
+ * patterns are only checked at drop time), `too-many-files` past the limit (as at drop time).
+ */
+export function uploadDragRejections(
+  types: readonly string[],
+  limits: UploadLimits,
+  existing = 0,
+): UploadDragRejection[] {
+  const patterns = uploadAcceptPatterns(limits.accept);
+  const mimes = patterns.filter((pattern) => !pattern.startsWith("."));
+  const extensions = patterns.length > mimes.length;
+  const rejections: UploadDragRejection[] = [];
+  let fits = 0;
+  const limit = capacity(limits, existing);
+  types.forEach((raw, index) => {
+    const type = raw.toLowerCase();
+    const known = type !== "" && !extensions && mimes.length > 0;
+    if (known && !mimes.some((mime) => mimeMatches(type, mime)))
+      rejections.push({ index, type: raw, errors: [uploadError("file-invalid-type", limits)] });
+    else if (++fits > limit)
+      rejections.push({ index, type: raw, errors: [uploadError("too-many-files")] });
+  });
+  return rejections;
+}
+
 /**
  * The verdict during a drag, when only the files' MIME types and count are known: `reject` when
  * the count is over the limit or a known type doesn't match the MIME types of `accept`;

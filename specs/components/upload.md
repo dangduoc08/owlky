@@ -151,10 +151,11 @@ contrast in tests).
 HTML events (on the root): `ok:upload:drop` (cancelable, `{ accepted, rejections }`),
 `ok:upload:change` (`{ files, reason }`), `ok:upload:remove` (cancelable, `{ file }`),
 `ok:upload:upload` (`{ files }`), `ok:upload:dialogopen`, `ok:upload:dialogcancel`,
-`ok:upload:drag` (`{ active, verdict, global }`), `ok:upload:error` (`{ error }`).
+`ok:upload:drag` (`{ active, verdict, global, rejections }`), `ok:upload:error` (`{ error }`).
 Instance: `files`, `rejections`, `dragState`, `isFileDialogActive`, `isProcessing`, `open()`,
 `setFiles()`, `removeFile()`, `clearFiles()`, `setValidator()`, `setErrorMessage()`,
 `setFilesFromEvent()`.
+React also exports `useDropzone(options)` and `Dropzone` (react-dropzone's hook and render prop, see the mapping).
 
 ## Responsive
 The zone, list and actions fill their container at every width; names are cut with an ellipsis;
@@ -174,9 +175,9 @@ Upstream: react-dropzone 20 (`useDropzone`, `Dropzone`) and the Minimals `Upload
 | `isDragActive` / `isDragAccept` / `isDragReject` / `isDragUnknown` / `isDragGlobal`, `isFileDialogActive`, `isProcessing` | `UploadState` | kept | |
 | `isFocused` | CSS `:focus-visible` | renamed | |
 | `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | renamed | |
-| `dragFileRejections` | — | deferred | MIME / surplus rejections during a drag |
-| `getRootProps` / `getInputProps` / `rootRef` / `inputRef`, `Dropzone` (render prop `children(state)`) | the component; `inputRef` | deferred (4.4) | hook form |
-| `refKey` | — | not applicable | no prop getters |
+| `dragFileRejections` | same | kept | `{ index, type, errors }[]` from the MIME types and the count (core `uploadDragRejections`): `file-invalid-type` for a known type outside `accept`'s MIME types, `too-many-files` past the limit; React `UploadState` / `useDropzone`, HTML `ok:upload:drag` `detail.rejections` and `dragState.rejections` |
+| `useDropzone` (`getRootProps` / `getInputProps` / `rootRef` / `inputRef` / `open`, `isFocused`, `acceptedFiles`, `fileRejections`), `Dropzone` (render prop `children(state)`, ref `{ open }`) | same | kept | React only (a hook). The root is focusable (`tabIndex` 0 unless `noKeyboard`), opens the dialog on a press, Enter or Space; the input is `hidden`. Your handlers run first; `preventDefault()` keeps the dropzone's off. The input's own click never reaches your root handler (no `stopPropagation`). `multiple` defaults to `true` (react-dropzone). HTML: the `upload` runtime, or core `createUploadController` on markup of your own |
+| `refKey` | — | not applicable | the getters always return `ref` |
 | Minimals `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | same | kept | |
 | Minimals "Horizontal layout" | `layout` | renamed | |
 

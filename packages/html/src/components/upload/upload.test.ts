@@ -308,6 +308,7 @@ describe("upload runtime", () => {
     });
     root.dispatchEvent(enter);
     expect(instance.dragState.verdict).toBe("accept");
+    expect(instance.dragState.rejections).toEqual([]);
     expect(root.getAttribute("data-ok-drag")).toBe("accept");
     let release: (v: null) => void = () => {};
     instance.setValidator(() => new Promise((resolve) => (release = resolve)));
