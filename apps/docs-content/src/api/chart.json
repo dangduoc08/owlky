@@ -919,6 +919,33 @@
       "name": "colorBlindMode"
      },
      {
+      "attr": "data-ok-tooltip",
+      "default": "shared",
+      "description": "Tooltip: `shared` lists every series of the category, `point` only the value under the pointer (or the keyboard), `none` shows none (the values are still announced).",
+      "kind": "style",
+      "name": "tooltip",
+      "optional": true,
+      "values": [
+       "shared",
+       "point",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-tooltip-fixed",
+      "default": "topRight",
+      "description": "The tooltip stays in a corner of the plot: `topLeft`, `topRight`, `bottomLeft` or `bottomRight` (default beside the value).",
+      "kind": "style",
+      "name": "tooltipFixed",
+      "optional": true,
+      "values": [
+       "topLeft",
+       "topRight",
+       "bottomLeft",
+       "bottomRight"
+      ]
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
@@ -1599,9 +1626,10 @@
       "name": "data-ok-chart-toolbar"
      },
      {
-      "description": "The tooltip.",
+      "description": "The tooltip; on a \\`template\\` child of the chart (HTML), its custom content.",
       "elements": [
-       "div"
+       "div",
+       "template"
       ],
       "kind": "part",
       "name": "data-ok-chart-tooltip"
@@ -1629,6 +1657,19 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-tooltip-rows"
+     },
+     {
+      "description": "In a custom tooltip template: what the element receives, as text (\\`row\\` is repeated per value).",
+      "kind": "value",
+      "name": "data-ok-chart-tooltip-slot",
+      "value": [
+       "marker",
+       "name",
+       "row",
+       "state",
+       "title",
+       "value"
+      ]
      },
      {
       "description": "The tooltip's \"Selected\" line, when its item has a selected point.",
@@ -2243,6 +2284,22 @@
       "description": "A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV).",
       "name": "toolbar",
       "type": "boolean"
+     },
+     {
+      "default": "\"shared\"",
+      "description": "Tooltip. every series of the category. `\"point\"`: only the value under the pointer or the keyboard. `\"none\"`: no tooltip is shown, but the values the keyboard moves to are still announced.",
+      "name": "tooltip",
+      "type": "\"none\" | \"point\" | \"shared\""
+     },
+     {
+      "description": "Custom tooltip content: called with the title, the rows (name, value, color), whether the item is selected and its data points; returns what the tooltip shows.",
+      "name": "tooltipContent",
+      "type": "((context: ChartTooltipContext) => ReactNode)"
+     },
+     {
+      "description": "The tooltip stays in this corner of the plot instead of following the value.",
+      "name": "tooltipFixed",
+      "type": "\"bottomLeft\" | \"bottomRight\" | \"topLeft\" | \"topRight\""
      },
      {
       "description": "Donut and radial bar center: the total (default the sum; radial bars the average).",

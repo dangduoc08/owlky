@@ -12,6 +12,8 @@ export interface ChartExample {
   readonly props: ChartProps;
   /** More charts in the same group (sparklines). */
   readonly more?: readonly ChartProps[];
+  /** HTML only: markup inside the first figure, after its table (a custom tooltip template). */
+  readonly html?: readonly string[];
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
@@ -1236,6 +1238,63 @@ export const chartExamples: Record<string, ChartExample> = {
           { name: "Team", data: [14, 18, 17, 24] },
         ],
       },
+    ],
+  },
+  // Roadmap 4.18.63: tooltip modes, fixed tooltips and custom content.
+  tooltip: {
+    title: "Tooltip options",
+    props: {
+      label: "Orders per weekday (one tooltip per column)",
+      type: "bar",
+      tooltip: "point",
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+      series: [
+        { name: "Online", data: [44, 55, 41, 67, 22] },
+        { name: "In store", data: [13, 23, 20, 8, 13] },
+      ],
+    },
+    more: [
+      {
+        label: "Visits per hour (fixed tooltip)",
+        type: "area",
+        tooltipFixed: "topLeft",
+        categories: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00"],
+        series: [{ name: "Visits", data: [31, 40, 28, 51, 42, 109, 100] }],
+      },
+      {
+        label: "Temperature per day (no tooltip)",
+        type: "line",
+        tooltip: "none",
+        markerSize: 4,
+        valueSuffix: " °C",
+        categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        series: [{ name: "Temperature", data: [18, 21, 19, 24, 26, 23, 20] }],
+      },
+    ],
+  },
+  "tooltip-custom": {
+    title: "Custom tooltip",
+    props: {
+      label: "Orders per weekday (custom tooltip)",
+      type: "bar",
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+      series: [
+        { name: "Online", data: [44, 55, 41, 67, 22] },
+        { name: "In store", data: [13, 23, 20, 8, 13] },
+      ],
+    },
+    html: [
+      "  <template data-ok-chart-tooltip>",
+      '    <div data-ok-chart-tooltip-title><span>Orders on </span><span data-ok-chart-tooltip-slot="title"></span></div>',
+      '    <div data-ok-chart-tooltip-state data-ok-chart-tooltip-slot="state">Selected</div>',
+      "    <div data-ok-chart-tooltip-rows>",
+      '      <div data-ok-chart-tooltip-row data-ok-chart-tooltip-slot="row">',
+      '        <span data-ok-chart-tooltip-marker data-ok-chart-tooltip-slot="marker"></span>',
+      '        <span data-ok-chart-tooltip-slot="name"></span>',
+      '        <span data-ok-chart-tooltip-value data-ok-chart-tooltip-slot="value"></span>',
+      "      </div>",
+      "    </div>",
+      "  </template>",
     ],
   },
   // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.

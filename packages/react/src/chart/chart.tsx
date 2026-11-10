@@ -28,6 +28,9 @@ import {
   type ChartSeries,
   type ChartStackType,
   type ChartTool,
+  type ChartTooltipContext,
+  type ChartTooltipCorner,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   type ChartYAxis,
@@ -46,6 +49,8 @@ import {
   chartToolbar,
   chartToolLabels,
   chartTooltip,
+  chartTooltipContext,
+  chartTooltipFixed,
   chartZoomKey,
   createChartGestures,
   exportChart,
@@ -152,6 +157,19 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
    * series without markers.
    */
   discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
+  /**
+   * Tooltip. Default `"shared"`: every series of the category. `"point"`: only the value under
+   * the pointer or the keyboard. `"none"`: no tooltip is shown, but the values the keyboard moves to
+   * are still announced.
+   */
+  tooltip?: ChartTooltipMode | undefined;
+  /** The tooltip stays in this corner of the plot instead of following the value. */
+  tooltipFixed?: ChartTooltipCorner | undefined;
+  /**
+   * Custom tooltip content: called with the title, the rows (name, value, color), whether the
+   * item is selected and its data points; returns what the tooltip shows.
+   */
+  tooltipContent?: ((context: ChartTooltipContext) => ReactNode) | undefined;
   /** Stacks the series on each other (bars, lines, areas). */
   stacked?: boolean | undefined;
   /**
@@ -406,6 +424,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     strokeWidth,
     colorBlindMode,
     discreteMarkers,
+    tooltip: tooltipMode,
+    tooltipFixed,
+    tooltipContent,
     ...rest
   },
   ref,
@@ -459,6 +480,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     fillPattern,
     strokeWidth,
     colorBlindMode,
+    tooltip: tooltipMode,
+    tooltipFixed,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -520,6 +543,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validPattern = attributes["data-ok-fill-pattern"] as ChartPattern | undefined;
   const validStrokeWidth = number("data-ok-stroke-width");
   const blind = attributes["data-ok-color-blind-mode"] !== undefined;
+  const validTooltip = attributes["data-ok-tooltip"] as ChartTooltipMode | undefined;
+  const validCorner = attributes["data-ok-tooltip-fixed"] as ChartTooltipCorner | undefined;
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -574,6 +599,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         strokeWidth: validStrokeWidth,
         colorBlindMode: blind,
         discreteMarkers,
+        tooltip: validTooltip,
         horizontal,
         markerSize: validMarkerSize,
         columnWidth: validColumnWidth,
@@ -651,6 +677,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validStrokeWidth,
       blind,
       discreteMarkers,
+      validTooltip,
       horizontal,
       validMarkerSize,
       validColumnWidth,
@@ -837,6 +864,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       { x: shown.x * scale, y: shown.y * scale },
       { width: tip.offsetWidth, height: tip.offsetHeight },
       { width: plot.clientWidth, height: plot.clientHeight },
+      chartTooltipFixed(validCorner, layout, scale),
     );
     tip.style.setProperty("--_ok-chart-tip-x", `${left}px`);
     tip.style.setProperty("--_ok-chart-tip-y", `${top}px`);
@@ -1064,31 +1092,33 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           {toElements(nodes)}
         </svg>
         <div ref={tipRef} data-ok-chart-tooltip="" role="status" hidden={!shown}>
-          {shown && (
-            <>
-              <div data-ok-chart-tooltip-title="">{shown.title}</div>
-              {shown.selected && (
-                <div data-ok-chart-tooltip-state="">
-                  {localeText?.selected ?? chartToolLabels.selected}
-                </div>
-              )}
-              <div data-ok-chart-tooltip-rows="">
-                {shown.rows.map((row, index) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: rows follow the series order
-                  <div key={index} data-ok-chart-tooltip-row="">
-                    <span
-                      data-ok-chart-tooltip-marker=""
-                      data-ok-color={row.color}
-                      data-ok-shape={row.shape}
-                      data-ok-pattern={row.pattern}
-                    />
-                    <span>{row.name}</span>
-                    <span data-ok-chart-tooltip-value="">{row.value}</span>
+          {shown && tooltipContent && active
+            ? tooltipContent(chartTooltipContext(layout, shown, active))
+            : shown && (
+                <>
+                  <div data-ok-chart-tooltip-title="">{shown.title}</div>
+                  {shown.selected && (
+                    <div data-ok-chart-tooltip-state="">
+                      {localeText?.selected ?? chartToolLabels.selected}
+                    </div>
+                  )}
+                  <div data-ok-chart-tooltip-rows="">
+                    {shown.rows.map((row, index) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: rows follow the series order
+                      <div key={index} data-ok-chart-tooltip-row="">
+                        <span
+                          data-ok-chart-tooltip-marker=""
+                          data-ok-color={row.color}
+                          data-ok-shape={row.shape}
+                          data-ok-pattern={row.pattern}
+                        />
+                        <span>{row.name}</span>
+                        <span data-ok-chart-tooltip-value="">{row.value}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </>
-          )}
+                </>
+              )}
         </div>
       </div>
       <table data-ok-chart-data="">

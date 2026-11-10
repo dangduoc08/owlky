@@ -34,6 +34,7 @@ import {
   type ChartSeries,
   type ChartStackType,
   type ChartTableModel,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   chartData,
@@ -117,6 +118,8 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly colorBlindMode?: boolean | undefined;
   /** Markers on single points (ApexCharts `markers.discrete`). */
   readonly discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
+  /** Tooltips (4.18.63): `point` gives index charts one tooltip per point (block or nearest point). */
+  readonly tooltip?: ChartTooltipMode | undefined;
   readonly horizontal?: boolean | undefined;
   readonly markerSize?: number | undefined;
   readonly columnWidth?: number | undefined;
@@ -342,7 +345,9 @@ export function renderChart(input: ChartRenderInput): ChartRender {
   // Selected points (4.18.60): outlines over the series, under the hover highlight.
   const marked = chartSelectedNodes(base, chartSelection(input.selectedDataPoints));
   if (marked.length) nodes.splice(before("data-ok-chart-active"), 0, ...marked);
-  const layout: ChartLayout = { ...base, nodes };
+  // Per-point tooltips (4.18.63): index charts (not radars) point at one mark at a time.
+  const perPoint = input.tooltip === "point" && base.mode === "index" && !base.polar;
+  const layout: ChartLayout = { ...base, nodes, ...(perPoint ? { mode: "point" as const } : {}) };
   // Circular charts list their categories (slices, rings); the others their series.
   const items: ChartLegendItem[] = circular
     ? (data.series[0]?.points ?? []).map((point) => ({

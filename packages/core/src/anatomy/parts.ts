@@ -369,8 +369,10 @@ export interface ChartParts {
   "data-ok-chart-tool-icon": Part<"svg">;
   /** The toolbar. */
   "data-ok-chart-toolbar": Part<"div">;
-  /** The tooltip. */
-  "data-ok-chart-tooltip": Part<"div">;
+  /** The tooltip; on a \`template\` child of the chart (HTML), its custom content. */
+  "data-ok-chart-tooltip": Part<"div" | "template">;
+  /** In a custom tooltip template: what the element receives, as text (\`row\` is repeated per value). */
+  "data-ok-chart-tooltip-slot": Value<"title" | "state" | "row" | "name" | "value" | "marker">;
   /** The color marker of a tooltip row. */
   "data-ok-chart-tooltip-marker": Part<"span">;
   /** One row of the tooltip. */

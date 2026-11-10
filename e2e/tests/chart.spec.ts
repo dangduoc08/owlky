@@ -61,6 +61,8 @@ const STORIES = [
   "dashed-lines",
   "patterns",
   "color-blind",
+  "tooltip",
+  "tooltip-custom",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

@@ -127,11 +127,14 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
         the price) + g[data-ok-chart-brush] › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2
       g[data-ok-chart-active]; g[data-ok-chart-pane-titles] › text[data-ok-chart-pane-title]
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
-    div[data-ok-chart-tooltip][role=status][hidden]?
+    div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
         + div[data-ok-chart-tooltip-rows]
         div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color][data-ok-shape]?[data-ok-pattern]? + span + span[data-ok-chart-tooltip-value]
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
+  template[data-ok-chart-tooltip]?                       (HTML: custom tooltip content, 4.18.63; React: tooltipContent)
+    [data-ok-chart-tooltip-slot="title|state|row|name|value|marker"] (text slots; row repeated per value,
+      marker gets data-ok-color / data-ok-shape / data-ok-pattern; state removed unless selected)
     caption (the chart's name)
     thead › tr › th[scope=col] (x label) + th[scope=col][data-ok-type]?[data-ok-color]?[data-ok-y-axis]? (one per series;
       data-ok-y-axis: its value axis when the chart has several; series cues, 4.18.62:
@@ -334,6 +337,8 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `fillPattern` | `data-ok-fill-pattern="…"` | style | `slantedLines` `squares` `circles` `horizontalLines` `verticalLines` | — | Pattern of every bar, area and slice: `slantedLines`, `squares`, `circles`, `horizontalLines` or `verticalLines` (turns patterns on; series may set their own). |
 | `strokeWidth` | `data-ok-stroke-width="…"` | number | number | — | Line width of every series in px (default 2.5; series may set their own). |
 | `colorBlindMode` | `data-ok-color-blind-mode` | flag | boolean | off | Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series. |
+| `tooltip` | `data-ok-tooltip="…"` | style | `shared` `point` `none` | — | Tooltip: `shared` lists every series of the category, `point` only the value under the pointer (or the keyboard), `none` shows none (the values are still announced). |
+| `tooltipFixed` | `data-ok-tooltip-fixed="…"` | style | `topLeft` `topRight` `bottomLeft` `bottomRight` | — | The tooltip stays in a corner of the plot: `topLeft`, `topRight`, `bottomLeft` or `bottomRight` (default beside the value). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
@@ -402,6 +407,15 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   or ring (its whole track) under the pointer with 8px of slack (circular charts), or the nearest
   category axis by angle within the web + 24px (radar) is active;
   a mouse leaving the plot clears it; touch keeps it until the next tap.
+- Tooltips (4.18.63): `tooltip="point"` turns an index chart's layout (not radars) into `point`
+  mode: the block under the pointer (2px of slack), else the nearest point within 24px; one row;
+  blocks show their category's band, points their marker; arrows move mark by mark (left to right,
+  then top to bottom); Enter / Space select that mark alone. `tooltip="none"` keeps the status
+  visually hidden (keyboard values announced) and the hover highlight. `tooltipFixed` places the
+  tooltip 8px inside a corner of the plot area (`chartTooltipFixed` + `placeChartTooltip(…, fixed)`).
+  Custom content: core `chartTooltipContext(layout, tooltip, active)`; React renders
+  `tooltipContent(context)` in the tooltip instead of its parts, the HTML runtime clones
+  `template[data-ok-chart-tooltip]` (direct child of the root) on each change.
 - Legend click toggles the series (React `onHiddenSeriesChange`, HTML cancelable `ok:chart:toggle`).
 - Selection (4.18.60, core `chart-select.ts`): a click on the plot selects the mark under it —
   the block (bar, box, candle, range bar, funnel bar; 2px slack), the slice or ring, the cell, or
@@ -647,8 +661,11 @@ Option areas not covered by the table above:
 | axis `style` / `cssClass` / `offsetX` / `offsetY`, `axisBorder`, `axisTicks` | — | not applicable | tokens / CSS |
 | `grid.show`, `grid.xaxis.lines.show`, `grid.yaxis.lines.show`, `grid.row` / `.column` stripes, `grid.padding` | always y lines | deferred | grid lines on / off per axis; stripes |
 | `grid.borderColor`, `.strokeDashArray`, `.position` | — | not applicable | tokens |
-| `tooltip.enabled`, `.shared`, `.intersect`, `.followCursor`, `.fixed`, `.inverseOrder`, `.hideEmptySeries` | the tooltip (shared by category) | deferred | `tooltip: false`; fixed position; per-point (non-shared) mode |
-| `tooltip.custom`, `tooltip.x.formatter`, `.y.title.formatter`, `.z.title` / `.z.formatter` | `valueFormatter`, `labelFormatter` | deferred | custom tooltip content (React node / HTML `<template>`) |
+| `tooltip.enabled`, `tooltip.shared` (+ `.intersect`) | `tooltip` (`data-ok-tooltip`, optional): `shared` (default), `point`, `none` | renamed (4.18.63) | `none` keeps a visually hidden status, so keyboard values are still announced; `point` = shared off with intersect (the block under the pointer, else the nearest point within 24px) |
+| `tooltip.fixed.enabled` / `.position` (`topLeft`, `topRight`, `bottomLeft`, `bottomRight`) | `tooltipFixed` (`data-ok-tooltip-fixed`, optional) | renamed (4.18.63) | 8px inside that corner of the plot area; `fixed.offsetX` / `Y`: not applicable |
+| `tooltip.custom({ series, seriesIndex, dataPointIndex, w })` | React `tooltipContent(context)` (a node) · HTML `template[data-ok-chart-tooltip]` with `[data-ok-chart-tooltip-slot]` | renamed (4.18.63) | context `{ title, rows, selected, points, active }`; the runtime clones the template and fills slots with `textContent` (never markup) |
+| `tooltip.followCursor`, `.inverseOrder`, `.hideEmptySeries` | — | deferred | follow the pointer; reversed rows; leaving out empty series |
+| `tooltip.x.formatter`, `.y.title.formatter`, `.z.title` / `.z.formatter` | `valueFormatter`, `labelFormatter`, `localeText` (`z`) | renamed | series names: custom content |
 | `tooltip.theme`, `.style`, `.fillSeriesColor`, `.marker`, `.onDatasetHover` | — | not applicable | tokens; series highlight always on |
 | `legend.horizontalAlign`, `.inverseOrder`, `.showForSingleSeries`, `.showForNullSeries`, `.showForZeroSeries`, `.onItemClick.toggleDataSeries`, `.onItemHover.highlightDataSeries`, `.customLegendItems`, `.clusterGroupedSeries` | `legend` (position) | deferred | alignment, single-series legend, toggle opt-out, custom items |
 | `legend.markers.shape`, `.fontSize` / `.offset*` / `.itemMargin` / `.labels.colors`, `.floating`, `.width` / `.height`, `.tooltipHoverFormatter` | — | not applicable | design / CSS |
@@ -701,5 +718,7 @@ Option areas not covered by the table above:
 - Stack and bar stories (4.18.61): Column stacked 100%, Stack totals, Column data labels, Column
   range colors.
 - Cue stories (4.18.62): Marker shapes, Dashed lines, Pattern fills, Color blind mode.
+- Tooltip stories (4.18.63): Tooltip options; Custom tooltip (a React demo with `?raw` source and
+  the HTML template; no Controls; the tooltip is hidden at rest, so parity compares the same markup).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

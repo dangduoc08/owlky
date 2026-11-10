@@ -21,6 +21,7 @@ import sparklinesGroup from "../../../../../packages/html/src/components/chart/e
 import stackTotalsGroup from "../../../../../packages/html/src/components/chart/examples/stack-totals-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
+import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -896,6 +897,54 @@ export function ChartAxes() {
 }`,
   },
   {
+    id: "tooltip",
+    title: "Change the tooltip",
+    body: `By default, the tooltip lists the values of every series in the category under the pointer or the keyboard. Change it with these options:
+
+- **One value:** \`tooltip="point"\` (\`data-ok-tooltip="point"\` in HTML) shows only the column, bar or point under the pointer, and the arrow keys move value by value.
+- **No tooltip:** \`tooltip="none"\` shows no tooltip. Screen readers still announce the values the keyboard moves to, because the tooltip stays as a hidden status region.
+- **Fixed position:** \`tooltipFixed\` (\`data-ok-tooltip-fixed\`) keeps the tooltip in a corner of the plot, so it never covers the values: \`topLeft\`, \`topRight\`, \`bottomLeft\` or \`bottomRight\`.
+
+To show your own content, pass \`tooltipContent(context)\` in React. It gets the \`title\`, the \`rows\` (\`name\`, \`value\` and \`color\` of each value), \`selected\` and the data \`points\`, and returns what the tooltip shows. In HTML, add a \`<template data-ok-chart-tooltip>\` to the chart. The chart copies it into the tooltip and writes text into its slots: \`data-ok-chart-tooltip-slot="title"\`, \`"state"\` (removed unless the value is selected), and \`"row"\`, which is repeated for each value with its \`"name"\`, \`"value"\` and \`"marker"\`. The slots only ever get text, so data can't inject markup.`,
+    html: `${snippetElement(tooltipCustomGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const orders = [
+  { name: "Online", data: [44, 55, 41, 67, 22] },
+  { name: "In store", data: [13, 23, 20, 8, 13] },
+];
+
+export function ChartTooltip() {
+  return (
+    <Chart
+      label="Orders per weekday"
+      type="bar"
+      categories={days}
+      series={orders}
+      tooltipContent={({ title, rows, selected }) => (
+        <>
+          <div data-ok-chart-tooltip-title="">
+            <span>Orders on </span>
+            <span>{title}</span>
+          </div>
+          {selected && <div data-ok-chart-tooltip-state="">Selected</div>}
+          <div data-ok-chart-tooltip-rows="">
+            {rows.map((row) => (
+              <div key={row.name} data-ok-chart-tooltip-row="">
+                <span data-ok-chart-tooltip-marker="" data-ok-color={row.color} />
+                <span>{row.name}</span>
+                <span data-ok-chart-tooltip-value="">{row.value}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    />
+  );
+}`,
+  },
+  {
     id: "select",
     title: "Select data points",
     body: `People can select a value to act on it, such as opening the orders of one weekday. A click selects the column, bar, slice, cell or point under the pointer, and a second click clears it. With the keyboard, Enter or Space selects the item the tooltip shows. On a category with several series, it selects the value of every series. A selected value gets an outline in the text color, and its tooltip says **Selected**, so screen readers announce it too.
@@ -1129,6 +1178,22 @@ const PREVIEWS = {
         height={240}
         categories={MONTHS}
         series={SALES}
+      />
+    </Preview>
+  ),
+  tooltip: () => (
+    <Preview>
+      <Chart
+        label="Orders per weekday (one tooltip per column)"
+        type="bar"
+        height={240}
+        tooltip="point"
+        tooltipFixed="topRight"
+        categories={["Mon", "Tue", "Wed", "Thu", "Fri"]}
+        series={[
+          { name: "Online", data: [44, 55, 41, 67, 22] },
+          { name: "In store", data: [13, 23, 20, 8, 13] },
+        ]}
       />
     </Preview>
   ),

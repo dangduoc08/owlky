@@ -150,6 +150,8 @@ const pairs: [component: string, story: string][] = [
   ["chart", "dashed-lines"],
   ["chart", "patterns"],
   ["chart", "color-blind"],
+  ["chart", "tooltip"],
+  ["chart", "tooltip-custom"],
   ["rating", "controlled"],
   ["rating", "read-only"],
   ["rating", "disabled"],

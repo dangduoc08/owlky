@@ -26,6 +26,9 @@ import {
   type ChartTableModel,
   type ChartTool,
   type ChartToolItem,
+  type ChartTooltip,
+  type ChartTooltipCorner,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   type ChartZoom,
@@ -43,6 +46,8 @@ import {
   chartToolLabels,
   chartTools,
   chartTooltip,
+  chartTooltipContext,
+  chartTooltipFixed,
   chartZoomKey,
   createChartGestures,
   exportChart,
@@ -440,6 +445,33 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         tip.replaceChildren();
         return;
       }
+      // Custom content (4.18.63): the author's template, its slots filled as text.
+      const template = element.querySelector<HTMLTemplateElement>(
+        ":scope > template[data-ok-chart-tooltip]",
+      );
+      if (template && active) fillTooltip(tip, template, shown, active);
+      else defaultTooltip(shown);
+      tip.hidden = false;
+      const scale = plot.clientWidth / current.layout.width || 1;
+      const { left, top } = placeChartTooltip(
+        { x: shown.x * scale, y: shown.y * scale },
+        { width: tip.offsetWidth, height: tip.offsetHeight },
+        { width: plot.clientWidth, height: plot.clientHeight },
+        chartTooltipFixed(
+          element.hasAttribute(o.tooltipFixed.attr)
+            ? (readStyle(element, o.tooltipFixed) as ChartTooltipCorner)
+            : undefined,
+          current.layout,
+          scale,
+        ),
+      );
+      // CSSOM, not a style string (strict CSP).
+      tip.style.setProperty("--_ok-chart-tip-x", `${left}px`);
+      tip.style.setProperty("--_ok-chart-tip-y", `${top}px`);
+    };
+
+    /** The built-in tooltip: title, the "Selected" state and one row per value. */
+    const defaultTooltip = (shown: ChartTooltip) => {
       const title = document.createElement("div");
       title.setAttribute("data-ok-chart-tooltip-title", "");
       title.textContent = shown.title;
@@ -468,16 +500,45 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         state.textContent = localeText.selected ?? chartToolLabels.selected;
         tip.replaceChildren(title, state, rows);
       } else tip.replaceChildren(title, rows);
-      tip.hidden = false;
-      const scale = plot.clientWidth / current.layout.width || 1;
-      const { left, top } = placeChartTooltip(
-        { x: shown.x * scale, y: shown.y * scale },
-        { width: tip.offsetWidth, height: tip.offsetHeight },
-        { width: plot.clientWidth, height: plot.clientHeight },
-      );
-      // CSSOM, not a style string (strict CSP).
-      tip.style.setProperty("--_ok-chart-tip-x", `${left}px`);
-      tip.style.setProperty("--_ok-chart-tip-y", `${top}px`);
+    };
+
+    /**
+     * A custom tooltip from `template[data-ok-chart-tooltip]`: `[data-ok-chart-tooltip-slot]`
+     * elements get the `title`, the `state` (removed unless selected), one copy of `row` per value
+     * with its `name`, `value` and `marker` (color and cues); never markup.
+     */
+    const fillTooltip = (
+      box: HTMLElement,
+      template: HTMLTemplateElement,
+      shown: ChartTooltip,
+      item: ChartActive,
+    ) => {
+      const context = chartTooltipContext((render as ChartRender).layout, shown, item);
+      const content = template.content.cloneNode(true) as DocumentFragment;
+      const slots = (root: ParentNode, name: string) => [
+        ...root.querySelectorAll<HTMLElement>(`[data-ok-chart-tooltip-slot="${name}"]`),
+      ];
+      for (const slot of slots(content, "title")) slot.textContent = context.title;
+      for (const slot of slots(content, "state")) {
+        if (!context.selected) slot.remove();
+        else if (!slot.textContent?.trim())
+          slot.textContent = localeText.selected ?? chartToolLabels.selected;
+      }
+      for (const proto of slots(content, "row")) {
+        for (const row of context.rows) {
+          const copy = proto.cloneNode(true) as HTMLElement;
+          for (const slot of slots(copy, "name")) slot.textContent = row.name;
+          for (const slot of slots(copy, "value")) slot.textContent = row.value;
+          for (const slot of slots(copy, "marker")) {
+            slot.setAttribute("data-ok-color", row.color);
+            if (row.shape) slot.setAttribute("data-ok-shape", row.shape);
+            if (row.pattern) slot.setAttribute("data-ok-pattern", row.pattern);
+          }
+          proto.before(copy);
+        }
+        proto.remove();
+      }
+      box.replaceChildren(content);
     };
 
     const draw = () => {
@@ -543,6 +604,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           : undefined,
         strokeWidth: readNumber(element, o.strokeWidth) as number | undefined,
         colorBlindMode: element.hasAttribute(o.colorBlindMode.attr),
+        tooltip: readStyle(element, o.tooltip) as ChartTooltipMode,
         discreteMarkers: parseChartDiscreteMarkers(
           element.getAttribute(CHART_TEXT_ATTRIBUTES.discreteMarkers),
         ),

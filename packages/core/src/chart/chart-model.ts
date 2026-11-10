@@ -72,6 +72,12 @@ export const isChartMarkerShape = (value: unknown): value is ChartMarkerShape =>
 export const isChartPattern = (value: unknown): value is ChartPattern =>
   chartPatterns.includes(value as ChartPattern);
 export type ChartDataLabelPosition = (typeof chartDataLabelPositions)[number];
+/** Tooltip modes (4.18.63): every series of a category, the point under the pointer, or none. */
+export const chartTooltipModes = ["shared", "point", "none"] as const;
+export type ChartTooltipMode = (typeof chartTooltipModes)[number];
+/** Corners of the plot a fixed tooltip sits in (ApexCharts `tooltip.fixed.position`). */
+export const chartTooltipCorners = ["topLeft", "topRight", "bottomLeft", "bottomRight"] as const;
+export type ChartTooltipCorner = (typeof chartTooltipCorners)[number];
 type Palette = (typeof paletteColorNames)[number];
 export type ChartCircularType = (typeof chartCircularTypes)[number];
 

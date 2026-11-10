@@ -31,8 +31,8 @@ const attributes = (map) =>
 const headerCell = (cell) =>
   `<th scope="${cell.colSpan ? "colgroup" : "col"}"${cell.colSpan ? ` colspan="${cell.colSpan}"` : ""}${cell.rowSpan ? ` rowspan="${cell.rowSpan}"` : ""}${attributes(cell.attrs)}>${escapeHtml(cell.text)}</th>`;
 
-/** One chart: the root's attributes and its data table. */
-function figure(props) {
+/** One chart: the root's attributes, its data table and any HTML-only markup (`html`). */
+function figure(props, html = []) {
   const rootAttributes = {
     ...(props.id ? { id: props.id } : {}),
     ...chartAttributes({
@@ -80,6 +80,7 @@ function figure(props) {
           "  </ul>",
         ]
       : []),
+    ...html,
     "</figure>",
   ];
 }
@@ -98,8 +99,13 @@ const EXTRA = {
   ],
 };
 
-for (const [story, { props, more = [] }] of Object.entries(chartExamples)) {
-  const lines = [...[props, ...more].flatMap(figure), ...(EXTRA[story] ?? []), ""];
+for (const [story, { props, more = [], html }] of Object.entries(chartExamples)) {
+  const lines = [
+    ...figure(props, html),
+    ...more.flatMap((chart) => figure(chart)),
+    ...(EXTRA[story] ?? []),
+    "",
+  ];
   writeFileSync(resolve(out, `${story}-group.html`), lines.join("\n"));
 }
 console.log(`chart: wrote ${Object.keys(chartExamples).length} snippets`);

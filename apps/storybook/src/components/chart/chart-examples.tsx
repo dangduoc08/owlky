@@ -4,6 +4,7 @@ import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { type ChartExample, chartExamples } from "./chart-data.js";
 import { LiveChart } from "./chart-live.js";
+import { CustomTooltipChart } from "./chart-tooltip.js";
 
 /** Story groups: one chart per reference section, the same data as the HTML snippets. */
 export const chartStories: Record<string, ReactGroup[]> = Object.fromEntries(
@@ -15,6 +16,8 @@ export const chartStories: Record<string, ReactGroup[]> = Object.fromEntries(
         content:
           story === "live-data" ? (
             <LiveChart />
+          ) : story === "tooltip-custom" ? (
+            <CustomTooltipChart />
           ) : more.length ? (
             [props, ...more].map((chart) => <Chart key={chart.label} {...chart} />)
           ) : (

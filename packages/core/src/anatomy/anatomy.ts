@@ -45,6 +45,8 @@ import {
   type ChartMarkerShape,
   type ChartPattern,
   type ChartStackType,
+  type ChartTooltipCorner,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   chartColors,
@@ -55,6 +57,8 @@ import {
   chartMarkerShapes,
   chartPatterns,
   chartStackTypes,
+  chartTooltipCorners,
+  chartTooltipModes,
   chartTypes,
   chartXTypes,
 } from "../chart/chart-model.js";
@@ -4478,6 +4482,20 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-color-blind-mode",
     "Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series.",
   ),
+  tooltip: style(
+    "data-ok-tooltip",
+    chartTooltipModes,
+    "shared",
+    "Tooltip: `shared` lists every series of the category, `point` only the value under the pointer (or the keyboard), `none` shows none (the values are still announced).",
+    { optional: true },
+  ),
+  tooltipFixed: style(
+    "data-ok-tooltip-fixed",
+    chartTooltipCorners,
+    "topRight",
+    "The tooltip stays in a corner of the plot: `topLeft`, `topRight`, `bottomLeft` or `bottomRight` (default beside the value).",
+    { optional: true },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -4544,6 +4562,8 @@ export interface ChartAnatomyOptions {
   fillPattern?: ChartPattern | undefined;
   strokeWidth?: number | undefined;
   colorBlindMode?: boolean | undefined;
+  tooltip?: ChartTooltipMode | undefined;
+  tooltipFixed?: ChartTooltipCorner | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */
