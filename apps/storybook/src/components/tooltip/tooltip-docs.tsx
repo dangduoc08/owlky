@@ -92,6 +92,46 @@ export function TooltipTiming() {
 }`,
   },
   {
+    id: "next-delay",
+    title: "Open the next tooltip sooner",
+    body: "When another tooltip shows, or closed less than 800 ms ago, `enterNextDelay` replaces `enterDelay`. Moving the pointer along a toolbar then shows each tooltip quickly, while the first one still waits. Without `enterNextDelay`, every tooltip waits for `enterDelay`.",
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" aria-describedby="bold-tip">
+  <span data-ok-button-label>Bold</span>
+</button>
+<div id="bold-tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom"
+  data-ok-enter-delay="500" data-ok-enter-next-delay="100"><span data-ok-tooltip-arrow aria-hidden="true"></span>Bold text</div>`,
+    react: `import { Button, Tooltip } from "@owlky/react";
+
+export function ToolbarTooltip() {
+  return (
+    <Tooltip title="Bold text" enterDelay={500} enterNextDelay={100}>
+      <Button variant="outlined">Bold</Button>
+    </Tooltip>
+  );
+}`,
+  },
+  {
+    id: "follow-cursor",
+    title: "Follow the pointer",
+    body: "With `followCursor`, the tooltip opens at the pointer and moves with it while the pointer stays on the trigger. Keyboard focus and touch still place it next to the trigger. Use it on large triggers, such as a disabled area that explains why it is disabled.",
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="lg" aria-describedby="follow-tip">
+  <span data-ok-button-label>Upgrade</span>
+</button>
+<div id="follow-tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom"
+  data-ok-follow-cursor><span data-ok-tooltip-arrow aria-hidden="true"></span>Available on the Pro plan</div>`,
+    react: `import { Button, Tooltip } from "@owlky/react";
+
+export function FollowTooltip() {
+  return (
+    <Tooltip title="Available on the Pro plan" followCursor describeChild>
+      <Button variant="outlined" size="lg">
+        Upgrade
+      </Button>
+    </Tooltip>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

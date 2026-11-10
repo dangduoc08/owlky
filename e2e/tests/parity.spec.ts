@@ -323,6 +323,7 @@ const pairs: [component: string, story: string][] = [
   ["tooltip", "variable-width"],
   ["tooltip", "transitions"],
   ["tooltip", "positioned"],
+  ["tooltip", "follow-cursor"],
   ["menu", "simple"],
   ["menu", "selected"],
   ["menu", "max-height"],

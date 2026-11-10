@@ -515,6 +515,7 @@
   "data-ok-end",
   "data-ok-end-angle",
   "data-ok-enter-delay",
+  "data-ok-enter-next-delay",
   "data-ok-error",
   "data-ok-exaggeration",
   "data-ok-excel-options",
@@ -544,6 +545,7 @@
   "data-ok-focus",
   "data-ok-focus-after-open",
   "data-ok-focused",
+  "data-ok-follow-cursor",
   "data-ok-font",
   "data-ok-force-wheel-axis",
   "data-ok-form-control",
@@ -57590,6 +57592,19 @@
          "name": "leaveDelay"
         },
         {
+         "attr": "data-ok-enter-next-delay",
+         "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago. Default: `enterDelay`.",
+         "kind": "number",
+         "min": 0,
+         "name": "enterNextDelay"
+        },
+        {
+         "attr": "data-ok-follow-cursor",
+         "description": "The tooltip follows the pointer over the trigger.",
+         "kind": "flag",
+         "name": "followCursor"
+        },
+        {
          "attr": "data-ok-open",
          "description": "Open state (`open` / `onOpenChange`; HTML: hover and focus).",
          "event": "ok:tooltip:open",
@@ -57651,9 +57666,20 @@
          "type": "number"
         },
         {
+         "default": "enterDelay",
+         "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago, so moving along a toolbar shows the next tooltip sooner.",
+         "name": "enterNextDelay",
+         "type": "number"
+        },
+        {
          "description": "Default 700 ms (touch: a long press opens the tooltip).",
          "name": "enterTouchDelay",
          "type": "number"
+        },
+        {
+         "description": "The tooltip follows the pointer while it is over the trigger.",
+         "name": "followCursor",
+         "type": "boolean"
         },
         {
          "description": "Default 0 ms.",
@@ -57772,6 +57798,19 @@
        "name": "leaveDelay"
       },
       {
+       "attr": "data-ok-enter-next-delay",
+       "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago. Default: `enterDelay`.",
+       "kind": "number",
+       "min": 0,
+       "name": "enterNextDelay"
+      },
+      {
+       "attr": "data-ok-follow-cursor",
+       "description": "The tooltip follows the pointer over the trigger.",
+       "kind": "flag",
+       "name": "followCursor"
+      },
+      {
        "attr": "data-ok-open",
        "description": "Open state (`open` / `onOpenChange`; HTML: hover and focus).",
        "event": "ok:tooltip:open",
@@ -57794,7 +57833,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `tooltip`: listed under \"options\".)\n\nReact: `title`, one element `children` (cloned: relation attribute, pointer / focus handlers,\nmerged ref), `describeChild`, `open` / `onOpenChange(open)`, `enterTouchDelay` (700),\n`leaveTouchDelay` (1500), `disableHoverListener`, `disableFocusListener`,\n`disableTouchListener`. Renamed: `TransitionComponent` (Grow / Fade / Zoom) → `transition`;\n`onOpen` / `onClose` → `onOpenChange`. Kept behavior: `describeChild=false` names the trigger\n(MUI sets `aria-label`; we use `aria-labelledby`, same name). Deferred: `followCursor`,\n`enterNextDelay` (4.6). Not applicable: `disableInteractive` (always hoverable, WCAG 1.4.13),\n`PopperProps`, `slots`, `slotProps`, `components`, `sx`.",
+     "body": "(Options of `tooltip`: listed under \"options\".)\n\nReact: `title`, one element `children` (cloned: relation attribute, pointer / focus handlers,\nmerged ref), `describeChild`, `open` / `onOpenChange(open)`, `enterTouchDelay` (700),\n`leaveTouchDelay` (1500), `disableHoverListener`, `disableFocusListener`,\n`disableTouchListener`. Renamed: `TransitionComponent` (Grow / Fade / Zoom) → `transition`;\n`onOpen` / `onClose` → `onOpenChange`. Kept behavior: `describeChild=false` names the trigger\n(MUI sets `aria-label`; we use `aria-labelledby`, same name). Kept (4.6): `followCursor`\n(`data-ok-follow-cursor`: on `pointermove` over the trigger the tooltip opens at and follows a\ncore `pointAnchor(x, y, trigger)` virtual anchor; focus and touch keep the trigger as anchor) and\n`enterNextDelay` (`data-ok-enter-next-delay`: core `createHoverIntent` keeps a module-scoped\ncount of shown tooltips and the last close; while one shows or within 800 ms of a close the next\none waits `enterNextDelay`). Default `enterNextDelay`: `enterDelay` (MUI 0; kept so existing\ntooltips keep their timing). Not applicable: `disableInteractive` (always hoverable, WCAG 1.4.13),\n`PopperProps`, `slots`, `slotProps`, `components`, `sx`.",
      "id": "options",
      "title": "Options"
     },
@@ -57819,7 +57858,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Tooltip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `title`, `children` (one element), `placement`, `arrow`, `describeChild`, `id` | same | kept | name through `aria-labelledby` (MUI: `aria-label`) |\n| `enterDelay`, `leaveDelay`, `enterTouchDelay`, `leaveTouchDelay` | same | kept | |\n| `disableHoverListener`, `disableFocusListener`, `disableTouchListener` | same | kept | |\n| `open`; `onOpen` / `onClose` | `open`; `onOpenChange(open)`; HTML `ok:tooltip:open` / `close` | renamed | |\n| `TransitionComponent` (Grow / Fade / Zoom) | `transition` (`grow` `fade` `zoom`) | renamed | |\n| `followCursor`, `enterNextDelay` | — | deferred (4.6) | |\n| `disableInteractive` | — (always hoverable) | not applicable | WCAG 1.4.13 |\n| `placement` `auto` / `auto-start` / `auto-end` | — | not applicable | the controller flips |\n| `PopperComponent` / `PopperProps`, `slots.popper` / `transition` / `arrow` | — | not applicable | core positioning, top layer |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "body": "Audit 2026-11-09 against MUI API page Tooltip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `title`, `children` (one element), `placement`, `arrow`, `describeChild`, `id` | same | kept | name through `aria-labelledby` (MUI: `aria-label`) |\n| `enterDelay`, `leaveDelay`, `enterTouchDelay`, `leaveTouchDelay` | same | kept | |\n| `disableHoverListener`, `disableFocusListener`, `disableTouchListener` | same | kept | |\n| `open`; `onOpen` / `onClose` | `open`; `onOpenChange(open)`; HTML `ok:tooltip:open` / `close` | renamed | |\n| `TransitionComponent` (Grow / Fade / Zoom) | `transition` (`grow` `fade` `zoom`) | renamed | |\n| `followCursor`, `enterNextDelay` | same (`data-ok-follow-cursor`, `data-ok-enter-next-delay`) | kept (4.6) | `enterNextDelay` defaults to `enterDelay` (MUI 0) |\n| `disableInteractive` | — (always hoverable) | not applicable | WCAG 1.4.13 |\n| `placement` `auto` / `auto-start` / `auto-end` | — | not applicable | the controller flips |\n| `PopperComponent` / `PopperProps`, `slots.popper` / `transition` / `arrow` | — | not applicable | core positioning, top layer |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -57869,6 +57908,15 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { Button, Tooltip } from \"@owlky/react\";\n\n{/* Positioned */}\n<div>\n  <Tooltip id=\"tooltip-top-start\" title=\"Placement top-start\" placement=\"top-start\" describeChild>\n    <Button variant=\"contained\" color=\"primary\">top-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-top\" title=\"Placement top\" placement=\"top\" describeChild>\n    <Button variant=\"contained\" color=\"primary\">top</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-top-end\" title=\"Placement top-end\" placement=\"top-end\" describeChild>\n    <Button variant=\"contained\" color=\"primary\">top-end</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-bottom-start\" title=\"Placement bottom-start\" placement=\"bottom-start\" describeChild>\n    <Button variant=\"contained\" color=\"secondary\">bottom-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-bottom\" title=\"Placement bottom\" placement=\"bottom\" describeChild>\n    <Button variant=\"contained\" color=\"secondary\">bottom</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-bottom-end\" title=\"Placement bottom-end\" placement=\"bottom-end\" describeChild>\n    <Button variant=\"contained\" color=\"secondary\">bottom-end</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-left-start\" title=\"Placement left-start\" placement=\"left-start\" describeChild>\n    <Button variant=\"contained\" color=\"warning\">left-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-left\" title=\"Placement left\" placement=\"left\" describeChild>\n    <Button variant=\"contained\" color=\"warning\">left</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-left-end\" title=\"Placement left-end\" placement=\"left-end\" describeChild>\n    <Button variant=\"contained\" color=\"warning\">left-end</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-right-start\" title=\"Placement right-start\" placement=\"right-start\" describeChild>\n    <Button variant=\"contained\" color=\"info\">right-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-right\" title=\"Placement right\" placement=\"right\" describeChild>\n    <Button variant=\"contained\" color=\"info\">right</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-right-end\" title=\"Placement right-end\" placement=\"right-end\" describeChild>\n    <Button variant=\"contained\" color=\"info\">right-end</Button>\n  </Tooltip>\n</div>\n",
      "snippets": [
       "positioned-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/icon-button.css + components/fab.css + components/tooltip.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Follow cursor -->\n<div>\n  <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"lg\" aria-describedby=\"tooltip-follow\">\n    <span data-ok-button-label>Move the pointer over this button</span>\n  </button>\n  <div id=\"tooltip-follow\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\" data-ok-follow-cursor><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>The tooltip follows the pointer</div>\n  <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"lg\" aria-describedby=\"tooltip-next\">\n    <span data-ok-button-label>Slow to open</span>\n  </button>\n  <div id=\"tooltip-next\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\" data-ok-enter-delay=\"500\" data-ok-enter-next-delay=\"100\"><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>Opens sooner after another tooltip</div>\n</div>",
+     "id": "components-tooltip--follow-cursor",
+     "name": "Follow cursor",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Button, Tooltip } from \"@owlky/react\";\n\n{/* Follow cursor */}\n<div>\n  <Tooltip id=\"tooltip-follow\" title=\"The tooltip follows the pointer\" followCursor describeChild>\n    <Button variant=\"outlined\" size=\"lg\">Move the pointer over this button</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-next\" title=\"Opens sooner after another tooltip\" enterDelay={500} enterNextDelay={100} describeChild>\n    <Button variant=\"outlined\" size=\"lg\">Slow to open</Button>\n  </Tooltip>\n</div>\n",
+     "snippets": [
+      "follow-cursor-group.html"
      ]
     }
    ],
@@ -67274,6 +67322,20 @@
      "id": "timing",
      "react": "import { Button, Tooltip } from \"@owlky/react\";\n\nexport function TooltipTiming() {\n  return (\n    <Tooltip title=\"Add to the cart\" enterDelay={500} leaveDelay={200}>\n      <Button variant=\"outlined\">Add</Button>\n    </Tooltip>\n  );\n}",
      "title": "Change the timing"
+    },
+    {
+     "body": "When another tooltip shows, or closed less than 800 ms ago, `enterNextDelay` replaces `enterDelay`. Moving the pointer along a toolbar then shows each tooltip quickly, while the first one still waits. Without `enterNextDelay`, every tooltip waits for `enterDelay`.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" aria-describedby=\"bold-tip\">\n  <span data-ok-button-label>Bold</span>\n</button>\n<div id=\"bold-tip\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\"\n  data-ok-enter-delay=\"500\" data-ok-enter-next-delay=\"100\"><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>Bold text</div>",
+     "id": "next-delay",
+     "react": "import { Button, Tooltip } from \"@owlky/react\";\n\nexport function ToolbarTooltip() {\n  return (\n    <Tooltip title=\"Bold text\" enterDelay={500} enterNextDelay={100}>\n      <Button variant=\"outlined\">Bold</Button>\n    </Tooltip>\n  );\n}",
+     "title": "Open the next tooltip sooner"
+    },
+    {
+     "body": "With `followCursor`, the tooltip opens at the pointer and moves with it while the pointer stays on the trigger. Keyboard focus and touch still place it next to the trigger. Use it on large triggers, such as a disabled area that explains why it is disabled.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"lg\" aria-describedby=\"follow-tip\">\n  <span data-ok-button-label>Upgrade</span>\n</button>\n<div id=\"follow-tip\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\"\n  data-ok-follow-cursor><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>Available on the Pro plan</div>",
+     "id": "follow-cursor",
+     "react": "import { Button, Tooltip } from \"@owlky/react\";\n\nexport function FollowTooltip() {\n  return (\n    <Tooltip title=\"Available on the Pro plan\" followCursor describeChild>\n      <Button variant=\"outlined\" size=\"lg\">\n        Upgrade\n      </Button>\n    </Tooltip>\n  );\n}",
+     "title": "Follow the pointer"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

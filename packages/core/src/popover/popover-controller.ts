@@ -82,6 +82,16 @@ export const POPOVER_PLACEMENT_ATTRIBUTE = "data-ok-current-placement";
 
 const px = (value: number) => `${value}px`;
 
+/** A virtual anchor at a point of the viewport (a tooltip that follows the pointer). */
+export const pointAnchor = (
+  x: number,
+  y: number,
+  contextElement?: Element,
+): PopoverVirtualAnchor => ({
+  getBoundingClientRect: () => new DOMRect(x, y, 0, 0),
+  contextElement,
+});
+
 /**
  * Anchored, non-modal overlay behavior shared by Popover, Menu and Tooltip.
  *

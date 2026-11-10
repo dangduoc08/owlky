@@ -1625,6 +1625,13 @@ export const tooltipOptions = defineOptions("tooltip", "data-ok-tooltip", {
   leaveDelay: number("data-ok-leave-delay", 0, "Milliseconds before it closes on leave.", {
     min: 0,
   }),
+  enterNextDelay: number(
+    "data-ok-enter-next-delay",
+    undefined,
+    "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago. Default: `enterDelay`.",
+    { min: 0 },
+  ),
+  followCursor: flag("data-ok-follow-cursor", "The tooltip follows the pointer over the trigger."),
   open: state(
     "data-ok-open",
     "Open state (`open` / `onOpenChange`; HTML: hover and focus).",
@@ -1638,6 +1645,8 @@ export interface TooltipAnatomyOptions {
   transition?: TooltipTransition | undefined;
   enterDelay?: number | undefined;
   leaveDelay?: number | undefined;
+  enterNextDelay?: number | undefined;
+  followCursor?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a tooltip (`div[role=tooltip][popover]`). */

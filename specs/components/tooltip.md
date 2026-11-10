@@ -27,6 +27,8 @@ Root: `data-ok-tooltip`. Unknown values fall back to the default.
 | `transition` | `data-ok-transition="…"` | style | `grow` `fade` `zoom` | — | Opening animation: grows, fades or zooms in. |
 | `enterDelay` | `data-ok-enter-delay="…"` | number | number | `100` | Milliseconds before it opens on hover. |
 | `leaveDelay` | `data-ok-leave-delay="…"` | number | number | `0` | Milliseconds before it closes on leave. |
+| `enterNextDelay` | `data-ok-enter-next-delay="…"` | number | number | — | Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago. Default: `enterDelay`. |
+| `followCursor` | `data-ok-follow-cursor` | flag | boolean | off | The tooltip follows the pointer over the trigger. |
 | `open` | `data-ok-open` · event `ok:tooltip:open` | state | — | — | Open state (`open` / `onOpenChange`; HTML: hover and focus). |
 <!-- /options:tooltip -->
 
@@ -35,8 +37,13 @@ merged ref), `describeChild`, `open` / `onOpenChange(open)`, `enterTouchDelay` (
 `leaveTouchDelay` (1500), `disableHoverListener`, `disableFocusListener`,
 `disableTouchListener`. Renamed: `TransitionComponent` (Grow / Fade / Zoom) → `transition`;
 `onOpen` / `onClose` → `onOpenChange`. Kept behavior: `describeChild=false` names the trigger
-(MUI sets `aria-label`; we use `aria-labelledby`, same name). Deferred: `followCursor`,
-`enterNextDelay` (4.6). Not applicable: `disableInteractive` (always hoverable, WCAG 1.4.13),
+(MUI sets `aria-label`; we use `aria-labelledby`, same name). Kept (4.6): `followCursor`
+(`data-ok-follow-cursor`: on `pointermove` over the trigger the tooltip opens at and follows a
+core `pointAnchor(x, y, trigger)` virtual anchor; focus and touch keep the trigger as anchor) and
+`enterNextDelay` (`data-ok-enter-next-delay`: core `createHoverIntent` keeps a module-scoped
+count of shown tooltips and the last close; while one shows or within 800 ms of a close the next
+one waits `enterNextDelay`). Default `enterNextDelay`: `enterDelay` (MUI 0; kept so existing
+tooltips keep their timing). Not applicable: `disableInteractive` (always hoverable, WCAG 1.4.13),
 `PopperProps`, `slots`, `slotProps`, `components`, `sx`.
 
 ## Layout and tokens
@@ -68,7 +75,7 @@ Audit 2026-11-09 against MUI API page Tooltip.
 | `disableHoverListener`, `disableFocusListener`, `disableTouchListener` | same | kept | |
 | `open`; `onOpen` / `onClose` | `open`; `onOpenChange(open)`; HTML `ok:tooltip:open` / `close` | renamed | |
 | `TransitionComponent` (Grow / Fade / Zoom) | `transition` (`grow` `fade` `zoom`) | renamed | |
-| `followCursor`, `enterNextDelay` | — | deferred (4.6) | |
+| `followCursor`, `enterNextDelay` | same (`data-ok-follow-cursor`, `data-ok-enter-next-delay`) | kept (4.6) | `enterNextDelay` defaults to `enterDelay` (MUI 0) |
 | `disableInteractive` | — (always hoverable) | not applicable | WCAG 1.4.13 |
 | `placement` `auto` / `auto-start` / `auto-end` | — | not applicable | the controller flips |
 | `PopperComponent` / `PopperProps`, `slots.popper` / `transition` / `arrow` | — | not applicable | core positioning, top layer |

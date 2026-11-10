@@ -1,6 +1,7 @@
 import {
   createHoverIntent,
   createPopoverController,
+  pointAnchor,
   readNumber,
   tooltipOptions,
 } from "@owlky/core";
@@ -27,10 +28,16 @@ export interface TooltipInstance extends ComponentInstance {
 interface Internal extends TooltipInstance {
   intent: ReturnType<typeof createHoverIntent>;
   trigger: Element | null;
+  /** The pointer over the trigger (`data-ok-follow-cursor`). */
+  pointer: { x: number; y: number } | null;
+  /** Re-reads the timing options. */
+  refresh(): void;
+  /** Moves a tooltip that follows the pointer. */
+  follow(): void;
 }
 
 const ARROW = 10;
-const { arrow, enterDelay, leaveDelay } = tooltipOptions.options;
+const { arrow, enterDelay, leaveDelay, enterNextDelay, followCursor } = tooltipOptions.options;
 const RELATIONS = ["aria-labelledby", "aria-describedby"] as const;
 const TRIGGER = "[aria-labelledby], [aria-describedby]";
 const RUNTIME_OFF = '[data-ok-runtime="off"]';
@@ -75,7 +82,12 @@ export const tooltip = defineComponent<TooltipInstance, TooltipEvents>({
       onDismiss: () => instance.intent.hide(),
     });
     const controller = createPopoverController(element, options());
+    const anchorOf = (trigger: Element) =>
+      element.hasAttribute(followCursor.attr) && instance.pointer
+        ? pointAnchor(instance.pointer.x, instance.pointer.y, trigger)
+        : trigger;
     const intentOptions = () => ({
+      enterNextDelay: readNumber(element, enterNextDelay) as number | undefined,
       enterDelay: readNumber(element, enterDelay) as number,
       leaveDelay: readNumber(element, leaveDelay) as number,
       onOpenChange: (open: boolean) => {
@@ -86,7 +98,7 @@ export const tooltip = defineComponent<TooltipInstance, TooltipEvents>({
           );
         if (open && trigger) {
           controller.setOptions(options());
-          controller.open(trigger);
+          controller.open(anchorOf(trigger));
           emit("open", { trigger });
         } else if (!open && controller.isOpen) {
           controller.close();
@@ -97,6 +109,13 @@ export const tooltip = defineComponent<TooltipInstance, TooltipEvents>({
     const instance: Internal = {
       intent: createHoverIntent(intentOptions()),
       trigger: null,
+      pointer: null,
+      refresh() {
+        instance.intent.setOptions(intentOptions());
+      },
+      follow() {
+        if (controller.isOpen && instance.trigger) controller.open(anchorOf(instance.trigger));
+      },
       get isOpen() {
         return controller.isOpen;
       },
@@ -128,6 +147,7 @@ export const tooltip = defineComponent<TooltipInstance, TooltipEvents>({
         const instance = instanceFor(trigger, runtime);
         if (!instance) return;
         instance.trigger = trigger;
+        instance.refresh();
         instance.intent.enter(event.pointerType);
       },
     },
@@ -137,7 +157,22 @@ export const tooltip = defineComponent<TooltipInstance, TooltipEvents>({
       handle(trigger, e, runtime) {
         const next = (e as PointerEvent).relatedTarget;
         if (next instanceof Node && trigger.contains(next)) return;
-        instanceFor(trigger, runtime)?.intent.leave();
+        const instance = instanceFor(trigger, runtime);
+        if (!instance) return;
+        instance.pointer = null;
+        instance.intent.leave();
+      },
+    },
+    {
+      event: "pointermove",
+      selector: TRIGGER,
+      handle(trigger, e, runtime) {
+        const event = e as PointerEvent;
+        if (event.pointerType === "touch") return;
+        const instance = instanceFor(trigger, runtime);
+        if (!instance || !tooltipFor(trigger)?.hasAttribute(followCursor.attr)) return;
+        instance.pointer = { x: event.clientX, y: event.clientY };
+        instance.follow();
       },
     },
     {

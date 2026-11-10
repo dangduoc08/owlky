@@ -1025,6 +1025,7 @@ export {
   type PopoverControllerOptions,
   type PopoverDismissReason,
   type PopoverVirtualAnchor,
+  pointAnchor,
 } from "./popover/popover-controller.js";
 export {
   computePosition,

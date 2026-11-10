@@ -6,6 +6,7 @@ import {
   type HoverIntent,
   type Placement,
   type PopoverController,
+  pointAnchor,
   type TooltipTransition,
   tooltipAttributes,
 } from "@owlky/core";
@@ -32,6 +33,7 @@ type TriggerProps = {
   ref?: Ref<HTMLElement>;
   onPointerEnter?: (event: PointerEvent<HTMLElement>) => void;
   onPointerLeave?: (event: PointerEvent<HTMLElement>) => void;
+  onPointerMove?: (event: PointerEvent<HTMLElement>) => void;
   onPointerDown?: (event: PointerEvent<HTMLElement>) => void;
   onPointerUp?: (event: PointerEvent<HTMLElement>) => void;
   onPointerCancel?: (event: PointerEvent<HTMLElement>) => void;
@@ -57,6 +59,13 @@ export interface TooltipProps
   enterDelay?: number | undefined;
   /** Default 0 ms. */
   leaveDelay?: number | undefined;
+  /**
+   * Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago, so
+   * moving along a toolbar shows the next tooltip sooner. Default: `enterDelay`.
+   */
+  enterNextDelay?: number | undefined;
+  /** The tooltip follows the pointer while it is over the trigger. */
+  followCursor?: boolean | undefined;
   /** Default 700 ms (touch: a long press opens the tooltip). */
   enterTouchDelay?: number | undefined;
   /** Default 1500 ms. */
@@ -91,6 +100,8 @@ export function Tooltip({
   transition,
   enterDelay,
   leaveDelay,
+  enterNextDelay,
+  followCursor,
   enterTouchDelay,
   leaveTouchDelay,
   open: controlledOpen,
@@ -115,9 +126,18 @@ export function Tooltip({
   const intentRef = useRef<HoverIntent | null>(null);
   const empty = title == null || title === "" || title === false;
 
+  // The last pointer position over the trigger (followCursor).
+  const pointer = useRef<{ x: number; y: number } | null>(null);
+  const anchor = () => {
+    const trigger = triggerRef.current as HTMLElement;
+    const at = pointer.current;
+    return followCursor && at ? pointAnchor(at.x, at.y, trigger) : trigger;
+  };
+
   const intentOptions = {
     enterDelay,
     leaveDelay,
+    enterNextDelay,
     enterTouchDelay,
     leaveTouchDelay,
     onOpenChange: (next: boolean) => {
@@ -159,10 +179,11 @@ export function Tooltip({
     });
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the anchor is read when the tooltip opens; the pointer moves it on its own.
   useEffect(() => {
     const controller = controllerRef.current;
     if (!controller) return;
-    if (open && triggerRef.current) controller.open(triggerRef.current);
+    if (open && triggerRef.current) controller.open(anchor());
     else controller.close();
   }, [open]);
 
@@ -191,8 +212,23 @@ export function Tooltip({
       childProps.onPointerEnter,
     ),
     onPointerLeave: chain(
-      disableHoverListener ? undefined : () => intent.leave(),
+      disableHoverListener
+        ? undefined
+        : () => {
+            pointer.current = null;
+            intent.leave();
+          },
       childProps.onPointerLeave,
+    ),
+    onPointerMove: chain(
+      followCursor
+        ? (event: PointerEvent<HTMLElement>) => {
+            if (event.pointerType === "touch") return;
+            pointer.current = { x: event.clientX, y: event.clientY };
+            if (controllerRef.current?.isOpen) controllerRef.current.open(anchor());
+          }
+        : undefined,
+      childProps.onPointerMove,
     ),
     onPointerDown: chain(
       disableTouchListener
@@ -229,7 +265,15 @@ export function Tooltip({
         id={id}
         role="tooltip"
         popover="manual"
-        {...tooltipAttributes({ placement, arrow, transition, enterDelay, leaveDelay })}
+        {...tooltipAttributes({
+          placement,
+          arrow,
+          transition,
+          enterDelay,
+          leaveDelay,
+          enterNextDelay,
+          followCursor,
+        })}
         data-ok-runtime="off"
         onPointerEnter={() => intent.enterTooltip()}
         onPointerLeave={() => intent.leave()}

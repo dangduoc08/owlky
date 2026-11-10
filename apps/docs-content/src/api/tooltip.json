@@ -141,6 +141,19 @@
       "name": "leaveDelay"
      },
      {
+      "attr": "data-ok-enter-next-delay",
+      "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago. Default: `enterDelay`.",
+      "kind": "number",
+      "min": 0,
+      "name": "enterNextDelay"
+     },
+     {
+      "attr": "data-ok-follow-cursor",
+      "description": "The tooltip follows the pointer over the trigger.",
+      "kind": "flag",
+      "name": "followCursor"
+     },
+     {
       "attr": "data-ok-open",
       "description": "Open state (`open` / `onOpenChange`; HTML: hover and focus).",
       "event": "ok:tooltip:open",
@@ -202,9 +215,20 @@
       "type": "number"
      },
      {
+      "default": "enterDelay",
+      "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago, so moving along a toolbar shows the next tooltip sooner.",
+      "name": "enterNextDelay",
+      "type": "number"
+     },
+     {
       "description": "Default 700 ms (touch: a long press opens the tooltip).",
       "name": "enterTouchDelay",
       "type": "number"
+     },
+     {
+      "description": "The tooltip follows the pointer while it is over the trigger.",
+      "name": "followCursor",
+      "type": "boolean"
      },
      {
       "description": "Default 0 ms.",
