@@ -2,8 +2,21 @@ import { chartOptions } from "@owlky/core";
 import chartApi from "@owlky/docs-content/api/chart.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Chart } from "@owlky/react";
+import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
+import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
+import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
+import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
+import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
+import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
+import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
+import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
+import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
+import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
+import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
+import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 const SALES = [
@@ -82,20 +95,7 @@ export function MonthlySales() {
 - **\`sankey\`:** flows between nodes, each as wide as its value. See "Show flows between stages".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
-    html: `<figure data-ok-chart data-ok-type="bar" data-ok-x-type="category" data-ok-curve="smooth"
-  data-ok-legend="top" data-ok-fill="gradient" data-ok-y-title="Points">
-  <table data-ok-chart-data>
-    <caption>Points per month</caption>
-    <thead>
-      <tr>
-        <th scope="col">Month</th>
-        <th scope="col" data-ok-type="bar" data-ok-color="primary-dark">Team A</th>
-        <th scope="col" data-ok-type="line" data-ok-color="info">Team B</th>
-      </tr>
-    </thead>
-    <tbody>…</tbody>
-  </table>
-</figure>`,
+    html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
 
 export function ChartTypes() {
@@ -145,7 +145,18 @@ export function ChartData() {
     title: "Set colors",
     body: "Series use the theme palette in order: primary dark, warning, info, error, success and then darker shades. To pick colors, use `colors` in React or `data-ok-color` on each column header in HTML. A color is a palette name, such as `info`, or a palette name and a shade, such as `primary-dark`. To color a single value, such as negative columns, give the point a `color` (React) or the cell a `data-ok-color` (HTML). Colors follow the theme and the preset, in light and dark mode.",
     html: `<td data-ok-color="error">-41.2</td>`,
-    react: `series={[{ name: "Cash flow", data: [{ y: 19.8, color: "success" }, { y: -41.2, color: "error" }] }]}`,
+    react: `import { Chart } from "@owlky/react";
+
+export function CashFlow() {
+  return (
+    <Chart
+      label="Cash flow"
+      type="bar"
+      categories={["Q1", "Q2"]}
+      series={[{ name: "Cash flow", data: [{ y: 19.8, color: "success" }, { y: -41.2, color: "error" }] }]}
+    />
+  );
+}`,
   },
   {
     id: "circular",
@@ -315,8 +326,10 @@ export function ChartCells() {
     title: "Show stages and changes",
     body: `- **Funnels:** \`funnel\` draws the first series as bars centered on one axis, each as long as its share of the largest value, such as the stages of a sign-up flow. For a pyramid, order the values from the smallest to the largest. \`barHeight\` sets the thickness (80% by default).
 - **Slopes:** \`slope\` joins each series' values across a few categories, usually two, such as before and after. The values print beside the first and last points, and the scale fits the data.`,
-    html: `<figure data-ok-chart data-ok-type="funnel" … data-ok-data-labels>`,
+    html: `${snippetElement(funnelGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
+
+const steps = ["Visited", "Signed up", "Activated", "Paid"];
 
 export function ChartStages() {
   return (
@@ -329,12 +342,15 @@ export function ChartStages() {
     title: "Fit charts in cards and table cells",
     body: "Set `sparkline` (`data-ok-sparkline` in HTML) to draw a chart without axes, grid or legend, such as a trend in a dashboard card or a table cell. A sparkline fills its container: give the container a height, or set `height` for the least height (40px by default). The tooltip, the keyboard and the data table still work.",
     html: `<div class="card-trend">
-  <figure data-ok-chart data-ok-type="area" data-ok-x-type="category" data-ok-curve="smooth"
-    data-ok-legend="top" data-ok-fill="gradient" data-ok-sparkline data-ok-height="48">
-    <table data-ok-chart-data>…</table>
-  </figure>
+${snippetElement(sparklinesGroup, "data-ok-chart ")
+  .split("\n")
+  .map((line) => `  ${line}`)
+  .join("\n")}
 </div>`,
     react: `import { Chart } from "@owlky/react";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const visits = [{ name: "Visits", data: [32, 41, 35, 51, 49, 62, 69] }];
 
 export function ChartSparklines() {
   return (
@@ -363,8 +379,17 @@ Updates keep the hidden series and the category under the pointer or the keyboar
     react: `import { Chart } from "@owlky/react";
 import { useEffect, useState } from "react";
 
-export function Requests({ source }) {
-  const [points, setPoints] = useState([]);
+interface Point {
+  time: string;
+  value: number;
+}
+
+export function Requests({
+  source,
+}: {
+  source: { subscribe(listener: (point: Point) => void): () => void };
+}) {
+  const [points, setPoints] = useState<Point[]>([]);
   useEffect(
     () => source.subscribe((point) => setPoints((current) => [...current, point].slice(-12))),
     [source],
@@ -389,10 +414,11 @@ export function Requests({ source }) {
 - **Keyboard:** \`+\` and \`-\` zoom, Shift with the Left or Right arrow pans, \`0\` resets. Escape hides the tooltip first, then resets the zoom.
 
 Set \`toolbar\` (\`data-ok-toolbar\`) to add buttons for zooming in and out, resetting, panning with the mouse, and downloading the chart as SVG, PNG or CSV. Downloads start only when someone selects a button or presses a key, and a failure is announced to screen readers. In React, \`zoomRange\` and \`onZoomRangeChange(range, reason)\` control the zoom. A zoom that reaches the newest point keeps following new points, so a live dashboard stays on its latest data.`,
-    html: `<figure data-ok-chart data-ok-type="area" data-ok-x-type="datetime" … data-ok-zoom data-ok-toolbar>
-  <table data-ok-chart-data>…</table>
-</figure>`,
+    html: `${snippetElement(zoomGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
+
+const days = ["2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06"];
+const users = [{ name: "Users", data: [1200, 1350, 1280, 1490, 1610, 1580] }];
 
 export function ChartZoom() {
   return (
@@ -404,17 +430,19 @@ export function ChartZoom() {
     id: "sync",
     title: "Synchronize charts",
     body: "Give charts the same `group` (`data-ok-group` in HTML) to synchronize them, such as requests, errors and latency of one service. Moving the pointer or the keyboard over one chart shows the same category in all of them, and zooming one zooms the others. Synchronized charts should share their categories.",
-    html: `<figure data-ok-chart data-ok-group="service" data-ok-zoom …>…</figure>
-<figure data-ok-chart data-ok-group="service" data-ok-type="bar" …>…</figure>`,
+    html: `${snippetElement(synchronizedGroup, "data-ok-chart ")}
+${snippetElement(synchronizedGroup, "data-ok-chart ", 1)}`,
     react: `import { Chart } from "@owlky/react";
+
+const minutes = ["10:00", "10:01", "10:02", "10:03", "10:04", "10:05"];
+const requests = [{ name: "Requests", data: [120, 140, 135, 160, 150, 170] }];
+const errors = [{ name: "Errors", data: [0, 1, 0, 3, 2, 1] }];
 
 export function ChartSync() {
   return (
     <>
-      <>
-        <Chart label="Requests" group="service" zoom categories={minutes} series={requests} />
-        <Chart label="Errors" group="service" type="bar" categories={minutes} series={errors} />
-      </>
+      <Chart label="Requests" group="service" zoom categories={minutes} series={requests} />
+      <Chart label="Errors" group="service" type="bar" categories={minutes} series={errors} />
     </>
   );
 }`,
@@ -423,17 +451,18 @@ export function ChartSync() {
     id: "brush",
     title: "Brush a chart",
     body: "A brush chart is a small overview that zooms another chart. Give the main chart an `id`, then set `brushTarget` (`data-ok-brush-target` in HTML) on the overview to that id. Drag across the overview to select a range, drag the selection to move it, or drag its handles to resize it. The keys of a zoomable chart work on the overview too. The selection follows the main chart when it zooms by itself.",
-    html: `<figure id="builds" data-ok-chart data-ok-type="area" …>…</figure>
-<figure data-ok-chart data-ok-type="bar" data-ok-brush-target="builds" data-ok-height="120" …>…</figure>`,
+    html: `${snippetElement(brushGroup, "data-ok-chart ")}
+${snippetElement(brushGroup, "data-ok-chart ", 1)}`,
     react: `import { Chart } from "@owlky/react";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const builds = [{ name: "Builds", data: [12, 15, 9, 20, 18, 7, 5] }];
 
 export function ChartBrush() {
   return (
     <>
-      <>
-        <Chart id="builds" label="Builds per day" type="area" categories={days} series={builds} />
-        <Chart label="Builds, overview" type="bar" brushTarget="builds" height={120} categories={days} series={builds} />
-      </>
+      <Chart id="builds" label="Builds per day" type="area" categories={days} series={builds} />
+      <Chart label="Builds, overview" type="bar" brushTarget="builds" height={120} categories={days} series={builds} />
     </>
   );
 }`,
@@ -448,14 +477,11 @@ export function ChartBrush() {
 - **\`point\`:** a marker at \`x\` and \`y\`.
 
 Each annotation takes a \`color\` (\`info\` by default). The list stays readable by screen readers once the chart is drawn.`,
-    html: `<figure data-ok-chart …>
-  <table data-ok-chart-data>…</table>
-  <ul data-ok-chart-annotations>
-    <li data-ok-annotation="x" data-ok-x="10:04" data-ok-color="warning">Deploy</li>
-    <li data-ok-annotation="y" data-ok-y="2" data-ok-color="error">Threshold</li>
-  </ul>
-</figure>`,
+    html: `${snippetElement(annotationsGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
+
+const minutes = ["10:00", "10:01", "10:02", "10:03", "10:04", "10:05"];
+const errors = [{ name: "Errors", data: [0, 1, 0, 3, 2, 1] }];
 
 export function ChartAnnotations() {
   return (
@@ -479,18 +505,7 @@ export function ChartAnnotations() {
 - **Timelines:** \`timeline\` draws tasks from their start date to their end date, one row per task. Give each point a text \`x\` (the task) and two dates in \`y\`. The axis shows minutes, hours, days, months or years, depending on the span.
 
 In the data table, each value gets its own column under a second header row, such as Open, High, Low and Close.`,
-    html: `<figure data-ok-chart data-ok-type="timeline" …>
-  <table data-ok-chart-data>
-    <caption>Release plan</caption>
-    <thead>
-      <tr><th scope="col" rowspan="2">Task</th><th scope="colgroup" colspan="2">Release</th></tr>
-      <tr><th scope="col" data-ok-part="start">Start</th><th scope="col" data-ok-part="end">End</th></tr>
-    </thead>
-    <tbody>
-      <tr><th scope="row">Design</th><td data-ok-value="2026-03-02">02 Mar 2026</td><td data-ok-value="2026-03-13">13 Mar 2026</td></tr>
-    </tbody>
-  </table>
-</figure>`,
+    html: `${snippetElement(timelineGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
 
 export function ChartFinance() {
@@ -619,8 +634,11 @@ export function EnergyUse() {
     id: "animations",
     title: "Animate charts",
     body: "Set `animations` (`data-ok-animations` in HTML) to grow the series in when the chart first draws, and to move bars, points and lines to their new values when the data changes. Animations never play when the system asks for reduced motion. Live charts that update often read better without them.",
-    html: `<figure data-ok-chart data-ok-type="bar" data-ok-animations …>…</figure>`,
+    html: `${snippetElement(animationsGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const deploys = [{ name: "Deploys", data: [3, 5, 2, 6, 4] }];
 
 export function ChartAnimations() {
   return (
@@ -632,12 +650,23 @@ export function ChartAnimations() {
     id: "localize",
     title: "Localize texts",
     body: "`locale` formats numbers and month names. The names of the values in tables and tooltips, such as Minimum or Open, come from the second header row of the HTML table. In React, pass them in `localeText`, together with the toolbar's button names and the download error. In HTML, call `setLocaleText(text)` on the instance for the toolbar.",
-    html: `<tr><th scope="col" data-ok-part="min">Nhỏ nhất</th>…</tr>
+    html: `${snippetElement(localizedGroup, "data-ok-chart ")}
 <script type="module">
   import { getRuntime } from "@owlky/html";
+  const element = document.querySelector("[data-ok-chart]");
   getRuntime().get(element, "chart").setLocaleText({ zoomIn: "Phóng to", svg: "Tải SVG" });
 </script>`,
     react: `import { Chart } from "@owlky/react";
+
+const series = [
+  {
+    name: "Thời gian phản hồi",
+    data: [
+      { x: "Thứ Hai", y: [12, 20, 25, 31, 40] },
+      { x: "Thứ Ba", y: [10, 18, 22, 28, 36] },
+    ],
+  },
+];
 
 export function ChartLocalize() {
   return (
@@ -649,8 +678,11 @@ export function ChartLocalize() {
     id: "labels",
     title: "Print values on the chart",
     body: "Set `dataLabels` (`data-ok-data-labels` in HTML) to print values on the chart: percentages on pie and donut slices, values inside columns and bars, and values above the points of lines, areas and radars. A label is left out where it doesn't fit, such as on a short column. The tooltip and the data table still show every value. Set `dataLabelBackground` to put the labels above points on a badge, which keeps them readable over lines. For your own text, pass `dataLabelFormatter(value, series, index)` in React, or call `setFormatters({ dataLabel })` on the HTML instance. Pie and donut labels get the percentage.",
-    html: `<figure data-ok-chart data-ok-type="pie" … data-ok-data-labels>`,
+    html: `${snippetElement(dataLabelsGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
+
+const devices = ["Mobile", "Desktop", "Tablet"];
+const visits = [{ name: "Visits", data: [540, 320, 90] }];
 
 export function ChartLabels() {
   return (
@@ -667,8 +699,13 @@ export function ChartLabels() {
     id: "values",
     title: "Format values and axes",
     body: "`valuePrefix` and `valueSuffix` add text around every value, such as a currency or a percent sign. `locale` sets the number format and the month names. `yMin` and `yMax` fix the value axis, and `yTitle` names it. For anything else, pass `valueFormatter(value, series)` and `labelFormatter(x)` in React, or call `setFormatters({ value, label })` on the HTML instance. The axis gets `series` -1.",
-    html: `<figure data-ok-chart … data-ok-value-prefix="$" data-ok-locale="de-DE" data-ok-y-min="0" data-ok-y-max="100">`,
+    html: `${snippetElement(columnSingle, "data-ok-chart ").replace(
+      "<figure data-ok-chart ",
+      '<figure data-ok-chart data-ok-value-prefix="$" data-ok-locale="de-DE" data-ok-y-min="0" data-ok-y-max="100" ',
+    )}`,
     react: `import { Chart } from "@owlky/react";
+
+const series = [{ name: "Revenue", data: [42, 57, 61, 75] }];
 
 export function ChartValues() {
   return (
