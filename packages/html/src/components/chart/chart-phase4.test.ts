@@ -265,6 +265,21 @@ describe("linked charts", () => {
     expect(titleOf(b)).toBeNull();
   });
 
+  it("a focused chart keeps its keyboard point when another chart of the group changes", async () => {
+    const host = sized(
+      `${chart('id="a" data-ok-group="g"')}${chart('id="b" data-ok-group="g"', "", 10, "Other")}`,
+    );
+    start();
+    const [a, b] = roots(host) as [HTMLElement, HTMLElement];
+    const plot = plotOf(b);
+    plot.focus();
+    key(plot, { key: "Home" });
+    expect(titleOf(b)).toBe("D0");
+    // A pointer leaving the other chart (a layout shift under it) clears the group's point.
+    plotOf(a).dispatchEvent(new PointerEvent("pointerleave", { pointerType: "mouse" }));
+    expect(titleOf(b)).toBe("D0");
+  });
+
   it("a brush chart zooms its target and follows it", async () => {
     const host = sized(
       `${chart('id="target"')}${chart('data-ok-brush-target="target"', "", 10, "Overview")}`,

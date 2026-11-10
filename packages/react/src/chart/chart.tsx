@@ -944,6 +944,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       brushTarget,
       zoom: () => renderRef.current.zoom,
       showIndex: (index) => {
+        // The keyboard drives a focused plot: another chart of the group (a pointer leaving it
+        // after a layout shift) must not take its active point.
+        if (plotRef.current?.contains(document.activeElement)) return;
         const next: ChartActive | null = index === null ? null : { kind: "index", index };
         if (sameChartActive(next, activeRef.current)) return;
         activeRef.current = next;

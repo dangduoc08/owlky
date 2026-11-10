@@ -180,6 +180,23 @@ describe("Chart phase 4", () => {
     expect(titleOf(b)).toBeNull();
   });
 
+  it("a focused chart keeps its keyboard point when another chart of the group changes", () => {
+    render(
+      <div style={{ width: 600 }}>
+        <Chart label="A" group="g" categories={DAYS} series={SERIES} />
+        <Chart label="B" group="g" categories={DAYS} series={SERIES} />
+      </div>,
+    );
+    const [a, b] = figures() as [HTMLElement, HTMLElement];
+    const plot = plotOf(b);
+    act(() => plot.focus());
+    fireEvent.keyDown(plot, { key: "Home" });
+    expect(titleOf(b)).toBe("D0");
+    // A pointer leaving the other chart (a layout shift under it) clears the group's point.
+    fireEvent.pointerLeave(plotOf(a));
+    expect(titleOf(b)).toBe("D0");
+  });
+
   it("a brush chart zooms its target and follows it", () => {
     const onZoom = vi.fn();
     render(

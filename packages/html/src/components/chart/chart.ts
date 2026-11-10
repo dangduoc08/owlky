@@ -796,7 +796,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         group,
         brushTarget,
         zoom: () => render?.zoom ?? null,
-        showIndex: (index) => setActive(index === null ? null : { kind: "index", index }, false),
+        showIndex: (index) => {
+          // The keyboard drives a focused plot: another chart of the group (a pointer leaving it
+          // after a layout shift) must not take its active point.
+          if (plot.contains(document.activeElement)) return;
+          setActive(index === null ? null : { kind: "index", index }, false);
+        },
         applyZoom: (range, reason) => setZoom(range, reason),
         select: (range) => {
           selection = range;
