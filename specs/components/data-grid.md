@@ -199,6 +199,14 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `hideFooterRowCount` | `data-ok-hide-footer-row-count` | flag | boolean | off | No row count in the footer (it shows only without pagination). |
 | `hideFooterSelectedRowCount` | `data-ok-hide-footer-selected-row-count` | flag | boolean | off | No "n rows selected" in the footer. |
 | `tabNavigation` | `data-ok-tab-navigation="…"` | style | `none` `content` `header` `all` | — | Tab moves between body cells (`content`), headers (`header`) or both (`all`); `none` leaves the grid. |
+| `columnHeaderHeight` | `data-ok-column-header-height="…"` | number | number | — | Column header height (px) before density. Default 56. |
+| `columnGroupHeaderHeight` | `data-ok-column-group-header-height="…"` | number | number | — | Column group header height (px) before density (default: the column headers'). |
+| `headerFilterHeight` | `data-ok-header-filter-height="…"` | number | number | — | Header filter row height (px) before density (default: the column headers', else 56). |
+| `showCellVerticalBorder` | `data-ok-show-cell-vertical-border` | flag | boolean | off | Vertical lines between the cells. |
+| `showColumnVerticalBorder` | `data-ok-show-column-vertical-border` | flag | boolean | off | Full-height vertical lines between the column headers. |
+| `rowSpacingType` | `data-ok-row-spacing-type="…"` | style | `margin` `border` | — | `getRowSpacing` space outside each row (`margin`) or inside it, under its background (`border`). |
+| `autoHeight` | `data-ok-auto-height` | flag | boolean | off | The grid grows with its rows: no scroll area, so no virtualization. |
+| `autoPageSize` | `data-ok-auto-page-size` | flag | boolean | off | The page size fits the grid's height (no rows per page choice). The grid needs a height. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -272,7 +280,9 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `historyStackSize` (30; 0: off), `onUndo` / `onRedo` (`{ ids }`), `showHistoryControls` (MUI X:
 `slotProps.toolbar.showHistoryControls`), apiRef `history` (`undo()` / `redo()` → `Promise<boolean>`,
 `clear()`, `canUndo()`, `canRedo()`); (4.18.54) `hideFooterPagination`, `hideFooterRowCount`,
-`hideFooterSelectedRowCount`, `label`, `tabNavigation`. Beyond MUI X (4.18.11,
+`hideFooterSelectedRowCount`, `label`, `tabNavigation`; (4.18.53) `columnHeaderHeight`,
+`columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`,
+`rowSpacingType`, `autoHeight`, `autoPageSize`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -483,6 +493,16 @@ with DOM methods and hides the TablePagination while `data-ok-hide-footer-pagina
 `tabNavigation`: Tab / Shift + Tab move the tab stop (the one `tabindex=0`) to the next / previous
 cell in reading order within the mode's cells, and leave the grid past the ends (not prevented).
 
+Layout (4.18.53): `columnHeaderHeight` / `columnGroupHeaderHeight` / `headerFilterHeight` (px ×
+0.7 / 1 / 1.3, rounded) become `--_ok-data-grid-header-height`, `--_ok-data-grid-group-header-height`
+and `--_ok-data-grid-header-filter-height` on the root (only those given; the header filter row
+follows `columnHeaderHeight`). `showCellVerticalBorder` / `showColumnVerticalBorder` draw a 1px
+`--ok-divider` line at each cell's / header's end. `rowSpacingType="border"` turns the row spacing
+into padding (measured rows already hold it). `autoHeight`: the grid grows with its rows, so it
+never virtualizes. `autoPageSize` (paged grids): core `gridAutoPageSize(main, rowStep)` = the scroll
+area's height without the header and pinned rows, over the row height + 1px, at least 1; measured
+by a ResizeObserver and again when the row height changes; the page stays (clamped).
+
 Status bar (4.18.11): with `statusBar` and `cellSelection`, the selected cells of the page (data
 rows, shown columns) give Count (cells with a value) and, with numbers in `number` columns, Sum,
 Average, Min and Max through the aggregation functions of those names (core `gridSelectionStats`,
@@ -587,9 +607,10 @@ the detailed record of what is kept.
 | Sorting / filtering / quick filter: models + callbacks, `sortingMode`, `filterMode`, `disableColumnSorting`, `disableColumnFilter`, `disableMultipleColumnsSorting` / `-Filtering`, `quickFilter*`, `ignoreDiacritics` | same | kept | |
 | Filtering: `filterDebounceMs`, `columnFilterDebounceMs`, `disableChildrenFiltering`, `disableChildrenSorting` | — | deferred | |
 | Pagination: `pagination`, `paginationModel`, `paginationMode`, `pageSizeOptions`, `rowCount` | same | kept | |
-| Pagination: `autoPageSize`, `paginationMeta` / `onPaginationMetaChange`, `estimatedRowCount`, `onRowCountChange` | — | deferred | unknown row counts, page size from height |
+| Pagination: `autoPageSize` | same | kept (4.18.53) | rows of the grid's row height (not per-row heights); the rows per page select goes away; HTML: `data-ok-auto-page-size` (the runtime writes the pagination's `data-ok-rows-per-page`) |
+| Pagination: `paginationMeta` / `onPaginationMetaChange`, `estimatedRowCount`, `onRowCountChange` | — | deferred | unknown row counts (4.18.56) |
 | Layout: `density`, `rowHeight`, `getRowHeight`, `getEstimatedRowHeight`, `getRowSpacing`, `rowSpanning`, `listView` | same | kept | |
-| Layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `rowSpacingType`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `autoHeight` | — | deferred | `autoHeight` = unbounded grid (CSS) today |
+| Layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `rowSpacingType`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `autoHeight` | same | kept (4.18.53) | heights × the density factor as root private properties (core `gridHeaderHeightProperties`; HTML through CSSOM); `headerFilterHeight` defaults to `columnHeaderHeight`, else 56px (MUI X: the header height); `rowSpacingType="border"` is padding inside the row (its background covers it); `autoHeight` sets the root's `block-size: auto` and stops the scroll area's flex (an author height still wins) |
 | Layout: `height`, `scrollbarSize`, `resizeThrottleMs`, `throttleRowsMs`, `nonce`, `logger`, `logLevel`, `experimentalFeatures`, `featureDependencies` | — | not applicable | consumer CSS / engine internals (no injected styles) |
 | Columns: resize, reorder, pinning, visibility props + callbacks, `columnGroupingModel`, `autosizeOnMount`, `autosizeOptions` | same | kept | |
 | Columns: `disableAutosize`, `onColumnResize`, `keepColumnPositionIfDraggedOutside`, `pinnedColumnsSectionSeparator`, `pinnedRowsSectionSeparator` | — | deferred | |

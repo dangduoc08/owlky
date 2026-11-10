@@ -756,6 +756,8 @@ export interface DataGridParts {
   "data-ok-searchable": Value<"false">;
   /** On a row: `false` means the row can't be selected. */
   "data-ok-selectable": Value<"false">;
+  /** On a row: extra space below it, in pixels. */
+  "data-ok-spacing-bottom": Value<string>;
   /** On a row: extra space above it, in pixels. */
   "data-ok-spacing-top": Value<string>;
   /**

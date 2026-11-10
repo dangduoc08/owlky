@@ -3446,9 +3446,58 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "Tab moves between body cells (`content`), headers (`header`) or both (`all`); `none` leaves the grid.",
     { optional: true },
   ),
+  columnHeaderHeight: number(
+    "data-ok-column-header-height",
+    undefined,
+    "Column header height (px) before density. Default 56.",
+    { min: 1 },
+  ),
+  columnGroupHeaderHeight: number(
+    "data-ok-column-group-header-height",
+    undefined,
+    "Column group header height (px) before density (default: the column headers').",
+    { min: 1 },
+  ),
+  headerFilterHeight: number(
+    "data-ok-header-filter-height",
+    undefined,
+    "Header filter row height (px) before density (default: the column headers', else 56).",
+    { min: 1 },
+  ),
+  showCellVerticalBorder: flag(
+    "data-ok-show-cell-vertical-border",
+    "Vertical lines between the cells.",
+  ),
+  showColumnVerticalBorder: flag(
+    "data-ok-show-column-vertical-border",
+    "Full-height vertical lines between the column headers.",
+  ),
+  rowSpacingType: style(
+    "data-ok-row-spacing-type",
+    ["margin", "border"] as const,
+    "margin",
+    "`getRowSpacing` space outside each row (`margin`) or inside it, under its background (`border`).",
+    { optional: true },
+  ),
+  autoHeight: flag(
+    "data-ok-auto-height",
+    "The grid grows with its rows: no scroll area, so no virtualization.",
+  ),
+  autoPageSize: flag(
+    "data-ok-auto-page-size",
+    "The page size fits the grid's height (no rows per page choice). The grid needs a height.",
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  columnHeaderHeight?: number | undefined;
+  columnGroupHeaderHeight?: number | undefined;
+  headerFilterHeight?: number | undefined;
+  showCellVerticalBorder?: boolean | undefined;
+  showColumnVerticalBorder?: boolean | undefined;
+  rowSpacingType?: "margin" | "border" | undefined;
+  autoHeight?: boolean | undefined;
+  autoPageSize?: boolean | undefined;
   hideFooterPagination?: boolean | undefined;
   hideFooterRowCount?: boolean | undefined;
   hideFooterSelectedRowCount?: boolean | undefined;

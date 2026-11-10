@@ -562,6 +562,14 @@
     margin-block: var(--_ok-data-grid-spacing-top, 0px) var(--_ok-data-grid-spacing-bottom, 0px);
   }
 
+  /* rowSpacingType="border": the space is inside the row, so its background covers it. */
+  :where(
+    [data-ok-data-grid][data-ok-row-spacing-type="border"] [data-ok-data-grid-body] > [role="row"]
+  ) {
+    margin-block: 0;
+    padding-block: var(--_ok-data-grid-spacing-top, 0px) var(--_ok-data-grid-spacing-bottom, 0px);
+  }
+
   :where([data-ok-data-grid-body] > [role="row"][data-ok-row-height="auto"] > [role="gridcell"]) {
     display: flex;
     align-items: center;
@@ -838,7 +846,49 @@
 
   /* Header filters: a row of small fields under the column headers. */
   :where([data-ok-data-grid-header] > [data-ok-data-grid-header-filters]) {
-    --_ok-data-grid-header-height: calc(var(--ok-spacing) * 14);
+    --_ok-data-grid-header-height: var(
+      --_ok-data-grid-header-filter-height,
+      calc(var(--ok-spacing) * 14)
+    );
+  }
+
+  /* Column group rows: their own height (columnGroupHeaderHeight), else the column headers'. */
+  :where([data-ok-data-grid-header] > [data-ok-data-grid-group-row] > *) {
+    height: var(--_ok-data-grid-group-header-height, var(--_ok-data-grid-header-height));
+  }
+
+  /* Vertical lines: between the cells (showCellVerticalBorder), between the headers (showColumnVerticalBorder). */
+  :where(
+    [data-ok-data-grid][data-ok-show-cell-vertical-border]
+      [data-ok-data-grid-main]
+      [role="gridcell"]
+  ) {
+    border-inline-end: 1px solid var(--ok-divider);
+  }
+
+  :where(
+    [data-ok-data-grid][data-ok-show-column-vertical-border]
+      [data-ok-data-grid-header]
+      [role="columnheader"]
+  ) {
+    border-inline-end: 1px solid var(--ok-divider);
+  }
+
+  :where(
+    [data-ok-data-grid][data-ok-show-column-vertical-border]
+      [data-ok-data-grid-header]
+      [role="columnheader"]::after
+  ) {
+    display: none;
+  }
+
+  /* autoHeight: the grid and its scroll area grow with the rows. */
+  :where([data-ok-data-grid][data-ok-auto-height]) {
+    block-size: auto;
+  }
+
+  :where([data-ok-data-grid][data-ok-auto-height] > [data-ok-data-grid-main]) {
+    flex: none;
   }
 
   :where([data-ok-data-grid-header-filters] > [role="columnheader"]) {

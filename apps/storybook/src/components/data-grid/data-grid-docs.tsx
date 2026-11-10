@@ -6,6 +6,8 @@ import cellsGroup from "../../../../../packages/html/src/components/data-grid/ex
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
+import dimensionsBorders from "../../../../../packages/html/src/components/data-grid/examples/dimensions-borders.html?raw";
+import dimensionsPages from "../../../../../packages/html/src/components/data-grid/examples/dimensions-pages.html?raw";
 import editorsGroup from "../../../../../packages/html/src/components/data-grid/examples/editors-group.html?raw";
 import footerGroup from "../../../../../packages/html/src/components/data-grid/examples/footer-group.html?raw";
 import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
@@ -1603,6 +1605,74 @@ export function Issues() {
       // Tab moves through the headers and the cells
       tabNavigation="all"
     />
+  );
+}`,
+  },
+  {
+    id: "dimensions",
+    title: "Size the headers and draw cell borders",
+    body: "`columnHeaderHeight` sets the height of the column headers, `columnGroupHeaderHeight` the height of the column group rows and `headerFilterHeight` the height of the header filter row, in pixels. The density scales them, like the rows: compact by 0.7 and comfortable by 1.3. The header filter row takes the column headers' height unless it has its own. `showCellVerticalBorder` draws a line between the cells and `showColumnVerticalBorder` between the column headers. `getRowSpacing` adds space above and below rows. By default, the space is a margin outside the row. With `rowSpacingType=\"border\"`, the space is inside the row, so the hover and selection colors cover it. `autoHeight` makes the grid grow with its rows instead of scrolling, so don't give it a height. In HTML, write the same options as attributes, and the spacing of each row in `data-ok-spacing-top` and `data-ok-spacing-bottom`.",
+    html: `${gridOf(dimensionsBorders)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "priority", headerName: "Priority" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      columnGroupingModel={[
+        { groupId: "work", headerName: "Work", children: [{ field: "priority" }, { field: "points" }] },
+      ]}
+      columnHeaderHeight={44}
+      columnGroupHeaderHeight={36}
+      showCellVerticalBorder
+      showColumnVerticalBorder
+      // 4 pixels above and below each row, inside the row
+      getRowSpacing={() => ({ top: 4, bottom: 4 })}
+      rowSpacingType="border"
+      autoHeight
+      hideFooter
+    />
+  );
+}`,
+  },
+  {
+    id: "auto-page-size",
+    title: "Fit the page size to the height",
+    body: "With `autoPageSize`, each page holds as many rows as the grid's height shows without scrolling, and the footer drops its rows per page menu. The grid needs a height of its own, for example from a flex layout or a CSS `height`. It measures again when it's resized or its density changes, and keeps the current page when it can. `onPaginationModelChange` reports each new page size.",
+    html: `${gridOf(dimensionsPages)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const tasks = Array.from({ length: 24 }, (_, i) => ({
+  id: i + 1,
+  title: \`Task \${i + 1}\`,
+  priority: ["High", "Medium", "Low"][i % 3],
+  points: (i % 5) + 1,
+}));
+
+const columns: GridColDef<(typeof tasks)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "priority", headerName: "Priority" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function Tasks() {
+  return (
+    // The grid needs a height: the page size follows it
+    <DataGrid aria-label="Tasks" rows={tasks} columns={columns} autoPageSize style={{ height: 520 }} />
   );
 }`,
   },

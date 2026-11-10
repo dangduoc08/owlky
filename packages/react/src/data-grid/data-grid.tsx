@@ -67,6 +67,7 @@ import {
   gridAggregationFunctionsFor,
   gridAlign,
   gridAriaSort,
+  gridAutoPageSize,
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
@@ -101,6 +102,7 @@ import {
   gridGroupRows,
   gridGroupsById,
   gridHeaderAlign,
+  gridHeaderHeightProperties,
   gridHistoryRow,
   gridMissingRanges,
   gridOperatorNeedsValue,
@@ -611,6 +613,31 @@ export interface DataGridProps<R>
   rowSpanning?: boolean | undefined;
   /** Row height, px, before the density factor. Default 52. */
   rowHeight?: number | undefined;
+  /** Column header height, px, before the density factor. Default 56. */
+  columnHeaderHeight?: number | undefined;
+  /** Column group header height, px, before the density factor. Default: `columnHeaderHeight`. */
+  columnGroupHeaderHeight?: number | undefined;
+  /**
+   * Header filter row height, px, before the density factor. Default: `columnHeaderHeight`, else
+   * 56.
+   */
+  headerFilterHeight?: number | undefined;
+  /** Vertical lines between the cells. */
+  showCellVerticalBorder?: boolean | undefined;
+  /** Full-height vertical lines between the column headers. */
+  showColumnVerticalBorder?: boolean | undefined;
+  /**
+   * Where `getRowSpacing` puts its space: outside the row (`margin`, default) or inside it, under
+   * its background (`border`).
+   */
+  rowSpacingType?: "margin" | "border" | undefined;
+  /** The grid grows with its rows (no scroll area, so no virtualization). Don't give it a height. */
+  autoHeight?: boolean | undefined;
+  /**
+   * The page size fits the grid's height, and the rows per page choice goes away. The grid needs a
+   * height.
+   */
+  autoPageSize?: boolean | undefined;
   /** A row's height: px, or `"auto"` (the content decides); `null`: the default. */
   getRowHeight?:
     | ((params: { id: string; model: R; densityFactor: number }) => number | "auto" | null)
@@ -1061,6 +1088,14 @@ function DataGridInner<R>(
     autosizeOptions,
     rowSpanning,
     rowHeight,
+    columnHeaderHeight,
+    columnGroupHeaderHeight,
+    headerFilterHeight,
+    showCellVerticalBorder,
+    showColumnVerticalBorder,
+    rowSpacingType,
+    autoHeight,
+    autoPageSize,
     getRowHeight,
     getEstimatedRowHeight,
     getRowClassName,
@@ -1726,6 +1761,11 @@ function DataGridInner<R>(
   const variable =
     !!getRowHeight || !!getRowSpacing || (!!getDetailPanelContent && detailIds.length > 0);
   const baseHeight = Math.round((rowHeight ?? 52) * factor);
+  // Header heights of their own (px × the density factor), as private properties of the root.
+  const headerHeights = gridHeaderHeightProperties(
+    { columnHeaderHeight, columnGroupHeaderHeight, headerFilterHeight },
+    density,
+  );
   const measured = useRef(new Map<string, number>());
   const [, remeasured] = useState(0);
   // Virtualization starts once the grid is measured: the first render (and SSR) shows every row,
@@ -1740,12 +1780,16 @@ function DataGridInner<R>(
       const heights = pageRows.map((row, i) => {
         const own = heightOf(row);
         const space = spacingOf(row, i);
+        const seen = measured.current.get(idOf(row));
         const box =
-          measured.current.get(idOf(row)) ??
+          seen ??
           (typeof own === "number"
             ? own + 1
             : (getEstimatedRowHeight?.({ id: idOf(row), model: row }) ?? baseHeight) + 1);
-        return box + (space.top ?? 0) + (space.bottom ?? 0);
+        // Border spacing is inside the row: a measured row already holds it.
+        return seen !== undefined && rowSpacingType === "border"
+          ? box
+          : box + (space.top ?? 0) + (space.bottom ?? 0);
       });
       offsets = gridRowOffsets(heights);
       range = gridRowWindowOf(offsets, vp.offset, vp.viewport, rowBufferPx);
@@ -2079,6 +2123,24 @@ function DataGridInner<R>(
   // A new density or new rows: measure the rows again.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-measures when these change.
   useEffect(() => watcher.current?.measure(), [density, rendered.length > 0]);
+  // autoPageSize: the page size follows the scroll area's height (rows of the grid's height).
+  const fitPage = useRef<() => void>(undefined as never);
+  fitPage.current = () => {
+    const main = gridRef.current;
+    if (!autoPageSize || !main || hideFooter || hideFooterPagination || lazy) return;
+    const size = gridAutoPageSize(main, baseHeight + 1);
+    if (size === pagination.pageSize) return;
+    const last = Math.max(Math.ceil(total / size), 1) - 1;
+    setPagination({ page: Math.min(pagination.page, last), pageSize: size });
+  };
+  useEffect(() => {
+    if (!autoPageSize || typeof ResizeObserver !== "function") return;
+    const observer = new ResizeObserver(() => fitPage.current());
+    observer.observe(gridRef.current as HTMLDivElement);
+    return () => observer.disconnect();
+  }, [autoPageSize]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fits again when the rows' height changes.
+  useEffect(() => fitPage.current(), [autoPageSize, baseHeight]);
 
   const cache = dataSourceCache === undefined ? defaultCache : dataSourceCache;
   const request = JSON.stringify({
@@ -4650,6 +4712,14 @@ function DataGridInner<R>(
         hideFooterRowCount,
         hideFooterSelectedRowCount,
         tabNavigation,
+        columnHeaderHeight,
+        columnGroupHeaderHeight,
+        headerFilterHeight,
+        showCellVerticalBorder,
+        showColumnVerticalBorder,
+        rowSpacingType,
+        autoHeight,
+        autoPageSize,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(groupingModel.length && !treeData
@@ -4693,9 +4763,15 @@ function DataGridInner<R>(
       data-ok-runtime="off"
       {...props}
       style={
-        rowHeight === undefined
+        rowHeight === undefined && !Object.keys(headerHeights).length
           ? props.style
-          : ({ "--_ok-data-grid-row-height": `${baseHeight}px`, ...props.style } as CSSProperties)
+          : ({
+              ...(rowHeight === undefined
+                ? {}
+                : { "--_ok-data-grid-row-height": `${baseHeight}px` }),
+              ...headerHeights,
+              ...props.style,
+            } as CSSProperties)
       }
     >
       {toolbar}
@@ -5085,7 +5161,8 @@ function DataGridInner<R>(
               count={total}
               page={page}
               rowsPerPage={pagination.pageSize}
-              rowsPerPageOptions={pageSizeOptions}
+              rowsPerPageOptions={autoPageSize ? [] : pageSizeOptions}
+              {...(autoPageSize ? { "data-ok-rows-per-page": pagination.pageSize } : {})}
               onPageChange={(next) => setPagination({ ...pagination, page: next })}
               onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
               labelRowsPerPage={labels.paginationRowsPerPage}

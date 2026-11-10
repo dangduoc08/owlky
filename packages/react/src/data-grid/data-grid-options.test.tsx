@@ -149,3 +149,139 @@ describe("DataGrid footer and toolbar", () => {
     expect(document.activeElement?.getAttribute("aria-label")).toBe("after");
   });
 });
+
+/** Resolves once `test` passes after a mutation of `target` (ResizeObserver work lands later). */
+const whenMutated = (target: Element, test: () => boolean) =>
+  new Promise<void>((resolve) => {
+    if (test()) return resolve();
+    const observer = new MutationObserver(() => {
+      if (!test()) return;
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(target, { attributes: true, childList: true, subtree: true });
+  });
+
+describe("DataGrid layout options", () => {
+  const root = () => document.querySelector("[data-ok-data-grid]") as HTMLElement;
+
+  it("header heights: px × density on the root's private properties", () => {
+    const { rerender } = render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS.slice(0, 2)}
+        columns={COLUMNS}
+        columnHeaderHeight={40}
+        columnGroupingModel={[{ groupId: "g", children: [{ field: "name" }, { field: "team" }] }]}
+        columnGroupHeaderHeight={30}
+        headerFilters
+        hideFooter
+      />,
+    );
+    expect(root().getAttribute("data-ok-column-header-height")).toBe("40");
+    expect(root().style.getPropertyValue("--_ok-data-grid-header-height")).toBe("40px");
+    expect(root().style.getPropertyValue("--_ok-data-grid-group-header-height")).toBe("30px");
+    // The header filters follow the column headers' height unless they have their own.
+    expect(root().style.getPropertyValue("--_ok-data-grid-header-filter-height")).toBe("40px");
+    const name = grid().querySelector('[role="columnheader"][data-ok-field="name"]') as HTMLElement;
+    expect(name.getBoundingClientRect().height).toBe(40);
+    const group = document.querySelector(
+      '[role="columnheader"][data-ok-group-id="g"]',
+    ) as HTMLElement;
+    expect(group.getBoundingClientRect().height).toBe(30);
+    rerender(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS.slice(0, 2)}
+        columns={COLUMNS}
+        density="compact"
+        columnHeaderHeight={40}
+        headerFilterHeight={60}
+        hideFooter
+      />,
+    );
+    expect(root().style.getPropertyValue("--_ok-data-grid-header-height")).toBe("28px");
+    expect(root().style.getPropertyValue("--_ok-data-grid-header-filter-height")).toBe("42px");
+    expect(root().style.getPropertyValue("--_ok-data-grid-group-header-height")).toBe("");
+  });
+
+  it("vertical borders, border spacing and autoHeight", async () => {
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS.slice(0, 3)}
+        columns={COLUMNS}
+        showCellVerticalBorder
+        showColumnVerticalBorder
+        getRowSpacing={() => ({ top: 4, bottom: 6 })}
+        rowSpacingType="border"
+        autoHeight
+        hideFooter
+      />,
+    );
+    const cell = grid().querySelector('[role="gridcell"][data-ok-field="name"]') as HTMLElement;
+    expect(getComputedStyle(cell).borderInlineEndWidth).toBe("1px");
+    const head = screen.getByRole("columnheader", { name: /^Name/ });
+    expect(getComputedStyle(head).borderInlineEndWidth).toBe("1px");
+    const row = cell.closest('[role="row"]') as HTMLElement;
+    expect(getComputedStyle(row).paddingTop).toBe("4px");
+    expect(getComputedStyle(row).paddingBottom).toBe("6px");
+    expect(getComputedStyle(row).marginTop).toBe("0px");
+    expect(root().hasAttribute("data-ok-auto-height")).toBe(true);
+    expect(getComputedStyle(grid()).flexGrow).toBe("0");
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("margin spacing stays outside the row by default", () => {
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS.slice(0, 3)}
+        columns={COLUMNS}
+        getRowSpacing={() => ({ top: 4 })}
+        hideFooter
+      />,
+    );
+    const row = grid().querySelector('[data-ok-data-grid-body] > [role="row"]') as HTMLElement;
+    expect(getComputedStyle(row).marginTop).toBe("4px");
+    expect(getComputedStyle(row).paddingTop).toBe("0px");
+    expect(root().hasAttribute("data-ok-row-spacing-type")).toBe(false);
+  });
+
+  it("autoPageSize fits the page to the grid's height and follows resizes", async () => {
+    const onPaginationModelChange = vi.fn();
+    render(
+      <div style={{ height: "500px", display: "flex", flexDirection: "column" }}>
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          autoPageSize
+          style={{ flex: "1 1 auto", minHeight: 0 }}
+          onPaginationModelChange={onPaginationModelChange}
+        />
+      </div>,
+    );
+    const pagination = footer().querySelector("[data-ok-table-pagination]") as HTMLElement;
+    // No rows per page choice.
+    expect(pagination.querySelector("select")).toBeNull();
+    const fits = () => {
+      const header = grid().querySelector("[data-ok-data-grid-header]") as HTMLElement;
+      return Math.floor((grid().clientHeight - header.offsetHeight) / 53);
+    };
+    await whenMutated(
+      pagination,
+      () => pagination.getAttribute("data-ok-rows-per-page") === String(fits()),
+    );
+    expect(shownRows()).toHaveLength(fits());
+    expect(onPaginationModelChange).toHaveBeenLastCalledWith({ page: 0, pageSize: fits() });
+    expect(grid().scrollHeight).toBeLessThanOrEqual(grid().clientHeight + 1);
+    // A taller grid holds more rows.
+    (root().parentElement as HTMLElement).style.height = "700px";
+    await whenMutated(
+      pagination,
+      () => pagination.getAttribute("data-ok-rows-per-page") === String(fits()),
+    );
+    expect(shownRows()).toHaveLength(Math.min(fits(), 12));
+  });
+});

@@ -1060,6 +1060,63 @@
        "header",
        "all"
       ]
+     },
+     {
+      "attr": "data-ok-column-header-height",
+      "description": "Column header height (px) before density. Default 56.",
+      "kind": "number",
+      "min": 1,
+      "name": "columnHeaderHeight"
+     },
+     {
+      "attr": "data-ok-column-group-header-height",
+      "description": "Column group header height (px) before density (default: the column headers').",
+      "kind": "number",
+      "min": 1,
+      "name": "columnGroupHeaderHeight"
+     },
+     {
+      "attr": "data-ok-header-filter-height",
+      "description": "Header filter row height (px) before density (default: the column headers', else 56).",
+      "kind": "number",
+      "min": 1,
+      "name": "headerFilterHeight"
+     },
+     {
+      "attr": "data-ok-show-cell-vertical-border",
+      "description": "Vertical lines between the cells.",
+      "kind": "flag",
+      "name": "showCellVerticalBorder"
+     },
+     {
+      "attr": "data-ok-show-column-vertical-border",
+      "description": "Full-height vertical lines between the column headers.",
+      "kind": "flag",
+      "name": "showColumnVerticalBorder"
+     },
+     {
+      "attr": "data-ok-row-spacing-type",
+      "default": "margin",
+      "description": "`getRowSpacing` space outside each row (`margin`) or inside it, under its background (`border`).",
+      "kind": "style",
+      "name": "rowSpacingType",
+      "optional": true,
+      "values": [
+       "margin",
+       "border"
+      ]
+     },
+     {
+      "attr": "data-ok-auto-height",
+      "description": "The grid grows with its rows: no scroll area, so no virtualization.",
+      "kind": "flag",
+      "name": "autoHeight"
+     },
+     {
+      "attr": "data-ok-auto-page-size",
+      "description": "The page size fits the grid's height (no rows per page choice). The grid needs a height.",
+      "kind": "flag",
+      "name": "autoPageSize"
      }
     ],
     "parts": [
@@ -1844,6 +1901,12 @@
       "value": "string"
      },
      {
+      "description": "On a row: extra space below it, in pixels.",
+      "kind": "value",
+      "name": "data-ok-spacing-bottom",
+      "value": "string"
+     },
+     {
       "description": "On a row: extra space above it, in pixels.",
       "kind": "value",
       "name": "data-ok-spacing-top",
@@ -1893,6 +1956,16 @@
       "description": "Receives the grid's methods.",
       "name": "apiRef",
       "type": "RefObject<GridApi<R> | null>"
+     },
+     {
+      "description": "The grid grows with its rows (no scroll area, so no virtualization). Don't give it a height.",
+      "name": "autoHeight",
+      "type": "boolean"
+     },
+     {
+      "description": "The page size fits the grid's height, and the rows per page choice goes away. The grid needs a height.",
+      "name": "autoPageSize",
+      "type": "boolean"
      },
      {
       "description": "Columns fit their content once the grid shows (resizable, non-flex columns).",
@@ -1955,9 +2028,20 @@
       "type": "number"
      },
      {
+      "default": "columnHeaderHeight",
+      "description": "Column group header height, px, before the density factor.",
+      "name": "columnGroupHeaderHeight",
+      "type": "number"
+     },
+     {
       "description": "Header groups over the columns (multi-level headers).",
       "name": "columnGroupingModel",
       "type": "readonly GridColumnGroup[]"
+     },
+     {
+      "description": "Column header height, px, before the density factor. Default 56.",
+      "name": "columnHeaderHeight",
+      "type": "number"
      },
      {
       "description": "Column order (fields); missing fields follow in their place.",
@@ -2177,6 +2261,12 @@
       "description": "Overrides the grouping column (header, width…). A function is called for each grouping column with the fields it groups by (`rowGroupingColumnMode=\"multiple\"`: one each).",
       "name": "groupingColDef",
       "type": "GridGroupingColDef | ((params: { fields: string[]; }) => GridGroupingColDef)"
+     },
+     {
+      "default": "columnHeaderHeight",
+      "description": "Header filter row height, px, before the density factor. , else 56.",
+      "name": "headerFilterHeight",
+      "type": "number"
      },
      {
       "description": "A row of filter fields under the column headers.",
@@ -2583,6 +2673,11 @@
       "type": "readonly string[]"
      },
      {
+      "description": "Where `getRowSpacing` puts its space: outside the row (`margin`, default) or inside it, under its background (`border`).",
+      "name": "rowSpacingType",
+      "type": "\"border\" | \"margin\""
+     },
+     {
       "description": "Neighbouring cells with the same value merge (per column).",
       "name": "rowSpanning",
       "type": "boolean"
@@ -2597,6 +2692,16 @@
       "description": "Distance from the end that counts as the end, px. Default 80.",
       "name": "scrollEndThreshold",
       "type": "number"
+     },
+     {
+      "description": "Vertical lines between the cells.",
+      "name": "showCellVerticalBorder",
+      "type": "boolean"
+     },
+     {
+      "description": "Full-height vertical lines between the column headers.",
+      "name": "showColumnVerticalBorder",
+      "type": "boolean"
      },
      {
       "default": "true",

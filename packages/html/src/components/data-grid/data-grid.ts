@@ -67,6 +67,7 @@ import {
   gridAggregationPositionOf,
   gridAlign,
   gridAriaSort,
+  gridAutoPageSize,
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
@@ -99,6 +100,7 @@ import {
   gridGroupRows,
   gridGroupsById,
   gridHeaderAlign,
+  gridHeaderHeightProperties,
   gridHistoryRow,
   gridMissingRanges,
   gridOperatorNeedsValue,
@@ -446,6 +448,11 @@ const {
   hideFooterPagination,
   hideFooterRowCount,
   hideFooterSelectedRowCount,
+  columnHeaderHeight,
+  columnGroupHeaderHeight,
+  headerFilterHeight,
+  rowSpacingType,
+  autoPageSize,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -1794,8 +1801,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const heights = () =>
       pageList.map((row) => {
         const own = Number(row.getAttribute("data-ok-row-height"));
-        const box = measured.get(row) ?? (own > 0 ? own : baseHeight()) + 1;
-        return box + spacingOf(row, "top") + spacingOf(row, "bottom");
+        const seen = measured.get(row);
+        const box = seen ?? (own > 0 ? own : baseHeight()) + 1;
+        // Border spacing is inside the row: a measured row already holds it.
+        return seen !== undefined && readStyle(element, rowSpacingType) === "border"
+          ? box
+          : box + spacingOf(row, "top") + spacingOf(row, "bottom");
       });
     let offsets: number[] | null = null;
     /** Row spans of the page (`rowSpanning`), recomputed on draw. */
@@ -2062,6 +2073,24 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
 
     // Virtualization and the end of the rows (infinite loading).
     let endCount = -1;
+    // autoPageSize: the page size follows the scroll area's height (rows of the grid's height).
+    const fitPage = () => {
+      if (!element.hasAttribute(autoPageSize.attr) || !paging() || lazy()) return;
+      const size = gridAutoPageSize(main, baseHeight() + 1);
+      if (size === pageSize) return;
+      // The pagination reports each change (resetting the page): set the target after.
+      const target = Math.min(page, Math.max(Math.ceil(total / size), 1) - 1);
+      pagination?.setAttribute("data-ok-rows-per-page", String(size));
+      pager()?.setRowsPerPage(size);
+      pageSize = size;
+      page = target;
+      pager()?.setPage(target);
+    };
+    if (typeof ResizeObserver === "function") {
+      const fit = new ResizeObserver(() => fitPage());
+      fit.observe(main);
+      signal.addEventListener("abort", () => fit.disconnect());
+    }
     const scrollWatcher = createGridScrollWatcher(main, {
       onChange: (next) => {
         viewport = next;
@@ -4203,11 +4232,24 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       // A row height of the grid (with the density factor), through CSSOM.
       rootVars = syncCustomProperties(
         element,
-        element.hasAttribute(rowHeightOption.attr)
-          ? { "--_ok-data-grid-row-height": `${baseHeight()}px` }
-          : {},
+        {
+          ...(element.hasAttribute(rowHeightOption.attr)
+            ? { "--_ok-data-grid-row-height": `${baseHeight()}px` }
+            : {}),
+          ...gridHeaderHeightProperties(
+            {
+              columnHeaderHeight: readNumber(element, columnHeaderHeight) as number | undefined,
+              columnGroupHeaderHeight: readNumber(element, columnGroupHeaderHeight) as
+                | number
+                | undefined,
+              headerFilterHeight: readNumber(element, headerFilterHeight) as number | undefined,
+            },
+            readStyle(element, densityOption) as GridDensity,
+          ),
+        },
         rootVars,
       );
+      fitPage();
       syncOverlays(rows().length);
     };
     let rootVars: string[] = [];
@@ -4265,6 +4307,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         hideFooterPagination.attr,
         hideFooterRowCount.attr,
         hideFooterSelectedRowCount.attr,
+        columnHeaderHeight.attr,
+        columnGroupHeaderHeight.attr,
+        headerFilterHeight.attr,
+        autoPageSize.attr,
       ],
     });
 

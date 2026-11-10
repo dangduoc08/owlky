@@ -815,13 +815,16 @@ export {
 } from "./data-grid/grid-excel.js";
 export {
   type GridFormat,
+  type GridHeaderHeights,
   type GridRowSpans,
   type GridSpan,
   type GridState,
+  gridAutoPageSize,
   gridColSpans,
   gridDensityFactor,
   gridFormats,
   gridFormatValue,
+  gridHeaderHeightProperties,
   gridRowOffsets,
   gridRowSpans,
   gridRowWindowOf,

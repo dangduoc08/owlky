@@ -115,6 +115,15 @@ const historyColumns: GridColDef<Issue>[] = [
   { field: "points", headerName: "Points", type: "number", width: 110, editable: true },
 ];
 
+/* Two dozen tasks for the page size story (story data). */
+export const TASKS: Issue[] = Array.from({ length: 24 }, (_, i) => ({
+  id: `task-${i + 1}`,
+  title: `Task ${i + 1}`,
+  priority: (["High", "Medium", "Low"] as const)[i % 3] as Issue["priority"],
+  due: null,
+  points: (i % 5) + 1,
+}));
+
 /* Read-only issues for the footer, layout and selection stories. */
 const plainColumns: GridColDef<Issue>[] = [
   { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
@@ -198,6 +207,50 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  dimensions: [
+    {
+      title: "Header heights, borders and row spacing",
+      content: (
+        // Lower headers, lines between cells and headers, 4px of space inside each row.
+        <DataGrid
+          id="grid-dimensions"
+          aria-label="Issues"
+          className="sb-grid-wide"
+          rows={ISSUES}
+          columns={plainColumns}
+          columnGroupingModel={[
+            {
+              groupId: "work",
+              headerName: "Work",
+              children: [{ field: "priority" }, { field: "points" }],
+            },
+          ]}
+          columnHeaderHeight={44}
+          columnGroupHeaderHeight={36}
+          showCellVerticalBorder
+          showColumnVerticalBorder
+          getRowSpacing={() => ({ top: 4, bottom: 4 })}
+          rowSpacingType="border"
+          autoHeight
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Page size from the height",
+      content: (
+        // As many rows per page as the grid's height holds.
+        <DataGrid
+          id="grid-pages"
+          aria-label="Tasks"
+          className="sb-grid"
+          rows={TASKS}
+          columns={plainColumns}
+          autoPageSize
+        />
+      ),
+    },
+  ],
 };
 
 export const MORE_FILES = {
@@ -206,4 +259,8 @@ export const MORE_FILES = {
   modes: [["Edit modes", "group"]],
   history: [["Undo and redo", "group"]],
   footer: [["Footer, label and Tab navigation", "group"]],
+  dimensions: [
+    ["Header heights, borders and row spacing", "borders"],
+    ["Page size from the height", "pages"],
+  ],
 } as const;

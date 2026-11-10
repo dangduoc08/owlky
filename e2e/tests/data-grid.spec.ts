@@ -581,5 +581,32 @@ for (const impl of implementations) {
       await page.keyboard.press("Shift+Tab");
       await expect(page.getByRole("columnheader", { name: /^Title/ })).toBeFocused();
     });
+
+    test("layout options: header heights, borders and a page size from the height", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "dimensions"));
+      const issues = page.getByRole("grid", { name: "Issues" });
+      const title = issues.locator(
+        '[data-ok-data-grid-header] [role="columnheader"][data-ok-field="title"]',
+      );
+      expect((await title.boundingBox())?.height).toBe(44);
+      const cell = issues.locator('[role="gridcell"][data-ok-field="title"]').first();
+      await expect(cell).toHaveCSS("border-inline-end-width", "1px");
+      await expect(cell.locator("xpath=..")).toHaveCSS("padding-top", "4px");
+      const tasks = page.getByRole("grid", { name: "Tasks" });
+      const pager = page.locator("#grid-pages [data-ok-table-pagination]");
+      await expect(pager.locator("select")).toHaveCount(0);
+      // The page holds what the scroll area shows, without scrolling.
+      const fits = await tasks.evaluate((main) => {
+        const header = main.querySelector("[data-ok-data-grid-header]") as HTMLElement;
+        return Math.floor((main.clientHeight - header.offsetHeight) / 53);
+      });
+      await expect(pager).toHaveAttribute("data-ok-rows-per-page", String(fits));
+      await expect(
+        tasks.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+      ).toHaveCount(fits);
+      expect(await tasks.evaluate((main) => main.scrollHeight <= main.clientHeight + 1)).toBe(true);
+    });
   });
 }

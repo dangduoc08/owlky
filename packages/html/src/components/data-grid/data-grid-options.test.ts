@@ -100,3 +100,76 @@ describe("data grid footer and toolbar", () => {
     expect(host.querySelectorAll('[data-ok-data-grid-main] [tabindex="0"]')).toHaveLength(1);
   });
 });
+
+/** Resolves once `test` passes after a mutation of `target` (ResizeObserver work lands later). */
+const whenMutated = (target: Element, test: () => boolean) =>
+  new Promise<void>((resolve) => {
+    if (test()) return resolve();
+    const observer = new MutationObserver(() => {
+      if (!test()) return;
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(target, { attributes: true, childList: true, subtree: true });
+  });
+
+describe("data grid layout options", () => {
+  it("header heights through CSSOM, borders and border spacing, as React writes them", async () => {
+    const { host, root } = setup(snippet("dimensions-borders"));
+    expect(root.style.getPropertyValue("--_ok-data-grid-header-height")).toBe("44px");
+    expect(root.style.getPropertyValue("--_ok-data-grid-group-header-height")).toBe("36px");
+    expect(root.hasAttribute("style")).toBe(true);
+    const header = host.querySelector(
+      '[data-ok-data-grid-header] [role="columnheader"][data-ok-field="title"]',
+    ) as HTMLElement;
+    expect(header.getBoundingClientRect().height).toBe(44);
+    const group = host.querySelector(
+      '[role="columnheader"][data-ok-group-id="work"]',
+    ) as HTMLElement;
+    expect(group.getBoundingClientRect().height).toBe(36);
+    const cell = host.querySelector('[role="gridcell"][data-ok-field="title"]') as HTMLElement;
+    expect(getComputedStyle(cell).borderInlineEndWidth).toBe("1px");
+    expect(getComputedStyle(header).borderInlineEndWidth).toBe("1px");
+    const row = cell.closest('[role="row"]') as HTMLElement;
+    expect(getComputedStyle(row).paddingTop).toBe("4px");
+    expect(getComputedStyle(row).marginTop).toBe("0px");
+    // Density scales the heights; a header filter height of its own.
+    root.setAttribute("data-ok-density", "compact");
+    root.setAttribute("data-ok-header-filter-height", "50");
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-data-grid-header-height")).toBe("31px");
+    expect(root.style.getPropertyValue("--_ok-data-grid-header-filter-height")).toBe("35px");
+    root.removeAttribute("data-ok-column-header-height");
+    root.removeAttribute("data-ok-column-group-header-height");
+    root.removeAttribute("data-ok-header-filter-height");
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-data-grid-header-height")).toBe("");
+    await expectNoAxeViolations(host);
+  });
+
+  it("autoPageSize fits the page to the grid's height and follows resizes", async () => {
+    const { host, root } = setup(snippet("dimensions-pages"));
+    root.style.height = "500px";
+    const main = host.querySelector("[data-ok-data-grid-main]") as HTMLElement;
+    const pagination = host.querySelector("[data-ok-table-pagination]") as HTMLElement;
+    const fits = () => {
+      const header = main.querySelector("[data-ok-data-grid-header]") as HTMLElement;
+      return Math.floor((main.clientHeight - header.offsetHeight) / 53);
+    };
+    await whenMutated(
+      pagination,
+      () => pagination.getAttribute("data-ok-rows-per-page") === String(fits()) && fits() > 5,
+    );
+    await settle();
+    expect(shown(host)).toHaveLength(fits());
+    expect(main.scrollHeight).toBeLessThanOrEqual(main.clientHeight + 1);
+    const before = fits();
+    root.style.height = "700px";
+    await whenMutated(
+      pagination,
+      () => pagination.getAttribute("data-ok-rows-per-page") === String(fits()) && fits() > before,
+    );
+    await settle();
+    expect(shown(host)).toHaveLength(fits());
+  });
+});
