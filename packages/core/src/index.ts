@@ -17,6 +17,8 @@ export {
   type AvatarColor,
   type AvatarGroupSpacing,
   type AvatarVariant,
+  accordionActionsAttributes,
+  accordionActionsOptions,
   accordionAttributes,
   accordionOptions,
   accordionVariants,

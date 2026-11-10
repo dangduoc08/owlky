@@ -403,6 +403,19 @@ export interface AccordionAnatomyOptions {
 export const accordionAttributes = (options: AccordionAnatomyOptions = {}): DataAttributes =>
   optionAttributes(accordionOptions, { ...options });
 
+export const accordionActionsOptions = defineOptions(
+  "accordion-actions",
+  "data-ok-accordion-actions",
+  {
+    disableSpacing: flag("data-ok-disable-spacing", "No space between the actions."),
+  },
+);
+
+/** `data-ok-*` attributes of an accordion's actions row. */
+export const accordionActionsAttributes = (
+  options: { disableSpacing?: boolean | undefined } = {},
+): DataAttributes => optionAttributes(accordionActionsOptions, { ...options });
+
 // --- Alert ------------------------------------------------------------------------------------
 
 export const alertSeverities = ["success", "info", "warning", "error"] as const;
@@ -5532,6 +5545,7 @@ export const linkRel = (target: unknown, rel: unknown): string | undefined => {
 
 export const optionSchemas = {
   accordion: accordionOptions,
+  "accordion-actions": accordionActionsOptions,
   alert: alertOptions,
   button: buttonOptions,
   "icon-button": iconButtonOptions,

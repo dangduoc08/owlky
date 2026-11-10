@@ -42,6 +42,7 @@ const SPECS = {
   paper: "paper.md",
   card: "card.md",
   "card-actions": "card.md",
+  "accordion-actions": "accordion.md",
   typography: "typography.md",
   link: "link.md",
   list: "list.md",

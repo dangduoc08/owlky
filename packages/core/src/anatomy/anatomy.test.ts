@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  accordionActionsAttributes,
   accordionAttributes,
   alertAttributes,
   ariaSort,
@@ -180,6 +181,19 @@ describe("accordionAttributes", () => {
       "data-ok-disabled": "",
     });
     expect(accordionAttributes({ variant: "x" as never })["data-ok-variant"]).toBe("default");
+  });
+});
+
+describe("accordionActionsAttributes", () => {
+  it("marker, and disableSpacing only when on", () => {
+    expect(accordionActionsAttributes()).toEqual({ "data-ok-accordion-actions": "" });
+    expect(accordionActionsAttributes({ disableSpacing: true })).toEqual({
+      "data-ok-accordion-actions": "",
+      "data-ok-disable-spacing": "",
+    });
+    expect(accordionActionsAttributes({ disableSpacing: "x" as never })).toEqual(
+      accordionActionsAttributes(),
+    );
   });
 });
 

@@ -1591,13 +1591,27 @@
        "description": "A row of actions under the details.",
        "elements": [
         "div"
+       ],
+       "options": [
+        {
+         "attr": "data-ok-disable-spacing",
+         "description": "No space between the actions.",
+         "kind": "flag",
+         "name": "disableSpacing"
+        }
        ]
       },
       "name": "AccordionActions",
       "react": {
        "description": "Buttons at the end of the content.",
        "native": "HTMLDivElement",
-       "props": []
+       "props": [
+        {
+         "description": "Removes the space between the actions.",
+         "name": "disableSpacing",
+         "type": "boolean"
+        }
+       ]
       }
      },
      {
@@ -1695,6 +1709,18 @@
       }
      ],
      "root": "data-ok-accordion"
+    },
+    {
+     "name": "accordion-actions",
+     "options": [
+      {
+       "attr": "data-ok-disable-spacing",
+       "description": "No space between the actions.",
+       "kind": "flag",
+       "name": "disableSpacing"
+      }
+     ],
+     "root": "data-ok-accordion-actions"
     }
    ],
    "sections": [
@@ -1704,17 +1730,17 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndetails[data-ok-accordion][data-ok-variant][name]?[open]?   React: + data-ok-runtime=\"off\"\n  summary[data-ok-accordion-summary][aria-disabled][tabindex=\"-1\"]?   (disabled)\n    … title (your heading, e.g. <h3>) and secondary text\n    span[data-ok-accordion-icon][aria-hidden=\"true\"] › svg[data-ok-accordion-plus] | your icon\n  div[data-ok-accordion-details]\n  div[data-ok-accordion-actions]?\n```\nNative `<details>` / `<summary>`: opening, keyboard (Enter / Space on the summary) and find-in-page\nwork without JavaScript. Same `name` = one open at a time (exclusive group).",
+     "body": "```\ndetails[data-ok-accordion][data-ok-variant][name]?[open]?   React: + data-ok-runtime=\"off\"\n  summary[data-ok-accordion-summary][aria-disabled][tabindex=\"-1\"]?   (disabled)\n    … title (your heading, e.g. <h3>) and secondary text\n    span[data-ok-accordion-icon][aria-hidden=\"true\"] › svg[data-ok-accordion-plus] | your icon\n  div[data-ok-accordion-details]\n  div[data-ok-accordion-actions][data-ok-disable-spacing]?\n```\nNative `<details>` / `<summary>`: opening, keyboard (Enter / Space on the summary) and find-in-page\nwork without JavaScript. Same `name` = one open at a time (exclusive group).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `accordion`: listed under \"options\".)\n\nOther props: `name` (native attribute, exclusive group) · React `expanded` / `defaultExpanded` /\n`onChange(expanded)`; `AccordionSummary expandIcon`.",
+     "body": "(Options of `accordion`: listed under \"options\".)\n\n(Options of `accordion-actions`: listed under \"options\".)\n\nOther props: `name` (native attribute, exclusive group) · React `expanded` / `defaultExpanded` /\n`onChange(expanded)`; `AccordionSummary expandIcon`.",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "- Summary: padding 16px / 8px end, `--ok-typography-subtitle1-*`; details: padding 0 16px 16px,\n  `--ok-typography-body2-*`, `--ok-text-secondary`. Stories put the summary text in a Typography\n  (`subtitle1`, `component=\"span\"`, like the reference), plus a `body2` / `textSecondary` line\n  in \"Controlled\".\n- `default`: closed items are separated by `--ok-divider`; the open item is a card\n  (`--ok-bg-paper`, `--ok-shadow-z8`, `--ok-radius-md`) with a 16px gutter above and below.\n- `outlined`: one bordered list (`--ok-divider`, `--ok-radius-md`), items joined.\n- `soft`: separate filled items (`channel(grey-500)` 8 %, 16 % when open, `--ok-radius-xl`), 8px apart; content uses `text-primary` (secondary text on the 16 % tint is below AA).\n- Icon: the default plus turns into a minus; any icon rotates 180° when open.\n- Disabled: `--ok-text-disabled`, no pointer events.\n- Opening animates the content height where `::details-content` / `interpolate-size` are supported.",
+     "body": "- Summary: padding 16px / 8px end, `--ok-typography-subtitle1-*`; details: padding 0 16px 16px,\n  `--ok-typography-body2-*`, `--ok-text-secondary`. Stories put the summary text in a Typography\n  (`subtitle1`, `component=\"span\"`, like the reference), plus a `body2` / `textSecondary` line\n  in \"Controlled\".\n- `default`: closed items are separated by `--ok-divider`; the open item is a card\n  (`--ok-bg-paper`, `--ok-shadow-z8`, `--ok-radius-md`) with a 16px gutter above and below.\n- `outlined`: one bordered list (`--ok-divider`, `--ok-radius-md`), items joined.\n- `soft`: separate filled items (`channel(grey-500)` 8 %, 16 % when open, `--ok-radius-xl`), 8px apart; content uses `text-primary` (secondary text on the 16 % tint is below AA).\n- Icon: the default plus turns into a minus; any icon rotates 180° when open.\n- Actions: flex row at the end, 8px between the actions (0 with `disableSpacing`), padding 0 16px 16px.\n- Disabled: `--ok-text-disabled`, no pointer events.\n- Opening animates the content height where `::details-content` / `interpolate-size` are supported.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -1744,7 +1770,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Accordion, AccordionSummary, AccordionDetails, AccordionActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Accordion` `children`, `disabled`, `disableGutters` | same | kept | |\n| `expanded`, `defaultExpanded` | same; HTML `open` | kept | |\n| `onChange(event, expanded)` | `onChange(expanded)`; HTML `ok:accordion:beforetoggle` / `toggle` | renamed | no event argument |\n| `slots.heading` (default `h3` around the summary) | author's heading inside the summary | renamed | composition |\n| `slots.region` / `slots.transition` (Collapse, `unmountOnExit`) | `div[data-ok-accordion-details]`, `::details-content` height animation | not applicable | native `<details>`; content stays mounted (find-in-page) |\n| — | `variant` (`default` `outlined` `soft`), `name` (exclusive group) | kept | beyond upstream: reference variants, native attribute |\n| `AccordionSummary` `expandIcon`, `children` | same | kept | |\n| `AccordionSummary` `focusVisibleClassName`, ButtonBase props (ripple) | `:focus-visible` | not applicable | native `<summary>` |\n| `AccordionDetails` `children` | same | kept | |\n| `AccordionActions` `children` | same | kept | |\n| `AccordionActions` `disableSpacing` | — | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Accordion, AccordionSummary, AccordionDetails, AccordionActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Accordion` `children`, `disabled`, `disableGutters` | same | kept | |\n| `expanded`, `defaultExpanded` | same; HTML `open` | kept | |\n| `onChange(event, expanded)` | `onChange(expanded)`; HTML `ok:accordion:beforetoggle` / `toggle` | renamed | no event argument |\n| `slots.heading` (default `h3` around the summary) | author's heading inside the summary | renamed | composition |\n| `slots.region` / `slots.transition` (Collapse, `unmountOnExit`) | `div[data-ok-accordion-details]`, `::details-content` height animation | not applicable | native `<details>`; content stays mounted (find-in-page) |\n| — | `variant` (`default` `outlined` `soft`), `name` (exclusive group) | kept | beyond upstream: reference variants, native attribute |\n| `AccordionSummary` `expandIcon`, `children` | same | kept | |\n| `AccordionSummary` `focusVisibleClassName`, ButtonBase props (ripple) | `:focus-visible` | not applicable | native `<summary>` |\n| `AccordionDetails` `children` | same | kept | |\n| `AccordionActions` `children` | same | kept | |\n| `AccordionActions` `disableSpacing` | same; HTML `data-ok-disable-spacing` | kept | Phase 4 row 4.18.47 |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -61921,7 +61947,7 @@
      "body": "An accordion shows a list of sections that people can expand and collapse in place, such as a FAQ or groups of settings. It keeps long pages short while every answer stays on the page. Accordions are native `<details>` elements, so they open, close and work with find-in-page even without JavaScript.",
      "html": "<!-- Load once per page -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n\n<details data-ok-accordion data-ok-variant=\"default\">\n  <summary data-ok-accordion-summary>How do I reset my password?<span data-ok-accordion-icon aria-hidden=\"true\"><svg data-ok-accordion-plus aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14\" /><path d=\"M12 5v14\" /></svg></span></summary>\n  <div data-ok-accordion-details>Open Settings, choose Security and select Reset password.</div>\n</details>",
      "id": "overview",
-     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { Accordion, AccordionDetails, AccordionSummary } from \"@owlky/react\";\n\nexport function PasswordFaq() {\n  return (\n    <Accordion>\n      <AccordionSummary>How do I reset my password?</AccordionSummary>\n      <AccordionDetails>Open Settings, choose Security and select Reset password.</AccordionDetails>\n    </Accordion>\n  );\n}",
+     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport {\n  Accordion,\n  AccordionActions,\n  AccordionDetails,\n  AccordionSummary,\n  Button,\n} from \"@owlky/react\";\n\nexport function PasswordFaq() {\n  return (\n    <Accordion>\n      <AccordionSummary>How do I reset my password?</AccordionSummary>\n      <AccordionDetails>Open Settings, choose Security and select Reset password.</AccordionDetails>\n    </Accordion>\n  );\n}",
      "title": "Overview"
     },
     {
@@ -61944,6 +61970,13 @@
      "id": "controlled",
      "react": "import { Accordion, AccordionDetails, AccordionSummary } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function BillingSection() {\n  const [expanded, setExpanded] = useState(false);\n  return (\n    <Accordion expanded={expanded} onChange={setExpanded}>\n      <AccordionSummary>Billing</AccordionSummary>\n      <AccordionDetails>Your plan renews on the first day of each month.</AccordionDetails>\n    </Accordion>\n  );\n}",
      "title": "Control the open state"
+    },
+    {
+     "body": "Put buttons for the open item in `AccordionActions`, after the details. The actions sit at the end of the row with 8px between them. Set `disableSpacing` to remove that space, for example when the buttons already have their own margins.",
+     "html": "<details data-ok-accordion data-ok-variant=\"default\" open>\n  <summary data-ok-accordion-summary>Terms of service<span data-ok-accordion-icon aria-hidden=\"true\"><svg data-ok-accordion-plus aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14\" /><path d=\"M12 5v14\" /></svg></span></summary>\n  <div data-ok-accordion-details>You agree to the terms when you create an account.</div>\n  <div data-ok-accordion-actions data-ok-disable-spacing>\n    <button data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" type=\"button\">Cancel</button>\n    <button data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" type=\"button\">Agree</button>\n  </div>\n</details>",
+     "id": "actions",
+     "react": "import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Button } from \"@owlky/react\";\n\nexport function TermsAccordion() {\n  return (\n    <Accordion defaultExpanded>\n      <AccordionSummary>Terms of service</AccordionSummary>\n      <AccordionDetails>You agree to the terms when you create an account.</AccordionDetails>\n      <AccordionActions disableSpacing>\n        <Button variant=\"text\">Cancel</Button>\n        <Button variant=\"contained\">Agree</Button>\n      </AccordionActions>\n    </Accordion>\n  );\n}",
+     "title": "Add actions"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -67294,7 +67327,6 @@
   }
  ],
  "parts": {
-  "data-ok-accordion-actions": "data-ok-accordion",
   "data-ok-accordion-details": "data-ok-accordion",
   "data-ok-accordion-icon": "data-ok-accordion",
   "data-ok-accordion-plus": "data-ok-accordion",

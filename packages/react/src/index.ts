@@ -144,6 +144,7 @@ export {
 export {
   Accordion,
   AccordionActions,
+  type AccordionActionsProps,
   AccordionDetails,
   type AccordionProps,
   AccordionSummary,

@@ -1,6 +1,11 @@
 "use client";
 
-import { type AccordionVariant, accordionAttributes, closeOtherDetails } from "@owlky/core";
+import {
+  type AccordionVariant,
+  accordionActionsAttributes,
+  accordionAttributes,
+  closeOtherDetails,
+} from "@owlky/core";
 import {
   type ComponentPropsWithoutRef,
   createContext,
@@ -173,9 +178,14 @@ export const AccordionDetails = forwardRef<HTMLDivElement, ComponentPropsWithout
   },
 );
 
+export interface AccordionActionsProps extends ComponentPropsWithoutRef<"div"> {
+  /** Removes the space between the actions. */
+  disableSpacing?: boolean | undefined;
+}
+
 /** Buttons at the end of the content. */
-export const AccordionActions = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<"div">>(
-  function AccordionActions(props, ref) {
-    return <div ref={ref} data-ok-accordion-actions="" {...props} />;
+export const AccordionActions = forwardRef<HTMLDivElement, AccordionActionsProps>(
+  function AccordionActions({ disableSpacing, ...props }, ref) {
+    return <div ref={ref} {...accordionActionsAttributes({ disableSpacing })} {...props} />;
   },
 );
