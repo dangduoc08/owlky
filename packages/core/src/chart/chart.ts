@@ -5,6 +5,12 @@ import {
 } from "./chart-annotations.js";
 import { type ChartYAxis, chartYAxes, withChartAxes } from "./chart-axes.js";
 import { layoutHeatmap, layoutTreemap } from "./chart-cells.js";
+import {
+  type ChartDiscreteMarker,
+  chartDiscreteMarkers,
+  chartPatternAt,
+  withChartCues,
+} from "./chart-cues.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
 import {
@@ -23,6 +29,8 @@ import {
   type ChartDataLabelPosition,
   type ChartFill,
   type ChartLegend,
+  type ChartMarkerShape,
+  type ChartPattern,
   type ChartSeries,
   type ChartStackType,
   type ChartTableModel,
@@ -99,6 +107,16 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly backgroundBarOpacity?: number | undefined;
   /** Bars: track corner radius in px. Default 4. */
   readonly backgroundBarRadius?: number | undefined;
+  /** Marker shape of every series (4.18.62; series may set their own). */
+  readonly markerShape?: ChartMarkerShape | undefined;
+  /** Pattern of every series or slice (turns patterns on, like `fill: "pattern"`). */
+  readonly fillPattern?: ChartPattern | undefined;
+  /** Line width of every series in px. */
+  readonly strokeWidth?: number | undefined;
+  /** A distinct marker shape, pattern and dash per series (non-color cues, WCAG 1.4.1). */
+  readonly colorBlindMode?: boolean | undefined;
+  /** Markers on single points (ApexCharts `markers.discrete`). */
+  readonly discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
   readonly horizontal?: boolean | undefined;
   readonly markerSize?: number | undefined;
   readonly columnWidth?: number | undefined;
@@ -167,6 +185,9 @@ export interface ChartLegendItem {
   readonly hidden: boolean;
   /** `legendValues`: the item's value as text. */
   readonly value?: string | undefined;
+  /** Non-color cues (4.18.62): the series' marker shape or pattern, shown on its marker. */
+  readonly shape?: ChartMarkerShape | undefined;
+  readonly pattern?: ChartPattern | undefined;
 }
 
 export interface ChartRender {
@@ -207,6 +228,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     plain.type !== "scatter" &&
     plain.type !== "bubble";
   const priceAxis = plain.series[0]?.axis;
+  const cued = stock ? plain : withChartCues(plain, input);
   const data: ChartData = stock
     ? {
         ...plain,
@@ -218,7 +240,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
           ),
         ],
       }
-    : plain;
+    : cued;
   // Radial bars show percentages unless told otherwise.
   const format = chartFormat(data, {
     ...input,
@@ -226,6 +248,9 @@ export function renderChart(input: ChartRenderInput): ChartRender {
   });
   const hidden = new Set(input.hidden ?? []);
   const circular = isCircularChart(data.type);
+  /** Pie, donut and polar area slices: their pattern (4.18.62; rings have none). */
+  const slicePattern = (x: number) =>
+    circular && data.type !== "radialBar" ? chartPatternAt(input, x) : undefined;
   type Layout = (d: ChartData, o: Parameters<typeof layoutChart>[1]) => ChartLayout;
   const layouts: Partial<Record<ChartType, Layout>> = {
     radar: (d, o) => layoutRadar(d, o, format),
@@ -285,6 +310,12 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     candleDownColor: input.candleDownColor,
     donutSize: input.donutSize,
     colorRanges: input.colorRanges,
+    discreteMarkers: chartDiscreteMarkers(input.discreteMarkers),
+    cueMarkers: input.colorBlindMode,
+    strokeWidth: input.strokeWidth,
+    slicePatterns: circular
+      ? (data.series[0]?.points ?? []).map((point) => slicePattern(point.x))
+      : undefined,
     zoom,
   });
   const zoomable = base.x !== undefined && extent !== null && !input.sparkline;
@@ -321,6 +352,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
         color: point.color as ChartColor,
         hidden: hidden.has(point.x),
         ...(input.legendValues && point.y !== null ? { value: format.value(point.y, 0) } : {}),
+        ...(slicePattern(point.x) ? { pattern: slicePattern(point.x) } : {}),
       }))
     : data.series.map((series, index) => {
         const last = [...series.points].reverse().find((point) => point.y !== null)?.y;
@@ -332,6 +364,8 @@ export function renderChart(input: ChartRenderInput): ChartRender {
           ...(input.legendValues && typeof last === "number"
             ? { value: format.value(last, index) }
             : {}),
+          ...(series.shape ? { shape: series.shape } : {}),
+          ...(series.pattern ? { pattern: series.pattern } : {}),
         };
       });
   const legend = input.legend === "none" || input.sparkline || items.length < 2 ? null : items;
@@ -366,7 +400,7 @@ function renderSankey(input: ChartRenderInput): ChartRender {
       nodeWidth: input.nodeWidth,
       whitespace: input.whitespace,
       edgeOpacity: input.edgeOpacity,
-      fill: input.fill,
+      fill: input.fill === "pattern" ? undefined : input.fill,
       axisTitles: input.axisTitles,
       dataLabels: input.dataLabels,
     },

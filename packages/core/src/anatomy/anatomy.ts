@@ -42,6 +42,8 @@ import {
   type ChartDataLabelPosition,
   type ChartFill,
   type ChartLegend,
+  type ChartMarkerShape,
+  type ChartPattern,
   type ChartStackType,
   type ChartType,
   type ChartXType,
@@ -50,6 +52,8 @@ import {
   chartDataLabelPositions,
   chartFills,
   chartLegends,
+  chartMarkerShapes,
+  chartPatterns,
   chartStackTypes,
   chartTypes,
   chartXTypes,
@@ -4256,7 +4260,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-fill",
     chartFills,
     "gradient",
-    "Area fill: a fading `gradient` or a `solid` tint.",
+    "Area fill: a fading `gradient`, a `solid` tint or a `pattern` (bars, areas and slices too; a different pattern per series unless `fillPattern` is set).",
   ),
   stacked: flag("data-ok-stacked", "Stacks the series on each other (bars, lines, areas)."),
   horizontal: flag("data-ok-horizontal", "Bars run left to right, categories down the side."),
@@ -4450,6 +4454,30 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Bars: corner radius of the tracks in px (default 4).",
     { min: 0 },
   ),
+  markerShape: style(
+    "data-ok-marker-shape",
+    chartMarkerShapes,
+    "circle",
+    "Shape of the markers of every series: `circle`, `square`, `triangle`, `diamond`, `cross`, `plus` or `star` (series may set their own).",
+    { optional: true },
+  ),
+  fillPattern: style(
+    "data-ok-fill-pattern",
+    chartPatterns,
+    "slantedLines",
+    "Pattern of every bar, area and slice: `slantedLines`, `squares`, `circles`, `horizontalLines` or `verticalLines` (turns patterns on; series may set their own).",
+    { optional: true },
+  ),
+  strokeWidth: number(
+    "data-ok-stroke-width",
+    undefined,
+    "Line width of every series in px (default 2.5; series may set their own).",
+    { min: 0 },
+  ),
+  colorBlindMode: flag(
+    "data-ok-color-blind-mode",
+    "Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series.",
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -4512,6 +4540,10 @@ export interface ChartAnatomyOptions {
   backgroundBars?: boolean | undefined;
   backgroundBarOpacity?: number | undefined;
   backgroundBarRadius?: number | undefined;
+  markerShape?: ChartMarkerShape | undefined;
+  fillPattern?: ChartPattern | undefined;
+  strokeWidth?: number | undefined;
+  colorBlindMode?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

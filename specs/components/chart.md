@@ -40,7 +40,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     span[data-ok-chart-status][role=status]                 (visually hidden; announces failed downloads)
   div[data-ok-chart-legend]                              (absent: one series, legend "none")
     button[type=button][data-ok-chart-legend-item][data-ok-color][aria-pressed]
-      span[data-ok-chart-legend-marker] + text + span[data-ok-chart-legend-value]? (legendValues)
+      span[data-ok-chart-legend-marker][data-ok-shape]?[data-ok-pattern]? + text + span[data-ok-chart-legend-value]? (legendValues)
   div[data-ok-chart-plot][role=group][aria-roledescription=chart][aria-label][tabindex=0]
     svg[data-ok-chart-svg][aria-hidden][focusable=false][width][height][viewBox]
       defs › linearGradient[id][data-ok-color] › stop[data-ok-chart-stop]×2   (gradient areas)
@@ -60,6 +60,12 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-data-labels]?                      (dataLabels; only when a label fits)
         text[data-ok-chart-data-label="inside|outside"]  (inside slices / bars: white; outside: above points)
         text[data-ok-chart-data-label="total"]           (stackTotals: past each stack's end, 4.18.61)
+      Non-color cues (4.18.62): defs › pattern[id][patternUnits=userSpaceOnUse][width=8][height=8]
+        [data-ok-chart-pattern="slantedLines|squares|circles|horizontalLines|verticalLines"][data-ok-color]
+        › rect[data-ok-chart-pattern-tint][fill-opacity] + path | circle[data-ok-chart-pattern-mark]
+        (bars, areas and slices then carry fill=url(#…)); markers may be
+        path[data-ok-chart-marker][data-ok-shape="square|triangle|diamond|cross|plus|star"][data-ok-color]?
+        (hover markers too); lines path[data-ok-chart-line][stroke-width]?[stroke-dasharray]?
       g[data-ok-chart-selected]?                         (selected points, 4.18.60; before the active group)
         circle | rect | path[data-ok-chart-selected-mark] (ring around points, frame around blocks
                                                           and cells, outline of slices and rings)
@@ -124,11 +130,12 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     div[data-ok-chart-tooltip][role=status][hidden]?
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
         + div[data-ok-chart-tooltip-rows]
-        div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
+        div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color][data-ok-shape]?[data-ok-pattern]? + span + span[data-ok-chart-tooltip-value]
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
     caption (the chart's name)
     thead › tr › th[scope=col] (x label) + th[scope=col][data-ok-type]?[data-ok-color]?[data-ok-y-axis]? (one per series;
-      data-ok-y-axis: its value axis when the chart has several)
+      data-ok-y-axis: its value axis when the chart has several; series cues, 4.18.62:
+      [data-ok-marker-shape]?[data-ok-fill-pattern]?[data-ok-stroke-width]?[data-ok-dash-array]?)
       Series of several values per point (box plot, range area, bubble): two header rows —
       tr › th[scope=col][rowspan=2] (x label) + th[scope=colgroup][colspan=n] (the series) |
            th[scope=col][rowspan=2] (single-value series)
@@ -186,6 +193,22 @@ bars: one rect per bar slot (stacked: per category) across the plot, `background
 4, at most half the slot), colors from `backgroundBarColors` by category index (else a 12 % grey),
 `fill-opacity` from `backgroundBarOpacity` (an attribute: CSS never sets it); drawn before the
 crosshair group.
+
+Non-color cues (core `chart-cues.ts`, 4.18.62, WCAG 1.4.1): `withChartCues` resolves per series
+its marker `shape` (series `markerShape`, else `markerShape`, else with `colorBlindMode` the n-th of
+circle, square, triangle, diamond, cross, plus, star; only where markers are drawn: scatter, or
+lines and areas with `markerSize` or `colorBlindMode`, which draws 4px markers), its `pattern`
+(bars and areas: series `fillPattern`, else `fillPattern`, else with `fill="pattern"` or
+`colorBlindMode` the n-th of slantedLines, squares, circles, horizontalLines, verticalLines; slices
+of pie, donut and polar area charts take it by category), its dash (series `dashArray`, else
+`dashArray`, else with `colorBlindMode` solid, `6 4`, `2 3`, `8 3 2 3`, `12 4`) and its line width
+(series `strokeWidth`, else `strokeWidth`; CSS 2.5px without). Shapes: squares 0.9r, triangles and
+diamonds about 1.2r, stars 1.3r / 0.55r, crosses and pluses as strokes. Patterns: one 8px
+`userSpaceOnUse` tile per pattern and color (`<prefix>-pattern-<style>-<color>`), a 0.24 tint and
+marks of the color; a pattern replaces an area's gradient. `discreteMarkers` draw a marker on one
+point of a line, area or scatter series (radius `size`, default the series' size and at least 5;
+`color`, `shape`), whatever its markers; `dataPointIndex` as in the selection. Legend and tooltip
+markers repeat the shape (`clip-path`) or the pattern (CSS gradients). Stock charts ignore cues.
 
 Polar geometry (core `chart-polar.ts`): angles in degrees clockwise from 12 o'clock; the chart is
 centered in the SVG, radius = half the smaller side - 4px. Donut hole 72 % of the radius. Radial
@@ -267,7 +290,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
-| `fill` | `data-ok-fill="…"` | style | `gradient` `solid` | `gradient` | Area fill: a fading `gradient` or a `solid` tint. |
+| `fill` | `data-ok-fill="…"` | style | `gradient` `solid` `pattern` | `gradient` | Area fill: a fading `gradient`, a `solid` tint or a `pattern` (bars, areas and slices too; a different pattern per series unless `fillPattern` is set). |
 | `stacked` | `data-ok-stacked` | flag | boolean | off | Stacks the series on each other (bars, lines, areas). |
 | `horizontal` | `data-ok-horizontal` | flag | boolean | off | Bars run left to right, categories down the side. |
 | `height` | `data-ok-height="…"` | number | number | `320` | Height of the plot in px (at least 40, sparklines 8). |
@@ -307,6 +330,10 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `backgroundBars` | `data-ok-background-bars` | flag | boolean | off | Bars: a grey track the height of the plot behind each bar. |
 | `backgroundBarOpacity` | `data-ok-background-bar-opacity="…"` | number | number | — | Bars: opacity of the tracks behind the bars (0 to 1; default 1). |
 | `backgroundBarRadius` | `data-ok-background-bar-radius="…"` | number | number | — | Bars: corner radius of the tracks in px (default 4). |
+| `markerShape` | `data-ok-marker-shape="…"` | style | `circle` `square` `triangle` `diamond` `cross` `plus` `star` | — | Shape of the markers of every series: `circle`, `square`, `triangle`, `diamond`, `cross`, `plus` or `star` (series may set their own). |
+| `fillPattern` | `data-ok-fill-pattern="…"` | style | `slantedLines` `squares` `circles` `horizontalLines` `verticalLines` | — | Pattern of every bar, area and slice: `slantedLines`, `squares`, `circles`, `horizontalLines` or `verticalLines` (turns patterns on; series may set their own). |
+| `strokeWidth` | `data-ok-stroke-width="…"` | number | number | — | Line width of every series in px (default 2.5; series may set their own). |
+| `colorBlindMode` | `data-ok-color-blind-mode` | flag | boolean | off | Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series. |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
@@ -318,7 +345,9 @@ Text attributes (React prop ↔ HTML attribute, written by React too): `yTitle` 
 `hidden`, `log-base <n>`, `tick-amount <n>`, `min <n>`, `max <n>`, then `title <text>`; series
 names stay out of it: each series column carries its axis, `th[data-ok-y-axis="<n>"]`), `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
 `locale` ↔ `data-ok-locale` (default `en-US`), `backgroundBarColors` ↔
-`data-ok-background-bar-colors` (palette names separated by spaces), `group` ↔ `data-ok-group`, `brushTarget` ↔
+`data-ok-background-bar-colors` (palette names separated by spaces), `discreteMarkers` ↔
+`data-ok-discrete-markers` (`"<series> <point> [color] [shape] [size]; …"`, core
+`chartDiscreteMarkersText` / `parseChartDiscreteMarkers`), `group` ↔ `data-ok-group`, `brushTarget` ↔
 `data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
 `chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
 
@@ -467,6 +496,8 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   reachable without a pointer.
 - Legend buttons: `aria-pressed`; hidden series show a hollow marker and crossed-out text (not color
   alone); targets at least 24 × 24px.
+- Non-color cues (4.18.62, WCAG 1.4.1): marker shapes, patterns and dashes tell series apart without
+  color; `colorBlindMode` turns all three on, and legend and tooltip markers repeat them.
 - Axis labels use `--ok-text-secondary` (AA in light and dark); the reference's lighter grey is
   under 4.5:1 (ADR-0014). Center labels too (the reference paints a gauge's name in the
   disabled grey or the series color).
@@ -621,10 +652,13 @@ Option areas not covered by the table above:
 | `tooltip.theme`, `.style`, `.fillSeriesColor`, `.marker`, `.onDatasetHover` | — | not applicable | tokens; series highlight always on |
 | `legend.horizontalAlign`, `.inverseOrder`, `.showForSingleSeries`, `.showForNullSeries`, `.showForZeroSeries`, `.onItemClick.toggleDataSeries`, `.onItemHover.highlightDataSeries`, `.customLegendItems`, `.clusterGroupedSeries` | `legend` (position) | deferred | alignment, single-series legend, toggle opt-out, custom items |
 | `legend.markers.shape`, `.fontSize` / `.offset*` / `.itemMargin` / `.labels.colors`, `.floating`, `.width` / `.height`, `.tooltipHoverFormatter` | — | not applicable | design / CSS |
-| `markers.shape`, `.discrete` (per-point markers), `.hover.size`, `.showNullDataPoints`, `.strokeWidth` | `markerSize` | deferred | marker shapes (also non-color series cues, WCAG 1.4.1) and per-point markers |
+| `markers.shape` (one or a list per series: `circle`, `square`, `triangle`, `diamond`, `cross`, `plus`, `star`) | `markerShape` (`data-ok-marker-shape`, optional) + series `markerShape` (`th[data-ok-marker-shape]`) | renamed (4.18.62) | ApexCharts' list → the series field; `rect`, `line`, `sparkle`: not built (square, star cover them) |
+| `markers.discrete` (`seriesIndex`, `dataPointIndex`, `fillColor`, `size`, `shape`) | `discreteMarkers` (`color`, `size`, `shape`; HTML `data-ok-discrete-markers` text) | renamed (4.18.62) | `strokeColor`: not applicable (the paper ring); also on series without markers |
+| `markers.hover.size`, `.showNullDataPoints`, `.strokeWidth` | — | not applicable | hover size fixed by the design; gaps break the line |
 | `markers.colors` / `.strokeColors` / `.fillOpacity` / `.offset*`, `largeDatasetThreshold`, `onClick` / `onDblClick` | — | not applicable | series colors; selection event above |
-| `stroke.width` (per series), `.lineCap`, `.colors`, `stroke.fill` | `dashArray` | deferred | line width per series |
-| `fill.type: "pattern"` (`verticalLines`, `horizontalLines`, `slantedLines`, `squares`, `circles`) | `fill` (`gradient` · `solid`) | deferred | pattern fills (non-color cue, WCAG 1.4.1) |
+| `stroke.width` (one or a list), `stroke.dashArray` (one or a list) | `strokeWidth` (`data-ok-stroke-width`), `dashArray` + series `strokeWidth` / `dashArray` (`th[data-ok-stroke-width]`, `th[data-ok-dash-array]`) | renamed (4.18.62) | lines and areas; lists → the series fields |
+| `stroke.lineCap`, `.colors`, `stroke.fill` | — | not applicable | design / series colors |
+| `fill.type: "pattern"`, `fill.pattern.style` (`verticalLines`, `horizontalLines`, `slantedLines`, `squares`, `circles`; one or a list) | `fill="pattern"`, `fillPattern` (`data-ok-fill-pattern`, optional) + series `fillPattern` (`th[data-ok-fill-pattern]`) | renamed (4.18.62) | bars, areas, pie / donut / polar slices; without `fillPattern` each series (slice) gets the next pattern; `pattern.width` / `.height` / `.strokeWidth`: fixed by the design (8px tiles) |
 | `fill.type: "image"`, `fill.gradient.*`, `fill.opacity`, `fill.colors` | — | not applicable | design / tokens; `colors` |
 | `plotOptions.bar.borderRadius`, `.borderRadiusApplication`, `.borderRadiusWhenStacked` | fixed radius | not applicable | design |
 | `plotOptions.bar.distributed` | point `color` | renamed | |
@@ -640,7 +674,7 @@ Option areas not covered by the table above:
 | `responsive` (`breakpoint`, `options` overrides) | — | not applicable | container width drives the layout; options per breakpoint are app code |
 | `theme.palette`, `.mode`, `.tokens`, `.follow`, `.name`, `.designSystem` | `colors` (palette names), `data-ok-theme` | renamed | |
 | `theme.monochrome` | — | not applicable | shades of one palette color: `colors` |
-| `theme.accessibility.colorBlindMode` | — | deferred | with the non-color cues row (markers, patterns) |
+| `theme.accessibility.colorBlindMode` (`deuteranopia`, `protanopia`, `tritanopia`, `highContrast`) | `colorBlindMode` flag (`data-ok-color-blind-mode`) | renamed (4.18.62) | no palette swap (colors are tokens): each series gets a distinct marker shape (lines get 4px markers), pattern and dash instead, so color is never the only cue (WCAG 1.4.1) |
 | `annotations.texts`, points `click` / `mouseEnter` / `mouseLeave` / `tooltip`, `yAxisIndex` | `annotations` | deferred | free text annotations; interactive point annotations |
 | `annotations.images`, points `image` / `customSVG`, label `style` / `offset*`, `fillColor` / `borderColor` | — | not applicable | design / tokens |
 | methods `render`, `updateOptions`, `appendSeries`, `add*Annotation` / `removeAnnotation` / `clearAnnotations`, `destroy`, `highlightSeries`, `showSeries` / `hideSeries`, `dataURI`, `setLocale`, `getRadialScales` | instance API above | renamed | see the table above; `setLocale` → `setLocaleText`; `destroy` = runtime `stop()` / unmount; `getRadialScales` not applicable |
@@ -666,5 +700,6 @@ Option areas not covered by the table above:
   same text.
 - Stack and bar stories (4.18.61): Column stacked 100%, Stack totals, Column data labels, Column
   range colors.
+- Cue stories (4.18.62): Marker shapes, Dashed lines, Pattern fills, Color blind mode.
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

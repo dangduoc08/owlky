@@ -1,6 +1,13 @@
+import { chartMarkerNode } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
 import type { ChartArc, ChartLayout, ChartMark, ChartNode, ChartRect } from "./chart-layout.js";
-import type { ChartColor, ChartData, ChartPart } from "./chart-model.js";
+import type {
+  ChartColor,
+  ChartData,
+  ChartMarkerShape,
+  ChartPart,
+  ChartPattern,
+} from "./chart-model.js";
 import { polarPoint, slicePath } from "./chart-polar.js";
 import { onSankeyLink } from "./chart-sankey.js";
 import { type ChartDataPoint, chartMarkPoint, hasChartDataPoint } from "./chart-select.js";
@@ -228,16 +235,28 @@ const BLOCKS: readonly string[] = [
 /** Series types whose points have their own colors in the tooltip (not the series color). */
 const OWN_COLORS: readonly string[] = ["funnel", "boxPlot", "candlestick", "rangeBar", "timeline"];
 
-const circle = (cx: number, cy: number, r: number, color: ChartColor): ChartNode => ({
-  tag: "circle",
-  attrs: {
-    cx: String(cx),
-    cy: String(cy),
-    r: String(r),
-    "data-ok-chart-active-marker": "",
-    "data-ok-color": color,
-  },
-});
+const circle = (
+  cx: number,
+  cy: number,
+  r: number,
+  color: ChartColor,
+  shape?: ChartMarkerShape,
+): ChartNode =>
+  shape
+    ? chartMarkerNode(shape, cx, cy, r, {
+        "data-ok-chart-active-marker": "",
+        "data-ok-color": color,
+      })
+    : {
+        tag: "circle",
+        attrs: {
+          cx: String(cx),
+          cy: String(cy),
+          r: String(r),
+          "data-ok-chart-active-marker": "",
+          "data-ok-color": color,
+        },
+      };
 
 /**
  * Hover nodes: `under` goes into the crosshair group (behind the series: the category band or a
@@ -274,7 +293,7 @@ export function chartActiveNodes(
       };
     }
     const r = mark.r !== undefined ? mark.r + 2 : layout.activeRadius;
-    return { under: [], over: [circle(mark.px, mark.py, r, mark.color)] };
+    return { under: [], over: [circle(mark.px, mark.py, r, mark.color, mark.shape)] };
   }
   const slot = layout.slots.find((entry) => entry.index === active.index);
   if (!slot) return { under: [], over: [] };
@@ -344,7 +363,7 @@ export function chartActiveNodes(
     layout.activeRadius > 0
       ? layout.marks
           .filter((mark) => mark.index === active.index && !BLOCKS.includes(mark.type))
-          .map((mark) => circle(mark.px, mark.py, layout.activeRadius, mark.color))
+          .map((mark) => circle(mark.px, mark.py, layout.activeRadius, mark.color, mark.shape))
       : [];
   return { under, over };
 }
@@ -384,6 +403,9 @@ export interface ChartTooltipRow {
   readonly name: string;
   readonly value: string;
   readonly color: ChartColor;
+  /** Non-color cues (4.18.62) on the row's marker. */
+  readonly shape?: ChartMarkerShape | undefined;
+  readonly pattern?: ChartPattern | undefined;
 }
 
 export interface ChartTooltip {
@@ -433,7 +455,17 @@ function tooltipOf(
         ? (data.categories[index] as number)
         : (data.categories[index] ?? String(index + 1));
   /** Rows of a mark: one value, a range (low – high), five box values or a value and a size. */
-  const rowsOf = (mark: ChartMark, color: ChartColor): ChartTooltipRow[] => {
+  const rowsOf = (mark: ChartMark, color: ChartColor): ChartTooltipRow[] =>
+    cueRows(rowsOfMark(mark, color), mark);
+  const cueRows = (rows: ChartTooltipRow[], mark: ChartMark): ChartTooltipRow[] =>
+    mark.shape || mark.pattern
+      ? rows.map((row) => ({
+          ...row,
+          ...(mark.shape ? { shape: mark.shape } : {}),
+          ...(mark.pattern ? { pattern: mark.pattern } : {}),
+        }))
+      : rows;
+  const rowsOfMark = (mark: ChartMark, color: ChartColor): ChartTooltipRow[] => {
     const series = data.series[mark.series] as (typeof data.series)[number];
     const value = (v: number) => format.value(v, mark.series);
     const { range } = mark;
@@ -484,13 +516,16 @@ function tooltipOf(
     if (!mark) return null;
     return {
       title: format.title(x),
-      rows: [
-        {
-          name: (data.series[0] as (typeof data.series)[number]).name,
-          value: format.value(mark.value, 0),
-          color: mark.color,
-        },
-      ],
+      rows: cueRows(
+        [
+          {
+            name: (data.series[0] as (typeof data.series)[number]).name,
+            value: format.value(mark.value, 0),
+            color: mark.color,
+          },
+        ],
+        mark,
+      ),
       x: mark.px,
       y: mark.py,
     };

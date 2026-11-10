@@ -12,9 +12,11 @@ import {
   type ChartLegendItem,
   type ChartLink,
   type ChartLocaleText,
+  type ChartMarkerShape,
   type ChartNode,
   type ChartOrientation,
   type ChartPart,
+  type ChartPattern,
   type ChartPointInput,
   type ChartRender,
   type ChartSelectionDetail,
@@ -49,6 +51,7 @@ import {
   nextChartActive,
   parseChartColorRanges,
   parseChartColors,
+  parseChartDiscreteMarkers,
   parseChartIndicators,
   parseChartList,
   parseChartYAxes,
@@ -399,9 +402,18 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         }
         button.setAttribute("data-ok-color", item.color);
         button.setAttribute("aria-pressed", String(!item.hidden));
-        if (button.textContent !== item.name + (item.value ?? "") || !button.firstElementChild) {
+        const current = button.firstElementChild;
+        if (
+          button.textContent !== item.name + (item.value ?? "") ||
+          !current ||
+          current.getAttribute("data-ok-shape") !== (item.shape ?? null) ||
+          current.getAttribute("data-ok-pattern") !== (item.pattern ?? null)
+        ) {
           const marker = document.createElement("span");
           marker.setAttribute("data-ok-chart-legend-marker", "");
+          // Non-color cues (4.18.62): the series' shape or pattern.
+          if (item.shape) marker.setAttribute("data-ok-shape", item.shape);
+          if (item.pattern) marker.setAttribute("data-ok-pattern", item.pattern);
           const parts: (Node | string)[] = [marker, item.name];
           if (item.value !== undefined) {
             const value = document.createElement("span");
@@ -439,6 +451,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         const marker = document.createElement("span");
         marker.setAttribute("data-ok-chart-tooltip-marker", "");
         marker.setAttribute("data-ok-color", row.color);
+        if (row.shape) marker.setAttribute("data-ok-shape", row.shape);
+        if (row.pattern) marker.setAttribute("data-ok-pattern", row.pattern);
         const name = document.createElement("span");
         name.textContent = row.name;
         const value = document.createElement("span");
@@ -521,6 +535,17 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         ),
         backgroundBarOpacity: readNumber(element, o.backgroundBarOpacity) as number | undefined,
         backgroundBarRadius: readNumber(element, o.backgroundBarRadius) as number | undefined,
+        markerShape: element.hasAttribute(o.markerShape.attr)
+          ? (readStyle(element, o.markerShape) as ChartMarkerShape)
+          : undefined,
+        fillPattern: element.hasAttribute(o.fillPattern.attr)
+          ? (readStyle(element, o.fillPattern) as ChartPattern)
+          : undefined,
+        strokeWidth: readNumber(element, o.strokeWidth) as number | undefined,
+        colorBlindMode: element.hasAttribute(o.colorBlindMode.attr),
+        discreteMarkers: parseChartDiscreteMarkers(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.discreteMarkers),
+        ),
         horizontal: element.hasAttribute(o.horizontal.attr),
         markerSize: readNumber(element, o.markerSize) as number | undefined,
         columnWidth: Number(readNumber(element, o.columnWidth)),

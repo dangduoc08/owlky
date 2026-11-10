@@ -1,4 +1,5 @@
 import { type ChartYAxis, chartYAxesText } from "./chart-axes.js";
+import { type ChartDiscreteMarker, chartDiscreteMarkersText } from "./chart-cues.js";
 import { type ChartIndicator, chartIndicatorsText } from "./chart-indicators.js";
 import type { ChartColorRange } from "./chart-layout.js";
 import { type ChartColor, chartColors, parseChartNumber } from "./chart-model.js";
@@ -30,6 +31,8 @@ export interface ChartTextOptions {
   readonly xTitle?: string | undefined;
   /** Bars: track colors (`"info-lighter warning-lighter"`, 4.18.61). */
   readonly backgroundBarColors?: readonly ChartColor[] | undefined;
+  /** Markers on single points (`"0 3 error square 6; 1 2"`, 4.18.62). */
+  readonly discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -46,6 +49,7 @@ export const CHART_TEXT_ATTRIBUTES = {
   yaxis: "data-ok-yaxis",
   xTitle: "data-ok-x-title",
   backgroundBarColors: "data-ok-background-bar-colors",
+  discreteMarkers: "data-ok-discrete-markers",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -122,6 +126,9 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
       if (text) out[attr] = text;
     } else if (key === "axisTitles") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "discreteMarkers") {
+      const text = chartDiscreteMarkersText(value as readonly ChartDiscreteMarker[] | undefined);
       if (text) out[attr] = text;
     } else if (key === "backgroundBarColors") {
       const text = ((value as readonly ChartColor[] | undefined) ?? []).filter(isColor).join(" ");

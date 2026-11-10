@@ -57,6 +57,10 @@ const STORIES = [
   "stack-totals",
   "column-data-labels",
   "column-ranges",
+  "marker-shapes",
+  "dashed-lines",
+  "patterns",
+  "color-blind",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

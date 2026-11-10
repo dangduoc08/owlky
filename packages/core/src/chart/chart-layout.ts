@@ -1,4 +1,10 @@
 import { axisScale, type ChartAxisSpec, type ChartValueScale, scaleValue } from "./chart-axes.js";
+import {
+  type ChartDiscreteMarker,
+  type ChartPattern,
+  chartMarkerNode,
+  chartPatternDefs,
+} from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartColor,
@@ -7,6 +13,7 @@ import {
   type ChartDataLabelPosition,
   type ChartDataSeries,
   type ChartFill,
+  type ChartMarkerShape,
   type ChartStackType,
   type ChartType,
   lighterTone,
@@ -37,7 +44,8 @@ export type ChartNodeTag =
   | "text"
   | "defs"
   | "linearGradient"
-  | "stop";
+  | "stop"
+  | "pattern";
 
 export interface ChartNode {
   readonly tag: ChartNodeTag;
@@ -134,6 +142,14 @@ export interface ChartLayoutOptions {
   readonly backgroundBarOpacity?: number | undefined;
   /** Bars: track corner radius in px. Default 4. */
   readonly backgroundBarRadius?: number | undefined;
+  /** Markers on single points (4.18.62, validated by `chartDiscreteMarkers`). */
+  readonly discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
+  /** Lines and areas get markers (4.4px) even without `markerSize` (`colorBlindMode`). */
+  readonly cueMarkers?: boolean | undefined;
+  /** Circular charts: the pattern of each slice by category (4.18.62). */
+  readonly slicePatterns?: readonly (ChartPattern | undefined)[] | undefined;
+  /** Line width of every series in px (series may set their own). */
+  readonly strokeWidth?: number | undefined;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -203,6 +219,9 @@ export interface ChartMark {
   readonly flow?: ChartFlow | undefined;
   /** Blocks (bars, boxes, candles, range bars, funnel bars): the rectangle they cover. */
   readonly box?: ChartRect | undefined;
+  /** Non-color cues (4.18.62): the point's marker shape, the block's or slice's pattern. */
+  readonly shape?: ChartMarkerShape | undefined;
+  readonly pattern?: ChartPattern | undefined;
   /**
    * The point's `dataPointIndex` when it differs from `index`: its position among the series'
    * points with a value (numeric axes).
@@ -1004,6 +1023,15 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       Math.min(100, Math.max(1, (horizontal ? options.barHeight : options.columnWidth) ?? 40))) /
     100;
   const markerSize = Math.max(0, options.markerSize ?? 0);
+  // Non-color cues (4.18.62): cue markers (colorBlindMode), discrete markers, pattern fills.
+  const lineMarkerSize = markerSize > 0 ? markerSize : options.cueMarkers ? 4 : 0;
+  const discrete = new Map(
+    (options.discreteMarkers ?? []).map((entry) => [
+      `${entry.seriesIndex}:${entry.dataPointIndex}`,
+      entry,
+    ]),
+  );
+  const patterns = chartPatternDefs(options.idPrefix);
   const indexesOf = (types: readonly ChartType[]) =>
     visible.filter(({ series }) => types.includes(series.type)).map(({ index }) => index);
   const boxSeries = indexesOf(["boxPlot"]);
@@ -1096,6 +1124,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         // Value ranges (4.18.61) color the bars whose value they hold; a point's own color wins.
         const own = point.color ?? rangeColor(point.y);
         const color = own ?? series.color;
+        const fill = series.pattern ? { fill: patterns.fill(series.pattern, color) } : {};
         marks.push({
           series: index,
           type: series.type,
@@ -1106,6 +1135,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           py: r2(horizontal ? a + size / 2 : end),
           color,
           box: box(a, size, start, end),
+          ...(series.pattern ? { pattern: series.pattern } : {}),
         });
         if (from === to) continue;
         if (options.dataLabels) {
@@ -1141,6 +1171,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
             d: barPath(a, size, start, end, rounded ? 4 : 0, horizontal),
             "data-ok-chart-bar": "",
             ...(own ? { "data-ok-color": own } : {}),
+            ...fill,
           }),
         );
       }
@@ -1424,6 +1455,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         py: r2(py),
         color: series.color,
         ...pointOf(point),
+        ...(series.shape ? { shape: series.shape } : {}),
       });
       if (options.dataLabels && series.type !== "scatter") {
         const entry = percent && stacks ? stack.get(`${index}:${point.x}`) : undefined;
@@ -1444,6 +1476,23 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         );
       }
     }
+    /** A point's marker: the series' shape and size, or its discrete marker (4.18.62). */
+    const markerOf = (
+      point: { x: number; y: number; color?: ChartColor | undefined },
+      size: number,
+    ) => {
+      const own = discrete.get(`${index}:${positions ? positions.get(point) : point.x}`);
+      const radius = own ? (own.size ?? Math.max(size, 5)) : size;
+      if (radius <= 0) return [];
+      const [px, py] = at(point);
+      const color = own?.color ?? point.color;
+      return [
+        chartMarkerNode(own?.shape ?? series.shape, px, py, radius, {
+          "data-ok-chart-marker": "",
+          ...(color ? { "data-ok-color": color } : {}),
+        }),
+      ];
+    };
     if (series.type === "scatter") {
       const radius = options.markerSize ?? 5;
       scatters.push(
@@ -1452,16 +1501,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           seriesAttrs,
           points
             .filter((p) => p.y !== null)
-            .map((p) => {
-              const [px, py] = at(p as { x: number; y: number });
-              return node("circle", {
-                cx: fmt(px),
-                cy: fmt(py),
-                r: fmt(radius),
-                "data-ok-chart-marker": "",
-                ...(p.color ? { "data-ok-color": p.color } : {}),
-              });
-            }),
+            .flatMap((p) => markerOf(p as { x: number; y: number }, radius)),
         ),
       );
       continue;
@@ -1480,7 +1520,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     const curve = options.curve ?? "smooth";
     const children: ChartNode[] = [];
     if (series.type === "area") {
-      const gradient = options.fill !== "solid";
+      // A pattern (4.18.62) replaces the gradient.
+      const pattern = series.pattern ? patterns.fill(series.pattern, series.color) : undefined;
+      const gradient = options.fill !== "solid" && !pattern;
       const id = `${options.idPrefix}-area-${index}`;
       if (gradient) {
         defs.push(
@@ -1503,31 +1545,34 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           node("path", {
             d: linePath(segment, curve) + close,
             "data-ok-chart-area": "",
-            ...(gradient ? { fill: `url(#${id})` } : {}),
+            ...(gradient ? { fill: `url(#${id})` } : pattern ? { fill: pattern } : {}),
           }),
         );
       }
     }
-    const dash = options.dashArray ? { "stroke-dasharray": fmt(options.dashArray) } : {};
+    // Dashes and widths per series (4.18.62), else the chart's.
+    const dash = series.dash
+      ? { "stroke-dasharray": series.dash }
+      : options.dashArray
+        ? { "stroke-dasharray": fmt(options.dashArray) }
+        : {};
+    const lineWidth = series.width ?? options.strokeWidth;
+    const stroke = lineWidth !== undefined ? { "stroke-width": fmt(lineWidth) } : {};
     for (const segment of segments) {
       children.push(
-        node("path", { d: linePath(segment, curve), "data-ok-chart-line": "", ...dash }),
+        node("path", {
+          d: linePath(segment, curve),
+          "data-ok-chart-line": "",
+          ...dash,
+          ...stroke,
+        }),
       );
     }
-    if (markerSize > 0) {
-      for (const segment of segments) {
-        for (const [px, py] of segment) {
-          children.push(
-            node("circle", {
-              cx: fmt(px),
-              cy: fmt(py),
-              r: fmt(markerSize),
-              "data-ok-chart-marker": "",
-            }),
-          );
-        }
-      }
-    }
+    // Markers in x order (the segments' points); discrete markers also on series without markers.
+    if (lineMarkerSize > 0 || discrete.size > 0)
+      for (const point of sorted)
+        if (point.y !== null)
+          children.push(...markerOf(point as { x: number; y: number }, lineMarkerSize));
     (series.type === "area" ? areas : lines).push(node("g", seriesAttrs, children));
   }
 
@@ -1602,6 +1647,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     }
   }
 
+  defs.push(...patterns.nodes());
   if (defs.length) nodes.push(node("defs", {}, defs));
   if (!sparkline) nodes.push(node("g", { "data-ok-chart-grid": "" }, grid));
   // Horizontal bars: the value axis title beside the categories, at the left edge.

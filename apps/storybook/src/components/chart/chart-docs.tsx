@@ -6,12 +6,14 @@ import animationsGroup from "../../../../../packages/html/src/components/chart/e
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
 import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
+import colorBlindGroup from "../../../../../packages/html/src/components/chart/examples/color-blind-group.html?raw";
 import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
 import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
+import markerShapesGroup from "../../../../../packages/html/src/components/chart/examples/marker-shapes-group.html?raw";
 import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
 import multipleYAxesGroup from "../../../../../packages/html/src/components/chart/examples/multiple-y-axes-group.html?raw";
 import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
@@ -775,6 +777,58 @@ export function ChartBars() {
 }`,
   },
   {
+    id: "cues",
+    title: "Tell series apart without color",
+    body: `Some people can't tell the series of a chart apart by color, and printed charts often lose it. Give series a second cue, so color is never the only way to read the chart:
+
+- **Marker shapes:** \`markerShape\` (\`data-ok-marker-shape\`) sets the shape of every marker: \`circle\`, \`square\`, \`triangle\`, \`diamond\`, \`cross\`, \`plus\` or \`star\`. A series can set its own \`markerShape\`. In HTML, write it on the series' column header. Lines draw markers only with \`markerSize\`, and scatter points always.
+- **Patterns:** \`fill="pattern"\` fills bars, areas and pie, donut and polar area slices with a pattern, a different one per series or slice. \`fillPattern\` (\`data-ok-fill-pattern\`) picks one for all of them: \`slantedLines\`, \`squares\`, \`circles\`, \`horizontalLines\` or \`verticalLines\`. A series can set its own \`fillPattern\`.
+- **Dashes and widths:** \`dashArray\` and \`strokeWidth\` set the dash length and line width of every line in pixels. A series can set its own \`dashArray\` and \`strokeWidth\` (\`data-ok-dash-array\` and \`data-ok-stroke-width\` on its column header).
+- **All at once:** \`colorBlindMode\` (\`data-ok-color-blind-mode\`) gives each series its own marker shape, pattern and dash, and adds markers to lines.
+
+The legend and the tooltip repeat each series' shape or pattern on its marker. To call out single points, such as a record, pass \`discreteMarkers\`: \`{ seriesIndex, dataPointIndex, color, size, shape }\` objects in React, or text such as \`data-ok-discrete-markers="0 4 error star 8"\` in HTML. They draw a marker on that point even when its series has none.`,
+    html: `${snippetElement(markerShapesGroup, "data-ok-chart ")}
+${snippetElement(colorBlindGroup, "data-ok-chart ", 1)}`,
+    react: `import { Chart } from "@owlky/react";
+
+const weeks = ["W1", "W2", "W3", "W4", "W5", "W6", "W7"];
+const sessions = [
+  { name: "Search", markerShape: "circle" as const, data: [45, 52, 38, 24, 33, 26, 21] },
+  { name: "Social", markerShape: "square" as const, data: [35, 41, 62, 42, 13, 18, 29] },
+  { name: "Email", markerShape: "triangle" as const, data: [87, 57, 74, 99, 75, 38, 62] },
+];
+const quarters = ["Q1", "Q2", "Q3", "Q4"];
+const revenue = [
+  { name: "Free", data: [8, 12, 15, 19] },
+  { name: "Pro", data: [21, 25, 30, 34] },
+  { name: "Team", data: [14, 18, 17, 24] },
+];
+
+export function ChartCues() {
+  return (
+    <>
+      <Chart
+        label="Weekly sessions by source"
+        markerSize={5}
+        curve="straight"
+        discreteMarkers={[
+          { seriesIndex: 0, dataPointIndex: 4, color: "error", size: 8, shape: "star" },
+        ]}
+        categories={weeks}
+        series={sessions}
+      />
+      <Chart
+        label="Revenue by plan per quarter"
+        type="bar"
+        colorBlindMode
+        categories={quarters}
+        series={revenue}
+      />
+    </>
+  );
+}`,
+  },
+  {
     id: "values",
     title: "Format values and axes",
     body: "`valuePrefix` and `valueSuffix` add text around every value, such as a currency or a percent sign. `locale` sets the number format and the month names. `yMin` and `yMax` fix the value axis, and `yTitle` names it. For anything else, pass `valueFormatter(value, series)` and `labelFormatter(x)` in React, or call `setFormatters({ value, label })` on the HTML instance. The axis gets `series` -1.",
@@ -929,6 +983,7 @@ export function ChartSelection() {
 - The data table holds every value, including hidden series. Screen readers can read it instead of the drawing, which they skip.
 - The tooltip is a status region, so screen readers announce the values the keyboard moves to, and whether they are selected.
 - Selected values get an outline, not only a color change, and Enter or Space selects them without a pointer.
+- Marker shapes, patterns and dashes (\`colorBlindMode\` turns them all on) tell series apart without color, and the legend and the tooltip repeat them.
 - Legend buttons report their state with \`aria-pressed\`. A hidden series keeps a hollow marker and crossed-out text, so the state doesn't rely on color.
 - Axis labels use the secondary text color, which meets a contrast ratio of at least 4.5:1 in light and dark mode.`,
   },
@@ -1074,6 +1129,37 @@ const PREVIEWS = {
         height={240}
         categories={MONTHS}
         series={SALES}
+      />
+    </Preview>
+  ),
+  cues: () => (
+    <Preview>
+      <Chart
+        label="Weekly sessions by source"
+        height={240}
+        markerSize={5}
+        curve="straight"
+        discreteMarkers={[
+          { seriesIndex: 0, dataPointIndex: 4, color: "error", size: 8, shape: "star" },
+        ]}
+        categories={["W1", "W2", "W3", "W4", "W5", "W6", "W7"]}
+        series={[
+          { name: "Search", markerShape: "circle", data: [45, 52, 38, 24, 33, 26, 21] },
+          { name: "Social", markerShape: "square", data: [35, 41, 62, 42, 13, 18, 29] },
+          { name: "Email", markerShape: "triangle", data: [87, 57, 74, 99, 75, 38, 62] },
+        ]}
+      />
+      <Chart
+        label="Revenue by plan per quarter"
+        type="bar"
+        height={240}
+        colorBlindMode
+        categories={["Q1", "Q2", "Q3", "Q4"]}
+        series={[
+          { name: "Free", data: [8, 12, 15, 19] },
+          { name: "Pro", data: [21, 25, 30, 34] },
+          { name: "Team", data: [14, 18, 17, 24] },
+        ]}
       />
     </Preview>
   ),

@@ -9,6 +9,7 @@ import {
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartDataPoint,
+  type ChartDiscreteMarker,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
@@ -17,8 +18,10 @@ import {
   type ChartLegend,
   type ChartLink,
   type ChartLocaleText,
+  type ChartMarkerShape,
   type ChartNode,
   type ChartOrientation,
+  type ChartPattern,
   type ChartSankeyEdge,
   type ChartSankeyNode,
   type ChartSelectionDetail,
@@ -122,8 +125,33 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   curve?: ChartCurve | undefined;
   /** Default `"top"`. Never shown for a single series. */
   legend?: ChartLegend | undefined;
-  /** Area fill. Default `"gradient"`. */
+  /**
+   * Area fill. Default `"gradient"`; `"solid"`, or `"pattern"`: bars, areas and slices get a
+   * different pattern per series (or `fillPattern`).
+   */
   fill?: ChartFill | undefined;
+  /**
+   * Marker shape of every series: `"circle"` (default), `"square"`, `"triangle"`, `"diamond"`,
+   * `"cross"`, `"plus"` or `"star"`. Series may set `markerShape` themselves.
+   */
+  markerShape?: ChartMarkerShape | undefined;
+  /**
+   * Pattern of every bar, area and slice (turns patterns on): `"slantedLines"`, `"squares"`,
+   * `"circles"`, `"horizontalLines"` or `"verticalLines"`. Series may set `fillPattern`.
+   */
+  fillPattern?: ChartPattern | undefined;
+  /** Line width of every series in px. Default 2.5. Series may set `strokeWidth`. */
+  strokeWidth?: number | undefined;
+  /**
+   * Series differ by more than color: each gets its own marker shape (lines get markers), pattern
+   * and dash.
+   */
+  colorBlindMode?: boolean | undefined;
+  /**
+   * Markers on single points (`{ seriesIndex, dataPointIndex, color, size, shape }`), also on
+   * series without markers.
+   */
+  discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
   /** Stacks the series on each other (bars, lines, areas). */
   stacked?: boolean | undefined;
   /**
@@ -373,6 +401,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     defaultSelectedDataPoints = NO_POINTS,
     onDataPointSelection,
     allowMultipleDataPointsSelection,
+    markerShape,
+    fillPattern,
+    strokeWidth,
+    colorBlindMode,
+    discreteMarkers,
     ...rest
   },
   ref,
@@ -422,6 +455,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     navigator,
     paneHeight,
     allowMultipleDataPointsSelection,
+    markerShape,
+    fillPattern,
+    strokeWidth,
+    colorBlindMode,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -479,6 +516,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     | undefined;
   const validTrackOpacity = number("data-ok-background-bar-opacity");
   const validTrackRadius = number("data-ok-background-bar-radius");
+  const validShape = attributes["data-ok-marker-shape"] as ChartMarkerShape | undefined;
+  const validPattern = attributes["data-ok-fill-pattern"] as ChartPattern | undefined;
+  const validStrokeWidth = number("data-ok-stroke-width");
+  const blind = attributes["data-ok-color-blind-mode"] !== undefined;
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -528,6 +569,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         backgroundBarColors,
         backgroundBarOpacity: validTrackOpacity,
         backgroundBarRadius: validTrackRadius,
+        markerShape: validShape,
+        fillPattern: validPattern,
+        strokeWidth: validStrokeWidth,
+        colorBlindMode: blind,
+        discreteMarkers,
         horizontal,
         markerSize: validMarkerSize,
         columnWidth: validColumnWidth,
@@ -600,6 +646,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       backgroundBarColors,
       validTrackOpacity,
       validTrackRadius,
+      validShape,
+      validPattern,
+      validStrokeWidth,
+      blind,
+      discreteMarkers,
       horizontal,
       validMarkerSize,
       validColumnWidth,
@@ -921,6 +972,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         yaxis,
         xTitle,
         backgroundBarColors,
+        discreteMarkers,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
@@ -962,7 +1014,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
               aria-pressed={!item.hidden}
               onClick={() => toggle(item.index)}
             >
-              <span data-ok-chart-legend-marker="" />
+              <span
+                data-ok-chart-legend-marker=""
+                data-ok-shape={item.shape}
+                data-ok-pattern={item.pattern}
+              />
               {item.name}
               {item.value !== undefined && <span data-ok-chart-legend-value="">{item.value}</span>}
             </button>
@@ -1020,7 +1076,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
                 {shown.rows.map((row, index) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: rows follow the series order
                   <div key={index} data-ok-chart-tooltip-row="">
-                    <span data-ok-chart-tooltip-marker="" data-ok-color={row.color} />
+                    <span
+                      data-ok-chart-tooltip-marker=""
+                      data-ok-color={row.color}
+                      data-ok-shape={row.shape}
+                      data-ok-pattern={row.pattern}
+                    />
                     <span>{row.name}</span>
                     <span data-ok-chart-tooltip-value="">{row.value}</span>
                   </div>

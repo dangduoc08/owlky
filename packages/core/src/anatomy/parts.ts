@@ -229,8 +229,8 @@ export interface ChartParts {
   "data-ok-chart-active-cell": Part<"rect">;
   /** The highlight of the active Sankey link. */
   "data-ok-chart-active-link": Part<"path">;
-  /** The marker of the active point. */
-  "data-ok-chart-active-marker": Part<"circle">;
+  /** The marker of the active point: a circle, or a path for other shapes. */
+  "data-ok-chart-active-marker": Part<"circle" | "path">;
   /** The highlight of the active slice. */
   "data-ok-chart-active-slice": Part<"path">;
   /** One drawn annotation: a line, a band or a point. */
@@ -313,8 +313,8 @@ export interface ChartParts {
   "data-ok-chart-line": Part<"path">;
   /** One Sankey link. */
   "data-ok-chart-link": Part<"path">;
-  /** The marker of a point. */
-  "data-ok-chart-marker": Part<"circle">;
+  /** The marker of a point: a circle, or a path for other shapes. */
+  "data-ok-chart-marker": Part<"circle" | "path">;
   /** On a data grid: the chart panel's model, as JSON. */
   "data-ok-chart-model": Value<string>;
   /** The navigator of a stock chart. */
@@ -381,6 +381,14 @@ export interface ChartParts {
   "data-ok-chart-tooltip-state": Part<"div">;
   /** The title of the tooltip. */
   "data-ok-chart-tooltip-title": Part<"div">;
+  /** One pattern definition (\`fill="pattern"\`, \`fillPattern\`, \`colorBlindMode\`): its style. */
+  "data-ok-chart-pattern": Value<
+    "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
+  >;
+  /** The lines, squares or dots of a pattern. */
+  "data-ok-chart-pattern-mark": Part<"path" | "circle">;
+  /** The faint tint under a pattern's marks. */
+  "data-ok-chart-pattern-tint": Part<"rect">;
   /** The value of a tooltip row. */
   "data-ok-chart-tooltip-value": Part<"span">;
   /** The track behind a radial bar. */
@@ -409,6 +417,26 @@ export interface ChartParts {
   "data-ok-major": State;
   /** On a value axis group: the axis is on the right of the plot. */
   "data-ok-opposite": State;
+  /** Markers on single points, such as \`0 3 error star 8; 1 2\`. */
+  "data-ok-discrete-markers": Value<string>;
+  /** On a data table column header: the series' marker shape. */
+  "data-ok-marker-shape": Value<
+    "circle" | "square" | "triangle" | "diamond" | "cross" | "plus" | "star"
+  >;
+  /** On a data table column header: the series' pattern. */
+  "data-ok-fill-pattern": Value<
+    "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
+  >;
+  /** On a data table column header: the series' line width in px. */
+  "data-ok-stroke-width": Value<string>;
+  /** On a data table column header: the series' dash length in px. */
+  "data-ok-dash-array": Value<string>;
+  /** On a marker, a legend marker or a tooltip marker: the series' marker shape. */
+  "data-ok-shape": Value<"square" | "triangle" | "diamond" | "cross" | "plus" | "star">;
+  /** On a legend or tooltip marker: the series' pattern. */
+  "data-ok-pattern": Value<
+    "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
+  >;
   /** On a data table header cell: which value of a point the column holds. */
   "data-ok-part": Value<"min" | "q1" | "median" | "q3" | "max" | "low" | "high" | "y" | "z">;
   /** Set by the runtime once the chart is drawn: the data table hides. */

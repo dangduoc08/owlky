@@ -1106,6 +1106,138 @@ export const chartExamples: Record<string, ChartExample> = {
       series: [{ name: "Balance", data: [12, 18, -7, -21, 9, 27, -4, 15, 31] }],
     },
   },
+  // Roadmap 4.18.62: non-color series cues (WCAG 1.4.1).
+  "marker-shapes": {
+    title: "Marker shapes",
+    props: {
+      label: "Weekly sessions by source",
+      type: "line",
+      markerSize: 5,
+      curve: "straight",
+      categories: ["W1", "W2", "W3", "W4", "W5", "W6", "W7"],
+      discreteMarkers: [
+        { seriesIndex: 0, dataPointIndex: 4, color: "error", size: 8, shape: "star" },
+      ],
+      series: [
+        { name: "Search", markerShape: "circle", data: [45, 52, 38, 24, 33, 26, 21] },
+        { name: "Social", markerShape: "square", data: [35, 41, 62, 42, 13, 18, 29] },
+        { name: "Email", markerShape: "triangle", data: [87, 57, 74, 99, 75, 38, 62] },
+      ],
+    },
+    more: [
+      {
+        label: "Samples of series A and B",
+        type: "scatter",
+        markerSize: 6,
+        colors: ["primary", "warning"],
+        series: [
+          {
+            name: "Series A",
+            markerShape: "diamond",
+            data: [
+              [4, 12],
+              [8, 18],
+              [12, 9],
+              [16, 22],
+              [20, 15],
+              [24, 27],
+            ],
+          },
+          {
+            name: "Series B",
+            markerShape: "cross",
+            data: [
+              [6, 20],
+              [10, 7],
+              [14, 25],
+              [18, 11],
+              [22, 19],
+              [26, 8],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "dashed-lines": {
+    title: "Dashed lines",
+    props: {
+      label: "Session duration, page views and total visits",
+      type: "line",
+      curve: "straight",
+      categories: ["01 Jan", "02 Jan", "03 Jan", "04 Jan", "05 Jan", "06 Jan", "07 Jan", "08 Jan"],
+      series: [
+        { name: "Session duration", strokeWidth: 4, data: [45, 52, 38, 24, 33, 26, 21, 20] },
+        {
+          name: "Page views",
+          strokeWidth: 5,
+          dashArray: 8,
+          data: [35, 41, 62, 42, 13, 18, 29, 37],
+        },
+        {
+          name: "Total visits",
+          strokeWidth: 3,
+          dashArray: 4,
+          data: [87, 57, 74, 99, 75, 38, 62, 47],
+        },
+      ],
+    },
+  },
+  patterns: {
+    title: "Pattern fills",
+    props: {
+      label: "Points scored by players, by match",
+      type: "bar",
+      horizontal: true,
+      stacked: true,
+      fill: "pattern",
+      barHeight: 60,
+      categories: ["Match 1", "Match 2", "Match 3", "Match 4"],
+      series: [
+        { name: "Ana", data: [44, 55, 41, 37] },
+        { name: "Bao", data: [53, 32, 33, 52] },
+        { name: "Chi", data: [12, 17, 11, 9] },
+      ],
+    },
+    more: [
+      {
+        label: "Share of visits by device",
+        type: "pie",
+        height: 260,
+        fill: "pattern",
+        colors: ["primary-dark", "warning", "info-dark"],
+        categories: ["Desktop", "Mobile", "Tablet"],
+        series: [{ name: "Visits", data: [44, 55, 13] }],
+      },
+    ],
+  },
+  "color-blind": {
+    title: "Color blind mode",
+    props: {
+      label: "Monthly signups by plan",
+      type: "line",
+      colorBlindMode: true,
+      categories: MONTHS,
+      series: [
+        { name: "Free", data: [30, 41, 35, 51, 49, 62, 69, 91, 99] },
+        { name: "Pro", data: [12, 21, 28, 30, 37, 42, 40, 51, 60] },
+        { name: "Team", data: [4, 9, 12, 18, 16, 22, 27, 31, 38] },
+      ],
+    },
+    more: [
+      {
+        label: "Revenue by plan per quarter",
+        type: "bar",
+        colorBlindMode: true,
+        categories: ["Q1", "Q2", "Q3", "Q4"],
+        series: [
+          { name: "Free", data: [8, 12, 15, 19] },
+          { name: "Pro", data: [21, 25, 30, 34] },
+          { name: "Team", data: [14, 18, 17, 24] },
+        ],
+      },
+    ],
+  },
   // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.
   stock: {
     title: "Stock chart",

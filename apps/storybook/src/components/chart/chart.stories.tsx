@@ -106,6 +106,11 @@ export const ColumnStacked100: StoryObj = story("column-stacked-100");
 export const StackTotals: StoryObj = story("stack-totals");
 export const ColumnDataLabels: StoryObj = story("column-data-labels");
 export const ColumnRanges: StoryObj = story("column-ranges");
+// Roadmap 4.18.62: non-color series cues.
+export const MarkerShapes: StoryObj = story("marker-shapes");
+export const DashedLines: StoryObj = story("dashed-lines");
+export const Patterns: StoryObj = story("patterns");
+export const ColorBlind: StoryObj = story("color-blind");
 // Phase 2.1 (ADR-0047): Sankey charts.
 export const Sankey: StoryObj = story("sankey");
 export const SankeyVertical: StoryObj = story("sankey-vertical");
