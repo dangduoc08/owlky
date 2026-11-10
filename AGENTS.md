@@ -486,6 +486,15 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   writes styles with a trailing `;` (`text-transform: uppercase;`): React compares a controlled
   `value` with the string it loaded, never with `getValue()`, or it reloads at mount. ProseMirror's
   `setAttribute("style")` passes the strict-CSP page (only parsed `style` attributes are refused).
+- Editor tables, mentions, bubble menu (ADR-0050): the bubble menu and the mention list are
+  `data-ok-runtime="off"` popovers that core drives (`createEditorBubbleMenu`, the Suggestion
+  renderer in `editor/mention.ts`), so the HTML popover runtime and its delegated triggers skip
+  them (the editor runtime opens the link form from the bubble's link button itself). Tiptap's
+  `commands.focus()` lands a frame later: tests and the bubble's Escape use `editor.view.focus()`
+  before setting a selection. Tiptap's `isEmpty` counts a table of empty cells as empty
+  (`getValue()` checks for a table). `owlky-editor.js` aliases `@floating-ui/dom` to
+  `src/floating-ui-stub.ts` (Suggestion only builds middleware). The Bubble menu, Table and
+  Mentions snippets: `pnpm build && node apps/storybook/scripts/demo-snippets.mjs editor`.
 - Chart (ADR-0024): core `renderChart` lays out a tree of SVG nodes (`ChartNode`); React maps
   attribute names to camelCase, the HTML runtime uses `createElementNS` + `setAttribute`. Text widths
   are **estimated** per glyph class (`chartTextWidth`), never measured, so server, React and HTML

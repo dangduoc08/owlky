@@ -53,5 +53,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0047](0047-chart-sankey-and-stock-charts.md) | Chart: Sankey and stock charts in the shared engine (links table, indicators, panes, navigator) | Accepted |
 | [0048](0048-gantt.md) | Gantt: one treegrid with a timeline column, laid out by core, built in three phases | Accepted |
 | [0049](0049-api-reference.md) | API reference: generated from typed sources (props, parts, event maps, instances), shown on every docs page | Accepted |
+| [0050](0050-editor-tables-mentions-bubble-menu.md) | Editor: tables, mentions and a bubble menu (new Tiptap extensions, opt-in), Tiptap settings passed through, a form value | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

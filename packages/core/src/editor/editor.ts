@@ -1,19 +1,33 @@
-import { Editor, Extension, getSchema } from "@tiptap/core";
+import {
+  type AnyExtension,
+  Editor,
+  type EnableRules,
+  Extension,
+  type FocusPosition,
+  getSchema,
+} from "@tiptap/core";
 import Image from "@tiptap/extension-image";
+import { TableKit } from "@tiptap/extension-table";
 import TextAlign from "@tiptap/extension-text-align";
 import { Placeholder } from "@tiptap/extensions";
-import { DOMSerializer, DOMParser as SchemaParser } from "@tiptap/pm/model";
+import { DOMSerializer, type ParseOptions, DOMParser as SchemaParser } from "@tiptap/pm/model";
+import type { EditorProps } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { createCodeBlock, type EditorHighlighter } from "./code-block.js";
+import { createMention, type EditorMentionOptions } from "./mention.js";
 import { type EditorTextTransform, readTextTransform, TextTransform } from "./text-transform.js";
 import {
   type EditorAction,
   type EditorBlock,
+  type EditorTableAction,
   editorActions,
   type HeadingLevel,
   headingLevels,
   safeEditorUrl,
 } from "./toolbar.js";
+
+/** Text direction of the content (Tiptap's `textDirection`). */
+export type EditorTextDirection = "ltr" | "rtl" | "auto";
 
 /** What the toolbar shows: the current block, pressed and disabled actions, the link under the caret. */
 export interface EditorState {
@@ -58,6 +72,28 @@ export interface EditorControllerOptions {
   readonly onChange?: ((value: string) => void) | undefined;
   /** The toolbar state may have changed (every transaction). */
   readonly onStateChange?: ((state: EditorState) => void) | undefined;
+  /**
+   * More Tiptap extensions, after the built-in ones; one with the name of a built-in top-level
+   * extension (`image`, `codeBlock`, `textAlign`, `placeholder`…) replaces it. Extensions are
+   * trusted code: what they add to the schema is theirs to sanitize.
+   */
+  readonly extensions?: readonly AnyExtension[] | undefined;
+  /** ProseMirror props (Tiptap's `editorProps`), merged; the editor's own attributes win. */
+  readonly editorProps?: EditorProps | undefined;
+  /** ProseMirror parse options for content (Tiptap's `parseOptions`). */
+  readonly parseOptions?: ParseOptions | undefined;
+  /** Puts the caret in the editor once it exists: `start`, `end`, `all`, a position, `true` (start). */
+  readonly autofocus?: FocusPosition | undefined;
+  /** Text direction of the content. Default: none (inherited). */
+  readonly textDirection?: EditorTextDirection | undefined;
+  /** Markdown-like shortcuts while typing (`# `, `**bold**`…). Default `true`. */
+  readonly enableInputRules?: EnableRules | undefined;
+  /** The same rules on pasted text. Default `true`. */
+  readonly enablePasteRules?: EnableRules | undefined;
+  /** Tables (ADR-0050): the table nodes and the `insertTable`… actions. Default `false`. */
+  readonly tables?: boolean | undefined;
+  /** Mentions (ADR-0050): the mention node and its suggestion list. */
+  readonly mentions?: EditorMentionOptions | undefined;
 }
 
 export interface EditorController {
@@ -91,7 +127,31 @@ const ClearFormat = Extension.create({
   },
 });
 
-const extensions = (options: EditorControllerOptions) => [
+/** Tiptap settings given in the options (only those given: Tiptap keeps its defaults). */
+function settings(options: EditorControllerOptions) {
+  const { autofocus, textDirection, enableInputRules, enablePasteRules, parseOptions } = options;
+  return {
+    ...(autofocus !== undefined ? { autofocus } : {}),
+    ...(textDirection !== undefined ? { textDirection } : {}),
+    ...(enableInputRules !== undefined ? { enableInputRules } : {}),
+    ...(enablePasteRules !== undefined ? { enablePasteRules } : {}),
+    ...(parseOptions !== undefined ? { parseOptions } : {}),
+  };
+}
+
+/** The built-in set, the opt-in tables and mentions, then the owner's extensions. */
+function extensions(options: EditorControllerOptions, editor: () => Editor | null): AnyExtension[] {
+  const own = options.extensions ?? [];
+  const names = new Set(own.map((extension) => extension.name));
+  const builtIn: AnyExtension[] = [
+    ...base(options),
+    ...(options.tables ? [TableKit.configure({ table: { resizable: false } })] : []),
+    ...(options.mentions ? [createMention(options.mentions, editor)] : []),
+  ];
+  return [...builtIn.filter((extension) => !names.has(extension.name)), ...own];
+}
+
+const base = (options: EditorControllerOptions) => [
   StarterKit.configure({
     codeBlock: false,
     heading: { levels: [...headingLevels] },
@@ -109,6 +169,34 @@ const extensions = (options: EditorControllerOptions) => [
   TextTransform,
   ClearFormat,
 ];
+
+type Commands = ReturnType<Editor["chain"]>;
+/** Each table action as a Tiptap command (the same for `run()` and `can()`). */
+const TABLE_COMMANDS: Record<EditorTableAction, (chain: Commands) => boolean> = {
+  insertTable: (c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+  addColumnBefore: (c) => c.addColumnBefore().run(),
+  addColumnAfter: (c) => c.addColumnAfter().run(),
+  deleteColumn: (c) => c.deleteColumn().run(),
+  addRowBefore: (c) => c.addRowBefore().run(),
+  addRowAfter: (c) => c.addRowAfter().run(),
+  deleteRow: (c) => c.deleteRow().run(),
+  toggleHeaderRow: (c) => c.toggleHeaderRow().run(),
+  toggleHeaderColumn: (c) => c.toggleHeaderColumn().run(),
+  mergeCells: (c) => c.mergeCells().run(),
+  splitCell: (c) => c.splitCell().run(),
+  deleteTable: (c) => c.deleteTable().run(),
+};
+const TABLE_ACTIONS = new Set<EditorAction>(Object.keys(TABLE_COMMANDS) as EditorTableAction[]);
+
+/** The document holds a table. */
+function hasTable(editor: Editor): boolean {
+  let found = false;
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === "table") found = true;
+    return !found;
+  });
+  return found;
+}
 
 const flags = (pick: (action: EditorAction) => boolean) =>
   Object.fromEntries(editorActions.map((action) => [action, pick(action)])) as Record<
@@ -157,11 +245,14 @@ function readState(editor: Editor): EditorState {
         return false;
     }
   });
+  const tables = editor.schema.nodes["table"] !== undefined;
   const disabled = flags((action) => {
     if (!editable) return true;
     if (action === "undo") return !can.undo();
     if (action === "redo") return !can.redo();
     if (action === "unlink") return !editor.isActive("link");
+    if (TABLE_ACTIONS.has(action))
+      return !tables || !TABLE_COMMANDS[action as EditorTableAction](editor.can().chain());
     return false;
   });
   const href = editor.getAttributes("link")["href"];
@@ -185,21 +276,21 @@ export function createEditorController(
   element: HTMLElement,
   options: EditorControllerOptions = {},
 ): EditorController {
-  const list = extensions(options);
+  const list = extensions(options, () => mounted);
   let content: string | Record<string, unknown> | null;
   if (options.content !== undefined) content = options.content;
   else {
     // Snippet markup: parse the DOM itself (no HTML string, no Trusted Types sink).
-    content = SchemaParser.fromSchema(getSchema(list)).parse(element).toJSON() as Record<
-      string,
-      unknown
-    >;
+    content = SchemaParser.fromSchema(getSchema(list))
+      .parse(element, options.parseOptions)
+      .toJSON() as Record<string, unknown>;
   }
   // Attributes ProseMirror writes (and removes on destroy): destroy() puts the element's own back.
   const OWNED = ["role", "class", "contenteditable", "translate", "aria-readonly"];
   const before = new Map(OWNED.map((name) => [name, element.getAttribute(name)]));
   element.replaceChildren();
 
+  const ownProps = options.editorProps;
   let destroyed = false;
   let mounted: Editor | null = null;
   const editor: Editor = new Editor({
@@ -209,11 +300,17 @@ export function createEditorController(
     editable: options.editable !== false,
     // Tiptap's own CSS is a <style> written with innerHTML (CSP / Trusted Types): editor.css has it.
     injectCSS: false,
+    ...settings(options),
     editorProps: {
-      attributes: (): Record<string, string> =>
-        (mounted ? !mounted.isEditable : options.editable === false)
+      ...ownProps,
+      attributes: (state): Record<string, string> => ({
+        ...(typeof ownProps?.attributes === "function"
+          ? ownProps.attributes(state)
+          : ownProps?.attributes),
+        ...((mounted ? !mounted.isEditable : options.editable === false)
           ? { "aria-readonly": "true" }
-          : {},
+          : {}),
+      }),
     },
     onUpdate: () => options.onChange?.(controller.getValue()),
     onTransaction: () => {
@@ -224,7 +321,8 @@ export function createEditorController(
 
   const controller: EditorController = {
     editor,
-    getValue: () => (editor.isEmpty ? "" : editor.getHTML()),
+    // Tiptap counts a table of empty cells as empty: it is content.
+    getValue: () => (editor.isEmpty && !hasTable(editor) ? "" : editor.getHTML()),
     getState: () => readState(editor),
     run(action, value = {}) {
       if (destroyed || !editor.isEditable) return false;
@@ -301,6 +399,24 @@ export function createEditorController(
           return chain().undo().run();
         case "redo":
           return chain().redo().run();
+        case "insertTable":
+        case "addColumnBefore":
+        case "addColumnAfter":
+        case "deleteColumn":
+        case "addRowBefore":
+        case "addRowAfter":
+        case "deleteRow":
+        case "toggleHeaderRow":
+        case "toggleHeaderColumn":
+        case "mergeCells":
+        case "splitCell":
+        case "deleteTable":
+          // Checked first: a chain that won't run would still move the focus (see above).
+          return (
+            editor.schema.nodes["table"] !== undefined &&
+            TABLE_COMMANDS[action](editor.can().chain()) &&
+            TABLE_COMMANDS[action](chain())
+          );
         case "textTransform": {
           if (value.textTransform === null) return chain().unsetMark("textTransform").run();
           const textTransform = readTextTransform(value.textTransform);

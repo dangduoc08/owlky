@@ -57,14 +57,18 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@floating-ui/dom": "1.8.0",
     "@owlky/tokens": "workspace:*",
     "@tiptap/core": "3.32.0",
     "@tiptap/extension-code-block": "3.32.0",
     "@tiptap/extension-image": "3.32.0",
+    "@tiptap/extension-mention": "3.32.0",
+    "@tiptap/extension-table": "3.32.0",
     "@tiptap/extension-text-align": "3.32.0",
     "@tiptap/extensions": "3.32.0",
     "@tiptap/pm": "3.32.0",
     "@tiptap/starter-kit": "3.32.0",
+    "@tiptap/suggestion": "3.32.0",
     "@types/hast": "3.0.5",
     "hast-util-sanitize": "5.0.2",
     "html-url-attributes": "3.0.1",

@@ -25,7 +25,14 @@ const iife = (entry: string, name: string, file: string, extra: UserConfig = {})
 });
 
 export default defineConfig(({ mode }): UserConfig => {
-  if (mode === "editor") return iife("src/cdn-editor.ts", "OwlkyEditorBundle", "owlky-editor.js");
+  if (mode === "editor")
+    return iife("src/cdn-editor.ts", "OwlkyEditorBundle", "owlky-editor.js", {
+      // Tiptap's Suggestion only positions with Floating UI in a helper the mention list doesn't
+      // use (ADR-0050): about 6 kB gzip less.
+      resolve: {
+        alias: [{ find: /^@floating-ui\/dom$/, replacement: local("src/floating-ui-stub.ts") }],
+      },
+    });
   if (mode === "markdown")
     return iife("src/cdn-markdown.ts", "OwlkyMarkdownBundle", "owlky-markdown.js");
   if (mode === "illustrations")

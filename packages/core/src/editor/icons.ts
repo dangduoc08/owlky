@@ -32,6 +32,8 @@ export const editorIcons = {
   fullscreen: "M4 9V4h5 M15 4h5v5 M20 15v5h-5 M9 20H4v-5",
   exitFullscreen: "M9 4v5H4 M20 9h-5V4 M15 20v-5h5 M4 15h5v5",
   chevronDown: "M6 9l6 6 6-6",
+  table:
+    "M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M4 10h16 M4 15h16 M10 4v16",
 } as const;
 
 export type EditorIconName = keyof typeof editorIcons;

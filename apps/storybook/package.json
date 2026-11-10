@@ -36,6 +36,7 @@
     "@storybook/addon-mcp": "10.6.3",
     "@storybook/react-vite": "10.6.5",
     "@tailwindcss/vite": "4.3.4",
+    "@tiptap/extensions": "3.32.0",
     "@types/luxon": "3.7.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",

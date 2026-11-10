@@ -1,13 +1,18 @@
-import { editorOptions, readBehavior } from "@owlky/core";
+import { editorOptions, parsePlacement, readBehavior } from "@owlky/core";
 import {
+  createEditorBubbleMenu,
   createEditorController,
   createToolbarNavigation,
   type EditorAction,
+  type EditorBubbleMenu,
   type EditorController,
+  type EditorControllerOptions,
   type EditorHighlighter,
+  type EditorMentionItem,
   type EditorState,
   editorActions,
   editorBlockLabels,
+  editorToolbarShortcut,
   holdEditorFullscreen,
   safeEditorUrl,
 } from "@owlky/core/editor";
@@ -20,6 +25,19 @@ export interface EditorEvents {
   change: EventSpec<{ value: string }>;
   /** After the editor entered or left full screen. */
   fullscreen: EventSpec<{ fullscreen: boolean }>;
+  /**
+   * The mention list needs items for `query` (the text after the trigger). `items` holds the
+   * matches from `template[data-ok-editor-mention-items]`; call `respondWith(itemsOrPromise)` to
+   * show others (for example from a server).
+   */
+  mentionsearch: EventSpec<{
+    query: string;
+    char: string;
+    items: readonly EditorMentionItem[];
+    respondWith(
+      items: readonly EditorMentionItem[] | PromiseLike<readonly EditorMentionItem[]>,
+    ): void;
+  }>;
 }
 
 export interface EditorInstance extends ComponentInstance {
@@ -45,9 +63,41 @@ export interface EditorInstance extends ComponentInstance {
 export interface CreateEditorOptions {
   /** Syntax highlighting and the language menu of code blocks (for example lowlight). */
   highlighter?: EditorHighlighter | undefined;
+  /** More Tiptap extensions for every editor (one with a built-in's name replaces it). */
+  extensions?: EditorControllerOptions["extensions"];
+  /** ProseMirror props (Tiptap's `editorProps`), merged with the editor's own. */
+  editorProps?: EditorControllerOptions["editorProps"];
+  /** ProseMirror parse options for the content (Tiptap's `parseOptions`). */
+  parseOptions?: EditorControllerOptions["parseOptions"];
 }
 
-const { editable: editableOption, fullscreen: fullscreenOption } = editorOptions.options;
+const {
+  editable: editableOption,
+  fullscreen: fullscreenOption,
+  tables: tablesOption,
+  autofocus: autofocusOption,
+  textDirection: textDirectionOption,
+  enableInputRules: inputRulesOption,
+  enablePasteRules: pasteRulesOption,
+} = editorOptions.options;
+/** Most mentions the list shows from the template. */
+const MENTION_LIMIT = 10;
+
+/** The template's items whose label contains `query` (case-insensitive). */
+function templateItems(
+  template: HTMLTemplateElement | undefined,
+  query: string,
+): EditorMentionItem[] {
+  if (!template) return [];
+  const needle = query.toLocaleLowerCase();
+  return [...template.content.querySelectorAll("[data-ok-value]")]
+    .map((item) => ({
+      id: item.getAttribute("data-ok-value") as string,
+      label: (item.textContent as string).trim(),
+    }))
+    .filter((item) => item.label.toLocaleLowerCase().includes(needle))
+    .slice(0, MENTION_LIMIT);
+}
 const DEFAULT_PLACEHOLDER = "Write something awesome...";
 const isAction = (value: string | null): value is EditorAction =>
   editorActions.includes(value as EditorAction);
@@ -71,7 +121,12 @@ const isAction = (value: string | null): value is EditorAction =>
  *          menu and the link / image forms; Fullscreen and Escape toggle `data-ok-fullscreen`.
  * Events:  ok:editor:change (detail `{ value }`), ok:editor:fullscreen (detail `{ fullscreen }`).
  */
-export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
+export const createEditor = ({
+  highlighter,
+  extensions,
+  editorProps,
+  parseOptions,
+}: CreateEditorOptions = {}) =>
   defineComponent<EditorInstance, EditorEvents>({
     name: "editor",
     selector: "[data-ok-editor]",
@@ -91,6 +146,8 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
         state = next;
         for (const button of own<HTMLButtonElement>("[data-ok-editor-action]")) {
           const action = button.getAttribute("data-ok-editor-action");
+          // The table menu's trigger.
+          if (action === "table" && button.disabled === editable) button.disabled = !editable;
           if (!isAction(action)) continue;
           const pressed = String(next.active[action]);
           if (
@@ -114,18 +171,91 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
           if (item.hasAttribute("data-ok-selected") !== selected)
             item.toggleAttribute("data-ok-selected", selected);
         }
+        for (const item of own<HTMLElement>("[data-ok-editor-table-action]")) {
+          const action = item.getAttribute("data-ok-editor-table-action");
+          const off = !editable || !isAction(action) || next.disabled[action];
+          if ((item.getAttribute("aria-disabled") === "true") !== off) {
+            if (off) item.setAttribute("aria-disabled", "true");
+            else item.removeAttribute("aria-disabled");
+          }
+        }
         navigation.sync();
       };
 
+      // Mentions: the list popover in the markup turns them on; items from the template or
+      // the `mentionsearch` event.
+      const mentionList = own<HTMLElement>("[data-ok-editor-mentions]")[0];
+      const mentionTemplate = own<HTMLTemplateElement>("template[data-ok-editor-mention-items]")[0];
+      const mentionChar = mentionList?.getAttribute("data-ok-char") || "@";
+      const choice = <V extends string>(spec: { attr: string; values: readonly V[] }) => {
+        const value = element.getAttribute(spec.attr);
+        return spec.values.includes(value as V) ? (value as V) : undefined;
+      };
+      const settings = {
+        tables: element.hasAttribute(tablesOption.attr),
+        autofocus: choice(autofocusOption),
+        textDirection: choice(textDirectionOption),
+        enableInputRules: readBehavior(element, inputRulesOption),
+        enablePasteRules: readBehavior(element, pasteRulesOption),
+        extensions,
+        editorProps,
+        parseOptions,
+      };
+
+      const input = own<HTMLInputElement>("input[data-ok-editor-input]")[0];
       const navigation = createToolbarNavigation(toolbar);
       const controller = createEditorController(content, {
         editable,
         placeholder: element.getAttribute("data-ok-placeholder") ?? DEFAULT_PLACEHOLDER,
         highlighter,
-        onChange: (value) => emit("change", { value }),
+        ...settings,
+        ...(mentionList
+          ? {
+              mentions: {
+                char: mentionChar,
+                allowSpaces: mentionList.hasAttribute("data-ok-allow-spaces"),
+                list: () => mentionList,
+                items: (query: string) => {
+                  let items:
+                    | readonly EditorMentionItem[]
+                    | PromiseLike<readonly EditorMentionItem[]> = templateItems(
+                    mentionTemplate,
+                    query,
+                  );
+                  emit("mentionsearch", {
+                    query,
+                    char: mentionChar,
+                    items: items as readonly EditorMentionItem[],
+                    respondWith(next) {
+                      items = next;
+                    },
+                  });
+                  return items;
+                },
+              },
+            }
+          : {}),
+        onChange: (value) => {
+          if (input) input.value = value;
+          emit("change", { value });
+        },
         onStateChange: paint,
       });
+      if (input) input.value = controller.getValue();
       paint(controller.getState());
+
+      // The bubble menu: the toolbar over selected text, when the markup has one.
+      const bubbleElement = own<HTMLElement>("[data-ok-editor-bubble-menu]")[0];
+      // A non-negative number of ms; anything else (or nothing) keeps Tiptap's 250.
+      const delayText = bubbleElement?.getAttribute("data-ok-update-delay") ?? "";
+      const delay = /^\d+$/.test(delayText) ? Number(delayText) : undefined;
+      const bubble: EditorBubbleMenu | null = bubbleElement
+        ? createEditorBubbleMenu(controller.editor, bubbleElement, {
+            placement: parsePlacement(bubbleElement.getAttribute("data-ok-placement"), "top"),
+            updateDelay: delay,
+          })
+        : null;
+      const releaseShortcut = editorToolbarShortcut(element, content, () => bubble);
 
       // Fullscreen: the page behind is dimmed (the root's Backdrop), locked and out of Tab's reach.
       let release: (() => void) | null = null;
@@ -163,19 +293,25 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
             : safeEditorUrl(src?.value ?? "", "image") === null;
       };
 
-      toolbar.addEventListener(
-        "click",
-        (event) => {
-          const button = (event.target as Element).closest("[data-ok-editor-action]");
-          if (!button || button.closest("[data-ok-editor]") !== element) return;
-          const action = button.getAttribute("data-ok-editor-action");
-          if (action === "fullscreen") setFullscreen(!element.hasAttribute(fullscreenOption.attr));
-          // Link and image open their popover (data-ok-popover-open); the form runs the action.
-          else if (isAction(action) && action !== "link" && action !== "image")
-            controller.run(action);
-        },
-        { signal },
-      );
+      const onToolClick = (event: Event) => {
+        const button = (event.target as Element).closest<HTMLElement>("[data-ok-editor-action]");
+        if (!button || button.closest("[data-ok-editor]") !== element) return;
+        const action = button.getAttribute("data-ok-editor-action");
+        if (action === "fullscreen") setFullscreen(!element.hasAttribute(fullscreenOption.attr));
+        else if (action === "link" || action === "image") {
+          // Toolbar buttons open their form with data-ok-popover-open; the bubble menu is
+          // outside the runtime's reach (data-ok-runtime="off"), so it opens it here.
+          if (!bubbleElement?.contains(button)) return;
+          const form = (element.getRootNode() as Document | ShadowRoot).getElementById(
+            button.getAttribute("aria-controls") as string,
+          );
+          runtime
+            .getOrCreate<{ toggle(anchor: Element): boolean } & ComponentInstance>(form, "popover")
+            ?.toggle(button);
+        } else if (isAction(action)) controller.run(action);
+      };
+      toolbar.addEventListener("click", onToolClick, { signal });
+      bubbleElement?.addEventListener("click", onToolClick, { signal });
 
       element.addEventListener(
         "ok:popover:open",
@@ -221,7 +357,9 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
         (event) => {
           const item = (event as CustomEvent<{ item: Element }>).detail.item;
           const block = item.getAttribute("data-ok-editor-block");
-          if (block === "paragraph") controller.run("paragraph");
+          const table = item.getAttribute("data-ok-editor-table-action");
+          if (isAction(table)) controller.run(table);
+          else if (block === "paragraph") controller.run("paragraph");
           else if (block && /^h[1-6]$/.test(block))
             controller.run("heading", { level: Number(block.slice(1)) });
         },
@@ -247,6 +385,7 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
         },
         setValue(value) {
           controller.setContent(value);
+          if (input) input.value = controller.getValue();
         },
         get fullscreen() {
           return element.hasAttribute(fullscreenOption.attr);
@@ -265,6 +404,8 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
         controller,
         destroy() {
           release?.();
+          releaseShortcut();
+          bubble?.destroy();
           navigation.destroy();
           controller.destroy({ restore: true });
         },

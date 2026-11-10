@@ -2,6 +2,17 @@
  * @owlky/core/editor — the Editor's engine (ADR-0023): Tiptap, shared by React and HTML. A separate
  * entry so that `@owlky/core` and the main HTML bundle don't load ProseMirror.
  */
+
+/** A Tiptap extension (`extensions` option). */
+export type { AnyExtension as EditorExtension } from "@tiptap/core";
+export {
+  createEditorBubbleMenu,
+  defaultBubbleMenuShow,
+  type EditorBubbleMenu,
+  type EditorBubbleMenuOptions,
+  type EditorBubbleMenuShowProps,
+  editorToolbarShortcut,
+} from "./bubble-menu.js";
 export type { EditorHighlighter, HighlightNode } from "./code-block.js";
 export {
   createEditorController,
@@ -9,9 +20,11 @@ export {
   type EditorController,
   type EditorControllerOptions,
   type EditorState,
+  type EditorTextDirection,
 } from "./editor.js";
 export { holdEditorFullscreen } from "./fullscreen.js";
 export { type EditorIconName, editorIcons } from "./icons.js";
+export type { EditorMentionItem, EditorMentionOptions } from "./mention.js";
 export {
   type EditorTextTransform,
   editorTextTransforms,
@@ -22,9 +35,13 @@ export {
   createToolbarNavigation,
   type EditorAction,
   type EditorBlock,
+  type EditorTableAction,
   type EditorToolButton,
   editorActions,
   editorBlockLabels,
+  editorBubbleMenuActions,
+  editorTableActions,
+  editorToolButton,
   editorToolbar,
   type HeadingLevel,
   headingLevels,

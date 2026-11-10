@@ -17,7 +17,7 @@ import { createEditor, type EditorInstance, editor } from "./editor.js";
 const snippets = Object.entries(
   import.meta.glob("./examples/*.html", { query: "?raw", import: "default", eager: true }),
 ) as [string, string][];
-const snippet = snippets[0]?.[1] as string;
+const snippet = snippets.find(([path]) => path.endsWith("/editor-group.html"))?.[1] as string;
 
 let runtime: Runtime | undefined;
 afterEach(() => {
@@ -65,8 +65,19 @@ async function selectText(content: HTMLElement, text: string) {
 }
 
 describe("editor snippet", () => {
-  it("has one story snippet with valid, CSP-safe anatomy", async () => {
-    expect(snippets).toHaveLength(1);
+  it("has story snippets with valid, CSP-safe anatomy", async () => {
+    expect(snippets.map(([path]) => path.split("/").pop()).sort()).toEqual([
+      "bubble-menu-group.html",
+      "editor-group.html",
+      "mentions-group.html",
+      "table-group.html",
+    ]);
+    for (const [, markup] of snippets) {
+      const each = mount(markup);
+      expectCspSafe(each, markup);
+      expect(each.querySelectorAll("[data-ok-editor]")).toHaveLength(1);
+      resetPage();
+    }
     const host = mount(snippet);
     expectCspSafe(host, snippet);
     for (const svg of host.querySelectorAll("svg"))

@@ -112,6 +112,10 @@
    "value": "#00A76F"
   },
   {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
    "name": "--ok-palette-secondary-light",
    "value": "#C684FF"
   },
@@ -303,6 +307,12 @@
       "description": "After the editor entered or left full screen.",
       "detail": "{ fullscreen: boolean; }",
       "name": "ok:editor:fullscreen"
+     },
+     {
+      "cancelable": false,
+      "description": "The mention list needs items for `query` (the text after the trigger). `items` holds the matches from `template[data-ok-editor-mention-items]`; call `respondWith(itemsOrPromise)` to show others (for example from a server).",
+      "detail": "{ query: string; char: string; items: readonly EditorMentionItem[]; respondWith(items: PromiseLike<readonly EditorMentionItem[]> | readonly EditorMentionItem[]): void; }",
+      "name": "ok:editor:mentionsearch"
      }
     ],
     "methods": [
@@ -370,6 +380,59 @@
       "name": "editable"
      },
      {
+      "attr": "data-ok-tables",
+      "description": "Tables: the table nodes and the toolbar's table menu (insert, rows, columns, headers, merge, split, delete).",
+      "kind": "flag",
+      "name": "tables"
+     },
+     {
+      "attr": "data-ok-autofocus",
+      "default": "start",
+      "description": "Puts the caret in the editor once it is ready: at the `start`, the `end`, or selects `all`. React also takes `true` or a position.",
+      "kind": "style",
+      "name": "autofocus",
+      "optional": true,
+      "values": [
+       "start",
+       "end",
+       "all"
+      ]
+     },
+     {
+      "attr": "data-ok-text-direction",
+      "default": "ltr",
+      "description": "Text direction of the content: `ltr`, `rtl` or `auto`. Default: inherited.",
+      "kind": "style",
+      "name": "textDirection",
+      "optional": true,
+      "values": [
+       "ltr",
+       "rtl",
+       "auto"
+      ]
+     },
+     {
+      "attr": "data-ok-enable-input-rules",
+      "default": true,
+      "description": "Markdown-like shortcuts while typing, such as `# ` for a heading (`false`: off).",
+      "kind": "behavior",
+      "name": "enableInputRules"
+     },
+     {
+      "attr": "data-ok-enable-paste-rules",
+      "default": true,
+      "description": "The same shortcuts on pasted text (`false`: off).",
+      "kind": "behavior",
+      "name": "enablePasteRules"
+     },
+     {
+      "attr": "name",
+      "children": ":scope > input[data-ok-editor-input]",
+      "description": "Form field name: a hidden input holds the HTML value, so the editor submits with its form.",
+      "kind": "native",
+      "name": "name"
+     },
+     {
       "attr": "data-ok-fullscreen",
       "description": "Fills the viewport (the toolbar's Fullscreen button, Escape leaves).",
       "event": "ok:editor:fullscreen",
@@ -386,7 +449,18 @@
     ],
     "parts": [
      {
-      "description": "A toolbar button and the command it runs, such as `bold`.",
+      "description": "On the mention list: its query may hold spaces.",
+      "kind": "state",
+      "name": "data-ok-allow-spaces"
+     },
+     {
+      "description": "On the mention list: the character that opens it, such as `@` (default).",
+      "kind": "value",
+      "name": "data-ok-char",
+      "value": "string"
+     },
+     {
+      "description": "A toolbar button and the command it runs, such as `bold` (`table`: opens the table menu).",
       "kind": "value",
       "name": "data-ok-editor-action",
       "value": "string"
@@ -412,6 +486,14 @@
       ],
       "kind": "part",
       "name": "data-ok-editor-body"
+     },
+     {
+      "description": "The toolbar over selected text: a Popover with `role=\"toolbar\"` and `data-ok-runtime=\"off\"`.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-bubble-menu"
      },
      {
       "description": "A code block of the content, with its language menu.",
@@ -494,12 +576,71 @@
       ]
      },
      {
+      "description": "A hidden input holding the HTML value, named for its form (`name`).",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-input"
+     },
+     {
       "description": "The language menu of a code block.",
       "elements": [
        "select"
       ],
       "kind": "part",
       "name": "data-ok-editor-language"
+     },
+     {
+      "description": "A mention in the content: `span[data-type=\"mention\"][data-id][data-label]`.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-mention"
+     },
+     {
+      "description": "The people (or anything) mentions suggest: a template of `[data-ok-value]` items.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-mention-items"
+     },
+     {
+      "description": "An option of the mention list, written by the runtime.",
+      "elements": [
+       "li"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-mention-option"
+     },
+     {
+      "description": "The mention list: a Popover with a `[role=listbox]` and `data-ok-runtime=\"off\"`.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-mentions"
+     },
+     {
+      "description": "An item of the table menu and the table action it runs, such as `addRowAfter`.",
+      "kind": "value",
+      "name": "data-ok-editor-table-action",
+      "value": [
+       "addColumnAfter",
+       "addColumnBefore",
+       "addRowAfter",
+       "addRowBefore",
+       "deleteColumn",
+       "deleteRow",
+       "deleteTable",
+       "insertTable",
+       "mergeCells",
+       "splitCell",
+       "toggleHeaderColumn",
+       "toggleHeaderRow"
+      ]
      },
      {
       "description": "The toolbar.",
@@ -529,6 +670,18 @@
        "lowercase",
        "uppercase"
       ]
+     },
+     {
+      "description": "On the bubble menu: how long it waits after the selection stops changing (ms; default 250).",
+      "kind": "value",
+      "name": "data-ok-update-delay",
+      "value": "string"
+     },
+     {
+      "description": "On a mention template item: the id the mention gets (`data-id`); its text is the label.",
+      "kind": "value",
+      "name": "data-ok-value",
+      "value": "string"
      }
     ],
     "runtime": "editor"
@@ -549,6 +702,16 @@
       "type": "string"
      },
      {
+      "description": "Puts the caret in the editor once it is ready: `\"start\"`, `\"end\"`, `\"all\"`, `true` or a position.",
+      "name": "autofocus",
+      "type": "FocusPosition"
+     },
+     {
+      "description": "A toolbar over selected text (`true`: bold, italic, underline, strikethrough, code, link).",
+      "name": "bubbleMenu",
+      "type": "boolean | EditorBubbleMenuProps"
+     },
+     {
       "description": "Initial content (HTML) when uncontrolled.",
       "name": "defaultValue",
       "type": "string"
@@ -560,9 +723,31 @@
       "type": "boolean"
      },
      {
+      "description": "ProseMirror props (Tiptap's `editorProps`), merged with the editor's own. Read at creation.",
+      "name": "editorProps",
+      "type": "EditorProps<any>"
+     },
+     {
+      "default": "true",
+      "description": "Markdown-like shortcuts while typing, such as `# ` for a heading.",
+      "name": "enableInputRules",
+      "type": "EnableRules"
+     },
+     {
+      "default": "true",
+      "description": "The same shortcuts on pasted text.",
+      "name": "enablePasteRules",
+      "type": "EnableRules"
+     },
+     {
       "description": "Error state: red border and helper text, `aria-invalid` on the textbox.",
       "name": "error",
       "type": "boolean"
+     },
+     {
+      "description": "More Tiptap extensions, after the built-in ones (one with a built-in's name replaces it). Read when the editor is created: change the component's `key` to use new ones.",
+      "name": "extensions",
+      "type": "readonly AnyExtension[]"
      },
      {
       "description": "Every toolbar group (code, code block, blockquote, horizontal rule, undo, redo).",
@@ -580,6 +765,16 @@
       "type": "EditorHighlighter"
      },
      {
+      "description": "Mentions: typing `char` (default `@`) opens a list of `items(query)` (may be async); the chosen item becomes `<span data-type=\"mention\" data-id data-label>`. Read when the editor is created.",
+      "name": "mentions",
+      "type": "EditorMentionProps"
+     },
+     {
+      "description": "Form field name: a hidden input holds the HTML value (`\"\"` when empty), so the editor submits with its form.",
+      "name": "name",
+      "type": "string"
+     },
+     {
       "description": "Called with the new HTML (`\"\"` when empty) after every change.",
       "name": "onChange",
       "type": "((value: string) => void)"
@@ -590,9 +785,25 @@
       "type": "((fullscreen: boolean) => void)"
      },
      {
+      "description": "ProseMirror parse options for the content (Tiptap's `parseOptions`). Read at creation.",
+      "name": "parseOptions",
+      "type": "ParseOptions"
+     },
+     {
       "description": "Shown while the editor is empty. \".",
       "name": "placeholder",
       "type": "string"
+     },
+     {
+      "default": "false",
+      "description": "Tables: the table nodes and a table menu in the toolbar.",
+      "name": "tables",
+      "type": "boolean"
+     },
+     {
+      "description": "Text direction of the content: `\"ltr\"`, `\"rtl\"` or `\"auto\"`. Default: inherited.",
+      "name": "textDirection",
+      "type": "EditorTextDirection"
      },
      {
       "description": "Controlled content (HTML). `\"\"` is empty.",

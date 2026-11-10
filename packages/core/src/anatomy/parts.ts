@@ -891,8 +891,43 @@ export interface DrawerParts {
 
 /** Editor: parts, states, values and triggers. */
 export interface EditorParts {
-  /** A toolbar button and the command it runs, such as `bold`. */
+  /** A toolbar button and the command it runs, such as `bold` (`table`: opens the table menu). */
   "data-ok-editor-action": Value<string>;
+  /** On the mention list: its query may hold spaces. */
+  "data-ok-allow-spaces": State;
+  /** The toolbar over selected text: a Popover with `role="toolbar"` and `data-ok-runtime="off"`. */
+  "data-ok-editor-bubble-menu": Part<"div">;
+  /** On the mention list: the character that opens it, such as `@` (default). */
+  "data-ok-char": Value<string>;
+  /** A hidden input holding the HTML value, named for its form (`name`). */
+  "data-ok-editor-input": Part<"input">;
+  /** A mention in the content: `span[data-type="mention"][data-id][data-label]`. */
+  "data-ok-editor-mention": Part<"span">;
+  /** The people (or anything) mentions suggest: a template of `[data-ok-value]` items. */
+  "data-ok-editor-mention-items": Part<"template">;
+  /** An option of the mention list, written by the runtime. */
+  "data-ok-editor-mention-option": Part<"li">;
+  /** The mention list: a Popover with a `[role=listbox]` and `data-ok-runtime="off"`. */
+  "data-ok-editor-mentions": Part<"div">;
+  /** An item of the table menu and the table action it runs, such as `addRowAfter`. */
+  "data-ok-editor-table-action": Value<
+    | "insertTable"
+    | "addColumnBefore"
+    | "addColumnAfter"
+    | "deleteColumn"
+    | "addRowBefore"
+    | "addRowAfter"
+    | "deleteRow"
+    | "toggleHeaderRow"
+    | "toggleHeaderColumn"
+    | "mergeCells"
+    | "splitCell"
+    | "deleteTable"
+  >;
+  /** On the bubble menu: how long it waits after the selection stops changing (ms; default 250). */
+  "data-ok-update-delay": Value<string>;
+  /** On a mention template item: the id the mention gets (`data-id`); its text is the label. */
+  "data-ok-value": Value<string>;
   /** A menu item of the heading menu and the block it sets. */
   "data-ok-editor-block": Value<"paragraph" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6">;
   /** The scrolling area around the content. */

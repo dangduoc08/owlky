@@ -352,6 +352,9 @@ const pairs: [component: string, story: string][] = [
   ["backdrop", "example"],
   ["collapse", "simple-collapse"],
   ["editor", "basic"],
+  ["editor", "bubble-menu"],
+  ["editor", "tables"],
+  ["editor", "mentions"],
   ...[
     "align",
     "progress",
@@ -507,6 +510,11 @@ async function loaded(page: Page, key: string) {
     await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);
     await expect(page.locator(".sb-editor-preview [data-ok-markdown] h4")).toBeVisible();
     await expect(page.locator(".hljs-keyword").first()).toBeVisible();
+    return;
+  }
+  if (key.startsWith("editor/")) {
+    // The HTML stories register the editor in their page script.
+    await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);
     return;
   }
   if (key.startsWith("markdown/")) {

@@ -2,12 +2,28 @@ import { editorOptions } from "@owlky/core";
 import editorApi from "@owlky/docs-content/api/editor.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Editor } from "@owlky/react";
+import bubbleGroup from "../../../../../packages/html/src/components/editor/examples/bubble-menu-group.html?raw";
 import editorGroup from "../../../../../packages/html/src/components/editor/examples/editor-group.html?raw";
+import mentionsGroup from "../../../../../packages/html/src/components/editor/examples/mentions-group.html?raw";
+import tableGroup from "../../../../../packages/html/src/components/editor/examples/table-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
 
 const EDITOR = snippetElement(editorGroup, "data-ok-editor data-ok-full-item");
+
+/** The editor bundle, loaded after the components. */
+const CDN_EDITOR = `<!-- Load once per page: the styles, the runtime and the editor -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+<script src="${CDN}/owlky-editor.js" defer></script>`;
+
+/** `editor` with the hidden form input as its last child. */
+function withInput(editor: string, name: string) {
+  const lines = editor.split("\n");
+  lines.splice(lines.length - 1, 0, `  <input type="hidden" data-ok-editor-input name="${name}">`);
+  return lines.join("\n");
+}
 
 /** The full editor of the snippet, with its own ids, label, root attributes and content. */
 function htmlEditor({
@@ -174,6 +190,133 @@ export function EditorStates() {
 }`,
   },
   {
+    id: "bubble-menu",
+    title: "Show a menu over selected text",
+    body: 'A bubble menu is a small toolbar that appears over the text people select, so they can format it without moving to the main toolbar. In React, set `bubbleMenu` to `true` for bold, italic, underline, strikethrough, code and link, or pass `{ actions }` to choose the buttons. `placement` puts it on another side of the selection, `updateDelay` sets how long it waits after the selection stops changing (250 milliseconds by default), and `shouldShow` decides when it appears. In HTML, add the bubble menu\'s markup to the editor: a popover with the toolbar buttons, marked `data-ok-runtime="off"` because the editor runs it. Keyboard users press Alt+F10 in the text to move to the menu, and Escape to come back with the selection unchanged.',
+    html: `${CDN_EDITOR}
+
+${snippetElement(bubbleGroup, 'id="bubble-editor"')}`,
+    react: `import { Editor } from "@owlky/react";
+
+export function Notes() {
+  return (
+    <Editor
+      aria-label="Notes"
+      defaultValue="<p>Select some text to format it.</p>"
+      bubbleMenu={{ actions: ["bold", "italic", "link"], placement: "bottom" }}
+    />
+  );
+}`,
+  },
+  {
+    id: "tables",
+    title: "Add tables",
+    body: "`tables` adds tables to the editor, with a **Table** button in the toolbar. Its menu inserts a table of three rows and three columns with a header row. It also adds and deletes rows and columns, turns the header row or column on and off, merges and splits cells, and deletes the table. Items that can't run where the caret is are disabled. Tab and Shift+Tab move between cells. Without `tables`, table markup in the content is dropped, as before.",
+    html: `${CDN_EDITOR}
+
+${snippetElement(tableGroup, 'id="table-editor"')}`,
+    react: `import { Editor } from "@owlky/react";
+
+const PLAN =
+  "<table><tbody><tr><th><p>Phase</p></th><th><p>Owner</p></th></tr>" +
+  "<tr><td><p>Design</p></td><td><p>Ada</p></td></tr></tbody></table>";
+
+export function Plan() {
+  return <Editor aria-label="Plan" tables defaultValue={PLAN} />;
+}`,
+  },
+  {
+    id: "mentions",
+    title: "Mention people",
+    body: 'Mentions turn a name typed after `@` into a link-like token. In React, pass `mentions` with an `items(query)` function that returns the matching items, each with an `id` and a `label`, or a promise of them. `char` changes the trigger character. While people type, a list of suggestions opens under the text. The arrow keys move through it, Enter or Tab picks an item, and Escape closes it. The chosen item becomes `<span data-type="mention" data-id="…" data-label="…">` in the HTML. In HTML, add the list\'s markup and a `<template data-ok-editor-mention-items>` with one `[data-ok-value]` element per item. The editor shows the items whose text contains the query. To look items up elsewhere, such as on a server, listen for `ok:editor:mentionsearch` and pass the items, or a promise of them, to `event.detail.respondWith()`.',
+    html: `${CDN_EDITOR}
+
+${snippetElement(mentionsGroup, 'id="mention-editor"')}
+
+<script type="module">
+  // Look people up on the server instead of in the template.
+  const editor = document.getElementById("mention-editor");
+  editor.addEventListener("ok:editor:mentionsearch", (event) => {
+    const { query, respondWith } = event.detail;
+    respondWith(
+      fetch(\`/api/people?q=\${encodeURIComponent(query)}\`).then((response) => response.json()),
+    );
+  });
+</script>`,
+    react: `import { Editor, type EditorMentionItem } from "@owlky/react";
+
+async function findPeople(query: string): Promise<EditorMentionItem[]> {
+  const response = await fetch(\`/api/people?q=\${encodeURIComponent(query)}\`);
+  return response.json();
+}
+
+export function Comment() {
+  return <Editor aria-label="Comment" mentions={{ items: findPeople }} />;
+}`,
+  },
+  {
+    id: "tiptap",
+    title: "Configure Tiptap",
+    body: "The editor runs on Tiptap, and you can pass Tiptap's settings through. `extensions` adds Tiptap extensions after the built-in ones, such as a character count. An extension with the name of a built-in one, such as `image`, replaces it. Extensions can accept new kinds of content, so only add ones you trust. `editorProps` passes ProseMirror props, merged with the editor's own, and `parseOptions` sets how content is parsed, such as keeping whitespace. These three are read when the editor starts: in React, change the component's `key` to start it again with new ones. In HTML, pass them to `createEditor()`. `autofocus` puts the caret in the editor when it starts, `textDirection` sets `ltr`, `rtl` or `auto`, and `enableInputRules` and `enablePasteRules` turn off the Markdown-like shortcuts, such as `# ` for a heading.",
+    html: `${htmlEditor({ id: "draft", label: "Draft", attrs: 'data-ok-full-item data-ok-autofocus="end" data-ok-text-direction="auto" data-ok-enable-input-rules="false"' })}
+
+<script type="module">
+  import { createEditor, getRuntime } from "@owlky/html";
+  import { CharacterCount } from "@tiptap/extensions";
+
+  getRuntime()
+    .register(
+      createEditor({
+        extensions: [CharacterCount.configure({ limit: 500 })],
+        editorProps: { attributes: { spellcheck: "false" } },
+        parseOptions: { preserveWhitespace: "full" },
+      }),
+    )
+    .start();
+</script>`,
+    react: `import { Editor } from "@owlky/react";
+import { CharacterCount } from "@tiptap/extensions";
+
+const extensions = [CharacterCount.configure({ limit: 500 })];
+
+export function Draft() {
+  return (
+    <Editor
+      aria-label="Draft"
+      extensions={extensions}
+      editorProps={{ attributes: { spellcheck: "false" } }}
+      autofocus="end"
+      textDirection="auto"
+      enableInputRules={false}
+    />
+  );
+}`,
+  },
+  {
+    id: "form",
+    title: "Submit the content with a form",
+    body: '`name` lets the editor take part in a form: a hidden input with that name holds the content as HTML, kept up to date after every change. In HTML, add `<input type="hidden" data-ok-editor-input name="…">` as the last child of the editor. Check the HTML on the server before you store or show it, as you would for any form field.',
+    html: `<form method="post" action="/posts">
+${withInput(htmlEditor({ id: "post", label: "Post" }), "body")
+  .split("\n")
+  .map((line) => `  ${line}`)
+  .join("\n")}
+  <button type="submit" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Publish</span></button>
+</form>`,
+    react: `import { Button, Editor } from "@owlky/react";
+
+export function NewPost() {
+  return (
+    <form method="post" action="/posts">
+      <Editor aria-label="Post" name="body" fullItem />
+      <Button type="submit" variant="contained" color="primary">
+        Publish
+      </Button>
+    </form>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML.",
@@ -188,6 +331,7 @@ export function EditorStates() {
     title: "Events and methods",
     body: `- **\`ok:editor:change\`** fires on the editor after every change, with the HTML in \`detail.value\`.
 - **\`ok:editor:fullscreen\`** fires when fullscreen mode changes, with \`detail.fullscreen\`.
+- **\`ok:editor:mentionsearch\`** fires when the mention list needs items, with \`detail.query\`, \`detail.char\`, the template's matches in \`detail.items\` and \`detail.respondWith(items)\`.
 - **Instance:** \`runtime.get(element, "editor")\` returns \`{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), controller }\`. \`controller.editor\` is the Tiptap editor.
 - **React:** \`onChange(value)\` and \`onFullscreenChange(fullscreen)\`.
 - **Trusted Types:** \`setValue\` and the React \`value\` prop parse an HTML string with the browser's \`DOMParser\`. Pages that enforce Trusted Types need a policy for it. Content written in the markup needs none.`,
@@ -204,7 +348,9 @@ export function EditorStates() {
 - Toolbar buttons have names and report their state with \`aria-pressed\`, so people hear whether bold or a list is on. Their keyboard shortcuts are announced through \`aria-keyshortcuts\`.
 - The link and image forms are dialogs named by their title. Escape closes them and returns focus to their button.
 - Images need a text alternative: fill in **Alt text**, or leave it empty only for decoration.
-- Fullscreen mode can always be left with Escape. While it is on, Tab moves between the toolbar and the text box only, so focus never reaches controls hidden behind the editor.`,
+- Fullscreen mode can always be left with Escape. While it is on, Tab moves between the toolbar and the text box only, so focus never reaches controls hidden behind the editor.
+- Alt+F10 moves from the text to the bubble menu when it shows, else to the toolbar, so keyboard users reach the formatting buttons without a pointer.
+- The mention list is a listbox. Focus stays in the text while people choose, and the text box points at the highlighted item with \`aria-activedescendant\`, so screen readers read it.`,
   },
   apiReferenceSection(editorApi),
 ];
@@ -265,6 +411,30 @@ const PREVIEWS = {
           type: "(fullscreen: boolean) => void",
           description: "Fullscreen mode changed.",
         },
+        {
+          react: "bubbleMenu",
+          html: "div[data-ok-editor-bubble-menu] (data-ok-placement, data-ok-update-delay)",
+          type: "boolean | { actions, placement, updateDelay, shouldShow, label }",
+          description: "A toolbar over selected text.",
+        },
+        {
+          react: "mentions",
+          html: "div[data-ok-editor-mentions] (data-ok-char) · template[data-ok-editor-mention-items]",
+          type: "{ items(query), char, allowSpaces, label }",
+          description: "Suggestions after `@`; the chosen item becomes a mention.",
+        },
+        {
+          react: "extensions / editorProps / parseOptions",
+          html: "createEditor({ extensions, editorProps, parseOptions })",
+          type: "Tiptap extensions / ProseMirror props / parse options",
+          description: "Tiptap settings, read when the editor starts.",
+        },
+        {
+          react: "name",
+          html: "input[type=hidden][data-ok-editor-input][name]",
+          type: "string",
+          description: "Submits the HTML value with the form.",
+        },
       ]}
     />
   ),
@@ -288,6 +458,12 @@ const PREVIEWS = {
           "Stays inside the editor, wrapping from the last stop to the first.",
         ],
         ["Escape", "Leaves fullscreen mode."],
+        ["Alt+F10", "Moves from the text to the bubble menu when it shows, else to the toolbar."],
+        ["Escape (bubble menu)", "Goes back to the text, keeping the selection."],
+        ["Down arrow / Up arrow (mention list)", "Moves through the suggestions."],
+        ["Enter / Tab (mention list)", "Inserts the highlighted suggestion."],
+        ["Escape (mention list)", "Closes the suggestions."],
+        ["Tab / Shift+Tab (table)", "Moves to the next or previous cell."],
       ]}
     />
   ),

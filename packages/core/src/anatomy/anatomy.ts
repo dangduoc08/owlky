@@ -3802,6 +3802,12 @@ export const dateRangePickerAttributes = (
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 // --- Editor (ADR-0023) --------------------------------------------------------------------------
 
+/** Where `autofocus` puts the caret (HTML `data-ok-autofocus`). */
+export const editorFocusPositions = ["start", "end", "all"] as const;
+export type EditorFocusPosition = (typeof editorFocusPositions)[number];
+/** Text directions of the content (`textDirection`). */
+export const editorTextDirections = ["ltr", "rtl", "auto"] as const;
+
 export const editorOptions = defineOptions("editor", "data-ok-editor", {
   fullItem: flag(
     "data-ok-full-item",
@@ -3816,6 +3822,39 @@ export const editorOptions = defineOptions("editor", "data-ok-editor", {
     true,
     "The content can be changed (`false`: read only, toolbar disabled).",
   ),
+  tables: flag(
+    "data-ok-tables",
+    "Tables: the table nodes and the toolbar's table menu (insert, rows, columns, headers, merge, split, delete).",
+  ),
+  autofocus: style(
+    "data-ok-autofocus",
+    editorFocusPositions,
+    "start",
+    "Puts the caret in the editor once it is ready: at the `start`, the `end`, or selects `all`. React also takes `true` or a position.",
+    { optional: true },
+  ),
+  textDirection: style(
+    "data-ok-text-direction",
+    editorTextDirections,
+    "ltr",
+    "Text direction of the content: `ltr`, `rtl` or `auto`. Default: inherited.",
+    { optional: true },
+  ),
+  enableInputRules: behavior(
+    "data-ok-enable-input-rules",
+    true,
+    "Markdown-like shortcuts while typing, such as `# ` for a heading (`false`: off).",
+  ),
+  enablePasteRules: behavior(
+    "data-ok-enable-paste-rules",
+    true,
+    "The same shortcuts on pasted text (`false`: off).",
+  ),
+  name: native(
+    "name",
+    "Form field name: a hidden input holds the HTML value, so the editor submits with its form.",
+    { children: ":scope > input[data-ok-editor-input]" },
+  ),
   fullscreen: state(
     "data-ok-fullscreen",
     "Fills the viewport (the toolbar's Fullscreen button, Escape leaves).",
@@ -3828,7 +3867,13 @@ export const editorOptions = defineOptions("editor", "data-ok-editor", {
   ),
 });
 
-export type EditorAnatomyOptions = { fullItem?: boolean | undefined; error?: boolean | undefined };
+export type EditorAnatomyOptions = {
+  fullItem?: boolean | undefined;
+  error?: boolean | undefined;
+  tables?: boolean | undefined;
+  autofocus?: EditorFocusPosition | undefined;
+  textDirection?: (typeof editorTextDirections)[number] | undefined;
+};
 
 /** `data-ok-*` attributes of an editor root. */
 export const editorAttributes = (options: EditorAnatomyOptions = {}): DataAttributes =>

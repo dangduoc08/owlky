@@ -2,17 +2,28 @@
 
 import { editorAttributes } from "@owlky/core";
 import {
+  createEditorBubbleMenu,
   createEditorController,
   createToolbarNavigation,
   type EditorAction,
   type EditorBlock,
+  type EditorBubbleMenu,
+  type EditorBubbleMenuOptions,
   type EditorController,
+  type EditorControllerOptions,
   type EditorHighlighter,
   type EditorIconName,
+  type EditorMentionOptions,
   type EditorState,
+  type EditorTextDirection,
+  type EditorToolButton,
   editorBlockLabels,
+  editorBubbleMenuActions,
   editorIcons,
+  editorTableActions,
+  editorToolButton,
   editorToolbar,
+  editorToolbarShortcut,
   holdEditorFullscreen,
   safeEditorUrl,
 } from "@owlky/core/editor";
@@ -35,7 +46,7 @@ import { Popover } from "../popover/popover.js";
 import { TextField } from "../text-field/text-field.js";
 import { useMergedRefs } from "../utils/refs.js";
 
-export type { EditorHighlighter } from "@owlky/core/editor";
+export type { EditorHighlighter, EditorMentionItem } from "@owlky/core/editor";
 
 export interface EditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue" | "placeholder"> {
@@ -63,6 +74,63 @@ export interface EditorProps
   "aria-label"?: string | undefined;
   /** Labels the textbox with another element. */
   "aria-labelledby"?: string | undefined;
+  /**
+   * Form field name: a hidden input holds the HTML value (`""` when empty), so the editor
+   * submits with its form.
+   */
+  name?: string | undefined;
+  /** Tables: the table nodes and a table menu in the toolbar. Default `false`. */
+  tables?: boolean | undefined;
+  /**
+   * Mentions: typing `char` (default `@`) opens a list of `items(query)` (may be async); the
+   * chosen item becomes `<span data-type="mention" data-id data-label>`. Read when the editor is
+   * created.
+   */
+  mentions?: EditorMentionProps | undefined;
+  /** A toolbar over selected text (`true`: bold, italic, underline, strikethrough, code, link). */
+  bubbleMenu?: boolean | EditorBubbleMenuProps | undefined;
+  /**
+   * More Tiptap extensions, after the built-in ones (one with a built-in's name replaces it).
+   * Read when the editor is created: change the component's `key` to use new ones.
+   */
+  extensions?: EditorControllerOptions["extensions"];
+  /** ProseMirror props (Tiptap's `editorProps`), merged with the editor's own. Read at creation. */
+  editorProps?: EditorControllerOptions["editorProps"];
+  /** ProseMirror parse options for the content (Tiptap's `parseOptions`). Read at creation. */
+  parseOptions?: EditorControllerOptions["parseOptions"];
+  /** Puts the caret in the editor once it is ready: `"start"`, `"end"`, `"all"`, `true` or a position. */
+  autofocus?: EditorControllerOptions["autofocus"];
+  /** Text direction of the content: `"ltr"`, `"rtl"` or `"auto"`. Default: inherited. */
+  textDirection?: EditorTextDirection | undefined;
+  /** Markdown-like shortcuts while typing, such as `# ` for a heading. Default `true`. */
+  enableInputRules?: EditorControllerOptions["enableInputRules"];
+  /** The same shortcuts on pasted text. Default `true`. */
+  enablePasteRules?: EditorControllerOptions["enablePasteRules"];
+}
+
+export interface EditorMentionProps {
+  /** The character that opens the list. Default `"@"`. */
+  char?: string | undefined;
+  /** The items for the text typed after `char`; may return a promise. */
+  items: EditorMentionOptions["items"];
+  /** The query may hold spaces. Default `false`. */
+  allowSpaces?: boolean | undefined;
+  /** Accessible name of the list. Default "Suggestions". */
+  label?: string | undefined;
+}
+
+/** The bubble menu's settings (`placement`, `updateDelay` and `shouldShow` are read when it is created). */
+export interface EditorBubbleMenuProps {
+  /** The buttons, as toolbar actions. Default: bold, italic, underline, strikethrough, code, link. */
+  actions?: readonly EditorToolButton["action"][] | undefined;
+  /** Side of the selection. Default `"top"`. */
+  placement?: EditorBubbleMenuOptions["placement"];
+  /** Waits this long after the selection stops changing (ms). Default 250. */
+  updateDelay?: number | undefined;
+  /** When the menu shows. Default: some text is selected in an editable editor with focus. */
+  shouldShow?: EditorBubbleMenuOptions["shouldShow"];
+  /** Accessible name of the menu. Default "Text formatting". */
+  label?: string | undefined;
 }
 
 const BLOCKS = Object.keys(editorBlockLabels) as Exclude<EditorBlock, "other">[];
@@ -114,15 +182,28 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     onFullscreenChange,
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledBy,
+    name,
+    tables = false,
+    mentions,
+    bubbleMenu,
+    extensions,
+    editorProps,
+    parseOptions,
+    autofocus,
+    textDirection,
+    enableInputRules,
+    enablePasteRules,
     id,
     onKeyDown,
     ...props
   },
   ref,
 ) {
-  const base = useId();
+  const reactId = useId();
+  // Every part id derives from `id` when one is given (readable snippets), else from useId.
+  const base = id ? `${id}-` : reactId;
   const ids = {
-    content: id ? `${id}-content` : `${base}content`,
+    content: `${base}content`,
     helper: `${base}helper`,
     heading: `${base}heading`,
     menu: `${base}menu`,
@@ -130,6 +211,10 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     linkTitle: `${base}link-title`,
     image: `${base}image`,
     imageTitle: `${base}image-title`,
+    table: `${base}table`,
+    tableMenu: `${base}table-menu`,
+    bubble: `${base}bubble`,
+    mentions: `${base}mentions`,
   };
   const rootRef = useRef<HTMLDivElement | null>(null);
   const rootRefs = useMergedRefs(ref, rootRef);
@@ -152,10 +237,33 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
   controlledRef.current = value !== undefined;
   const editableRef = useRef(editable);
   editableRef.current = editable;
+  // Read when the editor is created (Tiptap's `useEditor` without dependencies).
+  const setupRef = useRef({
+    extensions,
+    editorProps,
+    parseOptions,
+    autofocus,
+    textDirection,
+    enableInputRules,
+    enablePasteRules,
+  });
+  const mentionsRef = useRef(mentions);
+  mentionsRef.current = mentions;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  const mentionsListRef = useRef<HTMLDivElement>(null);
+  const bubbleMenuRef = useRef<EditorBubbleMenu | null>(null);
+  const bubble = bubbleMenu === true ? {} : bubbleMenu || null;
+  const bubbleOptions = useRef(bubble);
+  bubbleOptions.current = bubble;
+  const hasMentions = mentions !== undefined;
+  const mentionChar = mentions?.char;
+  const mentionSpaces = mentions?.allowSpaces;
 
   const [state, setState] = useState<EditorState>(INITIAL);
   const [fullscreen, setFullscreen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [tableAnchor, setTableAnchor] = useState<HTMLElement | null>(null);
   const [form, setForm] = useState<{ kind: "link" | "image"; anchor: HTMLElement } | null>(null);
   const [href, setHref] = useState("");
   const [src, setSrc] = useState("");
@@ -163,26 +271,72 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
 
   useEffect(() => {
     loadedRef.current = valueRef.current;
+    const setup = setupRef.current;
     const controller = createEditorController(contentRef.current as HTMLDivElement, {
       content: valueRef.current,
       editable: editableRef.current,
       placeholder,
       highlighter,
+      tables,
+      ...(hasMentions
+        ? {
+            mentions: {
+              char: mentionChar,
+              allowSpaces: mentionSpaces,
+              items: (query: string) => (mentionsRef.current as EditorMentionProps).items(query),
+              list: () => mentionsListRef.current,
+            },
+          }
+        : {}),
+      ...setup,
       onChange: (next) => {
         valueRef.current = next;
         loadedRef.current = null;
+        if (inputRef.current) inputRef.current.value = next;
         if (controlledRef.current) emittedRef.current = [...emittedRef.current, next].slice(-50);
         onChangeRef.current?.(next);
       },
       onStateChange: setState,
     });
     controllerRef.current = controller;
+    if (inputRef.current) inputRef.current.value = controller.getValue();
     setState(controller.getState());
     return () => {
       controller.destroy();
       controllerRef.current = null;
     };
-  }, [placeholder, highlighter]);
+  }, [placeholder, highlighter, tables, hasMentions, mentionChar, mentionSpaces]);
+
+  // The bubble menu follows the selection (a new one with each editor).
+  const hasBubble = bubble !== null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a new editor (state.editable flips at creation) gets a new menu.
+  useEffect(() => {
+    const controller = controllerRef.current;
+    if (!hasBubble || !controller || !bubbleRef.current) return;
+    // Read when the menu is created, like the editor's own settings.
+    const { placement, updateDelay, shouldShow } = bubbleOptions.current as EditorBubbleMenuProps;
+    const menu = createEditorBubbleMenu(controller.editor, bubbleRef.current, {
+      placement,
+      updateDelay,
+      shouldShow,
+    });
+    bubbleMenuRef.current = menu;
+    return () => {
+      menu.destroy();
+      bubbleMenuRef.current = null;
+    };
+  }, [hasBubble, placeholder, highlighter, tables, hasMentions, mentionChar, mentionSpaces]);
+
+  // Alt+F10: from the text to the bubble menu (when it shows) or the toolbar.
+  useEffect(
+    () =>
+      editorToolbarShortcut(
+        rootRef.current as HTMLElement,
+        contentRef.current as HTMLElement,
+        () => bubbleMenuRef.current,
+      ),
+    [],
+  );
 
   // Controlled content: a new `value` replaces the content, unless it is a late echo of a value
   // the editor reported itself (fast typing, batched renders). Like Tiptap, edits the owner
@@ -198,6 +352,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     emittedRef.current = [];
     if (value !== controller.getValue()) {
       controller.setContent(value);
+      if (inputRef.current) inputRef.current.value = controller.getValue();
       loadedRef.current = value;
     }
   }, [value]);
@@ -252,12 +407,71 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
   const disabled = (action: EditorAction) => !editable || state.disabled[action] === true;
   const blockLabel = editorBlockLabels[state.block === "other" ? "paragraph" : state.block];
 
+  /** A toolbar (or bubble menu) button. */
+  const toolButton = (button: EditorToolButton) => {
+    const { action } = button;
+    if (action === "fullscreen") {
+      return (
+        <button
+          key={action}
+          type="button"
+          data-ok-editor-action={action}
+          aria-label={button.label}
+          aria-pressed={fullscreen}
+          tabIndex={-1}
+          onClick={() => changeFullscreen(!fullscreen)}
+        >
+          <Icon name="fullscreen" part="enter" />
+          <Icon name="exitFullscreen" part="exit" />
+        </button>
+      );
+    }
+    const popover = button.popover ? (action as "link" | "image") : null;
+    return (
+      <button
+        key={action}
+        type="button"
+        data-ok-editor-action={action}
+        aria-label={button.label}
+        aria-keyshortcuts={button.keys}
+        aria-pressed={button.toggle ? state.active[action] === true : undefined}
+        aria-haspopup={popover ? "dialog" : undefined}
+        aria-expanded={popover ? form?.kind === popover : undefined}
+        aria-controls={popover ? ids[popover] : undefined}
+        disabled={disabled(action)}
+        tabIndex={-1}
+        onClick={(event) => (popover ? openForm(popover, event.currentTarget) : run(action))}
+      >
+        <Icon name={action} />
+      </button>
+    );
+  };
+  const groups = editorToolbar.slice(0, -1);
+  const last = editorToolbar.at(-1) as (typeof editorToolbar)[number];
+  const group = (each: (typeof editorToolbar)[number]) => (
+    <div
+      key={each.buttons[0]?.action}
+      data-ok-editor-group=""
+      data-ok-full={each.full ? "" : undefined}
+    >
+      {each.buttons.map(toolButton)}
+    </div>
+  );
+
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Escape from any part leaves fullscreen.
     <div
       ref={rootRefs}
-      {...editorAttributes({ fullItem, error })}
+      {...editorAttributes({
+        fullItem,
+        error,
+        tables,
+        autofocus: typeof autofocus === "string" ? autofocus : undefined,
+        textDirection,
+      })}
       data-ok-editable={editable ? undefined : "false"}
+      data-ok-enable-input-rules={enableInputRules === false ? "false" : undefined}
+      data-ok-enable-paste-rules={enablePasteRules === false ? "false" : undefined}
       data-ok-fullscreen={fullscreen ? "" : undefined}
       data-ok-runtime="off"
       id={id}
@@ -294,54 +508,26 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
           <span data-ok-editor-heading-label="">{blockLabel}</span>
           <Icon name="chevronDown" />
         </button>
-        {editorToolbar.map((group) => (
-          <div
-            key={group.buttons[0]?.action}
-            data-ok-editor-group=""
-            data-ok-full={group.full ? "" : undefined}
-          >
-            {group.buttons.map((button) => {
-              const { action } = button;
-              if (action === "fullscreen") {
-                return (
-                  <button
-                    key={action}
-                    type="button"
-                    data-ok-editor-action={action}
-                    aria-label={button.label}
-                    aria-pressed={fullscreen}
-                    tabIndex={-1}
-                    onClick={() => changeFullscreen(!fullscreen)}
-                  >
-                    <Icon name="fullscreen" part="enter" />
-                    <Icon name="exitFullscreen" part="exit" />
-                  </button>
-                );
-              }
-              const popover = button.popover ? (action as "link" | "image") : null;
-              return (
-                <button
-                  key={action}
-                  type="button"
-                  data-ok-editor-action={action}
-                  aria-label={button.label}
-                  aria-keyshortcuts={button.keys}
-                  aria-pressed={button.toggle ? state.active[action] === true : undefined}
-                  aria-haspopup={popover ? "dialog" : undefined}
-                  aria-expanded={popover ? form?.kind === popover : undefined}
-                  aria-controls={popover ? ids[popover] : undefined}
-                  disabled={disabled(action)}
-                  tabIndex={-1}
-                  onClick={(event) =>
-                    popover ? openForm(popover, event.currentTarget) : run(action)
-                  }
-                >
-                  <Icon name={action} />
-                </button>
-              );
-            })}
+        {groups.map(group)}
+        {tables ? (
+          <div data-ok-editor-group="">
+            <button
+              type="button"
+              data-ok-editor-action="table"
+              id={ids.table}
+              aria-label="Table"
+              aria-haspopup="menu"
+              aria-expanded={tableAnchor !== null}
+              aria-controls={ids.tableMenu}
+              disabled={!editable}
+              tabIndex={-1}
+              onClick={(event) => setTableAnchor(tableAnchor ? null : event.currentTarget)}
+            >
+              <Icon name="table" />
+            </button>
           </div>
-        ))}
+        ) : null}
+        {group(last)}
       </div>
       <div data-ok-editor-body="">
         {/* biome-ignore lint/a11y/useSemanticElements: ProseMirror's contenteditable rich text box (focusable once mounted). */}
@@ -449,6 +635,67 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
           </Button>
         </form>
       </Popover>
+      {tables ? (
+        <Menu
+          id={ids.tableMenu}
+          aria-labelledby={ids.table}
+          open={tableAnchor !== null}
+          anchorEl={tableAnchor}
+          onOpenChange={() => setTableAnchor(null)}
+        >
+          {editorTableActions.map(({ action, label }) => (
+            <MenuItem
+              key={action}
+              data-ok-editor-table-action={action}
+              disabled={disabled(action)}
+              onClick={() => run(action)}
+            >
+              {label}
+            </MenuItem>
+          ))}
+        </Menu>
+      ) : null}
+      {bubble ? (
+        <div
+          ref={bubbleRef}
+          popover="manual"
+          data-ok-popover=""
+          data-ok-editor-bubble-menu=""
+          data-ok-runtime="off"
+          id={ids.bubble}
+          role="toolbar"
+          aria-label={bubble.label ?? "Text formatting"}
+          aria-controls={ids.content}
+        >
+          {(bubble.actions ?? editorBubbleMenuActions).map((action) => {
+            const button = editorToolButton(action);
+            return button ? toolButton(button) : null;
+          })}
+        </div>
+      ) : null}
+      {mentions ? (
+        <div
+          ref={mentionsListRef}
+          popover="manual"
+          data-ok-popover=""
+          data-ok-editor-mentions=""
+          data-ok-runtime="off"
+          data-ok-char={mentionChar}
+          data-ok-allow-spaces={mentionSpaces ? "" : undefined}
+        >
+          {/* biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: listbox options are list items (as Autocomplete). */}
+          <ul role="listbox" id={ids.mentions} aria-label={mentions.label ?? "Suggestions"} />
+        </div>
+      ) : null}
+      {name !== undefined ? (
+        <input
+          ref={inputRef}
+          type="hidden"
+          data-ok-editor-input=""
+          name={name}
+          defaultValue={valueRef.current}
+        />
+      ) : null}
     </div>
   );
 });

@@ -564,6 +564,88 @@
     min-width: 0;
   }
 
+  /* --- Bubble menu, mentions and tables (ADR-0050) ------------------------------------------ */
+
+  :where([data-ok-editor-bubble-menu][data-ok-open]) {
+    display: flex;
+    gap: var(--ok-spacing);
+    align-items: center;
+    padding: var(--ok-spacing);
+  }
+
+  :where([data-ok-editor-mentions] > [role="listbox"]) {
+    box-sizing: border-box;
+    min-width: calc(var(--ok-spacing) * 45);
+    max-height: calc(var(--ok-spacing) * 60);
+    margin: 0;
+    padding: var(--ok-spacing);
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  :where([data-ok-editor-mention-option]) {
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-sm);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    cursor: pointer;
+  }
+
+  :where([data-ok-editor-mention-option][aria-selected="true"]) {
+    background-color: var(--ok-action-selected);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-editor-mention-option]:not([aria-selected="true"]):hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-editor-content] [data-ok-editor-mention]) {
+    padding: 0 calc(var(--ok-spacing) * 0.5);
+    border-radius: var(--ok-radius-xs);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
+    /* Brand text on a tint, as the reference's links (ADR-0014). */
+    color: var(--ok-palette-primary-main);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-editor-content] table) {
+    width: 100%;
+    margin: calc(var(--ok-spacing) * 4) 0;
+    overflow: hidden;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  :where([data-ok-editor-content] :is(td, th)) {
+    position: relative;
+    box-sizing: border-box;
+    min-width: 1em;
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 2);
+    border: 1px solid var(--_ok-editor-border);
+    text-align: start;
+    vertical-align: top;
+  }
+
+  :where([data-ok-editor-content] th) {
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.12);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-editor-content] :is(td, th) > p) {
+    margin: 0;
+  }
+
+  /* prosemirror-tables marks a cell selection with this class. */
+  :where([data-ok-editor-content] .selectedCell)::after {
+    position: absolute;
+    inset: 0;
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+    content: "";
+    pointer-events: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-editor-action], [data-ok-editor-heading]) {
       transition: none;

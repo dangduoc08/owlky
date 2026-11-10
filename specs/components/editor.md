@@ -3,7 +3,10 @@
 Reference: Minimal UI kit "Editor" page (one demo: the editor, a "Full item" switch and a
 preview), content only. Upstream: Tiptap 3 (ADR-0023), the Minimals `Editor` wrapper's props
 (ADR-0015). Created with `/component`; updated with `/component` (2026-11-09: text transform mark,
-fullscreen Backdrop with scroll lock and Tab containment, heading menu typography, language menu rule).
+fullscreen Backdrop with scroll lock and Tab containment, heading menu typography, language menu rule;
+2026-11-10, Phase 4 row 4.16 with 4.18.34–35, ADR-0050: tables, mentions, a bubble menu, Tiptap
+`extensions` / `editorProps` / `parseOptions` pass-through, `autofocus`, `textDirection`, input and
+paste rules, a form `name`).
 Reference URL: https://minimals.cc/components/extra/editor
 HTML source: built from Tiptap
 
@@ -34,7 +37,23 @@ div[data-ok-editor][data-ok-full-item]?[data-ok-error]?[data-ok-editable="false"
   Popover (link): div[data-ok-popover][role=dialog][aria-labelledby] › form[data-ok-editor-form=link][novalidate]
     › p[data-ok-editor-form-title] + div[data-ok-editor-form-row] › TextField (input[data-ok-editor-field=href]) + Button[type=submit]
   Popover (image): same › form[data-ok-editor-form=image] › title + TextField (src) + TextField (alt) + Button[type=submit]
+  -- ADR-0050 --
+  (toolbar, with tables) div[data-ok-editor-group] › button[data-ok-editor-action=table][aria-label=Table][aria-haspopup=menu][aria-expanded][aria-controls=<table menu>]
+                                                    (before the fullscreen group; HTML: data-ok-popover-open)
+  Menu (tables): div[data-ok-popover][id] › ul[data-ok-menu][role=menu][aria-labelledby=<table button>]
+    › li[data-ok-menu-item][data-ok-editor-table-action=<action>][aria-disabled]?   (12 items, editorTableActions)
+  content (tables): table › tbody › tr › th|td (colspan, rowspan, colwidth; Tiptap adds colgroup + min-width style)
+  content (mentions): span[data-type=mention][data-ok-editor-mention][data-id][data-label][data-mention-suggestion-char]? "@Label"
+  Bubble menu: div[popover=manual][data-ok-popover][data-ok-editor-bubble-menu][data-ok-runtime=off][id][role=toolbar]
+               [aria-label="Text formatting"][aria-controls=<content id>][data-ok-placement]?[data-ok-update-delay]?
+    › button[data-ok-editor-action] …                             (toolbar buttons; default bold italic underline strike code link)
+  Mention list: div[popover=manual][data-ok-popover][data-ok-editor-mentions][data-ok-runtime=off][data-ok-char]?[data-ok-allow-spaces]?
+    › ul[role=listbox][id][aria-label="Suggestions"] › li[role=option][id][data-ok-editor-mention-option][aria-selected]   (written by core)
+  template[data-ok-editor-mention-items] › [data-ok-value=<id>] "Label" …           (HTML only: the items)
+  input[type=hidden][data-ok-editor-input][name]                    (with `name`: the HTML value)
 ```
+The bubble menu and the mention list carry `data-ok-runtime="off"` in both implementations: the
+editor's core controllers own them (the HTML popover runtime stays away).
 Actions: `bold italic underline strike | bulletList orderedList | alignLeft alignCenter alignRight
 alignJustify | code codeBlock (full) | blockquote horizontalRule (full) | link unlink image |
 hardBreak clearFormat | undo redo (full) | fullscreen`. Labels and keys: `editorToolbar` in core.
@@ -50,6 +69,12 @@ Root: `data-ok-editor`. Unknown values fall back to the default.
 | `fullItem` | `data-ok-full-item` | flag | boolean | off | Every toolbar group: adds code, code block, blockquote, horizontal rule, undo and redo. |
 | `error` | `data-ok-error` | flag | boolean | off | Error state: red border and helper text, `aria-invalid` on the textbox. |
 | `editable` | `data-ok-editable="false"` turns it off | behavior | boolean | on | The content can be changed (`false`: read only, toolbar disabled). |
+| `tables` | `data-ok-tables` | flag | boolean | off | Tables: the table nodes and the toolbar's table menu (insert, rows, columns, headers, merge, split, delete). |
+| `autofocus` | `data-ok-autofocus="…"` | style | `start` `end` `all` | — | Puts the caret in the editor once it is ready: at the `start`, the `end`, or selects `all`. React also takes `true` or a position. |
+| `textDirection` | `data-ok-text-direction="…"` | style | `ltr` `rtl` `auto` | — | Text direction of the content: `ltr`, `rtl` or `auto`. Default: inherited. |
+| `enableInputRules` | `data-ok-enable-input-rules="false"` turns it off | behavior | boolean | on | Markdown-like shortcuts while typing, such as `# ` for a heading (`false`: off). |
+| `enablePasteRules` | `data-ok-enable-paste-rules="false"` turns it off | behavior | boolean | on | The same shortcuts on pasted text (`false`: off). |
+| `name` | `name` on each `input[data-ok-editor-input]` | native | boolean | off | Form field name: a hidden input holds the HTML value, so the editor submits with its form. |
 | `fullscreen` | `data-ok-fullscreen` · event `ok:editor:fullscreen` | state | — | — | Fills the viewport (the toolbar's Fullscreen button, Escape leaves). |
 | `value` | `data-ok-editor-content` · event `ok:editor:change` | state | — | — | The content: markup inside the content element. |
 <!-- /options:editor -->
@@ -58,6 +83,12 @@ Other props: `value` / `defaultValue` / `onChange(html)` (`""` when empty), `pla
 (default "Write something awesome..."; HTML `data-ok-placeholder`), `helperText`, `highlighter`
 (lowlight-compatible; HTML `createEditor({ highlighter })`), `onFullscreenChange(fullscreen)`,
 `aria-label` (default "Editor") / `aria-labelledby` (go to the textbox).
+ADR-0050: `bubbleMenu` (`true` | `{ actions, placement, updateDelay, shouldShow, label }`; HTML: the
+bubble menu markup, `data-ok-placement`, `data-ok-update-delay`), `mentions` (`{ char, items(query),
+allowSpaces, label }`; HTML: the list markup, `data-ok-char`, `data-ok-allow-spaces`, items from the
+template or `ok:editor:mentionsearch`), `extensions`, `editorProps`, `parseOptions` (read at
+creation; HTML `createEditor({ extensions, editorProps, parseOptions })`), `autofocus` (also `true`
+or a position in React).
 
 API mapping: see "Upstream API mapping" below.
 
@@ -100,13 +131,42 @@ only: toolbar hidden.
   (other spans and values are dropped); output is always the `style` form (portable HTML).
 - `editable=false`: `contenteditable=false`, `aria-readonly`, toolbar disabled and hidden.
 - Tiptap's injected `<style>` is off (`injectCSS: false`, CSP); editor.css carries ProseMirror's rules.
+- Tables (`tables`, ADR-0050): TableKit (Table, TableRow, TableHeader, TableCell; no column
+  resizing). The table menu runs `insertTable` (3 × 3 with a header row), add / delete column and
+  row, toggle header row / column, merge / split cells (a cell selection), delete table; items are
+  `aria-disabled` when their command can't run (`can()`), like the toolbar's `disabled`. A run is
+  checked with `can()` first (a refused chain would still move the focus). `getValue()` keeps a
+  table of empty cells (Tiptap's `isEmpty` counts it as empty).
+- Mentions (`mentions`): Tiptap's Mention + Suggestion; the list is a Popover (`bottom-start`) on
+  the suggestion's rectangle, opened while there are items (async items: shown when they arrive),
+  closed when there are none, on Escape and when the query ends. Core writes the options
+  (`li[role=option]`, label text) into the owner's listbox; the textbox gets `aria-controls` and
+  `aria-activedescendant` while it is open. Presses on the list keep the focus in the text. HTML
+  items: the template's `[data-ok-value]` entries whose text contains the query (case-insensitive,
+  10 at most), replaced by `respondWith()` of `ok:editor:mentionsearch`.
+- Bubble menu (`bubbleMenu`): core `createEditorBubbleMenu`; shows after `updateDelay` (250 ms)
+  when `shouldShow` holds (default: a non-empty text selection, editable, focus in the text or the
+  menu), placed `top` of the selection (`posToDOMRect`); hides on blur unless focus moved into it,
+  and when focus leaves it for the page. Its buttons are toolbar buttons (state, disabled, link /
+  image forms). Presses don't take the focus (`mousedown` default prevented).
+- Pass-through: `extensions` are added after the built-in set (a top-level one with the same name
+  replaces it); `editorProps` merge with the editor's (`aria-readonly` wins); `parseOptions` also
+  parse the HTML markup; `autofocus`, `textDirection`, `enableInputRules`, `enablePasteRules` go to
+  Tiptap as given. These and `tables` / `mentions` are read when the editor is created (React:
+  remount with `key` for new extensions).
+- `name`: a hidden input (`data-ok-editor-input`) carries `getValue()` after every change and
+  `setValue()`.
 
 ## Keyboard
 Toolbar: one tab stop (roving tabindex, `createToolbarNavigation`): ArrowLeft / ArrowRight
 (wrap), Home, End. Text box: Tiptap defaults (Mod+B / I / U, Mod+Shift+S, Mod+Shift+7 / 8,
 Mod+Shift+L / E / R / J, Mod+E, Mod+Alt+C, Mod+Shift+B, Shift+Enter, Mod+Z, Mod+Shift+Z) and
 Mod+Shift+X (clear formatting, Owlky). Escape leaves fullscreen; Tab / Shift+Tab stay inside the
-editor while fullscreen.
+editor while fullscreen. Alt+F10 in the text: to the bubble menu when it shows, else to the
+toolbar's current control (TinyMCE / CKEditor convention); in the bubble menu ArrowLeft /
+ArrowRight / Home / End move, Escape goes back to the text (selection kept). Mention list:
+ArrowDown / ArrowUp (wrap), Enter / Tab pick, Escape closes. Tables: Tiptap's Tab / Shift+Tab move
+between cells.
 
 ## Accessibility
 Textbox named by `aria-label` (default "Editor") or `aria-labelledby`, described by the helper,
@@ -114,6 +174,10 @@ Textbox named by `aria-label` (default "Editor") or `aria-labelledby`, described
 `aria-keyshortcuts` for shortcuts; popover triggers `aria-haspopup` / `aria-expanded` /
 `aria-controls`. Forms are dialogs named by their title; Escape closes them and focus returns to the
 button. Fullscreen keeps Tab inside the editor (WCAG 2.4.11: no focus on controls hidden behind it). Content links use the brand color (contrast exempt, ADR-0014).
+The bubble menu is a named `toolbar` (Alt+F10 reaches it without a pointer); the table trigger is
+`aria-haspopup="menu"`; the mention list is a named `listbox` the textbox points at with
+`aria-activedescendant` (focus stays in the text, as Autocomplete). Mentions are brand-colored text
+on a tint (ADR-0014).
 
 ## Events / API
 HTML `ok:editor:change` (`{ value }`), `ok:editor:fullscreen` (`{ fullscreen }`). Instance
@@ -123,6 +187,13 @@ Core: `EditorState.textTransform` (value at the selection), `run("textTransform"
 `editorTextTransforms`, `readTextTransform`, `holdEditorFullscreen(root)`.
 Registration is opt-in: `@owlky/html/editor`, `owlky-editor.js`, or `createEditor({ highlighter })`.
 React: `onChange(html)`, `onFullscreenChange(fullscreen)`.
+ADR-0050: HTML `ok:editor:mentionsearch` (`{ query, char, items, respondWith(itemsOrPromise) }`),
+`createEditor({ extensions, editorProps, parseOptions })`. Core: `createEditorBubbleMenu(editor,
+menu, options)` (`isOpen`, `update()`, `focus()`, `setOptions()`, `destroy()`),
+`defaultBubbleMenuShow`, `editorToolbarShortcut(root, content, bubble)`, `editorTableActions`,
+`editorBubbleMenuActions`, `editorToolButton(action)`, `EditorMentionItem`, controller options
+`tables`, `mentions`, `extensions`, `editorProps`, `parseOptions`, `autofocus`, `textDirection`,
+`enableInputRules`, `enablePasteRules`; table actions through `run()`.
 
 ## Responsive
 The toolbar wraps at every width (mobile: three to four rows); the body scrolls inside the 720px
@@ -144,16 +215,21 @@ Upstream: the Minimals `Editor` wrapper's props and Tiptap 3 (tiptap.dev/docs/ed
 | Tiptap `editable`, `setEditable()` | `editable`, `setEditable(on)` | kept | |
 | Tiptap `element`, `mount()` / `unmount()` | `[data-ok-editor-content]` | not applicable | the anatomy owns the mount |
 | Tiptap `injectCSS`, `injectNonce` | — | not applicable | `injectCSS: false` (CSP); editor.css |
-| Tiptap `extensions`, `schemaSpec`, `coreExtensionOptions`, `enableExtensionDispatchTransaction` | built-in set | deferred | StarterKit, Placeholder, Image, TextAlign, code block + `highlighter`, TextTransform, ClearFormat; no pass-through (tables, mentions…) |
-| Tiptap `editorProps`, `parseOptions`, `enableInputRules`, `enablePasteRules`, `textDirection`, `autofocus` | — | deferred | |
+| Tiptap `extensions` | `extensions` (after the built-in set; a same-named one replaces it) · HTML `createEditor({ extensions })` | kept | ADR-0050; read at creation |
+| Tiptap `schemaSpec`, `coreExtensionOptions`, `enableExtensionDispatchTransaction` | — | deferred | |
+| Tiptap `editorProps`, `parseOptions` | same (merged; read at creation) · HTML `createEditor({ editorProps, parseOptions })` | kept | |
+| Tiptap `enableInputRules`, `enablePasteRules`, `textDirection`, `autofocus` | same · `data-ok-enable-input-rules`, `-enable-paste-rules`, `-text-direction`, `-autofocus` | kept | rule lists (arrays) in React only; HTML autofocus `start` · `end` · `all` |
+| `@tiptap/extension-table` (TableKit) | `tables` / `data-ok-tables` + the table menu | kept | `resizable` and its options deferred |
+| `@tiptap/extension-mention` + `@tiptap/suggestion` | `mentions` (`char`, `items`, `allowSpaces`) · HTML list markup + template / `ok:editor:mentionsearch` | kept | `suggestions` (several triggers), `renderText` / `renderHTML`, `deleteTriggerWithBackspace` deferred |
 | event `update` | `onChange(html)`, `ok:editor:change` | renamed | |
 | events `beforeCreate`, `create`, `selectionUpdate`, `transaction`, `focus`, `blur`, `destroy`, `paste`, `drop`, `delete`, `contentError` | — | deferred | HTML: `controller.editor.on()`; React: no editor handle |
 | `getHTML()` | `getValue()`, instance `value` | renamed | |
 | `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `registerPlugin()`, `setOptions()` | — | deferred | HTML through `controller.editor`; React none |
 | `chain()`, `can()`, `isActive()`, `getAttributes()` | `run(action, value)`, `EditorState` (`active`, `disabled`, `link`, `textTransform`) | renamed | |
 | `commands.focus()`, `destroy()` | `focus()`, `destroy({ restore })` | kept | |
-| `@tiptap/react` `useEditor`, `EditorContent`, `useCurrentEditor`, `BubbleMenu`, `FloatingMenu` | — | deferred | |
-| form `name` (hidden input) | — | deferred | not in the reference or the wrapper |
+| `@tiptap/react` `BubbleMenu` (`shouldShow`, `updateDelay`, `options.placement`) | `bubbleMenu` (`actions`, `placement`, `updateDelay`, `shouldShow`) · HTML bubble menu markup | renamed | Owlky's own (popover controller, Alt+F10); `pluginKey`, `appendTo`, `resizeDelay`, other Floating UI options not applicable |
+| `@tiptap/react` `useEditor`, `EditorContent`, `useCurrentEditor`, `FloatingMenu` | — | deferred | |
+| form `name` (hidden input) | `name` · `input[data-ok-editor-input][name]` | kept | |
 
 Beyond upstream: `defaultValue`, `highlighter`, `onFullscreenChange`, `aria-label` /
 `aria-labelledby`, fullscreen.
@@ -163,4 +239,8 @@ React renders `data-ok-runtime="off"` (root and Backdrop); popover triggers carr
 `data-ok-popover-open` in HTML only. Snippets write text transforms as `data-ok-text-transform`
 (no `style` in snippets); the content DOM after mount is the same `style` form on both sides.
 Both mount the same controller, so the content DOM matches after mount (React fills it from
-`value`, HTML from the markup).
+`value`, HTML from the markup). The Bubble menu, Table and Mentions snippets are generated from the
+React demos (`node apps/storybook/scripts/demo-snippets.mjs editor`: content filled in, readable
+ids, `data-ok-runtime="off"` kept on the bubble menu and the mention list, the mention template
+added). The mention list's options and the textbox's `aria-activedescendant` exist only while the
+list is open (core writes them in both).
