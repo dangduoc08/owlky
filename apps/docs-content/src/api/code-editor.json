@@ -111,7 +111,7 @@
       "description": "The Monaco namespace once loaded, or `null`.",
       "kind": "property",
       "name": "monaco",
-      "type": "typeof import(\"/home/duoc/owlky/.claude/worktrees/agent-a3d100da79ad3921a/node_modules/.pnpm/monaco-editor@0.57.0/node_modules/monaco-editor/esm/vs/index\") | null"
+      "type": "typeof import(\"monaco-editor\") | null"
      },
      {
       "description": "Replaces the value (an undoable edit). Emits no `change` event.",
@@ -378,7 +378,7 @@
      {
       "description": "Called with Monaco before the editor is created (register languages, themes, …).",
       "name": "beforeMount",
-      "type": "((monaco: Monaco) => void)"
+      "type": "((monaco: typeof import(\"monaco-editor\")) => void)"
      },
      {
       "description": "Class of the element Monaco mounts on.",
@@ -439,7 +439,7 @@
      {
       "description": "Called with the editor and Monaco once mounted.",
       "name": "onMount",
-      "type": "((editor: CodeEditorInstance, monaco: Monaco) => void)"
+      "type": "((editor: IStandaloneCodeEditor, monaco: typeof import(\"monaco-editor\")) => void)"
      },
      {
       "description": "Called with the current model's markers when they change (validation).",
@@ -538,7 +538,7 @@
       "description": "The Monaco namespace once loaded, or `null`.",
       "kind": "property",
       "name": "monaco",
-      "type": "typeof import(\"/home/duoc/owlky/.claude/worktrees/agent-a3d100da79ad3921a/node_modules/.pnpm/monaco-editor@0.57.0/node_modules/monaco-editor/esm/vs/index\") | null"
+      "type": "typeof import(\"monaco-editor\") | null"
      },
      {
       "description": "The original and modified texts (the `<textarea>`s' until Monaco is ready).",
@@ -978,7 +978,7 @@
      {
       "description": "Called with Monaco before the diff editor is created.",
       "name": "beforeMount",
-      "type": "((monaco: Monaco) => void)"
+      "type": "((monaco: typeof import(\"monaco-editor\")) => void)"
      },
      {
       "description": "Class of the element Monaco mounts on.",
@@ -1034,7 +1034,7 @@
      {
       "description": "Called with the diff editor and Monaco once mounted.",
       "name": "onMount",
-      "type": "((editor: DiffEditorInstance, monaco: Monaco) => void)"
+      "type": "((editor: IStandaloneDiffEditor, monaco: typeof import(\"monaco-editor\")) => void)"
      },
      {
       "description": "Monaco diff editor options (`IStandaloneDiffEditorConstructionOptions`).",
@@ -1082,20 +1082,8 @@
  "title": "Code editor",
  "types": [
   {
-   "name": "CodeEditorInstance",
-   "type": "IStandaloneCodeEditor"
-  },
-  {
    "name": "CodeEditorTheme",
    "type": "\"auto\" | (string & {})"
-  },
-  {
-   "name": "DiffEditorInstance",
-   "type": "IStandaloneDiffEditor"
-  },
-  {
-   "name": "Monaco",
-   "type": "typeof import(\"/home/duoc/owlky/.claude/worktrees/agent-a3d100da79ad3921a/node_modules/.pnpm/monaco-editor@0.57.0/node_modules/monaco-editor/esm/vs/index\")"
   }
  ]
 }

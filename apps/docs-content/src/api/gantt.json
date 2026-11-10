@@ -160,10 +160,22 @@
     "attribute": "data-ok-gantt",
     "events": [
      {
+      "cancelable": false,
+      "description": "Asks the owner to open its own edit form for the task (double click, double tap or F2).",
+      "detail": "{ id: string; }",
+      "name": "ok:gantt:edit"
+     },
+     {
       "cancelable": true,
       "description": "Before the selection changes. Call `preventDefault()` to keep the current one.",
       "detail": "{ selected: string[]; mode: string; }",
       "name": "ok:gantt:selectionchange"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an edit changes a task's dates or progress. Call `preventDefault()` to refuse it.",
+      "detail": "{ id: string; change: GanttTaskChange; source: GanttChangeSource; }",
+      "name": "ok:gantt:taskchange"
      },
      {
       "cancelable": true,
@@ -184,6 +196,12 @@
       "kind": "property",
       "name": "collapsed",
       "type": "readonly string[]"
+     },
+     {
+      "description": "Downloads the chart (every row) as SVG, PNG or CSV; only during a user gesture.",
+      "kind": "method",
+      "name": "exportChart",
+      "type": "(format?: GanttExportFormat | undefined) => Promise<void>"
      },
      {
       "description": "The zoom in px per day.",
@@ -232,6 +250,12 @@
       "kind": "property",
       "name": "tasks",
       "type": "readonly GanttTask[]"
+     },
+     {
+      "description": "Writes a change into the task's table row and redraws (no event), as your edit form saves.",
+      "kind": "method",
+      "name": "updateTask",
+      "type": "(id: string, change: GanttTaskChange) => void"
      },
      {
       "description": "One zoom step in or out (no event).",
@@ -371,6 +395,65 @@
       "name": "disableTooltip"
      },
      {
+      "attr": "data-ok-height",
+      "description": "Height of the chart's scroll area in px (default: as tall as its rows). With a height, only the rows in view are rendered.",
+      "kind": "number",
+      "min": 80,
+      "name": "height"
+     },
+     {
+      "attr": "data-ok-disable-virtualization",
+      "description": "Renders every row even with a `height`.",
+      "kind": "flag",
+      "name": "disableVirtualization"
+     },
+     {
+      "attr": "data-ok-export-format",
+      "default": "svg",
+      "description": "Format of the toolbar's download button: `svg`, `png` or `csv` (the data table).",
+      "kind": "style",
+      "name": "exportFormat",
+      "optional": true,
+      "values": [
+       "svg",
+       "png",
+       "csv"
+      ]
+     },
+     {
+      "attr": "data-ok-disable-export",
+      "description": "No download button in the toolbar.",
+      "kind": "flag",
+      "name": "disableExport"
+     },
+     {
+      "attr": "data-ok-editable",
+      "description": "Tasks can be edited: drag bars, their edges and their progress handles, or press Enter on a row (arrows move, Shift + arrows change the end, Page Up / Page Down the progress, Enter saves, Escape cancels). Double click or F2 asks for your own edit form.",
+      "kind": "flag",
+      "name": "editable"
+     },
+     {
+      "attr": "data-ok-task-drag",
+      "default": true,
+      "description": "With `editable`: bars move by drag and arrow keys.",
+      "kind": "behavior",
+      "name": "taskDrag"
+     },
+     {
+      "attr": "data-ok-task-resize",
+      "default": true,
+      "description": "With `editable`: bar edges change the dates (drag, Shift + arrow keys).",
+      "kind": "behavior",
+      "name": "taskResize"
+     },
+     {
+      "attr": "data-ok-progress-drag",
+      "default": true,
+      "description": "With `editable`: the progress handle sets the progress (drag, Page Up / Page Down).",
+      "kind": "behavior",
+      "name": "progressDrag"
+     },
+     {
       "attr": "data-ok-collapsed",
       "description": "Collapsed parent rows: `data-ok-collapsed` on their rows of the data table (`aria-expanded` on the grid rows).",
       "event": "ok:gantt:toggle",
@@ -396,6 +479,21 @@
       "description": "Marks a task on the critical path.",
       "kind": "state",
       "name": "data-ok-critical"
+     },
+     {
+      "description": "Set while a bar is dragged.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
+      "description": "Turns editing on: bars can be moved, resized and their progress set.",
+      "kind": "state",
+      "name": "data-ok-editable"
+     },
+     {
+      "description": "Set on the row being edited with the keyboard.",
+      "kind": "state",
+      "name": "data-ok-editing"
      },
      {
       "description": "A task's bar.",
@@ -498,6 +596,16 @@
       "name": "data-ok-gantt-grid-lines"
      },
      {
+      "description": "A drag handle of a bar: its start, its end or its progress.",
+      "kind": "value",
+      "name": "data-ok-gantt-handle",
+      "value": [
+       "end",
+       "progress",
+       "start"
+      ]
+     },
+     {
       "description": "The column headers and the time scale.",
       "elements": [
        "div"
@@ -578,6 +686,14 @@
       ],
       "kind": "part",
       "name": "data-ok-gantt-scale"
+     },
+     {
+      "description": "The status region that announces each editing step.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-status"
      },
      {
       "description": "One label of the time scale.",
@@ -777,9 +893,34 @@
       "type": "readonly string[]"
      },
      {
+      "description": "No download button in the toolbar.",
+      "name": "disableExport",
+      "type": "boolean"
+     },
+     {
       "description": "No tooltip on bar hover or row focus.",
       "name": "disableTooltip",
       "type": "boolean"
+     },
+     {
+      "description": "Renders every row even with a `height`.",
+      "name": "disableVirtualization",
+      "type": "boolean"
+     },
+     {
+      "description": "Tasks can be edited by pointer and keyboard; the changes come through `onTaskChange`.",
+      "name": "editable",
+      "type": "boolean"
+     },
+     {
+      "description": "Format of the toolbar's download button (`svg`).",
+      "name": "exportFormat",
+      "type": "\"csv\" | \"png\" | \"svg\""
+     },
+     {
+      "description": "Height of the scroll area in px; only the rows in view render (unless `disableVirtualization`).",
+      "name": "height",
+      "type": "number"
      },
      {
       "description": "Non-working days (ISO dates).",
@@ -813,6 +954,16 @@
       "type": "((ids: string[], mode: GanttSelectionMode) => void)"
      },
      {
+      "description": "An edit asks to change a task: update `tasks` to accept it.",
+      "name": "onTaskChange",
+      "type": "((id: string, change: GanttTaskChange, source: GanttChangeSource) => void)"
+     },
+     {
+      "description": "A double click, a double tap or F2 asks to edit a task in your own form.",
+      "name": "onTaskEdit",
+      "type": "((id: string) => void)"
+     },
+     {
       "description": "Called when the zoom level changes.",
       "name": "onZoomChange",
       "type": "((pixelsPerDay: number) => void)"
@@ -821,6 +972,12 @@
       "description": "Zoom in px per day (controlled); the zoom buttons report changes through `onZoomChange`.",
       "name": "pixelsPerDay",
       "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "With `editable`: the progress handle sets the progress (drag, Page Up / Page Down).",
+      "name": "progressDrag",
+      "type": "boolean"
      },
      {
       "description": "Dashed lines at the project's first and last day.",
@@ -853,6 +1010,18 @@
       "default": "true",
       "description": "Draws a line on today's date.",
       "name": "showToday",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "With `editable`: bars move by drag and arrow keys.",
+      "name": "taskDrag",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "With `editable`: bar edges change the dates (drag, Shift + arrow keys).",
+      "name": "taskResize",
       "type": "boolean"
      },
      {
@@ -901,6 +1070,14 @@
  "name": "gantt",
  "title": "Gantt",
  "types": [
+  {
+   "name": "GanttChangeSource",
+   "type": "\"drag\" | \"keyboard\" | \"progress\" | \"resize\""
+  },
+  {
+   "name": "GanttExportFormat",
+   "type": "\"csv\" | \"png\" | \"svg\""
+  },
   {
    "name": "GanttSelectionMode",
    "type": "\"all\" | \"range\" | \"replace\" | \"toggle\""

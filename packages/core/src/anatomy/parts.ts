@@ -945,6 +945,12 @@ export interface GanttParts {
   "data-ok-columns": Value<string>;
   /** Marks a task on the critical path. */
   "data-ok-critical": State;
+  /** Set while a bar is dragged. */
+  "data-ok-dragging": State;
+  /** Turns editing on: bars can be moved, resized and their progress set. */
+  "data-ok-editable": State;
+  /** Set on the row being edited with the keyboard. */
+  "data-ok-editing": State;
   /** A task's bar. */
   "data-ok-gantt-bar": Part<"div">;
   /** The label of a bar. */
@@ -971,6 +977,8 @@ export interface GanttParts {
   "data-ok-gantt-grid": Part<"div">;
   /** The grid lines. */
   "data-ok-gantt-grid-lines": Part<"path">;
+  /** A drag handle of a bar: its start, its end or its progress. */
+  "data-ok-gantt-handle": Value<"start" | "end" | "progress">;
   /** The column headers and the time scale. */
   "data-ok-gantt-head": Part<"div">;
   /** Where a bar's label sits. */
@@ -991,6 +999,8 @@ export interface GanttParts {
   "data-ok-gantt-row": Part<"div">;
   /** The time scale. */
   "data-ok-gantt-scale": Part<"div">;
+  /** The status region that announces each editing step. */
+  "data-ok-gantt-status": Part<"div">;
   /** One label of the time scale. */
   "data-ok-gantt-tick": Part<"span">;
   /** One tier of the time scale. */

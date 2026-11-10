@@ -71,6 +71,8 @@ const OWN = /\/packages\/(react|core|html)\/(src|dist)\//;
 const cleanType = (text) =>
   text
     .replace(/\s+/g, " ")
+    // `import("<absolute path>")` differs per checkout (worktrees, CI): name the package instead.
+    .replace(/import\("[^"]*\/node_modules\/((?:@[^/"]+\/)?[^/"]+)[^"]*"\)/g, 'import("$1")')
     .replace(/ \| undefined$/, "")
     .replace(/^undefined \| /, "")
     .trim();

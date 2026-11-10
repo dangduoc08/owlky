@@ -3,6 +3,7 @@ import {
   exportGantt,
   GANTT_TEXT_ATTRIBUTES,
   type GanttBarLabel,
+  type GanttChangeSource,
   type GanttColumnKey,
   type GanttExportFormat,
   type GanttItem,
@@ -43,6 +44,10 @@ export interface GanttEvents {
   selectionchange: EventSpec<{ selected: string[]; mode: string }, true>;
   /** Before the zoom level changes. Call `preventDefault()` to keep it. */
   zoom: EventSpec<{ pixelsPerDay: number }, true>;
+  /** Before an edit changes a task's dates or progress. Call `preventDefault()` to refuse it. */
+  taskchange: EventSpec<{ id: string; change: GanttTaskChange; source: GanttChangeSource }, true>;
+  /** Asks the owner to open its own edit form for the task (double click, double tap or F2). */
+  edit: EventSpec<{ id: string }>;
 }
 
 export interface GanttInstance extends ComponentInstance {
