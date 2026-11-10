@@ -124,6 +124,7 @@ mkdirSync(out);
 const LUCIDE = [
   "Bold",
   "Check",
+  "ChevronLeft",
   "ChevronDown",
   "ChevronRight",
   "Copy",
@@ -133,6 +134,7 @@ const LUCIDE = [
   "Heart",
   "House",
   "Image",
+  "ImageOff",
   "Inbox",
   "Info",
   "Italic",

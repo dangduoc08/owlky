@@ -1131,3 +1131,45 @@ describe("options and videos", () => {
     controller.close();
   });
 });
+
+describe("image status (roadmap 4.18.81)", () => {
+  it("writes loading, complete and error on image slides, and updates on load and error", async () => {
+    const { root, slides, controller } = await setup({ kinds: ["image", "image", "custom"] });
+    // Decoded: complete. Custom slides have no status.
+    expect(slides[0]?.getAttribute("data-ok-status")).toBe("complete");
+    expect(slides[2]?.hasAttribute("data-ok-status")).toBe(false);
+    const image = slides[1]?.querySelector("img") as HTMLImageElement;
+    const failed = new Promise((resolve) =>
+      image.addEventListener("error", resolve, { once: true }),
+    );
+    image.src = "data:image/png;base64,broken";
+    await failed;
+    expect(slides[1]?.getAttribute("data-ok-status")).toBe("error");
+    // A new picture loads: loading until it is in.
+    const loaded = new Promise((resolve) =>
+      image.addEventListener("load", resolve, { once: true }),
+    );
+    image.src = `${PICTURE}#again`;
+    controller.sync();
+    root.querySelector("[data-ok-carousel-container]")?.append(document.createElement("i"));
+    await loaded;
+    expect(slides[1]?.getAttribute("data-ok-status")).toBe("complete");
+    controller.destroy();
+    expect(slides[0]?.hasAttribute("data-ok-status")).toBe(false);
+  });
+
+  it("is loading while an image waits to load", async () => {
+    const { slides } = await setup({ kinds: ["image", "image"] });
+    const frame = slides[1]?.querySelector("[data-ok-lightbox-zoom]") as HTMLElement;
+    // A lazy picture that isn't rendered doesn't start loading.
+    frame.style.display = "none";
+    const late = document.createElement("img");
+    late.setAttribute("data-ok-lightbox-image", "");
+    late.alt = "Late";
+    late.loading = "lazy";
+    late.src = `${PICTURE}#late`;
+    frame.replaceChildren(late);
+    await nextFrame();
+    expect(slides[1]?.getAttribute("data-ok-status")).toBe("loading");
+  });
+});

@@ -151,6 +151,82 @@ export function LightboxToolbar() {
 }`,
   },
   {
+    id: "custom-buttons",
+    title: "Replace the buttons",
+    body: `Replace any built-in button with your own, such as a labeled close button. In React, pass a function in \`render\`: \`buttonPrev\`, \`buttonNext\` and \`buttonClose\`, and for the toolbar \`buttonZoom\` (both zoom buttons), \`buttonSlideshow\`, \`buttonFullscreen\`, \`buttonDownload\`, \`buttonShare\`, \`buttonCaptions\` and \`buttonThumbnails\`. Each function gets the attributes that give the button its behavior and, where the button has a fixed name, its \`aria-label\`: spread them on your button. Return \`null\` to leave a button out. In HTML, write your button in place of the built-in one, with the same \`data-ok-lightbox-*\` or \`data-ok-carousel-*\` attribute.
+
+\`render.slideContainer\` wraps the content of each slide, such as to add a frame or a watermark over the picture. The wrapper should fill the slide: give it \`display: contents\`, or a full-size flex box. In HTML, put your wrapper inside each slide.`,
+    html: htmlLightbox().replace(
+      /<button[^>]*data-ok-lightbox-close[^>]*>[\s\S]*?<\/button>/,
+      '<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="sm" data-ok-lightbox-close><span data-ok-button-label>Close</span></button>',
+    ),
+    react: `import { Button, IconButton, Lightbox, type LightboxSlide } from "@owlky/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const slides: LightboxSlide[] = [
+  { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
+  { src: "forest.jpg", alt: "Forest in the fog", width: 2400, height: 1600, title: "Forest in the fog" },
+];
+
+export function LightboxButtons() {
+  return (
+    <Lightbox
+      slides={slides}
+      render={{
+        // The close button's attributes include its name: a visible label replaces it.
+        buttonClose: ({ "aria-label": _name, ...attributes }) => (
+          <Button variant="outlined" color="inherit" size="sm" {...attributes}>
+            Close
+          </Button>
+        ),
+        buttonPrev: (attributes) => (
+          <IconButton {...attributes}>
+            <ChevronLeft aria-hidden="true" />
+          </IconButton>
+        ),
+        buttonNext: (attributes) => (
+          <IconButton {...attributes}>
+            <ChevronRight aria-hidden="true" />
+          </IconButton>
+        ),
+        buttonShare: () => null,
+        slideContainer: ({ children }) => <div style={{ display: "contents" }}>{children}</div>,
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "loading",
+    title: "Show loading and error icons",
+    body: `By default, a slide shows nothing while its picture loads. To show an icon while it loads, and another one when it fails to load, pass \`render.iconLoading\` and \`render.iconError\` in React. In HTML, add a \`template\` with \`data-ok-lightbox-icon="loading"\` or \`"error"\` to the lightbox: the script copies it into every image slide. The lightbox marks each image slide with \`data-ok-status\` (\`loading\`, \`complete\` or \`error\`) and shows the matching icon in the middle of the slide. The icons are decorative: screen readers still read the slide's name and its image's \`alt\` text.`,
+    html: htmlLightbox().replace(
+      /^(<dialog [^>]*>)/,
+      `$1
+  <template data-ok-lightbox-icon="loading"><span data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit"><svg data-ok-circular-progress-svg viewBox="22 22 44 44" aria-hidden="true"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></template>
+  <template data-ok-lightbox-icon="error"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20M10.4 5H19a2 2 0 0 1 2 2v8.6M21 19H5a2 2 0 0 1-2-2V7"></path></svg></template>`,
+    ),
+    react: `import { CircularProgress, Lightbox, type LightboxSlide } from "@owlky/react";
+import { ImageOff } from "lucide-react";
+
+const slides: LightboxSlide[] = [
+  { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
+  { src: "forest.jpg", alt: "Forest in the fog", width: 2400, height: 1600, title: "Forest in the fog" },
+];
+
+export function LightboxLoading() {
+  return (
+    <Lightbox
+      slides={slides}
+      render={{
+        iconLoading: () => <CircularProgress color="inherit" aria-hidden="true" />,
+        iconError: () => <ImageOff size={48} aria-hidden="true" />,
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "zoom",
     title: "Zoom and pan",
     body: "Zoom in with the toolbar, the plus and minus keys, a double click or double tap, a pinch, or Ctrl and the mouse wheel. Then drag, use the arrow keys or the wheel to move around the image. An image zooms until one image pixel covers one screen pixel (`maxZoomPixelRatio`), so give images their natural `width` and `height`. `zoomInMultiplier` sets the size of each step, `doubleClickMaxStops` how many steps a double click goes through, and `scrollToZoom` lets the wheel zoom without Ctrl. Images that are no larger than the screen don't zoom.",
@@ -322,8 +398,9 @@ const PREVIEWS = {
         {
           react: "render",
           html: "your own markup",
-          type: "{ slide, slideHeader, slideFooter, controls, thumbnail, icon… }",
-          description: "Custom slides, extra content and icons.",
+          type: "{ slide, slideContainer, slideHeader, slideFooter, controls, thumbnail, button…, icon… }",
+          description:
+            "Custom slides, slide wrappers, extra content, replacement buttons, and icons (including `iconLoading` and `iconError`).",
         },
         {
           react: "customDownload / customShare",

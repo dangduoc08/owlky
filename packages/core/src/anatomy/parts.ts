@@ -1277,6 +1277,14 @@ export interface LightboxParts {
   "data-ok-lightbox-fullscreen": Part;
   /** The picture of a slide. */
   "data-ok-lightbox-image": Part<"img">;
+  /** Optional: the icon shown over an image slide while its image loads. */
+  "data-ok-lightbox-loading": Part<"span">;
+  /** Optional: the icon shown over an image slide whose image failed to load. */
+  "data-ok-lightbox-error": Part<"span">;
+  /** HTML only: a template of the loading or error icon, copied into every image slide. */
+  "data-ok-lightbox-icon": Value<"loading" | "error">;
+  /** Set by the runtime on an image slide: whether its image is loading, complete or failed. */
+  "data-ok-status": Value<"loading" | "complete" | "error">;
   /** One of the full screen button's two labels. */
   "data-ok-lightbox-label": Value<"enter" | "exit">;
   /** A visually hidden live region that announces the slide. */

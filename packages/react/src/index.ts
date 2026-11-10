@@ -378,6 +378,7 @@ export { Label, type LabelProps } from "./label/label.js";
 export {
   Lightbox,
   type LightboxApi,
+  type LightboxButtonAttributes,
   type LightboxCloseReason,
   type LightboxCustomSlide,
   type LightboxImageSlide,
