@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(15));
+  it("covers every story group", () => expect(snippets).toHaveLength(17));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -230,6 +230,99 @@ describe("organization chart directions (CSS only)", () => {
     // Unknown values draw the default (top) chart.
     expect(firstAfter(host).borderTopWidth).toBe("1px");
     expect(connectorMisses(root, true)).toEqual([]);
+  });
+});
+
+describe("organization chart per-node lines (CSS only)", () => {
+  /** Lead › First, Middle (own lines) › Report › Deep, plus Other › Leaf under Middle. */
+  const branch = (attrs = "", middle = 'data-ok-line-color="error" data-ok-line-style="dashed"') =>
+    `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid" aria-label="Team" ${attrs}>${node(
+      "Lead",
+      node("First") +
+        `<li data-ok-organization-chart-node ${middle}><div data-ok-organization-chart-label>Middle</div><ul data-ok-organization-chart-children>${
+          node("Report", node("Deep")) +
+          `<li data-ok-organization-chart-node data-ok-line-color="success"><div data-ok-organization-chart-label>Other</div><ul data-ok-organization-chart-children>${node("Leaf")}</ul></li>`
+        }</ul></li>`,
+    )}</ul>`;
+  const nodeOf = (host: Element, text: string) =>
+    [...host.querySelectorAll("[data-ok-organization-chart-node]")].find(
+      (item) => item.firstElementChild?.textContent === text,
+    ) as HTMLElement;
+  /** The line from a node down to its children list (the list's `::before`). */
+  const stem = (host: Element, text: string) =>
+    getComputedStyle(
+      nodeOf(host, text).querySelector(":scope > [data-ok-organization-chart-children]") as Element,
+      "::before",
+    );
+  /** The line from a node's bar to its label (only children: `::after`; others: both halves). */
+  const drop = (host: Element, text: string) => getComputedStyle(nodeOf(host, text), "::after");
+  const color = (host: Element, value: string) => {
+    const probe = document.createElement("span");
+    probe.style.color = value;
+    rootOf(host).append(probe);
+    const result = getComputedStyle(probe).color;
+    probe.remove();
+    return result;
+  };
+
+  it("a node's own color and style draw the lines to its children only", () => {
+    const host = mount(branch());
+    const divider = color(host, "var(--ok-divider)");
+    const error = color(host, "var(--ok-palette-error-light)");
+    const success = color(host, "var(--ok-palette-success-light)");
+    expect(stem(host, "Lead").borderLeftColor).toBe(divider);
+    // Middle's bar half and line to its label belong to the lead's lines.
+    expect(getComputedStyle(nodeOf(host, "Middle"), "::before").borderRightColor).toBe(divider);
+    expect(stem(host, "Middle").borderLeftColor).toBe(error);
+    expect(stem(host, "Middle").borderLeftStyle).toBe("dashed");
+    expect(drop(host, "Report").borderLeftColor).toBe(error);
+    expect(drop(host, "Report").borderTopStyle).toBe("dashed");
+    // One level down, the chart's lines again; a node with its own color keeps it.
+    expect(stem(host, "Report").borderLeftColor).toBe(divider);
+    expect(stem(host, "Report").borderLeftStyle).toBe("solid");
+    expect(drop(host, "Deep").borderLeftColor).toBe(divider);
+    expect(stem(host, "Other").borderLeftColor).toBe(success);
+    expect(stem(host, "Other").borderLeftStyle).toBe("solid");
+    expect(connectorMisses(rootOf(host), true)).toEqual([]);
+  });
+
+  it('edge color mode "node": a node\'s lines carry through its branch', () => {
+    const host = mount(branch('data-ok-edge-color-mode="node"'));
+    const error = color(host, "var(--ok-palette-error-light)");
+    const success = color(host, "var(--ok-palette-success-light)");
+    expect(stem(host, "Lead").borderLeftColor).toBe(color(host, "var(--ok-divider)"));
+    expect(stem(host, "Report").borderLeftColor).toBe(error);
+    expect(stem(host, "Report").borderLeftStyle).toBe("dashed");
+    expect(drop(host, "Deep").borderLeftColor).toBe(error);
+    // A node that sets its own color starts its branch over; the style still carries.
+    expect(stem(host, "Other").borderLeftColor).toBe(success);
+    expect(stem(host, "Other").borderLeftStyle).toBe("dashed");
+  });
+
+  it("follows the chart's line options where a node sets none, and the toggle matches", () => {
+    const host = mount(
+      branch("data-ok-enable-expand-collapse", 'data-ok-line-style="dotted"')
+        .replace('data-ok-line-color="divider"', 'data-ok-line-color="info"')
+        .replace(
+          "<div data-ok-organization-chart-label>Middle</div>",
+          '<div data-ok-organization-chart-label>Middle</div><button type="button" data-ok-organization-chart-toggle aria-expanded="true"><span data-ok-organization-chart-toggle-label>Reports</span></button>',
+        ),
+    );
+    const info = color(host, "var(--ok-palette-info-light)");
+    expect(stem(host, "Middle").borderLeftColor).toBe(info);
+    expect(stem(host, "Middle").borderLeftStyle).toBe("dotted");
+    const toggle = nodeOf(host, "Middle").querySelector(
+      "[data-ok-organization-chart-toggle]",
+    ) as Element;
+    expect(getComputedStyle(toggle).borderTopColor).toBe(info);
+    // Unknown values are ignored: the chart's lines apply.
+    nodeOf(host, "Middle").setAttribute("data-ok-line-color", "url(x)");
+    expect(stem(host, "Middle").borderLeftColor).toBe(info);
+  });
+
+  it("has no axe violations", async () => {
+    const host = mount(branch('data-ok-edge-color-mode="node"'));
+    await expectNoAxeViolations(host);
   });
 });
 

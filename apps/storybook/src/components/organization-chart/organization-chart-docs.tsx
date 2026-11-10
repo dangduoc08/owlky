@@ -1,4 +1,4 @@
-import { organizationChartOptions } from "@owlky/core";
+import { organizationChartNodeOptions, organizationChartOptions } from "@owlky/core";
 import organizationChartApi from "@owlky/docs-content/api/organization-chart.json" with {
   type: "json",
 };
@@ -68,7 +68,7 @@ export function OrganizationChartNodes() {
   {
     id: "lines",
     title: "Style the lines",
-    body: "The line options are set on the root and apply to the whole chart. `lineColor` is `divider` by default. Set it to a palette color for its light tone, or to `inherit` to use the chart's text color, which you can set with the `color` property. `lineStyle` draws `solid`, `dashed` or `dotted` lines. Lengths are numbers in pixels, or strings with a unit such as `\"1.5rem\"`: `lineHeight` (40 by default) is the height of the lines between two levels, `lineWidth` (1) their thickness, `lineBorderRadius` (24) the corner radius where they turn and `nodePadding` (4) the space on each side of every node. In HTML, the lengths need the script: it turns the attributes into private CSS properties, because CSS can't read lengths from attributes. Without the script, the default lengths apply.",
+    body: "The line options are set on the root and apply to the whole chart, unless a node sets its own. `lineColor` is `divider` by default. Set it to a palette color for its light tone, or to `inherit` to use the chart's text color, which you can set with the `color` property. `lineStyle` draws `solid`, `dashed` or `dotted` lines. Lengths are numbers in pixels, or strings with a unit such as `\"1.5rem\"`: `lineHeight` (40 by default) is the height of the lines between two levels, `lineWidth` (1) their thickness, `lineBorderRadius` (24) the corner radius where they turn and `nodePadding` (4) the space on each side of every node. In HTML, the lengths need the script: it turns the attributes into private CSS properties, because CSS can't read lengths from attributes. Without the script, the default lengths apply.",
     html: `<!-- The lengths need the script (once per page) -->
 <script src="${CDN}/owlky.js" defer></script>
 
@@ -100,6 +100,49 @@ export function OrganizationChartLines() {
     >
       <OrganizationChartNode label="Jonah Pereira, design" />
       <OrganizationChartNode label="Priya Raman, development" />
+    </OrganizationChart>
+  );
+}`,
+  },
+  {
+    id: "node-lines",
+    title: "Style the lines of a node",
+    body: "Set `lineColor` and `lineStyle` on a node to style the lines from that node to its children, and the border of its toggle button. They take the same values as the chart's options. Nodes without them use the chart's lines. By default, a node's lines stop at its children: the next level uses the chart's lines again. Set `edgeColorMode` to `\"node\"` on the chart to carry a node's lines through its whole branch, down to the nodes that set their own, for example to give each team its own color. In HTML, the node options are the same `data-ok-line-color` and `data-ok-line-style` attributes, on the node's `li`. They need no script. Lines are decorative, so don't rely on their color alone to convey meaning: say it in the labels too.",
+    html: `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-edge-color-mode="node" aria-label="Company">
+  <li data-ok-organization-chart-node>
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node data-ok-line-color="primary">
+        <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+        <ul data-ok-organization-chart-children>
+          <li data-ok-organization-chart-node>
+            <div data-ok-organization-chart-label>Aiko Tanaka, design</div>
+          </li>
+        </ul>
+      </li>
+      <li data-ok-organization-chart-node data-ok-line-color="info" data-ok-line-style="dashed">
+        <div data-ok-organization-chart-label>Priya Raman, development</div>
+        <ul data-ok-organization-chart-children>
+          <li data-ok-organization-chart-node>
+            <div data-ok-organization-chart-label>Elias Novak, development</div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function TeamColors() {
+  return (
+    <OrganizationChart aria-label="Company" edgeColorMode="node" label="Maya Lindqvist, CEO">
+      <OrganizationChartNode lineColor="primary" label="Jonah Pereira, design">
+        <OrganizationChartNode label="Aiko Tanaka, design" />
+      </OrganizationChartNode>
+      <OrganizationChartNode lineColor="info" lineStyle="dashed" label="Priya Raman, development">
+        <OrganizationChartNode label="Elias Novak, development" />
+      </OrganizationChartNode>
     </OrganizationChart>
   );
 }`,
@@ -503,6 +546,18 @@ const PREVIEWS = {
       </OrganizationChart>
     </Preview>
   ),
+  "node-lines": () => (
+    <Preview>
+      <OrganizationChart aria-label="Company" edgeColorMode="node" label="Maya Lindqvist, CEO">
+        <OrganizationChartNode lineColor="primary" label="Jonah Pereira, design">
+          <OrganizationChartNode label="Aiko Tanaka, design" />
+        </OrganizationChartNode>
+        <OrganizationChartNode lineColor="info" lineStyle="dashed" label="Priya Raman, development">
+          <OrganizationChartNode label="Elias Novak, development" />
+        </OrganizationChartNode>
+      </OrganizationChart>
+    </Preview>
+  ),
   scroll: () => (
     <Preview>
       <Scrollbar aria-label="Company chart, scrollable" style={{ width: "100%" }}>
@@ -577,7 +632,12 @@ const PREVIEWS = {
       />
     </Preview>
   ),
-  options: () => <OptionsTable schema={organizationChartOptions} />,
+  options: () => (
+    <>
+      <OptionsTable schema={organizationChartOptions} />
+      <OptionsTable schema={organizationChartNodeOptions} />
+    </>
+  ),
   props: () => (
     <PropsTable
       label="Organization chart parts"

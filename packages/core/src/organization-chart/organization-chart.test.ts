@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   organizationChartAttributes,
   organizationChartDirections,
+  organizationChartNodeAttributes,
   organizationChartOptions,
   readNumber,
   readStyle,
@@ -28,6 +29,26 @@ import {
 } from "./organization-chart.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>';
+
+describe("organizationChartNodeAttributes (per-node lines)", () => {
+  it("writes valid line options only, and edgeColorMode only when given", () => {
+    expect(organizationChartNodeAttributes()).toEqual({ "data-ok-organization-chart-node": "" });
+    expect(organizationChartNodeAttributes({ lineColor: "error", lineStyle: "dotted" })).toEqual({
+      "data-ok-organization-chart-node": "",
+      "data-ok-line-color": "error",
+      "data-ok-line-style": "dotted",
+    });
+    expect(
+      organizationChartNodeAttributes({ lineColor: HOSTILE as never, lineStyle: HOSTILE as never }),
+    ).toEqual({ "data-ok-organization-chart-node": "" });
+    expect(organizationChartAttributes({ edgeColorMode: "node" })["data-ok-edge-color-mode"]).toBe(
+      "node",
+    );
+    expect(organizationChartAttributes({ edgeColorMode: HOSTILE as never })).not.toHaveProperty(
+      "data-ok-edge-color-mode",
+    );
+  });
+});
 
 describe("organizationChartAttributes", () => {
   it("writes the explicit style defaults and no lengths", () => {

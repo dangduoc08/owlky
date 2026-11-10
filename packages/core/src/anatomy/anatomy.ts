@@ -2464,10 +2464,12 @@ export const timelineDotAttributes = (options: TimelineDotAnatomyOptions = {}): 
 export const organizationChartLineColors = ["divider", "inherit", ...paletteColorNames] as const;
 export const organizationChartLineStyles = ["solid", "dashed", "dotted"] as const;
 export const organizationChartDirections = ["top", "bottom", "left", "right"] as const;
+export const organizationChartEdgeColorModes = ["default", "node"] as const;
 
 export type OrganizationChartLineColor = (typeof organizationChartLineColors)[number];
 export type OrganizationChartLineStyle = (typeof organizationChartLineStyles)[number];
 export type OrganizationChartDirection = (typeof organizationChartDirections)[number];
+export type OrganizationChartEdgeColorMode = (typeof organizationChartEdgeColorModes)[number];
 
 const CHART_LENGTH = { min: 0, units: ["px", "rem", "em"] } as const;
 
@@ -2505,6 +2507,13 @@ export const organizationChartOptions = defineOptions(
       organizationChartLineStyles,
       "solid",
       "Line style of the connectors.",
+    ),
+    edgeColorMode: style(
+      "data-ok-edge-color-mode",
+      organizationChartEdgeColorModes,
+      "default",
+      "`default`: a node's own `lineColor` and `lineStyle` style the lines to its children only. `node`: they style its whole branch, down to the nodes that set their own.",
+      { optional: true },
     ),
     lineBorderRadius: number(
       "data-ok-line-border-radius",
@@ -2551,6 +2560,7 @@ export interface OrganizationChartAnatomyOptions {
   lineWidth?: number | string | undefined;
   lineColor?: OrganizationChartLineColor | undefined;
   lineStyle?: OrganizationChartLineStyle | undefined;
+  edgeColorMode?: OrganizationChartEdgeColorMode | undefined;
   lineBorderRadius?: number | string | undefined;
   nodePadding?: number | string | undefined;
   enableExpandCollapse?: boolean | undefined;
@@ -2564,6 +2574,38 @@ export interface OrganizationChartAnatomyOptions {
 export const organizationChartAttributes = (
   options: OrganizationChartAnatomyOptions = {},
 ): DataAttributes => optionAttributes(organizationChartOptions, { ...options });
+
+/** Per-node line options (ApexTree `edgeColorMode: "node"`): the lines from a node to its children. */
+export const organizationChartNodeOptions = defineOptions(
+  "organization-chart-node",
+  "data-ok-organization-chart-node",
+  {
+    lineColor: style(
+      "data-ok-line-color",
+      organizationChartLineColors,
+      "divider",
+      "Color of the lines from this node to its children (its whole branch with `edgeColorMode` `node`); none: the chart's.",
+      { optional: true },
+    ),
+    lineStyle: style(
+      "data-ok-line-style",
+      organizationChartLineStyles,
+      "solid",
+      "Line style of the lines from this node to its children (its whole branch with `edgeColorMode` `node`); none: the chart's.",
+      { optional: true },
+    ),
+  },
+);
+
+export interface OrganizationChartNodeAnatomyOptions {
+  lineColor?: OrganizationChartLineColor | undefined;
+  lineStyle?: OrganizationChartLineStyle | undefined;
+}
+
+/** `data-ok-*` attributes of an organization chart node (an `li`). */
+export const organizationChartNodeAttributes = (
+  options: OrganizationChartNodeAnatomyOptions = {},
+): DataAttributes => optionAttributes(organizationChartNodeOptions, { ...options });
 
 // --- Image --------------------------------------------------------------------------------------
 
@@ -6472,6 +6514,7 @@ export const optionSchemas = {
   "timeline-item": timelineItemOptions,
   "timeline-dot": timelineDotOptions,
   "organization-chart": organizationChartOptions,
+  "organization-chart-node": organizationChartNodeOptions,
   image: imageOptions,
   rating: ratingOptions,
   slider: sliderOptions,

@@ -720,6 +720,72 @@ function connectorMisses(root: Element, vertical: boolean): string[] {
   return misses;
 }
 
+/** Lead › Middle (own lines) › Report › Deep. */
+function Branch(props: Partial<OrganizationChartProps>) {
+  return (
+    <OrganizationChart aria-label="Team" label={<span>Lead</span>} {...props}>
+      <OrganizationChartNode label={<span>First</span>} />
+      <OrganizationChartNode
+        lineColor="error"
+        lineStyle="dashed"
+        label={<span>Middle</span>}
+        data-testid="middle"
+      >
+        <OrganizationChartNode label={<span>Report</span>}>
+          <OrganizationChartNode label={<span>Deep</span>} />
+        </OrganizationChartNode>
+      </OrganizationChartNode>
+    </OrganizationChart>
+  );
+}
+
+describe("OrganizationChart per-node lines", () => {
+  const stem = (text: string) =>
+    pseudo(
+      nodeOf(text).querySelector(":scope > [data-ok-organization-chart-children]") as Element,
+      "::before",
+    );
+  function error() {
+    const probe = document.createElement("span");
+    probe.style.color = "var(--ok-palette-error-light)";
+    document.body.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }
+
+  it("writes valid node options only, and edgeColorMode only when given", () => {
+    const { unmount } = render(<Branch />);
+    expect(chart().hasAttribute("data-ok-edge-color-mode")).toBe(false);
+    const middle = screen.getByTestId("middle");
+    expect(middle.getAttribute("data-ok-line-color")).toBe("error");
+    expect(middle.getAttribute("data-ok-line-style")).toBe("dashed");
+    expect(nodeOf("First").hasAttribute("data-ok-line-color")).toBe(false);
+    unmount();
+    render(
+      <OrganizationChart aria-label="Team" edgeColorMode={HOSTILE} label="Lead">
+        <OrganizationChartNode lineColor={HOSTILE} lineStyle={HOSTILE} label="Only" />
+      </OrganizationChart>,
+    );
+    expect(chart().hasAttribute("data-ok-edge-color-mode")).toBe(false);
+    expect(nodeOf("Only").getAttributeNames()).toEqual(["data-ok-organization-chart-node"]);
+  });
+
+  it("a node's lines go to its children; edgeColorMode node carries them down the branch", async () => {
+    const { rerender } = render(<Branch />);
+    expect(stem("Lead").borderLeftColor).toBe(divider());
+    expect(stem("Middle").borderLeftColor).toBe(error());
+    expect(stem("Middle").borderLeftStyle).toBe("dashed");
+    expect(stem("Report").borderLeftColor).toBe(divider());
+    rerender(<Branch edgeColorMode="node" />);
+    expect(chart().getAttribute("data-ok-edge-color-mode")).toBe("node");
+    expect(stem("Report").borderLeftColor).toBe(error());
+    expect(stem("Report").borderLeftStyle).toBe("dashed");
+    expect(pseudo(nodeOf("Deep"), "::after").borderLeftColor).toBe(error());
+    await expectNoAxeViolations();
+  });
+});
+
 describe("OrganizationChart direction", () => {
   const labelBox = (text: string) => box(screen.getByText(text));
 

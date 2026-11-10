@@ -6,12 +6,14 @@ import {
   type OrganizationChartAction,
   type OrganizationChartController,
   type OrganizationChartDirection,
+  type OrganizationChartEdgeColorMode,
   type OrganizationChartLineColor,
   type OrganizationChartLineStyle,
   organizationChartAncestors,
   organizationChartAttributes,
   organizationChartLoaded,
   organizationChartNode,
+  organizationChartNodeAttributes,
   organizationChartPlan,
   organizationChartStyle,
   organizationChartToggle,
@@ -83,6 +85,16 @@ interface NodeProps {
   hasChildren?: boolean | undefined;
   /** Accessible name of the node's toggle button, such as "Priya Raman's reports". Default `"Child nodes"`. */
   toggleLabel?: string | undefined;
+  /**
+   * Color of the lines from this node to its children (its whole branch with the chart's
+   * `edgeColorMode="node"`): `divider`, `inherit` or a palette color. Default: the chart's `lineColor`.
+   */
+  lineColor?: OrganizationChartLineColor | undefined;
+  /**
+   * Style of the lines from this node to its children (its whole branch with the chart's
+   * `edgeColorMode="node"`): `solid`, `dashed` or `dotted`. Default: the chart's `lineStyle`.
+   */
+  lineStyle?: OrganizationChartLineStyle | undefined;
 }
 
 /** One `li`: the label, then (collapsible charts) the toggle, then the children list. */
@@ -90,7 +102,16 @@ const NodeItem = forwardRef<
   HTMLLIElement,
   NodeProps & Omit<LiHTMLAttributes<HTMLLIElement>, "children">
 >(function NodeItem(
-  { label, children, nodeId, hasChildren, toggleLabel = "Child nodes", ...props },
+  {
+    label,
+    children,
+    nodeId,
+    hasChildren,
+    toggleLabel = "Child nodes",
+    lineColor,
+    lineStyle,
+    ...props
+  },
   ref,
 ) {
   const chart = useContext(ChartContext);
@@ -143,7 +164,7 @@ const NodeItem = forwardRef<
   return (
     <li
       ref={merged}
-      data-ok-organization-chart-node=""
+      {...organizationChartNodeAttributes({ lineColor, lineStyle })}
       data-ok-node-id={nodeId}
       data-ok-highlighted={nodeId !== undefined && nodeId === highlighted ? "" : undefined}
       {...props}
@@ -190,7 +211,7 @@ export function useOrganizationChartApiRef(): MutableRefObject<OrganizationChart
 
 export interface OrganizationChartProps
   extends Omit<HTMLAttributes<HTMLUListElement>, "children">,
-    Omit<NodeProps, "label" | "children"> {
+    Omit<NodeProps, "label" | "children" | "lineColor" | "lineStyle"> {
   /** Content of the root node, such as a card. */
   label: ReactNode;
   /** The root's children: `OrganizationChartNode` elements. */
@@ -209,6 +230,12 @@ export interface OrganizationChartProps
   lineColor?: OrganizationChartLineColor | undefined;
   /** `solid` (default), `dashed` or `dotted`. */
   lineStyle?: OrganizationChartLineStyle | undefined;
+  /**
+   * How a node's own `lineColor` and `lineStyle` apply: `default`, to the lines from that node to
+   * its children only; `node`, to its whole branch, down to the nodes that set their own.
+   * Default `"default"`.
+   */
+  edgeColorMode?: OrganizationChartEdgeColorMode | undefined;
   /** Corner radius where a connector turns: px, or a CSS length. Default `24`. */
   lineBorderRadius?: number | string | undefined;
   /** Space on each side of every node: px, or a CSS length. Default `4`. */
@@ -266,6 +293,7 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       lineWidth,
       lineColor,
       lineStyle,
+      edgeColorMode,
       lineBorderRadius,
       nodePadding,
       enableExpandCollapse = false,
@@ -490,6 +518,7 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
           ...lengths,
           lineColor,
           lineStyle,
+          edgeColorMode,
           enableExpandCollapse,
           expandCollapseOnNodeClick,
           collapseBadgeThreshold,

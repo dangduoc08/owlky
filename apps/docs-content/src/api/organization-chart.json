@@ -251,6 +251,18 @@
       ]
      },
      {
+      "attr": "data-ok-edge-color-mode",
+      "default": "default",
+      "description": "`default`: a node's own `lineColor` and `lineStyle` style the lines to its children only. `node`: they style its whole branch, down to the nodes that set their own.",
+      "kind": "style",
+      "name": "edgeColorMode",
+      "optional": true,
+      "values": [
+       "default",
+       "node"
+      ]
+     },
+     {
       "attr": "data-ok-line-border-radius",
       "default": 24,
       "description": "Corner radius where a connector turns: a number in px, or a CSS length.",
@@ -437,6 +449,12 @@
       "type": "\"bottom\" | \"left\" | \"right\" | \"top\""
      },
      {
+      "default": "\"default\"",
+      "description": "How a node's own `lineColor` and `lineStyle` apply: `default`, to the lines from that node to its children only; `node`, to its whole branch, down to the nodes that set their own.",
+      "name": "edgeColorMode",
+      "type": "\"default\" | \"node\""
+     },
+     {
       "default": "false",
       "description": "Nodes with children get a toggle button that collapses and expands them.",
       "name": "enableExpandCollapse",
@@ -549,6 +567,39 @@
     "description": "One node.",
     "elements": [
      "li"
+    ],
+    "options": [
+     {
+      "attr": "data-ok-line-color",
+      "default": "divider",
+      "description": "Color of the lines from this node to its children (its whole branch with `edgeColorMode` `node`); none: the chart's.",
+      "kind": "style",
+      "name": "lineColor",
+      "optional": true,
+      "values": [
+       "divider",
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-line-style",
+      "default": "solid",
+      "description": "Line style of the lines from this node to its children (its whole branch with `edgeColorMode` `node`); none: the chart's.",
+      "kind": "style",
+      "name": "lineStyle",
+      "optional": true,
+      "values": [
+       "solid",
+       "dashed",
+       "dotted"
+      ]
+     }
     ]
    },
    "name": "OrganizationChartNode",
@@ -571,6 +622,16 @@
       "name": "label",
       "required": true,
       "type": "ReactNode"
+     },
+     {
+      "description": "Color of the lines from this node to its children (its whole branch with the chart's `edgeColorMode=\"node\"`): `divider`, `inherit` or a palette color. Default: the chart's `lineColor`.",
+      "name": "lineColor",
+      "type": "\"divider\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Style of the lines from this node to its children (its whole branch with the chart's `edgeColorMode=\"node\"`): `solid`, `dashed` or `dotted`. Default: the chart's `lineStyle`.",
+      "name": "lineStyle",
+      "type": "\"dashed\" | \"dotted\" | \"solid\""
      },
      {
       "description": "The node's id, written as `data-ok-node-id`: the methods, callbacks and `collapsedNodes` use it.",

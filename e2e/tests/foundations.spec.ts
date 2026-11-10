@@ -238,7 +238,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-breadcrumbs--docs", ["breadcrumbs"]],
   ["components-stepper--docs", ["stepper", "step", "step-label", "mobile-stepper"]],
   ["components-timeline--docs", ["timeline", "timeline-item", "timeline-dot"]],
-  ["components-organization-chart--docs", ["organization-chart"]],
+  ["components-organization-chart--docs", ["organization-chart", "organization-chart-node"]],
   ["components-image--docs", ["image"]],
   ["components-rating--docs", ["rating"]],
   ["components-chart--docs", ["chart"]],

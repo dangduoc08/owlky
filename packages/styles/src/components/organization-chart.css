@@ -8,6 +8,9 @@
  *                 li[data-ok-organization-chart-node] … (nested at any depth)
  * Modifiers: data-ok-line-color = divider (default) | inherit | palette (light tone);
  *            data-ok-line-style = solid (default) | dashed | dotted;
+ *            data-ok-edge-color-mode = default (no attribute) | node; the same line color and
+ *            style attributes on a node style its own lines (to its children, its branch in
+ *            `node` mode);
  *            data-ok-direction = top (default, no attribute) | bottom | left | right (ADR-0052).
  * Lengths:   --_ok-org-line-height | -line-width | -line-radius | -node-padding, written on the
  *            root by React (`style`) or the HTML runtime (CSSOM) from data-ok-line-height,
@@ -39,6 +42,11 @@
     --_ok-org-line-color: var(--ok-divider);
     --_ok-org-line-style: solid;
     --_ok-org-line: var(--_ok-org-line-width) var(--_ok-org-line-style) var(--_ok-org-line-color);
+    /* Per-node lines: the chart's color and style (resolved here), and a node's own (none). */
+    --_ok-org-base-color: var(--_ok-org-line-color);
+    --_ok-org-base-style: var(--_ok-org-line-style);
+    --_ok-org-own-color: initial;
+    --_ok-org-own-style: initial;
     /* Where a collapsed toggle's chevron points: toward the children (ADR-0052). */
     --_ok-org-chevron: 0deg;
     /* Lineage highlight: how much the other nodes fade, and the path's color. */
@@ -91,6 +99,72 @@
 
   :where([data-ok-organization-chart][data-ok-line-style="dotted"]) {
     --_ok-org-line-style: dotted;
+  }
+
+  /* Per-node lines (edgeColorMode, data-ok-line-color / -style on a node): a node's own values
+     style the lines it draws to its children (its children list, their bar halves and lines to
+     their labels, which inherit the list's --_ok-org-line) and its toggle. By default every node
+     without its own values starts again from the chart's; with data-ok-edge-color-mode="node" a
+     node's values carry on through its branch until a node sets its own. */
+  :where(
+    [data-ok-organization-chart]:not([data-ok-edge-color-mode="node"])
+      [data-ok-organization-chart-node]
+  ) {
+    --_ok-org-own-color: initial;
+    --_ok-org-own-style: initial;
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="divider"]) {
+    --_ok-org-own-color: var(--ok-divider);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="inherit"]) {
+    --_ok-org-own-color: currentColor;
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="primary"]) {
+    --_ok-org-own-color: var(--ok-palette-primary-light);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="secondary"]) {
+    --_ok-org-own-color: var(--ok-palette-secondary-light);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="info"]) {
+    --_ok-org-own-color: var(--ok-palette-info-light);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="success"]) {
+    --_ok-org-own-color: var(--ok-palette-success-light);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="warning"]) {
+    --_ok-org-own-color: var(--ok-palette-warning-light);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-color="error"]) {
+    --_ok-org-own-color: var(--ok-palette-error-light);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-style="solid"]) {
+    --_ok-org-own-style: solid;
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-style="dashed"]) {
+    --_ok-org-own-style: dashed;
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-line-style="dotted"]) {
+    --_ok-org-own-style: dotted;
+  }
+
+  :where(
+    [data-ok-organization-chart-node]
+      > :is([data-ok-organization-chart-children], [data-ok-organization-chart-toggle])
+  ) {
+    --_ok-org-line-color: var(--_ok-org-own-color, var(--_ok-org-base-color));
+    --_ok-org-line-style: var(--_ok-org-own-style, var(--_ok-org-base-style));
+    --_ok-org-line: var(--_ok-org-line-width) var(--_ok-org-line-style) var(--_ok-org-line-color);
   }
 
   /* Nodes: the label, centered over its children. */

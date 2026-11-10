@@ -82,6 +82,48 @@ function TeamChart({ name, dir, ...lines }: LineProps & { name: string; dir?: "r
 }
 TeamChart.displayName = "TeamChart";
 
+/** Line options per lead (ApexTree `edgeColorMode`): each team's lines in its own color. */
+const BRANCH_LINES: Record<string, Pick<LineProps, "lineColor" | "lineStyle">> = {
+  jonah: { lineColor: "primary" },
+  priya: { lineColor: "info", lineStyle: "dashed" },
+  leila: { lineColor: "warning" },
+};
+
+/** A person with the line options of their branch, then their reports. */
+function BranchNode({ person }: { person: PersonNode }) {
+  return (
+    <OrganizationChartNode {...BRANCH_LINES[person.id]} label={<SimpleCard person={person} />}>
+      {person.children?.map((child) => (
+        <BranchNode key={child.id} person={child} />
+      ))}
+    </OrganizationChartNode>
+  );
+}
+BranchNode.displayName = "BranchNode";
+
+/** The small team with the engineer's lines in their own color and style. */
+function PerNodeChart() {
+  const [designer, engineer, writer] = TEAM.children as PersonNode[];
+  return (
+    <Scrollbar className="sb-org-scroll" aria-label="Lines per node, scrollable">
+      <OrganizationChart aria-label="Lines per node" label={<SimpleCard person={TEAM} />}>
+        <SimpleNode person={designer as PersonNode} />
+        <OrganizationChartNode
+          lineColor="error"
+          lineStyle="dashed"
+          label={<SimpleCard person={engineer as PersonNode} />}
+        >
+          {engineer?.children?.map((child) => (
+            <SimpleNode key={child.id} person={child} />
+          ))}
+        </OrganizationChartNode>
+        <SimpleNode person={writer as PersonNode} />
+      </OrganizationChart>
+    </Scrollbar>
+  );
+}
+PerNodeChart.displayName = "PerNodeChart";
+
 /** One person of the small team with an id and a named toggle (collapsible charts). */
 function TeamNode({ person }: { person: PersonNode }) {
   return (
@@ -150,6 +192,24 @@ export const organizationChartStories: Record<string, ReactGroup[]> = {
         <TeamChart name="Short lines" lineHeight={12} nodePadding={16} lineColor="inherit" />
       ),
     },
+    { title: "Per node", content: <PerNodeChart /> },
+    {
+      title: "Branch colors",
+      content: (
+        <Scrollbar className="sb-org-scroll" aria-label="Lines by branch, scrollable">
+          <OrganizationChart
+            aria-label="Lines by branch"
+            edgeColorMode="node"
+            lineHeight={20}
+            label={<SimpleCard person={CEO} />}
+          >
+            {PEOPLE.map((person) => (
+              <BranchNode key={person.id} person={person} />
+            ))}
+          </OrganizationChart>
+        </Scrollbar>
+      ),
+    },
   ],
 };
 
@@ -195,6 +255,8 @@ export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
     ["Dotted, square corners", "dotted"],
     ["Thick and colored", "thick"],
     ["Short and spaced", "short"],
+    ["Per node", "node"],
+    ["Branch colors", "branch"],
   ],
   direction: [
     ["Bottom", "bottom"],

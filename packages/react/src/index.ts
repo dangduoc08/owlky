@@ -79,6 +79,7 @@ export type {
   MotionTrigger,
   MotionVariant,
   OrganizationChartDirection,
+  OrganizationChartEdgeColorMode,
   OrganizationChartLineColor,
   OrganizationChartLineStyle,
   Orientation,

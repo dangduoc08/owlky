@@ -213,6 +213,45 @@ for (const impl of implementations) {
       await expect(chart.getByRole("listitem").first()).toContainText("Team lead");
     });
 
+    test("a node's line options style its lines, or its branch's in node mode", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "lines"));
+      const lines = await page.evaluate(() => {
+        const color = (root: Element, value: string) => {
+          const probe = document.createElement("span");
+          probe.style.color = value;
+          root.append(probe);
+          const result = getComputedStyle(probe).color;
+          probe.remove();
+          return result;
+        };
+        /** The line down from the node whose label holds `text` (its children list's `::before`). */
+        const stem = (root: Element, text: string) => {
+          const label = [...root.querySelectorAll("[data-ok-organization-chart-label]")].find(
+            (element) => element.textContent?.trim().startsWith(text),
+          ) as Element;
+          const list = (label.parentElement as Element).querySelector(
+            ":scope > [data-ok-organization-chart-children]",
+          ) as Element;
+          const style = getComputedStyle(list, "::before");
+          return `${style.borderLeftColor} ${style.borderLeftStyle}`;
+        };
+        const perNode = document.querySelector('[aria-label="Lines per node"]') as Element;
+        const branch = document.querySelector('[aria-label="Lines by branch"]') as Element;
+        const error = color(perNode, "var(--ok-palette-error-light)");
+        const info = color(branch, "var(--ok-palette-info-light)");
+        return {
+          engineer: stem(perNode, "Engineer") === `${error} dashed`,
+          lead: stem(perNode, "Team lead") === `${color(perNode, "var(--ok-divider)")} solid`,
+          // Priya's branch: her own line, and two levels below her.
+          priya: stem(branch, "Priya Raman") === `${info} dashed`,
+          sofia: stem(branch, "Sofia Marchetti") === `${info} dashed`,
+        };
+      });
+      expect(lines).toEqual({ engineer: true, lead: true, priya: true, sofia: true });
+    });
+
     test("a collapsible left-to-right chart toggles toward its children", async ({
       page,
       isMobile,
