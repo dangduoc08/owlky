@@ -157,13 +157,16 @@ export function StorageCard() {
 
 <!-- In your HTML -->
 <p class="rounded-md bg-primary-lighter px-2 text-primary-darker">Tailwind + Owlky colors</p>`,
-    react: `/* In your main CSS file */
-@import "tailwindcss";
-@import "@owlky/styles/owlky.css";
-@import "@owlky/styles/theme.css";
+    react: `// Set up Tailwind once, in your main CSS file:
+//   @import "tailwindcss";
+//   @import "@owlky/styles/owlky.css";
+//   @import "@owlky/styles/theme.css";
 
-// In your component
-<p className="rounded-md bg-primary-lighter px-2 text-primary-darker">Tailwind + Owlky colors</p>`,
+export function ColorTag() {
+  return (
+    <p className="rounded-md bg-primary-lighter px-2 text-primary-darker">Tailwind + Owlky colors</p>
+  );
+}`,
   },
   {
     id: "javascript",
@@ -210,7 +213,10 @@ To change them from code, call \`applyThemeSettings()\`. Pass a storage, such as
     html: `<html data-ok-theme="dark" data-ok-preset="cyan">
   <body>
     <!-- A light panel inside the dark page -->
-    <section data-ok-theme="light">…</section>
+    <section data-ok-theme="light">
+      <h2>Light panel</h2>
+      <p>This panel keeps the light colors on a dark page.</p>
+    </section>
   </body>
 </html>
 
@@ -219,14 +225,21 @@ To change them from code, call \`applyThemeSettings()\`. Pass a storage, such as
 
   applyThemeSettings({ mode: "dark", preset: "cyan" }, { storage: localStorage });
 </script>`,
-    react: `import { applyThemeSettings } from "@owlky/react";
+    react: `import { applyThemeSettings, Button } from "@owlky/react";
 
-// For example, in the click handler of a theme switch
-applyThemeSettings({ mode: "dark", preset: "cyan" }, { storage: localStorage });
-
-// A light panel with its own primary color
-export function Panel() {
-  return <section data-ok-theme="light" data-ok-preset="purple">…</section>;
+// A switch to the dark theme, and a light panel with its own primary color
+export function ThemedPage() {
+  return (
+    <>
+      <Button onClick={() => applyThemeSettings({ mode: "dark", preset: "cyan" }, { storage: localStorage })}>
+        Use the dark theme
+      </Button>
+      <section data-ok-theme="light" data-ok-preset="purple">
+        <h2>Light panel</h2>
+        <p>This panel keeps the light colors and a purple primary color.</p>
+      </section>
+    </>
+  );
 }`,
   },
   {

@@ -15,16 +15,44 @@ export const scrollbarSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 
 <section data-ok-scrollbar aria-label="Release notes" tabindex="0" style="max-height: 320px">
-  …
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.4</h3>
+  <p data-ok-typography data-ok-variant="body2">Offline mode and faster sync.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.3</h3>
+  <p data-ok-typography data-ok-variant="body2">A dark theme for every screen.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.2</h3>
+  <p data-ok-typography data-ok-variant="body2">Search across all your notes.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.1</h3>
+  <p data-ok-typography data-ok-variant="body2">Shared folders.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.0</h3>
+  <p data-ok-typography data-ok-variant="body2">A new editor.</p>
 </section>`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
-import { Scrollbar } from "@owlky/react";
+import { Scrollbar, Typography } from "@owlky/react";
 
 export function ReleaseNotes() {
   return (
     <Scrollbar aria-label="Release notes" style={{ maxHeight: 320 }}>
-      …
+      <Typography variant="subtitle2" component="h3">
+        Version 2.4
+      </Typography>
+      <Typography variant="body2">Offline mode and faster sync.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.3
+      </Typography>
+      <Typography variant="body2">A dark theme for every screen.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.2
+      </Typography>
+      <Typography variant="body2">Search across all your notes.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.1
+      </Typography>
+      <Typography variant="body2">Shared folders.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.0
+      </Typography>
+      <Typography variant="body2">A new editor.</Typography>
     </Scrollbar>
   );
 }`,
@@ -33,10 +61,46 @@ export function ReleaseNotes() {
     id: "visibility",
     title: "Keep the scrollbar visible",
     body: "By default, the scrollbar appears when the pointer rests on the area or when focus is inside it. On touch screens it's always visible. Set `autoHide` to `false` to always show it, for example when people might not notice that the area scrolls.",
-    html: `<section data-ok-scrollbar data-ok-auto-hide="false" aria-label="Release notes" tabindex="0">
-  …
+    html: `<section data-ok-scrollbar data-ok-auto-hide="false" aria-label="Release notes" tabindex="0" style="max-height: 320px">
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.4</h3>
+  <p data-ok-typography data-ok-variant="body2">Offline mode and faster sync.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.3</h3>
+  <p data-ok-typography data-ok-variant="body2">A dark theme for every screen.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.2</h3>
+  <p data-ok-typography data-ok-variant="body2">Search across all your notes.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.1</h3>
+  <p data-ok-typography data-ok-variant="body2">Shared folders.</p>
+  <h3 data-ok-typography data-ok-variant="subtitle2">Version 2.0</h3>
+  <p data-ok-typography data-ok-variant="body2">A new editor.</p>
 </section>`,
-    react: `<Scrollbar autoHide={false} aria-label="Release notes">…</Scrollbar>`,
+    react: `import { Scrollbar, Typography } from "@owlky/react";
+
+export function AlwaysVisible() {
+  return (
+    <Scrollbar autoHide={false} aria-label="Release notes" style={{ maxHeight: 320 }}>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.4
+      </Typography>
+      <Typography variant="body2">Offline mode and faster sync.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.3
+      </Typography>
+      <Typography variant="body2">A dark theme for every screen.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.2
+      </Typography>
+      <Typography variant="body2">Search across all your notes.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.1
+      </Typography>
+      <Typography variant="body2">Shared folders.</Typography>
+      <Typography variant="subtitle2" component="h3">
+        Version 2.0
+      </Typography>
+      <Typography variant="body2">A new editor.</Typography>
+    </Scrollbar>
+  );
+}`,
   },
   {
     id: "compose",
@@ -44,14 +108,50 @@ export function ReleaseNotes() {
     body: "Other components scroll by wrapping their content in a scrollbar area. Put a **Table** inside one within its `TableContainer`, place one inside a **Drawer**'s content, or wrap a **Sortable** list. The component around it stops scrolling by itself, and the scrollbar area takes over.",
     html: `<section data-ok-table-container>
   <section data-ok-scrollbar aria-label="Orders" tabindex="0">
-    <table data-ok-table data-ok-size="medium" data-ok-padding="normal">…</table>
+    <table data-ok-table data-ok-size="medium" data-ok-padding="normal">
+      <thead>
+        <tr><th scope="col">Customer</th><th scope="col" data-ok-align="right">Total</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ana Lima</td><td data-ok-align="right">$83.74</td></tr>
+        <tr><td>Jonah Pereira</td><td data-ok-align="right">$97.14</td></tr>
+        <tr><td>Priya Raman</td><td data-ok-align="right">$68.71</td></tr>
+      </tbody>
+    </table>
   </section>
 </section>`,
-    react: `<TableContainer>
-  <Scrollbar aria-label="Orders">
-    <Table>…</Table>
-  </Scrollbar>
-</TableContainer>`,
+    react: `import { Scrollbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@owlky/react";
+
+export function Orders() {
+  return (
+    <TableContainer>
+      <Scrollbar aria-label="Orders">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Customer</TableCell>
+              <TableCell align="right">Total</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow key="Ana Lima">
+              <TableCell>Ana Lima</TableCell>
+              <TableCell align="right">$83.74</TableCell>
+            </TableRow>
+            <TableRow key="Jonah Pereira">
+              <TableCell>Jonah Pereira</TableCell>
+              <TableCell align="right">$97.14</TableCell>
+            </TableRow>
+            <TableRow key="Priya Raman">
+              <TableCell>Priya Raman</TableCell>
+              <TableCell align="right">$68.71</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Scrollbar>
+    </TableContainer>
+  );
+}`,
   },
   {
     id: "options",

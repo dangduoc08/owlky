@@ -85,14 +85,19 @@ export function PageTitle() {
 <!-- In your HTML -->
 <h1 class="font-display text-h3">Monthly report</h1>
 <p class="text-body2 text-text-secondary">Updated 5 minutes ago</p>`,
-    react: `/* In your main CSS file */
-@import "tailwindcss";
-@import "@owlky/styles/owlky.css";
-@import "@owlky/styles/theme.css";
+    react: `// Set up Tailwind once, in your main CSS file:
+//   @import "tailwindcss";
+//   @import "@owlky/styles/owlky.css";
+//   @import "@owlky/styles/theme.css";
 
-// In your component
-<h1 className="font-display text-h3">Monthly report</h1>
-<p className="text-body2 text-text-secondary">Updated 5 minutes ago</p>`,
+export function ReportHeading() {
+  return (
+    <>
+      <h1 className="font-display text-h3">Monthly report</h1>
+      <p className="text-body2 text-text-secondary">Updated 5 minutes ago</p>
+    </>
+  );
+}`,
   },
   {
     id: "responsive",
@@ -104,7 +109,10 @@ export function PageTitle() {
     title: "Change the font and text size",
     body: `To use another font, set \`data-ok-font\` to ${codeList(fontFamilyPresetNames)}. To make all text larger or smaller, change the root font size: every size is in \`rem\`. Load the fonts yourself, for example from Fontsource. The **Settings** page explains both options.`,
     html: `<html data-ok-font="inter" style="font-size: 18px">
-  …
+  <body>
+    <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
+    <p data-ok-typography data-ok-variant="body1">Every size follows the root font size.</p>
+  </body>
 </html>`,
     react: `import "@fontsource-variable/inter";
 import { applyThemeSettings } from "@owlky/react";

@@ -10,6 +10,7 @@ import {
   TimelineOppositeContent,
   TimelineSeparator,
 } from "@owlky/react";
+import timelineSnippet from "../../../../../packages/html/src/components/timeline/examples/alternating-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
@@ -69,15 +70,42 @@ export function OrderHistory() {
     id: "position",
     title: "Place the content",
     body: "`position` sets the side of the content: `right` (the default), `left`, or `alternate` and `alternate-reverse` to switch sides from one event to the next. Set `position` on a single item to override the timeline. Leave out the connector on the last event, so the line ends at its dot.",
-    html: `<ul data-ok-timeline data-ok-position="alternate">…</ul>`,
-    react: `<Timeline position="alternate">…</Timeline>`,
+    html: `${timelineSnippet}`,
+    react: `import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineSeparator,
+} from "@owlky/react";
+
+export function TimelinePosition() {
+  return (
+    <Timeline position="alternate">
+      {["Success", "Warning", "Error"].map((text, index, all) => (
+        <TimelineItem key={text}>
+          <TimelineSeparator>
+            <TimelineDot />
+            {index < all.length - 1 ? <TimelineConnector /> : null}
+          </TimelineSeparator>
+          <TimelineContent>{text}</TimelineContent>
+        </TimelineItem>
+      ))}
+    </Timeline>
+  );
+}`,
   },
   {
     id: "dots",
     title: "Color the dots",
     body: '`TimelineDot` is grey by default. Set `color` to a palette color, or to `inherit` for the text color, and `variant` to `outlined` for a ring. A dot can hold a 24px icon. Add `aria-hidden="true"` to the icon: the content says what happened.',
     html: `<span data-ok-timeline-dot data-ok-variant="outlined" data-ok-color="primary"></span>`,
-    react: `<TimelineDot variant="outlined" color="primary" />`,
+    react: `import { TimelineDot } from "@owlky/react";
+
+export function TimelineDots() {
+  return <TimelineDot variant="outlined" color="primary" />;
+}`,
   },
   {
     id: "opposite",
@@ -85,14 +113,30 @@ export function OrderHistory() {
     body: "`TimelineOppositeContent` goes on the other side of the line, for example the time of the event. Without it, the content still takes one half of the width, so the line stays in the middle.",
     html: `<li data-ok-timeline-item>
   <div data-ok-timeline-opposite-content>09:30 am</div>
-  <div data-ok-timeline-separator>…</div>
+  <div data-ok-timeline-separator><span data-ok-timeline-dot data-ok-variant="filled" data-ok-color="grey"></span><span data-ok-timeline-connector></span></div>
   <div data-ok-timeline-content>Kickoff</div>
 </li>`,
-    react: `<TimelineItem>
-  <TimelineOppositeContent>09:30 am</TimelineOppositeContent>
-  <TimelineSeparator>…</TimelineSeparator>
-  <TimelineContent>Kickoff</TimelineContent>
-</TimelineItem>`,
+    react: `import {
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineOppositeContent,
+  TimelineSeparator,
+} from "@owlky/react";
+
+export function TimelineOpposite() {
+  return (
+    <TimelineItem>
+      <TimelineOppositeContent>09:30 am</TimelineOppositeContent>
+      <TimelineSeparator>
+        <TimelineDot />
+        <TimelineConnector />
+      </TimelineSeparator>
+      <TimelineContent>Kickoff</TimelineContent>
+    </TimelineItem>
+  );
+}`,
   },
   {
     id: "options",

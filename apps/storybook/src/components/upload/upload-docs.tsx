@@ -2,8 +2,21 @@ import { uploadOptions } from "@owlky/core";
 import uploadApi from "@owlky/docs-content/api/upload.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Upload, UploadAvatar, UploadBox } from "@owlky/react";
+import avatarGroup from "../../../../../packages/html/src/components/upload/examples/avatar-group.html?raw";
+import multipleGroup from "../../../../../packages/html/src/components/upload/examples/multiple-group.html?raw";
+import openDialogGroup from "../../../../../packages/html/src/components/upload/examples/open-dialog-group.html?raw";
+import singleGroup from "../../../../../packages/html/src/components/upload/examples/single-group.html?raw";
+import validationGroup from "../../../../../packages/html/src/components/upload/examples/validation-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
+
+const uploadOf = (markup: string) => snippetElement(markup, "data-ok-upload ");
+const indent = (text: string, spaces: number) =>
+  text
+    .split("\n")
+    .map((line) => (line ? `${" ".repeat(spaces)}${line}` : line))
+    .join("\n");
 
 export const uploadSections: GuideSection[] = [
   {
@@ -14,26 +27,7 @@ export const uploadSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
-<div data-ok-upload data-ok-variant="default" data-ok-layout="vertical">
-  <div data-ok-upload-zone>
-    <input type="file" data-ok-upload-input id="photo" name="photo" title=" "
-      aria-labelledby="photo-title">
-    <div data-ok-upload-placeholder>
-      <!-- The "upload" illustration (Foundations › Illustrations) -->
-      <svg data-ok-illustration="upload" data-ok-color="primary" data-ok-upload-illustration
-        aria-hidden="true" focusable="false" viewBox="0 0 480 360">…</svg>
-      <div data-ok-upload-placeholder-text>
-        <span data-ok-upload-title id="photo-title">Drop or select a file</span>
-        <span data-ok-upload-description>Drag a file here, or <span data-ok-upload-browse>browse</span> your device.</span>
-      </div>
-    </div>
-    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm"
-      data-ok-upload-remove id="photo-remove" aria-labelledby="photo-remove photo-preview" hidden>
-      <span data-ok-upload-remove-text>Remove</span><svg aria-hidden="true" viewBox="0 0 24 24">…</svg>
-    </button>
-  </div>
-  <div data-ok-upload-rejections role="alert"></div>
-</div>`,
+${uploadOf(singleGroup)}`,
     react: `import { Upload } from "@owlky/react";
 
 export function Photo() {
@@ -44,30 +38,19 @@ export function Photo() {
     id: "multiple",
     title: "Accept several files",
     body: "Turn on `multiple` to keep adding files: each drop or pick adds its files to the list. Without it, a new file replaces the current one. In HTML, put `multiple` on the input and add the list, its item `<template>` and, if you want them, the **Remove all** and **Upload** buttons. In React, `onRemoveAll` and `onUpload` show those buttons. Pass `value` with `onChange` to control the files yourself; `onChange` receives every file the upload holds.",
-    html: `<div data-ok-upload data-ok-variant="default" data-ok-layout="vertical">
-  <div data-ok-upload-zone>
-    <input type="file" data-ok-upload-input id="docs" name="docs" multiple title=" "
-      aria-labelledby="docs-title">
-    …
-  </div>
-  <div data-ok-upload-rejections role="alert"></div>
-  <ul data-ok-upload-list aria-live="polite"></ul>
-  <!-- Each file gets a copy of this row -->
-  <template data-ok-upload-template>
-    <li data-ok-upload-item><span data-ok-upload-thumb></span><span data-ok-upload-item-text><span data-ok-upload-item-name></span><span data-ok-upload-item-size></span></span><button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-upload-remove><span data-ok-upload-remove-text>Remove</span><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></button></li>
-  </template>
-  <div data-ok-upload-actions hidden>
-    <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit"
-      data-ok-size="sm" data-ok-upload-remove-all><span data-ok-button-label>Remove all</span></button>
-    <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit"
-      data-ok-size="sm" data-ok-upload-submit><span data-ok-button-label>Upload</span></button>
-  </div>
-</div>`,
-    react: `import { useState } from "react";
-import { Upload } from "@owlky/react";
+    html: `${uploadOf(multipleGroup)}`,
+    react: `import { Upload, type UploadValue } from "@owlky/react";
+import { useState } from "react";
+
+// Your own upload: send the files to your API
+async function send(files: UploadValue[]) {
+  const body = new FormData();
+  for (const file of files) if (file instanceof File) body.append("documents", file);
+  await fetch("/documents", { method: "POST", body });
+}
 
 export function Documents() {
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<UploadValue[]>([]);
   return (
     <Upload
       multiple
@@ -83,16 +66,7 @@ export function Documents() {
     id: "rules",
     title: "Limit types, sizes and counts",
     body: '`accept` takes the same values as the input\'s `accept` attribute, such as `image/*,.pdf`, or, in React, a map of MIME types to extensions such as `{ "image/*": [".png", ".jpg"] }`. The file dialog shows those types, and dropped or pasted files are checked against them too. `maxSize` and `minSize` are in bytes. `maxFiles` caps how many files a multiple upload holds. Add your own check with `validator`: it receives each file and returns `null`, an error `{ code, message }` or a list of errors, and it may return a promise. Rejected files appear under the zone with their reasons. Rewrite the messages, for example to translate them, with `getErrorMessage`.',
-    html: `<div data-ok-upload data-ok-variant="default" data-ok-layout="vertical"
-  data-ok-max-files="3" data-ok-max-size="1048576">
-  <div data-ok-upload-zone>
-    <input type="file" data-ok-upload-input id="pics" multiple accept="image/png,image/jpeg"
-      title=" " aria-labelledby="pics-title" aria-describedby="pics-helper">
-    …
-  </div>
-  <div data-ok-upload-helper-text id="pics-helper">PNG or JPEG, up to 1 MB each.</div>
-  …
-</div>
+    html: `${uploadOf(validationGroup)}
 
 <script type="module">
   const upload = window.Owlky.get(document.querySelector("[data-ok-upload]"), "upload");
@@ -100,42 +74,43 @@ export function Documents() {
     file.name.length > 60 ? { code: "name-too-long", message: "Use a shorter name" } : null,
   );
 </script>`,
-    react: `<Upload
-  multiple
-  accept={{ "image/*": [".png", ".jpg", ".jpeg"] }}
-  maxFiles={3}
-  maxSize={1048576}
-  helperText="PNG or JPEG, up to 1 MB each."
-  validator={(file) =>
-    file.name.length > 60 ? { code: "name-too-long", message: "Use a shorter name" } : null
-  }
-  onDropRejected={(rejections) => console.warn(rejections)}
-/>`,
+    react: `import { Upload } from "@owlky/react";
+
+export function Pictures() {
+  return (
+    <Upload
+      multiple
+      accept={{ "image/*": [".png", ".jpg", ".jpeg"] }}
+      maxFiles={3}
+      maxSize={1048576}
+      helperText="PNG or JPEG, up to 1 MB each."
+      validator={(file) =>
+        file.name.length > 60 ? { code: "name-too-long", message: "Use a shorter name" } : null
+      }
+      onDropRejected={(rejections) => console.warn(rejections)}
+    />
+  );
+}`,
   },
   {
     id: "list",
     title: "Show the files",
     body: 'The list shows a row per file with a preview, the name and the size. Set `layout` to `horizontal` for a wrapping row of tiles instead: the names stay available to screen readers. Image files show a preview made from a temporary object URL, which the upload releases when the file leaves. Turn previews off with `thumbnail={false}` (HTML: `data-ok-thumbnail="false"`) to show a colored file type icon for every file.',
-    html: `<div data-ok-upload data-ok-variant="default" data-ok-layout="horizontal"
-  data-ok-thumbnail="false">…</div>`,
-    react: `<Upload multiple layout="horizontal" thumbnail={false} />`,
+    html: `${uploadOf(multipleGroup).replace(
+      'data-ok-layout="vertical"',
+      'data-ok-layout="horizontal" data-ok-thumbnail="false"',
+    )}`,
+    react: `import { Upload } from "@owlky/react";
+
+export function FileRow() {
+  return <Upload multiple layout="horizontal" thumbnail={false} />;
+}`,
   },
   {
     id: "avatar",
     title: "Pick an avatar or a small box",
     body: "`UploadAvatar` is a round photo picker: the photo fills the circle and **Update photo** shows on hover and focus. It accepts images by default. `UploadBox` is a small box for toolbars and forms: it shows a cloud icon, or the `placeholder` you give it, and keeps the files without a list. In HTML, set `data-ok-variant` to `avatar` or `box`.",
-    html: `<div data-ok-upload data-ok-variant="avatar" data-ok-layout="vertical">
-  <div data-ok-upload-zone>
-    <input type="file" data-ok-upload-input id="me" accept="image/*" title=" "
-      aria-labelledby="me-title">
-    <div data-ok-upload-placeholder>
-      <svg data-ok-upload-icon aria-hidden="true" viewBox="0 0 24 24">…</svg>
-      <span data-ok-upload-title id="me-title" data-ok-label-upload="Upload photo"
-        data-ok-label-update="Update photo">Upload photo</span>
-    </div>
-  </div>
-  <div data-ok-upload-rejections role="alert"></div>
-</div>`,
+    html: `${uploadOf(avatarGroup)}`,
     react: `import { UploadAvatar, UploadBox } from "@owlky/react";
 
 export function Profile() {
@@ -151,18 +126,7 @@ export function Profile() {
     id: "open",
     title: "Open the file dialog yourself",
     body: "With `noClick`, pressing the zone no longer opens the file dialog, and with `noKeyboard` the input leaves the tab order. Give people a button instead: any element with `data-ok-upload-open` inside the upload opens the dialog, in HTML and in React. You can also call `open()` from a click handler: on the HTML instance, or on the `apiRef` in React. Browsers only open the dialog right after a user action. `noDrag` turns dropping off and `noPaste` turns pasting off.",
-    html: `<div data-ok-upload data-ok-variant="default" data-ok-layout="vertical"
-  data-ok-no-click data-ok-no-keyboard>
-  <div data-ok-upload-zone>
-    <input type="file" data-ok-upload-input multiple title=" " aria-label="Files" tabindex="-1">
-    <div data-ok-upload-placeholder>
-      <span>Drag files here</span>
-      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit"
-        data-ok-size="md" data-ok-upload-open><span data-ok-button-label>Open file dialog</span></button>
-    </div>
-  </div>
-  …
-</div>`,
+    html: `${uploadOf(openDialogGroup)}`,
     react: `import { Button, Upload } from "@owlky/react";
 
 <Upload
@@ -182,22 +146,23 @@ export function Profile() {
     title: "Send the files",
     body: "The upload copies the files it holds into its input, so a form with the input's `name` submits them, including dropped and pasted files. To send them yourself, read `files` from the HTML instance or the `onChange` value in React, and post them with `fetch()` and `FormData`. The **Upload** button gives you the files in `onUpload` (HTML: the `ok:upload:upload` event). Files a user chose before, such as a saved avatar, can be URL strings in `value`: the upload shows them but can't put them in the input.",
     html: `<form method="post" action="/profile" enctype="multipart/form-data">
-  <div data-ok-upload data-ok-variant="default" data-ok-layout="vertical">
-    <div data-ok-upload-zone>
-      <input type="file" data-ok-upload-input name="attachments" multiple title=" " …>
-      …
-    </div>
-  </div>
+${indent(uploadOf(multipleGroup), 2)}
   <button type="submit">Save</button>
 </form>`,
-    react: `<Upload
-  multiple
-  onUpload={async (files) => {
-    const body = new FormData();
-    for (const file of files) if (file instanceof File) body.append("attachments", file);
-    await fetch("/attachments", { method: "POST", body });
-  }}
-/>`,
+    react: `import { Upload } from "@owlky/react";
+
+export function Attachments() {
+  return (
+    <Upload
+      multiple
+      onUpload={async (files) => {
+        const body = new FormData();
+        for (const file of files) if (file instanceof File) body.append("attachments", file);
+        await fetch("/attachments", { method: "POST", body });
+      }}
+    />
+  );
+}`,
   },
   { id: "options", title: "Options", body: "Every option, as a React prop and an HTML attribute." },
   {

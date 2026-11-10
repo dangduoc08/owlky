@@ -10,9 +10,31 @@ import {
 import mapApi from "@owlky/docs-content/api/map.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MapView, Marker, NavigationControl, ScaleControl } from "@owlky/react";
+import changeTheme from "../../../../../packages/html/src/components/map/examples/change-theme-group.html?raw";
+import interactionGroup from "../../../../../packages/html/src/components/map/examples/interaction-group.html?raw";
+import markersGroup from "../../../../../packages/html/src/components/map/examples/markers-popups-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
 import { MAP_STYLES } from "./map-data.js";
+
+/** The attribution control every map shows (MapLibre fills in the text). */
+const ATTRIBUTION = snippetElement(markersGroup, "data-ok-map-attribution");
+const indent = (text: string, spaces: number) =>
+  text
+    .split("\n")
+    .map((line) => (line ? `${" ".repeat(spaces)}${line}` : line))
+    .join("\n");
+/** The parts inside every map root: the view, the fallback, the status and the four corners. */
+const MAP_PARTS = `  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <div data-ok-map-status role="status"></div>
+  <div data-ok-map-corner="top-left"></div>
+  <div data-ok-map-corner="top-right"></div>
+  <div data-ok-map-corner="bottom-left"></div>
+  <div data-ok-map-corner="bottom-right">
+${indent(ATTRIBUTION, 4)}
+  </div>`;
 
 export const mapSections: GuideSection[] = [
   {
@@ -37,7 +59,7 @@ export const mapSections: GuideSection[] = [
   <div data-ok-map-corner="top-right"></div>
   <div data-ok-map-corner="bottom-left"></div>
   <div data-ok-map-corner="bottom-right">
-    <details data-ok-map-attribution>…</details>
+${indent(ATTRIBUTION, 4)}
   </div>
 </div>`,
     react: `import workerUrl from "@owlky/core/map-worker.js?url";
@@ -64,10 +86,23 @@ export function Europe() {
     id: "styles",
     title: "Choose the map style",
     body: '`mapStyle` sets the style: a URL of a MapLibre style JSON, or the style object itself. Add `mapStyleDark` to switch styles when the map sits in a dark theme, such as the **Theme** menu\'s dark mode or a `data-ok-theme="dark"` area. Without it, the map keeps one style in both themes.\n\nIn HTML, change `data-ok-map-style` to switch the style later. In React, pass a new `mapStyle`, and keep style objects in a constant or `useMemo`, because a new object reloads the style.\n\nLayer colors can use Owlky tokens: write `"var(--ok-palette-info-main)"` as a paint value. The map reads the token\'s value, and reads it again when the theme changes.',
-    html: `<div data-ok-map
+    html: `<div data-ok-map data-ok-label="Map"
   data-ok-map-style="${MAP_STYLES.light}"
-  data-ok-map-style-dark="${MAP_STYLES.dark}">…</div>`,
-    react: `<MapView mapStyle="${MAP_STYLES.light}" mapStyleDark="${MAP_STYLES.dark}" />`,
+  data-ok-map-style-dark="${MAP_STYLES.dark}">
+${MAP_PARTS}
+</div>`,
+    react: `import { MapView } from "@owlky/react";
+
+export function ThemedMap() {
+  return (
+    <MapView
+      aria-label="Map"
+      mapStyle="${MAP_STYLES.light}"
+      mapStyleDark="${MAP_STYLES.dark}"
+      initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}
+    />
+  );
+}`,
   },
   {
     id: "markers",
@@ -76,13 +111,13 @@ export function Europe() {
     html: `<div data-ok-map-marker data-ok-longitude="2.35" data-ok-latitude="48.86"
   data-ok-anchor="bottom" data-ok-color="error"
   role="button" tabindex="0" aria-label="Paris" data-ok-map-popup-open="paris">
-  <svg data-ok-map-pin viewBox="0 0 24 24" aria-hidden="true"><path d="…" fill="currentColor"></path></svg>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-pin><path d="M12 2.5A7.5 7.5 0 0 0 4.5 10c0 5.3 6.2 11 6.9 11.6a.9.9 0 0 0 1.2 0c.7-.6 6.9-6.3 6.9-11.6A7.5 7.5 0 0 0 12 2.5Zm0 10.25a2.75 2.75 0 1 1 0-5.5 2.75 2.75 0 0 1 0 5.5Z" fill="currentColor"></path></svg>
 </div>
 <div id="paris" data-ok-map-popup data-ok-longitude="2.35" data-ok-latitude="48.86"
   data-ok-offset="28" role="dialog" tabindex="-1" aria-label="Paris" hidden>
   <span data-ok-map-popup-tip aria-hidden="true"></span>
   <div data-ok-map-popup-content>Capital of France</div>
-  <button type="button" data-ok-map-popup-close aria-label="Close">…</button>
+  <button type="button" data-ok-map-popup-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
 </div>`,
     react: `import { MapView, Marker, Popup } from "@owlky/react";
 import { useState } from "react";
@@ -131,17 +166,23 @@ export function Quakes() {
     id: "events",
     title: "Respond to the pointer",
     body: "List the layers people can point at in `interactiveLayerIds` (HTML: `data-ok-interactive-layer-ids`, separated by spaces). Mouse events then report the features under the pointer in `features`, and the cursor turns into a pointer over them. `onMouseEnter` and `onMouseLeave` fire when the pointer enters or leaves those features. Use them for highlights and hover popups. Give a hover popup `closeButton={false}`, `closeOnClick={false}` and `focusAfterOpen={false}`.",
-    html: `<div data-ok-map id="states" data-ok-interactive-layer-ids="states-fill">…</div>
+    html: `${snippetElement(interactionGroup, "data-ok-map ")}
 <script type="module">
-  const map = document.querySelector("#states");
+  const map = document.querySelector("#map-interaction");
   map.addEventListener("ok:map:mousemove", (event) => {
     console.log(event.detail.features[0]?.properties.name);
   });
 </script>`,
-    react: `<MapView
-  interactiveLayerIds={["states-fill"]}
-  onMouseMove={(event) => console.log(event.features?.[0]?.properties.name)}
-/>`,
+    react: `import { MapView } from "@owlky/react";
+
+export function MapEvents() {
+  return (
+    <MapView
+      interactiveLayerIds={["states-fill"]}
+      onMouseMove={(event) => console.log(event.features?.[0]?.properties["name"])}
+    />
+  );
+}`,
   },
   {
     id: "view",
@@ -150,31 +191,55 @@ export function Quakes() {
     html: `<button type="button" data-ok-map-fly-to="world" data-ok-view="139.69,35.69,10">
   Tokyo
 </button>`,
-    react: `const mapRef = useRef(null);
-// …
-<MapView ref={mapRef} … />
-<button type="button"
-  onClick={() => mapRef.current?.flyTo({ center: [139.69, 35.69], zoom: 10 })}>
-  Tokyo
-</button>`,
+    react: `import { MapView, type MapRef } from "@owlky/react";
+import { useRef } from "react";
+
+// Any MapLibre style URL, such as OpenFreeMap's
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+
+export function FlyToTokyo() {
+  const mapRef = useRef<MapRef>(null);
+  return (
+    <>
+      <MapView
+        ref={mapRef}
+        aria-label="Map"
+        mapStyle={MAP_STYLE}
+        initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}
+      />
+      <button type="button" onClick={() => mapRef.current?.flyTo({ center: [139.69, 35.69], zoom: 10 })}>
+        Tokyo
+      </button>
+    </>
+  );
+}`,
   },
   {
     id: "controls",
     title: "Add controls",
     body: "Controls sit in the corners of the map: `NavigationControl` (zoom and a compass you can drag to turn the map), `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `GlobeControl`, `TerrainControl` and `AttributionControl`, which every map shows unless you turn it off with `attributionControl={false}`. Place them with `position`, and add your own buttons in a `MapControl`. In HTML, write the controls inside the four corner elements.\n\nPut settings and readouts in a `MapPanel`: a dark, translucent card in a corner of the map.",
     html: `<div data-ok-map-corner="bottom-left">
-  <div data-ok-map-control data-ok-map-navigation>
-    <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in">…</button>
-    <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out">…</button>
-    <button type="button" data-ok-map-action="compass" aria-label="Reset north">…</button>
-  </div>
-  <div data-ok-map-scale data-ok-unit="metric"></div>
+${indent(snippetElement(changeTheme, "data-ok-map-navigation"), 2)}
+${indent(snippetElement(changeTheme, "data-ok-map-scale"), 2)}
 </div>`,
-    react: `<MapView …>
-  <NavigationControl position="bottom-left" />
-  <ScaleControl position="bottom-left" />
-  <FullscreenControl position="top-left" />
-</MapView>`,
+    react: `import { FullscreenControl, MapView, NavigationControl, ScaleControl } from "@owlky/react";
+
+// Any MapLibre style URL, such as OpenFreeMap's
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+
+export function MapControls() {
+  return (
+    <MapView
+      aria-label="Map"
+      mapStyle={MAP_STYLE}
+      initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}
+    >
+      <NavigationControl position="bottom-left" />
+      <ScaleControl position="bottom-left" />
+      <FullscreenControl position="top-left" />
+    </MapView>
+  );
+}`,
   },
   {
     id: "security",

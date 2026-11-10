@@ -16,6 +16,7 @@ import { CollapsibleDemo } from "./collapsible-demo.js";
 import { SortingDemo } from "./sorting-demo.js";
 import data from "./table-data.json" with { type: "json" };
 
+const CHEVRON = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>`;
 const ARROW = `<span data-ok-table-sort-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6" /></svg></span>`;
 
 export const tableSections: GuideSection[] = [
@@ -52,7 +53,13 @@ import {
   Scrollbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
 } from "@owlky/react";
 
-export function Orders({ orders }) {
+interface Order {
+  id: string;
+  customer: string;
+  total: string;
+}
+
+export function Orders({ orders }: { orders: Order[] }) {
   return (
     <TableContainer>
       <Scrollbar aria-label="Orders">
@@ -83,14 +90,96 @@ export function Orders({ orders }) {
     body: "Put the table in a **Scrollbar** inside its `TableContainer`. Wide tables then scroll sideways instead of stretching the page, and the scrollbar area is a named region keyboard users can scroll. To keep the header visible while a tall table scrolls, set `stickyHeader` and limit the scrollbar area's height.",
     html: `<section data-ok-table-container>
   <section data-ok-scrollbar aria-label="Countries" tabindex="0" style="max-height: 440px">
-    <table data-ok-table data-ok-size="medium" data-ok-padding="normal" data-ok-sticky-header>…</table>
+    <table data-ok-table data-ok-size="medium" data-ok-padding="normal" data-ok-sticky-header>
+      <thead>
+        <tr><th scope="col">Country</th><th scope="col">Code</th><th scope="col" data-ok-align="right">Population</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>India</td><td>IN</td><td data-ok-align="right">1,324,171,354</td></tr>
+        <tr><td>China</td><td>CN</td><td data-ok-align="right">1,403,500,365</td></tr>
+        <tr><td>Italy</td><td>IT</td><td data-ok-align="right">60,483,973</td></tr>
+        <tr><td>United States</td><td>US</td><td data-ok-align="right">327,167,434</td></tr>
+        <tr><td>Canada</td><td>CA</td><td data-ok-align="right">37,602,103</td></tr>
+        <tr><td>Australia</td><td>AU</td><td data-ok-align="right">25,475,400</td></tr>
+        <tr><td>Germany</td><td>DE</td><td data-ok-align="right">83,019,200</td></tr>
+        <tr><td>Ireland</td><td>IE</td><td data-ok-align="right">4,857,000</td></tr>
+        <tr><td>Mexico</td><td>MX</td><td data-ok-align="right">126,577,691</td></tr>
+        <tr><td>Japan</td><td>JP</td><td data-ok-align="right">126,317,000</td></tr>
+      </tbody>
+    </table>
   </section>
 </section>`,
-    react: `<TableContainer>
-  <Scrollbar aria-label="Countries" style={{ maxHeight: 440 }}>
-    <Table stickyHeader>…</Table>
-  </Scrollbar>
-</TableContainer>`,
+    react: `import { Scrollbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@owlky/react";
+
+export function Countries() {
+  return (
+    <TableContainer>
+      <Scrollbar aria-label="Countries" style={{ maxHeight: 440 }}>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Country</TableCell>
+              <TableCell>Code</TableCell>
+              <TableCell align="right">Population</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow key="IN">
+              <TableCell>India</TableCell>
+              <TableCell>IN</TableCell>
+              <TableCell align="right">1,324,171,354</TableCell>
+            </TableRow>
+            <TableRow key="CN">
+              <TableCell>China</TableCell>
+              <TableCell>CN</TableCell>
+              <TableCell align="right">1,403,500,365</TableCell>
+            </TableRow>
+            <TableRow key="IT">
+              <TableCell>Italy</TableCell>
+              <TableCell>IT</TableCell>
+              <TableCell align="right">60,483,973</TableCell>
+            </TableRow>
+            <TableRow key="US">
+              <TableCell>United States</TableCell>
+              <TableCell>US</TableCell>
+              <TableCell align="right">327,167,434</TableCell>
+            </TableRow>
+            <TableRow key="CA">
+              <TableCell>Canada</TableCell>
+              <TableCell>CA</TableCell>
+              <TableCell align="right">37,602,103</TableCell>
+            </TableRow>
+            <TableRow key="AU">
+              <TableCell>Australia</TableCell>
+              <TableCell>AU</TableCell>
+              <TableCell align="right">25,475,400</TableCell>
+            </TableRow>
+            <TableRow key="DE">
+              <TableCell>Germany</TableCell>
+              <TableCell>DE</TableCell>
+              <TableCell align="right">83,019,200</TableCell>
+            </TableRow>
+            <TableRow key="IE">
+              <TableCell>Ireland</TableCell>
+              <TableCell>IE</TableCell>
+              <TableCell align="right">4,857,000</TableCell>
+            </TableRow>
+            <TableRow key="MX">
+              <TableCell>Mexico</TableCell>
+              <TableCell>MX</TableCell>
+              <TableCell align="right">126,577,691</TableCell>
+            </TableRow>
+            <TableRow key="JP">
+              <TableCell>Japan</TableCell>
+              <TableCell>JP</TableCell>
+              <TableCell align="right">126,317,000</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Scrollbar>
+    </TableContainer>
+  );
+}`,
   },
   {
     id: "sort",
@@ -112,43 +201,106 @@ For selection, add a column of small **Checkbox** components: put \`data-ok-tabl
     </tr>
   </tbody>
 </table>`,
-    react: `<TableCell sortDirection={orderBy === "name" ? order : false}>
-  <TableSortLabel
-    active={orderBy === "name"}
-    direction={orderBy === "name" ? order : "asc"}
-    onClick={() => sortBy("name")}
-  >
-    Dessert
-  </TableSortLabel>
-</TableCell>`,
+    react: `import { Table, TableBody, TableCell, TableHead, TableRow, TableSortLabel } from "@owlky/react";
+import { useState } from "react";
+
+const desserts = [
+  { name: "Cupcake", calories: 305 },
+  { name: "Eclair", calories: 262 },
+  { name: "Frozen yoghurt", calories: 159 },
+];
+type Column = "name" | "calories";
+
+export function SortedDesserts() {
+  const [orderBy, setOrderBy] = useState<Column>("name");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const sortBy = (column: Column) => {
+    setOrder(orderBy === column && order === "asc" ? "desc" : "asc");
+    setOrderBy(column);
+  };
+  const rows = [...desserts].sort((a, b) => {
+    const result = a[orderBy] < b[orderBy] ? -1 : a[orderBy] > b[orderBy] ? 1 : 0;
+    return order === "asc" ? result : -result;
+  });
+  return (
+    <Table>
+      <TableHead>
+        <TableRow>
+          {(["name", "calories"] as const).map((column) => (
+            <TableCell key={column} sortDirection={orderBy === column ? order : false}>
+              <TableSortLabel
+                active={orderBy === column}
+                direction={orderBy === column ? order : "asc"}
+                onClick={() => sortBy(column)}
+              >
+                {column === "name" ? "Dessert" : "Calories"}
+              </TableSortLabel>
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.name}>
+            <TableCell>{row.name}</TableCell>
+            <TableCell>{row.calories}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}`,
   },
   {
     id: "expand",
     title: "Show details in an expandable row",
     body: "A `TableExpandButton` opens a `TableDetailRow` below its row, for details that don't fit in the columns. In React, keep the open state in your component. In HTML, point the button at the detail row's `id`; the script opens and closes it.",
-    html: `<tr>
-  <td data-ok-padding="checkbox">
-    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-expand="eclair-details" aria-expanded="false" aria-controls="eclair-details" aria-label="Purchase history of Eclair">…</button>
-  </td>
-  <td>Eclair</td>
-</tr>
-<tr id="eclair-details" data-ok-table-detail hidden>
-  <td colspan="2">…</td>
-</tr>`,
-    react: `<TableRow>
-  <TableCell padding="checkbox">
-    <TableExpandButton
-      expanded={open}
-      controls="eclair-details"
-      aria-label="Purchase history of Eclair"
-      onClick={() => setOpen(!open)}
-    />
-  </TableCell>
-  <TableCell>Eclair</TableCell>
-</TableRow>
-<TableDetailRow id="eclair-details" open={open} colSpan={2}>
-  …
-</TableDetailRow>`,
+    html: `<table data-ok-table data-ok-size="medium" data-ok-padding="normal">
+  <tbody>
+    <tr>
+      <td data-ok-padding="checkbox">
+        <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-expand="eclair-details" aria-expanded="false" aria-controls="eclair-details" aria-label="Purchase history of Eclair">${CHEVRON}</button>
+      </td>
+      <td>Eclair</td>
+    </tr>
+    <tr id="eclair-details" data-ok-table-detail hidden>
+      <td colspan="2">Bought 3 times this month, last on May 12.</td>
+    </tr>
+  </tbody>
+</table>`,
+    react: `import {
+  Table,
+  TableBody,
+  TableCell,
+  TableDetailRow,
+  TableExpandButton,
+  TableRow,
+} from "@owlky/react";
+import { useState } from "react";
+
+export function TableExpand() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Table>
+      <TableBody>
+        <TableRow>
+          <TableCell padding="checkbox">
+            <TableExpandButton
+              expanded={open}
+              controls="eclair-details"
+              aria-label="Purchase history of Eclair"
+              onClick={() => setOpen(!open)}
+            />
+          </TableCell>
+          <TableCell>Eclair</TableCell>
+        </TableRow>
+        <TableDetailRow id="eclair-details" open={open} colSpan={2}>
+          Bought 3 times this month, last on May 12.
+        </TableDetailRow>
+      </TableBody>
+    </Table>
+  );
+}`,
   },
   {
     id: "paginate",
@@ -157,19 +309,45 @@ For selection, add a column of small **Checkbox** components: put \`data-ok-tabl
     html: `<div data-ok-table-pagination="desserts">
   <label data-ok-table-pagination-rows>Rows per page:<select><option value="5" selected>5</option><option value="10">10</option></select></label>
   <span data-ok-table-pagination-displayed aria-live="polite">1–5 of 12</span>
-  <div data-ok-table-pagination-actions>…</div>
+<div data-ok-table-pagination-actions>
+  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-pagination-action="previous" aria-label="Go to previous page" title="Go to previous page" disabled><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg></button>
+  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-pagination-action="next" aria-label="Go to next page" title="Go to next page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg></button>
+</div>
 </div>`,
-    react: `<TablePagination
-  count={desserts.length}
-  page={page}
-  rowsPerPage={rowsPerPage}
-  rowsPerPageOptions={[5, 10, 25]}
-  onPageChange={setPage}
-  onRowsPerPageChange={(next) => {
-    setRowsPerPage(next);
-    setPage(0);
-  }}
-/>`,
+    react: `import { Table, TableBody, TableCell, TablePagination, TableRow } from "@owlky/react";
+import { useState } from "react";
+
+const desserts = Array.from({ length: 12 }, (_, index) => \`Dessert \${index + 1}\`);
+
+export function PagedDesserts() {
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const rows = desserts.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  return (
+    <>
+      <Table>
+        <TableBody>
+          {rows.map((name) => (
+            <TableRow key={name}>
+              <TableCell>{name}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <TablePagination
+        count={desserts.length}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        rowsPerPageOptions={[5, 10, 25]}
+        onPageChange={setPage}
+        onRowsPerPageChange={(next) => {
+          setRowsPerPage(next);
+          setPage(0);
+        }}
+      />
+    </>
+  );
+}`,
   },
   {
     id: "options",

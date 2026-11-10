@@ -2,6 +2,7 @@ import { treeViewOptions } from "@owlky/core";
 import treeViewApi from "@owlky/docs-content/api/tree-view.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { RichTreeView } from "@owlky/react";
+import treeSnippet from "../../../../../packages/html/src/components/tree-view/examples/simple-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
@@ -26,17 +27,7 @@ export const treeViewSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
-<ul data-ok-tree-view role="tree" aria-label="Projects" data-ok-variant="standard" data-ok-expansion-trigger="content">
-  <li role="treeitem" data-ok-tree-item data-ok-item-id="design" aria-expanded="false" aria-selected="false" tabindex="0">
-    <div data-ok-tree-item-content>
-      <span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden="true" viewBox="0 0 24 24">…</svg></span>
-      <span data-ok-tree-item-label>Design</span>
-    </div>
-    <ul data-ok-collapse role="group" data-ok-tree-item-group hidden>
-      <li role="treeitem" data-ok-tree-item data-ok-item-id="mockups" aria-selected="false" tabindex="-1">…</li>
-    </ul>
-  </li>
-</ul>`,
+${treeSnippet}`,
     react: `import { SimpleTreeView, TreeItem } from "@owlky/react";
 
 export function Projects() {
@@ -58,22 +49,47 @@ export function Projects() {
     id: "select",
     title: "Select items",
     body: "A click selects the item. Set `multiSelect` to select several: Ctrl or ⌘ click adds or removes one, and Shift click selects a range. `checkboxSelection` shows a checkbox on each item and implies `multiSelect`. Use `selectedItems` and `onSelectedItemsChange` to control the selection, or `disableSelection` when items are only for browsing.",
-    react: `<SimpleTreeView aria-label="Export" multiSelect checkboxSelection defaultSelectedItems={["design"]}>
-  …
-</SimpleTreeView>`,
+    react: `import { SimpleTreeView, TreeItem } from "@owlky/react";
+
+export function TreeViewSelect() {
+  return (
+    <SimpleTreeView aria-label="Export" multiSelect checkboxSelection defaultSelectedItems={["design"]}>
+      <TreeItem itemId="design" label="Design">
+        <TreeItem itemId="mockups" label="Mockups" />
+        <TreeItem itemId="assets" label="Assets" />
+      </TreeItem>
+      <TreeItem itemId="development" label="Development">
+        <TreeItem itemId="frontend" label="Frontend" />
+      </TreeItem>
+    </SimpleTreeView>
+  );
+}`,
   },
   {
     id: "icons",
     title: "Change the icons and the look",
     body: "By default, items with children show a chevron that turns when they open. Pass `expandIcon` and `collapseIcon` for your own pair, and `endIcon` for items without children. Set `variant` to `lines` for dashed guides beside nested items, round tinted expand icons and compact rows.",
-    react: `<SimpleTreeView
-  aria-label="Outline"
-  variant="lines"
-  expandIcon={<PlusIcon />}
-  collapseIcon={<MinusIcon />}
->
-  …
-</SimpleTreeView>`,
+    react: `import { SimpleTreeView, TreeItem } from "@owlky/react";
+import { MinusIcon, PlusIcon } from "lucide-react";
+
+export function TreeViewIcons() {
+  return (
+    <SimpleTreeView
+      aria-label="Outline"
+      variant="lines"
+      expandIcon={<PlusIcon />}
+      collapseIcon={<MinusIcon />}
+    >
+      <TreeItem itemId="design" label="Design">
+        <TreeItem itemId="mockups" label="Mockups" />
+        <TreeItem itemId="assets" label="Assets" />
+      </TreeItem>
+      <TreeItem itemId="development" label="Development">
+        <TreeItem itemId="frontend" label="Frontend" />
+      </TreeItem>
+    </SimpleTreeView>
+  );
+}`,
   },
   {
     id: "options",

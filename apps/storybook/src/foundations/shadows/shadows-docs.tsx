@@ -65,13 +65,16 @@ export function SalesCard() {
 
 <!-- In your HTML -->
 <article class="rounded-2xl bg-paper p-6 shadow-card">Weekly sales</article>`,
-    react: `/* In your main CSS file */
-@import "tailwindcss";
-@import "@owlky/styles/owlky.css";
-@import "@owlky/styles/theme.css";
+    react: `// Set up Tailwind once, in your main CSS file:
+//   @import "tailwindcss";
+//   @import "@owlky/styles/owlky.css";
+//   @import "@owlky/styles/theme.css";
 
-// In your component
-<article className="rounded-2xl bg-paper p-6 shadow-card">Weekly sales</article>`,
+export function WeeklySales() {
+  return (
+    <article className="rounded-2xl bg-paper p-6 shadow-card">Weekly sales</article>
+  );
+}`,
   },
   {
     id: "colored",

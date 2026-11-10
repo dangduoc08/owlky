@@ -58,21 +58,33 @@ export function Upload({ percent }: { percent: number }) {
       "Video",
       `<span data-ok-linear-progress-dashed></span>${BARS}`,
     ),
-    react: `<LinearProgress variant="buffer" value={30} valueBuffer={45} aria-label="Video" />`,
+    react: `import { LinearProgress } from "@owlky/react";
+
+export function LinearProgressBuffer() {
+  return <LinearProgress variant="buffer" value={30} valueBuffer={45} aria-label="Video" />;
+}`,
   },
   {
     id: "query",
     title: "Show a request before loading starts",
     body: "The `query` variant moves from the end to the start. Use it while a request waits for an answer, then switch to `determinate` once the progress is known.",
     html: htmlProgress('data-ok-variant="query" data-ok-color="primary"', "Searching"),
-    react: `<LinearProgress variant="query" aria-label="Searching" />`,
+    react: `import { LinearProgress } from "@owlky/react";
+
+export function LinearProgressQuery() {
+  return <LinearProgress variant="query" aria-label="Searching" />;
+}`,
   },
   {
     id: "colors",
     title: "Choose a color",
     body: "The default color is `primary`. Use another palette color, such as `success` or `error`, to match the context. Use `inherit` to take the text color of the surrounding element. The track behind the bar is the same color at 24% opacity.",
     html: htmlProgress('data-ok-variant="indeterminate" data-ok-color="inherit"', "Loading"),
-    react: `<LinearProgress color="inherit" aria-label="Loading" />`,
+    react: `import { LinearProgress } from "@owlky/react";
+
+export function LinearProgressColors() {
+  return <LinearProgress color="inherit" aria-label="Loading" />;
+}`,
   },
   {
     id: "label",
@@ -86,16 +98,22 @@ export function Upload({ percent }: { percent: number }) {
   )}
   <span>Step 3 of 5</span>
 </div>`,
-    react: `<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-  <LinearProgress
-    variant="determinate"
-    value={3}
-    max={5}
-    aria-valuetext="Step 3 of 5"
-    aria-label="Setup"
-  />
-  <span>Step 3 of 5</span>
-</div>`,
+    react: `import { LinearProgress, Step } from "@owlky/react";
+
+export function LinearProgressLabel() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <LinearProgress
+        variant="determinate"
+        value={3}
+        max={5}
+        aria-valuetext="Step 3 of 5"
+        aria-label="Setup"
+      />
+      <span>Step 3 of 5</span>
+    </div>
+  );
+}`,
   },
   {
     id: "options",

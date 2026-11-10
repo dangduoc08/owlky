@@ -57,7 +57,25 @@ Set \`size\` to a number in pixels or to a CSS length, such as \`"20rem"\`. In H
     html: `<svg data-ok-illustration="empty-content" data-ok-color="primary" data-ok-size="240" aria-hidden="true"></svg>
 
 <!-- Without the illustrations script -->
-<svg data-ok-illustration="empty-content" data-ok-color="primary" width="240" aria-hidden="true" viewBox="0 0 480 360">…</svg>`,
+<svg data-ok-illustration="empty-content" data-ok-color="primary" width="240" viewBox="0 0 480 360" focusable="false" aria-hidden="true">
+  <path d="M86 122C118 62 200 30 282 44c80 14 136 64 142 136 6 72-46 124-134 136-86 12-176-4-214-62-36-56-24-96 10-132Z" opacity="0.08" data-ok-tone="main" />
+  <ellipse cx="240" cy="320" rx="190" ry="12" data-ok-tone="shadow" />
+  <g transform="rotate(-10 240 96)">
+    <rect x="204" y="40" width="72" height="92" rx="8" data-ok-tone="paper" />
+    <rect x="204" y="40" width="72" height="92" rx="8" data-ok-tone="outline" data-ok-stroke stroke-width="3" />
+    <path d="M218 64h44M218 80h32M218 96h40" data-ok-tone="line" data-ok-stroke stroke-width="6" />
+  </g>
+  <path d="M150 168h180l-14 26H164Z" data-ok-tone="darker" />
+  <path d="M150 168 98 136l14 52 38 10Z" data-ok-tone="light" />
+  <path d="M330 168l52-32-14 52-38 10Z" data-ok-tone="light" />
+  <path d="M150 180h180v108a12 12 0 0 1-12 12H162a12 12 0 0 1-12-12Z" data-ok-tone="main" />
+  <path d="M240 180h90v108a12 12 0 0 1-12 12h-78Z" data-ok-tone="dark" />
+  <rect x="214" y="210" width="52" height="10" rx="5" opacity="0.6" data-ok-tone="lighter" />
+  <path d="M110 82Q110 92 120 92Q110 92 110 102Q110 92 100 92Q110 92 110 82Z" data-ok-tone="accent-main" />
+  <path d="M380 92Q380 100 388 100Q380 100 380 108Q380 100 372 100Q380 100 380 92Z" data-ok-tone="light" />
+  <circle cx="410" cy="240" r="5" data-ok-tone="accent-light" />
+  <circle cx="80" cy="240" r="4" data-ok-tone="light" />
+</svg>`,
     react: `import { emptyContent } from "@owlky/core/illustrations";
 import { Illustration } from "@owlky/react";
 
@@ -129,7 +147,9 @@ To keep your own art theme-aware, draw it as inline SVG with \`data-ok-tone\` on
     <rect data-ok-tone="main" x="180" y="120" width="120" height="180" rx="24" />
     <path data-ok-tone="accent-main" d="M120 88Q120 100 132 100Q120 100 120 112Q120 100 108 100Q120 100 120 88Z" />
   </svg>
-  <div data-ok-upload-placeholder-text>…</div>
+  <div data-ok-upload-placeholder-text>
+    <span data-ok-upload-title>Drop or select a file</span>
+  </div>
 </div>`,
     react: `import type { Illustration as IllustrationData } from "@owlky/core";
 import { backdrop, groundShadow, sparkle } from "@owlky/core/illustrations";

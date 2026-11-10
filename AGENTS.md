@@ -856,3 +856,9 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   Docs pages import their reference JSON `with { type: "json" }` (the website loads
   docs-content modules in Node). Rows carry `data-docs-api-row="<kind>:<entry>:<name>"`, not
   `data-docs-option` (the Options table test counts those).
+- Docs examples (`pnpm check:docs`, in `pnpm check` and CI): no `…` anywhere in an example, not even
+  in UI text ("Loading…" reads "Loading"); React examples are modules that declare their data;
+  long HTML comes from the canonical snippets through `snippetElement(markup, match)`
+  (`apps/storybook/src/helpers/snippet-markup.ts`, snippets imported with `?raw` by relative path),
+  with page helpers on top (`gridOf()` keeps a grid's first rows, `htmlLightbox()`, `htmlEditor()`).
+  An icon an example needs goes in the checker's lucide list after checking lucide.dev.

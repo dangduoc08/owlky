@@ -232,10 +232,12 @@ export { CountUp, type CountUpProps } from "./count-up/count-up.js";
 export {
   DataGrid,
   type DataGridProps,
+  type GridApi,
   type GridColDef,
   type GridInitialState,
   type GridPaginationModel,
   type GridRenderCellParams,
+  useGridApiRef,
 } from "./data-grid/data-grid.js";
 export {
   type DateCalendarSlotProps,

@@ -19,9 +19,9 @@ export const popoverSections: GuideSection[] = [
   <span data-ok-button-label>Show summary</span>
 </button>
 <div id="summary" popover="manual" data-ok-popover data-ok-placement="bottom" role="dialog" aria-label="Summary">
-  …
+  <p data-ok-typography data-ok-variant="body2">3 orders are waiting for shipping.</p>
 </div>`,
-    react: `import { Button, Popover } from "@owlky/react";
+    react: `import { Button, Popover, Typography } from "@owlky/react";
 import { useState } from "react";
 
 export function Summary() {
@@ -43,7 +43,7 @@ export function Summary() {
         anchorEl={anchor}
         onOpenChange={() => setAnchor(null)}
       >
-        …
+        <Typography variant="body2">3 orders are waiting for shipping.</Typography>
       </Popover>
     </>
   );
@@ -53,13 +53,36 @@ export function Summary() {
     id: "placement",
     title: "Place the popover",
     body: "Set `placement` to a side of the anchor (`top`, `bottom`, `left` or `right`) and, optionally, an alignment (`-start` or `-end`). The default is `bottom`, centered. Add `arrow` to point at the anchor. The arrow sits on the side that faces the anchor and follows the anchor's center, even after a flip. For example, `bottom-start` opens the popover below its anchor with the arrow at the top left, and `top-end` opens it above with the arrow at the bottom right.",
-    html: `<div id="info" popover="manual" data-ok-popover data-ok-placement="right-start" data-ok-arrow>
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md"
+  aria-expanded="false" aria-controls="info" data-ok-popover-open="info">
+  <span data-ok-button-label>Info</span>
+</button>
+<div id="info" popover="manual" data-ok-popover data-ok-placement="right-start" data-ok-arrow>
   <span data-ok-popover-arrow aria-hidden="true"></span>
-  …
+  <p data-ok-typography data-ok-variant="body2">Prices include taxes.</p>
 </div>`,
-    react: `<Popover open={open} anchorEl={anchor} placement="right-start" arrow>
-  …
-</Popover>`,
+    react: `import { Button, Popover, Typography } from "@owlky/react";
+import { useState } from "react";
+
+export function PriceInfo() {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  return (
+    <>
+      <Button variant="outlined" onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}>
+        Info
+      </Button>
+      <Popover
+        open={anchor !== null}
+        anchorEl={anchor}
+        placement="right-start"
+        arrow
+        onOpenChange={() => setAnchor(null)}
+      >
+        <Typography variant="body2">Prices include taxes.</Typography>
+      </Popover>
+    </>
+  );
+}`,
   },
   {
     id: "hover",
@@ -69,19 +92,31 @@ export function Summary() {
   aria-expanded="false" aria-controls="hint" data-ok-popover-hover="hint">
   <span data-ok-button-label>Hover me</span>
 </button>
-<div id="hint" popover="manual" data-ok-popover data-ok-placement="bottom">…</div>`,
-    react: `<Button
-  variant="outlined"
-  onPointerEnter={(event) => setAnchor(event.currentTarget)}
-  onPointerLeave={() => setAnchor(null)}
-  onFocus={(event) => setAnchor(event.currentTarget)}
-  onBlur={() => setAnchor(null)}
->
-  Hover me
-</Button>
-<Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>
-  …
-</Popover>`,
+<div id="hint" popover="manual" data-ok-popover data-ok-placement="bottom">
+  <p data-ok-typography data-ok-variant="body2">The popover follows the pointer and the focus.</p>
+</div>`,
+    react: `import { Button, Popover, Typography } from "@owlky/react";
+import { useState } from "react";
+
+export function PopoverHover() {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  return (
+    <>
+      <Button
+        variant="outlined"
+        onPointerEnter={(event) => setAnchor(event.currentTarget)}
+        onPointerLeave={() => setAnchor(null)}
+        onFocus={(event) => setAnchor(event.currentTarget)}
+        onBlur={() => setAnchor(null)}
+      >
+        Hover me
+      </Button>
+      <Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>
+        <Typography variant="body2">The popover follows the pointer and the focus.</Typography>
+      </Popover>
+    </>
+  );
+}`,
   },
   {
     id: "options",

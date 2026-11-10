@@ -119,13 +119,15 @@ const out = join(app, ".docs-code");
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out);
 // Icons that exist in lucide-react (each also as `<Name>Icon`): extend the list when an example
-// needs another one, after checking https://lucide.dev/icons.
+// needs another one, after checking https://lucide.dev/icons. Icons take lucide's `size` and
+// `absoluteStrokeWidth` besides the SVG attributes.
 const LUCIDE = [
   "Bold",
   "Check",
   "ChevronDown",
   "ChevronRight",
   "Copy",
+  "EllipsisVertical",
   "Eye",
   "EyeOff",
   "Heart",
@@ -135,6 +137,7 @@ const LUCIDE = [
   "Info",
   "Italic",
   "Mail",
+  "MapPin",
   "Minus",
   "Phone",
   "Plus",
@@ -150,7 +153,7 @@ const LUCIDE = [
 ];
 writeFileSync(
   join(out, "icons.d.ts"),
-  `declare module "lucide-react" {\n  type Icon = import("react").FC<import("react").SVGProps<SVGSVGElement>>;\n${LUCIDE.map((name) => `  export const ${name}: Icon;\n  export const ${name}Icon: Icon;\n`).join("")}}\n`,
+  `declare module "lucide-react" {\n  type Icon = import("react").FC<import("react").SVGProps<SVGSVGElement> & { size?: number | string; absoluteStrokeWidth?: boolean }>;\n${LUCIDE.map((name) => `  export const ${name}: Icon;\n  export const ${name}Icon: Icon;\n`).join("")}}\n`,
 );
 const programs = [[]];
 const owner = new Map();

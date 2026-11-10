@@ -1,8 +1,51 @@
 import { dataGridOptions } from "@owlky/core";
 import dataGridApi from "@owlky/docs-content/api/data-grid.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
+import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
+import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
+import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
+import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
+import largeGroup from "../../../../../packages/html/src/components/data-grid/examples/large-group.html?raw";
+import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
+import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
+import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
+import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
+import validationGroup from "../../../../../packages/html/src/components/data-grid/examples/validation-group.html?raw";
 import { CDN, GuideDocs, type GuideSection } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
+
+/** An element of a grid snippet; the search field's placeholder reads "Search" here. */
+const gridElement = (markup: string, match = "data-ok-data-grid ") =>
+  snippetElement(markup, match).replaceAll('placeholder="Search…"', 'placeholder="Search"');
+
+/**
+ * The grid of a snippet with its first `rows` data rows (the markup stays complete: header,
+ * toolbar, panels and templates), and extra root attributes.
+ */
+function gridOf(markup: string, { rows = 3, attrs = "" }: { rows?: number; attrs?: string } = {}) {
+  const lines = gridElement(markup).split("\n");
+  const out: string[] = [];
+  let kept = 0;
+  let skipUntil = "";
+  for (const line of lines) {
+    if (skipUntil) {
+      if (line === skipUntil) skipUntil = "";
+      continue;
+    }
+    const row = /^( *)<div role="row"[^>]*data-ok-row-id/.exec(line);
+    if (row && !line.includes("</div>")) {
+      kept++;
+      if (kept > rows) {
+        skipUntil = `${row[1]}</div>`;
+        continue;
+      }
+    }
+    out.push(line);
+  }
+  const grid = out.join("\n");
+  return attrs ? grid.replace("<div data-ok-data-grid ", `<div data-ok-data-grid ${attrs} `) : grid;
+}
 
 export const dataGridSections: GuideSection[] = [
   {
@@ -13,14 +56,20 @@ export const dataGridSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
-<!-- Copy the markup of the Basic story: the script sorts, filters and pages the rows it finds. -->
-<div data-ok-data-grid data-ok-density="standard">…</div>`,
+<!-- The script sorts, filters and pages the rows it finds -->
+${gridOf(basicGroup)}`,
     react: `import { DataGrid, type GridColDef } from "@owlky/react";
 
 const columns: GridColDef<Person>[] = [
   { field: "firstName", headerName: "First name", flex: 1 },
   { field: "age", headerName: "Age", type: "number", width: 90 },
 ];
+
+interface Person {
+  id: number;
+  firstName: string;
+  age: number;
+}
 
 export function People({ rows }: { rows: Person[] }) {
   return <DataGrid aria-label="People" rows={rows} columns={columns} checkboxSelection showToolbar />;
@@ -34,41 +83,116 @@ export function People({ rows }: { rows: Person[] }) {
 - **Values:** \`valueGetter\` computes a value from the row, and \`valueFormatter\` turns it into the text that the cell shows, the search finds and the export writes.
 - **Custom cells:** \`renderCell\` draws anything, such as an avatar or a rating. In HTML, write that markup in the cell, and put the raw value in \`data-ok-value\` so sorting and filtering use it.`,
     html: `<div role="gridcell" aria-colindex="5" data-ok-field="age" data-ok-align="right" data-ok-value="30" tabindex="-1">30</div>`,
-    react: `{ field: "age", headerName: "Age", type: "number", valueFormatter: (value) => \`\${value} years\` }`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, name: "Ana Lima", age: 34 },
+  { id: 2, name: "Jonah Pereira", age: 41 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "name", headerName: "Name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", valueFormatter: (value) => \`\${value} years\` },
+];
+
+export function People() {
+  return <DataGrid aria-label="People" rows={rows} columns={columns} />;
+}`,
   },
   {
     id: "toolbar",
     title: "Add a toolbar",
     body: "`showToolbar` adds a search field and buttons that open the column list, the filter panel, the row height menu and the export menu. Search matches every word you type in any column. Export downloads a CSV file or prints the grid as shown. Each feature can be turned off, for example with `disableColumnFilter`.",
-    html: `<div data-ok-data-grid-toolbar>…</div>`,
-    react: `<DataGrid aria-label="People" rows={rows} columns={columns} showToolbar disableDensitySelector />`,
+    html: `${gridElement(basicGroup, "data-ok-data-grid-toolbar")}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "firstName", headerName: "First name", flex: 1 },
+  { field: "lastName", headerName: "Last name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", width: 90 },
+];
+
+export function DataGridToolbar() {
+  return (
+    <DataGrid aria-label="People" rows={rows} columns={columns} showToolbar disableDensitySelector />
+  );
+}`,
   },
   {
     id: "state",
     title: "Control sorting, filtering, pages and selection",
     body: "Every state works controlled or uncontrolled, as in MUI X: `sortModel`, `filterModel`, `paginationModel`, `rowSelectionModel`, `columnVisibilityModel` and `density`, each with its `on…Change` callback, or `initialState` for the starting values. Shift + click on a header adds a column to the sort.",
     html: `<!-- HTML keeps the state in the page: listen to ok:data-grid:* events (see Events and methods). -->`,
-    react: `const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "age", sort: "desc" }]);
+    react: `import type { GridSortModel } from "@owlky/core";
+import { DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
 
-<DataGrid aria-label="People" rows={rows} columns={columns} sortModel={sortModel} onSortModelChange={setSortModel} />`,
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "firstName", headerName: "First name", flex: 1 },
+  { field: "lastName", headerName: "Last name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", width: 90 },
+];
+
+export function People() {
+  const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "age", sort: "desc" }]);
+  return (
+    <DataGrid
+      aria-label="People"
+      rows={rows}
+      columns={columns}
+      sortModel={sortModel}
+      onSortModelChange={setSortModel}
+    />
+  );
+}`,
   },
   {
     id: "filters",
     title: "Combine filters",
     body: "**Add filter** in the filter panel adds another condition. From the second row, choose **And** (every condition must match, the default) or **Or** (any one is enough). The remove button deletes a condition. Set `disableMultipleColumnsFiltering` to keep a single condition.",
     html: `<!-- The filter panel's Add filter button copies the first row, with an And / Or field. -->`,
-    react: `<DataGrid
-  aria-label="People"
-  rows={rows}
-  columns={columns}
-  filterModel={{
-    logicOperator: "or",
-    items: [
-      { field: "age", operator: "<", value: "20" },
-      { field: "age", operator: ">", value: "60" },
-    ],
-  }}
-/>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "firstName", headerName: "First name", flex: 1 },
+  { field: "lastName", headerName: "Last name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", width: 90 },
+];
+
+export function DataGridFilters() {
+  return (
+    <DataGrid
+      aria-label="People"
+      rows={rows}
+      columns={columns}
+      filterModel={{
+        logicOperator: "or",
+        items: [
+          { field: "age", operator: "<", value: "20" },
+          { field: "age", operator: ">", value: "60" },
+        ],
+      }}
+    />
+  );
+}`,
   },
   {
     id: "layout",
@@ -77,13 +201,33 @@ export function People({ rows }: { rows: Person[] }) {
 - **Move:** drag a header onto another one, or choose **Move left** or **Move right** in the column menu. \`columnOrder\` and \`onColumnOrderChange\` control the order.
 - **Pin:** choose **Pin to left** or **Pin to right** in the column menu. Pinned columns stay in view while the others scroll. Use \`pinnedColumns\` to pin columns from the start.`,
     html: `<!-- Pinned cells carry data-ok-pinned; the script keeps their offsets. -->
-<div role="columnheader" data-ok-field="firstName" data-ok-pinned="left" tabindex="-1">…</div>`,
-    react: `<DataGrid
-  aria-label="Employees"
-  rows={rows}
-  columns={columns}
-  initialState={{ pinnedColumns: { left: ["firstName"], right: ["actions"] } }}
-/>`,
+<div role="columnheader" data-ok-field="firstName" data-ok-pinned="left" tabindex="-1">
+  <span data-ok-data-grid-header-title>First name</span>
+</div>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "firstName", headerName: "First name", flex: 1 },
+  { field: "lastName", headerName: "Last name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", width: 90 },
+];
+
+export function DataGridLayout() {
+  return (
+    <DataGrid
+      aria-label="Employees"
+      rows={rows}
+      columns={columns}
+      initialState={{ pinnedColumns: { left: ["firstName"], right: ["actions"] } }}
+    />
+  );
+}`,
   },
   {
     id: "editing",
@@ -95,21 +239,42 @@ export function People({ rows }: { rows: Person[] }) {
     if (event.detail.row.age > 120) event.preventDefault();
   });
 </script>`,
-    react: `<DataGrid
-  aria-label="Employees"
-  rows={rows}
-  columns={[{ field: "age", headerName: "Age", type: "number", editable: true }]}
-  processRowUpdate={async (row) => saveEmployee(row)}
-/>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+// Your own save: send the row to your API and return what it stored
+async function saveEmployee(row: (typeof rows)[number]) {
+  const response = await fetch(\`/api/employees/\${row.id}\`, { method: "PUT", body: JSON.stringify(row) });
+  return response.json();
+}
+
+export function DataGridEditing() {
+  return (
+    <DataGrid
+      aria-label="Employees"
+      rows={rows}
+      columns={[{ field: "age", headerName: "Age", type: "number", editable: true }]}
+      processRowUpdate={async (row) => saveEmployee(row)}
+    />
+  );
+}`,
   },
   {
     id: "large",
     title: "Show large datasets",
     body: "The grid renders only the rows that are in view, plus a few above and below, so thousands of rows scroll smoothly. This works when the grid has a fixed height, such as `height: 520px` on the root: a grid that grows with its rows shows all of them. Set `disableVirtualization` to render every row of the page, for example before printing the page with the browser. To load more rows as people scroll, listen for the end of the rows. It's reported once for each number of rows, within `scrollEndThreshold` pixels (80 by default). Show `loading` while the next rows arrive.",
-    html: `<div data-ok-data-grid id="customers" style="height: 520px">…</div>
+    html: `${gridElement(largeGroup, "data-ok-data-grid ").replace("<div data-ok-data-grid ", '<div data-ok-data-grid id="customers" style="height: 520px" ')}
 <script type="module">
   const element = document.getElementById("customers");
   const grid = window.Owlky.get(element, "data-grid");
+  // Your own loader: a page of rows from your API
+  const fetchCustomers = async (start, count) =>
+    (await fetch(\`/api/customers?start=\${start}&count=\${count}\`)).json();
   let rows = await fetchCustomers(0, 200);
   grid.setRows(rows);
   // Load 200 more rows at the end of the list
@@ -120,8 +285,28 @@ export function People({ rows }: { rows: Person[] }) {
     element.removeAttribute("data-ok-loading");
   });
 </script>`,
-    react: `function Customers() {
-  const [rows, setRows] = useState(firstCustomers);
+    react: `import { DataGrid } from "@owlky/react";
+import { useEffect, useState } from "react";
+
+interface Customer {
+  id: number;
+  name: string;
+  city: string;
+}
+
+const columns = [
+  { field: "name", headerName: "Name", flex: 1 },
+  { field: "city", headerName: "City", flex: 1 },
+];
+
+// Your own loader: a page of rows from your API
+async function fetchCustomers(start: number, count: number): Promise<Customer[]> {
+  const response = await fetch(\`/api/customers?start=\${start}&count=\${count}\`);
+  return response.json();
+}
+
+export function Customers() {
+  const [rows, setRows] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const loadMore = async () => {
     setLoading(true);
@@ -129,6 +314,9 @@ export function People({ rows }: { rows: Person[] }) {
     setRows((current) => [...current, ...more]);
     setLoading(false);
   };
+  useEffect(() => {
+    fetchCustomers(0, 200).then(setRows);
+  }, []);
   return (
     <DataGrid
       aria-label="Customers"
@@ -150,7 +338,7 @@ export function People({ rows }: { rows: Person[] }) {
   const grid = window.Owlky.get(element, "data-grid");
   grid.setDataSource({
     // params: { sortModel, filterModel, paginationModel: { page, pageSize } }
-    async getRows(params) {
+    async getRows(params: object) {
       const response = await fetch("/api/customers", {
         method: "POST",
         body: JSON.stringify(params),
@@ -163,7 +351,7 @@ export function People({ rows }: { rows: Person[] }) {
 
 const customers = {
   // params: { sortModel, filterModel, paginationModel: { page, pageSize } }
-  async getRows(params) {
+  async getRows(params: object) {
     const response = await fetch("/api/customers", {
       method: "POST",
       body: JSON.stringify(params),
@@ -171,6 +359,8 @@ const customers = {
     return response.json(); // { rows, rowCount }
   },
 };
+
+const columns = [{ field: "name", headerName: "Name", flex: 1 }];
 
 export function Customers() {
   return <DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} />;
@@ -180,36 +370,37 @@ export function Customers() {
     id: "rows-from-data",
     title: "Build HTML rows from data",
     body: 'In HTML, the grid can build its rows from data instead of markup. Put one row inside `<template data-ok-data-grid-row>` in the grid: `setRows(rows)` copies it for each item, sets `data-ok-row-id` from `id`, and fills each cell with the value of its field as text. For cells with more than text, add `<template data-ok-data-grid-cell="<field>">`: its elements marked `data-ok-data-grid-value` receive the value. Values are always set as text, never as markup, so data from a server can\'t add scripts to the page.',
-    html: `<div data-ok-data-grid id="customers">
-  …
-  <template data-ok-data-grid-row>
-    <div role="row" data-ok-row-id="">
-      <div role="gridcell" aria-colindex="1" data-ok-field="name" tabindex="-1"></div>
-      <div role="gridcell" aria-colindex="2" data-ok-field="city" tabindex="-1"></div>
-    </div>
-  </template>
-  <template data-ok-data-grid-cell="city">
-    <svg aria-hidden="true" viewBox="0 0 24 24">…</svg>
-    <span data-ok-data-grid-value></span>
-  </template>
-</div>`,
+    html: `${gridElement(serverGroup, "data-ok-data-grid ").replace("<div data-ok-data-grid ", '<div data-ok-data-grid id="customers" ')}`,
   },
   {
     id: "selection",
     title: "Choose how rows are selected",
     body: 'With `checkboxSelection`, people select rows with checkboxes, a click on the row, Space and Ctrl + A. Set `disableMultipleRowSelection` to allow one row at a time: selecting a row clears the others, and the header has no **Select all** checkbox. To keep some rows from being selected, return `false` from `isRowSelectable` in React, or put `data-ok-selectable="false"` on the row in HTML. Their checkbox is disabled. `checkboxSelectionVisibleOnly` makes **Select all** select the current page only. When rows go away, their ids leave the selection, unless you set `keepNonExistentRowsSelected`. Use it with server pagination, where the rows of other pages aren\'t loaded.',
-    html: `<div data-ok-data-grid data-ok-checkbox-selection data-ok-disable-multiple-row-selection>
-  …
-  <div role="row" data-ok-row-id="t-2" data-ok-selectable="false" aria-selected="false">…</div>
-</div>`,
-    react: `<DataGrid
-  aria-label="Tasks"
-  rows={tasks}
-  columns={columns}
-  checkboxSelection
-  disableMultipleRowSelection
-  isRowSelectable={({ row }) => row.status !== "Done"}
-/>`,
+    html: `${gridOf(layoutTasks, { attrs: "data-ok-disable-multiple-row-selection" })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const tasks = [
+  { id: 1, title: "Write the brief", status: "Done" },
+  { id: 2, title: "Review the design", status: "Open" },
+];
+
+const columns: GridColDef<(typeof tasks)[number]>[] = [
+  { field: "title", headerName: "Task", flex: 1 },
+  { field: "status", headerName: "Status" },
+];
+
+export function DataGridSelection() {
+  return (
+    <DataGrid
+      aria-label="Tasks"
+      rows={tasks}
+      columns={columns}
+      checkboxSelection
+      disableMultipleRowSelection
+      isRowSelectable={({ row }) => row.status !== "Done"}
+    />
+  );
+}`,
   },
   {
     id: "spans",
@@ -220,19 +411,33 @@ export function Customers() {
 <div role="gridcell" aria-colindex="2" data-ok-field="team" hidden data-ok-covered></div>
 
 <!-- Rows that grow with their text -->
-<div role="row" data-ok-row-id="t-3" data-ok-row-height="auto">…</div>`,
-    react: `<DataGrid
-  aria-label="Budget"
-  rows={lines}
-  columns={[
-    { field: "region", headerName: "Region", colSpan: ({ row }) => (row.id === "total" ? 3 : 1) },
-    { field: "team", headerName: "Team" },
-    { field: "item", headerName: "Item" },
-    { field: "amount", headerName: "Amount", type: "number" },
-  ]}
-  rowSpanning
-  getRowHeight={({ model }) => (model.notes.length > 40 ? "auto" : null)}
-/>`,
+<div role="row" data-ok-row-id="t-3" data-ok-row-height="auto">
+  <div role="gridcell" aria-colindex="1" data-ok-field="task" tabindex="-1">Write the release notes, then send them to the team for review</div>
+</div>`,
+    react: `import { DataGrid } from "@owlky/react";
+
+const lines = [
+  { id: "a", region: "Europe", team: "Design", item: "Laptops", amount: 4000, notes: "Two laptops" },
+  { id: "b", region: "Europe", team: "Design", item: "Licenses", amount: 1200, notes: "Yearly licenses for the design tools of the team" },
+  { id: "total", region: "Total", team: "", item: "", amount: 5200, notes: "" },
+];
+
+export function DataGridSpans() {
+  return (
+    <DataGrid
+      aria-label="Budget"
+      rows={lines}
+      columns={[
+        { field: "region", headerName: "Region", colSpan: ({ row }) => (row.id === "total" ? 3 : 1) },
+        { field: "team", headerName: "Team" },
+        { field: "item", headerName: "Item" },
+        { field: "amount", headerName: "Amount", type: "number" },
+      ]}
+      rowSpanning
+      getRowHeight={({ model }) => (model.notes.length > 40 ? "auto" : null)}
+    />
+  );
+}`,
   },
   {
     id: "api",
@@ -247,8 +452,22 @@ export function Customers() {
     queueMicrotask(() => localStorage.setItem("people-grid", JSON.stringify(grid.exportState()))),
   );
 </script>`,
-    react: `function People() {
-  const apiRef = useGridApiRef();
+    react: `import { Button, DataGrid, type GridColDef, useGridApiRef } from "@owlky/react";
+
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "firstName", headerName: "First name", flex: 1 },
+  { field: "lastName", headerName: "Last name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", width: 90 },
+];
+
+export function People() {
+  const apiRef = useGridApiRef<(typeof rows)[number]>();
   return (
     <>
       <Button onClick={() => apiRef.current?.autosizeColumns()}>Fit columns</Button>
@@ -268,7 +487,14 @@ export function Customers() {
     if (field === "price" && !(Number(value) > 0)) event.detail.error = "Enter a price above 0";
   });
 </script>`,
-    react: `const columns = [
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, product: "Desk lamp", price: 49 },
+  { id: 2, product: "Chair", price: 129 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
   {
     field: "price",
     headerName: "Price",
@@ -278,38 +504,78 @@ export function Customers() {
       error: Number(props.value) > 0 ? undefined : "Enter a price above 0",
     }),
   },
-];`,
+];
+
+export function Prices() {
+  return <DataGrid aria-label="Prices" rows={rows} columns={columns} />;
+}`,
   },
   {
     id: "filter-options",
     title: "Tune filtering and search",
     body: 'The **is any of** operator keeps rows whose value is one of several values: type them separated by commas. A column\'s `filterOperators` replaces the operators of its type, for example with a range. Each operator returns a test for a value. In HTML, set them with `setFilterOperators(field, operators)`. Set `ignoreDiacritics` so that searches and filters ignore accents: "ha noi" finds "Hà Nội". `quickFilterLogicOperator="or"` keeps rows that match any word instead of every word. `quickFilterExcludeHiddenColumns` leaves hidden columns out of the search. To leave one column out, set its `getApplyQuickFilterFn` to `null` in React, or `data-ok-searchable="false"` on its header in HTML.',
-    html: `<div data-ok-data-grid data-ok-ignore-diacritics data-ok-quick-filter-logic-operator="or">…</div>`,
-    react: `<DataGrid
-  aria-label="Places"
-  rows={places}
-  columns={columns}
-  ignoreDiacritics
-  quickFilterLogicOperator="or"
-/>`,
+    html: `${gridOf(validationGroup, { attrs: 'data-ok-ignore-diacritics data-ok-quick-filter-logic-operator="or"' })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const places = [
+  { id: 1, city: "São Paulo", country: "Brazil" },
+  { id: 2, city: "Zürich", country: "Switzerland" },
+];
+
+const columns: GridColDef<(typeof places)[number]>[] = [
+  { field: "city", headerName: "City", flex: 1 },
+  { field: "country", headerName: "Country", flex: 1 },
+];
+
+export function DataGridFilterOptions() {
+  return (
+    <DataGrid
+      aria-label="Places"
+      rows={places}
+      columns={columns}
+      ignoreDiacritics
+      quickFilterLogicOperator="or"
+    />
+  );
+}`,
   },
   {
     id: "export-options",
     title: "Export and print",
     body: "**Download as CSV** exports the filtered, sorted rows of every page and the shown columns. `csvOptions` changes the delimiter, the columns (`fields`, `allColumns`), the header line and the file name. **Print** prints every filtered row on its own page, without the toolbar, footer and checkboxes. `printOptions` keeps them or picks the columns. In HTML, pass the same options to `exportCsv(options)` and `print(options)`. Values in an HTML column can be formatted with `data-ok-format` on its header (`number`, `currency`, `percent`, `date` or `datetime`) and `Intl` options in `data-ok-format-options`, or with `setValueFormatter(field, format)`.",
-    html: `<div role="columnheader" data-ok-field="price" data-ok-format="currency" data-ok-format-options='{"currency":"EUR"}'>…</div>
+    html: `<div role="columnheader" data-ok-field="price" data-ok-format="currency" data-ok-format-options='{"currency":"EUR"}'>
+  <span data-ok-data-grid-header-title>Price</span>
+</div>
 <script type="module">
   const grid = window.Owlky.get(document.getElementById("products"), "data-grid");
   grid.exportCsv({ delimiter: ";", fileName: "products" });
 </script>`,
-    react: `<DataGrid
-  aria-label="Products"
-  rows={rows}
-  columns={columns}
-  showToolbar
-  csvOptions={{ delimiter: ";", fileName: "products" }}
-  printOptions={{ hideFooter: false }}
-/>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "firstName", headerName: "First name", flex: 1 },
+  { field: "lastName", headerName: "Last name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", width: 90 },
+];
+
+export function DataGridExportOptions() {
+  return (
+    <DataGrid
+      aria-label="Products"
+      rows={rows}
+      columns={columns}
+      showToolbar
+      csvOptions={{ delimiter: ";", fileName: "products" }}
+      printOptions={{ hideFooter: false }}
+    />
+  );
+}`,
   },
   {
     id: "languages",
@@ -320,23 +586,54 @@ export function Customers() {
   window.Owlky.get(document.getElementById("people"), "data-grid").setLocaleText(viVN);
 </script>`,
     react: `import { viVN } from "@owlky/core";
+import { DataGrid, type GridColDef } from "@owlky/react";
 
-<DataGrid aria-label="Danh sách" rows={rows} columns={columns} localeText={viVN} />`,
+const rows = [
+  { id: 1, firstName: "Ana", lastName: "Lima", age: 34 },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", age: 17 },
+  { id: 3, firstName: "Priya", lastName: "Raman", age: 65 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "firstName", headerName: "First name", flex: 1 },
+  { field: "lastName", headerName: "Last name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number", width: 90 },
+];
+
+export function Vietnamese() {
+  return <DataGrid aria-label="Danh sách" rows={rows} columns={columns} localeText={viVN} />;
+}`,
   },
   {
     id: "tree",
     title: "Show rows as a tree",
     body: "Set `treeData` and return each row's path from `getTreeDataPath`: the names of its ancestors, then its own. Parents that a path names without a row of their own get a generated row. A group column shows the names with a button that opens and closes the children. Right and Left open and close a row when its group cell has the focus. `defaultGroupingExpansionDepth` sets how many levels are open at first. Filters keep the parents of the rows that match, and sorting orders rows among their siblings. In HTML, rows carry `aria-level` and `data-ok-parent`, and the grid fires `ok:data-grid:expand`. With a data source, `getChildrenCount` and `getGroupKey` let the grid load children when a row opens.",
-    html: `<div role="row" data-ok-row-id="m-2" data-ok-parent="m-1" aria-level="2" aria-expanded="false">…</div>`,
-    react: `<DataGrid
-  aria-label="Team"
-  rows={team}
-  columns={columns}
-  treeData
-  getTreeDataPath={(row) => row.path}
-  groupingColDef={{ headerName: "Name" }}
-  defaultGroupingExpansionDepth={1}
-/>`,
+    html: `<div role="row" data-ok-row-id="m-2" data-ok-parent="m-1" aria-level="2" aria-expanded="false">
+  <div role="gridcell" aria-colindex="1" data-ok-field="name" tabindex="-1">Design team</div>
+</div>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const team = [
+  { id: 1, path: ["Maya"], role: "CEO" },
+  { id: 2, path: ["Maya", "Jonah"], role: "Design" },
+  { id: 3, path: ["Maya", "Priya"], role: "Development" },
+];
+
+const columns: GridColDef<(typeof team)[number]>[] = [{ field: "role", headerName: "Role", flex: 1 }];
+
+export function DataGridTree() {
+  return (
+    <DataGrid
+      aria-label="Team"
+      rows={team}
+      columns={columns}
+      treeData
+      getTreeDataPath={(row) => row.path}
+      groupingColDef={{ headerName: "Name" }}
+      defaultGroupingExpansionDepth={1}
+    />
+  );
+}`,
   },
   {
     id: "detail",
@@ -345,45 +642,106 @@ export function Customers() {
     html: `<template data-ok-data-grid-detail="o-1001">
   <p>Order o-1001 for Ana Silva.</p>
 </template>`,
-    react: `<DataGrid
-  aria-label="Orders"
-  rows={orders}
-  columns={columns}
-  getDetailPanelContent={({ row }) => <OrderLines order={row} />}
-/>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const orders = [
+  { id: 1, customer: "Ana Lima", lines: ["Desk lamp", "Chair"] },
+  { id: 2, customer: "Jonah Pereira", lines: ["Shelf"] },
+];
+type Order = (typeof orders)[number];
+
+const columns: GridColDef<Order>[] = [{ field: "customer", headerName: "Customer", flex: 1 }];
+
+function OrderLines({ order }: { order: Order }) {
+  return (
+    <ul>
+      {order.lines.map((line) => (
+        <li key={line}>{line}</li>
+      ))}
+    </ul>
+  );
+}
+
+export function DataGridDetail() {
+  return (
+    <DataGrid
+      aria-label="Orders"
+      rows={orders}
+      columns={columns}
+      getDetailPanelContent={({ row }) => <OrderLines order={row} />}
+    />
+  );
+}`,
   },
   {
     id: "ordering",
     title: "Move and pin rows",
     body: 'With `rowReordering`, each row gets a handle: drag it onto another row, or press Alt + Up or Alt + Down on it. A screen reader hears the new position. Moving is off while the rows are sorted or filtered. React reports moves with `onRowOrderChange`; HTML fires `ok:data-grid:roworder`, which you can cancel. `pinnedRows` keeps rows above or below the others while they scroll. Pinned rows aren\'t sorted, filtered or paged. In HTML, put them in `<div role="rowgroup" data-ok-data-grid-pinned-rows="top">` (or `bottom`).',
-    react: `<DataGrid
-  aria-label="Agenda"
-  rows={items}
-  columns={columns}
-  rowReordering
-  onRowOrderChange={({ oldIndex, targetIndex }) => save(oldIndex, targetIndex)}
-  pinnedRows={{ top: [welcome], bottom: [questions] }}
-/>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const items = [
+  { id: "a", topic: "Roadmap" },
+  { id: "b", topic: "Hiring" },
+];
+const welcome = { id: "welcome", topic: "Welcome" };
+const questions = { id: "questions", topic: "Questions" };
+
+const columns: GridColDef<(typeof items)[number]>[] = [{ field: "topic", headerName: "Topic", flex: 1 }];
+
+// Your own save: store the new position
+function save(from: number, to: number) {
+  void fetch("/api/agenda/order", { method: "POST", body: JSON.stringify({ from, to }) });
+}
+
+export function DataGridOrdering() {
+  return (
+    <DataGrid
+      aria-label="Agenda"
+      rows={items}
+      columns={columns}
+      rowReordering
+      onRowOrderChange={({ oldIndex, targetIndex }) => save(oldIndex, targetIndex)}
+      pinnedRows={{ top: [welcome], bottom: [questions] }}
+    />
+  );
+}`,
   },
   {
     id: "groups",
     title: "Group column headers and show a list",
     body: "`columnGroupingModel` puts headers over groups of columns, on as many levels as you need. A group's `description` shows as its tooltip. When a column is hidden or moved, its group splits around it. Columns can't move out of their group. `listView` shows each row as one cell, such as a card on a small screen. `listViewColumn` says which field it shows, and `renderCell` builds its content. The headers and the other cells are hidden in list view.",
-    react: `<DataGrid
-  aria-label="Contacts"
-  rows={contacts}
-  columns={columns}
-  columnGroupingModel={[
-    { groupId: "person", headerName: "Person", children: [{ field: "firstName" }, { field: "lastName" }] },
-    { groupId: "contact", headerName: "Contact", children: [{ field: "email" }] },
-  ]}
-/>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const contacts = [
+  { id: 1, firstName: "Ana", lastName: "Lima", email: "ana@example.com" },
+  { id: 2, firstName: "Jonah", lastName: "Pereira", email: "jonah@example.com" },
+];
+
+const columns: GridColDef<(typeof contacts)[number]>[] = [
+  { field: "firstName", headerName: "First name" },
+  { field: "lastName", headerName: "Last name" },
+  { field: "email", headerName: "Email", flex: 1 },
+];
+
+export function DataGridGroups() {
+  return (
+    <DataGrid
+      aria-label="Contacts"
+      rows={contacts}
+      columns={columns}
+      columnGroupingModel={[
+        { groupId: "person", headerName: "Person", children: [{ field: "firstName" }, { field: "lastName" }] },
+        { groupId: "contact", headerName: "Contact", children: [{ field: "email" }] },
+      ]}
+    />
+  );
+}`,
   },
   {
     id: "lazy",
     title: "Load rows as they scroll into view",
     body: "With `lazyLoading` and a data source, the grid asks for the rows that come into view, 50 at a time. Rows that haven't arrived show as placeholders. The data source answers `start` and `end`, and returns the total in `rowCount`. `lazyLoadingRequestThrottleMs` spaces the requests. Wide grids also render only the columns in view, when the columns have fixed widths. `rowBufferPx` and `columnBufferPx` set how much renders beyond the visible area. A data source's `updateRow` saves edited rows. Its answer is shown, and a failure brings the old values back. The cache keeps answers for five minutes, or for the `ttl` you pass to `createGridDataSourceCache`.",
-    html: `<div data-ok-data-grid id="customers" data-ok-lazy-loading>…</div>
+    html: `${gridElement(lazyGroup, "data-ok-data-grid ").replace("<div data-ok-data-grid ", '<div data-ok-data-grid id="customers" ')}
 <script type="module">
   const grid = window.Owlky.get(document.getElementById("customers"), "data-grid");
   grid.setDataSource({
@@ -393,94 +751,230 @@ export function Customers() {
     },
   });
 </script>`,
-    react: `<DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} lazyLoading />`,
+    react: `import type { GridDataSource } from "@owlky/core";
+import { DataGrid, type GridColDef } from "@owlky/react";
+
+interface Customer {
+  id: number;
+  name: string;
+}
+
+const columns: GridColDef<Customer>[] = [{ field: "name", headerName: "Name", flex: 1 }];
+const noRows: Customer[] = [];
+
+// Your own server: it answers { rows, rowCount } for the rows asked for
+const customers: GridDataSource<Customer> = {
+  async getRows(params) {
+    const response = await fetch("/api/customers", { method: "POST", body: JSON.stringify(params) });
+    return response.json();
+  },
+};
+
+export function DataGridLazy() {
+  return <DataGrid aria-label="Customers" rows={noRows} columns={columns} dataSource={customers} lazyLoading />;
+}`,
   },
   {
     id: "grouping",
     title: "Group rows and aggregate values",
     body: "`rowGroupingModel` lists the fields that group the rows, outermost first. The grid adds a row for each group, with the group's name, its number of rows and a button that opens it. People group and ungroup columns from the column menu. `aggregationModel` gives fields a function: `sum`, `avg` (rounded to two decimals), `min`, `max` or `size` (the number of rows). Group rows show their values, and a footer row shows the values of every filtered row. The column menu offers the functions that fit each column's type, and the header names the function in use. Sorting an aggregated column orders the groups by their values. Sorting a grouped column orders them by name. With a data source, the grid passes `groupFields` and `groupKeys`, and the server returns the groups of each level. In HTML, the models are the attributes `data-ok-row-grouping-model` and `data-ok-aggregation-model` (JSON), and the grid builds the group rows from the rows in the markup. In tree data, the grid adds a row for each parent that a path names without a row of its own.",
-    html: `<div data-ok-data-grid id="sales"
-  data-ok-row-grouping-model='["region"]'
-  data-ok-aggregation-model='{"revenue":"sum"}'>…</div>`,
-    react: `<DataGrid
-  aria-label="Sales"
-  rows={sales}
-  columns={columns}
-  initialState={{
-    rowGrouping: { model: ["region"] },
-    aggregation: { model: { units: "sum", revenue: "sum" } },
-  }}
-/>`,
+    html: `${gridOf(groupingGroup, { rows: 6 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", year: 2024, units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", year: 2025, units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", year: 2025, units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "year", headerName: "Year", type: "number" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridGrouping() {
+  return (
+    <DataGrid
+      aria-label="Sales"
+      rows={sales}
+      columns={columns}
+      initialState={{
+        rowGrouping: { model: ["region"] },
+        aggregation: { model: { units: "sum", revenue: "sum" } },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "pivot",
     title: "Pivot the rows",
     body: "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and, for each column, its place and function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
-    html: `<div data-ok-data-grid id="sales" data-ok-pivot-active
-  data-ok-pivot-model='{"rows":[{"field":"region"}],"columns":[{"field":"year"}],"values":[{"field":"revenue","aggFunc":"sum"}]}'>…</div>`,
-    react: `<DataGrid
-  aria-label="Revenue by region and year"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  initialState={{
-    pivoting: {
-      active: true,
-      model: {
-        rows: [{ field: "region" }],
-        columns: [{ field: "year" }],
-        values: [{ field: "revenue", aggFunc: "sum" }],
-      },
-    },
-  }}
-/>`,
+    html: `${gridOf(pivotGroup, { rows: 6 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", year: 2024, units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", year: 2025, units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", year: 2025, units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "year", headerName: "Year", type: "number" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridPivot() {
+  return (
+    <DataGrid
+      aria-label="Revenue by region and year"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      initialState={{
+        pivoting: {
+          active: true,
+          model: {
+            rows: [{ field: "region" }],
+            columns: [{ field: "year" }],
+            values: [{ field: "revenue", aggFunc: "sum" }],
+          },
+        },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "cells",
     title: "Select cells and use the clipboard",
     body: "With `cellSelection`, people select cells in ranges: press a cell and drag, press another cell with Shift, or hold Shift and use the arrow keys. Ctrl or Cmd adds a range, or toggles one cell. Ctrl + A selects every cell of the page. Ctrl + C copies the selected cells as tab-separated text, which spreadsheets read. Without selected cells it copies the selected rows, or the focused cell. Ctrl + V pastes text into editable cells, from the selection's first cell or the focused cell. One copied value fills every selected cell. Each pasted row goes through `processRowUpdate` (HTML: a cancelable `ok:data-grid:edit`). `disableClipboardPaste` turns pasting off. The grid uses the browser's own copy and paste for these keys, so it never asks for clipboard permissions.",
-    html: `<div data-ok-data-grid id="inventory" data-ok-cell-selection>…</div>`,
-    react: `<DataGrid
-  aria-label="Inventory"
-  rows={items}
-  columns={columns}
-  cellSelection
-  processRowUpdate={(row) => save(row)}
-/>`,
+    html: `${gridOf(cellsGroup)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const items = [
+  { id: 1, product: "Desk lamp", stock: 12, price: 49 },
+  { id: 2, product: "Chair", stock: 4, price: 129 },
+];
+
+const columns: GridColDef<(typeof items)[number]>[] = [
+  { field: "product", headerName: "Product", flex: 1, editable: true },
+  { field: "stock", headerName: "Stock", type: "number", editable: true },
+  { field: "price", headerName: "Price", type: "number", editable: true },
+];
+
+// Your own save: send the row to your API
+async function save(row: (typeof items)[number]) {
+  await fetch(\`/api/items/\${row.id}\`, { method: "PUT", body: JSON.stringify(row) });
+  return row;
+}
+
+export function DataGridCells() {
+  return (
+    <DataGrid
+      aria-label="Inventory"
+      rows={items}
+      columns={columns}
+      cellSelection
+      processRowUpdate={(row) => save(row)}
+    />
+  );
+}`,
   },
   {
     id: "header-filters",
     title: "Filter from the headers",
     body: "`headerFilters` adds a row of fields under the column headers. Each field filters its column with the column type's first operator, and shows that operator as its label: text contains, a number equals, a date is. Booleans and choices get a list, dates get a date picker, and date times (`dateTime` columns) get a date time picker. The fields and the filter panel share one filter model. Up and Down move from a field to the cells. Date and date time filters in the filter panel use the same pickers.",
-    react: `<DataGrid aria-label="Inventory" rows={items} columns={columns} headerFilters />`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const items = [
+  { id: 1, product: "Desk lamp", stock: 12, price: 49 },
+  { id: 2, product: "Chair", stock: 4, price: 129 },
+];
+
+const columns: GridColDef<(typeof items)[number]>[] = [
+  { field: "product", headerName: "Product", flex: 1, editable: true },
+  { field: "stock", headerName: "Stock", type: "number", editable: true },
+  { field: "price", headerName: "Price", type: "number", editable: true },
+];
+
+export function DataGridHeaderFilters() {
+  return <DataGrid aria-label="Inventory" rows={items} columns={columns} headerFilters />;
+}`,
   },
   {
     id: "export-excel",
     title: "Export to Excel",
     body: "The **Export** menu downloads the filtered, sorted rows as an Excel workbook. Numbers, booleans and dates keep their type, with a date format. Text is written as text, never as a formula, because exported data may come from users. `excelOptions` sets the file name, the sheet name, the fields and whether to include the headers. In React, `apiRef.current.getDataAsExcel()` returns the file's bytes. In HTML, use `toExcel()` and `exportExcel()`, or the attribute `data-ok-excel-options` (JSON).",
-    react: `<DataGrid
-  aria-label="Sales"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  excelOptions={{ fileName: "sales", sheetName: "2025" }}
-/>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", year: 2024, units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", year: 2025, units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", year: 2025, units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "year", headerName: "Year", type: "number" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridExportExcel() {
+  return (
+    <DataGrid
+      aria-label="Sales"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      excelOptions={{ fileName: "sales", sheetName: "2025" }}
+    />
+  );
+}`,
   },
   {
     id: "charts",
     title: "Chart the rows",
     body: "With `chartsIntegration`, a chart follows the grid. `chartModel` sets its `type`, its `dimension` (the field that names the categories) and its `values` (number fields drawn as series). The types are `column`, `bar`, `line`, `area`, `pie`, `donut`, `radar` and `scatter`. When the rows are grouped, the chart shows the top-level groups with the aggregated values of the rows that pass the filters. Otherwise it shows the rows of the page. A scatter chart of rows whose category is a number column places each row at that number. The **Chart** button in the toolbar opens a panel to change the type, the category, the series, the stacking, the value labels and the legend. In HTML, the chart is a Chart component inside the grid, and the grid updates it through the chart's `updateSeries()` method.",
-    react: `<DataGrid
-  aria-label="Sales"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  chartsIntegration
-  initialState={{
-    rowGrouping: { model: ["product"] },
-    chartsIntegration: { model: { type: "column", values: ["revenue"] } },
-  }}
-/>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", year: 2024, units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", year: 2025, units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", year: 2025, units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "year", headerName: "Year", type: "number" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridCharts() {
+  return (
+    <DataGrid
+      aria-label="Sales"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        rowGrouping: { model: ["product"] },
+        chartsIntegration: { model: { type: "column", values: ["revenue"] } },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "charts-configuration",
@@ -496,33 +990,47 @@ export function Customers() {
 
 When the grid is pivoted, a value field of the pivot draws one series per pivot column, named by its keys. Grouping, filtering, pivoting and editing redraw the chart, so it always shows what the grid shows.`,
     html: `<!-- The chart model is JSON. The instance's setChartModel(model) changes it from code. -->
-<div data-ok-data-grid data-ok-charts-integration data-ok-row-grouping-model='["product"]'
-  data-ok-chart-model='{"type":"donut","values":["units"],"itemLabel":"value","legend":"right"}'>
-  …
-  <div data-ok-data-grid-chart>
-    <figure data-ok-chart id="sales-chart">…</figure>
-  </div>
-</div>`,
-    react: `<DataGrid
-  aria-label="Revenue by region and product"
-  rows={sales}
-  columns={columns}
-  showToolbar
-  chartsIntegration
-  initialState={{
-    pivoting: {
-      active: true,
-      model: {
-        rows: [{ field: "region" }],
-        columns: [{ field: "product" }],
-        values: [{ field: "revenue", aggFunc: "sum" }],
-      },
-    },
-    chartsIntegration: {
-      model: { type: "column", values: ["revenue"], stacked: true, legend: "bottom" },
-    },
-  }}
-/>`,
+${gridOf(chartsGroup, { rows: 6 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", year: 2024, units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", year: 2025, units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", year: 2025, units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "year", headerName: "Year", type: "number" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridChartsConfiguration() {
+  return (
+    <DataGrid
+      aria-label="Revenue by region and product"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        pivoting: {
+          active: true,
+          model: {
+            rows: [{ field: "region" }],
+            columns: [{ field: "product" }],
+            values: [{ field: "revenue", aggFunc: "sum" }],
+          },
+        },
+        chartsIntegration: {
+          model: { type: "column", values: ["revenue"], stacked: true, legend: "bottom" },
+        },
+      }}
+    />
+  );
+}`,
   },
   {
     id: "options",

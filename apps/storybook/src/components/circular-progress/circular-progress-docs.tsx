@@ -52,7 +52,11 @@ export function Upload({ percent }: { percent: number }) {
     title: "Choose a color",
     body: "The default color is `primary`. Use another palette color, such as `success` or `error`, to match the context. Use `inherit` to take the text color of the surrounding element, for example inside a button.",
     html: htmlProgress('data-ok-variant="indeterminate" data-ok-color="inherit"'),
-    react: `<CircularProgress color="inherit" aria-label="Loading" />`,
+    react: `import { CircularProgress } from "@owlky/react";
+
+export function CircularProgressColors() {
+  return <CircularProgress color="inherit" aria-label="Loading" />;
+}`,
   },
   {
     id: "size",
@@ -62,14 +66,20 @@ export function Upload({ percent }: { percent: number }) {
       'data-ok-variant="determinate" data-ok-color="primary" data-ok-size="3rem" data-ok-thickness="5" data-ok-track-slot aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"',
       "Storage used",
     ),
-    react: `<CircularProgress
-  variant="determinate"
-  value={70}
-  size="3rem"
-  thickness={5}
-  enableTrackSlot
-  aria-label="Storage used"
-/>`,
+    react: `import { CircularProgress } from "@owlky/react";
+
+export function CircularProgressSize() {
+  return (
+    <CircularProgress
+      variant="determinate"
+      value={70}
+      size="3rem"
+      thickness={5}
+      enableTrackSlot
+      aria-label="Storage used"
+    />
+  );
+}`,
   },
   {
     id: "label",
@@ -79,10 +89,16 @@ export function Upload({ percent }: { percent: number }) {
   ${htmlProgress('data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"', "Upload").replaceAll("\n", "\n  ")}
   <span>45%</span>
 </div>`,
-    react: `<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-  <CircularProgress variant="determinate" value={45} aria-label="Upload" />
-  <span>45%</span>
-</div>`,
+    react: `import { CircularProgress, Upload } from "@owlky/react";
+
+export function CircularProgressLabel() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <CircularProgress variant="determinate" value={45} aria-label="Upload" />
+      <span>45%</span>
+    </div>
+  );
+}`,
   },
   {
     id: "delay",
@@ -91,7 +107,11 @@ export function Upload({ percent }: { percent: number }) {
     html: htmlProgress(
       'data-ok-variant="indeterminate" data-ok-color="primary" data-ok-disable-shrink',
     ),
-    react: `<CircularProgress disableShrink aria-label="Loading" />`,
+    react: `import { CircularProgress } from "@owlky/react";
+
+export function CircularProgressDelay() {
+  return <CircularProgress disableShrink aria-label="Loading" />;
+}`,
   },
   {
     id: "options",

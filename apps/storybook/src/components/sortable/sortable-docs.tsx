@@ -69,12 +69,28 @@ export function Tasks() {
     body: "`grid` (the default) arranges items in columns that fit the width, `vertical` stacks them in one column and `horizontal` puts them in one row. Wrap a vertical or horizontal list in a **Scrollbar**: it scrolls the list and draws its frame.",
     html: `<section data-ok-scrollbar aria-label="Widgets list" tabindex="0">
   <ul id="widgets" data-ok-sortable data-ok-layout="horizontal" aria-label="Widgets">
-    …
+${["Sales", "Orders", "Visitors"].map((t) => htmlItem(t, false)).join("\n")}
   </ul>
 </section>`,
-    react: `<Scrollbar aria-label="Widgets list">
-  <Sortable layout="horizontal" aria-label="Widgets" … />
-</Scrollbar>`,
+    react: `import { Scrollbar, Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function Widgets() {
+  const [widgets, setWidgets] = useState(["Sales", "Orders", "Visitors"]);
+  return (
+    <Scrollbar aria-label="Widgets list">
+      <Sortable
+        layout="horizontal"
+        aria-label="Widgets"
+        items={widgets}
+        getKey={(widget) => widget}
+        getItemLabel={(widget) => widget}
+        renderItem={(widget) => <span>{widget}</span>}
+        onReorder={setWidgets}
+      />
+    </Scrollbar>
+  );
+}`,
   },
   {
     id: "remove",
@@ -83,10 +99,24 @@ export function Tasks() {
     html: `<ul id="tasks" data-ok-sortable data-ok-layout="vertical" aria-label="Tasks">
 ${htmlItem("Design")}
 </ul>`,
-    react: `<Sortable
-  …
-  onRemove={(task) => setTasks((all) => all.filter((t) => t !== task))}
-/>`,
+    react: `import { Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function RemovableTasks() {
+  const [tasks, setTasks] = useState(["Design", "Build", "Test"]);
+  return (
+    <Sortable
+      layout="vertical"
+      aria-label="Tasks"
+      items={tasks}
+      getKey={(task) => task}
+      getItemLabel={(task) => task}
+      renderItem={(task) => <span>{task}</span>}
+      onReorder={setTasks}
+      onRemove={(task) => setTasks((all) => all.filter((other) => other !== task))}
+    />
+  );
+}`,
   },
   {
     id: "add",
@@ -97,7 +127,9 @@ ${htmlItem("Design")}
 </button>
 
 <ul id="tasks" data-ok-sortable data-ok-layout="vertical" aria-label="Tasks">
-  …
+${TASKS.slice(0, 2)
+  .map((t) => htmlItem(t))
+  .join("\n")}
   <template data-ok-sortable-template>
 ${htmlItem("new task")}
   </template>
@@ -108,9 +140,26 @@ ${htmlItem("new task")}
     event.detail.item.querySelector("span").textContent = "New task";
   });
 </script>`,
-    react: `<Button onClick={() => setTasks((all) => [...all, \`Task \${all.length + 1}\`])}>
-  Add task
-</Button>`,
+    react: `import { Button, Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function GrowingTasks() {
+  const [tasks, setTasks] = useState(["Design", "Build"]);
+  return (
+    <>
+      <Button onClick={() => setTasks((all) => [...all, \`Task \${all.length + 1}\`])}>Add task</Button>
+      <Sortable
+        layout="vertical"
+        aria-label="Tasks"
+        items={tasks}
+        getKey={(task) => task}
+        getItemLabel={(task) => task}
+        renderItem={(task) => <span>{task}</span>}
+        onReorder={setTasks}
+      />
+    </>
+  );
+}`,
   },
   {
     id: "options",

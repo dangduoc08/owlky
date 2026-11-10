@@ -52,9 +52,15 @@ export function Company() {
     </li>
   </ul>
 </li>`,
-    react: `<OrganizationChartNode label="Priya Raman">
-  <OrganizationChartNode label="Elias Novak" />
-</OrganizationChartNode>`,
+    react: `import { OrganizationChartNode } from "@owlky/react";
+
+export function OrganizationChartNodes() {
+  return (
+    <OrganizationChartNode label="Priya Raman">
+      <OrganizationChartNode label="Elias Novak" />
+    </OrganizationChartNode>
+  );
+}`,
   },
   {
     id: "lines",
@@ -65,18 +71,35 @@ export function Company() {
 
 <ul data-ok-organization-chart data-ok-line-color="primary" data-ok-line-style="dashed"
     data-ok-line-height="20" data-ok-line-border-radius="8" aria-label="Company">
-  …
+  <li data-ok-organization-chart-node>
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+      </li>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Priya Raman, development</div>
+      </li>
+    </ul>
+  </li>
 </ul>`,
-    react: `<OrganizationChart
-  aria-label="Company"
-  label="Maya Lindqvist"
-  lineColor="primary"
-  lineStyle="dashed"
-  lineHeight={20}
-  lineBorderRadius={8}
->
-  …
-</OrganizationChart>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function OrganizationChartLines() {
+  return (
+    <OrganizationChart
+      aria-label="Company"
+      label="Maya Lindqvist"
+      lineColor="primary"
+      lineStyle="dashed"
+      lineHeight={20}
+      lineBorderRadius={8}
+    >
+      <OrganizationChartNode label="Jonah Pereira, design" />
+      <OrganizationChartNode label="Priya Raman, development" />
+    </OrganizationChart>
+  );
+}`,
   },
   {
     id: "scroll",
@@ -84,15 +107,28 @@ export function Company() {
     body: "A chart is as wide as its widest level and is centered when it fits. Put it in a `Scrollbar` so that a wide chart scrolls sideways inside the page, from its first node, instead of widening the page on small screens. Name the scroll area: it takes keyboard focus so that keyboard users can scroll it.",
     html: `<section data-ok-scrollbar aria-label="Company chart, scrollable" tabindex="0">
   <ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
-      aria-label="Company">…</ul>
+      aria-label="Company">
+    <li data-ok-organization-chart-node>
+      <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+      <ul data-ok-organization-chart-children>
+        <li data-ok-organization-chart-node>
+          <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+        </li>
+        <li data-ok-organization-chart-node>
+          <div data-ok-organization-chart-label>Priya Raman, development</div>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </section>`,
-    react: `import { OrganizationChart, Scrollbar } from "@owlky/react";
+    react: `import { OrganizationChart, OrganizationChartNode, Scrollbar } from "@owlky/react";
 
 export function CompanyChart() {
   return (
     <Scrollbar aria-label="Company chart, scrollable">
       <OrganizationChart aria-label="Company" label="Maya Lindqvist">
-        …
+        <OrganizationChartNode label="Jonah Pereira, design" />
+        <OrganizationChartNode label="Priya Raman, development" />
       </OrganizationChart>
     </Scrollbar>
   );

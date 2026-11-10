@@ -2,8 +2,47 @@ import { editorOptions } from "@owlky/core";
 import editorApi from "@owlky/docs-content/api/editor.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Editor } from "@owlky/react";
+import editorGroup from "../../../../../packages/html/src/components/editor/examples/editor-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
+
+const EDITOR = snippetElement(editorGroup, "data-ok-editor data-ok-full-item");
+
+/** The full editor of the snippet, with its own ids, label, root attributes and content. */
+function htmlEditor({
+  id,
+  label,
+  attrs = "data-ok-full-item",
+  content = "<p>Write your notes here.</p>",
+  helper,
+}: {
+  id: string;
+  label: string;
+  attrs?: string;
+  content?: string;
+  helper?: string;
+}) {
+  const lines = EDITOR.replaceAll('id="editor-', `id="${id}-`)
+    .replaceAll('"editor-', `"${id}-`)
+    .replace("<div data-ok-editor data-ok-full-item>", `<div data-ok-editor ${attrs}>`)
+    .replace(
+      'aria-label="Content">',
+      `aria-label="${label}"${helper ? ` aria-describedby="${id}-help"` : ""}>`,
+    )
+    .split("\n");
+  const open = lines.findIndex((line) => line.includes("data-ok-editor-content"));
+  const indent = (lines[open] as string).search(/\S/);
+  const close = lines.findIndex(
+    (line, i) => i > open && line.startsWith(`${" ".repeat(indent)}</div>`),
+  );
+  lines.splice(open + 1, close - open - 1, `${" ".repeat(indent + 2)}${content}`);
+  const body = lines.findIndex((line) => line.includes("data-ok-editor-body"));
+  const bodyEnd = lines.findIndex((line, i) => i > body && line.startsWith("  </div>"));
+  if (helper)
+    lines.splice(bodyEnd + 1, 0, `  <p data-ok-editor-helper id="${id}-help">${helper}</p>`);
+  return lines.join("\n");
+}
 
 export const editorSections: GuideSection[] = [
   {
@@ -62,8 +101,12 @@ export function Post() {
     id: "toolbar",
     title: "Choose the toolbar",
     body: "The default toolbar has the heading menu, text styles, lists, alignment, links, images, line breaks, clear formatting and fullscreen. Turn on `fullItem` to add code, code blocks, quotes, horizontal rules, undo and redo.\n\nThe Fullscreen button makes the editor fill the window over a backdrop that dims the page. While it is fullscreen, the page doesn't scroll and Tab stays inside the editor. Press Escape or the button again to leave. In React, `onFullscreenChange` reports the change. In HTML, listen to `ok:editor:fullscreen`, and put a `div[data-ok-backdrop]` first in the editor so that the page is dimmed.",
-    html: `<div data-ok-editor data-ok-full-item>…</div>`,
-    react: `<Editor aria-label="Article" fullItem />`,
+    html: htmlEditor({ id: "article", label: "Article" }),
+    react: `import { Editor } from "@owlky/react";
+
+export function EditorToolbar() {
+  return <Editor aria-label="Article" fullItem />;
+}`,
   },
   {
     id: "text-transform",
@@ -116,17 +159,19 @@ export function Snippet() {
     id: "states",
     title: "Show errors and read-only content",
     body: "Set `error` for a red border and red helper text, and `helperText` for the text under the editor. The helper text describes the text box for screen readers. Set `editable` to `false` to show content without the toolbar, for example a preview.",
-    html: `<div data-ok-editor data-ok-error>
-  …
-  <div data-ok-editor-body>
-    <div data-ok-editor-content role="textbox" aria-multiline="true" aria-label="Summary" aria-describedby="summary-help" aria-invalid="true">…</div>
-  </div>
-  <p data-ok-editor-helper id="summary-help">Write at least one sentence.</p>
-</div>
+    html: `${htmlEditor({ id: "summary", label: "Summary", attrs: "data-ok-full-item data-ok-error", content: "<p></p>", helper: "Write at least one sentence." })}
 
-<div data-ok-editor data-ok-editable="false">…</div>`,
-    react: `<Editor aria-label="Summary" error helperText="Write at least one sentence." />
-<Editor aria-label="Preview" editable={false} value={html} />`,
+${htmlEditor({ id: "preview", label: "Preview", attrs: 'data-ok-full-item data-ok-editable="false"', content: "<p>The release ships on Monday.</p>" })}`,
+    react: `import { Editor } from "@owlky/react";
+
+export function EditorStates() {
+  return (
+    <>
+      <Editor aria-label="Summary" error helperText="Write at least one sentence." />
+      <Editor aria-label="Preview" editable={false} value="<p>The release ships on Monday.</p>" />
+    </>
+  );
+}`,
   },
   {
     id: "options",

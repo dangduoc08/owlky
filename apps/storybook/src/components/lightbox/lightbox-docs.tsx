@@ -2,7 +2,27 @@ import { lightboxOptions } from "@owlky/core";
 import lightboxApi from "@owlky/docs-content/api/lightbox.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Lightbox } from "@owlky/react";
+import inlineExample from "../../../../../packages/html/src/components/lightbox/examples/inline-example.html?raw";
+import lightboxExample from "../../../../../packages/html/src/components/lightbox/examples/lightbox-example.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
+
+const LIGHTBOX = snippetElement(lightboxExample, "data-ok-lightbox ");
+
+/** The full lightbox of the snippet, as `dialog#photos`, with extra root attributes. */
+const htmlLightbox = (attrs = "") =>
+  LIGHTBOX.replace(
+    /^<dialog [^>]*>/,
+    `<dialog id="photos" data-ok-lightbox data-ok-theme="dark" aria-label="Lightbox"${attrs ? ` ${attrs}` : ""}>`,
+  );
+
+/** The snippet's triggers, opening `#photos`. */
+const TRIGGERS = lightboxExample
+  .split("\n")
+  .filter((line) => line.includes("data-ok-lightbox-trigger"))
+  .map((line) => line.trim().replaceAll('"lightbox-lightbox"', '"photos"'))
+  .join("\n");
+
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { Gallery, SLIDES } from "./lightbox-examples.js";
 
@@ -16,34 +36,9 @@ export const lightboxSections: GuideSection[] = [
 <script src="${CDN}/owlky.js" defer></script>
 
 <!-- Each trigger opens the lightbox at its slide -->
-<button type="button" data-ok-lightbox-trigger data-ok-lightbox-open="photos" data-ok-index="0"
-  aria-haspopup="dialog"><img src="lake.jpg" alt="Mountain lake"></button>
+${TRIGGERS}
 
-<dialog id="photos" data-ok-lightbox data-ok-theme="dark" aria-label="Lightbox">
-  <section data-ok-carousel data-ok-lightbox-carousel aria-roledescription="carousel"
-    aria-label="Photo gallery" data-ok-loop>
-    <div data-ok-carousel-stage>
-      <div data-ok-carousel-viewport tabindex="0">
-        <div data-ok-carousel-container>
-          <div role="group" aria-roledescription="slide" aria-label="1 of 5"
-            data-ok-carousel-slide data-ok-lightbox-slide data-ok-snapped>
-            <div data-ok-lightbox-zoom>
-              <img data-ok-lightbox-image src="lake.jpg" alt="Mountain lake" width="2400" height="1600">
-            </div>
-            <h2 data-ok-lightbox-caption="title">Mountain lake</h2>
-          </div>
-          …
-        </div>
-        <span data-ok-carousel-live aria-live="polite" aria-atomic="true"></span>
-      </div>
-      <div data-ok-lightbox-toolbar>…</div>
-      <button type="button" data-ok-icon-button data-ok-carousel-prev data-ok-lightbox-nav aria-label="Previous">…</button>
-      <button type="button" data-ok-icon-button data-ok-carousel-next data-ok-lightbox-nav aria-label="Next">…</button>
-    </div>
-    <div data-ok-carousel-thumbs data-ok-lightbox-thumbnails role="group" aria-label="Thumbnails">…</div>
-    <span data-ok-lightbox-live aria-live="polite" aria-atomic="true"></span>
-  </section>
-</dialog>`,
+${htmlLightbox()}`,
     react: `import { Lightbox, LightboxTrigger } from "@owlky/react";
 
 const slides = [
@@ -76,7 +71,9 @@ export function Photos() {
     <div data-ok-lightbox-description-text>A short clip.</div>
   </div>
 </div>`,
-    react: `const slides = [
+    react: `import type { LightboxSlide } from "@owlky/react";
+
+export const slides: LightboxSlide[] = [
   {
     src: "lake.jpg",
     alt: "Mountain lake",
@@ -109,9 +106,9 @@ export function Photos() {
   window.Owlky.get(photos, "lightbox").open(2);
 </script>`,
     react: `import { useState } from "react";
-import { Lightbox } from "@owlky/react";
+import { Lightbox, type LightboxSlide } from "@owlky/react";
 
-export function Controlled({ slides }) {
+export function Controlled({ slides }: { slides: LightboxSlide[] }) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   return (
@@ -129,51 +126,95 @@ export function Controlled({ slides }) {
     id: "toolbar",
     title: "Choose the toolbar buttons",
     body: "The zoom buttons, the slideshow button, the fullscreen button, the counter and the close button are on by default, like the thumbnails and the captions. Turn each one off with `disableZoom`, `disableSlideshow`, `disableFullscreen`, `disableTotal`, `disableThumbnails` and `disableCaptions`. Turn on more buttons with `download`, `share` and `rotate`, and add toggles for the captions and the thumbnails with `captionsShowToggle` and `thumbnailsShowToggle`. The share button uses the browser's share sheet and only shows where the browser offers one, and the fullscreen button only shows where fullscreen is available. In React, add your own buttons with `toolbarButtons`.",
-    html: `<dialog id="photos" data-ok-lightbox data-ok-theme="dark" aria-label="Lightbox"
-  data-ok-download data-ok-share data-ok-rotate data-ok-disable-slideshow
-  data-ok-captions-show-toggle data-ok-thumbnails-show-toggle>…</dialog>`,
-    react: `<Lightbox
-  slides={slides}
-  download
-  share
-  rotate
-  disableSlideshow
-  captionsShowToggle
-  thumbnailsShowToggle
-/>`,
+    html: `${htmlLightbox(
+      "data-ok-download data-ok-share data-ok-rotate data-ok-disable-slideshow data-ok-captions-show-toggle data-ok-thumbnails-show-toggle",
+    )}`,
+    react: `import { Lightbox, type LightboxSlide } from "@owlky/react";
+
+const slides: LightboxSlide[] = [
+  { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
+  { src: "forest.jpg", alt: "Forest in the fog", width: 2400, height: 1600, title: "Forest in the fog" },
+];
+
+export function LightboxToolbar() {
+  return (
+    <Lightbox
+      slides={slides}
+      download
+      share
+      rotate
+      disableSlideshow
+      captionsShowToggle
+      thumbnailsShowToggle
+    />
+  );
+}`,
   },
   {
     id: "zoom",
     title: "Zoom and pan",
     body: "Zoom in with the toolbar, the plus and minus keys, a double click or double tap, a pinch, or Ctrl and the mouse wheel. Then drag, use the arrow keys or the wheel to move around the image. An image zooms until one image pixel covers one screen pixel (`maxZoomPixelRatio`), so give images their natural `width` and `height`. `zoomInMultiplier` sets the size of each step, `doubleClickMaxStops` how many steps a double click goes through, and `scrollToZoom` lets the wheel zoom without Ctrl. Images that are no larger than the screen don't zoom.",
-    html: `<dialog id="photos" data-ok-lightbox … data-ok-max-zoom-pixel-ratio="2"
-  data-ok-zoom-in-multiplier="1.5" data-ok-scroll-to-zoom>…</dialog>`,
-    react: `<Lightbox slides={slides} maxZoomPixelRatio={2} zoomInMultiplier={1.5} scrollToZoom />`,
+    html: `${htmlLightbox('data-ok-max-zoom-pixel-ratio="2" data-ok-zoom-in-multiplier="1.5" data-ok-scroll-to-zoom')}`,
+    react: `import { Lightbox, type LightboxSlide } from "@owlky/react";
+
+const slides: LightboxSlide[] = [
+  { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
+  { src: "forest.jpg", alt: "Forest in the fog", width: 2400, height: 1600, title: "Forest in the fog" },
+];
+
+export function LightboxZoom() {
+  return <Lightbox slides={slides} maxZoomPixelRatio={2} zoomInMultiplier={1.5} scrollToZoom />;
+}`,
   },
   {
     id: "thumbnails",
     title: "Place the thumbnails",
     body: "Thumbnails sit at the `bottom` by default. Set `thumbnailsPosition` to `top`, `start` or `end` to move them, and change their size with `thumbnailsWidth`, `thumbnailsHeight`, `thumbnailsBorder`, `thumbnailsBorderRadius`, `thumbnailsPadding` and `thumbnailsGap` (in pixels). `thumbnailsImageFit` crops them to fill (`cover`) or shows the whole picture (`contain`). The row fades out at its edges unless `thumbnailsVignette` is `false`.",
-    html: `<dialog id="photos" data-ok-lightbox … data-ok-thumbnails-position="end"
-  data-ok-thumbnails-width="96" data-ok-thumbnails-height="64">…</dialog>`,
-    react: `<Lightbox slides={slides} thumbnailsPosition="end" thumbnailsWidth={96} thumbnailsHeight={64} />`,
+    html: `${htmlLightbox('data-ok-thumbnails-position="end" data-ok-thumbnails-width="96" data-ok-thumbnails-height="64"')}`,
+    react: `import { Lightbox, type LightboxSlide } from "@owlky/react";
+
+const slides: LightboxSlide[] = [
+  { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
+  { src: "forest.jpg", alt: "Forest in the fog", width: 2400, height: 1600, title: "Forest in the fog" },
+];
+
+export function LightboxThumbnails() {
+  return (
+    <Lightbox slides={slides} thumbnailsPosition="end" thumbnailsWidth={96} thumbnailsHeight={64} />
+  );
+}`,
   },
   {
     id: "inline",
     title: "Show it inline",
     body: "Set `inline` to place the lightbox in the page as a carousel, with the same toolbar, captions and thumbnails but no close button. In HTML, use a `div` with `data-ok-inline` instead of the dialog. It is 3:2 by default: change the size with your own CSS.",
-    html: `<div data-ok-lightbox data-ok-inline data-ok-theme="dark">
-  <section data-ok-carousel data-ok-lightbox-carousel aria-roledescription="carousel" aria-label="Photo gallery">…</section>
-</div>`,
-    react: `<Lightbox slides={slides} inline />`,
+    html: `${snippetElement(inlineExample, "data-ok-lightbox ")}`,
+    react: `import { Lightbox, type LightboxSlide } from "@owlky/react";
+
+const slides: LightboxSlide[] = [
+  { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
+  { src: "forest.jpg", alt: "Forest in the fog", width: 2400, height: 1600, title: "Forest in the fog" },
+];
+
+export function LightboxInline() {
+  return <Lightbox slides={slides} inline />;
+}`,
   },
   {
     id: "close",
     title: "Close the lightbox",
     body: "Escape and the close button always close the lightbox, unless you set `closeOnEscape` to `false`. Set `closeOnBackdropClick` to close it with a click beside the image, and `closeOnPullDown` or `closeOnPullUp` to close it when people pull the slide down or up. `finite` stops the slides at both ends instead of looping, and `disableSwipeNavigation` keeps swipes from changing slides.",
-    html: `<dialog id="photos" data-ok-lightbox … data-ok-close-on-backdrop-click
-  data-ok-close-on-pull-down data-ok-finite>…</dialog>`,
-    react: `<Lightbox slides={slides} closeOnBackdropClick closeOnPullDown finite />`,
+    html: `${htmlLightbox("data-ok-close-on-backdrop-click data-ok-close-on-pull-down data-ok-finite")}`,
+    react: `import { Lightbox, type LightboxSlide } from "@owlky/react";
+
+const slides: LightboxSlide[] = [
+  { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
+  { src: "forest.jpg", alt: "Forest in the fog", width: 2400, height: 1600, title: "Forest in the fog" },
+];
+
+export function LightboxClose() {
+  return <Lightbox slides={slides} closeOnBackdropClick closeOnPullDown finite />;
+}`,
   },
   {
     id: "options",
