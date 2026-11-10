@@ -18,7 +18,7 @@ export const codeEditorSections: GuideSection[] = [
 
 <div data-ok-code-editor data-ok-language="javascript" data-ok-height="240">
   <textarea data-ok-code-editor-value aria-label="Script" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">console.log("Hello");</textarea>
-  <div data-ok-code-editor-loading role="status">Loading...</div>
+  <div data-ok-code-editor-loading role="status">Loading</div>
   <div data-ok-code-editor-content></div>
 </div>`,
     react: `import { CodeEditor } from "@owlky/react";
@@ -41,7 +41,7 @@ export function Script() {
     html: `<form>
   <div data-ok-code-editor data-ok-language="sql" data-ok-height="200">
     <textarea data-ok-code-editor-value name="query" aria-label="Query" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">SELECT 1;</textarea>
-    <div data-ok-code-editor-loading role="status">Loading...</div>
+    <div data-ok-code-editor-loading role="status">Loading</div>
     <div data-ok-code-editor-content></div>
   </div>
 </form>
@@ -72,7 +72,7 @@ export function Query() {
     body: "Each `path` is its own model: a file with its text, language, undo history and cursor. Change `path` to switch files. The editor creates a model the first time it sees a path, from `defaultValue` and `defaultLanguage`, and keeps it when you switch back. Turn off `saveViewState` to forget the cursor and scroll position of each file, and turn on `keepCurrentModel` to keep the model when the editor goes away.\n\nIn HTML, put each file's first text in a `<template data-ok-code-editor-model>` with its `data-ok-path` and `data-ok-language`, then change `data-ok-path` on the editor.",
     html: `<div data-ok-code-editor data-ok-path="file:///script.js" data-ok-language="javascript">
   <textarea data-ok-code-editor-value aria-label="File" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">console.log("script");</textarea>
-  <div data-ok-code-editor-loading role="status">Loading...</div>
+  <div data-ok-code-editor-loading role="status">Loading</div>
   <div data-ok-code-editor-content></div>
   <template data-ok-code-editor-model data-ok-path="file:///style.css" data-ok-language="css">h1 { color: teal; }</template>
 </div>
@@ -113,7 +113,7 @@ export function Files() {
     html: `<div data-ok-diff-editor data-ok-language="markdown" data-ok-height="320">
   <textarea data-ok-diff-editor-original aria-label="Original" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"># Notes</textarea>
   <textarea data-ok-diff-editor-modified aria-label="Modified" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"># Release notes</textarea>
-  <div data-ok-diff-editor-loading role="status">Loading...</div>
+  <div data-ok-diff-editor-loading role="status">Loading</div>
   <div data-ok-diff-editor-content></div>
 </div>`,
     react: `import { DiffEditor } from "@owlky/react";
@@ -153,7 +153,11 @@ export function Settings() {
     id: "monaco",
     title: "Use Monaco directly",
     body: "Everything Monaco offers stays available. `beforeMount` receives the Monaco API before the editor exists, which is the place to register languages, completion providers and themes. `onMount` receives the editor itself, and `useMonaco()` returns the Monaco API anywhere in React once it has loaded. Pass Monaco's editor settings in `options`, such as `minimap`, `wordWrap` or `readOnly`; in HTML, write them as JSON in `data-ok-options`.\n\nIn HTML, listen to `ok:code-editor:beforemount` and `ok:code-editor:mount`, or register the editor yourself with `createCodeEditor({ beforeMount, onMount })`.",
-    html: `<div data-ok-code-editor data-ok-options='{"minimap":{"enabled":false},"wordWrap":"on"}'>…</div>
+    html: `<div data-ok-code-editor data-ok-language="javascript" data-ok-options='{"minimap":{"enabled":false},"wordWrap":"on"}'>
+  <textarea data-ok-code-editor-value aria-label="Notes" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">console.log("notes");</textarea>
+  <div data-ok-code-editor-loading role="status">Loading</div>
+  <div data-ok-code-editor-content></div>
+</div>
 
 <script type="module">
   document.addEventListener("ok:code-editor:beforemount", (event) => {
@@ -186,10 +190,18 @@ export function Notes() {
     title: "Match the theme",
     body: "With the default `theme` of `auto`, the editor uses Owlky's light or dark theme, whichever its scope uses through `data-ok-theme`. The colors come from your tokens and presets: the paper background, the text colors, and syntax colors that keep a contrast ratio of at least 4.5:1. The editor follows when the theme or preset changes.\n\nMonaco shows one theme on a page at a time. When editors sit in scopes with different themes, the editor that people used last decides. Set `theme` to a Monaco theme such as `vs-dark` or `hc-black`, or to a theme you define in `beforeMount`, to use it instead.",
     html: `<div data-ok-theme="dark">
-  <div data-ok-code-editor>…</div>
+  <div data-ok-code-editor data-ok-language="javascript" data-ok-height="160">
+    <textarea data-ok-code-editor-value aria-label="Dark script" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">console.log("dark");</textarea>
+    <div data-ok-code-editor-loading role="status">Loading</div>
+    <div data-ok-code-editor-content></div>
+  </div>
 </div>
 
-<div data-ok-code-editor data-ok-monaco-theme="hc-black">…</div>`,
+<div data-ok-code-editor data-ok-language="javascript" data-ok-height="160" data-ok-monaco-theme="hc-black">
+  <textarea data-ok-code-editor-value aria-label="High contrast script" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">console.log("high contrast");</textarea>
+  <div data-ok-code-editor-loading role="status">Loading</div>
+  <div data-ok-code-editor-content></div>
+</div>`,
     react: `import { CodeEditor } from "@owlky/react";
 
 export function CodeEditorThemes() {
@@ -227,7 +239,7 @@ loader.config({
 });
 
 export function Config() {
-  return <CodeEditor aria-label="Config" defaultLanguage="json" loading="Loading the editor…" />;
+  return <CodeEditor aria-label="Config" defaultLanguage="json" loading="Loading the editor" />;
 }`,
   },
   {
