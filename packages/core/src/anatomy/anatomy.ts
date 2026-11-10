@@ -1270,11 +1270,13 @@ export const labelOptions = defineOptions("label", "data-ok-label", {
     "default",
     "`default` (neutral), palette, `black` / `white`.",
   ),
+  disabled: flag("data-ok-disabled", "Dimmed and ignores the pointer, for an inactive status."),
 });
 
 export interface LabelAnatomyOptions {
   variant?: LabelVariant | undefined;
   color?: ChipColor | undefined;
+  disabled?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a label. */

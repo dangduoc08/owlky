@@ -4,6 +4,7 @@
  * Anatomy:   span[data-ok-label] › span[data-ok-label-icon="start"]? › text › span[data-ok-label-icon="end"]?
  * Modifiers: data-ok-variant = soft (default) | filled | outlined | inverted
  *            data-ok-color   = default | primary | secondary | info | success | warning | error | black | white
+ *            data-ok-disabled (dimmed, no pointer events)
  *
  * A small status tag, not interactive. Soft text uses the AA "text" tone; inverted pairs the
  * palette's lighter and darker tones. Single :where() selectors in @layer components.
@@ -106,5 +107,11 @@
   :where([data-ok-label-icon] > svg) {
     width: 100%;
     height: 100%;
+  }
+
+  /* Disabled: an inactive status, dimmed like the reference. */
+  :where([data-ok-label][data-ok-disabled]) {
+    opacity: 0.48;
+    pointer-events: none;
   }
 }

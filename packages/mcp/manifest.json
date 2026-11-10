@@ -37805,6 +37805,12 @@
           "black",
           "white"
          ]
+        },
+        {
+         "attr": "data-ok-disabled",
+         "description": "Dimmed and ignores the pointer, for an inactive status.",
+         "kind": "flag",
+         "name": "disabled"
         }
        ],
        "parts": [
@@ -37829,6 +37835,11 @@
          "description": "`default` (neutral), palette, `black` / `white`.",
          "name": "color",
          "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+        },
+        {
+         "description": "Dims the label and ignores the pointer, for an inactive status.",
+         "name": "disabled",
+         "type": "boolean"
         },
         {
          "description": "Decorative icon after the text.",
@@ -37894,6 +37905,12 @@
         "black",
         "white"
        ]
+      },
+      {
+       "attr": "data-ok-disabled",
+       "description": "Dimmed and ignores the pointer, for an inactive status.",
+       "kind": "flag",
+       "name": "disabled"
       }
      ],
      "root": "data-ok-label"
@@ -37906,7 +37923,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-label][data-ok-variant][data-ok-color]\n  span[data-ok-label-icon=\"start\"][aria-hidden]? › svg\n  text\n  span[data-ok-label-icon=\"end\"][aria-hidden]? › svg\n```",
+     "body": "```\nspan[data-ok-label][data-ok-variant][data-ok-color][data-ok-disabled]?\n  span[data-ok-label-icon=\"start\"][aria-hidden]? › svg\n  text\n  span[data-ok-label-icon=\"end\"][aria-hidden]? › svg\n```",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -37916,7 +37933,7 @@
      "title": "Options"
     },
     {
-     "body": "Height 24px, min width 24px, padding 0 6px, gap 6px, `--ok-radius-sm`, 12px bold. Soft (default):\nchannel at 0.16 + `--ok-c-text`; filled main + contrast; outlined 2px main border + main text;\ninverted palette `lighter` + `darker` (default grey-300 + text-primary; black / white channel at\n0.24 + main). Icons 16px.",
+     "body": "Height 24px, min width 24px, padding 0 6px, gap 6px, `--ok-radius-sm`, 12px bold. Soft (default):\nchannel at 0.16 + `--ok-c-text`; filled main + contrast; outlined 2px main border + main text;\ninverted palette `lighter` + `darker` (default grey-300 + text-primary; black / white channel at\n0.24 + main). Icons 16px. Disabled: opacity 0.48, no pointer events (exempt from `color-contrast`:\nan inactive status).",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -37931,7 +37948,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against Minimals `Label` (`LabelProps`: `color`, `variant`, `startIcon`, `endIcon`, `disabled`, `sx`; no MUI component).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`filled` `outlined` `soft` `inverted`), `color`, `startIcon`, `endIcon`, `children` | same; `color` + `black` / `white` | kept | |\n| `disabled` | — | deferred | new batch E row |\n| `sx` | — | not applicable | ADR-0015 |",
+     "body": "Audit 2026-11-09 against Minimals `Label` (`LabelProps`: `color`, `variant`, `startIcon`, `endIcon`, `disabled`, `sx`; no MUI component).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`filled` `outlined` `soft` `inverted`), `color`, `startIcon`, `endIcon`, `children` | same; `color` + `black` / `white` | kept | |\n| `disabled` | same; HTML `data-ok-disabled` | kept | Phase 4 row 4.18.48: opacity 0.48, no pointer events (as upstream) |\n| `sx` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -64883,6 +64900,13 @@
      "title": "Add an icon"
     },
     {
+     "body": "Set `disabled` to dim a label, for example for an archived item or an option that isn't available. A disabled label has an opacity of 0.48 and ignores the pointer. Say why the status is inactive in the surrounding text: the dimmed color alone doesn't tell people.",
+     "html": "<span data-ok-label data-ok-variant=\"soft\" data-ok-color=\"info\" data-ok-disabled>Archived</span>",
+     "id": "disabled",
+     "react": "import { Label } from \"@owlky/react\";\n\nexport function ArchivedLabel() {\n  return (\n    <Label color=\"info\" disabled>\n      Archived\n    </Label>\n  );\n}",
+     "title": "Show an inactive status"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -64903,7 +64927,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- The text is the label's meaning: don't rely on its color alone.\n- Soft and inverted labels meet a contrast ratio of at least 4.5:1. Filled and outlined brand colors follow the design, so light colors such as `warning` are lower.\n- White labels are meant for dark surfaces.",
+     "body": "- The text is the label's meaning: don't rely on its color alone.\n- Soft and inverted labels meet a contrast ratio of at least 4.5:1. Filled and outlined brand colors follow the design, so light colors such as `warning` are lower.\n- White labels are meant for dark surfaces.\n- A disabled label is dimmed below that ratio, like other inactive components. Keep its meaning in the text around it.",
      "id": "accessibility",
      "title": "Accessibility"
     },

@@ -10,15 +10,17 @@ export interface LabelProps extends Omit<HTMLAttributes<HTMLSpanElement>, "color
   startIcon?: ReactNode;
   /** Decorative icon after the text. */
   endIcon?: ReactNode;
+  /** Dims the label and ignores the pointer, for an inactive status. */
+  disabled?: boolean | undefined;
 }
 
 /** Label — spec: specs/components/label.md. A small status tag (not interactive). */
 export const Label = forwardRef<HTMLSpanElement, LabelProps>(function Label(
-  { variant, color, startIcon, endIcon, children, ...props },
+  { variant, color, disabled, startIcon, endIcon, children, ...props },
   ref,
 ) {
   return (
-    <span ref={ref} {...labelAttributes({ variant, color })} {...props}>
+    <span ref={ref} {...labelAttributes({ variant, color, disabled })} {...props}>
       {startIcon != null && (
         <span data-ok-label-icon="start" aria-hidden="true">
           {startIcon}

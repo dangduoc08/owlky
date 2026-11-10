@@ -36,6 +36,8 @@ const CONTRAST_EXEMPT = [
   '[data-ok-label][data-ok-color="white"]',
   '[data-ok-chip][data-ok-color="black"]',
   '[data-ok-label][data-ok-color="black"]',
+  // A disabled label is inactive, dimmed like the reference.
+  "[data-ok-label][data-ok-disabled]",
   '[data-ok-list-subheader][data-ok-color="primary"]',
   // Typography (and Link) in a palette's main tone follows the reference (ADR-0014); disabled text
   // is inactive; inherited colors (Link `inherit`) are checked.

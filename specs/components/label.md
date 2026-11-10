@@ -9,7 +9,7 @@ A small, non-interactive status or category tag. CSS only.
 
 ## Anatomy
 ```
-span[data-ok-label][data-ok-variant][data-ok-color]
+span[data-ok-label][data-ok-variant][data-ok-color][data-ok-disabled]?
   span[data-ok-label-icon="start"][aria-hidden]? › svg
   text
   span[data-ok-label-icon="end"][aria-hidden]? › svg
@@ -23,6 +23,7 @@ Root: `data-ok-label`. Unknown values fall back to the default.
 |---|---|---|---|---|---|
 | `variant` | `data-ok-variant="…"` | style | `filled` `outlined` `soft` `inverted` | `soft` | Fill, outline, tint or inverted tint. |
 | `color` | `data-ok-color="…"` | style | `default` `primary` `secondary` `info` `success` `warning` `error` `black` `white` | `default` | `default` (neutral), palette, `black` / `white`. |
+| `disabled` | `data-ok-disabled` | flag | boolean | off | Dimmed and ignores the pointer, for an inactive status. |
 <!-- /options:label -->
 
 React: `startIcon`, `endIcon`, `children`.
@@ -31,7 +32,8 @@ React: `startIcon`, `endIcon`, `children`.
 Height 24px, min width 24px, padding 0 6px, gap 6px, `--ok-radius-sm`, 12px bold. Soft (default):
 channel at 0.16 + `--ok-c-text`; filled main + contrast; outlined 2px main border + main text;
 inverted palette `lighter` + `darker` (default grey-300 + text-primary; black / white channel at
-0.24 + main). Icons 16px.
+0.24 + main). Icons 16px. Disabled: opacity 0.48, no pointer events (exempt from `color-contrast`:
+an inactive status).
 
 ## Keyboard / Accessibility
 Not focusable; the text carries the meaning. Filled / outlined brand colors and `white` follow
@@ -46,5 +48,5 @@ Audit 2026-11-09 against Minimals `Label` (`LabelProps`: `color`, `variant`, `st
 | Upstream | Owlky | Status | Note |
 |---|---|---|---|
 | `variant` (`filled` `outlined` `soft` `inverted`), `color`, `startIcon`, `endIcon`, `children` | same; `color` + `black` / `white` | kept | |
-| `disabled` | — | deferred | new batch E row |
+| `disabled` | same; HTML `data-ok-disabled` | kept | Phase 4 row 4.18.48: opacity 0.48, no pointer events (as upstream) |
 | `sx` | — | not applicable | ADR-0015 |

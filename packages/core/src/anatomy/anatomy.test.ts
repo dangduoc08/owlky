@@ -693,6 +693,10 @@ describe("avatar, badge, chip and label attributes", () => {
   it.each(labelVariants)("label variant %s", (variant) => {
     expect(labelAttributes({ variant })["data-ok-variant"]).toBe(variant);
   });
+  it("label disabled only when on", () => {
+    expect(labelAttributes({ disabled: true })["data-ok-disabled"]).toBe("");
+    expect(labelAttributes({ disabled: HOSTILE })).toEqual(labelAttributes());
+  });
   it.each(chipVariants)("chip variant %s", (variant) => {
     expect(chipAttributes({ variant })["data-ok-variant"]).toBe(variant);
   });
