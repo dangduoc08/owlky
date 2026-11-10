@@ -14,6 +14,10 @@
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
   {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
    "name": "--ok-duration-shortest",
    "value": "150ms"
   },
@@ -62,6 +66,10 @@
    "value": "9999px"
   },
   {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
@@ -106,6 +114,12 @@
     ],
     "methods": [
      {
+      "description": "Removes the highlight.",
+      "kind": "method",
+      "name": "clearHighlight",
+      "type": "() => void"
+     },
+     {
       "description": "Collapses the node with this `data-ok-node-id`.",
       "kind": "method",
       "name": "collapse",
@@ -148,6 +162,18 @@
       "type": "(depth: number) => void"
      },
      {
+      "description": "The `data-ok-node-id` of the highlighted node, or `null`.",
+      "kind": "method",
+      "name": "getHighlightedNode",
+      "type": "() => string | null"
+     },
+     {
+      "description": "Highlights the node with this `data-ok-node-id` and its path to the root (`data-ok-highlighted`, the others fade), expands its collapsed ancestors and scrolls it into view. Resolves once it is in view. Replaces an earlier highlight.",
+      "kind": "method",
+      "name": "highlightNode",
+      "type": "(nodeId: string) => Promise<void>"
+     },
+     {
       "description": "Whether the node with this `data-ok-node-id` shows its children.",
       "kind": "method",
       "name": "isExpanded",
@@ -155,6 +181,20 @@
      }
     ],
     "options": [
+     {
+      "attr": "data-ok-direction",
+      "default": "top",
+      "description": "Where the root sits: `top` (default, children below), `bottom`, `left` (at the inline start) or `right`.",
+      "kind": "style",
+      "name": "direction",
+      "optional": true,
+      "values": [
+       "top",
+       "bottom",
+       "left",
+       "right"
+      ]
+     },
      {
       "attr": "data-ok-line-height",
       "default": 40,
@@ -255,9 +295,28 @@
       "kind": "number",
       "min": 1,
       "name": "collapseBadgeThreshold"
+     },
+     {
+      "attr": "data-ok-highlight-on-hover",
+      "description": "Hovering or focusing a node highlights its path to the root and dims the other nodes.",
+      "kind": "flag",
+      "name": "highlightOnHover"
+     },
+     {
+      "attr": "data-ok-dim-opacity",
+      "default": 0.7,
+      "description": "How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden).",
+      "kind": "number",
+      "min": 0,
+      "name": "dimOpacity"
      }
     ],
     "parts": [
+     {
+      "description": "On a node: it is highlighted (a search result). Its path to the root keeps its colors while the other nodes fade. Written by `highlightNode(id)`.",
+      "kind": "state",
+      "name": "data-ok-highlighted"
+     },
      {
       "description": "On a node: its id, used by the instance methods and in the events.",
       "kind": "value",
@@ -361,6 +420,23 @@
       "type": "readonly string[]"
      },
      {
+      "description": "The `nodeId` highlighted at first (uncontrolled). Default none.",
+      "name": "defaultHighlightedNode",
+      "type": "string | null"
+     },
+     {
+      "default": "0.7",
+      "description": "How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden).",
+      "name": "dimOpacity",
+      "type": "number"
+     },
+     {
+      "default": "\"top\"",
+      "description": "Where the root sits and which way the chart grows: `top` (children below), `bottom`, `left` (the root at the inline start, so on the right of a right-to-left page) or `right`.",
+      "name": "direction",
+      "type": "\"bottom\" | \"left\" | \"right\" | \"top\""
+     },
+     {
       "default": "false",
       "description": "Nodes with children get a toggle button that collapses and expands them.",
       "name": "enableExpandCollapse",
@@ -376,6 +452,17 @@
       "description": "The node has children that `loadChildren` loads on its first expand (collapsible charts).",
       "name": "hasChildren",
       "type": "boolean"
+     },
+     {
+      "default": "false",
+      "description": "Hovering or focusing a node highlights its path to the root and dims the other nodes.",
+      "name": "highlightOnHover",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled `nodeId` of the highlighted node (a search result), or `null` for none.",
+      "name": "highlightedNode",
+      "type": "string | null"
      },
      {
       "description": "Content of the root node, such as a card.",
@@ -441,6 +528,11 @@
       "description": "Called when the user expands a node (toggle or label click), before it opens.",
       "name": "onExpand",
       "type": "((nodeId: string) => void)"
+     },
+     {
+      "description": "Called with the highlighted `nodeId` (or `null`) after `highlightNode` or `clearHighlight`.",
+      "name": "onHighlightedNodeChange",
+      "type": "((nodeId: string | null) => void)"
      },
      {
       "default": "\"Child nodes\"",

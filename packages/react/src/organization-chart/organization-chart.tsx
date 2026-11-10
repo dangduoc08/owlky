@@ -2,15 +2,20 @@
 
 import {
   createOrganizationChartController,
+  createOrganizationChartHighlight,
   type OrganizationChartAction,
   type OrganizationChartController,
+  type OrganizationChartDirection,
   type OrganizationChartLineColor,
   type OrganizationChartLineStyle,
+  organizationChartAncestors,
   organizationChartAttributes,
   organizationChartLoaded,
+  organizationChartNode,
   organizationChartPlan,
   organizationChartStyle,
   organizationChartToggle,
+  revealOrganizationChartNode,
 } from "@owlky/core";
 import {
   Children,
@@ -45,6 +50,8 @@ interface ChartState {
 }
 
 const ChartContext = createContext<ChartState | null>(null);
+/** The highlighted node's `nodeId`, or `null`. */
+const HighlightContext = createContext<string | null>(null);
 
 const hasNodes = (children: ReactNode) => Children.toArray(children).length > 0;
 const NONE: readonly string[] = [];
@@ -87,6 +94,7 @@ const NodeItem = forwardRef<
   ref,
 ) {
   const chart = useContext(ChartContext);
+  const highlighted = useContext(HighlightContext);
   const internal = useId();
   const listId = useId();
   const key = nodeId ?? internal;
@@ -133,7 +141,13 @@ const NodeItem = forwardRef<
   else if (filled) list = <ul data-ok-organization-chart-children="">{content}</ul>;
 
   return (
-    <li ref={merged} data-ok-organization-chart-node="" data-ok-node-id={nodeId} {...props}>
+    <li
+      ref={merged}
+      data-ok-organization-chart-node=""
+      data-ok-node-id={nodeId}
+      data-ok-highlighted={nodeId !== undefined && nodeId === highlighted ? "" : undefined}
+      {...props}
+    >
       <div data-ok-organization-chart-label="">{label}</div>
       {list}
     </li>
@@ -158,6 +172,15 @@ export interface OrganizationChartApi {
   expandSubtree(nodeId: string): void;
   /** Collapses a node and every node under it. */
   collapseSubtree(nodeId: string): void;
+  /**
+   * Highlights a node (`nodeId`) and its path to the root, expands its collapsed ancestors and
+   * scrolls it into view. Resolves once it is in view. Calls `onHighlightedNodeChange`.
+   */
+  highlightNode(nodeId: string): Promise<void>;
+  /** Removes the highlight. Calls `onHighlightedNodeChange` with `null`. */
+  clearHighlight(): void;
+  /** The highlighted node's `nodeId`, or `null`. */
+  getHighlightedNode(): string | null;
 }
 
 /** A ref for `apiRef`. */
@@ -172,6 +195,12 @@ export interface OrganizationChartProps
   label: ReactNode;
   /** The root's children: `OrganizationChartNode` elements. */
   children?: ReactNode;
+  /**
+   * Where the root sits and which way the chart grows: `top` (children below), `bottom`, `left`
+   * (the root at the inline start, so on the right of a right-to-left page) or `right`.
+   * Default `"top"`.
+   */
+  direction?: OrganizationChartDirection | undefined;
   /** Height of the connectors between two levels: px, or a CSS length. Default `40`. */
   lineHeight?: number | string | undefined;
   /** Thickness of the connectors: px, or a CSS length. Default `1`. */
@@ -207,6 +236,16 @@ export interface OrganizationChartProps
    * `OrganizationChartNode` elements (none makes it a leaf). A rejection keeps it collapsed.
    */
   loadChildren?: ((node: { id: string }) => Promise<ReactNode>) | undefined;
+  /** Hovering or focusing a node highlights its path to the root and dims the other nodes. Default `false`. */
+  highlightOnHover?: boolean | undefined;
+  /** How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden). Default `0.7`. */
+  dimOpacity?: number | undefined;
+  /** Controlled `nodeId` of the highlighted node (a search result), or `null` for none. */
+  highlightedNode?: string | null | undefined;
+  /** The `nodeId` highlighted at first (uncontrolled). Default none. */
+  defaultHighlightedNode?: string | null | undefined;
+  /** Called with the highlighted `nodeId` (or `null`) after `highlightNode` or `clearHighlight`. */
+  onHighlightedNodeChange?: ((nodeId: string | null) => void) | undefined;
   /** Receives the chart's methods (`useOrganizationChartApiRef()`). */
   apiRef?: MutableRefObject<OrganizationChartApi | undefined> | undefined;
 }
@@ -222,6 +261,7 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
     {
       label,
       children,
+      direction,
       lineHeight,
       lineWidth,
       lineColor,
@@ -238,6 +278,11 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       onExpand,
       onCollapse,
       loadChildren,
+      highlightOnHover = false,
+      dimOpacity,
+      highlightedNode,
+      defaultHighlightedNode,
+      onHighlightedNodeChange,
       apiRef,
       nodeId,
       hasChildren,
@@ -254,6 +299,11 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       defaultValue: defaultCollapsedNodes ?? NONE,
       onChange: (next) => onCollapsedNodesChange?.([...next]),
     });
+    const [highlighted, setHighlighted] = useControllableState<string | null>({
+      value: highlightedNode,
+      defaultValue: defaultHighlightedNode ?? null,
+      onChange: (next) => onHighlightedNodeChange?.(next),
+    });
     const [loaded, setLoaded] = useState<ReadonlyMap<string, ReactNode>>(() => new Map());
     const [loading, setLoading] = useState<ReadonlySet<string>>(() => new Set());
 
@@ -267,8 +317,24 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       } else elements.current.delete(key);
     }, []);
 
-    const latest = useRef({ collapsed, setCollapsed, loadChildren, onExpand, onCollapse });
-    latest.current = { collapsed, setCollapsed, loadChildren, onExpand, onCollapse };
+    const latest = useRef({
+      collapsed,
+      setCollapsed,
+      loadChildren,
+      onExpand,
+      onCollapse,
+      highlighted,
+      setHighlighted,
+    });
+    latest.current = {
+      collapsed,
+      setCollapsed,
+      loadChildren,
+      onExpand,
+      onCollapse,
+      highlighted,
+      setHighlighted,
+    };
 
     /** Applies key → expanded changes to the collapsed ids at once. */
     const apply = useCallback((changes: ReadonlyMap<string, boolean>) => {
@@ -336,6 +402,12 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       };
     }, [enableExpandCollapse]);
 
+    // The highlighted path's bar segments are measured by core (both implementations).
+    useLayoutEffect(() => {
+      const created = createOrganizationChartHighlight(root.current as HTMLUListElement);
+      return () => created.destroy();
+    }, []);
+
     useLayoutEffect(() => {
       controller.current?.update({
         expandCollapseOnNodeClick,
@@ -376,6 +448,23 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
         expandToDepth: (depth) => plan({ type: "expandToDepth", depth }),
         expandSubtree: (id) => subtree("expandSubtree", id),
         collapseSubtree: (id) => subtree("collapseSubtree", id),
+        highlightNode: (id) => {
+          const node = organizationChartNode(root.current as HTMLUListElement, id);
+          if (!node) return Promise.resolve();
+          if (latest.current.highlighted !== id) latest.current.setHighlighted(id);
+          // Collapsed ancestors open first (like the other methods, without onExpand).
+          const changes = new Map<string, boolean>();
+          for (const ancestor of organizationChartAncestors(node)) {
+            const key = keys.current.get(ancestor);
+            if (key !== undefined && latest.current.collapsed.includes(key)) changes.set(key, true);
+          }
+          if (changes.size > 0) apply(changes);
+          return revealOrganizationChartNode(node);
+        },
+        clearHighlight: () => {
+          if (latest.current.highlighted !== null) latest.current.setHighlighted(null);
+        },
+        getHighlightedNode: () => latest.current.highlighted,
       };
       return () => {
         apiRef.current = undefined;
@@ -392,30 +481,36 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
     );
 
     const lengths = { lineHeight, lineWidth, lineBorderRadius, nodePadding };
+    const look = { ...lengths, dimOpacity };
     return (
       <ul
         ref={merged}
         {...organizationChartAttributes({
+          direction,
           ...lengths,
           lineColor,
           lineStyle,
           enableExpandCollapse,
           expandCollapseOnNodeClick,
           collapseBadgeThreshold,
+          highlightOnHover,
+          dimOpacity,
         })}
         data-ok-runtime="off"
-        style={{ ...(organizationChartStyle(lengths) as CSSProperties), ...style }}
+        style={{ ...(organizationChartStyle(look) as CSSProperties), ...style }}
         {...props}
       >
         <ChartContext.Provider value={state}>
-          <NodeItem
-            label={label}
-            nodeId={nodeId}
-            hasChildren={hasChildren}
-            toggleLabel={toggleLabel}
-          >
-            {children}
-          </NodeItem>
+          <HighlightContext.Provider value={highlighted}>
+            <NodeItem
+              label={label}
+              nodeId={nodeId}
+              hasChildren={hasChildren}
+              toggleLabel={toggleLabel}
+            >
+              {children}
+            </NodeItem>
+          </HighlightContext.Provider>
         </ChartContext.Provider>
       </ul>
     );

@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(9));
+  it("covers every story group", () => expect(snippets).toHaveLength(15));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -148,6 +148,88 @@ describe("organization chart CSS without JavaScript", () => {
     expect(after.borderTopLeftRadius).toBe("24px");
     const child = host.querySelector("[data-ok-organization-chart-children] > li") as Element;
     expect(getComputedStyle(child).padding).toBe("40px 4px 0px");
+  });
+});
+
+/**
+ * Lines that miss their labels (ADR-0052): each visible children list's line from its parent and
+ * each child's line to its label sit on that label's center, across the bar's axis.
+ */
+function connectorMisses(root: Element, vertical: boolean): string[] {
+  const misses: string[] = [];
+  const center = (element: Element) => {
+    const rect = (element.firstElementChild ?? element).getBoundingClientRect();
+    return vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+  };
+  const lines = (element: Element, which: "::before" | "::after") => {
+    const style = getComputedStyle(element, which);
+    if (style.content === "none") return [];
+    const host = element.getBoundingClientRect();
+    const start = vertical
+      ? host.left + Number.parseFloat(style.left)
+      : host.top + Number.parseFloat(style.top);
+    const size = Number.parseFloat(vertical ? style.width : style.height);
+    const sides: [number, number][] = vertical
+      ? [
+          [Number.parseFloat(style.borderLeftWidth), start],
+          [-Number.parseFloat(style.borderRightWidth), start + size],
+        ]
+      : [
+          [Number.parseFloat(style.borderTopWidth), start],
+          [-Number.parseFloat(style.borderBottomWidth), start + size],
+        ];
+    return sides.filter(([width]) => width !== 0).map(([width, edge]) => edge + width / 2);
+  };
+  const near = (values: number[], target: number) =>
+    values.some((value) => Math.abs(value - target) < 1.5);
+  for (const list of root.querySelectorAll("[data-ok-organization-chart-children]")) {
+    if (list.getClientRects().length === 0) continue;
+    const parent = list.parentElement as Element;
+    const label = parent.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
+    if (!near(lines(list, "::before"), center(label)))
+      misses.push(`line from ${label.textContent?.trim()}`);
+    for (const child of list.children) {
+      const own = child.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
+      if (!near([...lines(child, "::before"), ...lines(child, "::after")], center(own)))
+        misses.push(`line to ${own.textContent?.trim()}`);
+    }
+  }
+  return misses;
+}
+
+describe("organization chart directions (CSS only)", () => {
+  const label = (host: Element, text: string) =>
+    [...host.querySelectorAll("[data-ok-organization-chart-label]")]
+      .find((element) => element.textContent?.includes(text))
+      ?.getBoundingClientRect() as DOMRect;
+
+  it.each([
+    ["bottom", true],
+    ["left", false],
+    ["right", false],
+    ["rtl", false],
+    ["collapsible", false],
+  ] as const)("direction-%s: every line sits on its label's center", (name, vertical) => {
+    const html = snippets.find(([path]) => path.endsWith(`/direction-${name}.html`))?.[1] as string;
+    const host = mount(html);
+    expect(connectorMisses(rootOf(host), vertical)).toEqual([]);
+    const lead = label(host, "Team lead");
+    const engineer = label(host, "Engineer");
+    if (name === "bottom") expect(engineer.bottom).toBeLessThan(lead.top);
+    else if (name === "right" || name === "rtl") expect(engineer.right).toBeLessThan(lead.left);
+    else expect(engineer.left).toBeGreaterThan(lead.right);
+  });
+
+  it("a hand-written chart follows data-ok-direction changes", () => {
+    const host = mount(chart('data-ok-direction="left"'));
+    const root = rootOf(host);
+    expect(connectorMisses(root, false)).toEqual([]);
+    root.setAttribute("data-ok-direction", "bottom");
+    expect(connectorMisses(root, true)).toEqual([]);
+    root.setAttribute("data-ok-direction", "sideways");
+    // Unknown values draw the default (top) chart.
+    expect(firstAfter(host).borderTopWidth).toBe("1px");
+    expect(connectorMisses(root, true)).toEqual([]);
   });
 });
 
@@ -553,6 +635,102 @@ describe("organization chart expand and collapse", () => {
     toggle(host, "elias").click();
     await finish();
     expect(badge(host, "elias")).toBe("3");
+    await expectNoAxeViolations(host);
+  });
+});
+
+interface HighlightInstance {
+  highlightNode(id: string): Promise<void>;
+  clearHighlight(): void;
+  getHighlightedNode(): string | null;
+}
+
+describe("organization chart highlight and search", () => {
+  const search = () => {
+    const html = snippets.find(([path]) => path.endsWith("/search-group.html"))?.[1] as string;
+    return mount(local(html));
+  };
+  const chartOf = (host: Element) => host.querySelector("#org-search") as HTMLElement;
+  const api = (host: Element) =>
+    runtime?.get(chartOf(host), "organization-chart") as unknown as HighlightInstance;
+  const nodeOf = (host: Element, id: string) =>
+    host.querySelector(`[data-ok-node-id="${id}"]`) as HTMLElement;
+  const opacity = (host: Element, id: string) =>
+    getComputedStyle(nodeOf(host, id).firstElementChild as Element).opacity;
+  const still = async (host: Element) => {
+    for (const animation of host.ownerDocument.getAnimations())
+      if (animation.effect?.getComputedTiming().endTime !== Infinity) animation.finish();
+    await settle();
+  };
+
+  it("highlightNode opens the collapsed ancestors, marks the node, and clears", async () => {
+    const host = search();
+    start();
+    await settle();
+    expect(list(host, "priya").hidden).toBe(true);
+    const done = api(host).highlightNode("sofia");
+    await finish();
+    await done;
+    expect(list(host, "priya").hidden).toBe(false);
+    expect(list(host, "elias").hidden).toBe(false);
+    expect(toggle(host, "priya").getAttribute("aria-expanded")).toBe("true");
+    expect(nodeOf(host, "sofia").hasAttribute("data-ok-highlighted")).toBe(true);
+    expect(api(host).getHighlightedNode()).toBe("sofia");
+    await still(host);
+    // A search result fades nothing (contrast).
+    expect(opacity(host, "jonah")).toBe("1");
+    // The path's segments are measured on its nodes.
+    expect(nodeOf(host, "sofia").style.getPropertyValue("--_ok-org-path-offset")).not.toBe("");
+    expect(nodeOf(host, "jonah").style.getPropertyValue("--_ok-org-path-offset")).toBe("");
+    await api(host).highlightNode("leila");
+    expect(nodeOf(host, "sofia").hasAttribute("data-ok-highlighted")).toBe(false);
+    await api(host).highlightNode("nobody");
+    expect(api(host).getHighlightedNode()).toBe("leila");
+    api(host).clearHighlight();
+    expect(host.querySelector("[data-ok-highlighted]")).toBeNull();
+    expect(api(host).getHighlightedNode()).toBeNull();
+    await still(host);
+    expect(opacity(host, "jonah")).toBe("1");
+  });
+
+  it("writes data-ok-dim-opacity as a private property and follows it", async () => {
+    const host = mount(chart('data-ok-dim-opacity="0.25" data-ok-highlight-on-hover'));
+    start();
+    await settle();
+    const root = rootOf(host);
+    expect(root.style.getPropertyValue("--_ok-org-dim-opacity")).toBe("0.25");
+    root.setAttribute("data-ok-dim-opacity", "nope");
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-org-dim-opacity")).toBe("");
+    runtime?.stop();
+    runtime = undefined;
+    expect(root.style.getPropertyValue("--_ok-org-dim-opacity")).toBe("");
+  });
+
+  it("the search field highlights the picked person (story script pattern)", async () => {
+    const host = search();
+    start();
+    await settle();
+    const field = host.querySelector("[data-ok-autocomplete]") as HTMLElement;
+    field.addEventListener("ok:autocomplete:change", (event) => {
+      const { value } = (event as CustomEvent<{ value: string | null }>).detail;
+      if (value) void api(host).highlightNode(value);
+    });
+    const input = host.querySelector('[role="combobox"]') as HTMLInputElement;
+    input.focus();
+    input.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    (host.querySelector('[role="option"][data-ok-value="zara"]') as HTMLElement).click();
+    await finish();
+    expect(nodeOf(host, "zara").hasAttribute("data-ok-highlighted")).toBe(true);
+    expect(list(host, "leila").hidden).toBe(false);
+  });
+
+  it("has no axe violations with a highlighted node", async () => {
+    const host = search();
+    start();
+    await settle();
+    await api(host).highlightNode("tomas");
+    await finish();
     await expectNoAxeViolations(host);
   });
 });

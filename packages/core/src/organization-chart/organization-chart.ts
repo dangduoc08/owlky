@@ -12,16 +12,20 @@ export const ORGANIZATION_CHART_LENGTHS = {
 export type OrganizationChartLength = keyof typeof ORGANIZATION_CHART_LENGTHS;
 
 export type OrganizationChartStyle = Partial<
-  Record<(typeof ORGANIZATION_CHART_LENGTHS)[OrganizationChartLength], string>
+  Record<
+    (typeof ORGANIZATION_CHART_LENGTHS)[OrganizationChartLength] | "--_ok-org-dim-opacity",
+    string
+  >
 >;
 
 /**
- * Private custom properties of an organization chart root for the given lengths (React `style`,
- * the HTML runtime through CSSOM). A number is in px; a string may carry a unit (`"2rem"`).
- * Invalid or missing values are left out, so the stylesheet's defaults apply.
+ * Private custom properties of an organization chart root for the given lengths and dim
+ * strength (React `style`, the HTML runtime through CSSOM). A length number is in px; a string
+ * may carry a unit (`"2rem"`). `dimOpacity` above 1 counts as 1. Invalid or missing values are
+ * left out, so the stylesheet's defaults apply.
  */
 export function organizationChartStyle(
-  values: Partial<Record<OrganizationChartLength, unknown>>,
+  values: Partial<Record<OrganizationChartLength | "dimOpacity", unknown>>,
 ): OrganizationChartStyle {
   const style: OrganizationChartStyle = {};
   for (const key of Object.keys(ORGANIZATION_CHART_LENGTHS) as OrganizationChartLength[]) {
@@ -29,6 +33,8 @@ export function organizationChartStyle(
     if (value !== undefined)
       style[ORGANIZATION_CHART_LENGTHS[key]] = typeof value === "number" ? `${value}px` : value;
   }
+  const dim = parseNumber(organizationChartOptions.options.dimOpacity, values.dimOpacity);
+  if (typeof dim === "number") style["--_ok-org-dim-opacity"] = String(Math.min(dim, 1));
   return style;
 }
 
@@ -225,4 +231,199 @@ export function createOrganizationChartController(
       observer.disconnect();
     },
   };
+}
+
+// --- Lineage highlight and search -------------------------------------------------------------
+
+/** A node's ancestors in its chart, nearest first (the root node last). */
+export function organizationChartAncestors(node: Element): HTMLElement[] {
+  const root = node.closest(ROOT);
+  const ancestors: HTMLElement[] = [];
+  for (
+    let parent = node.parentElement?.closest<HTMLElement>(NODE);
+    parent && parent.closest(ROOT) === root;
+    parent = parent.parentElement?.closest<HTMLElement>(NODE)
+  )
+    ancestors.push(parent);
+  return ancestors;
+}
+
+/** The chart's highlighted nodes (`data-ok-highlighted`, one in practice). */
+export function organizationChartHighlighted(root: Element): HTMLElement[] {
+  return organizationChartNodes(root).filter((node) => node.hasAttribute("data-ok-highlighted"));
+}
+
+/** Private properties of a node on a highlighted path: where its parent's line meets the bar. */
+export interface OrganizationChartPathStyle {
+  /** From the node's center to its list's center along the bar, signed, in logical px. */
+  "--_ok-org-path-offset": string;
+  /** `1` when the list's center lies toward the inline (or block) end of the node, else `0`. */
+  "--_ok-org-path-forward": string;
+  /** `1` on the first or last of several children: their turn is rounded. */
+  "--_ok-org-path-round": string;
+}
+
+const PATH_PROPERTIES = [
+  "--_ok-org-path-offset",
+  "--_ok-org-path-forward",
+  "--_ok-org-path-round",
+] as const;
+
+/**
+ * The bar segment between a child node and its parent's line, measured: CSS can't know where the
+ * list's center falls among siblings of different sizes. `null` for the root node.
+ */
+export function organizationChartPathStyle(node: HTMLElement): OrganizationChartPathStyle | null {
+  const list = node.parentElement;
+  if (!list?.matches("[data-ok-organization-chart-children]")) return null;
+  const direction = node.closest(ROOT)?.getAttribute("data-ok-direction");
+  const across = direction === "left" || direction === "right";
+  const outer = list.getBoundingClientRect();
+  const inner = node.getBoundingClientRect();
+  const size = across ? outer.height : outer.width;
+  const own = across ? inner.height : inner.width;
+  const rtl = !across && getComputedStyle(list).direction === "rtl";
+  const start = across
+    ? inner.top - outer.top
+    : rtl
+      ? outer.right - inner.right
+      : inner.left - outer.left;
+  // A transformed container (a zoomed chart) measures scaled boxes; the CSS works in layout px.
+  const layout = across ? list.offsetHeight : list.offsetWidth;
+  const scale = size > 0 && layout > 0 ? layout / size : 1;
+  const offset = Math.round((size / 2 - (start + own / 2)) * scale * 100) / 100;
+  const end = node === list.firstElementChild || node === list.lastElementChild;
+  return {
+    "--_ok-org-path-offset": `${offset}px`,
+    "--_ok-org-path-forward": offset >= 0 ? "1" : "0",
+    "--_ok-org-path-round": list.childElementCount > 1 && end ? "1" : "0",
+  };
+}
+
+export interface OrganizationChartHighlight {
+  /** Measures the highlighted paths again (they also follow pointer, focus, DOM and size changes). */
+  sync(): void;
+  destroy(): void;
+}
+
+/**
+ * Lineage highlight: the stylesheet dims the chart and keeps the path to the root of the hovered
+ * or focused node (`data-ok-highlight-on-hover`) or of the `data-ok-highlighted` node, with
+ * `:has()`. This controller only measures where each path's bar segment runs
+ * (`organizationChartPathStyle`) and writes it on the path's nodes through CSSOM, in both
+ * implementations. It owns no state.
+ */
+export function createOrganizationChartHighlight(root: HTMLElement): OrganizationChartHighlight {
+  let hovered: HTMLElement | null = null;
+  let focused: HTMLElement | null = null;
+  let written = new Set<HTMLElement>();
+
+  /** The node whose label or toggle holds an event target. */
+  const nodeOf = (target: EventTarget | null): HTMLElement | null => {
+    if (!(target instanceof Element)) return null;
+    const part = target.closest(`${LABEL}, ${TOGGLE}`);
+    const node = part?.parentElement;
+    return part && owns(root, part) && node?.matches(NODE) ? (node as HTMLElement) : null;
+  };
+
+  const clear = (node: HTMLElement) => {
+    for (const name of PATH_PROPERTIES) node.style.removeProperty(name);
+  };
+
+  const sync = () => {
+    const sources = organizationChartHighlighted(root);
+    if (root.hasAttribute("data-ok-highlight-on-hover"))
+      for (const node of [hovered, focused]) if (node?.isConnected) sources.push(node);
+    const path = new Set<HTMLElement>();
+    for (const source of sources)
+      for (const node of [source, ...organizationChartAncestors(source)]) path.add(node);
+    for (const node of written) if (!path.has(node)) clear(node);
+    for (const node of path) {
+      const style = organizationChartPathStyle(node);
+      if (!style) continue;
+      for (const name of PATH_PROPERTIES)
+        if (node.style.getPropertyValue(name) !== style[name])
+          node.style.setProperty(name, style[name]);
+    }
+    written = path;
+  };
+
+  const listeners = new AbortController();
+  const options = { signal: listeners.signal };
+  root.addEventListener(
+    "pointerover",
+    (event) => {
+      const node = nodeOf(event.target);
+      if (!node || node === hovered) return;
+      hovered = node;
+      sync();
+    },
+    options,
+  );
+  root.addEventListener(
+    "pointerout",
+    (event) => {
+      if (hovered && nodeOf(event.relatedTarget) !== hovered) hovered = null;
+    },
+    options,
+  );
+  root.addEventListener(
+    "focusin",
+    (event) => {
+      focused = nodeOf(event.target);
+      if (focused) sync();
+    },
+    options,
+  );
+  root.addEventListener(
+    "focusout",
+    () => {
+      focused = null;
+    },
+    options,
+  );
+
+  // Paths follow the layout: nodes added or removed, lists opening, a new direction, a resize.
+  const observer = new MutationObserver(sync);
+  observer.observe(root, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["hidden", "data-ok-highlighted", "data-ok-direction"],
+  });
+  const resize = new ResizeObserver(() => sync());
+  resize.observe(root);
+  sync();
+
+  return {
+    sync,
+    destroy() {
+      listeners.abort();
+      observer.disconnect();
+      resize.disconnect();
+      for (const node of written) clear(node);
+      written = new Set();
+    },
+  };
+}
+
+/**
+ * Scrolls a node's label into view once its ancestors finished expanding (owners expand them
+ * first; their Collapse animations start a frame later). Smooth unless reduced motion.
+ */
+export async function revealOrganizationChartNode(node: HTMLElement): Promise<void> {
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  // Every ancestor has a children list: the node is in it.
+  const animations = organizationChartAncestors(node).flatMap((ancestor) =>
+    (organizationChartList(ancestor) as HTMLElement).getAnimations(),
+  );
+  await Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
+  const label = node.isConnected ? node.querySelector(`:scope > ${LABEL}`) : null;
+  if (!label) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  label.scrollIntoView({
+    block: "nearest",
+    inline: "nearest",
+    behavior: reduce ? "auto" : "smooth",
+  });
 }

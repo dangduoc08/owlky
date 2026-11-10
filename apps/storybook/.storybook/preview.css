@@ -189,6 +189,10 @@
   width: 100%;
 }
 
+.sb-org-search {
+  width: min(100%, calc(var(--ok-spacing) * 80));
+}
+
 .sb-org-actions {
   display: flex;
   flex-wrap: wrap;

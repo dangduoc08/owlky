@@ -20,7 +20,11 @@ import {
   collapsibleScript,
   LAZY_SCRIPT_SOURCE,
   lazyScript,
+  SEARCH_SCRIPT_SOURCE,
+  searchScript,
 } from "./organization-chart-scripts.js";
+import { SearchChartDemo } from "./search-demo.js";
+import searchSource from "./search-demo.tsx?raw";
 import { StandardChartDemo } from "./standard-demo.js";
 import standardSource from "./standard-demo.tsx?raw";
 
@@ -103,6 +107,17 @@ export const Standard: StoryObj = demoStory(
 export const Group: StoryObj = demoStory("group", "Group", <GroupChartDemo />, groupSource);
 export const Lines: StoryObj = story("lines");
 
+/** Directions (ADR-0052): each group sets its own `direction`, so no Controls here. */
+export const Direction: StoryObj = frameworkStory({
+  html: snippetStory(
+    snippets,
+    "direction",
+    ORGANIZATION_CHART_FILES["direction"] ?? [],
+    htmlSetup(COLLAPSIBLE, true),
+  ),
+  react: reactGroupsStory(organizationChartStories["direction"] ?? []),
+});
+
 /** Expand and collapse (ADR-0051): stateful in React (`apiRef`), a page script in HTML. */
 export const Collapsible: StoryObj = {
   ...frameworkStory({
@@ -121,6 +136,29 @@ export const Collapsible: StoryObj = {
     ),
   }),
   name: "Expand and collapse",
+};
+
+/** Lineage highlight and search: composes an Autocomplete; stateful in React, a page script in HTML. */
+export const Search: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "search",
+      [["Highlight and search", "group"]],
+      htmlSetup(
+        [...COLLAPSIBLE, "text-field.css", "icon-button.css", "popover.css", "autocomplete.css"],
+        true,
+      ),
+      undefined,
+      { group: { script: searchScript, scriptSource: SEARCH_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Highlight and search", content: <SearchChartDemo /> }],
+      undefined,
+      searchSource,
+    ),
+  }),
+  name: "Highlight and search",
 };
 
 export const LazyChildren: StoryObj = {

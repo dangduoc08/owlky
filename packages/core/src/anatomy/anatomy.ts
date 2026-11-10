@@ -2426,9 +2426,11 @@ export const timelineDotAttributes = (options: TimelineDotAnatomyOptions = {}): 
 
 export const organizationChartLineColors = ["divider", "inherit", ...paletteColorNames] as const;
 export const organizationChartLineStyles = ["solid", "dashed", "dotted"] as const;
+export const organizationChartDirections = ["top", "bottom", "left", "right"] as const;
 
 export type OrganizationChartLineColor = (typeof organizationChartLineColors)[number];
 export type OrganizationChartLineStyle = (typeof organizationChartLineStyles)[number];
+export type OrganizationChartDirection = (typeof organizationChartDirections)[number];
 
 const CHART_LENGTH = { min: 0, units: ["px", "rem", "em"] } as const;
 
@@ -2436,6 +2438,13 @@ export const organizationChartOptions = defineOptions(
   "organization-chart",
   "data-ok-organization-chart",
   {
+    direction: style(
+      "data-ok-direction",
+      organizationChartDirections,
+      "top",
+      "Where the root sits: `top` (default, children below), `bottom`, `left` (at the inline start) or `right`.",
+      { optional: true },
+    ),
     lineHeight: number(
       "data-ok-line-height",
       40,
@@ -2486,10 +2495,21 @@ export const organizationChartOptions = defineOptions(
       "Smallest number of hidden descendants that a collapsed node's badge shows.",
       { min: 1 },
     ),
+    highlightOnHover: flag(
+      "data-ok-highlight-on-hover",
+      "Hovering or focusing a node highlights its path to the root and dims the other nodes.",
+    ),
+    dimOpacity: number(
+      "data-ok-dim-opacity",
+      0.7,
+      "How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden).",
+      { min: 0 },
+    ),
   },
 );
 
 export interface OrganizationChartAnatomyOptions {
+  direction?: OrganizationChartDirection | undefined;
   lineHeight?: number | string | undefined;
   lineWidth?: number | string | undefined;
   lineColor?: OrganizationChartLineColor | undefined;
@@ -2499,6 +2519,8 @@ export interface OrganizationChartAnatomyOptions {
   enableExpandCollapse?: boolean | undefined;
   expandCollapseOnNodeClick?: boolean | undefined;
   collapseBadgeThreshold?: number | undefined;
+  highlightOnHover?: boolean | undefined;
+  dimOpacity?: number | undefined;
 }
 
 /** `data-ok-*` attributes of an organization chart (the outer `ul`). */

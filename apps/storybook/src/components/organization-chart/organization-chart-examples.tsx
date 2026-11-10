@@ -1,6 +1,7 @@
 import { organizationChartOptions } from "@owlky/core";
 import {
   OrganizationChart,
+  type OrganizationChartDirection,
   type OrganizationChartLineColor,
   type OrganizationChartLineStyle,
   OrganizationChartNode,
@@ -58,6 +59,7 @@ const TEAM: PersonNode = {
 };
 
 interface LineProps {
+  direction?: OrganizationChartDirection;
   lineHeight?: number | string;
   lineWidth?: number | string;
   lineColor?: OrganizationChartLineColor;
@@ -67,9 +69,9 @@ interface LineProps {
 }
 
 /** The small team with the given line options, in a scroll area on narrow screens. */
-function TeamChart({ name, ...lines }: LineProps & { name: string }) {
+function TeamChart({ name, dir, ...lines }: LineProps & { name: string; dir?: "rtl" }) {
   return (
-    <Scrollbar className="sb-org-scroll" aria-label={`${name}, scrollable`}>
+    <Scrollbar className="sb-org-scroll" aria-label={`${name}, scrollable`} dir={dir}>
       <OrganizationChart aria-label={name} {...lines} label={<SimpleCard person={TEAM} />}>
         {TEAM.children?.map((child) => (
           <SimpleNode key={child.id} person={child} />
@@ -79,6 +81,22 @@ function TeamChart({ name, ...lines }: LineProps & { name: string }) {
   );
 }
 TeamChart.displayName = "TeamChart";
+
+/** One person of the small team with an id and a named toggle (collapsible charts). */
+function TeamNode({ person }: { person: PersonNode }) {
+  return (
+    <OrganizationChartNode
+      nodeId={person.id}
+      toggleLabel={`${person.name}'s reports`}
+      label={<SimpleCard person={person} />}
+    >
+      {person.children?.map((child) => (
+        <TeamNode key={child.id} person={child} />
+      ))}
+    </OrganizationChartNode>
+  );
+}
+TeamNode.displayName = "TeamNode";
 
 /**
  * Story groups — the same examples as `packages/html/src/components/organization-chart/examples/`
@@ -135,6 +153,41 @@ export const organizationChartStories: Record<string, ReactGroup[]> = {
   ],
 };
 
+/** Directions (ADR-0052): the same team grown from each side. */
+organizationChartStories["direction"] = [
+  { title: "Bottom", content: <TeamChart name="Chart growing upward" direction="bottom" /> },
+  { title: "Left", content: <TeamChart name="Chart growing to the right" direction="left" /> },
+  { title: "Right", content: <TeamChart name="Chart growing to the left" direction="right" /> },
+  {
+    title: "Left, right to left",
+    content: <TeamChart name="Right-to-left chart" direction="left" dir="rtl" />,
+  },
+  {
+    title: "Left, collapsible",
+    content: (
+      <Scrollbar
+        className="sb-org-scroll"
+        aria-label="Collapsible chart growing to the right, scrollable"
+      >
+        <OrganizationChart
+          aria-label="Collapsible chart growing to the right"
+          direction="left"
+          enableExpandCollapse
+          defaultCollapsedNodes={["b"]}
+          lineColor="primary"
+          nodeId={TEAM.id}
+          toggleLabel={`${TEAM.name}'s reports`}
+          label={<SimpleCard person={TEAM} />}
+        >
+          {TEAM.children?.map((child) => (
+            <TeamNode key={child.id} person={child} />
+          ))}
+        </OrganizationChart>
+      </Scrollbar>
+    ),
+  },
+];
+
 export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
   simple: [["Simple", "group"]],
   lines: [
@@ -143,10 +196,25 @@ export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
     ["Thick and colored", "thick"],
     ["Short and spaced", "short"],
   ],
+  direction: [
+    ["Bottom", "bottom"],
+    ["Left", "left"],
+    ["Right", "right"],
+    ["Left, right to left", "rtl"],
+    ["Left, collapsible", "collapsible"],
+  ],
 };
 
 /** Story Controls shared by the React and HTML stories (ADR-0015). */
 export const ORGANIZATION_CHART_CONTROLS = {
   schema: organizationChartOptions,
-  keys: ["lineHeight", "lineWidth", "lineColor", "lineStyle", "lineBorderRadius", "nodePadding"],
+  keys: [
+    "direction",
+    "lineHeight",
+    "lineWidth",
+    "lineColor",
+    "lineStyle",
+    "lineBorderRadius",
+    "nodePadding",
+  ],
 } as const;
