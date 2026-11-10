@@ -1644,13 +1644,43 @@ export interface TooltipAnatomyOptions {
 export const tooltipAttributes = (options: TooltipAnatomyOptions = {}): DataAttributes =>
   optionAttributes(tooltipOptions, { ...options });
 
+export const menuVariants = ["selectedMenu", "menu"] as const;
+export type MenuVariant = (typeof menuVariants)[number];
+
 export const menuOptions = defineOptions("menu", "data-ok-menu", {
   dense: flag("data-ok-dense", "Compact items."),
+  variant: style(
+    "data-ok-variant",
+    menuVariants,
+    "selectedMenu",
+    "Which item gets focus on open: the selected one, else the first (`selectedMenu`), or always the first (`menu`).",
+    { optional: true },
+  ),
+  disableAutoFocusItem: flag(
+    "data-ok-disable-auto-focus-item",
+    'On open, focus goes to the list (`tabindex="-1"`), not to an item; the arrow keys then enter it.',
+  ),
+  disabledItemsFocusable: flag(
+    "data-ok-disabled-items-focusable",
+    "The keyboard stops on disabled items too (they still can't be chosen).",
+  ),
+  disableListWrap: flag(
+    "data-ok-disable-list-wrap",
+    "The arrow keys stop at the first and last items instead of wrapping.",
+  ),
   selected: state("data-ok-selected", "The selected item (`MenuItem selected`).", "select"),
 });
 
+export interface MenuAnatomyOptions {
+  dense?: boolean | undefined;
+  variant?: MenuVariant | undefined;
+  disableAutoFocusItem?: boolean | undefined;
+  disabledItemsFocusable?: boolean | undefined;
+  disableListWrap?: boolean | undefined;
+}
+
 /** `data-ok-*` attributes of a menu list (`ul[role=menu]`). */
-export const menuAttributes = (options: { dense?: boolean | undefined } = {}): DataAttributes =>
+export const menuAttributes = (options: MenuAnatomyOptions = {}): DataAttributes =>
   optionAttributes(menuOptions, { ...options });
 
 export const menuItemOptions = defineOptions("menu-item", "data-ok-menu-item", {

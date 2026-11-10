@@ -1,0 +1,39 @@
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" id="menu-nested-button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-nested" data-ok-popover-open="menu-nested"><span data-ok-button-label>Open menu</span></button>
+<div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="menu-nested">
+  <span data-ok-popover-arrow aria-hidden="true"></span>
+  <ul role="menu" data-ok-menu aria-labelledby="menu-nested-button">
+    <li role="menuitem" tabindex="-1" data-ok-menu-item>New file</li>
+    <li role="none" data-ok-menu-submenu>
+      <div id="menu-nested-recent-trigger" role="menuitem" tabindex="-1" data-ok-menu-item aria-haspopup="menu" aria-expanded="false" aria-controls="menu-nested-recent">Open recent<svg data-ok-menu-submenu-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+      <div popover="manual" data-ok-popover data-ok-placement="right-start" id="menu-nested-recent">
+        <span data-ok-popover-arrow aria-hidden="true"></span>
+        <ul role="menu" data-ok-menu aria-labelledby="menu-nested-recent-trigger">
+          <li role="menuitem" tabindex="-1" data-ok-menu-item>report.pdf</li>
+          <li role="menuitem" tabindex="-1" data-ok-menu-item>notes.txt</li>
+          <li role="none" data-ok-menu-submenu>
+            <div id="menu-nested-archive-trigger" role="menuitem" tabindex="-1" data-ok-menu-item aria-haspopup="menu" aria-expanded="false" aria-controls="menu-nested-archive">Archive<svg data-ok-menu-submenu-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+            <div popover="manual" data-ok-popover data-ok-placement="right-start" id="menu-nested-archive">
+              <span data-ok-popover-arrow aria-hidden="true"></span>
+              <ul role="menu" data-ok-menu aria-labelledby="menu-nested-archive-trigger">
+                <li role="menuitem" tabindex="-1" data-ok-menu-item>2024.zip</li>
+                <li role="menuitem" tabindex="-1" data-ok-menu-item>2023.zip</li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <li role="none" data-ok-menu-submenu>
+      <div id="menu-nested-share-trigger" role="menuitem" tabindex="-1" data-ok-menu-item aria-haspopup="menu" aria-expanded="false" aria-controls="menu-nested-share">Share<svg data-ok-menu-submenu-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+      <div popover="manual" data-ok-popover data-ok-placement="right-start" id="menu-nested-share">
+        <span data-ok-popover-arrow aria-hidden="true"></span>
+        <ul role="menu" data-ok-menu aria-labelledby="menu-nested-share-trigger">
+          <li role="menuitem" tabindex="-1" data-ok-menu-item>Email</li>
+          <li role="menuitem" tabindex="-1" data-ok-menu-item>Message</li>
+          <li role="menuitem" tabindex="-1" data-ok-menu-item>Copy link</li>
+        </ul>
+      </div>
+    </li>
+    <li role="menuitem" tabindex="-1" data-ok-menu-item>Delete</li>
+  </ul>
+</div>

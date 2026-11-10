@@ -287,7 +287,9 @@ export {
   type MapScaleUnit,
   type MarkdownAnatomyOptions,
   type MarkdownImageMode,
+  type MenuAnatomyOptions,
   type MenuItemAnatomyOptions,
+  type MenuVariant,
   type MobileStepperAnatomyOptions,
   type MobileStepperPosition,
   type MobileStepperVariant,
@@ -325,6 +327,7 @@ export {
   menuItemAttributes,
   menuItemOptions,
   menuOptions,
+  menuVariants,
   mobileStepperAttributes,
   mobileStepperOptions,
   mobileStepperPositions,
@@ -934,10 +937,19 @@ export {
   zoomAround,
 } from "./lightbox/lightbox-model.js";
 export {
+  createSubmenuHover,
   createTypeahead,
   initialMenuItem,
+  isSubmenuTrigger,
+  MENU_SUBMENU,
   menuItems,
   menuKeyTarget,
+  openSubmenuTriggers,
+  parentMenuTrigger,
+  type SubmenuHover,
+  type SubmenuHoverOptions,
+  submenuKeyAction,
+  submenuPlacement,
   type Typeahead,
 } from "./menu/menu-navigation.js";
 export {

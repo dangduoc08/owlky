@@ -326,6 +326,8 @@ const pairs: [component: string, story: string][] = [
   ["menu", "simple"],
   ["menu", "selected"],
   ["menu", "max-height"],
+  ["menu", "nested"],
+  ["menu", "menu-list"],
   ["dialog", "simple"],
   ["dialog", "alerts"],
   ["dialog", "transitions"],

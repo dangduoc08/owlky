@@ -408,6 +408,7 @@
   "data-ok-disable-aggregation",
   "data-ok-disable-animation",
   "data-ok-disable-auto-focus",
+  "data-ok-disable-auto-focus-item",
   "data-ok-disable-auto-month-switching",
   "data-ok-disable-beacon",
   "data-ok-disable-captions",
@@ -809,6 +810,8 @@
   "data-ok-max-zoom-pixel-ratio",
   "data-ok-menu",
   "data-ok-menu-item",
+  "data-ok-menu-submenu",
+  "data-ok-menu-submenu-icon",
   "data-ok-min",
   "data-ok-min-date",
   "data-ok-min-date-time",
@@ -44777,6 +44780,36 @@
          "name": "dense"
         },
         {
+         "attr": "data-ok-variant",
+         "default": "selectedMenu",
+         "description": "Which item gets focus on open: the selected one, else the first (`selectedMenu`), or always the first (`menu`).",
+         "kind": "style",
+         "name": "variant",
+         "optional": true,
+         "values": [
+          "selectedMenu",
+          "menu"
+         ]
+        },
+        {
+         "attr": "data-ok-disable-auto-focus-item",
+         "description": "On open, focus goes to the list (`tabindex=\"-1\"`), not to an item; the arrow keys then enter it.",
+         "kind": "flag",
+         "name": "disableAutoFocusItem"
+        },
+        {
+         "attr": "data-ok-disabled-items-focusable",
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "kind": "flag",
+         "name": "disabledItemsFocusable"
+        },
+        {
+         "attr": "data-ok-disable-list-wrap",
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "kind": "flag",
+         "name": "disableListWrap"
+        },
+        {
          "attr": "data-ok-selected",
          "description": "The selected item (`MenuItem selected`).",
          "event": "ok:menu:select",
@@ -44788,14 +44821,24 @@
       },
       "name": "Menu",
       "react": {
-       "description": "A Popover holding a `ul[role=menu]`. Opening focuses the selected item (or the first); arrows, Home, End and typeahead move between items; Enter and Space choose; choosing an item closes the menu (reason `\"select\"`) unless its `onClick` calls `preventDefault()`.",
+       "description": "A Popover holding a `MenuList`. Opening focuses the selected item (or the first, see `variant`); choosing an item, also in a submenu, closes the menu (reason `\"select\"`) unless its `onClick` calls `preventDefault()`.",
        "native": "HTMLUListElement",
        "props": [
         {
-         "description": "The element the menu opens next to.",
+         "description": "The element (or virtual anchor) the menu opens next to.",
          "name": "anchorEl",
          "required": true,
          "type": "PopoverAnchor"
+        },
+        {
+         "description": "The point used with `anchorReference=\"anchorPosition\"`, in px from the viewport's top left corner.",
+         "name": "anchorPosition",
+         "type": "PopoverAnchorPosition"
+        },
+        {
+         "description": "What positions the menu: the anchor (default), `anchorPosition` (a point) or `none` (your CSS).",
+         "name": "anchorReference",
+         "type": "\"anchorEl\" | \"anchorPosition\" | \"none\""
         },
         {
          "description": "The content.",
@@ -44808,9 +44851,29 @@
          "type": "boolean"
         },
         {
+         "description": "On open, focus goes to the list instead of an item; the arrow keys then enter it.",
+         "name": "disableAutoFocusItem",
+         "type": "boolean"
+        },
+        {
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "name": "disableListWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
          "description": "`id` of the menu's popover (point the trigger's `aria-controls` at it).",
          "name": "id",
          "type": "string"
+        },
+        {
+         "description": "Minimum distance to the viewport edges, in px. Default 16.",
+         "name": "marginThreshold",
+         "type": "number"
         },
         {
          "description": "Called when the menu asks to close, with the reason.",
@@ -44833,6 +44896,16 @@
          "description": "Where the menu opens around its anchor.",
          "name": "placement",
          "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+        },
+        {
+         "description": "Length of the opening animation, in ms. Default: the theme's shorter duration.",
+         "name": "transitionDuration",
+         "type": "number"
+        },
+        {
+         "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+         "name": "variant",
+         "type": "\"menu\" | \"selectedMenu\""
         }
        ]
       }
@@ -44879,7 +44952,7 @@
        "native": "HTMLLIElement",
        "props": [
         {
-         "description": "Compact items.",
+         "description": "Compact: 4px less padding above and below.",
          "name": "dense",
          "type": "boolean"
         },
@@ -44902,6 +44975,127 @@
          "description": "The current choice: bold and tinted; the menu focuses it when it opens.",
          "name": "selected",
          "type": "boolean"
+        }
+       ]
+      }
+     },
+     {
+      "name": "MenuList",
+      "react": {
+       "description": "The `ul[role=menu]` with the menu's keyboard: arrows, Home, End and typeahead move between items, Enter and Space choose, ArrowRight (ArrowLeft right to left) opens a submenu and ArrowLeft closes it. A `Menu` renders one inside its Popover; used alone (a menu always on screen), the first focus item takes the tab stop.",
+       "native": "HTMLUListElement",
+       "props": [
+        {
+         "description": "Standalone list: focuses the list when it mounts (it then joins the tab order).",
+         "name": "autoFocus",
+         "type": "boolean"
+        },
+        {
+         "description": "Standalone list: focuses the first focus item (see `variant`) when it mounts.",
+         "name": "autoFocusItem",
+         "type": "boolean"
+        },
+        {
+         "description": "The content.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Compact items.",
+         "name": "dense",
+         "type": "boolean"
+        },
+        {
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "name": "disableListWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
+         "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+         "name": "variant",
+         "type": "\"menu\" | \"selectedMenu\""
+        }
+       ]
+      }
+     },
+     {
+      "html": {
+       "attribute": "data-ok-menu-submenu",
+       "description": "A submenu: the `li[role=none]` that holds its trigger item and its popover.",
+       "elements": [
+        "li"
+       ],
+       "parts": [
+        {
+         "description": "The chevron at the end of a submenu's trigger.",
+         "elements": [
+          "svg"
+         ],
+         "kind": "part",
+         "name": "data-ok-menu-submenu-icon"
+        }
+       ]
+      },
+      "name": "MenuSubmenu",
+      "react": {
+       "description": "A submenu inside a Menu or MenuList: a `li[role=none]` holding a trigger item (`aria-haspopup=\"menu\"`) and a Popover with its own `MenuList`, opened after the trigger in the reading direction. ArrowRight, Enter, Space or a click open it and focus its first item; resting the mouse on the trigger opens it without moving focus; ArrowLeft and Escape close it.",
+       "native": "HTMLUListElement",
+       "props": [
+        {
+         "description": "The content.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Compact items.",
+         "name": "dense",
+         "type": "boolean"
+        },
+        {
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "name": "disableListWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "The trigger can't open the submenu and is skipped by the keyboard.",
+         "name": "disabled",
+         "type": "boolean"
+        },
+        {
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
+         "description": "`id` of the submenu's popover (default: a generated one).",
+         "name": "id",
+         "type": "string"
+        },
+        {
+         "description": "The trigger item's content (text, an icon). A chevron follows it.",
+         "name": "label",
+         "required": true,
+         "type": "ReactNode"
+        },
+        {
+         "description": "Props of the submenu's popover paper.",
+         "name": "paperProps",
+         "type": "HTMLAttributes<HTMLDivElement>"
+        },
+        {
+         "description": "Props of the trigger item (`div[role=menuitem]`).",
+         "name": "triggerProps",
+         "type": "HTMLAttributes<HTMLDivElement>"
+        },
+        {
+         "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+         "name": "variant",
+         "type": "\"menu\" | \"selectedMenu\""
         }
        ]
       }
@@ -44930,13 +45124,16 @@
    "name": "menu",
    "react": [
     "Menu",
-    "MenuItem"
+    "MenuItem",
+    "MenuList",
+    "MenuSubmenu"
    ],
    "referenceUrl": "https://minimals.cc/components/mui/menu",
    "related": [
     "button",
     "icon-button",
     "list",
+    "paper",
     "popover"
    ],
    "requiredParts": {},
@@ -44950,6 +45147,36 @@
        "description": "Compact items.",
        "kind": "flag",
        "name": "dense"
+      },
+      {
+       "attr": "data-ok-variant",
+       "default": "selectedMenu",
+       "description": "Which item gets focus on open: the selected one, else the first (`selectedMenu`), or always the first (`menu`).",
+       "kind": "style",
+       "name": "variant",
+       "optional": true,
+       "values": [
+        "selectedMenu",
+        "menu"
+       ]
+      },
+      {
+       "attr": "data-ok-disable-auto-focus-item",
+       "description": "On open, focus goes to the list (`tabindex=\"-1\"`), not to an item; the arrow keys then enter it.",
+       "kind": "flag",
+       "name": "disableAutoFocusItem"
+      },
+      {
+       "attr": "data-ok-disabled-items-focusable",
+       "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+       "kind": "flag",
+       "name": "disabledItemsFocusable"
+      },
+      {
+       "attr": "data-ok-disable-list-wrap",
+       "description": "The arrow keys stop at the first and last items instead of wrapping.",
+       "kind": "flag",
+       "name": "disableListWrap"
       },
       {
        "attr": "data-ok-selected",
@@ -45005,12 +45232,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup=menu][aria-expanded]\ndiv[data-ok-popover][popover=manual][id][data-ok-placement=bottom-start]\n  › span[data-ok-popover-arrow]\n  › ul[data-ok-menu][role=menu][aria-labelledby][data-ok-dense]?\n      › li[data-ok-menu-item][role=menuitem][tabindex=-1][data-ok-selected]?[aria-disabled]?…\n```",
+     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup=menu][aria-expanded]\ndiv[data-ok-popover][popover=manual][id][data-ok-placement=bottom-start]\n  › span[data-ok-popover-arrow]\n  › ul[data-ok-menu][role=menu][aria-labelledby][data-ok-dense]?\n      › li[data-ok-menu-item][role=menuitem][tabindex=-1][data-ok-selected]?[aria-disabled]?…\n      › li[data-ok-menu-submenu][role=none]                         (a submenu, Phase 4.5)\n          › div[data-ok-menu-item][role=menuitem][tabindex=-1][id][aria-haspopup=menu][aria-expanded][aria-controls]\n              › label › svg[data-ok-menu-submenu-icon][aria-hidden]   (chevron, mirrored with dir=rtl)\n          › div[data-ok-popover][popover=manual][id][data-ok-placement=right-start]   (left-start right to left)\n              › span[data-ok-popover-arrow] › ul[data-ok-menu][role=menu][aria-labelledby=trigger id] › …\nul[data-ok-menu][role=menu][aria-label]                              (standalone MenuList, no popover)\n  › li[data-ok-menu-item][tabindex=0]   (the focus item: selected, else first; `variant=\"menu\"`: first)\n```\nThe submenu's popover is a DOM descendant of the menu's popover (so presses inside it aren't\n\"outside\"), in the top layer. Fallback path (no Popover API): the submenu is `position: fixed`\ninside the paper, whose `backdrop-filter` makes it the containing block (positions may be off;\ndocumented limitation of old browsers).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `menu`: listed under \"options\".)\n\n(Options of `menu-item`: listed under \"options\".)\n\nReact: `Menu` `open` / `anchorEl` / `onOpenChange(open, reason)` (escape | backdrop | select |\ntab), `placement` (default `bottom-start`), `paperProps`; `MenuItem` `onClick` (choosing closes\nthe menu unless `preventDefault()`). Renamed: `onClose` → `onOpenChange`; `MenuListProps` →\nprops on `Menu` (they go to the list); `PaperProps` / `slotProps.paper` → `paperProps`.\nKept: `variant=\"selectedMenu\"` behavior (focus the selected item) as the only behavior; MUI\n`autoFocusItem` always on. Deferred: `variant=\"menu\"`, nested menus. Not applicable:\n`TransitionComponent`, `sx`, `classes`, `component`.",
+     "body": "(Options of `menu`: listed under \"options\".)\n\n(Options of `menu-item`: listed under \"options\".)\n\nReact: `Menu` `open` / `anchorEl` / `onOpenChange(open, reason)` (escape | backdrop | select |\ntab), `placement` (default `bottom-start`), `paperProps`; `MenuItem` `onClick` (choosing closes\nthe menu unless `preventDefault()`). Renamed: `onClose` → `onOpenChange`; `MenuListProps` →\nprops on `Menu` (they go to the list); `PaperProps` / `slotProps.paper` → `paperProps`.\nKept: `variant` (`selectedMenu` default · `menu`: always the first item), `disableAutoFocusItem`\n(focus the list; React renders `tabindex=\"-1\"`, HTML writes it), `disabledItemsFocusable`,\n`disableListWrap` (attributes on the list, read by core `menuItems` / `initialMenuItem` /\n`menuKeyTarget`), `anchorReference` / `anchorPosition` / `marginThreshold` /\n`transitionDuration` (passed to the Popover, see popover.md). React `MenuList` works alone\n(`autoFocus` focuses the list and gives it `tabindex=\"0\"`, `autoFocusItem` focuses the focus\nitem; both on mount; HTML: the native `autofocus` attribute), the focus item takes the tab stop\n(`tabindex=\"0\"`, MUI's active item). Nested menus (no MUI API; Base UI / WAI-ARIA submenus):\nReact `MenuSubmenu` (`label`, `disabled`, `id`, `triggerProps`, `paperProps`, list props),\nHTML the anatomy above. Not applicable:\n`TransitionComponent`, `sx`, `classes`, `component`.",
      "id": "options",
      "title": "Options"
     },
@@ -45025,7 +45252,7 @@
      "title": "Responsive behavior"
     },
     {
-     "body": "Opening focuses the selected (or first) enabled item. ArrowDown / ArrowUp (wrap), Home, End,\ntypeahead (500 ms buffer; a repeated letter cycles), Enter / Space choose, Escape closes (focus\nreturns to the trigger), Tab closes. Disabled items are skipped.",
+     "body": "Opening focuses the selected (or first) enabled item. ArrowDown / ArrowUp (wrap), Home, End,\ntypeahead (500 ms buffer; a repeated letter cycles), Enter / Space choose, Escape closes (focus\nreturns to the trigger), Tab closes. Disabled items are skipped.\n\nSubmenus (core `submenuKeyAction`, `createSubmenuHover`): ArrowRight, Enter, Space or a click on\na trigger open its submenu and focus its focus item; ArrowLeft inside closes it and focuses the\ntrigger; Escape closes the top submenu only (focus back to its trigger). Right to left (computed\n`direction`), ArrowLeft opens and ArrowRight closes, and the submenu opens on the left. Moving\nto another item of a menu closes the submenus open there. Mouse: resting 100 ms on a trigger\nopens its submenu without moving focus; resting on another item of the same menu closes it;\ncrossing items on the way into a submenu cancels. Choosing an item anywhere, Tab and a press\noutside close the whole menu; closing the menu closes its submenus.",
      "id": "keyboard-accessibility",
      "title": "Keyboard / Accessibility"
     },
@@ -45035,7 +45262,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Menu (inherits Popover), MenuItem, MenuList.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl`, `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop` `select` `tab`); HTML `ok:menu:select` + popover events | renamed | |\n| Popover `anchorOrigin` / `transformOrigin` | `placement` (default `bottom-start`) | renamed | see popover.md |\n| `MenuListProps` | props on `Menu` (to the list) | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `variant=\"selectedMenu\"`, `autoFocus` | the only behavior (focus the selected, else first item) | kept | |\n| `variant=\"menu\"`, nested menus | — | deferred (4.5) | |\n| `disableAutoFocusItem` | — | deferred | new batch E row |\n| `transitionDuration` | — | deferred | new batch E row (with Popover) |\n| `PopoverClasses` | — | not applicable | ADR-0015 |\n| `MenuItem` `selected`, `dense`, `divider`, `disableGutters`, `disabled` | same (`disabled` → `aria-disabled`) | kept | |\n| `MenuItem` `autoFocus`, `component`, `focusVisibleClassName`, ripple props | — | not applicable | focus is the menu's; `li[role=menuitem]` |\n| `MenuList` (standalone, without Popover) `autoFocus`, `autoFocusItem`, `variant` | HTML: `ul[data-ok-menu]` works alone; React: none | deferred | new batch E row |\n| `MenuList` `disabledItemsFocusable`, `disableListWrap` | — (disabled items skipped, always wraps) | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Menu (inherits Popover), MenuItem, MenuList.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl`, `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop` `select` `tab`); HTML `ok:menu:select` + popover events | renamed | |\n| Popover `anchorOrigin` / `transformOrigin` | `placement` (default `bottom-start`) | renamed | see popover.md |\n| `MenuListProps` | props on `Menu` (to the list) | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `variant=\"selectedMenu\"`, `autoFocus` | the only behavior (focus the selected, else first item) | kept | |\n| `variant=\"menu\"` | same (`data-ok-variant`) | kept (4.5) | |\n| nested menus | `MenuSubmenu`; HTML `li[data-ok-menu-submenu]` | kept (4.5) | no MUI API: WAI-ARIA submenus |\n| `disableAutoFocusItem` | same (`data-ok-disable-auto-focus-item`) | kept (4.18.39) | |\n| `transitionDuration` | same (Popover) | kept (4.18.43) | number of ms |\n| Popover `anchorReference`, `anchorPosition`, `marginThreshold` | same (Popover) | kept (4.7) | |\n| `PopoverClasses` | — | not applicable | ADR-0015 |\n| `MenuItem` `selected`, `dense`, `divider`, `disableGutters`, `disabled` | same (`disabled` → `aria-disabled`) | kept | |\n| `MenuItem` `autoFocus`, `component`, `focusVisibleClassName`, ripple props | — | not applicable | focus is the menu's; `li[role=menuitem]` |\n| `MenuList` (standalone, without Popover) `autoFocus`, `autoFocusItem`, `variant` | React `MenuList`; HTML `ul[data-ok-menu]` alone + native `autofocus` | kept (4.18.39) | |\n| `MenuList` `disabledItemsFocusable`, `disableListWrap` | same (`data-ok-disabled-items-focusable`, `data-ok-disable-list-wrap`) | kept (4.18.42) | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -45067,6 +45294,24 @@
      "react": "import { IconButton, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\nimport { DemoIcon } from \"../shared/demo-icon.js\";\n\nconst MOONS = [\n  \"None\",\n  \"Ariel\",\n  \"Callisto\",\n  \"Deimos\",\n  \"Europa\",\n  \"Ganymede\",\n  \"Io\",\n  \"Miranda\",\n  \"Oberon\",\n  \"Phobos\",\n  \"Rhea\",\n  \"Titan\",\n  \"Triton\",\n];\n\n/** A long menu that scrolls: 4.5 items tall, opened by an icon button. */\nexport function MaxHeightMenuDemo() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <IconButton\n        aria-label=\"More\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        aria-controls=\"menu-long\"\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        <DemoIcon name=\"moreVertical\" />\n      </IconButton>\n      <Menu\n        id=\"menu-long\"\n        aria-label=\"Moons\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        {MOONS.map((moon) => (\n          <MenuItem key={moon} selected={moon === \"Phobos\"}>\n            {moon}\n          </MenuItem>\n        ))}\n      </Menu>\n    </>\n  );\n}\n",
      "snippets": [
       "max-height-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/icon-button.css + components/list.css + components/popover.css + components/menu.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Nested menu -->\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" id=\"menu-nested-button\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested\" data-ok-popover-open=\"menu-nested\"><span data-ok-button-label>Open menu</span></button>\n<div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"menu-nested\">\n  <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n  <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-button\">\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>New file</li>\n    <li role=\"none\" data-ok-menu-submenu>\n      <div id=\"menu-nested-recent-trigger\" role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested-recent\">Open recent<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n      <div popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\" id=\"menu-nested-recent\">\n        <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n        <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-recent-trigger\">\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>report.pdf</li>\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>notes.txt</li>\n          <li role=\"none\" data-ok-menu-submenu>\n            <div id=\"menu-nested-archive-trigger\" role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested-archive\">Archive<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\" id=\"menu-nested-archive\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-archive-trigger\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>2024.zip</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>2023.zip</li>\n              </ul>\n            </div>\n          </li>\n        </ul>\n      </div>\n    </li>\n    <li role=\"none\" data-ok-menu-submenu>\n      <div id=\"menu-nested-share-trigger\" role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested-share\">Share<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n      <div popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\" id=\"menu-nested-share\">\n        <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n        <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-share-trigger\">\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Email</li>\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Message</li>\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Copy link</li>\n        </ul>\n      </div>\n    </li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Delete</li>\n  </ul>\n</div>",
+     "id": "components-menu--nested",
+     "name": "Nested menu",
+     "react": "import { Button, Menu, MenuItem, MenuSubmenu } from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/** A menu whose items open submenus: arrows, hover or a click open them. */\nexport function NestedMenuDemo() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        id=\"menu-nested-button\"\n        variant=\"outlined\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        aria-controls=\"menu-nested\"\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Open menu\n      </Button>\n      <Menu\n        id=\"menu-nested\"\n        aria-labelledby=\"menu-nested-button\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        <MenuItem>New file</MenuItem>\n        <MenuSubmenu id=\"menu-nested-recent\" label=\"Open recent\">\n          <MenuItem>report.pdf</MenuItem>\n          <MenuItem>notes.txt</MenuItem>\n          <MenuSubmenu id=\"menu-nested-archive\" label=\"Archive\">\n            <MenuItem>2024.zip</MenuItem>\n            <MenuItem>2023.zip</MenuItem>\n          </MenuSubmenu>\n        </MenuSubmenu>\n        <MenuSubmenu id=\"menu-nested-share\" label=\"Share\">\n          <MenuItem>Email</MenuItem>\n          <MenuItem>Message</MenuItem>\n          <MenuItem>Copy link</MenuItem>\n        </MenuSubmenu>\n        <MenuItem>Delete</MenuItem>\n      </Menu>\n    </>\n  );\n}\n",
+     "snippets": [
+      "nested-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/paper.css + components/menu.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Menu list -->\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\">\n  <ul role=\"menu\" data-ok-menu data-ok-variant=\"menu\" aria-label=\"Account\">\n    <li role=\"menuitem\" tabindex=\"0\" data-ok-menu-item>Profile</li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-selected>My account</li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-disabled=\"true\">Billing</li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Logout</li>\n  </ul>\n</div>",
+     "id": "components-menu--menu-list",
+     "name": "Menu list",
+     "react": "import { MenuItem, MenuList, Paper } from \"@owlky/react\";\n\n/** A menu always on screen: a MenuList on a Paper, without a popover. */\nexport function MenuListDemo() {\n  return (\n    <Paper>\n      <MenuList aria-label=\"Account\" variant=\"menu\">\n        <MenuItem>Profile</MenuItem>\n        <MenuItem selected>My account</MenuItem>\n        <MenuItem disabled>Billing</MenuItem>\n        <MenuItem>Logout</MenuItem>\n      </MenuList>\n    </Paper>\n  );\n}\n",
+     "snippets": [
+      "menu-list-group.html"
      ]
     }
    ],
@@ -65529,6 +65774,27 @@
      "title": "Handle a choice"
     },
     {
+     "body": "A submenu groups related choices under one item. In React, put a `MenuSubmenu` with a `label` among the items. In HTML, wrap the trigger item and the submenu's popover in `li[role=\"none\"][data-ok-menu-submenu]`; the trigger has `aria-haspopup=\"menu\"`, `aria-expanded` and `aria-controls`. The submenu opens after its trigger in the reading direction (on the left in right-to-left pages). Arrow Right, Enter, Space or a click open it, Arrow Left and Escape close it, and resting the pointer on the trigger opens it too. Choosing an item in a submenu closes the whole menu.",
+     "html": "<button type=\"button\" id=\"file-button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"file-menu\" data-ok-popover-open=\"file-menu\">\n  <span data-ok-button-label>File</span>\n</button>\n<div id=\"file-menu\" popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\">\n  <ul data-ok-menu role=\"menu\" aria-labelledby=\"file-button\">\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">New file</li>\n    <li role=\"none\" data-ok-menu-submenu>\n      <div id=\"share-trigger\" data-ok-menu-item role=\"menuitem\" tabindex=\"-1\" aria-haspopup=\"menu\"\n        aria-expanded=\"false\" aria-controls=\"share-menu\">Share<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n      <div id=\"share-menu\" popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\">\n        <ul data-ok-menu role=\"menu\" aria-labelledby=\"share-trigger\">\n          <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Email</li>\n          <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Copy link</li>\n        </ul>\n      </div>\n    </li>\n  </ul>\n</div>",
+     "id": "nested",
+     "react": "import { Button, Menu, MenuItem, MenuSubmenu } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function FileMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        id=\"file-button\"\n        variant=\"outlined\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        File\n      </Button>\n      <Menu aria-labelledby=\"file-button\" open={anchor !== null} anchorEl={anchor} onOpenChange={() => setAnchor(null)}>\n        <MenuItem>New file</MenuItem>\n        <MenuSubmenu id=\"share-menu\" label=\"Share\">\n          <MenuItem>Email</MenuItem>\n          <MenuItem>Copy link</MenuItem>\n        </MenuSubmenu>\n      </Menu>\n    </>\n  );\n}",
+     "title": "Nest menus"
+    },
+    {
+     "body": "A `MenuList` is the list of a menu on its own, for a menu that is always on screen, such as on a Paper. It has the same keyboard as a menu. Its focus item takes the tab stop (`tabindex=\"0\"`): the selected item, else the first one. In React, `autoFocusItem` focuses that item when the list mounts and `autoFocus` focuses the list itself. In HTML, use the native `autofocus` attribute.",
+     "html": "<!-- Load once per page: the styles and the runtime -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\">\n  <ul data-ok-menu role=\"menu\" aria-label=\"Account\">\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"0\">Profile</li>\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Logout</li>\n  </ul>\n</div>",
+     "id": "menu-list",
+     "react": "import { MenuItem, MenuList, Paper } from \"@owlky/react\";\n\nexport function AccountList() {\n  return (\n    <Paper>\n      <MenuList aria-label=\"Account\">\n        <MenuItem>Profile</MenuItem>\n        <MenuItem>Logout</MenuItem>\n      </MenuList>\n    </Paper>\n  );\n}",
+     "title": "Show a menu without a popover"
+    },
+    {
+     "body": "By default, opening a menu focuses the selected item, else the first one. Set `variant` to `menu` to always focus the first item. With `disableAutoFocusItem`, focus goes to the list itself and the arrow keys then move into it; in HTML, also give the list `tabindex=\"-1\"`. `disabledItemsFocusable` lets the keyboard stop on disabled items, and `disableListWrap` stops the arrow keys at the first and last items.",
+     "html": "<ul data-ok-menu role=\"menu\" aria-label=\"Sort\" tabindex=\"-1\" data-ok-variant=\"menu\"\n  data-ok-disable-auto-focus-item data-ok-disable-list-wrap>\n  <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Newest</li>\n  <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\" data-ok-selected>Oldest</li>\n</ul>",
+     "id": "focus",
+     "react": "import { Button, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SortMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={(event) => setAnchor(event.currentTarget)}>\n        Sort\n      </Button>\n      <Menu\n        aria-label=\"Sort\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        variant=\"menu\"\n        disableAutoFocusItem\n        disableListWrap\n        onOpenChange={() => setAnchor(null)}\n      >\n        <MenuItem>Newest</MenuItem>\n        <MenuItem selected>Oldest</MenuItem>\n      </Menu>\n    </>\n  );\n}",
+     "title": "Choose where focus goes"
+    },
+    {
      "body": "The menu's popover takes the Popover options, such as `placement` (default `bottom-start` for menus). Every option works the same way in both versions.",
      "id": "options",
      "title": "Options"
@@ -67639,6 +67905,8 @@
   "data-ok-map-style-dark": "data-ok-map",
   "data-ok-map-view": "data-ok-map",
   "data-ok-markdown-source": "data-ok-markdown",
+  "data-ok-menu-submenu": "data-ok-menu",
+  "data-ok-menu-submenu-icon": "data-ok-menu",
   "data-ok-mobile-stepper-back": "data-ok-mobile-stepper",
   "data-ok-mobile-stepper-dot": "data-ok-mobile-stepper",
   "data-ok-mobile-stepper-dots": "data-ok-mobile-stepper",

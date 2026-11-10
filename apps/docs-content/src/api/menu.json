@@ -66,6 +66,36 @@
       "name": "dense"
      },
      {
+      "attr": "data-ok-variant",
+      "default": "selectedMenu",
+      "description": "Which item gets focus on open: the selected one, else the first (`selectedMenu`), or always the first (`menu`).",
+      "kind": "style",
+      "name": "variant",
+      "optional": true,
+      "values": [
+       "selectedMenu",
+       "menu"
+      ]
+     },
+     {
+      "attr": "data-ok-disable-auto-focus-item",
+      "description": "On open, focus goes to the list (`tabindex=\"-1\"`), not to an item; the arrow keys then enter it.",
+      "kind": "flag",
+      "name": "disableAutoFocusItem"
+     },
+     {
+      "attr": "data-ok-disabled-items-focusable",
+      "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+      "kind": "flag",
+      "name": "disabledItemsFocusable"
+     },
+     {
+      "attr": "data-ok-disable-list-wrap",
+      "description": "The arrow keys stop at the first and last items instead of wrapping.",
+      "kind": "flag",
+      "name": "disableListWrap"
+     },
+     {
       "attr": "data-ok-selected",
       "description": "The selected item (`MenuItem selected`).",
       "event": "ok:menu:select",
@@ -77,14 +107,24 @@
    },
    "name": "Menu",
    "react": {
-    "description": "A Popover holding a `ul[role=menu]`. Opening focuses the selected item (or the first); arrows, Home, End and typeahead move between items; Enter and Space choose; choosing an item closes the menu (reason `\"select\"`) unless its `onClick` calls `preventDefault()`.",
+    "description": "A Popover holding a `MenuList`. Opening focuses the selected item (or the first, see `variant`); choosing an item, also in a submenu, closes the menu (reason `\"select\"`) unless its `onClick` calls `preventDefault()`.",
     "native": "HTMLUListElement",
     "props": [
      {
-      "description": "The element the menu opens next to.",
+      "description": "The element (or virtual anchor) the menu opens next to.",
       "name": "anchorEl",
       "required": true,
       "type": "PopoverAnchor"
+     },
+     {
+      "description": "The point used with `anchorReference=\"anchorPosition\"`, in px from the viewport's top left corner.",
+      "name": "anchorPosition",
+      "type": "PopoverAnchorPosition"
+     },
+     {
+      "description": "What positions the menu: the anchor (default), `anchorPosition` (a point) or `none` (your CSS).",
+      "name": "anchorReference",
+      "type": "\"anchorEl\" | \"anchorPosition\" | \"none\""
      },
      {
       "description": "The content.",
@@ -97,9 +137,29 @@
       "type": "boolean"
      },
      {
+      "description": "On open, focus goes to the list instead of an item; the arrow keys then enter it.",
+      "name": "disableAutoFocusItem",
+      "type": "boolean"
+     },
+     {
+      "description": "The arrow keys stop at the first and last items instead of wrapping.",
+      "name": "disableListWrap",
+      "type": "boolean"
+     },
+     {
+      "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+      "name": "disabledItemsFocusable",
+      "type": "boolean"
+     },
+     {
       "description": "`id` of the menu's popover (point the trigger's `aria-controls` at it).",
       "name": "id",
       "type": "string"
+     },
+     {
+      "description": "Minimum distance to the viewport edges, in px. Default 16.",
+      "name": "marginThreshold",
+      "type": "number"
      },
      {
       "description": "Called when the menu asks to close, with the reason.",
@@ -122,6 +182,16 @@
       "description": "Where the menu opens around its anchor.",
       "name": "placement",
       "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+     },
+     {
+      "description": "Length of the opening animation, in ms. Default: the theme's shorter duration.",
+      "name": "transitionDuration",
+      "type": "number"
+     },
+     {
+      "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+      "name": "variant",
+      "type": "\"menu\" | \"selectedMenu\""
      }
     ]
    }
@@ -168,7 +238,7 @@
     "native": "HTMLLIElement",
     "props": [
      {
-      "description": "Compact items.",
+      "description": "Compact: 4px less padding above and below.",
       "name": "dense",
       "type": "boolean"
      },
@@ -191,6 +261,127 @@
       "description": "The current choice: bold and tinted; the menu focuses it when it opens.",
       "name": "selected",
       "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MenuList",
+   "react": {
+    "description": "The `ul[role=menu]` with the menu's keyboard: arrows, Home, End and typeahead move between items, Enter and Space choose, ArrowRight (ArrowLeft right to left) opens a submenu and ArrowLeft closes it. A `Menu` renders one inside its Popover; used alone (a menu always on screen), the first focus item takes the tab stop.",
+    "native": "HTMLUListElement",
+    "props": [
+     {
+      "description": "Standalone list: focuses the list when it mounts (it then joins the tab order).",
+      "name": "autoFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "Standalone list: focuses the first focus item (see `variant`) when it mounts.",
+      "name": "autoFocusItem",
+      "type": "boolean"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Compact items.",
+      "name": "dense",
+      "type": "boolean"
+     },
+     {
+      "description": "The arrow keys stop at the first and last items instead of wrapping.",
+      "name": "disableListWrap",
+      "type": "boolean"
+     },
+     {
+      "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+      "name": "disabledItemsFocusable",
+      "type": "boolean"
+     },
+     {
+      "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+      "name": "variant",
+      "type": "\"menu\" | \"selectedMenu\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-menu-submenu",
+    "description": "A submenu: the `li[role=none]` that holds its trigger item and its popover.",
+    "elements": [
+     "li"
+    ],
+    "parts": [
+     {
+      "description": "The chevron at the end of a submenu's trigger.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-menu-submenu-icon"
+     }
+    ]
+   },
+   "name": "MenuSubmenu",
+   "react": {
+    "description": "A submenu inside a Menu or MenuList: a `li[role=none]` holding a trigger item (`aria-haspopup=\"menu\"`) and a Popover with its own `MenuList`, opened after the trigger in the reading direction. ArrowRight, Enter, Space or a click open it and focus its first item; resting the mouse on the trigger opens it without moving focus; ArrowLeft and Escape close it.",
+    "native": "HTMLUListElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Compact items.",
+      "name": "dense",
+      "type": "boolean"
+     },
+     {
+      "description": "The arrow keys stop at the first and last items instead of wrapping.",
+      "name": "disableListWrap",
+      "type": "boolean"
+     },
+     {
+      "description": "The trigger can't open the submenu and is skipped by the keyboard.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+      "name": "disabledItemsFocusable",
+      "type": "boolean"
+     },
+     {
+      "description": "`id` of the submenu's popover (default: a generated one).",
+      "name": "id",
+      "type": "string"
+     },
+     {
+      "description": "The trigger item's content (text, an icon). A chevron follows it.",
+      "name": "label",
+      "required": true,
+      "type": "ReactNode"
+     },
+     {
+      "description": "Props of the submenu's popover paper.",
+      "name": "paperProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     },
+     {
+      "description": "Props of the trigger item (`div[role=menuitem]`).",
+      "name": "triggerProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     },
+     {
+      "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+      "name": "variant",
+      "type": "\"menu\" | \"selectedMenu\""
      }
     ]
    }

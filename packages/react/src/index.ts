@@ -70,6 +70,7 @@ export type {
   LinkUnderline,
   ListItemAlignment,
   ListSubheaderColor,
+  MenuVariant,
   MobileStepperPosition,
   MobileStepperVariant,
   MotionBorderColor,
@@ -459,7 +460,11 @@ export {
   type MenuCloseReason,
   MenuItem,
   type MenuItemProps,
+  MenuList,
+  type MenuListProps,
   type MenuProps,
+  MenuSubmenu,
+  type MenuSubmenuProps,
 } from "./menu/menu.js";
 export {
   Motion,

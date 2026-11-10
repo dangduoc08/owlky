@@ -4,7 +4,7 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
-import { Menu, MenuItem } from "./menu.js";
+import { Menu, MenuItem, MenuList, MenuSubmenu } from "./menu.js";
 
 function Demo({
   onChange,
@@ -169,5 +169,203 @@ describe("Menu", () => {
         </Menu>,
       ),
     ).toContain('role="menu"');
+  });
+});
+
+function Nested({ onChange }: { onChange?: (open: boolean, reason?: string) => void }) {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  return (
+    <>
+      <button type="button" onClick={(event) => setAnchor(event.currentTarget)}>
+        Open
+      </button>
+      <Menu
+        aria-label="File"
+        open={anchor !== null}
+        anchorEl={anchor}
+        onOpenChange={(open, reason) => {
+          onChange?.(open, reason);
+          setAnchor(null);
+        }}
+      >
+        <MenuItem>New</MenuItem>
+        <MenuSubmenu id="share" label="Share">
+          <MenuItem>Email</MenuItem>
+          <MenuSubmenu id="more" label="More">
+            <MenuItem>Fax</MenuItem>
+          </MenuSubmenu>
+        </MenuSubmenu>
+        <MenuSubmenu id="off" label="Off" disabled>
+          <MenuItem>Never</MenuItem>
+        </MenuSubmenu>
+        <MenuItem>Delete</MenuItem>
+      </Menu>
+      <button type="button">Outside</button>
+    </>
+  );
+}
+
+const isOpen = (id: string) => document.getElementById(id)?.hasAttribute("data-ok-open");
+const trigger = (name: string) => screen.getByRole("menuitem", { name, hidden: true });
+
+describe("MenuSubmenu", () => {
+  it("keyboard: ArrowRight / Enter open and focus the first item, ArrowLeft and Escape close", async () => {
+    const onChange = vi.fn();
+    render(<Nested onChange={onChange} />);
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    await userEvent.keyboard("{ArrowDown}");
+    const share = trigger("Share");
+    expect(document.activeElement).toBe(share);
+    expect(share.getAttribute("aria-haspopup")).toBe("menu");
+    expect(share.getAttribute("aria-controls")).toBe("share");
+    await userEvent.keyboard("{ArrowRight}");
+    expect(isOpen("share")).toBe(true);
+    expect(share.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement?.textContent).toBe("Email");
+    // Keys in the submenu stay in it.
+    await userEvent.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(trigger("More"));
+    await userEvent.keyboard("{Enter}");
+    expect(isOpen("more")).toBe(true);
+    expect(document.activeElement?.textContent).toBe("Fax");
+    await userEvent.keyboard("{Escape}");
+    expect(isOpen("more")).toBe(false);
+    expect(isOpen("share")).toBe(true);
+    expect(document.activeElement).toBe(trigger("More"));
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(isOpen("share")).toBe(false);
+    expect(document.activeElement).toBe(share);
+    expect(onChange).not.toHaveBeenCalled();
+    // Disabled triggers are skipped; moving on closes open submenus.
+    await userEvent.keyboard("{ArrowRight}");
+    expect(isOpen("share")).toBe(true);
+    share.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(isOpen("share")).toBe(false);
+    expect(isOpen("off")).toBe(false);
+    expect(document.activeElement).toBe(trigger("Delete"));
+    await userEvent.keyboard("{ArrowUp}{ArrowRight}");
+    expect(isOpen("share")).toBe(true);
+    // Choosing an item in a submenu closes the whole menu.
+    await userEvent.keyboard("{Enter}");
+    expect(onChange).toHaveBeenCalledWith(false, "select");
+    expect(isOpen("share")).toBe(false);
+  });
+
+  it("a click opens it; Tab and a press outside close the whole menu; it closes with the menu", async () => {
+    const onChange = vi.fn();
+    render(<Nested onChange={onChange} />);
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    await userEvent.click(trigger("Share"));
+    expect(isOpen("share")).toBe(true);
+    expect(onChange).not.toHaveBeenCalled();
+    await userEvent.keyboard("{Tab}");
+    expect(onChange).toHaveBeenLastCalledWith(false, "tab");
+    expect(isOpen("share")).toBe(false);
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    await userEvent.click(trigger("Share"));
+    expect(isOpen("share")).toBe(true);
+    await userEvent.click(screen.getByRole("button", { name: "Outside" }));
+    expect(onChange).toHaveBeenLastCalledWith(false, "backdrop");
+  });
+
+  it("the mouse resting on a trigger opens its submenu without moving focus", async () => {
+    render(<Nested />);
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    const active = document.activeElement;
+    await userEvent.hover(trigger("Share"));
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(isOpen("share")).toBe(true);
+    expect(document.activeElement).toBe(active);
+    await userEvent.hover(trigger("New"));
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(isOpen("share")).toBe(false);
+    await userEvent.hover(trigger("Share"));
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    // ArrowRight on an open submenu's trigger focuses its first item.
+    trigger("Share").focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(document.activeElement?.textContent).toBe("Email");
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("right to left: the submenu opens on the left; ArrowLeft opens, ArrowRight closes", async () => {
+    render(
+      <div dir="rtl">
+        <Nested />
+      </div>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    await userEvent.keyboard("{ArrowDown}{ArrowLeft}");
+    expect(isOpen("share")).toBe(true);
+    expect(document.getElementById("share")?.getAttribute("data-ok-placement")).toBe("left-start");
+    await userEvent.keyboard("{ArrowRight}");
+    expect(isOpen("share")).toBe(false);
+  });
+});
+
+describe("Menu options and MenuList", () => {
+  it("variant menu focuses the first item; disableAutoFocusItem focuses the list", async () => {
+    const { rerender } = render(
+      <Menu open anchorEl={document.body} aria-label="V" variant="menu">
+        <MenuItem>One</MenuItem>
+        <MenuItem selected>Two</MenuItem>
+      </Menu>,
+    );
+    expect(document.activeElement?.textContent).toBe("One");
+    rerender(
+      <Menu open={false} anchorEl={document.body} aria-label="V" disableAutoFocusItem>
+        <MenuItem>One</MenuItem>
+        <MenuItem selected>Two</MenuItem>
+      </Menu>,
+    );
+    rerender(
+      <Menu open anchorEl={document.body} aria-label="V" disableAutoFocusItem>
+        <MenuItem>One</MenuItem>
+        <MenuItem selected>Two</MenuItem>
+      </Menu>,
+    );
+    const list = screen.getByRole("menu");
+    expect(document.activeElement).toBe(list);
+    expect(list.getAttribute("tabindex")).toBe("-1");
+    await userEvent.keyboard("{ArrowDown}");
+    expect(document.activeElement?.textContent).toBe("One");
+  });
+
+  it("standalone: the focus item takes the tab stop; autoFocus, autoFocusItem, wrap and disabled options", async () => {
+    const { rerender } = render(
+      <MenuList aria-label="L" disabledItemsFocusable disableListWrap>
+        <MenuItem disabled>Off</MenuItem>
+        <MenuItem>On</MenuItem>
+      </MenuList>,
+    );
+    const list = screen.getByRole("menu");
+    expect(list.dataset).toMatchObject({ okDisabledItemsFocusable: "", okDisableListWrap: "" });
+    const [off, on] = screen.getAllByRole("menuitem");
+    expect(off?.getAttribute("tabindex")).toBe("0");
+    expect(on?.getAttribute("tabindex")).toBe("-1");
+    off?.focus();
+    await userEvent.keyboard("{ArrowUp}");
+    expect(document.activeElement).toBe(off);
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    expect(document.activeElement).toBe(on);
+    await userEvent.keyboard("{Tab}");
+    rerender(
+      <MenuList aria-label="L" autoFocusItem>
+        <MenuItem disabled>Off</MenuItem>
+        <MenuItem selected>On</MenuItem>
+        text
+      </MenuList>,
+    );
+    expect(document.activeElement?.textContent).toBe("On");
+    expect(screen.getAllByRole("menuitem")[1]?.getAttribute("tabindex")).toBe("0");
+    rerender(
+      <MenuList aria-label="L" autoFocus>
+        <MenuItem>On</MenuItem>
+      </MenuList>,
+    );
+    expect(document.activeElement).toBe(screen.getByRole("menu"));
+    expect(screen.getByRole("menu").getAttribute("tabindex")).toBe("0");
+    await expectNoAxeViolations(document.body);
   });
 });

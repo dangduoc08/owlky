@@ -1313,6 +1313,14 @@ export interface MarkdownParts {
   "data-ok-disallowed-elements": Value<string>;
 }
 
+/** Menu: parts, states, values and triggers. */
+export interface MenuParts {
+  /** A submenu: the `li[role=none]` that holds its trigger item and its popover. */
+  "data-ok-menu-submenu": Part<"li">;
+  /** The chevron at the end of a submenu's trigger. */
+  "data-ok-menu-submenu-icon": Part<"svg">;
+}
+
 /** Motion: parts, states, values and triggers. */
 export interface MotionParts {
   /** The full number for assistive technology. */

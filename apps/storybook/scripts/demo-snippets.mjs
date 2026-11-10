@@ -41,6 +41,8 @@ const DEMOS = [
     popoverTriggers,
   ],
   ["popover", "virtual-element-demo.tsx", "VirtualElementDemo", "virtual-element-group"],
+  ["menu", "nested-demo.tsx", "NestedMenuDemo", "nested-group", popoverTriggers],
+  ["menu", "menu-list-demo.tsx", "MenuListDemo", "menu-list-group"],
 ];
 
 const only = process.argv.slice(2);
@@ -91,6 +93,8 @@ function pretty(markup) {
     return `\n@@kept:${kept.length - 1}@@\n`;
   };
   const lines = markup
+    // Submenu triggers hold their label and chevron on one line.
+    .replace(/<div\b[^>]*role="menuitem"[^>]*>(?:(?!<\/?div\b)[\s\S])*<\/div>/g, protect)
     .replace(/<(button|span|h2|h3|h6|p|svg|label|a)\b[^>]*>(?:(?!<\/?\1\b)[\s\S])*<\/\1>/g, protect)
     .replace(/></g, ">\n<")
     .split("\n")
