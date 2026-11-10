@@ -17,7 +17,7 @@
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { API, SignatureKind, SymbolFlags } from "typescript/unstable/sync";
+import { API, isUnionType, SignatureKind, SymbolFlags } from "typescript/unstable/sync";
 import { folderSpec as sharedFolderSpec } from "./component-folders.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -160,14 +160,42 @@ const missingDoc = new Map();
     if (!type) continue;
     const signatures = checker.getSignaturesOfType(type, SignatureKind.Call);
     if (signatures.length === 0) continue;
-    // Overloads (Link): the signature with the most own props.
+    // Overloads (Link, Button): every own prop of every signature, once (the first one's docs);
+    // required only when every signature requires it. Union props (a button or a link) add the
+    // props of a single member (`LinkComponent`) as optional.
     let best;
+    const variants = [];
+    const optional = new Set();
     for (const signature of signatures) {
       const props = checker.getParameterType(signature, 0);
       if (!props) continue;
-      const list = checker.getPropertiesOfType(props);
+      const list = [...checker.getPropertiesOfType(props)];
+      if (isUnionType(props)) {
+        const names = new Set(list.map((prop) => prop.name));
+        for (const member of props.getTypes())
+          for (const prop of checker.getPropertiesOfType(member)) {
+            if (names.has(prop.name)) continue;
+            names.add(prop.name);
+            optional.add(prop.name);
+            list.push(prop);
+          }
+      }
+      variants.push(list);
+    }
+    if (variants.length > 0) {
+      const merged = new Map();
+      const seen = new Map();
+      for (const list of variants) {
+        for (const prop of list) {
+          if (!merged.has(prop.name)) merged.set(prop.name, prop);
+          seen.set(prop.name, (seen.get(prop.name) ?? 0) + 1);
+          if (prop.flags & SymbolFlags.Optional) optional.add(prop.name);
+        }
+      }
+      for (const [name, count] of seen) if (count < variants.length) optional.add(name);
+      const list = [...merged.values()];
       const own = list.filter((p) => OWN.test(p.declarations?.[0]?.path ?? "")).length;
-      if (!best || own > best.own) best = { list, own };
+      best = { list, own, optional };
     }
     if (!best) continue;
     // forwardRef drops the named props of a type with an index signature (CardMedia): read the
@@ -211,7 +239,8 @@ const missingDoc = new Map();
         }
       }
       if (defaultValue !== undefined) entry.default = defaultValue;
-      if (!(prop.flags & SymbolFlags.Optional)) entry.required = true;
+      if (!(prop.flags & SymbolFlags.Optional) && !best.optional?.has(prop.name))
+        entry.required = true;
       props.push(entry);
     }
     props.sort((a, b) => byName(a.name, b.name));

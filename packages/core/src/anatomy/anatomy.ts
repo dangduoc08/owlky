@@ -1108,6 +1108,11 @@ export const textFieldOptions = defineOptions("text-field", "data-ok-text-field"
     "Vertical margin: 0, 8 / 4px or 16 / 8px.",
   ),
   shrink: flag("data-ok-shrink", "Keep the label above the value even when empty."),
+  hiddenLabel: flag(
+    "data-ok-hidden-label",
+    "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
+  ),
+  focused: flag("data-ok-focused", "Show the focus colors even when the field doesn't have focus."),
   minRows: number("data-ok-min-rows", undefined, "Multiline: rows shown at least.", { min: 1 }),
   maxRows: number("data-ok-max-rows", undefined, "Multiline: rows before it scrolls.", { min: 1 }),
   disabled: native("disabled", "Native `disabled` on the input.", { children: FIELD_INPUT }),
@@ -1129,6 +1134,8 @@ export interface TextFieldAnatomyOptions {
   fullWidth?: boolean | undefined;
   margin?: TextFieldMargin | undefined;
   shrink?: boolean | undefined;
+  hiddenLabel?: boolean | undefined;
+  focused?: boolean | undefined;
   minRows?: number | undefined;
   maxRows?: number | undefined;
 }
@@ -3496,6 +3503,10 @@ const valueTypeOption = style(
   { optional: true },
 );
 
+/** Side of a field's clear or open button (MUI `clearButtonPosition`, `openPickerButtonPosition`). */
+export const pickerButtonPositions = ["start", "end"] as const;
+export type PickerButtonPosition = (typeof pickerButtonPositions)[number];
+
 export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field", {
   formatDensity: style(
     "data-ok-format-density",
@@ -3504,6 +3515,24 @@ export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field"
     "`spacious` puts spaces around the separators (`05 / 25 / 2025`).",
   ),
   clearable: flag("data-ok-clearable", "A clear button at the end of the field."),
+  clearButtonPosition: style(
+    "data-ok-clear-button-position",
+    pickerButtonPositions,
+    "end",
+    "Side of the clear button. HTML: put the button in the adornment on that side.",
+    { optional: true },
+  ),
+  openPickerButtonPosition: style(
+    "data-ok-open-picker-button-position",
+    pickerButtonPositions,
+    "end",
+    "Pickers: side of the open button. HTML: put the button in the adornment on that side.",
+    { optional: true },
+  ),
+  shouldRespectLeadingZeros: flag(
+    "data-ok-should-respect-leading-zeros",
+    "Digit sections keep the format's padding (`D` shows `5`); by default they show two digits (`05`).",
+  ),
   readOnly: flag(
     "data-ok-read-only",
     "The value can't be changed (it can still be focused and copied).",
@@ -3519,6 +3548,9 @@ export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field"
 export interface DateFieldAnatomyOptions {
   formatDensity?: (typeof pickerFormatDensities)[number] | undefined;
   clearable?: boolean | undefined;
+  clearButtonPosition?: PickerButtonPosition | undefined;
+  openPickerButtonPosition?: PickerButtonPosition | undefined;
+  shouldRespectLeadingZeros?: boolean | undefined;
   readOnly?: boolean | undefined;
   valueType?: (typeof pickerValueTypes)[number] | undefined;
   range?: boolean | undefined;

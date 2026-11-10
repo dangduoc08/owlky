@@ -7,6 +7,8 @@ import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { EyeIcon, PersonIcon } from "./text-field-examples.js";
 
+const SEARCH_SVG = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>`;
+
 const outline = (label: string) =>
   `<fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>${label}</span></legend></fieldset>`;
 
@@ -118,6 +120,39 @@ export function Password() {
 }`,
   },
   {
+    id: "hidden-label",
+    title: "Hide the label",
+    body: "When the context already says what a field is for, such as a search field in a toolbar, set `hiddenLabel`. The label is hidden visually but still names the input for assistive technology, and the field is laid out as if it had no label: a filled field gets less padding above the value. Show a placeholder instead, so sighted users know what to type. An adornment that only decorates the field can let presses through to the input: set `disablePointerEvents` on it (HTML: `data-ok-disable-pointer-events`).",
+    html: `<div data-ok-text-field data-ok-variant="filled" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-hidden-label>
+  <label data-ok-text-field-label for="search">Search</label>
+  <div data-ok-text-field-control>
+    <span data-ok-text-field-adornment="start" data-ok-disable-pointer-events>${SEARCH_SVG}</span>
+    <input id="search" data-ok-text-field-input type="search" placeholder="Search orders">
+  </div>
+</div>`,
+    react: `import { InputAdornment, TextField } from "@owlky/react";
+import { SearchIcon } from "lucide-react";
+
+export function SearchField() {
+  return (
+    <TextField
+      id="search"
+      variant="filled"
+      size="small"
+      label="Search"
+      hiddenLabel
+      type="search"
+      placeholder="Search orders"
+      startAdornment={
+        <InputAdornment position="start" disablePointerEvents>
+          <SearchIcon />
+        </InputAdornment>
+      }
+    />
+  );
+}`,
+  },
+  {
     id: "select",
     title: "Let people choose from a list",
     body: "Set `select` and pass `<option>` elements to get a native `<select>` in the field's frame. The label always stays above it. A native select uses the system's list on every device, which works well on touch screens and with assistive technology. For a list in the page's own style, set `selectProps` to `{ native: false }` and pass **MenuItem**s: the field then holds a **Select** (see its page).",
@@ -191,6 +226,22 @@ export function TextFieldMultiline() {
   apiReferenceSection(textFieldApi),
 ];
 
+function SearchPreviewIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+  );
+}
+
 function PasswordPreview() {
   const [shown, setShown] = useState(false);
   return (
@@ -248,6 +299,23 @@ const PREVIEWS = {
     <Preview>
       <PasswordPreview />
       <TextField label="Weight" endAdornment={<InputAdornment position="end">kg</InputAdornment>} />
+    </Preview>
+  ),
+  "hidden-label": () => (
+    <Preview>
+      <TextField
+        variant="filled"
+        size="small"
+        label="Search"
+        hiddenLabel
+        type="search"
+        placeholder="Search orders"
+        startAdornment={
+          <InputAdornment position="start" disablePointerEvents>
+            <SearchPreviewIcon />
+          </InputAdornment>
+        }
+      />
     </Preview>
   ),
   select: () => (
@@ -309,6 +377,24 @@ const PREVIEWS = {
           html: "on the input",
           type: "string",
           description: "Native attributes, passed to the input.",
+        },
+        {
+          react: "component",
+          html: "any element",
+          type: "ElementType",
+          description: "The root element. Default `div`.",
+        },
+        {
+          react: "InputAdornment component",
+          html: "any element",
+          type: "ElementType",
+          description: "The adornment's element. Default `span`.",
+        },
+        {
+          react: "InputAdornment disablePointerEvents",
+          html: "data-ok-disable-pointer-events",
+          type: "boolean",
+          description: "Presses on the adornment go through to the input.",
         },
         {
           html: "data-ok-text-field-reveal",

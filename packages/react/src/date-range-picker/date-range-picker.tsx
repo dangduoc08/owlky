@@ -4,6 +4,7 @@ import {
   type DateRange,
   dateRangePickerAttributes,
   defaultRangeCalendars,
+  type FieldSelectedSections,
   focusCalendar,
   focusPickerView,
   formatAccessibleDate,
@@ -174,10 +175,13 @@ export interface DateRangePickerProps
   disabled?: boolean | undefined;
   /** Focuses the field when it mounts. */
   autoFocus?: boolean | undefined;
-  /** The selected section of the field (its index, `null`: none), controlled. */
-  selectedSections?: number | null | undefined;
-  /** Called when the selected section changes. */
-  onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+  /**
+   * The selected section of the field (controlled): its index, the first section of a type
+   * (`"day"`), every section (`"all"`), or `null` for none.
+   */
+  selectedSections?: FieldSelectedSections | undefined;
+  /** Called when the selected section changes (its index, or `"all"`). */
+  onSelectedSectionsChange?: ((section: FieldSelectedSections) => void) | undefined;
   /** Text under the field, such as a hint or an error message. */
   helperText?: ReactNode;
   /** Shows the field in the error state. */

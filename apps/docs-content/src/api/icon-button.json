@@ -123,19 +123,40 @@
    },
    "name": "IconButton",
    "react": {
-    "description": "A native round `<button type=\"button\">` holding a decorative icon. Give it an accessible name with `aria-label`.",
-    "native": "HTMLButtonElement",
+    "description": "A native round `<button type=\"button\">` holding a decorative icon, an `<a>` when `href` is set (an icon link; or the `LinkComponent`), or the `component`. Give it an accessible name with `aria-label`.",
+    "native": "HTMLElement",
     "props": [
+     {
+      "default": "\"a\"",
+      "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the button's attributes.",
+      "name": "LinkComponent",
+      "type": "ElementType"
+     },
      {
       "description": "Scales up on hover and down while pressed (off with reduced motion).",
       "name": "animate",
       "type": "boolean"
      },
      {
+      "description": "The icon.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
       "default": "\"default\"",
       "description": "`default` (secondary text), `inherit` (text color) or a palette color.",
       "name": "color",
       "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+     },
+     {
+      "description": "The element or component to render, such as a router link.",
+      "name": "component",
+      "type": "C"
+     },
+     {
+      "description": "Turns the button off: links get `aria-disabled` and leave the tab order.",
+      "name": "disabled",
+      "type": "boolean"
      },
      {
       "description": "Pull the button out by its padding so the icon lines up with that edge.",

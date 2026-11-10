@@ -230,9 +230,15 @@
    },
    "name": "Button",
    "react": {
-    "description": "A native `<button type=\"button\">`, or an `<a>` when `href` is set.",
-    "native": "HTMLAnchorElement",
+    "description": "A native `<button type=\"button\">`, an `<a>` when `href` is set (or the `LinkComponent`), or the `component`, such as a router link.",
+    "native": "HTMLElement",
     "props": [
+     {
+      "default": "\"a\"",
+      "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the button's attributes.",
+      "name": "LinkComponent",
+      "type": "ElementType"
+     },
      {
       "description": "The content.",
       "name": "children",
@@ -245,12 +251,17 @@
       "type": "ColorName"
      },
      {
+      "description": "The element or component to render, such as a router link.",
+      "name": "component",
+      "type": "C"
+     },
+     {
       "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
       "name": "disableElevation",
       "type": "boolean"
      },
      {
-      "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+      "description": "Turns the button off: links get `aria-disabled` and leave the tab order.",
       "name": "disabled",
       "type": "boolean"
      },

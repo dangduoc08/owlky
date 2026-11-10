@@ -11,10 +11,10 @@ adornments and helper text.
 
 ## Anatomy
 ```
-div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-min-rows]?[data-ok-max-rows]?
+div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-hidden-label]?[data-ok-focused]?[data-ok-min-rows]?[data-ok-max-rows]?
   label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] " *")
   div[data-ok-text-field-control]
-    span[data-ok-text-field-adornment="start"]?
+    span[data-ok-text-field-adornment="start"][data-ok-disable-pointer-events]?   (optional; any element)
     input[data-ok-text-field-input][id][placeholder]   | textarea[…][rows][placeholder] | select[…] › option
     svg[data-ok-text-field-select-icon][aria-hidden]?  (select)
     span[data-ok-text-field-adornment="end"]?
@@ -38,6 +38,8 @@ Root: `data-ok-text-field`. Unknown values fall back to the default.
 | `fullWidth` | `data-ok-full-width` | flag | boolean | off | Stretch to the container width. |
 | `margin` | `data-ok-margin="…"` | style | `none` `dense` `normal` | `none` | Vertical margin: 0, 8 / 4px or 16 / 8px. |
 | `shrink` | `data-ok-shrink` | flag | boolean | off | Keep the label above the value even when empty. |
+| `hiddenLabel` | `data-ok-hidden-label` | flag | boolean | off | Hide the label visually (it still names the input); the field gets the padding of a field without a label. |
+| `focused` | `data-ok-focused` | flag | boolean | off | Show the focus colors even when the field doesn't have focus. |
 | `minRows` | `data-ok-min-rows="…"` | number | number | — | Multiline: rows shown at least. |
 | `maxRows` | `data-ok-max-rows="…"` | number | number | — | Multiline: rows before it scrolls. |
 | `disabled` | `disabled` on each `[data-ok-text-field-control] > :is([data-ok-text-field-input]:not([data-ok-select-display]), [data-ok-select-input])` | native | boolean | off | Native `disabled` on the input. |
@@ -120,9 +122,9 @@ Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, 
 | `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |
 | `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |
 | `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |
-| FormControl `hiddenLabel`, `focused`, `component` | — | deferred | filled field without label (less top padding), forced focus style, root element |
+| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |
 | InputAdornment `position`, `children` | same | kept | |
-| InputAdornment `disablePointerEvents`, `component` | — | deferred | |
+| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |
 | InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |
 | `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |
 | `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |

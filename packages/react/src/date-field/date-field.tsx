@@ -1,27 +1,33 @@
 "use client";
 
 import {
+  createFieldApi,
   createFieldController,
   type DateRules,
   type DateValidationError,
   type DateView,
   dateFieldAttributes,
   defaultPickerFormat,
+  type FieldApi,
   type FieldController,
+  type FieldSelectedSections,
   type FormatSection,
+  fieldSections,
   formatIsoDate,
   formatIsoDateTime,
   formatIsoTime,
   isSamePickerValue,
   isValidDate,
+  type PickerButtonPosition,
   type PickerLocaleText,
   type PickerValidationError,
   type PickerValueType,
   type PickerView,
-  parseFormat,
   pickerValueIso,
   pickerViewsOf,
   resolveAmpm,
+  resolveSelectedSection,
+  type SelectionControlColor,
   type SelectionControlSize,
   sectionAria,
   sectionLabel,
@@ -29,6 +35,7 @@ import {
   sectionsToDate,
   sectionValues,
   startOfDay,
+  type TextFieldMargin,
   type TextFieldVariant,
   type TimeRules,
   type TimeView,
@@ -43,6 +50,7 @@ import {
   type Ref,
   useEffect,
   useId,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -203,8 +211,15 @@ export interface DateFieldProps
   formatDensity?: "dense" | "spacious" | undefined;
   /** A clear button at the end. */
   clearable?: boolean | undefined;
+  /** Side of the clear button. Default `"end"`. */
+  clearButtonPosition?: PickerButtonPosition | undefined;
   /** Called when the clear button empties the field. */
   onClear?: (() => void) | undefined;
+  /**
+   * Digit sections keep the format's padding (`D` shows `5`). Default `false`: they always show
+   * two digits (`05`).
+   */
+  shouldRespectLeadingZeros?: boolean | undefined;
   /** The value can't be changed. */
   readOnly?: boolean | undefined;
   /** Turns the field off. */
@@ -213,10 +228,15 @@ export interface DateFieldProps
   referenceDate?: Date | undefined;
   /** Focuses the first section on mount. */
   autoFocus?: boolean | undefined;
-  /** The focused section (controlled), `null` when none. */
-  selectedSections?: number | null | undefined;
-  /** Called when another section gets focus. */
-  onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+  /**
+   * The selected section (controlled): its index, the first section of a type (`"day"`), every
+   * section (`"all"`), or `null` for none.
+   */
+  selectedSections?: FieldSelectedSections | undefined;
+  /** Called when another section gets focus (its index), or every section is selected (`"all"`). */
+  onSelectedSectionsChange?: ((section: FieldSelectedSections) => void) | undefined;
+  /** The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`. */
+  fieldRef?: Ref<FieldApi> | undefined;
   /** Text overrides for this field. */
   localeText?: Partial<PickerLocaleText> | undefined;
   /** TextField props. */
@@ -229,6 +249,14 @@ export interface DateFieldProps
   variant?: TextFieldVariant | undefined;
   /** The field's size. */
   size?: SelectionControlSize | undefined;
+  /** Focus color; `default` is the text color. Default `"default"`. */
+  color?: SelectionControlColor | undefined;
+  /** Vertical margin. Default `"none"`. */
+  margin?: TextFieldMargin | undefined;
+  /** Hide the label visually (it still names the field); the field is laid out as without one. */
+  hiddenLabel?: boolean | undefined;
+  /** Show the focus colors even when the field doesn't have focus. */
+  focused?: boolean | undefined;
   /** Stretches the field to the container's width. */
   fullWidth?: boolean | undefined;
   /** Marks the field as required (an asterisk on the label). */
@@ -239,7 +267,9 @@ export interface DateFieldProps
   inputRef?: Ref<HTMLInputElement> | undefined;
   /** Id of the sections group (other ids derive from it). */
   id?: string | undefined;
-  /** More content at the end (a picker's open button). */
+  /** An `InputAdornment` with `position="start"`, before the sections. */
+  startAdornment?: ReactNode;
+  /** An `InputAdornment` with `position="end"`, after the sections (before the buttons). */
   endAdornment?: ReactNode;
 }
 
@@ -260,6 +290,10 @@ export interface PickerFieldProps
     | ((value: Date | null, context: PickerChangeContext<PickerValidationError>) => void)
     | undefined;
   onError?: ((error: PickerValidationError | null, value: Date | null) => void) | undefined;
+  /** A picker's open button (internal). */
+  openButton?: ReactNode;
+  /** Side of the open button. Default `"end"`. */
+  openPickerButtonPosition?: PickerButtonPosition | undefined;
 }
 
 /**
@@ -294,25 +328,35 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
     views,
     formatDensity,
     clearable,
+    clearButtonPosition,
+    openPickerButtonPosition,
     onClear,
+    shouldRespectLeadingZeros,
     readOnly = false,
     disabled = false,
     referenceDate,
     autoFocus,
     selectedSections,
     onSelectedSectionsChange,
+    fieldRef,
     localeText: localeTextProp,
     label,
     helperText,
     error: errorProp,
     variant,
     size,
+    color,
+    margin,
+    hiddenLabel,
+    focused,
     fullWidth,
     required,
     name,
     inputRef,
     id: idProp,
+    startAdornment,
     endAdornment,
+    openButton,
     minDate,
     maxDate,
     disablePast,
@@ -332,7 +376,10 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
   const ampm = resolveAmpm(ampmProp, locale);
   const format =
     formatProp ?? defaultPickerFormat(pickerViewsOf(views, valueType), valueType, ampm, locale);
-  const sections = useMemo<FormatSection[]>(() => parseFormat(format), [format]);
+  const sections = useMemo<FormatSection[]>(
+    () => fieldSections(format, shouldRespectLeadingZeros),
+    [format, shouldRespectLeadingZeros],
+  );
   const timeProps = {
     minTime,
     maxTime,
@@ -368,12 +415,14 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
   // The value the texts stand for: a new outside value (or format) resets the texts.
   const shown = useRef<{ value: Date | null; format: string; locale: string }>({
     value: current,
-    format,
+    format: `${format}\u0000${shouldRespectLeadingZeros === true}`,
     locale,
   });
+  // The texts depend on the format and on the padding of its digit sections.
+  const layout = `${format}\u0000${shouldRespectLeadingZeros === true}`;
   if (
     !isSamePickerValue(shown.current.value, current) ||
-    shown.current.format !== format ||
+    shown.current.format !== layout ||
     shown.current.locale !== locale
   ) {
     // An invalid value (partly filled) is what the texts already show: keep them, unless the
@@ -381,9 +430,9 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
     const keep =
       !isValidDate(current) &&
       current !== null &&
-      shown.current.format === format &&
+      shown.current.format === layout &&
       shown.current.locale === locale;
-    shown.current = { value: current, format, locale };
+    shown.current = { value: current, format: layout, locale };
     if (!keep) {
       const next = sectionValues(current, sections, locale);
       if (next.join("\u0000") !== texts.join("\u0000")) setTexts(next);
@@ -403,7 +452,7 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
   const commit = (next: string[]) => {
     setTexts(next);
     const date = sectionsToDate(next, sections, locale, reference());
-    shown.current = { value: date, format, locale };
+    shown.current = { value: date, format: layout, locale };
     if (isSamePickerValue(date, current)) return;
     setCurrent(date);
     onChange?.(date, { validationError: validate(date) });
@@ -420,6 +469,7 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
     autoFocus,
     selectedSections,
     onSelectedSectionsChange,
+    fieldRef,
   });
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -432,6 +482,9 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
         ...dateFieldAttributes({
           formatDensity,
           clearable,
+          clearButtonPosition,
+          openPickerButtonPosition,
+          shouldRespectLeadingZeros,
           readOnly,
           valueType: valueType === "date" ? undefined : valueType,
         }),
@@ -451,6 +504,10 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
       invalid={errorProp ?? validationError !== null}
       variant={variant}
       size={size}
+      color={color}
+      margin={margin}
+      hiddenLabel={hiddenLabel}
+      focused={focused}
       fullWidth={fullWidth}
       formatDensity={formatDensity}
       disabled={disabled}
@@ -470,7 +527,11 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
         onClear?.();
         controllerRef.current?.focusSection(0);
       }}
+      clearButtonPosition={clearButtonPosition}
+      openPickerButtonPosition={openPickerButtonPosition}
+      startAdornment={startAdornment}
       endAdornment={endAdornment}
+      openButton={openButton}
     />
   );
 });
@@ -487,8 +548,9 @@ export interface SectionedFieldOptions {
   /** New texts from a key, a paste or a clear. */
   commit: (next: string[]) => void;
   autoFocus?: boolean | undefined;
-  selectedSections?: number | null | undefined;
-  onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+  selectedSections?: FieldSelectedSections | undefined;
+  onSelectedSectionsChange?: ((section: FieldSelectedSections) => void) | undefined;
+  fieldRef?: Ref<FieldApi> | undefined;
 }
 
 /** Core's field controller on the sections group, refreshed every render (internal). */
@@ -518,9 +580,32 @@ export function useSectionedField(options: SectionedFieldOptions) {
         setActive(index);
         latest.current.onSelectedSectionsChange?.(index);
       },
+      onSelectAll: () => latest.current.onSelectedSectionsChange?.("all"),
     });
     controllerRef.current = controller;
     return () => controller.destroy();
+  }, []);
+
+  // The field API reads the controller and the latest texts when it is called.
+  useImperativeHandle(options.fieldRef, (): FieldApi => {
+    const api = () =>
+      controllerRef.current
+        ? createFieldApi(controllerRef.current, () => {
+            const s = latest.current;
+            return {
+              sections: s.sections,
+              values: s.texts,
+              placeholders: s.sections.map((section) => sectionPlaceholder(section, s.localeText)),
+            };
+          })
+        : null;
+    return {
+      getSections: () => api()?.getSections() ?? [],
+      getActiveSectionIndex: () => api()?.getActiveSectionIndex() ?? null,
+      setSelectedSections: (selected) => api()?.setSelectedSections(selected),
+      focusField: (selected) => api()?.focusField(selected),
+      isFieldFocused: () => api()?.isFieldFocused() ?? false,
+    };
   }, []);
 
   // After every render: keep the focused section's text selected.
@@ -534,7 +619,9 @@ export function useSectionedField(options: SectionedFieldOptions) {
   }, [autoFocus]);
 
   useEffect(() => {
-    if (typeof selectedSections === "number") controllerRef.current?.focusSection(selectedSections);
+    const target = resolveSelectedSection(selectedSections, latest.current.sections);
+    if (target === "all") controllerRef.current?.selectAll();
+    else if (typeof target === "number") controllerRef.current?.focusSection(target);
   }, [selectedSections]);
 
   return { groupRef, controllerRef, active };
@@ -554,6 +641,10 @@ export function SectionedTextField({
   invalid,
   variant,
   size,
+  color,
+  margin,
+  hiddenLabel,
+  focused,
   fullWidth,
   formatDensity,
   disabled,
@@ -568,8 +659,12 @@ export function SectionedTextField({
   name,
   inputRef,
   clearable,
+  clearButtonPosition,
+  openPickerButtonPosition,
   onClear,
+  startAdornment,
   endAdornment,
+  openButton,
 }: {
   rootRef: Ref<HTMLDivElement>;
   rootAttributes: Record<string, string>;
@@ -583,6 +678,10 @@ export function SectionedTextField({
   invalid: boolean;
   variant?: TextFieldVariant | undefined;
   size?: SelectionControlSize | undefined;
+  color?: SelectionControlColor | undefined;
+  margin?: TextFieldMargin | undefined;
+  hiddenLabel?: boolean | undefined;
+  focused?: boolean | undefined;
   fullWidth?: boolean | undefined;
   formatDensity?: "dense" | "spacious" | undefined;
   disabled: boolean;
@@ -597,8 +696,13 @@ export function SectionedTextField({
   name?: string | undefined;
   inputRef?: Ref<HTMLInputElement> | undefined;
   clearable?: boolean | undefined;
+  clearButtonPosition?: PickerButtonPosition | undefined;
+  openPickerButtonPosition?: PickerButtonPosition | undefined;
   onClear: () => void;
+  startAdornment?: ReactNode;
   endAdornment?: ReactNode;
+  /** A picker's open button. */
+  openButton?: ReactNode;
 }) {
   const labelId = `${id}-label`;
   const helperId = helperText != null ? `${id}-helper-text` : undefined;
@@ -607,15 +711,34 @@ export function SectionedTextField({
   const attributes = textFieldAttributes({
     variant,
     size,
+    color,
+    margin,
     error: invalid,
     fullWidth,
     shrink: filled,
+    hiddenLabel,
+    focused,
   });
   const outlined = attributes["data-ok-variant"] === "outlined";
   const spacious = formatDensity === "spacious";
   const separator = (text: string) => (spacious && text.trim() !== "" ? ` ${text.trim()} ` : text);
   const editable = !disabled && !readOnly;
   const showClear = clearable === true && filled && !disabled && !readOnly;
+  const clearButton = clearable && (
+    <IconButton
+      data-ok-date-field-clear=""
+      size="sm"
+      aria-label={localeText.fieldClearLabel}
+      hidden={!showClear || undefined}
+      onClick={onClear}
+    >
+      <ClearIcon />
+    </IconButton>
+  );
+  const clearAtStart = clearButtonPosition === "start";
+  const openAtStart = openPickerButtonPosition === "start";
+  // `false` (a picker without views) still renders the end adornment, as before.
+  const hasOpen = openButton != null;
 
   return (
     <div
@@ -640,6 +763,13 @@ export function SectionedTextField({
         </label>
       )}
       <div data-ok-text-field-control="">
+        {((clearable && clearAtStart) || (hasOpen && openAtStart)) && (
+          <InputAdornment position="start">
+            {openAtStart && openButton}
+            {clearAtStart && clearButton}
+          </InputAdornment>
+        )}
+        {startAdornment}
         <div
           ref={groupRef}
           id={id}
@@ -698,20 +828,11 @@ export function SectionedTextField({
           value={hiddenValue}
           disabled={disabled}
         />
-        {(clearable || endAdornment != null) && (
+        {endAdornment}
+        {((clearable && !clearAtStart) || (hasOpen && !openAtStart)) && (
           <InputAdornment position="end">
-            {clearable && (
-              <IconButton
-                data-ok-date-field-clear=""
-                size="sm"
-                aria-label={localeText.fieldClearLabel}
-                hidden={!showClear || undefined}
-                onClick={onClear}
-              >
-                <ClearIcon />
-              </IconButton>
-            )}
-            {endAdornment}
+            {!clearAtStart && clearButton}
+            {!openAtStart && openButton}
           </InputAdornment>
         )}
         {outlined && (

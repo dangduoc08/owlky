@@ -17,7 +17,7 @@ import {
   startOfMonth,
 } from "./dates.js";
 import { sectionsToDate, sectionValues } from "./field.js";
-import { type FormatSection, parseFormat } from "./format.js";
+import { type FormatSection, fieldSections } from "./format.js";
 import { formatDate } from "./locale.js";
 import {
   type PickerValidationError,
@@ -275,10 +275,13 @@ export function monthsShowing(
  * The sections of a single input range field: the format twice, joined by " – ", each section
  * marked with its `part` (0 start, 1 end); `count` is the number of sections of one date.
  */
-export function rangeFieldSections(format: string): { sections: FormatSection[]; count: number } {
-  const one = parseFormat(format);
+export function rangeFieldSections(
+  format: string,
+  respectLeadingZeros = false,
+): { sections: FormatSection[]; count: number } {
+  const one = fieldSections(format, respectLeadingZeros);
   const start = one.map((s) => ({ ...s, part: 0 as const }));
-  const end = parseFormat(format).map((s) => ({ ...s, part: 1 as const }));
+  const end = fieldSections(format, respectLeadingZeros).map((s) => ({ ...s, part: 1 as const }));
   const last = start.at(-1);
   const first = end[0];
   if (last && first) {

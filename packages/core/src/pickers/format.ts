@@ -107,6 +107,18 @@ export function parseFormat(format: string): FormatSection[] {
   return sections;
 }
 
+/**
+ * Sections of a field's format (MUI `shouldRespectLeadingZeros`): unless `respectLeadingZeros`,
+ * digit sections without padding (`D`, `M`, `H`, `h`, `m`, `s`) show two digits, as `DD`… do.
+ */
+export function fieldSections(format: string, respectLeadingZeros = false): FormatSection[] {
+  const sections = parseFormat(format);
+  if (respectLeadingZeros) return sections;
+  return sections.map((section) =>
+    section.contentType === "digit" && section.pad === 0 ? { ...section, pad: 2 } : section,
+  );
+}
+
 /** A 12-hour clock in this format (`h` / `hh` or a meridiem). */
 export const is12HourFormat = (sections: readonly FormatSection[]): boolean =>
   sections.some((s) => s.type === "meridiem" || s.token === "h" || s.token === "hh");

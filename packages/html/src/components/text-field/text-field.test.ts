@@ -161,6 +161,48 @@ describe("text field runtime", () => {
     await userEvent.click(host.querySelector('[aria-label="Lonely"]') as HTMLElement);
   });
 
+  it("data-ok-focused, data-ok-hidden-label and adornments without pointer events (CSS only)", async () => {
+    const host = mount(
+      field('data-ok-focused data-ok-color="primary"')
+        .replace('id="f"', 'id="a"')
+        .replace('for="f"', 'for="a"') +
+        field('data-ok-color="primary"').replace('id="f"', 'id="b"').replace('for="f"', 'for="b"') +
+        field(
+          "data-ok-hidden-label",
+          '<input id="c" data-ok-text-field-input placeholder="Search">',
+        )
+          .replace('for="f"', 'for="c"')
+          .replace('data-ok-variant="outlined"', 'data-ok-variant="filled"')
+          .replace(/<fieldset[\s\S]*?<\/fieldset>/, "") +
+        '<div data-ok-text-field data-ok-variant="filled" data-ok-size="medium" data-ok-color="default" data-ok-margin="none"><div data-ok-text-field-control><input id="d" data-ok-text-field-input placeholder="None" aria-label="None"><span data-ok-text-field-adornment="end" data-ok-disable-pointer-events>kg</span></div></div>',
+    );
+    start();
+    const [forced, real, hidden, none] = ["a", "b", "c", "d"].map(
+      (id) => host.querySelector(`#${id}`) as HTMLInputElement,
+    ) as HTMLInputElement[];
+    const root = (input: Element | undefined) =>
+      (input as Element).closest("[data-ok-text-field]") as HTMLElement;
+    const part = (input: Element | undefined, name: string) =>
+      root(input).querySelector(`[data-ok-text-field-${name}]`) as HTMLElement;
+    (real as HTMLInputElement).focus();
+    for (const input of [forced, real])
+      for (const element of [part(input, "outline"), part(input, "label")])
+        await Promise.all(element.getAnimations().map((a) => a.finished));
+    await settle();
+    expect(getComputedStyle(part(forced, "outline")).borderTopColor).toBe(
+      getComputedStyle(part(real, "outline")).borderTopColor,
+    );
+    expect(getComputedStyle(part(forced, "label")).color).toBe(
+      getComputedStyle(part(real, "label")).color,
+    );
+    expect((hidden as HTMLElement).getBoundingClientRect().height).toBe(
+      (none as HTMLElement).getBoundingClientRect().height,
+    );
+    expect(part(hidden, "label").getBoundingClientRect().width).toBeLessThanOrEqual(1);
+    expect(getComputedStyle(part(none, "adornment")).pointerEvents).toBe("none");
+    await expectNoAxeViolations(host);
+  });
+
   it.each(['"><img src=x onerror=alert(1)>', "-3", "1e9999", "9".repeat(4000)])(
     "ignores hostile row values: %s",
     async (value) => {

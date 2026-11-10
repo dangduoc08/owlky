@@ -4,10 +4,12 @@
  * Anatomy:   [data-ok-form-control]?                                   (the FormControl around it)
  *              › label[data-ok-form-label][data-ok-input-label][data-ok-shrink]?   (InputLabel)
  *              › div[data-ok-select][data-ok-variant][data-ok-size][data-ok-color]   (the field box)
+ *                  › [data-ok-text-field-adornment="start"]?                  (InputAdornment)
  *                  › div[data-ok-select-display][role=combobox][tabindex=0]   (the value)
  *                    | select[data-ok-select-native]                           (native)
  *                  › input[data-ok-select-input][aria-hidden][tabindex=-1]     (form value)
  *                  › svg[data-ok-select-icon][aria-hidden]
+ *                  › [data-ok-text-field-adornment="end"]?                    (before the arrow)
  *                  › fieldset[data-ok-select-outline] › legend › span          (outlined: the notch)
  *                  › div[data-ok-popover] › ul[data-ok-select-listbox][role=listbox]
  *                      › li[data-ok-menu-item][role=option][aria-selected] (menu.css)
@@ -191,6 +193,40 @@
     --_ok-pad: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3.5);
   }
 
+  /*
+   * Adornments (InputAdornment, text-field.css styles them): inside the box, the start one before
+   * the value, the end one before the arrow (the box keeps the arrow's space).
+   */
+  :where([data-ok-select][data-ok-variant]) {
+    --_ok-pad-x: calc(var(--ok-spacing) * 3.5);
+    --_ok-arrow-space: calc(var(--ok-spacing) * 8);
+  }
+
+  :where([data-ok-select][data-ok-variant]:has(> [data-ok-text-field-adornment="start"])) {
+    padding-inline-start: var(--_ok-pad-x);
+  }
+
+  :where([data-ok-select][data-ok-variant]:has(> [data-ok-text-field-adornment="end"])) {
+    padding-inline-end: var(--_ok-arrow-space);
+  }
+
+  :where(
+    [data-ok-select][data-ok-variant]
+      > [data-ok-text-field-adornment="start"]
+      ~ :is([data-ok-select-display], select[data-ok-select-native])
+  ) {
+    padding-inline-start: 0;
+  }
+
+  :where(
+    [data-ok-select][data-ok-variant]
+      > :is([data-ok-select-display], select[data-ok-select-native]):has(
+        ~ [data-ok-text-field-adornment="end"]
+      )
+  ) {
+    padding-inline-end: 0;
+  }
+
   /* Outlined: a fieldset whose legend repeats the label (the notch), as in TextField. */
   :where([data-ok-select-outline]) {
     position: absolute;
@@ -232,6 +268,7 @@
     [data-ok-select][data-ok-variant]:focus-within,
     [data-ok-select][data-ok-variant]:has(> [data-ok-select-input]:not(:placeholder-shown)),
     [data-ok-select][data-ok-variant]:has(> select),
+    [data-ok-select][data-ok-variant]:has(> [data-ok-text-field-adornment="start"]),
     [data-ok-form-control]:has(> [data-ok-input-label][data-ok-shrink]) > [data-ok-select]
   ) {
     --_ok-legend-max: 100%;
@@ -240,6 +277,7 @@
   /* Filled */
   :where([data-ok-select][data-ok-variant="filled"]) {
     --_ok-pad: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
+    --_ok-pad-x: calc(var(--ok-spacing) * 3);
     background-color: var(--_ok-tint);
     transition: background-color var(--ok-duration-shorter) var(--ok-easing-standard);
   }
@@ -271,7 +309,18 @@
   /* Standard */
   :where([data-ok-select][data-ok-variant="standard"]) {
     --_ok-pad: var(--ok-spacing) 0;
+    --_ok-pad-x: 0px;
+    --_ok-arrow-space: calc(var(--ok-spacing) * 6);
     border-radius: 0;
+  }
+
+  /* A filled select with a label: the start adornment sits on the value's line. */
+  :where(
+    [data-ok-form-control]:not([data-ok-hidden-label]):has(> [data-ok-input-label])
+      > [data-ok-select][data-ok-variant="filled"]
+      > [data-ok-text-field-adornment="start"]
+  ) {
+    margin-block-start: calc(var(--ok-spacing) * 4);
   }
 
   :where([data-ok-select][data-ok-variant="standard"][data-ok-size="small"]) {
@@ -438,7 +487,10 @@
     [data-ok-form-control]:has(
       > [data-ok-select][data-ok-variant] > [data-ok-select-input]:not(:placeholder-shown)
     ),
-    [data-ok-form-control]:has(> [data-ok-select][data-ok-variant] > select)
+    [data-ok-form-control]:has(> [data-ok-select][data-ok-variant] > select),
+    [data-ok-form-control]:has(
+      > [data-ok-select][data-ok-variant] > [data-ok-text-field-adornment="start"]
+    )
   ) {
     --_ok-label-y: var(--_ok-label-up);
     --_ok-label-scale: 0.75;

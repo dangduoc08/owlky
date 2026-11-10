@@ -101,6 +101,24 @@ export function IconButtonAnimate() {
 }`,
   },
   {
+    id: "link",
+    title: "Use an icon button as a link",
+    body: "When an icon button navigates, render it as a link. In React, pass `href`; in HTML, use an `<a>` element with the same attributes. A disabled link loses its `href` and gets `aria-disabled`, so it can't be followed. To navigate with a routing library, pass your router's link component in `component` (with the props it needs, such as `to`) or in `LinkComponent` (with `href`). A disabled router link keeps its URL, leaves the tab order and ignores pointer clicks.",
+    html: `<a href="/messages" data-ok-icon-button data-ok-color="default" data-ok-size="md" aria-label="Messages">
+  ${iconMarkup("mail")}
+</a>`,
+    react: `import { IconButton } from "@owlky/react";
+import { MailIcon } from "lucide-react";
+
+export function MessagesLink() {
+  return (
+    <IconButton href="/messages" aria-label="Messages">
+      <MailIcon />
+    </IconButton>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -113,7 +131,7 @@ export function IconButtonAnimate() {
   {
     id: "keyboard",
     title: "Keyboard",
-    body: "Icon buttons are native buttons, so the browser provides the keyboard behavior.",
+    body: "Icon buttons and icon links are native elements, so the browser provides the keyboard behavior.",
   },
   {
     id: "accessibility",
@@ -168,6 +186,13 @@ const PREVIEWS = {
       </IconButton>
     </Preview>
   ),
+  link: () => (
+    <Preview>
+      <IconButton href="#docs-messages" aria-label="Messages">
+        <DocsIcon name="mail" />
+      </IconButton>
+    </Preview>
+  ),
   options: () => <OptionsTable schema={iconButtonOptions} />,
   props: () => (
     <PropsTable
@@ -192,9 +217,29 @@ const PREVIEWS = {
           description: "Replaces the spinner while loading.",
         },
         {
+          react: "href",
+          html: "<a href>",
+          type: "string",
+          description:
+            "Renders an icon link. A disabled or loading link loses its href and gets aria-disabled.",
+        },
+        {
+          react: "component",
+          html: "<a>",
+          type: "ElementType",
+          description:
+            "The element or component to render, such as a router link. It gets the button's attributes and its ref.",
+        },
+        {
+          react: "LinkComponent",
+          html: "<a>",
+          type: "ElementType",
+          description: "The component that renders the link when href is set. Default a.",
+        },
+        {
           react: "ref",
-          type: "HTMLButtonElement",
-          description: "Forwarded to the button. Every native button attribute is passed through.",
+          type: "HTMLButtonElement | HTMLAnchorElement",
+          description: "Forwarded to the button or link. Every native attribute is passed through.",
         },
       ]}
     />
@@ -204,6 +249,7 @@ const PREVIEWS = {
       rows={[
         ["Tab", "Moves focus to the button. Disabled and loading buttons are skipped."],
         ["Enter / Space", "Activates the button."],
+        ["Enter", "Follows an icon link."],
       ]}
     />
   ),

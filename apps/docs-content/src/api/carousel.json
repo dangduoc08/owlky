@@ -1133,6 +1133,11 @@
       "type": "ColorName"
      },
      {
+      "description": "The element to render: `\"button\"` (the default).",
+      "name": "component",
+      "type": "\"button\""
+     },
+     {
       "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
       "name": "disableElevation",
       "type": "boolean"

@@ -97,7 +97,7 @@ Upstream: MUI `Button` (+ `ButtonBase`), mui.com/material-ui/api/button/.
 | `children`, `disabled`, `fullWidth`, `disableElevation`, `href`, `startIcon`, `endIcon` | same | kept | disabled link: no `href`, `aria-disabled` |
 | `loading`, `loadingIndicator`, `loadingPosition` | same | kept | `loading` boolean (MUI `null` = no loader slot) |
 | `type` (ButtonBase, default `button`) | native `type` | kept | |
-| `component`, `LinkComponent` (ButtonBase) | — | deferred | `<button>` or `<a href>` only; router links can't be passed |
+| `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: `component` renders that element or component (a router link gets the attributes, `ref` and its own props such as `to`); `LinkComponent` replaces the `<a>` when `href` is set; `component="button"` + `href` still renders the link (MUI). Elements other than `button` are links: a disabled router link keeps its `href` (routers need it), gets `aria-disabled` + `tabindex=-1`, and CSS turns pointer events off (`[href][aria-disabled=true]`). Non-interactive elements (`span`, `label`) aren't supported: no `role=button` or key handling is added (native first; Upload covers MUI's `component="label"` file buttons). HTML: the router renders the `a`, with the same attributes |
 | `action`, `focusVisibleClassName`, `onFocusVisible` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |
 | `nativeButton` (ButtonBase) | — | not applicable | always a native element |
 | `disableRipple`, `disableFocusRipple`, `disableTouchRipple`, `centerRipple`, `focusRipple`, `TouchRippleProps`, `touchRippleRef` | — | not applicable | no ripple (CSS states) |

@@ -146,6 +146,12 @@
       "type": "ColorName"
      },
      {
+      "default": "\"div\"",
+      "description": "The root element, such as `\"nav\"` or `\"span\"`. It keeps `role=\"group\"`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
       "default": "true",
       "description": "Passed to every child Button. (as in the reference).",
       "name": "disableElevation",

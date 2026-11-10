@@ -121,7 +121,6 @@
      {
       "description": "The element or component to render, such as a router link.",
       "name": "component",
-      "required": true,
       "type": "C"
      },
      {

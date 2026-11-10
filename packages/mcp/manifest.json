@@ -264,6 +264,7 @@
   "data-ok-circular-progress",
   "data-ok-circular-progress-circle",
   "data-ok-circular-progress-svg",
+  "data-ok-clear-button-position",
   "data-ok-clear-on-blur",
   "data-ok-clear-on-escape",
   "data-ok-clearable",
@@ -480,6 +481,7 @@
   "data-ok-disable-past",
   "data-ok-disable-pivoting",
   "data-ok-disable-placeholder",
+  "data-ok-disable-pointer-events",
   "data-ok-disable-prefers-reduced-motion",
   "data-ok-disable-restore-focus",
   "data-ok-disable-row-grouping",
@@ -969,6 +971,7 @@
   "data-ok-once",
   "data-ok-open",
   "data-ok-open-on-focus",
+  "data-ok-open-picker-button-position",
   "data-ok-open-to",
   "data-ok-opposite",
   "data-ok-options",
@@ -1145,6 +1148,7 @@
   "data-ok-share-title",
   "data-ok-share-url",
   "data-ok-shift-step",
+  "data-ok-should-respect-leading-zeros",
   "data-ok-show-accuracy",
   "data-ok-show-accuracy-circle",
   "data-ok-show-days-outside-current-month",
@@ -5136,9 +5140,15 @@
       },
       "name": "Button",
       "react": {
-       "description": "A native `<button type=\"button\">`, or an `<a>` when `href` is set.",
-       "native": "HTMLAnchorElement",
+       "description": "A native `<button type=\"button\">`, an `<a>` when `href` is set (or the `LinkComponent`), or the `component`, such as a router link.",
+       "native": "HTMLElement",
        "props": [
+        {
+         "default": "\"a\"",
+         "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the button's attributes.",
+         "name": "LinkComponent",
+         "type": "ElementType"
+        },
         {
          "description": "The content.",
          "name": "children",
@@ -5151,12 +5161,17 @@
          "type": "ColorName"
         },
         {
+         "description": "The element or component to render, such as a router link.",
+         "name": "component",
+         "type": "C"
+        },
+        {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
          "name": "disableElevation",
          "type": "boolean"
         },
         {
-         "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+         "description": "Turns the button off: links get `aria-disabled` and leave the tab order.",
          "name": "disabled",
          "type": "boolean"
         },
@@ -5365,7 +5380,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Button` (+ `ButtonBase`), mui.com/material-ui/api/button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`text` · `contained` · `outlined`) | `variant` | kept | + `soft` (reference) |\n| `color` | `color` | kept | default `inherit` (reference; MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | + `xl` (reference) |\n| `children`, `disabled`, `fullWidth`, `disableElevation`, `href`, `startIcon`, `endIcon` | same | kept | disabled link: no `href`, `aria-disabled` |\n| `loading`, `loadingIndicator`, `loadingPosition` | same | kept | `loading` boolean (MUI `null` = no loader slot) |\n| `type` (ButtonBase, default `button`) | native `type` | kept | |\n| `component`, `LinkComponent` (ButtonBase) | — | deferred | `<button>` or `<a href>` only; router links can't be passed |\n| `action`, `focusVisibleClassName`, `onFocusVisible` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `nativeButton` (ButtonBase) | — | not applicable | always a native element |\n| `disableRipple`, `disableFocusRipple`, `disableTouchRipple`, `centerRipple`, `focusRipple`, `TouchRippleProps`, `touchRippleRef` | — | not applicable | no ripple (CSS states) |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Button` (+ `ButtonBase`), mui.com/material-ui/api/button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`text` · `contained` · `outlined`) | `variant` | kept | + `soft` (reference) |\n| `color` | `color` | kept | default `inherit` (reference; MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | + `xl` (reference) |\n| `children`, `disabled`, `fullWidth`, `disableElevation`, `href`, `startIcon`, `endIcon` | same | kept | disabled link: no `href`, `aria-disabled` |\n| `loading`, `loadingIndicator`, `loadingPosition` | same | kept | `loading` boolean (MUI `null` = no loader slot) |\n| `type` (ButtonBase, default `button`) | native `type` | kept | |\n| `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: `component` renders that element or component (a router link gets the attributes, `ref` and its own props such as `to`); `LinkComponent` replaces the `<a>` when `href` is set; `component=\"button\"` + `href` still renders the link (MUI). Elements other than `button` are links: a disabled router link keeps its `href` (routers need it), gets `aria-disabled` + `tabindex=-1`, and CSS turns pointer events off (`[href][aria-disabled=true]`). Non-interactive elements (`span`, `label`) aren't supported: no `role=button` or key handling is added (native first; Upload covers MUI's `component=\"label\"` file buttons). HTML: the router renders the `a`, with the same attributes |\n| `action`, `focusVisibleClassName`, `onFocusVisible` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `nativeButton` (ButtonBase) | — | not applicable | always a native element |\n| `disableRipple`, `disableFocusRipple`, `disableTouchRipple`, `centerRipple`, `focusRipple`, `TouchRippleProps`, `touchRippleRef` | — | not applicable | no ripple (CSS states) |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -5601,6 +5616,12 @@
          "type": "ColorName"
         },
         {
+         "default": "\"div\"",
+         "description": "The root element, such as `\"nav\"` or `\"span\"`. It keeps `role=\"group\"`.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "default": "true",
          "description": "Passed to every child Button. (as in the reference).",
          "name": "disableElevation",
@@ -5789,7 +5810,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `ButtonGroup`, mui.com/material-ui/api/button-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `orientation`, `fullWidth`, `disabled`, `disableElevation` | same | kept | reach **direct** child Buttons only (`cloneElement`); `disableElevation` on by default (reference) |\n| `variant` | `variant` | kept | default `outlined` (as MUI); + `soft` |\n| `color` | `color` | kept | default `inherit` (MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | |\n| `component` | — | deferred | root is always `div[role=group]` |\n| `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `ButtonGroup`, mui.com/material-ui/api/button-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `orientation`, `fullWidth`, `disabled`, `disableElevation` | same | kept | reach **direct** child Buttons only (`cloneElement`); `disableElevation` on by default (reference) |\n| `variant` | `variant` | kept | default `outlined` (as MUI); + `soft` |\n| `color` | `color` | kept | default `inherit` (MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | |\n| `component` | same | kept | 4.18.22: the root element (default `div`), always with `role=\"group\"`; HTML: write any element |\n| `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -7576,6 +7597,11 @@
          "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
          "name": "color",
          "type": "ColorName"
+        },
+        {
+         "description": "The element to render: `\"button\"` (the default).",
+         "name": "component",
+         "type": "\"button\""
         },
         {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
@@ -20003,6 +20029,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -20011,6 +20043,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -20054,14 +20092,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -20083,6 +20136,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -20113,6 +20171,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -20166,9 +20230,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -20184,6 +20248,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -20222,9 +20292,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -20247,6 +20317,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -20265,6 +20341,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -20827,6 +20908,30 @@
          "type": "(section?: number | undefined) => void"
         },
         {
+         "description": "Focuses the field: the first section, or the given one.",
+         "kind": "method",
+         "name": "focusField",
+         "type": "(selected?: number | \"day\" | \"hours\" | \"meridiem\" | \"minutes\" | \"month\" | \"seconds\" | \"weekDay\" | \"year\" | undefined) => void"
+        },
+        {
+         "description": "The selected section's index, or `null` when no section is selected.",
+         "kind": "method",
+         "name": "getActiveSectionIndex",
+         "type": "() => number | null"
+        },
+        {
+         "description": "Every section with its text.",
+         "kind": "method",
+         "name": "getSections",
+         "type": "() => FieldSection[]"
+        },
+        {
+         "description": "The field has focus.",
+         "kind": "method",
+         "name": "isFieldFocused",
+         "type": "() => boolean"
+        },
+        {
          "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
          "kind": "method",
          "name": "setDate",
@@ -20849,6 +20954,12 @@
          "kind": "method",
          "name": "setLocaleText",
          "type": "(text: Partial<PickerLocaleText>) => void"
+        },
+        {
+         "description": "Selects a section by index or type, every section (`\"all\"`) or none (`null`).",
+         "kind": "method",
+         "name": "setSelectedSections",
+         "type": "(selected: FieldSelectedSections) => void"
         },
         {
          "description": "Days, months or years that can't be picked (functions have no attribute).",
@@ -20910,6 +21021,36 @@
          "description": "A clear button at the end of the field.",
          "kind": "flag",
          "name": "clearable"
+        },
+        {
+         "attr": "data-ok-clear-button-position",
+         "default": "end",
+         "description": "Side of the clear button. HTML: put the button in the adornment on that side.",
+         "kind": "style",
+         "name": "clearButtonPosition",
+         "optional": true,
+         "values": [
+          "start",
+          "end"
+         ]
+        },
+        {
+         "attr": "data-ok-open-picker-button-position",
+         "default": "end",
+         "description": "Pickers: side of the open button. HTML: put the button in the adornment on that side.",
+         "kind": "style",
+         "name": "openPickerButtonPosition",
+         "optional": true,
+         "values": [
+          "start",
+          "end"
+         ]
+        },
+        {
+         "attr": "data-ok-should-respect-leading-zeros",
+         "description": "Digit sections keep the format's padding (`D` shows `5`); by default they show two digits (`05`).",
+         "kind": "flag",
+         "name": "shouldRespectLeadingZeros"
         },
         {
          "attr": "data-ok-read-only",
@@ -21005,9 +21146,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -21030,13 +21183,23 @@
          "type": "boolean"
         },
         {
-         "description": "More content at the end (a picker's open button).",
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
         },
         {
          "description": "Error colors; default: the value is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -21061,6 +21224,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field); the field is laid out as without one.",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the sections group (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -21079,6 +21247,12 @@
          "description": "Text overrides for this field.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -21111,9 +21285,9 @@
          "type": "((error: DateValidationError | null, value: PickerValidDate | null) => void)"
         },
         {
-         "description": "Called when another section gets focus.",
+         "description": "Called when another section gets focus (its index), or every section is selected (`\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "The value can't be changed.",
@@ -21131,9 +21305,9 @@
          "type": "boolean"
         },
         {
-         "description": "The focused section (controlled), `null` when none.",
+         "description": "The selected section (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -21151,9 +21325,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -22064,9 +22249,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -22104,9 +22289,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -22204,9 +22389,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -22234,13 +22431,23 @@
          "type": "boolean"
         },
         {
-         "description": "More content at the end (a picker's open button).",
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
         },
         {
          "description": "Error colors; default: the value is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -22265,6 +22472,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field); the field is laid out as without one.",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the sections group (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -22283,6 +22495,12 @@
          "description": "Text overrides for this field.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -22340,9 +22558,9 @@
          "type": "((error: PickerValidationError | null, value: PickerValidDate | null) => void)"
         },
         {
-         "description": "Called when another section gets focus.",
+         "description": "Called when another section gets focus (its index), or every section is selected (`\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "The value can't be changed.",
@@ -22360,9 +22578,9 @@
          "type": "boolean"
         },
         {
-         "description": "The focused section (controlled), `null` when none.",
+         "description": "The selected section (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -22385,9 +22603,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -22440,6 +22669,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -22448,6 +22683,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -22496,14 +22737,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -22525,6 +22781,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -22555,6 +22816,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -22633,9 +22900,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -22651,6 +22918,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -22689,9 +22962,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -22719,6 +22992,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -22742,6 +23021,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -23052,9 +23336,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -23092,9 +23376,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -23214,6 +23498,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -23222,6 +23512,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -23265,14 +23561,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -23294,6 +23605,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -23324,6 +23640,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -23377,9 +23699,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -23395,6 +23717,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -23433,9 +23761,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -23458,6 +23786,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -23476,6 +23810,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -23775,9 +24114,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -23815,9 +24154,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -23920,6 +24259,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -23928,6 +24273,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -23976,14 +24327,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -24005,6 +24371,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -24035,6 +24406,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -24113,9 +24490,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -24131,6 +24508,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -24169,9 +24552,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -24199,6 +24582,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -24222,6 +24611,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -24532,9 +24926,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -24572,9 +24966,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -24699,6 +25093,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -24707,6 +25107,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -24740,8 +25146,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -24764,6 +25185,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -24789,6 +25215,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -24836,9 +25268,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -24849,6 +25281,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -24882,14 +25320,20 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -24910,6 +25354,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -25142,9 +25591,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -25177,9 +25626,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -25570,6 +26019,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -25578,6 +26033,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -25621,14 +26082,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -25650,6 +26126,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -25680,6 +26161,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -25733,9 +26220,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -25751,6 +26238,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -25789,9 +26282,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -25814,6 +26307,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -25832,6 +26331,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -26131,9 +26635,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -26171,9 +26675,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -26276,6 +26780,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -26284,6 +26794,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -26332,14 +26848,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -26361,6 +26892,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -26391,6 +26927,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -26469,9 +27011,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -26487,6 +27029,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -26525,9 +27073,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -26555,6 +27103,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -26578,6 +27132,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -26888,9 +27447,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -26928,9 +27487,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -27055,6 +27614,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -27063,6 +27628,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -27096,8 +27667,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -27120,6 +27706,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -27145,6 +27736,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -27192,9 +27789,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -27205,6 +27802,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -27238,14 +27841,20 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -27266,6 +27875,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -27498,9 +28112,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -27533,9 +28147,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -27893,6 +28507,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
@@ -28088,6 +28708,12 @@
          "description": "Years that can't be picked (gets 1 January).",
          "name": "shouldDisableYear",
          "type": "((year: PickerValidDate) => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -28321,6 +28947,12 @@
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -28814,9 +29446,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end of the field.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial range.",
@@ -28839,8 +29483,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Error colors; default: the range is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -28865,6 +29524,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -28883,6 +29547,12 @@
          "description": "Replaces the text of the labels and buttons, such as for another language.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -28915,9 +29585,9 @@
          "type": "((error: [RangeValidationError | null, RangeValidationError | null], value: [PickerValidDate | null, PickerValidDate | null]) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -28935,9 +29605,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -28955,9 +29625,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -28999,9 +29680,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end of the field.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial range.",
@@ -29029,8 +29722,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Error colors; default: the range is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -29055,6 +29763,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -29073,6 +29786,12 @@
          "description": "Replaces the text of the labels and buttons, such as for another language.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -29130,9 +29849,9 @@
          "type": "((error: [RangeValidationError | null, RangeValidationError | null], value: [PickerValidDate | null, PickerValidDate | null]) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -29150,9 +29869,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -29175,9 +29894,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -29224,9 +29954,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end of the field.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial range.",
@@ -29254,8 +29996,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Error colors; default: the range is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -29280,6 +30037,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -29298,6 +30060,12 @@
          "description": "Replaces the text of the labels and buttons, such as for another language.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -29335,9 +30103,9 @@
          "type": "((error: [RangeValidationError | null, RangeValidationError | null], value: [PickerValidDate | null, PickerValidDate | null]) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -29355,9 +30123,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
@@ -29365,9 +30133,20 @@
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -29909,9 +30688,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -29954,9 +30745,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -29972,6 +30783,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -30045,6 +30862,12 @@
          "type": "((year: PickerValidDate) => void)"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "The view the picker opens on.",
          "name": "openTo",
          "type": "PickerView"
@@ -30101,6 +30924,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -30119,6 +30948,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -30199,9 +31033,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -30229,6 +31075,26 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -30237,6 +31103,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -30274,6 +31146,12 @@
          "type": "((view: \"hours\" | \"minutes\" | \"seconds\") => void)"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "The view the picker opens on.",
          "name": "openTo",
          "type": "\"hours\" | \"minutes\" | \"seconds\""
@@ -30305,6 +31183,12 @@
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Digital clocks leave out the options that can't be picked.",
          "name": "skipDisabled",
          "type": "boolean"
@@ -30318,6 +31202,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -30718,9 +31607,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -30748,13 +31649,23 @@
          "type": "boolean"
         },
         {
-         "description": "More content at the end (a picker's open button).",
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
         },
         {
          "description": "Error colors; default: the value is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -30779,6 +31690,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field); the field is laid out as without one.",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the sections group (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -30797,6 +31713,12 @@
          "description": "Text overrides for this field.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -30834,9 +31756,9 @@
          "type": "((error: TimeValidationError | null, value: PickerValidDate | null) => void)"
         },
         {
-         "description": "Called when another section gets focus.",
+         "description": "Called when another section gets focus (its index), or every section is selected (`\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "The value can't be changed.",
@@ -30854,9 +31776,9 @@
          "type": "boolean"
         },
         {
-         "description": "The focused section (controlled), `null` when none.",
+         "description": "The selected section (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
@@ -30864,9 +31786,20 @@
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -30919,6 +31852,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -30927,6 +31866,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -30960,8 +31905,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -30984,6 +31944,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -31009,6 +31974,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -31056,9 +32027,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -31069,6 +32040,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -31102,14 +32079,20 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -31130,6 +32113,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -31362,9 +32350,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -31397,9 +32385,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -31648,6 +32636,10 @@
      {
       "name": "DateValidationError",
       "type": "\"disableFuture\" | \"disablePast\" | \"invalidDate\" | \"maxDate\" | \"minDate\" | \"shouldDisableDate\" | \"shouldDisableMonth\" | \"shouldDisableYear\""
+     },
+     {
+      "name": "FieldSelectedSections",
+      "type": "number | \"all\" | \"day\" | \"hours\" | \"meridiem\" | \"minutes\" | \"month\" | \"seconds\" | \"weekDay\" | \"year\" | null"
      },
      {
       "name": "PickerDayRenderer",
@@ -31981,6 +32973,36 @@
        "description": "A clear button at the end of the field.",
        "kind": "flag",
        "name": "clearable"
+      },
+      {
+       "attr": "data-ok-clear-button-position",
+       "default": "end",
+       "description": "Side of the clear button. HTML: put the button in the adornment on that side.",
+       "kind": "style",
+       "name": "clearButtonPosition",
+       "optional": true,
+       "values": [
+        "start",
+        "end"
+       ]
+      },
+      {
+       "attr": "data-ok-open-picker-button-position",
+       "default": "end",
+       "description": "Pickers: side of the open button. HTML: put the button in the adornment on that side.",
+       "kind": "style",
+       "name": "openPickerButtonPosition",
+       "optional": true,
+       "values": [
+        "start",
+        "end"
+       ]
+      },
+      {
+       "attr": "data-ok-should-respect-leading-zeros",
+       "description": "Digit sections keep the format's padding (`D` shows `5`); by default they show two digits (`05`).",
+       "kind": "flag",
+       "name": "shouldRespectLeadingZeros"
       },
       {
        "attr": "data-ok-read-only",
@@ -32410,7 +33432,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.\nApplies to every picker, field, calendar and clock that has the prop upstream.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |\n| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |\n| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |\n| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |\n| `selectedSections` / `onSelectedSectionsChange` | same | kept | a section index (MUI also `\"all\"` / a section type) |\n| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |\n| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |\n| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |\n| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |\n| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |\n| `timezone` | same | kept | `\"default\"` · `\"system\"` · `\"UTC\"` · IANA |\n| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |\n| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |\n| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |\n| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |\n| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required` | renamed | |\n| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |\n| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |\n| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |\n| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |\n| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |\n| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |\n| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |\n| fields `clearButtonPosition`, `openPickerButtonPosition` | — | deferred | buttons always at the end |\n| fields `startAdornment` / `endAdornment` | — | deferred | `endAdornment` internal (open button) |\n| fields `shouldRespectLeadingZeros` | — | deferred | |\n| fields `fieldRef` (field API) | — | deferred | |\n| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | — | deferred | |\n| single input range fields `dateSeparator` | — | deferred | fixed `\" – \"` |\n| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |\n| TimeClock `showViewSwitcher` | — | deferred | |\n| static pickers `displayStaticWrapperAs` | — | deferred | |\n| `dateFormats` | — | not applicable | `format` per picker |\n| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |\n| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |\n| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |\n\nBeyond MUI: `today` (React: pins \"today\"), `aria-current=\"date\"`, HTML `data-ok-locale` /\n`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,\nopen buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,\ncalendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /\n`setDateAdapter` / `setDayRenderer`.",
+     "body": "Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.\nApplies to every picker, field, calendar and clock that has the prop upstream.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |\n| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |\n| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |\n| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |\n| `selectedSections` / `onSelectedSectionsChange` | same | kept | 4.18.29: a section index, a section type (its first section), `\"all\"` or `null` (`FieldSelectedSections`); the callback reports the focused section's index, or `\"all\"` on select-all (Ctrl / ⌘ + A). HTML: instance `setSelectedSections` |\n| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |\n| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |\n| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |\n| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |\n| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |\n| `timezone` | same | kept | `\"default\"` · `\"system\"` · `\"UTC\"` · IANA |\n| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |\n| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |\n| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |\n| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |\n| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required`, `color`, `margin`, `hiddenLabel`, `focused` | renamed | 4.18.29 added `color` / `margin` / `hiddenLabel` / `focused` (`data-ok-color`, `data-ok-margin`, `data-ok-hidden-label`, `data-ok-focused` on the TextField root; an empty field shows its sections when focused, with a hidden label or a start adornment) |\n| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |\n| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |\n| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |\n| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |\n| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |\n| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |\n| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |\n| fields `clearButtonPosition`, `openPickerButtonPosition` | same | kept | 4.18.29: `start` puts the button in a start adornment (open button first, `edge=\"start\"`); `data-ok-clear-button-position` / `data-ok-open-picker-button-position` on the field root mark it, HTML markup places the button. Fields, single input range fields (clear), single-value pickers; range pickers keep their buttons at the end (deferred) |\n| fields `startAdornment` / `endAdornment` | same | kept | 4.18.29: an `InputAdornment` around the sections; the end one comes before the buttons' adornment. Fields, single input range fields, single-value pickers |\n| fields `shouldRespectLeadingZeros` | same | kept | 4.18.29: default `false` as in MUI: digit sections without padding (`D`, `M`, `H`, `h`, `m`, `s`) show two digits (`fieldSections`); `data-ok-should-respect-leading-zeros` keeps the format's padding. Behavior change: such formats used to keep their padding |\n| fields `fieldRef` (field API) | same | kept | 4.18.29: `getSections` (type, format token, content type, value, placeholder, separators), `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused` (core `createFieldApi`); HTML: the same methods on the `date-field` instance (pickers: the field's instance). Fields, single input range fields, single-value pickers |\n| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | same | kept | 4.18.29, see `slotProps.textField`. Multi input range fields and range pickers: deferred (each end is a field of its own) |\n| single input range fields `dateSeparator` | — | deferred | fixed `\" – \"` |\n| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |\n| TimeClock `showViewSwitcher` | — | deferred | |\n| static pickers `displayStaticWrapperAs` | — | deferred | |\n| `dateFormats` | — | not applicable | `format` per picker |\n| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |\n| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |\n| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |\n\nBeyond MUI: `today` (React: pins \"today\"), `aria-current=\"date\"`, HTML `data-ok-locale` /\n`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,\nopen buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,\ncalendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /\n`setDateAdapter` / `setDayRenderer`.",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -33906,6 +34928,11 @@
          "type": "ColorName"
         },
         {
+         "description": "The element to render: `\"button\"` (the default).",
+         "name": "component",
+         "type": "\"button\""
+        },
+        {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
          "name": "disableElevation",
          "type": "boolean"
@@ -34035,6 +35062,11 @@
          "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
          "name": "color",
          "type": "ColorName"
+        },
+        {
+         "description": "The element to render: `\"button\"` (the default).",
+         "name": "component",
+         "type": "\"button\""
         },
         {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
@@ -35554,9 +36586,15 @@
       },
       "name": "Fab",
       "react": {
-       "description": "A native `<button type=\"button\">`, or an `<a>` when `href` is set; round fabs need `aria-label`, extended fabs are named by their label.",
-       "native": "HTMLAnchorElement",
+       "description": "A native `<button type=\"button\">`, an `<a>` when `href` is set (or the `LinkComponent`), or the `component`; round fabs need `aria-label`, extended fabs are named by their label.",
+       "native": "HTMLElement",
        "props": [
+        {
+         "default": "\"a\"",
+         "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the fab's attributes.",
+         "name": "LinkComponent",
+         "type": "ElementType"
+        },
         {
          "description": "Scales up on hover and down while pressed (off with reduced motion).",
          "name": "animate",
@@ -35569,7 +36607,12 @@
          "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
         },
         {
-         "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+         "description": "The element or component to render, such as a router link.",
+         "name": "component",
+         "type": "C"
+        },
+        {
+         "description": "Turns the fab off: links get `aria-disabled` and leave the tab order.",
          "name": "disabled",
          "type": "boolean"
         },
@@ -35690,7 +36733,7 @@
      "title": "Options"
     },
     {
-     "body": "Native `<button>` — CSS only, no runtime. Positioning (fixed / absolute) is up to the page.",
+     "body": "Native `<button>`, or `<a href>` for a link — CSS only, no runtime. Positioning (fixed / absolute) is up to the page.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -35715,7 +36758,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Fab` (+ `ButtonBase`), mui.com/material-ui/api/fab/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`circular` · `extended`) | `extended` flag | renamed | Owlky's `variant` is the fill style (`contained` · `outlined` · `soft`, reference) |\n| `color` (default `default`) | `color` | kept | + `inherit`, `black` / `white` |\n| `size` (`small` · `medium` · `large`, default `large`) | `size` (`sm` · `md` · `lg`, default `md`) | renamed | |\n| `children`, `disabled`, `href` | same | kept | |\n| `component`, `LinkComponent` (ButtonBase) | — | deferred | router links can't be passed |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
+     "body": "Upstream: MUI `Fab` (+ `ButtonBase`), mui.com/material-ui/api/fab/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`circular` · `extended`) | `extended` flag | renamed | Owlky's `variant` is the fill style (`contained` · `outlined` · `soft`, reference) |\n| `color` (default `default`) | `color` | kept | + `inherit`, `black` / `white` |\n| `size` (`small` · `medium` · `large`, default `large`) | `size` (`sm` · `md` · `lg`, default `md`) | renamed | |\n| `children`, `disabled`, `href` | same | kept | |\n| `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: as on Button (router links; a disabled router link keeps its `href`, `aria-disabled`, `tabindex=-1`, no pointer events) |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -38446,19 +39489,40 @@
       },
       "name": "IconButton",
       "react": {
-       "description": "A native round `<button type=\"button\">` holding a decorative icon. Give it an accessible name with `aria-label`.",
-       "native": "HTMLButtonElement",
+       "description": "A native round `<button type=\"button\">` holding a decorative icon, an `<a>` when `href` is set (an icon link; or the `LinkComponent`), or the `component`. Give it an accessible name with `aria-label`.",
+       "native": "HTMLElement",
        "props": [
+        {
+         "default": "\"a\"",
+         "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the button's attributes.",
+         "name": "LinkComponent",
+         "type": "ElementType"
+        },
         {
          "description": "Scales up on hover and down while pressed (off with reduced motion).",
          "name": "animate",
          "type": "boolean"
         },
         {
+         "description": "The icon.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
          "default": "\"default\"",
          "description": "`default` (secondary text), `inherit` (text color) or a palette color.",
          "name": "color",
          "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+        },
+        {
+         "description": "The element or component to render, such as a router link.",
+         "name": "component",
+         "type": "C"
+        },
+        {
+         "description": "Turns the button off: links get `aria-disabled` and leave the tab order.",
+         "name": "disabled",
+         "type": "boolean"
         },
         {
          "description": "Pull the button out by its padding so the icon lines up with that edge.",
@@ -38571,7 +39635,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nbutton[type=\"button\"][data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]\n  svg[aria-hidden=\"true\"]            (any decorative SVG or img)\n  span[data-ok-icon-button-loader][aria-hidden=\"true\"]   only while loading (data-ok-loading)\n    span[data-ok-circular-progress][data-ok-color=\"inherit\"][data-ok-button-spinner]   default loader: a CircularProgress (React: `loadingIndicator` replaces it)\n```",
+     "body": "```\n(button[type=\"button\"] | a[href])[data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]\n  svg[aria-hidden=\"true\"]            (any decorative SVG or img)\n  span[data-ok-icon-button-loader][aria-hidden=\"true\"]   only while loading (data-ok-loading)\n    span[data-ok-circular-progress][data-ok-color=\"inherit\"][data-ok-button-spinner]   default loader: a CircularProgress (React: `loadingIndicator` replaces it)\n```",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -38586,7 +39650,7 @@
      "title": "States"
     },
     {
-     "body": "Native `<button>` — CSS only, no runtime. Circular (`--ok-radius-full`), transparent background.\n`data-ok-animate` transitions `transform`; `prefers-reduced-motion` disables the scale.",
+     "body": "Native `<button>`, or `<a href>` for an icon link — CSS only, no runtime. Circular (`--ok-radius-full`), transparent background.\n`data-ok-animate` transitions `transform`; `prefers-reduced-motion` disables the scale.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -38611,7 +39675,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `IconButton` (+ `ButtonBase`), mui.com/material-ui/api/icon-button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `color`, `edge`, `disabled`, `loading`, `loadingIndicator` | same | kept | `color` + `black` / `white`; `edge` `false` = absent |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |\n| `type` (ButtonBase) | native `type` | kept | |\n| `href`, `component`, `LinkComponent` (ButtonBase) | — | deferred | always a `<button>`: no icon links |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
+     "body": "Upstream: MUI `IconButton` (+ `ButtonBase`), mui.com/material-ui/api/icon-button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `color`, `edge`, `disabled`, `loading`, `loadingIndicator` | same | kept | `color` + `black` / `white`; `edge` `false` = absent |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |\n| `type` (ButtonBase) | native `type` | kept | |\n| `href`, `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: `href` renders an `<a data-ok-icon-button>` (an icon link; disabled / loading: no `href`, `role=link`, `aria-disabled`); `component` / `LinkComponent` as on Button (router links) |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -42515,7 +43579,6 @@
         {
          "description": "The element or component to render, such as a router link.",
          "name": "component",
-         "required": true,
          "type": "C"
         },
         {
@@ -53371,6 +54434,11 @@
          "type": "HTMLAttributes<HTMLDivElement>"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, inside the field before the arrow.",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Error colors and `aria-invalid`. Default: the FormControl's.",
          "name": "error",
          "type": "boolean"
@@ -53459,6 +54527,11 @@
          "description": "`medium` or `small`. Default: the FormControl's, else `\"medium\"`.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, inside the field before the value.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Controlled value: one value (`\"\"` = none) or, with `multiple`, a list.",
@@ -53701,7 +54774,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\n[data-ok-form-control][data-ok-variant]?[data-ok-size]?[data-ok-hidden-label]?…   (FormControl, optional)\n  label[data-ok-form-label][data-ok-input-label][id][for]?[data-ok-shrink]?[data-ok-disable-animation]?\n  div[data-ok-select][data-ok-variant][data-ok-size][data-ok-color][data-ok-error]?[data-ok-full-width]?\n                     [data-ok-multiple]?[data-ok-auto-width]?[data-ok-display-empty]?\n    template[data-ok-select-chip]?          (HTML: a Chip per value, multiple)\n    template[data-ok-select-placeholder]?   (HTML: what an empty value shows, displayEmpty)\n    div[data-ok-select-display][role=combobox][tabindex=0|-1][id][aria-haspopup=listbox]\n       [aria-expanded][aria-controls=<id>-listbox][aria-labelledby]?[aria-label]?[aria-describedby]?\n       [aria-disabled]?[aria-readonly]?[aria-invalid]?[aria-required]?   › the value's content\n    input[data-ok-select-input][aria-hidden=true][tabindex=-1][name]?[value][placeholder=\" \"][disabled]?[required]?\n    svg[data-ok-select-icon][aria-hidden]\n    fieldset[data-ok-select-outline][aria-hidden] › legend › span (label + \" *\")   (outlined)\n    div[data-ok-popover][popover=manual][id=<id>-menu][data-ok-placement=bottom-start][tabindex=-1]\n      span[data-ok-popover-arrow]\n      ul[data-ok-select-listbox][role=listbox][id=<id>-listbox][aria-labelledby]?[aria-multiselectable]?\n        li[data-ok-menu-item][role=option][tabindex=-1][aria-selected][data-ok-selected]?[data-ok-value][aria-disabled]?\n        li[data-ok-list-subheader][role=presentation]   (grouping)\n  p[data-ok-form-helper-text][id]?\nNative: div[data-ok-select][…] › select[data-ok-select-native][id] › option | optgroup, svg[data-ok-select-icon] (not multiple), fieldset\nComposed (no field box of its own): TextField's control `div[data-ok-text-field-control][data-ok-select]`\n  around the same parts (trigger also `data-ok-text-field-input`, icon also\n  `data-ok-text-field-select-icon`); TablePagination's `div[data-ok-select]` (bare, styled by table.css).\n```\nReact renders `data-ok-runtime=\"off\"` on the field box (and the paper). The field box always\nwrites its variant / size / color (resolved: own prop, else the FormControl's, else the default).",
+     "body": "```\n[data-ok-form-control][data-ok-variant]?[data-ok-size]?[data-ok-hidden-label]?…   (FormControl, optional)\n  label[data-ok-form-label][data-ok-input-label][id][for]?[data-ok-shrink]?[data-ok-disable-animation]?\n  div[data-ok-select][data-ok-variant][data-ok-size][data-ok-color][data-ok-error]?[data-ok-full-width]?\n                     [data-ok-multiple]?[data-ok-auto-width]?[data-ok-display-empty]?\n    template[data-ok-select-chip]?          (HTML: a Chip per value, multiple)\n    template[data-ok-select-placeholder]?   (HTML: what an empty value shows, displayEmpty)\n    [data-ok-text-field-adornment=\"start\"]?   (InputAdornment)\n    div[data-ok-select-display][role=combobox][tabindex=0|-1][id][aria-haspopup=listbox]\n       [aria-expanded][aria-controls=<id>-listbox][aria-labelledby]?[aria-label]?[aria-describedby]?\n       [aria-disabled]?[aria-readonly]?[aria-invalid]?[aria-required]?   › the value's content\n    input[data-ok-select-input][aria-hidden=true][tabindex=-1][name]?[value][placeholder=\" \"][disabled]?[required]?\n    svg[data-ok-select-icon][aria-hidden]\n    [data-ok-text-field-adornment=\"end\"]?   (InputAdornment, before the arrow on screen)\n    fieldset[data-ok-select-outline][aria-hidden] › legend › span (label + \" *\")   (outlined)\n    div[data-ok-popover][popover=manual][id=<id>-menu][data-ok-placement=bottom-start][tabindex=-1]\n      span[data-ok-popover-arrow]\n      ul[data-ok-select-listbox][role=listbox][id=<id>-listbox][aria-labelledby]?[aria-multiselectable]?\n        li[data-ok-menu-item][role=option][tabindex=-1][aria-selected][data-ok-selected]?[data-ok-value][aria-disabled]?\n        li[data-ok-list-subheader][role=presentation]   (grouping)\n  p[data-ok-form-helper-text][id]?\nNative: div[data-ok-select][…] › select[data-ok-select-native][id] › option | optgroup, svg[data-ok-select-icon] (not multiple), fieldset\nComposed (no field box of its own): TextField's control `div[data-ok-text-field-control][data-ok-select]`\n  around the same parts (trigger also `data-ok-text-field-input`, icon also\n  `data-ok-text-field-select-icon`); TablePagination's `div[data-ok-select]` (bare, styled by table.css).\n```\nReact renders `data-ok-runtime=\"off\"` on the field box (and the paper). The field box always\nwrites its variant / size / color (resolved: own prop, else the FormControl's, else the default).",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -53741,7 +54814,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Select` (+ OutlinedInput / InputBase props), `InputLabel`, `NativeSelect`,\nmui.com/material-ui/api/select/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `autoWidth`, `children`, `defaultOpen`, `defaultValue`, `displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`, `renderValue`, `value`, `variant` | same | kept | `id` → the trigger; `inputProps` / `inputRef` → hidden input or native select |\n| InputBase `size`, `color`, `error`, `disabled`, `required`, `fullWidth`, `name`, `readOnly` | same | kept | default: the FormControl's |\n| `onChange(event, child)` | `onChange(value)` | renamed | the options' own values (numbers stay numbers) |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | reasons `escape` · `backdrop` · `select` · `tab` · `toggle` |\n| `MenuProps` | `menuProps` (`placement`, `paperProps`, `listProps`) | renamed | |\n| `SelectDisplayProps` | `displayProps` | renamed | |\n| `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant=\"standard\"` for its look |\n| InputBase `startAdornment` / `endAdornment` | — | deferred | adornments inside the field box |\n| `IconComponent` | — | not applicable | the arrow is part of the anatomy |\n| `input` | — | not applicable | the field box is the Select |\n| InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |\n| InputLabel `color`, `disabled`, `error`, `focused`, `required` | same | kept | from FormLabel |\n| InputLabel `variant`, `size`, `margin` | — | not applicable | CSS reads the Select's |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Select` (+ OutlinedInput / InputBase props), `InputLabel`, `NativeSelect`,\nmui.com/material-ui/api/select/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `autoWidth`, `children`, `defaultOpen`, `defaultValue`, `displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`, `renderValue`, `value`, `variant` | same | kept | `id` → the trigger; `inputProps` / `inputRef` → hidden input or native select |\n| InputBase `size`, `color`, `error`, `disabled`, `required`, `fullWidth`, `name`, `readOnly` | same | kept | default: the FormControl's |\n| `onChange(event, child)` | `onChange(value)` | renamed | the options' own values (numbers stay numbers) |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | reasons `escape` · `backdrop` · `select` · `tab` · `toggle` |\n| `MenuProps` | `menuProps` (`placement`, `paperProps`, `listProps`) | renamed | |\n| `SelectDisplayProps` | `displayProps` | renamed | |\n| `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant=\"standard\"` for its look |\n| InputBase `startAdornment` / `endAdornment` | same | kept | 4.18.27: an `InputAdornment` (`[data-ok-text-field-adornment]`) inside the field box: the start one before the trigger (it floats the InputLabel and opens the notch, as in TextField), the end one after the arrow icon in the DOM and drawn before it (the box keeps the arrow's space); native selects too |\n| `IconComponent` | — | not applicable | the arrow is part of the anatomy |\n| `input` | — | not applicable | the field box is the Select |\n| InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |\n| InputLabel `color`, `disabled`, `error`, `focused`, `required` | same | kept | from FormLabel |\n| InputLabel `variant`, `size`, `margin` | — | not applicable | CSS reads the Select's |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -59105,6 +60178,18 @@
          "name": "shrink"
         },
         {
+         "attr": "data-ok-hidden-label",
+         "description": "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
+         "kind": "flag",
+         "name": "hiddenLabel"
+        },
+        {
+         "attr": "data-ok-focused",
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "kind": "flag",
+         "name": "focused"
+        },
+        {
          "attr": "data-ok-min-rows",
          "description": "Multiline: rows shown at least.",
          "kind": "number",
@@ -59141,6 +60226,11 @@
         }
        ],
        "parts": [
+        {
+         "description": "On an adornment: presses go through it to the input (React `disablePointerEvents`).",
+         "kind": "state",
+         "name": "data-ok-disable-pointer-events"
+        },
         {
          "description": "An adornment before or after the input, such as an icon or a unit.",
          "kind": "value",
@@ -59233,6 +60323,12 @@
          "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
+         "default": "\"div\"",
+         "description": "The root element.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "description": "Uncontrolled initial value.",
          "name": "defaultValue",
          "type": "string | number"
@@ -59248,6 +60344,11 @@
          "type": "boolean"
         },
         {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
          "description": "Stretch to the container width.",
          "name": "fullWidth",
          "type": "boolean"
@@ -59256,6 +60357,11 @@
          "description": "Text under the field, such as a hint or an error message (linked with `aria-describedby`).",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the label visually: it still names the input, and the field is laid out as if it had none (a filled field gets less padding above the value).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "The floating label; it names the input.",
@@ -59344,6 +60450,17 @@
        "description": "An icon, text or button before or after a text field's input.",
        "native": "HTMLSpanElement",
        "props": [
+        {
+         "default": "\"span\"",
+         "description": "The element to render.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
+         "description": "Presses go through the adornment to the input, such as for a decorative icon.",
+         "name": "disablePointerEvents",
+         "type": "boolean"
+        },
         {
          "description": "Which side of the input it goes on.",
          "name": "position",
@@ -59451,6 +60568,18 @@
        "name": "shrink"
       },
       {
+       "attr": "data-ok-hidden-label",
+       "description": "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
+       "kind": "flag",
+       "name": "hiddenLabel"
+      },
+      {
+       "attr": "data-ok-focused",
+       "description": "Show the focus colors even when the field doesn't have focus.",
+       "kind": "flag",
+       "name": "focused"
+      },
+      {
        "attr": "data-ok-min-rows",
        "description": "Multiline: rows shown at least.",
        "kind": "number",
@@ -59496,7 +60625,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-min-rows]?[data-ok-max-rows]?\n  label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] \" *\")\n  div[data-ok-text-field-control]\n    span[data-ok-text-field-adornment=\"start\"]?\n    input[data-ok-text-field-input][id][placeholder]   | textarea[…][rows][placeholder] | select[…] › option\n    svg[data-ok-text-field-select-icon][aria-hidden]?  (select)\n    span[data-ok-text-field-adornment=\"end\"]?\n    fieldset[data-ok-text-field-outline][aria-hidden] › legend? › span (label + \" *\")   (outlined only)\n  div[data-ok-text-field-helper][id]?                  (linked by aria-describedby)\n```\nInputs and textareas always carry a `placeholder` (\" \" when none): `:not(:placeholder-shown)` is\nhow CSS knows there is a value. React renders `data-ok-runtime=\"off\"` on the root; `ref` and the\nremaining props go to the input; `className` / `style` to the root.",
+     "body": "```\ndiv[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-hidden-label]?[data-ok-focused]?[data-ok-min-rows]?[data-ok-max-rows]?\n  label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] \" *\")\n  div[data-ok-text-field-control]\n    span[data-ok-text-field-adornment=\"start\"][data-ok-disable-pointer-events]?   (optional; any element)\n    input[data-ok-text-field-input][id][placeholder]   | textarea[…][rows][placeholder] | select[…] › option\n    svg[data-ok-text-field-select-icon][aria-hidden]?  (select)\n    span[data-ok-text-field-adornment=\"end\"]?\n    fieldset[data-ok-text-field-outline][aria-hidden] › legend? › span (label + \" *\")   (outlined only)\n  div[data-ok-text-field-helper][id]?                  (linked by aria-describedby)\n```\nInputs and textareas always carry a `placeholder` (\" \" when none): `:not(:placeholder-shown)` is\nhow CSS knows there is a value. React renders `data-ok-runtime=\"off\"` on the root; `ref` and the\nremaining props go to the input; `className` / `style` to the root.",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -59541,7 +60670,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | — | deferred | filled field without label (less top padding), forced focus style, root element |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | — | deferred | |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
+     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -66928,6 +68057,13 @@
      "title": "Use a button as a link"
     },
     {
+     "body": "To navigate on the client without a full page load, pass your router's link component in `component`, with the props it needs, such as `to`. You can also keep `href` and pass the component in `LinkComponent`: Button renders it whenever `href` is set. Button adds its attributes to that component, which must pass them, and its `ref`, to the element it renders. A disabled router link keeps its URL, because the router may need it. It gets `aria-disabled`, leaves the tab order and ignores pointer clicks. In HTML, the router renders the `a` element: add the button attributes to it.",
+     "html": "<!-- The router renders the element; add the button attributes to it. -->\n<a href=\"/settings\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\">\n  <span data-ok-button-label>Settings</span>\n</a>",
+     "id": "routing",
+     "react": "import { Button } from \"@owlky/react\";\nimport type { ComponentProps } from \"react\";\n\n// Stands in for a router's link component, such as the one of React Router.\nfunction RouterLink({ to, ...props }: { to: string } & ComponentProps<\"a\">) {\n  return <a href={to} {...props} />;\n}\n\nexport function ButtonRouterLink() {\n  return (\n    <Button component={RouterLink} to=\"/settings\" variant=\"contained\">\n      Settings\n    </Button>\n  );\n}",
+     "title": "Use a routing library"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -68278,6 +69414,13 @@
      "title": "Customize the layout and the views"
     },
     {
+     "body": "The field takes the props of a text field and a few of its own:\n- **Text field props:** `label`, `helperText`, `variant`, `size`, `color`, `margin`, `fullWidth`, `required`, `hiddenLabel` and `focused` work as they do on **Text field**.\n- **Adornments:** `startAdornment` and `endAdornment` take an `InputAdornment`, such as a unit or a hint. The end adornment comes before the field's buttons.\n- **Button positions:** `clearButtonPosition` and `openPickerButtonPosition` put the clear button and the picker's open button at the `start` or the `end` (the default). In HTML, put the button in the adornment of that side.\n- **Leading zeros:** digit sections show two digits by default, so `M/D/YYYY` shows \"05/07/2025\". Set `shouldRespectLeadingZeros` to keep the format's padding (\"5/7/2025\").\n- **Field API:** `fieldRef` gives `getSections()`, `getActiveSectionIndex()`, `setSelectedSections(selected)`, `focusField(section)` and `isFieldFocused()`. A selection is a section index, a section type such as `\"day\"`, `\"all\"`, or `null` for none. `selectedSections` takes the same values. In HTML, the field's instance (`\"date-field\"`) has the same methods.",
+     "html": "<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-shrink data-ok-date-field data-ok-format-density=\"dense\" data-ok-clearable data-ok-clear-button-position=\"start\" data-ok-value=\"2025-05-25\" data-ok-format=\"MM/DD/YYYY\">\n  <label data-ok-text-field-label id=\"dv-clearable-label\" for=\"dv-clearable\">Clearable</label>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\">\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-date-field-clear aria-label=\"Clear\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg>\n      </button>\n    </span>\n    <div id=\"dv-clearable\" role=\"group\" data-ok-text-field-input data-ok-date-field-sections aria-labelledby=\"dv-clearable-label\">\n      <span data-ok-date-field-section>\n        <span data-ok-date-field-content data-ok-section=\"month\" role=\"spinbutton\" aria-label=\"Month\" aria-valuenow=\"5\" aria-valuemin=\"1\" aria-valuemax=\"12\" aria-valuetext=\"May\" tabindex=\"0\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">05</span>\n        <span data-ok-date-field-separator>/</span>\n      </span>\n      <span data-ok-date-field-section>\n        <span data-ok-date-field-content data-ok-section=\"day\" role=\"spinbutton\" aria-label=\"Day\" aria-valuenow=\"25\" aria-valuemin=\"1\" aria-valuemax=\"31\" aria-valuetext=\"25\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">25</span>\n        <span data-ok-date-field-separator>/</span>\n      </span>\n      <span data-ok-date-field-section>\n        <span data-ok-date-field-content data-ok-section=\"year\" role=\"spinbutton\" aria-label=\"Year\" aria-valuenow=\"2025\" aria-valuemin=\"0\" aria-valuemax=\"9999\" aria-valuetext=\"2025\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"done\">2025</span>\n      </span>\n    </div>\n    <input type=\"hidden\" data-ok-date-field-input value=\"2025-05-25\">\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Clearable</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>\n\n<script type=\"module\">\n  // The field API: select the day, as fieldRef does in React.\n  const field = document.getElementById(\"dv-clearable\").closest(\"[data-ok-date-field]\");\n  window.Owlky.get(field, \"date-field\").setSelectedSections(\"day\");\n</script>",
+     "id": "field",
+     "react": "import type { FieldApi } from \"@owlky/core\";\nimport { DatePicker, InputAdornment } from \"@owlky/react\";\nimport { useRef } from \"react\";\n\nexport function DepartureDate() {\n  const fieldRef = useRef<FieldApi>(null);\n  return (\n    <>\n      <DatePicker\n        label=\"Departure\"\n        clearable\n        clearButtonPosition=\"start\"\n        openPickerButtonPosition=\"start\"\n        format=\"M/D/YYYY\"\n        shouldRespectLeadingZeros\n        endAdornment={<InputAdornment position=\"end\">local time</InputAdornment>}\n        fieldRef={fieldRef}\n      />\n      <button type=\"button\" onClick={() => fieldRef.current?.setSelectedSections(\"day\")}>\n        Edit the day\n      </button>\n    </>\n  );\n}",
+     "title": "Customize the field"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. Pickers pass the field and calendar options on to their field and calendar.",
      "id": "options",
      "title": "Options"
@@ -69297,6 +70440,13 @@
      "title": "Add a press animation"
     },
     {
+     "body": "When an icon button navigates, render it as a link. In React, pass `href`; in HTML, use an `<a>` element with the same attributes. A disabled link loses its `href` and gets `aria-disabled`, so it can't be followed. To navigate with a routing library, pass your router's link component in `component` (with the props it needs, such as `to`) or in `LinkComponent` (with `href`). A disabled router link keeps its URL, leaves the tab order and ignores pointer clicks.",
+     "html": "<a href=\"/messages\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" aria-label=\"Messages\">\n  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" /><path d=\"m3 7 9 6 9-6\" /></svg>\n</a>",
+     "id": "link",
+     "react": "import { IconButton } from \"@owlky/react\";\nimport { MailIcon } from \"lucide-react\";\n\nexport function MessagesLink() {\n  return (\n    <IconButton href=\"/messages\" aria-label=\"Messages\">\n      <MailIcon />\n    </IconButton>\n  );\n}",
+     "title": "Use an icon button as a link"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -69307,7 +70457,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "Icon buttons are native buttons, so the browser provides the keyboard behavior.",
+     "body": "Icon buttons and icon links are native elements, so the browser provides the keyboard behavior.",
      "id": "keyboard",
      "title": "Keyboard"
     },
@@ -70763,6 +71913,13 @@
      "title": "Show help, errors and states"
     },
     {
+     "body": "Pass an `InputAdornment` in `startAdornment` or `endAdornment` to show an icon, a prefix or a unit inside the field. The start adornment comes before the value and keeps the label above the field. The end adornment comes before the arrow. In HTML, put the adornment element before the trigger or after the arrow icon.",
+     "html": "<div data-ok-form-control>\n  <label data-ok-form-label data-ok-input-label id=\"weight-label\">Weight</label>\n  <div data-ok-select data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\">\n    <span data-ok-text-field-adornment=\"start\">≈</span>\n    <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"weight\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"weight-listbox\" aria-labelledby=\"weight-label\">5</div>\n    <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"5\">\n    <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n    <span data-ok-text-field-adornment=\"end\">kg</span>\n    <fieldset data-ok-select-outline aria-hidden=\"true\"><legend><span>Weight</span></legend></fieldset>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"weight-menu\" tabindex=\"-1\">\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul data-ok-select-listbox role=\"listbox\" id=\"weight-listbox\" aria-labelledby=\"weight-label\">\n        <li role=\"option\" tabindex=\"-1\" data-ok-menu-item aria-selected=\"false\" data-ok-value=\"1\">1</li>\n        <li role=\"option\" tabindex=\"-1\" data-ok-menu-item data-ok-selected aria-selected=\"true\" data-ok-value=\"5\">5</li>\n        <li role=\"option\" tabindex=\"-1\" data-ok-menu-item aria-selected=\"false\" data-ok-value=\"10\">10</li>\n      </ul>\n    </div>\n  </div>\n</div>",
+     "id": "adornments",
+     "react": "import { FormControl, InputAdornment, InputLabel, MenuItem, Select } from \"@owlky/react\";\n\nexport function Weight() {\n  return (\n    <FormControl>\n      <InputLabel id=\"weight-label\">Weight</InputLabel>\n      <Select\n        labelId=\"weight-label\"\n        id=\"weight\"\n        label=\"Weight\"\n        defaultValue={5}\n        startAdornment={<InputAdornment position=\"start\">≈</InputAdornment>}\n        endAdornment={<InputAdornment position=\"end\">kg</InputAdornment>}\n      >\n        <MenuItem value={1}>1</MenuItem>\n        <MenuItem value={5}>5</MenuItem>\n        <MenuItem value={10}>10</MenuItem>\n      </Select>\n    </FormControl>\n  );\n}",
+     "title": "Add a prefix or a unit"
+    },
+    {
      "body": "Set `multiple`: the value is a list, each option toggles, and the menu stays open while people pick. The field shows the chosen options' text, separated by commas. To show chips instead, return **Chip**s from `renderValue`. In HTML, add a `<template data-ok-select-chip>` with one chip as the field box's first child: the runtime fills a copy for each value.",
      "html": "<div data-ok-form-control>\n  <label data-ok-form-label data-ok-input-label id=\"people-label\">People</label>\n  <div data-ok-select data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-multiple>\n    <template data-ok-select-chip><span data-ok-chip data-ok-variant=\"filled\" data-ok-color=\"default\" data-ok-size=\"small\"><span data-ok-chip-action><span data-ok-chip-label></span></span></span></template>\n    <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"people\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"people-listbox\" aria-labelledby=\"people-label\"><span data-ok-chip data-ok-variant=\"filled\" data-ok-color=\"default\" data-ok-size=\"small\"><span data-ok-chip-action><span data-ok-chip-label>Oliver Hansen</span></span></span><span data-ok-chip data-ok-variant=\"filled\" data-ok-color=\"default\" data-ok-size=\"small\"><span data-ok-chip-action><span data-ok-chip-label>Van Henry</span></span></span></div>\n    <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"Oliver Hansen,Van Henry\">\n    <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n    <fieldset data-ok-select-outline aria-hidden=\"true\"><legend><span>People</span></legend></fieldset>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"people-menu\" tabindex=\"-1\">\n      <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul data-ok-select-listbox role=\"listbox\" id=\"people-listbox\" aria-labelledby=\"people-label\" aria-multiselectable=\"true\">\n        <li role=\"option\" tabindex=\"-1\" data-ok-menu-item data-ok-selected aria-selected=\"true\" data-ok-value=\"Oliver Hansen\">Oliver Hansen</li>\n        <li role=\"option\" tabindex=\"-1\" data-ok-menu-item data-ok-selected aria-selected=\"true\" data-ok-value=\"Van Henry\">Van Henry</li>\n        <li role=\"option\" tabindex=\"-1\" data-ok-menu-item aria-selected=\"false\" data-ok-value=\"April Tucker\">April Tucker</li>\n      </ul>\n    </div>\n  </div>\n</div>",
      "id": "multiple",
@@ -71464,6 +72621,13 @@
      "id": "adornments",
      "react": "import { IconButton, InputAdornment, TextField } from \"@owlky/react\";\nimport { EyeIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nexport function Password() {\n  const [shown, setShown] = useState(false);\n  return (\n    <TextField\n      id=\"password\"\n      label=\"Password\"\n      type={shown ? \"text\" : \"password\"}\n      autoComplete=\"current-password\"\n      endAdornment={\n        <InputAdornment position=\"end\">\n          <IconButton edge=\"end\" aria-label=\"Show password\" aria-pressed={shown} onClick={() => setShown(!shown)}>\n            <EyeIcon />\n          </IconButton>\n        </InputAdornment>\n      }\n    />\n  );\n}",
      "title": "Add icons, units and buttons"
+    },
+    {
+     "body": "When the context already says what a field is for, such as a search field in a toolbar, set `hiddenLabel`. The label is hidden visually but still names the input for assistive technology, and the field is laid out as if it had no label: a filled field gets less padding above the value. Show a placeholder instead, so sighted users know what to type. An adornment that only decorates the field can let presses through to the input: set `disablePointerEvents` on it (HTML: `data-ok-disable-pointer-events`).",
+     "html": "<div data-ok-text-field data-ok-variant=\"filled\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-hidden-label>\n  <label data-ok-text-field-label for=\"search\">Search</label>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\" data-ok-disable-pointer-events><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\" /><path d=\"m20 20-3.5-3.5\" /></svg></span>\n    <input id=\"search\" data-ok-text-field-input type=\"search\" placeholder=\"Search orders\">\n  </div>\n</div>",
+     "id": "hidden-label",
+     "react": "import { InputAdornment, TextField } from \"@owlky/react\";\nimport { SearchIcon } from \"lucide-react\";\n\nexport function SearchField() {\n  return (\n    <TextField\n      id=\"search\"\n      variant=\"filled\"\n      size=\"small\"\n      label=\"Search\"\n      hiddenLabel\n      type=\"search\"\n      placeholder=\"Search orders\"\n      startAdornment={\n        <InputAdornment position=\"start\" disablePointerEvents>\n          <SearchIcon />\n        </InputAdornment>\n      }\n    />\n  );\n}",
+     "title": "Hide the label"
     },
     {
      "body": "Set `select` and pass `<option>` elements to get a native `<select>` in the field's frame. The label always stays above it. A native select uses the system's list on every device, which works well on touch screens and with assistive technology. For a list in the page's own style, set `selectProps` to `{ native: false }` and pass **MenuItem**s: the field then holds a **Select** (see its page).",

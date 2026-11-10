@@ -1,7 +1,7 @@
 /*
  * Button group — spec: specs/components/button-group.md
  *
- * Anatomy:  div[role="group"][data-ok-button-group] › [data-ok-button]…
+ * Anatomy:  *[role="group"][data-ok-button-group] (a div by default) › [data-ok-button]…
  * Modifiers: data-ok-orientation = horizontal (default) | vertical, data-ok-full-width
  *
  * The group only joins its Buttons (see button.css for their look): outer corners rounded, a 1px

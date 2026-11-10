@@ -3,9 +3,14 @@ import { userEvent } from "vitest/browser";
 import { cleanupDom, mount } from "../test-utils.js";
 import { makeDate } from "./dates.js";
 import { sectionPlaceholder } from "./field.js";
-import { createFieldController } from "./field-controller.js";
-import { parseFormat } from "./format.js";
+import {
+  createFieldApi,
+  createFieldController,
+  resolveSelectedSection,
+} from "./field-controller.js";
+import { fieldSections, parseFormat } from "./format.js";
 import { pickersEnUS } from "./locale.js";
+import { rangeFieldSections } from "./range.js";
 
 afterEach(() => {
   cleanupDom();
@@ -29,6 +34,7 @@ function setup(format = "MM/DD/YYYY", initial?: string[]) {
   const state = { values: initial ?? sections.map(() => ""), disabled: false, readOnly: false };
   const changes: string[][] = [];
   const actives: number[] = [];
+  const all: number[] = [];
   const render = () =>
     spans.forEach((span, i) => {
       span.textContent = state.values[i] || placeholders[i] || "";
@@ -51,8 +57,10 @@ function setup(format = "MM/DD/YYYY", initial?: string[]) {
       controller.sync();
     },
     onActiveSectionChange: (index) => actives.push(index),
+    onSelectAll: () => all.push(1),
   });
-  return { group, spans, state, changes, actives, controller };
+  const api = createFieldApi(controller, () => ({ sections, values: state.values, placeholders }));
+  return { group, spans, state, changes, actives, all, controller, api };
 }
 
 const focused = () => document.activeElement;
@@ -307,5 +315,129 @@ describe("createFieldController — unfocused and unusual input", () => {
     (spans[1] as HTMLElement).dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
     expect(state.values).toEqual(["05", "25", "2025"]);
+  });
+});
+
+describe("field API (fieldRef)", () => {
+  it("reports the sections with their texts and placeholders", () => {
+    const { api } = setup("MM/DD/YYYY", ["05", "", "2025"]);
+    expect(api.getSections()).toEqual([
+      {
+        type: "month",
+        format: "MM",
+        contentType: "digit",
+        value: "05",
+        placeholder: "MM",
+        startSeparator: "",
+        endSeparator: "/",
+      },
+      {
+        type: "day",
+        format: "DD",
+        contentType: "digit",
+        value: "",
+        placeholder: "DD",
+        startSeparator: "",
+        endSeparator: "/",
+      },
+      {
+        type: "year",
+        format: "YYYY",
+        contentType: "digit",
+        value: "2025",
+        placeholder: "YYYY",
+        startSeparator: "",
+        endSeparator: "",
+      },
+    ]);
+  });
+
+  it("focusField, setSelectedSections (index, type, all, none), getActiveSectionIndex, isFieldFocused", async () => {
+    const { api, spans, group, all } = setup();
+    expect(api.isFieldFocused()).toBe(false);
+    expect(api.getActiveSectionIndex()).toBeNull();
+    api.focusField();
+    expect(focused()).toBe(spans[0]);
+    expect(api.isFieldFocused()).toBe(true);
+    expect(api.getActiveSectionIndex()).toBe(0);
+    api.focusField("year");
+    expect(focused()).toBe(spans[2]);
+    api.setSelectedSections(1);
+    expect(focused()).toBe(spans[1]);
+    expect(api.getActiveSectionIndex()).toBe(1);
+    api.setSelectedSections("day");
+    expect(focused()).toBe(spans[1]);
+    api.setSelectedSections("all");
+    expect(group.hasAttribute("data-ok-all-selected")).toBe(true);
+    expect(api.getActiveSectionIndex()).toBe(0);
+    expect(all).toHaveLength(1);
+    api.setSelectedSections(null);
+    expect(group.hasAttribute("data-ok-all-selected")).toBe(false);
+    expect(selectedText()).toBe("");
+    expect(focused()).toBe(spans[1]);
+    // Unknown types and out-of-range indexes select nothing; focusField falls back to the first.
+    api.setSelectedSections("hours");
+    api.focusField(9);
+    expect(focused()).toBe(spans[0]);
+    (document.querySelector("button") as HTMLElement).focus();
+    expect(api.isFieldFocused()).toBe(false);
+    // selectAll from outside the field focuses it first.
+    api.setSelectedSections("all");
+    expect(group.contains(focused())).toBe(true);
+    await userEvent.keyboard("1");
+  });
+
+  it("Ctrl / ⌘ + A reports the select-all", async () => {
+    const { spans, all } = setup();
+    (spans[0] as HTMLElement).focus();
+    await userEvent.keyboard("{Control>}a{/Control}");
+    expect(all).toHaveLength(1);
+  });
+
+  it("selectAll on an empty group does nothing", () => {
+    const host = mount('<div role="group"></div>');
+    const group = host.firstElementChild as HTMLElement;
+    const controller = createFieldController(group, {
+      read: () => ({
+        sections: [],
+        values: [],
+        placeholders: [],
+        locale: "en-US",
+        reference: makeDate(2026, 0, 1),
+        disabled: false,
+        readOnly: false,
+      }),
+      onValuesChange: () => {},
+    });
+    controller.selectAll();
+    expect(controller.isAllSelected()).toBe(false);
+    controller.destroy();
+  });
+
+  it("resolveSelectedSection: indexes, types, all and none", () => {
+    const sections = parseFormat("MM/DD/YYYY");
+    expect(resolveSelectedSection(2, sections)).toBe(2);
+    expect(resolveSelectedSection(3, sections)).toBeNull();
+    expect(resolveSelectedSection(1.5, sections)).toBeNull();
+    expect(resolveSelectedSection("year", sections)).toBe(2);
+    expect(resolveSelectedSection("minutes", sections)).toBeNull();
+    expect(resolveSelectedSection("all", sections)).toBe("all");
+    expect(resolveSelectedSection(null, sections)).toBeNull();
+    expect(resolveSelectedSection(undefined, sections)).toBeNull();
+  });
+});
+
+describe("leading zeros (shouldRespectLeadingZeros)", () => {
+  it("pads digit sections without padding unless the format's padding is kept", () => {
+    const padded = fieldSections("M/D/YYYY h:m:s A");
+    expect(padded.map((s) => s.pad)).toEqual([2, 2, 4, 2, 2, 2, 0]);
+    const kept = fieldSections("M/D/YYYY h:m:s A", true);
+    expect(kept.map((s) => s.pad)).toEqual([0, 0, 4, 0, 0, 0, 0]);
+    expect(fieldSections("MMMM D").map((s) => s.pad)).toEqual([0, 2]);
+    const range = rangeFieldSections("M/D/YYYY");
+    expect(range.sections.map((s) => s.pad)).toEqual([2, 2, 4, 2, 2, 4]);
+    expect(rangeFieldSections("M/D/YYYY", true).sections.map((s) => s.pad)).toEqual([
+      0, 0, 4, 0, 0, 4,
+    ]);
   });
 });

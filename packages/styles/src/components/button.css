@@ -219,6 +219,11 @@
     border-color: var(--ok-action-disabled-bg);
   }
 
+  /* A disabled router link keeps its href (the router needs it): no clicks reach it. */
+  :where([data-ok-button][href][aria-disabled="true"]) {
+    pointer-events: none;
+  }
+
   /* Loading */
   :where([data-ok-button][data-ok-loading]) {
     cursor: progress;

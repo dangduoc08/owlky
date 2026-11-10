@@ -96,15 +96,21 @@ export {
   typeInSection,
 } from "./field.js";
 export {
+  createFieldApi,
   createFieldController,
+  type FieldApi,
   type FieldController,
   type FieldControllerOptions,
   type FieldControllerState,
+  type FieldSection,
+  type FieldSelectedSections,
+  resolveSelectedSection,
 } from "./field-controller.js";
 export {
   defaultDateFormat,
   escapeFormatLiteral,
   type FormatSection,
+  fieldSections,
   formatAccessibleDate,
   formatSection,
   formatWith,

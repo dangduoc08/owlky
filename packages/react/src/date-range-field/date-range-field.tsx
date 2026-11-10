@@ -4,9 +4,12 @@ import {
   type DateRange,
   dateFieldAttributes,
   defaultPickerFormat,
+  type FieldApi,
+  type FieldSelectedSections,
   formatIsoRange,
   isSameRange,
   isValidDate,
+  type PickerButtonPosition,
   type PickerLocaleText,
   type PickerValueType,
   type PickerView,
@@ -16,10 +19,12 @@ import {
   rangeFieldSections,
   rangeSectionValues,
   resolveAmpm,
+  type SelectionControlColor,
   type SelectionControlSize,
   sectionAria,
   sectionsToRange,
   startOfDay,
+  type TextFieldMargin,
   type TextFieldVariant,
   type TimeView,
   validateRange,
@@ -73,6 +78,11 @@ export interface RangeFieldProps
   onError?: ((error: RangeErrors, value: DateRange) => void) | undefined;
   /** The format of one date (Day.js tokens). Default: from the views and the locale. */
   format?: string | undefined;
+  /**
+   * Digit sections keep the format's padding (`D` shows `5`). Default `false`: they always show
+   * two digits (`05`).
+   */
+  shouldRespectLeadingZeros?: boolean | undefined;
   formatDensity?: "dense" | "spacious" | undefined;
   readOnly?: boolean | undefined;
   /** Turns the field off. */
@@ -108,10 +118,29 @@ export interface SingleInputRangeFieldProps extends RangeFieldProps {
   clearable?: boolean | undefined;
   /** Called when the clear button empties the field. */
   onClear?: (() => void) | undefined;
-  /** The selected section of the field (its index, `null`: none), controlled. */
-  selectedSections?: number | null | undefined;
-  /** Called when the selected section changes. */
-  onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+  /**
+   * The selected section of the field (controlled): its index, the first section of a type
+   * (`"day"`), every section (`"all"`), or `null` for none.
+   */
+  selectedSections?: FieldSelectedSections | undefined;
+  /** Called when the selected section changes (its index, or `"all"`). */
+  onSelectedSectionsChange?: ((section: FieldSelectedSections) => void) | undefined;
+  /** The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`. */
+  fieldRef?: Ref<FieldApi> | undefined;
+  /** Side of the clear button. Default `"end"`. */
+  clearButtonPosition?: PickerButtonPosition | undefined;
+  /** An `InputAdornment` with `position="start"`, before the sections. */
+  startAdornment?: ReactNode;
+  /** An `InputAdornment` with `position="end"`, after the sections (before the buttons). */
+  endAdornment?: ReactNode;
+  /** Focus color; `default` is the text color. Default `"default"`. */
+  color?: SelectionControlColor | undefined;
+  /** Vertical margin. Default `"none"`. */
+  margin?: TextFieldMargin | undefined;
+  /** Hide the label visually (it still names the field). */
+  hiddenLabel?: boolean | undefined;
+  /** Show the focus colors even when the field doesn't have focus. */
+  focused?: boolean | undefined;
   /** Form field name: a hidden input carries the ISO interval `start/end`. */
   name?: string | undefined;
   /** A ref to the hidden input that carries the value. */
@@ -224,9 +253,18 @@ export const SingleInputRangeField = forwardRef<
     id: idProp,
     label,
     clearable,
+    clearButtonPosition,
     onClear,
     selectedSections,
     onSelectedSectionsChange,
+    fieldRef,
+    startAdornment,
+    endAdornment,
+    color,
+    margin,
+    hiddenLabel,
+    focused,
+    shouldRespectLeadingZeros,
     name,
     inputRef,
     minDate,
@@ -243,7 +281,10 @@ export const SingleInputRangeField = forwardRef<
   const { locale, localeText, explicit, format, timeProps, validate } = useRangeRules(props);
   const generated = useId();
   const id = idProp ?? generated;
-  const { sections, count } = useMemo(() => rangeFieldSections(format), [format]);
+  const { sections, count } = useMemo(
+    () => rangeFieldSections(format, shouldRespectLeadingZeros),
+    [format, shouldRespectLeadingZeros],
+  );
 
   const [current, setCurrent] = useControllableState<DateRange>({
     value,
@@ -298,6 +339,7 @@ export const SingleInputRangeField = forwardRef<
     autoFocus,
     selectedSections,
     onSelectedSectionsChange,
+    fieldRef,
   });
   const rootRef = useRef<HTMLDivElement>(null);
   const mergedRef = useMergedRefs(ref, rootRef);
@@ -310,6 +352,8 @@ export const SingleInputRangeField = forwardRef<
         ...dateFieldAttributes({
           formatDensity,
           clearable,
+          clearButtonPosition,
+          shouldRespectLeadingZeros,
           readOnly,
           valueType: valueType === "date" ? undefined : valueType,
           range: true,
@@ -330,6 +374,10 @@ export const SingleInputRangeField = forwardRef<
       invalid={error ?? rangeError(errors) !== null}
       variant={variant}
       size={size}
+      color={color}
+      margin={margin}
+      hiddenLabel={hiddenLabel}
+      focused={focused}
       fullWidth={fullWidth}
       formatDensity={formatDensity}
       disabled={disabled}
@@ -358,7 +406,10 @@ export const SingleInputRangeField = forwardRef<
         onClear?.();
         controllerRef.current?.focusSection(0);
       }}
-      endAdornment={adornments?.[0]}
+      clearButtonPosition={clearButtonPosition}
+      startAdornment={startAdornment}
+      endAdornment={endAdornment}
+      openButton={adornments?.[0]}
     />
   );
 });
@@ -388,6 +439,7 @@ export const MultiInputRangeField = forwardRef<
     onError,
     format: formatProp,
     formatDensity,
+    shouldRespectLeadingZeros,
     readOnly,
     disabled,
     referenceDate,
@@ -442,6 +494,7 @@ export const MultiInputRangeField = forwardRef<
       ampm={ampm}
       today={today}
       formatDensity={formatDensity}
+      shouldRespectLeadingZeros={shouldRespectLeadingZeros}
       readOnly={readOnly}
       disabled={disabled}
       referenceDate={side === 1 && isValidDate(current[0]) ? current[0] : referenceDate}
@@ -464,7 +517,7 @@ export const MultiInputRangeField = forwardRef<
       minutesStep={minutesStep}
       shouldDisableTime={shouldDisableTime}
       disableIgnoringDatePartForTimeValidation={disableIgnoringDatePartForTimeValidation}
-      endAdornment={adornments?.[side]}
+      openButton={adornments?.[side]}
       onFocus={() => onFieldFocus?.(side === 0 ? "start" : "end")}
     />
   );

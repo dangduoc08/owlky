@@ -8,7 +8,7 @@ An action shown only as an icon (toolbar, card actions). For text actions use Bu
 
 ## Anatomy
 ```
-button[type="button"][data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]
+(button[type="button"] | a[href])[data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]
   svg[aria-hidden="true"]            (any decorative SVG or img)
   span[data-ok-icon-button-loader][aria-hidden="true"]   only while loading (data-ok-loading)
     span[data-ok-circular-progress][data-ok-color="inherit"][data-ok-button-spinner]   default loader: a CircularProgress (React: `loadingIndicator` replaces it)
@@ -41,7 +41,7 @@ React only: `loadingIndicator?: ReactNode` (default: the spinner) replaces the l
 inherit), `:focus-visible` (2px outline), `:disabled` (`--ok-action-disabled`), `:active` (animate).
 
 ## Behavior
-Native `<button>` — CSS only, no runtime. Circular (`--ok-radius-full`), transparent background.
+Native `<button>`, or `<a href>` for an icon link — CSS only, no runtime. Circular (`--ok-radius-full`), transparent background.
 `data-ok-animate` transitions `transform`; `prefers-reduced-motion` disables the scale.
 
 ## Keyboard
@@ -65,7 +65,7 @@ Upstream: MUI `IconButton` (+ `ButtonBase`), mui.com/material-ui/api/icon-button
 | `children`, `color`, `edge`, `disabled`, `loading`, `loadingIndicator` | same | kept | `color` + `black` / `white`; `edge` `false` = absent |
 | `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |
 | `type` (ButtonBase) | native `type` | kept | |
-| `href`, `component`, `LinkComponent` (ButtonBase) | — | deferred | always a `<button>`: no icon links |
+| `href`, `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: `href` renders an `<a data-ok-icon-button>` (an icon link; disabled / loading: no `href`, `role=link`, `aria-disabled`); `component` / `LinkComponent` as on Button (router links) |
 | `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |
 | `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |
 | `sx`, `classes` | — | not applicable | ADR-0015 |

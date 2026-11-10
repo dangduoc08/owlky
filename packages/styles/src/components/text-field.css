@@ -18,7 +18,9 @@
  *                              | error (focus color)
  *            data-ok-margin  = none (default) | dense | normal
  *            data-ok-error, data-ok-full-width, data-ok-shrink, data-ok-min-rows, data-ok-max-rows
- * States:    :focus-within, :disabled / :placeholder-shown of the input (via :has())
+ * States:    :focus-within (or data-ok-focused), :disabled / :placeholder-shown of the input (via :has())
+ *            data-ok-hidden-label: the label is visually hidden (it still names the input) and the
+ *            field is laid out as if it had none; adornment data-ok-disable-pointer-events
  *
  * The label floats up when the field has focus or a value, when it starts with an adornment, for
  * selects and with data-ok-shrink. "Has a value" is `:not(:placeholder-shown)`, so inputs and
@@ -145,6 +147,7 @@
   /* Floating: the label moves up, the outline opens its notch, the placeholder shows. */
   :where(
     [data-ok-text-field]:focus-within,
+    [data-ok-text-field][data-ok-focused],
     [data-ok-text-field][data-ok-shrink],
     [data-ok-text-field]:has(> [data-ok-text-field-control] > input:not(:placeholder-shown)),
     [data-ok-text-field]:has(> [data-ok-text-field-control] > textarea:not(:placeholder-shown)),
@@ -163,8 +166,24 @@
   }
 
   /* Without a label the placeholder is always visible. */
-  :where([data-ok-text-field]:not(:has(> [data-ok-text-field-label]))) {
+  :where(
+    [data-ok-text-field]:not(:has(> [data-ok-text-field-label])),
+    [data-ok-text-field][data-ok-hidden-label]
+  ) {
     --_ok-placeholder: 1;
+  }
+
+  /* Hidden label: visually hidden, still the input's name; the outline keeps no notch for it. */
+  :where([data-ok-text-field][data-ok-hidden-label]) {
+    --_ok-legend-max: 0.01px;
+  }
+
+  :where([data-ok-text-field][data-ok-hidden-label] > [data-ok-text-field-label]) {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   /* Adornments */
@@ -178,6 +197,11 @@
     font-weight: var(--ok-font-weight-semibold);
     line-height: 1.5714;
     white-space: nowrap;
+  }
+
+  /* Presses go through to the input (MUI `disablePointerEvents`). */
+  :where([data-ok-text-field-adornment][data-ok-disable-pointer-events]) {
+    pointer-events: none;
   }
 
   :where([data-ok-text-field-adornment] > svg) {
@@ -350,14 +374,18 @@
     --_ok-label-up: var(--ok-spacing);
   }
 
-  :where([data-ok-text-field][data-ok-variant="filled"]:not(:has(> [data-ok-text-field-label]))) {
+  :where(
+    [data-ok-text-field][data-ok-variant="filled"]:not(:has(> [data-ok-text-field-label])),
+    [data-ok-text-field][data-ok-variant="filled"][data-ok-hidden-label]
+  ) {
     --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3);
   }
 
   :where(
     [data-ok-text-field][data-ok-variant="filled"][data-ok-size="small"]:not(
       :has(> [data-ok-text-field-label])
-    )
+    ),
+    [data-ok-text-field][data-ok-variant="filled"][data-ok-size="small"][data-ok-hidden-label]
   ) {
     --_ok-pad: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
   }
@@ -379,7 +407,9 @@
   }
 
   :where(
-    [data-ok-text-field][data-ok-variant="filled"]:has(> [data-ok-text-field-label])
+    [data-ok-text-field][data-ok-variant="filled"]:not([data-ok-hidden-label]):has(
+        > [data-ok-text-field-label]
+      )
       [data-ok-text-field-adornment="start"]
   ) {
     margin-block-start: calc(var(--ok-spacing) * 4);
@@ -405,7 +435,9 @@
   }
 
   :where(
-    [data-ok-text-field][data-ok-variant="standard"]:has(> [data-ok-text-field-label])
+    [data-ok-text-field][data-ok-variant="standard"]:not([data-ok-hidden-label]):has(
+        > [data-ok-text-field-label]
+      )
       > [data-ok-text-field-control]
   ) {
     margin-block-start: calc(var(--ok-spacing) * 4);
@@ -443,7 +475,10 @@
   /* Hover (pointer devices, enabled fields) */
   @media (hover: hover) {
     /* Not while focused: the focus color wins. */
-    :where([data-ok-text-field-control]:hover:not(:has(> :disabled)):not(:focus-within)) {
+    :where(
+        :not([data-ok-focused])
+          > [data-ok-text-field-control]:hover:not(:has(> :disabled)):not(:focus-within)
+      ) {
       --_ok-border: var(--ok-text-primary);
       --_ok-tint: var(--_ok-tint-hover);
       --_ok-line: var(--ok-text-primary);
@@ -458,25 +493,27 @@
   }
 
   /* Focus */
-  :where([data-ok-text-field]:focus-within) {
+  :where([data-ok-text-field]:is(:focus-within, [data-ok-focused])) {
     --_ok-border: var(--_ok-accent);
     --_ok-border-width: 2px;
     --_ok-tint: var(--_ok-tint-hover);
   }
 
-  :where([data-ok-text-field]:focus-within > [data-ok-text-field-label]) {
+  :where([data-ok-text-field]:is(:focus-within, [data-ok-focused]) > [data-ok-text-field-label]) {
     color: var(--_ok-accent-text);
   }
 
   /* Filled shows focus with a ring too (the reference only darkens the fill; WCAG 2.4.7). */
   :where(
-    [data-ok-text-field][data-ok-variant="filled"]:focus-within > [data-ok-text-field-control]
+    [data-ok-text-field][data-ok-variant="filled"]:is(:focus-within, [data-ok-focused])
+      > [data-ok-text-field-control]
   ) {
     box-shadow: inset 0 0 0 2px var(--_ok-accent);
   }
 
   :where(
-    [data-ok-text-field][data-ok-variant="standard"]:focus-within > [data-ok-text-field-control]
+    [data-ok-text-field][data-ok-variant="standard"]:is(:focus-within, [data-ok-focused])
+      > [data-ok-text-field-control]
   )::after {
     transform: scaleX(1);
   }

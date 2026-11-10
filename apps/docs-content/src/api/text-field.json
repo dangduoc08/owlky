@@ -185,6 +185,18 @@
       "name": "shrink"
      },
      {
+      "attr": "data-ok-hidden-label",
+      "description": "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
+      "kind": "flag",
+      "name": "hiddenLabel"
+     },
+     {
+      "attr": "data-ok-focused",
+      "description": "Show the focus colors even when the field doesn't have focus.",
+      "kind": "flag",
+      "name": "focused"
+     },
+     {
       "attr": "data-ok-min-rows",
       "description": "Multiline: rows shown at least.",
       "kind": "number",
@@ -221,6 +233,11 @@
      }
     ],
     "parts": [
+     {
+      "description": "On an adornment: presses go through it to the input (React `disablePointerEvents`).",
+      "kind": "state",
+      "name": "data-ok-disable-pointer-events"
+     },
      {
       "description": "An adornment before or after the input, such as an icon or a unit.",
       "kind": "value",
@@ -313,6 +330,12 @@
       "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
      },
      {
+      "default": "\"div\"",
+      "description": "The root element.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
       "description": "Uncontrolled initial value.",
       "name": "defaultValue",
       "type": "string | number"
@@ -328,6 +351,11 @@
       "type": "boolean"
      },
      {
+      "description": "Show the focus colors even when the field doesn't have focus.",
+      "name": "focused",
+      "type": "boolean"
+     },
+     {
       "description": "Stretch to the container width.",
       "name": "fullWidth",
       "type": "boolean"
@@ -336,6 +364,11 @@
       "description": "Text under the field, such as a hint or an error message (linked with `aria-describedby`).",
       "name": "helperText",
       "type": "ReactNode"
+     },
+     {
+      "description": "Hide the label visually: it still names the input, and the field is laid out as if it had none (a filled field gets less padding above the value).",
+      "name": "hiddenLabel",
+      "type": "boolean"
      },
      {
       "description": "The floating label; it names the input.",
@@ -424,6 +457,17 @@
     "description": "An icon, text or button before or after a text field's input.",
     "native": "HTMLSpanElement",
     "props": [
+     {
+      "default": "\"span\"",
+      "description": "The element to render.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "Presses go through the adornment to the input, such as for a decorative icon.",
+      "name": "disablePointerEvents",
+      "type": "boolean"
+     },
      {
       "description": "Which side of the input it goes on.",
       "name": "position",

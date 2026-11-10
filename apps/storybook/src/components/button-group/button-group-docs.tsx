@@ -157,6 +157,13 @@ const PREVIEWS = {
           description: "Name of the group.",
         },
         {
+          react: "component",
+          html: "any element",
+          type: "ElementType",
+          description:
+            "The group element, such as nav for a group of links. It keeps role=group. Default div.",
+        },
+        {
           react: "ref",
           type: "HTMLDivElement",
           description: "Forwarded to the group element.",

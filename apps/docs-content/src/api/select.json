@@ -372,6 +372,11 @@
       "type": "HTMLAttributes<HTMLDivElement>"
      },
      {
+      "description": "An `InputAdornment` with `position=\"end\"`, inside the field before the arrow.",
+      "name": "endAdornment",
+      "type": "ReactNode"
+     },
+     {
       "description": "Error colors and `aria-invalid`. Default: the FormControl's.",
       "name": "error",
       "type": "boolean"
@@ -460,6 +465,11 @@
       "description": "`medium` or `small`. Default: the FormControl's, else `\"medium\"`.",
       "name": "size",
       "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"start\"`, inside the field before the value.",
+      "name": "startAdornment",
+      "type": "ReactNode"
      },
      {
       "description": "Controlled value: one value (`\"\"` = none) or, with `multiple`, a list.",

@@ -104,4 +104,19 @@ describe("button CSS without JavaScript", () => {
     button.click();
     expect(clicks).toBe(0);
   });
+
+  it("a disabled router link that keeps its href gets no pointer events", () => {
+    const host = mount(
+      '<a href="/docs" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Docs</span></a>' +
+        '<a href="/docs" aria-disabled="true" tabindex="-1" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Off</span></a>',
+    );
+    const [link, off] = [
+      ...host.querySelectorAll<HTMLElement>("[data-ok-button]"),
+    ] as HTMLElement[];
+    expect(css(link as HTMLElement).pointerEvents).toBe("auto");
+    expect(css(off as HTMLElement).pointerEvents).toBe("none");
+    expect(css(off as HTMLElement).backgroundColor).not.toBe(
+      css(link as HTMLElement).backgroundColor,
+    );
+  });
 });

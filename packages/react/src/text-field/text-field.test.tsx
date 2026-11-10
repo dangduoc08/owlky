@@ -8,7 +8,7 @@ import { expectNoAxeViolations, settled } from "../test-utils.js";
 import { InputAdornment, TextField } from "./text-field.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
-const css = (element: Element) => getComputedStyle(element);
+const css = (element: Element, pseudo?: string) => getComputedStyle(element, pseudo);
 const rootOf = (input: Element) => input.closest("[data-ok-text-field]") as HTMLElement;
 const labelOf = (input: Element) =>
   rootOf(input).querySelector("[data-ok-text-field-label]") as HTMLElement;
@@ -252,6 +252,105 @@ describe("TextField", () => {
     });
     expect(root.hasAttribute("data-ok-full-width")).toBe(true);
     expect(root.outerHTML).not.toContain("<img");
+  });
+
+  it("focused shows the focus colors without focus, and hovering keeps them", async () => {
+    render(
+      <>
+        <TextField label="Forced" focused color="primary" />
+        <TextField label="Real" color="primary" />
+        <TextField label="Rest" color="primary" />
+      </>,
+    );
+    const forced = screen.getByRole("textbox", { name: "Forced" });
+    const real = screen.getByRole("textbox", { name: "Real" });
+    const rest = screen.getByRole("textbox", { name: "Rest" });
+    expect(rootOf(forced).hasAttribute("data-ok-focused")).toBe(true);
+    expect(document.activeElement).not.toBe(forced);
+    await userEvent.click(real);
+    const outline = (input: Element) =>
+      rootOf(input).querySelector("[data-ok-text-field-outline]") as HTMLElement;
+    for (const input of [forced, real]) {
+      await settled(outline(input));
+      await settled(labelOf(input));
+    }
+    expect(css(outline(forced)).borderTopColor).toBe(css(outline(real)).borderTopColor);
+    expect(css(outline(forced)).borderTopWidth).toBe("2px");
+    expect(css(labelOf(forced)).color).toBe(css(labelOf(real)).color);
+    expect(css(labelOf(forced)).color).not.toBe(css(labelOf(rest)).color);
+    expect(labelPosition(forced)).toEqual(labelPosition(real));
+    await userEvent.hover(forced);
+    await settled(outline(forced));
+    expect(css(outline(forced)).borderTopColor).toBe(css(outline(real)).borderTopColor);
+  });
+
+  it("hiddenLabel hides the label visually, keeps the name and drops the label space", () => {
+    render(
+      <>
+        <TextField label="Hidden" hiddenLabel variant="filled" placeholder="Search" />
+        <TextField variant="filled" placeholder="None" />
+        <TextField label="Hidden outlined" hiddenLabel placeholder="Find" />
+        <TextField label="Hidden standard" hiddenLabel variant="standard" />
+        <TextField label="Standard" variant="standard" />
+      </>,
+    );
+    const hidden = screen.getByRole("textbox", { name: "Hidden" });
+    const none = screen.getByPlaceholderText("None");
+    expect(rootOf(hidden).hasAttribute("data-ok-hidden-label")).toBe(true);
+    const box = (input: Element) => input.getBoundingClientRect();
+    expect(box(hidden).height).toBe(box(none).height);
+    expect(labelOf(hidden).getBoundingClientRect().width).toBeLessThanOrEqual(1);
+    expect(css(hidden, "::placeholder").opacity).toBe("1");
+    const outlined = screen.getByRole("textbox", { name: "Hidden outlined" });
+    const legend = rootOf(outlined).querySelector("legend") as HTMLElement;
+    expect(legend.getBoundingClientRect().width).toBeLessThan(1);
+    const control = (input: Element) =>
+      rootOf(input).querySelector("[data-ok-text-field-control]") as HTMLElement;
+    expect(css(control(screen.getByRole("textbox", { name: "Hidden standard" }))).marginTop).toBe(
+      "0px",
+    );
+    expect(css(control(screen.getByRole("textbox", { name: "Standard" }))).marginTop).toBe("16px");
+  });
+
+  it("component sets the root element; InputAdornment takes component and disablePointerEvents", async () => {
+    const ref = createRef<HTMLSpanElement>();
+    render(
+      <TextField
+        component="fieldset"
+        label="Amount"
+        startAdornment={
+          <InputAdornment ref={ref} position="start" component="div" disablePointerEvents>
+            $
+          </InputAdornment>
+        }
+      />,
+    );
+    const input = screen.getByRole("textbox", { name: "Amount" });
+    expect(rootOf(input).tagName).toBe("FIELDSET");
+    const adornment = ref.current as HTMLElement;
+    expect(adornment.tagName).toBe("DIV");
+    expect(adornment.dataset).toMatchObject({ okTextFieldAdornment: "start" });
+    expect(adornment.hasAttribute("data-ok-disable-pointer-events")).toBe(true);
+    expect(css(adornment).pointerEvents).toBe("none");
+    // A press on the adornment reaches the control (the input gets focus through the label box).
+    const at = adornment.getBoundingClientRect();
+    const hit = document.elementFromPoint(at.left + at.width / 2, at.top + at.height / 2);
+    expect(adornment.contains(hit)).toBe(false);
+    await expectNoAxeViolations();
+  });
+
+  it("renders the same markup as before without the new props", () => {
+    const html = renderToString(
+      <TextField
+        id="n"
+        label="Name"
+        startAdornment={<InputAdornment position="start">$</InputAdornment>}
+      />,
+    );
+    expect(html).toContain(
+      '<div data-ok-text-field="" data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-runtime="off">',
+    );
+    expect(html).toContain('<span data-ok-text-field-adornment="start">$</span>');
   });
 
   it("renders on the server", () => {

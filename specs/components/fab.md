@@ -36,7 +36,7 @@ Root: `data-ok-fab`. Unknown values fall back to the default.
 | disabled | `--ok-action-disabled` text, `--ok-action-disabled-bg` fill or border, no shadow | — |
 
 ## Behavior
-Native `<button>` — CSS only, no runtime. Positioning (fixed / absolute) is up to the page.
+Native `<button>`, or `<a href>` for a link — CSS only, no runtime. Positioning (fixed / absolute) is up to the page.
 
 ## Keyboard
 Native: `Enter` / `Space` activate.
@@ -61,7 +61,7 @@ Upstream: MUI `Fab` (+ `ButtonBase`), mui.com/material-ui/api/fab/.
 | `color` (default `default`) | `color` | kept | + `inherit`, `black` / `white` |
 | `size` (`small` · `medium` · `large`, default `large`) | `size` (`sm` · `md` · `lg`, default `md`) | renamed | |
 | `children`, `disabled`, `href` | same | kept | |
-| `component`, `LinkComponent` (ButtonBase) | — | deferred | router links can't be passed |
+| `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: as on Button (router links; a disabled router link keeps its `href`, `aria-disabled`, `tabindex=-1`, no pointer events) |
 | `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |
 | `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |
 | `sx`, `classes` | — | not applicable | ADR-0015 |
