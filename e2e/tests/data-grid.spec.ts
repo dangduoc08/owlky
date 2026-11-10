@@ -331,13 +331,70 @@ for (const impl of implementations) {
       ).toContainText("Photos");
 
       await openStory(page, storyId(impl, "datagrid", "pivoting"));
-      await expect(page.locator('[data-ok-data-grid-group-row] [role="columnheader"]')).toHaveText([
-        "2024",
-        "2025",
-      ]);
-      await page.getByRole("button", { name: "Pivot" }).click();
-      await page.getByRole("switch", { name: "Pivot" }).click();
+      await expect(
+        page.locator('#grid-pivot [data-ok-data-grid-group-row] [role="columnheader"]'),
+      ).toHaveText(["2024", "2025"]);
+      await page.locator('#grid-pivot [aria-controls="grid-pivot-pivot"]').click();
+      const panel = page.locator("#grid-pivot-pivot");
+      // Move up / Move down reorder the values (no dragging needed).
+      await panel.getByRole("button", { name: "Move down: Revenue" }).click();
+      await expect(
+        panel
+          .locator('[data-ok-data-grid-pivot-section="values"] [data-ok-data-grid-pivot-field]')
+          .first(),
+      ).toHaveAttribute("data-ok-field", "units");
+      await expect(
+        page
+          .locator(
+            '#grid-pivot [data-ok-data-grid-header] > [role="row"]:not([data-ok-data-grid-group-row]) > [role="columnheader"]',
+          )
+          .nth(1),
+      ).toHaveText(/^Units/);
+      // Drag the product from Not used into Rows (mouse and touch: pointer events).
+      const handle = panel.locator('[data-ok-field="product"] [data-ok-data-grid-pivot-handle]');
+      const region = panel.locator(
+        '[data-ok-data-grid-pivot-section="rows"] [data-ok-field="region"]',
+      );
+      const from = (await handle.boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      const to = (await region.boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      await handle.dispatchEvent("pointerdown", {
+        button: 0,
+        pointerId: 7,
+        clientX: from.x + 2,
+        clientY: from.y + 2,
+      });
+      await page.evaluate(
+        ({ x, y }) => {
+          for (const type of ["pointermove", "pointerup"])
+            document.dispatchEvent(
+              new PointerEvent(type, { bubbles: true, pointerId: 7, clientX: x, clientY: y }),
+            );
+        },
+        { x: to.x + 4, y: to.y + to.height - 2 },
+      );
+      await expect(
+        panel.locator('[data-ok-data-grid-pivot-section="rows"] [data-ok-data-grid-pivot-field]'),
+      ).toHaveCount(2);
+      await page.keyboard.press("Escape");
+      await page.locator('#grid-pivot [aria-controls="grid-pivot-pivot"]').click();
+      await panel.getByRole("switch", { name: "Pivot" }).click();
       await expect(page.getByRole("grid", { name: "Revenue by region and year" })).toBeVisible();
+      // Derived columns: the year and quarter of a date.
+      await expect(
+        page
+          .locator('#grid-pivot-derived [data-ok-data-grid-group-row] [role="columnheader"]')
+          .first(),
+      ).toHaveText("2024");
     });
 
     test("cell selection, clipboard and header filters", async ({ page, browserName, context }) => {

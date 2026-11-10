@@ -382,6 +382,88 @@ describe("data grid row grouping and aggregation (HTML)", () => {
   });
 });
 
+describe("data grid pivot panel and derived columns (HTML)", () => {
+  it("pivots by the year and quarter of a date, or by fields you derive", () => {
+    const { host, instance } = setup("pivot-derived");
+    const groups = () =>
+      [...host.querySelectorAll('[data-ok-data-grid-group-row] > [role="columnheader"]')].map((c) =>
+        c.textContent?.trim(),
+      );
+    expect(groups()).toEqual(["2024", "2025", "Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"]);
+    expect(texts(host).map((r) => r[0])).toEqual(["AAPL", "MSFT", "GOOGL"]);
+    // Fields you derive (null: none).
+    instance.setPivotDerivedColumns((column) =>
+      column.field === "date"
+        ? [
+            {
+              field: "date-year",
+              headerName: "Year",
+              valueGetter: (raw) => (String(raw).startsWith("2024") ? "Last year" : "This year"),
+            },
+          ]
+        : undefined,
+    );
+    expect(groups()).toEqual(["Last year", "This year"]);
+    instance.setPivotDerivedColumns(null);
+    expect(groups()).toEqual([]);
+  });
+
+  it("moves fields by dragging and by the Move buttons, like React", () => {
+    const { host, instance } = setup("pivot-group");
+    const panel = host.querySelector("#grid-pivot-pivot") as HTMLElement;
+    const section = (name: string) =>
+      panel.querySelector(`[data-ok-data-grid-pivot-section="${name}"]`) as HTMLElement;
+    const fieldsOf = (name: string) =>
+      [...section(name).querySelectorAll("[data-ok-data-grid-pivot-field]")].map((f) =>
+        f.getAttribute("data-ok-field"),
+      );
+    const button = (field: string, direction: string) =>
+      panel.querySelector(
+        `[data-ok-field="${field}"] [data-ok-data-grid-pivot-move="${direction}"]`,
+      ) as HTMLButtonElement;
+    // Open the panel (the test page has no popover runtime styles for it).
+    panel.setAttribute("data-ok-open", "");
+    panel.style.cssText = "display:block;position:static";
+    expect(fieldsOf("values")).toEqual(["revenue", "units"]);
+    button("revenue", "down").focus();
+    button("revenue", "down").click();
+    expect(instance.pivotModel.values.map((v) => v.field)).toEqual(["units", "revenue"]);
+    expect(fieldsOf("values")).toEqual(["units", "revenue"]);
+    expect(button("revenue", "down").disabled).toBe(true);
+    expect(document.activeElement).toBe(button("revenue", "up"));
+    expect(button("product", "up").hidden).toBe(true);
+    // Unused fields keep the columns' order.
+    expect(fieldsOf("none")).toEqual(["product"]);
+    // Drag the product into Rows, after Region.
+    const handle = panel.querySelector(
+      '[data-ok-field="product"] [data-ok-data-grid-pivot-handle]',
+    ) as HTMLElement;
+    const region = panel.querySelector(
+      '[data-ok-data-grid-pivot-section="rows"] [data-ok-field="region"]',
+    ) as HTMLElement;
+    const from = handle.getBoundingClientRect();
+    const to = region.getBoundingClientRect();
+    handle.dispatchEvent(
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        button: 0,
+        pointerId: 1,
+        clientX: from.left + 2,
+        clientY: from.top + 2,
+      }),
+    );
+    const at = { bubbles: true, pointerId: 1, clientX: to.left + 4, clientY: to.bottom - 2 };
+    document.dispatchEvent(new PointerEvent("pointermove", at));
+    expect(region.getAttribute("data-ok-drop")).toBe("after");
+    document.dispatchEvent(new PointerEvent("pointerup", at));
+    expect(instance.pivotModel.rows).toEqual([{ field: "region" }, { field: "product" }]);
+    expect(fieldsOf("rows")).toEqual(["region", "product"]);
+    expect(
+      (section("rows").querySelector("[data-ok-data-grid-pivot-empty]") as HTMLElement).hidden,
+    ).toBe(true);
+  });
+});
+
 describe("data grid pivoting (HTML)", () => {
   it("builds the pivot from the rows and edits it in the panel", () => {
     const { host, root, instance } = setup("pivot-group");

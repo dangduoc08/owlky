@@ -570,8 +570,18 @@ export interface DataGridParts {
   "data-ok-data-grid-panel": Part<"div">;
   /** The rows pinned to the top or the bottom. */
   "data-ok-data-grid-pinned-rows": Value<"top" | "bottom">;
+  /** A pivot panel section's hint when it has no field, such as "Drag here to create rows". */
+  "data-ok-data-grid-pivot-empty": Part<"span">;
   /** One field of the pivot panel. */
   "data-ok-data-grid-pivot-field": Part<"div">;
+  /** The handle that drags a pivot field to another section or position (pointer only). */
+  "data-ok-data-grid-pivot-handle": Part<"span">;
+  /** The buttons that move a pivot field up or down in its section. */
+  "data-ok-data-grid-pivot-move": Value<"up" | "down">;
+  /** A section of the pivot panel: the fields not used, or the rows, columns or values. */
+  "data-ok-data-grid-pivot-section": Value<"none" | "rows" | "columns" | "values">;
+  /** The title of a pivot panel section. */
+  "data-ok-data-grid-pivot-section-title": Part<"span">;
   /** The switch that turns pivot mode on. */
   "data-ok-data-grid-pivot-switch": Part;
   /** The quick filter search field of the toolbar. */
@@ -606,8 +616,12 @@ export interface DataGridParts {
   "data-ok-detail-height": Value<string>;
   /** On a chart panel field: turns it off. */
   "data-ok-disable": Value<string>;
+  /** Set by the runtime on a pivot field while a pointer drags it. */
+  "data-ok-dragging": State;
   /** Set by the runtime on the row or column a drag would drop next to. */
   "data-ok-drop": Value<"before" | "after">;
+  /** Set by the runtime on the pivot panel section a dragged field would drop into. */
+  "data-ok-drop-target": State;
   /** Set by the runtime on a cell or row being edited. */
   "data-ok-editing": State;
   /** Options of the Excel export, as JSON. */

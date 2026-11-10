@@ -1,0 +1,553 @@
+<div data-ok-data-grid data-ok-pivot-active data-ok-density="standard" data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="labeled" data-ok-quick-filter-logic-operator="and" data-ok-row-grouping-column-mode="single" data-ok-aggregation-rows-scope="filtered" data-ok-pivot-model="{&quot;rows&quot;:[{&quot;field&quot;:&quot;ticker&quot;}],&quot;columns&quot;:[{&quot;field&quot;:&quot;date-year&quot;},{&quot;field&quot;:&quot;date-quarter&quot;}],&quot;values&quot;:[{&quot;field&quot;:&quot;volume&quot;,&quot;aggFunc&quot;:&quot;sum&quot;}]}" id="grid-pivot-derived" class="sb-grid-wide">
+  <div data-ok-data-grid-toolbar>
+    <div data-ok-data-grid-quick-filter>
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+        <div data-ok-text-field-control>
+          <span data-ok-text-field-adornment="start"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M10 3a7 7 0 015.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1110 3zm0 2a5 5 0 100 10 5 5 0 000-10z" /></svg></span>
+          <input aria-label="Search" id="grid-pivot-derived-search" data-ok-text-field-input placeholder="Search…" value="">
+          <fieldset data-ok-text-field-outline aria-hidden="true"></fieldset>
+        </div>
+      </div>
+    </div>
+    <div data-ok-data-grid-toolbar-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-pivot-derived-columns" data-ok-popover-open="grid-pivot-derived-columns"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M4 5h4v14H4zm6 0h4v14h-4zm6 0h4v14h-4z" /></svg></span><span data-ok-button-label>Columns</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-pivot-derived-filters" data-ok-popover-open="grid-pivot-derived-filters"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5h18l-7 8v6l-4 2v-8z" /></svg></span><span data-ok-button-label>Filters</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-pivot-derived-density" data-ok-popover-open="grid-pivot-derived-density"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z" /></svg></span><span data-ok-button-label>Density</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-pivot-derived-pivot" data-ok-popover-open="grid-pivot-derived-pivot"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 3h18v4H3zm0 6h4v12H3zm6 0h12v12H9zm2 2v8h8v-8z" /></svg></span><span data-ok-button-label>Pivot</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-pivot-derived-export" data-ok-popover-open="grid-pivot-derived-export"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 3h2v9l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3zM5 18h14v2H5z" /></svg></span><span data-ok-button-label>Export</span></button>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-pivot-derived-pivot">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel data-ok-data-grid-form-panel role="group" aria-label="Pivot">
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-pivot-switch checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Pivot</span>
+        </label>
+        <div data-ok-data-grid-pivot-section="none" role="group" aria-labelledby="grid-pivot-derived-pivot-section-none">
+          <span id="grid-pivot-derived-pivot-section-none" data-ok-data-grid-pivot-section-title>Not used</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="date">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-date">Date</label>
+              <div data-ok-text-field-control>
+                <select id="grid-pivot-derived-pivot-date" data-ok-text-field-input>
+                  <option value="none" selected>Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns">Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Date</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-date-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-pivot-derived-pivot-date-function" data-ok-text-field-input>
+                  <option value="min" selected>min</option>
+                  <option value="max">max</option>
+                  <option value="size">size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Date" hidden disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Date" hidden disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
+          </div>
+        </div>
+        <div data-ok-data-grid-pivot-section="rows" role="group" aria-labelledby="grid-pivot-derived-pivot-section-rows">
+          <span id="grid-pivot-derived-pivot-section-rows" data-ok-data-grid-pivot-section-title>Rows</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="ticker">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-ticker">Ticker</label>
+              <div data-ok-text-field-control>
+                <select id="grid-pivot-derived-pivot-ticker" data-ok-text-field-input>
+                  <option value="none">Not used</option>
+                  <option value="rows" selected>Rows</option>
+                  <option value="columns">Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Ticker</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-ticker-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-pivot-derived-pivot-ticker-function" data-ok-text-field-input>
+                  <option value="size" selected>size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Ticker" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Ticker" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
+          </div>
+          <span data-ok-data-grid-pivot-empty hidden>Drag here to create rows</span>
+        </div>
+        <div data-ok-data-grid-pivot-section="columns" role="group" aria-labelledby="grid-pivot-derived-pivot-section-columns">
+          <span id="grid-pivot-derived-pivot-section-columns" data-ok-data-grid-pivot-section-title>Columns</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="date-year">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-date-year">Date (Year)</label>
+              <div data-ok-text-field-control>
+                <select id="grid-pivot-derived-pivot-date-year" data-ok-text-field-input>
+                  <option value="none">Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns" selected>Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Date (Year)</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-date-year-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-pivot-derived-pivot-date-year-function" data-ok-text-field-input>
+                  <option value="size" selected>size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Date (Year)" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Date (Year)"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
+          </div>
+          <div data-ok-data-grid-pivot-field data-ok-field="date-quarter">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-date-quarter">Date (Quarter)</label>
+              <div data-ok-text-field-control>
+                <select id="grid-pivot-derived-pivot-date-quarter" data-ok-text-field-input>
+                  <option value="none">Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns" selected>Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Date (Quarter)</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-date-quarter-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-pivot-derived-pivot-date-quarter-function" data-ok-text-field-input>
+                  <option value="size" selected>size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Date (Quarter)"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Date (Quarter)" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
+          </div>
+          <span data-ok-data-grid-pivot-empty hidden>Drag here to create columns</span>
+        </div>
+        <div data-ok-data-grid-pivot-section="values" role="group" aria-labelledby="grid-pivot-derived-pivot-section-values">
+          <span id="grid-pivot-derived-pivot-section-values" data-ok-data-grid-pivot-section-title>Values</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="volume">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-volume">Volume</label>
+              <div data-ok-text-field-control>
+                <select id="grid-pivot-derived-pivot-volume" data-ok-text-field-input>
+                  <option value="none">Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns">Columns</option>
+                  <option value="values" selected>Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Volume</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-pivot-derived-pivot-volume-function">Function</label>
+              <div data-ok-text-field-control>
+                <select id="grid-pivot-derived-pivot-volume-function" data-ok-text-field-input>
+                  <option value="sum" selected>sum</option>
+                  <option value="avg">avg</option>
+                  <option value="min">min</option>
+                  <option value="max">max</option>
+                  <option value="size">size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Volume" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Volume" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
+          </div>
+          <span data-ok-data-grid-pivot-empty hidden>Drag here to create values</span>
+        </div>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-pivot-derived-columns">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel role="group" aria-label="Columns">
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="date" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Date</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="ticker" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Ticker</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="volume" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Volume</span>
+        </label>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-pivot-derived-filters">
+      <template data-ok-data-grid-any-of="grid-pivot-derived-filter-value">
+        <div data-ok-autocomplete data-ok-multiple data-ok-free-solo>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-pivot-derived-filter-value">Value</label>
+            <div data-ok-text-field-control>
+              <input role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="grid-pivot-derived-filter-value-listbox" autocomplete="off" id="grid-pivot-derived-filter-value" data-ok-text-field-input placeholder=" " value="">
+              <span data-ok-text-field-adornment="end">
+                <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-clear tabindex="-1" aria-label="Clear" hidden><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+              </span>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Value</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>
+            <span data-ok-popover-arrow aria-hidden="true"></span>
+            <ul role="listbox" id="grid-pivot-derived-filter-value-listbox" aria-label="Value"></ul>
+            <div data-ok-autocomplete-no-options>No options</div>
+          </div>
+        </div>
+      </template>
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel role="group" aria-label="Filters">
+        <div data-ok-data-grid-filter>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-filter-remove aria-label="Remove filter"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z" /></svg></button>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-pivot-derived-filter-field">Columns</label>
+            <div data-ok-text-field-control>
+              <select id="grid-pivot-derived-filter-field" data-ok-text-field-input>
+                <option value="date" selected>Date</option>
+                <option value="ticker">Ticker</option>
+                <option value="volume">Volume</option>
+              </select>
+              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Columns</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-pivot-derived-filter-operator">Operator</label>
+            <div data-ok-text-field-control>
+              <select id="grid-pivot-derived-filter-operator" data-ok-text-field-input>
+                <option value="is" selected>is</option>
+                <option value="not">is not</option>
+                <option value="after">is after</option>
+                <option value="onOrAfter">is on or after</option>
+                <option value="before">is before</option>
+                <option value="onOrBefore">is on or before</option>
+                <option value="isEmpty">is empty</option>
+                <option value="isNotEmpty">is not empty</option>
+              </select>
+              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Operator</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div data-ok-date-picker data-ok-picker-variant="responsive" data-ok-orientation="portrait">
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-date-field data-ok-format-density="dense" data-ok-format="MM/DD/YYYY">
+              <label data-ok-text-field-label id="grid-pivot-derived-filter-value-label" for="grid-pivot-derived-filter-value">Value</label>
+              <div data-ok-text-field-control>
+                <div id="grid-pivot-derived-filter-value" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="grid-pivot-derived-filter-value-label"><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="month" role="spinbutton" aria-label="Month" aria-valuemin="1" aria-valuemax="12" aria-valuetext="Empty" tabindex="0" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">MM</span><span data-ok-date-field-separator>/</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="day" role="spinbutton" aria-label="Day" aria-valuemin="1" aria-valuemax="31" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">DD</span><span data-ok-date-field-separator>/</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="year" role="spinbutton" aria-label="Year" aria-valuemin="0" aria-valuemax="9999" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="done">YYYY</span></span></div>
+                <input type="hidden" data-ok-date-field-input value="">
+                <span data-ok-text-field-adornment="end">
+                  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-date-picker-open aria-label="Choose date" aria-haspopup="dialog"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Zm-4 5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1Z" /></svg></button>
+                </span>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Value</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date" data-ok-date-picker-paper>
+              <span data-ok-popover-arrow aria-hidden="true"></span>
+              <div data-ok-picker-layout data-ok-orientation="portrait">
+                <div data-ok-picker-toolbar hidden><span data-ok-picker-toolbar-overline id="grid-pivot-derived-filter-value-toolbar">Select date</span><span data-ok-picker-toolbar-title>––</span></div>
+                <div data-ok-picker-content>
+                  <div id="grid-pivot-derived-filter-value-calendar" data-ok-date-calendar data-ok-months-per-row="3" data-ok-years-per-row="4" data-ok-years-order="asc" data-ok-view="day" data-ok-views="year day" data-ok-month="2026-11">
+                    <div data-ok-date-calendar-header>
+                      <div data-ok-date-calendar-label id="grid-pivot-derived-filter-value-calendar-label" aria-live="polite">November 2026</div>
+                      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-date-calendar-switch aria-label="calendar view is open, switch to year view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg></button>
+                      <div data-ok-date-calendar-nav>
+                        <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-date-calendar-prev aria-label="Previous month" title="Previous month"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+                        <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-date-calendar-next aria-label="Next month" title="Next month"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+                      </div>
+                    </div>
+                    <div role="grid" data-ok-day-calendar aria-labelledby="grid-pivot-derived-filter-value-calendar-label">
+                      <div role="row" data-ok-day-calendar-header><span role="columnheader" aria-label="Sunday">S</span><span role="columnheader" aria-label="Monday">M</span><span role="columnheader" aria-label="Tuesday">T</span><span role="columnheader" aria-label="Wednesday">W</span><span role="columnheader" aria-label="Thursday">T</span><span role="columnheader" aria-label="Friday">F</span><span role="columnheader" aria-label="Saturday">S</span></div>
+                      <div role="rowgroup">
+                        <div role="row" aria-rowindex="1">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-01" aria-colindex="1" aria-selected="false" tabindex="-1">1</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-02" aria-colindex="2" aria-selected="false" tabindex="-1">2</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-03" aria-colindex="3" aria-selected="false" tabindex="-1">3</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-04" aria-colindex="4" aria-selected="false" tabindex="-1">4</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-05" aria-colindex="5" aria-selected="false" tabindex="-1">5</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-06" aria-colindex="6" aria-selected="false" tabindex="-1">6</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-07" aria-colindex="7" aria-selected="false" tabindex="-1">7</button>
+                        </div>
+                        <div role="row" aria-rowindex="2">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-08" aria-colindex="1" aria-selected="false" tabindex="-1">8</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-09" aria-colindex="2" aria-selected="false" tabindex="-1">9</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-10" aria-colindex="3" aria-selected="false" aria-current="date" data-ok-today tabindex="0">10</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-11" aria-colindex="4" aria-selected="false" tabindex="-1">11</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-12" aria-colindex="5" aria-selected="false" tabindex="-1">12</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-13" aria-colindex="6" aria-selected="false" tabindex="-1">13</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-14" aria-colindex="7" aria-selected="false" tabindex="-1">14</button>
+                        </div>
+                        <div role="row" aria-rowindex="3">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-15" aria-colindex="1" aria-selected="false" tabindex="-1">15</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-16" aria-colindex="2" aria-selected="false" tabindex="-1">16</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-17" aria-colindex="3" aria-selected="false" tabindex="-1">17</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-18" aria-colindex="4" aria-selected="false" tabindex="-1">18</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-19" aria-colindex="5" aria-selected="false" tabindex="-1">19</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-20" aria-colindex="6" aria-selected="false" tabindex="-1">20</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-21" aria-colindex="7" aria-selected="false" tabindex="-1">21</button>
+                        </div>
+                        <div role="row" aria-rowindex="4">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-22" aria-colindex="1" aria-selected="false" tabindex="-1">22</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-23" aria-colindex="2" aria-selected="false" tabindex="-1">23</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-24" aria-colindex="3" aria-selected="false" tabindex="-1">24</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-25" aria-colindex="4" aria-selected="false" tabindex="-1">25</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-26" aria-colindex="5" aria-selected="false" tabindex="-1">26</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-27" aria-colindex="6" aria-selected="false" tabindex="-1">27</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-28" aria-colindex="7" aria-selected="false" tabindex="-1">28</button>
+                        </div>
+                        <div role="row" aria-rowindex="5">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-29" aria-colindex="1" aria-selected="false" tabindex="-1">29</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-30" aria-colindex="2" aria-selected="false" tabindex="-1">30</button>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div data-ok-picker-actions hidden>
+                  <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="cancel" hidden><span data-ok-button-label>Cancel</span></button>
+                  <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="accept" hidden><span data-ok-button-label>OK</span></button>
+                </div>
+              </div>
+            </div>
+            <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select date" data-ok-date-picker-dialog>
+              <div data-ok-dialog-paper></div>
+            </dialog>
+          </div>
+        </div>
+        <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" data-ok-data-grid-filter-add><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg></span><span data-ok-button-label>Add filter</span></button>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-pivot-derived-density">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul role="menu" data-ok-menu>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="compact">Compact</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-selected data-ok-density="standard">Standard</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="comfortable">Comfortable</li>
+      </ul>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-pivot-derived-export">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul role="menu" data-ok-menu>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="csv">Download as CSV</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="print">Print</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="excel">Download as Excel</li>
+      </ul>
+    </div>
+  </div>
+  <div role="grid" data-ok-data-grid-main aria-label="Volume by ticker and quarter" aria-rowcount="19" aria-colcount="3">
+    <div role="rowgroup" data-ok-data-grid-header>
+      <div role="row" aria-rowindex="1">
+        <div role="columnheader" aria-colindex="1" data-ok-field="date" data-ok-type="date" data-ok-align="left" data-ok-width="210" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Date</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Date column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-pivot-derived-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="2" data-ok-field="ticker" data-ok-type="string" data-ok-align="left" data-ok-width="120" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Ticker</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Ticker column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-pivot-derived-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="3" data-ok-field="volume" data-ok-type="number" data-ok-align="right" data-ok-width="120" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Volume</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Volume column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-pivot-derived-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+    <div role="rowgroup" data-ok-data-grid-body>
+      <div role="row" aria-rowindex="2" data-ok-row-id="t-01">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-01-01</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">AAPL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="1000" tabindex="-1">1000</div>
+      </div>
+      <div role="row" aria-rowindex="3" data-ok-row-id="t-02">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-06-08</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">MSFT</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="1373" tabindex="-1">1373</div>
+      </div>
+      <div role="row" aria-rowindex="4" data-ok-row-id="t-03">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-11-15</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">GOOGL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="1746" tabindex="-1">1746</div>
+      </div>
+      <div role="row" aria-rowindex="5" data-ok-row-id="t-04">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-04-22</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">AAPL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="2119" tabindex="-1">2119</div>
+      </div>
+      <div role="row" aria-rowindex="6" data-ok-row-id="t-05">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-09-01</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">MSFT</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="2492" tabindex="-1">2492</div>
+      </div>
+      <div role="row" aria-rowindex="7" data-ok-row-id="t-06">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-02-08</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">GOOGL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="2865" tabindex="-1">2865</div>
+      </div>
+      <div role="row" aria-rowindex="8" data-ok-row-id="t-07">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-07-15</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">AAPL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="3238" tabindex="-1">3238</div>
+      </div>
+      <div role="row" aria-rowindex="9" data-ok-row-id="t-08">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-12-22</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">MSFT</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="3611" tabindex="-1">3611</div>
+      </div>
+      <div role="row" aria-rowindex="10" data-ok-row-id="t-09">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-05-01</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">GOOGL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="3984" tabindex="-1">3984</div>
+      </div>
+      <div role="row" aria-rowindex="11" data-ok-row-id="t-10">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-10-08</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">AAPL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="4357" tabindex="-1">4357</div>
+      </div>
+      <div role="row" aria-rowindex="12" data-ok-row-id="t-11">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-03-15</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">MSFT</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="4730" tabindex="-1">4730</div>
+      </div>
+      <div role="row" aria-rowindex="13" data-ok-row-id="t-12">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-08-22</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">GOOGL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="1103" tabindex="-1">1103</div>
+      </div>
+      <div role="row" aria-rowindex="14" data-ok-row-id="t-13">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-01-01</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">AAPL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="1476" tabindex="-1">1476</div>
+      </div>
+      <div role="row" aria-rowindex="15" data-ok-row-id="t-14">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-06-08</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">MSFT</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="1849" tabindex="-1">1849</div>
+      </div>
+      <div role="row" aria-rowindex="16" data-ok-row-id="t-15">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-11-15</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">GOOGL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="2222" tabindex="-1">2222</div>
+      </div>
+      <div role="row" aria-rowindex="17" data-ok-row-id="t-16">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-04-22</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">AAPL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="2595" tabindex="-1">2595</div>
+      </div>
+      <div role="row" aria-rowindex="18" data-ok-row-id="t-17">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2024-09-01</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">MSFT</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="2968" tabindex="-1">2968</div>
+      </div>
+      <div role="row" aria-rowindex="19" data-ok-row-id="t-18">
+        <div role="gridcell" aria-colindex="1" data-ok-field="date" data-ok-align="left" tabindex="-1">2025-02-08</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="ticker" data-ok-align="left" tabindex="-1">GOOGL</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="volume" data-ok-align="right" data-ok-value="3341" tabindex="-1">3341</div>
+      </div>
+    </div>
+  </div>
+  <div data-ok-data-grid-loading data-ok-variant="linear-progress" role="status" aria-label="Loading" hidden><span role="progressbar" data-ok-linear-progress data-ok-variant="indeterminate" data-ok-color="primary" aria-label="Loading"><span data-ok-linear-progress-bar="1"></span><span data-ok-linear-progress-bar="2"></span></span></div>
+  <div data-ok-data-grid-overlay role="status" hidden></div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="grid-pivot-derived-column-menu">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <ul role="menu" data-ok-menu>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="asc">Sort by ASC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="desc">Sort by DESC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unsort">Unsort</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="left">Move left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="right">Move right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-left">Pin to left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-right">Pin to right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unpin">Unpin</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="group">Group by</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-none" hidden>Aggregation: none</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-sum" hidden>Aggregation: sum</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-avg" hidden>Aggregation: avg</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-min" hidden>Aggregation: min</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-max" hidden>Aggregation: max</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-size" hidden>Aggregation: size</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="filter">Filter</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="hide">Hide column</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="columns">Manage columns</li>
+    </ul>
+  </div>
+</div>

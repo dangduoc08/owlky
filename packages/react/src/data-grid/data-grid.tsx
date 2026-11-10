@@ -8,6 +8,7 @@ import {
   createGridColumnControls,
   createGridDataSourceCache,
   createGridNavigation,
+  createGridPivotDrag,
   createGridRowReorder,
   createGridScrollWatcher,
   dataGridAttributes,
@@ -43,6 +44,7 @@ import {
   type GridNavigation,
   type GridPinnedColumns,
   type GridPivotModel,
+  type GridPivotSection,
   type GridRowWindow,
   type GridSortModel,
   type GridState,
@@ -86,7 +88,10 @@ import {
   gridOperatorNeedsValue,
   gridPinSide,
   gridPivot,
+  gridPivotDerivedColumns,
   gridPivotRole,
+  gridPivotSectionNames,
+  gridPivotSections,
   gridQuickFilterValues,
   gridRowGroups,
   gridRowOffsets,
@@ -110,6 +115,7 @@ import {
   measureGridColumn,
   mergeGridCellSelection,
   moveGridColumn,
+  moveGridPivotField,
   moveGridRow,
   nextGridSort,
   orderGridColumns,
@@ -599,6 +605,14 @@ export interface DataGridProps<R>
   /** Called when pivot mode turns on or off. */
   onPivotActiveChange?: ((active: boolean) => void) | undefined;
   disablePivoting?: boolean | undefined;
+  /**
+   * Pivot fields derived from a column, such as its year (MUI X). Default: the year and quarter
+   * of every `date` column (`<field>-year`, `<field>-quarter`); `null`: none.
+   */
+  getPivotDerivedColumns?:
+    | ((column: GridColDef<R>) => GridColDef<R>[] | undefined)
+    | null
+    | undefined;
   /** Options of the Excel export. */
   excelOptions?: GridExcelOptions | undefined;
   /** Cells are selected in ranges (press, drag, Shift + click, Shift + arrows). */
@@ -700,6 +714,17 @@ const GripIcon = () => (
 const PivotIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
     <path d="M3 3h18v4H3zm0 6h4v12H3zm6 0h12v12H9zm2 2v8h8v-8z" />
+  </svg>
+);
+const MoveIcon = ({ down }: { down?: boolean }) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path
+      d={
+        down
+          ? "M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z"
+          : "M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z"
+      }
+    />
   </svg>
 );
 const ChartIcon = () => (
@@ -900,6 +925,7 @@ function DataGridInner<R>(
     pivotActive: pivotActiveProp,
     onPivotActiveChange,
     disablePivoting,
+    getPivotDerivedColumns,
     excelOptions,
     cellSelection,
     cellSelectionModel,
@@ -1080,7 +1106,26 @@ function DataGridInner<R>(
     (labels[
       `aggregationFunctionLabel${fn.charAt(0).toUpperCase()}${fn.slice(1)}` as keyof GridLabels
     ] as string | undefined) ?? fn;
-  const sourceOf = (field: string) => columnsProp.find((c) => c.field === field) as GridColDef<R>;
+  // Pivot fields derived from other columns (default: the year and quarter of date columns).
+  const derivedColumns: GridColDef<R>[] =
+    getPivotDerivedColumns === null
+      ? []
+      : columnsProp.flatMap((column) => {
+          if (column.pivotable === false || column.type === "actions") return [];
+          if (getPivotDerivedColumns) return getPivotDerivedColumns(column) ?? [];
+          return (
+            gridPivotDerivedColumns(column, {
+              year: labels.pivotYearColumnHeaderName,
+              quarter: labels.pivotQuarterColumnHeaderName,
+            }) ?? []
+          ).map(({ derive, ...rest }) => ({
+            ...rest,
+            valueGetter: (row: R) => derive(rawValue(column, row)),
+          }));
+        });
+  const sourceOf = (field: string) =>
+    (columnsProp.find((c) => c.field === field) ??
+      derivedColumns.find((c) => c.field === field)) as GridColDef<R>;
   const pivotOn = !!pivotActive && !disablePivoting && !treeData && !lazy;
   const pivotRows = pivotOn
     ? server.filter
@@ -1097,7 +1142,7 @@ function DataGridInner<R>(
   const pivot = pivotOn
     ? gridPivot(
         pivotRows,
-        columnsProp.filter((c) => c.pivotable !== false),
+        [...columnsProp, ...derivedColumns].filter((c) => c.pivotable !== false),
         pivotModel,
         (row, field) => rawValue(sourceOf(field), row),
         (row, field) => textOf(sourceOf(field), row),
@@ -2486,7 +2531,65 @@ function DataGridInner<R>(
     }
   };
 
-  // Pivot panel: the switch, then each column's place (rows, columns, values) and function.
+  // Pivot panel: the switch, then one section per place (not used, rows, columns, values) with
+  // each field's place and function, Move up / Move down, and a handle to drag it (core drag).
+  const pivotFieldColumns = [...columnsProp, ...derivedColumns].filter(
+    (c) => c.pivotable !== false && c.type !== "actions",
+  );
+  const pivotSections = gridPivotSections(
+    pivotModel,
+    pivotFieldColumns.map((c) => c.field),
+  );
+  const pivotSectionTitles = {
+    none: labels.pivotNotUsed,
+    rows: labels.pivotRows,
+    columns: labels.pivotColumns,
+    values: labels.pivotValues,
+  };
+  const pivotHints = {
+    none: "",
+    rows: labels.pivotDragToRows,
+    columns: labels.pivotDragToColumns,
+    values: labels.pivotDragToValues,
+  };
+  const pivotFunctionOf = (column: GridColDef<R>) =>
+    pivotModel.values.find((v) => v.field === column.field)?.aggFunc ??
+    (gridAggregationFunctionsFor(column)[0] as string);
+  const pivotPanelRef = useRef<HTMLDivElement>(null);
+  const movePivot = useRef<(field: string, section: GridPivotSection, index: number) => void>(
+    undefined as never,
+  );
+  movePivot.current = (field, section, index) => {
+    const column = pivotFieldColumns.find((c) => c.field === field);
+    if (column)
+      setPivotModel(moveGridPivotField(pivotModel, field, section, index, pivotFunctionOf(column)));
+  };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: attaches once the panel renders.
+  useEffect(() => {
+    const element = pivotPanelRef.current;
+    if (!element) return;
+    const drag = createGridPivotDrag(element, {
+      onMove: (field, section, index) => movePivot.current(field, section, index),
+    });
+    return () => drag.destroy();
+  }, [panel === "pivot"]);
+  // Moving a field moves its buttons: the pressed one (or the other, at an end) keeps the focus.
+  const refocusPivot = useRef<{ field: string; direction: "up" | "down" } | null>(null);
+  useLayoutEffect(() => {
+    const target = refocusPivot.current;
+    if (!target) return;
+    refocusPivot.current = null;
+    const box = pivotPanelRef.current?.querySelector(
+      `[data-ok-data-grid-pivot-field][data-ok-field="${CSS.escape(target.field)}"]`,
+    );
+    const pressed = box?.querySelector<HTMLButtonElement>(
+      `[data-ok-data-grid-pivot-move="${target.direction}"]`,
+    );
+    const other = box?.querySelector<HTMLButtonElement>(
+      `[data-ok-data-grid-pivot-move="${target.direction === "up" ? "down" : "up"}"]`,
+    );
+    (pressed && !pressed.disabled ? pressed : other)?.focus();
+  });
   const pivotAvailable =
     !disablePivoting &&
     !treeData &&
@@ -2500,6 +2603,7 @@ function DataGridInner<R>(
       onOpenChange={(next) => !next && closePanel()}
     >
       <div
+        ref={pivotPanelRef}
         data-ok-data-grid-panel=""
         data-ok-data-grid-form-panel=""
         role="group"
@@ -2516,63 +2620,120 @@ function DataGridInner<R>(
             />
           }
         />
-        {columnsProp
-          .filter((c) => c.pivotable !== false && c.type !== "actions")
-          .map((column) => {
-            const role = gridPivotRole(pivotModel, column.field);
-            const functions = gridAggregationFunctionsFor(column);
-            const fn =
-              pivotModel.values.find((v) => v.field === column.field)?.aggFunc ??
-              (functions[0] as string);
-            return (
-              <div key={column.field} data-ok-data-grid-pivot-field="" data-ok-field={column.field}>
-                <TextField
-                  id={`${id}-pivot-${column.field}`}
-                  select
-                  size="small"
-                  label={column.headerName ?? column.field}
-                  value={role}
-                  onChange={(next) =>
-                    setPivotModel(
-                      setGridPivotRole(
-                        pivotModel,
-                        column.field,
-                        next as "rows" | "columns" | "values" | "none",
-                        fn,
-                      ),
-                    )
-                  }
+        {gridPivotSectionNames.map((section) => (
+          <div
+            key={section}
+            data-ok-data-grid-pivot-section={section}
+            role="group"
+            aria-labelledby={`${id}-pivot-section-${section}`}
+          >
+            <span id={`${id}-pivot-section-${section}`} data-ok-data-grid-pivot-section-title="">
+              {pivotSectionTitles[section]}
+            </span>
+            {pivotSections[section].map((field, index, list) => {
+              const column = pivotFieldColumns.find((c) => c.field === field) as GridColDef<R>;
+              const role = gridPivotRole(pivotModel, column.field);
+              const fn = pivotFunctionOf(column);
+              const functions = gridAggregationFunctionsFor(column);
+              const name = column.headerName ?? column.field;
+              const move = (direction: "up" | "down") => {
+                refocusPivot.current = { field, direction };
+                setPivotModel(
+                  moveGridPivotField(
+                    pivotModel,
+                    field,
+                    section,
+                    index + (direction === "up" ? -1 : 1),
+                    fn,
+                  ),
+                );
+              };
+              return (
+                <div
+                  key={column.field}
+                  data-ok-data-grid-pivot-field=""
+                  data-ok-field={column.field}
                 >
-                  <option value="none">{labels.pivotNotUsed}</option>
-                  <option value="rows">{labels.pivotRows}</option>
-                  <option value="columns">{labels.pivotColumns}</option>
-                  <option value="values">{labels.pivotValues}</option>
-                </TextField>
-                <TextField
-                  id={`${id}-pivot-${column.field}-function`}
-                  select
-                  size="small"
-                  label={labels.pivotAggregation}
-                  disabled={role !== "values"}
-                  value={fn}
-                  onChange={(next) =>
-                    setPivotModel({
-                      ...pivotModel,
-                      values: pivotModel.values.map((v) =>
-                        v.field === column.field ? { ...v, aggFunc: next } : v,
-                      ),
-                    })
-                  }
-                >
-                  {functions.map((f) => (
-                    <option key={f} value={f}>
-                      {aggLabel(f)}
-                    </option>
-                  ))}
-                </TextField>
-              </div>
-            );
-          })}
+                  <span data-ok-data-grid-pivot-handle="" aria-hidden="true">
+                    <GripIcon />
+                  </span>
+                  <TextField
+                    id={`${id}-pivot-${column.field}`}
+                    select
+                    size="small"
+                    label={column.headerName ?? column.field}
+                    value={role}
+                    onChange={(next) =>
+                      setPivotModel(
+                        setGridPivotRole(
+                          pivotModel,
+                          column.field,
+                          next as "rows" | "columns" | "values" | "none",
+                          fn,
+                        ),
+                      )
+                    }
+                  >
+                    <option value="none">{labels.pivotNotUsed}</option>
+                    <option value="rows">{labels.pivotRows}</option>
+                    <option value="columns">{labels.pivotColumns}</option>
+                    <option value="values">{labels.pivotValues}</option>
+                  </TextField>
+                  <TextField
+                    id={`${id}-pivot-${column.field}-function`}
+                    select
+                    size="small"
+                    label={labels.pivotAggregation}
+                    disabled={role !== "values"}
+                    value={fn}
+                    onChange={(next) =>
+                      setPivotModel({
+                        ...pivotModel,
+                        values: pivotModel.values.map((v) =>
+                          v.field === column.field ? { ...v, aggFunc: next } : v,
+                        ),
+                      })
+                    }
+                  >
+                    {functions.map((f) => (
+                      <option key={f} value={f}>
+                        {aggLabel(f)}
+                      </option>
+                    ))}
+                  </TextField>
+                  <IconButton
+                    size="sm"
+                    data-ok-data-grid-pivot-move="up"
+                    aria-label={`${labels.pivotMoveUp}: ${name}`}
+                    disabled={index === 0}
+                    hidden={section === "none" || undefined}
+                    onClick={() => move("up")}
+                  >
+                    <MoveIcon />
+                  </IconButton>
+                  <IconButton
+                    size="sm"
+                    data-ok-data-grid-pivot-move="down"
+                    aria-label={`${labels.pivotMoveDown}: ${name}`}
+                    disabled={index === list.length - 1}
+                    hidden={section === "none" || undefined}
+                    onClick={() => move("down")}
+                  >
+                    <MoveIcon down />
+                  </IconButton>
+                </div>
+              );
+            })}
+            {section !== "none" && (
+              <span
+                data-ok-data-grid-pivot-empty=""
+                hidden={pivotSections[section].length > 0 || undefined}
+              >
+                {pivotHints[section]}
+              </span>
+            )}
+          </div>
+        ))}
       </div>
     </Popover>
   );

@@ -9,6 +9,7 @@ import {
   createGridColumnControls,
   createGridDataSourceCache,
   createGridNavigation,
+  createGridPivotDrag,
   createGridRowReorder,
   createGridScrollWatcher,
   dataGridOptions,
@@ -43,6 +44,7 @@ import {
   type GridPivotColumn,
   type GridPivotModel,
   type GridPivotResult,
+  type GridPivotSection,
   type GridPrintLayout,
   type GridRowWindow,
   type GridSortModel,
@@ -84,7 +86,9 @@ import {
   gridOperatorNeedsValue,
   gridPinSide,
   gridPivot,
+  gridPivotDerivedColumns,
   gridPivotRole,
+  gridPivotSections,
   gridQuickFilterValues,
   gridRowGroups,
   gridRowOffsets,
@@ -106,6 +110,7 @@ import {
   measureGridColumn,
   mergeGridCellSelection,
   moveGridColumn,
+  moveGridPivotField,
   moveGridRow,
   nextGridSort,
   orderGridColumns,
@@ -312,6 +317,14 @@ export interface DataGridInstance extends ComponentInstance {
   setPivotModel(model: GridPivotModel): void;
   /** Turns pivot mode on or off. */
   setPivotActive(active: boolean): void;
+  /**
+   * Pivot fields derived from a column (MUI X `getPivotDerivedColumns`), from the source cell's
+   * value. Default: the year and quarter of `date` columns; `null`: none. The panel lists the
+   * fields its markup has.
+   */
+  setPivotDerivedColumns(
+    getter: ((column: GridColumn) => GridPivotDerivedField[] | undefined) | null,
+  ): void;
   /** Selects these cells. */
   setCellSelectionModel(model: GridCellSelectionModel): void;
   /** Sets the chart panel's model. */
@@ -367,6 +380,13 @@ const {
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
+
+/** A derived pivot field of the HTML grid: its value from the source cell's value. */
+export interface GridPivotDerivedField extends GridColumn {
+  valueGetter(value: unknown, row: HTMLElement): unknown;
+  /** Its text (default: the value as text). */
+  valueFormatter?: ((value: unknown) => string) | undefined;
+}
 
 export interface GridPrintOptions extends GridPrintLayout {
   /** Fields to print (default: the shown columns). */
@@ -762,12 +782,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ? fields.map((field) => gridGroupingField(field))
         : [GRID_GROUPING_FIELD];
     };
+    /** Derived pivot fields by field: their source column and getter (`syncDerived`). */
+    const derived = new Map<string, { source: string; column: GridPivotDerivedField }>();
     const groupingGetters = new Map<
       string,
       (value: unknown, row: HTMLElement) => string | number | Date | null | undefined
     >();
     /** A row's group key: the column's getter, its `data-ok-grouping-value`, else its text. */
     const groupingKey = (row: HTMLElement, field: string) => {
+      if (derived.has(field)) return pivotText(row, field);
       const getter = groupingGetters.get(field);
       if (getter) return gridGroupingKey(getter(cellValue(row, field), row));
       return cellOf(row, field)?.getAttribute("data-ok-grouping-value") ?? cellText(row, field);
@@ -2213,6 +2236,44 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       else apply();
     };
 
+    // Pivot fields derived from other columns (default: the year and quarter of date columns).
+    let deriveColumns:
+      | ((column: GridColumn) => GridPivotDerivedField[] | undefined)
+      | null
+      | undefined;
+    const syncDerived = () => {
+      derived.clear();
+      if (deriveColumns === null) return;
+      for (const column of baseColumns) {
+        if (column.type === "actions") continue;
+        const list = deriveColumns
+          ? deriveColumns(column)
+          : gridPivotDerivedColumns(column, {
+              year: labels.pivotYearColumnHeaderName,
+              quarter: labels.pivotQuarterColumnHeaderName,
+            })?.map(({ derive, ...rest }) => ({
+              ...rest,
+              valueGetter: (raw: unknown) => derive(raw),
+            }));
+        for (const own of list ?? []) derived.set(own.field, { source: column.field, column: own });
+      }
+    };
+    /** The pivot's values and texts: derived fields from their source cell. */
+    const pivotValue = (row: HTMLElement, field: string) => {
+      const own = derived.get(field);
+      return own ? own.column.valueGetter(cellValue(row, own.source), row) : cellValue(row, field);
+    };
+    function pivotText(row: HTMLElement, field: string) {
+      const own = derived.get(field);
+      if (!own) return cellText(row, field);
+      const raw = pivotValue(row, field);
+      return own.column.valueFormatter
+        ? own.column.valueFormatter(raw)
+        : raw === null || raw === undefined
+          ? ""
+          : String(raw);
+    }
+
     // Pivoting: the pivot's columns and groups replace the markup's columns while it shows.
     let baseHeader: Node[] | null = null;
     let baseGroupRows: HTMLElement[] = [];
@@ -2245,12 +2306,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           baseGroupRows = groupRowEls();
           for (const row of baseGroupRows) row.remove();
         }
+        syncDerived();
         pivot = gridPivot(
           pivotRows(),
-          baseColumns.filter((c) => c.type !== "actions"),
+          [
+            ...baseColumns.filter((c) => c.type !== "actions"),
+            ...[...derived.values()].map((d) => d.column),
+          ],
           pivotModel,
-          cellValue,
-          cellText,
+          pivotValue,
+          pivotText,
           labelOf,
         );
         const result = pivot;
@@ -2348,6 +2413,54 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const own = pivotModel.values.find((v) => v.field === field)?.aggFunc;
         if (own) fn.value = own;
       }
+      // Sections: each field in its place, in the model's order (unused ones in column order).
+      const sections = pivotPanel?.querySelectorAll<HTMLElement>(
+        "[data-ok-data-grid-pivot-section]",
+      );
+      if (!pivotPanel || !sections?.length) return;
+      const boxes = new Map(
+        [...pivotPanel.querySelectorAll<HTMLElement>("[data-ok-data-grid-pivot-field]")].map(
+          (box) => [box.getAttribute("data-ok-field") as string, box],
+        ),
+      );
+      syncDerived();
+      const order = gridPivotSections(
+        pivotModel,
+        [...baseColumns.map((c) => c.field), ...derived.keys()].filter((f) => boxes.has(f)),
+      );
+      for (const section of sections) {
+        const name = section.getAttribute("data-ok-data-grid-pivot-section") as GridPivotSection;
+        const list = order[name] ?? [];
+        let previous = section.querySelector<HTMLElement>(
+          ":scope > [data-ok-data-grid-pivot-section-title]",
+        );
+        list.forEach((field, index) => {
+          const box = boxes.get(field) as HTMLElement;
+          // Only fields out of place move (moving a focused element drops its focus).
+          if (previous && box.previousElementSibling !== previous) previous.after(box);
+          else if (!previous && box.parentElement !== section) section.prepend(box);
+          previous = box;
+          for (const button of box.querySelectorAll<HTMLButtonElement>(
+            "[data-ok-data-grid-pivot-move]",
+          )) {
+            button.hidden = name === "none";
+            button.disabled =
+              button.getAttribute("data-ok-data-grid-pivot-move") === "up"
+                ? index === 0
+                : index === list.length - 1;
+          }
+        });
+        const hint = section.querySelector<HTMLElement>(":scope > [data-ok-data-grid-pivot-empty]");
+        if (hint) hint.hidden = list.length > 0;
+      }
+    };
+    /** Moves a field of the panel (Move up / Move down, a drop). */
+    const movePivotField = (field: string, section: GridPivotSection, index: number) => {
+      const box = pivotPanel?.querySelector<HTMLElement>(
+        `[data-ok-data-grid-pivot-field][data-ok-field="${CSS.escape(field)}"]`,
+      );
+      const fn = box?.querySelectorAll("select")[1]?.value ?? "sum";
+      setPivot(moveGridPivotField(pivotModel, field, section, index, fn), pivotOn());
     };
     const setPivot = (model: GridPivotModel, active: boolean) => {
       if (!emit("pivot", { model, active }, { cancelable: true })) {
@@ -2358,7 +2471,35 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       element.setAttribute("data-ok-pivot-model", JSON.stringify(model));
       if (active !== pivotOn()) element.toggleAttribute(pivotActiveOption.attr, active);
       if (pivot || active) showPivot();
+      else syncPivotPanel();
     };
+    pivotPanel?.addEventListener(
+      "click",
+      (event) => {
+        const button = (event.target as Element).closest<HTMLButtonElement>(
+          "[data-ok-data-grid-pivot-move]",
+        );
+        const box = button?.closest<HTMLElement>("[data-ok-data-grid-pivot-field]");
+        const section = box?.closest<HTMLElement>("[data-ok-data-grid-pivot-section]");
+        if (!button || button.disabled || !box || !section) return;
+        const field = box.getAttribute("data-ok-field") as string;
+        const name = section.getAttribute("data-ok-data-grid-pivot-section") as GridPivotSection;
+        const fields = [
+          ...section.querySelectorAll<HTMLElement>(":scope > [data-ok-data-grid-pivot-field]"),
+        ].map((b) => b.getAttribute("data-ok-field"));
+        const direction = button.getAttribute("data-ok-data-grid-pivot-move");
+        movePivotField(field, name, fields.indexOf(field) + (direction === "up" ? -1 : 1));
+        // The pressed button keeps the focus (the other one at an end).
+        const other = box.querySelector<HTMLButtonElement>(
+          `[data-ok-data-grid-pivot-move="${direction === "up" ? "down" : "up"}"]`,
+        );
+        (button.disabled ? other : button)?.focus();
+      },
+      { signal },
+    );
+    const pivotDrag = pivotPanel
+      ? createGridPivotDrag(pivotPanel, { onMove: movePivotField })
+      : null;
     pivotPanel?.addEventListener(
       "change",
       (event) => {
@@ -3889,6 +4030,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         element.toggleAttribute(pivotActiveOption.attr, active);
         showPivot();
       },
+      setPivotDerivedColumns(getter) {
+        deriveColumns = getter;
+        syncDerived();
+        if (pivot) showPivot();
+        else syncPivotPanel();
+      },
       setCellSelectionModel(model) {
         cellModel = sanitizeGridCellSelection(model);
         markCells();
@@ -3906,6 +4053,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         scrollWatcher.destroy();
         columnControls.destroy();
         rowReorder.destroy();
+        pivotDrag?.destroy();
         clearTimeout(lazyState.timer as number);
         navigation.destroy();
         syncCustomProperties(main, {}, written);

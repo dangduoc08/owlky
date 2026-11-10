@@ -11,6 +11,7 @@ import groupingValue from "../../../../../packages/html/src/components/data-grid
 import largeGroup from "../../../../../packages/html/src/components/data-grid/examples/large-group.html?raw";
 import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
 import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
+import pivotDerived from "../../../../../packages/html/src/components/data-grid/examples/pivot-derived.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
 import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
 import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
@@ -982,7 +983,7 @@ export function DataGridGroupFooters() {
   {
     id: "pivot",
     title: "Pivot the rows",
-    body: "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and, for each column, its place and function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
+    body: "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and four sections: **Not used**, **Rows**, **Columns** and **Values**. Drag a field by its handle to another section or to another place in its section. Without a mouse, pick a field's place in its list and move it with its **Move up** and **Move down** buttons, so you never need to drag. Each value field has a function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
     html: `${gridOf(pivotGroup, { rows: 6 })}`,
     react: `import { DataGrid, type GridColDef } from "@owlky/react";
 
@@ -1014,6 +1015,63 @@ export function DataGridPivot() {
             rows: [{ field: "region" }],
             columns: [{ field: "year" }],
             values: [{ field: "revenue", aggFunc: "sum" }],
+          },
+        },
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "pivot-derived",
+    title: "Pivot by parts of a date",
+    body: 'To group a pivot by year or quarter, the grid derives fields from your columns. By default, every `date` column gets a year field (`<field>-year`) and a quarter field (`<field>-quarter`, `Q1` to `Q4`), named "Date (Year)" and "Date (Quarter)". They show in the pivot panel and work in the pivot model like other fields. `getPivotDerivedColumns` replaces them: the grid calls it for each column, and it returns the columns to derive (each with a `valueGetter`), or nothing. Pass `null` for none. In HTML, the defaults work the same way. Give the runtime your own function with `setPivotDerivedColumns(getter)`: each derived field\'s `valueGetter` receives the source cell\'s value.',
+    html: `${gridOf(pivotDerived, { rows: 4 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+type Trade = { id: number; date: string; ticker: string; volume: number };
+
+const trades: Trade[] = [
+  { id: 1, date: "2024-03-14", ticker: "AAPL", volume: 5500 },
+  { id: 2, date: "2024-08-02", ticker: "MSFT", volume: 3200 },
+  { id: 3, date: "2025-01-20", ticker: "AAPL", volume: 4100 },
+];
+
+const columns: GridColDef<Trade>[] = [
+  { field: "date", headerName: "Date", type: "date" },
+  { field: "ticker", headerName: "Ticker" },
+  { field: "volume", headerName: "Volume", type: "number" },
+];
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// A month field instead of the default year and quarter
+const monthOf = (column: GridColDef<Trade>): GridColDef<Trade>[] | undefined =>
+  column.type === "date"
+    ? [
+        {
+          field: \`\${column.field}-month\`,
+          headerName: \`\${column.headerName} (Month)\`,
+          valueGetter: (row) => months[Number(row.date.slice(5, 7)) - 1],
+        },
+      ]
+    : undefined;
+
+export function DataGridPivotDerived() {
+  return (
+    <DataGrid
+      aria-label="Volume by ticker and month"
+      rows={trades}
+      columns={columns}
+      showToolbar
+      getPivotDerivedColumns={monthOf}
+      initialState={{
+        pivoting: {
+          active: true,
+          model: {
+            rows: [{ field: "ticker" }],
+            columns: [{ field: "date-month" }],
+            values: [{ field: "volume", aggFunc: "sum" }],
           },
         },
       }}
@@ -1220,7 +1278,7 @@ export function DataGridChartsConfiguration() {
 - **Instance:** \`runtime.get(element, "data-grid")\` returns \`{ sortModel, filterModel, selection, columnVisibilityModel, columnOrder, pinnedColumns, columnWidths }\` with a setter for each (\`setSortModel(model)\`, \`setColumnWidth(field, width)\` and so on; setters fire no events), \`toCsv()\`, \`exportCsv()\`, \`setRows(rows)\` and \`setDataSource(source)\` (\`null\` stops it).
 - **\`ok:data-grid:rowclick\`**, **\`ok:data-grid:rowdoubleclick\`**, **\`ok:data-grid:cellclick\`**, **\`ok:data-grid:celldoubleclick\`** and **\`ok:data-grid:columnheaderclick\`** report the row id, the field and the value. **\`ok:data-grid:editstart\`** and **\`ok:data-grid:editstop\`** report the cell and the reason. **\`ok:data-grid:validate\`** asks for an error in \`detail.error\`.
 - **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
-- **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
+- **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\`, \`setPivotDerivedColumns(getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
 - **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },

@@ -105,8 +105,14 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     toolbar › Button (Pivot: pivot model given; Chart: chartsIntegration) › Popover#<id>-pivot | #<id>-charts
       › div[data-ok-data-grid-panel][data-ok-data-grid-form-panel][role=group]
         pivot: FormControlLabel(Switch[data-ok-data-grid-pivot-switch]),
-          div[data-ok-data-grid-pivot-field][data-ok-field] › TextField select #<id>-pivot-<field> (none|rows|columns|values),
-          TextField select #<id>-pivot-<field>-function
+          div[data-ok-data-grid-pivot-section=none|rows|columns|values][role=group][aria-labelledby]
+            [data-ok-drop-target]? › span#<id>-pivot-section-<section>[data-ok-data-grid-pivot-section-title]
+          › div[data-ok-data-grid-pivot-field][data-ok-field][data-ok-dragging]?[data-ok-drop=before|after]? (model order;
+            not used: column order, derived fields after the columns)
+            › span[data-ok-data-grid-pivot-handle][aria-hidden] (pointer drag), TextField select
+            #<id>-pivot-<field> (none|rows|columns|values), TextField select #<id>-pivot-<field>-function,
+            IconButton[data-ok-data-grid-pivot-move=up|down][aria-label="Move up: <header>"][disabled]? ([hidden] when not used)
+          › span[data-ok-data-grid-pivot-empty][hidden]? ("Drag here to create rows"; not in none)
         charts: TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value]),
           FormControlLabel(Switch[data-ok-data-grid-chart-stacked][disabled]?), FormControlLabel(Switch[data-ok-data-grid-chart-item-label]),
           TextField select #<id>-chart-legend (top|right|bottom|none)
@@ -230,7 +236,8 @@ Autocomplete chips. Phase 6: `rowGroupingModel` / `onRowGroupingModelChange` /
 `row[field]`), `groupingColDef` as a function of `{ fields }` (one call per grouping column),
 `availableAggregationFunctions`; `pivotModel` / `onPivotModelChange`, `pivotActive` /
 `onPivotActiveChange`, `initialState.pivoting` (`model`, `active`), `disablePivoting`, column
-`pivotable`; `excelOptions` (`fileName`, `sheetName`, `fields`, `allColumns`, `includeHeaders`),
+`pivotable`; `getPivotDerivedColumns(column)` (default: `<field>-year` / `<field>-quarter` of `date`
+columns; `null`: none); `excelOptions` (`fileName`, `sheetName`, `fields`, `allColumns`, `includeHeaders`),
 `apiRef.getDataAsExcel` / `exportDataAsExcel`; `cellSelection`, `cellSelectionModel` /
 `onCellSelectionModelChange`; `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` /
 `onClipboardPasteEnd`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`,
@@ -241,9 +248,10 @@ Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
 filters, column virtualization, lazy loading of row chunks). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
-Deferred (roadmap): `getPivotDerivedColumns` (year / quarter of dates), the pivot panel's drag and
-drop (selects instead), header filter operator menus, the AI assistant (needs a language model
-service). Server-side aggregation: `aggregationFunctions` keeps the built-in functions as the menu's
+Deferred (roadmap): header filter operator menus, the AI assistant (needs a language model
+service). Pivot panel: no field search (MUI X: search fields) and no field menu (MUI X: Move to
+top / bottom, Add to …): the role select moves a field between sections, Move up / Move down
+within one (WCAG 2.5.7 alternatives to dragging). Server-side aggregation: `aggregationFunctions` keeps the built-in functions as the menu's
 choices (MUI X: none by default with a data source); grids without `getAggregatedValue` and without
 an `aggregateRow` in the response still aggregate the loaded rows.
 Row grouping gaps (not in a roadmap row): `leafField`, `mainGroupingCriteria`, rows with missing
@@ -362,7 +370,13 @@ row. Server-side aggregation (a data source and an aggregation): requests carry 
 `getAggregatedValue(row, field)` (default `row[field]`); lazy grids show the footer row too. Pivot: groups of the `rows` fields,
 one column per distinct key tuple of the `columns` fields (sorted, `desc` per field) × value; column
 groups name the keys; leaves never show; filters run on the data first; exports keep the data
-columns and rows. Excel: core `gridToXlsx` (stored ZIP, inline strings, typed numbers, booleans and
+columns and rows. Derived fields (`getPivotDerivedColumns`, default year and `Q1`–`Q4` of `date`
+columns, `YYYY-MM-DD` read as local days) exist in the pivot and its panel only. Panel: sections in
+the model's order; dragging a field's handle past 4px moves it (the section under the pointer gets
+`data-ok-drop-target`, the field next to the drop `data-ok-drop`; Escape cancels) and reports the
+move (core `moveGridPivotField`: within a section a field keeps its sort / function, new values
+take the field's function select); Move up / Move down keep the focus on the pressed button (the
+other at an end). Excel: core `gridToXlsx` (stored ZIP, inline strings, typed numbers, booleans and
 dates, bold header, column widths); text never becomes a formula. Clipboard: Ctrl / Cmd + C copies
 the selected cells (else selected rows, else the focused cell) as TSV; Ctrl / Cmd + V pastes into
 editable cells from the selection's corner or the focused cell; one value fills the selection; each
@@ -433,7 +447,7 @@ known keys only; React writes them from `csvOptions` / `printOptions`).
 Phase 6: `ok:data-grid:rowgrouping | aggregation | cellselection | chart` (cancelable, `{ model }`),
 `ok:data-grid:pivot` (cancelable, `{ model, active }`), `ok:data-grid:clipboardcopy` (`{ data }`),
 `ok:data-grid:clipboardpaste` (cancelable, `{ data }`: the pasted cells); instance
-`setGroupingValueGetter(field, getter | null)` (getter of the cell's value and row; else
+`setPivotDerivedColumns(getter | null)`, `setGroupingValueGetter(field, getter | null)` (getter of the cell's value and row; else
 `data-ok-grouping-value`, else the cell text);
 `rowGroupingModel`, `aggregationModel`, `pivotModel`, `pivotActive`, `cellSelectionModel`,
 `chartModel` with `set…` (no events; the chart panel's fields follow the model),
@@ -490,7 +504,8 @@ the detailed record of what is kept.
 | Row grouping / aggregation / pivot: models + callbacks, `disableRowGrouping`, `aggregationFunctions`, `aggregationRowsScope`, `getAggregationPosition` (root and groups: `inline`, `footer`, `null`), `disablePivoting`, `pivotActive` | same | kept | HTML: `data-ok-aggregation-position` by level |
 | Server-side aggregation: params `aggregationModel`, response `aggregateRow`, `dataSource.getAggregatedValue` | same | kept | `aggregationFunctions` keeps the built-in choices with a data source |
 | `rowGroupingColumnMode`, `groupingColDef` callback | same | kept | callback params `{ fields }`; server-side grouping keeps one column |
-| `getPivotDerivedColumns`, pivot drag and drop | — | deferred (4.15) | |
+| `getPivotDerivedColumns` | same | kept | `null` turns the defaults off; HTML: `setPivotDerivedColumns(getter)` (value: the source cell's) |
+| Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef`, `pivotPanelOpen` / `onPivotPanelOpenChange` | — | deferred | |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |

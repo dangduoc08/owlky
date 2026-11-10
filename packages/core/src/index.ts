@@ -801,6 +801,17 @@ export {
   moveGridCell,
 } from "./data-grid/grid-navigation.js";
 export {
+  createGridPivotDrag,
+  type GridPivotDerivedColumn,
+  type GridPivotDrag,
+  type GridPivotDragOptions,
+  type GridPivotSection,
+  gridPivotDerivedColumns,
+  gridPivotSectionNames,
+  gridPivotSections,
+  moveGridPivotField,
+} from "./data-grid/grid-pivot-panel.js";
+export {
   GRID_AGGREGATION_ROOT_ID,
   GRID_GROUPING_FIELD,
   type GridAggregationFunction,

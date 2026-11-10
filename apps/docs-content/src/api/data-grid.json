@@ -468,7 +468,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 87 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 94 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "Pins columns to the start and the end.",
@@ -481,6 +481,12 @@
       "kind": "method",
       "name": "setPivotActive",
       "type": "(active: boolean) => void"
+     },
+     {
+      "description": "Pivot fields derived from a column (MUI X `getPivotDerivedColumns`), from the source cell's value. Default: the year and quarter of `date` columns; `null`: none. The panel lists the fields its markup has.",
+      "kind": "method",
+      "name": "setPivotDerivedColumns",
+      "type": "(getter: ((column: GridColumn) => GridPivotDerivedField[] | undefined) | null) => void"
      },
      {
       "description": "Sets the pivot model.",
@@ -1213,12 +1219,56 @@
       ]
      },
      {
+      "description": "A pivot panel section's hint when it has no field, such as \"Drag here to create rows\".",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-empty"
+     },
+     {
       "description": "One field of the pivot panel.",
       "elements": [
        "div"
       ],
       "kind": "part",
       "name": "data-ok-data-grid-pivot-field"
+     },
+     {
+      "description": "The handle that drags a pivot field to another section or position (pointer only).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-handle"
+     },
+     {
+      "description": "The buttons that move a pivot field up or down in its section.",
+      "kind": "value",
+      "name": "data-ok-data-grid-pivot-move",
+      "value": [
+       "down",
+       "up"
+      ]
+     },
+     {
+      "description": "A section of the pivot panel: the fields not used, or the rows, columns or values.",
+      "kind": "value",
+      "name": "data-ok-data-grid-pivot-section",
+      "value": [
+       "columns",
+       "none",
+       "rows",
+       "values"
+      ]
+     },
+     {
+      "description": "The title of a pivot panel section.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-section-title"
      },
      {
       "description": "The switch that turns pivot mode on.",
@@ -1339,6 +1389,11 @@
       "value": "string"
      },
      {
+      "description": "Set by the runtime on a pivot field while a pointer drags it.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
       "description": "Set by the runtime on the row or column a drag would drop next to.",
       "kind": "value",
       "name": "data-ok-drop",
@@ -1346,6 +1401,11 @@
        "after",
        "before"
       ]
+     },
+     {
+      "description": "Set by the runtime on the pivot panel section a dragged field would drop into.",
+      "kind": "state",
+      "name": "data-ok-drop-target"
      },
      {
       "description": "Set by the runtime on a cell or row being edited.",
@@ -1809,6 +1869,11 @@
       "description": "The height to assume for `\"auto\"` rows before they are measured.",
       "name": "getEstimatedRowHeight",
       "type": "((params: { id: string; model: R; }) => number)"
+     },
+     {
+      "description": "Pivot fields derived from a column, such as its year (MUI X). Default: the year and quarter of every `date` column (`<field>-year`, `<field>-quarter`); `null`: none.",
+      "name": "getPivotDerivedColumns",
+      "type": "((column: GridColDef<R>) => GridColDef<R>[] | undefined) | null"
      },
      {
       "description": "Returns a class name for a row.",

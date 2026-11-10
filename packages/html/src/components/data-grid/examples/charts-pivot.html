@@ -28,162 +28,192 @@
           </span>
           <span data-ok-form-control-label-text>Pivot</span>
         </label>
-        <div data-ok-data-grid-pivot-field data-ok-field="region">
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-region">Region</label>
-            <div data-ok-text-field-control>
-              <select id="grid-charts-pivot-pivot-region" data-ok-text-field-input>
-                <option value="none">Not used</option>
-                <option value="rows" selected>Rows</option>
-                <option value="columns">Columns</option>
-                <option value="values">Values</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Region</span></legend>
-              </fieldset>
+        <div data-ok-data-grid-pivot-section="none" role="group" aria-labelledby="grid-charts-pivot-pivot-section-none">
+          <span id="grid-charts-pivot-pivot-section-none" data-ok-data-grid-pivot-section-title>Not used</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="year">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-year">Year</label>
+              <div data-ok-text-field-control>
+                <select id="grid-charts-pivot-pivot-year" data-ok-text-field-input>
+                  <option value="none" selected>Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns">Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Year</span></legend>
+                </fieldset>
+              </div>
             </div>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-year-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-charts-pivot-pivot-year-function" data-ok-text-field-input>
+                  <option value="sum" selected>sum</option>
+                  <option value="avg">avg</option>
+                  <option value="min">min</option>
+                  <option value="max">max</option>
+                  <option value="size">size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Year" hidden disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Year" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
           </div>
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-region-function">Function</label>
-            <div data-ok-text-field-control>
-              <select disabled id="grid-charts-pivot-pivot-region-function" data-ok-text-field-input>
-                <option value="size" selected>size</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Function</span></legend>
-              </fieldset>
+          <div data-ok-data-grid-pivot-field data-ok-field="units">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-units">Units</label>
+              <div data-ok-text-field-control>
+                <select id="grid-charts-pivot-pivot-units" data-ok-text-field-input>
+                  <option value="none" selected>Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns">Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Units</span></legend>
+                </fieldset>
+              </div>
             </div>
-          </div>
-        </div>
-        <div data-ok-data-grid-pivot-field data-ok-field="product">
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-product">Product</label>
-            <div data-ok-text-field-control>
-              <select id="grid-charts-pivot-pivot-product" data-ok-text-field-input>
-                <option value="none">Not used</option>
-                <option value="rows">Rows</option>
-                <option value="columns" selected>Columns</option>
-                <option value="values">Values</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Product</span></legend>
-              </fieldset>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-units-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-charts-pivot-pivot-units-function" data-ok-text-field-input>
+                  <option value="sum" selected>sum</option>
+                  <option value="avg">avg</option>
+                  <option value="min">min</option>
+                  <option value="max">max</option>
+                  <option value="size">size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
             </div>
-          </div>
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-product-function">Function</label>
-            <div data-ok-text-field-control>
-              <select disabled id="grid-charts-pivot-pivot-product-function" data-ok-text-field-input>
-                <option value="size" selected>size</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Function</span></legend>
-              </fieldset>
-            </div>
-          </div>
-        </div>
-        <div data-ok-data-grid-pivot-field data-ok-field="year">
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-year">Year</label>
-            <div data-ok-text-field-control>
-              <select id="grid-charts-pivot-pivot-year" data-ok-text-field-input>
-                <option value="none" selected>Not used</option>
-                <option value="rows">Rows</option>
-                <option value="columns">Columns</option>
-                <option value="values">Values</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Year</span></legend>
-              </fieldset>
-            </div>
-          </div>
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-year-function">Function</label>
-            <div data-ok-text-field-control>
-              <select disabled id="grid-charts-pivot-pivot-year-function" data-ok-text-field-input>
-                <option value="sum" selected>sum</option>
-                <option value="avg">avg</option>
-                <option value="min">min</option>
-                <option value="max">max</option>
-                <option value="size">size</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Function</span></legend>
-              </fieldset>
-            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Units" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Units" hidden disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
           </div>
         </div>
-        <div data-ok-data-grid-pivot-field data-ok-field="units">
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-units">Units</label>
-            <div data-ok-text-field-control>
-              <select id="grid-charts-pivot-pivot-units" data-ok-text-field-input>
-                <option value="none" selected>Not used</option>
-                <option value="rows">Rows</option>
-                <option value="columns">Columns</option>
-                <option value="values">Values</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Units</span></legend>
-              </fieldset>
+        <div data-ok-data-grid-pivot-section="rows" role="group" aria-labelledby="grid-charts-pivot-pivot-section-rows">
+          <span id="grid-charts-pivot-pivot-section-rows" data-ok-data-grid-pivot-section-title>Rows</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="region">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-region">Region</label>
+              <div data-ok-text-field-control>
+                <select id="grid-charts-pivot-pivot-region" data-ok-text-field-input>
+                  <option value="none">Not used</option>
+                  <option value="rows" selected>Rows</option>
+                  <option value="columns">Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Region</span></legend>
+                </fieldset>
+              </div>
             </div>
-          </div>
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-units-function">Function</label>
-            <div data-ok-text-field-control>
-              <select disabled id="grid-charts-pivot-pivot-units-function" data-ok-text-field-input>
-                <option value="sum" selected>sum</option>
-                <option value="avg">avg</option>
-                <option value="min">min</option>
-                <option value="max">max</option>
-                <option value="size">size</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Function</span></legend>
-              </fieldset>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-region-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-charts-pivot-pivot-region-function" data-ok-text-field-input>
+                  <option value="size" selected>size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
             </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Region" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Region" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
           </div>
+          <span data-ok-data-grid-pivot-empty hidden>Drag here to create rows</span>
         </div>
-        <div data-ok-data-grid-pivot-field data-ok-field="revenue">
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-revenue">Revenue</label>
-            <div data-ok-text-field-control>
-              <select id="grid-charts-pivot-pivot-revenue" data-ok-text-field-input>
-                <option value="none">Not used</option>
-                <option value="rows">Rows</option>
-                <option value="columns">Columns</option>
-                <option value="values" selected>Values</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Revenue</span></legend>
-              </fieldset>
+        <div data-ok-data-grid-pivot-section="columns" role="group" aria-labelledby="grid-charts-pivot-pivot-section-columns">
+          <span id="grid-charts-pivot-pivot-section-columns" data-ok-data-grid-pivot-section-title>Columns</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="product">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-product">Product</label>
+              <div data-ok-text-field-control>
+                <select id="grid-charts-pivot-pivot-product" data-ok-text-field-input>
+                  <option value="none">Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns" selected>Columns</option>
+                  <option value="values">Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Product</span></legend>
+                </fieldset>
+              </div>
             </div>
-          </div>
-          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
-            <label data-ok-text-field-label for="grid-charts-pivot-pivot-revenue-function">Function</label>
-            <div data-ok-text-field-control>
-              <select id="grid-charts-pivot-pivot-revenue-function" data-ok-text-field-input>
-                <option value="sum" selected>sum</option>
-                <option value="avg">avg</option>
-                <option value="min">min</option>
-                <option value="max">max</option>
-                <option value="size">size</option>
-              </select>
-              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              <fieldset data-ok-text-field-outline aria-hidden="true">
-                <legend><span>Function</span></legend>
-              </fieldset>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-product-function">Function</label>
+              <div data-ok-text-field-control>
+                <select disabled id="grid-charts-pivot-pivot-product-function" data-ok-text-field-input>
+                  <option value="size" selected>size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
             </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Product" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Product" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
           </div>
+          <span data-ok-data-grid-pivot-empty hidden>Drag here to create columns</span>
+        </div>
+        <div data-ok-data-grid-pivot-section="values" role="group" aria-labelledby="grid-charts-pivot-pivot-section-values">
+          <span id="grid-charts-pivot-pivot-section-values" data-ok-data-grid-pivot-section-title>Values</span>
+          <div data-ok-data-grid-pivot-field data-ok-field="revenue">
+            <span data-ok-data-grid-pivot-handle aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" /></svg></span>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-revenue">Revenue</label>
+              <div data-ok-text-field-control>
+                <select id="grid-charts-pivot-pivot-revenue" data-ok-text-field-input>
+                  <option value="none">Not used</option>
+                  <option value="rows">Rows</option>
+                  <option value="columns">Columns</option>
+                  <option value="values" selected>Values</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Revenue</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+              <label data-ok-text-field-label for="grid-charts-pivot-pivot-revenue-function">Function</label>
+              <div data-ok-text-field-control>
+                <select id="grid-charts-pivot-pivot-revenue-function" data-ok-text-field-input>
+                  <option value="sum" selected>sum</option>
+                  <option value="avg">avg</option>
+                  <option value="min">min</option>
+                  <option value="max">max</option>
+                  <option value="size">size</option>
+                </select>
+                <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>Function</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="up" aria-label="Move up: Revenue" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z" /></svg></button>
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-pivot-move="down" aria-label="Move down: Revenue" disabled><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z" /></svg></button>
+          </div>
+          <span data-ok-data-grid-pivot-empty hidden>Drag here to create values</span>
         </div>
       </div>
     </div>

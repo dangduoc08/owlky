@@ -668,6 +668,173 @@ describe("DataGrid pivoting", () => {
     values: [{ field: "units", aggFunc: "sum" }],
   };
 
+  it("pivots by derived columns: the year and quarter of dates, or your own", () => {
+    const { rerender } = render(
+      <DataGrid
+        id="d"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        pivotActive
+        pivotModel={{
+          rows: [{ field: "date-quarter" }],
+          columns: [{ field: "date-year" }],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        hideFooter
+      />,
+    );
+    expect(texts()).toEqual([["Q2", "65"]]);
+    expect(
+      [...grid().querySelectorAll('[data-ok-data-grid-group-row] [role="columnheader"]')].map(
+        (c) => c.textContent,
+      ),
+    ).toEqual(["2025"]);
+    // The panel lists them after the columns.
+    expect(
+      [...document.querySelectorAll("#d-pivot [data-ok-data-grid-pivot-field]")].map((f) =>
+        f.getAttribute("data-ok-field"),
+      ),
+    ).toEqual(["region", "product", "year", "date", "date-quarter", "date-year", "units"]);
+    expect(
+      within(document.getElementById("d-pivot") as HTMLElement).getByLabelText("Date (Year)"),
+    ).toBeTruthy();
+    rerender(
+      <DataGrid
+        id="d"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        pivotActive
+        getPivotDerivedColumns={(column) =>
+          column.field === "units"
+            ? [
+                {
+                  field: "units-band",
+                  headerName: "Units band",
+                  valueGetter: (row) => (row.units >= 20 ? "big" : "small"),
+                },
+              ]
+            : undefined
+        }
+        pivotModel={{
+          rows: [{ field: "units-band" }],
+          columns: [],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        hideFooter
+      />,
+    );
+    expect(texts()).toEqual([
+      ["small", "15"],
+      ["big", "50"],
+    ]);
+    expect(document.querySelector('#d-pivot [data-ok-field="date-year"]')).toBeNull();
+    rerender(
+      <DataGrid
+        id="d"
+        aria-label="Sales"
+        rows={SALES}
+        columns={COLUMNS}
+        getPivotDerivedColumns={null}
+        showToolbar
+        pivotModel={model}
+        hideFooter
+      />,
+    );
+    expect(document.querySelector('#d-pivot [data-ok-field="date-year"]')).toBeNull();
+  });
+
+  it("moves fields between sections by dragging, and in order by buttons", async () => {
+    const onModel = vi.fn();
+    render(
+      <DataGrid
+        id="m"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        initialState={{
+          pivoting: {
+            model: { ...model, rows: [{ field: "region" }, { field: "product" }] },
+            active: true,
+          },
+        }}
+        onPivotModelChange={onModel}
+        hideFooter
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Pivot" }));
+    const panel = document.getElementById("m-pivot") as HTMLElement;
+    const section = (name: string) =>
+      panel.querySelector(`[data-ok-data-grid-pivot-section="${name}"]`) as HTMLElement;
+    const fieldsOf = (name: string) =>
+      [...section(name).querySelectorAll("[data-ok-data-grid-pivot-field]")].map((f) =>
+        f.getAttribute("data-ok-field"),
+      );
+    expect(fieldsOf("rows")).toEqual(["region", "product"]);
+    expect(
+      section("rows").querySelector("[data-ok-data-grid-pivot-section-title]")?.textContent,
+    ).toBe("Rows");
+    expect(section("rows").getAttribute("aria-labelledby")).toBe("m-pivot-section-rows");
+    const hint = section("columns").querySelector("[data-ok-data-grid-pivot-empty]") as HTMLElement;
+    expect(hint.hidden).toBe(true);
+    // Move buttons: hidden for unused fields, disabled at the ends.
+    const button = (field: string, direction: string) =>
+      panel.querySelector(
+        `[data-ok-field="${field}"] [data-ok-data-grid-pivot-move="${direction}"]`,
+      ) as HTMLButtonElement;
+    expect(button("date", "up").hidden).toBe(true);
+    expect(button("region", "up").disabled).toBe(true);
+    expect(button("product", "down").disabled).toBe(true);
+    expect(button("region", "down").getAttribute("aria-label")).toBe("Move down: Region");
+    button("region", "down").focus();
+    fireEvent.click(button("region", "down"));
+    expect(onModel.mock.lastCall?.[0].rows).toEqual([{ field: "product" }, { field: "region" }]);
+    expect(fieldsOf("rows")).toEqual(["product", "region"]);
+    // At the end now: the other button keeps the focus.
+    expect(document.activeElement).toBe(button("region", "up"));
+    // Drag the year from Columns into Rows, before Product.
+    const handle = panel.querySelector(
+      '[data-ok-field="year"] [data-ok-data-grid-pivot-handle]',
+    ) as HTMLElement;
+    const box = (el: Element) => el.getBoundingClientRect();
+    const product = panel.querySelector('[data-ok-field="product"]') as HTMLElement;
+    const start = box(handle);
+    act(() => {
+      handle.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          bubbles: true,
+          button: 0,
+          pointerId: 1,
+          clientX: start.left + 2,
+          clientY: start.top + 2,
+        }),
+      );
+      const to = {
+        clientX: box(product).left + 4,
+        clientY: box(product).top + 2,
+        pointerId: 1,
+        bubbles: true,
+      };
+      document.dispatchEvent(new PointerEvent("pointermove", to));
+      document.dispatchEvent(new PointerEvent("pointerup", to));
+    });
+    expect(onModel.mock.lastCall?.[0]).toMatchObject({
+      rows: [{ field: "year" }, { field: "product" }, { field: "region" }],
+      columns: [],
+    });
+    expect(
+      (section("columns").querySelector("[data-ok-data-grid-pivot-empty]") as HTMLElement).hidden,
+    ).toBe(false);
+    await expectNoAxeViolations(panel);
+  });
+
   it("shows the pivot, edits it in the panel and turns it off", async () => {
     const onModel = vi.fn();
     const onActive = vi.fn();
