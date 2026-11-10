@@ -65,12 +65,12 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.2 | A | Slider | `scale`, `shiftStep` | 🔄 |
 | 4.3 | A | Switch | `icon` / `checkedIcon` | 🔄 |
 | 4.4 | A | Upload | hook API (`getRootProps` / `getInputProps`, react-dropzone style) | 🔄 |
-| 4.5 | B — overlays, navigation | Menu | nested menus, `variant="menu"` | ⬜ |
-| 4.6 | B | Tooltip | `followCursor`, `enterNextDelay` | ⬜ |
-| 4.7 | B | Popover | `anchorPosition` / `anchorReference`, `marginThreshold` | ⬜ |
-| 4.8 | B | Dialog | `keepMounted` (exit transitions come with Phase 5) | ⬜ |
-| 4.9 | B | Drawer, Backdrop | `elevation`, `transitionDuration` | ⬜ |
-| 4.10 | B | Stepper | `nonLinear`, `StepButton`, Step `expanded` / `last` | ⬜ |
+| 4.5 | B — overlays, navigation | Menu | nested menus, `variant="menu"` | 🔄 |
+| 4.6 | B | Tooltip | `followCursor`, `enterNextDelay` | 🔄 |
+| 4.7 | B | Popover | `anchorPosition` / `anchorReference`, `marginThreshold` | 🔄 |
+| 4.8 | B | Dialog | `keepMounted` (exit transitions come with Phase 5) | 🔄 |
+| 4.9 | B | Drawer, Backdrop | `elevation`, `transitionDuration` | 🔄 |
+| 4.10 | B | Stepper | `nonLinear`, `StepButton`, Step `expanded` / `last` | 🔄 |
 | 4.11 | C — data display | Tree view | drag and drop (`itemsReordering`), lazy loading, label editing, `selectionPropagation`, `apiRef`, `getItemId` / `getItemLabel` | ⬜ |
 | 4.12 | C | Avatar group | any `spacing` (today `medium` / `small`) | ⬜ |
 | 4.13 | C | Linear progress | right to left | ⬜ |
@@ -117,14 +117,14 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.36 | E — audit 3.1 (should) | Chip | link chips: `component="a"` / `href` on the action (clickable) | ⬜ |
 | 4.18.37 | E — audit 3.1 (should) | Snackbar | right to left: Toaster `dir`, logical properties in `snackbar.css` (with 4.13) | ⬜ |
 | 4.18.38 | E — audit 3.1 (should) | Snackbar | per-toast `closeButton` / `invert`, Toaster `invert`, `toastOptions` (defaults for every toast), `icons` | ⬜ |
-| 4.18.39 | E — audit 3.1 (should) | Menu | React `MenuList` without a Popover (`autoFocus`, `autoFocusItem`, `variant`); Menu `disableAutoFocusItem` | ⬜ |
+| 4.18.39 | E — audit 3.1 (should) | Menu | React `MenuList` without a Popover (`autoFocus`, `autoFocusItem`, `variant`); Menu `disableAutoFocusItem` | 🔄 |
 | 4.18.40 | E — audit 3.1 (could) | Snackbar | several toasters: Toaster `id` + toast `toasterId` | ⬜ |
 | 4.18.41 | E — audit 3.1 (could) | Snackbar | `toast.promise` `unwrap()`, `finally`, toast options; `toast.getHistory()` / `getToasts()`, `useSonner()` | ⬜ |
-| 4.18.42 | E — audit 3.1 (could) | Menu | `MenuList` `disabledItemsFocusable`, `disableListWrap` | ⬜ |
-| 4.18.43 | E — audit 3.1 (could) | Popover, Menu | `transitionDuration` | ⬜ |
+| 4.18.42 | E — audit 3.1 (could) | Menu | `MenuList` `disabledItemsFocusable`, `disableListWrap` | 🔄 |
+| 4.18.43 | E — audit 3.1 (could) | Popover, Menu | `transitionDuration` | 🔄 |
 | 4.18.44 | E — audit 3.1 (could) | Dialog | `transitionDuration` (with 5.1 exit transitions) | ⬜ |
-| 4.18.45 | E — audit 3.1 (could) | Dialog, Drawer | Modal props `disableRestoreFocus`, `disableScrollLock`; Drawer `ModalProps.keepMounted` (with 4.8) | ⬜ |
-| 4.18.46 | E — audit 3.1 (could) | Drawer | `SwipeableDrawer`: `onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`; a button to open and close stays (WCAG 2.5.7); shares a core swipe helper with 4.14 | ⬜ |
+| 4.18.45 | E — audit 3.1 (could) | Dialog, Drawer | Modal props `disableRestoreFocus`, `disableScrollLock`; Drawer `ModalProps.keepMounted` (with 4.8) | 🔄 |
+| 4.18.46 | E — audit 3.1 (could) | Drawer | `SwipeableDrawer`: `onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`; a button to open and close stays (WCAG 2.5.7); shares a core swipe helper with 4.14 | 🔄 |
 | 4.18.47 | E — audit 3.1 (could) | Accordion | `AccordionActions` `disableSpacing` | ⬜ |
 | 4.18.48 | E — audit 3.1 (could) | Label | `disabled` | ⬜ |
 | 4.18.49 | E — audit 3.1 (must) | Data grid | column `sortComparator` / `getSortComparator` / `sortingOrder`, grid `sortingOrder`, `multipleColumnsSortingMode` | ⬜ |
@@ -149,10 +149,10 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.68 | E — audit 3.1 (could, **ADR**) | Chart | drilldown (`drillDown` / `drillUp` / `drillToRoot`, back control, events); trellis small multiples | ⬜ |
 | 4.18.69 | E — audit 3.1 (should) | Tree view | `onItemSelectionToggle`, `onItemClick`, `onItemFocus`; `isItemDisabled`, `isItemSelectionDisabled` / TreeItem `disableSelection`, `disabledItemsFocusable`, `getItemChildren` (with 4.11) | ⬜ |
 | 4.18.70 | E — audit 3.1 (could, **ADR**) | Tree view | `itemChildrenIndentation`; virtualization (`itemHeight`, flat DOM `domStructure`) | ⬜ |
-| 4.18.71 | E — audit 3.1 (should) | Tabs | link tabs (Tab `href` / `component`, navigation pattern with `aria-current`) | ⬜ |
-| 4.18.72 | E — audit 3.1 (could) | Tabs | `TabPanel value` from the Tabs context (hides itself, `keepMounted`), like MUI Lab `TabContext` | ⬜ |
-| 4.18.73 | E — audit 3.1 (could) | Pagination | PaginationItem `component` (router link as the item) | ⬜ |
-| 4.18.74 | E — audit 3.1 (could) | Stepper | StepContent `transitionDuration` (Collapse `timeout` pass-through) | ⬜ |
+| 4.18.71 | E — audit 3.1 (should) | Tabs | link tabs (Tab `href` / `component`, navigation pattern with `aria-current`) | 🔄 |
+| 4.18.72 | E — audit 3.1 (could) | Tabs | `TabPanel value` from the Tabs context (hides itself, `keepMounted`), like MUI Lab `TabContext` | 🔄 |
+| 4.18.73 | E — audit 3.1 (could) | Pagination | PaginationItem `component` (router link as the item) | 🔄 |
+| 4.18.74 | E — audit 3.1 (could) | Stepper | StepContent `transitionDuration` (Collapse `timeout` pass-through) | 🔄 |
 | 4.18.75 | E — audit 3.1 (should, **ADR**) | Sortable | move between lists (`group` / `accept`, a kanban story), keyboard and announcements across lists | ⬜ |
 | 4.18.76 | E — audit 3.1 (should) | Sortable | auto scroll near Scrollbar / page edges while dragging; disabled items; `onDragStart` / `onDragOver` / `onDragCancel`; HTML `messages` | ⬜ |
 | 4.18.77 | E — audit 3.1 (could) | Sortable | swapping strategy; drag by the whole item (no handle) | ⬜ |
