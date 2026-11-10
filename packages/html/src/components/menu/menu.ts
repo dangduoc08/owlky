@@ -110,6 +110,9 @@ export const menu = defineComponent<MenuInstance, MenuEvents>({
     const popover = element.closest("[data-ok-popover]");
     const onClose = (event: Event) => {
       if (event.target !== popover) return;
+      // A pending hover open must not reopen a submenu once its menu has closed (the menu may be
+      // reopened by the same press before the hover delay ends).
+      hovers.get(runtime)?.cancel();
       for (const trigger of openSubmenuTriggers(element)) closeSubmenu(trigger, runtime, "api");
       // A submenu closed by Escape or a press outside: its trigger's state; a press outside closes
       // the whole menu.
@@ -178,6 +181,8 @@ export const menu = defineComponent<MenuInstance, MenuEvents>({
       handle(item, _event, runtime) {
         if (item.getAttribute("aria-disabled") === "true") return;
         if (isSubmenuTrigger(item)) {
+          // A click decides: drop the hover intent it started on the way in.
+          hovers.get(runtime)?.cancel();
           openSubmenu(item, true, runtime);
           return;
         }

@@ -241,6 +241,23 @@ describe("submenus", () => {
     expect(host.querySelector("#t")?.getAttribute("aria-expanded")).toBe("false");
   });
 
+  it("a hover open still pending when the menu closes and reopens doesn't open the submenu", async () => {
+    const host = mount(nested);
+    start();
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    // A mouse pointerover on the trigger starts the 100 ms hover intent.
+    (host.querySelector("#t") as HTMLElement).dispatchEvent(
+      new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
+    );
+    const button = host.querySelector("#b") as HTMLElement;
+    button.click();
+    expect(open(host, "m")).toBe(false);
+    button.click();
+    expect(open(host, "m")).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(open(host, "s")).toBe(false);
+  });
+
   it("hover opens without moving focus and closes on another item; right to left mirrors", async () => {
     const host = mount(nested);
     start();
