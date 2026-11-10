@@ -1178,3 +1178,148 @@ describe("createCarouselController", () => {
     expect(events.focus).toEqual([]);
   });
 });
+
+describe("Embla v9 API (roadmap 4.18.80)", () => {
+  it("aliases the v8 methods", () => {
+    const { controller } = setup({ attrs: 'data-ok-align="start"' });
+    expect(controller.canGoToPrev()).toBe(false);
+    expect(controller.canGoToNext()).toBe(true);
+    controller.goToNext(true);
+    expect(controller.selectedSnap()).toBe(1);
+    expect(controller.previousSnap()).toBe(0);
+    controller.goToPrev(true);
+    expect(controller.selectedSnap()).toBe(0);
+    controller.goTo(2, true);
+    expect(controller.selectedScrollSnap()).toBe(2);
+    expect(controller.snapList()).toEqual(controller.scrollSnapList());
+  });
+
+  it("snapIndex moves from the selected snap, clamped or around a loop", () => {
+    const plain = setup({ attrs: 'data-ok-align="start"' });
+    plain.controller.goTo(1, true);
+    expect(plain.controller.snapIndex()).toBe(1);
+    expect(plain.controller.snapIndex(1)).toBe(2);
+    expect(plain.controller.snapIndex(-5)).toBe(0);
+    expect(plain.controller.snapIndex(9)).toBe(2);
+    expect(plain.controller.snapIndex(Number.NaN)).toBe(1);
+    const looped = setup({ count: 5, attrs: 'data-ok-loop data-ok-align="start"' });
+    looped.controller.goTo(4, true);
+    expect(looped.controller.snapIndex(1)).toBe(0);
+    expect(looped.controller.snapIndex(-6)).toBe(3);
+    const empty = setup({ count: 0 });
+    expect(empty.controller.snapIndex(1)).toBe(0);
+  });
+
+  it("goTo takes a direction around a loop", async () => {
+    const { controller, events, viewport, slides } = setup({
+      count: 5,
+      attrs: 'data-ok-loop data-ok-align="start" data-ok-duration="40"',
+    });
+    // The slides that show up in the viewport while it scrolls.
+    const seen = new Set<number>();
+    viewport.addEventListener("scroll", () => {
+      const view = viewport.getBoundingClientRect();
+      slides.forEach((slide, i) => {
+        const box = slide.getBoundingClientRect();
+        if (box.right > view.left + 1 && box.left < view.right - 1) seen.add(i);
+      });
+    });
+    // From 0 to 1 the short way is forward; backward goes round through 4, 3 and 2.
+    controller.goTo(1, false, "backward");
+    await settled(events);
+    expect(controller.selectedSnap()).toBe(1);
+    expect(seen.has(3)).toBe(true);
+    // From 1 to 0 the short way is backward; forward goes round through 2, 3 and 4.
+    seen.clear();
+    controller.goTo(0, false, "forward");
+    await settled(events);
+    expect(controller.selectedSnap()).toBe(0);
+    expect(seen.has(3)).toBe(true);
+    // Without a direction: the short way.
+    seen.clear();
+    controller.goTo(1);
+    await settled(events);
+    expect(seen.has(3)).toBe(false);
+  });
+
+  it("reports pointer moves while pressed; false skips the drag step", () => {
+    const moves: number[] = [];
+    let refuse = false;
+    const { viewport } = setup(
+      { attrs: 'data-ok-align="start" data-ok-duration="1"' },
+      {
+        onPointerMove: (event) => {
+          moves.push(event.clientX);
+          return refuse ? false : undefined;
+        },
+      },
+    );
+    pointer(viewport, "pointermove", 280);
+    expect(moves).toEqual([]);
+    pointer(viewport, "pointerdown", 300);
+    pointer(viewport, "pointermove", 250);
+    expect(viewport.scrollLeft).toBe(50);
+    refuse = true;
+    pointer(viewport, "pointermove", 200);
+    expect(viewport.scrollLeft).toBe(50);
+    expect(moves).toEqual([250, 200]);
+    pointer(viewport, "pointerup", 200);
+    pointer(viewport, "pointermove", 150);
+    expect(moves).toEqual([250, 200]);
+  });
+
+  it("reports real size changes; false skips the measure", async () => {
+    const resized: Element[][] = [];
+    let refuse = false;
+    const { events, viewport } = setup(
+      { attrs: 'data-ok-align="start"' },
+      {
+        onResize: (entries) => {
+          resized.push(entries.map((entry) => entry.target));
+          return refuse ? false : undefined;
+        },
+      },
+    );
+    await frames(3);
+    // The observer's first report (the initial sizes) isn't a change.
+    expect(resized).toEqual([]);
+    viewport.style.width = "200px";
+    await until(() => resized.length > 0);
+    expect(resized[0]).toContain(viewport);
+    await frames(3);
+    refuse = true;
+    const before = events.reinit.length;
+    viewport.style.width = "320px";
+    await until(() => resized.length > 1);
+    await frames(3);
+    expect(events.reinit.length).toBe(before);
+  });
+
+  it("reports added and removed slides; false skips the measure", async () => {
+    // The number of slides the carousel lists right after it handled each change.
+    const listed: number[] = [];
+    let refuse = true;
+    let api: CarouselController | null = null;
+    const { root, controller } = setup(
+      { attrs: 'data-ok-align="start"' },
+      {
+        onSlidesChanged: (records) => {
+          expect(records[0]?.type).toBe("childList");
+          queueMicrotask(() => listed.push(api?.slideNodes().length ?? -1));
+          return refuse ? false : undefined;
+        },
+      },
+    );
+    api = controller;
+    // The controller's own first writes come in an earlier batch of records.
+    await frames(2);
+    const container = root.querySelector("[data-ok-carousel-container]") as HTMLElement;
+    const copy = () => (container.lastElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+    container.append(copy());
+    await until(() => listed.length === 1);
+    refuse = false;
+    container.append(copy());
+    await until(() => listed.length === 2);
+    expect(listed).toEqual([4, 6]);
+  });
+});

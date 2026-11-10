@@ -621,6 +621,7 @@ export {
   type CarouselAutoScrollApi,
   type CarouselController,
   type CarouselControllerOptions,
+  type CarouselDirection,
   createCarouselController,
   readCarouselSettings,
 } from "./carousel/carousel-controller.js";

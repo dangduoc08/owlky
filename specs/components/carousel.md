@@ -216,15 +216,26 @@ never start with `prefers-reduced-motion`. Loop never duplicates content. Dots a
 ## Events / API
 HTML events on the root: `ok:carousel:select` `{ index, previous }`, `settle` `{ index }`,
 `scroll` `{ progress }`, `slidesinview` `{ indexes }`, `reinit` `{ snapCount }`, `autoplay` /
-`autoscroll` `{ playing }`, `slidefocus` `{ index }`, `pointerdown`, `pointerup`.
+`autoscroll` `{ playing }`, `slidefocus` `{ index }`, `pointerdown`, `pointerup`, and the cancelable
+`pointermove` (the pressed pointer moved; prevented → no drag step), `resize` `{ entries }` (the
+viewport or a slide changed size, compared with `getBoundingClientRect()` sizes recorded when it is
+observed, like Embla's resize handler; prevented → no re-measure) and `slideschanged`
+`{ records }` (slides added or removed; prevented → no re-measure; the scroll and settle checks
+may still measure later).
 Instance (`runtime.get(root, "carousel")`) and React `apiRef`: `scrollNext(jump?)`,
 `scrollPrev(jump?)`, `scrollTo(index, jump?)`, `canScrollNext()`, `canScrollPrev()`,
 `selectedScrollSnap()`, `previousScrollSnap()`, `scrollSnapList()`, `scrollProgress()`,
 `slidesInView()`, `slidesNotInView()`, `slideNodes()`, `rootNode()`, `containerNode()`, `reInit()`,
-`autoplay.{play, stop, reset, isPlaying, timeUntilNext}`, `autoScroll.{play, stop, reset, isPlaying}`.
+`autoplay.{play, stop, reset, isPlaying, timeUntilNext}`, `autoScroll.{play, stop, reset, isPlaying}`;
+Embla v9 aliases `goToNext(jump?)`, `goToPrev(jump?)`, `goTo(index, jump?, direction?)` (`forward` ·
+`backward` force the way round a loop), `canGoToNext()`, `canGoToPrev()`, `selectedSnap()`,
+`previousSnap()`, `snapList()`, `snapIndex(offset = 0)` (the selected snap moved by `offset`,
+wrapped with `loop`, clamped otherwise).
 React callbacks: `onSelect(index, previous)`, `onSettle(index)`, `onScroll(progress)`,
 `onSlidesInView(indexes)`, `onReInit(snapCount)`, `onAutoplayChange(playing)`,
-`onAutoScrollChange(playing)`, `onSlideFocus(index)`.
+`onAutoScrollChange(playing)`, `onSlideFocus(index)`, `onResize(entries)`, `onSlidesChanged(records)`
+(return `false` to cancel); pointer moves use the native `onPointerMove`, like `onPointerDown` /
+`onPointerUp`.
 
 ## Responsive
 Mobile first: one slide per view unless `slidesToShow` says otherwise per breakpoint; controls wrap;
@@ -244,14 +255,15 @@ statuses and the v9 API.
 | `direction` | `dir` attribute | renamed | native |
 | `container`, `slides` | anatomy | not applicable | |
 | `resize`, `slideChanges` (v8 `watchResize`, `watchSlides`), `inViewMargin`, `ssr` | — | not applicable | always observed; CSS sizes are SSR-safe |
-| Methods `goToNext` / `goToPrev` / `goTo`, `canGoToNext` / `canGoToPrev` | `scrollNext` / `scrollPrev` / `scrollTo`, `canScrollNext` / `canScrollPrev` | renamed | v8 names; v9 aliases deferred |
-| Methods `selectedSnap`, `previousSnap`, `snapList` | `selectedScrollSnap`, `previousScrollSnap`, `scrollSnapList` | renamed | v8 names |
+| Methods `goToNext` / `goToPrev` / `goTo` (with `direction`), `canGoToNext` / `canGoToPrev` | same, and the v8 `scrollNext` / `scrollPrev` / `scrollTo`, `canScrollNext` / `canScrollPrev` | kept | both names (roadmap 4.18.80) |
+| Methods `selectedSnap`, `previousSnap`, `snapList` | same, and the v8 `selectedScrollSnap`, `previousScrollSnap`, `scrollSnapList` | kept | both names |
 | Methods `scrollProgress`, `slidesInView`, `slideNodes`, `rootNode`, `containerNode`, `reInit` | same (+ `slidesNotInView`) | kept | |
-| Method `snapIndex(slide)` | — | deferred | snap of a slide |
+| Method `snapIndex(offset)` | same | kept | v9 rc04 takes an offset from the selected snap (not a slide); the snap of a slide stays internal |
 | Methods `destroy`, `on` / `off` | runtime `stop()` / unmount, DOM events, React callbacks | renamed | |
 | Methods `plugins`, `cloneEngine`, `internalEngine`, `ssrStyles`, `createEvent` | — | not applicable | no plugin system / engine; CSS sizes |
 | Events `select`, `settle`, `scroll`, `slidesinview`, `reinit`, `slidefocus`, `pointerdown`, `pointerup` | `ok:carousel:*` · `onSelect` … `onSlideFocus` | kept | |
-| Events `resize`, `slideschanged`, `pointermove`, `destroy` | — | deferred | |
+| Events `resize`, `slideschanged`, `pointermove` (cancelable) | `ok:carousel:resize` / `slideschanged` / `pointermove` · `onResize`, `onSlidesChanged`, native `onPointerMove` | kept | cancel = `preventDefault()` / return `false` |
+| Event `destroy` | — | deferred | runtime `stop()` / unmount |
 | Plugins Autoplay, Auto Scroll, Auto Height, Fade, Wheel Gestures, Class Names, Accessibility | options / attributes (table above) | kept | Class Names → `data-ok-*` |
 | Plugin Ssr | — | not applicable | SSR-safe CSS sizes |
 | Minimals `slidesToShow`, `slideSpacing`, arrows / dots / progress / thumbs / play button | same | kept | |

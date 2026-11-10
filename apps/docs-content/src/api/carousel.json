@@ -125,6 +125,12 @@
       "name": "ok:carousel:pointerdown"
      },
      {
+      "cancelable": true,
+      "description": "While the pressed pointer moves. Call `preventDefault()` to skip the drag step.",
+      "detail": "undefined",
+      "name": "ok:carousel:pointermove"
+     },
+     {
       "cancelable": false,
       "description": "When the pointer was released.",
       "detail": "undefined",
@@ -135,6 +141,12 @@
       "description": "After the carousel set itself up again (options or slides changed).",
       "detail": "{ snapCount: number; }",
       "name": "ok:carousel:reinit"
+     },
+     {
+      "cancelable": true,
+      "description": "After the viewport or a slide changed size, with the observer entries of the elements that changed. Call `preventDefault()` to keep the carousel from measuring again.",
+      "detail": "{ entries: ResizeObserverEntry[]; }",
+      "name": "ok:carousel:resize"
      },
      {
       "cancelable": false,
@@ -161,6 +173,12 @@
       "name": "ok:carousel:slidefocus"
      },
      {
+      "cancelable": true,
+      "description": "After slides were added or removed, with the mutation records. Call `preventDefault()` to keep the carousel from measuring again.",
+      "detail": "{ records: MutationRecord[]; }",
+      "name": "ok:carousel:slideschanged"
+     },
+     {
       "cancelable": false,
       "description": "After the slides in view changed.",
       "detail": "{ indexes: number[]; }",
@@ -181,6 +199,18 @@
       "type": "CarouselAutoplayApi"
      },
      {
+      "description": "Embla v9 name of `canScrollNext`.",
+      "kind": "method",
+      "name": "canGoToNext",
+      "type": "() => boolean"
+     },
+     {
+      "description": "Embla v9 name of `canScrollPrev`.",
+      "kind": "method",
+      "name": "canGoToPrev",
+      "type": "() => boolean"
+     },
+     {
       "description": "Whether there is a next snap point (always with `loop`).",
       "kind": "method",
       "name": "canScrollNext",
@@ -199,9 +229,33 @@
       "type": "() => HTMLElement | null"
      },
      {
+      "description": "Embla v9 name of `scrollTo`. With `loop`, `direction` forces the way round (`forward` or `backward`); without it, the shortest way.",
+      "kind": "method",
+      "name": "goTo",
+      "type": "(index: number, jump?: boolean | undefined, direction?: CarouselDirection | undefined) => void"
+     },
+     {
+      "description": "Embla v9 name of `scrollNext`.",
+      "kind": "method",
+      "name": "goToNext",
+      "type": "(jump?: boolean | undefined) => void"
+     },
+     {
+      "description": "Embla v9 name of `scrollPrev`.",
+      "kind": "method",
+      "name": "goToPrev",
+      "type": "(jump?: boolean | undefined) => void"
+     },
+     {
       "description": "The index of the snap point selected before.",
       "kind": "method",
       "name": "previousScrollSnap",
+      "type": "() => number"
+     },
+     {
+      "description": "Embla v9 name of `previousScrollSnap`.",
+      "kind": "method",
+      "name": "previousSnap",
       "type": "() => number"
      },
      {
@@ -253,6 +307,12 @@
       "type": "() => number"
      },
      {
+      "description": "Embla v9 name of `selectedScrollSnap`.",
+      "kind": "method",
+      "name": "selectedSnap",
+      "type": "() => number"
+     },
+     {
       "description": "The slide elements.",
       "kind": "method",
       "name": "slideNodes",
@@ -268,6 +328,18 @@
       "description": "The indexes of the slides out of view.",
       "kind": "method",
       "name": "slidesNotInView",
+      "type": "() => number[]"
+     },
+     {
+      "description": "The selected snap moved by `offset` (Embla v9): `1` is the next snap, `-1` the previous one. Wraps around with `loop`, otherwise stops at the first and last snaps.",
+      "kind": "method",
+      "name": "snapIndex",
+      "type": "(offset?: number | undefined) => number"
+     },
+     {
+      "description": "Embla v9 name of `scrollSnapList`.",
+      "kind": "method",
+      "name": "snapList",
       "type": "() => number[]"
      }
     ],
@@ -851,6 +923,11 @@
       "type": "((snapCount: number) => void)"
      },
      {
+      "description": "The viewport or a slide changed size (Embla `resize`): the entries whose size changed. Return `false` to keep the carousel from measuring again.",
+      "name": "onResize",
+      "type": "((entries: ResizeObserverEntry[]) => unknown)"
+     },
+     {
       "description": "Scroll progress 0–1, once per frame while scrolling.",
       "name": "onScroll",
       "type": "((progress: number) => void)"
@@ -869,6 +946,11 @@
       "description": "An element inside slide `index` got keyboard focus.",
       "name": "onSlideFocus",
       "type": "((index: number) => void)"
+     },
+     {
+      "description": "Slides were added or removed (Embla `slideschanged`). Return `false` to keep the carousel from measuring again.",
+      "name": "onSlidesChanged",
+      "type": "((records: MutationRecord[]) => unknown)"
      },
      {
       "description": "The slides in view changed.",
@@ -1420,6 +1502,10 @@
   {
    "name": "CarouselAlign",
    "type": "number | \"center\" | \"end\" | \"start\" | ((viewSize: number, snapSize: number, index: number) => number)"
+  },
+  {
+   "name": "CarouselDirection",
+   "type": "\"backward\" | \"forward\""
   },
   {
    "name": "CarouselResponsive",

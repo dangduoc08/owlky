@@ -43,7 +43,7 @@ import { Button, type ButtonAsButtonProps } from "../button/button.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { useMergedRefs } from "../utils/refs.js";
 
-export type { CarouselApi } from "@owlky/core";
+export type { CarouselApi, CarouselDirection } from "@owlky/core";
 
 interface CarouselContextValue {
   snapCount: number;
@@ -60,7 +60,7 @@ const useCarousel = (): CarouselContextValue =>
   useContext(CarouselContext) ?? { snapCount: 0, startIndex: 0, loop: false, slidesToScroll: 1 };
 
 export interface CarouselProps
-  extends Omit<HTMLAttributes<HTMLElement>, "onSelect" | "onScroll" | "draggable">,
+  extends Omit<HTMLAttributes<HTMLElement>, "onSelect" | "onScroll" | "onResize" | "draggable">,
     Omit<CarouselAnatomyOptions, "align"> {
   /** Where the selected slides sit: `start`, `center` (default), `end`, a fraction 0–1 of the viewport, or a function `(viewSize, snapSize, index) => offset`. */
   align?: CarouselAlign | undefined;
@@ -82,6 +82,16 @@ export interface CarouselProps
   onAutoScrollChange?: ((playing: boolean) => void) | undefined;
   /** An element inside slide `index` got keyboard focus. */
   onSlideFocus?: ((index: number) => void) | undefined;
+  /**
+   * The viewport or a slide changed size (Embla `resize`): the entries whose size changed.
+   * Return `false` to keep the carousel from measuring again.
+   */
+  onResize?: ((entries: ResizeObserverEntry[]) => unknown) | undefined;
+  /**
+   * Slides were added or removed (Embla `slideschanged`). Return `false` to keep the carousel
+   * from measuring again.
+   */
+  onSlidesChanged?: ((records: MutationRecord[]) => unknown) | undefined;
   /** Names the carousel (required by the carousel pattern), for example "Featured articles". */
   "aria-label"?: string | undefined;
   children?: ReactNode;
@@ -149,6 +159,8 @@ export const Carousel = forwardRef<HTMLElement, CarouselProps>(function Carousel
     onAutoplayChange,
     onAutoScrollChange,
     onSlideFocus,
+    onResize,
+    onSlidesChanged,
     style,
     children,
     ...props
@@ -168,6 +180,8 @@ export const Carousel = forwardRef<HTMLElement, CarouselProps>(function Carousel
     onAutoplayChange,
     onAutoScrollChange,
     onSlideFocus,
+    onResize,
+    onSlidesChanged,
   });
   callbacks.current = {
     onSelect,
@@ -178,6 +192,8 @@ export const Carousel = forwardRef<HTMLElement, CarouselProps>(function Carousel
     onAutoplayChange,
     onAutoScrollChange,
     onSlideFocus,
+    onResize,
+    onSlidesChanged,
   };
   const alignRef = useRef(align);
   alignRef.current = align;
@@ -196,6 +212,8 @@ export const Carousel = forwardRef<HTMLElement, CarouselProps>(function Carousel
       onAutoplay: (playing) => callbacks.current.onAutoplayChange?.(playing),
       onAutoScroll: (playing) => callbacks.current.onAutoScrollChange?.(playing),
       onSlideFocus: (index) => callbacks.current.onSlideFocus?.(index),
+      onResize: (entries) => callbacks.current.onResize?.(entries),
+      onSlidesChanged: (records) => callbacks.current.onSlidesChanged?.(records),
     });
     controllerRef.current = controller;
     if (apiRef) (apiRef as { current: CarouselApi | null }).current = controller;

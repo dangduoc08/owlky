@@ -6635,6 +6635,12 @@
          "name": "ok:carousel:pointerdown"
         },
         {
+         "cancelable": true,
+         "description": "While the pressed pointer moves. Call `preventDefault()` to skip the drag step.",
+         "detail": "undefined",
+         "name": "ok:carousel:pointermove"
+        },
+        {
          "cancelable": false,
          "description": "When the pointer was released.",
          "detail": "undefined",
@@ -6645,6 +6651,12 @@
          "description": "After the carousel set itself up again (options or slides changed).",
          "detail": "{ snapCount: number; }",
          "name": "ok:carousel:reinit"
+        },
+        {
+         "cancelable": true,
+         "description": "After the viewport or a slide changed size, with the observer entries of the elements that changed. Call `preventDefault()` to keep the carousel from measuring again.",
+         "detail": "{ entries: ResizeObserverEntry[]; }",
+         "name": "ok:carousel:resize"
         },
         {
          "cancelable": false,
@@ -6671,6 +6683,12 @@
          "name": "ok:carousel:slidefocus"
         },
         {
+         "cancelable": true,
+         "description": "After slides were added or removed, with the mutation records. Call `preventDefault()` to keep the carousel from measuring again.",
+         "detail": "{ records: MutationRecord[]; }",
+         "name": "ok:carousel:slideschanged"
+        },
+        {
          "cancelable": false,
          "description": "After the slides in view changed.",
          "detail": "{ indexes: number[]; }",
@@ -6691,6 +6709,18 @@
          "type": "CarouselAutoplayApi"
         },
         {
+         "description": "Embla v9 name of `canScrollNext`.",
+         "kind": "method",
+         "name": "canGoToNext",
+         "type": "() => boolean"
+        },
+        {
+         "description": "Embla v9 name of `canScrollPrev`.",
+         "kind": "method",
+         "name": "canGoToPrev",
+         "type": "() => boolean"
+        },
+        {
          "description": "Whether there is a next snap point (always with `loop`).",
          "kind": "method",
          "name": "canScrollNext",
@@ -6709,9 +6739,33 @@
          "type": "() => HTMLElement | null"
         },
         {
+         "description": "Embla v9 name of `scrollTo`. With `loop`, `direction` forces the way round (`forward` or `backward`); without it, the shortest way.",
+         "kind": "method",
+         "name": "goTo",
+         "type": "(index: number, jump?: boolean | undefined, direction?: CarouselDirection | undefined) => void"
+        },
+        {
+         "description": "Embla v9 name of `scrollNext`.",
+         "kind": "method",
+         "name": "goToNext",
+         "type": "(jump?: boolean | undefined) => void"
+        },
+        {
+         "description": "Embla v9 name of `scrollPrev`.",
+         "kind": "method",
+         "name": "goToPrev",
+         "type": "(jump?: boolean | undefined) => void"
+        },
+        {
          "description": "The index of the snap point selected before.",
          "kind": "method",
          "name": "previousScrollSnap",
+         "type": "() => number"
+        },
+        {
+         "description": "Embla v9 name of `previousScrollSnap`.",
+         "kind": "method",
+         "name": "previousSnap",
          "type": "() => number"
         },
         {
@@ -6763,6 +6817,12 @@
          "type": "() => number"
         },
         {
+         "description": "Embla v9 name of `selectedScrollSnap`.",
+         "kind": "method",
+         "name": "selectedSnap",
+         "type": "() => number"
+        },
+        {
          "description": "The slide elements.",
          "kind": "method",
          "name": "slideNodes",
@@ -6778,6 +6838,18 @@
          "description": "The indexes of the slides out of view.",
          "kind": "method",
          "name": "slidesNotInView",
+         "type": "() => number[]"
+        },
+        {
+         "description": "The selected snap moved by `offset` (Embla v9): `1` is the next snap, `-1` the previous one. Wraps around with `loop`, otherwise stops at the first and last snaps.",
+         "kind": "method",
+         "name": "snapIndex",
+         "type": "(offset?: number | undefined) => number"
+        },
+        {
+         "description": "Embla v9 name of `scrollSnapList`.",
+         "kind": "method",
+         "name": "snapList",
          "type": "() => number[]"
         }
        ],
@@ -7361,6 +7433,11 @@
          "type": "((snapCount: number) => void)"
         },
         {
+         "description": "The viewport or a slide changed size (Embla `resize`): the entries whose size changed. Return `false` to keep the carousel from measuring again.",
+         "name": "onResize",
+         "type": "((entries: ResizeObserverEntry[]) => unknown)"
+        },
+        {
          "description": "Scroll progress 0–1, once per frame while scrolling.",
          "name": "onScroll",
          "type": "((progress: number) => void)"
@@ -7379,6 +7456,11 @@
          "description": "An element inside slide `index` got keyboard focus.",
          "name": "onSlideFocus",
          "type": "((index: number) => void)"
+        },
+        {
+         "description": "Slides were added or removed (Embla `slideschanged`). Return `false` to keep the carousel from measuring again.",
+         "name": "onSlidesChanged",
+         "type": "((records: MutationRecord[]) => unknown)"
         },
         {
          "description": "The slides in view changed.",
@@ -7927,6 +8009,10 @@
      {
       "name": "CarouselAlign",
       "type": "number | \"center\" | \"end\" | \"start\" | ((viewSize: number, snapSize: number, index: number) => number)"
+     },
+     {
+      "name": "CarouselDirection",
+      "type": "\"backward\" | \"forward\""
      },
      {
       "name": "CarouselResponsive",
@@ -8496,7 +8582,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML events on the root: `ok:carousel:select` `{ index, previous }`, `settle` `{ index }`,\n`scroll` `{ progress }`, `slidesinview` `{ indexes }`, `reinit` `{ snapCount }`, `autoplay` /\n`autoscroll` `{ playing }`, `slidefocus` `{ index }`, `pointerdown`, `pointerup`.\nInstance (`runtime.get(root, \"carousel\")`) and React `apiRef`: `scrollNext(jump?)`,\n`scrollPrev(jump?)`, `scrollTo(index, jump?)`, `canScrollNext()`, `canScrollPrev()`,\n`selectedScrollSnap()`, `previousScrollSnap()`, `scrollSnapList()`, `scrollProgress()`,\n`slidesInView()`, `slidesNotInView()`, `slideNodes()`, `rootNode()`, `containerNode()`, `reInit()`,\n`autoplay.{play, stop, reset, isPlaying, timeUntilNext}`, `autoScroll.{play, stop, reset, isPlaying}`.\nReact callbacks: `onSelect(index, previous)`, `onSettle(index)`, `onScroll(progress)`,\n`onSlidesInView(indexes)`, `onReInit(snapCount)`, `onAutoplayChange(playing)`,\n`onAutoScrollChange(playing)`, `onSlideFocus(index)`.",
+     "body": "HTML events on the root: `ok:carousel:select` `{ index, previous }`, `settle` `{ index }`,\n`scroll` `{ progress }`, `slidesinview` `{ indexes }`, `reinit` `{ snapCount }`, `autoplay` /\n`autoscroll` `{ playing }`, `slidefocus` `{ index }`, `pointerdown`, `pointerup`, and the cancelable\n`pointermove` (the pressed pointer moved; prevented → no drag step), `resize` `{ entries }` (the\nviewport or a slide changed size, compared with `getBoundingClientRect()` sizes recorded when it is\nobserved, like Embla's resize handler; prevented → no re-measure) and `slideschanged`\n`{ records }` (slides added or removed; prevented → no re-measure; the scroll and settle checks\nmay still measure later).\nInstance (`runtime.get(root, \"carousel\")`) and React `apiRef`: `scrollNext(jump?)`,\n`scrollPrev(jump?)`, `scrollTo(index, jump?)`, `canScrollNext()`, `canScrollPrev()`,\n`selectedScrollSnap()`, `previousScrollSnap()`, `scrollSnapList()`, `scrollProgress()`,\n`slidesInView()`, `slidesNotInView()`, `slideNodes()`, `rootNode()`, `containerNode()`, `reInit()`,\n`autoplay.{play, stop, reset, isPlaying, timeUntilNext}`, `autoScroll.{play, stop, reset, isPlaying}`;\nEmbla v9 aliases `goToNext(jump?)`, `goToPrev(jump?)`, `goTo(index, jump?, direction?)` (`forward` ·\n`backward` force the way round a loop), `canGoToNext()`, `canGoToPrev()`, `selectedSnap()`,\n`previousSnap()`, `snapList()`, `snapIndex(offset = 0)` (the selected snap moved by `offset`,\nwrapped with `loop`, clamped otherwise).\nReact callbacks: `onSelect(index, previous)`, `onSettle(index)`, `onScroll(progress)`,\n`onSlidesInView(indexes)`, `onReInit(snapCount)`, `onAutoplayChange(playing)`,\n`onAutoScrollChange(playing)`, `onSlideFocus(index)`, `onResize(entries)`, `onSlidesChanged(records)`\n(return `false` to cancel); pointer moves use the native `onPointerMove`, like `onPointerDown` /\n`onPointerUp`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -8506,7 +8592,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: Embla Carousel options, methods, events and official plugins\n(embla-carousel.com/docs/api/options, /methods, /events, /plugins, v9.0.0-rc04, checked\n2026-11-09). \"API mapping (Embla → Owlky)\" above holds the option-level detail; this table adds\nstatuses and the v9 API.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Options `active`, `align`, `axis`, `breakpoints`, `containScroll`, `dragFree`, `dragThreshold`, `duration`, `focus`, `inViewThreshold`, `loop`, `skipSnaps`, `slidesToScroll` | same | kept | |\n| `draggable` (v8 `watchDrag`), `startSnap` (v8 `startIndex`) | `draggable`, `startIndex` | kept / renamed | `startIndex` keeps the v8 name |\n| `direction` | `dir` attribute | renamed | native |\n| `container`, `slides` | anatomy | not applicable | |\n| `resize`, `slideChanges` (v8 `watchResize`, `watchSlides`), `inViewMargin`, `ssr` | — | not applicable | always observed; CSS sizes are SSR-safe |\n| Methods `goToNext` / `goToPrev` / `goTo`, `canGoToNext` / `canGoToPrev` | `scrollNext` / `scrollPrev` / `scrollTo`, `canScrollNext` / `canScrollPrev` | renamed | v8 names; v9 aliases deferred |\n| Methods `selectedSnap`, `previousSnap`, `snapList` | `selectedScrollSnap`, `previousScrollSnap`, `scrollSnapList` | renamed | v8 names |\n| Methods `scrollProgress`, `slidesInView`, `slideNodes`, `rootNode`, `containerNode`, `reInit` | same (+ `slidesNotInView`) | kept | |\n| Method `snapIndex(slide)` | — | deferred | snap of a slide |\n| Methods `destroy`, `on` / `off` | runtime `stop()` / unmount, DOM events, React callbacks | renamed | |\n| Methods `plugins`, `cloneEngine`, `internalEngine`, `ssrStyles`, `createEvent` | — | not applicable | no plugin system / engine; CSS sizes |\n| Events `select`, `settle`, `scroll`, `slidesinview`, `reinit`, `slidefocus`, `pointerdown`, `pointerup` | `ok:carousel:*` · `onSelect` … `onSlideFocus` | kept | |\n| Events `resize`, `slideschanged`, `pointermove`, `destroy` | — | deferred | |\n| Plugins Autoplay, Auto Scroll, Auto Height, Fade, Wheel Gestures, Class Names, Accessibility | options / attributes (table above) | kept | Class Names → `data-ok-*` |\n| Plugin Ssr | — | not applicable | SSR-safe CSS sizes |\n| Minimals `slidesToShow`, `slideSpacing`, arrows / dots / progress / thumbs / play button | same | kept | |",
+     "body": "Upstream: Embla Carousel options, methods, events and official plugins\n(embla-carousel.com/docs/api/options, /methods, /events, /plugins, v9.0.0-rc04, checked\n2026-11-09). \"API mapping (Embla → Owlky)\" above holds the option-level detail; this table adds\nstatuses and the v9 API.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Options `active`, `align`, `axis`, `breakpoints`, `containScroll`, `dragFree`, `dragThreshold`, `duration`, `focus`, `inViewThreshold`, `loop`, `skipSnaps`, `slidesToScroll` | same | kept | |\n| `draggable` (v8 `watchDrag`), `startSnap` (v8 `startIndex`) | `draggable`, `startIndex` | kept / renamed | `startIndex` keeps the v8 name |\n| `direction` | `dir` attribute | renamed | native |\n| `container`, `slides` | anatomy | not applicable | |\n| `resize`, `slideChanges` (v8 `watchResize`, `watchSlides`), `inViewMargin`, `ssr` | — | not applicable | always observed; CSS sizes are SSR-safe |\n| Methods `goToNext` / `goToPrev` / `goTo` (with `direction`), `canGoToNext` / `canGoToPrev` | same, and the v8 `scrollNext` / `scrollPrev` / `scrollTo`, `canScrollNext` / `canScrollPrev` | kept | both names (roadmap 4.18.80) |\n| Methods `selectedSnap`, `previousSnap`, `snapList` | same, and the v8 `selectedScrollSnap`, `previousScrollSnap`, `scrollSnapList` | kept | both names |\n| Methods `scrollProgress`, `slidesInView`, `slideNodes`, `rootNode`, `containerNode`, `reInit` | same (+ `slidesNotInView`) | kept | |\n| Method `snapIndex(offset)` | same | kept | v9 rc04 takes an offset from the selected snap (not a slide); the snap of a slide stays internal |\n| Methods `destroy`, `on` / `off` | runtime `stop()` / unmount, DOM events, React callbacks | renamed | |\n| Methods `plugins`, `cloneEngine`, `internalEngine`, `ssrStyles`, `createEvent` | — | not applicable | no plugin system / engine; CSS sizes |\n| Events `select`, `settle`, `scroll`, `slidesinview`, `reinit`, `slidefocus`, `pointerdown`, `pointerup` | `ok:carousel:*` · `onSelect` … `onSlideFocus` | kept | |\n| Events `resize`, `slideschanged`, `pointermove` (cancelable) | `ok:carousel:resize` / `slideschanged` / `pointermove` · `onResize`, `onSlidesChanged`, native `onPointerMove` | kept | cancel = `preventDefault()` / return `false` |\n| Event `destroy` | — | deferred | runtime `stop()` / unmount |\n| Plugins Autoplay, Auto Scroll, Auto Height, Fade, Wheel Gestures, Class Names, Accessibility | options / attributes (table above) | kept | Class Names → `data-ok-*` |\n| Plugin Ssr | — | not applicable | SSR-safe CSS sizes |\n| Minimals `slidesToShow`, `slideSpacing`, arrows / dots / progress / thumbs / play button | same | kept | |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -69493,6 +69579,13 @@
      "title": "Scroll vertically or right to left"
     },
     {
+     "body": "The carousel's methods follow Embla Carousel. Both the version 8 names (`scrollNext()`, `scrollTo()`, `selectedScrollSnap()`) and the version 9 names work, so code written for either version runs unchanged:\n\n- **Move:** `goToNext()`, `goToPrev()` and `goTo(index)`. Pass `true` as the second argument to jump without animation. In a looping carousel, `goTo(index, false, \"forward\")` or `\"backward\"` picks the way round; without it, the carousel takes the shortest way.\n- **Read:** `canGoToNext()`, `canGoToPrev()`, `selectedSnap()`, `previousSnap()` and `snapList()`. `snapIndex(offset)` returns the selected snap moved by `offset`, such as `snapIndex(1)` for the next one. It wraps around in a looping carousel.\n\nThree events report changes around the slides. **Resize** fires when the viewport or a slide changes size, **slides changed** when slides are added or removed, and **pointer move** while a pressed pointer moves. Cancel one to skip what the carousel does next: it doesn't measure again after a cancelled resize or slide change, and it doesn't scroll for a cancelled pointer move. In React, pass `onResize` or `onSlidesChanged` and return `false` to cancel; use the native `onPointerMove` for pointer moves. In HTML, listen for `ok:carousel:resize`, `ok:carousel:slideschanged` or `ok:carousel:pointermove` and call `preventDefault()`.",
+     "html": "<section aria-roledescription=\"carousel\" id=\"stories\" data-ok-carousel data-ok-align=\"center\" data-ok-axis=\"y\" data-ok-contain-scroll=\"trimSnaps\" data-ok-effect=\"none\" class=\"sb-carousel sb-carousel-vertical\" aria-label=\"Y axis\">\n  <div data-ok-carousel-stage>\n    <div data-ok-carousel-viewport tabindex=\"0\" class=\"sb-carousel-rounded\">\n      <div data-ok-carousel-container>\n        <div role=\"group\" aria-roledescription=\"slide\" aria-label=\"1 of 4\" data-ok-carousel-slide data-ok-snapped>\n          <div class=\"sb-carousel-image sb-carousel-fill\"><span data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-carousel-index\">4</span><img src=\"carousel/slide-4.svg\" alt=\"Emerald hills\"></div>\n        </div>\n        <div role=\"group\" aria-roledescription=\"slide\" aria-label=\"2 of 4\" data-ok-carousel-slide>\n          <div class=\"sb-carousel-image sb-carousel-fill\"><span data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-carousel-index\">5</span><img src=\"carousel/slide-5.svg\" alt=\"Coral reef\"></div>\n        </div>\n        <div role=\"group\" aria-roledescription=\"slide\" aria-label=\"3 of 4\" data-ok-carousel-slide>\n          <div class=\"sb-carousel-image sb-carousel-fill\"><span data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-carousel-index\">6</span><img src=\"carousel/slide-6.svg\" alt=\"Northern lights\"></div>\n        </div>\n        <div role=\"group\" aria-roledescription=\"slide\" aria-label=\"4 of 4\" data-ok-carousel-slide>\n          <div class=\"sb-carousel-image sb-carousel-fill\"><span data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-carousel-index\">7</span><img src=\"carousel/slide-7.svg\" alt=\"Desert dunes\"></div>\n        </div>\n      </div>\n      <span data-ok-carousel-live aria-live=\"polite\" aria-atomic=\"true\"></span>\n    </div>\n    <div data-ok-carousel-dots data-ok-variant=\"circular\" data-ok-color=\"warning\" data-ok-placement=\"top-end\">\n      <button type=\"button\" data-ok-carousel-dot aria-label=\"Go to slide 1\" aria-current=\"true\"></button>\n      <button type=\"button\" data-ok-carousel-dot aria-label=\"Go to slide 2\"></button>\n      <button type=\"button\" data-ok-carousel-dot aria-label=\"Go to slide 3\"></button>\n      <button type=\"button\" data-ok-carousel-dot aria-label=\"Go to slide 4\"></button>\n    </div>\n    <div data-ok-carousel-arrows data-ok-variant=\"basic\" data-ok-color=\"white\" data-ok-placement=\"bottom-end\">\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-carousel-prev aria-label=\"Previous slide\" aria-disabled=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\"></path></svg></button>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-carousel-next aria-label=\"Next slide\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\"></path></svg></button>\n    </div>\n  </div>\n</section>\n<button type=\"button\" id=\"stories-next\">Next story</button>\n<p id=\"stories-status\" role=\"status\"></p>\n\n<script type=\"module\">\n  const root = document.getElementById(\"stories\");\n  const status = document.getElementById(\"stories-status\");\n  document.getElementById(\"stories-next\").addEventListener(\"click\", () => {\n    const carousel = window.Owlky.get(root, \"carousel\");\n    carousel.goTo(carousel.snapIndex(1));\n  });\n  root.addEventListener(\"ok:carousel:resize\", (event) => {\n    status.textContent = `${event.detail.entries.length} parts changed size.`;\n  });\n</script>",
+     "id": "api",
+     "react": "import { Carousel, type CarouselApi, CarouselSlide, CarouselViewport } from \"@owlky/react\";\nimport { useRef, useState } from \"react\";\n\nconst photos = [\n  { src: \"photo-1.jpg\", alt: \"Mountain lake\" },\n  { src: \"photo-2.jpg\", alt: \"Forest in the fog\" },\n  { src: \"photo-3.jpg\", alt: \"Desert road\" },\n];\n\nexport function CarouselControls() {\n  const apiRef = useRef<CarouselApi>(null);\n  const [status, setStatus] = useState(\"\");\n  const next = () => {\n    const api = apiRef.current;\n    if (api) api.goTo(api.snapIndex(1));\n  };\n  return (\n    <>\n      <Carousel\n        aria-label=\"Stories\"\n        loop\n        apiRef={apiRef}\n        onResize={(entries) => setStatus(`${entries.length} parts changed size.`)}\n      >\n        <CarouselViewport>\n          {photos.map((photo) => (\n            <CarouselSlide key={photo.src}>\n              <img src={photo.src} alt={photo.alt} />\n            </CarouselSlide>\n          ))}\n        </CarouselViewport>\n      </Carousel>\n      <button type=\"button\" onClick={next}>\n        Next story\n      </button>\n      <p role=\"status\">{status}</p>\n    </>\n  );\n}",
+     "title": "Control the carousel from code"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The first table lists the options of `Carousel`, the next ones those of the arrows, dots, progress bar and thumbnails. `breakpoints` changes behavior options per media query, such as `{ \"(min-width: 900px)\": { loop: true } }` (in HTML, the same JSON in `data-ok-breakpoints`).",
      "id": "options",
      "title": "Options"
@@ -69503,7 +69596,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:carousel:select`** fires on the root when the selected slide changes, with `detail.index` and `detail.previous`. **`ok:carousel:settle`** fires when scrolling stops.\n- **Other events:** `scroll` (`detail.progress`), `slidesinview` (`detail.indexes`), `reinit` (`detail.snapCount`), `autoplay` and `autoscroll` (`detail.playing`), `slidefocus` (`detail.index`), `pointerdown` and `pointerup`.\n- **Instance:** `runtime.get(element, \"carousel\")` returns `scrollNext()`, `scrollPrev()`, `scrollTo(index)` (pass `true` as the last argument to jump without animation), `canScrollNext()`, `canScrollPrev()`, `selectedScrollSnap()`, `scrollSnapList()`, `scrollProgress()`, `slidesInView()`, `reInit()`, and `autoplay` and `autoScroll` with `play()`, `stop()`, `reset()` and `isPlaying()`.\n- **React:** `apiRef` receives the same methods. Callbacks are `onSelect(index, previous)`, `onSettle(index)`, `onScroll(progress)`, `onSlidesInView(indexes)`, `onReInit(snapCount)`, `onAutoplayChange(playing)`, `onAutoScrollChange(playing)` and `onSlideFocus(index)`.",
+     "body": "- **`ok:carousel:select`** fires on the root when the selected slide changes, with `detail.index` and `detail.previous`. **`ok:carousel:settle`** fires when scrolling stops.\n- **Other events:** `scroll` (`detail.progress`), `slidesinview` (`detail.indexes`), `reinit` (`detail.snapCount`), `autoplay` and `autoscroll` (`detail.playing`), `slidefocus` (`detail.index`), `pointerdown` and `pointerup`. The cancelable `pointermove`, `resize` (`detail.entries`) and `slideschanged` (`detail.records`) skip what the carousel does next when you call `preventDefault()`.\n- **Instance:** `runtime.get(element, \"carousel\")` returns `scrollNext()`, `scrollPrev()`, `scrollTo(index)` (pass `true` as the second argument to jump without animation), `canScrollNext()`, `canScrollPrev()`, `selectedScrollSnap()`, `previousScrollSnap()`, `scrollSnapList()`, `scrollProgress()`, `slidesInView()`, `reInit()`, and `autoplay` and `autoScroll` with `play()`, `stop()`, `reset()` and `isPlaying()`. The Embla version 9 names work too: `goToNext()`, `goToPrev()`, `goTo(index, jump, direction)`, `canGoToNext()`, `canGoToPrev()`, `selectedSnap()`, `previousSnap()`, `snapList()` and `snapIndex(offset)`.\n- **React:** `apiRef` receives the same methods. Callbacks are `onSelect(index, previous)`, `onSettle(index)`, `onScroll(progress)`, `onSlidesInView(indexes)`, `onReInit(snapCount)`, `onAutoplayChange(playing)`, `onAutoScrollChange(playing)`, `onSlideFocus(index)`, `onResize(entries)` and `onSlidesChanged(records)` (return `false` to skip the measure that follows).",
      "id": "events",
      "title": "Events and methods"
     },
