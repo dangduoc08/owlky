@@ -821,6 +821,7 @@ export {
   type GridChartColumn,
   type GridChartData,
   type GridChartModel,
+  type GridChartModels,
   type GridChartOptions,
   type GridChartSeries,
   type GridChartType,
@@ -830,6 +831,7 @@ export {
   type GridPivotColumn,
   type GridPivotModel,
   type GridPivotResult,
+  gridActiveChartId,
   gridAggregate,
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
@@ -857,6 +859,7 @@ export {
   parseGridAggregationModel,
   parseGridAggregationPositions,
   sanitizeGridChartModel,
+  sanitizeGridChartModels,
   sanitizeGridPivotModel,
   setGridPivotRole,
 } from "./data-grid/grid-premium.js";

@@ -737,6 +737,7 @@ export const gridDefaultLabels = {
   pivotDragToValues: "Drag here to create values",
   pivotMoveUp: "Move up",
   pivotMoveDown: "Move down",
+  chartsActive: "Chart",
   chartsType: "Chart type",
   chartsDimension: "Category",
   chartsValues: "Series",

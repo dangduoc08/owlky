@@ -113,11 +113,14 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
             #<id>-pivot-<field> (none|rows|columns|values), TextField select #<id>-pivot-<field>-function,
             IconButton[data-ok-data-grid-pivot-move=up|down][aria-label="Move up: <header>"][disabled]? ([hidden] when not used)
           › span[data-ok-data-grid-pivot-empty][hidden]? ("Drag here to create rows"; not in none)
-        charts: TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value]),
+        charts: (several charts) TextField select #<id>-chart-active (one option per chart, its label),
+          TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value]),
           FormControlLabel(Switch[data-ok-data-grid-chart-stacked][disabled]?), FormControlLabel(Switch[data-ok-data-grid-chart-item-label]),
           TextField select #<id>-chart-legend (top|right|bottom|none)
     div[data-ok-data-grid-chart][hidden]? › Chart#<id>-chart (HTML: figure › table[data-ok-chart-data]; the grid sets the
       figure's option attributes and calls the Chart's `updateSeries`, or writes the table without the chart runtime)
+    several charts (root [data-ok-chart-models='{"<chart id>":{…}}'][data-ok-active-chart-id]): one
+      div[data-ok-data-grid-chart][data-ok-chart-id=<chart id>][hidden]? › Chart#<id>-chart-<chart id> per model (in order)
     Popover#<id>-filters › template[data-ok-data-grid-date="<id>-filter-value"] › DatePicker (HTML only)
     Popover#<id>-filters › template[data-ok-data-grid-date-time="<id>-filter-value"] › DateTimePicker (HTML only)
   div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
@@ -242,7 +245,9 @@ columns; `null`: none); `excelOptions` (`fileName`, `sheetName`, `fields`, `allC
 `onCellSelectionModelChange`; `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` /
 `onClipboardPasteEnd`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`,
 `ignoreValueFormatterDuringExport`; `headerFilters`; `chartsIntegration`, `chartModel` /
-`onChartModelChange` / `initialState.chartsIntegration.model`; data source `groupFields`; `apiRef`
+`onChartModelChange` / `initialState.chartsIntegration.model`; `chartModels` / `onChartModelsChange` /
+`initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` /
+`initialState.chartsIntegration.activeChartId`, `apiRef.setChartModels` / `setActiveChartId`; data source `groupFields`; `apiRef`
 row grouping, aggregation, pivot, cell selection and chart setters. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
@@ -267,7 +272,11 @@ palettes), `height`, `showMark`, `seriesAxisLabel`, `showToolbar`; renamed `inte
 `grid`, axis positions, `tickPlacement`, `tickLabelPlacement`, `seriesAxisReverse`,
 `categoriesAxisLabel`, `borderRadius`, gap ratios, `paddingAngle`, `cornerRadius`, `seriesGap`,
 `outerRadius`, `width`, tooltip placement / trigger, `onRender`. One dimension (MUI X: several, a
-grouped axis), one chart per grid (multiple renderer proxies: deferred). Beyond MUI X: `radar` and
+grouped axis). Several charts (MUI X: one `GridChartsRendererProxy` per id with a `label`, models in
+`initialState.chartsIntegration.charts`, `activeChartId`): renamed to `chartModels` (by chart id;
+ids letters, digits, `-`, `_`), the model's `label`, `activeChartId` / `onActiveChartIdChange`; the
+charts render inside the grid, one after the other, and the panel's Chart select picks the one it
+edits. Beyond MUI X: `radar` and
 `scatter` types. While pivoting, a value field of the pivot stands for its pivot columns (MUI X sets
 them with `updateChartValuesData` once the columns exist).
 
@@ -450,7 +459,10 @@ Phase 6: `ok:data-grid:rowgrouping | aggregation | cellselection | chart` (cance
 `setPivotDerivedColumns(getter | null)`, `setGroupingValueGetter(field, getter | null)` (getter of the cell's value and row; else
 `data-ok-grouping-value`, else the cell text);
 `rowGroupingModel`, `aggregationModel`, `pivotModel`, `pivotActive`, `cellSelectionModel`,
-`chartModel` with `set…` (no events; the chart panel's fields follow the model),
+`chartModel` with `set…` (no events; the chart panel's fields follow the model; several charts:
+the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
+`setActiveChartId(id)`; `ok:data-grid:chart` carries `id` with several charts;
+`ok:data-grid:activechart` (cancelable, `{ id }`);
 `toExcel(options)`, `exportExcel(options)`.
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
 
@@ -510,7 +522,7 @@ the detailed record of what is kept.
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
 | Charts: `chartsIntegration`, `chartModel` (renamed, see above) | same | kept | |
-| Charts: `activeChartId` / `onActiveChartIdChange` (several charts) | — | deferred (4.15) | |
+| Charts: several `GridChartsRendererProxy` (`id`, `label`), `initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` | `chartModels` (+ model `label`), `activeChartId` | renamed | charts inside the grid; HTML `data-ok-chart-models`, `data-ok-active-chart-id` |
 | Formulas / computed columns: `disableFormulas`, `formulaFunctions`, `formulaA1Notation`, `disableEval`, `disableFormulaAutocomplete`, `computedColumns`, `computedColDef`, `disableComputedColumns`, `onComputedColumnsChange` | — | not applicable | a formula engine (roadmap 2.4 notes); `valueGetter` covers derived columns |
 | AI assistant: `aiAssistant*`, `allowAiAssistantDataSampling`, `onPrompt` | — | not applicable | needs a model service (roadmap 2.4 notes) |
 | `rowsLoadingMode` | `lazyLoading`, `paginationMode` | not applicable | |

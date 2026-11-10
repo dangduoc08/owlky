@@ -864,6 +864,61 @@ describe("data grid charts integration (HTML)", () => {
   });
 });
 
+describe("data grid several charts (HTML)", () => {
+  it("draws one chart per id and the panel edits the one picked, like React", () => {
+    const { host, root, instance } = setup("charts-multiple");
+    const regions = [...host.querySelectorAll<HTMLElement>("[data-ok-data-grid-chart]")];
+    expect(regions.map((r) => r.getAttribute("data-ok-chart-id"))).toEqual(["revenue", "units"]);
+    const figure = (i: number) => regions[i]?.querySelector("[data-ok-chart]") as HTMLElement;
+    expect(figure(1).getAttribute("data-ok-type")).toBe("line");
+    expect(regions.every((r) => !r.hidden)).toBe(true);
+    const onChart = vi.fn();
+    root.addEventListener("ok:data-grid:chart", onChart);
+    const type = host.querySelector<HTMLSelectElement>(
+      "#grid-charts-multiple-chart-type",
+    ) as HTMLSelectElement;
+    expect(type.value).toBe("column");
+    type.value = "area";
+    type.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(onChart.mock.lastCall?.[0].detail).toMatchObject({
+      id: "revenue",
+      model: { type: "area" },
+    });
+    expect(figure(0).getAttribute("data-ok-type")).toBe("area");
+    expect(JSON.parse(root.getAttribute("data-ok-chart-models") as string).revenue.type).toBe(
+      "area",
+    );
+    // Switching charts (cancelable) shows the other chart's model in the panel.
+    const active = host.querySelector<HTMLSelectElement>(
+      "#grid-charts-multiple-chart-active",
+    ) as HTMLSelectElement;
+    root.addEventListener("ok:data-grid:activechart", (e) => e.preventDefault(), { once: true });
+    active.value = "units";
+    active.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.activeChartId).toBe("revenue");
+    expect(active.value).toBe("revenue");
+    active.value = "units";
+    active.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.activeChartId).toBe("units");
+    expect(type.value).toBe("line");
+    expect(instance.chartModel.label).toBe("Units by product");
+    instance.setChartModel({ ...instance.chartModel, type: "bar" });
+    expect(figure(1).hasAttribute("data-ok-horizontal")).toBe(true);
+    expect(instance.exportState().chartsIntegration).toMatchObject({
+      activeChartId: "units",
+      charts: { units: { type: "bar" } },
+    });
+    instance.setChartModels({ revenue: { values: ["units"] } });
+    expect(instance.activeChartId).toBe("revenue");
+    instance.setActiveChartId("nope");
+    expect(instance.activeChartId).toBe("revenue");
+    instance.restoreState({
+      chartsIntegration: { charts: { units: { type: "pie" } }, activeChartId: "units" },
+    });
+    expect(instance.chartModels).toEqual({ units: { type: "pie" } });
+  });
+});
+
 describe("data grid charts integration: every chart type (HTML)", () => {
   it("offers every chart type with stacking, value labels and a legend", () => {
     const { host, root, instance } = setup("charts-group");

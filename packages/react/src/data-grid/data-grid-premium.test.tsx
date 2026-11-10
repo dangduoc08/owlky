@@ -1271,6 +1271,83 @@ describe("DataGrid header filters", () => {
 });
 
 describe("DataGrid charts integration and date filters", () => {
+  it("draws several charts, and the panel edits the one picked (MUI X)", async () => {
+    const onModels = vi.fn();
+    const onActive = vi.fn();
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(
+      <DataGrid
+        id="mc"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        showToolbar
+        chartsIntegration
+        rowGroupingModel={["region"]}
+        initialState={{
+          chartsIntegration: {
+            charts: {
+              units: { label: "Units", values: ["units"] },
+              years: { label: "Years", type: "line", values: ["year"] },
+            },
+          },
+        }}
+        onChartModelsChange={onModels}
+        onActiveChartIdChange={onActive}
+        hideFooter
+      />,
+    );
+    const regions = [...document.querySelectorAll<HTMLElement>("[data-ok-data-grid-chart]")];
+    expect(regions.map((r) => r.getAttribute("data-ok-chart-id"))).toEqual(["units", "years"]);
+    expect(regions.map((r) => r.querySelector("figure")?.id)).toEqual([
+      "mc-chart-units",
+      "mc-chart-years",
+    ]);
+    expect(regions[1]?.querySelector("figure")?.getAttribute("data-ok-type")).toBe("line");
+    expect(regions[0]?.querySelector("caption")?.textContent).toBe("Units");
+    const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+    expect(root.getAttribute("data-ok-active-chart-id")).toBe("units");
+    expect(JSON.parse(root.getAttribute("data-ok-chart-models") as string).years.type).toBe("line");
+    await userEvent.click(screen.getByRole("button", { name: "Chart" }));
+    const panel = document.getElementById("mc-charts") as HTMLElement;
+    const active = panel.querySelector("#mc-chart-active") as HTMLSelectElement;
+    expect([...active.options].map((o) => o.textContent)).toEqual(["Units", "Years"]);
+    fireEvent.change(within(panel).getByLabelText("Chart type"), { target: { value: "bar" } });
+    expect(onModels.mock.lastCall?.[0].units.type).toBe("bar");
+    expect(regions[0]?.querySelector("figure")?.hasAttribute("data-ok-horizontal")).toBe(true);
+    fireEvent.change(active, { target: { value: "years" } });
+    expect(onActive).toHaveBeenLastCalledWith("years");
+    expect((within(panel).getByLabelText("Chart type") as HTMLSelectElement).value).toBe("line");
+    act(() =>
+      (apiRef.current as GridApi<Sale>).setChartModel({
+        label: "Years",
+        type: "area",
+        values: ["year"],
+      }),
+    );
+    expect(regions[1]?.querySelector("figure")?.getAttribute("data-ok-type")).toBe("area");
+    expect((apiRef.current as GridApi<Sale>).exportState().chartsIntegration).toMatchObject({
+      activeChartId: "years",
+      charts: { years: { type: "area" } },
+    });
+    act(() => (apiRef.current as GridApi<Sale>).setActiveChartId("units"));
+    expect(root.getAttribute("data-ok-active-chart-id")).toBe("units");
+    act(() =>
+      (apiRef.current as GridApi<Sale>).setChartModels({
+        only: { values: ["units"] },
+        "bad id!": {},
+      }),
+    );
+    expect(
+      [...document.querySelectorAll("[data-ok-data-grid-chart]")].map((r) =>
+        r.getAttribute("data-ok-chart-id"),
+      ),
+    ).toEqual(["only"]);
+    await expectNoAxeViolations(document.body);
+  });
+
   it("charts the top-level groups or the page's rows", async () => {
     const onChart = vi.fn();
     const { rerender } = render(

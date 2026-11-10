@@ -23,6 +23,7 @@ import {
   type GridAggregationModel,
   type GridCellSelectionModel,
   type GridChartModel,
+  type GridChartModels,
   type GridChartType,
   type GridColumn,
   type GridColumnGroup,
@@ -50,6 +51,7 @@ import {
   type GridSortModel,
   type GridState,
   type GridViewport,
+  gridActiveChartId,
   gridAggregate,
   gridAggregationFunctionsFor,
   gridAggregationPositionOf,
@@ -131,6 +133,7 @@ import {
   renderChart,
   sanitizeGridCellSelection,
   sanitizeGridChartModel,
+  sanitizeGridChartModels,
   sanitizeGridPivotModel,
   sanitizeGridState,
   selectGridRow,
@@ -187,7 +190,10 @@ export interface DataGridEvents {
   /** Before the cell selection changes. Call `preventDefault()` to keep it. */
   cellselection: EventSpec<{ model: GridCellSelectionModel }, true>;
   /** Before the chart panel's model changes. Call `preventDefault()` to keep it. */
-  chart: EventSpec<{ model: GridChartModel }, true>;
+  /** Before a chart's model changes (`id`: which chart, with several). Call `preventDefault()` to keep it. */
+  chart: EventSpec<{ model: GridChartModel; id?: string | undefined }, true>;
+  /** Before the chart panel switches to another chart. Call `preventDefault()` to stay. */
+  activechart: EventSpec<{ id: string }, true>;
   /** Before the pivot model or mode changes. Call `preventDefault()` to keep it. */
   pivot: EventSpec<{ model: GridPivotModel; active: boolean }, true>;
   /** After a column was resized, in pixels. */
@@ -307,8 +313,16 @@ export interface DataGridInstance extends ComponentInstance {
   readonly pivotActive: boolean;
   /** The selected cells. */
   readonly cellSelectionModel: GridCellSelectionModel;
-  /** The chart panel's model. */
+  /** The chart panel's model (several charts: the active chart's). */
   readonly chartModel: GridChartModel;
+  /** Several charts: every chart's model, by chart id (`data-ok-chart-models`). */
+  readonly chartModels: GridChartModels;
+  /** Several charts: the chart the panel edits (`data-ok-active-chart-id`). */
+  readonly activeChartId: string | null;
+  /** Several charts: sets every chart's model (no events). */
+  setChartModels(models: GridChartModels): void;
+  /** Several charts: the chart the panel edits (no events). */
+  setActiveChartId(id: string): void;
   /** Groups the rows by these fields. */
   setRowGroupingModel(model: readonly string[]): void;
   /** Sets the aggregation. */
@@ -658,6 +672,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let pivotModel = sanitizeGridPivotModel(parseJson(element.getAttribute("data-ok-pivot-model")));
     let cellModel: GridCellSelectionModel = {};
     let chartModel = sanitizeGridChartModel(parseJson(element.getAttribute("data-ok-chart-model")));
+    // Several charts (MUI X): one model per chart id; the panel edits the active one.
+    let chartModels = sanitizeGridChartModels(
+      parseJson(element.getAttribute("data-ok-chart-models")),
+    );
+    let activeChart = gridActiveChartId(
+      chartModels,
+      element.getAttribute("data-ok-active-chart-id"),
+    );
+    const panelModel = () => (activeChart ? (chartModels[activeChart] ?? {}) : chartModel);
     const labelOf = (fn: string) =>
       labels[
         `aggregationFunctionLabel${fn.charAt(0).toUpperCase()}${fn.slice(1)}` as keyof GridLabels
@@ -2709,18 +2732,23 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
 
     // Charts integration: the chart follows the rows (or the top-level groups; pivoted grids:
     // their pivot columns) through the Chart's update path (`updateSeries`, option attributes).
-    const chartRegion = element.querySelector<HTMLElement>("[data-ok-data-grid-chart]");
-    let chartKey = "";
+    /** The charts: one region, or one per chart id (`data-ok-chart-id`). */
+    const chartRegions = () => [
+      ...element.querySelectorAll<HTMLElement>(":scope > [data-ok-data-grid-chart]"),
+    ];
+    const chartKeys = new WeakMap<HTMLElement, string>();
     let chartSeriesCount = 0;
     /** Panel fields show the model (it may come from `setChartModel` or `restoreState`). */
     const syncChartPanel = () => {
       const panel = byId("charts");
       if (!panel) return;
+      const chartModel = panelModel();
       const type = chartModel.type ?? "column";
       const select = (suffix: string, value: string) => {
         const field = panel.querySelector<HTMLSelectElement>(`#${CSS.escape(`${id}-${suffix}`)}`);
         if (field && field.value !== value) field.value = value;
       };
+      if (activeChart) select("chart-active", activeChart);
       select("chart-type", type);
       select(
         "chart-dimension",
@@ -2746,9 +2774,21 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (labelsSwitch) labelsSwitch.checked = chartModel.itemLabel === "value";
     };
     const syncChart = () => {
-      const figure = chartRegion?.querySelector<HTMLElement>("[data-ok-chart]");
+      for (const region of chartRegions()) {
+        const chartId = region.getAttribute("data-ok-chart-id");
+        drawChart(
+          region,
+          chartId ? (chartModels[chartId] ?? {}) : chartModel,
+          chartId === activeChart,
+        );
+      }
+      syncChartPanel();
+    };
+    /** One chart: its data from its model, through the Chart's update path. */
+    const drawChart = (chartRegion: HTMLElement, chartModel: GridChartModel, active: boolean) => {
+      const figure = chartRegion.querySelector<HTMLElement>("[data-ok-chart]");
       const table = figure?.querySelector<HTMLTableElement>("[data-ok-chart-data]");
-      if (!chartRegion || !figure || !table) return;
+      if (!figure || !table) return;
       const chartColumns = baseColumns.filter((c) => c.type !== "actions");
       const candidates = pivot ? columns : chartColumns;
       const fields = gridChartFields(chartModel, candidates);
@@ -2794,8 +2834,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
               )
           : null;
       chartRegion.hidden = !data;
-      chartSeriesCount = data?.series.length ?? 0;
-      syncChartPanel();
+      if (active) chartSeriesCount = data?.series.length ?? 0;
       const { yTitle, ...options } = gridChartOptions(chartModel, data);
       const attributes: Record<string, string> = {
         ...chartAttributes(options),
@@ -2808,8 +2847,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       for (const [name, attr] of Object.entries(attributes))
         if (figure.getAttribute(name) !== attr) figure.setAttribute(name, attr);
       const key = JSON.stringify([data, options.type, options.xType]);
-      if (key === chartKey) return;
-      chartKey = key;
+      if (key === chartKeys.get(chartRegion)) return;
+      chartKeys.set(chartRegion, key);
       const series = data?.series ?? [];
       const categories = data?.categories ?? [];
       const chart = runtime.getOrCreate<ChartInstance>(figure, "chart");
@@ -2852,18 +2891,36 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }),
       );
     };
-    const setChart = (model: GridChartModel) =>
-      change("chart", model, (next) => {
-        chartModel = next;
-        element.setAttribute("data-ok-chart-model", JSON.stringify(next));
-        syncChart();
-      });
+    const chartRegion = chartRegions()[0];
+    const setChart = (model: GridChartModel) => {
+      if (
+        !emit("chart", { model, ...(activeChart ? { id: activeChart } : {}) }, { cancelable: true })
+      )
+        return;
+      if (activeChart) {
+        chartModels = { ...chartModels, [activeChart]: model };
+        element.setAttribute("data-ok-chart-models", JSON.stringify(chartModels));
+      } else {
+        chartModel = model;
+        element.setAttribute("data-ok-chart-model", JSON.stringify(model));
+      }
+      syncChart();
+    };
+    const showActiveChart = (chartId: string) => {
+      activeChart = gridActiveChartId(chartModels, chartId);
+      if (activeChart) element.setAttribute("data-ok-active-chart-id", activeChart);
+      syncChart();
+    };
     byId("charts")?.addEventListener(
       "change",
       (event) => {
         const target = event.target as HTMLInputElement;
+        const chartModel = panelModel();
         const values = chartModel.values ?? [];
-        if (target.id === `${id}-chart-type`)
+        if (target.id === `${id}-chart-active`) {
+          if (emit("activechart", { id: target.value }, { cancelable: true }))
+            showActiveChart(target.value);
+        } else if (target.id === `${id}-chart-type`)
           setChart({ ...chartModel, type: target.value as GridChartType });
         else if (target.id === `${id}-chart-dimension`)
           setChart({ ...chartModel, dimension: target.value || null });
@@ -3912,7 +3969,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ? { aggregation: { model: { ...aggregationModel } } }
           : {}),
         ...(pivotPanel ? { pivoting: { model: pivotModel, active: pivotOn() } } : {}),
-        ...(chartRegion ? { chartsIntegration: { model: chartModel } } : {}),
+        ...(chartRegion
+          ? {
+              chartsIntegration: {
+                model: chartModel,
+                ...(activeChart ? { charts: chartModels, activeChartId: activeChart } : {}),
+              },
+            }
+          : {}),
       }),
       restoreState(input) {
         const state = sanitizeGridState(input);
@@ -3938,6 +4002,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (state.density) element.setAttribute(densityOption.attr, state.density);
         if (state.aggregation?.model) aggregationModel = state.aggregation.model;
         if (state.chartsIntegration?.model) chartModel = state.chartsIntegration.model;
+        if (state.chartsIntegration?.charts) chartModels = state.chartsIntegration.charts;
+        if (state.chartsIntegration?.charts || state.chartsIntegration?.activeChartId)
+          activeChart = gridActiveChartId(
+            chartModels,
+            state.chartsIntegration.activeChartId ?? activeChart,
+          );
         if (state.pivoting?.model) pivotModel = state.pivoting.model;
         if (state.pivoting?.active !== undefined)
           element.toggleAttribute(pivotActiveOption.attr, state.pivoting.active);
@@ -4010,8 +4080,22 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       get cellSelectionModel() {
         return cellModel;
       },
+      get chartModels() {
+        return chartModels;
+      },
+      get activeChartId() {
+        return activeChart;
+      },
+      setChartModels(models) {
+        chartModels = sanitizeGridChartModels(models);
+        element.setAttribute("data-ok-chart-models", JSON.stringify(chartModels));
+        showActiveChart(activeChart ?? "");
+      },
+      setActiveChartId(chartId) {
+        showActiveChart(chartId);
+      },
       get chartModel() {
-        return chartModel;
+        return panelModel();
       },
       setRowGroupingModel(model) {
         rowGrouping = [...model];
@@ -4041,7 +4125,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         markCells();
       },
       setChartModel(model) {
-        chartModel = sanitizeGridChartModel(model);
+        if (activeChart)
+          chartModels = { ...chartModels, [activeChart]: sanitizeGridChartModel(model) };
+        else chartModel = sanitizeGridChartModel(model);
         syncChart();
       },
       toExcel,

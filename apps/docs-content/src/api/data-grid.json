@@ -116,6 +116,12 @@
     "events": [
      {
       "cancelable": true,
+      "description": "Before the chart panel switches to another chart. Call `preventDefault()` to stay.",
+      "detail": "{ id: string; }",
+      "name": "ok:data-grid:activechart"
+     },
+     {
+      "cancelable": true,
       "description": "Before the aggregation changes (field to function). Call `preventDefault()` to keep it.",
       "detail": "{ model: Record<string, string>; }",
       "name": "ok:data-grid:aggregation"
@@ -140,8 +146,8 @@
      },
      {
       "cancelable": true,
-      "description": "Before the chart panel's model changes. Call `preventDefault()` to keep it.",
-      "detail": "{ model: GridChartModel; }",
+      "description": "Before a chart's model changes (`id`: which chart, with several). Call `preventDefault()` to keep it.",
+      "detail": "{ model: GridChartModel; id?: string | undefined; }",
       "name": "ok:data-grid:chart"
      },
      {
@@ -291,6 +297,12 @@
     ],
     "methods": [
      {
+      "description": "Several charts: the chart the panel edits (`data-ok-active-chart-id`).",
+      "kind": "property",
+      "name": "activeChartId",
+      "type": "string | null"
+     },
+     {
       "description": "The aggregation (field to function).",
       "kind": "property",
       "name": "aggregationModel",
@@ -309,10 +321,16 @@
       "type": "GridCellSelectionModel"
      },
      {
-      "description": "The chart panel's model.",
+      "description": "The chart panel's model (several charts: the active chart's).",
       "kind": "property",
       "name": "chartModel",
       "type": "GridChartModel"
+     },
+     {
+      "description": "Several charts: every chart's model, by chart id (`data-ok-chart-models`).",
+      "kind": "property",
+      "name": "chartModels",
+      "type": "GridChartModels"
      },
      {
       "description": "The fields in their display order.",
@@ -405,6 +423,12 @@
       "type": "string[]"
      },
      {
+      "description": "Several charts: the chart the panel edits (no events).",
+      "kind": "method",
+      "name": "setActiveChartId",
+      "type": "(id: string) => void"
+     },
+     {
       "description": "Sets the aggregation.",
       "kind": "method",
       "name": "setAggregationModel",
@@ -421,6 +445,12 @@
       "kind": "method",
       "name": "setChartModel",
       "type": "(model: GridChartModel) => void"
+     },
+     {
+      "description": "Several charts: sets every chart's model (no events).",
+      "kind": "method",
+      "name": "setChartModels",
+      "type": "(models: GridChartModels) => void"
      },
      {
       "description": "These setters don't emit events.",
@@ -468,7 +498,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 94 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 95 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "Pins columns to the start and the end.",
@@ -898,6 +928,12 @@
     ],
     "parts": [
      {
+      "description": "Several charts: the chart the panel edits.",
+      "kind": "value",
+      "name": "data-ok-active-chart-id",
+      "value": "string"
+     },
+     {
       "description": "On a header cell: `false` keeps the column out of the aggregation menu.",
       "kind": "value",
       "name": "data-ok-aggregable",
@@ -915,6 +951,18 @@
       "description": "Where groups show their aggregated values, as JSON by level: `root` and each grouped field, to `inline`, `footer` or `null`. React writes it from `getAggregationPosition`.",
       "kind": "value",
       "name": "data-ok-aggregation-position",
+      "value": "string"
+     },
+     {
+      "description": "Several charts: a chart's id, on its `data-ok-data-grid-chart` region.",
+      "kind": "value",
+      "name": "data-ok-chart-id",
+      "value": "string"
+     },
+     {
+      "description": "Several charts: every chart's model, by chart id, as JSON.",
+      "kind": "value",
+      "name": "data-ok-chart-models",
       "value": "string"
      },
      {
@@ -1613,6 +1661,11 @@
     "native": "HTMLDivElement",
     "props": [
      {
+      "description": "Several charts: the one the chart panel edits (default: the first), controlled.",
+      "name": "activeChartId",
+      "type": "string"
+     },
+     {
       "description": "The functions offered (default: the built-in ones).",
       "name": "aggregationFunctions",
       "type": "Readonly<Record<string, GridAggregationFunction>>"
@@ -1656,6 +1709,11 @@
       "description": "The chart panel's model, controlled.",
       "name": "chartModel",
       "type": "GridChartModel"
+     },
+     {
+      "description": "Several charts of the grid, by chart id (MUI X: one renderer proxy per id), controlled. Each model's `label` names its chart. Replaces `chartModel`.",
+      "name": "chartModels",
+      "type": "GridChartModels"
      },
      {
       "description": "A chart of the rows (or top-level groups) under the grid.",
@@ -1988,6 +2046,11 @@
       "type": "Partial<GridLabels>"
      },
      {
+      "description": "Called when the chart panel switches to another chart.",
+      "name": "onActiveChartIdChange",
+      "type": "((id: string) => void)"
+     },
+     {
       "description": "Called when the aggregation changes.",
       "name": "onAggregationModelChange",
       "type": "((model: GridAggregationModel) => void)"
@@ -2026,6 +2089,11 @@
       "description": "Called when the chart panel's model changes.",
       "name": "onChartModelChange",
       "type": "((model: GridChartModel) => void)"
+     },
+     {
+      "description": "Called when a chart's model changes, with every chart's model.",
+      "name": "onChartModelsChange",
+      "type": "((models: GridChartModels) => void)"
      },
      {
       "description": "Called after cells were copied, with the copied text.",
@@ -2309,6 +2377,10 @@
   {
    "name": "GridCellSelectionModel",
    "type": "{ [x: string]: Record<string, boolean>; }"
+  },
+  {
+   "name": "GridChartModels",
+   "type": "{ [x: string]: GridChartModel; }"
   },
   {
    "name": "GridColumnVisibilityModel",

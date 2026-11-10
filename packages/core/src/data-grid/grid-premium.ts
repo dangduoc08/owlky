@@ -628,6 +628,8 @@ const SLICED: readonly GridChartType[] = ["pie", "donut"];
 
 /** What the grid's chart shows (MUI X charts integration: dimension, values, configuration). */
 export interface GridChartModel {
+  /** Several charts: the chart's name in the panel and its accessible label (MUI X `label`). */
+  label?: string | undefined;
   /** Default `column`. */
   type?: GridChartType | undefined;
   /** The field whose texts are the categories (with row grouping: the top-level groups). */
@@ -807,6 +809,26 @@ export function gridChartOptions(
   return options;
 }
 
+/** Several charts of one grid (MUI X: one renderer proxy per id), by chart id. */
+export type GridChartModels = Record<string, GridChartModel>;
+
+/** Ids of several charts: letters, digits, `-` and `_` (they name elements). */
+const CHART_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+/** Chart models by id from untrusted input: safe ids and known model keys only. */
+export function sanitizeGridChartModels(input: unknown): GridChartModels {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return {};
+  const out: GridChartModels = {};
+  for (const [id, model] of Object.entries(input as Record<string, unknown>))
+    if (CHART_ID.test(id) && !["__proto__", "constructor", "prototype"].includes(id))
+      out[id] = sanitizeGridChartModel(model);
+  return out;
+}
+
+/** The chart the panel edits: `id` when it is one of the charts, else the first. */
+export const gridActiveChartId = (models: GridChartModels, id: string | null | undefined) =>
+  id && Object.hasOwn(models, id) ? id : (Object.keys(models)[0] ?? null);
+
 /** A chart model from untrusted input: known keys, types and values only. */
 export function sanitizeGridChartModel(input: unknown): GridChartModel {
   if (typeof input !== "object" || input === null || Array.isArray(input)) return {};
@@ -829,6 +851,7 @@ export function sanitizeGridChartModel(input: unknown): GridChartModel {
     );
   if (chartCurves.includes(value["curve"] as ChartCurve)) out.curve = value["curve"] as ChartCurve;
   if (typeof value["seriesAxisLabel"] === "string") out.seriesAxisLabel = value["seriesAxisLabel"];
+  if (typeof value["label"] === "string") out.label = value["label"];
   for (const key of ["height", "startAngle", "endAngle", "donutSize"] as const) {
     const n = value[key];
     if (typeof n === "number" && Number.isFinite(n)) out[key] = n;

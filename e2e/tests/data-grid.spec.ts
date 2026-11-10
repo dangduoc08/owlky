@@ -443,6 +443,17 @@ for (const impl of implementations) {
       const donut = page.locator("#grid-charts-donut [data-ok-data-grid-chart] [data-ok-chart]");
       await expect(donut.locator("[data-ok-chart-slice]")).toHaveCount(3);
       await expect(donut.locator("[data-ok-chart-data-label]")).toHaveCount(3);
+      // Several charts: the panel's Chart select picks the chart it edits.
+      await page.keyboard.press("Escape");
+      const several = page.locator("#grid-charts-multiple");
+      const charts = several.locator("[data-ok-data-grid-chart] [data-ok-chart]");
+      await expect(charts).toHaveCount(2);
+      await expect(charts.nth(1)).toHaveAttribute("data-ok-type", "line");
+      await several.getByRole("button", { name: "Chart" }).click();
+      await page.locator("#grid-charts-multiple-chart-active").selectOption("units");
+      await page.locator("#grid-charts-multiple-chart-type").selectOption("area");
+      await expect(charts.nth(1)).toHaveAttribute("data-ok-type", "area");
+      await expect(charts.nth(0)).toHaveAttribute("data-ok-type", "bar");
     });
   });
 }

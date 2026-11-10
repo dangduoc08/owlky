@@ -506,6 +506,12 @@ export interface DataGridParts {
   "data-ok-data-grid-body": Part<"div">;
   /** HTML only: the template of a column's custom cells, named by its field. */
   "data-ok-data-grid-cell": Part<"template">;
+  /** Several charts: the chart the panel edits. */
+  "data-ok-active-chart-id": Value<string>;
+  /** Several charts: a chart's id, on its `data-ok-data-grid-chart` region. */
+  "data-ok-chart-id": Value<string>;
+  /** Several charts: every chart's model, by chart id, as JSON. */
+  "data-ok-chart-models": Value<string>;
   /** The chart panel's chart. */
   "data-ok-data-grid-chart": Part<"div">;
   /** The chart panel's switch for item labels. */

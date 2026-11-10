@@ -350,6 +350,31 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
       ),
     },
     {
+      title: "Multiple charts",
+      content: (
+        <DataGrid
+          id="grid-charts-multiple"
+          aria-label="Sales by product"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          showToolbar
+          chartsIntegration
+          initialState={{
+            rowGrouping: { model: ["product"] },
+            aggregation: { model: { units: "sum", revenue: "sum" } },
+            chartsIntegration: {
+              charts: {
+                revenue: { label: "Revenue by product", type: "column", values: ["revenue"] },
+                units: { label: "Units by product", type: "line", values: ["units"] },
+              },
+            },
+          }}
+          hideFooter
+        />
+      ),
+    },
+    {
       title: "Donut chart",
       content: (
         <DataGrid
@@ -390,6 +415,7 @@ export const PHASE6_FILES = {
   charts: [
     ["Charts integration", "group"],
     ["Pivot chart", "pivot"],
+    ["Multiple charts", "multiple"],
     ["Donut chart", "donut"],
   ],
 } as const;

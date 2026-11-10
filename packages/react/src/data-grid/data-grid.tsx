@@ -25,6 +25,7 @@ import {
   type GridAggregationModel,
   type GridCellSelectionModel,
   type GridChartModel,
+  type GridChartModels,
   type GridChartType,
   type GridColumn,
   type GridColumnGroup,
@@ -50,6 +51,7 @@ import {
   type GridState,
   type GridTreeRow,
   type GridViewport,
+  gridActiveChartId,
   gridAggregate,
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
@@ -128,6 +130,7 @@ import {
   prepareGridPrint,
   printGridContent,
   pruneGridSelection,
+  sanitizeGridChartModels,
   sanitizeGridState,
   selectGridRow,
   setGridPivotRole,
@@ -316,7 +319,12 @@ export interface GridApi<R> {
   setPivotActive(active: boolean): void;
   getCellSelectionModel(): GridCellSelectionModel;
   setCellSelectionModel(model: GridCellSelectionModel): void;
+  /** Sets the chart model (several charts: the chart the panel edits). */
   setChartModel(model: GridChartModel): void;
+  /** Several charts: sets every chart's model, by chart id. */
+  setChartModels(models: GridChartModels): void;
+  /** Several charts: the chart the panel edits. */
+  setActiveChartId(id: string): void;
   /** The .xlsx file of the filtered, sorted rows (bytes). */
   getDataAsExcel(options?: GridExcelOptions): Uint8Array;
   exportDataAsExcel(options?: GridExcelOptions): void;
@@ -643,6 +651,17 @@ export interface DataGridProps<R>
   chartModel?: GridChartModel | undefined;
   /** Called when the chart panel's model changes. */
   onChartModelChange?: ((model: GridChartModel) => void) | undefined;
+  /**
+   * Several charts of the grid, by chart id (MUI X: one renderer proxy per id), controlled. Each
+   * model's `label` names its chart. Replaces `chartModel`.
+   */
+  chartModels?: GridChartModels | undefined;
+  /** Called when a chart's model changes, with every chart's model. */
+  onChartModelsChange?: ((models: GridChartModels) => void) | undefined;
+  /** Several charts: the one the chart panel edits (default: the first), controlled. */
+  activeChartId?: string | undefined;
+  /** Called when the chart panel switches to another chart. */
+  onActiveChartIdChange?: ((id: string) => void) | undefined;
 }
 
 export type GridEditStopReason = "enterKeyDown" | "escapeKeyDown" | "cellFocusOut";
@@ -940,6 +959,10 @@ function DataGridInner<R>(
     headerFilters,
     chartsIntegration,
     chartModel: chartProp,
+    chartModels: chartModelsProp,
+    onChartModelsChange,
+    activeChartId: activeChartProp,
+    onActiveChartIdChange,
     onChartModelChange,
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledby,
@@ -1029,6 +1052,24 @@ function DataGridInner<R>(
     defaultValue: initialState?.chartsIntegration?.model ?? {},
     onChange: onChartModelChange,
   });
+  // Several charts (MUI X): one model per chart id; the panel edits the active one.
+  const [chartModels, setChartModels] = useControllableState<GridChartModels>({
+    value: chartModelsProp,
+    defaultValue: initialState?.chartsIntegration?.charts ?? {},
+    onChange: onChartModelsChange,
+  });
+  const [activeChartState, setActiveChartId] = useControllableState<string | null>({
+    value: activeChartProp,
+    defaultValue: initialState?.chartsIntegration?.activeChartId ?? null,
+    onChange: (next) => next && onActiveChartIdChange?.(next),
+  });
+  const chartIds = Object.keys(chartModels);
+  const activeChartId = gridActiveChartId(chartModels, activeChartState);
+  const panelModel: GridChartModel = activeChartId
+    ? (chartModels[activeChartId] as GridChartModel)
+    : chartModel;
+  const setPanelModel = (next: GridChartModel) =>
+    activeChartId ? setChartModels({ ...chartModels, [activeChartId]: next }) : setChartModel(next);
   const [widths, setWidths] = useState<GridColumnWidths>(() =>
     Object.fromEntries(
       Object.entries(initialState?.columns?.dimensions ?? {}).map(([f, d]) => [f, d.width]),
@@ -2344,7 +2385,15 @@ function DataGridInner<R>(
       ? { aggregation: { model: { ...aggregationState } } }
       : {}),
     ...(pivotAvailable ? { pivoting: { model: pivotModel, active: !!pivotActive } } : {}),
-    ...(chartsIntegration ? { chartsIntegration: { model: chartModel } } : {}),
+    ...(chartsIntegration
+      ? {
+          chartsIntegration: {
+            model: chartModel,
+            ...(chartIds.length ? { charts: chartModels } : {}),
+            ...(activeChartId ? { activeChartId } : {}),
+          },
+        }
+      : {}),
   });
   const restoreState = (input: unknown) => {
     const state = sanitizeGridState(input);
@@ -2367,6 +2416,9 @@ function DataGridInner<R>(
     if (state.pivoting?.model) setPivotModel(state.pivoting.model);
     if (state.pivoting?.active !== undefined) setPivotActive(state.pivoting.active);
     if (state.chartsIntegration?.model) setChartModel(state.chartsIntegration.model);
+    if (state.chartsIntegration?.charts) setChartModels(state.chartsIntegration.charts);
+    if (state.chartsIntegration?.activeChartId)
+      setActiveChartId(state.chartsIntegration.activeChartId);
   };
   const scrollToIndexes = ({ rowIndex, colIndex }: { rowIndex?: number; colIndex?: number }) => {
     const grid = gridRef.current as HTMLDivElement;
@@ -2421,7 +2473,9 @@ function DataGridInner<R>(
     setPivotActive,
     getCellSelectionModel: () => cellModel,
     setCellSelectionModel: setCellModel,
-    setChartModel,
+    setChartModel: setPanelModel,
+    setChartModels: (models) => setChartModels(sanitizeGridChartModels(models)),
+    setActiveChartId,
     getDataAsExcel: getExcel,
     exportDataAsExcel: exportExcel,
   };
@@ -2739,59 +2793,70 @@ function DataGridInner<R>(
   );
   // Charts integration: one chart of the top-level groups (aggregated) or of the page's rows.
   // Pivoted grids chart their pivot columns: a value field stands for its columns.
-  const chartType: GridChartType = chartModel.type ?? "column";
   const dataById = new Map(view.map((row) => [idOf(row), row]));
   const chartColumns = columnsProp.filter((c) => c.type !== "actions");
   const chartCandidates = pivot ? columns : chartColumns;
-  const chartFields = gridChartFields(chartModel, chartCandidates);
-  const dimension = chartColumns.some((c) => c.field === chartModel.dimension)
-    ? (chartModel.dimension as string)
+  /** A chart's data, options and stacking from its model (one per chart). */
+  const chartOf = (chartModel: GridChartModel) => {
+    const chartType: GridChartType = chartModel.type ?? "column";
+    const chartFields = gridChartFields(chartModel, chartCandidates);
+    const dimension = chartColumns.some((c) => c.field === chartModel.dimension)
+      ? (chartModel.dimension as string)
+      : null;
+    const topGroups =
+      grouping.length > 0 && !serverTree
+        ? sorted.filter((row): row is R & Group => isGroup(row) && row[GROUP].depth === 0)
+        : null;
+    const chartShown = chartsIntegration && chartFields.length > 0 && !!(dimension || topGroups);
+    // Groups aggregate the rows that pass the filters (a pivot's rows are filtered already).
+    const chartPass =
+      chartShown && topGroups && !pivot && !server.filter
+        ? new Set(localFilter(orderedRows).map(idOf))
+        : null;
+    const chartColumnOf = (field: string) =>
+      chartCandidates.find((c) => c.field === field) as GridColDef<R>;
+    const chartData = !chartShown
+      ? null
+      : topGroups
+        ? gridChartData(
+            topGroups,
+            chartModel,
+            chartCandidates,
+            (row) => row[GROUP].key,
+            (row, field) =>
+              gridAggregate(
+                row[GROUP].leafIds
+                  .filter((leaf) => !chartPass || chartPass.has(leaf))
+                  .map((leaf) => dataById.get(leaf) as R),
+                { [field]: aggregationModel[field] ?? aggregationState[field] ?? "sum" },
+                chartCandidates,
+                (r, f) => rawValue(chartColumnOf(f), r),
+                aggregationFunctions,
+              )[field],
+          )
+        : gridChartData(
+            pageRows.filter(isData),
+            chartModel,
+            chartCandidates,
+            (row) => textOf(sourceOf(dimension as string), row),
+            (row, field) => rawValue(chartColumnOf(field), row),
+            sourceOf(dimension as string).type === "number"
+              ? (row) => rawValue(sourceOf(dimension as string), row)
+              : undefined,
+          );
+    const chartOptions = gridChartOptions(chartModel, chartData);
+    const stackable =
+      gridStackableChartTypes.includes(chartType) && (chartData?.series.length ?? 0) > 1;
+    return { chartData, chartOptions, stackable };
+  };
+  const { chartData, chartOptions, stackable } = chartOf(chartModel);
+  const panelChart = activeChartId ? chartOf(panelModel) : null;
+  const panelStackable = panelChart ? panelChart.stackable : stackable;
+  const chartType: GridChartType = panelModel.type ?? "column";
+  const chartValues = panelModel.values ?? [];
+  const dimension = chartColumns.some((c) => c.field === panelModel.dimension)
+    ? (panelModel.dimension as string)
     : null;
-  const topGroups =
-    grouping.length > 0 && !serverTree
-      ? sorted.filter((row): row is R & Group => isGroup(row) && row[GROUP].depth === 0)
-      : null;
-  const chartShown = chartsIntegration && chartFields.length > 0 && !!(dimension || topGroups);
-  // Groups aggregate the rows that pass the filters (a pivot's rows are filtered already).
-  const chartPass =
-    chartShown && topGroups && !pivot && !server.filter
-      ? new Set(localFilter(orderedRows).map(idOf))
-      : null;
-  const chartColumnOf = (field: string) =>
-    chartCandidates.find((c) => c.field === field) as GridColDef<R>;
-  const chartData = !chartShown
-    ? null
-    : topGroups
-      ? gridChartData(
-          topGroups,
-          chartModel,
-          chartCandidates,
-          (row) => row[GROUP].key,
-          (row, field) =>
-            gridAggregate(
-              row[GROUP].leafIds
-                .filter((leaf) => !chartPass || chartPass.has(leaf))
-                .map((leaf) => dataById.get(leaf) as R),
-              { [field]: aggregationModel[field] ?? aggregationState[field] ?? "sum" },
-              chartCandidates,
-              (r, f) => rawValue(chartColumnOf(f), r),
-              aggregationFunctions,
-            )[field],
-        )
-      : gridChartData(
-          pageRows.filter(isData),
-          chartModel,
-          chartCandidates,
-          (row) => textOf(sourceOf(dimension as string), row),
-          (row, field) => rawValue(chartColumnOf(field), row),
-          sourceOf(dimension as string).type === "number"
-            ? (row) => rawValue(sourceOf(dimension as string), row)
-            : undefined,
-        );
-  const chartOptions = gridChartOptions(chartModel, chartData);
-  const chartValues = chartModel.values ?? [];
-  const stackable =
-    gridStackableChartTypes.includes(chartType) && (chartData?.series.length ?? 0) > 1;
   const chartsPanel = (
     <Popover
       id={`${id}-charts`}
@@ -2806,13 +2871,29 @@ function DataGridInner<R>(
         role="group"
         aria-label={labels.toolbarCharts}
       >
+        {activeChartId && (
+          <TextField
+            id={`${id}-chart-active`}
+            select
+            size="small"
+            label={labels.chartsActive}
+            value={activeChartId}
+            onChange={(next) => setActiveChartId(next)}
+          >
+            {chartIds.map((chartId) => (
+              <option key={chartId} value={chartId}>
+                {chartModels[chartId]?.label ?? chartId}
+              </option>
+            ))}
+          </TextField>
+        )}
         <TextField
           id={`${id}-chart-type`}
           select
           size="small"
           label={labels.chartsType}
           value={chartType}
-          onChange={(type) => setChartModel({ ...chartModel, type: type as GridChartType })}
+          onChange={(type) => setPanelModel({ ...panelModel, type: type as GridChartType })}
         >
           {gridChartTypes.map((type) => (
             <option key={type} value={type}>
@@ -2830,7 +2911,7 @@ function DataGridInner<R>(
           size="small"
           label={labels.chartsDimension}
           value={dimension ?? ""}
-          onChange={(field) => setChartModel({ ...chartModel, dimension: field || null })}
+          onChange={(field) => setPanelModel({ ...panelModel, dimension: field || null })}
         >
           <option value="">{labels.chartsNone}</option>
           {chartColumns.map((c) => (
@@ -2851,8 +2932,8 @@ function DataGridInner<R>(
                   data-ok-data-grid-chart-value={column.field}
                   checked={chartValues.includes(column.field)}
                   onChange={(on) =>
-                    setChartModel({
-                      ...chartModel,
+                    setPanelModel({
+                      ...panelModel,
                       values: on
                         ? [...chartValues.filter((f) => f !== column.field), column.field]
                         : chartValues.filter((f) => f !== column.field),
@@ -2868,9 +2949,9 @@ function DataGridInner<R>(
             <Switch
               size="small"
               data-ok-data-grid-chart-stacked=""
-              checked={!!chartModel.stacked}
-              disabled={!stackable}
-              onChange={(on) => setChartModel({ ...chartModel, stacked: on })}
+              checked={!!panelModel.stacked}
+              disabled={!panelStackable}
+              onChange={(on) => setPanelModel({ ...panelModel, stacked: on })}
             />
           }
         />
@@ -2880,8 +2961,8 @@ function DataGridInner<R>(
             <Switch
               size="small"
               data-ok-data-grid-chart-item-label=""
-              checked={chartModel.itemLabel === "value"}
-              onChange={(on) => setChartModel({ ...chartModel, itemLabel: on ? "value" : "none" })}
+              checked={panelModel.itemLabel === "value"}
+              onChange={(on) => setPanelModel({ ...panelModel, itemLabel: on ? "value" : "none" })}
             />
           }
         />
@@ -2890,9 +2971,9 @@ function DataGridInner<R>(
           select
           size="small"
           label={labels.chartsLegend}
-          value={chartModel.legend ?? "top"}
+          value={panelModel.legend ?? "top"}
           onChange={(legend) =>
-            setChartModel({ ...chartModel, legend: legend as GridChartModel["legend"] })
+            setPanelModel({ ...panelModel, legend: legend as GridChartModel["legend"] })
           }
         >
           {(["top", "right", "bottom", "none"] as const).map((legend) => (
@@ -4015,6 +4096,12 @@ function DataGridInner<R>(
         : {})}
       {...(pivotAvailable ? { "data-ok-pivot-model": JSON.stringify(pivotModel) } : {})}
       {...(chartsIntegration ? { "data-ok-chart-model": JSON.stringify(chartModel) } : {})}
+      {...(chartsIntegration && activeChartId
+        ? {
+            "data-ok-chart-models": JSON.stringify(chartModels),
+            "data-ok-active-chart-id": activeChartId,
+          }
+        : {})}
       {...(excelOptions
         ? {
             "data-ok-excel-options": JSON.stringify(
@@ -4200,7 +4287,7 @@ function DataGridInner<R>(
           </div>
         )}
       </div>
-      {chartsIntegration && (
+      {chartsIntegration && !activeChartId && (
         <div data-ok-data-grid-chart="" hidden={!chartData || undefined}>
           <Chart
             id={`${id}-chart`}
@@ -4211,6 +4298,27 @@ function DataGridInner<R>(
           />
         </div>
       )}
+      {chartsIntegration &&
+        chartIds.map((chartId) => {
+          const model = chartModels[chartId] as GridChartModel;
+          const one = chartId === activeChartId && panelChart ? panelChart : chartOf(model);
+          return (
+            <div
+              key={chartId}
+              data-ok-data-grid-chart=""
+              data-ok-chart-id={chartId}
+              hidden={!one.chartData || undefined}
+            >
+              <Chart
+                id={`${id}-chart-${chartId}`}
+                label={model.label ?? labels.chartLabel}
+                {...one.chartOptions}
+                categories={one.chartData?.categories ?? []}
+                series={one.chartData?.series ?? []}
+              />
+            </div>
+          );
+        })}
       {rowReordering && (
         <div data-ok-data-grid-live="" role="status">
           {announcement}

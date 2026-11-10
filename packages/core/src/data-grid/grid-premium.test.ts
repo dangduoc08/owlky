@@ -3,6 +3,7 @@ import type { GridColumn } from "./data-grid.js";
 import { sanitizeGridState } from "./grid-layout.js";
 import {
   GRID_GROUPING_FIELD,
+  gridActiveChartId,
   gridAggregate,
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
@@ -28,6 +29,7 @@ import {
   parseGridAggregationModel,
   parseGridAggregationPositions,
   sanitizeGridChartModel,
+  sanitizeGridChartModels,
   sanitizeGridPivotModel,
   setGridPivotRole,
 } from "./grid-premium.js";
@@ -714,6 +716,28 @@ describe("charts", () => {
       type: "scatter",
       xType: "numeric",
     });
+  });
+});
+
+describe("several charts", () => {
+  it("reads chart models by safe ids and picks the active one", () => {
+    expect(
+      sanitizeGridChartModels({
+        a: { type: "line", label: "A", bogus: 1 },
+        "b-2_c": "x",
+        "bad id": {},
+        __proto__: { type: "bar" },
+      }),
+    ).toEqual({ a: { type: "line", label: "A" }, "b-2_c": {} });
+    expect(sanitizeGridChartModels([1])).toEqual({});
+    expect(sanitizeGridChartModels(null)).toEqual({});
+    expect(gridActiveChartId({ a: {}, b: {} }, "b")).toBe("b");
+    expect(gridActiveChartId({ a: {}, b: {} }, "c")).toBe("a");
+    expect(gridActiveChartId({}, "a")).toBeNull();
+    expect(
+      sanitizeGridState({ chartsIntegration: { charts: { a: { label: 2 } }, activeChartId: "a" } })
+        .chartsIntegration,
+    ).toEqual({ charts: { a: {} }, activeChartId: "a" });
   });
 });
 

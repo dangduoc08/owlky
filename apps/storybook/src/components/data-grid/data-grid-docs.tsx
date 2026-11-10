@@ -4,6 +4,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
+import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
 import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
 import groupingMultiple from "../../../../../packages/html/src/components/data-grid/examples/grouping-multiple.html?raw";
@@ -1205,6 +1206,48 @@ export function DataGridCharts() {
 }`,
   },
   {
+    id: "charts-multiple",
+    title: "Draw several charts",
+    body: "One grid can drive several charts. `chartModels` holds one chart model per chart id, and each model's `label` names its chart. The charts show one after the other under the grid. The **Chart** list at the top of the chart panel picks the chart the panel edits, which is `activeChartId` (`onActiveChartIdChange` reports a switch). Each chart keeps its own type, series and configuration. In HTML, put the models in `data-ok-chart-models` (JSON) with one chart region per id, and the active one in `data-ok-active-chart-id`. The grid fires `ok:data-grid:chart` with the chart's `id`, and the cancelable `ok:data-grid:activechart` when the panel switches charts.",
+    html: `${gridOf(chartsMultiple, { rows: 4 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridSeveralCharts() {
+  return (
+    <DataGrid
+      aria-label="Sales by product"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        rowGrouping: { model: ["product"] },
+        aggregation: { model: { units: "sum", revenue: "sum" } },
+        chartsIntegration: {
+          charts: {
+            revenue: { label: "Revenue by product", type: "column", values: ["revenue"] },
+            units: { label: "Units by product", type: "line", values: ["units"] },
+          },
+        },
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "charts-configuration",
     title: "Configure the chart",
     body: `The chart model also holds the chart's configuration. Each setting applies only to the types that use it.
@@ -1279,7 +1322,7 @@ export function DataGridChartsConfiguration() {
 - **\`ok:data-grid:rowclick\`**, **\`ok:data-grid:rowdoubleclick\`**, **\`ok:data-grid:cellclick\`**, **\`ok:data-grid:celldoubleclick\`** and **\`ok:data-grid:columnheaderclick\`** report the row id, the field and the value. **\`ok:data-grid:editstart\`** and **\`ok:data-grid:editstop\`** report the cell and the reason. **\`ok:data-grid:validate\`** asks for an error in \`detail.error\`.
 - **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
 - **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\`, \`setPivotDerivedColumns(getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
-- **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
+- **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. **\`ok:data-grid:activechart\`** reports the chart the panel switches to in \`detail.id\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {
