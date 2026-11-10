@@ -87,9 +87,9 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.6 | E (could) | Organization chart | per-node line options (`edgeColorMode: "node"`: `lineColor` / `lineStyle` on a node) | ⬜ |
 | 4.18.7 | E (could, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | ⬜ |
 | 4.18.8 | E (should) | Tree view | `expandAll` / `collapseAll` / `expandToDepth(depth)` / `expandSubtree(id)` (instance, React `apiRef`), search highlight of matching items and their ancestors | ✅ |
-| 4.18.9 | E — ApexGrid (must) | Data grid | undo / redo of edits (`history: { enabled, stackSize }`, MUI X undo-redo): Ctrl / Cmd + Z, Ctrl / Cmd + Shift + Z, a paste or bulk edit is one step, `processRowUpdate` on each | ⬜ |
+| 4.18.9 | E — ApexGrid (must) | Data grid | undo / redo of edits (`history: { enabled, stackSize }`, MUI X undo-redo): Ctrl / Cmd + Z, Ctrl / Cmd + Shift + Z, a paste or bulk edit is one step, `processRowUpdate` on each | 🔄 |
 | 4.18.10 | E (should) | Data grid | set filter: a checklist of the column's distinct values with search and "Select all", on the `isAnyOf` model | ⬜ |
-| 4.18.11 | E (must) | Data grid | status bar for `cellSelection`: count, sum, average, min, max of the selected cells, a polite live region, with `aggregationFunctions` | ⬜ |
+| 4.18.11 | E (must) | Data grid | status bar for `cellSelection`: count, sum, average, min, max of the selected cells, a polite live region, with `aggregationFunctions` | 🔄 |
 | 4.18.12 | E (should) | Data grid (+ Chart) | a chart from a cell range (`createRangeChart`, Alt + F1), cross-filtering (a category click filters the grid), chart config `toJSON` / `restore` | ⬜ |
 | 4.18.13 | E (could) | Data grid | context menu on cells (right click, Shift + F10, Menu key: copy, paste, export, chart range, pin), extensible, after 4.7 `anchorPosition`; nested filter groups (AND / OR, JSON) in the filter panel | ⬜ |
 | 4.18.14 | E (could) | Data grid | `autoGenerate`: columns and types inferred from `rows` when `columns` is omitted | ⬜ |
@@ -113,7 +113,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.32 | E — audit 3.1 (could) | Code editor | DiffEditor `line` | ⬜ |
 | 4.18.33 | E — audit 3.1 (should) | Editor | React access to the Tiptap editor (`onCreate` / editor ref) and Tiptap events (`create`, `focus`, `blur`, `selectionUpdate`, `transaction`, `paste`, `drop`, `delete`, `contentError`); `getJSON()` / `getText()` | ⬜ |
 | 4.18.34 | E — audit 3.1 (could) | Editor | `editorProps`, `parseOptions`, `enableInputRules` / `enablePasteRules`, `textDirection`, `autofocus`; form `name` (hidden input) (with 4.16) | ✅ |
-| 4.18.35 | E — audit 3.1 (could, **ADR**) | Editor | `extensions` pass-through (tables, mentions), `BubbleMenu` / `FloatingMenu` / `useEditor` (with 4.16: new Tiptap extension dependencies, schema and sanitizer impact) | ⬜ |
+| 4.18.35 | E — audit 3.1 (could, **ADR**) | Editor | `extensions` pass-through (tables, mentions), `BubbleMenu` / `FloatingMenu` / `useEditor` (with 4.16: new Tiptap extension dependencies, schema and sanitizer impact) | ✅ |
 | 4.18.36 | E — audit 3.1 (should) | Chip | link chips: `component="a"` / `href` on the action (clickable) | ✅ |
 | 4.18.37 | E — audit 3.1 (should) | Snackbar | right to left: Toaster `dir`, logical properties in `snackbar.css` (with 4.13) | ✅ |
 | 4.18.38 | E — audit 3.1 (should) | Snackbar | per-toast `closeButton` / `invert`, Toaster `invert`, `toastOptions` (defaults for every toast), `icons` | ✅ |
@@ -127,8 +127,8 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.46 | E — audit 3.1 (could) | Drawer | `SwipeableDrawer`: `onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`; a button to open and close stays (WCAG 2.5.7); shares a core swipe helper with 4.14 | ⏸ |
 | 4.18.47 | E — audit 3.1 (could) | Accordion | `AccordionActions` `disableSpacing` | ✅ |
 | 4.18.48 | E — audit 3.1 (could) | Label | `disabled` | ✅ |
-| 4.18.49 | E — audit 3.1 (must) | Data grid | column `sortComparator` / `getSortComparator` / `sortingOrder`, grid `sortingOrder`, `multipleColumnsSortingMode` | ⬜ |
-| 4.18.50 | E — audit 3.1 (must) | Data grid | column `renderEditCell`, `renderHeaderFilter`; controlled `cellModesModel` / `rowModesModel` | ⬜ |
+| 4.18.49 | E — audit 3.1 (must) | Data grid | column `sortComparator` / `getSortComparator` / `sortingOrder`, grid `sortingOrder`, `multipleColumnsSortingMode` | 🔄 |
+| 4.18.50 | E — audit 3.1 (must) | Data grid | column `renderEditCell`, `renderHeaderFilter`; controlled `cellModesModel` / `rowModesModel` | 🔄 |
 | 4.18.51 | E — audit 3.1 (should) | Data grid | per-column hooks and opt-outs: `cellClassName`, `headerClassName`, `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | ⬜ |
 | 4.18.52 | E — audit 3.1 (should) | Data grid | selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef` | ⬜ |
 | 4.18.53 | E — audit 3.1 (should) | Data grid | layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `rowSpacingType`, `autoHeight`, `autoPageSize` | ⬜ |
@@ -137,8 +137,8 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.56 | E — audit 3.1 (could) | Data grid | server: `paginationMeta` / `estimatedRowCount` / `onRowCountChange`, `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`, `filterDebounceMs` / `columnFilterDebounceMs`, `disableChildrenFiltering` / `-Sorting` | ⬜ |
 | 4.18.57 | E — audit 3.1 (could) | Data grid | `disableAutosize`, `keepColumnPositionIfDraggedOutside`, pinned section separators, `isRowReorderable` / `isValidRowReorder` / `setTreeDataPath`, `pivotingColDef`, `pivotPanelOpen`, `virtualizeColumnsWithAutoRowHeight` | ⬜ |
 | 4.18.58 | E — audit 3.1 (could) | Data grid | `cellSelectionFillHandle` (drag to fill, keyboard alternative, WCAG 2.5.7) | ⬜ |
-| 4.18.59 | E — audit 3.1 (must) | Chart | several value axes (`yaxis[]` with `seriesName`, `opposite`), `logarithmic`, `reversed`, `tickAmount`; a drawn x axis title | ⬜ |
-| 4.18.60 | E — audit 3.1 (must) | Chart | point / slice / label selection: `ok:chart:select` + React callback (click, Enter), selected state (`allowMultipleDataPointsSelection`, `toggleDataPointSelection`) | ⬜ |
+| 4.18.59 | E — audit 3.1 (must) | Chart | several value axes (`yaxis[]` with `seriesName`, `opposite`), `logarithmic`, `reversed`, `tickAmount`; a drawn x axis title | 🔄 |
+| 4.18.60 | E — audit 3.1 (must) | Chart | point / slice / label selection: `ok:chart:select` + React callback (click, Enter), selected state (`allowMultipleDataPointsSelection`, `toggleDataPointSelection`) | 🔄 |
 | 4.18.61 | E — audit 3.1 (should) | Chart | `stackType: "100%"`, `stackOnlyBar`; stacked totals, data label position; bar `colors.ranges`, background bars | ⬜ |
 | 4.18.62 | E — audit 3.1 (should) | Chart | non-color series cues: `markers.shape`, `markers.discrete`, `fill.pattern`, `colorBlindMode` (WCAG 1.4.1); `stroke.width` per series | ⬜ |
 | 4.18.63 | E — audit 3.1 (should) | Chart | tooltip: `tooltip: false`, per-point mode (`shared: false`), fixed position, custom content (React node / HTML `<template>`) | ⬜ |
