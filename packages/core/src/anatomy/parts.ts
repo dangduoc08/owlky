@@ -429,8 +429,8 @@ export interface CheckboxParts {
 
 /** Chip: parts, states, values and triggers. */
 export interface ChipParts {
-  /** The chip's main element: a button when the chip is clickable. */
-  "data-ok-chip-action": Part;
+  /** The chip's main element: a button when the chip is clickable, a link (`a` with `href`) for a link chip, else a `span`. */
+  "data-ok-chip-action": Part<"button" | "a" | "span">;
   /** The delete button. */
   "data-ok-chip-delete": Part<"button">;
   /** The icon at the start. */

@@ -12,6 +12,11 @@ const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
 const css = (element: Element) => getComputedStyle(element);
 const rootOf = (el: Element) => el.closest("[data-ok-chip]") as HTMLElement;
 
+/** A router link stand-in: its own `to` becomes the `href`. */
+function RouterLink({ to, ...props }: { to: string } & Record<string, unknown>) {
+  return <a href={`/app${to}`} data-router="" {...props} />;
+}
+
 describe("Chip", () => {
   it("renders a static filled chip of 32px", () => {
     render(<Chip label="Tag" />);
@@ -118,6 +123,63 @@ describe("Chip", () => {
       okColor: "default",
       okSize: "medium",
     });
+  });
+
+  it("link chips: an <a> with href, hover and focus like a button, rel on new tabs", async () => {
+    const onClick = vi.fn((event: { preventDefault(): void }) => event.preventDefault());
+    const onDelete = vi.fn();
+    render(
+      <>
+        <Chip label="Docs" color="primary" href="#docs" onClick={onClick} onDelete={onDelete} />
+        <Chip label="New tab" href="https://example.com/" target="_blank" rel="external" />
+        <Chip label="Same tab" href="#same" target="_self" />
+      </>,
+    );
+    const link = screen.getByRole("link", { name: "Docs" });
+    expect(link.localName).toBe("a");
+    expect(link.getAttribute("href")).toBe("#docs");
+    expect(link.dataset["okChipAction"]).toBe("");
+    expect(css(link).textDecorationLine).toBe("none");
+    expect(css(link).cursor).toBe("pointer");
+    await userEvent.click(link);
+    expect(onClick).toHaveBeenCalledTimes(1);
+    const root = rootOf(link);
+    await settled(root);
+    expect(css(root).backgroundColor).toBe("rgb(0, 120, 103)");
+    link.focus();
+    await userEvent.keyboard("{Delete}");
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("link", { name: "New tab" }).getAttribute("rel")).toBe(
+      "external noopener noreferrer",
+    );
+    expect(screen.getByRole("link", { name: "Same tab" }).hasAttribute("rel")).toBe(false);
+    expect(screen.queryByRole("button", { name: "Docs" })).toBeNull();
+  });
+
+  it("link chips: disabled drops href; component renders a router link with actionProps", async () => {
+    const onClick = vi.fn();
+    render(
+      <>
+        <Chip label="Off" href="#off" onClick={onClick} disabled />
+        <Chip label="Route" component={RouterLink} actionProps={{ to: "/settings" }} />
+        <Chip label="Button" component="button" />
+        <Chip label="Off button" onClick={onClick} disabled />
+      </>,
+    );
+    const off = screen.getByRole("link", { name: "Off" });
+    expect(off.hasAttribute("href")).toBe(false);
+    expect(off.getAttribute("aria-disabled")).toBe("true");
+    // Same disabled colors as a disabled button chip.
+    const offButton = screen.getByRole("button", { name: "Off button" });
+    expect(css(rootOf(off)).color).toBe(css(rootOf(offButton)).color);
+    expect(css(rootOf(off)).backgroundColor).toBe(css(rootOf(offButton)).backgroundColor);
+    off.click();
+    expect(onClick).not.toHaveBeenCalled();
+    const route = screen.getByRole("link", { name: "Route" });
+    expect(route.getAttribute("href")).toBe("/app/settings");
+    expect(route.dataset).toMatchObject({ router: "", okChipAction: "" });
+    expect(screen.getByRole("button", { name: "Button" }).getAttribute("type")).toBe("button");
+    await expectNoAxeViolations(document.body);
   });
 
   it("renders on the server and has no axe violations", async () => {

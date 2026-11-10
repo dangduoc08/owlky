@@ -278,6 +278,7 @@ const pairs: [component: string, story: string][] = [
   ["chip", "filled"],
   ["chip", "outlined"],
   ["chip", "soft"],
+  ["chip", "clickable-link"],
   ["typography", "usage"],
   ["typography", "theme-keys"],
   ["typography", "semantic-element"],

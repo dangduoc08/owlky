@@ -11975,7 +11975,12 @@
        ],
        "parts": [
         {
-         "description": "The chip's main element: a button when the chip is clickable.",
+         "description": "The chip's main element: a button when the chip is clickable, a link (`a` with `href`) for a link chip, else a `span`.",
+         "elements": [
+          "a",
+          "button",
+          "span"
+         ],
          "kind": "part",
          "name": "data-ok-chip-action"
         },
@@ -12012,6 +12017,11 @@
        "native": "HTMLSpanElement",
        "props": [
         {
+         "description": "Other props of the action element, such as a router link's `to`.",
+         "name": "actionProps",
+         "type": "Record<string, unknown>"
+        },
+        {
          "description": "An `Avatar` before the label.",
          "name": "avatar",
          "type": "ReactNode"
@@ -12026,6 +12036,12 @@
          "description": "`default` (neutral), palette, `black` / `white`.",
          "name": "color",
          "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+        },
+        {
+         "default": "a",
+         "description": "The element or component of the action, such as a router link. with `href`, else `button`.",
+         "name": "component",
+         "type": "ElementType"
         },
         {
          "description": "Replaces the delete icon.",
@@ -12044,6 +12060,11 @@
          "type": "boolean"
         },
         {
+         "description": "Makes the chip a link: its action is an `<a>` with this URL.",
+         "name": "href",
+         "type": "string"
+        },
+        {
          "description": "An icon before the label (when there's no avatar).",
          "name": "icon",
          "type": "ReactNode"
@@ -12055,9 +12076,9 @@
          "type": "ReactNode"
         },
         {
-         "description": "Called when the chip is pressed.",
+         "description": "Called when the chip is pressed (its button, or its link with `href`).",
          "name": "onClick",
-         "type": "((event: MouseEvent<HTMLButtonElement, MouseEvent>) => void)"
+         "type": "((event: MouseEvent<HTMLAnchorElement | HTMLButtonElement, MouseEvent>) => void)"
         },
         {
          "description": "Renders a delete button that calls it (and Backspace / Delete on the focused chip).",
@@ -12065,10 +12086,20 @@
          "type": "(() => void)"
         },
         {
+         "description": "The link's relationship to the current page.",
+         "name": "rel",
+         "type": "string"
+        },
+        {
          "default": "\"medium\"",
          "description": "`medium` (32px) or `small` (24px).",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "Where the link opens, such as `_blank`. A new tab always gets `rel=\"noopener noreferrer\"`.",
+         "name": "target",
+         "type": "HTMLAttributeAnchorTarget"
         },
         {
          "default": "\"filled\"",
@@ -12159,12 +12190,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-chip][data-ok-variant][data-ok-color][data-ok-size]\n  (button[type=button] | span)[data-ok-chip-action]       button when clickable\n    span[data-ok-avatar]? | span[data-ok-chip-icon]? › svg\n    span[data-ok-chip-label]\n  button[type=button][data-ok-chip-delete][aria-label]? › svg[aria-hidden]\n```\nReact renders `data-ok-runtime=\"off\"` on the root.",
+     "body": "```\nspan[data-ok-chip][data-ok-variant][data-ok-color][data-ok-size]\n  (button[type=button] | a | span)[data-ok-chip-action]   button when clickable; a link chip: a[href]\n                                                          (disabled: no href, role=link, aria-disabled)\n    span[data-ok-avatar]? | span[data-ok-chip-icon]? › svg\n    span[data-ok-chip-label]\n  button[type=button][data-ok-chip-delete][aria-label]? › svg[aria-hidden]\n```\nReact renders `data-ok-runtime=\"off\"` on the root.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `chip`: listed under \"options\".)\n\nReact: `label`, `avatar`, `icon`, `clickable` / `onClick`, `onDelete()`, `deleteIcon`, `disabled`.\nRenamed / beyond: `variant` gains `soft` and `color` gains `black` / `white` (reference);\n`deleteLabel` (default \"Remove\", a11y — MUI's delete icon has no name). Not applicable: `sx`,\n`classes`, `component`, `skipFocusWhenDisabled` (native disabled buttons leave the tab order).",
+     "body": "(Options of `chip`: listed under \"options\".)\n\nReact: `label`, `avatar`, `icon`, `clickable` / `onClick`, `href` / `target` / `rel`, `component` /\n`actionProps` (the action element, such as a router link, and its props), `onDelete()`,\n`deleteIcon`, `disabled`.\nRenamed / beyond: `variant` gains `soft` and `color` gains `black` / `white` (reference);\n`deleteLabel` (default \"Remove\", a11y — MUI's delete icon has no name). Not applicable: `sx`,\n`classes`, `skipFocusWhenDisabled` (native disabled buttons leave the tab order). `component`\napplies to the action, not the root (the root holds the action and the delete button).",
      "id": "options",
      "title": "Options"
     },
@@ -12174,12 +12205,12 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "HTML runtime `chip`: the delete button (click) or Backspace / Delete on the action button →\ncancelable `ok:chip:delete` → `hidden`. React: `onDelete()` for both.",
+     "body": "HTML runtime `chip`: the delete button (click) or Backspace / Delete on the action button or link →\ncancelable `ok:chip:delete` → `hidden`. React: `onDelete()` for both.",
      "id": "behavior",
      "title": "Behavior"
     },
     {
-     "body": "| Key | Action |\n|---|---|\n| Tab | Action button, then the delete button |\n| Enter / Space | Press the focused button |\n| Backspace / Delete | Delete the chip (focus on its action button) |",
+     "body": "| Key | Action |\n|---|---|\n| Tab | Action button, then the delete button |\n| Enter / Space | Press the focused button |\n| Backspace / Delete | Delete the chip (focus on its action button or link) |",
      "id": "keyboard",
      "title": "Keyboard"
     },
@@ -12194,7 +12225,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Chip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `label`, `avatar`, `icon`, `clickable`, `deleteIcon`, `disabled`, `size`, `variant`, `color` | same; `variant` + `soft`, `color` + `black` / `white` | kept | |\n| `onClick` | same | kept | |\n| `onDelete(event)` | `onDelete()`; HTML `ok:chip:delete` (cancelable) | renamed | no event argument |\n| — | `deleteLabel` (\"Remove\") | kept | beyond upstream: names the delete button |\n| `component` + `href` (link chip, `clickable`) | — (action is a `button` or `span`) | deferred | new batch E row |\n| `children` | — | not applicable | unsupported upstream too |\n| `skipFocusWhenDisabled`, `nativeButton` | native `button` + `disabled` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "body": "Audit 2026-11-09 against MUI API page Chip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `label`, `avatar`, `icon`, `clickable`, `deleteIcon`, `disabled`, `size`, `variant`, `color` | same; `variant` + `soft`, `color` + `black` / `white` | kept | |\n| `onClick` | same | kept | |\n| `onDelete(event)` | `onDelete()`; HTML `ok:chip:delete` (cancelable) | renamed | no event argument |\n| — | `deleteLabel` (\"Remove\") | kept | beyond upstream: names the delete button |\n| `component` + `href` (link chip, `clickable`) | `href` / `target` / `rel` on the action (`a`), `component` = the action's element, `actionProps` for its other props | renamed | Phase 4 row 4.18.36: the root stays a `span` (it holds the delete button); disabled links drop `href` + `aria-disabled` (ButtonBase) |\n| `children` | — | not applicable | unsupported upstream too |\n| `skipFocusWhenDisabled`, `nativeButton` | native `button` + `disabled` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -12235,6 +12266,15 @@
       "soft-custom-icons.html",
       "soft-disabled.html",
       "soft-sizes.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/avatar.css + components/chip.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Clickable link -->\n<span data-ok-chip data-ok-variant=\"filled\" data-ok-color=\"default\" data-ok-size=\"medium\"><a data-ok-chip-action href=\"#clickable-link\"><span data-ok-chip-label>Clickable link</span></a></span>\n<span data-ok-chip data-ok-variant=\"outlined\" data-ok-color=\"default\" data-ok-size=\"medium\"><a data-ok-chip-action href=\"#clickable-link\"><span data-ok-chip-label>Clickable link</span></a></span>\n<span data-ok-chip data-ok-variant=\"soft\" data-ok-color=\"primary\" data-ok-size=\"medium\"><a data-ok-chip-action href=\"#clickable-link\"><span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\">M</span><span data-ok-chip-label>Deletable link</span></a><button type=\"button\" data-ok-chip-delete aria-label=\"Remove\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z\" fill=\"currentColor\" fill-rule=\"evenodd\" /></svg></button></span>",
+     "id": "components-chip--clickable-link",
+     "name": "Clickable link",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Avatar, Chip } from \"@owlky/react\";\n\n{/* Clickable link */}\n<Chip label=\"Clickable link\" href=\"#clickable-link\" />\n<Chip variant=\"outlined\" label=\"Clickable link\" href=\"#clickable-link\" />\n<Chip variant=\"soft\" color=\"primary\" avatar={<Avatar>M</Avatar>} label=\"Deletable link\" href=\"#clickable-link\" onDelete={undefined} />\n",
+     "snippets": [
+      "link-clickable.html"
      ]
     }
    ],
@@ -63090,6 +63130,13 @@
      "title": "Make a chip clickable or deletable"
     },
     {
+     "body": "Pass `href` to make the chip a link: its action becomes an `<a>` that looks and responds like a clickable chip. A link that opens a new tab with `target=\"_blank\"` always gets `rel=\"noopener noreferrer\"`. For a router link, pass the router's component as `component` and its own props, such as `to`, in `actionProps`. A disabled link chip has no `href`, so it can't be followed, and is marked `aria-disabled=\"true\"`.",
+     "html": "<span data-ok-chip data-ok-variant=\"outlined\" data-ok-color=\"default\" data-ok-size=\"medium\">\n  <a data-ok-chip-action href=\"https://example.com/docs/\"><span data-ok-chip-label>Documentation</span></a>\n</span>\n<span data-ok-chip data-ok-variant=\"soft\" data-ok-color=\"info\" data-ok-size=\"medium\">\n  <a data-ok-chip-action role=\"link\" aria-disabled=\"true\"><span data-ok-chip-label>Archive</span></a>\n</span>",
+     "id": "links",
+     "react": "import { Chip } from \"@owlky/react\";\n\nexport function DocLinks() {\n  return (\n    <>\n      <Chip variant=\"outlined\" label=\"Documentation\" href=\"https://example.com/docs/\" />\n      <Chip variant=\"soft\" color=\"info\" label=\"Archive\" href=\"https://example.com/archive/\" disabled />\n    </>\n  );\n}",
+     "title": "Link a chip to a page"
+    },
+    {
      "body": "The variant is `filled` (default), `outlined` or `soft`. Colors are `default` (neutral), the palette colors, `black` and `white`. The `small` size is 24px high, for dense lists such as table cells.",
      "html": "<span data-ok-chip data-ok-variant=\"outlined\" data-ok-color=\"info\" data-ok-size=\"small\">\n  <span data-ok-chip-action>\n    <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\">M</span>\n    <span data-ok-chip-label>Mia</span>\n  </span>\n</span>",
      "id": "variants",
@@ -63107,7 +63154,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:chip:delete`** (cancelable) fires when the delete button is pressed, or Backspace / Delete is pressed on the chip's button. If you don't call `preventDefault()`, the chip is then hidden.\n- **Instance:** `runtime.get(element, \"chip\")` returns `{ delete() }`.\n- **React:** `onDelete()` and `onClick(event)`.",
+     "body": "- **`ok:chip:delete`** (cancelable) fires when the delete button is pressed, or Backspace / Delete is pressed on the chip's button or link. If you don't call `preventDefault()`, the chip is then hidden.\n- **Instance:** `runtime.get(element, \"chip\")` returns `{ delete() }`.\n- **React:** `onDelete()` and `onClick(event)`.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -63117,7 +63164,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- The label names a clickable chip. Name each delete button with what it removes, such as \"Remove Paris\" (React: `deleteLabel`, default \"Remove\").\n- The chip's button and its delete button are two tab stops, so keyboard users can reach both.\n- Focus is shown with a 2px outline. The delete button's target is 24 × 24px.\n- Neutral chips meet a contrast ratio of at least 4.5:1, and soft chips use the accessible text tone. Filled and outlined brand colors follow the design.",
+     "body": "- The label names a clickable chip. Name each delete button with what it removes, such as \"Remove Paris\" (React: `deleteLabel`, default \"Remove\").\n- The chip's button and its delete button are two tab stops, so keyboard users can reach both.\n- A link chip is announced as a link. Use it to go somewhere, and a clickable chip to do something on the page.\n- Focus is shown with a 2px outline. The delete button's target is 24 × 24px.\n- Neutral chips meet a contrast ratio of at least 4.5:1, and soft chips use the accessible text tone. Filled and outlined brand colors follow the design.",
      "id": "accessibility",
      "title": "Accessibility"
     },

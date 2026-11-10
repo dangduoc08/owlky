@@ -36,7 +36,7 @@ const PIXEL =
 const local = (html: string) => html.replaceAll(/src="avatars\/[^"]+"/g, `src="${PIXEL}"`);
 
 describe("chip snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(12));
+  it("covers every story group", () => expect(snippets).toHaveLength(13));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -89,5 +89,22 @@ describe("chip runtime", () => {
     expect(events).toEqual(["a", "b", "c"]);
     expect(rt.get<ChipInstance>(chips[1] as Element, "chip")?.delete()).toBe(false);
     expect(components).toContain(chip);
+  });
+
+  it("link chips: Backspace / Delete on the link deletes; the link keeps its look", async () => {
+    const host = mount(
+      `<span data-ok-chip data-ok-variant="soft" data-ok-color="primary" data-ok-size="medium"><a data-ok-chip-action href="#docs"><span data-ok-chip-label>Docs</span></a><button type="button" data-ok-chip-delete aria-label="Remove Docs">x</button></span>` +
+        `<span data-ok-chip data-ok-variant="soft" data-ok-color="info" data-ok-size="medium"><a data-ok-chip-action role="link" aria-disabled="true"><span data-ok-chip-label>Off</span></a></span>`,
+    );
+    start();
+    const [docs, off] = [...host.querySelectorAll<HTMLElement>("[data-ok-chip]")];
+    const link = docs?.querySelector<HTMLElement>("a") as HTMLElement;
+    expect(getComputedStyle(link).textDecorationLine).toBe("none");
+    expect(getComputedStyle(off as HTMLElement).color).not.toBe(
+      getComputedStyle(docs as HTMLElement).color,
+    );
+    link.focus();
+    await userEvent.keyboard("{Backspace}");
+    expect(docs?.hidden).toBe(true);
   });
 });

@@ -2,10 +2,14 @@ import {
   type ChipColor,
   type ChipVariant,
   chipAttributes,
+  linkRel,
   type SelectionControlSize,
 } from "@owlky/core";
 import {
+  createElement,
+  type ElementType,
   forwardRef,
+  type HTMLAttributeAnchorTarget,
   type HTMLAttributes,
   type KeyboardEvent,
   type MouseEvent,
@@ -40,8 +44,18 @@ export interface ChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, "color"
   icon?: ReactNode;
   /** Makes the chip a button (also implied by `onClick`). */
   clickable?: boolean | undefined;
-  /** Called when the chip is pressed. */
-  onClick?: ((event: MouseEvent<HTMLButtonElement>) => void) | undefined;
+  /** Called when the chip is pressed (its button, or its link with `href`). */
+  onClick?(event: MouseEvent<HTMLButtonElement | HTMLAnchorElement>): void;
+  /** Makes the chip a link: its action is an `<a>` with this URL. */
+  href?: string | undefined;
+  /** Where the link opens, such as `_blank`. A new tab always gets `rel="noopener noreferrer"`. */
+  target?: HTMLAttributeAnchorTarget | undefined;
+  /** The link's relationship to the current page. */
+  rel?: string | undefined;
+  /** The element or component of the action, such as a router link. Default: `a` with `href`, else `button`. */
+  component?: ElementType | undefined;
+  /** Other props of the action element, such as a router link's `to`. */
+  actionProps?: Record<string, unknown> | undefined;
   /** Renders a delete button that calls it (and Backspace / Delete on the focused chip). */
   onDelete?: (() => void) | undefined;
   /** Replaces the delete icon. */
@@ -66,6 +80,11 @@ export const Chip = forwardRef<HTMLSpanElement, ChipProps>(function Chip(
     icon,
     clickable,
     onClick,
+    href,
+    target,
+    rel,
+    component,
+    actionProps,
     onDelete,
     deleteIcon,
     deleteLabel = "Remove",
@@ -81,8 +100,10 @@ export const Chip = forwardRef<HTMLSpanElement, ChipProps>(function Chip(
       <span data-ok-chip-label="">{label}</span>
     </>
   );
-  const button = clickable === true || onClick !== undefined;
-  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+  const link = href !== undefined || (component !== undefined && component !== "button");
+  const button = !link && (clickable === true || onClick !== undefined || component === "button");
+  const safeRel = linkRel(target, rel);
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (onDelete && (event.key === "Backspace" || event.key === "Delete")) {
       event.preventDefault();
       onDelete();
@@ -90,7 +111,23 @@ export const Chip = forwardRef<HTMLSpanElement, ChipProps>(function Chip(
   };
   return (
     <span ref={ref} {...chipAttributes({ variant, color, size })} data-ok-runtime="off" {...props}>
-      {button ? (
+      {link ? (
+        createElement(
+          component ?? "a",
+          {
+            ...actionProps,
+            "data-ok-chip-action": "",
+            ...(href === undefined || disabled === true ? {} : { href }),
+            ...(target === undefined ? {} : { target }),
+            ...(safeRel === undefined ? {} : { rel: safeRel }),
+            // A disabled link has no `href` (it can't be followed) and says so.
+            ...(disabled === true ? { role: "link", "aria-disabled": true } : {}),
+            onClick: disabled === true ? undefined : onClick,
+            onKeyDown,
+          },
+          inner,
+        )
+      ) : button ? (
         <button
           type="button"
           data-ok-chip-action=""

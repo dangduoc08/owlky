@@ -2,13 +2,13 @@
  * Chip — spec: specs/components/chip.md
  *
  * Anatomy:   span[data-ok-chip]
- *              › (button[type=button] | span)[data-ok-chip-action]   (clickable chips: a button)
+ *              › (button[type=button] | a | span)[data-ok-chip-action]   (clickable: a button; link chips: an a)
  *                  › span[data-ok-avatar]? | span[data-ok-chip-icon]? › span[data-ok-chip-label]
  *              › button[type=button][data-ok-chip-delete][aria-label]? › svg
  * Modifiers: data-ok-variant = filled (default) | outlined | soft
  *            data-ok-color   = default | primary | secondary | info | success | warning | error | black | white
  *            data-ok-size    = medium (default) | small
- * States:    the buttons' :hover, :focus-visible, :disabled (via :has())
+ * States:    the action's :hover, :focus-visible, :disabled / [aria-disabled="true"] (via :has())
  *
  * Single :where() selectors in @layer components. Translucent colors use
  * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
@@ -69,7 +69,11 @@
     cursor: default;
   }
 
-  :where(button[data-ok-chip-action]) {
+  :where(a[data-ok-chip-action]) {
+    text-decoration: none;
+  }
+
+  :where(button[data-ok-chip-action], a[data-ok-chip-action][href]) {
     cursor: pointer;
   }
 
@@ -177,18 +181,22 @@
 
   /* Hover (clickable chips) */
   @media (hover: hover) {
-    :where([data-ok-chip]:has(> button[data-ok-chip-action]:enabled:hover)) {
+    :where([data-ok-chip]:has(> :is(button:enabled, a[href])[data-ok-chip-action]:hover)) {
       background-color: var(--_ok-dark);
     }
 
     :where(
-        [data-ok-chip][data-ok-variant="outlined"]:has(> button[data-ok-chip-action]:enabled:hover)
+        [data-ok-chip][data-ok-variant="outlined"]:has(
+          > :is(button:enabled, a[href])[data-ok-chip-action]:hover
+        )
       ) {
       background-color: rgb(var(--_ok-channel) / 0.08);
     }
 
     :where(
-        [data-ok-chip][data-ok-variant="soft"]:has(> button[data-ok-chip-action]:enabled:hover)
+        [data-ok-chip][data-ok-variant="soft"]:has(
+          > :is(button:enabled, a[href])[data-ok-chip-action]:hover
+        )
       ) {
       background-color: rgb(var(--_ok-channel) / 0.32);
     }
@@ -199,7 +207,7 @@
   }
 
   /* Focus */
-  :where([data-ok-chip]:has(> button[data-ok-chip-action]:focus-visible)) {
+  :where([data-ok-chip]:has(> :is(button, a)[data-ok-chip-action]:focus-visible)) {
     outline: 2px solid var(--ok-text-primary);
     outline-offset: 2px;
   }
@@ -211,19 +219,25 @@
   }
 
   /* Disabled */
-  :where([data-ok-chip]:has(> button:disabled)) {
+  :where([data-ok-chip]:has(> :is(button:disabled, [aria-disabled="true"]))) {
     --_ok-dark: var(--ok-action-disabled-bg);
 
     background-color: var(--ok-action-disabled-bg);
     color: var(--ok-action-disabled);
   }
 
-  :where([data-ok-chip][data-ok-variant="outlined"]:has(> button:disabled)) {
+  :where(
+    [data-ok-chip][data-ok-variant="outlined"]:has(> :is(button:disabled, [aria-disabled="true"]))
+  ) {
     border-color: var(--ok-action-disabled-bg);
     background-color: transparent;
   }
 
-  :where([data-ok-chip]:has(> button:disabled) [data-ok-chip-action] > [data-ok-avatar]) {
+  :where(
+    [data-ok-chip]:has(> :is(button:disabled, [aria-disabled="true"]))
+      [data-ok-chip-action]
+      > [data-ok-avatar]
+  ) {
     --_ok-bg: var(--ok-action-disabled-bg);
     --_ok-fg: var(--ok-action-disabled);
   }

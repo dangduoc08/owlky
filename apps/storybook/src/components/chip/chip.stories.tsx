@@ -3,7 +3,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { ChipDocs } from "./chip-docs.js";
-import { CHIP_CONTROLS, GROUP_FILES, variantGroups } from "./chip-examples.js";
+import {
+  CHIP_CONTROLS,
+  CHIP_LINK_CONTROLS,
+  GROUP_FILES,
+  LINK_GROUP_FILES,
+  linkGroups,
+  variantGroups,
+} from "./chip-examples.js";
 
 const controls = { ...CHIP_CONTROLS, target: Chip };
 
@@ -37,3 +44,10 @@ export default meta;
 export const Filled: StoryObj = story("filled");
 export const Outlined: StoryObj = story("outlined");
 export const Soft: StoryObj = story("soft");
+export const ClickableLink: StoryObj = {
+  name: "Clickable link",
+  ...frameworkStory({
+    html: snippetStory(snippets, "link", LINK_GROUP_FILES, setup, CHIP_LINK_CONTROLS),
+    react: reactGroupsStory(linkGroups(), { ...CHIP_LINK_CONTROLS, target: Chip }),
+  }),
+};

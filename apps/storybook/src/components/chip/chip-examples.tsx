@@ -121,6 +121,34 @@ export function variantGroups(variant: ChipVariant): ReactGroup[] {
   ];
 }
 
+/** The "Clickable link" story (MUI's demo): chips whose action is a link. */
+export function linkGroups(): ReactGroup[] {
+  return [
+    {
+      title: "Clickable link",
+      content: [
+        <Chip key="f" label="Clickable link" href="#clickable-link" />,
+        <Chip key="o" variant="outlined" label="Clickable link" href="#clickable-link" />,
+        <Chip
+          key="s"
+          variant="soft"
+          color="primary"
+          avatar={m()}
+          label="Deletable link"
+          href="#clickable-link"
+          onDelete={noop}
+        />,
+      ],
+    },
+  ];
+}
+
+/** Group title ↔ snippet file suffix of the link story (`link-clickable.html`). */
+export const LINK_GROUP_FILES: GroupFiles = [["Clickable link", "clickable"]];
+
+/** The link story's Controls: `disabled` is `aria-disabled` on links (no native attribute to write). */
+export const CHIP_LINK_CONTROLS = { schema: chipOptions, keys: ["size"] } as const;
+
 /** Group title ↔ snippet file suffix, in story order. */
 export const GROUP_FILES: GroupFiles = [
   ["Colors", "colors"],

@@ -59,6 +59,27 @@ export function Cities() {
 }`,
   },
   {
+    id: "links",
+    title: "Link a chip to a page",
+    body: 'Pass `href` to make the chip a link: its action becomes an `<a>` that looks and responds like a clickable chip. A link that opens a new tab with `target="_blank"` always gets `rel="noopener noreferrer"`. For a router link, pass the router\'s component as `component` and its own props, such as `to`, in `actionProps`. A disabled link chip has no `href`, so it can\'t be followed, and is marked `aria-disabled="true"`.',
+    html: `<span data-ok-chip data-ok-variant="outlined" data-ok-color="default" data-ok-size="medium">
+  <a data-ok-chip-action href="https://example.com/docs/"><span data-ok-chip-label>Documentation</span></a>
+</span>
+<span data-ok-chip data-ok-variant="soft" data-ok-color="info" data-ok-size="medium">
+  <a data-ok-chip-action role="link" aria-disabled="true"><span data-ok-chip-label>Archive</span></a>
+</span>`,
+    react: `import { Chip } from "@owlky/react";
+
+export function DocLinks() {
+  return (
+    <>
+      <Chip variant="outlined" label="Documentation" href="https://example.com/docs/" />
+      <Chip variant="soft" color="info" label="Archive" href="https://example.com/archive/" disabled />
+    </>
+  );
+}`,
+  },
+  {
     id: "variants",
     title: "Choose a variant, color and size",
     body: "The variant is `filled` (default), `outlined` or `soft`. Colors are `default` (neutral), the palette colors, `black` and `white`. The `small` size is 24px high, for dense lists such as table cells.",
@@ -89,7 +110,7 @@ export function MiaChip() {
   {
     id: "events",
     title: "Events and methods",
-    body: `- **\`ok:chip:delete\`** (cancelable) fires when the delete button is pressed, or Backspace / Delete is pressed on the chip's button. If you don't call \`preventDefault()\`, the chip is then hidden.
+    body: `- **\`ok:chip:delete\`** (cancelable) fires when the delete button is pressed, or Backspace / Delete is pressed on the chip's button or link. If you don't call \`preventDefault()\`, the chip is then hidden.
 - **Instance:** \`runtime.get(element, "chip")\` returns \`{ delete() }\`.
 - **React:** \`onDelete()\` and \`onClick(event)\`.`,
   },
@@ -103,6 +124,7 @@ export function MiaChip() {
     title: "Accessibility",
     body: `- The label names a clickable chip. Name each delete button with what it removes, such as "Remove Paris" (React: \`deleteLabel\`, default "Remove").
 - The chip's button and its delete button are two tab stops, so keyboard users can reach both.
+- A link chip is announced as a link. Use it to go somewhere, and a clickable chip to do something on the page.
 - Focus is shown with a 2px outline. The delete button's target is 24 × 24px.
 - Neutral chips meet a contrast ratio of at least 4.5:1, and soft chips use the accessible text tone. Filled and outlined brand colors follow the design.`,
   },
@@ -133,6 +155,12 @@ const PREVIEWS = {
     </Preview>
   ),
   actions: CitiesPreview,
+  links: () => (
+    <Preview>
+      <Chip variant="outlined" label="Documentation" href="#links" />
+      <Chip variant="soft" color="info" label="Archive" href="#links" disabled />
+    </Preview>
+  ),
   variants: () => (
     <Preview>
       <Chip variant="outlined" color="info" size="small" avatar={<Avatar>M</Avatar>} label="Mia" />
@@ -163,6 +191,19 @@ const PREVIEWS = {
           description: "Makes the chip a button.",
         },
         {
+          react: "href / target / rel",
+          html: "a[data-ok-chip-action][href]",
+          type: "string",
+          description: 'Makes the chip a link. `target="_blank"` adds `rel="noopener noreferrer"`.',
+        },
+        {
+          react: "component / actionProps",
+          html: "the action element",
+          type: "ElementType / object",
+          description:
+            "Renders the action as another element or component, such as a router link, with its own props.",
+        },
+        {
           react: "onDelete",
           html: "button[data-ok-chip-delete]",
           type: "() => void",
@@ -182,7 +223,7 @@ const PREVIEWS = {
         },
         {
           react: "disabled",
-          html: "disabled on the buttons",
+          html: 'disabled on the buttons; a link: no href, aria-disabled="true"',
           type: "boolean",
           description: "Disables the chip.",
         },
@@ -193,8 +234,8 @@ const PREVIEWS = {
     <KeyboardTable
       rows={[
         ["Tab", "Moves to the chip's button, then to its delete button."],
-        ["Enter / Space", "Presses the focused button."],
-        ["Backspace / Delete", "Deletes the chip whose button has focus."],
+        ["Enter / Space", "Presses the focused button. Enter follows a link chip."],
+        ["Backspace / Delete", "Deletes the chip whose button or link has focus."],
       ]}
     />
   ),
