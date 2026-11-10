@@ -13,6 +13,8 @@ import {
 import {
   type ChangeEvent,
   type CSSProperties,
+  createElement,
+  type ElementType,
   forwardRef,
   type HTMLAttributes,
   type InputHTMLAttributes,
@@ -41,12 +43,21 @@ function SelectIcon() {
 export interface InputAdornmentProps extends HTMLAttributes<HTMLSpanElement> {
   /** Which side of the input it goes on. */
   position: "start" | "end";
+  /** Presses go through the adornment to the input, such as for a decorative icon. */
+  disablePointerEvents?: boolean | undefined;
+  /** The element to render. Default `"span"`. */
+  component?: ElementType | undefined;
 }
 
 /** InputAdornment — an icon, text or button before or after a text field's input. */
 export const InputAdornment = forwardRef<HTMLSpanElement, InputAdornmentProps>(
-  function InputAdornment({ position, ...props }, ref) {
-    return <span ref={ref} data-ok-text-field-adornment={position} {...props} />;
+  function InputAdornment({ position, disablePointerEvents, component = "span", ...props }, ref) {
+    return createElement(component, {
+      ref,
+      "data-ok-text-field-adornment": position,
+      ...(disablePointerEvents ? { "data-ok-disable-pointer-events": "" } : {}),
+      ...props,
+    });
   },
 );
 
@@ -90,6 +101,15 @@ export interface TextFieldProps
   margin?: TextFieldMargin | undefined;
   /** Keep the label above the value even when the field is empty. */
   shrink?: boolean | undefined;
+  /**
+   * Hide the label visually: it still names the input, and the field is laid out as if it had
+   * none (a filled field gets less padding above the value).
+   */
+  hiddenLabel?: boolean | undefined;
+  /** Show the focus colors even when the field doesn't have focus. */
+  focused?: boolean | undefined;
+  /** The root element. Default `"div"`. */
+  component?: ElementType | undefined;
   /** Controlled value. */
   value?: string | number | undefined;
   /** Uncontrolled initial value. */
@@ -135,6 +155,9 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     fullWidth,
     margin,
     shrink,
+    hiddenLabel,
+    focused,
+    component = "div",
     id,
     onChange,
     multiline,
@@ -176,6 +199,8 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     fullWidth,
     margin,
     shrink,
+    hiddenLabel,
+    focused,
     minRows: min,
     maxRows: max,
   });
@@ -283,13 +308,10 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
         {outline}
       </div>
     );
-  return (
-    <div
-      {...attributes}
-      data-ok-runtime="off"
-      className={className}
-      style={{ ...rowStyle, ...style }}
-    >
+  return createElement(
+    component,
+    { ...attributes, "data-ok-runtime": "off", className, style: { ...rowStyle, ...style } },
+    <>
       {label != null && (
         <label data-ok-text-field-label="" htmlFor={inputId} id={labelId}>
           {label}
@@ -306,6 +328,6 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
           {helperText}
         </div>
       )}
-    </div>
+    </>,
   );
 });

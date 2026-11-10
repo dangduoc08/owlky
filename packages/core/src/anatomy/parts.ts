@@ -1740,6 +1740,8 @@ export interface TabsParts {
 export interface TextFieldParts {
   /** An adornment before or after the input, such as an icon or a unit. */
   "data-ok-text-field-adornment": Value<"start" | "end">;
+  /** On an adornment: presses go through it to the input (React `disablePointerEvents`). */
+  "data-ok-disable-pointer-events": State;
   /** The asterisk of a required field's label. */
   "data-ok-text-field-asterisk": Part<"span">;
   /** The box around the input. */

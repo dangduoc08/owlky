@@ -465,6 +465,7 @@
   "data-ok-disable-past",
   "data-ok-disable-pivoting",
   "data-ok-disable-placeholder",
+  "data-ok-disable-pointer-events",
   "data-ok-disable-prefers-reduced-motion",
   "data-ok-disable-restore-focus",
   "data-ok-disable-row-grouping",
@@ -57964,6 +57965,18 @@
          "name": "shrink"
         },
         {
+         "attr": "data-ok-hidden-label",
+         "description": "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
+         "kind": "flag",
+         "name": "hiddenLabel"
+        },
+        {
+         "attr": "data-ok-focused",
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "kind": "flag",
+         "name": "focused"
+        },
+        {
          "attr": "data-ok-min-rows",
          "description": "Multiline: rows shown at least.",
          "kind": "number",
@@ -58000,6 +58013,11 @@
         }
        ],
        "parts": [
+        {
+         "description": "On an adornment: presses go through it to the input (React `disablePointerEvents`).",
+         "kind": "state",
+         "name": "data-ok-disable-pointer-events"
+        },
         {
          "description": "An adornment before or after the input, such as an icon or a unit.",
          "kind": "value",
@@ -58092,6 +58110,12 @@
          "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
+         "default": "\"div\"",
+         "description": "The root element.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "description": "Uncontrolled initial value.",
          "name": "defaultValue",
          "type": "string | number"
@@ -58107,6 +58131,11 @@
          "type": "boolean"
         },
         {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
          "description": "Stretch to the container width.",
          "name": "fullWidth",
          "type": "boolean"
@@ -58115,6 +58144,11 @@
          "description": "Text under the field, such as a hint or an error message (linked with `aria-describedby`).",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the label visually: it still names the input, and the field is laid out as if it had none (a filled field gets less padding above the value).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "The floating label; it names the input.",
@@ -58203,6 +58237,17 @@
        "description": "An icon, text or button before or after a text field's input.",
        "native": "HTMLSpanElement",
        "props": [
+        {
+         "default": "\"span\"",
+         "description": "The element to render.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
+         "description": "Presses go through the adornment to the input, such as for a decorative icon.",
+         "name": "disablePointerEvents",
+         "type": "boolean"
+        },
         {
          "description": "Which side of the input it goes on.",
          "name": "position",
@@ -58310,6 +58355,18 @@
        "name": "shrink"
       },
       {
+       "attr": "data-ok-hidden-label",
+       "description": "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
+       "kind": "flag",
+       "name": "hiddenLabel"
+      },
+      {
+       "attr": "data-ok-focused",
+       "description": "Show the focus colors even when the field doesn't have focus.",
+       "kind": "flag",
+       "name": "focused"
+      },
+      {
        "attr": "data-ok-min-rows",
        "description": "Multiline: rows shown at least.",
        "kind": "number",
@@ -58355,7 +58412,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-min-rows]?[data-ok-max-rows]?\n  label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] \" *\")\n  div[data-ok-text-field-control]\n    span[data-ok-text-field-adornment=\"start\"]?\n    input[data-ok-text-field-input][id][placeholder]   | textarea[…][rows][placeholder] | select[…] › option\n    svg[data-ok-text-field-select-icon][aria-hidden]?  (select)\n    span[data-ok-text-field-adornment=\"end\"]?\n    fieldset[data-ok-text-field-outline][aria-hidden] › legend? › span (label + \" *\")   (outlined only)\n  div[data-ok-text-field-helper][id]?                  (linked by aria-describedby)\n```\nInputs and textareas always carry a `placeholder` (\" \" when none): `:not(:placeholder-shown)` is\nhow CSS knows there is a value. React renders `data-ok-runtime=\"off\"` on the root; `ref` and the\nremaining props go to the input; `className` / `style` to the root.",
+     "body": "```\ndiv[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-hidden-label]?[data-ok-focused]?[data-ok-min-rows]?[data-ok-max-rows]?\n  label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] \" *\")\n  div[data-ok-text-field-control]\n    span[data-ok-text-field-adornment=\"start\"][data-ok-disable-pointer-events]?   (optional; any element)\n    input[data-ok-text-field-input][id][placeholder]   | textarea[…][rows][placeholder] | select[…] › option\n    svg[data-ok-text-field-select-icon][aria-hidden]?  (select)\n    span[data-ok-text-field-adornment=\"end\"]?\n    fieldset[data-ok-text-field-outline][aria-hidden] › legend? › span (label + \" *\")   (outlined only)\n  div[data-ok-text-field-helper][id]?                  (linked by aria-describedby)\n```\nInputs and textareas always carry a `placeholder` (\" \" when none): `:not(:placeholder-shown)` is\nhow CSS knows there is a value. React renders `data-ok-runtime=\"off\"` on the root; `ref` and the\nremaining props go to the input; `className` / `style` to the root.",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -58400,7 +58457,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | — | deferred | filled field without label (less top padding), forced focus style, root element |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | — | deferred | |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
+     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -70300,6 +70357,13 @@
      "id": "adornments",
      "react": "import { IconButton, InputAdornment, TextField } from \"@owlky/react\";\nimport { EyeIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nexport function Password() {\n  const [shown, setShown] = useState(false);\n  return (\n    <TextField\n      id=\"password\"\n      label=\"Password\"\n      type={shown ? \"text\" : \"password\"}\n      autoComplete=\"current-password\"\n      endAdornment={\n        <InputAdornment position=\"end\">\n          <IconButton edge=\"end\" aria-label=\"Show password\" aria-pressed={shown} onClick={() => setShown(!shown)}>\n            <EyeIcon />\n          </IconButton>\n        </InputAdornment>\n      }\n    />\n  );\n}",
      "title": "Add icons, units and buttons"
+    },
+    {
+     "body": "When the context already says what a field is for, such as a search field in a toolbar, set `hiddenLabel`. The label is hidden visually but still names the input for assistive technology, and the field is laid out as if it had no label: a filled field gets less padding above the value. Show a placeholder instead, so sighted users know what to type. An adornment that only decorates the field can let presses through to the input: set `disablePointerEvents` on it (HTML: `data-ok-disable-pointer-events`).",
+     "html": "<div data-ok-text-field data-ok-variant=\"filled\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-hidden-label>\n  <label data-ok-text-field-label for=\"search\">Search</label>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\" data-ok-disable-pointer-events><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\" /><path d=\"m20 20-3.5-3.5\" /></svg></span>\n    <input id=\"search\" data-ok-text-field-input type=\"search\" placeholder=\"Search orders\">\n  </div>\n</div>",
+     "id": "hidden-label",
+     "react": "import { InputAdornment, TextField } from \"@owlky/react\";\nimport { SearchIcon } from \"lucide-react\";\n\nexport function SearchField() {\n  return (\n    <TextField\n      id=\"search\"\n      variant=\"filled\"\n      size=\"small\"\n      label=\"Search\"\n      hiddenLabel\n      type=\"search\"\n      placeholder=\"Search orders\"\n      startAdornment={\n        <InputAdornment position=\"start\" disablePointerEvents>\n          <SearchIcon />\n        </InputAdornment>\n      }\n    />\n  );\n}",
+     "title": "Hide the label"
     },
     {
      "body": "Set `select` and pass `<option>` elements to get a native `<select>` in the field's frame. The label always stays above it. A native select uses the system's list on every device, which works well on touch screens and with assistive technology. For a list in the page's own style, set `selectProps` to `{ native: false }` and pass **MenuItem**s: the field then holds a **Select** (see its page).",

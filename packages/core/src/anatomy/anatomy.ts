@@ -1092,6 +1092,11 @@ export const textFieldOptions = defineOptions("text-field", "data-ok-text-field"
     "Vertical margin: 0, 8 / 4px or 16 / 8px.",
   ),
   shrink: flag("data-ok-shrink", "Keep the label above the value even when empty."),
+  hiddenLabel: flag(
+    "data-ok-hidden-label",
+    "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
+  ),
+  focused: flag("data-ok-focused", "Show the focus colors even when the field doesn't have focus."),
   minRows: number("data-ok-min-rows", undefined, "Multiline: rows shown at least.", { min: 1 }),
   maxRows: number("data-ok-max-rows", undefined, "Multiline: rows before it scrolls.", { min: 1 }),
   disabled: native("disabled", "Native `disabled` on the input.", { children: FIELD_INPUT }),
@@ -1113,6 +1118,8 @@ export interface TextFieldAnatomyOptions {
   fullWidth?: boolean | undefined;
   margin?: TextFieldMargin | undefined;
   shrink?: boolean | undefined;
+  hiddenLabel?: boolean | undefined;
+  focused?: boolean | undefined;
   minRows?: number | undefined;
   maxRows?: number | undefined;
 }
