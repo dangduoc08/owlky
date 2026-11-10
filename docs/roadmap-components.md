@@ -61,10 +61,10 @@ then 4.22–4.24, then 4.25 with its ADR).
 
 | # | Batch | Component | Missing today | Status |
 |---|---|---|---|---|
-| 4.1 | A — inputs | Autocomplete | `groupBy`, `loading` / `loadingText`, virtualization, `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList`, `ListboxComponent` | 🔄 |
-| 4.2 | A | Slider | `scale`, `shiftStep` | 🔄 |
-| 4.3 | A | Switch | `icon` / `checkedIcon` | 🔄 |
-| 4.4 | A | Upload | hook API (`getRootProps` / `getInputProps`, react-dropzone style) | 🔄 |
+| 4.1 | A — inputs | Autocomplete | `groupBy`, `loading` / `loadingText`, virtualization, `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList`, `ListboxComponent` | ✅ |
+| 4.2 | A | Slider | `scale`, `shiftStep` | ✅ |
+| 4.3 | A | Switch | `icon` / `checkedIcon` | ✅ |
+| 4.4 | A | Upload | hook API (`getRootProps` / `getInputProps`, react-dropzone style) | ✅ |
 | 4.5 | B — overlays, navigation | Menu | nested menus, `variant="menu"` | 🔄 |
 | 4.6 | B | Tooltip | `followCursor`, `enterNextDelay` | 🔄 |
 | 4.7 | B | Popover | `anchorPosition` / `anchorReference`, `marginThreshold` | 🔄 |
@@ -101,15 +101,15 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.20 | E (could) | Chart | measure ruler (span · free, keyboard alternative, pinned rulers, `clearMeasures`), draggable annotations that report data coordinates (Ink) | ⬜ |
 | 4.18.21 | E — ApexCharts v8 (should: waterfall, dumbbell first) | Chart | new types `waterfall`, `dumbbell`, `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` (prop-level mapping in 3.1) | ⬜ |
 | 4.18.22 | E — audit 3.1 (should) | Button, Icon button, Fab (+ Button group) | polymorphic `component` / `LinkComponent` (router links); Icon button `href` (icon links); Button group `component` | ⬜ |
-| 4.18.23 | E — audit 3.1 (should) | Autocomplete | `readOnly`, `onHighlightChange`, `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, configurable `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | 🔄 |
-| 4.18.24 | E — audit 3.1 (could) | Autocomplete | `renderValue` (custom chips), `clearIcon` / `popupIcon` / `forcePopupIcon`, object values (`getOptionLabel` / `isOptionEqualToValue` / `getOptionKey` / `getOptionValue`), public `useAutocomplete` / `createFilterOptions` | 🔄 |
+| 4.18.23 | E — audit 3.1 (should) | Autocomplete | `readOnly`, `onHighlightChange`, `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, configurable `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | ✅ |
+| 4.18.24 | E — audit 3.1 (could) | Autocomplete | `renderValue` (custom chips), `clearIcon` / `popupIcon` / `forcePopupIcon`, object values (`getOptionLabel` / `isOptionEqualToValue` / `getOptionKey` / `getOptionValue`), public `useAutocomplete` / `createFilterOptions` | ✅ |
 | 4.18.25 | E — audit 3.1 (should) | Text field | FormControl props `hiddenLabel`, `focused`, `component`; InputAdornment `disablePointerEvents`, `component` | ⬜ |
 | 4.18.26 | E — audit 3.1 (could) | Text field (+ Select) | standalone `InputBase` / `OutlinedInput` (`notched`) / `FilledInput` (`disableUnderline`) / `Input`, `inputComponent` | ⬜ |
 | 4.18.27 | E — audit 3.1 (should) | Select | InputBase `startAdornment` / `endAdornment` | ⬜ |
-| 4.18.28 | E — audit 3.1 (could) | Slider | `tabIndex` | 🔄 |
+| 4.18.28 | E — audit 3.1 (could) | Slider | `tabIndex` | ✅ |
 | 4.18.29 | E — audit 3.1 (should) | Date pickers (fields) | `clearButtonPosition`, `openPickerButtonPosition`, public `startAdornment` / `endAdornment`, `shouldRespectLeadingZeros`, `fieldRef` (field API), TextField props `color` / `margin` / `hiddenLabel` / `focused`, `selectedSections` `"all"` / section type | ⬜ |
 | 4.18.30 | E — audit 3.1 (could) | Date pickers | range fields `dateSeparator`; calendars and clocks `focusedView` / `onFocusedViewChange`; TimeClock `showViewSwitcher`; static pickers `displayStaticWrapperAs` | ⬜ |
-| 4.18.31 | E — audit 3.1 (could) | Upload | `dragFileRejections` (MIME / surplus rejections during a drag) | 🔄 |
+| 4.18.31 | E — audit 3.1 (could) | Upload | `dragFileRejections` (MIME / surplus rejections during a drag) | ✅ |
 | 4.18.32 | E — audit 3.1 (could) | Code editor | DiffEditor `line` | ⬜ |
 | 4.18.33 | E — audit 3.1 (should) | Editor | React access to the Tiptap editor (`onCreate` / editor ref) and Tiptap events (`create`, `focus`, `blur`, `selectionUpdate`, `transaction`, `paste`, `drop`, `delete`, `contentError`); `getJSON()` / `getText()` | ⬜ |
 | 4.18.34 | E — audit 3.1 (could) | Editor | `editorProps`, `parseOptions`, `enableInputRules` / `enablePasteRules`, `textDirection`, `autofocus`; form `name` (hidden input) (with 4.16) | ⬜ |
@@ -169,6 +169,8 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.24 | F | Text field | "Number input": increment / decrement buttons in the adornment, `min` / `max` / `step`, Arrow / PageUp / PageDown keys, helper text, disabled | ⬜ |
 | 4.25 | F | Text field (+ Select / Autocomplete) | "Phone input": country select (auto, default, fixed, international, hidden select), national / international / raw values. Needs phone metadata (for example `libphonenumber-js`): **ADR**, behind an opt-in entry like Editor / Map | ⬜ |
 | 4.26 | F | Foundations › Settings (or Introduction) | "Styled": no component — a guide "Style components" with CSS variables, `data-ok-*` state selectors (`[data-ok-open]`, `:focus-visible`, `:disabled`), keyframes with tokens, Tailwind (Owlky's answer to MUI's `sx` / `styled()` / `keyframes`) | ⬜ |
+
+**Notes:** batch A merged 2026-11-10. Behavior changes to mention in the release notes: Autocomplete `selectOnFocus` follows MUI (the first click in a non-free-solo field selects its text); Slider Page Up / Down move by `shiftStep` (default 10) instead of 10 steps. Budgets: all CSS 51.6 of 52 kB, `owlky.js` 187.1 of 190 kB.
 
 ## Phase 5 — Motion full version (own ADR)
 
