@@ -16,16 +16,17 @@ export const tooltipSections: GuideSection[] = [
 <script src="${CDN}/owlky.js" defer></script>
 
 <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" aria-labelledby="delete-tip">
-  <svg aria-hidden="true" viewBox="0 0 24 24">…</svg>
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M6 7l1 13h10l1-13" /><path d="M9 7V4h6v3" /></svg>
 </button>
 <div id="delete-tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom">Delete</div>`,
     react: `import { IconButton, Tooltip } from "@owlky/react";
+import { Trash2Icon } from "lucide-react";
 
 export function DeleteButton() {
   return (
     <Tooltip title="Delete">
       <IconButton>
-        <DeleteIcon />
+        <Trash2Icon aria-hidden="true" />
       </IconButton>
     </Tooltip>
   );
@@ -59,11 +60,14 @@ export function TooltipName() {
   Add
 </div>`,
     react: `import { Fab, Tooltip } from "@owlky/react";
+import { PlusIcon } from "lucide-react";
 
 export function TooltipPlacement() {
   return (
     <Tooltip title="Add" placement="top" arrow transition="fade">
-      <Fab color="primary"><AddIcon /></Fab>
+      <Fab color="primary">
+        <PlusIcon aria-hidden="true" />
+      </Fab>
     </Tooltip>
   );
 }`,
@@ -72,13 +76,18 @@ export function TooltipPlacement() {
     id: "timing",
     title: "Change the timing",
     body: "A tooltip opens 100 ms after the pointer enters its trigger (`enterDelay`) and closes when it leaves (`leaveDelay`, 0 ms). Keyboard focus opens it at once. On touch screens, a press held for 700 ms opens it, and it closes 1.5 seconds after you lift your finger. The pointer can move onto the tooltip without closing it.",
-    html: `<div id="tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom"
-  data-ok-enter-delay="500" data-ok-leave-delay="200">…</div>`,
-    react: `import { Tooltip } from "@owlky/react";
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" aria-describedby="tip">
+  <span data-ok-button-label>Add</span>
+</button>
+<div id="tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom"
+  data-ok-enter-delay="500" data-ok-leave-delay="200"><span data-ok-tooltip-arrow aria-hidden="true"></span>Add to the cart</div>`,
+    react: `import { Button, Tooltip } from "@owlky/react";
 
 export function TooltipTiming() {
   return (
-    <Tooltip title="Add" enterDelay={500} leaveDelay={200}>…</Tooltip>
+    <Tooltip title="Add to the cart" enterDelay={500} leaveDelay={200}>
+      <Button variant="outlined">Add</Button>
+    </Tooltip>
   );
 }`,
   },

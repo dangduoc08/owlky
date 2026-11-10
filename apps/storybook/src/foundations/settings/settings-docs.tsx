@@ -35,7 +35,10 @@ Each setting is an attribute or a style on an element, so it works without JavaS
     title: "Change the primary color",
     body: "Set `data-ok-preset` to replace the primary color everywhere it's used, such as filled buttons, selected states and colored shadows. The other palette colors don't change.",
     html: `<html data-ok-preset="purple">
-  …
+  <body>
+    <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
+    <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Export</span></button>
+  </body>
 </html>`,
     react: `import { applyThemeSettings } from "@owlky/react";
 
@@ -48,7 +51,10 @@ applyThemeSettings({ preset: "purple" });`,
     html: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter/index.css">
 
 <html data-ok-font="inter">
-  …
+  <body>
+    <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
+    <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Export</span></button>
+  </body>
 </html>`,
     react: `import "@fontsource-variable/inter";
 import { applyThemeSettings } from "@owlky/react";
@@ -60,7 +66,10 @@ applyThemeSettings({ font: "inter" });`,
     title: "Change the text size",
     body: `Every size in Owlky is in \`rem\`, so the root font size scales the whole interface: text, spacing and components. Set it on the \`<html>\` element, between ${fontSizeRange.min}px and ${fontSizeRange.max}px.`,
     html: `<html style="font-size: 18px">
-  …
+  <body>
+    <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
+    <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Export</span></button>
+  </body>
 </html>`,
     react: `import { applyThemeSettings } from "@owlky/react";
 
@@ -100,7 +109,9 @@ applyThemeSettings({ mode: "dark", preset: "blue" }, { storage: localStorage });
     html: `<section data-ok-theme="dark" data-ok-preset="orange" data-ok-font="dm-sans">
   <!-- This section uses its own settings -->
 </section>`,
-    react: `export function ThemePreview({ children }) {
+    react: `import type { ReactNode } from "react";
+
+export function ThemePreview({ children }: { children: ReactNode }) {
   return (
     <section data-ok-theme="dark" data-ok-preset="orange" data-ok-font="dm-sans">
       {children}

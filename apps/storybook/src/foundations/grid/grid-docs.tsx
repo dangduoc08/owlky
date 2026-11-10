@@ -33,10 +33,20 @@ const toolbar = {
     id: "tailwind",
     title: "Use Tailwind CSS spacing",
     body: "The Owlky theme for Tailwind CSS v4 sets Tailwind's spacing unit to `--ok-spacing`, so every spacing utility follows it. For example, `gap-2` is 8px and `p-4` is 16px.",
-    html: `<div class="flex gap-2 p-4">…</div>`,
-    react: `export function GridTailwind() {
+    html: `<div class="flex gap-2 p-4">
+  <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md"><span data-ok-button-label>Cancel</span></button>
+  <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Save</span></button>
+</div>`,
+    react: `import { Button } from "@owlky/react";
+
+export function FormActions() {
   return (
-    <div className="flex gap-2 p-4">…</div>
+    <div className="flex gap-2 p-4">
+      <Button variant="outlined">Cancel</Button>
+      <Button variant="contained" color="primary">
+        Save
+      </Button>
+    </div>
   );
 }`,
   },
@@ -85,12 +95,14 @@ const desktop = window.matchMedia(\`(min-width: \${defaultTheme.breakpoints.md}p
 </style>
 
 <div class="cards">
-  <article>…</article>
-  <article>…</article>
-  <article>…</article>
+  <article>Sales</article>
+  <article>Orders</article>
+  <article>Visitors</article>
 </div>`,
-    react: `// With the Owlky theme for Tailwind CSS
-export function Cards({ children }) {
+    react: `import type { ReactNode } from "react";
+
+// With the Owlky theme for Tailwind CSS
+export function Cards({ children }: { children: ReactNode }) {
   return (
     <div className="grid grid-cols-12 gap-4 *:col-span-12 min-[600px]:*:col-span-6 min-[1200px]:*:col-span-4">
       {children}
