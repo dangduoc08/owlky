@@ -10,6 +10,7 @@ import {
   TimelineOppositeContent,
   TimelineSeparator,
 } from "@owlky/react";
+import timelineSnippet from "../../../../../packages/html/src/components/timeline/examples/alternating-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
@@ -69,12 +70,29 @@ export function OrderHistory() {
     id: "position",
     title: "Place the content",
     body: "`position` sets the side of the content: `right` (the default), `left`, or `alternate` and `alternate-reverse` to switch sides from one event to the next. Set `position` on a single item to override the timeline. Leave out the connector on the last event, so the line ends at its dot.",
-    html: `<ul data-ok-timeline data-ok-position="alternate">…</ul>`,
-    react: `import { Timeline } from "@owlky/react";
+    html: `${timelineSnippet}`,
+    react: `import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineSeparator,
+} from "@owlky/react";
 
 export function TimelinePosition() {
   return (
-    <Timeline position="alternate">…</Timeline>
+    <Timeline position="alternate">
+      {["Success", "Warning", "Error"].map((text, index, all) => (
+        <TimelineItem key={text}>
+          <TimelineSeparator>
+            <TimelineDot />
+            {index < all.length - 1 ? <TimelineConnector /> : null}
+          </TimelineSeparator>
+          <TimelineContent>{text}</TimelineContent>
+        </TimelineItem>
+      ))}
+    </Timeline>
   );
 }`,
   },
@@ -95,16 +113,26 @@ export function TimelineDots() {
     body: "`TimelineOppositeContent` goes on the other side of the line, for example the time of the event. Without it, the content still takes one half of the width, so the line stays in the middle.",
     html: `<li data-ok-timeline-item>
   <div data-ok-timeline-opposite-content>09:30 am</div>
-  <div data-ok-timeline-separator>…</div>
+  <div data-ok-timeline-separator><span data-ok-timeline-dot data-ok-variant="filled" data-ok-color="grey"></span><span data-ok-timeline-connector></span></div>
   <div data-ok-timeline-content>Kickoff</div>
 </li>`,
-    react: `import { TimelineContent, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@owlky/react";
+    react: `import {
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineOppositeContent,
+  TimelineSeparator,
+} from "@owlky/react";
 
 export function TimelineOpposite() {
   return (
     <TimelineItem>
       <TimelineOppositeContent>09:30 am</TimelineOppositeContent>
-      <TimelineSeparator>…</TimelineSeparator>
+      <TimelineSeparator>
+        <TimelineDot />
+        <TimelineConnector />
+      </TimelineSeparator>
       <TimelineContent>Kickoff</TimelineContent>
     </TimelineItem>
   );

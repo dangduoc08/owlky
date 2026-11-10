@@ -42,12 +42,18 @@ export function PlansHeading() {
 - **Backgrounds:** \`kenburnsTop\` and the other Ken Burns directions zoom slowly into an image. \`panTop\` and the other pan directions move a gradient background. \`color2x\` to \`color5x\` paint text with a moving gradient. These loop until you pause them.
 
 \`duration\` sets the length of an entrance in milliseconds (640 by default), \`delay\` waits before it starts, and \`distance\` sets how far directional animations travel in pixels.`,
-    html: `<div data-ok-motion data-ok-variant="zoomInLeft" data-ok-duration="800" data-ok-distance="80">…</div>`,
-    react: `import { Motion } from "@owlky/react";
+    html: `<div data-ok-motion data-ok-variant="zoomInLeft" data-ok-duration="800" data-ok-distance="80">
+  <h2 data-ok-typography data-ok-variant="h4">Welcome back</h2>
+</div>`,
+    react: `import { Motion, Typography } from "@owlky/react";
 
 export function MotionVariants() {
   return (
-    <Motion variant="zoomInLeft" duration={800} distance={80}>…</Motion>
+    <Motion variant="zoomInLeft" duration={800} distance={80}>
+      <Typography variant="h4" component="h2">
+        Welcome back
+      </Typography>
+    </Motion>
   );
 }`,
   },
@@ -119,14 +125,45 @@ export function Title() {
     html: `<dialog id="share" data-ok-dialog data-ok-max-width="sm" aria-labelledby="share-title">
   <div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
     <h2 id="share-title" data-ok-dialog-title>Share your location?</h2>
-    …
+    <div data-ok-dialog-content>
+      <p data-ok-dialog-content-text>Nearby stores show up first when you share your location.</p>
+    </div>
+    <div data-ok-dialog-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close><span data-ok-button-label>Not now</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" data-ok-dialog-close><span data-ok-button-label>Share</span></button>
+    </div>
   </div>
 </dialog>`,
-    react: `import { Dialog } from "@owlky/react";
+    react: `import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@owlky/react";
+import { useState } from "react";
 
 export function MotionDialog() {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen} transition="slideInUp">…</Dialog>
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)}>
+        Share location
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen} transition="slideInUp" aria-labelledby="share-title">
+        <DialogTitle id="share-title">Share your location?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Nearby stores show up first when you share your location.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Not now</Button>
+          <Button variant="contained" color="primary" onClick={() => setOpen(false)}>
+            Share
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }`,
   },
@@ -142,13 +179,20 @@ export function MotionDialog() {
   // Your pause button toggles the attribute
   document.getElementById("hero").toggleAttribute("data-ok-paused", true);
 </script>`,
-    react: `import { Motion } from "@owlky/react";
+    react: `import { Button, Motion } from "@owlky/react";
+import { useState } from "react";
 
 export function MotionPause() {
+  const [paused, setPaused] = useState(false);
   return (
-    <Motion variant="kenburnsTop" paused={paused}>
-      <img src="hero.jpg" alt="Mountain lake at sunrise" />
-    </Motion>
+    <>
+      <Motion variant="kenburnsTop" paused={paused}>
+        <img src="hero.jpg" alt="Mountain lake at sunrise" />
+      </Motion>
+      <Button aria-pressed={paused} onClick={() => setPaused(!paused)}>
+        {paused ? "Play" : "Pause"}
+      </Button>
+    </>
   );
 }`,
   },
