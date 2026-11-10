@@ -31,19 +31,28 @@ afterEach(() => {
 });
 
 describe("menu snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(3));
+  it("covers every story group", () => expect(snippets).toHaveLength(5));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
     expectNamedButtons(host);
     for (const menu of host.querySelectorAll("[data-ok-menu]")) {
       expect(menu.getAttribute("role")).toBe("menu");
-      expect(menu.parentElement?.hasAttribute("data-ok-popover")).toBe(true);
+      const standalone = !menu.parentElement?.hasAttribute("data-ok-popover");
+      if (standalone) expect(menu.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
       expect(menu.hasAttribute("aria-labelledby") || menu.hasAttribute("aria-label")).toBe(true);
-      for (const item of menu.children) {
-        expect(item.getAttribute("role")).toBe("menuitem");
-        expect(item.getAttribute("tabindex")).toBe("-1");
-        expect(item.hasAttribute("data-ok-menu-item")).toBe(true);
+      for (const child of menu.children) {
+        const submenu = child.hasAttribute("data-ok-menu-submenu");
+        const item = submenu ? child.firstElementChild : child;
+        if (submenu) {
+          expect(child.getAttribute("role")).toBe("none");
+          expect(item?.getAttribute("aria-haspopup")).toBe("menu");
+          const popover = child.querySelector(":scope > [data-ok-popover]");
+          expect(item?.getAttribute("aria-controls")).toBe(popover?.id);
+        }
+        expect(item?.getAttribute("role")).toBe("menuitem");
+        if (!standalone) expect(item?.getAttribute("tabindex")).toBe("-1");
+        expect(item?.hasAttribute("data-ok-menu-item")).toBe(true);
       }
     }
     for (const trigger of host.querySelectorAll("[data-ok-popover-open]"))
@@ -56,7 +65,7 @@ describe("menu snippets", () => {
     const host = mount(html);
     start();
     await expectNoAxeViolations(host);
-    (host.querySelector("[data-ok-popover-open]") as HTMLElement).click();
+    (host.querySelector("[data-ok-popover-open]") as HTMLElement | null)?.click();
     await settle();
     await expectNoAxeViolations(host);
   });
@@ -142,5 +151,132 @@ describe("menu runtime", () => {
     (menu.firstElementChild as HTMLElement).focus();
     await userEvent.keyboard("{ArrowDown}");
     expect(document.activeElement).toBe(menu.firstElementChild);
+  });
+});
+
+const nested = `
+  <button type="button" id="b" aria-haspopup="menu" data-ok-popover-open="m">Open</button>
+  <div id="m" popover="manual" data-ok-popover data-ok-placement="bottom-start">
+    <ul data-ok-menu role="menu" aria-labelledby="b">
+      <li data-ok-menu-item role="menuitem" tabindex="-1">New</li>
+      <li role="none" data-ok-menu-submenu>
+        <div data-ok-menu-item role="menuitem" tabindex="-1" id="t" aria-haspopup="menu" aria-expanded="false" aria-controls="s">Share</div>
+        <div id="s" popover="manual" data-ok-popover data-ok-placement="right-start">
+          <ul data-ok-menu role="menu" aria-labelledby="t">
+            <li data-ok-menu-item role="menuitem" tabindex="-1">Email</li>
+            <li role="none" data-ok-menu-submenu>
+              <div data-ok-menu-item role="menuitem" tabindex="-1" id="t2" aria-haspopup="menu" aria-expanded="false" aria-controls="s2">More</div>
+              <div id="s2" popover="manual" data-ok-popover data-ok-placement="right-start">
+                <ul data-ok-menu role="menu" aria-labelledby="t2">
+                  <li data-ok-menu-item role="menuitem" tabindex="-1">Fax</li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </li>
+      <li data-ok-menu-item role="menuitem" tabindex="-1">Delete</li>
+    </ul>
+  </div>
+  <input id="next" aria-label="Next">`;
+
+describe("submenus", () => {
+  const open = (host: HTMLElement, id: string) =>
+    (host.querySelector(`#${id}`) as HTMLElement).hasAttribute("data-ok-open");
+
+  it("keyboard: ArrowRight / Enter open, ArrowLeft / Escape close, a choice closes every menu", async () => {
+    const host = mount(nested);
+    start();
+    const chosen: string[] = [];
+    host.addEventListener("ok:menu:select", (e) =>
+      chosen.push(String((e as CustomEvent<{ item: Element }>).detail.item.textContent)),
+    );
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    await userEvent.keyboard("{ArrowDown}{ArrowRight}");
+    const share = host.querySelector("#t") as HTMLElement;
+    expect(open(host, "s")).toBe(true);
+    expect(share.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement?.textContent).toBe("Email");
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    expect(open(host, "s2")).toBe(true);
+    expect(document.activeElement?.textContent).toBe("Fax");
+    await userEvent.keyboard("{Escape}");
+    expect(open(host, "s2")).toBe(false);
+    expect(host.querySelector("#t2")?.getAttribute("aria-expanded")).toBe("false");
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(open(host, "s")).toBe(false);
+    expect(document.activeElement).toBe(share);
+    await userEvent.keyboard(" ");
+    expect(open(host, "s")).toBe(true);
+    share.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(document.activeElement?.textContent).toBe("Email");
+    share.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(open(host, "s")).toBe(false);
+    await userEvent.keyboard("{ArrowUp}{ArrowRight}{Enter}");
+    expect(chosen).toEqual(["Email"]);
+    expect(open(host, "s")).toBe(false);
+    expect(open(host, "m")).toBe(false);
+  });
+
+  it("clicks open; Tab, a press outside and closing the menu close every submenu", async () => {
+    const host = mount(nested);
+    start();
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    await userEvent.click(host.querySelector("#t") as HTMLElement);
+    expect(open(host, "s")).toBe(true);
+    await userEvent.keyboard("{Tab}");
+    expect(open(host, "s")).toBe(false);
+    expect(open(host, "m")).toBe(false);
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    await userEvent.click(host.querySelector("#t") as HTMLElement);
+    await userEvent.click(host.querySelector("#next") as HTMLElement);
+    expect(open(host, "s")).toBe(false);
+    expect(open(host, "m")).toBe(false);
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    await userEvent.click(host.querySelector("#t") as HTMLElement);
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    expect(open(host, "s")).toBe(false);
+    expect(host.querySelector("#t")?.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("hover opens without moving focus and closes on another item; right to left mirrors", async () => {
+    const host = mount(nested);
+    start();
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    const active = document.activeElement;
+    await userEvent.hover(host.querySelector("#t") as HTMLElement);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(open(host, "s")).toBe(true);
+    expect(document.activeElement).toBe(active);
+    await userEvent.hover(host.querySelector("li") as HTMLElement);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(open(host, "s")).toBe(false);
+    host.setAttribute("dir", "rtl");
+    (host.querySelector("#t") as HTMLElement).focus();
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(open(host, "s")).toBe(true);
+    expect(host.querySelector("#s")?.getAttribute("data-ok-placement")).toBe("left-start");
+    await userEvent.keyboard("{ArrowRight}");
+    expect(open(host, "s")).toBe(false);
+    await expectNoAxeViolations(host);
+  });
+
+  it("menu options: variant, disableAutoFocusItem, disableListWrap", async () => {
+    const host = mount(markup);
+    start();
+    const menu = host.querySelector("[data-ok-menu]") as HTMLElement;
+    menu.setAttribute("data-ok-variant", "menu");
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    expect(document.activeElement?.textContent).toBe("Profile");
+    await userEvent.keyboard("{Escape}");
+    menu.setAttribute("data-ok-disable-auto-focus-item", "");
+    menu.setAttribute("tabindex", "-1");
+    menu.setAttribute("data-ok-disable-list-wrap", "");
+    await userEvent.click(host.querySelector("#b") as HTMLElement);
+    expect(document.activeElement).toBe(menu);
+    await userEvent.keyboard("{ArrowUp}{ArrowDown}");
+    expect(document.activeElement?.textContent).toBe("Logout");
   });
 });

@@ -68,6 +68,38 @@ describe("Tooltip", () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
+  it("followCursor: the tooltip moves with the pointer; enterNextDelay is written", async () => {
+    render(
+      <Tooltip
+        title="Here"
+        describeChild
+        enterDelay={0}
+        enterNextDelay={5}
+        followCursor
+        placement="bottom-start"
+      >
+        <button type="button" style={{ width: 200, height: 100 }}>
+          Area
+        </button>
+      </Tooltip>,
+    );
+    const button = screen.getByRole("button", { name: "Area" });
+    const tooltip = screen.getByRole("tooltip", { hidden: true });
+    expect(tooltip.dataset).toMatchObject({ okFollowCursor: "", okEnterNextDelay: "5" });
+    const box = button.getBoundingClientRect();
+    await userEvent.hover(button, { position: { x: 20, y: 30 } });
+    await wait(30);
+    expect(tooltip.hasAttribute("data-ok-open")).toBe(true);
+    const first = Number.parseFloat(tooltip.style.getPropertyValue("--_ok-popover-y"));
+    expect(first).toBeGreaterThan(box.y + 30);
+    await userEvent.hover(button, { position: { x: 60, y: 70 } });
+    const second = Number.parseFloat(tooltip.style.getPropertyValue("--_ok-popover-y"));
+    expect(second - first).toBeCloseTo(40, 0);
+    await userEvent.unhover(button);
+    await wait(150);
+    expect(tooltip.hasAttribute("data-ok-open")).toBe(false);
+  });
+
   it("keyboard focus opens it, Escape and blur close it; listeners can be disabled", async () => {
     render(
       <>

@@ -475,6 +475,11 @@
     "native": "HTMLElement",
     "props": [
      {
+      "description": "The element or component to render the item as, such as a router link: it gets the item's attributes, content and other props (a router link's `to`). Disabled items get `aria-disabled`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
       "description": "Renders a link (`<a>`) instead of a button.",
       "name": "href",
       "type": "string"

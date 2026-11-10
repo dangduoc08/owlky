@@ -26,7 +26,7 @@ afterEach(() => {
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe("tooltip snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(5));
+  it("covers every story group", () => expect(snippets).toHaveLength(6));
 
   it.each(snippets)("%s: every tooltip follows its trigger and is named by it", (_, html) => {
     const host = mount(html);
@@ -79,6 +79,34 @@ describe("tooltip runtime", () => {
     await wait(150);
     expect(tooltip.hasAttribute("data-ok-open")).toBe(false);
     expect(events).toEqual(["open", "close"]);
+  });
+
+  it("data-ok-follow-cursor moves it with the pointer; data-ok-enter-next-delay", async () => {
+    const host = mount(`
+      <button type="button" id="area" aria-describedby="ft" style="width: 200px; height: 100px">Area</button>
+      <div id="ft" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom-start"
+        data-ok-enter-delay="300" data-ok-enter-next-delay="0" data-ok-follow-cursor>Here</div>
+      <button type="button" id="other" aria-describedby="ot">Other</button>
+      <div id="ot" role="tooltip" popover="manual" data-ok-tooltip data-ok-enter-delay="0">Other tip</div>`);
+    start();
+    const button = host.querySelector("#area") as HTMLElement;
+    const tooltip = host.querySelector("#ft") as HTMLElement;
+    // Another tooltip shows: the next one opens after enterNextDelay, not enterDelay.
+    await userEvent.hover(host.querySelector("#other") as HTMLElement);
+    await wait(30);
+    const box = button.getBoundingClientRect();
+    await userEvent.hover(button, { position: { x: 20, y: 30 } });
+    await wait(30);
+    expect(tooltip.hasAttribute("data-ok-open")).toBe(true);
+    const y = () => Number.parseFloat(tooltip.style.getPropertyValue("--_ok-popover-y"));
+    const first = y();
+    expect(first).toBeGreaterThan(box.y + 30);
+    await userEvent.hover(button, { position: { x: 60, y: 70 } });
+    expect(y() - first).toBeCloseTo(40, 0);
+    // Without the flag, moving doesn't reposition it.
+    tooltip.removeAttribute("data-ok-follow-cursor");
+    await userEvent.hover(button, { position: { x: 60, y: 10 } });
+    expect(y() - first).toBeCloseTo(40, 0);
   });
 
   it("keyboard focus opens it at once; Escape and blur close it; focus stays", async () => {

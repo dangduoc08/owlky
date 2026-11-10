@@ -91,7 +91,25 @@ export function ClickShield() {
   {
     id: "transitions",
     title: "Fade in and out",
-    body: "The backdrop fades in over 250 ms and fades out over 200 ms. When people turn on reduced motion in their system settings, it appears and disappears at once. A closed backdrop stays in the page, hidden, so its fade-out can play. Hidden backdrops don't catch clicks and screen readers skip them.",
+    body: "The backdrop fades in over 250 ms and fades out over 200 ms. Set `transitionDuration` to use one length, in milliseconds, for both fades. When people turn on reduced motion in their system settings, it appears and disappears at once. A closed backdrop stays in the page, hidden, so its fade-out can play. Hidden backdrops don't catch clicks and screen readers skip them.",
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-backdrop-open="slow">
+  <span data-ok-button-label>Show</span>
+</button>
+<div id="slow" data-ok-backdrop data-ok-transition-duration="600" data-ok-backdrop-close></div>`,
+    react: `import { Backdrop, Button } from "@owlky/react";
+import { useState } from "react";
+
+export function SlowBackdrop() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)}>
+        Show
+      </Button>
+      <Backdrop open={open} transitionDuration={600} onClick={() => setOpen(false)} />
+    </>
+  );
+}`,
   },
   {
     id: "dialog",

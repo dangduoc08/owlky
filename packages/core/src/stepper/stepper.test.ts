@@ -10,6 +10,15 @@ describe("stepState", () => {
     ]);
   });
 
+  it("non-linear: only the active step is derived; explicit values still win", () => {
+    expect([0, 1, 2].map((index) => stepState(index, 1, {}, true))).toEqual([
+      { active: false, completed: false, disabled: false },
+      { active: true, completed: false, disabled: false },
+      { active: false, completed: false, disabled: false },
+    ]);
+    expect(stepState(0, 1, { completed: true }, true).completed).toBe(true);
+  });
+
   it("every step is completed once the active step passes the last one", () => {
     expect(stepState(2, 3)).toEqual({ active: false, completed: true, disabled: false });
   });

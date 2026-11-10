@@ -6,10 +6,12 @@ import {
   type DrawerCloseReason,
   type DrawerVariant,
   drawerAttributes,
+  drawerStyle,
   type ModalController,
 } from "@owlky/core";
 import {
   type ComponentPropsWithoutRef,
+  type CSSProperties,
   createContext,
   forwardRef,
   type MouseEvent,
@@ -120,6 +122,19 @@ export interface DrawerContentProps extends ComponentPropsWithoutRef<"dialog"> {
   hideBackdrop?: boolean | undefined;
   /** Temporary only: Escape doesn't ask to close. */
   disableEscapeKeyDown?: boolean | undefined;
+  /** Temporary only: focus isn't moved back to the trigger on close. */
+  disableRestoreFocus?: boolean | undefined;
+  /** Temporary only: the page behind can still scroll while the drawer is open. */
+  disableScrollLock?: boolean | undefined;
+  /**
+   * Keeps the children rendered while the drawer is closed (MUI `ModalProps.keepMounted`).
+   * Default `true` (the HTML markup is always there too); `false` renders them only while open.
+   */
+  keepMounted?: boolean | undefined;
+  /** Shadow depth of the panel, 0–24. Default: each edge's own shadow (docked drawers: none). */
+  elevation?: number | undefined;
+  /** Length of the slide in and out, in ms. Default: the theme's short duration. */
+  transitionDuration?: number | undefined;
 }
 
 /**
@@ -129,7 +144,19 @@ export interface DrawerContentProps extends ComponentPropsWithoutRef<"dialog"> {
  */
 export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerContentProps>(
   function DrawerContent(
-    { anchor, hideBackdrop, disableEscapeKeyDown, children, ...props },
+    {
+      anchor,
+      hideBackdrop,
+      disableEscapeKeyDown,
+      disableRestoreFocus,
+      disableScrollLock,
+      keepMounted = true,
+      elevation,
+      transitionDuration,
+      children,
+      style,
+      ...props
+    },
     forwardedRef,
   ) {
     const { open, setOpen, triggerRef, variant, contentId } = useDrawerContext("DrawerContent");
@@ -137,8 +164,20 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
     const ref = useMergedRefs(elementRef, forwardedRef as Ref<HTMLDialogElement>);
     const controllerRef = useRef<ModalController | null>(null);
     const temporary = variant === "temporary";
-    const attributes = drawerAttributes({ anchor, variant, hideBackdrop, disableEscapeKeyDown });
-    const content = <div data-ok-drawer-content="">{children}</div>;
+    const attributes = drawerAttributes({
+      anchor,
+      variant,
+      hideBackdrop,
+      disableEscapeKeyDown,
+      disableRestoreFocus,
+      disableScrollLock,
+      elevation,
+      transitionDuration,
+    });
+    const custom = drawerStyle({ elevation, transitionDuration });
+    const merged =
+      Object.keys(custom).length > 0 ? ({ ...custom, ...style } as CSSProperties) : style;
+    const content = <div data-ok-drawer-content="">{keepMounted || open ? children : null}</div>;
 
     // Effects run in declaration order: create the controller, sync options, then open/close.
     useEffect(() => {
@@ -158,6 +197,8 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
       controllerRef.current?.setOptions({
         contentSelector: "[data-ok-drawer-content]",
         closeOnEscape: disableEscapeKeyDown !== true,
+        restoreFocus: disableRestoreFocus !== true,
+        lockScroll: disableScrollLock !== true,
         onDismiss: (reason) => setOpen(false, reason),
         onExternalClose: () => setOpen(false, "close"),
       });
@@ -179,6 +220,7 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
           {...attributes}
           data-ok-runtime="off"
           hidden={!open}
+          style={merged}
           {...rest}
         >
           {content}
@@ -186,7 +228,7 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
       );
     }
     return (
-      <dialog ref={ref} {...attributes} data-ok-runtime="off" {...props}>
+      <dialog ref={ref} {...attributes} data-ok-runtime="off" style={merged} {...props}>
         {content}
       </dialog>
     );

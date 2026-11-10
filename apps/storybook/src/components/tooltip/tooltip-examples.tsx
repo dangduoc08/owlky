@@ -138,6 +138,37 @@ export const positionedGroups: ReactGroup[] = [
   },
 ];
 
+export const followCursorGroups: ReactGroup[] = [
+  {
+    title: "Follow cursor",
+    content: (
+      <div>
+        <Tooltip
+          id="tooltip-follow"
+          title="The tooltip follows the pointer"
+          followCursor
+          describeChild
+        >
+          <Button variant="outlined" size="lg">
+            Move the pointer over this button
+          </Button>
+        </Tooltip>
+        <Tooltip
+          id="tooltip-next"
+          title="Opens sooner after another tooltip"
+          enterDelay={500}
+          enterNextDelay={100}
+          describeChild
+        >
+          <Button variant="outlined" size="lg">
+            Slow to open
+          </Button>
+        </Tooltip>
+      </div>
+    ),
+  },
+];
+
 /** One group per story: `<story>-group.html`. */
 export const files = (title: string): GroupFiles => [[title, "group"]];
 

@@ -105,6 +105,28 @@ describe("drawer runtime", () => {
     expect(isScrollLocked()).toBe(true);
   });
 
+  it("elevation and transition duration through CSSOM; disable restore focus and scroll lock", async () => {
+    mount(
+      SIMPLE(
+        'data-ok-elevation="4" data-ok-transition-duration="30" data-ok-disable-restore-focus data-ok-disable-scroll-lock',
+      ),
+    );
+    await settle();
+    const element = $<HTMLDialogElement>("#d");
+    expect(element.style.getPropertyValue("--_ok-drawer-shadow")).toBe("var(--ok-elevation-4)");
+    expect(element.style.getPropertyValue("--_ok-drawer-duration")).toBe("30ms");
+    element.setAttribute("data-ok-elevation", "bogus");
+    element.removeAttribute("data-ok-transition-duration");
+    await settle();
+    expect(element.style.getPropertyValue("--_ok-drawer-shadow")).toBe("");
+    expect(element.style.getPropertyValue("--_ok-drawer-duration")).toBe("");
+    await userEvent.click($("#trigger"));
+    expect(isScrollLocked()).toBe(false);
+    await userEvent.keyboard("{Escape}");
+    expect(element.open).toBe(false);
+    expect(document.activeElement?.id).not.toBe("trigger");
+  });
+
   it("closes on Escape, returns focus to the trigger and emits events in order", async () => {
     mount(SIMPLE());
     await settle();

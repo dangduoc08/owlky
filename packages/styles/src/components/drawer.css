@@ -70,7 +70,8 @@
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-dialog-start);
     outline: none;
-    transition: transform var(--ok-duration-short) var(--ok-easing-decelerate);
+    transition: transform var(--_ok-drawer-duration, var(--ok-duration-short))
+      var(--ok-easing-decelerate);
   }
 
   :where([data-ok-drawer][data-ok-anchor="right"] > [data-ok-drawer-content]) {
@@ -216,7 +217,13 @@
   }
 
   :where([data-ok-drawer])::backdrop {
-    transition: opacity var(--ok-duration-short) var(--ok-easing-standard);
+    transition: opacity var(--_ok-drawer-duration, var(--ok-duration-short))
+      var(--ok-easing-standard);
+  }
+
+  /* An explicit elevation (data-ok-elevation, --_ok-drawer-shadow through CSSOM) wins. */
+  :where([data-ok-drawer][data-ok-elevation] > [data-ok-drawer-content]) {
+    box-shadow: var(--_ok-drawer-shadow);
   }
 
   /* Content in a Scrollbar: the Scrollbar fills the panel and scrolls. */

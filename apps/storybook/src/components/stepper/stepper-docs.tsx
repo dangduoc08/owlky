@@ -190,6 +190,73 @@ export function StepperMobile() {
 }`,
   },
   {
+    id: "non-linear",
+    title: "Let people visit steps in any order",
+    body: "Add `nonLinear` to the stepper and put a `StepButton` in each step instead of a `StepLabel`. The stepper then only derives the active step: no step is completed or disabled until you say so with `completed` and `disabled` on the step. A disabled step's button is disabled too. In HTML, the runtime moves to a step when its `[data-ok-step-button]` is pressed, and leaves `data-ok-completed` and `data-ok-disabled` as you wrote them.",
+    html: `<ol id="setup" data-ok-stepper data-ok-orientation="horizontal" data-ok-variant="standard" data-ok-active-step="0"
+  data-ok-non-linear aria-label="Setup">
+  <li data-ok-step data-ok-active aria-current="step">
+    <button type="button" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>1</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Account</span></span></span></button>
+  </li>
+  <li data-ok-step data-ok-completed>
+    <div data-ok-step-connector aria-hidden="true"><span data-ok-step-connector-line></span></div>
+    <button type="button" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>2</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Profile</span></span></span></button>
+  </li>
+</ol>`,
+    react: `import { Step, StepButton, Stepper } from "@owlky/react";
+import { useState } from "react";
+
+export function SetupSteps() {
+  const [active, setActive] = useState(0);
+  const completed = [false, true];
+  return (
+    <Stepper nonLinear activeStep={active} aria-label="Setup">
+      {["Account", "Profile"].map((label, index) => (
+        <Step key={label} completed={completed[index]}>
+          <StepButton onClick={() => setActive(index)}>{label}</StepButton>
+        </Step>
+      ))}
+    </Stepper>
+  );
+}`,
+  },
+  {
+    id: "expanded",
+    title: "Keep step content open",
+    body: "In a vertical stepper, `StepContent` shows only under the active step. Add `expanded` to a step to keep its content open, for example a summary that stays visible. `transitionDuration` on `StepContent` sets how long it takes to open and close, in milliseconds (`auto` by default: from its height); in HTML, it is the content's `data-ok-timeout`. Mark the last step with `last` when it isn't the list's last element, so no line is drawn below it.",
+    html: `<ol data-ok-stepper data-ok-orientation="vertical" data-ok-variant="standard" data-ok-active-step="0" aria-label="Order">
+  <li data-ok-step data-ok-active aria-current="step">
+    <span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>1</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Shipping</span></span></span>
+    <div data-ok-step-content data-ok-collapse data-ok-timeout="200"><p data-ok-typography data-ok-variant="body2">Choose a delivery address.</p></div>
+  </li>
+  <li data-ok-step data-ok-disabled data-ok-expanded>
+    <div data-ok-step-connector aria-hidden="true"><span data-ok-step-connector-line></span></div>
+    <span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>2</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Summary</span></span></span>
+    <div data-ok-step-content data-ok-collapse data-ok-timeout="200"><p data-ok-typography data-ok-variant="body2">2 items, free delivery.</p></div>
+  </li>
+</ol>`,
+    react: `import { Step, StepContent, StepLabel, Stepper, Typography } from "@owlky/react";
+
+export function OrderSteps() {
+  return (
+    <Stepper activeStep={0} orientation="vertical" aria-label="Order">
+      <Step>
+        <StepLabel>Shipping</StepLabel>
+        <StepContent transitionDuration={200}>
+          <Typography variant="body2">Choose a delivery address.</Typography>
+        </StepContent>
+      </Step>
+      <Step expanded>
+        <StepLabel>Summary</StepLabel>
+        <StepContent transitionDuration={200}>
+          <Typography variant="body2">2 items, free delivery.</Typography>
+        </StepContent>
+      </Step>
+    </Stepper>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't valid fall back to the default. The tables list the options of `Stepper`, `Step`, `StepLabel` and `MobileStepper`.",

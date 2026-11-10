@@ -235,6 +235,35 @@ export function DrawerDocked() {
 }`,
   },
   {
+    id: "elevation",
+    title: "Change the shadow and the speed",
+    body: `- **Shadow:** \`elevation\` sets the panel's shadow from \`0\` (none) to \`24\`, from the same scale as Paper. Without it, each edge has its own shadow and docked drawers have none.
+- **Speed:** \`transitionDuration\` sets how long the panel takes to slide in and out, in milliseconds.
+- **Temporary drawers:** \`disableRestoreFocus\` keeps focus where it is when the drawer closes, and \`disableScrollLock\` lets the page behind scroll. In React, \`keepMounted={false}\` renders the content only while the drawer is open.`,
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md"
+  data-ok-drawer-open="filters" aria-haspopup="dialog">
+  <span data-ok-button-label>Filters</span>
+</button>
+<dialog id="filters" data-ok-drawer data-ok-anchor="right" data-ok-variant="temporary" data-ok-elevation="4"
+  data-ok-transition-duration="150" aria-label="Filters">
+  <div data-ok-drawer-content>
+    <p data-ok-typography data-ok-variant="body2">Filters slide in quickly.</p>
+  </div>
+</dialog>`,
+    react: `import { Drawer, DrawerContent, DrawerTrigger, Typography } from "@owlky/react";
+
+export function FilterDrawer() {
+  return (
+    <Drawer>
+      <DrawerTrigger variant="outlined">Filters</DrawerTrigger>
+      <DrawerContent anchor="right" aria-label="Filters" elevation={4} transitionDuration={150}>
+        <Typography variant="body2">Filters slide in quickly.</Typography>
+      </DrawerContent>
+    </Drawer>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

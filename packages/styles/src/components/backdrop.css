@@ -3,6 +3,7 @@
  *
  * Anatomy:   div[data-ok-backdrop] › children (centered)
  * Modifiers: data-ok-invisible (transparent)
+ * Private:   --_ok-backdrop-duration (data-ok-transition-duration, through CSSOM)
  * States:    data-ok-open (shown). Closed backdrops stay in the DOM, hidden with `visibility`
  *            so they leave the accessibility tree and don't catch clicks.
  *
@@ -27,15 +28,15 @@
     opacity: 0;
     visibility: hidden;
     transition:
-      opacity var(--ok-duration-shorter) var(--ok-easing-standard),
-      visibility 0s linear var(--ok-duration-shorter);
+      opacity var(--_ok-backdrop-duration, var(--ok-duration-shorter)) var(--ok-easing-standard),
+      visibility 0s linear var(--_ok-backdrop-duration, var(--ok-duration-shorter));
   }
 
   :where([data-ok-backdrop][data-ok-open]) {
     opacity: 1;
     visibility: visible;
     transition:
-      opacity var(--ok-duration-short) var(--ok-easing-standard),
+      opacity var(--_ok-backdrop-duration, var(--ok-duration-short)) var(--ok-easing-standard),
       visibility 0s;
   }
 

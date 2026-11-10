@@ -7,6 +7,8 @@ import { HorizontalDemo } from "./horizontal-demo.js";
 import horizontalSource from "./horizontal-demo.tsx?raw";
 import { MobileDemo } from "./mobile-demo.js";
 import mobileSource from "./mobile-demo.tsx?raw";
+import { NonLinearDemo } from "./non-linear-demo.js";
+import nonLinearSource from "./non-linear-demo.tsx?raw";
 import { StepperDocs } from "./stepper-docs.js";
 import { VerticalDemo } from "./vertical-demo.js";
 import verticalSource from "./vertical-demo.tsx?raw";
@@ -71,6 +73,18 @@ export const AlternativeLabel: StoryObj = {
     ),
   }),
   name: "Linear alternative label",
+};
+
+export const NonLinear: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "non-linear", [["Non-linear", "group"]], SETUP),
+    react: reactGroupsStory(
+      [{ title: "Non-linear", content: <NonLinearDemo /> }],
+      undefined,
+      nonLinearSource,
+    ),
+  }),
+  name: "Non-linear",
 };
 
 export const Vertical: StoryObj = {

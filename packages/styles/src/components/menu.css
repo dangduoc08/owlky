@@ -4,6 +4,10 @@
  * Anatomy:   div[data-ok-popover] (the paper, see popover.css)
  *              › ul[data-ok-menu][role=menu][aria-labelledby]
  *                  › li[data-ok-menu-item][role=menuitem][tabindex=-1]
+ *                  › li[data-ok-menu-submenu][role=none]   (a submenu)
+ *                      › div[data-ok-menu-item][role=menuitem][aria-haspopup=menu][aria-expanded]
+ *                          › svg[data-ok-menu-submenu-icon]
+ *                      › div[data-ok-popover] › ul[data-ok-menu]
  * Modifiers: menu      data-ok-dense
  *            item      data-ok-selected (+ aria-current), data-ok-dense, data-ok-show-divider,
  *                      data-ok-disable-gutters; aria-disabled="true"
@@ -40,7 +44,10 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  :where([data-ok-menu-item]:not(:last-child)) {
+  :where(
+    [data-ok-menu-item]:not(:last-child, :has(+ [data-ok-popover])),
+    [data-ok-menu-submenu]:not(:last-child)
+  ) {
     margin-bottom: var(--ok-spacing);
   }
 
@@ -48,6 +55,15 @@
     flex-shrink: 0;
     width: calc(var(--ok-spacing) * 5);
     height: calc(var(--ok-spacing) * 5);
+  }
+
+  /* The submenu chevron sits at the end, turned for right to left. */
+  :where([data-ok-menu-submenu-icon]) {
+    margin-inline-start: auto;
+  }
+
+  :where([dir="rtl"] [data-ok-menu-submenu-icon]) {
+    transform: scaleX(-1);
   }
 
   :where([data-ok-menu][data-ok-dense] > [data-ok-menu-item], [data-ok-menu-item][data-ok-dense]) {
@@ -77,7 +93,7 @@
     }
   }
 
-  :where([data-ok-menu-item]:focus) {
+  :where([data-ok-menu-item]:focus, [data-ok-menu-item][aria-expanded="true"]) {
     background-color: var(--ok-action-focus);
   }
 

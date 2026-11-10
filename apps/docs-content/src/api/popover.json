@@ -61,7 +61,7 @@
      {
       "cancelable": true,
       "description": "Before the popover opens. Call `preventDefault()` to keep it closed.",
-      "detail": "{ anchor: Element; }",
+      "detail": "{ anchor: PopoverAnchorTarget; }",
       "name": "ok:popover:beforeopen"
      },
      {
@@ -73,7 +73,7 @@
      {
       "cancelable": false,
       "description": "After the popover opened next to `anchor`.",
-      "detail": "{ anchor: Element; }",
+      "detail": "{ anchor: PopoverAnchorTarget; }",
       "name": "ok:popover:open"
      }
     ],
@@ -91,10 +91,10 @@
       "type": "boolean"
      },
      {
-      "description": "Opens next to `anchor`. Returns `false` if `ok:popover:beforeopen` was prevented.",
+      "description": "Opens next to `anchor`: an element or a virtual anchor (`getBoundingClientRect()`, such as a text selection). Returns `false` if `ok:popover:beforeopen` was prevented.",
       "kind": "method",
       "name": "open",
-      "type": "(anchor: Element) => boolean"
+      "type": "(anchor: PopoverAnchorTarget) => boolean"
      },
      {
       "description": "Opens the popover next to `anchor` when it is closed, and closes it otherwise.",
@@ -150,6 +150,34 @@
       "name": "disableRestoreFocus"
      },
      {
+      "attr": "data-ok-anchor-reference",
+      "default": "anchorEl",
+      "description": "What positions it: `anchorEl` (the anchor), `anchorPosition` (a point, `anchorPosition` / `data-ok-anchor-position`) or `none` (your CSS).",
+      "kind": "style",
+      "name": "anchorReference",
+      "optional": true,
+      "values": [
+       "anchorEl",
+       "anchorPosition",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-margin-threshold",
+      "default": 16,
+      "description": "Minimum distance to the viewport edges (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "marginThreshold"
+     },
+     {
+      "attr": "data-ok-transition-duration",
+      "description": "Length of the opening animation (ms). Default: the theme's shorter duration.",
+      "kind": "number",
+      "min": 0,
+      "name": "transitionDuration"
+     },
+     {
       "attr": "data-ok-open",
       "description": "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
       "event": "ok:popover:close",
@@ -158,6 +186,12 @@
      }
     ],
     "parts": [
+     {
+      "description": "The point the popover opens at with `data-ok-anchor-reference=\"anchorPosition\"`: `top,left` in px from the viewport's top left corner.",
+      "kind": "value",
+      "name": "data-ok-anchor-position",
+      "value": "string"
+     },
      {
       "description": "Set by the runtime: the side the popover opened on after flipping.",
       "kind": "value",
@@ -208,6 +242,16 @@
       "type": "PopoverAnchor"
      },
      {
+      "description": "The point, in px from the viewport's top left corner, used with `anchorReference=\"anchorPosition\"`.",
+      "name": "anchorPosition",
+      "type": "PopoverAnchorPosition"
+     },
+     {
+      "description": "What positions the popover: `\"anchorEl\"` (default), `\"anchorPosition\"` (the point in `anchorPosition`; `anchorEl` may then be left out) or `\"none\"` (your own CSS).",
+      "name": "anchorReference",
+      "type": "\"anchorEl\" | \"anchorPosition\" | \"none\""
+     },
+     {
       "description": "Draws an arrow pointing at the anchor.",
       "name": "arrow",
       "type": "boolean"
@@ -238,6 +282,11 @@
       "type": "(() => HTMLElement | null | undefined)"
      },
      {
+      "description": "Minimum distance to the viewport edges, in px. Default 16.",
+      "name": "marginThreshold",
+      "type": "number"
+     },
+     {
       "description": "Called when the user asks to close: `\"escape\"` or `\"backdrop\"` (a press outside).",
       "name": "onOpenChange",
       "type": "((open: boolean, reason?: PopoverDismissReason | undefined) => void)"
@@ -253,6 +302,11 @@
       "description": "Side of the anchor and alignment. Flips when there is no room.",
       "name": "placement",
       "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+     },
+     {
+      "description": "Length of the opening animation, in ms. Default: the theme's shorter duration.",
+      "name": "transitionDuration",
+      "type": "number"
      }
     ]
    }
@@ -264,7 +318,11 @@
  "types": [
   {
    "name": "PopoverAnchor",
-   "type": "Element | (() => Element | null | undefined) | null"
+   "type": "(() => PopoverAnchorTarget | null | undefined) | PopoverAnchorTarget | null"
+  },
+  {
+   "name": "PopoverAnchorTarget",
+   "type": "Element | PopoverVirtualAnchor"
   },
   {
    "name": "PopoverCloseReason",

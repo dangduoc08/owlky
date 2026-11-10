@@ -28,7 +28,7 @@ export interface DialogInstance extends ComponentInstance {
 const byId = (from: Element, id: string): Element | null =>
   (from.getRootNode() as Document | ShadowRoot).getElementById(id);
 
-const { disableEscapeKeyDown } = dialogOptions.options;
+const { disableEscapeKeyDown, disableRestoreFocus, disableScrollLock } = dialogOptions.options;
 
 /**
  * Dialog — spec: specs/components/dialog.md
@@ -55,6 +55,8 @@ export const dialog = defineComponent<DialogInstance, DialogEvents>({
     const options = () => ({
       contentSelector: "[data-ok-dialog-paper]",
       closeOnEscape: !element.hasAttribute(disableEscapeKeyDown.attr),
+      restoreFocus: !element.hasAttribute(disableRestoreFocus.attr),
+      lockScroll: !element.hasAttribute(disableScrollLock.attr),
       onDismiss: (reason: DialogCloseReason) => instance.close(reason),
       onExternalClose: () => emit("close", { reason: "native" }),
     });

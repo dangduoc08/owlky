@@ -161,3 +161,38 @@ describe("Pagination behavior", () => {
     await expectNoAxeViolations();
   });
 });
+
+const RouterLink = ({ to, ...props }: { to: string } & Record<string, unknown>) => (
+  <a href={`/app${to}`} {...props} />
+);
+
+describe("PaginationItem component", () => {
+  it("renders the item as a router link with its own props; disabled items get aria-disabled", async () => {
+    render(
+      <Pagination
+        count={3}
+        page={2}
+        aria-label="Pages"
+        renderItem={(item) => (
+          <PaginationItem component={RouterLink} to={`/page/${item.page ?? 1}`} {...item} />
+        )}
+      />,
+    );
+    const current = screen.getByRole("link", { name: "page 2" });
+    expect(current.getAttribute("href")).toBe("/app/page/2");
+    expect(current.getAttribute("aria-current")).toBe("page");
+    expect(current.dataset).toMatchObject({ okPaginationItem: "", okType: "page" });
+    render(
+      <PaginationItem
+        component={RouterLink}
+        to="/x"
+        type="previous"
+        disabled
+        aria-label="Previous page"
+      />,
+    );
+    const previous = document.querySelector('a[href="/app/x"]') as HTMLElement;
+    expect(previous.getAttribute("aria-disabled")).toBe("true");
+    await expectNoAxeViolations();
+  });
+});

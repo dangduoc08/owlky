@@ -182,6 +182,48 @@ export function WelcomeDialog() {
 }`,
   },
   {
+    id: "focus-scroll",
+    title: "Control focus, scrolling and mounting",
+    body: `- **Focus:** when a dialog closes, focus returns to the element that was focused before it opened. \`disableRestoreFocus\` turns this off, for example when the dialog's action moves focus somewhere else.
+- **Scrolling:** while a dialog is open, the page behind it doesn't scroll. \`disableScrollLock\` lets it scroll.
+- **Mounting:** in React, the dialog's children stay rendered while it is closed, like the HTML markup. Set \`keepMounted\` to \`false\` to render them only while it is open, which resets their state each time it opens.`,
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="notes" aria-haspopup="dialog"><span data-ok-button-label>Notes</span></button>
+<dialog id="notes" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" data-ok-disable-restore-focus
+  data-ok-disable-scroll-lock aria-labelledby="notes-title">
+  <div data-ok-dialog-paper>
+    <h2 data-ok-dialog-title id="notes-title">Notes</h2>
+    <div data-ok-dialog-content>
+      <p data-ok-dialog-content-text>The page behind keeps scrolling.</p>
+    </div>
+    <div data-ok-dialog-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close><span data-ok-button-label>Close</span></button>
+    </div>
+  </div>
+</dialog>`,
+    react: `import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@owlky/react";
+import { useState } from "react";
+
+export function NotesDialog() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)}>
+        Notes
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen} disableRestoreFocus disableScrollLock keepMounted={false}>
+        <DialogTitle>Notes</DialogTitle>
+        <DialogContent>
+          <DialogContentText>The page behind keeps scrolling.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

@@ -1,3 +1,4 @@
+import { isScrollLocked } from "@owlky/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
@@ -87,6 +88,21 @@ describe("dialog runtime", () => {
     await userEvent.click(host.querySelector("#cancel") as HTMLElement);
     expect(dialog.open).toBe(false);
     expect(events).toEqual(["beforeopen:", "open:", "beforeclose:trigger", "close:trigger"]);
+  });
+
+  it("data-ok-disable-restore-focus and data-ok-disable-scroll-lock", async () => {
+    const host = mount(markup);
+    start();
+    const dialog = host.querySelector("#d") as HTMLDialogElement;
+    dialog.setAttribute("data-ok-disable-restore-focus", "");
+    dialog.setAttribute("data-ok-disable-scroll-lock", "");
+    const open = host.querySelector("#open") as HTMLElement;
+    await userEvent.click(open);
+    expect(dialog.open).toBe(true);
+    expect(isScrollLocked()).toBe(false);
+    await userEvent.click(host.querySelector("#cancel") as HTMLElement);
+    expect(dialog.open).toBe(false);
+    expect(document.activeElement).not.toBe(open);
   });
 
   it("Escape and the backdrop close it; disableEscapeKeyDown; native form close", async () => {

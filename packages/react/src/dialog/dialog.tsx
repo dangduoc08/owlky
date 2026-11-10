@@ -44,6 +44,16 @@ export interface DialogProps extends Omit<ComponentPropsWithoutRef<"dialog">, "o
   hideBackdrop?: boolean | undefined;
   /** Escape doesn't ask to close. */
   disableEscapeKeyDown?: boolean | undefined;
+  /** Focus isn't moved back to the element focused before the dialog opened. */
+  disableRestoreFocus?: boolean | undefined;
+  /** The page behind can still scroll while the dialog is open. */
+  disableScrollLock?: boolean | undefined;
+  /**
+   * Keeps the children rendered while the dialog is closed. Default `true` (the HTML markup is
+   * always there too); `false` renders them only while it is open (MUI's default), which
+   * resets their state on every opening.
+   */
+  keepMounted?: boolean | undefined;
   /**
    * Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…). Without it, the paper fades
    * and scales in briefly.
@@ -69,6 +79,9 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
     scroll,
     hideBackdrop,
     disableEscapeKeyDown,
+    disableRestoreFocus,
+    disableScrollLock,
+    keepMounted = true,
     transition,
     paperProps,
     children,
@@ -96,6 +109,8 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
     controllerRef.current?.setOptions({
       contentSelector: "[data-ok-dialog-paper]",
       closeOnEscape: disableEscapeKeyDown !== true,
+      restoreFocus: disableRestoreFocus !== true,
+      lockScroll: disableScrollLock !== true,
       onDismiss: (reason) => onOpenChange?.(false, reason),
       onExternalClose: () => onOpenChange?.(false, "close"),
     });
@@ -117,6 +132,8 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
         scroll,
         hideBackdrop,
         disableEscapeKeyDown,
+        disableRestoreFocus,
+        disableScrollLock,
       })}
       data-ok-runtime="off"
       aria-labelledby={props["aria-label"] ? undefined : titleId}
@@ -133,7 +150,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
             : {})}
           {...paperProps}
         >
-          {children}
+          {keepMounted || open ? children : null}
         </div>
       </TitleIdContext.Provider>
     </dialog>

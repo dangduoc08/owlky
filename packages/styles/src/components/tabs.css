@@ -6,6 +6,7 @@
  *             div[data-ok-tabs-scroller]
  *               div[role="tablist"][data-ok-tabs-list]
  *                 button[role="tab"][data-ok-tab][data-ok-icon-position]?[aria-selected]
+ *                 | a[data-ok-tab][href][aria-current=page]?   (link tabs, root role=navigation)
  *                   svg? span[data-ok-tab-label]?
  *               span[data-ok-tabs-indicator]
  *             div[data-ok-tabs-scroll-button="end"]?
@@ -143,6 +144,7 @@
     text-align: center;
     white-space: normal;
     cursor: pointer;
+    text-decoration: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition: color var(--ok-duration-short) var(--ok-easing-standard);
@@ -205,7 +207,7 @@
     line-height: 1.5;
   }
 
-  :where([data-ok-tab][aria-selected="true"]) {
+  :where([data-ok-tab]:is([aria-selected="true"], [aria-current="page"])) {
     color: var(--_ok-tabs-selected);
     font-weight: var(--ok-font-weight-semibold);
   }

@@ -10,6 +10,7 @@ import {
   avatarGroupStyle,
   avatarVariants,
   backdropAttributes,
+  backdropStyle,
   badgeAttributes,
   badgeContent,
   badgeVariants,
@@ -36,6 +37,7 @@ import {
   dividerVariants,
   drawerAnchors,
   drawerAttributes,
+  drawerStyle,
   editorAttributes,
   fabAttributes,
   fabColors,
@@ -112,6 +114,30 @@ import {
 } from "./anatomy.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
+
+describe("drawer and backdrop styles", () => {
+  it("elevation and transition duration become private properties; invalid values are dropped", () => {
+    expect(drawerStyle({})).toEqual({});
+    expect(drawerStyle({ elevation: 4, transitionDuration: 120 })).toEqual({
+      "--_ok-drawer-shadow": "var(--ok-elevation-4)",
+      "--_ok-drawer-duration": "120ms",
+    });
+    expect(drawerStyle({ elevation: "0", transitionDuration: "0" })).toEqual({
+      "--_ok-drawer-shadow": "none",
+      "--_ok-drawer-duration": "0ms",
+    });
+    expect(drawerStyle({ elevation: 25, transitionDuration: -1 })).toEqual({});
+    expect(drawerStyle({ elevation: HOSTILE, transitionDuration: HOSTILE })).toEqual({});
+    expect(drawerAttributes({ elevation: 8, transitionDuration: 200 })).toMatchObject({
+      "data-ok-elevation": "8",
+      "data-ok-transition-duration": "200",
+    });
+    expect(backdropStyle({ transitionDuration: 300 })).toEqual({
+      "--_ok-backdrop-duration": "300ms",
+    });
+    expect(backdropStyle({ transitionDuration: "soon" })).toEqual({});
+  });
+});
 
 describe("buttonAttributes", () => {
   it("emits explicit defaults", () => {

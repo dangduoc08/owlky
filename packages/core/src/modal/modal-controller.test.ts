@@ -64,6 +64,20 @@ describe.each([
     controller.destroy();
   });
 
+  it("restoreFocus false and lockScroll false (MUI disableRestoreFocus, disableScrollLock)", () => {
+    const { trigger, controller } = setup({
+      forceFallback,
+      restoreFocus: false,
+      lockScroll: false,
+    });
+    trigger.focus();
+    controller.open();
+    expect(isScrollLocked()).toBe(false);
+    controller.close();
+    expect(document.activeElement).not.toBe(trigger);
+    controller.destroy();
+  });
+
   it("restores focus to the trigger and releases everything on close", () => {
     const { dialog, trigger, controller } = setup({ forceFallback });
     trigger.focus();

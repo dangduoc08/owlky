@@ -1,12 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createHoverIntent } from "./hover-intent.js";
+import { createHoverIntent, type HoverIntent } from "./hover-intent.js";
 
+const intents: HoverIntent[] = [];
 beforeEach(() => vi.useFakeTimers());
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+  // Destroyed intents leave the page-wide count of shown tooltips.
+  for (const intent of intents.splice(0)) intent.destroy();
+  vi.useRealTimers();
+});
 
 const setup = (options = {}) => {
   const onOpenChange = vi.fn();
-  return { intent: createHoverIntent({ onOpenChange, ...options }), onOpenChange };
+  const intent = createHoverIntent({ onOpenChange, ...options });
+  intents.push(intent);
+  return { intent, onOpenChange };
 };
 
 describe("createHoverIntent", () => {
@@ -90,5 +97,35 @@ describe("createHoverIntent", () => {
     vi.advanceTimersByTime(500);
     expect(intent.open).toBe(true);
     expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("enterNextDelay: while another tooltip shows or for 800 ms after it closed", () => {
+    const first = setup();
+    const second = setup({ enterDelay: 300, enterNextDelay: 20 });
+    // Nothing shown recently: enterDelay.
+    vi.advanceTimersByTime(60_000);
+    second.intent.enter();
+    vi.advanceTimersByTime(299);
+    expect(second.intent.open).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(second.intent.open).toBe(true);
+    second.intent.hide();
+    // Closed less than 800 ms ago, then another one shows: enterNextDelay.
+    vi.advanceTimersByTime(700);
+    second.intent.enter();
+    vi.advanceTimersByTime(20);
+    expect(second.intent.open).toBe(true);
+    second.intent.hide();
+    vi.advanceTimersByTime(900);
+    first.intent.focus();
+    second.intent.enter();
+    vi.advanceTimersByTime(20);
+    expect(second.intent.open).toBe(true);
+    // Without enterNextDelay, enterDelay stays.
+    const third = setup({ enterDelay: 50 });
+    third.intent.enter();
+    vi.advanceTimersByTime(49);
+    expect(third.intent.open).toBe(false);
+    for (const { intent } of [first, second, third]) intent.destroy();
   });
 });

@@ -1,4 +1,6 @@
+import { backdropStyle } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
+import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export type BackdropCloseReason = "trigger" | "api";
@@ -25,6 +27,7 @@ export interface BackdropInstance extends ComponentInstance {
 }
 
 const OPEN = "data-ok-open";
+const DURATION = "data-ok-transition-duration";
 
 const byId = (from: Element, id: string): Element | null =>
   (from.getRootNode() as Document | ShadowRoot).getElementById(id);
@@ -46,7 +49,22 @@ export const backdrop = defineComponent<BackdropInstance, BackdropEvents>({
 
   setup(element, { emit }) {
     const isOpen = () => element.hasAttribute(OPEN);
+    // The fade's length (data-ok-transition-duration) through CSSOM.
+    let written: string[] = [];
+    const timing = () => {
+      written = syncCustomProperties(
+        element,
+        backdropStyle({ transitionDuration: element.getAttribute(DURATION) ?? undefined }),
+        written,
+      );
+    };
+    timing();
+    const observer = new MutationObserver(timing);
+    observer.observe(element, { attributes: true, attributeFilter: [DURATION] });
     return {
+      destroy() {
+        observer.disconnect();
+      },
       get isOpen() {
         return isOpen();
       },

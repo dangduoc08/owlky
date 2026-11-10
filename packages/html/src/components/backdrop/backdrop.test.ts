@@ -160,6 +160,16 @@ describe("backdrop runtime", () => {
     expect(trigger).toBe(host.querySelector("#t"));
   });
 
+  it("data-ok-transition-duration sets the fades through CSSOM, also when it changes", async () => {
+    const host = mount(`<div id="b" data-ok-backdrop data-ok-transition-duration="25"></div>`);
+    start();
+    const backdrop = host.querySelector("#b") as HTMLElement;
+    expect(backdrop.style.getPropertyValue("--_ok-backdrop-duration")).toBe("25ms");
+    backdrop.setAttribute("data-ok-transition-duration", "x");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(backdrop.style.getPropertyValue("--_ok-backdrop-duration")).toBe("");
+  });
+
   it("invisible: transparent, still catches the click", async () => {
     const host = mount(
       `<div id="b" data-ok-backdrop data-ok-invisible data-ok-open data-ok-backdrop-close></div>`,

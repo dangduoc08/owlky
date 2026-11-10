@@ -88,6 +88,13 @@
       "name": "invisible"
      },
      {
+      "attr": "data-ok-transition-duration",
+      "description": "Length of the fade in and out (ms). Default: the theme's durations.",
+      "kind": "number",
+      "min": 0,
+      "name": "transitionDuration"
+     },
+     {
       "attr": "data-ok-open",
       "description": "Open state (`open`; HTML: `data-ok-open`, a trigger or `open()`).",
       "event": "ok:backdrop:close",
@@ -136,6 +143,11 @@
       "name": "open",
       "required": true,
       "type": "boolean"
+     },
+     {
+      "description": "Length of the fade in and out, in ms. Default: the theme's durations.",
+      "name": "transitionDuration",
+      "type": "number"
      }
     ]
    }

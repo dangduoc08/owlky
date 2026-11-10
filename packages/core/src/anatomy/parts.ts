@@ -1313,6 +1313,14 @@ export interface MarkdownParts {
   "data-ok-disallowed-elements": Value<string>;
 }
 
+/** Menu: parts, states, values and triggers. */
+export interface MenuParts {
+  /** A submenu: the `li[role=none]` that holds its trigger item and its popover. */
+  "data-ok-menu-submenu": Part<"li">;
+  /** The chevron at the end of a submenu's trigger. */
+  "data-ok-menu-submenu-icon": Part<"svg">;
+}
+
 /** Motion: parts, states, values and triggers. */
 export interface MotionParts {
   /** The full number for assistive technology. */
@@ -1359,6 +1367,8 @@ export interface PaginationParts {
 
 /** Popover: parts, states, values and triggers. */
 export interface PopoverParts {
+  /** The point the popover opens at with `data-ok-anchor-reference="anchorPosition"`: `top,left` in px from the viewport's top left corner. */
+  "data-ok-anchor-position": Value<string>;
   /** Set by the runtime: the side the popover opened on after flipping. */
   "data-ok-current-placement": Value<string>;
   /** Set by the runtime when the browser lacks the Popover API. */
@@ -1525,6 +1535,8 @@ export interface StepperParts {
   "data-ok-mobile-stepper-progress": Part<"span">;
   /** The "2 / 6" text of the `text` variant. */
   "data-ok-mobile-stepper-text": Part<"span">;
+  /** A step's label as a button that moves to the step (non-linear steppers). */
+  "data-ok-step-button": Part<"button">;
   /** The line before a step (not on the first one). */
   "data-ok-step-connector": Part<"div">;
   /** The line itself. */

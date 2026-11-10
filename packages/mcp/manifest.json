@@ -29,6 +29,8 @@
   "data-ok-ampm",
   "data-ok-ampm-in-clock",
   "data-ok-anchor",
+  "data-ok-anchor-position",
+  "data-ok-anchor-reference",
   "data-ok-animate",
   "data-ok-animation-fade",
   "data-ok-animation-swipe",
@@ -406,6 +408,7 @@
   "data-ok-disable-aggregation",
   "data-ok-disable-animation",
   "data-ok-disable-auto-focus",
+  "data-ok-disable-auto-focus-item",
   "data-ok-disable-auto-month-switching",
   "data-ok-disable-beacon",
   "data-ok-disable-captions",
@@ -440,6 +443,7 @@
   "data-ok-disable-restore-focus",
   "data-ok-disable-row-grouping",
   "data-ok-disable-row-selection-on-click",
+  "data-ok-disable-scroll-lock",
   "data-ok-disable-scrolling",
   "data-ok-disable-selection",
   "data-ok-disable-shrink",
@@ -513,6 +517,7 @@
   "data-ok-end",
   "data-ok-end-angle",
   "data-ok-enter-delay",
+  "data-ok-enter-next-delay",
   "data-ok-error",
   "data-ok-exaggeration",
   "data-ok-excel-options",
@@ -544,6 +549,7 @@
   "data-ok-focus",
   "data-ok-focus-after-open",
   "data-ok-focused",
+  "data-ok-follow-cursor",
   "data-ok-font",
   "data-ok-force-wheel-axis",
   "data-ok-form-control",
@@ -695,6 +701,7 @@
   "data-ok-label-value",
   "data-ok-labels",
   "data-ok-language",
+  "data-ok-last",
   "data-ok-latitude",
   "data-ok-layout",
   "data-ok-lazy",
@@ -800,6 +807,7 @@
   "data-ok-map-user-location",
   "data-ok-map-view",
   "data-ok-margin",
+  "data-ok-margin-threshold",
   "data-ok-markdown",
   "data-ok-markdown-source",
   "data-ok-marker-size",
@@ -818,6 +826,8 @@
   "data-ok-max-zoom-pixel-ratio",
   "data-ok-menu",
   "data-ok-menu-item",
+  "data-ok-menu-submenu",
+  "data-ok-menu-submenu-icon",
   "data-ok-min",
   "data-ok-min-date",
   "data-ok-min-date-time",
@@ -868,6 +878,7 @@
   "data-ok-no-wrap",
   "data-ok-node-padding",
   "data-ok-node-width",
+  "data-ok-non-linear",
   "data-ok-offset",
   "data-ok-once",
   "data-ok-open",
@@ -1099,6 +1110,7 @@
   "data-ok-state",
   "data-ok-status",
   "data-ok-step",
+  "data-ok-step-button",
   "data-ok-step-connector",
   "data-ok-step-connector-line",
   "data-ok-step-content",
@@ -1255,6 +1267,7 @@
   "data-ok-transfer-list-panel",
   "data-ok-transfer-list-title",
   "data-ok-transition",
+  "data-ok-transition-duration",
   "data-ok-tree-chevron",
   "data-ok-tree-collapse-icon",
   "data-ok-tree-data",
@@ -3826,6 +3839,13 @@
          "name": "invisible"
         },
         {
+         "attr": "data-ok-transition-duration",
+         "description": "Length of the fade in and out (ms). Default: the theme's durations.",
+         "kind": "number",
+         "min": 0,
+         "name": "transitionDuration"
+        },
+        {
          "attr": "data-ok-open",
          "description": "Open state (`open`; HTML: `data-ok-open`, a trigger or `open()`).",
          "event": "ok:backdrop:close",
@@ -3874,6 +3894,11 @@
          "name": "open",
          "required": true,
          "type": "boolean"
+        },
+        {
+         "description": "Length of the fade in and out, in ms. Default: the theme's durations.",
+         "name": "transitionDuration",
+         "type": "number"
         }
        ]
       }
@@ -3907,6 +3932,13 @@
        "description": "Transparent: blocks clicks without dimming the page (for example, behind a custom menu).",
        "kind": "flag",
        "name": "invisible"
+      },
+      {
+       "attr": "data-ok-transition-duration",
+       "description": "Length of the fade in and out (ms). Default: the theme's durations.",
+       "kind": "number",
+       "min": 0,
+       "name": "transitionDuration"
       },
       {
        "attr": "data-ok-open",
@@ -3956,7 +3988,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `invisible`, `children` | same; HTML `data-ok-open`, `data-ok-invisible` | kept | |\n| `transitionDuration` | — (fixed `--ok-duration-*`) | deferred (4.9) | |\n| `component` | — | not applicable | one `div` |\n| Fade props (`appear`, `easing`, `timeout`, `addEndListener`, `onEnter`… callbacks) | one CSS fade | not applicable | HTML `ok:backdrop:open` / `close` events |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `invisible`, `children` | same; HTML `data-ok-open`, `data-ok-invisible` | kept | |\n| `transitionDuration` | same, a number of ms for both fades; HTML `data-ok-transition-duration` | kept (4.9) | core `backdropStyle` → `--_ok-backdrop-duration` (React `style`, HTML CSSOM); `{ enter, exit }` not applicable |\n| `component` | — | not applicable | one `div` |\n| Fade props (`appear`, `easing`, `timeout`, `addEndListener`, `onEnter`… callbacks) | one CSS fade | not applicable | HTML `ok:backdrop:open` / `close` events |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -31261,6 +31293,18 @@
          "name": "disableEscapeKeyDown"
         },
         {
+         "attr": "data-ok-disable-restore-focus",
+         "description": "Focus isn't moved back to the element focused before it opened.",
+         "kind": "flag",
+         "name": "disableRestoreFocus"
+        },
+        {
+         "attr": "data-ok-disable-scroll-lock",
+         "description": "The page behind can still scroll while it is open.",
+         "kind": "flag",
+         "name": "disableScrollLock"
+        },
+        {
          "attr": "data-ok-variant",
          "children": "[data-ok-dialog-paper]",
          "default": "fadeIn",
@@ -31348,6 +31392,16 @@
          "type": "boolean"
         },
         {
+         "description": "Focus isn't moved back to the element focused before the dialog opened.",
+         "name": "disableRestoreFocus",
+         "type": "boolean"
+        },
+        {
+         "description": "The page behind can still scroll while the dialog is open.",
+         "name": "disableScrollLock",
+         "type": "boolean"
+        },
+        {
          "description": "Covers the viewport.",
          "name": "fullScreen",
          "type": "boolean"
@@ -31360,6 +31414,12 @@
         {
          "description": "Transparent backdrop (still modal).",
          "name": "hideBackdrop",
+         "type": "boolean"
+        },
+        {
+         "default": "true",
+         "description": "Keeps the children rendered while the dialog is closed. (the HTML markup is always there too); `false` renders them only while it is open (MUI's default), which resets their state on every opening.",
+         "name": "keepMounted",
          "type": "boolean"
         },
         {
@@ -31567,6 +31627,18 @@
        "name": "disableEscapeKeyDown"
       },
       {
+       "attr": "data-ok-disable-restore-focus",
+       "description": "Focus isn't moved back to the element focused before it opened.",
+       "kind": "flag",
+       "name": "disableRestoreFocus"
+      },
+      {
+       "attr": "data-ok-disable-scroll-lock",
+       "description": "The page behind can still scroll while it is open.",
+       "kind": "flag",
+       "name": "disableScrollLock"
+      },
+      {
        "attr": "data-ok-variant",
        "children": "[data-ok-dialog-paper]",
        "default": "fadeIn",
@@ -31649,7 +31721,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |\n| `maxWidth` (`false`) | `\"none\"` | renamed | |\n| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |\n| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred | new batch E row (with 5.1 exit transitions) |\n| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |\n| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |\n| Modal `keepMounted` | always mounted | deferred (4.8) | |\n| Modal `disableRestoreFocus`, `disableScrollLock` | — | deferred | new batch E row |\n| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |\n| Modal `container`, `disablePortal` | — | not applicable | top layer |\n| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |\n| `DialogTitle`, `DialogContentText` `children` | same | kept | |\n| `DialogContent` `dividers` | same | kept | |\n| `DialogActions` `disableSpacing` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |\n| `maxWidth` (`false`) | `\"none\"` | renamed | |\n| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |\n| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred (4.18.44) | waits for 5.1 exit transitions |\n| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |\n| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |\n| Modal `keepMounted` | same (React only), default `true` | kept (4.8) | MUI default `false`; ours keeps the children like the HTML markup (no breaking change); `false` renders them only while open |\n| Modal `disableRestoreFocus`, `disableScrollLock` | same (`data-ok-disable-restore-focus`, `data-ok-disable-scroll-lock`) | kept (4.18.45) | core modal controller `restoreFocus` / `lockScroll`; the browser's own focus return after `dialog.close()` is undone |\n| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |\n| Modal `container`, `disablePortal` | — | not applicable | top layer |\n| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |\n| `DialogTitle`, `DialogContentText` `children` | same | kept | |\n| `DialogContent` `dividers` | same | kept | |\n| `DialogActions` `disableSpacing` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -32181,6 +32253,60 @@
          "name": "disableEscapeKeyDown"
         },
         {
+         "attr": "data-ok-disable-restore-focus",
+         "description": "Temporary only: focus isn't moved back to the trigger on close.",
+         "kind": "flag",
+         "name": "disableRestoreFocus"
+        },
+        {
+         "attr": "data-ok-disable-scroll-lock",
+         "description": "Temporary only: the page behind can still scroll while it is open.",
+         "kind": "flag",
+         "name": "disableScrollLock"
+        },
+        {
+         "attr": "data-ok-elevation",
+         "default": "16",
+         "description": "Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none.",
+         "kind": "style",
+         "name": "elevation",
+         "optional": true,
+         "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24"
+         ]
+        },
+        {
+         "attr": "data-ok-transition-duration",
+         "description": "Length of the slide in and out (ms). Default: the theme's short duration.",
+         "kind": "number",
+         "min": 0,
+         "name": "transitionDuration"
+        },
+        {
          "attr": "open | hidden",
          "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
          "event": "ok:drawer:close",
@@ -32340,9 +32466,35 @@
          "type": "boolean"
         },
         {
+         "description": "Temporary only: focus isn't moved back to the trigger on close.",
+         "name": "disableRestoreFocus",
+         "type": "boolean"
+        },
+        {
+         "description": "Temporary only: the page behind can still scroll while the drawer is open.",
+         "name": "disableScrollLock",
+         "type": "boolean"
+        },
+        {
+         "description": "Shadow depth of the panel, 0–24. Default: each edge's own shadow (docked drawers: none).",
+         "name": "elevation",
+         "type": "number"
+        },
+        {
          "description": "Temporary only: transparent backdrop (still modal; a click outside still closes it).",
          "name": "hideBackdrop",
          "type": "boolean"
+        },
+        {
+         "default": "true",
+         "description": "keepMounted`). (the HTML markup is always there too); `false` renders them only while open.",
+         "name": "keepMounted",
+         "type": "boolean"
+        },
+        {
+         "description": "Length of the slide in and out, in ms. Default: the theme's short duration.",
+         "name": "transitionDuration",
+         "type": "number"
         }
        ]
       }
@@ -32501,6 +32653,60 @@
        "name": "disableEscapeKeyDown"
       },
       {
+       "attr": "data-ok-disable-restore-focus",
+       "description": "Temporary only: focus isn't moved back to the trigger on close.",
+       "kind": "flag",
+       "name": "disableRestoreFocus"
+      },
+      {
+       "attr": "data-ok-disable-scroll-lock",
+       "description": "Temporary only: the page behind can still scroll while it is open.",
+       "kind": "flag",
+       "name": "disableScrollLock"
+      },
+      {
+       "attr": "data-ok-elevation",
+       "default": "16",
+       "description": "Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none.",
+       "kind": "style",
+       "name": "elevation",
+       "optional": true,
+       "values": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24"
+       ]
+      },
+      {
+       "attr": "data-ok-transition-duration",
+       "description": "Length of the slide in and out (ms). Default: the theme's short duration.",
+       "kind": "number",
+       "min": 0,
+       "name": "transitionDuration"
+      },
+      {
        "attr": "open | hidden",
        "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
        "event": "ok:drawer:close",
@@ -32558,7 +32764,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |\n| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |\n| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |\n| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |\n| `elevation`, `transitionDuration` | — | deferred (4.9) | |\n| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |\n| `ModalProps.keepMounted` (default unmount), `disableRestoreFocus`, `disableScrollLock` | always mounted | deferred | new batch E row (with Dialog) |\n| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |\n| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |\n| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |\n| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |\n| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |\n| `elevation`, `transitionDuration` | `DrawerContent` props; HTML `data-ok-elevation` (0–24), `data-ok-transition-duration` (ms) | kept (4.9) | core `drawerStyle` → `--_ok-drawer-shadow` / `--_ok-drawer-duration` (React `style`, HTML CSSOM); without `elevation` each edge keeps its shadow (MUI 16) |\n| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |\n| `ModalProps.keepMounted`, `disableRestoreFocus`, `disableScrollLock` | `DrawerContent` props `keepMounted` (React only, default `true`), `disableRestoreFocus`, `disableScrollLock` (`data-ok-*`, temporary only) | renamed (4.18.45) | props on DrawerContent instead of `ModalProps` |\n| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |\n| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred (4.18.46) | \"could\"; left after batch B (budget, shares a swipe helper with 4.14) |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -44880,6 +45086,36 @@
          "name": "dense"
         },
         {
+         "attr": "data-ok-variant",
+         "default": "selectedMenu",
+         "description": "Which item gets focus on open: the selected one, else the first (`selectedMenu`), or always the first (`menu`).",
+         "kind": "style",
+         "name": "variant",
+         "optional": true,
+         "values": [
+          "selectedMenu",
+          "menu"
+         ]
+        },
+        {
+         "attr": "data-ok-disable-auto-focus-item",
+         "description": "On open, focus goes to the list (`tabindex=\"-1\"`), not to an item; the arrow keys then enter it.",
+         "kind": "flag",
+         "name": "disableAutoFocusItem"
+        },
+        {
+         "attr": "data-ok-disabled-items-focusable",
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "kind": "flag",
+         "name": "disabledItemsFocusable"
+        },
+        {
+         "attr": "data-ok-disable-list-wrap",
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "kind": "flag",
+         "name": "disableListWrap"
+        },
+        {
          "attr": "data-ok-selected",
          "description": "The selected item (`MenuItem selected`).",
          "event": "ok:menu:select",
@@ -44891,14 +45127,24 @@
       },
       "name": "Menu",
       "react": {
-       "description": "A Popover holding a `ul[role=menu]`. Opening focuses the selected item (or the first); arrows, Home, End and typeahead move between items; Enter and Space choose; choosing an item closes the menu (reason `\"select\"`) unless its `onClick` calls `preventDefault()`.",
+       "description": "A Popover holding a `MenuList`. Opening focuses the selected item (or the first, see `variant`); choosing an item, also in a submenu, closes the menu (reason `\"select\"`) unless its `onClick` calls `preventDefault()`.",
        "native": "HTMLUListElement",
        "props": [
         {
-         "description": "The element the menu opens next to.",
+         "description": "The element (or virtual anchor) the menu opens next to.",
          "name": "anchorEl",
          "required": true,
          "type": "PopoverAnchor"
+        },
+        {
+         "description": "The point used with `anchorReference=\"anchorPosition\"`, in px from the viewport's top left corner.",
+         "name": "anchorPosition",
+         "type": "PopoverAnchorPosition"
+        },
+        {
+         "description": "What positions the menu: the anchor (default), `anchorPosition` (a point) or `none` (your CSS).",
+         "name": "anchorReference",
+         "type": "\"anchorEl\" | \"anchorPosition\" | \"none\""
         },
         {
          "description": "The content.",
@@ -44911,9 +45157,29 @@
          "type": "boolean"
         },
         {
+         "description": "On open, focus goes to the list instead of an item; the arrow keys then enter it.",
+         "name": "disableAutoFocusItem",
+         "type": "boolean"
+        },
+        {
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "name": "disableListWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
          "description": "`id` of the menu's popover (point the trigger's `aria-controls` at it).",
          "name": "id",
          "type": "string"
+        },
+        {
+         "description": "Minimum distance to the viewport edges, in px. Default 16.",
+         "name": "marginThreshold",
+         "type": "number"
         },
         {
          "description": "Called when the menu asks to close, with the reason.",
@@ -44936,6 +45202,16 @@
          "description": "Where the menu opens around its anchor.",
          "name": "placement",
          "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+        },
+        {
+         "description": "Length of the opening animation, in ms. Default: the theme's shorter duration.",
+         "name": "transitionDuration",
+         "type": "number"
+        },
+        {
+         "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+         "name": "variant",
+         "type": "\"menu\" | \"selectedMenu\""
         }
        ]
       }
@@ -44982,7 +45258,7 @@
        "native": "HTMLLIElement",
        "props": [
         {
-         "description": "Compact items.",
+         "description": "Compact: 4px less padding above and below.",
          "name": "dense",
          "type": "boolean"
         },
@@ -45008,6 +45284,127 @@
         }
        ]
       }
+     },
+     {
+      "name": "MenuList",
+      "react": {
+       "description": "The `ul[role=menu]` with the menu's keyboard: arrows, Home, End and typeahead move between items, Enter and Space choose, ArrowRight (ArrowLeft right to left) opens a submenu and ArrowLeft closes it. A `Menu` renders one inside its Popover; used alone (a menu always on screen), the first focus item takes the tab stop.",
+       "native": "HTMLUListElement",
+       "props": [
+        {
+         "description": "Standalone list: focuses the list when it mounts (it then joins the tab order).",
+         "name": "autoFocus",
+         "type": "boolean"
+        },
+        {
+         "description": "Standalone list: focuses the first focus item (see `variant`) when it mounts.",
+         "name": "autoFocusItem",
+         "type": "boolean"
+        },
+        {
+         "description": "The content.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Compact items.",
+         "name": "dense",
+         "type": "boolean"
+        },
+        {
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "name": "disableListWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
+         "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+         "name": "variant",
+         "type": "\"menu\" | \"selectedMenu\""
+        }
+       ]
+      }
+     },
+     {
+      "html": {
+       "attribute": "data-ok-menu-submenu",
+       "description": "A submenu: the `li[role=none]` that holds its trigger item and its popover.",
+       "elements": [
+        "li"
+       ],
+       "parts": [
+        {
+         "description": "The chevron at the end of a submenu's trigger.",
+         "elements": [
+          "svg"
+         ],
+         "kind": "part",
+         "name": "data-ok-menu-submenu-icon"
+        }
+       ]
+      },
+      "name": "MenuSubmenu",
+      "react": {
+       "description": "A submenu inside a Menu or MenuList: a `li[role=none]` holding a trigger item (`aria-haspopup=\"menu\"`) and a Popover with its own `MenuList`, opened after the trigger in the reading direction. ArrowRight, Enter, Space or a click open it and focus its first item; resting the mouse on the trigger opens it without moving focus; ArrowLeft and Escape close it.",
+       "native": "HTMLUListElement",
+       "props": [
+        {
+         "description": "The content.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Compact items.",
+         "name": "dense",
+         "type": "boolean"
+        },
+        {
+         "description": "The arrow keys stop at the first and last items instead of wrapping.",
+         "name": "disableListWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "The trigger can't open the submenu and is skipped by the keyboard.",
+         "name": "disabled",
+         "type": "boolean"
+        },
+        {
+         "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
+         "description": "`id` of the submenu's popover (default: a generated one).",
+         "name": "id",
+         "type": "string"
+        },
+        {
+         "description": "The trigger item's content (text, an icon). A chevron follows it.",
+         "name": "label",
+         "required": true,
+         "type": "ReactNode"
+        },
+        {
+         "description": "Props of the submenu's popover paper.",
+         "name": "paperProps",
+         "type": "HTMLAttributes<HTMLDivElement>"
+        },
+        {
+         "description": "Props of the trigger item (`div[role=menuitem]`).",
+         "name": "triggerProps",
+         "type": "HTMLAttributes<HTMLDivElement>"
+        },
+        {
+         "description": "`\"selectedMenu\"` (default): the selected item gets focus first, else the first item. `\"menu\"`: always the first item.",
+         "name": "variant",
+         "type": "\"menu\" | \"selectedMenu\""
+        }
+       ]
+      }
      }
     ],
     "types": [
@@ -45017,7 +45414,11 @@
      },
      {
       "name": "PopoverAnchor",
-      "type": "Element | (() => Element | null | undefined) | null"
+      "type": "(() => PopoverAnchorTarget | null | undefined) | PopoverAnchorTarget | null"
+     },
+     {
+      "name": "PopoverAnchorTarget",
+      "type": "Element | PopoverVirtualAnchor"
      },
      {
       "name": "PopoverDismissReason",
@@ -45029,13 +45430,16 @@
    "name": "menu",
    "react": [
     "Menu",
-    "MenuItem"
+    "MenuItem",
+    "MenuList",
+    "MenuSubmenu"
    ],
    "referenceUrl": "https://minimals.cc/components/mui/menu",
    "related": [
     "button",
     "icon-button",
     "list",
+    "paper",
     "popover"
    ],
    "requiredParts": {},
@@ -45049,6 +45453,36 @@
        "description": "Compact items.",
        "kind": "flag",
        "name": "dense"
+      },
+      {
+       "attr": "data-ok-variant",
+       "default": "selectedMenu",
+       "description": "Which item gets focus on open: the selected one, else the first (`selectedMenu`), or always the first (`menu`).",
+       "kind": "style",
+       "name": "variant",
+       "optional": true,
+       "values": [
+        "selectedMenu",
+        "menu"
+       ]
+      },
+      {
+       "attr": "data-ok-disable-auto-focus-item",
+       "description": "On open, focus goes to the list (`tabindex=\"-1\"`), not to an item; the arrow keys then enter it.",
+       "kind": "flag",
+       "name": "disableAutoFocusItem"
+      },
+      {
+       "attr": "data-ok-disabled-items-focusable",
+       "description": "The keyboard stops on disabled items too (they still can't be chosen).",
+       "kind": "flag",
+       "name": "disabledItemsFocusable"
+      },
+      {
+       "attr": "data-ok-disable-list-wrap",
+       "description": "The arrow keys stop at the first and last items instead of wrapping.",
+       "kind": "flag",
+       "name": "disableListWrap"
       },
       {
        "attr": "data-ok-selected",
@@ -45104,12 +45538,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup=menu][aria-expanded]\ndiv[data-ok-popover][popover=manual][id][data-ok-placement=bottom-start]\n  › span[data-ok-popover-arrow]\n  › ul[data-ok-menu][role=menu][aria-labelledby][data-ok-dense]?\n      › li[data-ok-menu-item][role=menuitem][tabindex=-1][data-ok-selected]?[aria-disabled]?…\n```",
+     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup=menu][aria-expanded]\ndiv[data-ok-popover][popover=manual][id][data-ok-placement=bottom-start]\n  › span[data-ok-popover-arrow]\n  › ul[data-ok-menu][role=menu][aria-labelledby][data-ok-dense]?\n      › li[data-ok-menu-item][role=menuitem][tabindex=-1][data-ok-selected]?[aria-disabled]?…\n      › li[data-ok-menu-submenu][role=none]                         (a submenu, Phase 4.5)\n          › div[data-ok-menu-item][role=menuitem][tabindex=-1][id][aria-haspopup=menu][aria-expanded][aria-controls]\n              › label › svg[data-ok-menu-submenu-icon][aria-hidden]   (chevron, mirrored with dir=rtl)\n          › div[data-ok-popover][popover=manual][id][data-ok-placement=right-start]   (left-start right to left)\n              › span[data-ok-popover-arrow] › ul[data-ok-menu][role=menu][aria-labelledby=trigger id] › …\nul[data-ok-menu][role=menu][aria-label]                              (standalone MenuList, no popover)\n  › li[data-ok-menu-item][tabindex=0]   (the focus item: selected, else first; `variant=\"menu\"`: first)\n```\nThe submenu's popover is a DOM descendant of the menu's popover (so presses inside it aren't\n\"outside\"), in the top layer. Fallback path (no Popover API): the submenu is `position: fixed`\ninside the paper, whose `backdrop-filter` makes it the containing block (positions may be off;\ndocumented limitation of old browsers).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `menu`: listed under \"options\".)\n\n(Options of `menu-item`: listed under \"options\".)\n\nReact: `Menu` `open` / `anchorEl` / `onOpenChange(open, reason)` (escape | backdrop | select |\ntab), `placement` (default `bottom-start`), `paperProps`; `MenuItem` `onClick` (choosing closes\nthe menu unless `preventDefault()`). Renamed: `onClose` → `onOpenChange`; `MenuListProps` →\nprops on `Menu` (they go to the list); `PaperProps` / `slotProps.paper` → `paperProps`.\nKept: `variant=\"selectedMenu\"` behavior (focus the selected item) as the only behavior; MUI\n`autoFocusItem` always on. Deferred: `variant=\"menu\"`, nested menus. Not applicable:\n`TransitionComponent`, `sx`, `classes`, `component`.",
+     "body": "(Options of `menu`: listed under \"options\".)\n\n(Options of `menu-item`: listed under \"options\".)\n\nReact: `Menu` `open` / `anchorEl` / `onOpenChange(open, reason)` (escape | backdrop | select |\ntab), `placement` (default `bottom-start`), `paperProps`; `MenuItem` `onClick` (choosing closes\nthe menu unless `preventDefault()`). Renamed: `onClose` → `onOpenChange`; `MenuListProps` →\nprops on `Menu` (they go to the list); `PaperProps` / `slotProps.paper` → `paperProps`.\nKept: `variant` (`selectedMenu` default · `menu`: always the first item), `disableAutoFocusItem`\n(focus the list; React renders `tabindex=\"-1\"`, HTML writes it), `disabledItemsFocusable`,\n`disableListWrap` (attributes on the list, read by core `menuItems` / `initialMenuItem` /\n`menuKeyTarget`), `anchorReference` / `anchorPosition` / `marginThreshold` /\n`transitionDuration` (passed to the Popover, see popover.md). React `MenuList` works alone\n(`autoFocus` focuses the list and gives it `tabindex=\"0\"`, `autoFocusItem` focuses the focus\nitem; both on mount; HTML: the native `autofocus` attribute), the focus item takes the tab stop\n(`tabindex=\"0\"`, MUI's active item). Nested menus (no MUI API; Base UI / WAI-ARIA submenus):\nReact `MenuSubmenu` (`label`, `disabled`, `id`, `triggerProps`, `paperProps`, list props),\nHTML the anatomy above. Not applicable:\n`TransitionComponent`, `sx`, `classes`, `component`.",
      "id": "options",
      "title": "Options"
     },
@@ -45124,7 +45558,7 @@
      "title": "Responsive behavior"
     },
     {
-     "body": "Opening focuses the selected (or first) enabled item. ArrowDown / ArrowUp (wrap), Home, End,\ntypeahead (500 ms buffer; a repeated letter cycles), Enter / Space choose, Escape closes (focus\nreturns to the trigger), Tab closes. Disabled items are skipped.",
+     "body": "Opening focuses the selected (or first) enabled item. ArrowDown / ArrowUp (wrap), Home, End,\ntypeahead (500 ms buffer; a repeated letter cycles), Enter / Space choose, Escape closes (focus\nreturns to the trigger), Tab closes. Disabled items are skipped.\n\nSubmenus (core `submenuKeyAction`, `createSubmenuHover`): ArrowRight, Enter, Space or a click on\na trigger open its submenu and focus its focus item; ArrowLeft inside closes it and focuses the\ntrigger; Escape closes the top submenu only (focus back to its trigger). Right to left (computed\n`direction`), ArrowLeft opens and ArrowRight closes, and the submenu opens on the left. Moving\nto another item of a menu closes the submenus open there. Mouse: resting 100 ms on a trigger\nopens its submenu without moving focus; resting on another item of the same menu closes it;\ncrossing items on the way into a submenu cancels. Choosing an item anywhere, Tab and a press\noutside close the whole menu; closing the menu closes its submenus.",
      "id": "keyboard-accessibility",
      "title": "Keyboard / Accessibility"
     },
@@ -45134,7 +45568,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Menu (inherits Popover), MenuItem, MenuList.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl`, `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop` `select` `tab`); HTML `ok:menu:select` + popover events | renamed | |\n| Popover `anchorOrigin` / `transformOrigin` | `placement` (default `bottom-start`) | renamed | see popover.md |\n| `MenuListProps` | props on `Menu` (to the list) | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `variant=\"selectedMenu\"`, `autoFocus` | the only behavior (focus the selected, else first item) | kept | |\n| `variant=\"menu\"`, nested menus | — | deferred (4.5) | |\n| `disableAutoFocusItem` | — | deferred | new batch E row |\n| `transitionDuration` | — | deferred | new batch E row (with Popover) |\n| `PopoverClasses` | — | not applicable | ADR-0015 |\n| `MenuItem` `selected`, `dense`, `divider`, `disableGutters`, `disabled` | same (`disabled` → `aria-disabled`) | kept | |\n| `MenuItem` `autoFocus`, `component`, `focusVisibleClassName`, ripple props | — | not applicable | focus is the menu's; `li[role=menuitem]` |\n| `MenuList` (standalone, without Popover) `autoFocus`, `autoFocusItem`, `variant` | HTML: `ul[data-ok-menu]` works alone; React: none | deferred | new batch E row |\n| `MenuList` `disabledItemsFocusable`, `disableListWrap` | — (disabled items skipped, always wraps) | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Menu (inherits Popover), MenuItem, MenuList.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl`, `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop` `select` `tab`); HTML `ok:menu:select` + popover events | renamed | |\n| Popover `anchorOrigin` / `transformOrigin` | `placement` (default `bottom-start`) | renamed | see popover.md |\n| `MenuListProps` | props on `Menu` (to the list) | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `variant=\"selectedMenu\"`, `autoFocus` | the only behavior (focus the selected, else first item) | kept | |\n| `variant=\"menu\"` | same (`data-ok-variant`) | kept (4.5) | |\n| nested menus | `MenuSubmenu`; HTML `li[data-ok-menu-submenu]` | kept (4.5) | no MUI API: WAI-ARIA submenus |\n| `disableAutoFocusItem` | same (`data-ok-disable-auto-focus-item`) | kept (4.18.39) | |\n| `transitionDuration` | same (Popover) | kept (4.18.43) | number of ms |\n| Popover `anchorReference`, `anchorPosition`, `marginThreshold` | same (Popover) | kept (4.7) | |\n| `PopoverClasses` | — | not applicable | ADR-0015 |\n| `MenuItem` `selected`, `dense`, `divider`, `disableGutters`, `disabled` | same (`disabled` → `aria-disabled`) | kept | |\n| `MenuItem` `autoFocus`, `component`, `focusVisibleClassName`, ripple props | — | not applicable | focus is the menu's; `li[role=menuitem]` |\n| `MenuList` (standalone, without Popover) `autoFocus`, `autoFocusItem`, `variant` | React `MenuList`; HTML `ul[data-ok-menu]` alone + native `autofocus` | kept (4.18.39) | |\n| `MenuList` `disabledItemsFocusable`, `disableListWrap` | same (`data-ok-disabled-items-focusable`, `data-ok-disable-list-wrap`) | kept (4.18.42) | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -45166,6 +45600,24 @@
      "react": "import { IconButton, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\nimport { DemoIcon } from \"../shared/demo-icon.js\";\n\nconst MOONS = [\n  \"None\",\n  \"Ariel\",\n  \"Callisto\",\n  \"Deimos\",\n  \"Europa\",\n  \"Ganymede\",\n  \"Io\",\n  \"Miranda\",\n  \"Oberon\",\n  \"Phobos\",\n  \"Rhea\",\n  \"Titan\",\n  \"Triton\",\n];\n\n/** A long menu that scrolls: 4.5 items tall, opened by an icon button. */\nexport function MaxHeightMenuDemo() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <IconButton\n        aria-label=\"More\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        aria-controls=\"menu-long\"\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        <DemoIcon name=\"moreVertical\" />\n      </IconButton>\n      <Menu\n        id=\"menu-long\"\n        aria-label=\"Moons\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        {MOONS.map((moon) => (\n          <MenuItem key={moon} selected={moon === \"Phobos\"}>\n            {moon}\n          </MenuItem>\n        ))}\n      </Menu>\n    </>\n  );\n}\n",
      "snippets": [
       "max-height-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/icon-button.css + components/list.css + components/popover.css + components/menu.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Nested menu -->\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" id=\"menu-nested-button\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested\" data-ok-popover-open=\"menu-nested\"><span data-ok-button-label>Open menu</span></button>\n<div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"menu-nested\">\n  <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n  <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-button\">\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>New file</li>\n    <li role=\"none\" data-ok-menu-submenu>\n      <div id=\"menu-nested-recent-trigger\" role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested-recent\">Open recent<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n      <div popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\" id=\"menu-nested-recent\">\n        <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n        <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-recent-trigger\">\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>report.pdf</li>\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>notes.txt</li>\n          <li role=\"none\" data-ok-menu-submenu>\n            <div id=\"menu-nested-archive-trigger\" role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested-archive\">Archive<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\" id=\"menu-nested-archive\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-archive-trigger\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>2024.zip</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>2023.zip</li>\n              </ul>\n            </div>\n          </li>\n        </ul>\n      </div>\n    </li>\n    <li role=\"none\" data-ok-menu-submenu>\n      <div id=\"menu-nested-share-trigger\" role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"menu-nested-share\">Share<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n      <div popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\" id=\"menu-nested-share\">\n        <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n        <ul role=\"menu\" data-ok-menu aria-labelledby=\"menu-nested-share-trigger\">\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Email</li>\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Message</li>\n          <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Copy link</li>\n        </ul>\n      </div>\n    </li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Delete</li>\n  </ul>\n</div>",
+     "id": "components-menu--nested",
+     "name": "Nested menu",
+     "react": "import { Button, Menu, MenuItem, MenuSubmenu } from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/** A menu whose items open submenus: arrows, hover or a click open them. */\nexport function NestedMenuDemo() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        id=\"menu-nested-button\"\n        variant=\"outlined\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        aria-controls=\"menu-nested\"\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Open menu\n      </Button>\n      <Menu\n        id=\"menu-nested\"\n        aria-labelledby=\"menu-nested-button\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        <MenuItem>New file</MenuItem>\n        <MenuSubmenu id=\"menu-nested-recent\" label=\"Open recent\">\n          <MenuItem>report.pdf</MenuItem>\n          <MenuItem>notes.txt</MenuItem>\n          <MenuSubmenu id=\"menu-nested-archive\" label=\"Archive\">\n            <MenuItem>2024.zip</MenuItem>\n            <MenuItem>2023.zip</MenuItem>\n          </MenuSubmenu>\n        </MenuSubmenu>\n        <MenuSubmenu id=\"menu-nested-share\" label=\"Share\">\n          <MenuItem>Email</MenuItem>\n          <MenuItem>Message</MenuItem>\n          <MenuItem>Copy link</MenuItem>\n        </MenuSubmenu>\n        <MenuItem>Delete</MenuItem>\n      </Menu>\n    </>\n  );\n}\n",
+     "snippets": [
+      "nested-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/paper.css + components/menu.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Menu list -->\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\">\n  <ul role=\"menu\" data-ok-menu data-ok-variant=\"menu\" aria-label=\"Account\">\n    <li role=\"menuitem\" tabindex=\"0\" data-ok-menu-item>Profile</li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-selected>My account</li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item aria-disabled=\"true\">Billing</li>\n    <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item>Logout</li>\n  </ul>\n</div>",
+     "id": "components-menu--menu-list",
+     "name": "Menu list",
+     "react": "import { MenuItem, MenuList, Paper } from \"@owlky/react\";\n\n/** A menu always on screen: a MenuList on a Paper, without a popover. */\nexport function MenuListDemo() {\n  return (\n    <Paper>\n      <MenuList aria-label=\"Account\" variant=\"menu\">\n        <MenuItem>Profile</MenuItem>\n        <MenuItem selected>My account</MenuItem>\n        <MenuItem disabled>Billing</MenuItem>\n        <MenuItem>Logout</MenuItem>\n      </MenuList>\n    </Paper>\n  );\n}\n",
+     "snippets": [
+      "menu-list-group.html"
      ]
     }
    ],
@@ -47735,6 +48187,11 @@
        "native": "HTMLElement",
        "props": [
         {
+         "description": "The element or component to render the item as, such as a router link: it gets the item's attributes, content and other props (a router link's `to`). Disabled items get `aria-disabled`.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "description": "Renders a link (`<a>`) instead of a button.",
          "name": "href",
          "type": "string"
@@ -47908,7 +48365,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Pagination`, `PaginationItem`, `usePagination` (mui.com/material-ui/api/pagination,\n/api/pagination-item, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `count`, `page`, `defaultPage`, `onChange(event, page)` | same / `data-ok-count`, `data-ok-page`, `ok:pagination:change` | kept | React `onChange(page)` (no event) |\n| `siblingCount`, `boundaryCount` | same / `data-ok-sibling-count`, `-boundary-count` | kept | |\n| `showFirstButton`, `showLastButton`, `hidePrevButton`, `hideNextButton` | same / the buttons the markup contains | kept | |\n| `color` | `color` / `data-ok-color` | kept | adds `info` … `error`; arbitrary strings not applicable |\n| `shape`, `disabled` | same | kept | |\n| `size` `small` / `medium` / `large` | `size` `sm` / `md` / `lg` | renamed | project size names |\n| `variant` `text` / `outlined` | `variant` | kept | `soft` added (reference) |\n| `getItemAriaLabel(type, page, selected)` | same / `data-ok-label-page`, `-label-current` | kept | HTML: templates for page items only |\n| `renderItem` | `renderItem` (React) | kept | HTML: author the markup |\n| PaginationItem `type`, `page`, `selected`, `disabled` | same | kept | |\n| PaginationItem `color`, `shape`, `size`, `variant` | root options | not applicable | items read the root's attributes |\n| PaginationItem `component` (router links) | `href` → `a` only | deferred | router `Link` as the item element (like Link's `component`) |\n| PaginationItem `slots` (`first` / `last` / `next` / `previous` icons) | `icons` / `icon` | renamed | composition |\n| `usePagination` | core `paginationItems` | renamed | framework-free; no React hook |\n| `classes`, `sx`, `slots` / `slotProps` | — | not applicable | by decision |",
+     "body": "Upstream: MUI `Pagination`, `PaginationItem`, `usePagination` (mui.com/material-ui/api/pagination,\n/api/pagination-item, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `count`, `page`, `defaultPage`, `onChange(event, page)` | same / `data-ok-count`, `data-ok-page`, `ok:pagination:change` | kept | React `onChange(page)` (no event) |\n| `siblingCount`, `boundaryCount` | same / `data-ok-sibling-count`, `-boundary-count` | kept | |\n| `showFirstButton`, `showLastButton`, `hidePrevButton`, `hideNextButton` | same / the buttons the markup contains | kept | |\n| `color` | `color` / `data-ok-color` | kept | adds `info` … `error`; arbitrary strings not applicable |\n| `shape`, `disabled` | same | kept | |\n| `size` `small` / `medium` / `large` | `size` `sm` / `md` / `lg` | renamed | project size names |\n| `variant` `text` / `outlined` | `variant` | kept | `soft` added (reference) |\n| `getItemAriaLabel(type, page, selected)` | same / `data-ok-label-page`, `-label-current` | kept | HTML: templates for page items only |\n| `renderItem` | `renderItem` (React) | kept | HTML: author the markup |\n| PaginationItem `type`, `page`, `selected`, `disabled` | same | kept | |\n| PaginationItem `color`, `shape`, `size`, `variant` | root options | not applicable | items read the root's attributes |\n| PaginationItem `component` (router links) | same (React): the item's attributes, content and other props (a router link's `to`) go to the component; disabled → `aria-disabled` | kept (4.18.73) | HTML: `a[data-ok-pagination-item][href]` |\n| PaginationItem `slots` (`first` / `last` / `next` / `previous` icons) | `icons` / `icon` | renamed | composition |\n| `usePagination` | core `paginationItems` | renamed | framework-free; no React hook |\n| `classes`, `sx`, `slots` / `slotProps` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -48452,7 +48909,7 @@
         {
          "cancelable": true,
          "description": "Before the popover opens. Call `preventDefault()` to keep it closed.",
-         "detail": "{ anchor: Element; }",
+         "detail": "{ anchor: PopoverAnchorTarget; }",
          "name": "ok:popover:beforeopen"
         },
         {
@@ -48464,7 +48921,7 @@
         {
          "cancelable": false,
          "description": "After the popover opened next to `anchor`.",
-         "detail": "{ anchor: Element; }",
+         "detail": "{ anchor: PopoverAnchorTarget; }",
          "name": "ok:popover:open"
         }
        ],
@@ -48482,10 +48939,10 @@
          "type": "boolean"
         },
         {
-         "description": "Opens next to `anchor`. Returns `false` if `ok:popover:beforeopen` was prevented.",
+         "description": "Opens next to `anchor`: an element or a virtual anchor (`getBoundingClientRect()`, such as a text selection). Returns `false` if `ok:popover:beforeopen` was prevented.",
          "kind": "method",
          "name": "open",
-         "type": "(anchor: Element) => boolean"
+         "type": "(anchor: PopoverAnchorTarget) => boolean"
         },
         {
          "description": "Opens the popover next to `anchor` when it is closed, and closes it otherwise.",
@@ -48541,6 +48998,34 @@
          "name": "disableRestoreFocus"
         },
         {
+         "attr": "data-ok-anchor-reference",
+         "default": "anchorEl",
+         "description": "What positions it: `anchorEl` (the anchor), `anchorPosition` (a point, `anchorPosition` / `data-ok-anchor-position`) or `none` (your CSS).",
+         "kind": "style",
+         "name": "anchorReference",
+         "optional": true,
+         "values": [
+          "anchorEl",
+          "anchorPosition",
+          "none"
+         ]
+        },
+        {
+         "attr": "data-ok-margin-threshold",
+         "default": 16,
+         "description": "Minimum distance to the viewport edges (px).",
+         "kind": "number",
+         "min": 0,
+         "name": "marginThreshold"
+        },
+        {
+         "attr": "data-ok-transition-duration",
+         "description": "Length of the opening animation (ms). Default: the theme's shorter duration.",
+         "kind": "number",
+         "min": 0,
+         "name": "transitionDuration"
+        },
+        {
          "attr": "data-ok-open",
          "description": "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
          "event": "ok:popover:close",
@@ -48549,6 +49034,12 @@
         }
        ],
        "parts": [
+        {
+         "description": "The point the popover opens at with `data-ok-anchor-reference=\"anchorPosition\"`: `top,left` in px from the viewport's top left corner.",
+         "kind": "value",
+         "name": "data-ok-anchor-position",
+         "value": "string"
+        },
         {
          "description": "Set by the runtime: the side the popover opened on after flipping.",
          "kind": "value",
@@ -48599,6 +49090,16 @@
          "type": "PopoverAnchor"
         },
         {
+         "description": "The point, in px from the viewport's top left corner, used with `anchorReference=\"anchorPosition\"`.",
+         "name": "anchorPosition",
+         "type": "PopoverAnchorPosition"
+        },
+        {
+         "description": "What positions the popover: `\"anchorEl\"` (default), `\"anchorPosition\"` (the point in `anchorPosition`; `anchorEl` may then be left out) or `\"none\"` (your own CSS).",
+         "name": "anchorReference",
+         "type": "\"anchorEl\" | \"anchorPosition\" | \"none\""
+        },
+        {
          "description": "Draws an arrow pointing at the anchor.",
          "name": "arrow",
          "type": "boolean"
@@ -48629,6 +49130,11 @@
          "type": "(() => HTMLElement | null | undefined)"
         },
         {
+         "description": "Minimum distance to the viewport edges, in px. Default 16.",
+         "name": "marginThreshold",
+         "type": "number"
+        },
+        {
          "description": "Called when the user asks to close: `\"escape\"` or `\"backdrop\"` (a press outside).",
          "name": "onOpenChange",
          "type": "((open: boolean, reason?: PopoverDismissReason | undefined) => void)"
@@ -48644,6 +49150,11 @@
          "description": "Side of the anchor and alignment. Flips when there is no room.",
          "name": "placement",
          "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+        },
+        {
+         "description": "Length of the opening animation, in ms. Default: the theme's shorter duration.",
+         "name": "transitionDuration",
+         "type": "number"
         }
        ]
       }
@@ -48652,7 +49163,11 @@
     "types": [
      {
       "name": "PopoverAnchor",
-      "type": "Element | (() => Element | null | undefined) | null"
+      "type": "(() => PopoverAnchorTarget | null | undefined) | PopoverAnchorTarget | null"
+     },
+     {
+      "name": "PopoverAnchorTarget",
+      "type": "Element | PopoverVirtualAnchor"
      },
      {
       "name": "PopoverCloseReason",
@@ -48672,6 +49187,8 @@
    "referenceUrl": "https://minimals.cc/components/mui/popover",
    "related": [
     "button",
+    "form-control-label",
+    "radio",
     "typography"
    ],
    "requiredParts": {},
@@ -48726,6 +49243,34 @@
        "name": "disableRestoreFocus"
       },
       {
+       "attr": "data-ok-anchor-reference",
+       "default": "anchorEl",
+       "description": "What positions it: `anchorEl` (the anchor), `anchorPosition` (a point, `anchorPosition` / `data-ok-anchor-position`) or `none` (your CSS).",
+       "kind": "style",
+       "name": "anchorReference",
+       "optional": true,
+       "values": [
+        "anchorEl",
+        "anchorPosition",
+        "none"
+       ]
+      },
+      {
+       "attr": "data-ok-margin-threshold",
+       "default": 16,
+       "description": "Minimum distance to the viewport edges (px).",
+       "kind": "number",
+       "min": 0,
+       "name": "marginThreshold"
+      },
+      {
+       "attr": "data-ok-transition-duration",
+       "description": "Length of the opening animation (ms). Default: the theme's shorter duration.",
+       "kind": "number",
+       "min": 0,
+       "name": "transitionDuration"
+      },
+      {
        "attr": "data-ok-open",
        "description": "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
        "event": "ok:popover:close",
@@ -48743,12 +49288,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup][aria-expanded][aria-controls]   (HTML trigger; or data-ok-popover-hover)\ndiv[data-ok-popover][popover=manual][id][data-ok-placement][data-ok-arrow]?[role=dialog]?\n  › span[data-ok-popover-arrow][aria-hidden]       (always rendered; shown with data-ok-arrow)\n  › content\n```\nStates written by the controller: `data-ok-open`, `data-ok-current-placement` (after a flip),\n`data-ok-fallback` (no Popover API), CSSOM `--_ok-popover-x|y|arrow`.",
+     "body": "```\nbutton[data-ok-popover-open=\"id\"][aria-haspopup][aria-expanded][aria-controls]   (HTML trigger; or data-ok-popover-hover)\ndiv[data-ok-popover][popover=manual][id][data-ok-placement][data-ok-arrow]?[role=dialog]?\n  › span[data-ok-popover-arrow][aria-hidden]       (always rendered; shown with data-ok-arrow)\n  › content\n```\nStates written by the controller: `data-ok-open`, `data-ok-current-placement` (after a flip),\n`data-ok-fallback` (no Popover API), CSSOM `--_ok-popover-x|y|arrow|duration` (no `x` / `y`\nwith `anchorReference=\"none\"`).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `popover`: listed under \"options\".)\n\nReact: `open` + `anchorEl` (element or function) + `onOpenChange(open, reason)`, `initialFocus`,\n`children`. Renamed: `anchorOrigin` / `transformOrigin` → `placement` (one vocabulary for\nPopover, Menu and Tooltip: side + start/center/end; the controller flips and shifts);\n`onClose(event, reason)` → `onOpenChange(false, reason)` with `escape` | `backdrop`; the\nMinimals arrow (`slotProps.arrow.placement`) → `arrow` (it follows the placement).\nDeferred: `anchorPosition` / `anchorReference` (anchoring to a point), `marginThreshold` (16px\nfixed), `container` (top layer). Not applicable: `TransitionComponent`, `slots`, `slotProps`,\n`sx`, `elevation` (one dropdown shadow), `disableScrollLock` (non-modal: the page stays scrollable;\nthe popover follows its anchor), `disablePortal` (top layer).",
+     "body": "(Options of `popover`: listed under \"options\".)\n\nReact: `open` + `anchorEl` (element or function) + `onOpenChange(open, reason)`, `initialFocus`,\n`children`. Renamed: `anchorOrigin` / `transformOrigin` → `placement` (one vocabulary for\nPopover, Menu and Tooltip: side + start/center/end; the controller flips and shifts);\n`onClose(event, reason)` → `onOpenChange(false, reason)` with `escape` | `backdrop`; the\nMinimals arrow (`slotProps.arrow.placement`) → `arrow` (it follows the placement).\nKept (Phase 4.7): `anchorReference` (`anchorEl` · `anchorPosition` · `none`; HTML\n`data-ok-anchor-reference`), `anchorPosition` (`{ top, left }`; HTML\n`data-ok-anchor-position=\"top,left\"`, written by React too), `marginThreshold`\n(`data-ok-margin-threshold`), `transitionDuration` (ms, the opening animation;\n`data-ok-transition-duration` → `--_ok-popover-duration` through CSSOM by the controller).\n`anchorEl` also takes a virtual anchor (`{ getBoundingClientRect(), contextElement? }`, MUI\n`PopoverVirtualElement`); HTML: `instance.open(virtualAnchor)`. `none` writes no coordinates:\nthe author's CSS positions the paper. Not applicable: `container` (top layer), `TransitionComponent`, `slots`, `slotProps`,\n`sx`, `elevation` (one dropdown shadow), `disableScrollLock` (non-modal: the page stays scrollable;\nthe popover follows its anchor), `disablePortal` (top layer).",
      "id": "options",
      "title": "Options"
     },
@@ -48773,7 +49318,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Popover (inherits Modal).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl` (element or function), `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop`) | renamed | |\n| `anchorOrigin` / `transformOrigin` | `placement` (side + start / center / end; flip and shift) | renamed | overlapping origins not expressible |\n| Minimals `slotProps.arrow.placement` | `arrow` | renamed | follows the placement |\n| `anchorReference`, `anchorPosition` | — | deferred (4.7) | |\n| `marginThreshold` | 16px fixed | deferred (4.7) | |\n| `transitionDuration` | — (`--ok-duration-shorter`) | deferred | new batch E row (with Menu) |\n| `action` (`updatePosition`) | controller repositions on scroll / resize | not applicable | |\n| `elevation` | `--ok-shadow-dropdown` | not applicable | one dropdown shadow |\n| `container`, Modal `disablePortal` | — | not applicable | top layer |\n| `disableScrollLock` | — | not applicable | non-modal: page stays scrollable |\n| Modal `disableEscapeKeyDown`, `disableAutoFocus`, `disableRestoreFocus` | same | kept | |\n| Modal `keepMounted` | always mounted | kept | |\n| Modal `disableEnforceFocus`, `hideBackdrop`, `BackdropProps` | — | not applicable | no focus trap, no backdrop element |\n| — | `initialFocus` | kept | beyond upstream |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API page Popover (inherits Modal).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl` (element or function), `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop`) | renamed | |\n| `anchorOrigin` / `transformOrigin` | `placement` (side + start / center / end; flip and shift) | renamed | overlapping origins not expressible |\n| Minimals `slotProps.arrow.placement` | `arrow` | renamed | follows the placement |\n| `anchorReference`, `anchorPosition` | same; HTML `data-ok-anchor-reference`, `data-ok-anchor-position=\"top,left\"` | kept (4.7) | |\n| `anchorEl` virtual element (`PopoverVirtualElement`) | same (`PopoverVirtualAnchor`); HTML `open(virtualAnchor)` | kept (4.7) | |\n| `marginThreshold` | same (`data-ok-margin-threshold`, default 16; `0` = none) | kept (4.7) | MUI `null` → `0` |\n| `transitionDuration` | same, a number of ms for the opening animation | kept (4.18.43) | `auto` and `{ enter, exit }` not applicable: no exit animation (Phase 5.1) |\n| `action` (`updatePosition`) | controller repositions on scroll / resize | not applicable | |\n| `elevation` | `--ok-shadow-dropdown` | not applicable | one dropdown shadow |\n| `container`, Modal `disablePortal` | — | not applicable | top layer |\n| `disableScrollLock` | — | not applicable | non-modal: page stays scrollable |\n| Modal `disableEscapeKeyDown`, `disableAutoFocus`, `disableRestoreFocus` | same | kept | |\n| Modal `keepMounted` | always mounted | kept | |\n| Modal `disableEnforceFocus`, `hideBackdrop`, `BackdropProps` | — | not applicable | no focus trap, no backdrop element |\n| — | `initialFocus` | kept | beyond upstream |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -48796,6 +49341,24 @@
      "react": "import type { Placement } from \"@owlky/core\";\nimport { Button, Popover, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/**\n * Each button is named after where its arrow sits on the popover: `top-left` puts the arrow on\n * the top edge, near the left, so the popover opens below the button (`placement=\"bottom-start\"`).\n */\nconst ARROWS: [string, [arrow: string, placement: Placement][]][] = [\n  [\n    \"top\",\n    [\n      [\"top-left\", \"bottom-start\"],\n      [\"top-center\", \"bottom\"],\n      [\"top-right\", \"bottom-end\"],\n    ],\n  ],\n  [\n    \"bottom\",\n    [\n      [\"bottom-left\", \"top-start\"],\n      [\"bottom-center\", \"top\"],\n      [\"bottom-right\", \"top-end\"],\n    ],\n  ],\n  [\n    \"left\",\n    [\n      [\"left-top\", \"right-start\"],\n      [\"left-center\", \"right\"],\n      [\"left-bottom\", \"right-end\"],\n    ],\n  ],\n  [\n    \"right\",\n    [\n      [\"right-top\", \"left-start\"],\n      [\"right-center\", \"left\"],\n      [\"right-bottom\", \"left-end\"],\n    ],\n  ],\n];\n\n/** Every arrow position: the popover opens on the opposite side of its button. */\nexport function CustomArrowDemo() {\n  const [open, setOpen] = useState<{ arrow: string; anchor: HTMLElement } | null>(null);\n  const all = ARROWS.flatMap(([, items]) => items);\n  return (\n    <>\n      {ARROWS.map(([side, items]) => (\n        <div key={side}>\n          {items.map(([arrow]) => (\n            <Button\n              key={arrow}\n              variant=\"outlined\"\n              aria-haspopup=\"dialog\"\n              aria-expanded={open?.arrow === arrow}\n              aria-controls={`popover-arrow-${arrow}`}\n              onClick={(event) =>\n                setOpen(open?.arrow === arrow ? null : { arrow, anchor: event.currentTarget })\n              }\n            >\n              {arrow}\n            </Button>\n          ))}\n        </div>\n      ))}\n      {all.map(([arrow, placement]) => (\n        <Popover\n          key={arrow}\n          id={`popover-arrow-${arrow}`}\n          role=\"dialog\"\n          aria-label={`Arrow ${arrow}`}\n          placement={placement}\n          arrow\n          open={open?.arrow === arrow}\n          anchorEl={open?.arrow === arrow ? open.anchor : null}\n          onOpenChange={() => setOpen(null)}\n        >\n          <div>\n            <Typography variant=\"subtitle1\">Arrow {arrow}</Typography>\n            <Typography variant=\"body2\" color=\"textSecondary\">\n              The arrow points at the button that opened this popover.\n            </Typography>\n          </div>\n        </Popover>\n      ))}\n    </>\n  );\n}\n",
      "snippets": [
       "custom-arrow-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/popover.css + components/radio.css + components/form-control-label.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Anchor playground -->\n<div role=\"radiogroup\" data-ok-radio-group data-ok-row aria-label=\"Anchor reference\">\n  <label data-ok-form-control-label data-ok-label-placement=\"end\"><span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\"><input type=\"radio\" data-ok-radio-input name=\"anchor-reference\" checked value=\"anchorEl\"><span data-ok-radio-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"9.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></circle></svg></span><span data-ok-radio-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></span></span><span data-ok-form-control-label-text>Anchor element</span></label>\n  <label data-ok-form-control-label data-ok-label-placement=\"end\"><span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\"><input type=\"radio\" data-ok-radio-input name=\"anchor-reference\" value=\"anchorPosition\"><span data-ok-radio-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"9.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></circle></svg></span><span data-ok-radio-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z\" fill=\"currentColor\" fill-rule=\"evenodd\"></path></svg></span></span><span data-ok-form-control-label-text>Anchor position</span></label>\n</div>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"popover-playground\" data-ok-popover-open=\"popover-playground\"><span data-ok-button-label>Open popover</span></button>\n<div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-anchor-reference=\"anchorEl\" data-ok-anchor-position=\"200,400\" id=\"popover-playground\" role=\"dialog\" aria-label=\"Playground\">\n  <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n  <p data-ok-typography data-ok-variant=\"body2\">With an anchor position, the popover opens 200px from the top and 400px from the left.</p>\n</div>\n\n<script type=\"module\">\n// The radios pick what positions the popover.\nconst popover = document.getElementById(\"popover-playground\");\nfor (const radio of document.querySelectorAll('input[name=\"anchor-reference\"]')) {\n  radio.addEventListener(\"change\", () => {\n    popover.setAttribute(\"data-ok-anchor-reference\", radio.value);\n  });\n}\n</script>",
+     "id": "components-popover--anchor-playground",
+     "name": "Anchor playground",
+     "react": "import {\n  Button,\n  FormControlLabel,\n  Popover,\n  type PopoverAnchorReference,\n  Radio,\n  RadioGroup,\n  Typography,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/** One popover, positioned by its anchor element or by a point in the viewport. */\nexport function AnchorPlaygroundDemo() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  const [reference, setReference] = useState<PopoverAnchorReference>(\"anchorEl\");\n  return (\n    <>\n      <RadioGroup\n        row\n        name=\"anchor-reference\"\n        aria-label=\"Anchor reference\"\n        value={reference}\n        onChange={(value) => setReference(value as PopoverAnchorReference)}\n      >\n        <FormControlLabel value=\"anchorEl\" control={<Radio />} label=\"Anchor element\" />\n        <FormControlLabel value=\"anchorPosition\" control={<Radio />} label=\"Anchor position\" />\n      </RadioGroup>\n      <Button\n        variant=\"contained\"\n        aria-haspopup=\"dialog\"\n        aria-expanded={anchor !== null}\n        aria-controls=\"popover-playground\"\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Open popover\n      </Button>\n      <Popover\n        id=\"popover-playground\"\n        role=\"dialog\"\n        aria-label=\"Playground\"\n        placement=\"bottom-start\"\n        anchorReference={reference}\n        anchorPosition={{ top: 200, left: 400 }}\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        <Typography variant=\"body2\">\n          With an anchor position, the popover opens 200px from the top and 400px from the left.\n        </Typography>\n      </Popover>\n    </>\n  );\n}\n",
+     "snippets": [
+      "anchor-playground-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/popover.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Virtual element -->\n<p data-ok-typography data-ok-variant=\"body2\">Select some words of this sentence: a popover opens next to the selection.</p>\n<div popover=\"manual\" data-ok-popover data-ok-placement=\"top\" data-ok-arrow data-ok-disable-auto-focus data-ok-disable-restore-focus id=\"popover-selection\">\n  <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n  <p data-ok-typography data-ok-variant=\"body2\">You selected some text.</p>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\n// A virtual anchor: the selection's rectangle places the popover next to the selected text.\nconst text = document.querySelector(\"[data-ok-typography]\");\nconst popover = document.getElementById(\"popover-selection\");\n\nfunction selected() {\n  const selection = document.getSelection();\n  const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;\n  return range && !range.collapsed && text.contains(range.commonAncestorContainer) ? range : null;\n}\n\n// Open once the selection is made, close as soon as it is gone.\nfunction onSelected() {\n  const instance = getRuntime().get(popover, \"popover\");\n  const range = selected();\n  instance.close();\n  if (range) instance.open({ getBoundingClientRect: () => range.getBoundingClientRect() });\n}\ndocument.addEventListener(\"pointerup\", onSelected);\ndocument.addEventListener(\"keyup\", onSelected);\ndocument.addEventListener(\"selectionchange\", () => {\n  if (!selected()) getRuntime().get(popover, \"popover\").close();\n});\n</script>",
+     "id": "components-popover--virtual-element",
+     "name": "Virtual element",
+     "react": "import { Popover, type PopoverVirtualAnchor, Typography } from \"@owlky/react\";\nimport { useEffect, useRef, useState } from \"react\";\n\n/** Select text in the paragraph: a popover opens next to the selection, a virtual anchor. */\nexport function VirtualElementDemo() {\n  const text = useRef<HTMLElement>(null);\n  const [anchor, setAnchor] = useState<PopoverVirtualAnchor | null>(null);\n  useEffect(() => {\n    // The selected range, when it lies in the paragraph.\n    const selected = () => {\n      const selection = document.getSelection();\n      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;\n      const inside =\n        range && !range.collapsed && text.current?.contains(range.commonAncestorContainer);\n      return inside ? range : null;\n    };\n    // Open once the selection is made, close as soon as it is gone.\n    const onSelected = () => {\n      const range = selected();\n      setAnchor(range ? { getBoundingClientRect: () => range.getBoundingClientRect() } : null);\n    };\n    const onChange = () => {\n      if (!selected()) setAnchor(null);\n    };\n    document.addEventListener(\"pointerup\", onSelected);\n    document.addEventListener(\"keyup\", onSelected);\n    document.addEventListener(\"selectionchange\", onChange);\n    return () => {\n      document.removeEventListener(\"pointerup\", onSelected);\n      document.removeEventListener(\"keyup\", onSelected);\n      document.removeEventListener(\"selectionchange\", onChange);\n    };\n  }, []);\n  return (\n    <>\n      <Typography ref={text} variant=\"body2\">\n        Select some words of this sentence: a popover opens next to the selection.\n      </Typography>\n      <Popover\n        id=\"popover-selection\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        placement=\"top\"\n        arrow\n        disableAutoFocus\n        disableRestoreFocus\n      >\n        <Typography variant=\"body2\">You selected some text.</Typography>\n      </Popover>\n    </>\n  );\n}\n",
+     "snippets": [
+      "virtual-element-group.html"
      ]
     }
    ],
@@ -52740,6 +53303,10 @@
    "api": {
     "css": [
      {
+      "name": "--ok-action-hover",
+      "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+     },
+     {
       "dark": "#1C252E",
       "light": "#FFFFFF",
       "name": "--ok-bg-paper"
@@ -52808,6 +53375,10 @@
      {
       "name": "--ok-radius-full",
       "value": "9999px"
+     },
+     {
+      "name": "--ok-radius-sm",
+      "value": "6px"
      },
      {
       "name": "--ok-shadow-z8",
@@ -52917,6 +53488,12 @@
          "kind": "number",
          "min": 0,
          "name": "activeStep"
+        },
+        {
+         "attr": "data-ok-non-linear",
+         "description": "Steps can be visited in any order: only the active step is derived, completed and disabled steps are yours to set.",
+         "kind": "flag",
+         "name": "nonLinear"
         }
        ],
        "parts": [
@@ -52991,6 +53568,11 @@
          "description": "The line between steps. `null` draws none.",
          "name": "connector",
          "type": "ReactNode"
+        },
+        {
+         "description": "Steps can be visited in any order (with `StepButton`): only the active step is derived; set `completed` and `disabled` on the steps yourself.",
+         "name": "nonLinear",
+         "type": "boolean"
         },
         {
          "default": "\"horizontal\"",
@@ -53203,6 +53785,18 @@
          "description": "Not reached yet (dimmed).",
          "kind": "flag",
          "name": "disabled"
+        },
+        {
+         "attr": "data-ok-expanded",
+         "description": "Vertical steppers: the step's content stays shown, also when it isn't active.",
+         "kind": "flag",
+         "name": "expanded"
+        },
+        {
+         "attr": "data-ok-last",
+         "description": "The last step (no line below its content), when it isn't the list's last element.",
+         "kind": "flag",
+         "name": "last"
         }
        ],
        "parts": [
@@ -53246,7 +53840,7 @@
        "native": "HTMLLIElement",
        "props": [
         {
-         "description": "Overrides the state the stepper computes.",
+         "description": "Overrides the state the stepper computes: the current step.",
          "name": "active",
          "type": "boolean"
         },
@@ -53256,19 +53850,60 @@
          "type": "ReactNode"
         },
         {
-         "description": "Done: the icon shows a check.",
+         "description": "Overrides the state the stepper computes: done (a check icon).",
          "name": "completed",
          "type": "boolean"
         },
         {
-         "description": "Not reached yet (dimmed).",
+         "description": "Overrides the state the stepper computes: not reachable (dimmed; its `StepButton` is disabled).",
          "name": "disabled",
+         "type": "boolean"
+        },
+        {
+         "description": "Vertical steppers: the step's `StepContent` stays shown, also when it isn't active.",
+         "name": "expanded",
          "type": "boolean"
         },
         {
          "description": "Set by the `Stepper` (its position).",
          "name": "index",
          "type": "number"
+        },
+        {
+         "description": "The last step (no line below its content), when it isn't the list's last element.",
+         "name": "last",
+         "type": "boolean"
+        }
+       ]
+      }
+     },
+     {
+      "html": {
+       "attribute": "data-ok-step-button",
+       "description": "A step's label as a button that moves to the step (non-linear steppers).",
+       "elements": [
+        "button"
+       ]
+      },
+      "name": "StepButton",
+      "react": {
+       "description": "A step's label as a button, to move to that step in a `nonLinear` stepper (set `activeStep` in `onClick`). Disabled with its step.",
+       "native": "HTMLButtonElement",
+       "props": [
+        {
+         "description": "The step's title.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Replaces the step number: a number or text, or any node (a decorative `svg`).",
+         "name": "icon",
+         "type": "ReactNode"
+        },
+        {
+         "description": "A second line, such as \"Optional\".",
+         "name": "optional",
+         "type": "ReactNode"
         }
        ]
       }
@@ -53307,9 +53942,15 @@
       },
       "name": "StepContent",
       "react": {
-       "description": "Vertical steppers: what the active step shows below its label. A Collapse (`timeout=\"auto\"`, as MUI): `hidden` on the other steps.",
-       "native": "HTMLElement",
-       "props": []
+       "description": "Vertical steppers: what the active (or `expanded`) step shows below its label. A Collapse: `hidden` on the other steps.",
+       "native": "HTMLDivElement",
+       "props": [
+        {
+         "description": "Length of the open and close animation: ms, or `\"auto\"` (default: from the height, as MUI). The Collapse's `timeout`.",
+         "name": "transitionDuration",
+         "type": "number | \"auto\""
+        }
+       ]
       }
      },
      {
@@ -53385,6 +54026,7 @@
    "react": [
     "MobileStepper",
     "Step",
+    "StepButton",
     "StepConnector",
     "StepContent",
     "StepLabel",
@@ -53445,6 +54087,12 @@
        "kind": "number",
        "min": 0,
        "name": "activeStep"
+      },
+      {
+       "attr": "data-ok-non-linear",
+       "description": "Steps can be visited in any order: only the active step is derived, completed and disabled steps are yours to set.",
+       "kind": "flag",
+       "name": "nonLinear"
       }
      ],
      "root": "data-ok-stepper"
@@ -53469,6 +54117,18 @@
        "description": "Not reached yet (dimmed).",
        "kind": "flag",
        "name": "disabled"
+      },
+      {
+       "attr": "data-ok-expanded",
+       "description": "Vertical steppers: the step's content stays shown, also when it isn't active.",
+       "kind": "flag",
+       "name": "expanded"
+      },
+      {
+       "attr": "data-ok-last",
+       "description": "The last step (no line below its content), when it isn't the list's last element.",
+       "kind": "flag",
+       "name": "last"
       }
      ],
      "root": "data-ok-step"
@@ -53583,7 +54243,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Stepper`, `Step`, `StepLabel`, `StepContent`, `StepIcon`, `StepConnector`,\n`StepButton`, `MobileStepper` (mui.com/material-ui/api/stepper …, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Stepper `activeStep`, `alternativeLabel`, `orientation` | same / `data-ok-active-step`, `-alternative-label`, `-orientation` | kept | |\n| Stepper `connector` | `connector` / `div[data-ok-step-connector]` | kept | `null`: none |\n| Stepper `children` | `children` | kept | |\n| Stepper `nonLinear` | — | deferred (4.10) | |\n| Stepper `component` | — | not applicable | root is `ol` |\n| — | Stepper `variant` (`dot`, `circle`) | kept | Owlky addition (reference \"Customized\") |\n| Step `active`, `completed`, `disabled`, `index` | same / `data-ok-active`, `-completed`, `-disabled` | kept | |\n| Step `expanded`, `last` | — | deferred (4.10) | |\n| Step `component` | — | not applicable | `li` |\n| StepButton (`icon`, `optional`) | — | deferred (4.10) | |\n| StepLabel `children`, `error`, `optional`, `icon` | same / `data-ok-error`, `-step-label-optional`, `-step-icon` | kept | |\n| StepLabel `slots.stepIcon` / `StepIconComponent` | `icon` (node) | renamed | composition |\n| StepIcon `active`, `completed`, `error`, `icon` | step / label state | not applicable | internal part, state from the step |\n| StepContent `children` | `StepContent` (a Collapse, `timeout=\"auto\"`) | kept | |\n| StepContent `transitionDuration` | — | deferred | Collapse `timeout` pass-through (Collapse already has it) |\n| MobileStepper `steps`, `activeStep`, `variant`, `position`, `backButton`, `nextButton` | same / `data-ok-steps`, … | kept | |\n| — | MobileStepper `getStepLabel` / `data-ok-label-step` | kept | Owlky addition (name of dots / bar) |\n| MobileStepper Paper props (`elevation`, `square`) | — | not applicable | bar keeps the paper background; compose a Paper around it |\n| MobileStepper `slots` / `slotProps` (`root`, `dot`, `dots`, `progress`) | — | not applicable | composition |\n| `classes`, `sx`, StepContent `slots.transition` | — | not applicable | by decision |",
+     "body": "Upstream: MUI `Stepper`, `Step`, `StepLabel`, `StepContent`, `StepIcon`, `StepConnector`,\n`StepButton`, `MobileStepper` (mui.com/material-ui/api/stepper …, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Stepper `activeStep`, `alternativeLabel`, `orientation` | same / `data-ok-active-step`, `-alternative-label`, `-orientation` | kept | |\n| Stepper `connector` | `connector` / `div[data-ok-step-connector]` | kept | `null`: none |\n| Stepper `children` | `children` | kept | |\n| Stepper `nonLinear` | same / `data-ok-non-linear` | kept (4.10) | core `stepState(…, nonLinear)`: only the active step is derived; HTML leaves `data-ok-completed` / `-disabled` as written |\n| Stepper `component` | — | not applicable | root is `ol` |\n| — | Stepper `variant` (`dot`, `circle`) | kept | Owlky addition (reference \"Customized\") |\n| Step `active`, `completed`, `disabled`, `index` | same / `data-ok-active`, `-completed`, `-disabled` | kept | |\n| Step `expanded`, `last` | same / `data-ok-expanded`, `data-ok-last` | kept (4.10) | `expanded` keeps `StepContent` open; `last` = `:last-child` for wrapped lists |\n| Step `component` | — | not applicable | `li` |\n| StepButton (`icon`, `optional`, `children`) | `StepButton` / `button[data-ok-step-button]` › StepLabel markup | kept (4.10) | disabled with its step; HTML runtime moves to the pressed step |\n| StepLabel `children`, `error`, `optional`, `icon` | same / `data-ok-error`, `-step-label-optional`, `-step-icon` | kept | |\n| StepLabel `slots.stepIcon` / `StepIconComponent` | `icon` (node) | renamed | composition |\n| StepIcon `active`, `completed`, `error`, `icon` | step / label state | not applicable | internal part, state from the step |\n| StepContent `children` | `StepContent` (a Collapse, `timeout=\"auto\"`) | kept | |\n| StepContent `transitionDuration` | same (React) → Collapse `timeout`; HTML `data-ok-timeout` on the content | kept (4.18.74) | ms or `auto` (default) |\n| MobileStepper `steps`, `activeStep`, `variant`, `position`, `backButton`, `nextButton` | same / `data-ok-steps`, … | kept | |\n| — | MobileStepper `getStepLabel` / `data-ok-label-step` | kept | Owlky addition (name of dots / bar) |\n| MobileStepper Paper props (`elevation`, `square`) | — | not applicable | bar keeps the paper background; compose a Paper around it |\n| MobileStepper `slots` / `slotProps` (`root`, `dot`, `dots`, `progress`) | — | not applicable | composition |\n| `classes`, `sx`, StepContent `slots.transition` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -53611,6 +54271,15 @@
      "react": "import { Button, Paper, Step, StepLabel, Stepper, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst STEPS = [\n  { label: \"Choose a plan\", text: \"Pick the plan and the billing period that suit your team.\" },\n  {\n    label: \"Add details\",\n    optional: \"Optional\",\n    text: \"Name the project and invite the people who will work on it.\",\n  },\n  { label: \"Review and confirm\", text: \"Check the summary, then confirm to create the project.\" },\n];\n\n/** A linear stepper: Next completes the current step, Back returns to the previous one. */\nexport function HorizontalDemo({ alternativeLabel = false }: { alternativeLabel?: boolean }) {\n  const [active, setActive] = useState(0);\n  return (\n    <div className=\"sb-stepper-demo\">\n      <Stepper activeStep={active} alternativeLabel={alternativeLabel} aria-label=\"Project setup\">\n        {STEPS.map((step) => (\n          <Step key={step.label}>\n            <StepLabel optional={step.optional}>{step.label}</StepLabel>\n          </Step>\n        ))}\n      </Stepper>\n      <Paper elevation={0} className=\"sb-stepper-panel\">\n        {active < STEPS.length ? (\n          <Typography variant=\"body2\">{STEPS[active]?.text}</Typography>\n        ) : (\n          <div>\n            <Typography variant=\"body2\">All steps completed. Your project is ready.</Typography>\n            <Button color=\"inherit\" onClick={() => setActive(0)}>\n              Reset\n            </Button>\n          </div>\n        )}\n      </Paper>\n      <div className=\"sb-stepper-actions\">\n        <Button color=\"inherit\" disabled={active === 0} onClick={() => setActive(active - 1)}>\n          Back\n        </Button>\n        <Button\n          variant=\"contained\"\n          color=\"inherit\"\n          onClick={() => setActive(Math.min(active + 1, STEPS.length))}\n        >\n          Next\n        </Button>\n      </div>\n    </div>\n  );\n}\n",
      "snippets": [
       "alternative-label-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/paper.css + components/typography.css + components/stepper.css + components/button.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Non-linear -->\n<div class=\"sb-stepper-demo\">\n  <ol id=\"stepper-non-linear\" data-ok-stepper data-ok-orientation=\"horizontal\" data-ok-variant=\"standard\" data-ok-active-step=\"0\" data-ok-non-linear aria-label=\"Project setup\">\n    <li data-ok-step data-ok-active aria-current=\"step\"><button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>1</span><svg data-ok-step-icon-check aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\" /></svg><svg data-ok-step-icon-error aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M12 6v7M12 18h.01\" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Choose a plan</span></span></span></button></li>\n    <li data-ok-step>\n      <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n      <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>2</span><svg data-ok-step-icon-check aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\" /></svg><svg data-ok-step-icon-error aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M12 6v7M12 18h.01\" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Add details</span><span data-ok-step-label-optional>Optional</span></span></span></button>\n    </li>\n    <li data-ok-step>\n      <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n      <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>3</span><svg data-ok-step-icon-check aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\" /></svg><svg data-ok-step-icon-error aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M12 6v7M12 18h.01\" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Review and confirm</span></span></span></button>\n    </li>\n  </ol>\n  <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"0\" class=\"sb-stepper-panel\">\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-stepper-panel=\"stepper-non-linear\">Pick the plan and the billing period that suit your team.</p>\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-stepper-panel=\"stepper-non-linear\" hidden>Name the project and invite the people who will work on it.</p>\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-stepper-panel=\"stepper-non-linear\" hidden>Check the summary, then confirm to create the project.</p>\n    <div data-ok-stepper-panel=\"stepper-non-linear\" hidden>\n      <p data-ok-typography data-ok-variant=\"body2\">All steps visited. Your project is ready.</p>\n      <button data-ok-stepper-reset=\"stepper-non-linear\" type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\"><span data-ok-button-label>Reset</span></button>\n    </div>\n  </div>\n  <div class=\"sb-stepper-actions\">\n    <button data-ok-stepper-back=\"stepper-non-linear\" type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" disabled><span data-ok-button-label>Back</span></button>\n    <button data-ok-stepper-next=\"stepper-non-linear\" type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\"><span data-ok-button-label>Next</span></button>\n  </div>\n</div>",
+     "id": "components-stepper--non-linear",
+     "name": "Non-linear",
+     "react": "import { Button, Paper, Step, StepButton, Stepper, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst STEPS = [\n  { label: \"Choose a plan\", text: \"Pick the plan and the billing period that suit your team.\" },\n  {\n    label: \"Add details\",\n    optional: \"Optional\",\n    text: \"Name the project and invite the people who will work on it.\",\n  },\n  { label: \"Review and confirm\", text: \"Check the summary, then confirm to create the project.\" },\n];\n\n/** A non-linear stepper: every step is a button, so steps can be visited in any order. */\nexport function NonLinearDemo() {\n  const [active, setActive] = useState(0);\n  return (\n    <div className=\"sb-stepper-demo\">\n      <Stepper nonLinear activeStep={active} aria-label=\"Project setup\">\n        {STEPS.map((step, index) => (\n          <Step key={step.label}>\n            <StepButton optional={step.optional} onClick={() => setActive(index)}>\n              {step.label}\n            </StepButton>\n          </Step>\n        ))}\n      </Stepper>\n      <Paper elevation={0} className=\"sb-stepper-panel\">\n        {active < STEPS.length ? (\n          <Typography variant=\"body2\">{STEPS[active]?.text}</Typography>\n        ) : (\n          <div>\n            <Typography variant=\"body2\">All steps visited. Your project is ready.</Typography>\n            <Button color=\"inherit\" onClick={() => setActive(0)}>\n              Reset\n            </Button>\n          </div>\n        )}\n      </Paper>\n      <div className=\"sb-stepper-actions\">\n        <Button color=\"inherit\" disabled={active === 0} onClick={() => setActive(active - 1)}>\n          Back\n        </Button>\n        <Button\n          variant=\"contained\"\n          color=\"inherit\"\n          onClick={() => setActive(Math.min(active + 1, STEPS.length))}\n        >\n          Next\n        </Button>\n      </div>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "non-linear-group.html"
      ]
     },
     {
@@ -55353,9 +56022,19 @@
       },
       "name": "Tab",
       "react": {
-       "description": "A `button[role=\"tab\"]` inside `Tabs`.",
-       "native": "HTMLButtonElement",
+       "description": "A `button[role=\"tab\"]` inside `Tabs`; with `href` or `component`, a link (`aria-current=\"page\"` when selected).",
+       "native": "HTMLElement",
        "props": [
+        {
+         "description": "The element or component to render, such as a router link (its own props pass through).",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
+         "description": "Makes the tab a link (`a[href]`): the navigation pattern. The selected link gets `aria-current=\"page\"`, the tab list becomes plain links in a `navigation` landmark.",
+         "name": "href",
+         "type": "string"
+        },
         {
          "description": "An icon (decorative `svg`); icon-only tabs need an `aria-label`.",
          "name": "icon",
@@ -55386,6 +56065,25 @@
       }
      },
      {
+      "name": "TabContext",
+      "react": {
+       "description": "Shares the selected `value` between a `Tabs` and its `TabPanel value=\"…\"`s, and links them (`id`, `aria-controls`, `aria-labelledby`). Keep the value in state and set it from `Tabs onChange`.",
+       "props": [
+        {
+         "description": "`Tabs` and the `TabPanel`s that go with it.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "The selected tab's `value`.",
+         "name": "value",
+         "required": true,
+         "type": "string | false"
+        }
+       ]
+      }
+     },
+     {
       "html": {
        "attribute": "data-ok-tab-panel",
        "description": "The panel of a tab.",
@@ -55395,9 +56093,21 @@
       },
       "name": "TabPanel",
       "react": {
-       "description": "The content of one tab: `role=\"tabpanel\"`, in the tab order (it may hold no focusable content). Hide the others with `hidden`.",
-       "native": "HTMLElement",
-       "props": []
+       "description": "The content of one tab: `role=\"tabpanel\"`, in the tab order (it may hold no focusable content). Hide the others with `hidden`, or give each a `value` inside a `TabContext`.",
+       "native": "HTMLDivElement",
+       "props": [
+        {
+         "default": "false",
+         "description": "With `value`: keep the children rendered while the panel is hidden.",
+         "name": "keepMounted",
+         "type": "boolean"
+        },
+        {
+         "description": "In a `TabContext`: the tab this panel belongs to. The panel then links itself to its tab and hides itself while another tab is selected.",
+         "name": "value",
+         "type": "string"
+        }
+       ]
       }
      }
     ]
@@ -55406,6 +56116,7 @@
    "name": "tabs",
    "react": [
     "Tab",
+    "TabContext",
     "TabPanel",
     "Tabs"
    ],
@@ -55608,7 +56319,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Tabs`, `Tab`; MUI Lab `TabContext`, `TabList`, `TabPanel`\n(mui.com/material-ui/api/tabs, /api/tab, /api/tab-panel, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `onChange(event, value)` | `value` / `defaultValue` / `onChange(value)` · `aria-selected`, `ok:tabs:change` | kept | value-first callback; `defaultValue` added |\n| `variant`, `orientation`, `centered` | same / `data-ok-variant`, `-orientation`, `-centered` | kept | |\n| `textColor`, `indicatorColor` | same | kept | `inherit` added (reference default); arbitrary color strings not applicable |\n| `scrollButtons`, `allowScrollButtonsMobile`, `visibleScrollbar` | same | kept | |\n| `selectionFollowsFocus` | same | kept | |\n| `aria-label`, `aria-labelledby` | same (on the tablist) | kept | |\n| `action` (`updateIndicator`, `updateScrollButtons`) | — | not applicable | the controller re-measures itself (ResizeObserver, fonts) |\n| `component` | — | not applicable | root is a `div` |\n| — | `segmented` | kept | Owlky addition (reference \"Custom\") |\n| Tab `value`, `label`, `icon`, `iconPosition`, `wrapped`, `disabled` | same | kept | |\n| Tab `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| Tab ButtonBase props (`href`, `component`: link tabs) | — | deferred | tabs as links (navigation tabs, router links) |\n| Lab `TabPanel` `value`, `keepMounted` | `TabPanel` (app sets `hidden`) | deferred | panel picks its tab from context (Lab `TabContext`); panels stay mounted |\n| Lab `TabContext`, `TabList` | `Tabs` | not applicable | `Tabs` owns the value |\n| `slots` / `slotProps` (indicator, scroll buttons and icons, scroller, list, scrollbar) | — | not applicable | composition / by decision |\n| `classes`, `sx` | — | not applicable | by decision |",
+     "body": "Upstream: MUI `Tabs`, `Tab`; MUI Lab `TabContext`, `TabList`, `TabPanel`\n(mui.com/material-ui/api/tabs, /api/tab, /api/tab-panel, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `onChange(event, value)` | `value` / `defaultValue` / `onChange(value)` · `aria-selected`, `ok:tabs:change` | kept | value-first callback; `defaultValue` added |\n| `variant`, `orientation`, `centered` | same / `data-ok-variant`, `-orientation`, `-centered` | kept | |\n| `textColor`, `indicatorColor` | same | kept | `inherit` added (reference default); arbitrary color strings not applicable |\n| `scrollButtons`, `allowScrollButtonsMobile`, `visibleScrollbar` | same | kept | |\n| `selectionFollowsFocus` | same | kept | |\n| `aria-label`, `aria-labelledby` | same (on the tablist) | kept | |\n| `action` (`updateIndicator`, `updateScrollButtons`) | — | not applicable | the controller re-measures itself (ResizeObserver, fonts) |\n| `component` | — | not applicable | root is a `div` |\n| — | `segmented` | kept | Owlky addition (reference \"Custom\") |\n| Tab `value`, `label`, `icon`, `iconPosition`, `wrapped`, `disabled` | same | kept | |\n| Tab `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| Tab ButtonBase props (`href`, `component`: link tabs) | same: `a[data-ok-tab][href]` (or the component), `data-ok-value`, `aria-current=\"page\"`; the root becomes `role=\"navigation\"` (named), the list loses `role=\"tablist\"` | kept (4.18.71) | navigation pattern: no roving tabindex or arrow keys (core controller: `a[data-ok-tab]`, `isSelectedTab`, `markTab`) |\n| Lab `TabPanel` `value`, `keepMounted` | same (React, in a `TabContext`): links itself, `hidden` while another tab is selected, no children unless `keepMounted` | kept (4.18.72) | HTML: the runtime shows the panel named by `aria-controls` |\n| Lab `TabContext` | `TabContext` (React): `value` + generated ids for tabs and panels | kept (4.18.72) | |\n| Lab `TabList` | `Tabs` (reads the `TabContext` value) | not applicable | `Tabs` owns the list |\n| `slots` / `slotProps` (indicator, scroll buttons and icons, scroller, list, scrollbar) | — | not applicable | composition / by decision |\n| `classes`, `sx` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -55680,6 +56391,15 @@
       "custom-dynamic.html",
       "custom-full-width.html",
       "custom-scrollable.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/tabs.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Nav tabs -->\n<div data-ok-tabs data-ok-variant=\"standard\" data-ok-orientation=\"horizontal\" data-ok-text-color=\"inherit\" data-ok-indicator-color=\"inherit\" data-ok-scroll-buttons=\"auto\" role=\"navigation\" aria-label=\"Project pages\">\n  <div data-ok-tabs-scroller>\n    <div data-ok-tabs-list>\n      <a href=\"#overview\" data-ok-tab data-ok-value=\"overview\" aria-current=\"page\"><span data-ok-tab-label>Overview</span></a>\n      <a href=\"#activity\" data-ok-tab data-ok-value=\"activity\"><span data-ok-tab-label>Activity</span></a>\n      <a href=\"#settings\" data-ok-tab data-ok-value=\"settings\"><span data-ok-tab-label>Settings</span></a>\n    </div>\n    <span data-ok-tabs-indicator></span>\n  </div>\n</div>",
+     "id": "components-tabs--nav",
+     "name": "Nav tabs",
+     "react": "import { Tab, Tabs } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst PAGES = [\n  { value: \"overview\", label: \"Overview\" },\n  { value: \"activity\", label: \"Activity\" },\n  { value: \"settings\", label: \"Settings\" },\n];\n\n/** Tabs as links: a navigation landmark, the current page marked with `aria-current`. */\nexport function NavTabsDemo() {\n  const [page, setPage] = useState(\"overview\");\n  return (\n    <Tabs value={page} onChange={setPage} aria-label=\"Project pages\">\n      {PAGES.map((item) => (\n        <Tab key={item.value} value={item.value} label={item.label} href={`#${item.value}`} />\n      ))}\n    </Tabs>\n  );\n}\n",
+     "snippets": [
+      "nav-group.html"
      ]
     }
    ],
@@ -57614,6 +58334,19 @@
          "name": "leaveDelay"
         },
         {
+         "attr": "data-ok-enter-next-delay",
+         "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago. Default: `enterDelay`.",
+         "kind": "number",
+         "min": 0,
+         "name": "enterNextDelay"
+        },
+        {
+         "attr": "data-ok-follow-cursor",
+         "description": "The tooltip follows the pointer over the trigger.",
+         "kind": "flag",
+         "name": "followCursor"
+        },
+        {
          "attr": "data-ok-open",
          "description": "Open state (`open` / `onOpenChange`; HTML: hover and focus).",
          "event": "ok:tooltip:open",
@@ -57675,9 +58408,20 @@
          "type": "number"
         },
         {
+         "default": "enterDelay",
+         "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago, so moving along a toolbar shows the next tooltip sooner.",
+         "name": "enterNextDelay",
+         "type": "number"
+        },
+        {
          "description": "Default 700 ms (touch: a long press opens the tooltip).",
          "name": "enterTouchDelay",
          "type": "number"
+        },
+        {
+         "description": "The tooltip follows the pointer while it is over the trigger.",
+         "name": "followCursor",
+         "type": "boolean"
         },
         {
          "description": "Default 0 ms.",
@@ -57796,6 +58540,19 @@
        "name": "leaveDelay"
       },
       {
+       "attr": "data-ok-enter-next-delay",
+       "description": "Milliseconds before it opens while another tooltip shows or closed less than 800 ms ago. Default: `enterDelay`.",
+       "kind": "number",
+       "min": 0,
+       "name": "enterNextDelay"
+      },
+      {
+       "attr": "data-ok-follow-cursor",
+       "description": "The tooltip follows the pointer over the trigger.",
+       "kind": "flag",
+       "name": "followCursor"
+      },
+      {
        "attr": "data-ok-open",
        "description": "Open state (`open` / `onOpenChange`; HTML: hover and focus).",
        "event": "ok:tooltip:open",
@@ -57818,7 +58575,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `tooltip`: listed under \"options\".)\n\nReact: `title`, one element `children` (cloned: relation attribute, pointer / focus handlers,\nmerged ref), `describeChild`, `open` / `onOpenChange(open)`, `enterTouchDelay` (700),\n`leaveTouchDelay` (1500), `disableHoverListener`, `disableFocusListener`,\n`disableTouchListener`. Renamed: `TransitionComponent` (Grow / Fade / Zoom) → `transition`;\n`onOpen` / `onClose` → `onOpenChange`. Kept behavior: `describeChild=false` names the trigger\n(MUI sets `aria-label`; we use `aria-labelledby`, same name). Deferred: `followCursor`,\n`enterNextDelay` (4.6). Not applicable: `disableInteractive` (always hoverable, WCAG 1.4.13),\n`PopperProps`, `slots`, `slotProps`, `components`, `sx`.",
+     "body": "(Options of `tooltip`: listed under \"options\".)\n\nReact: `title`, one element `children` (cloned: relation attribute, pointer / focus handlers,\nmerged ref), `describeChild`, `open` / `onOpenChange(open)`, `enterTouchDelay` (700),\n`leaveTouchDelay` (1500), `disableHoverListener`, `disableFocusListener`,\n`disableTouchListener`. Renamed: `TransitionComponent` (Grow / Fade / Zoom) → `transition`;\n`onOpen` / `onClose` → `onOpenChange`. Kept behavior: `describeChild=false` names the trigger\n(MUI sets `aria-label`; we use `aria-labelledby`, same name). Kept (4.6): `followCursor`\n(`data-ok-follow-cursor`: on `pointermove` over the trigger the tooltip opens at and follows a\ncore `pointAnchor(x, y, trigger)` virtual anchor; focus and touch keep the trigger as anchor) and\n`enterNextDelay` (`data-ok-enter-next-delay`: core `createHoverIntent` keeps a module-scoped\ncount of shown tooltips and the last close; while one shows or within 800 ms of a close the next\none waits `enterNextDelay`). Default `enterNextDelay`: `enterDelay` (MUI 0; kept so existing\ntooltips keep their timing). Not applicable: `disableInteractive` (always hoverable, WCAG 1.4.13),\n`PopperProps`, `slots`, `slotProps`, `components`, `sx`.",
      "id": "options",
      "title": "Options"
     },
@@ -57843,7 +58600,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Tooltip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `title`, `children` (one element), `placement`, `arrow`, `describeChild`, `id` | same | kept | name through `aria-labelledby` (MUI: `aria-label`) |\n| `enterDelay`, `leaveDelay`, `enterTouchDelay`, `leaveTouchDelay` | same | kept | |\n| `disableHoverListener`, `disableFocusListener`, `disableTouchListener` | same | kept | |\n| `open`; `onOpen` / `onClose` | `open`; `onOpenChange(open)`; HTML `ok:tooltip:open` / `close` | renamed | |\n| `TransitionComponent` (Grow / Fade / Zoom) | `transition` (`grow` `fade` `zoom`) | renamed | |\n| `followCursor`, `enterNextDelay` | — | deferred (4.6) | |\n| `disableInteractive` | — (always hoverable) | not applicable | WCAG 1.4.13 |\n| `placement` `auto` / `auto-start` / `auto-end` | — | not applicable | the controller flips |\n| `PopperComponent` / `PopperProps`, `slots.popper` / `transition` / `arrow` | — | not applicable | core positioning, top layer |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "body": "Audit 2026-11-09 against MUI API page Tooltip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `title`, `children` (one element), `placement`, `arrow`, `describeChild`, `id` | same | kept | name through `aria-labelledby` (MUI: `aria-label`) |\n| `enterDelay`, `leaveDelay`, `enterTouchDelay`, `leaveTouchDelay` | same | kept | |\n| `disableHoverListener`, `disableFocusListener`, `disableTouchListener` | same | kept | |\n| `open`; `onOpen` / `onClose` | `open`; `onOpenChange(open)`; HTML `ok:tooltip:open` / `close` | renamed | |\n| `TransitionComponent` (Grow / Fade / Zoom) | `transition` (`grow` `fade` `zoom`) | renamed | |\n| `followCursor`, `enterNextDelay` | same (`data-ok-follow-cursor`, `data-ok-enter-next-delay`) | kept (4.6) | `enterNextDelay` defaults to `enterDelay` (MUI 0) |\n| `disableInteractive` | — (always hoverable) | not applicable | WCAG 1.4.13 |\n| `placement` `auto` / `auto-start` / `auto-end` | — | not applicable | the controller flips |\n| `PopperComponent` / `PopperProps`, `slots.popper` / `transition` / `arrow` | — | not applicable | core positioning, top layer |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -57893,6 +58650,15 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { Button, Tooltip } from \"@owlky/react\";\n\n{/* Positioned */}\n<div>\n  <Tooltip id=\"tooltip-top-start\" title=\"Placement top-start\" placement=\"top-start\" describeChild>\n    <Button variant=\"contained\" color=\"primary\">top-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-top\" title=\"Placement top\" placement=\"top\" describeChild>\n    <Button variant=\"contained\" color=\"primary\">top</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-top-end\" title=\"Placement top-end\" placement=\"top-end\" describeChild>\n    <Button variant=\"contained\" color=\"primary\">top-end</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-bottom-start\" title=\"Placement bottom-start\" placement=\"bottom-start\" describeChild>\n    <Button variant=\"contained\" color=\"secondary\">bottom-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-bottom\" title=\"Placement bottom\" placement=\"bottom\" describeChild>\n    <Button variant=\"contained\" color=\"secondary\">bottom</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-bottom-end\" title=\"Placement bottom-end\" placement=\"bottom-end\" describeChild>\n    <Button variant=\"contained\" color=\"secondary\">bottom-end</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-left-start\" title=\"Placement left-start\" placement=\"left-start\" describeChild>\n    <Button variant=\"contained\" color=\"warning\">left-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-left\" title=\"Placement left\" placement=\"left\" describeChild>\n    <Button variant=\"contained\" color=\"warning\">left</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-left-end\" title=\"Placement left-end\" placement=\"left-end\" describeChild>\n    <Button variant=\"contained\" color=\"warning\">left-end</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-right-start\" title=\"Placement right-start\" placement=\"right-start\" describeChild>\n    <Button variant=\"contained\" color=\"info\">right-start</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-right\" title=\"Placement right\" placement=\"right\" describeChild>\n    <Button variant=\"contained\" color=\"info\">right</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-right-end\" title=\"Placement right-end\" placement=\"right-end\" describeChild>\n    <Button variant=\"contained\" color=\"info\">right-end</Button>\n  </Tooltip>\n</div>\n",
      "snippets": [
       "positioned-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/icon-button.css + components/fab.css + components/tooltip.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Follow cursor -->\n<div>\n  <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"lg\" aria-describedby=\"tooltip-follow\">\n    <span data-ok-button-label>Move the pointer over this button</span>\n  </button>\n  <div id=\"tooltip-follow\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\" data-ok-follow-cursor><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>The tooltip follows the pointer</div>\n  <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"lg\" aria-describedby=\"tooltip-next\">\n    <span data-ok-button-label>Slow to open</span>\n  </button>\n  <div id=\"tooltip-next\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\" data-ok-enter-delay=\"500\" data-ok-enter-next-delay=\"100\"><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>Opens sooner after another tooltip</div>\n</div>",
+     "id": "components-tooltip--follow-cursor",
+     "name": "Follow cursor",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Button, Tooltip } from \"@owlky/react\";\n\n{/* Follow cursor */}\n<div>\n  <Tooltip id=\"tooltip-follow\" title=\"The tooltip follows the pointer\" followCursor describeChild>\n    <Button variant=\"outlined\" size=\"lg\">Move the pointer over this button</Button>\n  </Tooltip>\n  <Tooltip id=\"tooltip-next\" title=\"Opens sooner after another tooltip\" enterDelay={500} enterNextDelay={100} describeChild>\n    <Button variant=\"outlined\" size=\"lg\">Slow to open</Button>\n  </Tooltip>\n</div>\n",
+     "snippets": [
+      "follow-cursor-group.html"
      ]
     }
    ],
@@ -63113,8 +63879,10 @@
      "title": "Block clicks without dimming"
     },
     {
-     "body": "The backdrop fades in over 250 ms and fades out over 200 ms. When people turn on reduced motion in their system settings, it appears and disappears at once. A closed backdrop stays in the page, hidden, so its fade-out can play. Hidden backdrops don't catch clicks and screen readers skip them.",
+     "body": "The backdrop fades in over 250 ms and fades out over 200 ms. Set `transitionDuration` to use one length, in milliseconds, for both fades. When people turn on reduced motion in their system settings, it appears and disappears at once. A closed backdrop stays in the page, hidden, so its fade-out can play. Hidden backdrops don't catch clicks and screen readers skip them.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-backdrop-open=\"slow\">\n  <span data-ok-button-label>Show</span>\n</button>\n<div id=\"slow\" data-ok-backdrop data-ok-transition-duration=\"600\" data-ok-backdrop-close></div>",
      "id": "transitions",
+     "react": "import { Backdrop, Button } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SlowBackdrop() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Show\n      </Button>\n      <Backdrop open={open} transitionDuration={600} onClick={() => setOpen(false)} />\n    </>\n  );\n}",
      "title": "Fade in and out"
     },
     {
@@ -64628,6 +65396,13 @@
      "title": "Animate the entrance"
     },
     {
+     "body": "- **Focus:** when a dialog closes, focus returns to the element that was focused before it opened. `disableRestoreFocus` turns this off, for example when the dialog's action moves focus somewhere else.\n- **Scrolling:** while a dialog is open, the page behind it doesn't scroll. `disableScrollLock` lets it scroll.\n- **Mounting:** in React, the dialog's children stay rendered while it is closed, like the HTML markup. Set `keepMounted` to `false` to render them only while it is open, which resets their state each time it opens.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-open=\"notes\" aria-haspopup=\"dialog\"><span data-ok-button-label>Notes</span></button>\n<dialog id=\"notes\" data-ok-dialog data-ok-max-width=\"sm\" data-ok-scroll=\"paper\" data-ok-disable-restore-focus\n  data-ok-disable-scroll-lock aria-labelledby=\"notes-title\">\n  <div data-ok-dialog-paper>\n    <h2 data-ok-dialog-title id=\"notes-title\">Notes</h2>\n    <div data-ok-dialog-content>\n      <p data-ok-dialog-content-text>The page behind keeps scrolling.</p>\n    </div>\n    <div data-ok-dialog-actions>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-close><span data-ok-button-label>Close</span></button>\n    </div>\n  </div>\n</dialog>",
+     "id": "focus-scroll",
+     "react": "import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function NotesDialog() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Notes\n      </Button>\n      <Dialog open={open} onOpenChange={setOpen} disableRestoreFocus disableScrollLock keepMounted={false}>\n        <DialogTitle>Notes</DialogTitle>\n        <DialogContent>\n          <DialogContentText>The page behind keeps scrolling.</DialogContentText>\n        </DialogContent>\n        <DialogActions>\n          <Button onClick={() => setOpen(false)}>Close</Button>\n        </DialogActions>\n      </Dialog>\n    </>\n  );\n}",
+     "title": "Control focus, scrolling and mounting"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -64765,6 +65540,13 @@
      "id": "docked",
      "react": "import { Drawer, DrawerContent, List, ListItem, ListItemButton, ListItemText } from \"@owlky/react\";\n\nexport function DrawerDocked() {\n  return (\n    <div style={{ display: \"flex\" }}>\n      <Drawer variant=\"permanent\">\n        <DrawerContent aria-label=\"Navigation\">\n          <nav aria-label=\"Main\">\n            <List>\n              <ListItem disablePadding>\n                <ListItemButton href=\"/dashboard\">\n                  <ListItemText primary=\"Dashboard\" />\n                </ListItemButton>\n              </ListItem>\n              <ListItem disablePadding>\n                <ListItemButton href=\"/orders\">\n                  <ListItemText primary=\"Orders\" />\n                </ListItemButton>\n              </ListItem>\n            </List>\n          </nav>\n        </DrawerContent>\n      </Drawer>\n      <main>\n        <h1>Dashboard</h1>\n      </main>\n    </div>\n  );\n}",
      "title": "Dock the drawer next to the page"
+    },
+    {
+     "body": "- **Shadow:** `elevation` sets the panel's shadow from `0` (none) to `24`, from the same scale as Paper. Without it, each edge has its own shadow and docked drawers have none.\n- **Speed:** `transitionDuration` sets how long the panel takes to slide in and out, in milliseconds.\n- **Temporary drawers:** `disableRestoreFocus` keeps focus where it is when the drawer closes, and `disableScrollLock` lets the page behind scroll. In React, `keepMounted={false}` renders the content only while the drawer is open.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  data-ok-drawer-open=\"filters\" aria-haspopup=\"dialog\">\n  <span data-ok-button-label>Filters</span>\n</button>\n<dialog id=\"filters\" data-ok-drawer data-ok-anchor=\"right\" data-ok-variant=\"temporary\" data-ok-elevation=\"4\"\n  data-ok-transition-duration=\"150\" aria-label=\"Filters\">\n  <div data-ok-drawer-content>\n    <p data-ok-typography data-ok-variant=\"body2\">Filters slide in quickly.</p>\n  </div>\n</dialog>",
+     "id": "elevation",
+     "react": "import { Drawer, DrawerContent, DrawerTrigger, Typography } from \"@owlky/react\";\n\nexport function FilterDrawer() {\n  return (\n    <Drawer>\n      <DrawerTrigger variant=\"outlined\">Filters</DrawerTrigger>\n      <DrawerContent anchor=\"right\" aria-label=\"Filters\" elevation={4} transitionDuration={150}>\n        <Typography variant=\"body2\">Filters slide in quickly.</Typography>\n      </DrawerContent>\n    </Drawer>\n  );\n}",
+     "title": "Change the shadow and the speed"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -66296,6 +67078,27 @@
      "title": "Handle a choice"
     },
     {
+     "body": "A submenu groups related choices under one item. In React, put a `MenuSubmenu` with a `label` among the items. In HTML, wrap the trigger item and the submenu's popover in `li[role=\"none\"][data-ok-menu-submenu]`; the trigger has `aria-haspopup=\"menu\"`, `aria-expanded` and `aria-controls`. The submenu opens after its trigger in the reading direction (on the left in right-to-left pages). Arrow Right, Enter, Space or a click open it, Arrow Left and Escape close it, and resting the pointer on the trigger opens it too. Choosing an item in a submenu closes the whole menu.",
+     "html": "<button type=\"button\" id=\"file-button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"file-menu\" data-ok-popover-open=\"file-menu\">\n  <span data-ok-button-label>File</span>\n</button>\n<div id=\"file-menu\" popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\">\n  <ul data-ok-menu role=\"menu\" aria-labelledby=\"file-button\">\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">New file</li>\n    <li role=\"none\" data-ok-menu-submenu>\n      <div id=\"share-trigger\" data-ok-menu-item role=\"menuitem\" tabindex=\"-1\" aria-haspopup=\"menu\"\n        aria-expanded=\"false\" aria-controls=\"share-menu\">Share<svg data-ok-menu-submenu-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m9 6 6 6-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></div>\n      <div id=\"share-menu\" popover=\"manual\" data-ok-popover data-ok-placement=\"right-start\">\n        <ul data-ok-menu role=\"menu\" aria-labelledby=\"share-trigger\">\n          <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Email</li>\n          <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Copy link</li>\n        </ul>\n      </div>\n    </li>\n  </ul>\n</div>",
+     "id": "nested",
+     "react": "import { Button, Menu, MenuItem, MenuSubmenu } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function FileMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        id=\"file-button\"\n        variant=\"outlined\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        File\n      </Button>\n      <Menu aria-labelledby=\"file-button\" open={anchor !== null} anchorEl={anchor} onOpenChange={() => setAnchor(null)}>\n        <MenuItem>New file</MenuItem>\n        <MenuSubmenu id=\"share-menu\" label=\"Share\">\n          <MenuItem>Email</MenuItem>\n          <MenuItem>Copy link</MenuItem>\n        </MenuSubmenu>\n      </Menu>\n    </>\n  );\n}",
+     "title": "Nest menus"
+    },
+    {
+     "body": "A `MenuList` is the list of a menu on its own, for a menu that is always on screen, such as on a Paper. It has the same keyboard as a menu. Its focus item takes the tab stop (`tabindex=\"0\"`): the selected item, else the first one. In React, `autoFocusItem` focuses that item when the list mounts and `autoFocus` focuses the list itself. In HTML, use the native `autofocus` attribute.",
+     "html": "<!-- Load once per page: the styles and the runtime -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\">\n  <ul data-ok-menu role=\"menu\" aria-label=\"Account\">\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"0\">Profile</li>\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Logout</li>\n  </ul>\n</div>",
+     "id": "menu-list",
+     "react": "import { MenuItem, MenuList, Paper } from \"@owlky/react\";\n\nexport function AccountList() {\n  return (\n    <Paper>\n      <MenuList aria-label=\"Account\">\n        <MenuItem>Profile</MenuItem>\n        <MenuItem>Logout</MenuItem>\n      </MenuList>\n    </Paper>\n  );\n}",
+     "title": "Show a menu without a popover"
+    },
+    {
+     "body": "By default, opening a menu focuses the selected item, else the first one. Set `variant` to `menu` to always focus the first item. With `disableAutoFocusItem`, focus goes to the list itself and the arrow keys then move into it; in HTML, also give the list `tabindex=\"-1\"`. `disabledItemsFocusable` lets the keyboard stop on disabled items, and `disableListWrap` stops the arrow keys at the first and last items.",
+     "html": "<ul data-ok-menu role=\"menu\" aria-label=\"Sort\" tabindex=\"-1\" data-ok-variant=\"menu\"\n  data-ok-disable-auto-focus-item data-ok-disable-list-wrap>\n  <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Newest</li>\n  <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\" data-ok-selected>Oldest</li>\n</ul>",
+     "id": "focus",
+     "react": "import { Button, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SortMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={(event) => setAnchor(event.currentTarget)}>\n        Sort\n      </Button>\n      <Menu\n        aria-label=\"Sort\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        variant=\"menu\"\n        disableAutoFocusItem\n        disableListWrap\n        onOpenChange={() => setAnchor(null)}\n      >\n        <MenuItem>Newest</MenuItem>\n        <MenuItem selected>Oldest</MenuItem>\n      </Menu>\n    </>\n  );\n}",
+     "title": "Choose where focus goes"
+    },
+    {
      "body": "The menu's popover takes the Popover options, such as `placement` (default `bottom-start` for menus). Every option works the same way in both versions.",
      "id": "options",
      "title": "Options"
@@ -66524,6 +67327,13 @@
      "title": "Control which pages are shown"
     },
     {
+     "body": "When each page has its own URL, render the items as links. In React, return a `PaginationItem` from `renderItem` with an `href`, or with your router's link component in `component`: the item passes its attributes, content and other props (such as `to`) to it, and disabled items get `aria-disabled`. In HTML, write the items as `a[data-ok-pagination-item][href]`, with `aria-current=\"page\"` on the current one.",
+     "html": "<nav aria-label=\"Pages\" data-ok-pagination data-ok-variant=\"text\" data-ok-color=\"standard\" data-ok-shape=\"circular\" data-ok-size=\"md\">\n  <ul>\n    <li><a data-ok-pagination-item data-ok-type=\"page\" href=\"/posts?page=1\" aria-label=\"Go to page 1\">1</a></li>\n    <li><a data-ok-pagination-item data-ok-type=\"page\" href=\"/posts?page=2\" aria-current=\"page\" aria-label=\"page 2\">2</a></li>\n    <li><a data-ok-pagination-item data-ok-type=\"page\" href=\"/posts?page=3\" aria-label=\"Go to page 3\">3</a></li>\n  </ul>\n</nav>",
+     "id": "links",
+     "react": "import { Pagination, PaginationItem } from \"@owlky/react\";\nimport { type AnchorHTMLAttributes, forwardRef } from \"react\";\n\n// Stands for your router's link component, which takes `to` instead of `href`.\nconst RouterLink = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }>(\n  function RouterLink({ to, ...props }, ref) {\n    return <a ref={ref} href={to} {...props} />;\n  },\n);\n\nexport function PostPages({ page }: { page: number }) {\n  return (\n    <Pagination\n      count={3}\n      page={page}\n      aria-label=\"Pages\"\n      renderItem={(item) => (\n        <PaginationItem component={RouterLink} to={`/posts?page=${item.page ?? 1}`} {...item} />\n      )}\n    />\n  );\n}",
+     "title": "Use links for the pages"
+    },
+    {
      "body": "In React, slice your rows for the current page. In HTML, point the pagination at a table with `data-ok-pagination=\"<table id>\"` and set `data-ok-rows-per-page`: the script shows only that page's rows and counts the pages for you. For a rows-per-page menu and a \"1–5 of 12\" label, use the table's own `TablePagination` instead.",
      "html": "<table id=\"orders\" data-ok-table data-ok-size=\"medium\" data-ok-padding=\"normal\">\n  <caption>Orders</caption>\n  <thead>\n    <tr><th scope=\"col\">Order</th><th scope=\"col\" data-ok-align=\"right\">Total ($)</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>#1001</td><td data-ok-align=\"right\">57.00</td></tr>\n    <tr><td>#1002</td><td data-ok-align=\"right\">94.00</td></tr>\n    <tr><td>#1003</td><td data-ok-align=\"right\">131.00</td></tr>\n    <tr><td>#1004</td><td data-ok-align=\"right\">168.00</td></tr>\n    <tr><td>#1005</td><td data-ok-align=\"right\">205.00</td></tr>\n    <tr><td>#1006</td><td data-ok-align=\"right\">42.00</td></tr>\n    <tr><td>#1007</td><td data-ok-align=\"right\">79.00</td></tr>\n    <tr><td>#1008</td><td data-ok-align=\"right\">116.00</td></tr>\n    <tr><td>#1009</td><td data-ok-align=\"right\">153.00</td></tr>\n    <tr><td>#1010</td><td data-ok-align=\"right\">190.00</td></tr>\n    <tr><td>#1011</td><td data-ok-align=\"right\">27.00</td></tr>\n    <tr><td>#1012</td><td data-ok-align=\"right\">64.00</td></tr>\n  </tbody>\n</table>\n\n<nav aria-label=\"Orders pages\" data-ok-pagination=\"orders\" data-ok-variant=\"text\" data-ok-color=\"standard\" data-ok-shape=\"circular\" data-ok-size=\"md\" data-ok-rows-per-page=\"5\" data-ok-page=\"1\">\n  <ul>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"previous\" aria-label=\"Go to previous page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"next\" aria-label=\"Go to next page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></button></li>\n  </ul>\n</nav>",
      "id": "table",
@@ -66661,6 +67471,20 @@
      "id": "hover",
      "react": "import { Button, Popover, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function PopoverHover() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onPointerEnter={(event) => setAnchor(event.currentTarget)}\n        onPointerLeave={() => setAnchor(null)}\n        onFocus={(event) => setAnchor(event.currentTarget)}\n        onBlur={() => setAnchor(null)}\n      >\n        Hover me\n      </Button>\n      <Popover open={anchor !== null} anchorEl={anchor} disableAutoFocus disableRestoreFocus>\n        <Typography variant=\"body2\">The popover follows the pointer and the focus.</Typography>\n      </Popover>\n    </>\n  );\n}",
      "title": "Show a popover on hover"
+    },
+    {
+     "body": "Set `anchorReference` to `anchorPosition` and give the point in `anchorPosition`, in pixels from the top left corner of the viewport. In HTML, write the point as `data-ok-anchor-position=\"top,left\"`. Use it for context menus that open where the user pressed. With `anchorReference=\"none\"`, the popover isn't positioned at all, so your own CSS places it. `marginThreshold` keeps the popover that many pixels inside the viewport (16 by default).",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"point\" data-ok-popover-open=\"point\">\n  <span data-ok-button-label>Open at a point</span>\n</button>\n<div id=\"point\" popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\"\n  data-ok-anchor-reference=\"anchorPosition\" data-ok-anchor-position=\"200,400\" data-ok-margin-threshold=\"8\"\n  role=\"dialog\" aria-label=\"Point\">\n  <p data-ok-typography data-ok-variant=\"body2\">This popover opens 200px from the top and 400px from the left.</p>\n</div>",
+     "id": "anchor-position",
+     "react": "import { Button, Popover, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function PopoverAtPoint() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(!open)}>\n        Open at a point\n      </Button>\n      <Popover\n        role=\"dialog\"\n        aria-label=\"Point\"\n        open={open}\n        anchorEl={null}\n        anchorReference=\"anchorPosition\"\n        anchorPosition={{ top: 200, left: 400 }}\n        marginThreshold={8}\n        placement=\"bottom-start\"\n        onOpenChange={() => setOpen(false)}\n      >\n        <Typography variant=\"body2\">This popover opens 200px from the top and 400px from the left.</Typography>\n      </Popover>\n    </>\n  );\n}",
+     "title": "Open the popover at a point"
+    },
+    {
+     "body": "The anchor doesn't have to be an element. Any object with a `getBoundingClientRect()` method works, such as a text selection's range. In React, pass it as `anchorEl`. In HTML, pass it to the instance's `open()` method. The popover reads the rectangle again when the page scrolls or resizes.",
+     "html": "<!-- Load once per page: the styles and the runtime -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<p data-ok-typography data-ok-variant=\"body2\" id=\"text\">Select some words of this sentence.</p>\n<div id=\"selection\" popover=\"manual\" data-ok-popover data-ok-placement=\"top\" data-ok-disable-auto-focus\n  data-ok-disable-restore-focus>\n  <p data-ok-typography data-ok-variant=\"body2\">You selected some text.</p>\n</div>\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  // Open the popover next to the selection once it is made.\n  const text = document.getElementById(\"text\");\n  document.addEventListener(\"pointerup\", () => {\n    const popover = getRuntime().get(document.getElementById(\"selection\"), \"popover\");\n    const range = document.getSelection().rangeCount ? document.getSelection().getRangeAt(0) : null;\n    popover.close();\n    if (range && !range.collapsed && text.contains(range.commonAncestorContainer)) {\n      popover.open({ getBoundingClientRect: () => range.getBoundingClientRect() });\n    }\n  });\n</script>",
+     "id": "virtual-element",
+     "react": "import { Popover, type PopoverVirtualAnchor, Typography } from \"@owlky/react\";\nimport { useEffect, useRef, useState } from \"react\";\n\nexport function SelectionPopover() {\n  const text = useRef<HTMLElement>(null);\n  const [anchor, setAnchor] = useState<PopoverVirtualAnchor | null>(null);\n  useEffect(() => {\n    // Open the popover next to the selection once it is made.\n    const onPointerUp = () => {\n      const selection = document.getSelection();\n      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;\n      const inside = range && !range.collapsed && text.current?.contains(range.commonAncestorContainer);\n      setAnchor(inside ? { getBoundingClientRect: () => range.getBoundingClientRect() } : null);\n    };\n    document.addEventListener(\"pointerup\", onPointerUp);\n    return () => document.removeEventListener(\"pointerup\", onPointerUp);\n  }, []);\n  return (\n    <>\n      <Typography ref={text} variant=\"body2\">\n        Select some words of this sentence.\n      </Typography>\n      <Popover open={anchor !== null} anchorEl={anchor} placement=\"top\" disableAutoFocus disableRestoreFocus>\n        <Typography variant=\"body2\">You selected some text.</Typography>\n      </Popover>\n    </>\n  );\n}",
+     "title": "Anchor the popover to a virtual element"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -67303,6 +68127,20 @@
      "title": "Use a mobile stepper"
     },
     {
+     "body": "Add `nonLinear` to the stepper and put a `StepButton` in each step instead of a `StepLabel`. The stepper then only derives the active step: no step is completed or disabled until you say so with `completed` and `disabled` on the step. A disabled step's button is disabled too. In HTML, the runtime moves to a step when its `[data-ok-step-button]` is pressed, and leaves `data-ok-completed` and `data-ok-disabled` as you wrote them.",
+     "html": "<ol id=\"setup\" data-ok-stepper data-ok-orientation=\"horizontal\" data-ok-variant=\"standard\" data-ok-active-step=\"0\"\n  data-ok-non-linear aria-label=\"Setup\">\n  <li data-ok-step data-ok-active aria-current=\"step\">\n    <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>1</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Account</span></span></span></button>\n  </li>\n  <li data-ok-step data-ok-completed>\n    <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n    <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>2</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Profile</span></span></span></button>\n  </li>\n</ol>",
+     "id": "non-linear",
+     "react": "import { Step, StepButton, Stepper } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SetupSteps() {\n  const [active, setActive] = useState(0);\n  const completed = [false, true];\n  return (\n    <Stepper nonLinear activeStep={active} aria-label=\"Setup\">\n      {[\"Account\", \"Profile\"].map((label, index) => (\n        <Step key={label} completed={completed[index]}>\n          <StepButton onClick={() => setActive(index)}>{label}</StepButton>\n        </Step>\n      ))}\n    </Stepper>\n  );\n}",
+     "title": "Let people visit steps in any order"
+    },
+    {
+     "body": "In a vertical stepper, `StepContent` shows only under the active step. Add `expanded` to a step to keep its content open, for example a summary that stays visible. `transitionDuration` on `StepContent` sets how long it takes to open and close, in milliseconds (`auto` by default: from its height); in HTML, it is the content's `data-ok-timeout`. Mark the last step with `last` when it isn't the list's last element, so no line is drawn below it.",
+     "html": "<ol data-ok-stepper data-ok-orientation=\"vertical\" data-ok-variant=\"standard\" data-ok-active-step=\"0\" aria-label=\"Order\">\n  <li data-ok-step data-ok-active aria-current=\"step\">\n    <span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>1</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Shipping</span></span></span>\n    <div data-ok-step-content data-ok-collapse data-ok-timeout=\"200\"><p data-ok-typography data-ok-variant=\"body2\">Choose a delivery address.</p></div>\n  </li>\n  <li data-ok-step data-ok-disabled data-ok-expanded>\n    <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n    <span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>2</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Summary</span></span></span>\n    <div data-ok-step-content data-ok-collapse data-ok-timeout=\"200\"><p data-ok-typography data-ok-variant=\"body2\">2 items, free delivery.</p></div>\n  </li>\n</ol>",
+     "id": "expanded",
+     "react": "import { Step, StepContent, StepLabel, Stepper, Typography } from \"@owlky/react\";\n\nexport function OrderSteps() {\n  return (\n    <Stepper activeStep={0} orientation=\"vertical\" aria-label=\"Order\">\n      <Step>\n        <StepLabel>Shipping</StepLabel>\n        <StepContent transitionDuration={200}>\n          <Typography variant=\"body2\">Choose a delivery address.</Typography>\n        </StepContent>\n      </Step>\n      <Step expanded>\n        <StepLabel>Summary</StepLabel>\n        <StepContent transitionDuration={200}>\n          <Typography variant=\"body2\">2 items, free delivery.</Typography>\n        </StepContent>\n      </Step>\n    </Stepper>\n  );\n}",
+     "title": "Keep step content open"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't valid fall back to the default. The tables list the options of `Stepper`, `Step`, `StepLabel` and `MobileStepper`.",
      "id": "options",
      "title": "Options"
@@ -67495,6 +68333,20 @@
      "body": "Give each tab an `id` and an `aria-controls` that names its panel. Give each panel the matching `id` and an `aria-labelledby` that names its tab. Screen readers then announce which tab a panel belongs to. In HTML, the runtime shows the panel of the tab you select and hides the others with `hidden`. In React, the app owns the selection: pass `value` and `onChange`, and set `hidden` on the panels yourself. `defaultValue` keeps the selection inside `Tabs` when you don't need it.",
      "id": "panels",
      "title": "Connect tabs to their panels"
+    },
+    {
+     "body": "In React, wrap `Tabs` and its panels in a `TabContext` with the selected `value`. Give each `TabPanel` the `value` of its tab: the panel then links itself to its tab (`id`, `aria-controls` and `aria-labelledby`) and hides itself while another tab is selected. A hidden panel renders no children unless you add `keepMounted`. HTML doesn't need it: the runtime shows the panel that the selected tab's `aria-controls` names.",
+     "html": "<div data-ok-tabs data-ok-variant=\"standard\" data-ok-orientation=\"horizontal\" data-ok-text-color=\"inherit\" data-ok-indicator-color=\"inherit\" data-ok-scroll-buttons=\"auto\">\n  <div data-ok-tabs-scroller>\n    <div role=\"tablist\" data-ok-tabs-list aria-label=\"Views\">\n      <button type=\"button\" role=\"tab\" data-ok-tab id=\"view-list\" aria-controls=\"panel-list\" value=\"list\" aria-selected=\"true\" tabindex=\"0\"><span data-ok-tab-label>List</span></button>\n      <button type=\"button\" role=\"tab\" data-ok-tab id=\"view-board\" aria-controls=\"panel-board\" value=\"board\" aria-selected=\"false\" tabindex=\"-1\"><span data-ok-tab-label>Board</span></button>\n    </div>\n    <span data-ok-tabs-indicator></span>\n  </div>\n</div>\n<div role=\"tabpanel\" data-ok-tab-panel id=\"panel-list\" aria-labelledby=\"view-list\" tabindex=\"0\">The list view.</div>\n<div role=\"tabpanel\" data-ok-tab-panel id=\"panel-board\" aria-labelledby=\"view-board\" tabindex=\"0\" hidden>The board view.</div>",
+     "id": "tab-context",
+     "react": "import { Tab, TabContext, TabPanel, Tabs } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Views() {\n  const [view, setView] = useState(\"list\");\n  return (\n    <TabContext value={view}>\n      <Tabs onChange={setView} aria-label=\"Views\">\n        <Tab value=\"list\" label=\"List\" />\n        <Tab value=\"board\" label=\"Board\" />\n      </Tabs>\n      <TabPanel value=\"list\">The list view.</TabPanel>\n      <TabPanel value=\"board\" keepMounted>\n        The board view.\n      </TabPanel>\n    </TabContext>\n  );\n}",
+     "title": "Let panels follow the selection"
+    },
+    {
+     "body": "When each tab opens a page, make the tabs links: give each `Tab` an `href`, or a router link component in `component` (its own props, such as `to`, pass through). The tab bar then becomes a `navigation` landmark of plain links named by `aria-label`, and the selected link gets `aria-current=\"page\"` instead of `aria-selected`. Links keep the usual Tab order, without arrow-key movement, as people expect from navigation. In HTML, write `a[data-ok-tab][href]` in a list without a role, and `role=\"navigation\"` on the root.",
+     "html": "<div data-ok-tabs data-ok-variant=\"standard\" data-ok-orientation=\"horizontal\" data-ok-text-color=\"inherit\" data-ok-indicator-color=\"inherit\" data-ok-scroll-buttons=\"auto\" role=\"navigation\" aria-label=\"Project pages\">\n  <div data-ok-tabs-scroller>\n    <div data-ok-tabs-list>\n      <a href=\"/overview\" data-ok-tab data-ok-value=\"overview\" aria-current=\"page\"><span data-ok-tab-label>Overview</span></a>\n      <a href=\"/activity\" data-ok-tab data-ok-value=\"activity\"><span data-ok-tab-label>Activity</span></a>\n    </div>\n    <span data-ok-tabs-indicator></span>\n  </div>\n</div>",
+     "id": "links",
+     "react": "import { Tab, Tabs } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function ProjectNav() {\n  const [page, setPage] = useState(\"overview\");\n  return (\n    <Tabs value={page} onChange={setPage} aria-label=\"Project pages\">\n      <Tab value=\"overview\" label=\"Overview\" href=\"/overview\" />\n      <Tab value=\"activity\" label=\"Activity\" href=\"/activity\" />\n    </Tabs>\n  );\n}",
+     "title": "Use tabs to navigate between pages"
     },
     {
      "body": "Pass an icon with `icon`. With a label, `iconPosition` puts the icon above (`top`, the default), below (`bottom`), before (`start`) or after (`end`) the label. Tabs with an icon above or below are 72px tall. Icon-only tabs have no visible text, so give each one an `aria-label`.",
@@ -67803,6 +68655,20 @@
      "id": "timing",
      "react": "import { Button, Tooltip } from \"@owlky/react\";\n\nexport function TooltipTiming() {\n  return (\n    <Tooltip title=\"Add to the cart\" enterDelay={500} leaveDelay={200}>\n      <Button variant=\"outlined\">Add</Button>\n    </Tooltip>\n  );\n}",
      "title": "Change the timing"
+    },
+    {
+     "body": "When another tooltip shows, or closed less than 800 ms ago, `enterNextDelay` replaces `enterDelay`. Moving the pointer along a toolbar then shows each tooltip quickly, while the first one still waits. Without `enterNextDelay`, every tooltip waits for `enterDelay`.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" aria-describedby=\"bold-tip\">\n  <span data-ok-button-label>Bold</span>\n</button>\n<div id=\"bold-tip\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\"\n  data-ok-enter-delay=\"500\" data-ok-enter-next-delay=\"100\"><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>Bold text</div>",
+     "id": "next-delay",
+     "react": "import { Button, Tooltip } from \"@owlky/react\";\n\nexport function ToolbarTooltip() {\n  return (\n    <Tooltip title=\"Bold text\" enterDelay={500} enterNextDelay={100}>\n      <Button variant=\"outlined\">Bold</Button>\n    </Tooltip>\n  );\n}",
+     "title": "Open the next tooltip sooner"
+    },
+    {
+     "body": "With `followCursor`, the tooltip opens at the pointer and moves with it while the pointer stays on the trigger. Keyboard focus and touch still place it next to the trigger. Use it on large triggers, such as a disabled area that explains why it is disabled.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"lg\" aria-describedby=\"follow-tip\">\n  <span data-ok-button-label>Upgrade</span>\n</button>\n<div id=\"follow-tip\" role=\"tooltip\" popover=\"manual\" data-ok-tooltip data-ok-placement=\"bottom\"\n  data-ok-follow-cursor><span data-ok-tooltip-arrow aria-hidden=\"true\"></span>Available on the Pro plan</div>",
+     "id": "follow-cursor",
+     "react": "import { Button, Tooltip } from \"@owlky/react\";\n\nexport function FollowTooltip() {\n  return (\n    <Tooltip title=\"Available on the Pro plan\" followCursor describeChild>\n      <Button variant=\"outlined\" size=\"lg\">\n        Upgrade\n      </Button>\n    </Tooltip>\n  );\n}",
+     "title": "Follow the pointer"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -68468,6 +69334,8 @@
   "data-ok-map-style-dark": "data-ok-map",
   "data-ok-map-view": "data-ok-map",
   "data-ok-markdown-source": "data-ok-markdown",
+  "data-ok-menu-submenu": "data-ok-menu",
+  "data-ok-menu-submenu-icon": "data-ok-menu",
   "data-ok-mobile-stepper-back": "data-ok-mobile-stepper",
   "data-ok-mobile-stepper-dot": "data-ok-mobile-stepper",
   "data-ok-mobile-stepper-dots": "data-ok-mobile-stepper",
@@ -68508,6 +69376,7 @@
   "data-ok-sortable-item": "data-ok-sortable",
   "data-ok-sortable-remove": "data-ok-sortable",
   "data-ok-sortable-template": "data-ok-sortable",
+  "data-ok-step-button": "data-ok-step",
   "data-ok-step-connector": "data-ok-step",
   "data-ok-step-connector-line": "data-ok-step",
   "data-ok-step-content": "data-ok-step",

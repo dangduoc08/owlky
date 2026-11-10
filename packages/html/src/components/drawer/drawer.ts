@@ -1,5 +1,6 @@
-import { createModalController, drawerOptions, readStyle } from "@owlky/core";
+import { createModalController, drawerOptions, drawerStyle, readStyle } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
+import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export type DrawerCloseReason = "escape" | "backdrop" | "trigger" | "api" | "native";
@@ -31,7 +32,9 @@ export interface DrawerInstance extends ComponentInstance {
 const byId = (from: Element, id: string): Element | null =>
   (from.getRootNode() as Document | ShadowRoot).getElementById(id);
 
-const { variant, disableEscapeKeyDown } = drawerOptions.options;
+const { variant, disableEscapeKeyDown, disableRestoreFocus, disableScrollLock } =
+  drawerOptions.options;
+const STYLED = ["data-ok-elevation", "data-ok-transition-duration"];
 
 /**
  * Drawer — spec: specs/components/drawer.md
@@ -56,10 +59,27 @@ export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
     const options = () => ({
       contentSelector: "[data-ok-drawer-content]",
       closeOnEscape: !element.hasAttribute(disableEscapeKeyDown.attr),
+      restoreFocus: !element.hasAttribute(disableRestoreFocus.attr),
+      lockScroll: !element.hasAttribute(disableScrollLock.attr),
       onDismiss: (reason: DrawerCloseReason) => instance.close(reason),
       onExternalClose: () => emit("close", { reason: "native" }),
     });
     const controller = kind === "temporary" ? createModalController(element, options()) : null;
+    // Elevation and slide length through CSSOM (data-ok-elevation, data-ok-transition-duration).
+    let written: string[] = [];
+    const timing = () => {
+      written = syncCustomProperties(
+        element,
+        drawerStyle({
+          elevation: element.getAttribute("data-ok-elevation") ?? undefined,
+          transitionDuration: element.getAttribute("data-ok-transition-duration") ?? undefined,
+        }),
+        written,
+      );
+    };
+    timing();
+    const observer = new MutationObserver(timing);
+    observer.observe(element, { attributes: true, attributeFilter: STYLED });
 
     /** Docked drawers: triggers report the state (`aria-expanded`). */
     const syncTriggers = () => {
@@ -107,6 +127,7 @@ export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
       },
       destroy() {
         controller?.destroy();
+        observer.disconnect();
       },
     };
 

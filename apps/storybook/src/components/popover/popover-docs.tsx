@@ -119,6 +119,102 @@ export function PopoverHover() {
 }`,
   },
   {
+    id: "anchor-position",
+    title: "Open the popover at a point",
+    body: 'Set `anchorReference` to `anchorPosition` and give the point in `anchorPosition`, in pixels from the top left corner of the viewport. In HTML, write the point as `data-ok-anchor-position="top,left"`. Use it for context menus that open where the user pressed. With `anchorReference="none"`, the popover isn\'t positioned at all, so your own CSS places it. `marginThreshold` keeps the popover that many pixels inside the viewport (16 by default).',
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md"
+  aria-haspopup="dialog" aria-expanded="false" aria-controls="point" data-ok-popover-open="point">
+  <span data-ok-button-label>Open at a point</span>
+</button>
+<div id="point" popover="manual" data-ok-popover data-ok-placement="bottom-start"
+  data-ok-anchor-reference="anchorPosition" data-ok-anchor-position="200,400" data-ok-margin-threshold="8"
+  role="dialog" aria-label="Point">
+  <p data-ok-typography data-ok-variant="body2">This popover opens 200px from the top and 400px from the left.</p>
+</div>`,
+    react: `import { Button, Popover, Typography } from "@owlky/react";
+import { useState } from "react";
+
+export function PopoverAtPoint() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant="outlined" onClick={() => setOpen(!open)}>
+        Open at a point
+      </Button>
+      <Popover
+        role="dialog"
+        aria-label="Point"
+        open={open}
+        anchorEl={null}
+        anchorReference="anchorPosition"
+        anchorPosition={{ top: 200, left: 400 }}
+        marginThreshold={8}
+        placement="bottom-start"
+        onOpenChange={() => setOpen(false)}
+      >
+        <Typography variant="body2">This popover opens 200px from the top and 400px from the left.</Typography>
+      </Popover>
+    </>
+  );
+}`,
+  },
+  {
+    id: "virtual-element",
+    title: "Anchor the popover to a virtual element",
+    body: "The anchor doesn't have to be an element. Any object with a `getBoundingClientRect()` method works, such as a text selection's range. In React, pass it as `anchorEl`. In HTML, pass it to the instance's `open()` method. The popover reads the rectangle again when the page scrolls or resizes.",
+    html: `<!-- Load once per page: the styles and the runtime -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+<p data-ok-typography data-ok-variant="body2" id="text">Select some words of this sentence.</p>
+<div id="selection" popover="manual" data-ok-popover data-ok-placement="top" data-ok-disable-auto-focus
+  data-ok-disable-restore-focus>
+  <p data-ok-typography data-ok-variant="body2">You selected some text.</p>
+</div>
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  // Open the popover next to the selection once it is made.
+  const text = document.getElementById("text");
+  document.addEventListener("pointerup", () => {
+    const popover = getRuntime().get(document.getElementById("selection"), "popover");
+    const range = document.getSelection().rangeCount ? document.getSelection().getRangeAt(0) : null;
+    popover.close();
+    if (range && !range.collapsed && text.contains(range.commonAncestorContainer)) {
+      popover.open({ getBoundingClientRect: () => range.getBoundingClientRect() });
+    }
+  });
+</script>`,
+    react: `import { Popover, type PopoverVirtualAnchor, Typography } from "@owlky/react";
+import { useEffect, useRef, useState } from "react";
+
+export function SelectionPopover() {
+  const text = useRef<HTMLElement>(null);
+  const [anchor, setAnchor] = useState<PopoverVirtualAnchor | null>(null);
+  useEffect(() => {
+    // Open the popover next to the selection once it is made.
+    const onPointerUp = () => {
+      const selection = document.getSelection();
+      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+      const inside = range && !range.collapsed && text.current?.contains(range.commonAncestorContainer);
+      setAnchor(inside ? { getBoundingClientRect: () => range.getBoundingClientRect() } : null);
+    };
+    document.addEventListener("pointerup", onPointerUp);
+    return () => document.removeEventListener("pointerup", onPointerUp);
+  }, []);
+  return (
+    <>
+      <Typography ref={text} variant="body2">
+        Select some words of this sentence.
+      </Typography>
+      <Popover open={anchor !== null} anchorEl={anchor} placement="top" disableAutoFocus disableRestoreFocus>
+        <Typography variant="body2">You selected some text.</Typography>
+      </Popover>
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -171,9 +267,17 @@ const PREVIEWS = {
         },
         {
           react: "anchorEl",
-          html: "the trigger",
-          type: "Element | (() => Element)",
-          description: "The element the popover points at.",
+          html: "the trigger, or open(anchor)",
+          type: "Element | PopoverVirtualAnchor | (() => Element)",
+          description:
+            "What the popover points at: an element, or an object with `getBoundingClientRect()`.",
+        },
+        {
+          react: "anchorPosition",
+          html: "data-ok-anchor-position",
+          type: "{ top: number; left: number }",
+          description:
+            'The point used with `anchorReference="anchorPosition"`, in px from the viewport\'s top left corner. HTML: `"top,left"`.',
         },
         {
           react: "onOpenChange",

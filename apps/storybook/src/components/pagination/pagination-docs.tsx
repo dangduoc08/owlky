@@ -78,6 +78,40 @@ export function PaginationRanges() {
 }`,
   },
   {
+    id: "links",
+    title: "Use links for the pages",
+    body: 'When each page has its own URL, render the items as links. In React, return a `PaginationItem` from `renderItem` with an `href`, or with your router\'s link component in `component`: the item passes its attributes, content and other props (such as `to`) to it, and disabled items get `aria-disabled`. In HTML, write the items as `a[data-ok-pagination-item][href]`, with `aria-current="page"` on the current one.',
+    html: `<nav aria-label="Pages" data-ok-pagination data-ok-variant="text" data-ok-color="standard" data-ok-shape="circular" data-ok-size="md">
+  <ul>
+    <li><a data-ok-pagination-item data-ok-type="page" href="/posts?page=1" aria-label="Go to page 1">1</a></li>
+    <li><a data-ok-pagination-item data-ok-type="page" href="/posts?page=2" aria-current="page" aria-label="page 2">2</a></li>
+    <li><a data-ok-pagination-item data-ok-type="page" href="/posts?page=3" aria-label="Go to page 3">3</a></li>
+  </ul>
+</nav>`,
+    react: `import { Pagination, PaginationItem } from "@owlky/react";
+import { type AnchorHTMLAttributes, forwardRef } from "react";
+
+// Stands for your router's link component, which takes \`to\` instead of \`href\`.
+const RouterLink = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }>(
+  function RouterLink({ to, ...props }, ref) {
+    return <a ref={ref} href={to} {...props} />;
+  },
+);
+
+export function PostPages({ page }: { page: number }) {
+  return (
+    <Pagination
+      count={3}
+      page={page}
+      aria-label="Pages"
+      renderItem={(item) => (
+        <PaginationItem component={RouterLink} to={\`/posts?page=\${item.page ?? 1}\`} {...item} />
+      )}
+    />
+  );
+}`,
+  },
+  {
     id: "table",
     title: "Page a table",
     body: 'In React, slice your rows for the current page. In HTML, point the pagination at a table with `data-ok-pagination="<table id>"` and set `data-ok-rows-per-page`: the script shows only that page\'s rows and counts the pages for you. For a rows-per-page menu and a "1–5 of 12" label, use the table\'s own `TablePagination` instead.',

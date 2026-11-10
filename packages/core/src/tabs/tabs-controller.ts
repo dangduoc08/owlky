@@ -18,20 +18,38 @@ export interface TabsController {
   destroy(): void;
 }
 
-const TAB = '[role="tab"]';
+/** Tabs, and link tabs (`a[data-ok-tab]`, the navigation pattern: `aria-current="page"`). */
+const TAB = '[role="tab"], a[data-ok-tab]';
+const LIST = '[role="tablist"], [data-ok-tabs-list]';
 /** Root flags written by the controller: the tabs can scroll toward the start / the end. */
 export const TABS_SCROLL_START = "data-ok-can-scroll-start";
 export const TABS_SCROLL_END = "data-ok-can-scroll-end";
 /** Indicator flag: set after the first measure, so the indicator only slides between tabs. */
 export const TABS_INDICATOR_READY = "data-ok-ready";
 
-/** A tab's value: its `value` attribute, else its position. */
+/** A tab's value: its `value` (a link tab's `data-ok-value`) attribute, else its position. */
 export const tabValue = (tab: Element, index: number): string =>
-  tab.getAttribute("value") ?? String(index);
+  tab.getAttribute("value") ?? tab.getAttribute("data-ok-value") ?? String(index);
+
+/** Is this the selected tab (`aria-selected`, or a link tab's `aria-current="page"`)? */
+export const isSelectedTab = (tab: Element): boolean =>
+  tab.getAttribute("aria-selected") === "true" || tab.getAttribute("aria-current") === "page";
+
+/**
+ * Writes a tab's selection: `aria-selected` and the roving `tabindex` for tabs, `aria-current`
+ * for link tabs (links stay in the tab order).
+ */
+export function markTab(tab: HTMLElement, selected: boolean): void {
+  if (tab.getAttribute("role") === "tab") {
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  } else if (selected) tab.setAttribute("aria-current", "page");
+  else tab.removeAttribute("aria-current");
+}
 
 /** The tabs of `root` (not those of nested tabs), in order. */
 export function tabsOf(root: Element): HTMLElement[] {
-  const list = root.querySelector('[role="tablist"]');
+  const list = root.querySelector(LIST);
   if (!list) return [];
   return [...list.querySelectorAll<HTMLElement>(TAB)].filter(
     (tab) => tab.closest("[data-ok-tabs]") === root,
@@ -79,7 +97,7 @@ export function createTabsController(
   const abort = new AbortController();
   const { signal } = abort;
   const vertical = () => root.getAttribute("data-ok-orientation") === "vertical";
-  const list = () => root.querySelector<HTMLElement>('[role="tablist"]');
+  const list = () => root.querySelector<HTMLElement>(LIST);
   const scroller = () => root.querySelector<HTMLElement>("[data-ok-tabs-scroller]");
   const indicator = () => root.querySelector<HTMLElement>("[data-ok-tabs-indicator]");
   const own = (target: EventTarget | null) => {
@@ -87,7 +105,7 @@ export function createTabsController(
     return tab && tabsOf(root).includes(tab) ? tab : null;
   };
   const request = (tab: HTMLElement) => {
-    if (!enabled(tab) || tab.getAttribute("aria-selected") === "true") return;
+    if (!enabled(tab) || isSelectedTab(tab)) return;
     options.onSelect(tab, tabValue(tab, tabsOf(root).indexOf(tab)));
   };
   let selected: HTMLElement | null = null;
@@ -111,9 +129,11 @@ export function createTabsController(
     "keydown",
     (event) => {
       const tab = own(event.target);
-      if (!tab || event.altKey || event.ctrlKey || event.metaKey) return;
+      // Link tabs keep the native Tab order (no roving focus).
+      if (tab?.getAttribute("role") !== "tab" || event.altKey || event.ctrlKey || event.metaKey)
+        return;
       const rtl = getComputedStyle(root).direction === "rtl";
-      const target = tabsKeyTarget(tabsOf(root), tab, event.key, vertical(), rtl);
+      const target = tabsKeyTarget(tabsOf(root), tab as HTMLElement, event.key, vertical(), rtl);
       if (!target) return;
       event.preventDefault();
       target.focus();
@@ -161,7 +181,7 @@ export function createTabsController(
   const controller: TabsController = {
     update() {
       const tabs = tabsOf(root);
-      const current = tabs.find((tab) => tab.getAttribute("aria-selected") === "true") ?? null;
+      const current = tabs.find(isSelectedTab) ?? null;
       const line = indicator();
       const area = list();
       if (line && area) {

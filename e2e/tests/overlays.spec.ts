@@ -112,6 +112,32 @@ for (const impl of implementations) {
       await expect(page.getByRole("menuitem", { name: "Phobos" })).toBeFocused();
     });
 
+    test("nested menu: arrows open and close submenus; a choice closes every menu", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "menu", "nested"));
+      const trigger = page.locator("#menu-nested-button");
+      await trigger.click();
+      await page.keyboard.press("ArrowDown");
+      const recent = page.getByRole("menuitem", { name: "Open recent" });
+      await expect(recent).toBeFocused();
+      await page.keyboard.press("ArrowRight");
+      await expect(page.locator("#menu-nested-recent")).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "report.pdf" })).toBeFocused();
+      await expect(recent).toHaveAttribute("aria-expanded", "true");
+      await page.keyboard.press("ArrowLeft");
+      await expect(page.locator("#menu-nested-recent")).toBeHidden();
+      await expect(recent).toBeFocused();
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("End");
+      await page.keyboard.press("ArrowRight");
+      await expect(page.getByRole("menuitem", { name: "2024.zip" })).toBeFocused();
+      await page.keyboard.press("Enter");
+      await expect(page.locator("#menu-nested")).toBeHidden();
+      await expect(page.locator("#menu-nested-archive")).toBeHidden();
+      await expect(trigger).toBeFocused();
+    });
+
     test("dialog: modal, focus inside, Escape closes and focus returns", async ({ page }) => {
       await openStory(page, storyId(impl, "dialog", "form"));
       const trigger = page.getByRole("button", { name: "Form dialog" });

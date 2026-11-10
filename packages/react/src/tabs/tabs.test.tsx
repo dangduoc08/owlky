@@ -4,7 +4,7 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations, settled } from "../test-utils.js";
-import { Tab, TabPanel, Tabs } from "./tabs.js";
+import { Tab, TabContext, TabPanel, Tabs } from "./tabs.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
 const css = (element: Element) => getComputedStyle(element);
@@ -441,5 +441,68 @@ describe("Tabs", () => {
     }
     expect(html).toBe(clone.innerHTML);
     unmount();
+  });
+});
+
+const RouterLink = ({ to, ...props }: { to: string } & Record<string, unknown>) => (
+  <a href={`/app${to}`} {...props} />
+);
+
+function ContextDemo() {
+  const [value, setValue] = useState("one");
+  return (
+    <TabContext value={value}>
+      <Tabs onChange={setValue} aria-label="Views">
+        <Tab value="one" label="One" />
+        <Tab value="two" label="Two" />
+      </Tabs>
+      <TabPanel value="one">First</TabPanel>
+      <TabPanel value="two" keepMounted>
+        Second
+      </TabPanel>
+      <TabPanel>Free</TabPanel>
+    </TabContext>
+  );
+}
+
+describe("Link tabs and TabContext", () => {
+  it("href and component render links in a navigation landmark; aria-current marks the page", async () => {
+    const onChange = vi.fn();
+    render(
+      <Tabs value="b" onChange={onChange} aria-label="Pages">
+        <Tab value="a" label="A" href="#a" />
+        <Tab value="b" label="B" component={RouterLink} to="/b" />
+      </Tabs>,
+    );
+    const nav = screen.getByRole("navigation", { name: "Pages" });
+    expect(nav.querySelector('[role="tablist"]')).toBeNull();
+    const a = screen.getByRole("link", { name: "A" });
+    const b = screen.getByRole("link", { name: "B" });
+    expect(b.getAttribute("href")).toBe("/app/b");
+    expect(b.getAttribute("aria-current")).toBe("page");
+    expect(a.hasAttribute("aria-current")).toBe(false);
+    expect(a.dataset).toMatchObject({ okTab: "", okValue: "a" });
+    a.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    await userEvent.click(a);
+    expect(onChange).toHaveBeenCalledWith("a");
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("TabContext links tabs and panels; TabPanel value hides itself; keepMounted", async () => {
+    render(<ContextDemo />);
+    const one = screen.getByRole("tab", { name: "One" });
+    const first = screen.getByRole("tabpanel", { name: "One" });
+    expect(one.getAttribute("aria-controls")).toBe(first.id);
+    expect(first.getAttribute("aria-labelledby")).toBe(one.id);
+    const second = document.getElementById(
+      screen.getByRole("tab", { name: "Two" }).getAttribute("aria-controls") as string,
+    ) as HTMLElement;
+    expect(second.hidden).toBe(true);
+    expect(second.textContent).toBe("Second");
+    await userEvent.click(screen.getByRole("tab", { name: "Two" }));
+    expect(second.hidden).toBe(false);
+    expect(first.hidden).toBe(true);
+    expect(first.textContent).toBe("");
+    expect(screen.getByText("Free").hidden).toBe(false);
   });
 });

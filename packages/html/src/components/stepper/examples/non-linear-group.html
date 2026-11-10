@@ -1,0 +1,26 @@
+<div class="sb-stepper-demo">
+  <ol id="stepper-non-linear" data-ok-stepper data-ok-orientation="horizontal" data-ok-variant="standard" data-ok-active-step="0" data-ok-non-linear aria-label="Project setup">
+    <li data-ok-step data-ok-active aria-current="step"><button type="button" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>1</span><svg data-ok-step-icon-check aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg><svg data-ok-step-icon-error aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 18h.01" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Choose a plan</span></span></span></button></li>
+    <li data-ok-step>
+      <div data-ok-step-connector aria-hidden="true"><span data-ok-step-connector-line></span></div>
+      <button type="button" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>2</span><svg data-ok-step-icon-check aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg><svg data-ok-step-icon-error aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 18h.01" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Add details</span><span data-ok-step-label-optional>Optional</span></span></span></button>
+    </li>
+    <li data-ok-step>
+      <div data-ok-step-connector aria-hidden="true"><span data-ok-step-connector-line></span></div>
+      <button type="button" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>3</span><svg data-ok-step-icon-check aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg><svg data-ok-step-icon-error aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 18h.01" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Review and confirm</span></span></span></button>
+    </li>
+  </ol>
+  <div data-ok-paper data-ok-variant="elevation" data-ok-elevation="0" class="sb-stepper-panel">
+    <p data-ok-typography data-ok-variant="body2" data-ok-stepper-panel="stepper-non-linear">Pick the plan and the billing period that suit your team.</p>
+    <p data-ok-typography data-ok-variant="body2" data-ok-stepper-panel="stepper-non-linear" hidden>Name the project and invite the people who will work on it.</p>
+    <p data-ok-typography data-ok-variant="body2" data-ok-stepper-panel="stepper-non-linear" hidden>Check the summary, then confirm to create the project.</p>
+    <div data-ok-stepper-panel="stepper-non-linear" hidden>
+      <p data-ok-typography data-ok-variant="body2">All steps visited. Your project is ready.</p>
+      <button data-ok-stepper-reset="stepper-non-linear" type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md"><span data-ok-button-label>Reset</span></button>
+    </div>
+  </div>
+  <div class="sb-stepper-actions">
+    <button data-ok-stepper-back="stepper-non-linear" type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" disabled><span data-ok-button-label>Back</span></button>
+    <button data-ok-stepper-next="stepper-non-linear" type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md"><span data-ok-button-label>Next</span></button>
+  </div>
+</div>

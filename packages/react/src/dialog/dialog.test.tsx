@@ -1,4 +1,4 @@
-import { dialogMaxWidths } from "@owlky/core";
+import { dialogMaxWidths, isScrollLocked } from "@owlky/core";
 import { render, screen } from "@testing-library/react";
 import { createRef, useState } from "react";
 import { renderToString } from "react-dom/server";
@@ -154,5 +154,20 @@ describe("Dialog", () => {
       </Dialog>,
     );
     expect(html).toContain("data-ok-dialog-paper");
+  });
+
+  it("keepMounted false renders the children only while open; disableRestoreFocus, disableScrollLock", async () => {
+    render(<Demo keepMounted={false} disableRestoreFocus disableScrollLock />);
+    const element = document.querySelector("dialog") as HTMLDialogElement;
+    expect(element.dataset).toMatchObject({ okDisableRestoreFocus: "", okDisableScrollLock: "" });
+    expect(element.querySelector("[data-ok-dialog-title]")).toBeNull();
+    const open = screen.getByRole("button", { name: "Open" });
+    await userEvent.click(open);
+    expect(screen.getByRole("dialog", { name: "Share your location?" })).toBeTruthy();
+    expect(isScrollLocked()).toBe(false);
+    await userEvent.keyboard("{Escape}");
+    expect(element.open).toBe(false);
+    expect(document.activeElement).not.toBe(open);
+    expect(element.querySelector("[data-ok-dialog-title]")).toBeNull();
   });
 });

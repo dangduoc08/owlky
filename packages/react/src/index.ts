@@ -70,6 +70,7 @@ export type {
   LinkUnderline,
   ListItemAlignment,
   ListSubheaderColor,
+  MenuVariant,
   MobileStepperPosition,
   MobileStepperVariant,
   MotionBorderColor,
@@ -90,7 +91,10 @@ export type {
   PaletteColorName,
   PaperVariant,
   Placement,
+  PopoverAnchorPosition,
+  PopoverAnchorReference,
   PopoverDismissReason,
+  PopoverVirtualAnchor,
   ProgressColor,
   RatingSize,
   SelectionControlColor,
@@ -457,7 +461,11 @@ export {
   type MenuCloseReason,
   MenuItem,
   type MenuItemProps,
+  MenuList,
+  type MenuListProps,
   type MenuProps,
+  MenuSubmenu,
+  type MenuSubmenuProps,
 } from "./menu/menu.js";
 export {
   Motion,
@@ -589,6 +597,8 @@ export {
   MobileStepper,
   type MobileStepperProps,
   Step,
+  StepButton,
+  type StepButtonProps,
   StepConnector,
   StepContent,
   type StepContentProps,
@@ -623,6 +633,8 @@ export {
 } from "./table/table.js";
 export {
   Tab,
+  TabContext,
+  type TabContextProps,
   TabPanel,
   type TabPanelProps,
   type TabProps,

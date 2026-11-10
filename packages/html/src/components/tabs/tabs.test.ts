@@ -51,13 +51,49 @@ const tab = (host: Element, i: number) => host.querySelector(`[value="v${i}"]`) 
 const panel = (host: Element, id: string, i: number) =>
   host.querySelector(`#${id}-p${i}`) as HTMLElement;
 
+describe("link tabs", () => {
+  it("a click marks the link aria-current and emits change; arrows don't rove", async () => {
+    const host = mount(`
+      <div data-ok-tabs data-ok-variant="standard" role="navigation" aria-label="Pages">
+        <div data-ok-tabs-scroller><div data-ok-tabs-list>
+          <a href="#a" data-ok-tab data-ok-value="a" aria-current="page">A</a>
+          <a href="#b" data-ok-tab data-ok-value="b">B</a>
+        </div><span data-ok-tabs-indicator></span></div>
+      </div>`);
+    const rt = start();
+    const root = host.querySelector("[data-ok-tabs]") as HTMLElement;
+    const [a, b] = [...host.querySelectorAll<HTMLElement>("a")];
+    const values: unknown[] = [];
+    root.addEventListener("ok:tabs:change", (e) => values.push((e as CustomEvent).detail.value));
+    expect(rt.get<TabsInstance>(root, "tabs")?.value).toBe("a");
+    b?.addEventListener("click", (e) => e.preventDefault(), { once: true });
+    (b as HTMLElement).click();
+    expect(values).toEqual(["b"]);
+    expect(b?.getAttribute("aria-current")).toBe("page");
+    expect(a?.hasAttribute("aria-current")).toBe(false);
+    expect(a?.tabIndex).toBe(0);
+    a?.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(a);
+    await expectNoAxeViolations(host);
+  });
+});
+
 describe("tabs snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(14));
+  it("covers every story group", () => expect(snippets).toHaveLength(15));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
     for (const root of host.querySelectorAll<HTMLElement>("[data-ok-tabs]")) {
       expect(tabsOptions.options.variant.values).toContain(root.dataset["okVariant"]);
+      if (root.getAttribute("role") === "navigation") {
+        // Link tabs: plain links in a named landmark, at most one current page.
+        expect(root.hasAttribute("aria-label")).toBe(true);
+        const links = [...root.querySelectorAll("[data-ok-tabs-list] > *")];
+        expect(links.every((a) => a.localName === "a" && a.hasAttribute("href"))).toBe(true);
+        expect(links.filter((a) => a.getAttribute("aria-current") === "page")).toHaveLength(1);
+        continue;
+      }
       const list = root.querySelector('[role="tablist"]') as HTMLElement;
       expect(list.hasAttribute("data-ok-tabs-list")).toBe(true);
       expect(list.hasAttribute("aria-label") || list.hasAttribute("aria-labelledby")).toBe(true);

@@ -6,6 +6,7 @@ import { TooltipDocs } from "./tooltip-docs.js";
 import {
   arrowGroups,
   files,
+  followCursorGroups,
   positionedGroups,
   simpleGroups,
   TOOLTIP_CONTROLS,
@@ -48,3 +49,7 @@ export const VariableWidth: StoryObj = {
 };
 export const Transitions: StoryObj = story("transitions", "Transitions", transitionGroups);
 export const Positioned: StoryObj = story("positioned", "Positioned", positionedGroups);
+export const FollowCursor: StoryObj = {
+  ...story("follow-cursor", "Follow cursor", followCursorGroups),
+  name: "Follow cursor",
+};

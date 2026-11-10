@@ -61,7 +61,7 @@ const button = (host: Element, name: string) =>
   ) as HTMLButtonElement;
 
 describe("stepper snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(7));
+  it("covers every story group", () => expect(snippets).toHaveLength(8));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
@@ -281,5 +281,38 @@ describe("mobile stepper runtime", () => {
     );
     start();
     expect(host.querySelector("[data-ok-mobile-stepper-text]")?.textContent).toBe("1 / 1");
+  });
+});
+
+describe("non-linear steppers", () => {
+  const buttons = (label: string, attrs = "") =>
+    `<li data-ok-step ${attrs}><button type="button" data-ok-step-button><span data-ok-step-label><span data-ok-step-label-text><span data-ok-step-label-title>${label}</span></span></span></button><div data-ok-step-content data-ok-collapse hidden>Content ${label}</div></li>`;
+
+  it("step buttons move to their step; completed and disabled stay as written; expanded content stays", async () => {
+    const host = mount(`
+      <ol id="n" data-ok-stepper data-ok-orientation="vertical" data-ok-active-step="0" data-ok-non-linear aria-label="N">
+        ${buttons("A")}${buttons("B", "data-ok-completed data-ok-expanded")}${buttons("C", "data-ok-disabled")}
+      </ol>`);
+    start();
+    const root = host.querySelector("#n") as HTMLElement;
+    expect(states(root)).toEqual(["active", "completed", "disabled"]);
+    const [a, b, c] = [...host.querySelectorAll<HTMLButtonElement>("[data-ok-step-button]")];
+    expect(c?.disabled).toBe(true);
+    const content = (index: number) =>
+      host.querySelectorAll<HTMLElement>("[data-ok-step-content]")[index] as HTMLElement;
+    expect(content(1).hidden).toBe(false);
+    await userEvent.click(b as HTMLElement);
+    expect(states(root)).toEqual(["", "active,completed", "disabled"]);
+    expect(content(0).hidden).toBe(true);
+    (a as HTMLButtonElement).click();
+    expect(root.getAttribute("data-ok-active-step")).toBe("0");
+    expect(content(1).hidden).toBe(false);
+    // Linear steppers still derive every state; their buttons follow `disabled`.
+    root.removeAttribute("data-ok-non-linear");
+    (a as HTMLButtonElement).click();
+    const instance = runtime?.get<StepperInstance>(root, "stepper");
+    instance?.go(1);
+    expect(states(root)).toEqual(["completed", "active", "disabled"]);
+    expect(c?.disabled).toBe(true);
   });
 });
