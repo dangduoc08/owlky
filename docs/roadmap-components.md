@@ -75,9 +75,9 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.12 | C | Avatar group | any `spacing` (today `medium` / `small`) | ✅ |
 | 4.13 | C | Linear progress | right to left | ✅ |
 | 4.14 | C | Snackbar | swipe to dismiss, `expand` / stacked collapse, `richColors`, `hotkey`, `offset` / `gap`, per-toast `position` | ✅ |
-| 4.15 | D — heavy | Data grid | `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, group footers, server-side aggregation, `getPivotDerivedColumns`, pivot panel drag and drop, one chart per grid | 🔄 |
-| 4.16 | D | Editor | Tiptap `extensions` / `editorProps` pass-through, bubble menus, tables, mentions, a form `name` | 🔄 |
-| 4.17 | D | Walktour | `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | 🔄 |
+| 4.15 | D — heavy | Data grid | `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, group footers, server-side aggregation, `getPivotDerivedColumns`, pivot panel drag and drop, one chart per grid | ✅ |
+| 4.16 | D | Editor | Tiptap `extensions` / `editorProps` pass-through, bubble menus, tables, mentions, a form `name` | ✅ |
+| 4.17 | D | Walktour | `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | ✅ |
 | 4.18 | E — from the audits | any | rows added by 2.4 and 3.1 | ⬜ |
 | 4.18.1 | E — ApexTree (must, **ADR** superseding ADR-0036) | Organization chart | collapsible nodes (`enableExpandCollapse`, `expandCollapseOnNodeClick`, a badge with the hidden count), `expandAll` / `collapseAll` / `expandToDepth`, lazy children (`loadChildren`), `ok:organization-chart:expand`, a toggle button per branch (`aria-expanded`), Collapse for the children list | ⬜ |
 | 4.18.2 | E (should, **ADR**) | Organization chart | `direction` `top` · `bottom` · `left` · `right` (connectors on logical properties, right to left mirrors) | ⬜ |
@@ -112,7 +112,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.31 | E — audit 3.1 (could) | Upload | `dragFileRejections` (MIME / surplus rejections during a drag) | ✅ |
 | 4.18.32 | E — audit 3.1 (could) | Code editor | DiffEditor `line` | ⬜ |
 | 4.18.33 | E — audit 3.1 (should) | Editor | React access to the Tiptap editor (`onCreate` / editor ref) and Tiptap events (`create`, `focus`, `blur`, `selectionUpdate`, `transaction`, `paste`, `drop`, `delete`, `contentError`); `getJSON()` / `getText()` | ⬜ |
-| 4.18.34 | E — audit 3.1 (could) | Editor | `editorProps`, `parseOptions`, `enableInputRules` / `enablePasteRules`, `textDirection`, `autofocus`; form `name` (hidden input) (with 4.16) | ⬜ |
+| 4.18.34 | E — audit 3.1 (could) | Editor | `editorProps`, `parseOptions`, `enableInputRules` / `enablePasteRules`, `textDirection`, `autofocus`; form `name` (hidden input) (with 4.16) | ✅ |
 | 4.18.35 | E — audit 3.1 (could, **ADR**) | Editor | `extensions` pass-through (tables, mentions), `BubbleMenu` / `FloatingMenu` / `useEditor` (with 4.16: new Tiptap extension dependencies, schema and sanitizer impact) | ⬜ |
 | 4.18.36 | E — audit 3.1 (should) | Chip | link chips: `component="a"` / `href` on the action (clickable) | ✅ |
 | 4.18.37 | E — audit 3.1 (should) | Snackbar | right to left: Toaster `dir`, logical properties in `snackbar.css` (with 4.13) | ✅ |
@@ -173,6 +173,8 @@ then 4.22–4.24, then 4.25 with its ADR).
 **Notes:** batch A merged 2026-11-10. Behavior changes to mention in the release notes: Autocomplete `selectOnFocus` follows MUI (the first click in a non-free-solo field selects its text); Slider Page Up / Down move by `shiftStep` (default 10) instead of 10 steps. Budgets: all CSS 51.6 of 52 kB, `owlky.js` 187.1 of 190 kB.
 
 **Notes:** batches B and C merged 2026-11-10. Left: 4.18.44 Dialog `transitionDuration` (waits for 5.1), 4.18.46 SwipeableDrawer (no shared swipe helper yet; the Snackbar's is toast-specific), 4.18.70 tree virtualization (needs an ADR; `itemChildrenIndentation` is done). Release-note behavior changes: Snackbar toasts that can be swiped show a close button unless `closeButton={false}` (WCAG 2.5.7); `toast.promise` returns a boxed id with `unwrap()` (compare with `id.valueOf()`); Tree view arrow keys, Home / End and typeahead skip disabled items unless `disabledItemsFocusable`; Tooltip `enterNextDelay` defaults to `enterDelay`; React Dialog / Drawer `keepMounted` defaults to `true`. Budgets: `owlky.js` 195.1 of 200 kB, all CSS 52.6 of 56 kB.
+
+**Notes:** batch D merged 2026-11-10 (ADR-0050: Tiptap table, mention and suggestion packages, Floating UI stubbed in `owlky-editor.js`; 4.18.34 shipped with 4.16). Release-note behavior changes: Walktour waits up to 1000 ms for a missing target (`targetWaitTimeout={0}` for the old skip), scrolls with an eased 300 ms animation and skips fixed targets, and fires `step:after` before the next step's change; Editor Alt+F10 moves to the toolbar or the bubble menu, part ids derive from `id`; every Data grid root writes `data-ok-row-grouping-column-mode="single"`, date columns add year and quarter fields to the pivot panel, `"footer"` aggregation positions now render, the pivot panel's fields sit in four sections. Budgets: `owlky.js` 200.0 of 205 kB, all CSS 53.0 of 56 kB, editor IIFE 155.1 of 163 kB. Watch list (local, under load, pass alone): React Toaster auto-close, HTML Tooltip "instance show / hide", HTML Dialog, Firefox data grid docs "fits a phone".
 
 ## Phase 5 — Motion full version (own ADR)
 
