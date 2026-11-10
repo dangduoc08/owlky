@@ -100,14 +100,14 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.19 | E — ApexCharts Premium (should) | Chart | crossfilter between charts of a `group` (a slice click or a brush filters the others; Linked Views / Highlight Filter) | ⬜ |
 | 4.18.20 | E (could) | Chart | measure ruler (span · free, keyboard alternative, pinned rulers, `clearMeasures`), draggable annotations that report data coordinates (Ink) | ⬜ |
 | 4.18.21 | E — ApexCharts v8 (should: waterfall, dumbbell first) | Chart | new types `waterfall`, `dumbbell`, `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` (prop-level mapping in 3.1) | ⬜ |
-| 4.18.22 | E — audit 3.1 (should) | Button, Icon button, Fab (+ Button group) | polymorphic `component` / `LinkComponent` (router links); Icon button `href` (icon links); Button group `component` | ⬜ |
+| 4.18.22 | E — audit 3.1 (should) | Button, Icon button, Fab (+ Button group) | polymorphic `component` / `LinkComponent` (router links); Icon button `href` (icon links); Button group `component` | 🔄 |
 | 4.18.23 | E — audit 3.1 (should) | Autocomplete | `readOnly`, `onHighlightChange`, `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, configurable `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | ✅ |
 | 4.18.24 | E — audit 3.1 (could) | Autocomplete | `renderValue` (custom chips), `clearIcon` / `popupIcon` / `forcePopupIcon`, object values (`getOptionLabel` / `isOptionEqualToValue` / `getOptionKey` / `getOptionValue`), public `useAutocomplete` / `createFilterOptions` | ✅ |
-| 4.18.25 | E — audit 3.1 (should) | Text field | FormControl props `hiddenLabel`, `focused`, `component`; InputAdornment `disablePointerEvents`, `component` | ⬜ |
+| 4.18.25 | E — audit 3.1 (should) | Text field | FormControl props `hiddenLabel`, `focused`, `component`; InputAdornment `disablePointerEvents`, `component` | 🔄 |
 | 4.18.26 | E — audit 3.1 (could) | Text field (+ Select) | standalone `InputBase` / `OutlinedInput` (`notched`) / `FilledInput` (`disableUnderline`) / `Input`, `inputComponent` | ⬜ |
-| 4.18.27 | E — audit 3.1 (should) | Select | InputBase `startAdornment` / `endAdornment` | ⬜ |
+| 4.18.27 | E — audit 3.1 (should) | Select | InputBase `startAdornment` / `endAdornment` | 🔄 |
 | 4.18.28 | E — audit 3.1 (could) | Slider | `tabIndex` | ✅ |
-| 4.18.29 | E — audit 3.1 (should) | Date pickers (fields) | `clearButtonPosition`, `openPickerButtonPosition`, public `startAdornment` / `endAdornment`, `shouldRespectLeadingZeros`, `fieldRef` (field API), TextField props `color` / `margin` / `hiddenLabel` / `focused`, `selectedSections` `"all"` / section type | ⬜ |
+| 4.18.29 | E — audit 3.1 (should) | Date pickers (fields) | `clearButtonPosition`, `openPickerButtonPosition`, public `startAdornment` / `endAdornment`, `shouldRespectLeadingZeros`, `fieldRef` (field API), TextField props `color` / `margin` / `hiddenLabel` / `focused`, `selectedSections` `"all"` / section type | 🔄 |
 | 4.18.30 | E — audit 3.1 (could) | Date pickers | range fields `dateSeparator`; calendars and clocks `focusedView` / `onFocusedViewChange`; TimeClock `showViewSwitcher`; static pickers `displayStaticWrapperAs` | ⬜ |
 | 4.18.31 | E — audit 3.1 (could) | Upload | `dragFileRejections` (MIME / surplus rejections during a drag) | ✅ |
 | 4.18.32 | E — audit 3.1 (could) | Code editor | DiffEditor `line` | ⬜ |
