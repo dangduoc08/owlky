@@ -24,6 +24,7 @@ import {
   type ChartEdgeStyle,
   type ChartHierarchyNode,
   type ChartLayoutType,
+  type ChartLeaf,
   chartHierarchy,
   chartHierarchyTable,
   isHierarchyChart,
@@ -61,6 +62,7 @@ import {
   isCircularChart,
   isWholeChart,
 } from "./chart-model.js";
+import { layoutSunburst } from "./chart-partition.js";
 import { layoutCircular, layoutRadar } from "./chart-polar.js";
 import {
   type ChartOrientation,
@@ -113,6 +115,18 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly enableExpandCollapse?: boolean | undefined;
   /** Tree charts: ids of the nodes whose children are hidden. */
   readonly collapsedNodes?: readonly string[] | undefined;
+  /** Sunburst charts: the node zoomed into (an id; `null`: none). */
+  readonly drillNode?: string | null | undefined;
+  /** Sunburst charts: clicks, Enter and Space don't zoom into nodes. */
+  readonly disableZoomOnClick?: boolean | undefined;
+  /** Sunburst charts: the hole in % of the radius. Default 15. */
+  readonly innerSize?: number | undefined;
+  /** Sunburst charts: the gap between arcs in px. Default 1. */
+  readonly spacing?: number | undefined;
+  /** Sunburst charts: shallow branches `extend` to the edge (default) or `stop`. */
+  readonly leaf?: ChartLeaf | undefined;
+  /** Sunburst charts: how much paler each level gets (0 to 1). Default 0.14. */
+  readonly tint?: number | undefined;
   /** Stock charts (ADR-0047): indicators of the first series (overlays and panes). */
   readonly indicators?: readonly ChartIndicator[] | undefined;
   /** Stock charts: a navigator under the panes (the whole axis, the zoom as a brush). */
@@ -532,23 +546,45 @@ function renderHierarchy(input: ChartRenderInput): ChartRender {
   const data = chartData({ type: input.type, series: [] });
   const format = chartFormat(data, input);
   const hierarchy = chartHierarchy(input);
-  const layout = layoutTree(
-    hierarchy,
-    {
-      width: input.width,
-      height: input.height,
-      direction: input.direction,
-      layoutType: input.layoutType,
-      edgeStyle: input.edgeStyle,
-      markerSize: input.markerSize,
-      collapsed: input.collapsedNodes,
-      expandCollapse: input.enableExpandCollapse,
-      dataLabels: input.dataLabels,
-      startAngle: input.startAngle,
-      endAngle: input.endAngle,
-    },
-    format,
-  );
+  const partition = {
+    width: input.width,
+    height: input.height,
+    drill: input.drillNode,
+    disableZoomOnClick: input.disableZoomOnClick,
+    leaf: input.leaf,
+    spacing: input.spacing,
+    tint: input.tint,
+    dataLabels: input.dataLabels,
+  };
+  const layout =
+    input.type === "sunburst"
+      ? layoutSunburst(
+          hierarchy,
+          {
+            ...partition,
+            innerSize: input.innerSize,
+            startAngle: input.startAngle,
+            endAngle: input.endAngle,
+          },
+          format,
+        )
+      : layoutTree(
+          hierarchy,
+          {
+            width: input.width,
+            height: input.height,
+            direction: input.direction,
+            layoutType: input.layoutType,
+            edgeStyle: input.edgeStyle,
+            markerSize: input.markerSize,
+            collapsed: input.collapsedNodes,
+            expandCollapse: input.enableExpandCollapse,
+            dataLabels: input.dataLabels,
+            startAngle: input.startAngle,
+            endAngle: input.endAngle,
+          },
+          format,
+        );
   return {
     data,
     format,

@@ -13,7 +13,7 @@ texts. ADR-0047 adds the commercial add-ons' features (behavior and option names
 charts (ApexSankey, phase 2.1) and stock charts (ApexStock, phase 2.2: indicators, panes, a
 navigator). Roadmap 4.18.21 adds ApexCharts v8's waterfall and dumbbell charts; 4.18.19 a crossfilter
 between the charts of a group (ADR-0054). Roadmap 4.18.7 adds tree charts (ApexTree layouts in the
-SVG engine, ADR-0058). Upstream: ApexCharts (`react-apexcharts`, ADR-0015), ApexSankey, ApexStock
+SVG engine, ADR-0058) and 4.18.21 the sunburst on the same hierarchy model. Upstream: ApexCharts (`react-apexcharts`, ADR-0015), ApexSankey, ApexStock
 and ApexTree.
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
@@ -147,11 +147,20 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
         + circle[data-ok-chart-tree-node][data-ok-color][data-ok-collapsed]?×n (preorder)
       g[data-ok-chart-active] › path[data-ok-chart-active-path][data-ok-color]* (root → node) + circle[data-ok-chart-active-node]
       g[data-ok-chart-data-labels] › text[data-ok-chart-node-label][transform=rotate(…)]? (radial leaves)
+    Sunburst (ADR-0058; root [data-ok-inner-size]?[data-ok-spacing]?[data-ok-leaf]?[data-ok-tint]?
+      [data-ok-start-angle]?[data-ok-end-angle]?[data-ok-disable-zoom-on-click]?[data-ok-drill-node]?):
+      g[data-ok-chart-series][data-ok-type=sunburst] › path[data-ok-chart-arc][fill-opacity][stroke-width][data-ok-color]×n
+        (preorder; the drilled node first, as the center disc)
+      g[data-ok-chart-data-labels] › text[data-ok-chart-partition-label="inside|plain"][transform=rotate(…)]? (before the active group)
+      g[data-ok-chart-active] › path[data-ok-chart-active-node] (the arc's outline)
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
         + div[data-ok-chart-tooltip-rows]
         div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color][data-ok-shape]?[data-ok-pattern]? + span + span[data-ok-chart-tooltip-value]
+  div[data-ok-chart-drill]                               (sunburst charts unless disableZoomOnClick; before the plot)
+    button[type=button][data-ok-chart-drill-up][hidden]? › "Back" (localeText `drillUp`; hidden while not drilled)
+    span[data-ok-chart-drill-path][role=status] › the drilled path ("Storage › Backups"; empty at the top)
   div[data-ok-chart-filter]                              (crossfilter, 4.18.19: charts with data-ok-crossfilter)
     button[type=button][data-ok-chart-filter-clear][hidden]? › "Clear filter" (hidden while the group has no filter)
     span[data-ok-chart-filter-status][role=status]       (visually hidden; announces this chart's filter changes)
@@ -178,9 +187,9 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
       tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
         + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
-    Tree: thead › tr › th[scope=col][data-ok-part="name|parent|y"] (y only when a node has a value);
+    Tree, sunburst: thead › tr › th[scope=col][data-ok-part="name|parent|y"] (y only when a node has a value);
       one row per node in preorder: tbody › tr › th[scope=row][data-ok-value]? (id when it differs
-      from the name)[data-ok-color]? (own color) + td[data-ok-value]? (the parent's name, its id
+      from the name)[data-ok-color]? (where a color starts: own, or the palette on roots and a single root's children) + td[data-ok-value]? (the parent's name, its id
       when it differs; empty for roots) + td[data-ok-value]? (value; parents: the sum)
   ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
     li[data-ok-annotation="x|y|point"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]? › label text
@@ -359,6 +368,22 @@ Tree geometry (core `chart-hierarchy.ts`, `chart-tree.ts`, ADR-0058):
   through the middle depth), `straight`. Nodes are circles of `markerSize` (default 5, 2–20).
   `dataLabels`: the value after the name (when values are given).
 
+Sunburst geometry (core `chart-partition.ts`, ADR-0058):
+- Spans: the roots share `startAngle` → `endAngle` (default a full turn) by value, each node its
+  parent's span by value (ApexCharts `partition: "normalize"`); nodes of value 0 are not drawn.
+  The rings fill the SVG (a part of a turn is fitted by its bounding box), radius 2px inside it.
+- Rings: an `innerSize` hole (default 15%, 0–90), then one ring per level to the deepest drawn;
+  `leaf: extend` (default) stretches leaves to the edge, `stop` ends them at their ring. Arcs are
+  `slicePath` shapes with a paper stroke of `spacing` px (default 1, at most 8; an attribute, CSS
+  never sets it) and `fill-opacity` = max(0.3, 1 − `tint` × levels below where the color starts)
+  (default tint 0.14; an attribute).
+- Drill (`drillNode`, a node with children; others are ignored): the node is a center disc (radius
+  max(hole, 15%)) and its subtree fills the rings. `up` is its parent's id (`null` for a root).
+- Labels (12px, estimated): on the center disc across it; on arcs of at least 8° along the radius
+  (room: the ring's thickness − 8px) or along the ring (room: the chord whose sagitta stays inside
+  the ring), whichever is larger, upright; left out without room for two characters and an
+  ellipsis; white on shades from 0.6, primary text below. `dataLabels`: the value after the name.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -382,7 +407,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line) or `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML) or `sunburst` (the same hierarchy as rings, each node an arc sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -447,6 +472,11 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `layoutType` | `data-ok-layout-type="…"` | style | `tree` `cluster` | — | Tree charts: `tree` (a tidy tree, the default) or `cluster` (a dendrogram: every leaf on the last level). |
 | `edgeStyle` | `data-ok-edge-style="…"` | style | `orthogonal` `curved` `straight` | — | Tree charts: links with right angles (`orthogonal`, the default), `curved` or `straight`. |
 | `enableExpandCollapse` | `data-ok-enable-expand-collapse` | flag | boolean | off | Tree charts: a click, Enter or Space on a node with children hides or shows them. |
+| `innerSize` | `data-ok-inner-size="…"` | number | number | — | Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15). |
+| `spacing` | `data-ok-spacing="…"` | number | number | — | Sunburst charts: the gap between arcs in px (default 1). |
+| `leaf` | `data-ok-leaf="…"` | style | `extend` `stop` | — | Sunburst charts: branches that end before the deepest level `extend` to the edge (the default) or `stop` at their level. |
+| `tint` | `data-ok-tint="…"` | number | number | — | Sunburst charts: how much paler each level is than the level its color starts at (0 to 1; default 0.14). |
+| `disableZoomOnClick` | `data-ok-disable-zoom-on-click` | flag | boolean | off | Sunburst charts: a click, Enter or Space on a node doesn't zoom into it. |
 | `crossfilter` | `data-ok-crossfilter="…"` | style | `filter` `highlight` | — | Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
@@ -616,6 +646,14 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   or shows them (HTML `ok:chart:expand`, cancelable; React `onCollapsedNodesChange`); the node stays
   active. The state is `data-ok-collapsed-nodes` on the root (`;`-separated ids, written by React
   and the runtime; authors may set it).
+- Sunburst drill (ADR-0058, ApexCharts `zoomOnClick`): a click, Enter or Space on an arc with
+  children zooms into it; on the center disc it zooms out one level; Escape (before hiding the
+  tooltip) and **Back** zoom out one level too; the acted-on node stays active; at the top,
+  **Back** hides and the focus moves to the plot. The state is `data-ok-drill-node` on the root
+  (written by React and the runtime; authors may set it). HTML `ok:chart:drill` (cancelable,
+  before the change); React `drillNode` / `defaultDrillNode` / `onDrillNodeChange`.
+  `disableZoomOnClick` removes the controls and the drill keys (a set `drillNode` still shows).
+  The drill row keeps its height while hidden, so the plot never moves under the pointer.
 - Stock charts: one tooltip per date lists every visible series of every pane (OHLC, volume, each
   indicator); the crosshair band runs through all panes; the legend toggles indicators. A press in
   the navigator (±4px) works like a brush on the zoom: inside the window moves it, its edges (8px)
@@ -642,7 +680,9 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | Arrows (tree) | Toward the leaves: the first child; toward the root: the parent; across: the next / previous node drawn on the level (crossing parents). Top trees: Down / Up, Right / Left; bottom: Up / Down; left: Right / Left, Down / Up; right: Left / Right; radial: Right / Left out and in, Down / Up across |
 | Home / End | First / last (cells: top-left / bottom-right; trees: the first root / the last node) |
 | Enter / Space | Selects the active category's points, slice, ring, cell or point; pressed again, clears them (not on Sankey, hierarchy or brush charts). Trees with `enableExpandCollapse`: hides or shows the node's children |
-| Escape | Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
+| Arrows (sunburst) | Right / Left: the first child / the parent; Down / Up: the next / previous arc drawn on the ring |
+| Enter / Space (sunburst) | Zooms into the active arc's branch; on the center disc, zooms out one level |
+| Escape | Sunbursts: zooms out one level first. Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
 | `+` / `=`, `-` | Zoom in / out around the middle (zoom and brush charts) |
 | Shift + Left / Right | Pans the zoomed range by one category (a tenth on numeric axes) |
 | `0` | Resets the zoom |
@@ -690,6 +730,8 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   localizable as Name / Parent / Value), so the hierarchy reads without the drawing; the tooltip
   announces the path, the level and the children (collapsed or not); collapsed nodes are hollow
   (not color alone); expanding needs no pointer (Enter / Space).
+- Sunburst drill needs no pointer (Enter / Space, Escape, a native **Back** button of 32px); the
+  drilled path is a visible polite status; the table keeps every node while zoomed.
 - Visually hidden tables are anchored at the bottom of the root and grow upward, so long tables never
   add page scroll (they did before phase 4: the page grew by the table's height).
 
@@ -700,17 +742,19 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   `ok:chart:active` (detail `{ active: { kind: "index", index } | { kind: "mark", mark } | null }`),
   `ok:chart:zoom` (detail `{ range: { min, max } | null, reason: "user" | "group" | "brush" }`;
   cancelable for `user`), `ok:chart:expand` (tree charts, cancelable, detail
-  `{ id, expanded, collapsedNodes }`, before the change).
+  `{ id, expanded, collapsedNodes }`, before the change), `ok:chart:drill` (sunburst charts,
+  cancelable, detail `{ id: string | null, path: string[] }`, before the change).
 - Instance: `{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(f),
   refresh(), updateSeries(series, categories?), appendData(data, { categories?, limit? }),
   zoomRange, setZoomRange(range), exportChart(format), setLocaleText(text), selectedDataPoints,
   setSelectedDataPoints(list), toggleDataPointSelection(seriesIndex, dataPointIndex), filter,
-  clearFilter(), collapsedNodes, setCollapsedNodes(ids) }`;
+  clearFilter(), collapsedNodes, setCollapsedNodes(ids), drillNode, setDrillNode(id) }`;
   methods emit no events. `updateSeries` replaces the data (the current categories unless given);
   `appendData([{ data: [...] }, …])` appends points per series in order, `categories` adds theirs,
   `limit` keeps the last n (a sliding window). `refresh()` reads the table again.
 - React: `collapsedNodes` (controlled) / `defaultCollapsedNodes` / `onCollapsedNodesChange(ids)`
-  (tree charts); `crossfilter`, `onFilterChange(categories, own)`; `onDataPointSelection(detail)`, `selectedDataPoints` (controlled) /
+  (tree charts); `drillNode` (controlled) / `defaultDrillNode` / `onDrillNodeChange(id)` (sunburst
+  charts); `crossfilter`, `onFilterChange(categories, own)`; `onDataPointSelection(detail)`, `selectedDataPoints` (controlled) /
   `defaultSelectedDataPoints`; `onHiddenSeriesChange(hidden)`, `onActiveChange(active)`; `hiddenSeries` (controlled) /
   `defaultHiddenSeries`; `zoomRange` / `defaultZoomRange` / `onZoomRangeChange(range, reason)` (also
   for group and brush changes, so controlled charts follow); `ref` → the `figure` (core
@@ -808,7 +852,14 @@ Option areas not covered by the table above:
 | `plotOptions.bar.dumbbellColors` (`[[start, end], …]`) | `dumbbellColors` (palette names; HTML `data-ok-dumbbell-colors="start end; …"`) | kept (4.18.21) | pair n for series n, later series the first pair; CSS colors: not applicable (tokens) |
 | `markers.size` on dumbbells | `markerSize` (default 6) | renamed (4.18.21) | |
 | dumbbell line style (`stroke.width`, `stroke.colors`), `plotOptions.bar.dumbbell.*` styling | — | not applicable | fixed by the design: the series color at 0.48, 4px; start ring, end disc |
-| ApexCharts v8 types `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | not built in this batch (waterfall and dumbbell first); prop-level mapping here when built |
+| `chart.type: "sunburst"` (ApexCharts 8, `apexcharts/sunburst`) | `type="sunburst"` | kept (4.18.21, ADR-0058) | |
+| sunburst `series[0].data` `{ x, y, children, color }`, `drilldown.series` adapter | `hierarchy` (`{ name, value, children, color }`; `x` / `y` accepted) · HTML one row per node with its parent | renamed (ADR-0058) | the drilldown adapter: not applicable (nest the data) |
+| `plotOptions.sunburst.innerSize` (`'15%'` or px), `startAngle`, `endAngle`, `spacing`, `leaf` (`extend` · `stop`), `tint` | `innerSize` (%), `startAngle`, `endAngle`, `spacing` (px), `leaf`, `tint` | kept | pixel `innerSize`: not applicable (a share of the radius) |
+| `plotOptions.sunburst.zoomOnClick` (default `true`), breadcrumb, a click on the center to zoom out | `disableZoomOnClick` (zoom on by default); `drillNode` / `ok:chart:drill`; **Back** + the path (`data-ok-chart-drill`); Escape | renamed (ADR-0058) | `drilldown.breadcrumb` `formatter` / `position` / offsets: not built |
+| `plotOptions.sunburst.partition` (`normalize` · `strict`) | always `normalize` | not built: `strict` | parents are the sum of their children |
+| `plotOptions.sunburst.borderRadius`, `offsetX` / `offsetY`, `dataLabels.style.*`, `stroke` | — | not applicable | fixed by the design and tokens; labels follow `dataLabels` (values) and the 8° minimum (`minAngleToShow`) |
+| `plotOptions.sunburst.dataLabels.show` | always on (names where they fit); `dataLabels` adds the values | renamed | |
+| ApexCharts v8 types `streamgraph`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | `type="tree"` | kept (4.18.7, ADR-0058) | see "API mapping" (ApexTree rows) |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
@@ -914,6 +965,9 @@ Option areas not covered by the table above:
 - Tree story (4.18.7, ADR-0058): Tree (a tidy top tree with values, data labels and
   expand / collapse; a radial dendrogram with curved links; a left tree with curved links and a
   node collapsed by default — `data-ok-collapsed-nodes` on the HTML root).
+- Sunburst story (4.18.21, ADR-0058): Sunburst (cloud spend with drill; a half circle with data
+  labels, a 40% hole, `leaf="stop"` and own colors, without zoom on click). React renders the drill
+  row; the runtime builds the same markup.
 - Crossfilter story (4.18.19): Crossfilter (a highlight column chart with several selections, a
   filtered column chart and a filtered donut in one group). At rest every chart renders its
   filter controls with the button hidden and an empty status, in both frameworks.

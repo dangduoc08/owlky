@@ -23,6 +23,7 @@ import {
   type ChartHierarchyNode,
   type ChartIndicator,
   type ChartLayoutType,
+  type ChartLeaf,
   type ChartLegend,
   type ChartLegendAlign,
   type ChartLink,
@@ -52,6 +53,8 @@ import {
   chartAnnotationItems,
   chartAttributes,
   chartBrushCategories,
+  chartDrillLabels,
+  chartDrillUp,
   chartFilterCategories,
   chartFilterLabels,
   chartFilterText,
@@ -146,6 +149,25 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   defaultCollapsedNodes?: readonly string[] | undefined;
   /** Tree charts: called with the collapsed ids after a node is expanded or collapsed. */
   onCollapsedNodesChange?: ((collapsedNodes: string[]) => void) | undefined;
+  /**
+   * Sunburst charts, controlled: the id of the node zoomed into (`null`: none). A click, Enter or
+   * Space on a node with children zooms into it; on the zoomed node, Escape or **Back** zooms out.
+   */
+  drillNode?: string | null | undefined;
+  /** Sunburst charts: the node zoomed into at first (uncontrolled). */
+  defaultDrillNode?: string | null | undefined;
+  /** Sunburst charts: called with the new node (`null` at the top) when the chart zooms. */
+  onDrillNodeChange?: ((drillNode: string | null) => void) | undefined;
+  /** Sunburst charts: clicks, Enter and Space don't zoom into nodes. */
+  disableZoomOnClick?: boolean | undefined;
+  /** Sunburst charts: the hole in the center in % of the radius (0 to 90). Default 15. */
+  innerSize?: number | undefined;
+  /** Sunburst charts: the gap between arcs in px. Default 1. */
+  spacing?: number | undefined;
+  /** Sunburst charts: branches that end early `extend` to the edge or `stop`. Default `"extend"`. */
+  leaf?: ChartLeaf | undefined;
+  /** Sunburst charts: how much paler each level is (0 to 1). Default 0.14. */
+  tint?: number | undefined;
   /**
    * Stock charts: indicators of the first series (the price), such as `{ type: "sma", period: 20 }`.
    * Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price;
@@ -444,6 +466,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     collapsedNodes,
     defaultCollapsedNodes = NO_IDS,
     onCollapsedNodesChange,
+    drillNode,
+    defaultDrillNode = null,
+    onDrillNodeChange,
+    disableZoomOnClick,
+    innerSize,
+    spacing,
+    leaf,
+    tint,
     indicators,
     navigator,
     paneHeight,
@@ -609,6 +639,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     layoutType,
     edgeStyle,
     enableExpandCollapse,
+    disableZoomOnClick,
+    innerSize,
+    spacing,
+    leaf,
+    tint,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -694,6 +729,17 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     defaultValue: defaultCollapsedNodes,
     onChange: onCollapsedNodesChange as ((value: readonly string[]) => void) | undefined,
   });
+  // Sunburst charts: the drilled node, controlled or kept here.
+  const [drill, setDrill] = useControllableState<string | null>({
+    value: drillNode,
+    defaultValue: defaultDrillNode,
+    onChange: onDrillNodeChange,
+  });
+  const zoomOnClickOff = attributes["data-ok-disable-zoom-on-click"] !== undefined;
+  const validInnerSize = number("data-ok-inner-size");
+  const validSpacing = number("data-ok-spacing");
+  const validLeaf = attributes["data-ok-leaf"] as ChartLeaf | undefined;
+  const validTint = number("data-ok-tint");
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -736,6 +782,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         edgeStyle: validEdgeStyle,
         enableExpandCollapse: expandCollapse,
         collapsedNodes: collapsed,
+        drillNode: drill,
+        disableZoomOnClick: zoomOnClickOff,
+        innerSize: validInnerSize,
+        spacing: validSpacing,
+        leaf: validLeaf,
+        tint: validTint,
         indicators,
         navigator: navigatorOn,
         paneHeight: validPaneHeight,
@@ -835,6 +887,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validEdgeStyle,
       expandCollapse,
       collapsed,
+      drill,
+      zoomOnClickOff,
+      validInnerSize,
+      validSpacing,
+      validLeaf,
+      validTint,
       indicators,
       navigatorOn,
       validPaneHeight,
@@ -1154,7 +1212,16 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       setCollapsed(toggleChartCollapsed(collapsed, action.id));
       return true;
     }
-    return false;
+    if (!layout.hierarchy?.drillable) return false;
+    focusRef.current = action.focus;
+    setDrill(action.id);
+    return true;
+  };
+  /** The **Back** button: one level up; at the top the button hides and the plot takes focus. */
+  const drillUp = () => {
+    const action = chartDrillUp(layout);
+    act(action);
+    if (action?.id === null) plotRef.current?.focus();
   };
   // After an action, the node acted on stays active (its mark may have moved).
   useLayoutEffect(() => {
@@ -1210,6 +1277,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       select(
         marks.map((mark) => chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number])),
       );
+      return;
+    }
+    if (event.key === "Escape" && act(chartDrillUp(layout))) {
+      // Sunburst charts: one level up before anything else.
+      event.preventDefault();
       return;
     }
     if (event.key === "Escape") {
@@ -1299,6 +1371,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         gridColumnColors,
         dumbbellColors,
         collapsedNodes: collapsed,
+        drillNode: drill,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
@@ -1363,6 +1436,21 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
               </span>
             );
           })}
+        </div>
+      )}
+      {layout.hierarchy?.drillable && layout.hierarchy.type !== "tree" && (
+        <div data-ok-chart-drill="">
+          <button
+            type="button"
+            data-ok-chart-drill-up=""
+            hidden={layout.hierarchy.drill === null}
+            onClick={drillUp}
+          >
+            {localeText?.drillUp ?? chartDrillLabels.drillUp}
+          </button>
+          <span data-ok-chart-drill-path="" role="status">
+            {layout.hierarchy.path.join(" › ")}
+          </span>
         </div>
       )}
       {/* A focusable group (biome.json override): arrow keys move through the chart's values. */}

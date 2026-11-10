@@ -34,6 +34,10 @@
  *               Tree (ADR-0058): path[data-ok-chart-tree-link] + circle[data-ok-chart-tree-node]
  *                 [data-ok-collapsed]? + text[data-ok-chart-node-label], path[data-ok-chart-active-path]
  *                 (the lineage) + circle[data-ok-chart-active-node] in the active group;
+ *               Sunburst (ADR-0058): path[data-ok-chart-arc][fill-opacity][stroke-width] +
+ *                 text[data-ok-chart-partition-label="inside|plain"], path[data-ok-chart-active-node];
+ *             div[data-ok-chart-drill] › button[data-ok-chart-drill-up] + span[data-ok-chart-drill-path]
+ *               (sunburst charts, before the plot);
  *                 [data-ok-sparkline] roots: no axes or legend, the plot fills the container
  *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
  *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? + div[data-ok-chart-tooltip-rows]
@@ -1084,6 +1088,55 @@
     white-space: nowrap;
   }
 
+  /* Drill controls (ADR-0058): a Back button and the drilled path (a status that announces the
+     change) before the plot. The row keeps its height while not drilled, so the plot never moves
+     under the pointer when the button appears. */
+  :where([data-ok-chart-drill]) {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    min-width: 0;
+    min-height: calc(var(--ok-spacing) * 8);
+  }
+
+  :where([data-ok-chart-drill-up]) {
+    min-height: calc(var(--ok-spacing) * 8);
+    margin: 0;
+    padding: 0 calc(var(--ok-spacing) * 2);
+    border: 1px solid var(--ok-divider);
+    border-radius: var(--ok-radius-sm);
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    cursor: pointer;
+  }
+
+  :where([data-ok-chart-drill-up][hidden]) {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-chart-drill-up]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-chart-drill-up]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-chart-drill-path]) {
+    overflow: hidden;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   :where([data-ok-chart-tool-icon]) {
     fill: none;
     stroke: currentcolor;
@@ -1159,6 +1212,25 @@
     stroke: var(--ok-text-primary);
     stroke-width: 2px;
     pointer-events: none;
+  }
+
+  /* Sunburst arcs (ADR-0058): the branch color, shaded per level by a fill-opacity attribute and
+     separated by a paper stroke whose width is an attribute (spacing): CSS never sets either. */
+  :where([data-ok-chart-arc]) {
+    fill: var(--_ok-chart-c);
+    stroke: var(--ok-bg-paper);
+    stroke-linejoin: round;
+  }
+
+  :where([data-ok-chart-partition-label]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-partition-label="inside"]) {
+    fill: var(--ok-palette-common-white);
   }
 
   /* Waterfall connectors (4.18.21): a dashed line from each bar's end to the next bar. */

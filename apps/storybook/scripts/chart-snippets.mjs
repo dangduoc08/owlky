@@ -41,10 +41,12 @@ function figure(props, html = []) {
         props.xType ??
         (props.type === "scatter" || props.type === "bubble" ? "numeric" : "category"),
     }),
-    // Tree charts write their collapsed nodes (React: the state, at first the default).
+    // Tree charts write their collapsed nodes, sunbursts their drilled node (React: the state,
+    // at first the default).
     ...chartTextAttributes({
       ...props,
       collapsedNodes: props.collapsedNodes ?? props.defaultCollapsedNodes,
+      drillNode: props.drillNode ?? props.defaultDrillNode,
     }),
   };
   const { table } = renderChart({

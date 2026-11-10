@@ -68,6 +68,7 @@ const STORIES = [
   "waterfall",
   "dumbbell",
   "tree",
+  "sunburst",
   "crossfilter",
 ];
 
@@ -700,6 +701,58 @@ test("chart crossfilter: after the same actions, React and HTML draw the same SV
     await page.keyboard.press("Escape");
     await page.mouse.move(0, 0);
     await expect(page.locator("[data-ok-chart-filter-band]")).toHaveCount(1);
+    return svgTree(page);
+  };
+  const react = await after("react");
+  const html = await after("html");
+  expect(html).toEqual(react);
+});
+
+// Roadmap 4.18.21 (ADR-0058): sunburst charts.
+for (const impl of implementations) {
+  test.describe(`chart sunburst (${impl})`, () => {
+    test("Enter and clicks zoom into a branch; Escape and Back zoom out", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "sunburst"));
+      const first = page.locator("[data-ok-chart]").first();
+      const title = first.locator("[data-ok-chart-tooltip-title]");
+      const back = first.getByRole("button", { name: "Back" });
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(14);
+      await expect(back).toBeHidden();
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("ArrowDown");
+      await expect(title).toHaveText("Storage");
+      await page.keyboard.press("Enter");
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(6);
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Storage");
+      await expect(back).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(14);
+      await first.locator("[data-ok-chart-arc]").nth(10).click();
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Network");
+      await back.click();
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(14);
+      await expect(back).toBeHidden();
+      const table = page.getByRole("table", { name: /^Cloud spend by service/ });
+      await expect(table.getByRole("row")).toHaveCount(15);
+    });
+  });
+}
+
+test("chart sunburst: after drilling, React and HTML draw the same SVG", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== "chromium", "Structure is browser-independent.");
+  const after = async (impl: "react" | "html") => {
+    await openStory(page, storyId(impl, "chart", "sunburst"));
+    await page.locator("[data-ok-chart-plot]").first().focus();
+    await page.keyboard.press("Home");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("[data-ok-chart-drill-path]").first()).toHaveText("Storage");
+    // Leaving the plot hides the tooltip and its highlight.
+    await page.locator("[data-ok-chart-plot]").first().blur();
     return svgTree(page);
   };
   const react = await after("react");

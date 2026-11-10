@@ -24,7 +24,7 @@ palette tokens, strict CSP, no `innerHTML`, no new runtime dependency, WCAG 2.2 
 2. **The HTML table lists nodes with their parent**, like Sankey's link rows: one row per node in
    preorder, the name as the row header, then the parent's name (empty for roots) and an optional
    value (`th[data-ok-part="name|parent|y"]`). Ids that differ from names go in `data-ok-value`
-   (on the node's cell and on parent cells), own colors in `data-ok-color`. A parent must come
+   (on the node's cell and on parent cells), colors in `data-ok-color` where they start (own colors, and the palette colors of the roots or a single root's children, so the HTML table draws the same colors as React's `colors` prop). A parent must come
    before its children; an unknown parent makes a root, so a table can't express a cycle. The table
    is also the accessible view: the hierarchy reads as "node, parent, value".
 3. **Colors** come from the palette: the roots — or the children of a single root — take `colors`

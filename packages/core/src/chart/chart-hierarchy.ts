@@ -65,9 +65,7 @@ export interface ChartHierarchyItem {
   /** Leaves: their value (1 each when no node has one); parents: the sum of their children. */
   readonly value: number;
   readonly color: ChartColor;
-  /** Whether the node's color was given (written on its table row). */
-  readonly givenColor: boolean;
-  /** Levels below the node where its color starts (tints, ADR-0058). */
+  /** Levels below the node where its color starts (0: it starts here; written in the table). */
   readonly tone: number;
   readonly depth: number;
   /** Index of the parent item, `-1` for roots. */
@@ -108,7 +106,6 @@ export function chartHierarchy(input: {
     own: number | null;
     value: number;
     color: ChartColor;
-    givenColor: boolean;
     tone: number;
     depth: number;
     parent: number;
@@ -140,7 +137,6 @@ export function chartHierarchy(input: {
       own: raw === null || raw < 0 ? null : raw,
       value: 0,
       color,
-      givenColor: isColor(entry.color),
       tone: isColor(entry.color) || starts || !up ? 0 : up.tone + 1,
       depth,
       parent,
@@ -188,7 +184,7 @@ export const chartHierarchyIndex = (hierarchy: ChartHierarchy, id: string | null
 
 /**
  * The data table: one row per node in preorder (the name as the row header, then its parent's
- * name and, when values are given, its value). Ids that differ from the names and own colors are
+ * name and, when values are given, its value). Ids that differ from the names and colors where they start are
  * cell attributes.
  */
 export function chartHierarchyTable(
@@ -222,7 +218,8 @@ export function chartHierarchyTable(
           text: item.name,
           attrs: {
             ...(item.id !== item.name ? { "data-ok-value": item.id } : {}),
-            ...(item.givenColor ? { "data-ok-color": item.color } : {}),
+            // Colors where they start (own or from the palette), so HTML draws the same ones.
+            ...(item.tone === 0 ? { "data-ok-color": item.color } : {}),
           },
         },
         cells,
@@ -332,6 +329,8 @@ export interface ChartTreeMark {
   readonly action?: "toggle" | "in" | "out" | undefined;
   /** Trees: the node's children are hidden. */
   readonly collapsed?: boolean | undefined;
+  /** Partitions: the names from the root to the node (the drill path when it is drilled). */
+  readonly path?: readonly string[] | undefined;
   readonly title: string;
   readonly rows: readonly {
     readonly name: string;
@@ -446,7 +445,15 @@ export function chartTreeMarkOf(layout: ChartLayout, id: string | null): number 
 /** What Enter or a click on a hierarchy mark does. */
 export type ChartHierarchyAction =
   | { readonly kind: "toggle"; readonly id: string }
-  | { readonly kind: "drill"; readonly id: string | null; readonly focus: string };
+  | {
+      readonly kind: "drill";
+      /** The node to zoom into (`null`: none). */
+      readonly id: string | null;
+      /** The names from the root to that node (empty for `null`). */
+      readonly path: readonly string[];
+      /** The node that stays active after the redraw. */
+      readonly focus: string;
+    };
 
 /** The action of a mark (`null`: none): expand or collapse a tree node, or drill in or out. */
 export function chartHierarchyAction(
@@ -456,15 +463,23 @@ export function chartHierarchyAction(
   const tree = mark === null ? undefined : layout.marks[mark]?.tree;
   if (!tree?.action) return null;
   if (tree.action === "toggle") return { kind: "toggle", id: tree.id };
-  if (tree.action === "in") return { kind: "drill", id: tree.id, focus: tree.id };
-  return { kind: "drill", id: layout.hierarchy?.up ?? null, focus: tree.id };
+  const path = tree.path ?? [];
+  if (tree.action === "in") return { kind: "drill", id: tree.id, path, focus: tree.id };
+  const up = layout.hierarchy?.up ?? null;
+  return { kind: "drill", id: up, path: up === null ? [] : path.slice(0, -1), focus: tree.id };
 }
 
 /** Escape and the back control: one level up from the drilled node (`null` when not drilled). */
 export function chartDrillUp(layout: ChartLayout): ChartHierarchyAction | null {
   const state = layout.hierarchy;
   if (!state?.drill) return null;
-  return { kind: "drill", id: state.up ?? null, focus: state.drill };
+  const up = state.up ?? null;
+  return {
+    kind: "drill",
+    id: up,
+    path: up === null ? [] : state.path.slice(0, -1),
+    focus: state.drill,
+  };
 }
 
 /** Collapsed ids after toggling one (kept in order, each once). */

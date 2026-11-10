@@ -30,7 +30,9 @@ export type ChartLocaleText = Readonly<
       // Crossfilter controls (4.18.19, ADR-0054).
       | "clearFilter"
       | "filter"
-      | "filterCleared",
+      | "filterCleared"
+      // Drill controls of sunburst charts (ADR-0058).
+      | "drillUp",
       string
     >
   >

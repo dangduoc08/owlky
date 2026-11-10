@@ -135,7 +135,7 @@ describe("chart hierarchy model", () => {
     expect(table.head.map((cell) => cell.attrs["data-ok-part"])).toEqual(["name", "parent", "y"]);
     expect(table.rows.map((row) => [row.header, ...row.cells])).toEqual([
       [
-        { text: "Root", attrs: { "data-ok-value": "root" } },
+        { text: "Root", attrs: { "data-ok-value": "root", "data-ok-color": "primary-dark" } },
         { text: "", attrs: {} },
         { text: "1,200", attrs: { "data-ok-value": "1200" } },
       ],
@@ -145,7 +145,7 @@ describe("chart hierarchy model", () => {
         { text: "1,200", attrs: { "data-ok-value": "1200" } },
       ],
       [
-        { text: "Leaf", attrs: { "data-ok-value": "Leaf-2" } },
+        { text: "Leaf", attrs: { "data-ok-value": "Leaf-2", "data-ok-color": "info" } },
         { text: "Root", attrs: { "data-ok-value": "root" } },
         { text: "0", attrs: {} },
       ],
@@ -202,12 +202,23 @@ describe("chart hierarchy model", () => {
         { ...(layout.marks[1] as ChartLayout["marks"][number]), tree: { ...tree, action: "out" } },
       ],
     };
-    expect(chartHierarchyAction(drilled, 0)).toEqual({ kind: "drill", id: "B", focus: "B" });
-    expect(chartHierarchyAction(drilled, 1)).toEqual({ kind: "drill", id: null, focus: "A" });
-    expect(chartDrillUp(drilled)).toEqual({ kind: "drill", id: null, focus: "A" });
+    expect(chartHierarchyAction(drilled, 0)).toEqual({
+      kind: "drill",
+      id: "B",
+      path: [],
+      focus: "B",
+    });
+    expect(chartHierarchyAction(drilled, 1)).toEqual({
+      kind: "drill",
+      id: null,
+      path: [],
+      focus: "A",
+    });
+    expect(chartDrillUp(drilled)).toEqual({ kind: "drill", id: null, path: [], focus: "A" });
     expect(chartHierarchyAction({ ...drilled, hierarchy: undefined }, 1)).toEqual({
       kind: "drill",
       id: null,
+      path: [],
       focus: "A",
     });
   });

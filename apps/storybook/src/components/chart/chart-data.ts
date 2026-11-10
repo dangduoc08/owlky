@@ -1765,4 +1765,78 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21 (ADR-0058): sunburst charts (ApexCharts v8 `sunburst`, `zoomOnClick`).
+  sunburst: {
+    title: "Sunburst",
+    props: {
+      label: "Cloud spend by service, thousands of dollars per month",
+      type: "sunburst",
+      valuePrefix: "$",
+      valueSuffix: "k",
+      height: 400,
+      hierarchy: [
+        {
+          name: "Compute",
+          children: [
+            { name: "Virtual machines", value: 42 },
+            { name: "Containers", value: 28 },
+            { name: "Functions", value: 9 },
+          ],
+        },
+        {
+          name: "Storage",
+          children: [
+            { name: "Objects", value: 21 },
+            { name: "Disks", value: 14 },
+            {
+              name: "Backups",
+              children: [
+                { name: "Daily", value: 5 },
+                { name: "Archive", value: 3 },
+              ],
+            },
+          ],
+        },
+        {
+          name: "Network",
+          children: [
+            { name: "Transfer", value: 12 },
+            { name: "CDN", value: 7 },
+          ],
+        },
+        { name: "Databases", value: 24 },
+      ],
+    },
+    more: [
+      {
+        label: "Support tickets by channel and topic this week",
+        type: "sunburst",
+        startAngle: -90,
+        endAngle: 90,
+        innerSize: 40,
+        leaf: "stop",
+        dataLabels: true,
+        disableZoomOnClick: true,
+        height: 260,
+        colors: ["info", "warning", "success"],
+        hierarchy: [
+          {
+            name: "Email",
+            children: [
+              { name: "Billing", value: 34 },
+              { name: "Login", value: 21 },
+            ],
+          },
+          {
+            name: "Chat",
+            children: [
+              { name: "Orders", value: 28 },
+              { name: "Returns", value: 12 },
+            ],
+          },
+          { name: "Phone", value: 18 },
+        ],
+      },
+    ],
+  },
 };

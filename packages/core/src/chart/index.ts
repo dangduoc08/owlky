@@ -214,6 +214,7 @@ export {
   parseChartNumber,
   readChartTable,
 } from "./chart-model.js";
+export { type ChartPartitionOptions, layoutSunburst } from "./chart-partition.js";
 export {
   type ChartOrientation,
   type ChartSankeyEdge,

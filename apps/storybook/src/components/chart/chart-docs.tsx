@@ -23,6 +23,7 @@ import multipleYAxesGroup from "../../../../../packages/html/src/components/char
 import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
 import stackTotalsGroup from "../../../../../packages/html/src/components/chart/examples/stack-totals-group.html?raw";
+import sunburstGroup from "../../../../../packages/html/src/components/chart/examples/sunburst-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
@@ -111,6 +112,7 @@ export function MonthlySales() {
 - **\`waterfall\`:** how a start value changes step by step into an end value. See "Show changes step by step".
 - **\`dumbbell\`:** two values per category, such as before and after, joined by a line. See "Compare two values per category".
 - **\`tree\`:** a hierarchy of nodes joined by links, such as teams or a site map. See "Show a hierarchy as a tree".
+- **\`sunburst\`:** a hierarchy as rings, each node an arc sized by its value. See "Show parts of a hierarchy as rings".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -676,7 +678,7 @@ export function PageLoadDumbbell() {
     body: `A tree chart draws a hierarchy, such as teams and their members or the sections of a website, as nodes joined by links. Set \`type\` to \`tree\` and describe the nodes instead of series:
 
 - **React:** pass \`hierarchy\`, a node or a list of root nodes. Each node is \`{ name, value, color, children }\`, and every field is optional. A node's \`id\` defaults to its name. Repeated names get a number, such as \`Other-2\`.
-- **HTML:** write one table row per node, in order, with each parent before its children. The node's name is the row header, then the parent's name and an optional value. Mark the column headers with \`data-ok-part="name"\`, \`"parent"\` and \`"y"\`. Leave the parent cell empty for a root. When an id differs from the name, put the id in \`data-ok-value\` on the node's cell and on the parent cells that point to it.
+- **HTML:** write one table row per node, in order, with each parent before its children. The node's name is the row header, then the parent's name and an optional value. Mark the column headers with \`data-ok-part="name"\`, \`"parent"\` and \`"y"\`. Leave the parent cell empty for a root. When an id differs from the name, put the id in \`data-ok-value\` on the node's cell and on the parent cells that point to it. Put a branch color in \`data-ok-color\` on the node's cell.
 
 A parent's value is the sum of its children. Nodes take their branch color: the children of the root (or each root, when there are several) take \`colors\` in order, then the chart palette. A node's own \`color\` applies to its whole subtree.
 
@@ -728,6 +730,70 @@ export function ProductTeams() {
       dataLabels
       height={360}
       hierarchy={teams}
+    />
+  );
+}`,
+  },
+  {
+    id: "sunburst",
+    title: "Show parts of a hierarchy as rings",
+    body: `A sunburst chart shows how a total splits into parts and their own parts, such as cloud spend by service. Each level is a ring, and each node is an arc of its parent, sized by its value. Set \`type\` to \`sunburst\` and describe the nodes as for a tree chart: \`hierarchy\` in React, or one table row per node with its parent in HTML. See "Show a hierarchy as a tree". The first ring holds the roots, and each root's branch keeps the root's color.
+
+- **\`innerSize\`:** the hole in the center, in percent of the radius (15 by default). Set it to \`0\` for a solid chart.
+- **\`startAngle\` and \`endAngle\`:** the part of the circle to fill, such as \`-90\` and \`90\` for a half circle.
+- **\`leaf\`:** branches that end before the deepest level \`extend\` to the edge (the default) or \`stop\` at their ring.
+- **\`spacing\`:** the gap between arcs in pixels (1 by default).
+- **\`tint\`:** how much paler each ring is than the one its color starts at, from 0 to 1 (0.14 by default).
+- **\`dataLabels\`:** adds each node's value after its name.
+
+Select an arc, or press Enter or Space on it, to zoom into its branch: it fills the center and its children fill the rings. Select the center, press Escape or select **Back** above the chart to zoom out one level. The path of the branch shows next to **Back**, and screen readers announce it. Set \`disableZoomOnClick\` to keep the chart still. In React, read and set the branch with \`drillNode\`, \`defaultDrillNode\` and \`onDrillNodeChange\`. In HTML, the branch's id is in \`data-ok-drill-node\`.
+
+Labels follow the radius or the ring, whichever leaves more room, and are left out on arcs that are too small. The tooltip and the data table keep every name and value.`,
+    html: `${snippetElement(sunburstGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const spend = [
+  {
+    name: "Compute",
+    children: [
+      { name: "Virtual machines", value: 42 },
+      { name: "Containers", value: 28 },
+      { name: "Functions", value: 9 },
+    ],
+  },
+  {
+    name: "Storage",
+    children: [
+      { name: "Objects", value: 21 },
+      { name: "Disks", value: 14 },
+      {
+        name: "Backups",
+        children: [
+          { name: "Daily", value: 5 },
+          { name: "Archive", value: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    name: "Network",
+    children: [
+      { name: "Transfer", value: 12 },
+      { name: "CDN", value: 7 },
+    ],
+  },
+  { name: "Databases", value: 24 },
+];
+
+export function CloudSpend() {
+  return (
+    <Chart
+      label="Cloud spend by service, thousands of dollars per month"
+      type="sunburst"
+      valuePrefix="$"
+      valueSuffix="k"
+      height={400}
+      hierarchy={spend}
     />
   );
 }`,
@@ -1269,6 +1335,7 @@ export function ChartLegendGrid() {
 - **\`ok:chart:select\`** fires for each value a click, Enter or Space selects or clears, with \`detail.seriesIndex\`, \`detail.dataPointIndex\`, \`detail.selected\` and \`detail.selectedDataPoints\`. See "Select data points".
 - **\`ok:chart:filter\`** fires when the group's crossfilter changes, with \`detail.categories\` (\`null\` when cleared) and \`detail.own\`. The instance has \`filter\` and \`clearFilter()\`. See "Filter linked charts".
 - **\`ok:chart:zoom\`** fires when the zoom changes, with \`detail.range\` (\`{ min, max }\` or \`null\`) and \`detail.reason\`: \`user\` for the chart's own gestures, keys and buttons (cancelable), \`group\` or \`brush\` when a linked chart zoomed it.
+- **\`ok:chart:drill\`** (cancelable) fires before a sunburst chart zooms into a branch or out of it, with \`detail.id\` (\`null\` at the top) and \`detail.path\`, the names from the root. The instance has \`drillNode\` and \`setDrillNode(id)\`.
 - **\`ok:chart:expand\`** (cancelable) fires before a click, Enter or Space hides or shows a tree node's children, with \`detail.id\`, \`detail.expanded\` and \`detail.collapsedNodes\`. The instance has \`collapsedNodes\` and \`setCollapsedNodes(ids)\`.
 - **Phase 4 methods:** \`zoomRange\`, \`setZoomRange(range)\` (its group and brushes follow), \`exportChart("svg" | "png" | "csv")\` (a promise that rejects outside a user gesture) and \`setLocaleText(text)\`.
 - **Selection methods:** \`selectedDataPoints\`, \`setSelectedDataPoints(list)\` and \`toggleDataPointSelection(seriesIndex, dataPointIndex)\`.
@@ -1672,6 +1739,39 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  sunburst: () => (
+    <Preview>
+      <Chart
+        label="Support tickets by channel and topic this week"
+        type="sunburst"
+        startAngle={-90}
+        endAngle={90}
+        innerSize={40}
+        leaf="stop"
+        dataLabels
+        disableZoomOnClick
+        height={260}
+        colors={["info", "warning", "success"]}
+        hierarchy={[
+          {
+            name: "Email",
+            children: [
+              { name: "Billing", value: 34 },
+              { name: "Login", value: 21 },
+            ],
+          },
+          {
+            name: "Chat",
+            children: [
+              { name: "Orders", value: 28 },
+              { name: "Returns", value: 12 },
+            ],
+          },
+          { name: "Phone", value: 18 },
+        ]}
+      />
+    </Preview>
+  ),
   tree: () => (
     <Preview>
       <Chart
@@ -1808,6 +1908,12 @@ const PREVIEWS = {
           type: "string[]",
           description:
             "Tree charts with `enableExpandCollapse`: the ids of the nodes whose children are hidden.",
+        },
+        {
+          react: "drillNode / defaultDrillNode / onDrillNodeChange",
+          html: "data-ok-drill-node · ok:chart:drill",
+          type: "string | null",
+          description: "Sunburst charts: the id of the branch the chart is zoomed into.",
         },
         {
           react: "indicators",
@@ -1951,6 +2057,15 @@ const PREVIEWS = {
           "Enter / Space (tree)",
           "Hides or shows the children of the node (`enableExpandCollapse`).",
         ],
+        [
+          "Arrow keys (sunburst)",
+          "Right arrow: the first child. Left arrow: the parent. Down arrow and Up arrow: the next or previous arc of the ring.",
+        ],
+        [
+          "Enter / Space (sunburst)",
+          "Zooms into the arc's branch. On the center, zooms out one level.",
+        ],
+        ["Escape (sunburst)", "Zooms out one level. At the top, hides the tooltip."],
         ["Home / End", "Shows the first or last category or point."],
         [
           "Enter / Space",
