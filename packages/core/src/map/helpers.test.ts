@@ -3,7 +3,7 @@ import {
   autoAnchor,
   distanceMeters,
   mapOffset,
-  mapScale,
+  mapScaleBar,
   parseAttribution,
   safeMapUrl,
   supportsWebGL,
@@ -81,27 +81,27 @@ describe("parseAttribution", () => {
   });
 });
 
-describe("mapScale", () => {
+describe("mapScaleBar", () => {
   it("rounds to 1, 2, 3 or 5 times a power of ten", () => {
-    expect(mapScale(523_000, 100)).toEqual({ label: "500 km", width: 95.6 });
-    expect(mapScale(3_400, 100).label).toBe("3 km");
-    expect(mapScale(2_500, 100).label).toBe("2 km");
-    expect(mapScale(1_200, 100).label).toBe("1 km");
-    expect(mapScale(12_000, 100).label).toBe("10 km");
-    expect(mapScale(800, 100).label).toBe("500 m");
-    expect(mapScale(0.5, 100)).toEqual({ label: "0.5 m", width: 100 });
+    expect(mapScaleBar(523_000, 100)).toEqual({ label: "500 km", width: 95.6 });
+    expect(mapScaleBar(3_400, 100).label).toBe("3 km");
+    expect(mapScaleBar(2_500, 100).label).toBe("2 km");
+    expect(mapScaleBar(1_200, 100).label).toBe("1 km");
+    expect(mapScaleBar(12_000, 100).label).toBe("10 km");
+    expect(mapScaleBar(800, 100).label).toBe("500 m");
+    expect(mapScaleBar(0.5, 100)).toEqual({ label: "0.5 m", width: 100 });
   });
 
   it("uses feet and miles, or nautical miles", () => {
-    expect(mapScale(100, 100, "imperial").label).toBe("300 ft");
-    expect(mapScale(5_000, 100, "imperial").label).toBe("3 mi");
-    expect(mapScale(50_000, 100, "nautical").label).toBe("20 nm");
+    expect(mapScaleBar(100, 100, "imperial").label).toBe("300 ft");
+    expect(mapScaleBar(5_000, 100, "imperial").label).toBe("3 mi");
+    expect(mapScaleBar(50_000, 100, "nautical").label).toBe("20 nm");
   });
 
   it("is empty without a distance or a width", () => {
-    expect(mapScale(0, 100)).toEqual({ label: "", width: 0 });
-    expect(mapScale(100, 0)).toEqual({ label: "", width: 0 });
-    expect(mapScale(Number.NaN, 100)).toEqual({ label: "", width: 0 });
+    expect(mapScaleBar(0, 100)).toEqual({ label: "", width: 0 });
+    expect(mapScaleBar(100, 0)).toEqual({ label: "", width: 0 });
+    expect(mapScaleBar(Number.NaN, 100)).toEqual({ label: "", width: 0 });
   });
 });
 

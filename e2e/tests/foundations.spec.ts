@@ -192,6 +192,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
       "map-geolocate",
       "map-scale",
       "map-attribution",
+      "map-legend",
     ],
   ],
   ["components-button-button--docs", ["button"]],

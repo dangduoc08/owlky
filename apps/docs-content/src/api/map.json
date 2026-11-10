@@ -9,6 +9,10 @@
    "value": "color-mix(in srgb, #919EAB 8%, transparent)"
   },
   {
+   "name": "--ok-action-selected",
+   "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+  },
+  {
    "dark": "#1C252E",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
@@ -148,6 +152,10 @@
    "value": "1.5714"
   },
   {
+   "name": "--ok-typography-caption-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
    "name": "--ok-typography-caption-font-size",
    "value": "0.75rem"
   },
@@ -158,6 +166,22 @@
   {
    "name": "--ok-typography-subtitle1-font-size",
    "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
   },
   {
    "name": "--ok-z-modal",
@@ -222,6 +246,12 @@
       "description": "After the map finished drawing.",
       "detail": "MapEvent",
       "name": "ok:map:idle"
+     },
+     {
+      "cancelable": false,
+      "description": "After a class of an interactive legend was pressed or released (dispatched on the legend; `active` lists the pressed classes).",
+      "detail": "{ classIndex: number; active: number[]; }",
+      "name": "ok:map:legendtoggle"
      },
      {
       "cancelable": false,
@@ -303,6 +333,12 @@
      },
      {
       "cancelable": false,
+      "description": "After a region was selected or the selection cleared (dispatched on `[data-ok-map-regions]`; `id` is `null` when cleared).",
+      "detail": "{ id: string | number | null; }",
+      "name": "ok:map:regionselect"
+     },
+     {
+      "cancelable": false,
       "description": "After a rotation ended.",
       "detail": "MapEvent",
       "name": "ok:map:rotateend"
@@ -380,6 +416,12 @@
       "kind": "method",
       "name": "openPopup",
       "type": "(popup: string | Element) => void"
+     },
+     {
+      "description": "Classifies values for a choropleth (core `mapScale`): class breaks, token colors and the MapLibre expressions.",
+      "kind": "property",
+      "name": "scale",
+      "type": "(values: readonly (number | null | undefined)[], options?: MapScaleOptions | undefined) => MapScaleResult"
      },
      {
       "description": "Enters or leaves full screen.",
@@ -558,6 +600,11 @@
     ],
     "parts": [
      {
+      "description": "Set by the runtime on the region option the keyboard is on.",
+      "kind": "state",
+      "name": "data-ok-active"
+     },
+     {
       "description": "On a source: its credit, shown in the attribution control.",
       "kind": "value",
       "name": "data-ok-attribution",
@@ -665,7 +712,17 @@
       "name": "data-ok-generate-id"
      },
      {
-      "description": "On a source or a layer: its id.",
+      "description": "Set by the runtime on the region option under the pointer.",
+      "kind": "state",
+      "name": "data-ok-hovered"
+     },
+     {
+      "description": "Set by the runtime on the regions list while the pointer is over a region.",
+      "kind": "state",
+      "name": "data-ok-hovering"
+     },
+     {
+      "description": "On a source or a layer: its id. On a row of the regions table: the feature id it joins.",
       "kind": "value",
       "name": "data-ok-id",
       "value": "string"
@@ -674,6 +731,12 @@
       "description": "The ids of the layers whose features pointer events report, separated by spaces.",
       "kind": "value",
       "name": "data-ok-interactive-layer-ids",
+      "value": "string"
+     },
+     {
+      "description": "On regions: the id of the fill layer that pointer hovers and clicks hit.",
+      "kind": "value",
+      "name": "data-ok-layer",
       "value": "string"
      },
      {
@@ -774,6 +837,14 @@
       "name": "data-ok-map-layer"
      },
      {
+      "description": "Set by the runtime: one region in the regions list (an option with its name and value).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-region"
+     },
+     {
       "description": "HTML only: a data source (hidden).",
       "elements": [
        "div"
@@ -810,15 +881,32 @@
       "name": "data-ok-map-user-location"
      },
      {
+      "description": "On a legend class: the highest value of the class.",
+      "kind": "value",
+      "name": "data-ok-max",
+      "value": "string"
+     },
+     {
       "description": "The area the map can't leave, `west,south,east,north`.",
       "kind": "value",
       "name": "data-ok-max-bounds",
       "value": "string"
      },
      {
+      "description": "On a legend class: the lowest value of the class.",
+      "kind": "value",
+      "name": "data-ok-min",
+      "value": "string"
+     },
+     {
       "description": "Set by the runtime on the attribution control on narrow maps.",
       "kind": "state",
       "name": "data-ok-narrow"
+     },
+     {
+      "description": "On a legend class: the class of regions without a value.",
+      "kind": "state",
+      "name": "data-ok-null"
      },
      {
       "description": "On a marker or a popup: its offset, in pixels, such as `0 -12`.",
@@ -858,15 +946,21 @@
       "name": "data-ok-show-accuracy"
      },
      {
-      "description": "On a layer outside a source: the id of its source. On the terrain control: the DEM source.",
+      "description": "On a layer outside a source: the id of its source. On the terrain control: the DEM source. On regions: the source of the regions.",
       "kind": "value",
       "name": "data-ok-source",
       "value": "string"
      },
      {
-      "description": "On a layer: the layer of a vector source it draws.",
+      "description": "On a layer: the layer of a vector source it draws. On regions: the source layer of the regions.",
       "kind": "value",
       "name": "data-ok-source-layer",
+      "value": "string"
+     },
+     {
+      "description": "On a legend swatch or gradient stop: its color, a CSS color or `var(--ok-…)` token.",
+      "kind": "value",
+      "name": "data-ok-swatch",
       "value": "string"
      },
      {
@@ -891,6 +985,12 @@
       "description": "On a source: the URL of its TileJSON or data.",
       "kind": "value",
       "name": "data-ok-url",
+      "value": "string"
+     },
+     {
+      "description": "On a cell of the regions table: the region's value, a number.",
+      "kind": "value",
+      "name": "data-ok-value",
       "value": "string"
      }
     ],
@@ -1100,6 +1200,162 @@
     ]
    },
    "name": "MapGeolocate"
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-legend",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "classes",
+      "description": "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "classes",
+       "gradient"
+      ]
+     },
+     {
+      "attr": "data-ok-interactive",
+      "default": true,
+      "description": "Classes are toggle buttons: pressing some mutes the regions outside them.",
+      "kind": "behavior",
+      "name": "interactive"
+     }
+    ],
+    "parts": [
+     {
+      "description": "A legend's swatches for each class, or its gradient bar.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-bar"
+     },
+     {
+      "description": "One class of a legend: a toggle button (interactive) or a list item.",
+      "kind": "part",
+      "name": "data-ok-map-legend-class"
+     },
+     {
+      "description": "The list of a legend's classes.",
+      "elements": [
+       "ul"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-classes"
+     },
+     {
+      "description": "A gradient legend: the bar and its ticks.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-gradient"
+     },
+     {
+      "description": "The range text of a legend class.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-label"
+     },
+     {
+      "description": "One color of a gradient bar.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-stop"
+     },
+     {
+      "description": "The color square of a legend class.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-swatch"
+     },
+     {
+      "description": "The lowest and highest values under a gradient bar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-ticks"
+     },
+     {
+      "description": "The title of a legend.",
+      "elements": [
+       "p"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-title"
+     }
+    ]
+   },
+   "name": "MapLegend",
+   "react": {
+    "description": "The classes (or the gradient) of a choropleth's scale, in a corner of the map.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Text of a class. 5 – 3\".",
+      "name": "formatter",
+      "type": "((item: MapScaleClass, index: number) => string)"
+     },
+     {
+      "default": "true",
+      "description": "Classes are toggle buttons that mute the regions outside the pressed ones.",
+      "name": "interactive",
+      "type": "boolean"
+     },
+     {
+      "description": "Text of the no-data class. noData` (\"No data\").",
+      "name": "nullLabel",
+      "type": "string"
+     },
+     {
+      "description": "Called when a class is pressed or released (interactive legends).",
+      "name": "onLegendToggle",
+      "type": "((event: MapLegendToggleEvent) => void)"
+     },
+     {
+      "default": "bottom-left",
+      "description": "The corner of the map that holds the legend.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "description": "The scale from `mapScale()`: its classes, colors and range.",
+      "name": "scale",
+      "required": true,
+      "type": "MapScaleResult"
+     },
+     {
+      "description": "Adds a class for regions without a value.",
+      "name": "showNull",
+      "type": "boolean"
+     },
+     {
+      "description": "Text of a number in the default class text and the gradient's ticks.",
+      "name": "tickFormatter",
+      "type": "((value: number) => string)"
+     },
+     {
+      "description": "The legend's title (it also names the legend).",
+      "name": "title",
+      "type": "ReactNode"
+     },
+     {
+      "description": "`classes` (default): a swatch and a range per class; `gradient`: one bar from min to max.",
+      "name": "variant",
+      "type": "\"classes\" | \"gradient\""
+     }
+    ]
+   }
   },
   {
    "html": {
@@ -1365,6 +1621,87 @@
       "description": "The content.",
       "name": "children",
       "type": "ReactNode"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-regions",
+    "description": "The regions of a choropleth: their keyboard list and their data table.",
+    "elements": [
+     "div"
+    ],
+    "parts": [
+     {
+      "description": "The regions' listbox; the runtime fills it from the table.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-regions-list"
+     }
+    ]
+   },
+   "name": "MapRegions",
+   "react": {
+    "description": "The regions of a choropleth: joins `data` to the source's features through feature state (`value`, `hover`, `focus`, `selected`, `muted`), gives keyboard users a list of the regions (name and value, Enter selects) and holds the data as a table for assistive technology.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "The data table's caption, such as \"Population by state, 2020\".",
+      "name": "caption",
+      "required": true,
+      "type": "ReactNode"
+     },
+     {
+      "description": "The regions and their values.",
+      "name": "data",
+      "required": true,
+      "type": "readonly MapRegionDatum[]"
+     },
+     {
+      "description": "Text of a value in the table and the regions list. Default: up to two decimals.",
+      "name": "formatValue",
+      "type": "((value: number) => string)"
+     },
+     {
+      "description": "The fill layer that pointer hovers and clicks hit (the first layer of `mapRegionLayers`).",
+      "name": "layer",
+      "type": "string"
+     },
+     {
+      "description": "Accessible name of the regions list. regions` (\"Regions\").",
+      "name": "listLabel",
+      "type": "string"
+     },
+     {
+      "default": "Region",
+      "description": "Header of the name column.",
+      "name": "nameLabel",
+      "type": "string"
+     },
+     {
+      "description": "Called when a region is selected (a click on the map, Enter or Space in the list) or cleared.",
+      "name": "onRegionSelect",
+      "type": "((event: MapRegionSelectEvent) => void)"
+     },
+     {
+      "description": "The source whose features are the regions (it needs feature ids: `promoteId`).",
+      "name": "source",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "Vector sources: the source layer with the regions.",
+      "name": "sourceLayer",
+      "type": "string"
+     },
+     {
+      "default": "Value",
+      "description": "Header of the value column.",
+      "name": "valueLabel",
+      "type": "string"
      }
     ]
    }

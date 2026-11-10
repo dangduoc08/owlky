@@ -676,6 +676,8 @@
   "data-ok-horizontal",
   "data-ok-hotkey",
   "data-ok-hover",
+  "data-ok-hovered",
+  "data-ok-hovering",
   "data-ok-icon-button",
   "data-ok-icon-button-loader",
   "data-ok-icon-position",
@@ -704,6 +706,7 @@
   "data-ok-inner",
   "data-ok-input-label",
   "data-ok-inset",
+  "data-ok-interactive",
   "data-ok-interactive-layer-ids",
   "data-ok-invert",
   "data-ok-invisible",
@@ -742,6 +745,7 @@
   "data-ok-language",
   "data-ok-last",
   "data-ok-latitude",
+  "data-ok-layer",
   "data-ok-layout",
   "data-ok-lazy",
   "data-ok-lazy-loading",
@@ -829,6 +833,16 @@
   "data-ok-map-geolocate",
   "data-ok-map-icon",
   "data-ok-map-layer",
+  "data-ok-map-legend",
+  "data-ok-map-legend-bar",
+  "data-ok-map-legend-class",
+  "data-ok-map-legend-classes",
+  "data-ok-map-legend-gradient",
+  "data-ok-map-legend-label",
+  "data-ok-map-legend-stop",
+  "data-ok-map-legend-swatch",
+  "data-ok-map-legend-ticks",
+  "data-ok-map-legend-title",
   "data-ok-map-marker",
   "data-ok-map-navigation",
   "data-ok-map-panel",
@@ -838,6 +852,9 @@
   "data-ok-map-popup-content",
   "data-ok-map-popup-open",
   "data-ok-map-popup-tip",
+  "data-ok-map-region",
+  "data-ok-map-regions",
+  "data-ok-map-regions-list",
   "data-ok-map-scale",
   "data-ok-map-source",
   "data-ok-map-status",
@@ -919,6 +936,7 @@
   "data-ok-node-padding",
   "data-ok-node-width",
   "data-ok-non-linear",
+  "data-ok-null",
   "data-ok-offset",
   "data-ok-once",
   "data-ok-open",
@@ -1183,6 +1201,7 @@
   "data-ok-stop-on-last-snap",
   "data-ok-stop-on-mouse-enter",
   "data-ok-stroke",
+  "data-ok-swatch",
   "data-ok-swipe-directions",
   "data-ok-swiping",
   "data-ok-switch",
@@ -42741,6 +42760,10 @@
       "value": "color-mix(in srgb, #919EAB 8%, transparent)"
      },
      {
+      "name": "--ok-action-selected",
+      "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+     },
+     {
       "dark": "#1C252E",
       "light": "#FFFFFF",
       "name": "--ok-bg-paper"
@@ -42880,6 +42903,10 @@
       "value": "1.5714"
      },
      {
+      "name": "--ok-typography-caption-font-family",
+      "value": "var(--ok-font-family)"
+     },
+     {
       "name": "--ok-typography-caption-font-size",
       "value": "0.75rem"
      },
@@ -42890,6 +42917,22 @@
      {
       "name": "--ok-typography-subtitle1-font-size",
       "value": "1rem"
+     },
+     {
+      "name": "--ok-typography-subtitle2-font-family",
+      "value": "var(--ok-font-family)"
+     },
+     {
+      "name": "--ok-typography-subtitle2-font-size",
+      "value": "0.875rem"
+     },
+     {
+      "name": "--ok-typography-subtitle2-font-weight",
+      "value": "600"
+     },
+     {
+      "name": "--ok-typography-subtitle2-line-height",
+      "value": "1.5714"
      },
      {
       "name": "--ok-z-modal",
@@ -42954,6 +42997,12 @@
          "description": "After the map finished drawing.",
          "detail": "MapEvent",
          "name": "ok:map:idle"
+        },
+        {
+         "cancelable": false,
+         "description": "After a class of an interactive legend was pressed or released (dispatched on the legend; `active` lists the pressed classes).",
+         "detail": "{ classIndex: number; active: number[]; }",
+         "name": "ok:map:legendtoggle"
         },
         {
          "cancelable": false,
@@ -43035,6 +43084,12 @@
         },
         {
          "cancelable": false,
+         "description": "After a region was selected or the selection cleared (dispatched on `[data-ok-map-regions]`; `id` is `null` when cleared).",
+         "detail": "{ id: string | number | null; }",
+         "name": "ok:map:regionselect"
+        },
+        {
+         "cancelable": false,
          "description": "After a rotation ended.",
          "detail": "MapEvent",
          "name": "ok:map:rotateend"
@@ -43112,6 +43167,12 @@
          "kind": "method",
          "name": "openPopup",
          "type": "(popup: string | Element) => void"
+        },
+        {
+         "description": "Classifies values for a choropleth (core `mapScale`): class breaks, token colors and the MapLibre expressions.",
+         "kind": "property",
+         "name": "scale",
+         "type": "(values: readonly (number | null | undefined)[], options?: MapScaleOptions | undefined) => MapScaleResult"
         },
         {
          "description": "Enters or leaves full screen.",
@@ -43290,6 +43351,11 @@
        ],
        "parts": [
         {
+         "description": "Set by the runtime on the region option the keyboard is on.",
+         "kind": "state",
+         "name": "data-ok-active"
+        },
+        {
          "description": "On a source: its credit, shown in the attribution control.",
          "kind": "value",
          "name": "data-ok-attribution",
@@ -43397,7 +43463,17 @@
          "name": "data-ok-generate-id"
         },
         {
-         "description": "On a source or a layer: its id.",
+         "description": "Set by the runtime on the region option under the pointer.",
+         "kind": "state",
+         "name": "data-ok-hovered"
+        },
+        {
+         "description": "Set by the runtime on the regions list while the pointer is over a region.",
+         "kind": "state",
+         "name": "data-ok-hovering"
+        },
+        {
+         "description": "On a source or a layer: its id. On a row of the regions table: the feature id it joins.",
          "kind": "value",
          "name": "data-ok-id",
          "value": "string"
@@ -43406,6 +43482,12 @@
          "description": "The ids of the layers whose features pointer events report, separated by spaces.",
          "kind": "value",
          "name": "data-ok-interactive-layer-ids",
+         "value": "string"
+        },
+        {
+         "description": "On regions: the id of the fill layer that pointer hovers and clicks hit.",
+         "kind": "value",
+         "name": "data-ok-layer",
          "value": "string"
         },
         {
@@ -43506,6 +43588,14 @@
          "name": "data-ok-map-layer"
         },
         {
+         "description": "Set by the runtime: one region in the regions list (an option with its name and value).",
+         "elements": [
+          "div"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-region"
+        },
+        {
          "description": "HTML only: a data source (hidden).",
          "elements": [
           "div"
@@ -43542,15 +43632,32 @@
          "name": "data-ok-map-user-location"
         },
         {
+         "description": "On a legend class: the highest value of the class.",
+         "kind": "value",
+         "name": "data-ok-max",
+         "value": "string"
+        },
+        {
          "description": "The area the map can't leave, `west,south,east,north`.",
          "kind": "value",
          "name": "data-ok-max-bounds",
          "value": "string"
         },
         {
+         "description": "On a legend class: the lowest value of the class.",
+         "kind": "value",
+         "name": "data-ok-min",
+         "value": "string"
+        },
+        {
          "description": "Set by the runtime on the attribution control on narrow maps.",
          "kind": "state",
          "name": "data-ok-narrow"
+        },
+        {
+         "description": "On a legend class: the class of regions without a value.",
+         "kind": "state",
+         "name": "data-ok-null"
         },
         {
          "description": "On a marker or a popup: its offset, in pixels, such as `0 -12`.",
@@ -43590,15 +43697,21 @@
          "name": "data-ok-show-accuracy"
         },
         {
-         "description": "On a layer outside a source: the id of its source. On the terrain control: the DEM source.",
+         "description": "On a layer outside a source: the id of its source. On the terrain control: the DEM source. On regions: the source of the regions.",
          "kind": "value",
          "name": "data-ok-source",
          "value": "string"
         },
         {
-         "description": "On a layer: the layer of a vector source it draws.",
+         "description": "On a layer: the layer of a vector source it draws. On regions: the source layer of the regions.",
          "kind": "value",
          "name": "data-ok-source-layer",
+         "value": "string"
+        },
+        {
+         "description": "On a legend swatch or gradient stop: its color, a CSS color or `var(--ok-…)` token.",
+         "kind": "value",
+         "name": "data-ok-swatch",
          "value": "string"
         },
         {
@@ -43623,6 +43736,12 @@
          "description": "On a source: the URL of its TileJSON or data.",
          "kind": "value",
          "name": "data-ok-url",
+         "value": "string"
+        },
+        {
+         "description": "On a cell of the regions table: the region's value, a number.",
+         "kind": "value",
+         "name": "data-ok-value",
          "value": "string"
         }
        ],
@@ -43832,6 +43951,162 @@
        ]
       },
       "name": "MapGeolocate"
+     },
+     {
+      "html": {
+       "attribute": "data-ok-map-legend",
+       "options": [
+        {
+         "attr": "data-ok-variant",
+         "default": "classes",
+         "description": "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest.",
+         "kind": "style",
+         "name": "variant",
+         "values": [
+          "classes",
+          "gradient"
+         ]
+        },
+        {
+         "attr": "data-ok-interactive",
+         "default": true,
+         "description": "Classes are toggle buttons: pressing some mutes the regions outside them.",
+         "kind": "behavior",
+         "name": "interactive"
+        }
+       ],
+       "parts": [
+        {
+         "description": "A legend's swatches for each class, or its gradient bar.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-bar"
+        },
+        {
+         "description": "One class of a legend: a toggle button (interactive) or a list item.",
+         "kind": "part",
+         "name": "data-ok-map-legend-class"
+        },
+        {
+         "description": "The list of a legend's classes.",
+         "elements": [
+          "ul"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-classes"
+        },
+        {
+         "description": "A gradient legend: the bar and its ticks.",
+         "elements": [
+          "div"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-gradient"
+        },
+        {
+         "description": "The range text of a legend class.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-label"
+        },
+        {
+         "description": "One color of a gradient bar.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-stop"
+        },
+        {
+         "description": "The color square of a legend class.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-swatch"
+        },
+        {
+         "description": "The lowest and highest values under a gradient bar.",
+         "elements": [
+          "div"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-ticks"
+        },
+        {
+         "description": "The title of a legend.",
+         "elements": [
+          "p"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-legend-title"
+        }
+       ]
+      },
+      "name": "MapLegend",
+      "react": {
+       "description": "The classes (or the gradient) of a choropleth's scale, in a corner of the map.",
+       "native": "HTMLElement",
+       "props": [
+        {
+         "description": "Text of a class. 5 – 3\".",
+         "name": "formatter",
+         "type": "((item: MapScaleClass, index: number) => string)"
+        },
+        {
+         "default": "true",
+         "description": "Classes are toggle buttons that mute the regions outside the pressed ones.",
+         "name": "interactive",
+         "type": "boolean"
+        },
+        {
+         "description": "Text of the no-data class. noData` (\"No data\").",
+         "name": "nullLabel",
+         "type": "string"
+        },
+        {
+         "description": "Called when a class is pressed or released (interactive legends).",
+         "name": "onLegendToggle",
+         "type": "((event: MapLegendToggleEvent) => void)"
+        },
+        {
+         "default": "bottom-left",
+         "description": "The corner of the map that holds the legend.",
+         "name": "position",
+         "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+        },
+        {
+         "description": "The scale from `mapScale()`: its classes, colors and range.",
+         "name": "scale",
+         "required": true,
+         "type": "MapScaleResult"
+        },
+        {
+         "description": "Adds a class for regions without a value.",
+         "name": "showNull",
+         "type": "boolean"
+        },
+        {
+         "description": "Text of a number in the default class text and the gradient's ticks.",
+         "name": "tickFormatter",
+         "type": "((value: number) => string)"
+        },
+        {
+         "description": "The legend's title (it also names the legend).",
+         "name": "title",
+         "type": "ReactNode"
+        },
+        {
+         "description": "`classes` (default): a swatch and a range per class; `gradient`: one bar from min to max.",
+         "name": "variant",
+         "type": "\"classes\" | \"gradient\""
+        }
+       ]
+      }
      },
      {
       "html": {
@@ -44097,6 +44372,87 @@
          "description": "The content.",
          "name": "children",
          "type": "ReactNode"
+        }
+       ]
+      }
+     },
+     {
+      "html": {
+       "attribute": "data-ok-map-regions",
+       "description": "The regions of a choropleth: their keyboard list and their data table.",
+       "elements": [
+        "div"
+       ],
+       "parts": [
+        {
+         "description": "The regions' listbox; the runtime fills it from the table.",
+         "elements": [
+          "div"
+         ],
+         "kind": "part",
+         "name": "data-ok-map-regions-list"
+        }
+       ]
+      },
+      "name": "MapRegions",
+      "react": {
+       "description": "The regions of a choropleth: joins `data` to the source's features through feature state (`value`, `hover`, `focus`, `selected`, `muted`), gives keyboard users a list of the regions (name and value, Enter selects) and holds the data as a table for assistive technology.",
+       "native": "HTMLElement",
+       "props": [
+        {
+         "description": "The data table's caption, such as \"Population by state, 2020\".",
+         "name": "caption",
+         "required": true,
+         "type": "ReactNode"
+        },
+        {
+         "description": "The regions and their values.",
+         "name": "data",
+         "required": true,
+         "type": "readonly MapRegionDatum[]"
+        },
+        {
+         "description": "Text of a value in the table and the regions list. Default: up to two decimals.",
+         "name": "formatValue",
+         "type": "((value: number) => string)"
+        },
+        {
+         "description": "The fill layer that pointer hovers and clicks hit (the first layer of `mapRegionLayers`).",
+         "name": "layer",
+         "type": "string"
+        },
+        {
+         "description": "Accessible name of the regions list. regions` (\"Regions\").",
+         "name": "listLabel",
+         "type": "string"
+        },
+        {
+         "default": "Region",
+         "description": "Header of the name column.",
+         "name": "nameLabel",
+         "type": "string"
+        },
+        {
+         "description": "Called when a region is selected (a click on the map, Enter or Space in the list) or cleared.",
+         "name": "onRegionSelect",
+         "type": "((event: MapRegionSelectEvent) => void)"
+        },
+        {
+         "description": "The source whose features are the regions (it needs feature ids: `promoteId`).",
+         "name": "source",
+         "required": true,
+         "type": "string"
+        },
+        {
+         "description": "Vector sources: the source layer with the regions.",
+         "name": "sourceLayer",
+         "type": "string"
+        },
+        {
+         "default": "Value",
+         "description": "Header of the value column.",
+         "name": "valueLabel",
+         "type": "string"
         }
        ]
       }
@@ -44579,9 +44935,11 @@
     "GlobeControl",
     "Layer",
     "MapControl",
+    "MapLegend",
     "MapPanel",
     "MapPin",
     "MapProvider",
+    "MapRegions",
     "MapView",
     "Marker",
     "NavigationControl",
@@ -44589,6 +44947,9 @@
     "ScaleControl",
     "Source",
     "TerrainControl",
+    "mapRegionLayers",
+    "mapScale",
+    "mapScaleLabel",
     "useMap"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/map",
@@ -44608,6 +44969,10 @@
      "data-ok-map-corner",
      "data-ok-map-status",
      "data-ok-map-view"
+    ],
+    "data-ok-map-legend": [
+     "data-ok-map-legend-class",
+     "data-ok-map-legend-classes"
     ]
    },
    "root": "data-ok-map",
@@ -44996,6 +45361,30 @@
      "root": "data-ok-map-scale"
     },
     {
+     "name": "map-legend",
+     "options": [
+      {
+       "attr": "data-ok-variant",
+       "default": "classes",
+       "description": "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest.",
+       "kind": "style",
+       "name": "variant",
+       "values": [
+        "classes",
+        "gradient"
+       ]
+      },
+      {
+       "attr": "data-ok-interactive",
+       "default": true,
+       "description": "Classes are toggle buttons: pressing some mutes the regions outside them.",
+       "kind": "behavior",
+       "name": "interactive"
+      }
+     ],
+     "root": "data-ok-map-legend"
+    },
+    {
      "name": "map-attribution",
      "options": [
       {
@@ -45015,14 +45404,19 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoom|max-zoom|min-pitch|max-pitch]?\n   [data-ok-projection][data-ok-<handler>=\"false\"]?[data-ok-cooperative-gestures]?[data-ok-render-world-copies=\"false\"]?\n   [data-ok-map-style][data-ok-map-style-dark]?[data-ok-bounds=\"w,s,e,n\"]?[data-ok-max-bounds]?\n   [data-ok-interactive-layer-ids=\"a b\"]?[data-ok-label]?\n   [data-ok-ready]? (style in) [data-ok-loaded]? (first full render) [data-ok-fallback]? [data-ok-fullscreen]?\n  div[data-ok-map-view]                       MapLibre: div.maplibregl-canvas-container › canvas[role=region][tabindex=0]\n                                                [aria-label][aria-describedby][aria-roledescription=map]; div[data-ok-map-user-location]?\n  div[data-ok-map-fallback]                   text (default from labels.fallback when empty)\n  p[data-ok-map-description][id]?             text alternative (visually hidden; shown with the fallback)\n  div[data-ok-map-status][role=status]        location announcements (visually hidden)\n  div[data-ok-map-marker][data-ok-longitude][data-ok-latitude][data-ok-anchor][data-ok-color][data-ok-offset]?\n     [data-ok-draggable]?[data-ok-rotation]?[data-ok-rotation-alignment]?[data-ok-pitch-alignment]?\n     [role=button][tabindex=0][aria-label]? (interactive) [data-ok-dragging]? (state)\n    svg[data-ok-map-pin] | content\n  div[data-ok-map-popup][role=dialog|tooltip][tabindex=-1][aria-label]?[data-ok-longitude][data-ok-latitude]\n     [data-ok-anchor]?[data-ok-offset]?[data-ok-max-width]?[data-ok-close-on-click=\"false\"]?[data-ok-close-on-move]?\n     [data-ok-focus-after-open=\"false\"]?[data-ok-current-anchor] (controller) [hidden]? (HTML: closed)\n    span[data-ok-map-popup-tip][aria-hidden] + div[data-ok-map-popup-content] + button[data-ok-map-popup-close][aria-label]?\n  div[data-ok-map-source][data-ok-id][data-ok-type][hidden] › div[data-ok-map-layer][data-ok-id][data-ok-type][hidden]   (HTML only)\n  div[data-ok-map-panel][data-ok-position][data-ok-theme=dark]\n  div[data-ok-map-corner=top-left|top-right|bottom-left|bottom-right]   (always the four, in this order)\n    div[data-ok-map-control][data-ok-map-navigation][data-ok-visualize-pitch]?\n      button[data-ok-map-action=zoom-in|zoom-out][aria-label][aria-disabled]\n      button[data-ok-map-action=compass] › svg[data-ok-map-compass-icon] › path[data-ok-map-compass-north|south]\n    div[data-ok-map-control][data-ok-map-geolocate][data-ok-track-user-location]?[data-ok-show-user-location=\"false\"]?[data-ok-show-accuracy-circle=\"false\"]?\n      button[data-ok-map-action=geolocate][data-ok-state=off|waiting|active|error][aria-pressed]? (tracking)\n    div[data-ok-map-control] › button[data-ok-map-action=fullscreen][aria-pressed] › svg[data-ok-map-icon=enter] + svg[data-ok-map-icon=exit]\n    div[data-ok-map-control] › button[data-ok-map-action=globe|terrain][aria-pressed] (terrain: data-ok-source, data-ok-exaggeration)\n    div[data-ok-map-scale][data-ok-unit][data-ok-max-width]?   text and width from the controller\n    details[data-ok-map-attribution][data-ok-compact]?[data-ok-narrow]? (controller) › summary[aria-label] › svg + div[data-ok-map-attribution-text]\n  div[data-ok-map-control] (MapControl: author content)\n```\nSources and layers: `data-ok-data` (URL or inline JSON), `data-ok-url`, `data-ok-tiles` (URLs\nseparated by spaces), `data-ok-tile-size`, `data-ok-min-zoom`, `data-ok-max-zoom`, `data-ok-bounds`\n(JSON), `data-ok-scheme`, `data-ok-attribution`, `data-ok-cluster`, `data-ok-cluster-radius`,\n`data-ok-cluster-max-zoom`, `data-ok-cluster-min-points`, `data-ok-cluster-properties` (JSON),\n`data-ok-promote-id`, `data-ok-generate-id`, `data-ok-buffer`, `data-ok-tolerance`,\n`data-ok-line-metrics`, `data-ok-encoding`, `data-ok-coordinates` (JSON); layers `data-ok-paint`,\n`data-ok-layout`, `data-ok-filter` (JSON), `data-ok-source-layer`, `data-ok-min-zoom`,\n`data-ok-max-zoom`, `data-ok-before-id`, and `data-ok-source` when not inside a source. Anything\nelse is ignored (allowlist). Paint and layout strings `\"var(--ok-…)\"` resolve to the token's value\n(again when the color scheme changes).",
+     "body": "```\ndiv[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoom|max-zoom|min-pitch|max-pitch]?\n   [data-ok-projection][data-ok-<handler>=\"false\"]?[data-ok-cooperative-gestures]?[data-ok-render-world-copies=\"false\"]?\n   [data-ok-map-style][data-ok-map-style-dark]?[data-ok-bounds=\"w,s,e,n\"]?[data-ok-max-bounds]?\n   [data-ok-interactive-layer-ids=\"a b\"]?[data-ok-label]?\n   [data-ok-ready]? (style in) [data-ok-loaded]? (first full render) [data-ok-fallback]? [data-ok-fullscreen]?\n  div[data-ok-map-view]                       MapLibre: div.maplibregl-canvas-container › canvas[role=region][tabindex=0]\n                                                [aria-label][aria-describedby][aria-roledescription=map]; div[data-ok-map-user-location]?\n  div[data-ok-map-fallback]                   text (default from labels.fallback when empty)\n  p[data-ok-map-description][id]?             text alternative (visually hidden; shown with the fallback)\n  div[data-ok-map-status][role=status]        location announcements (visually hidden)\n  div[data-ok-map-marker][data-ok-longitude][data-ok-latitude][data-ok-anchor][data-ok-color][data-ok-offset]?\n     [data-ok-draggable]?[data-ok-rotation]?[data-ok-rotation-alignment]?[data-ok-pitch-alignment]?\n     [role=button][tabindex=0][aria-label]? (interactive) [data-ok-dragging]? (state)\n    svg[data-ok-map-pin] | content\n  div[data-ok-map-popup][role=dialog|tooltip][tabindex=-1][aria-label]?[data-ok-longitude][data-ok-latitude]\n     [data-ok-anchor]?[data-ok-offset]?[data-ok-max-width]?[data-ok-close-on-click=\"false\"]?[data-ok-close-on-move]?\n     [data-ok-focus-after-open=\"false\"]?[data-ok-current-anchor] (controller) [hidden]? (HTML: closed)\n    span[data-ok-map-popup-tip][aria-hidden] + div[data-ok-map-popup-content] + button[data-ok-map-popup-close][aria-label]?\n  div[data-ok-map-source][data-ok-id][data-ok-type][hidden] › div[data-ok-map-layer][data-ok-id][data-ok-type][hidden]   (HTML only)\n  div[data-ok-map-panel][data-ok-position][data-ok-theme=dark]\n  div[data-ok-map-regions][data-ok-source][data-ok-layer]?[data-ok-source-layer]?[id]?   (choropleth)\n    div[data-ok-map-regions-list][role=listbox][tabindex=0][aria-label]? [id] [aria-activedescendant] [data-ok-hovering]? (controller)\n      div[data-ok-map-region][role=option][id][data-ok-id][aria-selected][data-ok-active]?[data-ok-hovered]?   (controller, from the rows)\n    table › caption + thead (th[scope=col] × 2) + tbody › tr[data-ok-id] › th[scope=row] + td[data-ok-value]?\n  div[data-ok-map-corner=top-left|top-right|bottom-left|bottom-right]   (always the four, in this order)\n    div[data-ok-map-control][data-ok-map-navigation][data-ok-visualize-pitch]?\n      button[data-ok-map-action=zoom-in|zoom-out][aria-label][aria-disabled]\n      button[data-ok-map-action=compass] › svg[data-ok-map-compass-icon] › path[data-ok-map-compass-north|south]\n    div[data-ok-map-control][data-ok-map-geolocate][data-ok-track-user-location]?[data-ok-show-user-location=\"false\"]?[data-ok-show-accuracy-circle=\"false\"]?\n      button[data-ok-map-action=geolocate][data-ok-state=off|waiting|active|error][aria-pressed]? (tracking)\n    div[data-ok-map-control] › button[data-ok-map-action=fullscreen][aria-pressed] › svg[data-ok-map-icon=enter] + svg[data-ok-map-icon=exit]\n    div[data-ok-map-control] › button[data-ok-map-action=globe|terrain][aria-pressed] (terrain: data-ok-source, data-ok-exaggeration)\n    div[data-ok-map-scale][data-ok-unit][data-ok-max-width]?   text and width from the controller\n    details[data-ok-map-attribution][data-ok-compact]?[data-ok-narrow]? (controller) › summary[aria-label] › svg + div[data-ok-map-attribution-text]\n    div[data-ok-map-legend][data-ok-variant=classes|gradient][data-ok-interactive=\"false\"]?[role=group][aria-labelledby|aria-label]\n      p[data-ok-map-legend-title][id]?\n      ul[data-ok-map-legend-classes] › li › button[data-ok-map-legend-class][data-ok-min][data-ok-max][aria-pressed] | [data-ok-null]\n                                           (static: span[data-ok-map-legend-class]) › span[data-ok-map-legend-swatch][data-ok-swatch][aria-hidden] + span[data-ok-map-legend-label]\n      | div[data-ok-map-legend-gradient] › span[data-ok-map-legend-bar][aria-hidden] › span[data-ok-map-legend-stop][data-ok-swatch]×n\n                                         + div[data-ok-map-legend-ticks] › span (min) + span (max)\n  div[data-ok-map-control] (MapControl: author content)\n```\nSources and layers: `data-ok-data` (URL or inline JSON), `data-ok-url`, `data-ok-tiles` (URLs\nseparated by spaces), `data-ok-tile-size`, `data-ok-min-zoom`, `data-ok-max-zoom`, `data-ok-bounds`\n(JSON), `data-ok-scheme`, `data-ok-attribution`, `data-ok-cluster`, `data-ok-cluster-radius`,\n`data-ok-cluster-max-zoom`, `data-ok-cluster-min-points`, `data-ok-cluster-properties` (JSON),\n`data-ok-promote-id`, `data-ok-generate-id`, `data-ok-buffer`, `data-ok-tolerance`,\n`data-ok-line-metrics`, `data-ok-encoding`, `data-ok-coordinates` (JSON); layers `data-ok-paint`,\n`data-ok-layout`, `data-ok-filter` (JSON), `data-ok-source-layer`, `data-ok-min-zoom`,\n`data-ok-max-zoom`, `data-ok-before-id`, and `data-ok-source` when not inside a source. Anything\nelse is ignored (allowlist). Paint and layout strings `\"var(--ok-…)\"` resolve to the token's value\n(again when the color scheme changes).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `map`: listed under \"options\".)\n\n(Options of `map-marker`: listed under \"options\".)\n\n(Options of `map-popup`: listed under \"options\".)\n\n(Options of `map-navigation`: listed under \"options\".)\n\n(Options of `map-geolocate`: listed under \"options\".)\n\n(Options of `map-scale`: listed under \"options\".)\n\n(Options of `map-attribution`: listed under \"options\".)\n\nOther props (React) ↔ HTML: `mapStyle` / `mapStyleDark` (URL or style object; HTML URLs only:\n`data-ok-map-style` / `data-ok-map-style-dark`), `initialViewState` (`longitude`, `latitude`,\n`zoom`, `pitch`, `bearing`, `bounds`, `fitBoundsOptions`; HTML root numbers and `data-ok-bounds`),\n`viewState` / `longitude` … `bearing` (controlled; HTML: change the root numbers), `maxBounds`\n(`data-ok-max-bounds`), `interactiveLayerIds` (`data-ok-interactive-layer-ids`), `cursor`,\n`terrain`, `mapOptions` (any other MapLibre option, read once), `labels` (control names and\nmessages), `aria-label` (`data-ok-label`, the canvas name, default \"Map\"), `description`\n(`p[data-ok-map-description]`), `fallback` (content of `[data-ok-map-fallback]`),\n`attributionControl` (default `true`; HTML writes the attribution in the bottom-right corner).\nEvent props: `onLoad`, `onError`, `onIdle`, `onResize`, `onRemove`, `onRender`, `onData`,\n`onStyleData`, `onSourceData`, `onMoveStart|Move|MoveEnd`, `onZoom…`, `onRotate…`, `onPitch…`,\n`onDrag…`, `onBoxZoom…`, `onClick`, `onDblClick`, `onContextMenu`, `onMouseDown|Up|Move|Over|Out|\nEnter|Leave`, `onWheel`, `onTouch…` (event: `{ type, viewState, lngLat?, point?, features?,\noriginalEvent?, error?, sourceId? }`), `onFullscreenChange`, `onFallback`.\nParts: `Marker` (`longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`,\n`rotationAlignment`, `pitchAlignment`, `onDragStart|Drag|DragEnd({ lngLat })`, `onClick`,\nchildren), `Popup` (`longitude`, `latitude`, `anchor`, `offset`, `closeButton`, `closeOnClick`,\n`closeOnMove`, `focusAfterOpen`, `maxWidth`, `onClose(reason)`, `onOpen`), `Source` (MapLibre source\nspec + `id`), `Layer` (MapLibre layer spec + `id`, `source`, `beforeId`), controls\n`NavigationControl` (`showZoom`, `showCompass`, `visualizePitch`), `GeolocateControl`\n(`trackUserLocation`, `showUserLocation`, `showAccuracyCircle`, `onGeolocate`, `onError`,\n`onTrackUserLocationStart|End`), `FullscreenControl`, `ScaleControl` (`maxWidth`, `unit`),\n`AttributionControl` (`compact`), `GlobeControl`, `TerrainControl` (`source`, `exaggeration`),\n`MapControl` (custom), each with `position`; `MapPanel` (`position`); `MapProvider` + `useMap()`;\nref `MapRef` (`getMap()`, `controller`, `getViewState()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`).\n\nAPI mapping (react-map-gl): renamed `Map` → `MapView` (a component named `Map` shadows the global `Map` in consumer modules, Biome `noShadowRestrictedNames`). Kept `mapStyle`, `initialViewState`, `viewState` and the view props,\n`minZoom` … `maxPitch`, `maxBounds`, `projection`, `renderWorldCopies`, `cooperativeGestures`, the\neight handler props, `interactiveLayerIds`, `cursor`, `terrain`, `attributionControl`, every event\nprop, `Marker` / `Popup` / `Source` / `Layer` props, the controls and their options, `MapProvider`,\n`useMap`, `MapRef.getMap()`. Added `mapStyleDark` (theme), `description`, `fallback`, `labels`,\n`onFullscreenChange`, `onFallback`, `MapPanel`, `Popup.onClose(reason)`. Renamed: other MapLibre\noptions go through `mapOptions` (`transformRequest`, `hash`, `fadeDuration`, `locale`,\n`pixelRatio`…). Not applicable: `mapLib` (MapLibre is built in), `reuseMaps`, `RTLTextPlugin` (call\nMapLibre's `setRTLTextPlugin` from `@owlky/core/map`'s MapLibre), `Marker.popup` (compose a\n`Popup`; HTML `data-ok-map-popup-open`), `Marker.color` as any CSS color (palette names), `style`\nprops of parts (class names / CSS), `useControl` (use `MapControl`), `LogoControl` (MapLibre logo\nis off; the attribution credits the data).",
+     "body": "(Options of `map`: listed under \"options\".)\n\n(Options of `map-marker`: listed under \"options\".)\n\n(Options of `map-popup`: listed under \"options\".)\n\n(Options of `map-navigation`: listed under \"options\".)\n\n(Options of `map-geolocate`: listed under \"options\".)\n\n(Options of `map-scale`: listed under \"options\".)\n\n(Options of `map-legend`: listed under \"options\".)\n\n(Options of `map-attribution`: listed under \"options\".)\n\nOther props (React) ↔ HTML: `mapStyle` / `mapStyleDark` (URL or style object; HTML URLs only:\n`data-ok-map-style` / `data-ok-map-style-dark`), `initialViewState` (`longitude`, `latitude`,\n`zoom`, `pitch`, `bearing`, `bounds`, `fitBoundsOptions`; HTML root numbers and `data-ok-bounds`),\n`viewState` / `longitude` … `bearing` (controlled; HTML: change the root numbers), `maxBounds`\n(`data-ok-max-bounds`), `interactiveLayerIds` (`data-ok-interactive-layer-ids`), `cursor`,\n`terrain`, `mapOptions` (any other MapLibre option, read once), `labels` (control names and\nmessages), `aria-label` (`data-ok-label`, the canvas name, default \"Map\"), `description`\n(`p[data-ok-map-description]`), `fallback` (content of `[data-ok-map-fallback]`),\n`attributionControl` (default `true`; HTML writes the attribution in the bottom-right corner).\nEvent props: `onLoad`, `onError`, `onIdle`, `onResize`, `onRemove`, `onRender`, `onData`,\n`onStyleData`, `onSourceData`, `onMoveStart|Move|MoveEnd`, `onZoom…`, `onRotate…`, `onPitch…`,\n`onDrag…`, `onBoxZoom…`, `onClick`, `onDblClick`, `onContextMenu`, `onMouseDown|Up|Move|Over|Out|\nEnter|Leave`, `onWheel`, `onTouch…` (event: `{ type, viewState, lngLat?, point?, features?,\noriginalEvent?, error?, sourceId? }`), `onFullscreenChange`, `onFallback`.\nParts: `Marker` (`longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`,\n`rotationAlignment`, `pitchAlignment`, `onDragStart|Drag|DragEnd({ lngLat })`, `onClick`,\nchildren), `Popup` (`longitude`, `latitude`, `anchor`, `offset`, `closeButton`, `closeOnClick`,\n`closeOnMove`, `focusAfterOpen`, `maxWidth`, `onClose(reason)`, `onOpen`), `Source` (MapLibre source\nspec + `id`), `Layer` (MapLibre layer spec + `id`, `source`, `beforeId`), controls\n`NavigationControl` (`showZoom`, `showCompass`, `visualizePitch`), `GeolocateControl`\n(`trackUserLocation`, `showUserLocation`, `showAccuracyCircle`, `onGeolocate`, `onError`,\n`onTrackUserLocationStart|End`), `FullscreenControl`, `ScaleControl` (`maxWidth`, `unit`),\n`AttributionControl` (`compact`), `GlobeControl`, `TerrainControl` (`source`, `exaggeration`),\n`MapControl` (custom), each with `position`; `MapPanel` (`position`); `MapProvider` + `useMap()`;\nref `MapRef` (`getMap()`, `controller`, `getViewState()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`).\nChoropleth parts: `MapRegions` (`source`, `sourceLayer`, `layer`, `data: { id, name, value }[]`,\n`caption`, `nameLabel`, `valueLabel`, `formatValue`, `listLabel`, `onRegionSelect({ id })`) and\n`MapLegend` (`scale`, `position` default `bottom-left`, `variant`, `title`, `interactive`, `showNull`,\n`nullLabel`, `formatter(item, index)`, `tickFormatter(value)`, `onLegendToggle({ classIndex, active })`);\nhelpers (core `@owlky/core/map`, re-exported by `@owlky/react`): `mapScale`, `mapRegionLayers`,\n`mapScaleLabel`, `mapPaletteColors`, `jenksBreaks`.\n\nAPI mapping (react-map-gl): renamed `Map` → `MapView` (a component named `Map` shadows the global `Map` in consumer modules, Biome `noShadowRestrictedNames`). Kept `mapStyle`, `initialViewState`, `viewState` and the view props,\n`minZoom` … `maxPitch`, `maxBounds`, `projection`, `renderWorldCopies`, `cooperativeGestures`, the\neight handler props, `interactiveLayerIds`, `cursor`, `terrain`, `attributionControl`, every event\nprop, `Marker` / `Popup` / `Source` / `Layer` props, the controls and their options, `MapProvider`,\n`useMap`, `MapRef.getMap()`. Added `mapStyleDark` (theme), `description`, `fallback`, `labels`,\n`onFullscreenChange`, `onFallback`, `MapPanel`, `Popup.onClose(reason)`. Renamed: other MapLibre\noptions go through `mapOptions` (`transformRequest`, `hash`, `fadeDuration`, `locale`,\n`pixelRatio`…). Not applicable: `mapLib` (MapLibre is built in), `reuseMaps`, `RTLTextPlugin` (call\nMapLibre's `setRTLTextPlugin` from `@owlky/core/map`'s MapLibre), `Marker.popup` (compose a\n`Popup`; HTML `data-ok-map-popup-open`), `Marker.color` as any CSS color (palette names), `style`\nprops of parts (class names / CSS), `useControl` (use `MapControl`), `LogoControl` (MapLibre logo\nis off; the attribution credits the data).",
      "id": "options",
      "title": "Options"
+    },
+    {
+     "body": "Roadmap 4.18.15, after ApexMaps (apexcharts.com/apexmaps, docs checked 2026-11-10).\n- `mapScale(values, { method, classes, palette, thresholds, nullColor, input })` (pure): `method`\n  `quantile` (default; R-7 interpolated quantiles) · `equalInterval` · `jenks` (Fisher's exact\n  natural breaks, O(k·n²)) · `threshold` (`thresholds`, classes = thresholds + 1); equal breaks\n  are kept once (fewer classes). `palette`: a palette color (`lighter` … `darker`, five shades) or\n  `grey` (200–800, seven), or a color array; colors are sampled evenly from the ramp and `classes`\n  is capped at its length. Returns `{ method, min, max, breaks, classes[{ index, min, max, color,\n  count }], colors, nullColor, nullCount, expression, gradient, classOf(value) }`; `expression` is\n  `[\"case\", is-number, [\"step\", input, c0, b1, c1, …], nullColor]`, `gradient` the same with\n  `interpolate` (stops evenly from min to max). `input` defaults to `[\"feature-state\", \"value\"]`.\n  Colors are `var(--ok-…)` strings: the controller resolves them on add and again when a\n  `data-ok-theme` / `data-ok-preset` changes or the system scheme flips.\n- `mapRegionLayers({ id, source, sourceLayer?, scale, variant?, opacity = 0.8, mutedOpacity = 0.15 })`:\n  a fill (`muted` → `mutedOpacity`, hover / focus / selected → +0.15) and `<id>-outline` (selected\n  2.5px, hover / focus 1.5px `--ok-text-primary`, else 0.5px `--ok-bg-paper`).\n- Regions (controller, both owners): each `tr[data-ok-id]` sets feature state `{ value, muted,\n  selected, hover, focus }` on `{ source, sourceLayer, id }` (ids: a canonical number string → a\n  number, else the string; the source needs ids, `promoteId`). States are written again after each\n  style load and when the source object is re-created; rows that go away get `removeFeatureState`.\n  The controller fills the list with one option per row (`<name>: <cell text>` or `labels.noData`),\n  ids `<list id>-<n>` (list id: `<root id>-list`, else generated). Pointer: `mousemove` over\n  `data-ok-layer` sets `hover` (and `data-ok-hovered` / `data-ok-hovering`, the visible readout) and\n  the pointer cursor; a click toggles the single selection; clicks off the regions keep it.\n- Legend: pressing a class toggles `aria-pressed` (controller-owned; React renders `false` only),\n  regions outside the pressed classes get `muted` (a class is `[min, max)`, the last one includes\n  `max`, `data-ok-null` matches regions without a value; none pressed: none muted). Swatches and\n  the gradient bar get `--_ok-map-swatch` / `--_ok-map-gradient` through CSSOM from\n  `data-ok-swatch` (`var(--ok-…)` or a CSS color; `url(` and declarations refused).\n- Layout: legend on paper (like the controls, a candidate to compose Paper later), `--ok-radius-md`, `--ok-shadow-z1`, caption type, 12px swatches, 24px\n  class rows, pressed `--ok-action-selected`; the readout is a paper chip at the top center\n  (`--ok-shadow-dropdown`), visible while the list has `:focus-visible` (the active option) or the\n  pointer is over a region (the hovered one). The table is visually hidden; with the fallback it is\n  shown (scrolls) and the description becomes visually hidden.\n- Not built (could, later): a hover tooltip with custom content (compose a `Popup` with\n  `onMouseMove`), camera moves to the keyboard's region, bivariate / diverging scales, `log` /\n  `sqrt` continuous scales, ordinal (category) scales, OkLab-resampled ramps (palette arrays are\n  used as given), multi-selection, legend `align` / `width` / `marker`, ApexMaps' own geometry\n  registry and `joinBy` (MapLibre sources and feature ids instead).",
+     "id": "choropleth",
+     "title": "Choropleth"
     },
     {
      "body": "Root: 480px high (`--ok-spacing` × 120), `--ok-radius-md`, `overflow: hidden`; fullscreen fallback is\nfixed and fills the window at `--ok-z-modal`. Corners: 10px from the edges, column of controls with\n8px gaps. Controls: paper, `--ok-radius-md`, `--ok-shadow-z1`, 32px buttons, 20px icons, dividers\nbetween buttons, hover `--ok-action-hover`, focus ring `--ok-text-primary`, disabled\n`--ok-action-disabled`, pressed `--ok-palette-primary-main`; compass north `--ok-palette-error-main`.\nPin: 26px, `--ok-c-main` of `data-ok-color`. Popup: paper, `--ok-radius-lg`, `--ok-shadow-dropdown`,\n10px tip, 240px max width, close button 28px. Panel: grey 900 at 80% with a 6px blur,\n`--ok-radius-lg`, white text, a nested dark theme for its controls. Scale: gradient\n`--ok-palette-secondary-dark` → `--ok-palette-error-dark`, white caption text. Attribution: white at\n84%, grey 800 caption text, a 24px info button when folded (narrower than 640px or `compact`).\nResponsive: the root is fluid (`min-width: 0`); panels cap at the map's size and scroll; the\nattribution folds below 640px of map width.",
@@ -45040,17 +45434,17 @@
      "title": "Behavior"
     },
     {
-     "body": "| Key | Action |\n|---|---|\n| Arrow keys (map) | Pan (MapLibre) |\n| + / − (map) | Zoom (MapLibre) |\n| Shift + arrows (map) | Rotate / tilt (MapLibre) |\n| Enter / Space (button marker) | Click it |\n| Arrow keys (draggable marker) | Move 10px; Shift: 50px |\n| Escape | Close the focused popup; leave the fullscreen fallback |\n| Tab | Map, markers, popups, panels, controls in DOM order |",
+     "body": "| Key | Action |\n|---|---|\n| Up / Down, Left / Right (regions list) | Previous / next region (no wrap) |\n| Home / End, Page up / Page down (regions list) | First / last region; 10 regions |\n| Letters (regions list) | Next region whose name starts with the typed text (700 ms buffer) |\n| Enter / Space (regions list) | Select the active region, or clear it |\n| Escape (regions list) | Clear the selection |\n| Enter / Space (legend class) | Toggle the class (mute the regions outside the pressed classes) |\n| Arrow keys (map) | Pan (MapLibre) |\n| + / − (map) | Zoom (MapLibre) |\n| Shift + arrows (map) | Rotate / tilt (MapLibre) |\n| Enter / Space (button marker) | Click it |\n| Arrow keys (draggable marker) | Move 10px; Shift: 50px |\n| Escape | Close the focused popup; leave the fullscreen fallback |\n| Tab | Map, markers, popups, panels, controls in DOM order |",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "The canvas is a `region` named by `aria-label` (default \"Map\"), `aria-roledescription=\"map\"` and\ndescribed by `[data-ok-map-description]`, which is shown when the map can't draw. Interactive\nmarkers are buttons with names. Popups are dialogs (or tooltips for hover readouts) that take and\nreturn focus. Control buttons are labelled (`labels`), report `aria-pressed` / `aria-disabled`, and\ngeolocation results are announced in the status region. Draggable markers can also be moved with\nthe keyboard; stories also let a click place them (WCAG 2.5.7). Animations respect reduced motion\n(MapLibre's camera and the stories' animated point, which can be paused, WCAG 2.2.2).",
+     "body": "The canvas is a `region` named by `aria-label` (default \"Map\"), `aria-roledescription=\"map\"` and\ndescribed by `[data-ok-map-description]`, which is shown when the map can't draw. Interactive\nmarkers are buttons with names. Popups are dialogs (or tooltips for hover readouts) that take and\nreturn focus. Control buttons are labelled (`labels`), report `aria-pressed` / `aria-disabled`, and\ngeolocation results are announced in the status region. Choropleths: the regions list is a\n`listbox` (name from `listLabel` / `labels.regions`) whose options carry each region's name and\nvalue (`aria-activedescendant`, `aria-selected`); the table (caption, column and row headers) holds\nthe same data for assistive technology and replaces the map in the fallback; legend classes are\ntoggle buttons in a named group with their ranges as text, so values never depend on color alone\n(WCAG 1.1.1, 1.4.1). Draggable markers can also be moved with\nthe keyboard; stories also let a click place them (WCAG 2.5.7). Animations respect reduced motion\n(MapLibre's camera and the stories' animated point, which can be paused, WCAG 2.2.2).",
      "id": "accessibility",
      "title": "Accessibility"
     },
     {
-     "body": "HTML (on the root unless noted): `ok:map:load|error|idle|movestart|move|moveend|zoomend|rotateend|\npitchend|click|dblclick|contextmenu|mousemove|mouseenter|mouseleave` (detail: the core `MapEvent`),\n`ok:map:popupopen` / `ok:map:popupclose` (on the popup; `detail.reason`, cancelable),\n`ok:map:markerdragstart|markerdrag|markerdragend` (on the marker; `detail.lngLat`),\n`ok:map:fullscreen` (`{ fullscreen }`), `ok:map:geolocate` (`{ coords }`),\n`ok:map:geolocateerror` (`{ code, message }`), `ok:map:trackuserlocation` (`{ tracking }`),\n`ok:map:fallback` (`{ reason }`). Instance: `{ controller, map, viewState, flyTo, easeTo, jumpTo,\nfitBounds, setSourceData(id, data), getClusterExpansionZoom(source, clusterId), openPopup(popup),\nclosePopup(popup), fullscreen, setFullscreen(on) }`. Worker: `setMapWorkerUrl(url)` from\n`@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; `owlky-map.js` finds\n`owlky-map-worker.js` next to itself).",
+     "body": "HTML (on the root unless noted): `ok:map:load|error|idle|movestart|move|moveend|zoomend|rotateend|\npitchend|click|dblclick|contextmenu|mousemove|mouseenter|mouseleave` (detail: the core `MapEvent`),\n`ok:map:popupopen` / `ok:map:popupclose` (on the popup; `detail.reason`, cancelable),\n`ok:map:markerdragstart|markerdrag|markerdragend` (on the marker; `detail.lngLat`),\n`ok:map:fullscreen` (`{ fullscreen }`), `ok:map:geolocate` (`{ coords }`),\n`ok:map:geolocateerror` (`{ code, message }`), `ok:map:trackuserlocation` (`{ tracking }`),\n`ok:map:fallback` (`{ reason }`), `ok:map:regionselect` (on `[data-ok-map-regions]`, `{ id }`),\n`ok:map:legendtoggle` (on the legend, `{ classIndex, active }`). Instance: `{ controller, map, viewState, flyTo, easeTo, jumpTo,\nfitBounds, setSourceData(id, data), getClusterExpansionZoom(source, clusterId), openPopup(popup),\nclosePopup(popup), fullscreen, setFullscreen(on), scale }` (`scale` = core `mapScale`, for CDN pages). Worker: `setMapWorkerUrl(url)` from\n`@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; `owlky-map.js` finds\n`owlky-map-worker.js` next to itself).",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -45060,12 +45454,12 @@
      "title": "Security"
     },
     {
-     "body": "Upstream: react-map-gl (maplibre) `Map`, `Marker`, `Popup`, `Source`, `Layer`, controls\n(visgl.github.io/react-map-gl/docs/api-reference/maplibre/…, checked 2026-11-09) on MapLibre GL JS.\nThe \"API mapping\" paragraph above records the details; this table adds a status per area.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Map` | `MapView` | renamed | avoids shadowing the global `Map` |\n| Layout: `id`, `cursor` | same (`id` names the map for `useMap`) | kept | `style`: class names / CSS |\n| Styling: `mapStyle`, `projection`, `renderWorldCopies`, `terrain` | same / `data-ok-map-style`, `-projection`, `-render-world-copies` | kept | `mapStyleDark` added (theme) |\n| Styling: `light`, `sky` | `mapOptions` (read once) | deferred | reactive props (sky / atmosphere on the globe, 3D light) |\n| Styling: `styleDiffing` | — | deferred | diff style changes instead of reloading |\n| Camera: `initialViewState` (`bounds`, `fitBoundsOptions`), `longitude` … `bearing`, `viewState`, `minZoom` / `maxZoom` / `minPitch` / `maxPitch`, `maxBounds` | same / root numbers, `data-ok-bounds`, `-max-bounds` | kept | |\n| Camera: `padding` | — | deferred | camera padding (a side panel over the map) |\n| Input handlers (8 flags), `interactiveLayerIds` | same / `data-ok-<handler>=\"false\"`, `-interactive-layer-ids` | kept | `cooperativeGestures` too |\n| Callbacks: `onLoad` … `onSourceData` (every map, mouse, touch, move, zoom, rotate, pitch, drag, box zoom, data event) | same · `ok:map:*` | kept | HTML emits a subset (Events / API) |\n| Other: `mapLib`, `reuseMaps` | — | not applicable | MapLibre built in |\n| Other: `RTLTextPlugin`, `workerCount`, `maxParallelImageRequests` | MapLibre from `@owlky/core/map` | not applicable | global MapLibre settings, called by the app |\n| Other: `workerUrl` | `setMapWorkerUrl(url)` | renamed | |\n| Methods: `getMap()` (+ safe map methods on the ref) | `MapRef.getMap()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`, `getViewState()` | kept | |\n| Marker `longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`, `rotationAlignment`, `pitchAlignment`, `onClick`, `onDragStart` / `onDrag` / `onDragEnd` | same | kept | `color`: palette names |\n| Marker `scale`, `clickTolerance` | — | deferred | default pin size; click vs drag tolerance |\n| Marker `popup` | compose a `Popup` | not applicable | HTML `data-ok-map-popup-open` |\n| Popup `longitude`, `latitude`, `anchor`, `offset`, `maxWidth`, `closeButton`, `closeOnClick`, `closeOnMove`, `focusAfterOpen`, `onOpen`, `onClose` | same | kept | `onClose(reason)` |\n| Popup / Marker `style`, `className` | `className` | kept | `style` not applicable (strict CSP in HTML) |\n| `Source`, `Layer` (MapLibre specs, `beforeId`) | same / hidden `data-ok-map-source` / `-layer` (allowlist) | kept | |\n| `NavigationControl`, `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `AttributionControl`, `GlobeControl`, `TerrainControl` (+ `position`) | same | kept | Owlky markup |\n| `LogoControl`, `useControl` | — / `MapControl` | not applicable | |\n| `MapProvider`, `useMap` | same | kept | |\n| choropleth, great circles, geo maps (ApexMaps parity) | — | deferred (4.18.15–4.18.17) | |",
+     "body": "Upstream: react-map-gl (maplibre) `Map`, `Marker`, `Popup`, `Source`, `Layer`, controls\n(visgl.github.io/react-map-gl/docs/api-reference/maplibre/…, checked 2026-11-09) on MapLibre GL JS.\nThe \"API mapping\" paragraph above records the details; this table adds a status per area.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Map` | `MapView` | renamed | avoids shadowing the global `Map` |\n| Layout: `id`, `cursor` | same (`id` names the map for `useMap`) | kept | `style`: class names / CSS |\n| Styling: `mapStyle`, `projection`, `renderWorldCopies`, `terrain` | same / `data-ok-map-style`, `-projection`, `-render-world-copies` | kept | `mapStyleDark` added (theme) |\n| Styling: `light`, `sky` | `mapOptions` (read once) | deferred | reactive props (sky / atmosphere on the globe, 3D light) |\n| Styling: `styleDiffing` | — | deferred | diff style changes instead of reloading |\n| Camera: `initialViewState` (`bounds`, `fitBoundsOptions`), `longitude` … `bearing`, `viewState`, `minZoom` / `maxZoom` / `minPitch` / `maxPitch`, `maxBounds` | same / root numbers, `data-ok-bounds`, `-max-bounds` | kept | |\n| Camera: `padding` | — | deferred | camera padding (a side panel over the map) |\n| Input handlers (8 flags), `interactiveLayerIds` | same / `data-ok-<handler>=\"false\"`, `-interactive-layer-ids` | kept | `cooperativeGestures` too |\n| Callbacks: `onLoad` … `onSourceData` (every map, mouse, touch, move, zoom, rotate, pitch, drag, box zoom, data event) | same · `ok:map:*` | kept | HTML emits a subset (Events / API) |\n| Other: `mapLib`, `reuseMaps` | — | not applicable | MapLibre built in |\n| Other: `RTLTextPlugin`, `workerCount`, `maxParallelImageRequests` | MapLibre from `@owlky/core/map` | not applicable | global MapLibre settings, called by the app |\n| Other: `workerUrl` | `setMapWorkerUrl(url)` | renamed | |\n| Methods: `getMap()` (+ safe map methods on the ref) | `MapRef.getMap()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`, `getViewState()` | kept | |\n| Marker `longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`, `rotationAlignment`, `pitchAlignment`, `onClick`, `onDragStart` / `onDrag` / `onDragEnd` | same | kept | `color`: palette names |\n| Marker `scale`, `clickTolerance` | — | deferred | default pin size; click vs drag tolerance |\n| Marker `popup` | compose a `Popup` | not applicable | HTML `data-ok-map-popup-open` |\n| Popup `longitude`, `latitude`, `anchor`, `offset`, `maxWidth`, `closeButton`, `closeOnClick`, `closeOnMove`, `focusAfterOpen`, `onOpen`, `onClose` | same | kept | `onClose(reason)` |\n| Popup / Marker `style`, `className` | `className` | kept | `style` not applicable (strict CSP in HTML) |\n| `Source`, `Layer` (MapLibre specs, `beforeId`) | same / hidden `data-ok-map-source` / `-layer` (allowlist) | kept | |\n| `NavigationControl`, `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `AttributionControl`, `GlobeControl`, `TerrainControl` (+ `position`) | same | kept | Owlky markup |\n| `LogoControl`, `useControl` | — / `MapControl` | not applicable | |\n| `MapProvider`, `useMap` | same | kept | |\n| ApexMaps `scale.type` (`quantile`, `equalInterval` / `quantize`, `jenks` / `naturalBreaks`, `threshold`), `classes`, `breaks`, `palette`, `nullColor` | `mapScale({ method, classes, thresholds, palette, nullColor })` | renamed | `type` → `method`, `breaks` → `thresholds` (the result's `breaks` are the computed ones); continuous `linear` / `log` / `sqrt` and `ordinal` deferred |\n| ApexMaps `legend.style` (`classes` · `gradient`), `interactive`, `title`, `position`, `showNull`, `formatter`, `tickFormatter`, event `legendToggle` | `MapLegend` `variant`, `interactive`, `title`, `position`, `showNull`, `formatter`, `tickFormatter`, `onLegendToggle` / `ok:map:legendtoggle` | kept | `style` → `variant`; `scale.nullLabel` → `nullLabel`; `align`, `width`, `marker` deferred |\n| ApexMaps `states.muted.opacity`, `states.active` | `mapRegionLayers({ mutedOpacity })`, outline of `selected` | kept | |\n| ApexMaps `series.joinBy`, `series.data` | `MapRegions data` joined by feature id (`promoteId`) | renamed | |\n| ApexMaps accessibility (roving keyboard, data table) | `MapRegions` listbox + table | kept | |\n| ApexMaps `tooltip`, `dataLabels`, `setSelection()`, `frameFeature()` | compose `Popup` / symbol layers; `fitBounds` | deferred | |\n| great circles, geo maps | — | deferred (4.18.16–4.18.17) | |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
     {
-     "body": "- React `Source` / `Layer` render no DOM; HTML writes `hidden` declarations (parity skips `hidden`).\n- React renders a popup while it is open; HTML keeps closed popups `hidden` in the markup.\n- HTML-only hooks ignored by parity: `data-ok-map-popup-open`, `data-ok-map-fly-to`, `data-ok-view`,\n  `data-ok-duration`.\n- React portals controls into the corners after mount (none in server markup); HTML writes them in\n  the corners.\n- Pixel parity masks the WebGL canvas and the panels and credits drawn over it: two page loads can\n  render tiles at different moments. The DOM (including MapLibre's canvas container) is compared.\n- Stories: Controls are not offered (stateful demos, like the Editor); options are covered by unit\n  tests and the docs' Options tables.",
+     "body": "- Choropleth: the regions list's options, its `aria-activedescendant`, the legend's `aria-pressed`\n  and the swatch properties are written by the shared controller in both implementations (React\n  renders an empty list and `aria-pressed=\"false\"`).\n- React `Source` / `Layer` render no DOM; HTML writes `hidden` declarations (parity skips `hidden`).\n- React renders a popup while it is open; HTML keeps closed popups `hidden` in the markup.\n- HTML-only hooks ignored by parity: `data-ok-map-popup-open`, `data-ok-map-fly-to`, `data-ok-view`,\n  `data-ok-duration`.\n- React portals controls into the corners after mount (none in server markup); HTML writes them in\n  the corners.\n- Pixel parity masks the WebGL canvas and the panels and credits drawn over it: two page loads can\n  render tiles at different moments. The DOM (including MapLibre's canvas container) is compared.\n- Stories: Controls are not offered (stateful demos, like the Editor); options are covered by unit\n  tests and the docs' Options tables.",
      "id": "parity-notes",
      "title": "Parity notes"
     }
@@ -45160,6 +45554,15 @@
      "react": "import { MapView, type MapViewState, ToggleButton, ToggleButtonGroup } from \"@owlky/react\";\nimport { useState } from \"react\";\nimport { MAP_STYLES } from \"../map-data.js\";\n\ntype Mode = \"side-by-side\" | \"split-screen\";\n\nexport function SideBySideDemo() {\n  const [view, setView] = useState<MapViewState>({\n    longitude: -122.43,\n    latitude: 37.78,\n    zoom: 12,\n    pitch: 0,\n    bearing: 0,\n  });\n  const [mode, setMode] = useState<Mode>(\"side-by-side\");\n  // The map under the pointer (or with focus) leads; the other one follows it.\n  const [active, setActive] = useState<\"left\" | \"right\">(\"left\");\n  return (\n    <div className={`sb-map-compare sb-map-compare--${mode}`}>\n      <MapView\n        id=\"map-left\"\n        aria-label=\"Light map of San Francisco\"\n        description=\"San Francisco in the light style. It moves with the dark map beside it.\"\n        mapStyle={MAP_STYLES.light}\n        viewState={view}\n        onMove={(event) => active === \"left\" && setView(event.viewState)}\n        onPointerEnter={() => setActive(\"left\")}\n        onFocus={() => setActive(\"left\")}\n      />\n      <MapView\n        id=\"map-right\"\n        aria-label=\"Dark map of San Francisco\"\n        description=\"San Francisco in the dark style. It moves with the light map beside it.\"\n        mapStyle={MAP_STYLES.dark}\n        viewState={view}\n        onMove={(event) => active === \"right\" && setView(event.viewState)}\n        onPointerEnter={() => setActive(\"right\")}\n        onFocus={() => setActive(\"right\")}\n      />\n      <ToggleButtonGroup\n        className=\"sb-map-compare-mode\"\n        exclusive\n        size=\"sm\"\n        aria-label=\"Layout\"\n        value={mode}\n        onChange={(value) => {\n          if (value) setMode(value as Mode);\n        }}\n      >\n        <ToggleButton value=\"side-by-side\">Side by side</ToggleButton>\n        <ToggleButton value=\"split-screen\">Split screen</ToggleButton>\n      </ToggleButtonGroup>\n    </div>\n  );\n}\n",
      "snippets": [
       "side-by-side-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): owlky-map-worker.js sits next to owlky-map.js. -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-map.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\", \"@owlky/html/auto\", then \"@owlky/html/map\"; point setMapWorkerUrl() (from @owlky/core/map) at \"@owlky/core/map-worker.js\". -->\n\n<!-- Choropleth -->\n<div id=\"map-choropleth\" data-ok-map data-ok-longitude=\"-98\" data-ok-latitude=\"38.5\" data-ok-zoom=\"3\" data-ok-projection=\"mercator\" data-ok-map-style=\"https://tiles.openfreemap.org/styles/positron\" data-ok-map-style-dark=\"https://tiles.openfreemap.org/styles/dark\" data-ok-label=\"Map of US states by population\">\n  <div data-ok-map-view></div>\n  <div data-ok-map-fallback></div>\n  <p data-ok-map-description id=\"map-choropleth-description\">The 50 US states and the District of Columbia, colored by their population in the 2020 census. California, Texas, Florida and New York are the most populous.</p>\n  <div data-ok-map-status role=\"status\"></div>\n  <div data-ok-map-source data-ok-id=\"population\" data-ok-type=\"geojson\" data-ok-data=\"maps/us-states.geojson\" data-ok-promote-id=\"name\" hidden>\n    <div data-ok-map-layer data-ok-id=\"population-fill\" data-ok-type=\"fill\" data-ok-paint='{\"fill-color\":[\"case\",[\"==\",[\"typeof\",[\"feature-state\",\"value\"]],\"number\"],[\"step\",[\"feature-state\",\"value\"],\"var(--ok-palette-primary-lighter)\",3.96,\"var(--ok-palette-primary-light)\",8.63,\"var(--ok-palette-primary-main)\",20.2,\"var(--ok-palette-primary-dark)\",39.54,\"var(--ok-palette-primary-darker)\"],\"var(--ok-text-disabled)\"],\"fill-opacity\":[\"case\",[\"boolean\",[\"feature-state\",\"muted\"],false],0.15,[\"any\",[\"boolean\",[\"feature-state\",\"hover\"],false],[\"boolean\",[\"feature-state\",\"focus\"],false],[\"boolean\",[\"feature-state\",\"selected\"],false]],0.95,0.8]}' hidden></div>\n    <div data-ok-map-layer data-ok-id=\"population-fill-outline\" data-ok-type=\"line\" data-ok-paint='{\"line-color\":[\"case\",[\"any\",[\"boolean\",[\"feature-state\",\"selected\"],false],[\"boolean\",[\"feature-state\",\"focus\"],false],[\"boolean\",[\"feature-state\",\"hover\"],false]],\"var(--ok-text-primary)\",\"var(--ok-bg-paper)\"],\"line-width\":[\"case\",[\"boolean\",[\"feature-state\",\"selected\"],false],2.5,[\"any\",[\"boolean\",[\"feature-state\",\"focus\"],false],[\"boolean\",[\"feature-state\",\"hover\"],false]],1.5,0.5]}' hidden></div>\n  </div>\n  <div id=\"map-choropleth-regions\" data-ok-map-regions data-ok-source=\"population\" data-ok-layer=\"population-fill\">\n    <div data-ok-map-regions-list role=\"listbox\" tabindex=\"0\" aria-label=\"States\"></div>\n    <table>\n      <caption>Population by state, 2020 census</caption>\n      <thead>\n        <tr>\n          <th scope=\"col\">State</th>\n          <th scope=\"col\">Population</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr data-ok-id=\"Alabama\"><th scope=\"row\">Alabama</th><td data-ok-value=\"5.02\">5.02 million</td></tr>\n        <tr data-ok-id=\"Alaska\"><th scope=\"row\">Alaska</th><td data-ok-value=\"0.73\">0.73 million</td></tr>\n        <tr data-ok-id=\"Arizona\"><th scope=\"row\">Arizona</th><td data-ok-value=\"7.15\">7.15 million</td></tr>\n        <tr data-ok-id=\"Arkansas\"><th scope=\"row\">Arkansas</th><td data-ok-value=\"3.01\">3.01 million</td></tr>\n        <tr data-ok-id=\"California\"><th scope=\"row\">California</th><td data-ok-value=\"39.54\">39.54 million</td></tr>\n        <tr data-ok-id=\"Colorado\"><th scope=\"row\">Colorado</th><td data-ok-value=\"5.77\">5.77 million</td></tr>\n        <tr data-ok-id=\"Connecticut\"><th scope=\"row\">Connecticut</th><td data-ok-value=\"3.61\">3.61 million</td></tr>\n        <tr data-ok-id=\"Delaware\"><th scope=\"row\">Delaware</th><td data-ok-value=\"0.99\">0.99 million</td></tr>\n        <tr data-ok-id=\"District of Columbia\"><th scope=\"row\">District of Columbia</th><td data-ok-value=\"0.69\">0.69 million</td></tr>\n        <tr data-ok-id=\"Florida\"><th scope=\"row\">Florida</th><td data-ok-value=\"21.54\">21.54 million</td></tr>\n        <tr data-ok-id=\"Georgia\"><th scope=\"row\">Georgia</th><td data-ok-value=\"10.71\">10.71 million</td></tr>\n        <tr data-ok-id=\"Hawaii\"><th scope=\"row\">Hawaii</th><td data-ok-value=\"1.46\">1.46 million</td></tr>\n        <tr data-ok-id=\"Idaho\"><th scope=\"row\">Idaho</th><td data-ok-value=\"1.84\">1.84 million</td></tr>\n        <tr data-ok-id=\"Illinois\"><th scope=\"row\">Illinois</th><td data-ok-value=\"12.81\">12.81 million</td></tr>\n        <tr data-ok-id=\"Indiana\"><th scope=\"row\">Indiana</th><td data-ok-value=\"6.79\">6.79 million</td></tr>\n        <tr data-ok-id=\"Iowa\"><th scope=\"row\">Iowa</th><td data-ok-value=\"3.19\">3.19 million</td></tr>\n        <tr data-ok-id=\"Kansas\"><th scope=\"row\">Kansas</th><td data-ok-value=\"2.94\">2.94 million</td></tr>\n        <tr data-ok-id=\"Kentucky\"><th scope=\"row\">Kentucky</th><td data-ok-value=\"4.51\">4.51 million</td></tr>\n        <tr data-ok-id=\"Louisiana\"><th scope=\"row\">Louisiana</th><td data-ok-value=\"4.66\">4.66 million</td></tr>\n        <tr data-ok-id=\"Maine\"><th scope=\"row\">Maine</th><td data-ok-value=\"1.36\">1.36 million</td></tr>\n        <tr data-ok-id=\"Maryland\"><th scope=\"row\">Maryland</th><td data-ok-value=\"6.18\">6.18 million</td></tr>\n        <tr data-ok-id=\"Massachusetts\"><th scope=\"row\">Massachusetts</th><td data-ok-value=\"7.03\">7.03 million</td></tr>\n        <tr data-ok-id=\"Michigan\"><th scope=\"row\">Michigan</th><td data-ok-value=\"10.08\">10.08 million</td></tr>\n        <tr data-ok-id=\"Minnesota\"><th scope=\"row\">Minnesota</th><td data-ok-value=\"5.71\">5.71 million</td></tr>\n        <tr data-ok-id=\"Mississippi\"><th scope=\"row\">Mississippi</th><td data-ok-value=\"2.96\">2.96 million</td></tr>\n        <tr data-ok-id=\"Missouri\"><th scope=\"row\">Missouri</th><td data-ok-value=\"6.15\">6.15 million</td></tr>\n        <tr data-ok-id=\"Montana\"><th scope=\"row\">Montana</th><td data-ok-value=\"1.08\">1.08 million</td></tr>\n        <tr data-ok-id=\"Nebraska\"><th scope=\"row\">Nebraska</th><td data-ok-value=\"1.96\">1.96 million</td></tr>\n        <tr data-ok-id=\"Nevada\"><th scope=\"row\">Nevada</th><td data-ok-value=\"3.1\">3.10 million</td></tr>\n        <tr data-ok-id=\"New Hampshire\"><th scope=\"row\">New Hampshire</th><td data-ok-value=\"1.38\">1.38 million</td></tr>\n        <tr data-ok-id=\"New Jersey\"><th scope=\"row\">New Jersey</th><td data-ok-value=\"9.29\">9.29 million</td></tr>\n        <tr data-ok-id=\"New Mexico\"><th scope=\"row\">New Mexico</th><td data-ok-value=\"2.12\">2.12 million</td></tr>\n        <tr data-ok-id=\"New York\"><th scope=\"row\">New York</th><td data-ok-value=\"20.2\">20.20 million</td></tr>\n        <tr data-ok-id=\"North Carolina\"><th scope=\"row\">North Carolina</th><td data-ok-value=\"10.44\">10.44 million</td></tr>\n        <tr data-ok-id=\"North Dakota\"><th scope=\"row\">North Dakota</th><td data-ok-value=\"0.78\">0.78 million</td></tr>\n        <tr data-ok-id=\"Ohio\"><th scope=\"row\">Ohio</th><td data-ok-value=\"11.8\">11.80 million</td></tr>\n        <tr data-ok-id=\"Oklahoma\"><th scope=\"row\">Oklahoma</th><td data-ok-value=\"3.96\">3.96 million</td></tr>\n        <tr data-ok-id=\"Oregon\"><th scope=\"row\">Oregon</th><td data-ok-value=\"4.24\">4.24 million</td></tr>\n        <tr data-ok-id=\"Pennsylvania\"><th scope=\"row\">Pennsylvania</th><td data-ok-value=\"13\">13.00 million</td></tr>\n        <tr data-ok-id=\"Rhode Island\"><th scope=\"row\">Rhode Island</th><td data-ok-value=\"1.1\">1.10 million</td></tr>\n        <tr data-ok-id=\"South Carolina\"><th scope=\"row\">South Carolina</th><td data-ok-value=\"5.12\">5.12 million</td></tr>\n        <tr data-ok-id=\"South Dakota\"><th scope=\"row\">South Dakota</th><td data-ok-value=\"0.89\">0.89 million</td></tr>\n        <tr data-ok-id=\"Tennessee\"><th scope=\"row\">Tennessee</th><td data-ok-value=\"6.91\">6.91 million</td></tr>\n        <tr data-ok-id=\"Texas\"><th scope=\"row\">Texas</th><td data-ok-value=\"29.15\">29.15 million</td></tr>\n        <tr data-ok-id=\"Utah\"><th scope=\"row\">Utah</th><td data-ok-value=\"3.27\">3.27 million</td></tr>\n        <tr data-ok-id=\"Vermont\"><th scope=\"row\">Vermont</th><td data-ok-value=\"0.64\">0.64 million</td></tr>\n        <tr data-ok-id=\"Virginia\"><th scope=\"row\">Virginia</th><td data-ok-value=\"8.63\">8.63 million</td></tr>\n        <tr data-ok-id=\"Washington\"><th scope=\"row\">Washington</th><td data-ok-value=\"7.71\">7.71 million</td></tr>\n        <tr data-ok-id=\"West Virginia\"><th scope=\"row\">West Virginia</th><td data-ok-value=\"1.79\">1.79 million</td></tr>\n        <tr data-ok-id=\"Wisconsin\"><th scope=\"row\">Wisconsin</th><td data-ok-value=\"5.89\">5.89 million</td></tr>\n        <tr data-ok-id=\"Wyoming\"><th scope=\"row\">Wyoming</th><td data-ok-value=\"0.58\">0.58 million</td></tr>\n      </tbody>\n    </table>\n  </div>\n  <div data-ok-map-corner=\"top-left\"></div>\n  <div data-ok-map-corner=\"top-right\">\n    <div data-ok-map-control data-ok-map-navigation>\n      <button type=\"button\" data-ok-map-action=\"zoom-in\" aria-label=\"Zoom in\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 5v14M5 12h14\"></path></svg></button>\n      <button type=\"button\" data-ok-map-action=\"zoom-out\" aria-label=\"Zoom out\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 12h14\"></path></svg></button>\n      <button type=\"button\" data-ok-map-action=\"compass\" aria-label=\"Reset north\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\" data-ok-map-compass-icon><path d=\"M12 3 16 12H8Z\" data-ok-map-compass-north></path><path d=\"M8 12h8l-4 9Z\" data-ok-map-compass-south></path></svg></button>\n    </div>\n  </div>\n  <div data-ok-map-corner=\"bottom-left\">\n    <div id=\"map-choropleth-legend\" role=\"group\" aria-labelledby=\"map-choropleth-legend-title\" data-ok-map-legend data-ok-variant=\"classes\">\n      <p data-ok-map-legend-title id=\"map-choropleth-legend-title\">Population (millions)</p>\n      <ul data-ok-map-legend-classes>\n        <li>\n          <button type=\"button\" data-ok-map-legend-class data-ok-min=\"0.58\" data-ok-max=\"3.96\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-lighter)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>0.58 – 3.96</span></button>\n        </li>\n        <li>\n          <button type=\"button\" data-ok-map-legend-class data-ok-min=\"3.96\" data-ok-max=\"8.63\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-light)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>3.96 – 8.63</span></button>\n        </li>\n        <li>\n          <button type=\"button\" data-ok-map-legend-class data-ok-min=\"8.63\" data-ok-max=\"20.2\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-main)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>8.63 – 20.2</span></button>\n        </li>\n        <li>\n          <button type=\"button\" data-ok-map-legend-class data-ok-min=\"20.2\" data-ok-max=\"39.54\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-dark)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>20.2 – 39.54</span></button>\n        </li>\n        <li>\n          <button type=\"button\" data-ok-map-legend-class data-ok-min=\"39.54\" data-ok-max=\"39.54\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-darker)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>39.54</span></button>\n        </li>\n      </ul>\n    </div>\n  </div>\n  <div data-ok-map-corner=\"bottom-right\">\n    <details data-ok-map-attribution>\n      <summary aria-label=\"Map credits\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01\"></path></svg></summary>\n      <div data-ok-map-attribution-text></div>\n    </details>\n  </div>\n</div>",
+     "id": "components-map--choropleth",
+     "name": "Choropleth",
+     "react": "import {\n  Layer,\n  type LayerProps,\n  MapLegend,\n  MapRegions,\n  MapView,\n  mapRegionLayers,\n  mapScale,\n  NavigationControl,\n  Source,\n} from \"@owlky/react\";\nimport { MAP_STYLES, STATE_POPULATION, US_STATES } from \"../map-data.js\";\n\nconst regions = STATE_POPULATION.map(([name, value]) => ({ id: name, name, value }));\n// Jenks natural breaks: five classes of the primary palette's shades.\nconst scale = mapScale(\n  regions.map((region) => region.value),\n  { method: \"jenks\", classes: 5 },\n);\nconst [fill, outline] = mapRegionLayers({\n  id: \"population-fill\",\n  source: \"population\",\n  scale,\n}) as unknown as [LayerProps, LayerProps];\n\nexport function ChoroplethDemo() {\n  return (\n    <MapView\n      id=\"map-choropleth\"\n      aria-label=\"Map of US states by population\"\n      description=\"The 50 US states and the District of Columbia, colored by their population in the 2020 census. California, Texas, Florida and New York are the most populous.\"\n      mapStyle={MAP_STYLES.light}\n      mapStyleDark={MAP_STYLES.dark}\n      initialViewState={{ longitude: -98, latitude: 38.5, zoom: 3 }}\n    >\n      <NavigationControl position=\"top-right\" />\n      {/* promoteId: the state's name is the feature id the regions join on. */}\n      <Source id=\"population\" type=\"geojson\" data={US_STATES} promoteId=\"name\">\n        <Layer {...fill} />\n        <Layer {...outline} />\n      </Source>\n      <MapRegions\n        id=\"map-choropleth-regions\"\n        source=\"population\"\n        layer=\"population-fill\"\n        data={regions}\n        caption=\"Population by state, 2020 census\"\n        nameLabel=\"State\"\n        valueLabel=\"Population\"\n        formatValue={(value) => `${value.toFixed(2)} million`}\n        listLabel=\"States\"\n      />\n      <MapLegend id=\"map-choropleth-legend\" scale={scale} title=\"Population (millions)\" />\n    </MapView>\n  );\n}\n",
+     "snippets": [
+      "choropleth-group.html"
      ]
     }
    ],
@@ -68340,6 +68743,13 @@
      "title": "Respond to the pointer"
     },
     {
+     "body": "A choropleth colors regions, such as countries or states, by a value. `mapScale(values, options)` sorts the values into classes and returns the class breaks, one color per class and a MapLibre expression that paints them. Pick the `method`: `quantile` (about as many regions in each class, the default), `equalInterval` (classes of the same width), `jenks` (natural breaks that keep similar values together) or `threshold` (your own `thresholds`). The colors come from the shades of a palette color, such as `primary`, so they follow the theme and the preset. Pass your own colors in `palette` if you need more than five classes.\n\n`mapRegionLayers({ id, source, scale })` returns two layers: a fill in the scale's colors and an outline that marks the region under the pointer, the one the keyboard is on and the selected one. The source needs a feature id for each region, so set `promoteId` to the property that names it.\n\n`MapRegions` joins your data to those regions by id (HTML: a `div[data-ok-map-regions]` with a table). It also gives keyboard users a list of the regions: press Tab to reach it, then use the arrow keys to move from region to region and hear its name and value. Enter selects a region, like a click on the map. The table holds the same data for screen readers, and the map shows it when the browser can't draw the map.\n\n`MapLegend` shows the classes in a corner of the map. Each class is a toggle button: press one or more to fade the regions outside them. Set `variant` to `gradient` for a continuous bar, and draw the fill with `scale.gradient` (`mapRegionLayers` with `variant: \"gradient\"`).",
+     "html": "<!-- The regions: feature ids from the state names, colors from mapScale() -->\n<div data-ok-map-source data-ok-id=\"population\" data-ok-type=\"geojson\" data-ok-data=\"maps/us-states.geojson\" data-ok-promote-id=\"name\" hidden>\n  <div data-ok-map-layer data-ok-id=\"population-fill\" data-ok-type=\"fill\" data-ok-paint='{\"fill-color\":[\"case\",[\"==\",[\"typeof\",[\"feature-state\",\"value\"]],\"number\"],[\"step\",[\"feature-state\",\"value\"],\"var(--ok-palette-primary-lighter)\",3.96,\"var(--ok-palette-primary-light)\",8.63,\"var(--ok-palette-primary-main)\",20.2,\"var(--ok-palette-primary-dark)\",39.54,\"var(--ok-palette-primary-darker)\"],\"var(--ok-text-disabled)\"],\"fill-opacity\":[\"case\",[\"boolean\",[\"feature-state\",\"muted\"],false],0.15,[\"any\",[\"boolean\",[\"feature-state\",\"hover\"],false],[\"boolean\",[\"feature-state\",\"focus\"],false],[\"boolean\",[\"feature-state\",\"selected\"],false]],0.95,0.8]}' hidden></div>\n  <div data-ok-map-layer data-ok-id=\"population-fill-outline\" data-ok-type=\"line\" data-ok-paint='{\"line-color\":[\"case\",[\"any\",[\"boolean\",[\"feature-state\",\"selected\"],false],[\"boolean\",[\"feature-state\",\"focus\"],false],[\"boolean\",[\"feature-state\",\"hover\"],false]],\"var(--ok-text-primary)\",\"var(--ok-bg-paper)\"],\"line-width\":[\"case\",[\"boolean\",[\"feature-state\",\"selected\"],false],2.5,[\"any\",[\"boolean\",[\"feature-state\",\"focus\"],false],[\"boolean\",[\"feature-state\",\"hover\"],false]],1.5,0.5]}' hidden></div>\n</div>\n\n<!-- The data, joined to the regions by id -->\n<div id=\"map-choropleth-regions\" data-ok-map-regions data-ok-source=\"population\" data-ok-layer=\"population-fill\">\n  <div data-ok-map-regions-list role=\"listbox\" tabindex=\"0\" aria-label=\"States\"></div>\n  <table>\n    <caption>Population by state, 2020 census</caption>\n    <thead>\n      <tr>\n        <th scope=\"col\">State</th>\n        <th scope=\"col\">Population</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr data-ok-id=\"Alabama\"><th scope=\"row\">Alabama</th><td data-ok-value=\"5.02\">5.02 million</td></tr>\n      <tr data-ok-id=\"Alaska\"><th scope=\"row\">Alaska</th><td data-ok-value=\"0.73\">0.73 million</td></tr>\n      <tr data-ok-id=\"Arizona\"><th scope=\"row\">Arizona</th><td data-ok-value=\"7.15\">7.15 million</td></tr>\n      <tr data-ok-id=\"Arkansas\"><th scope=\"row\">Arkansas</th><td data-ok-value=\"3.01\">3.01 million</td></tr>\n      <tr data-ok-id=\"California\"><th scope=\"row\">California</th><td data-ok-value=\"39.54\">39.54 million</td></tr>\n      <tr data-ok-id=\"Colorado\"><th scope=\"row\">Colorado</th><td data-ok-value=\"5.77\">5.77 million</td></tr>\n      <tr data-ok-id=\"Connecticut\"><th scope=\"row\">Connecticut</th><td data-ok-value=\"3.61\">3.61 million</td></tr>\n      <tr data-ok-id=\"Delaware\"><th scope=\"row\">Delaware</th><td data-ok-value=\"0.99\">0.99 million</td></tr>\n      <tr data-ok-id=\"District of Columbia\"><th scope=\"row\">District of Columbia</th><td data-ok-value=\"0.69\">0.69 million</td></tr>\n      <tr data-ok-id=\"Florida\"><th scope=\"row\">Florida</th><td data-ok-value=\"21.54\">21.54 million</td></tr>\n      <tr data-ok-id=\"Georgia\"><th scope=\"row\">Georgia</th><td data-ok-value=\"10.71\">10.71 million</td></tr>\n      <tr data-ok-id=\"Hawaii\"><th scope=\"row\">Hawaii</th><td data-ok-value=\"1.46\">1.46 million</td></tr>\n      <tr data-ok-id=\"Idaho\"><th scope=\"row\">Idaho</th><td data-ok-value=\"1.84\">1.84 million</td></tr>\n      <tr data-ok-id=\"Illinois\"><th scope=\"row\">Illinois</th><td data-ok-value=\"12.81\">12.81 million</td></tr>\n      <tr data-ok-id=\"Indiana\"><th scope=\"row\">Indiana</th><td data-ok-value=\"6.79\">6.79 million</td></tr>\n      <tr data-ok-id=\"Iowa\"><th scope=\"row\">Iowa</th><td data-ok-value=\"3.19\">3.19 million</td></tr>\n      <tr data-ok-id=\"Kansas\"><th scope=\"row\">Kansas</th><td data-ok-value=\"2.94\">2.94 million</td></tr>\n      <tr data-ok-id=\"Kentucky\"><th scope=\"row\">Kentucky</th><td data-ok-value=\"4.51\">4.51 million</td></tr>\n      <tr data-ok-id=\"Louisiana\"><th scope=\"row\">Louisiana</th><td data-ok-value=\"4.66\">4.66 million</td></tr>\n      <tr data-ok-id=\"Maine\"><th scope=\"row\">Maine</th><td data-ok-value=\"1.36\">1.36 million</td></tr>\n      <tr data-ok-id=\"Maryland\"><th scope=\"row\">Maryland</th><td data-ok-value=\"6.18\">6.18 million</td></tr>\n      <tr data-ok-id=\"Massachusetts\"><th scope=\"row\">Massachusetts</th><td data-ok-value=\"7.03\">7.03 million</td></tr>\n      <tr data-ok-id=\"Michigan\"><th scope=\"row\">Michigan</th><td data-ok-value=\"10.08\">10.08 million</td></tr>\n      <tr data-ok-id=\"Minnesota\"><th scope=\"row\">Minnesota</th><td data-ok-value=\"5.71\">5.71 million</td></tr>\n      <tr data-ok-id=\"Mississippi\"><th scope=\"row\">Mississippi</th><td data-ok-value=\"2.96\">2.96 million</td></tr>\n      <tr data-ok-id=\"Missouri\"><th scope=\"row\">Missouri</th><td data-ok-value=\"6.15\">6.15 million</td></tr>\n      <tr data-ok-id=\"Montana\"><th scope=\"row\">Montana</th><td data-ok-value=\"1.08\">1.08 million</td></tr>\n      <tr data-ok-id=\"Nebraska\"><th scope=\"row\">Nebraska</th><td data-ok-value=\"1.96\">1.96 million</td></tr>\n      <tr data-ok-id=\"Nevada\"><th scope=\"row\">Nevada</th><td data-ok-value=\"3.1\">3.10 million</td></tr>\n      <tr data-ok-id=\"New Hampshire\"><th scope=\"row\">New Hampshire</th><td data-ok-value=\"1.38\">1.38 million</td></tr>\n      <tr data-ok-id=\"New Jersey\"><th scope=\"row\">New Jersey</th><td data-ok-value=\"9.29\">9.29 million</td></tr>\n      <tr data-ok-id=\"New Mexico\"><th scope=\"row\">New Mexico</th><td data-ok-value=\"2.12\">2.12 million</td></tr>\n      <tr data-ok-id=\"New York\"><th scope=\"row\">New York</th><td data-ok-value=\"20.2\">20.20 million</td></tr>\n      <tr data-ok-id=\"North Carolina\"><th scope=\"row\">North Carolina</th><td data-ok-value=\"10.44\">10.44 million</td></tr>\n      <tr data-ok-id=\"North Dakota\"><th scope=\"row\">North Dakota</th><td data-ok-value=\"0.78\">0.78 million</td></tr>\n      <tr data-ok-id=\"Ohio\"><th scope=\"row\">Ohio</th><td data-ok-value=\"11.8\">11.80 million</td></tr>\n      <tr data-ok-id=\"Oklahoma\"><th scope=\"row\">Oklahoma</th><td data-ok-value=\"3.96\">3.96 million</td></tr>\n      <tr data-ok-id=\"Oregon\"><th scope=\"row\">Oregon</th><td data-ok-value=\"4.24\">4.24 million</td></tr>\n      <tr data-ok-id=\"Pennsylvania\"><th scope=\"row\">Pennsylvania</th><td data-ok-value=\"13\">13.00 million</td></tr>\n      <tr data-ok-id=\"Rhode Island\"><th scope=\"row\">Rhode Island</th><td data-ok-value=\"1.1\">1.10 million</td></tr>\n      <tr data-ok-id=\"South Carolina\"><th scope=\"row\">South Carolina</th><td data-ok-value=\"5.12\">5.12 million</td></tr>\n      <tr data-ok-id=\"South Dakota\"><th scope=\"row\">South Dakota</th><td data-ok-value=\"0.89\">0.89 million</td></tr>\n      <tr data-ok-id=\"Tennessee\"><th scope=\"row\">Tennessee</th><td data-ok-value=\"6.91\">6.91 million</td></tr>\n      <tr data-ok-id=\"Texas\"><th scope=\"row\">Texas</th><td data-ok-value=\"29.15\">29.15 million</td></tr>\n      <tr data-ok-id=\"Utah\"><th scope=\"row\">Utah</th><td data-ok-value=\"3.27\">3.27 million</td></tr>\n      <tr data-ok-id=\"Vermont\"><th scope=\"row\">Vermont</th><td data-ok-value=\"0.64\">0.64 million</td></tr>\n      <tr data-ok-id=\"Virginia\"><th scope=\"row\">Virginia</th><td data-ok-value=\"8.63\">8.63 million</td></tr>\n      <tr data-ok-id=\"Washington\"><th scope=\"row\">Washington</th><td data-ok-value=\"7.71\">7.71 million</td></tr>\n      <tr data-ok-id=\"West Virginia\"><th scope=\"row\">West Virginia</th><td data-ok-value=\"1.79\">1.79 million</td></tr>\n      <tr data-ok-id=\"Wisconsin\"><th scope=\"row\">Wisconsin</th><td data-ok-value=\"5.89\">5.89 million</td></tr>\n      <tr data-ok-id=\"Wyoming\"><th scope=\"row\">Wyoming</th><td data-ok-value=\"0.58\">0.58 million</td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- The legend sits in a corner -->\n<div data-ok-map-corner=\"bottom-left\">\n  <div id=\"map-choropleth-legend\" role=\"group\" aria-labelledby=\"map-choropleth-legend-title\" data-ok-map-legend data-ok-variant=\"classes\">\n    <p data-ok-map-legend-title id=\"map-choropleth-legend-title\">Population (millions)</p>\n    <ul data-ok-map-legend-classes>\n      <li>\n        <button type=\"button\" data-ok-map-legend-class data-ok-min=\"0.58\" data-ok-max=\"3.96\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-lighter)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>0.58 – 3.96</span></button>\n      </li>\n      <li>\n        <button type=\"button\" data-ok-map-legend-class data-ok-min=\"3.96\" data-ok-max=\"8.63\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-light)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>3.96 – 8.63</span></button>\n      </li>\n      <li>\n        <button type=\"button\" data-ok-map-legend-class data-ok-min=\"8.63\" data-ok-max=\"20.2\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-main)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>8.63 – 20.2</span></button>\n      </li>\n      <li>\n        <button type=\"button\" data-ok-map-legend-class data-ok-min=\"20.2\" data-ok-max=\"39.54\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-dark)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>20.2 – 39.54</span></button>\n      </li>\n      <li>\n        <button type=\"button\" data-ok-map-legend-class data-ok-min=\"39.54\" data-ok-max=\"39.54\" aria-pressed=\"false\"><span data-ok-map-legend-swatch data-ok-swatch=\"var(--ok-palette-primary-darker)\" aria-hidden=\"true\"></span><span data-ok-map-legend-label>39.54</span></button>\n      </li>\n    </ul>\n  </div>\n</div>\n\n<script type=\"module\">\n  const regions = document.querySelector(\"#map-choropleth-regions\");\n  regions.addEventListener(\"ok:map:regionselect\", (event) => {\n    console.log(\"Selected\", event.detail.id);\n  });\n</script>",
+     "id": "choropleth",
+     "react": "import {\n  Layer,\n  type LayerProps,\n  MapLegend,\n  MapRegions,\n  MapView,\n  mapRegionLayers,\n  mapScale,\n  Source,\n} from \"@owlky/react\";\n\nconst STATES = [\n  { id: \"California\", name: \"California\", value: 39.54 },\n  { id: \"Nevada\", name: \"Nevada\", value: 3.1 },\n  { id: \"Oregon\", name: \"Oregon\", value: 4.24 },\n  { id: \"Arizona\", name: \"Arizona\", value: 7.15 },\n];\nconst scale = mapScale(\n  STATES.map((state) => state.value),\n  { method: \"jenks\", classes: 3 },\n);\nconst [fill, outline] = mapRegionLayers({\n  id: \"population-fill\",\n  source: \"population\",\n  scale,\n}) as unknown as [LayerProps, LayerProps];\n\nexport function PopulationMap() {\n  return (\n    <MapView\n      aria-label=\"Map of western US states by population\"\n      mapStyle=\"https://tiles.openfreemap.org/styles/positron\"\n      initialViewState={{ longitude: -117, latitude: 38, zoom: 4 }}\n    >\n      {/* The state names are the feature ids */}\n      <Source id=\"population\" type=\"geojson\" data=\"us-states.geojson\" promoteId=\"name\">\n        <Layer {...fill} />\n        <Layer {...outline} />\n      </Source>\n      <MapRegions\n        source=\"population\"\n        layer=\"population-fill\"\n        data={STATES}\n        caption=\"Population by state, 2020 census\"\n        nameLabel=\"State\"\n        valueLabel=\"Population\"\n        formatValue={(value) => `${value.toFixed(2)} million`}\n        onRegionSelect={(event) => console.log(\"Selected\", event.id)}\n      />\n      <MapLegend scale={scale} title=\"Population (millions)\" />\n    </MapView>\n  );\n}",
+     "title": "Color regions by value"
+    },
+    {
      "body": "`initialViewState` sets where the map starts: `longitude`, `latitude`, `zoom`, `pitch` and `bearing`, or `bounds` to fit. To control the view, pass `viewState` and update it from `onMove`. The map ref has `flyTo`, `easeTo`, `jumpTo` and `fitBounds`, and `getMap()` returns the MapLibre map for anything else.\n\nIn HTML, the root's `data-ok-longitude`, `data-ok-latitude` and `data-ok-zoom` set the view, and the map moves when you change them. Any element with `data-ok-map-fly-to=\"<map id>\"` and `data-ok-view=\"longitude,latitude,zoom\"` flies the map there when it is clicked, or when a radio button is selected. With reduced motion, the map jumps instead of flying.",
      "html": "<button type=\"button\" data-ok-map-fly-to=\"world\" data-ok-view=\"139.69,35.69,10\">\n  Tokyo\n</button>",
      "id": "view",
@@ -68359,7 +68769,7 @@
      "title": "Use the map on a strict page"
     },
     {
-     "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. The map's options come first, then the marker, popup and control options.",
+     "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. The map's options come first, then the marker, popup, control and legend options.",
      "id": "options",
      "title": "Options"
     },
@@ -68369,7 +68779,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:map:load`**, **`ok:map:move`**, **`ok:map:moveend`**, **`ok:map:click`**, **`ok:map:mousemove`**, **`ok:map:mouseenter`**, **`ok:map:mouseleave`** and the other map events fire on the map with `detail.viewState`, and for pointer events `lngLat`, `point` and `features`.\n- **`ok:map:popupopen`** and **`ok:map:popupclose`** fire on a popup. `popupclose` has `detail.reason` and can be canceled to keep it open.\n- **`ok:map:markerdragstart`**, **`ok:map:markerdrag`** and **`ok:map:markerdragend`** fire on a marker with `detail.lngLat`.\n- **`ok:map:fullscreen`**, **`ok:map:geolocate`**, **`ok:map:geolocateerror`**, **`ok:map:trackuserlocation`** and **`ok:map:fallback`** report the controls and a map that can't draw.\n- **Instance:** `runtime.get(element, \"map\")` returns `{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on) }`.\n- **React:** event props such as `onLoad`, `onMove`, `onClick`, `onMouseMove` and `onMouseEnter`; a ref with `getMap()`, `flyTo`, `easeTo`, `jumpTo` and `fitBounds`; and `useMap()` inside a map or a `MapProvider`.",
+     "body": "- **`ok:map:load`**, **`ok:map:move`**, **`ok:map:moveend`**, **`ok:map:click`**, **`ok:map:mousemove`**, **`ok:map:mouseenter`**, **`ok:map:mouseleave`** and the other map events fire on the map with `detail.viewState`, and for pointer events `lngLat`, `point` and `features`.\n- **`ok:map:popupopen`** and **`ok:map:popupclose`** fire on a popup. `popupclose` has `detail.reason` and can be canceled to keep it open.\n- **`ok:map:markerdragstart`**, **`ok:map:markerdrag`** and **`ok:map:markerdragend`** fire on a marker with `detail.lngLat`.\n- **`ok:map:regionselect`** fires on a `div[data-ok-map-regions]` with `detail.id`, which is `null` when the selection is cleared. **`ok:map:legendtoggle`** fires on a legend with `detail.classIndex` and `detail.active`, the pressed classes.\n- **`ok:map:fullscreen`**, **`ok:map:geolocate`**, **`ok:map:geolocateerror`**, **`ok:map:trackuserlocation`** and **`ok:map:fallback`** report the controls and a map that can't draw.\n- **Instance:** `runtime.get(element, \"map\")` returns `{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), scale(values, options) }`. `scale` is `mapScale`, for pages that load the map from the CDN.\n- **React:** event props such as `onLoad`, `onMove`, `onClick`, `onMouseMove` and `onMouseEnter`; a ref with `getMap()`, `flyTo`, `easeTo`, `jumpTo` and `fitBounds`; and `useMap()` inside a map or a `MapProvider`.",
      "id": "api",
      "title": "Events and methods"
     },
@@ -68379,7 +68789,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Name each map with `aria-label` (HTML: `data-ok-label`). Without a name, it is called \"Map\".\n- Describe what the map shows with `description` (HTML: a `p[data-ok-map-description]` with an `id`). Screen readers read it with the map, and it replaces the map when the browser can't draw it.\n- Give every interactive marker a name. People can open its popup with Enter or Space, and move a draggable marker with the arrow keys.\n- A popup takes focus when it opens and gives it back when it closes, unless you turn off `focusAfterOpen`.\n- Controls have names and states: fullscreen and globe report `aria-pressed`, and the location result is announced.\n- Moving content needs a way to pause it, and animations respect reduced motion.",
+     "body": "- Name each map with `aria-label` (HTML: `data-ok-label`). Without a name, it is called \"Map\".\n- Describe what the map shows with `description` (HTML: a `p[data-ok-map-description]` with an `id`). Screen readers read it with the map, and it replaces the map when the browser can't draw it.\n- Give every interactive marker a name. People can open its popup with Enter or Space, and move a draggable marker with the arrow keys.\n- A popup takes focus when it opens and gives it back when it closes, unless you turn off `focusAfterOpen`.\n- On a choropleth, name the regions' list with `listLabel` and give the table a `caption`. Keyboard users reach every region through the list, screen readers also get the table, and the legend shows the ranges as text, so the data never depends on color alone.\n- Controls have names and states: fullscreen and globe report `aria-pressed`, and the location result is announced.\n- Moving content needs a way to pause it, and animations respect reduced motion.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -70790,11 +71200,18 @@
   "data-ok-map-fly-to": "data-ok-map",
   "data-ok-map-icon": "data-ok-map",
   "data-ok-map-layer": "data-ok-map",
+  "data-ok-map-legend-class": "data-ok-map-legend",
+  "data-ok-map-legend-classes": "data-ok-map-legend",
+  "data-ok-map-legend-label": "data-ok-map-legend",
+  "data-ok-map-legend-swatch": "data-ok-map-legend",
+  "data-ok-map-legend-title": "data-ok-map-legend",
   "data-ok-map-panel": "data-ok-map",
   "data-ok-map-pin": "data-ok-map",
   "data-ok-map-popup-close": "data-ok-map-popup",
   "data-ok-map-popup-content": "data-ok-map-popup",
   "data-ok-map-popup-tip": "data-ok-map-popup",
+  "data-ok-map-regions": "data-ok-map",
+  "data-ok-map-regions-list": "data-ok-map",
   "data-ok-map-source": "data-ok-map",
   "data-ok-map-status": "data-ok-map",
   "data-ok-map-style": "data-ok-map",

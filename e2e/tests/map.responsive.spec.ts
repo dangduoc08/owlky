@@ -32,7 +32,7 @@ async function measure(page: Page) {
         rect.top >= frame.top - 0.5 &&
         rect.bottom <= frame.bottom + 0.5;
       for (const part of map.querySelectorAll<HTMLElement>(
-        "[data-ok-map-control], [data-ok-map-panel], [data-ok-map-scale], [data-ok-map-attribution]",
+        "[data-ok-map-control], [data-ok-map-panel], [data-ok-map-scale], [data-ok-map-attribution], [data-ok-map-legend]",
       )) {
         const rect = part.getBoundingClientRect();
         if (rect.width === 0) continue;
@@ -49,7 +49,7 @@ async function measure(page: Page) {
           });
       }
       for (const target of map.querySelectorAll<HTMLElement>(
-        "[data-ok-map-action], [data-ok-map-marker][role=button], [data-ok-map-attribution] > summary",
+        "[data-ok-map-action], [data-ok-map-marker][role=button], [data-ok-map-attribution] > summary, button[data-ok-map-legend-class]",
       )) {
         const rect = target.getBoundingClientRect();
         if (rect.width === 0) continue;
@@ -69,7 +69,14 @@ async function measure(page: Page) {
   });
 }
 
-const STORIES = ["change-theme", "markers-popups", "interaction", "heatmap", "side-by-side"];
+const STORIES = [
+  "change-theme",
+  "markers-popups",
+  "interaction",
+  "heatmap",
+  "side-by-side",
+  "choropleth",
+];
 
 for (const viewport of viewports) {
   test.describe(`map responsive @ ${viewport.name} ${viewport.width}×${viewport.height}`, () => {

@@ -3,6 +3,7 @@
  * Basemaps: OpenFreeMap (free, no key; © OpenMapTiles, data © OpenStreetMap contributors).
  * Earthquakes: USGS (public domain), October 2025, magnitude 1.5 and up, contiguous US.
  * US states: Natural Earth 1:110m (public domain). Capitals and cities: public facts.
+ * State populations: U.S. Census Bureau, 2020 Census apportionment counts (public domain).
  */
 
 /** Map styles (OpenFreeMap). */
@@ -253,3 +254,58 @@ export const POINT_LAYER = {
     "circle-stroke-color": "var(--ok-palette-common-white)",
   },
 } as const;
+
+/** "Choropleth": resident population by state, 2020 Census (millions; the GeoJSON's `name` joins it). */
+export const STATE_POPULATION: [string, number][] = [
+  ["Alabama", 5.02],
+  ["Alaska", 0.73],
+  ["Arizona", 7.15],
+  ["Arkansas", 3.01],
+  ["California", 39.54],
+  ["Colorado", 5.77],
+  ["Connecticut", 3.61],
+  ["Delaware", 0.99],
+  ["District of Columbia", 0.69],
+  ["Florida", 21.54],
+  ["Georgia", 10.71],
+  ["Hawaii", 1.46],
+  ["Idaho", 1.84],
+  ["Illinois", 12.81],
+  ["Indiana", 6.79],
+  ["Iowa", 3.19],
+  ["Kansas", 2.94],
+  ["Kentucky", 4.51],
+  ["Louisiana", 4.66],
+  ["Maine", 1.36],
+  ["Maryland", 6.18],
+  ["Massachusetts", 7.03],
+  ["Michigan", 10.08],
+  ["Minnesota", 5.71],
+  ["Mississippi", 2.96],
+  ["Missouri", 6.15],
+  ["Montana", 1.08],
+  ["Nebraska", 1.96],
+  ["Nevada", 3.1],
+  ["New Hampshire", 1.38],
+  ["New Jersey", 9.29],
+  ["New Mexico", 2.12],
+  ["New York", 20.2],
+  ["North Carolina", 10.44],
+  ["North Dakota", 0.78],
+  ["Ohio", 11.8],
+  ["Oklahoma", 3.96],
+  ["Oregon", 4.24],
+  ["Pennsylvania", 13.0],
+  ["Rhode Island", 1.1],
+  ["South Carolina", 5.12],
+  ["South Dakota", 0.89],
+  ["Tennessee", 6.91],
+  ["Texas", 29.15],
+  ["Utah", 3.27],
+  ["Vermont", 0.64],
+  ["Virginia", 8.63],
+  ["Washington", 7.71],
+  ["West Virginia", 1.79],
+  ["Wisconsin", 5.89],
+  ["Wyoming", 0.58],
+];

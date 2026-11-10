@@ -419,6 +419,24 @@ export {
   useMap,
 } from "./map/map.js";
 export {
+  MapLegend,
+  type MapLegendProps,
+  type MapLegendToggleEvent,
+  type MapRegionDatum,
+  type MapRegionLayersOptions,
+  type MapRegionSelectEvent,
+  MapRegions,
+  type MapRegionsProps,
+  type MapScaleClass,
+  type MapScaleMethod,
+  type MapScaleOptions,
+  type MapScalePalette,
+  type MapScaleResult,
+  mapRegionLayers,
+  mapScale,
+  mapScaleLabel,
+} from "./map/map-choropleth.js";
+export {
   AttributionControl,
   type AttributionControlProps,
   FullscreenControl,

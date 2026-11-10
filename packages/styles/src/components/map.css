@@ -13,6 +13,8 @@
  *              › div[data-ok-map-corner=top-left|top-right|bottom-left|bottom-right]
  *                  › div[data-ok-map-control] › button[data-ok-map-action] › svg
  *                  › div[data-ok-map-scale] · details[data-ok-map-attribution]
+ *                  › div[data-ok-map-legend][data-ok-variant] › ul › li › button[data-ok-map-legend-class] | gradient
+ *              › div[data-ok-map-regions] › div[data-ok-map-regions-list][role=listbox] + table (choropleth)
  * Positions of markers and popups come from the controller (CSSOM): --_ok-map-x|y, rotations.
  */
 @reference "../theme.css";
@@ -788,8 +790,246 @@
     text-decoration: underline;
   }
 
+  /* --- Choropleth: legend ---------------------------------------------------------------------- */
+
+  :where([data-ok-map-legend]) {
+    box-sizing: border-box;
+    max-width: calc(var(--ok-spacing) * 60);
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-z1);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-typography-caption-font-family);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+    pointer-events: auto;
+  }
+
+  :where([data-ok-map][data-ok-fallback] [data-ok-map-legend]) {
+    display: none;
+  }
+
+  :where([data-ok-map-legend-title]) {
+    margin: 0 0 calc(var(--ok-spacing) * 1);
+    font-family: var(--ok-typography-subtitle2-font-family);
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+  }
+
+  :where([data-ok-map-legend-classes]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 0.5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-ok-map-legend-class]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    box-sizing: border-box;
+    width: 100%;
+    min-height: calc(var(--ok-spacing) * 6);
+    padding: 0 calc(var(--ok-spacing) * 1);
+    border: 0;
+    border-radius: var(--ok-radius-sm);
+    background: transparent;
+    color: var(--ok-text-secondary);
+    font: inherit;
+    text-align: start;
+  }
+
+  :where(button[data-ok-map-legend-class]) {
+    cursor: pointer;
+    transition: background-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  @media (hover: hover) {
+    :where(button[data-ok-map-legend-class]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where(button[data-ok-map-legend-class]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
+  :where(button[data-ok-map-legend-class][aria-pressed="true"]) {
+    background-color: var(--ok-action-selected);
+    color: var(--ok-text-primary);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Once a class is pressed, the others fade like their regions on the map. */
+  :where(
+    [data-ok-map-legend]:has([aria-pressed="true"])
+      button[data-ok-map-legend-class][aria-pressed="false"]
+      [data-ok-map-legend-swatch]
+  ) {
+    opacity: 0.32;
+  }
+
+  :where([data-ok-map-legend-swatch]) {
+    flex: none;
+    width: calc(var(--ok-spacing) * 3);
+    height: calc(var(--ok-spacing) * 3);
+    border-radius: var(--ok-radius-xs);
+    background: var(--_ok-map-swatch, transparent);
+    box-shadow: inset 0 0 0 1px var(--ok-divider);
+  }
+
+  :where([data-ok-map-legend-gradient]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 1);
+    width: calc(var(--ok-spacing) * 40);
+    max-width: 100%;
+  }
+
+  :where([data-ok-map-legend-bar]) {
+    display: block;
+    height: calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-full);
+    background: var(--_ok-map-gradient, var(--ok-action-selected));
+  }
+
+  :where([data-ok-map-legend-stop]) {
+    display: none;
+  }
+
+  :where([data-ok-map-legend-ticks]) {
+    display: flex;
+    justify-content: space-between;
+    gap: calc(var(--ok-spacing) * 2);
+    color: var(--ok-text-secondary);
+  }
+
+  /* --- Choropleth: regions (keyboard list and data table) -------------------------------------- */
+
+  :where([data-ok-map-regions]) {
+    position: absolute;
+    top: calc(var(--ok-spacing) * 2.5);
+    left: 50%;
+    z-index: 4;
+    max-width: calc(100% - var(--ok-spacing) * 32);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  :where([data-ok-map-regions] > table, [data-ok-map-regions-list]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* The list shows the region the keyboard is on, or the one under the pointer. */
+  :where([data-ok-map-regions-list]:focus-visible, [data-ok-map-regions-list][data-ok-hovering]) {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 1) calc(var(--ok-spacing) * 2.5);
+    overflow: visible;
+    clip-path: none;
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-dropdown);
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-map-regions-list]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-map-region]) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The readout shows one option; the others stay in the accessibility tree (visually hidden). */
+  :where(
+    [data-ok-map-regions-list]:focus-visible > [data-ok-map-region]:not([data-ok-active]),
+    [data-ok-map-regions-list][data-ok-hovering]:not(:focus-visible)
+      > [data-ok-map-region]:not([data-ok-hovered])
+  ) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+  }
+
+  :where([data-ok-map-region][aria-selected="true"]) {
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Without the map, the table is the content. */
+  :where([data-ok-map][data-ok-fallback] > [data-ok-map-regions]) {
+    inset: calc(var(--ok-spacing) * 16) calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 6);
+    max-width: none;
+    overflow: auto;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  :where([data-ok-map][data-ok-fallback] > [data-ok-map-regions] > table) {
+    position: static;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    border-collapse: collapse;
+  }
+
+  :where([data-ok-map][data-ok-fallback] > [data-ok-map-regions] caption) {
+    padding-bottom: calc(var(--ok-spacing) * 2);
+    font-weight: var(--ok-font-weight-semibold);
+    text-align: start;
+  }
+
+  :where(
+    [data-ok-map][data-ok-fallback] > [data-ok-map-regions] th,
+    [data-ok-map][data-ok-fallback] > [data-ok-map-regions] td
+  ) {
+    padding: calc(var(--ok-spacing) * 1) calc(var(--ok-spacing) * 2);
+    border-bottom: 1px solid var(--ok-divider);
+    text-align: start;
+  }
+
+  :where([data-ok-map][data-ok-fallback]:has(> [data-ok-map-regions]) > [data-ok-map-fallback]) {
+    justify-content: flex-start;
+  }
+
+  /* The table takes the description's place on screen (it stays the canvas's text alternative). */
+  :where([data-ok-map][data-ok-fallback]:has(> [data-ok-map-regions]) > [data-ok-map-description]) {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    :where([data-ok-map-pin], [data-ok-map-action]) {
+    :where([data-ok-map-pin], [data-ok-map-action], button[data-ok-map-legend-class]) {
       transition: none;
     }
 

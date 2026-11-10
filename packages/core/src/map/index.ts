@@ -4,6 +4,22 @@
  */
 export { getWorkerUrl as getMapWorkerUrl, setWorkerUrl as setMapWorkerUrl } from "maplibre-gl";
 export {
+  jenksBreaks,
+  type MapExpression,
+  type MapRegionLayersOptions,
+  type MapScaleClass,
+  type MapScaleMethod,
+  type MapScaleOptions,
+  type MapScalePalette,
+  type MapScaleResult,
+  mapPaletteColors,
+  mapRegionLayers,
+  mapScale,
+  mapScaleLabel,
+  mapScaleMethods,
+  mapScalePalettes,
+} from "./choropleth.js";
+export {
   mapLayerTypes,
   mapSourceTypes,
   readLayerDeclaration,
@@ -14,7 +30,7 @@ export {
   autoAnchor,
   distanceMeters,
   mapOffset,
-  mapScale,
+  mapScaleBar,
   parseAttribution,
   safeMapUrl,
   supportsWebGL,

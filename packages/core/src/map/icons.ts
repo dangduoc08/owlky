@@ -39,6 +39,9 @@ export const mapLabels = {
   locationDenied: "Location permission denied.",
   locationUnavailable: "Your location isn't available.",
   locationFound: "Map moved to your location.",
+  regions: "Regions",
+  legend: "Legend",
+  noData: "No data",
 } as const;
 
 export type MapLabels = { -readonly [K in keyof typeof mapLabels]: string };

@@ -1,0 +1,111 @@
+<div id="map-choropleth" data-ok-map data-ok-longitude="-98" data-ok-latitude="38.5" data-ok-zoom="3" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-label="Map of US states by population">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <p data-ok-map-description id="map-choropleth-description">The 50 US states and the District of Columbia, colored by their population in the 2020 census. California, Texas, Florida and New York are the most populous.</p>
+  <div data-ok-map-status role="status"></div>
+  <div data-ok-map-source data-ok-id="population" data-ok-type="geojson" data-ok-data="maps/us-states.geojson" data-ok-promote-id="name" hidden>
+    <div data-ok-map-layer data-ok-id="population-fill" data-ok-type="fill" data-ok-paint='{"fill-color":["case",["==",["typeof",["feature-state","value"]],"number"],["step",["feature-state","value"],"var(--ok-palette-primary-lighter)",3.96,"var(--ok-palette-primary-light)",8.63,"var(--ok-palette-primary-main)",20.2,"var(--ok-palette-primary-dark)",39.54,"var(--ok-palette-primary-darker)"],"var(--ok-text-disabled)"],"fill-opacity":["case",["boolean",["feature-state","muted"],false],0.15,["any",["boolean",["feature-state","hover"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","selected"],false]],0.95,0.8]}' hidden></div>
+    <div data-ok-map-layer data-ok-id="population-fill-outline" data-ok-type="line" data-ok-paint='{"line-color":["case",["any",["boolean",["feature-state","selected"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],"var(--ok-text-primary)","var(--ok-bg-paper)"],"line-width":["case",["boolean",["feature-state","selected"],false],2.5,["any",["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],1.5,0.5]}' hidden></div>
+  </div>
+  <div id="map-choropleth-regions" data-ok-map-regions data-ok-source="population" data-ok-layer="population-fill">
+    <div data-ok-map-regions-list role="listbox" tabindex="0" aria-label="States"></div>
+    <table>
+      <caption>Population by state, 2020 census</caption>
+      <thead>
+        <tr>
+          <th scope="col">State</th>
+          <th scope="col">Population</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-ok-id="Alabama"><th scope="row">Alabama</th><td data-ok-value="5.02">5.02 million</td></tr>
+        <tr data-ok-id="Alaska"><th scope="row">Alaska</th><td data-ok-value="0.73">0.73 million</td></tr>
+        <tr data-ok-id="Arizona"><th scope="row">Arizona</th><td data-ok-value="7.15">7.15 million</td></tr>
+        <tr data-ok-id="Arkansas"><th scope="row">Arkansas</th><td data-ok-value="3.01">3.01 million</td></tr>
+        <tr data-ok-id="California"><th scope="row">California</th><td data-ok-value="39.54">39.54 million</td></tr>
+        <tr data-ok-id="Colorado"><th scope="row">Colorado</th><td data-ok-value="5.77">5.77 million</td></tr>
+        <tr data-ok-id="Connecticut"><th scope="row">Connecticut</th><td data-ok-value="3.61">3.61 million</td></tr>
+        <tr data-ok-id="Delaware"><th scope="row">Delaware</th><td data-ok-value="0.99">0.99 million</td></tr>
+        <tr data-ok-id="District of Columbia"><th scope="row">District of Columbia</th><td data-ok-value="0.69">0.69 million</td></tr>
+        <tr data-ok-id="Florida"><th scope="row">Florida</th><td data-ok-value="21.54">21.54 million</td></tr>
+        <tr data-ok-id="Georgia"><th scope="row">Georgia</th><td data-ok-value="10.71">10.71 million</td></tr>
+        <tr data-ok-id="Hawaii"><th scope="row">Hawaii</th><td data-ok-value="1.46">1.46 million</td></tr>
+        <tr data-ok-id="Idaho"><th scope="row">Idaho</th><td data-ok-value="1.84">1.84 million</td></tr>
+        <tr data-ok-id="Illinois"><th scope="row">Illinois</th><td data-ok-value="12.81">12.81 million</td></tr>
+        <tr data-ok-id="Indiana"><th scope="row">Indiana</th><td data-ok-value="6.79">6.79 million</td></tr>
+        <tr data-ok-id="Iowa"><th scope="row">Iowa</th><td data-ok-value="3.19">3.19 million</td></tr>
+        <tr data-ok-id="Kansas"><th scope="row">Kansas</th><td data-ok-value="2.94">2.94 million</td></tr>
+        <tr data-ok-id="Kentucky"><th scope="row">Kentucky</th><td data-ok-value="4.51">4.51 million</td></tr>
+        <tr data-ok-id="Louisiana"><th scope="row">Louisiana</th><td data-ok-value="4.66">4.66 million</td></tr>
+        <tr data-ok-id="Maine"><th scope="row">Maine</th><td data-ok-value="1.36">1.36 million</td></tr>
+        <tr data-ok-id="Maryland"><th scope="row">Maryland</th><td data-ok-value="6.18">6.18 million</td></tr>
+        <tr data-ok-id="Massachusetts"><th scope="row">Massachusetts</th><td data-ok-value="7.03">7.03 million</td></tr>
+        <tr data-ok-id="Michigan"><th scope="row">Michigan</th><td data-ok-value="10.08">10.08 million</td></tr>
+        <tr data-ok-id="Minnesota"><th scope="row">Minnesota</th><td data-ok-value="5.71">5.71 million</td></tr>
+        <tr data-ok-id="Mississippi"><th scope="row">Mississippi</th><td data-ok-value="2.96">2.96 million</td></tr>
+        <tr data-ok-id="Missouri"><th scope="row">Missouri</th><td data-ok-value="6.15">6.15 million</td></tr>
+        <tr data-ok-id="Montana"><th scope="row">Montana</th><td data-ok-value="1.08">1.08 million</td></tr>
+        <tr data-ok-id="Nebraska"><th scope="row">Nebraska</th><td data-ok-value="1.96">1.96 million</td></tr>
+        <tr data-ok-id="Nevada"><th scope="row">Nevada</th><td data-ok-value="3.1">3.10 million</td></tr>
+        <tr data-ok-id="New Hampshire"><th scope="row">New Hampshire</th><td data-ok-value="1.38">1.38 million</td></tr>
+        <tr data-ok-id="New Jersey"><th scope="row">New Jersey</th><td data-ok-value="9.29">9.29 million</td></tr>
+        <tr data-ok-id="New Mexico"><th scope="row">New Mexico</th><td data-ok-value="2.12">2.12 million</td></tr>
+        <tr data-ok-id="New York"><th scope="row">New York</th><td data-ok-value="20.2">20.20 million</td></tr>
+        <tr data-ok-id="North Carolina"><th scope="row">North Carolina</th><td data-ok-value="10.44">10.44 million</td></tr>
+        <tr data-ok-id="North Dakota"><th scope="row">North Dakota</th><td data-ok-value="0.78">0.78 million</td></tr>
+        <tr data-ok-id="Ohio"><th scope="row">Ohio</th><td data-ok-value="11.8">11.80 million</td></tr>
+        <tr data-ok-id="Oklahoma"><th scope="row">Oklahoma</th><td data-ok-value="3.96">3.96 million</td></tr>
+        <tr data-ok-id="Oregon"><th scope="row">Oregon</th><td data-ok-value="4.24">4.24 million</td></tr>
+        <tr data-ok-id="Pennsylvania"><th scope="row">Pennsylvania</th><td data-ok-value="13">13.00 million</td></tr>
+        <tr data-ok-id="Rhode Island"><th scope="row">Rhode Island</th><td data-ok-value="1.1">1.10 million</td></tr>
+        <tr data-ok-id="South Carolina"><th scope="row">South Carolina</th><td data-ok-value="5.12">5.12 million</td></tr>
+        <tr data-ok-id="South Dakota"><th scope="row">South Dakota</th><td data-ok-value="0.89">0.89 million</td></tr>
+        <tr data-ok-id="Tennessee"><th scope="row">Tennessee</th><td data-ok-value="6.91">6.91 million</td></tr>
+        <tr data-ok-id="Texas"><th scope="row">Texas</th><td data-ok-value="29.15">29.15 million</td></tr>
+        <tr data-ok-id="Utah"><th scope="row">Utah</th><td data-ok-value="3.27">3.27 million</td></tr>
+        <tr data-ok-id="Vermont"><th scope="row">Vermont</th><td data-ok-value="0.64">0.64 million</td></tr>
+        <tr data-ok-id="Virginia"><th scope="row">Virginia</th><td data-ok-value="8.63">8.63 million</td></tr>
+        <tr data-ok-id="Washington"><th scope="row">Washington</th><td data-ok-value="7.71">7.71 million</td></tr>
+        <tr data-ok-id="West Virginia"><th scope="row">West Virginia</th><td data-ok-value="1.79">1.79 million</td></tr>
+        <tr data-ok-id="Wisconsin"><th scope="row">Wisconsin</th><td data-ok-value="5.89">5.89 million</td></tr>
+        <tr data-ok-id="Wyoming"><th scope="row">Wyoming</th><td data-ok-value="0.58">0.58 million</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div data-ok-map-corner="top-left"></div>
+  <div data-ok-map-corner="top-right">
+    <div data-ok-map-control data-ok-map-navigation>
+      <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="compass" aria-label="Reset north"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-compass-icon><path d="M12 3 16 12H8Z" data-ok-map-compass-north></path><path d="M8 12h8l-4 9Z" data-ok-map-compass-south></path></svg></button>
+    </div>
+  </div>
+  <div data-ok-map-corner="bottom-left">
+    <div id="map-choropleth-legend" role="group" aria-labelledby="map-choropleth-legend-title" data-ok-map-legend data-ok-variant="classes">
+      <p data-ok-map-legend-title id="map-choropleth-legend-title">Population (millions)</p>
+      <ul data-ok-map-legend-classes>
+        <li>
+          <button type="button" data-ok-map-legend-class data-ok-min="0.58" data-ok-max="3.96" aria-pressed="false"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-primary-lighter)" aria-hidden="true"></span><span data-ok-map-legend-label>0.58 – 3.96</span></button>
+        </li>
+        <li>
+          <button type="button" data-ok-map-legend-class data-ok-min="3.96" data-ok-max="8.63" aria-pressed="false"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-primary-light)" aria-hidden="true"></span><span data-ok-map-legend-label>3.96 – 8.63</span></button>
+        </li>
+        <li>
+          <button type="button" data-ok-map-legend-class data-ok-min="8.63" data-ok-max="20.2" aria-pressed="false"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-primary-main)" aria-hidden="true"></span><span data-ok-map-legend-label>8.63 – 20.2</span></button>
+        </li>
+        <li>
+          <button type="button" data-ok-map-legend-class data-ok-min="20.2" data-ok-max="39.54" aria-pressed="false"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-primary-dark)" aria-hidden="true"></span><span data-ok-map-legend-label>20.2 – 39.54</span></button>
+        </li>
+        <li>
+          <button type="button" data-ok-map-legend-class data-ok-min="39.54" data-ok-max="39.54" aria-pressed="false"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-primary-darker)" aria-hidden="true"></span><span data-ok-map-legend-label>39.54</span></button>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>
+      <summary aria-label="Map credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01"></path></svg></summary>
+      <div data-ok-map-attribution-text></div>
+    </details>
+  </div>
+</div>

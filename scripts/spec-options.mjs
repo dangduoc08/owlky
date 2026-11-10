@@ -112,6 +112,7 @@ const SPECS = {
   "map-geolocate": "map.md",
   "map-scale": "map.md",
   "map-attribution": "map.md",
+  "map-legend": "map.md",
 };
 
 const code = (value) => `\`${value}\``;

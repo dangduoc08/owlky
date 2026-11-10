@@ -99,7 +99,7 @@ function roundScale(value: number): number {
  * The scale bar for `meters` across `maxWidth` px: its label (`"500 km"`) and width in px.
  * Imperial switches from feet to miles at a mile, metric from metres to kilometres at 1 km.
  */
-export function mapScale(
+export function mapScaleBar(
   meters: number,
   maxWidth: number,
   unit: MapScaleUnit = "metric",

@@ -1,6 +1,7 @@
 import {
   mapAttributionOptions,
   mapGeolocateOptions,
+  mapLegendOptions,
   mapMarkerOptions,
   mapNavigationOptions,
   mapOptions,
@@ -11,6 +12,7 @@ import mapApi from "@owlky/docs-content/api/map.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MapView, Marker, NavigationControl, ScaleControl } from "@owlky/react";
 import changeTheme from "../../../../../packages/html/src/components/map/examples/change-theme-group.html?raw";
+import choropleth from "../../../../../packages/html/src/components/map/examples/choropleth-group.html?raw";
 import interactionGroup from "../../../../../packages/html/src/components/map/examples/interaction-group.html?raw";
 import markersGroup from "../../../../../packages/html/src/components/map/examples/markers-popups-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -185,6 +187,81 @@ export function MapEvents() {
 }`,
   },
   {
+    id: "choropleth",
+    title: "Color regions by value",
+    body: "A choropleth colors regions, such as countries or states, by a value. `mapScale(values, options)` sorts the values into classes and returns the class breaks, one color per class and a MapLibre expression that paints them. Pick the `method`: `quantile` (about as many regions in each class, the default), `equalInterval` (classes of the same width), `jenks` (natural breaks that keep similar values together) or `threshold` (your own `thresholds`). The colors come from the shades of a palette color, such as `primary`, so they follow the theme and the preset. Pass your own colors in `palette` if you need more than five classes.\n\n`mapRegionLayers({ id, source, scale })` returns two layers: a fill in the scale's colors and an outline that marks the region under the pointer, the one the keyboard is on and the selected one. The source needs a feature id for each region, so set `promoteId` to the property that names it.\n\n`MapRegions` joins your data to those regions by id (HTML: a `div[data-ok-map-regions]` with a table). It also gives keyboard users a list of the regions: press Tab to reach it, then use the arrow keys to move from region to region and hear its name and value. Enter selects a region, like a click on the map. The table holds the same data for screen readers, and the map shows it when the browser can't draw the map.\n\n`MapLegend` shows the classes in a corner of the map. Each class is a toggle button: press one or more to fade the regions outside them. Set `variant` to `gradient` for a continuous bar, and draw the fill with `scale.gradient` (`mapRegionLayers` with `variant: \"gradient\"`).",
+    html: `<!-- The regions: feature ids from the state names, colors from mapScale() -->
+${snippetElement(choropleth, "data-ok-map-source ")}
+
+<!-- The data, joined to the regions by id -->
+${snippetElement(choropleth, "data-ok-map-regions ")}
+
+<!-- The legend sits in a corner -->
+<div data-ok-map-corner="bottom-left">
+${indent(snippetElement(choropleth, "data-ok-map-legend "), 2)}
+</div>
+
+<script type="module">
+  const regions = document.querySelector("#map-choropleth-regions");
+  regions.addEventListener("ok:map:regionselect", (event) => {
+    console.log("Selected", event.detail.id);
+  });
+</script>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapLegend,
+  MapRegions,
+  MapView,
+  mapRegionLayers,
+  mapScale,
+  Source,
+} from "@owlky/react";
+
+const STATES = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Oregon", name: "Oregon", value: 4.24 },
+  { id: "Arizona", name: "Arizona", value: 7.15 },
+];
+const scale = mapScale(
+  STATES.map((state) => state.value),
+  { method: "jenks", classes: 3 },
+);
+const [fill, outline] = mapRegionLayers({
+  id: "population-fill",
+  source: "population",
+  scale,
+}) as unknown as [LayerProps, LayerProps];
+
+export function PopulationMap() {
+  return (
+    <MapView
+      aria-label="Map of western US states by population"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -117, latitude: 38, zoom: 4 }}
+    >
+      {/* The state names are the feature ids */}
+      <Source id="population" type="geojson" data="us-states.geojson" promoteId="name">
+        <Layer {...fill} />
+        <Layer {...outline} />
+      </Source>
+      <MapRegions
+        source="population"
+        layer="population-fill"
+        data={STATES}
+        caption="Population by state, 2020 census"
+        nameLabel="State"
+        valueLabel="Population"
+        formatValue={(value) => \`\${value.toFixed(2)} million\`}
+        onRegionSelect={(event) => console.log("Selected", event.id)}
+      />
+      <MapLegend scale={scale} title="Population (millions)" />
+    </MapView>
+  );
+}`,
+  },
+  {
     id: "view",
     title: "Move the map",
     body: '`initialViewState` sets where the map starts: `longitude`, `latitude`, `zoom`, `pitch` and `bearing`, or `bounds` to fit. To control the view, pass `viewState` and update it from `onMove`. The map ref has `flyTo`, `easeTo`, `jumpTo` and `fitBounds`, and `getMap()` returns the MapLibre map for anything else.\n\nIn HTML, the root\'s `data-ok-longitude`, `data-ok-latitude` and `data-ok-zoom` set the view, and the map moves when you change them. Any element with `data-ok-map-fly-to="<map id>"` and `data-ok-view="longitude,latitude,zoom"` flies the map there when it is clicked, or when a radio button is selected. With reduced motion, the map jumps instead of flying.',
@@ -249,7 +326,7 @@ export function MapControls() {
   {
     id: "options",
     title: "Options",
-    body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. The map's options come first, then the marker, popup and control options.",
+    body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. The map's options come first, then the marker, popup, control and legend options.",
   },
   {
     id: "props",
@@ -262,8 +339,9 @@ export function MapControls() {
     body: `- **\`ok:map:load\`**, **\`ok:map:move\`**, **\`ok:map:moveend\`**, **\`ok:map:click\`**, **\`ok:map:mousemove\`**, **\`ok:map:mouseenter\`**, **\`ok:map:mouseleave\`** and the other map events fire on the map with \`detail.viewState\`, and for pointer events \`lngLat\`, \`point\` and \`features\`.
 - **\`ok:map:popupopen\`** and **\`ok:map:popupclose\`** fire on a popup. \`popupclose\` has \`detail.reason\` and can be canceled to keep it open.
 - **\`ok:map:markerdragstart\`**, **\`ok:map:markerdrag\`** and **\`ok:map:markerdragend\`** fire on a marker with \`detail.lngLat\`.
+- **\`ok:map:regionselect\`** fires on a \`div[data-ok-map-regions]\` with \`detail.id\`, which is \`null\` when the selection is cleared. **\`ok:map:legendtoggle\`** fires on a legend with \`detail.classIndex\` and \`detail.active\`, the pressed classes.
 - **\`ok:map:fullscreen\`**, **\`ok:map:geolocate\`**, **\`ok:map:geolocateerror\`**, **\`ok:map:trackuserlocation\`** and **\`ok:map:fallback\`** report the controls and a map that can't draw.
-- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on) }\`.
+- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), scale(values, options) }\`. \`scale\` is \`mapScale\`, for pages that load the map from the CDN.
 - **React:** event props such as \`onLoad\`, \`onMove\`, \`onClick\`, \`onMouseMove\` and \`onMouseEnter\`; a ref with \`getMap()\`, \`flyTo\`, \`easeTo\`, \`jumpTo\` and \`fitBounds\`; and \`useMap()\` inside a map or a \`MapProvider\`.`,
   },
   {
@@ -278,6 +356,7 @@ export function MapControls() {
 - Describe what the map shows with \`description\` (HTML: a \`p[data-ok-map-description]\` with an \`id\`). Screen readers read it with the map, and it replaces the map when the browser can't draw it.
 - Give every interactive marker a name. People can open its popup with Enter or Space, and move a draggable marker with the arrow keys.
 - A popup takes focus when it opens and gives it back when it closes, unless you turn off \`focusAfterOpen\`.
+- On a choropleth, name the regions' list with \`listLabel\` and give the table a \`caption\`. Keyboard users reach every region through the list, screen readers also get the table, and the legend shows the ranges as text, so the data never depends on color alone.
 - Controls have names and states: fullscreen and globe report \`aria-pressed\`, and the location result is announced.
 - Moving content needs a way to pause it, and animations respect reduced motion.`,
   },
@@ -310,6 +389,7 @@ const PREVIEWS = {
       <OptionsTable schema={mapGeolocateOptions} />
       <OptionsTable schema={mapScaleOptions} />
       <OptionsTable schema={mapAttributionOptions} />
+      <OptionsTable schema={mapLegendOptions} />
     </>
   ),
   props: () => (
@@ -377,6 +457,48 @@ const PREVIEWS = {
           description: "A draggable marker moved.",
         },
         {
+          react: "MapRegions source / layer / sourceLayer",
+          html: "data-ok-source, data-ok-layer, data-ok-source-layer",
+          type: "string",
+          description: "The source of the regions, and the fill layer that the pointer hits.",
+        },
+        {
+          react: "MapRegions data",
+          html: "tr[data-ok-id] › th + td[data-ok-value]",
+          type: "{ id, name, value }[]",
+          description: "Each region's feature id, name and value (no value: no data).",
+        },
+        {
+          react: "MapRegions caption / nameLabel / valueLabel / formatValue / listLabel",
+          html: "caption, th[scope=col], cell text, aria-label",
+          type: "ReactNode / string / (value) => string",
+          description: "The table's caption and headers, the value text, and the list's name.",
+        },
+        {
+          react: "MapRegions onRegionSelect",
+          html: "ok:map:regionselect",
+          type: "({ id }) => void",
+          description: "A region was selected, or the selection was cleared.",
+        },
+        {
+          react: "MapLegend scale / title / position",
+          html: "div[data-ok-map-legend] in a corner",
+          type: "MapScaleResult / ReactNode / corner",
+          description: "The classes to show, the legend's title and its corner.",
+        },
+        {
+          react: "MapLegend showNull / nullLabel / formatter / tickFormatter",
+          html: "button[data-ok-null], label text",
+          type: "boolean / string / functions",
+          description: "A class for regions without a value, and the texts of classes and numbers.",
+        },
+        {
+          react: "MapLegend onLegendToggle",
+          html: "ok:map:legendtoggle",
+          type: "({ classIndex, active }) => void",
+          description: "A class was pressed or released.",
+        },
+        {
           react: "Popup onClose / onOpen",
           html: "ok:map:popupclose / popupopen",
           type: "(reason) => void",
@@ -396,6 +518,16 @@ const PREVIEWS = {
         ["Enter / Space (marker)", "Clicks the marker, for example to open its popup."],
         ["Arrow keys (draggable marker)", "Move the marker by 10 px (Shift: 50 px)."],
         ["Escape", "Closes the popup that has focus, or leaves fullscreen."],
+        ["Up arrow / Down arrow (regions list)", "Moves to the previous or next region."],
+        ["Home / End (regions list)", "Moves to the first or last region."],
+        ["Page up / Page down (regions list)", "Moves 10 regions."],
+        ["A letter (regions list)", "Moves to the next region whose name starts with it."],
+        ["Enter / Space (regions list)", "Selects the region, or clears the selection."],
+        ["Escape (regions list)", "Clears the selection."],
+        [
+          "Enter / Space (legend class)",
+          "Fades, or shows again, the regions outside the pressed classes.",
+        ],
       ]}
     />
   ),

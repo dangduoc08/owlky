@@ -21,12 +21,13 @@ import {
   autoAnchor,
   distanceMeters,
   mapOffset,
-  mapScale,
+  mapScaleBar,
   parseAttribution,
   safeMapUrl,
   supportsWebGL,
 } from "./helpers.js";
 import { type MapLabels, mapLabels } from "./icons.js";
+import { createMapRegions } from "./regions.js";
 
 /** A MapLibre style: a style URL or a style object. */
 export type MapStyle = Exclude<Parameters<MapLibreMap["setStyle"]>[0], null>;
@@ -159,6 +160,14 @@ export interface MapControllerOptions extends Partial<MapSettings> {
   readonly onGeolocate?: ((position: GeolocationPosition) => void) | undefined;
   readonly onGeolocateError?: ((error: GeolocationPositionError | Error) => void) | undefined;
   readonly onTrackUserLocationChange?: ((tracking: boolean) => void) | undefined;
+  /** A region of a `[data-ok-map-regions]` part was selected (`null`: the selection was cleared). */
+  readonly onRegionSelect?:
+    | ((regions: HTMLElement, id: string | number | null) => void)
+    | undefined;
+  /** A class of an interactive legend was pressed; `active` lists the pressed classes. */
+  readonly onLegendToggle?:
+    | ((legend: HTMLElement, classIndex: number, active: readonly number[]) => void)
+    | undefined;
 }
 
 export interface MapController {
@@ -242,6 +251,14 @@ const OVERLAY_ATTRIBUTES = [
   "data-ok-pitch-alignment",
   "data-ok-max-width",
   "hidden",
+  // Regions and legends (choropleth).
+  "data-ok-id",
+  "data-ok-value",
+  "data-ok-swatch",
+  "data-ok-min",
+  "data-ok-max",
+  "data-ok-source",
+  "data-ok-layer",
 ];
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -477,7 +494,9 @@ export function createMapController(
   const hover = (raw: { point: { x: number; y: number }; originalEvent?: Event }) => {
     const features = queryFeatures(raw.point) ?? [];
     const over = features.length > 0;
-    (map as MapLibreMap).getCanvas().style.cursor = settings.cursor ?? (over ? "pointer" : "");
+    const region = regions.pointer(raw.point);
+    (map as MapLibreMap).getCanvas().style.cursor =
+      settings.cursor ?? (over || region ? "pointer" : "");
     if (over === hovered) return;
     hovered = over;
     emit(over ? "mouseenter" : "mouseleave", {
@@ -617,6 +636,18 @@ export function createMapController(
     shown = visible;
   };
 
+  // --- Regions and legends (choropleth) ----------------------------------------------------------
+
+  const regions = createMapRegions({
+    element,
+    own,
+    ready: () => (map && styleReady ? map : null),
+    write,
+    labels: () => labels,
+    onRegionSelect: options.onRegionSelect,
+    onLegendToggle: options.onLegendToggle,
+  });
+
   // --- Controls ---------------------------------------------------------------------------------
 
   let geolocateState: MapGeolocateState = "off";
@@ -643,7 +674,7 @@ export function createMapController(
         : "metric";
       const left = map.unproject([0, height / 2]);
       const right = map.unproject([Math.max(1, maxWidth), height / 2]);
-      const { label: text, width } = mapScale(
+      const { label: text, width } = mapScaleBar(
         distanceMeters([left.lng, left.lat], [right.lng, right.lat]),
         Math.max(1, maxWidth),
         unit,
@@ -761,6 +792,7 @@ export function createMapController(
     focusPopups();
     paintControls();
     paintAttribution();
+    regions.scan();
     firstScan = false;
   };
   // One callback per batch of mutations (a microtask after them).
@@ -997,6 +1029,7 @@ export function createMapController(
     instance.on("style.load", () => {
       styleReady = true;
       restore(instance);
+      regions.apply();
       // Ready once the first style is in: overlays are placed (tiles may still be loading, and a
       // source updated every frame can hold MapLibre's `load` back).
       if (!element.hasAttribute("data-ok-ready")) {
@@ -1024,8 +1057,12 @@ export function createMapController(
       paintControls();
       paintAttribution();
     });
-    instance.on("sourcedata", () => paintAttribution());
-    instance.on("click", () => {
+    instance.on("sourcedata", () => {
+      paintAttribution();
+      regions.sourceData();
+    });
+    instance.on("click", (event) => {
+      regions.click(event.point);
       for (const popup of popups)
         if (!popup.hidden && popup.getAttribute("data-ok-close-on-click") !== "false")
           options.onPopupClose?.(popup, "click");
@@ -1037,6 +1074,7 @@ export function createMapController(
     });
     instance.on("mousemove", hover);
     instance.on("mouseout", () => {
+      regions.pointer(null);
       if (!hovered) return;
       hovered = false;
       emit("mouseleave", { features: [] });
@@ -1057,7 +1095,7 @@ export function createMapController(
   themeObserver.observe(document.documentElement, {
     subtree: true,
     attributes: true,
-    attributeFilter: ["data-ok-theme"],
+    attributeFilter: ["data-ok-theme", "data-ok-preset"],
   });
 
   // --- DOM listeners: controls, popups, markers -------------------------------------------------
@@ -1396,6 +1434,7 @@ export function createMapController(
       abort.abort();
       observer.disconnect();
       themeObserver.disconnect();
+      regions.destroy();
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
       if (element.hasAttribute("data-ok-fullscreen") && document.fullscreenElement !== element)
         element.removeAttribute("data-ok-fullscreen");

@@ -7,6 +7,8 @@ import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
 import { snippetStory } from "../shared/snippets.js";
 import { ChangeThemeDemo } from "./demos/change-theme.js";
 import changeThemeSource from "./demos/change-theme.tsx?raw";
+import { ChoroplethDemo } from "./demos/choropleth.js";
+import choroplethSource from "./demos/choropleth.tsx?raw";
 import { ClustersDemo } from "./demos/clusters.js";
 import clustersSource from "./demos/clusters.tsx?raw";
 import { DraggableMarkersDemo } from "./demos/draggable-markers.js";
@@ -137,4 +139,11 @@ export const SideBySide = story(
   "Side by side",
   SideBySideDemo,
   sideBySideSource,
+);
+export const Choropleth = story(
+  "Choropleth",
+  "choropleth",
+  "Choropleth",
+  ChoroplethDemo,
+  choroplethSource,
 );
