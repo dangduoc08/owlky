@@ -21,13 +21,25 @@ afterEach(() => {
 });
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// Resolves once the toaster list's titles read `expected` (a MutationObserver, never a poll).
+const untilTitles = (host: HTMLElement, expected: string[]) =>
+  new Promise<void>((resolve) => {
+    const done = () => JSON.stringify(titles(host)) === JSON.stringify(expected);
+    if (done()) return resolve();
+    const observer = new MutationObserver(() => {
+      if (!done()) return;
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(list(host), { childList: true, subtree: true, characterData: true });
+  });
 
 const markup = (attrs = "") => `
   <section data-ok-toaster data-ok-position="top-right" aria-label="Notifications" ${attrs}>
     <ol data-ok-toaster-list aria-live="polite"></ol>
   </section>
   <template id="t1"><li data-ok-toast data-ok-type="default"><div data-ok-toast-content><div data-ok-toast-title>Saved</div></div><button type="button" data-ok-toast-close aria-label="Close">x</button></li></template>
-  <template id="t2"><li data-ok-toast data-ok-type="loading" data-ok-duration="60" data-ok-then="t3"><div data-ok-toast-content><div data-ok-toast-title>Loading</div></div></li></template>
+  <template id="t2"><li data-ok-toast data-ok-type="loading" data-ok-duration="400" data-ok-then="t3"><div data-ok-toast-content><div data-ok-toast-title>Loading</div></div></li></template>
   <template id="t3"><li data-ok-toast data-ok-type="success"><div data-ok-toast-content><div data-ok-toast-title>Done</div></div></li></template>
   <template id="t4"><li data-ok-toast data-ok-type="default"><div data-ok-toast-content><div data-ok-toast-title>Deleted</div></div><button type="button" data-ok-toast-action>Undo</button><div data-ok-toast-actions><button type="button" data-ok-toast-dismiss>Dismiss</button></div></li></template>
   <template id="empty"></template>
@@ -68,17 +80,21 @@ describe("toaster runtime", () => {
   });
 
   it("times out; data-ok-then replaces a toast; the trigger can move the toaster", async () => {
-    const host = mount(markup('data-ok-duration="80"'));
+    // Durations a loaded CI runner's click can't use up; the steps wait for the DOM, not a clock.
+    const host = mount(markup('data-ok-duration="400"'));
     start();
-    await userEvent.click(host.querySelector("#b2") as HTMLElement);
+    const timeouts: string[] = [];
+    host.addEventListener("ok:toaster:dismiss", (e) =>
+      timeouts.push((e as CustomEvent).detail.reason),
+    );
+    (host.querySelector("#b2") as HTMLElement).click();
     expect(host.querySelector("[data-ok-toaster]")?.getAttribute("data-ok-position")).toBe(
       "bottom-left",
     );
     expect(titles(host)).toEqual(["Loading"]);
-    await wait(100);
-    expect(titles(host)).toEqual(["Done"]);
-    await wait(150);
-    expect(titles(host)).toEqual([]);
+    await untilTitles(host, ["Done"]);
+    await untilTitles(host, []);
+    expect(timeouts.at(-1)).toBe("timeout");
   });
 
   it("hover and focus pause the time; actions are cancelable; Escape closes a focused toast", async () => {
@@ -87,7 +103,10 @@ describe("toaster runtime", () => {
     start();
     const toaster = host.querySelector("[data-ok-toaster]") as HTMLElement;
     await userEvent.click(host.querySelector("#b4") as HTMLElement);
-    await userEvent.hover(toaster, { force: true });
+    // Hover the toast once it has slid in: mid-animation WebKit finds it outside the viewport.
+    const toast = list(host).querySelector("[data-ok-toast]") as HTMLElement;
+    for (const animation of toast.getAnimations({ subtree: true })) animation.finish();
+    await userEvent.hover(toast);
     await wait(2000);
     expect(titles(host)).toEqual(["Deleted"]);
     host.addEventListener("ok:toaster:action", (e) => e.preventDefault(), { once: true });
