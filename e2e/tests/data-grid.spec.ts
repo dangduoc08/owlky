@@ -419,8 +419,9 @@ for (const impl of implementations) {
       }
       const filter = page.locator("#grid-cells-header-filter-name");
       await filter.fill("teapot");
+      // The story has a second grid (the status bar): count this grid's rows.
       await expect(
-        page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+        page.locator('#grid-cells [data-ok-data-grid-body] > [role="row"]:not([hidden])'),
       ).toHaveCount(1);
       // Status bar: figures of the selected cells, also from the keyboard (Shift + arrows).
       const status = page.locator("#grid-cells-status [data-ok-data-grid-status-bar]");
