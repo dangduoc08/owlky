@@ -375,6 +375,12 @@
       "type": "GridChartModels"
      },
      {
+      "description": "The charts' models as JSON, for `restoreCharts` (the charts part of `exportState()`).",
+      "kind": "method",
+      "name": "chartsToJSON",
+      "type": "() => GridChartsState"
+     },
+     {
       "description": "The fields in their display order.",
       "kind": "property",
       "name": "columnOrder",
@@ -391,6 +397,12 @@
       "kind": "property",
       "name": "columnWidths",
       "type": "GridColumnWidths"
+     },
+     {
+      "description": "Charts the selected cells (or `cellRange`; no events): categories from the range's first column, series from its number columns. With several charts it adds a chart (and its region) and makes it active, otherwise it replaces the chart's model. `null` when the range holds no number.",
+      "kind": "method",
+      "name": "createRangeChart",
+      "type": "(params?: GridRangeChartParams | undefined) => GridRangeChart | null"
      },
      {
       "description": "fileName`, else `data-ok-export-file-name`, default \"data\").",
@@ -445,6 +457,12 @@
       "kind": "method",
       "name": "print",
       "type": "(options?: GridPrintOptions | undefined) => void"
+     },
+     {
+      "description": "Applies a charts config from `chartsToJSON()` (no events; unknown keys are dropped).",
+      "kind": "method",
+      "name": "restoreCharts",
+      "type": "(config: unknown) => void"
      },
      {
       "description": "Applies a saved state (unknown keys and values are dropped).",
@@ -564,7 +582,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 110 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 117 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's values, returns the value to write. `null`: back to parsing by the column type.",
@@ -1243,9 +1261,22 @@
       "name": "data-ok-data-grid-chart"
      },
      {
+      "description": "The chart panel's switch that lets a category selection filter the grid (`crossFilter`).",
+      "kind": "part",
+      "name": "data-ok-data-grid-chart-cross-filter"
+     },
+     {
       "description": "The chart panel's switch for item labels.",
       "kind": "part",
       "name": "data-ok-data-grid-chart-item-label"
+     },
+     {
+      "description": "With cell selection: the chart panel's button that charts the selected cells.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-chart-range"
      },
      {
       "description": "The chart panel's switch for stacked series.",

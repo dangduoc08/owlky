@@ -1,0 +1,8 @@
+---
+"@owlky/core": minor
+"@owlky/react": minor
+"@owlky/html": minor
+"@owlky/mcp": patch
+---
+
+Data grid: charts from a cell range, cross-filtering and a chart config (ADR-0055). With `cellSelection` and `chartsIntegration`, Alt + F1 on a cell or **Chart from selection** in the chart panel charts the selected cells (categories from the range's first column, series from its number columns; a range without numbers is refused), and `createRangeChart({ cellRange, chartType, label, id })` does it from code (apiRef and HTML instance). With several charts the new chart is added and made active; with one chart its model is replaced. Range charts keep their rows in the model's new `rows`. The model's new `crossFilter` option (panel switch **Filter the grid**) turns a category selection in the chart (click, Enter or Space) into the category field's "is any of" filter, and clearing the selection clears it; the chart draws the rows that pass the other filters and shows its filter as its selection. Range and cross-filtering charts merge rows of one category. `chartsToJSON()` / `restoreCharts(config)` save and restore the charts (the `chartsIntegration` part of `exportState()`). Both are announced in the grid's live region, which now renders with `chartsIntegration`. In HTML, `setChartModels` and `restoreCharts` now add and remove chart regions to match the models. Core: `gridRangeChartModel`, `gridCrossFilter*`, `gridChartGroups`, `gridChartsState`, `sanitizeGridChartsState`; `createGridCellSelection` takes `onRangeChart`; seven locale keys in every pack.

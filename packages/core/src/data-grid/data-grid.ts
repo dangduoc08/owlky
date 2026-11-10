@@ -1012,6 +1012,16 @@ export const gridDefaultLabels = {
   chartLegendBottom: "Bottom",
   chartLegendNone: "None",
   chartLabel: "Chart of the data",
+  chartsRange: "Chart from selection",
+  /** `{index}` is replaced (the range chart's number). */
+  chartsRangeLabel: "Range chart {index}",
+  /** `{label}` is replaced (the new chart's name). */
+  chartsRangeCreated: "Chart created: {label}",
+  chartsRangeRefused: "Select cells with numbers to create a chart",
+  chartsCrossFilter: "Filter the grid",
+  /** `{field}` and `{values}` are replaced (the column's name, the categories). */
+  chartsCrossFilterApplied: "Filtered by {field}: {values}",
+  chartsCrossFilterCleared: "Filter cleared",
   headerFilterLabel: "filter",
   filterValueAny: "any",
   filterValueTrue: "true",

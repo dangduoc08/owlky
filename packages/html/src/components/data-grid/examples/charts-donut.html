@@ -95,6 +95,14 @@
           </span>
           <span data-ok-form-control-label-text>Show values</span>
         </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-cross-filter>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Filter the grid</span>
+        </label>
         <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
           <label data-ok-text-field-label for="grid-charts-donut-chart-legend">Legend</label>
           <div data-ok-text-field-control>
@@ -553,6 +561,7 @@
       </table>
     </figure>
   </div>
+  <div data-ok-data-grid-live role="status"></div>
   <div data-ok-data-grid-loading data-ok-variant="linear-progress" role="status" aria-label="Loading" hidden><span role="progressbar" data-ok-linear-progress data-ok-variant="indeterminate" data-ok-color="primary" aria-label="Loading"><span data-ok-linear-progress-bar="1"></span><span data-ok-linear-progress-bar="2"></span></span></div>
   <div data-ok-data-grid-overlay role="status" hidden></div>
   <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="grid-charts-donut-column-menu">

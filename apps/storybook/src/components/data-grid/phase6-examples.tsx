@@ -411,6 +411,35 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
         />
       ),
     },
+    {
+      title: "Range charts and cross-filtering",
+      content: (
+        <DataGrid
+          id="grid-charts-range"
+          aria-label="Sales by region"
+          className="sb-grid-wide"
+          rows={SALES.slice(0, 12)}
+          columns={salesColumns}
+          showToolbar
+          chartsIntegration
+          cellSelection
+          initialState={{
+            chartsIntegration: {
+              charts: {
+                regions: {
+                  label: "Revenue by region",
+                  type: "column",
+                  dimension: "region",
+                  values: ["revenue"],
+                  crossFilter: true,
+                },
+              },
+            },
+          }}
+          hideFooter
+        />
+      ),
+    },
   ],
 };
 
@@ -435,5 +464,6 @@ export const PHASE6_FILES = {
     ["Pivot chart", "pivot"],
     ["Multiple charts", "multiple"],
     ["Donut chart", "donut"],
+    ["Range charts and cross-filtering", "range"],
   ],
 } as const;

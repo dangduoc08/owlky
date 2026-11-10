@@ -754,6 +754,17 @@ export interface GridChartModel {
   endAngle?: number | undefined;
   /** Donut hole in % of the radius (MUI X `innerRadius`). */
   donutSize?: number | undefined;
+  /**
+   * A range chart (`createRangeChart`): the ids of the rows it draws, those that pass the filters
+   * in the grid's order (grouping and paging aside). Without it, the page's rows or the groups.
+   */
+  rows?: readonly string[] | undefined;
+  /**
+   * Selecting a category (a click, Enter or Space) filters the grid to it, as an `isAnyOf` filter
+   * of the category field; clearing the selection clears it (ApexGrid `crossFilter`). The chart
+   * draws the rows that pass the other filters.
+   */
+  crossFilter?: boolean | undefined;
 }
 
 /** A series of the grid's chart (an entry of the Chart component's `series`). */
@@ -928,7 +939,7 @@ export function sanitizeGridChartModel(input: unknown): GridChartModel {
   if (typeof value["dimension"] === "string") out.dimension = value["dimension"];
   if (Array.isArray(value["values"]))
     out.values = value["values"].filter((v): v is string => typeof v === "string");
-  for (const key of ["stacked", "showMark", "showToolbar", "animations"] as const)
+  for (const key of ["stacked", "showMark", "showToolbar", "animations", "crossFilter"] as const)
     if (typeof value[key] === "boolean") out[key] = value[key];
   if (value["itemLabel"] === "none" || value["itemLabel"] === "value")
     out.itemLabel = value["itemLabel"];
@@ -941,6 +952,11 @@ export function sanitizeGridChartModel(input: unknown): GridChartModel {
   if (chartCurves.includes(value["curve"] as ChartCurve)) out.curve = value["curve"] as ChartCurve;
   if (typeof value["seriesAxisLabel"] === "string") out.seriesAxisLabel = value["seriesAxisLabel"];
   if (typeof value["label"] === "string") out.label = value["label"];
+  if (Array.isArray(value["rows"]))
+    out.rows = value["rows"]
+      .filter((v): v is string | number => typeof v === "string" || typeof v === "number")
+      .slice(0, 100_000)
+      .map(String);
   for (const key of ["height", "startAngle", "endAngle", "donutSize"] as const) {
     const n = value[key];
     if (typeof n === "number" && Number.isFinite(n)) out[key] = n;

@@ -132,11 +132,16 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         charts: (several charts) TextField select #<id>-chart-active (one option per chart, its label),
           TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value]),
           FormControlLabel(Switch[data-ok-data-grid-chart-stacked][disabled]?), FormControlLabel(Switch[data-ok-data-grid-chart-item-label]),
-          TextField select #<id>-chart-legend (top|right|bottom|none)
+          FormControlLabel(Switch[data-ok-data-grid-chart-cross-filter]) (4.18.12), TextField select #<id>-chart-legend (top|right|bottom|none),
+          Button[data-ok-data-grid-chart-range] ("Chart from selection"; with cellSelection, 4.18.12)
     div[data-ok-data-grid-chart][hidden]? › Chart#<id>-chart (HTML: figure › table[data-ok-chart-data]; the grid sets the
       figure's option attributes and calls the Chart's `updateSeries`, or writes the table without the chart runtime)
     several charts (root [data-ok-chart-models='{"<chart id>":{…}}'][data-ok-active-chart-id]): one
       div[data-ok-data-grid-chart][data-ok-chart-id=<chart id>][hidden]? › Chart#<id>-chart-<chart id> per model (in order)
+      (HTML builds and removes regions with DOM methods when models are added or removed: range charts,
+      `setChartModels`, `restoreCharts`; the panel's Chart select follows)
+    div[data-ok-data-grid-live][role=status] (rowReordering or chartsIntegration: range chart and
+      cross-filter announcements)
     Popover#<id>-filters › template[data-ok-data-grid-date="<id>-filter-value"] › DatePicker (HTML only)
     Popover#<id>-filters › template[data-ok-data-grid-date-time="<id>-filter-value"] › DateTimePicker (HTML only)
   div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
@@ -300,7 +305,12 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `checkboxColDef`. Beyond MUI X (4.18.10): column `filterVariant: "set"`, locale keys `setFilterSearch`,
 `setFilterSelectAll`, `setFilterValues`, `setFilterSelected`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
-`statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+`statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X (4.18.12, ADR-0055,
+ApexGrid / AG Grid / spreadsheets): apiRef `createRangeChart({ cellRange?, chartType?, label?, id? })` →
+`{ id, model } | null`, Alt + F1, chart model `rows` (range charts) and `crossFilter`, apiRef
+`chartsToJSON()` / `restoreCharts(config)` (ApexGrid `chart.toJSON()` / `chart.restore()`), locale keys
+`chartsRange`, `chartsRangeLabel`, `chartsRangeCreated`, `chartsRangeRefused`, `chartsCrossFilter`,
+`chartsCrossFilterApplied`, `chartsCrossFilterCleared`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
@@ -458,7 +468,32 @@ points on a numeric axis; otherwise one point per category). Core `gridChartOpti
 to the Chart's options for both implementations; `stacked` needs a column, bar, line or area chart
 with two series (the panel's switch is disabled otherwise). Every change (rows, edits, filters,
 sorting, paging, grouping, aggregation, pivoting, the model) redraws through the Chart's update
-path: React passes new `series`, HTML calls `updateSeries` (the data table follows in place). Navigation ignores grids inside cells
+path: React passes new `series`, HTML calls `updateSeries` (the data table follows in place).
+Range charts (4.18.12, ADR-0055, core `grid-charts.ts`): `createRangeChart`, Alt + F1 on a body cell
+(core `createGridCellSelection` `onRangeChart`) or the panel's **Chart from selection** button chart the
+selected cells (`params.cellRange`: any cells): the model's `rows` are the range's rows, its
+`dimension` the range's first column unless it is a number column (then the categories are the rows'
+positions 1…n), its `values` the range's number columns (series named by their headers); no number in
+the range → refused (`null`, "Select cells with numbers to create a chart" in the live region). With
+several charts the chart is added (`range-<n>`, label "Range chart <n>", or `params.id` / `label`) and
+becomes active; with one chart its model is replaced. A range chart draws its rows that pass the
+filters in sort order (grouping and paging aside); its type and the rest come from the panel like any
+chart. User paths announce "Chart created: <label>"; HTML fires the cancelable `ok:data-grid:chart`
+(`{ model, id? }`) first, the method fires none. Cross-filtering (`crossFilter`): the chart's
+category field is the top-level grouping field when it draws groups, else `dimension`; a category
+selection (the Chart's click, Enter or Space, `onDataPointSelection` / `ok:chart:select`) becomes that
+field's `isAnyOf` filter item (replacing any other `isAnyOf` item on it; none clears it; React
+`onFilterModelChange`, HTML the cancelable `ok:data-grid:filter`; page back to 0), announced
+"Filtered by <header>: <values>" / "Filter cleared". The chart draws the rows that pass the other
+filters (not its own), on every page; its selection (`selectedDataPoints`) is every series' point of
+the filtered categories, so a filter set elsewhere (panel, header filter, code) shows on the chart and
+a refused filter puts it back. Range and cross-filtering charts merge rows of one category (text or
+group key) with the aggregation (default `sum`, as ApexGrid). Not cross-filtering: pivoted grids,
+server-side filtering, scatter charts on a number dimension. Categories match by text (the
+`isAnyOf` rules). `chartsToJSON()` returns the `chartsIntegration` part of `exportState()` (a deep
+copy); `restoreCharts(config)` sanitizes it (`sanitizeGridChartsState`) and applies it (`restoreState`
+goes through it).
+Navigation ignores grids inside cells
 (a date picker's calendar) and leaves their tab stops alone.
 
 Sorting (4.18.49): a header goes to the next direction of its cycle (the column's `sortingOrder`,
@@ -579,6 +614,8 @@ changes (no repeated announcements). React: custom `aggregationFunctions` apply;
 | A character (editable cell) | Edit, starting with that character |
 | Right to left | Left / Right and Alt + Left / Right follow the reading order |
 | Shift + arrows (cellSelection) | Extend the cell range from the anchor |
+| Alt + F1 (cell, cellSelection + chartsIntegration) | Chart the selected cells (announced; refused without numbers) |
+| Enter / Space (a cross-filtering chart's plot) | Filter the grid to the active category / clear it (the Chart's selection keys) |
 | Ctrl / Cmd + C, Ctrl / Cmd + V (cell) | Copy (cells, rows or the focused cell) / paste into editable cells |
 | Ctrl / Cmd + Z (cell, header) | Undo the last edit or paste |
 | Ctrl / Cmd + Shift + Z, Ctrl / Cmd + Y (cell, header) | Redo it |
@@ -588,7 +625,11 @@ changes (no repeated announcements). React: custom `aggregationFunctions` apply;
 `role=grid` named by `aria-label` / `aria-labelledby` (never the root), counts and indexes,
 `aria-sort` on sortable headers (`none` until sorted), `aria-selected` on rows with selection,
 `aria-multiselectable`. Checkboxes named "Select all rows" / "Select row"; menu buttons
-"<header> column menu". The overlay is a `status`.
+"<header> column menu". The overlay is a `status`. Range charts and cross-filters are announced in
+`[data-ok-data-grid-live]` (polite `status`, visually hidden): "Chart created: <label>", "Select
+cells with numbers to create a chart", "Filtered by <header>: <values>", "Filter cleared". Every
+pointer path has a keyboard one: Alt + F1 or the panel's button (WCAG 2.5.7), Enter / Space on the
+chart's plot for category clicks.
 
 ## Events / API
 HTML: `ok:data-grid:sort | filter | selection | columns | density | order | pinned` (cancelable,
@@ -617,7 +658,9 @@ Phase 6: `ok:data-grid:rowgrouping | aggregation | cellselection | chart` (cance
 `rowGroupingModel`, `aggregationModel`, `pivotModel`, `pivotActive`, `cellSelectionModel`,
 `chartModel` with `set…` (no events; the chart panel's fields follow the model; several charts:
 the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
-`setActiveChartId(id)`; `ok:data-grid:chart` carries `id` with several charts;
+`setActiveChartId(id)`; `ok:data-grid:chart` carries `id` with several charts; (4.18.12)
+`createRangeChart(params)` (no events), `chartsToJSON()`, `restoreCharts(config)` (no events);
+`setChartModels` and `restoreCharts` build and remove chart regions;
 `ok:data-grid:activechart` (cancelable, `{ id }`);
 `toExcel(options)`, `exportExcel(options)`.
 Batch E: `ok:data-grid:undo` / `redo` (`{ ids }`), instance `history` (`undo()`, `redo()`,
@@ -691,6 +734,9 @@ the detailed record of what is kept.
 | (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |
 | (not in MUI X) set filter (ApexGrid, spreadsheets): a checklist of a column's values | column `filterVariant: "set"` | added (4.18.10) | on the `isAnyOf` model (string, number, singleSelect columns); filter panel and header filter; HTML `data-ok-filter-variant="set"` on the header |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
+| (not in MUI X) range charts (ApexGrid / AG Grid `createRangeChart`, spreadsheets' Alt + F1) | apiRef / instance `createRangeChart({ cellRange, chartType, label, id })`, Alt + F1, panel **Chart from selection**, model `rows` | added (4.18.12, ADR-0055) | AG Grid's `cellRange: { rowStartIndex, rowEndIndex, columns }` → a cell selection model; returns `{ id, model }` (AG Grid: a `ChartRef`); categories from the first column (series by rows, AG Grid `seriesChartTypes` / combination charts, chart windows and `chartThemes`: not done) |
+| (not in MUI X) cross-filtering (ApexGrid `chart.crossFilter`, AG Grid cross-filter charts) | model `crossFilter` (panel switch) | added (4.18.12, ADR-0055) | the field's `isAnyOf` filter item; the chart draws the rows that pass the other filters; not pivoted, server-filtered or numeric scatter charts; one grid (no filters across grids) |
+| (not in MUI X as one call) chart config (ApexGrid `chart.toJSON()` / `chart.restore(config)`; MUI X `exportState().chartsIntegration`) | `chartsToJSON()` / `restoreCharts(config)` | renamed (4.18.12) | on the grid (it owns the charts); HTML builds and removes chart regions; switching between one chart and several needs that mode's markup (the panel's Chart select) |
 | Charts: `chartsIntegration`, `chartModel` (renamed, see above) | same | kept | |
 | Charts: several `GridChartsRendererProxy` (`id`, `label`), `initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` | `chartModels` (+ model `label`), `activeChartId` | renamed | charts inside the grid; HTML `data-ok-chart-models`, `data-ok-active-chart-id` |
 | Formulas / computed columns: `disableFormulas`, `formulaFunctions`, `formulaA1Notation`, `disableEval`, `disableFormulaAutocomplete`, `computedColumns`, `computedColDef`, `disableComputedColumns`, `onComputedColumnsChange` | — | not applicable | a formula engine (roadmap 2.4 notes); `valueGetter` covers derived columns |

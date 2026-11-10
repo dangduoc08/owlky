@@ -787,6 +787,23 @@ export {
   toggleGridCell,
 } from "./data-grid/grid-cells.js";
 export {
+  type GridChartsState,
+  type GridRangeChart,
+  type GridRangeChartParams,
+  gridChartGroups,
+  gridChartsState,
+  gridCrossFilter,
+  gridCrossFilterBase,
+  gridCrossFilterField,
+  gridCrossFilterPoints,
+  gridCrossFilterSelection,
+  gridCrossFilterValues,
+  gridRangeChartId,
+  gridRangeChartModel,
+  isGridRangeChart,
+  sanitizeGridChartsState,
+} from "./data-grid/grid-charts.js";
+export {
   createGridColumnControls,
   type GridColumnControls,
   type GridColumnControlsOptions,

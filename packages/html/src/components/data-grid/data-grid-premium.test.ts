@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
 import type { Runtime } from "../../runtime/types.js";
-import { mount, resetPage, settle } from "../../test-utils.js";
+import { expectNoAxeViolations, mount, resetPage, settle } from "../../test-utils.js";
+import type { ChartInstance } from "../chart/chart.js";
 import { components } from "../index.js";
 import type { DataGridInstance } from "./data-grid.js";
 
@@ -1189,5 +1190,215 @@ describe("data grid phase 6 edges (HTML)", () => {
     key(header(host, "age"), "a");
     expect(instance.cellSelectionModel).toEqual({});
     root.removeAttribute("data-ok-cell-selection");
+  });
+});
+
+describe("data grid range charts and cross-filtering (HTML, ADR-0055)", () => {
+  const plotKey = (figure: Element, k: string) =>
+    figure
+      .querySelector("[data-ok-chart-plot]")
+      ?.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+  const chartOf = (region: Element) =>
+    runtime?.get<ChartInstance>(region.querySelector("[data-ok-chart]") as HTMLElement, "chart");
+  const live = (host: Element) => host.querySelector("[data-ok-data-grid-live]")?.textContent;
+  const crossSwitch = (host: Element) =>
+    host.querySelector("[data-ok-data-grid-chart-cross-filter]") as HTMLInputElement;
+
+  it("filters the grid from a chart's category selection and clears it", async () => {
+    const { host, root, instance } = setup("charts-range");
+    const { region, body } = chartParts(host);
+    expect(body()).toEqual(["North736", "South827", "East864", "West1,092"]);
+    expect(bodyRows(host)).toHaveLength(12);
+    const figure = region.querySelector("[data-ok-chart]") as HTMLElement;
+    const onFilter = vi.fn();
+    root.addEventListener("ok:data-grid:filter", onFilter);
+    plotKey(figure, "Home");
+    plotKey(figure, "Enter");
+    expect(onFilter.mock.lastCall?.[0].detail.model.items).toEqual([
+      { field: "region", operator: "isAnyOf", value: ["North"] },
+    ]);
+    expect(bodyRows(host)).toHaveLength(3);
+    // The chart keeps every category (it doesn't filter itself) and shows its filter.
+    expect(body()).toHaveLength(4);
+    expect(chartOf(region)?.selectedDataPoints).toEqual([{ seriesIndex: 0, dataPointIndex: 0 }]);
+    expect(live(host)).toBe("Filtered by Region: North");
+    // Another category replaces it.
+    plotKey(figure, "ArrowRight");
+    plotKey(figure, "Enter");
+    expect(live(host)).toBe("Filtered by Region: South");
+    expect(chartOf(region)?.selectedDataPoints).toEqual([{ seriesIndex: 0, dataPointIndex: 1 }]);
+    plotKey(figure, "Enter");
+    expect(instance.filterModel.items).toEqual([]);
+    expect(bodyRows(host)).toHaveLength(12);
+    expect(live(host)).toBe("Filter cleared");
+    // A refused filter puts the chart's selection back.
+    root.addEventListener("ok:data-grid:filter", (e) => e.preventDefault(), { once: true });
+    plotKey(figure, "End");
+    plotKey(figure, "Enter");
+    expect(instance.filterModel.items).toEqual([]);
+    expect(chartOf(region)?.selectedDataPoints).toEqual([]);
+    // The filter set elsewhere (the filter panel, code) shows as the chart's selection.
+    instance.setFilterModel({ items: [{ field: "region", operator: "isAnyOf", value: ["East"] }] });
+    expect(chartOf(region)?.selectedDataPoints).toEqual([{ seriesIndex: 0, dataPointIndex: 2 }]);
+    // The panel's switch turns cross-filtering off: the chart follows the filtered rows again.
+    crossSwitch(host).click();
+    expect(instance.chartModel.crossFilter).toBe(false);
+    // Without it, rows are one category each (rows of the page), and selections filter nothing.
+    expect(body()).toEqual(["East420", "East364", "East80"]);
+    plotKey(figure, "Home");
+    plotKey(figure, "Enter");
+    expect(instance.filterModel.items).toHaveLength(1);
+    instance.setChartModel({ ...instance.chartModel, crossFilter: true });
+    expect(crossSwitch(host).checked).toBe(true);
+    expect(body()).toHaveLength(4);
+    await settle();
+    await expectNoAxeViolations(host);
+  });
+
+  it("charts the selected cells with Alt + F1 or the panel's button", () => {
+    const { host, root, instance } = setup("charts-range");
+    instance.setCellSelectionModel({
+      "s-01": { region: true, units: true, revenue: true },
+      "s-02": { region: true, units: true, revenue: true },
+      "s-05": { region: true, units: true },
+    });
+    const onChart = vi.fn();
+    root.addEventListener("ok:data-grid:chart", onChart);
+    key(cell(host, "s-01", "units"), "F1", { altKey: true });
+    expect(onChart.mock.lastCall?.[0].detail).toMatchObject({
+      id: "range-1",
+      model: { type: "column", dimension: "region", values: ["units", "revenue"] },
+    });
+    const regions = [...host.querySelectorAll<HTMLElement>("[data-ok-data-grid-chart]")];
+    expect(regions.map((r) => r.getAttribute("data-ok-chart-id"))).toEqual(["regions", "range-1"]);
+    const figure = regions[1]?.querySelector("[data-ok-chart]") as HTMLElement;
+    expect(figure.id).toBe("grid-charts-range-chart-range-1");
+    const table = figure.querySelector("table") as HTMLTableElement;
+    // Rows of one category merge (summed, as ApexGrid does).
+    expect(rowTexts(table.tBodies[0] as HTMLTableSectionElement)).toEqual([
+      "North78448",
+      "South47329",
+    ]);
+    expect(instance.activeChartId).toBe("range-1");
+    const active = host.querySelector<HTMLSelectElement>(
+      "#grid-charts-range-chart-active",
+    ) as HTMLSelectElement;
+    expect([...active.options].map((o) => o.textContent)).toEqual([
+      "Revenue by region",
+      "Range chart 1",
+    ]);
+    expect(active.value).toBe("range-1");
+    expect(live(host)).toBe("Chart created: Range chart 1");
+    // The panel picks the new chart's type.
+    change(host.querySelector("#grid-charts-range-chart-type") as HTMLSelectElement, "line");
+    expect(figure.getAttribute("data-ok-type")).toBe("line");
+    expect(instance.chartModels["range-1"]?.rows).toEqual(["s-01", "s-02", "s-05"]);
+    // A range without numbers is refused and announced.
+    instance.setCellSelectionModel({ "s-01": { region: true, product: true } });
+    (host.querySelector("[data-ok-data-grid-chart-range]") as HTMLButtonElement).click();
+    expect(live(host)).toBe("Select cells with numbers to create a chart");
+    expect(host.querySelectorAll("[data-ok-data-grid-chart]")).toHaveLength(2);
+    expect(instance.createRangeChart()).toBeNull();
+    // A canceled `chart` event keeps the charts.
+    instance.setCellSelectionModel({ "s-03": { units: true } });
+    root.addEventListener("ok:data-grid:chart", (e) => e.preventDefault(), { once: true });
+    (host.querySelector("[data-ok-data-grid-chart-range]") as HTMLButtonElement).click();
+    expect(Object.keys(instance.chartModels)).toEqual(["regions", "range-1"]);
+    // The method takes a range, a type, a label and an id (no events).
+    expect(
+      instance.createRangeChart({
+        cellRange: { "s-03": { units: true }, "s-04": { units: true } },
+        chartType: "pie",
+        label: "Units",
+        id: "units",
+      }),
+    ).toEqual({
+      id: "units",
+      model: {
+        label: "Units",
+        type: "pie",
+        dimension: null,
+        values: ["units"],
+        rows: ["s-03", "s-04"],
+      },
+    });
+    const units = host.querySelector('[data-ok-chart-id="units"] table') as HTMLTableElement;
+    expect(rowTexts(units.tBodies[0] as HTMLTableSectionElement)).toEqual(["184", "231"]);
+  });
+
+  it("saves and restores the charts' config", () => {
+    const { host, instance } = setup("charts-range");
+    instance.createRangeChart({ cellRange: { "s-01": { region: true, revenue: true } } });
+    const config = instance.chartsToJSON();
+    expect(config).toEqual({
+      model: {},
+      charts: {
+        regions: expect.objectContaining({ crossFilter: true }),
+        "range-1": expect.objectContaining({ rows: ["s-01"] }),
+      },
+      activeChartId: "range-1",
+    });
+    expect(JSON.parse(JSON.stringify(config))).toEqual(config);
+    instance.restoreCharts({ charts: { regions: config.charts?.["regions"] }, bad: 1 });
+    expect(Object.keys(instance.chartModels)).toEqual(["regions"]);
+    expect(host.querySelectorAll("[data-ok-data-grid-chart]")).toHaveLength(1);
+    expect(instance.activeChartId).toBe("regions");
+    instance.restoreCharts(config);
+    expect(host.querySelectorAll("[data-ok-data-grid-chart]")).toHaveLength(2);
+    expect(instance.activeChartId).toBe("range-1");
+    expect(instance.exportState().chartsIntegration).toEqual(config);
+  });
+
+  it("cross-filters a chart of groups by the grouping field", () => {
+    const { host, instance } = setup("charts-group");
+    instance.setChartModel({ ...instance.chartModel, crossFilter: true });
+    const { region, body } = chartParts(host);
+    expect(body()).toEqual(["Tea2,497", "Juice2,592", "Coffee2,658"]);
+    plotKey(region.querySelector("[data-ok-chart]") as HTMLElement, "Home");
+    plotKey(region.querySelector("[data-ok-chart]") as HTMLElement, "Enter");
+    expect(instance.filterModel.items).toEqual([
+      { field: "product", operator: "isAnyOf", value: ["Tea"] },
+    ]);
+    expect(live(host)).toBe("Filtered by Product: Tea");
+    expect(body()).toHaveLength(3);
+  });
+
+  it("needs the charts integration", () => {
+    const { host, instance } = setup("cells-group");
+    instance.setCellSelectionModel({ "i-1": { stock: true } });
+    key(cell(host, "i-1", "stock"), "F1", { altKey: true });
+    expect(instance.createRangeChart()).toBeNull();
+    expect(host.querySelector("[data-ok-data-grid-chart]")).toBeNull();
+  });
+
+  it("replaces the one chart's model without several charts", () => {
+    const { host, instance } = setup("charts-group", (root) =>
+      root.setAttribute("data-ok-cell-selection", ""),
+    );
+    const made = instance.createRangeChart({
+      cellRange: {
+        "s-01": { region: true, revenue: true },
+        "s-05": { region: true, revenue: true },
+      },
+    });
+    expect(made?.id).toBeNull();
+    expect(instance.chartModel.rows).toEqual(["s-01", "s-05"]);
+    expect(chartParts(host).body()).toEqual(["North448"]);
+    // The user path fires the cancelable `chart` event without an id.
+    const onChart = vi.fn();
+    host.addEventListener("ok:data-grid:chart", onChart);
+    instance.setCellSelectionModel({ "s-02": { region: true, units: true } });
+    // Rows are grouped (collapsed): Alt + F1 on any body cell.
+    const anyCell = host.querySelector(
+      '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+    ) as HTMLElement;
+    key(anyCell, "F1", { altKey: true });
+    expect(onChart.mock.lastCall?.[0].detail).toEqual({ model: instance.chartModel });
+    expect(chartParts(host).body()).toEqual(["South47"]);
+    // Several charts need the markup of several charts (the panel's Chart select).
+    instance.restoreCharts({ charts: {}, activeChartId: "none" });
+    expect(instance.activeChartId).toBeNull();
+    instance.restoreCharts({ charts: { extra: { values: ["units"] } } });
+    expect(host.querySelectorAll("[data-ok-data-grid-chart]")).toHaveLength(2);
   });
 });
