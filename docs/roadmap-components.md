@@ -137,8 +137,8 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.56 | E — audit 3.1 (could) | Data grid | server: `paginationMeta` / `estimatedRowCount` / `onRowCountChange`, `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`, `filterDebounceMs` / `columnFilterDebounceMs`, `disableChildrenFiltering` / `-Sorting` | ⬜ |
 | 4.18.57 | E — audit 3.1 (could) | Data grid | `disableAutosize`, `keepColumnPositionIfDraggedOutside`, pinned section separators, `isRowReorderable` / `isValidRowReorder` / `setTreeDataPath`, `pivotingColDef`, `pivotPanelOpen`, `virtualizeColumnsWithAutoRowHeight` | ⬜ |
 | 4.18.58 | E — audit 3.1 (could) | Data grid | `cellSelectionFillHandle` (drag to fill, keyboard alternative, WCAG 2.5.7) | ⬜ |
-| 4.18.59 | E — audit 3.1 (must) | Chart | several value axes (`yaxis[]` with `seriesName`, `opposite`), `logarithmic`, `reversed`, `tickAmount`; a drawn x axis title | 🔄 |
-| 4.18.60 | E — audit 3.1 (must) | Chart | point / slice / label selection: `ok:chart:select` + React callback (click, Enter), selected state (`allowMultipleDataPointsSelection`, `toggleDataPointSelection`) | 🔄 |
+| 4.18.59 | E — audit 3.1 (must) | Chart | several value axes (`yaxis[]` with `seriesName`, `opposite`), `logarithmic`, `reversed`, `tickAmount`; a drawn x axis title | ✅ |
+| 4.18.60 | E — audit 3.1 (must) | Chart | point / slice / label selection: `ok:chart:select` + React callback (click, Enter), selected state (`allowMultipleDataPointsSelection`, `toggleDataPointSelection`) | ✅ |
 | 4.18.61 | E — audit 3.1 (should) | Chart | `stackType: "100%"`, `stackOnlyBar`; stacked totals, data label position; bar `colors.ranges`, background bars | ⬜ |
 | 4.18.62 | E — audit 3.1 (should) | Chart | non-color series cues: `markers.shape`, `markers.discrete`, `fill.pattern`, `colorBlindMode` (WCAG 1.4.1); `stroke.width` per series | ⬜ |
 | 4.18.63 | E — audit 3.1 (should) | Chart | tooltip: `tooltip: false`, per-point mode (`shared: false`), fixed position, custom content (React node / HTML `<template>`) | ⬜ |
