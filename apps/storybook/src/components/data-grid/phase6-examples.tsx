@@ -168,6 +168,25 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
       ),
     },
     {
+      title: "Group footers",
+      content: (
+        <DataGrid
+          id="grid-grouping-footers"
+          aria-label="Sales by region, with a total per region"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          initialState={{
+            rowGrouping: { model: ["region"] },
+            aggregation: { model: { units: "sum", revenue: "sum" } },
+          }}
+          defaultGroupingExpansionDepth={1}
+          getAggregationPosition={(group) => (group.isRoot ? null : "footer")}
+          hideFooter
+        />
+      ),
+    },
+    {
       title: "Generated parents",
       content: (
         <DataGrid
@@ -313,6 +332,7 @@ export const PHASE6_FILES = {
     ["Row grouping and aggregation", "group"],
     ["Multiple grouping columns", "multiple"],
     ["Grouping value getter", "value"],
+    ["Group footers", "footers"],
     ["Generated parents", "tree"],
   ],
   pivot: [["Pivoting", "group"]],

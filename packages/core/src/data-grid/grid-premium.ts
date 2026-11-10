@@ -21,7 +21,7 @@ import {
   gridCompare,
   gridSortValue,
 } from "./data-grid.js";
-import type { GridColumnGroup } from "./grid-structure.js";
+import type { GridColumnGroup, GridTreeRow } from "./grid-structure.js";
 
 /** The row grouping column (MUI X `GRID_ROW_GROUPING_SINGLE_GROUPING_FIELD`). */
 export const GRID_GROUPING_FIELD = "__row_group_by_columns_group__";
@@ -60,6 +60,10 @@ export function gridGroupingKey(value: unknown): string {
 }
 /** Id of the aggregation footer row (the root group). */
 export const GRID_AGGREGATION_ROOT_ID = "auto-generated-group-footer-root";
+
+/** Id of a group's footer row (`getAggregationPosition` → `footer`; MUI X ids). */
+export const gridGroupFooterId = (groupId: string): string =>
+  `auto-generated-group-footer-${groupId}`;
 
 /** Id of a generated row (a group, or a missing tree parent) from its path of keys. */
 export const gridGroupRowId = (path: readonly string[]): string =>
@@ -284,6 +288,83 @@ export function parseGridAggregationModel(
       Object.hasOwn(functions, name)
     )
       out[field] = name;
+  return out;
+}
+
+/** Where a group shows its aggregated values (MUI X `GridAggregationPosition`; `null`: nowhere). */
+export type GridAggregationPosition = "inline" | "footer" | null;
+
+/**
+ * Positions by level (the HTML equivalent of `getAggregationPosition`): `root` for the footer of
+ * every row (default `footer`), a grouped field for its groups (default `inline`).
+ */
+export type GridAggregationPositions = Record<string, GridAggregationPosition>;
+
+/** Positions from untrusted input (JSON attributes): known values only. */
+export function parseGridAggregationPositions(json: string | null): GridAggregationPositions {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json ?? "null");
+  } catch {
+    return {};
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
+  const out: GridAggregationPositions = {};
+  for (const [key, value] of Object.entries(parsed as Record<string, unknown>))
+    if (
+      !["__proto__", "constructor", "prototype"].includes(key) &&
+      (value === "inline" || value === "footer" || value === null)
+    )
+      out[key] = value;
+  return out;
+}
+
+/** A group's position (`field` undefined: the root) from positions by level. */
+export const gridAggregationPositionOf = (
+  positions: GridAggregationPositions,
+  field: string | undefined,
+): GridAggregationPosition =>
+  field === undefined
+    ? Object.hasOwn(positions, "root")
+      ? (positions["root"] as GridAggregationPosition)
+      : "footer"
+    : Object.hasOwn(positions, field)
+      ? (positions[field] as GridAggregationPosition)
+      : "inline";
+
+/**
+ * The shown rows with a footer row after the last shown descendant of each open group that has
+ * one (`getAggregationPosition` → `footer`). Footers sit one level below their group.
+ */
+export function gridWithGroupFooters<R>(
+  list: readonly GridTreeRow<R>[],
+  hasFooter: (node: GridTreeRow<R>) => boolean,
+  footerOf: (node: GridTreeRow<R>) => R,
+): GridTreeRow<R>[] {
+  const out: GridTreeRow<R>[] = [];
+  const open: GridTreeRow<R>[] = [];
+  const close = (depth: number) => {
+    while (open.length && (open[open.length - 1] as GridTreeRow<R>).depth >= depth) {
+      const group = open.pop() as GridTreeRow<R>;
+      out.push({
+        row: footerOf(group),
+        id: gridGroupFooterId(group.id),
+        depth: group.depth + 1,
+        parentId: group.id,
+        childrenCount: 0,
+        descendantCount: 0,
+        expanded: false,
+        posInSet: 0,
+        setSize: 0,
+      });
+    }
+  };
+  for (const node of list) {
+    close(node.depth);
+    out.push(node);
+    if (node.expanded && hasFooter(node)) open.push(node);
+  }
+  close(0);
   return out;
 }
 

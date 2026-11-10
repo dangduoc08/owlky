@@ -203,6 +203,84 @@ describe("data grid row grouping and aggregation (HTML)", () => {
     expect(names()).toEqual(["Under 50 units(11)", "50 units or more(13)"]);
   });
 
+  it("builds group footers from data-ok-aggregation-position, like React", async () => {
+    const { host, root, instance } = setup("grouping-footers");
+    const footers = () =>
+      bodyRows(host).filter((r) => r.hasAttribute("data-ok-data-grid-aggregation-row"));
+    // Every group open: a footer after each group's rows, none for the root.
+    expect(footers()).toHaveLength(4);
+    const north = footers()[0] as HTMLElement;
+    expect(north.getAttribute("data-ok-row-id")).toBe(
+      "auto-generated-group-footer-auto-generated-row-region/North",
+    );
+    expect(north.getAttribute("aria-level")).toBe("2");
+    expect(shownCells(north)).toEqual(["", "", "", "", "300", "1760"]);
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)).toEqual(["North(6)", "", "", "", "", ""]);
+    expect(bodyRows(host)[7]).toBe(north);
+    expect(host.querySelector("[data-ok-data-grid-pinned-rows]")).toBeNull();
+    // Closing a group drops its footer; the indexes follow.
+    (
+      (bodyRows(host)[0] as HTMLElement).querySelector(
+        "[data-ok-data-grid-tree-toggle]",
+      ) as HTMLElement
+    ).click();
+    expect(footers()).toHaveLength(3);
+    expect(bodyRows(host)[1]?.getAttribute("aria-rowindex")).toBe("3");
+    // Back to the defaults: values in the group rows, the root's in a footer row.
+    root.removeAttribute("data-ok-aggregation-position");
+    await settle();
+    expect(footers()).toHaveLength(0);
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)).toEqual([
+      "North(6)",
+      "",
+      "",
+      "",
+      "300",
+      "1760",
+    ]);
+    expect(
+      host.querySelector('[data-ok-row-id="auto-generated-group-footer-root"]'),
+    ).not.toBeNull();
+    root.setAttribute("data-ok-aggregation-position", '{"region":null,"root":"footer"}');
+    await settle();
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)[4]).toBe("");
+    instance.setAggregationModel({});
+    expect(host.querySelector("[data-ok-data-grid-aggregation-row]")).toBeNull();
+  });
+
+  it("asks a data source for the aggregation and shows its values", async () => {
+    const { host, root, instance } = setup("server-aggregation-group");
+    const asked: GridGetRowsParams[] = [];
+    let answer: (() => void) | undefined;
+    instance.setDataSource({
+      getRows: (params) =>
+        new Promise((resolve) => {
+          asked.push(params);
+          answer = () =>
+            resolve({
+              rows: [{ id: "c-1", firstName: "Ana", lastName: "Silva", age: 40, city: "Lima" }],
+              rowCount: 1,
+              aggregateRow: { age: { value: 40 }, id: { value: 1 } },
+            });
+        }),
+      getAggregatedValue: (row, field) =>
+        ((row as Record<string, { value?: number }>)[field] as { value?: number }).value,
+    });
+    expect(asked[0]?.aggregationModel).toEqual({ age: "avg", id: "size" });
+    answer?.();
+    await settle();
+    const footer = host.querySelector(
+      '[data-ok-row-id="auto-generated-group-footer-root"]',
+    ) as HTMLElement;
+    expect(cell(host, "auto-generated-group-footer-root", "age").textContent).toBe("40");
+    expect(cell(host, "auto-generated-group-footer-root", "id").textContent).toBe("1");
+    expect(footer).not.toBeNull();
+    // A new aggregation asks again.
+    instance.setAggregationModel({ age: "max" });
+    expect(asked.at(-1)?.aggregationModel).toEqual({ age: "max" });
+    expect(root.getAttribute("data-ok-aggregation-model")).toBe('{"age":"max"}');
+  });
+
   it("filters leaves, selects data rows, exports and keeps its state", () => {
     const { host, root, instance } = setup("grouping-group", (r) =>
       r.setAttribute("data-ok-aggregation-rows-scope", "all"),

@@ -74,6 +74,7 @@ import {
   gridFilterOperators,
   gridFilterValues,
   gridGroupComparator,
+  gridGroupFooterId,
   gridGroupingField,
   gridGroupingFieldOf,
   gridGroupingKey,
@@ -100,6 +101,7 @@ import {
   gridToXlsx,
   gridTreeGroups,
   gridTreeRows,
+  gridWithGroupFooters,
   isGridCellSelected,
   isGridFilterable,
   isGridHideable,
@@ -240,8 +242,20 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
     | undefined;
 }
 
-/** Where a group's aggregated values show: in its row, or (the root) in a footer row. */
+/** Where a group's aggregated values show: in its row, in a footer row, or nowhere. */
 export type GridAggregationPosition = "inline" | "footer" | null;
+
+/** The group `getAggregationPosition` asks about (MUI X `GridGroupNode`). */
+export interface GridAggregationGroup {
+  id: string;
+  /** -1 for the root (every row). */
+  depth: number;
+  isRoot: boolean;
+  /** Row grouping: the grouped field (MUI X `groupingField`). */
+  groupingField?: string | undefined;
+  /** Row grouping: the group's name (MUI X `groupingKey`). */
+  groupingKey?: string | undefined;
+}
 
 /** Print export options (MUI X `printOptions`). */
 export interface GridPrintOptions {
@@ -570,10 +584,12 @@ export interface DataGridProps<R>
   aggregationFunctions?: Readonly<Record<string, GridAggregationFunction>> | undefined;
   /** Rows aggregated: the filtered ones (default) or all. */
   aggregationRowsScope?: "filtered" | "all" | undefined;
-  /** Where a group shows its values (default: groups inline, the root in a footer row). */
-  getAggregationPosition?:
-    | ((group: { id: string; depth: number; isRoot: boolean }) => GridAggregationPosition)
-    | undefined;
+  /**
+   * Where a group shows its values: in its row (`inline`), in a footer row after its rows
+   * (`footer`) or nowhere (`null`). Default: groups inline, the root (`depth` -1) in a footer row.
+   * Ignored while pivoting.
+   */
+  getAggregationPosition?: ((group: GridAggregationGroup) => GridAggregationPosition) | undefined;
   /** The pivot model (rows, columns and values), controlled. */
   pivotModel?: GridPivotModel | undefined;
   /** Called when the pivot model changes. */
@@ -709,6 +725,13 @@ type Group = { [GROUP]: GridGroupNode };
 const asGroupRow = <R,>(node: GridGroupNode) => ({ [GROUP]: node }) as unknown as R;
 const isGroup = (row: unknown): row is Group =>
   typeof row === "object" && row !== null && GROUP in row;
+/** A group's footer row (`getAggregationPosition` → `footer`): a generated row too. */
+const FOOTER = Symbol("group footer");
+type Footer = Group & { [FOOTER]: string };
+const asFooterRow = <R,>(node: GridGroupNode) =>
+  ({ [GROUP]: { ...node, id: gridGroupFooterId(node.id) }, [FOOTER]: node.id }) as unknown as R;
+const isFooter = (row: unknown): row is Footer =>
+  typeof row === "object" && row !== null && FOOTER in row;
 /** Data rows only (not generated or placeholder rows). */
 const isData = (row: unknown) => !isGroup(row) && !isHole(row);
 
@@ -1012,7 +1035,11 @@ function DataGridInner<R>(
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
   const [viewport, setViewport] = useState<GridViewport | null>(null);
-  const [sourced, setSourced] = useState<{ rows: readonly R[]; rowCount?: number | undefined }>({
+  const [sourced, setSourced] = useState<{
+    rows: readonly R[];
+    rowCount?: number | undefined;
+    aggregateRow?: Record<string, unknown> | undefined;
+  }>({
     rows: [],
   });
   const [sourceLoading, setSourceLoading] = useState(false);
@@ -1106,8 +1133,14 @@ function DataGridInner<R>(
       ? {}
       : aggregationState;
   const aggregating = Object.keys(aggregationModel).length > 0;
-  const aggregationPosition = (group: { id: string; depth: number; isRoot: boolean }) =>
-    getAggregationPosition ? getAggregationPosition(group) : group.isRoot ? "footer" : "inline";
+  const aggregationPosition = (group: GridAggregationGroup): GridAggregationPosition =>
+    getAggregationPosition && !pivot
+      ? getAggregationPosition(group)
+      : group.isRoot
+        ? "footer"
+        : "inline";
+  /** The grouping's positions by level, for the HTML runtime (`data-ok-aggregation-position`). */
+  const positions: Record<string, GridAggregationPosition> = {};
   /** The functions a column offers, and the one it uses (when it offers it). */
   const functionsOf = (column: GridColDef<R>) =>
     gridAggregationFunctionsFor(column, aggregationFunctions, column.availableAggregationFunctions);
@@ -1220,16 +1253,29 @@ function DataGridInner<R>(
     const passed = server.filter || pivot ? null : localFilter(source);
     const pass = passed ? new Set(passed) : null;
     const place = server.sort ? null : new Map(localSort(source).map((row, i) => [row, i]));
-    // Aggregated values of each group (and of every row for the footer).
+    // Aggregated values of each group: in its row, or in a footer row after its rows.
+    const groupValues = new Map<string, Record<string, unknown>>();
+    const footers = new Map<string, GridGroupNode>();
     if (aggregating) {
       const scoped = (list: readonly R[]) =>
         aggregationRowsScope === "all" || !pass ? list : list.filter((r) => pass.has(r));
-      for (const node of nodes?.groups ?? [])
-        if (aggregationPosition({ id: node.id, depth: node.depth, isRoot: false }) === "inline")
-          aggregates.set(
-            node.id,
-            aggregateRows(scoped(node.leafIds.map((leaf) => byId.get(leaf) as R))),
-          );
+      for (const node of nodes?.groups ?? []) {
+        const position = aggregationPosition({
+          id: node.id,
+          depth: node.depth,
+          isRoot: false,
+          groupingField: node.field,
+          groupingKey: node.key,
+        });
+        if (node.field && !(node.field in positions)) positions[node.field] = position;
+        if (position === null) continue;
+        const values = aggregateRows(scoped(node.leafIds.map((leaf) => byId.get(leaf) as R)));
+        groupValues.set(node.id, values);
+        if (position === "footer") {
+          footers.set(node.id, node);
+          aggregates.set(gridGroupFooterId(node.id), values);
+        } else aggregates.set(node.id, values);
+      }
     }
     const openOf = (rowId: string, depth: number) =>
       expansion.get(rowId) ??
@@ -1259,7 +1305,7 @@ function DataGridInner<R>(
             place: (row) => place.get(row) as number,
             firstPlace: (row) => firstPlace.get(idOf(row)) as number,
             keyOf: (row) => (row as Group)[GROUP].key,
-            aggregateOf: (row, field) => aggregates.get(idOf(row))?.[field],
+            aggregateOf: (row, field) => groupValues.get(idOf(row))?.[field],
             fieldOf: (row) => (isGroup(row) ? row[GROUP].field : undefined),
             sortModel,
             columns,
@@ -1268,9 +1314,28 @@ function DataGridInner<R>(
           })
         : undefined,
     };
-    const list = gridTreeRows(items, { ...options, expanded: openOf });
+    // Footer rows follow the last row of their open group (the same object in both lists).
+    const footerRows = new Map<string, R>();
+    const withFooters = (rows: GridTreeRow<R>[]) =>
+      footers.size
+        ? gridWithGroupFooters(
+            rows,
+            (node) => footers.has(node.id),
+            (node) => {
+              let footer = footerRows.get(node.id);
+              if (!footer) {
+                footer = asFooterRow<R>(footers.get(node.id) as GridGroupNode);
+                footerRows.set(node.id, footer);
+              }
+              return footer;
+            },
+          )
+        : rows;
+    const list = withFooters(gridTreeRows(items, { ...options, expanded: openOf }));
     // Every row renders (children of closed rows `hidden`), so the markup holds the whole tree.
-    const all = serverTree ? list : gridTreeRows(items, { ...options, expanded: () => true });
+    const all = serverTree
+      ? list
+      : withFooters(gridTreeRows(items, { ...options, expanded: () => true }));
     tree = new Map(
       all.map((node) => [
         node.id,
@@ -1288,18 +1353,40 @@ function DataGridInner<R>(
     filtered = server.filter ? orderedRows : localFilter(orderedRows);
     sorted = server.sort ? filtered : localSort(filtered);
   }
-  // The root's values show in a footer row (MUI X: a pinned bottom row).
+  // The root's values show in a footer row (MUI X: a pinned bottom row). Server-side
+  // aggregation: the data source's `aggregateRow` (through `getAggregatedValue`).
+  const rootPosition = aggregationPosition({
+    id: GRID_AGGREGATION_ROOT_ID,
+    depth: -1,
+    isRoot: true,
+  });
+  positions["root"] = rootPosition;
+  const serverAggregation =
+    !!dataSource && !pivot && (!!dataSource.getAggregatedValue || !!sourced.aggregateRow);
+  const requestedAggregation: GridAggregationModel = Object.fromEntries(
+    columns.flatMap((c) => (aggregationOf(c) ? [[c.field, aggregationOf(c) as string]] : [])),
+  );
+  /** A server row's aggregated value (`getAggregatedValue`, else `row[field]`). */
+  const serverValue = (row: R | Record<string, unknown>, field: string) =>
+    dataSource?.getAggregatedValue
+      ? dataSource.getAggregatedValue(row, field)
+      : (row as Record<string, unknown>)[field];
   const rootAggregates =
-    aggregating &&
-    !lazy &&
-    aggregationPosition({ id: GRID_AGGREGATION_ROOT_ID, depth: -1, isRoot: true }) === "footer"
-      ? aggregateRows(
-          pivot
-            ? pivotRows
-            : aggregationRowsScope === "all" || server.filter
-              ? orderedRows
-              : localFilter(orderedRows),
-        )
+    aggregating && (!lazy || serverAggregation) && rootPosition === "footer"
+      ? serverAggregation
+        ? Object.fromEntries(
+            Object.keys(requestedAggregation).map((field) => [
+              field,
+              sourced.aggregateRow ? serverValue(sourced.aggregateRow, field) : undefined,
+            ]),
+          )
+        : aggregateRows(
+            pivot
+              ? pivotRows
+              : aggregationRowsScope === "all" || server.filter
+                ? orderedRows
+                : localFilter(orderedRows),
+          )
       : null;
   const total = server.page
     ? ((dataSource ? sourced.rowCount : rowCount) ?? sorted.length)
@@ -1638,6 +1725,7 @@ function DataGridInner<R>(
           filterModel,
           groupKeys: keys,
           ...(treeData ? {} : { groupFields: grouping }),
+          ...(aggregating && !pivot ? { aggregationModel: requestedAggregation } : {}),
         })
         .then((response) => setChildRows((current) => new Map(current).set(rowId, response.rows)))
         .catch((error: unknown) => onDataSourceError?.(error))
@@ -1698,6 +1786,7 @@ function DataGridInner<R>(
     paginationModel: { page: pagination.page, pageSize: pagination.pageSize },
     ...(serverTree ? { groupKeys: [] } : {}),
     ...(serverTree && !treeData ? { groupFields: grouping } : {}),
+    ...(aggregating && !pivot ? { aggregationModel: requestedAggregation } : {}),
   });
   // New top-level rows: children loaded before belong to the old ones.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the request changes.
@@ -1729,7 +1818,8 @@ function DataGridInner<R>(
     };
   }, [dataSource, cache, request, onDataSourceError, lazy]);
   // Lazy loading: ask for the chunks the window misses (throttled); a new sort or filter restarts.
-  const lazyKey = JSON.stringify({ sortModel, filterModel });
+  const lazyAggregation = aggregating && !pivot ? requestedAggregation : null;
+  const lazyKey = JSON.stringify({ sortModel, filterModel, lazyAggregation });
   const lazyWindow = range ?? { start: 0, end: Math.min(total || LAZY_CHUNK, LAZY_CHUNK) };
   const lazyState = useRef({ key: "", pending: new Set<string>(), last: 0 });
   // A new data source: lazily loaded rows belonged to the old one.
@@ -1766,7 +1856,13 @@ function DataGridInner<R>(
         state.pending.add(name);
         setSourceLoading(true);
         dataSource
-          .getRows({ sortModel, filterModel, start: r.start, end: r.end })
+          .getRows({
+            sortModel,
+            filterModel,
+            start: r.start,
+            end: r.end,
+            ...(lazyAggregation ? { aggregationModel: lazyAggregation } : {}),
+          })
           .then((response) => {
             if (state.key !== lazyKey) return;
             setLazyRows((current) => {
@@ -1774,8 +1870,12 @@ function DataGridInner<R>(
               for (const [k, row] of response.rows.entries()) next.set(r.start + k, row);
               return next;
             });
-            if (response.rowCount !== undefined)
-              setSourced((current) => ({ ...current, rowCount: response.rowCount }));
+            if (response.rowCount !== undefined || response.aggregateRow)
+              setSourced((current) => ({
+                ...current,
+                ...(response.rowCount !== undefined ? { rowCount: response.rowCount } : {}),
+                ...(response.aggregateRow ? { aggregateRow: response.aggregateRow } : {}),
+              }));
           })
           .catch((error: unknown) => onDataSourceError?.(error))
           .finally(() => {
@@ -3129,7 +3229,14 @@ function DataGridInner<R>(
         {shown.map((column, c) => {
           if (!renders(column)) return null;
           const value = rawValue(column, row);
-          const text = textOf(column, row);
+          // Server-side aggregation: a server parent shows its aggregated values.
+          const text =
+            serverAggregation &&
+            serverTree &&
+            aggregationOf(column) &&
+            (dataSource?.getChildrenCount?.(row) ?? 0) > 0
+              ? aggregateText(column, serverValue(row, column.field))
+              : textOf(column, row);
           const custom = column.renderCell?.({
             row,
             field: column.field,
@@ -3370,11 +3477,28 @@ function DataGridInner<R>(
       </div>
     );
   };
-  /** A generated row: a group (row grouping, pivot) or a missing tree parent. */
+  /** A generated row: a group (row grouping, pivot), a missing tree parent or a group footer. */
   const renderGroupRow = (row: R & Group, index: number) => {
     const rowId = row[GROUP].id;
     const node = tree?.get(rowId) as GridTreeRow<R>;
     const parent = node.childrenCount > 0;
+    if (isFooter(row))
+      return (
+        <div
+          key={rowId}
+          role="row"
+          aria-rowindex={firstRowIndex + index + rowOffset}
+          hidden={!onPage(index) || undefined}
+          data-ok-row-id={rowId}
+          data-ok-generated=""
+          data-ok-data-grid-aggregation-row=""
+          aria-level={node.depth + 1}
+          data-ok-parent={node.parentId as string}
+        >
+          {specials.map((special) => specialCell(special.field, row, "body", node, false, false))}
+          {shown.map((column, c) => valueCell(column, c, aggregates.get(rowId) ?? null))}
+        </div>
+      );
     return (
       <div
         key={rowId}
@@ -3471,7 +3595,7 @@ function DataGridInner<R>(
       hidden: listView || undefined,
       tabIndex: -1,
     } as const;
-    if (place !== "body" || (isGroup(row) && field !== groupCellOf(row)))
+    if (place !== "body" || isFooter(row) || (isGroup(row) && field !== groupCellOf(row)))
       return <div {...common} />;
     if (field === REORDER_FIELD)
       return (
@@ -3724,6 +3848,9 @@ function DataGridInner<R>(
         : {})}
       {...(Object.keys(aggregationState).length
         ? { "data-ok-aggregation-model": JSON.stringify(aggregationState) }
+        : {})}
+      {...(getAggregationPosition && aggregating && !pivot
+        ? { "data-ok-aggregation-position": JSON.stringify(positions) }
         : {})}
       {...(pivotAvailable ? { "data-ok-pivot-model": JSON.stringify(pivotModel) } : {})}
       {...(chartsIntegration ? { "data-ok-chart-model": JSON.stringify(chartModel) } : {})}

@@ -906,6 +906,12 @@
       "value": "string"
      },
      {
+      "description": "Where groups show their aggregated values, as JSON by level: `root` and each grouped field, to `inline`, `footer` or `null`. React writes it from `getAggregationPosition`.",
+      "kind": "value",
+      "name": "data-ok-aggregation-position",
+      "value": "string"
+     },
+     {
       "description": "Set by the runtime on the first cell after the hidden columns of the column window.",
       "kind": "state",
       "name": "data-ok-col-start"
@@ -1780,9 +1786,9 @@
       "type": "GridFilterModel"
      },
      {
-      "description": "Where a group shows its values (default: groups inline, the root in a footer row).",
+      "description": "Where a group shows its values: in its row (`inline`), in a footer row after its rows (`footer`) or nowhere (`null`). Default: groups inline, the root (`depth` -1) in a footer row. Ignored while pivoting.",
       "name": "getAggregationPosition",
-      "type": "((group: { id: string; depth: number; isRoot: boolean; }) => GridAggregationPosition)"
+      "type": "((group: GridAggregationGroup) => GridAggregationPosition)"
      },
      {
       "description": "Returns a class name for a cell.",
@@ -2230,6 +2236,10 @@
   {
    "name": "GridAggregationModel",
    "type": "{ [x: string]: string; }"
+  },
+  {
+   "name": "GridAggregationPosition",
+   "type": "\"footer\" | \"inline\" | null"
   },
   {
    "name": "GridCellSelectionModel",

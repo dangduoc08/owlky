@@ -11,6 +11,7 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "advanced"],
   ["datagrid", "large"],
   ["datagrid", "server"],
+  ["datagrid", "server-aggregation"],
   ["datagrid", "layout"],
   ["datagrid", "validation"],
   ["datagrid", "tree-data"],
@@ -405,7 +406,12 @@ const pairs: [component: string, story: string][] = [
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
-const LOADS = new Set(["datagrid/large", "datagrid/server", "datagrid/lazy-loading"]);
+const LOADS = new Set([
+  "datagrid/large",
+  "datagrid/server",
+  "datagrid/server-aggregation",
+  "datagrid/lazy-loading",
+]);
 
 /**
  * Image stories (and Markdown, whose pictures are Images): lazy pictures load while the network is

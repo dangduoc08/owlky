@@ -422,6 +422,163 @@ describe("DataGrid row grouping and aggregation", () => {
     expect(cell("1", "region").hasAttribute("data-ok-grouping-value")).toBe(false);
   });
 
+  it("shows group footers where getAggregationPosition says", async () => {
+    const position = vi.fn((group: { isRoot: boolean; groupingField?: string | undefined }) =>
+      group.isRoot ? null : group.groupingField === "region" ? ("footer" as const) : "inline",
+    );
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum" }}
+        getAggregationPosition={position}
+        defaultGroupingExpansionDepth={-1}
+        hideFooter
+      />,
+    );
+    expect(position).toHaveBeenCalledWith({
+      id: "auto-generated-row-region/North",
+      depth: 0,
+      isRoot: false,
+      groupingField: "region",
+      groupingKey: "North",
+    });
+    const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+    expect(JSON.parse(root.getAttribute("data-ok-aggregation-position") as string)).toEqual({
+      region: "footer",
+      root: null,
+    });
+    // The group row shows no value; its footer follows its rows; no root footer.
+    expect(texts().map((r) => [r[0], r[4]])).toEqual([
+      ["North(2)", ""],
+      ["", "10"],
+      ["", "5"],
+      ["", "15"],
+      ["South(1)", ""],
+      ["", "30"],
+      ["", "30"],
+      ["East(1)", ""],
+      ["", "20"],
+      ["", "20"],
+    ]);
+    const footer = bodyRows()[3] as HTMLElement;
+    expect(footer.getAttribute("data-ok-row-id")).toBe(
+      "auto-generated-group-footer-auto-generated-row-region/North",
+    );
+    expect(footer.hasAttribute("data-ok-data-grid-aggregation-row")).toBe(true);
+    expect(footer.getAttribute("aria-level")).toBe("2");
+    expect(footer.getAttribute("data-ok-parent")).toBe("auto-generated-row-region/North");
+    expect(footer.querySelector("[data-ok-data-grid-tree-toggle]")).toBeNull();
+    expect(document.querySelector("[data-ok-data-grid-pinned-rows]")).toBeNull();
+    await expectNoAxeViolations(document.body);
+    // A closed group hides its footer.
+    fireEvent.click(
+      document.querySelector(
+        '[data-ok-row-id="auto-generated-row-region/North"] [data-ok-data-grid-tree-toggle]',
+      ) as HTMLElement,
+    );
+    expect(texts()[1]?.[0]).toBe("South(1)");
+    expect((footer as HTMLElement).hidden).toBe(true);
+    // Pivoting ignores getAggregationPosition (MUI X).
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        pivotActive
+        pivotModel={{
+          rows: [{ field: "region" }],
+          columns: [],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        getAggregationPosition={position}
+        hideFooter
+      />,
+    );
+    expect(root.hasAttribute("data-ok-aggregation-position")).toBe(false);
+    expect(
+      document.querySelector("[data-ok-data-grid-pinned-rows] [data-ok-data-grid-aggregation-row]"),
+    ).not.toBeNull();
+  });
+
+  it("asks a data source for the aggregation and shows its values", async () => {
+    const asked: GridGetRowsParams[] = [];
+    const source: GridDataSource<Sale> = {
+      getRows: async (params) => {
+        asked.push(params);
+        return {
+          rows: SALES.slice(0, 2),
+          rowCount: 4,
+          aggregateRow: { units: { total: 65 } },
+        };
+      },
+      getAggregatedValue: (row, field) =>
+        ((row as Record<string, unknown>)[field] as { total?: number } | undefined)?.total ?? null,
+    };
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        rows={[]}
+        columns={COLUMNS}
+        dataSource={source}
+        dataSourceCache={null}
+        aggregationModel={{ units: "sum" }}
+      />,
+    );
+    const footer = await screen.findByText("65");
+    expect(footer.closest("[data-ok-data-grid-aggregation-row]")).not.toBeNull();
+    expect(asked[0]?.aggregationModel).toEqual({ units: "sum" });
+    // Without an aggregation the request has none.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        rows={[]}
+        columns={COLUMNS}
+        dataSource={source}
+        dataSourceCache={null}
+      />,
+    );
+    await act(async () => {});
+    expect(asked.at(-1)?.aggregationModel).toBeUndefined();
+    expect(document.querySelector("[data-ok-data-grid-aggregation-row]")).toBeNull();
+  });
+
+  it("shows a server group's aggregated values (getAggregatedValue)", async () => {
+    type Group = { id: string; region: string; units: number; count: number };
+    const source: GridDataSource<Group> = {
+      getRows: async (params) => ({
+        rows:
+          params.groupKeys?.length === 0
+            ? [{ id: "g-north", region: "North", units: 15, count: 2 }]
+            : [],
+        aggregateRow: { units: 65 },
+      }),
+      getChildrenCount: (row) => row.count,
+      getGroupKey: (row) => row.region,
+      getAggregatedValue: (row, field) => (field === "units" ? `${(row as Group).units}!` : null),
+    };
+    render(
+      <DataGrid
+        aria-label="Sales"
+        rows={[]}
+        columns={[
+          { field: "region", headerName: "Region" },
+          { field: "units", headerName: "Units", type: "number" },
+        ]}
+        dataSource={source}
+        dataSourceCache={null}
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum" }}
+      />,
+    );
+    expect(await screen.findByText("15!")).toBeTruthy();
+    expect(await screen.findByText("65!")).toBeTruthy();
+  });
+
   it("tree data generates rows for missing parents", () => {
     const files = [
       { id: "a", path: ["Docs", "A.txt"], size: 2 },

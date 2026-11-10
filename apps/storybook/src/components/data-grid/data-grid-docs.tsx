@@ -4,6 +4,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
+import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
 import groupingMultiple from "../../../../../packages/html/src/components/data-grid/examples/grouping-multiple.html?raw";
 import groupingValue from "../../../../../packages/html/src/components/data-grid/examples/grouping-value.html?raw";
@@ -11,6 +12,7 @@ import largeGroup from "../../../../../packages/html/src/components/data-grid/ex
 import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
 import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
+import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
 import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
 import validationGroup from "../../../../../packages/html/src/components/data-grid/examples/validation-group.html?raw";
 import { CDN, GuideDocs, type GuideSection } from "../../helpers/guide.js";
@@ -366,6 +368,59 @@ const columns = [{ field: "name", headerName: "Name", flex: 1 }];
 
 export function Customers() {
   return <DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} />;
+}`,
+  },
+  {
+    id: "server-aggregation",
+    title: "Aggregate on the server",
+    body: "With a data source, the server computes the aggregated values. When the grid aggregates, `getRows()` receives `aggregationModel` (field to function), and the response adds `aggregateRow`: the values of every row that passes the filters, for the footer row. For the rows of server-side grouping and tree data, `getAggregatedValue(row, field)` reads a parent row's value, and it also reads `aggregateRow`. By default the grid reads `row[field]`. A new aggregation asks the server again. In HTML, put the model in `data-ok-aggregation-model` and give the same data source to `setDataSource()`.",
+    html: `${gridElement(serverAggregation)}
+<script type="module">
+  const grid = window.Owlky.get(document.getElementById("grid-server-aggregation"), "data-grid");
+  grid.setDataSource({
+    // params: { sortModel, filterModel, paginationModel, aggregationModel }
+    async getRows(params) {
+      const response = await fetch("/api/customers", {
+        method: "POST",
+        body: JSON.stringify(params),
+      });
+      return response.json(); // { rows, rowCount, aggregateRow }
+    },
+    getAggregatedValue: (row, field) => row[field],
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+type Customer = { id: string; name: string; age: number };
+
+const customers = {
+  // params: { sortModel, filterModel, paginationModel, aggregationModel }
+  async getRows(params: object) {
+    const response = await fetch("/api/customers", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    return response.json(); // { rows, rowCount, aggregateRow }
+  },
+  getAggregatedValue: (row: Record<string, unknown>, field: string) => row[field],
+};
+
+const columns: GridColDef<Customer>[] = [
+  { field: "name", headerName: "Name", flex: 1 },
+  { field: "age", headerName: "Age", type: "number" },
+];
+const noRows: Customer[] = [];
+
+export function CustomersWithTotals() {
+  return (
+    <DataGrid
+      aria-label="Customers, with their average age"
+      rows={noRows}
+      columns={columns}
+      dataSource={customers}
+      initialState={{ aggregation: { model: { age: "avg" } } }}
+    />
+  );
 }`,
   },
   {
@@ -882,6 +937,43 @@ export function DataGridGroupingValues() {
       initialState={{
         rowGrouping: { model: ["units"] },
         aggregation: { model: { revenue: "sum" } },
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "group-footers",
+    title: "Show totals in group footers",
+    body: '`getAggregationPosition` decides where each group shows its aggregated values: `"inline"` in the group row, `"footer"` in a footer row after the group\'s rows, or `null` for nowhere. It receives the group, with its `groupingField` and `groupingKey`, or the root (`isRoot`, depth -1) for the footer row of every row. By default, groups show their values inline and the root in the footer row. A group footer shows while its group is open. In HTML, set `data-ok-aggregation-position` to JSON by level: `root` for the footer row of every row, and each grouped field for its groups, such as `{"root": null, "region": "footer"}`. React writes the attribute for you. The pivot ignores the positions.',
+    html: `${gridOf(groupingFooters, { rows: 8 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridGroupFooters() {
+  return (
+    <DataGrid
+      aria-label="Sales by region, with a total per region"
+      rows={sales}
+      columns={columns}
+      defaultGroupingExpansionDepth={1}
+      // A footer row per group, no footer row for every row
+      getAggregationPosition={(group) => (group.isRoot ? null : "footer")}
+      initialState={{
+        rowGrouping: { model: ["region"] },
+        aggregation: { model: { units: "sum", revenue: "sum" } },
       }}
     />
   );

@@ -483,6 +483,11 @@ export interface DataGridParts {
   "data-ok-aggregable": Value<"false">;
   /** The aggregation (field to function), as JSON. */
   "data-ok-aggregation-model": Value<string>;
+  /**
+   * Where groups show their aggregated values, as JSON by level: `root` and each grouped field, to
+   * `inline`, `footer` or `null`. React writes it from `getAggregationPosition`.
+   */
+  "data-ok-aggregation-position": Value<string>;
   /** Set by the runtime on the first cell after the hidden columns of the column window. */
   "data-ok-col-start": State;
   /** The total number of rows. HTML: written by the grid. */

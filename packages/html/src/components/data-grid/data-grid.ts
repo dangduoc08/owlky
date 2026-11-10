@@ -36,6 +36,7 @@ import {
   type GridFilterModel,
   type GridFilterOperator,
   type GridFormat,
+  type GridGetRowsResponse,
   type GridGroupNode,
   type GridLabels,
   type GridPinnedColumns,
@@ -49,6 +50,7 @@ import {
   type GridViewport,
   gridAggregate,
   gridAggregationFunctionsFor,
+  gridAggregationPositionOf,
   gridAlign,
   gridAriaSort,
   gridCanMoveColumn,
@@ -71,6 +73,7 @@ import {
   gridFormats,
   gridFormatValue,
   gridGroupComparator,
+  gridGroupFooterId,
   gridGroupingField,
   gridGroupingKey,
   gridGroupPaths,
@@ -95,6 +98,7 @@ import {
   gridToTsv,
   gridToXlsx,
   gridTreeRows,
+  gridWithGroupFooters,
   isGridCellSelected,
   isGridGroupingField,
   isGridResizable,
@@ -106,6 +110,7 @@ import {
   nextGridSort,
   orderGridColumns,
   parseGridAggregationModel,
+  parseGridAggregationPositions,
   parseGridClipboard,
   parseGridEditValue,
   parseGridExcelOptions,
@@ -662,8 +667,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }),
       );
     };
-    // Generated rows: one element per group, kept while its group exists.
+    // Generated rows: one element per group, kept while its group exists (and its footer row).
     const groupEls = new Map<string, HTMLElement>();
+    const footerEls = new Map<string, HTMLElement>();
     const groupNodes = new Map<string, GridGroupNode>();
     const aggregates = new Map<string, Record<string, unknown>>();
     const leafCounts = new Map<string, number>();
@@ -1226,6 +1232,23 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let spacers: string[] = [];
     let source: GridDataSource<DataRow> | null = null;
     let sourceCount: number | undefined;
+    // Server-side aggregation: the data source's values of every row (the footer row).
+    let sourceAggregateRow: Record<string, unknown> | undefined;
+    /** The aggregation the data source is asked for (none while pivoting or not aggregating). */
+    const serverAggregationModel = () => {
+      const model = activeAggregation();
+      return source && !pivot && Object.keys(model).length ? model : null;
+    };
+    const serverAggregation = () =>
+      !!source && !pivot && (!!source.getAggregatedValue || !!sourceAggregateRow);
+    /** A server row's aggregated value (`getAggregatedValue`, else `row[field]`). */
+    const serverValue = (row: Record<string, unknown>, field: string) =>
+      source?.getAggregatedValue ? source.getAggregatedValue(row, field) : row[field];
+    /** Where groups show their values (`data-ok-aggregation-position`, JSON by level). */
+    const positions = () =>
+      pivot
+        ? {}
+        : parseGridAggregationPositions(element.getAttribute("data-ok-aggregation-position"));
     const serverSide = (spec: typeof sortingMode) =>
       source !== null || readStyle(element, spec) === "server";
     // Tree data: open rows (absent: the default depth).
@@ -1321,6 +1344,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ? null
           : new Map(sortGridRows(source, sortModel, columns, value).map((row, i) => [row, i]));
         const model = activeAggregation();
+        const levels = positions();
+        const groupValues = new Map<string, Record<string, unknown>>();
+        const footerValues = new Map<string, Record<string, unknown>>();
         aggregates.clear();
         leafCounts.clear();
         const byRowId = new Map(source.map((row) => [idOf(row), row]));
@@ -1332,8 +1358,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         for (const node of nodes.groups) {
           const leaves = node.leafIds.map((leaf) => byRowId.get(leaf) as HTMLElement);
           leafCounts.set(node.id, pass ? leaves.filter((r) => pass.has(r)).length : leaves.length);
-          if (Object.keys(model).length)
-            aggregates.set(node.id, gridAggregate(scoped(leaves), model, columns, value));
+          const position = gridAggregationPositionOf(levels, node.field);
+          if (Object.keys(model).length && position !== null) {
+            const values = gridAggregate(scoped(leaves), model, columns, value);
+            groupValues.set(node.id, values);
+            (position === "footer" ? footerValues : aggregates).set(node.id, values);
+          }
           firstPlace.set(node.id, Math.min(...leaves.map((r) => place?.get(r) ?? 0)));
         }
         const generatedRow = (row: HTMLElement) => row.hasAttribute("data-ok-generated");
@@ -1349,7 +1379,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
                 place: (row) => place.get(row) as number,
                 firstPlace: (row) => firstPlace.get(idOf(row)) as number,
                 keyOf: (row) => (groupNodes.get(idOf(row)) as GridGroupNode).key,
-                aggregateOf: (row, field) => aggregates.get(idOf(row))?.[field],
+                aggregateOf: (row, field) => groupValues.get(idOf(row))?.[field],
                 fieldOf: (row) => groupNodes.get(idOf(row))?.field,
                 sortModel,
                 columns,
@@ -1403,7 +1433,39 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             );
           }
         }
-        sorted = tree.map((node) => node.row);
+        // Group footers: a row after the last shown row of each open group that has one.
+        for (const known of [...footerEls.keys()])
+          if (!footerValues.has(known)) footerEls.delete(known);
+        const shown = gridWithGroupFooters(
+          tree,
+          (node) => footerValues.has(node.id),
+          (node) => {
+            let row = footerEls.get(node.id);
+            if (!row) {
+              row = document.createElement("div");
+              row.setAttribute("role", "row");
+              row.setAttribute("data-ok-row-id", gridGroupFooterId(node.id));
+              row.setAttribute("data-ok-generated", "");
+              row.setAttribute("data-ok-data-grid-aggregation-row", "");
+              footerEls.set(node.id, row);
+            }
+            if (
+              row.querySelectorAll(":scope > [data-ok-field]").length !==
+              specialFields.length + columns.length
+            )
+              fillGroupRow(row);
+            row.setAttribute("aria-level", String(node.depth + 2));
+            row.setAttribute("data-ok-parent", node.id);
+            const values = footerValues.get(node.id);
+            for (const column of columns)
+              (cellOf(row, column.field) as HTMLElement).textContent = aggregateText(
+                column.field,
+                values?.[column.field],
+              );
+            return row;
+          },
+        );
+        sorted = shown.map((node) => node.row);
         filtered = pass ? source.filter((row) => pass.has(row)) : source;
       } else {
         filtered = serverSide(filterMode)
@@ -1482,8 +1544,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }
         label.textContent = labelOf(fn);
       }
-      let footer = main.querySelector<HTMLElement>("[data-ok-data-grid-aggregation-row]");
-      if (!Object.keys(model).length || lazy()) {
+      let footer = main.querySelector<HTMLElement>(
+        `[data-ok-row-id="${GRID_AGGREGATION_ROOT_ID}"]`,
+      );
+      if (
+        !Object.keys(model).length ||
+        (lazy() && !serverAggregation()) ||
+        gridAggregationPositionOf(positions(), undefined) !== "footer"
+      ) {
         const group = footer?.parentElement;
         footer?.remove();
         if (group && !group.children.length) group.remove();
@@ -1512,7 +1580,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           : readStyle(element, aggregationRowsScope) === "all" || serverSide(filterMode)
             ? rows()
             : filterGridRows(rows(), filterModel, columns, value, text, filterOptions());
-        const values = gridAggregate(rowsNow, model, columns, value);
+        const values = serverAggregation()
+          ? Object.fromEntries(
+              Object.keys(model).map((field) => [
+                field,
+                sourceAggregateRow ? serverValue(sourceAggregateRow, field) : undefined,
+              ]),
+            )
+          : gridAggregate(rowsNow, model, columns, value);
         for (const column of columns) {
           const cell = cellOf(footer, column.field);
           (cell as HTMLElement).textContent = aggregateText(column.field, values[column.field]);
@@ -1647,7 +1722,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
     const lazyRequest = (range: { start: number; end: number }) => {
       const current = source as GridDataSource<DataRow>;
-      const key = JSON.stringify({ sortModel, filterModel });
+      const aggregation = serverAggregationModel();
+      const key = JSON.stringify({ sortModel, filterModel, aggregation });
       if (lazyState.key !== key) {
         lazyState.key = key;
         lazyState.pending.clear();
@@ -1668,9 +1744,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           lazyState.pending.add(name);
           element.setAttribute(loadingOption.attr, "");
           current
-            .getRows({ sortModel, filterModel, start: r.start, end: r.end })
+            .getRows({
+              sortModel,
+              filterModel,
+              start: r.start,
+              end: r.end,
+              ...(aggregation ? { aggregationModel: aggregation } : {}),
+            })
             .then((response) => {
               if (lazyState.key !== key || source !== current) return;
+              if (response.aggregateRow) sourceAggregateRow = response.aggregateRow;
               const fresh = response.rows.map((item, k) => {
                 const row = fillRow(item);
                 lazyLoaded.set(r.start + k, row);
@@ -1870,7 +1953,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           const field = cell.getAttribute("data-ok-field") as string;
           if (isSpecial(field)) continue;
           const raw = item[field];
-          const shownText = formatted(field, raw);
+          // Server-side aggregation: a server parent shows its aggregated values.
+          const shownText =
+            serverAggregation() &&
+            activeAggregation()[field] &&
+            (source?.getChildrenCount?.(item) ?? 0) > 0
+              ? aggregateText(field, serverValue(item, field))
+              : formatted(field, raw);
           const cellTemplate = element.querySelector<HTMLTemplateElement>(
             `template[data-ok-data-grid-cell="${CSS.escape(field)}"]`,
           );
@@ -1902,10 +1991,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         filterModel,
         paginationModel: { page, pageSize: Number.isFinite(pageSize) ? pageSize : 0 },
         ...(serverGrouping() ? { groupKeys: [], groupFields: [...rowGrouping] } : {}),
+        ...(serverAggregationModel()
+          ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
+          : {}),
       };
       const cached = sourceCache.get(params);
-      const show = (response: { rows: DataRow[]; rowCount?: number | undefined }) => {
+      const show = (response: GridGetRowsResponse<DataRow>) => {
         sourceCount = response.rowCount;
+        sourceAggregateRow = response.aggregateRow;
         buildRows(response.rows);
       };
       if (cached) {
@@ -1957,6 +2050,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             filterModel,
             groupKeys: keys,
             ...(serverGrouping() ? { groupFields: [...rowGrouping] } : {}),
+            ...(serverAggregationModel()
+              ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
+              : {}),
           })
           .then((response) => {
             if (source !== current) return;
@@ -2112,7 +2208,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (Object.keys(aggregationModel).length)
         element.setAttribute("data-ok-aggregation-model", JSON.stringify(aggregationModel));
       else element.removeAttribute("data-ok-aggregation-model");
-      apply();
+      // A data source aggregates on the server: ask again.
+      if (source) refresh();
+      else apply();
     };
 
     // Pivoting: the pivot's columns and groups replace the markup's columns while it shows.
@@ -3517,6 +3615,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let listNow = element.hasAttribute(listView.attr);
     let pivotNow = pivotOn();
     let columnModeNow = readStyle(element, rowGroupingColumnMode);
+    let positionsNow = element.getAttribute("data-ok-aggregation-position");
     const options = new MutationObserver(() => {
       reflect();
       if (pivotOn() !== pivotNow) {
@@ -3526,6 +3625,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (readStyle(element, rowGroupingColumnMode) !== columnModeNow) {
         columnModeNow = readStyle(element, rowGroupingColumnMode);
         syncGroupColumns();
+        apply();
+      }
+      if (element.getAttribute("data-ok-aggregation-position") !== positionsNow) {
+        positionsNow = element.getAttribute("data-ok-aggregation-position");
         apply();
       }
       markCells();
@@ -3553,6 +3656,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         pivotActiveOption.attr,
         cellSelectionOption.attr,
         rowGroupingColumnMode.attr,
+        "data-ok-aggregation-position",
       ],
     });
 

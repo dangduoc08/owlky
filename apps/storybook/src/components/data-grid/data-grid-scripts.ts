@@ -75,6 +75,30 @@ grid.setDataSource({
   },
 });`;
 
+/** Server-side aggregation (HTML): the data source answers the footer's values too. */
+export function serverAggregationScript(row: HTMLElement) {
+  const { api } = gridIn(row);
+  api.setDataSource(createCustomerSource());
+  return () => api.setDataSource(null);
+}
+
+export const SERVER_AGGREGATION_SCRIPT_SOURCE = `import { getRuntime } from "@owlky/html";
+
+const element = document.getElementById("grid-server-aggregation");
+const grid = getRuntime().get(element, "data-grid");
+
+// The grid asks for the aggregation too (the attribute data-ok-aggregation-model)
+grid.setDataSource({
+  async getRows({ sortModel, filterModel, paginationModel, aggregationModel }) {
+    const response = await fetch("/api/customers", {
+      method: "POST",
+      body: JSON.stringify({ sortModel, filterModel, paginationModel, aggregationModel }),
+    });
+    return response.json(); // { rows, rowCount, aggregateRow }
+  },
+  getAggregatedValue: (row, field) => row[field],
+});`;
+
 /** Editing and validation (HTML): the price format and the checks React gets from its columns. */
 export function validationScript(row: HTMLElement) {
   const { element, api } = gridIn(row);

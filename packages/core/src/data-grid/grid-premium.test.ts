@@ -6,11 +6,13 @@ import {
   gridAggregate,
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
+  gridAggregationPositionOf,
   gridChartData,
   gridChartFields,
   gridChartOptions,
   gridChartStacked,
   gridGroupComparator,
+  gridGroupFooterId,
   gridGroupingField,
   gridGroupingFieldOf,
   gridGroupingKey,
@@ -20,9 +22,11 @@ import {
   gridPivotRole,
   gridRowGroups,
   gridTreeGroups,
+  gridWithGroupFooters,
   isGridGroupingField,
   isGridPivotField,
   parseGridAggregationModel,
+  parseGridAggregationPositions,
   sanitizeGridChartModel,
   sanitizeGridPivotModel,
   setGridPivotRole,
@@ -198,6 +202,76 @@ describe("aggregation", () => {
     expect(parseGridAggregationModel("{")).toEqual({});
     expect(parseGridAggregationModel(null)).toEqual({});
     expect(({} as Record<string, unknown>)["x"]).toBeUndefined();
+  });
+});
+
+describe("aggregation positions and group footers", () => {
+  it("reads positions by level safely, with MUI X defaults", () => {
+    const positions = parseGridAggregationPositions(
+      '{"root":null,"region":"footer","product":"inline","x":"top","__proto__":"footer"}',
+    );
+    expect(positions).toEqual({ root: null, region: "footer", product: "inline" });
+    expect(({} as Record<string, unknown>)["footer"]).toBeUndefined();
+    expect(parseGridAggregationPositions("[1]")).toEqual({});
+    expect(parseGridAggregationPositions("{oops")).toEqual({});
+    expect(parseGridAggregationPositions(null)).toEqual({});
+    expect(gridAggregationPositionOf(positions, undefined)).toBeNull();
+    expect(gridAggregationPositionOf(positions, "region")).toBe("footer");
+    expect(gridAggregationPositionOf({}, undefined)).toBe("footer");
+    expect(gridAggregationPositionOf({}, "year")).toBe("inline");
+  });
+
+  it("adds a footer after the last shown row of each open group", () => {
+    type Node = Parameters<typeof gridWithGroupFooters<string>>[0][number];
+    const node = (id: string, depth: number, expanded = false, parentId: string | null = null) =>
+      ({
+        row: id,
+        id,
+        depth,
+        parentId,
+        childrenCount: expanded ? 1 : 0,
+        descendantCount: 0,
+        expanded,
+        posInSet: 1,
+        setSize: 1,
+      }) as Node;
+    const list = [
+      node("a", 0, true),
+      node("a/x", 1, true, "a"),
+      node("a/x/1", 2, false, "a/x"),
+      node("a/y", 1, false, "a"),
+      node("b", 0, true),
+      node("b/1", 1, false, "b"),
+      node("c", 0, false),
+    ];
+    const out = gridWithGroupFooters(
+      list,
+      (n) => n.id !== "a/y",
+      (n) => `footer of ${n.id}`,
+    );
+    expect(out.map((n) => n.row)).toEqual([
+      "a",
+      "a/x",
+      "a/x/1",
+      "footer of a/x",
+      "a/y",
+      "footer of a",
+      "b",
+      "b/1",
+      "footer of b",
+      "c",
+    ]);
+    const footer = out[3] as Node;
+    expect(footer).toMatchObject({ id: gridGroupFooterId("a/x"), depth: 2, parentId: "a/x" });
+    expect(gridGroupFooterId("g")).toBe("auto-generated-group-footer-g");
+    // Closed groups (and lists without footers) stay as they are.
+    expect(
+      gridWithGroupFooters(
+        list.slice(-1),
+        () => true,
+        () => "f",
+      ),
+    ).toHaveLength(1);
   });
 });
 

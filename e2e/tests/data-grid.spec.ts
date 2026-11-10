@@ -152,6 +152,15 @@ for (const impl of implementations) {
       await expect(grid).toHaveAttribute("aria-rowcount", "1001");
     });
 
+    test("server-side aggregation: the footer shows the server's values", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "server-aggregation"));
+      const footer = page.locator('[data-ok-row-id="auto-generated-group-footer-root"]');
+      await expect(footer.locator('[data-ok-field="id"]')).toHaveText("1000");
+      await expect(footer.locator('[data-ok-field="age"]')).toHaveText(/^\d+(\.\d+)?$/);
+      await page.getByRole("textbox", { name: "Search" }).fill("Lima");
+      await expect(footer.locator('[data-ok-field="id"]')).not.toHaveText("1000");
+    });
+
     test("layout: spans, single selection, autosize by double click", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "layout"));
       const north = page.locator('#grid-spans [data-ok-row-id="b-1"] [data-ok-field="region"]');
