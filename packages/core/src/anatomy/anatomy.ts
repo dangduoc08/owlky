@@ -2413,6 +2413,12 @@ export const sliderOptions = defineOptions("slider", "data-ok-slider", {
   step: number("data-ok-step", 1, "Step between values (HTML `marks`: only the marks).", {
     min: 0,
   }),
+  shiftStep: number(
+    "data-ok-shift-step",
+    10,
+    "How far Page Up / Page Down and Shift + arrow keys move the thumb.",
+    { min: 0 },
+  ),
   value: state("value", "Value of each thumb (`value` / `defaultValue`).", "change"),
 });
 
@@ -2427,6 +2433,7 @@ export interface SliderAnatomyOptions {
   min?: number | undefined;
   max?: number | undefined;
   step?: number | undefined;
+  shiftStep?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a slider root. */

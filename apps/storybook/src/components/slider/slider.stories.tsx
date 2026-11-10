@@ -6,6 +6,7 @@ import { RangeDemo } from "./range-demo.js";
 import rangeSource from "./range-demo.tsx?raw";
 import { SliderDocs } from "./slider-docs.js";
 import { SLIDER_CONTROLS, SLIDER_FILES, sliderStories } from "./slider-examples.js";
+import { NON_LINEAR_SCRIPT_SOURCE, nonLinearScript } from "./slider-scripts.js";
 
 const controls: StoryControls = { ...SLIDER_CONTROLS, target: Slider };
 
@@ -51,6 +52,20 @@ export const Range: StoryObj = {
     react: reactGroupsStory([{ title: "Range", content: <RangeDemo /> }], undefined, rangeSource),
   }),
   name: "Range",
+};
+export const NonLinear: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "non-linear",
+      SLIDER_FILES["non-linear"] ?? [],
+      SETUP,
+      SLIDER_CONTROLS,
+      { group: { script: nonLinearScript, scriptSource: NON_LINEAR_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(sliderStories["non-linear"] ?? [], controls),
+  }),
+  name: "Non-linear scale",
 };
 export const Vertical: StoryObj = story("vertical");
 export const Colors: StoryObj = story("colors");

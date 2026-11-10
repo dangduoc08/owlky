@@ -48,7 +48,7 @@ function press(root: HTMLElement, ratio: number, type = "pointerdown") {
 }
 
 describe("slider snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(10));
+  it("covers every story group", () => expect(snippets).toHaveLength(11));
 
   it.each(snippets)("%s: valid anatomy, no style attributes", (_, html) => {
     const host = mount(html);
@@ -204,5 +204,50 @@ describe("slider runtime", () => {
     expect(at(root.querySelector("[data-ok-slider-thumb]"))).toBe("");
     root.remove();
     await settle();
+  });
+});
+
+describe("slider runtime: shiftStep and scale", () => {
+  it("data-ok-shift-step sets the Page and Shift + arrow distance", async () => {
+    const host = mount(
+      snippet("volume").replace(
+        "<span data-ok-slider ",
+        '<span data-ok-slider data-ok-shift-step="25" ',
+      ),
+    );
+    const rt = start();
+    const root = host.querySelector("[data-ok-slider]") as HTMLElement;
+    const input = root.querySelector("input") as HTMLInputElement;
+    const before = rt.get<SliderInstance>(root, "slider")?.value[0] as number;
+    input.focus();
+    await userEvent.keyboard("{PageUp}");
+    expect(rt.get<SliderInstance>(root, "slider")?.value[0]).toBe(Math.min(before + 25, 100));
+  });
+
+  it("setScale shows and announces the scaled value; null removes it", async () => {
+    const host = mount(snippet("non-linear"));
+    const rt = start();
+    const root = host.querySelector("[data-ok-slider]") as HTMLElement;
+    const input = root.querySelector("input") as HTMLInputElement;
+    const label = root.querySelector("[data-ok-slider-value-label]") as HTMLElement;
+    const api = rt.get<SliderInstance>(root, "slider") as SliderInstance;
+    expect(label.textContent).toBe("10");
+    api.setScale(
+      (x) => 2 ** x,
+      (v) => `${v} B`,
+    );
+    expect(input.getAttribute("aria-valuenow")).toBe("1024");
+    expect(input.getAttribute("aria-valuetext")).toBe("1024 B");
+    expect(label.textContent).toBe("1024 B");
+    input.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(api.value).toEqual([11]);
+    expect(label.textContent).toBe("2048 B");
+    api.setScale((x) => x * 2);
+    expect(label.textContent).toBe("22");
+    api.setScale(null);
+    expect(input.hasAttribute("aria-valuenow")).toBe(false);
+    expect(label.textContent).toBe("11");
+    await expectNoAxeViolations(host);
   });
 });

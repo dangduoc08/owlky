@@ -106,6 +106,20 @@ for (const impl of implementations) {
       await expect(input).toHaveAttribute("aria-valuetext", "37°C");
     });
 
+    test("non-linear scale: the announced value is scaled; Shift + arrow moves by shiftStep", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "slider", "non-linear"));
+      const input = page.getByRole("slider", { name: "Storage" });
+      await expect(input).toHaveAttribute("aria-valuetext", "1 KB");
+      await input.press("ArrowRight");
+      await expect(input).toHaveValue("11");
+      await expect(input).toHaveAttribute("aria-valuenow", "2048");
+      await expect(input).toHaveAttribute("aria-valuetext", "2 KB");
+      await input.press("Shift+ArrowRight");
+      await expect(input).toHaveValue("21");
+    });
+
     test("range: pressing the track moves the closest thumb", async ({ page }) => {
       await openStory(page, storyId(impl, "slider", "range"));
       const rail = page.locator("[data-ok-slider-rail]");

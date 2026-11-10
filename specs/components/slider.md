@@ -1,7 +1,8 @@
 # Slider
 
 Reference: Minimal UI kit "Slider" page, sections Volume, Disabled, Temperature, Sizes, Small steps,
-Custom marks, Restricted values, Range, Vertical, Colors (content only). Upstream: MUI `Slider`
+Custom marks, Restricted values, Range, Vertical, Colors (content only); MUI demo section
+Non-linear scale. Upstream: MUI `Slider`
 (ADR-0015). Created with `/component`.
 Reference URL: https://minimals.cc/components/mui/slider
 
@@ -19,7 +20,8 @@ span[data-ok-slider][data-ok-color][data-ok-size][data-ok-orientation][data-ok-t
   span[data-ok-slider-mark][data-ok-value][data-ok-active]?   (--_ok-slider-at)
   span[data-ok-slider-mark-label][data-ok-value][aria-hidden]
   span[data-ok-slider-thumb][data-ok-index][data-ok-active]?   (--_ok-slider-at)
-    input[type=range][min][max][step][value][aria-label|aria-labelledby][aria-valuetext]?[aria-orientation]?[name]?
+    input[type=range][min][max][step][value][aria-label|aria-labelledby][aria-valuetext]?[aria-valuenow]?
+         [aria-orientation]?[name]?[tabindex]?      (aria-valuenow: the scaled value, with `scale` only)
     span[data-ok-slider-value-label][aria-hidden]?
 ```
 Positions are private custom properties (React `style`; HTML runtime CSSOM). Snippets carry none.
@@ -40,6 +42,7 @@ Root: `data-ok-slider`. Unknown values fall back to the default.
 | `min` | `data-ok-min="…"` | number | number | `0` | Lowest value. |
 | `max` | `data-ok-max="…"` | number | number | `100` | Highest value. |
 | `step` | `data-ok-step="…"` | number | number | `1` | Step between values (HTML `marks`: only the marks). |
+| `shiftStep` | `data-ok-shift-step="…"` | number | number | `10` | How far Page Up / Page Down and Shift + arrow keys move the thumb. |
 | `value` | `value` · event `ok:slider:change` | state | — | — | Value of each thumb (`value` / `defaultValue`). |
 <!-- /options:slider -->
 
@@ -47,7 +50,10 @@ Other props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, act
 `onChangeCommitted(value)`, `marks` (`true` · `{ value, label? }[]`; HTML: mark parts), `step`
 `null` (HTML `data-ok-step="0"`), `valueLabelFormat(value, index)`, `getAriaValueText(value,
 index)` (HTML `data-ok-label-value="{value}°C"` for both), `getAriaLabel(index)`, `aria-label`,
-`aria-labelledby`, `name`.
+`aria-labelledby`, `name`, `scale(value)` (the shown and announced value: value label,
+`getAriaValueText`, `aria-valuenow`; `onChange` keeps the plain value; HTML instance
+`setScale(scale, format?)`, a function by nature), `tabIndex` (on each thumb's input; HTML: write
+`tabindex` on the inputs).
 
 API mapping: see "Upstream API mapping" below.
 
@@ -65,14 +71,14 @@ focus-visible: 8px halo `rgb(main / 0.16)`; focus-visible adds a 2px outline. Ma
 Press on the rail moves the closest thumb there and starts a drag (Pointer Events, captured);
 `onCommit` on release. Thumbs swap when crossing (`disableSwap`: stop at the neighbour). Keys
 (on the focused input, handled by the controller): arrows ± step (marks only: next mark),
-Page Up / Down ± 10 steps, Home / End; RTL mirrors Left / Right. Native `input` events
+Page Up / Down and Shift + arrows ± `shiftStep` (default 10, snapped to the step), Home / End; RTL mirrors Left / Right. Native `input` events
 (assistive technologies) are applied too.
 
 ## Keyboard
 | Key | Action |
 |---|---|
 | → / ↑, ← / ↓ | ± one step (or to the next mark) |
-| Page Up / Page Down | ± ten steps |
+| Page Up / Page Down, Shift + arrows | ± `shiftStep` (default 10) |
 | Home / End | min / max |
 
 ## Accessibility
@@ -82,7 +88,7 @@ Mark label text AA (secondary text instead of the reference's disabled grey).
 
 ## Events / API
 HTML `ok:slider:change` (cancelable, `{ value: number[], activeThumb }`), `ok:slider:commit`
-(`{ value }`). Instance `{ value, setValue(value) }`.
+(`{ value }`). Instance `{ value, setValue(value), setScale(scale, format?) }`.
 
 ## Responsive
 Horizontal sliders fill their container; vertical ones its height. Pressing the track (any
@@ -98,8 +104,9 @@ Upstream: MUI `Slider`, mui.com/material-ui/api/slider/.
 | `onChange(event, value, activeThumb)` | `onChange(value, activeThumb)` | renamed | value-first (ADR-0015) |
 | `onChangeCommitted(event, value)` | `onChangeCommitted(value)` | renamed | |
 | `aria-valuetext` | `getAriaValueText` | renamed | per thumb |
-| `scale`, `shiftStep` | — | deferred (4.2) | |
-| `tabIndex` | — | deferred | thumbs' inputs keep the default tab order |
+| `scale` | same | kept | React function; HTML `setScale(scale, format?)` on the instance (a function can't be an attribute) |
+| `shiftStep` | same | kept | HTML `data-ok-shift-step`; Page keys now move by it (they moved 10 steps) |
+| `tabIndex` | same | kept | on each thumb's input; HTML: `tabindex` on the inputs |
 | `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 (custom thumbs / labels by composition) |
 
 ## Parity notes

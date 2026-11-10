@@ -1020,6 +1020,7 @@
   "data-ok-share-text",
   "data-ok-share-title",
   "data-ok-share-url",
+  "data-ok-shift-step",
   "data-ok-show-accuracy",
   "data-ok-show-accuracy-circle",
   "data-ok-show-days-outside-current-month",
@@ -15001,6 +15002,14 @@
        "name": "step"
       },
       {
+       "attr": "data-ok-shift-step",
+       "default": 10,
+       "description": "How far Page Up / Page Down and Shift + arrow keys move the thumb.",
+       "kind": "number",
+       "min": 0,
+       "name": "shiftStep"
+      },
+      {
        "attr": "value",
        "description": "Value of each thumb (`value` / `defaultValue`).",
        "event": "ok:slider:change",
@@ -15018,12 +15027,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-slider][data-ok-color][data-ok-size][data-ok-orientation][data-ok-track][data-ok-value-label-display]\n    [data-ok-min]?[data-ok-max]?[data-ok-step]?[data-ok-disabled]?[data-ok-disable-swap]?[data-ok-label-value]?\n  span[data-ok-slider-rail]\n  span[data-ok-slider-track]                                 (--_ok-slider-start / -end)\n  span[data-ok-slider-mark][data-ok-value][data-ok-active]?   (--_ok-slider-at)\n  span[data-ok-slider-mark-label][data-ok-value][aria-hidden]\n  span[data-ok-slider-thumb][data-ok-index][data-ok-active]?   (--_ok-slider-at)\n    input[type=range][min][max][step][value][aria-label|aria-labelledby][aria-valuetext]?[aria-orientation]?[name]?\n    span[data-ok-slider-value-label][aria-hidden]?\n```\nPositions are private custom properties (React `style`; HTML runtime CSSOM). Snippets carry none.",
+     "body": "```\nspan[data-ok-slider][data-ok-color][data-ok-size][data-ok-orientation][data-ok-track][data-ok-value-label-display]\n    [data-ok-min]?[data-ok-max]?[data-ok-step]?[data-ok-disabled]?[data-ok-disable-swap]?[data-ok-label-value]?\n  span[data-ok-slider-rail]\n  span[data-ok-slider-track]                                 (--_ok-slider-start / -end)\n  span[data-ok-slider-mark][data-ok-value][data-ok-active]?   (--_ok-slider-at)\n  span[data-ok-slider-mark-label][data-ok-value][aria-hidden]\n  span[data-ok-slider-thumb][data-ok-index][data-ok-active]?   (--_ok-slider-at)\n    input[type=range][min][max][step][value][aria-label|aria-labelledby][aria-valuetext]?[aria-valuenow]?\n         [aria-orientation]?[name]?[tabindex]?      (aria-valuenow: the scaled value, with `scale` only)\n    span[data-ok-slider-value-label][aria-hidden]?\n```\nPositions are private custom properties (React `style`; HTML runtime CSSOM). Snippets carry none.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `slider`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, activeThumb)`,\n`onChangeCommitted(value)`, `marks` (`true` · `{ value, label? }[]`; HTML: mark parts), `step`\n`null` (HTML `data-ok-step=\"0\"`), `valueLabelFormat(value, index)`, `getAriaValueText(value,\nindex)` (HTML `data-ok-label-value=\"{value}°C\"` for both), `getAriaLabel(index)`, `aria-label`,\n`aria-labelledby`, `name`.\n\nAPI mapping: see \"Upstream API mapping\" below.",
+     "body": "(Options of `slider`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, activeThumb)`,\n`onChangeCommitted(value)`, `marks` (`true` · `{ value, label? }[]`; HTML: mark parts), `step`\n`null` (HTML `data-ok-step=\"0\"`), `valueLabelFormat(value, index)`, `getAriaValueText(value,\nindex)` (HTML `data-ok-label-value=\"{value}°C\"` for both), `getAriaLabel(index)`, `aria-label`,\n`aria-labelledby`, `name`, `scale(value)` (the shown and announced value: value label,\n`getAriaValueText`, `aria-valuenow`; `onChange` keeps the plain value; HTML instance\n`setScale(scale, format?)`, a function by nature), `tabIndex` (on each thumb's input; HTML: write\n`tabindex` on the inputs).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -15033,12 +15042,12 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "Press on the rail moves the closest thumb there and starts a drag (Pointer Events, captured);\n`onCommit` on release. Thumbs swap when crossing (`disableSwap`: stop at the neighbour). Keys\n(on the focused input, handled by the controller): arrows ± step (marks only: next mark),\nPage Up / Down ± 10 steps, Home / End; RTL mirrors Left / Right. Native `input` events\n(assistive technologies) are applied too.",
+     "body": "Press on the rail moves the closest thumb there and starts a drag (Pointer Events, captured);\n`onCommit` on release. Thumbs swap when crossing (`disableSwap`: stop at the neighbour). Keys\n(on the focused input, handled by the controller): arrows ± step (marks only: next mark),\nPage Up / Down and Shift + arrows ± `shiftStep` (default 10, snapped to the step), Home / End; RTL mirrors Left / Right. Native `input` events\n(assistive technologies) are applied too.",
      "id": "behavior",
      "title": "Behavior"
     },
     {
-     "body": "| Key | Action |\n|---|---|\n| → / ↑, ← / ↓ | ± one step (or to the next mark) |\n| Page Up / Page Down | ± ten steps |\n| Home / End | min / max |",
+     "body": "| Key | Action |\n|---|---|\n| → / ↑, ← / ↓ | ± one step (or to the next mark) |\n| Page Up / Page Down, Shift + arrows | ± `shiftStep` (default 10) |\n| Home / End | min / max |",
      "id": "keyboard",
      "title": "Keyboard"
     },
@@ -15048,7 +15057,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML `ok:slider:change` (cancelable, `{ value: number[], activeThumb }`), `ok:slider:commit`\n(`{ value }`). Instance `{ value, setValue(value) }`.",
+     "body": "HTML `ok:slider:change` (cancelable, `{ value: number[], activeThumb }`), `ok:slider:commit`\n(`{ value }`). Instance `{ value, setValue(value), setScale(scale, format?) }`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -15058,7 +15067,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Slider`, mui.com/material-ui/api/slider/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `defaultValue`, `min`, `max`, `step` (incl. `null`), `marks`, `orientation`, `size`, `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`, `aria-label`, `aria-labelledby`, `disabled`, `disableSwap`, `name` | same | kept | |\n| `color` | `color` | kept | + `inherit` and every palette color (reference) |\n| `onChange(event, value, activeThumb)` | `onChange(value, activeThumb)` | renamed | value-first (ADR-0015) |\n| `onChangeCommitted(event, value)` | `onChangeCommitted(value)` | renamed | |\n| `aria-valuetext` | `getAriaValueText` | renamed | per thumb |\n| `scale`, `shiftStep` | — | deferred (4.2) | |\n| `tabIndex` | — | deferred | thumbs' inputs keep the default tab order |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 (custom thumbs / labels by composition) |",
+     "body": "Upstream: MUI `Slider`, mui.com/material-ui/api/slider/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `defaultValue`, `min`, `max`, `step` (incl. `null`), `marks`, `orientation`, `size`, `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`, `aria-label`, `aria-labelledby`, `disabled`, `disableSwap`, `name` | same | kept | |\n| `color` | `color` | kept | + `inherit` and every palette color (reference) |\n| `onChange(event, value, activeThumb)` | `onChange(value, activeThumb)` | renamed | value-first (ADR-0015) |\n| `onChangeCommitted(event, value)` | `onChangeCommitted(value)` | renamed | |\n| `aria-valuetext` | `getAriaValueText` | renamed | per thumb |\n| `scale` | same | kept | React function; HTML `setScale(scale, format?)` on the instance (a function can't be an attribute) |\n| `shiftStep` | same | kept | HTML `data-ok-shift-step`; Page keys now move by it (they moved 10 steps) |\n| `tabIndex` | same | kept | on each thumb's input; HTML: `tabindex` on the inputs |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 (custom thumbs / labels by composition) |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -15140,6 +15149,15 @@
      "react": "import { Slider, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst MARKS = [0, 250, 500, 750, 1000].map((value) => ({ value, label: `$${value}` }));\nconst price = (value: number) => `$${value}`;\n\n/** A price range with its bounds shown below. */\nexport function RangeDemo() {\n  const [value, setValue] = useState<number | number[]>([200, 370]);\n  const [low, high] = value as number[];\n  return (\n    <div className=\"sb-slider-range\">\n      <Slider\n        getAriaLabel={(index) => (index === 0 ? \"Minimum price\" : \"Maximum price\")}\n        value={value}\n        onChange={setValue}\n        min={0}\n        max={1000}\n        step={10}\n        marks={MARKS}\n        valueLabelDisplay=\"on\"\n        valueLabelFormat={price}\n        getAriaValueText={price}\n        data-ok-label-value={\"$\" + \"{value}\"}\n      />\n      <Typography\n        variant=\"subtitle2\"\n        component=\"p\"\n      >{`Min: ${price(low as number)} · Max: ${price(high as number)}`}</Typography>\n    </div>\n  );\n}\n",
      "snippets": [
       "range-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/slider.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Non-linear scale -->\n<span data-ok-slider data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-orientation=\"horizontal\" data-ok-track=\"normal\" data-ok-value-label-display=\"auto\" data-ok-min=\"5\" data-ok-max=\"30\">\n  <span data-ok-slider-rail></span>\n  <span data-ok-slider-track></span>\n  <span data-ok-slider-thumb data-ok-index=\"0\">\n    <input type=\"range\" min=\"5\" max=\"30\" step=\"1\" aria-label=\"Storage\" aria-valuenow=\"1024\" aria-valuetext=\"1 KB\" value=\"10\">\n    <span data-ok-slider-value-label aria-hidden=\"true\">1 KB</span>\n  </span>\n</span>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\nfunction bytes(value) {\n  const units = [\"B\", \"KB\", \"MB\", \"GB\", \"TB\"];\n  let size = value;\n  let unit = 0;\n  while (size >= 1024 && unit < units.length - 1) {\n    size /= 1024;\n    unit += 1;\n  }\n  return `${size} ${units[unit]}`;\n}\n\n// Show and announce 2 to the value, as a size in bytes\nconst slider = getRuntime().get(document.querySelector(\"[data-ok-slider]\"), \"slider\");\nslider.setScale((value) => 2 ** value, bytes);\n</script>",
+     "id": "components-slider--non-linear",
+     "name": "Non-linear scale",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Slider } from \"@owlky/react\";\n\n{/* Non-linear scale */}\n<Slider aria-label=\"Storage\" defaultValue={10} min={5} max={30} scale={undefined} valueLabelDisplay=\"auto\" valueLabelFormat={undefined} getAriaValueText={undefined} />\n",
+     "snippets": [
+      "non-linear-group.html"
      ]
     },
     {
@@ -22399,6 +22417,18 @@
      "id": "look",
      "react": "import { Slider } from \"@owlky/react\";\n\nexport function Level() {\n  return (\n    <div style={{ height: 200 }}>\n      <Slider orientation=\"vertical\" aria-label=\"Level\" defaultValue={30} />\n    </div>\n  );\n}",
      "title": "Change the look"
+    },
+    {
+     "body": "In React, `scale` turns the value into the one people see and hear, such as a power of two for a storage size. The value label, `getAriaValueText` and `aria-valuenow` get the scaled value, while `onChange` keeps the plain one. In HTML, call `setScale(scale, format)` on the instance: `format` writes the value label and `aria-valuetext`.",
+     "html": "<!-- The slider of the \"Non-linear scale\" story -->\n<script type=\"module\">\n  import { getRuntime } from \"@owlky/html\";\n\n  const slider = getRuntime().get(document.querySelector(\"[data-ok-slider]\"), \"slider\");\n  slider.setScale(\n    (value) => 2 ** value,\n    (bytes) => `${bytes / 1024} KB`,\n  );\n</script>",
+     "id": "scale",
+     "react": "import { Slider } from \"@owlky/react\";\n\nexport function Storage() {\n  return (\n    <Slider\n      aria-label=\"Storage\"\n      defaultValue={10}\n      min={5}\n      max={30}\n      scale={(value) => 2 ** value}\n      valueLabelDisplay=\"auto\"\n      valueLabelFormat={(bytes) => `${bytes / 1024} KB`}\n      getAriaValueText={(bytes) => `${bytes / 1024} KB`}\n    />\n  );\n}",
+     "title": "Use a non-linear scale"
+    },
+    {
+     "body": "The arrow keys move a thumb by one `step`. Page Up, Page Down and the arrow keys with Shift move it by `shiftStep`, 10 by default (HTML `data-ok-shift-step`). In React, `tabIndex` sets the tab order of the thumbs' inputs. In HTML, write `tabindex` on the inputs.",
+     "id": "keys",
+     "title": "Set the keyboard steps"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't valid fall back to the default.",

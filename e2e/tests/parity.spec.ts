@@ -147,6 +147,7 @@ const pairs: [component: string, story: string][] = [
   ["slider", "range"],
   ["slider", "vertical"],
   ["slider", "colors"],
+  ["slider", "non-linear"],
   ["tabs", "text"],
   ["tabs", "icon"],
   ["tabs", "colors"],

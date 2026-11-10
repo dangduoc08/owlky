@@ -5,6 +5,19 @@ import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const celsius = (value: number) => `${value}°C`;
+
+/** Non-linear scale: the value is a power of two, shown as a size in bytes ("1 KB"). */
+export const storageScale = (value: number) => 2 ** value;
+export function bytes(value: number) {
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let size = value;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+  return `${size} ${units[unit]}`;
+}
 const TEMPERATURES = [
   { value: 0, label: "0°C" },
   { value: 20, label: "20°C" },
@@ -41,6 +54,23 @@ export const sliderStories: Record<string, ReactGroup[]> = {
   ],
   disabled: [
     { title: "Disabled", content: <Slider aria-label="Disabled" defaultValue={30} disabled /> },
+  ],
+  "non-linear": [
+    {
+      title: "Non-linear scale",
+      content: (
+        <Slider
+          aria-label="Storage"
+          defaultValue={10}
+          min={5}
+          max={30}
+          scale={storageScale}
+          valueLabelDisplay="auto"
+          valueLabelFormat={bytes}
+          getAriaValueText={bytes}
+        />
+      ),
+    },
   ],
   temperature: [
     {

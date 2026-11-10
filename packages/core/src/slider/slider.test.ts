@@ -5,6 +5,8 @@ import {
   createSliderController,
   formatSliderValue,
   SLIDER_ACTIVE,
+  SLIDER_SHIFT_STEP,
+  scaleSliderValue,
   setSliderValue,
   sliderKeyValue,
   sliderLayout,
@@ -26,7 +28,7 @@ const MARKS = {
 
 describe("slider math", () => {
   it("sliderRange: defaults and invalid values", () => {
-    expect(sliderRange()).toEqual({ min: 0, max: 100, step: 1, marks: undefined });
+    expect(sliderRange()).toEqual({ min: 0, max: 100, step: 1, marks: undefined, shiftStep: 10 });
     expect(sliderRange({ min: 10, max: 5, step: -2 })).toMatchObject({
       min: 10,
       max: 110,
@@ -270,5 +272,48 @@ describe("createSliderController", () => {
       }),
     );
     expect(onChange).toHaveBeenCalledWith([80], 0);
+  });
+});
+
+describe("slider shiftStep and scale", () => {
+  it("Page keys and Shift + arrows move by shiftStep (default 10), snapped to the step", () => {
+    const range = sliderRange({ min: 0, max: 100, step: 5 });
+    expect(range.shiftStep).toBe(SLIDER_SHIFT_STEP);
+    expect(sliderKeyValue("PageUp", 30, range)).toBe(40);
+    expect(sliderKeyValue("ArrowRight", 30, range)).toBe(35);
+    expect(sliderKeyValue("ArrowRight", 30, range, false, true)).toBe(40);
+    expect(sliderKeyValue("ArrowDown", 30, range, false, true)).toBe(20);
+    const wide = sliderRange({ min: 0, max: 100, step: 1, shiftStep: 25 });
+    expect(sliderKeyValue("PageDown", 60, wide)).toBe(35);
+    expect(sliderKeyValue("ArrowUp", 60, wide, false, true)).toBe(85);
+    expect(sliderRange({ shiftStep: -2 }).shiftStep).toBe(SLIDER_SHIFT_STEP);
+    expect(sliderKeyValue("PageUp", 95, { ...wide, shiftStep: undefined })).toBe(100);
+  });
+
+  it("scale: the shown value, invalid results fall back", () => {
+    expect(scaleSliderValue(10, (x) => 2 ** x)).toBe(1024);
+    expect(scaleSliderValue(10, null)).toBe(10);
+    expect(scaleSliderValue(10, () => Number.NaN)).toBe(10);
+  });
+
+  it("the controller passes Shift to the keys", () => {
+    const host = mount(
+      '<span data-ok-slider><span data-ok-slider-rail></span><span data-ok-slider-thumb><input type="range"></span></span>',
+    );
+    const onChange = vi.fn();
+    createSliderController(host.firstElementChild as HTMLElement, {
+      read: () => ({
+        values: [30],
+        range: sliderRange({ step: 1, shiftStep: 20 }),
+        disableSwap: false,
+        disabled: false,
+      }),
+      onChange,
+      onCommit: vi.fn(),
+    });
+    (host.querySelector("input") as HTMLInputElement).dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", shiftKey: true, bubbles: true }),
+    );
+    expect(onChange).toHaveBeenCalledWith([50], 0);
   });
 });
