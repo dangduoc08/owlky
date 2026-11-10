@@ -443,6 +443,7 @@
   "data-ok-disable-restore-focus",
   "data-ok-disable-row-grouping",
   "data-ok-disable-row-selection-on-click",
+  "data-ok-disable-scroll-lock",
   "data-ok-disable-scrolling",
   "data-ok-disable-selection",
   "data-ok-disable-shrink",
@@ -3785,6 +3786,13 @@
          "name": "invisible"
         },
         {
+         "attr": "data-ok-transition-duration",
+         "description": "Length of the fade in and out (ms). Default: the theme's durations.",
+         "kind": "number",
+         "min": 0,
+         "name": "transitionDuration"
+        },
+        {
          "attr": "data-ok-open",
          "description": "Open state (`open`; HTML: `data-ok-open`, a trigger or `open()`).",
          "event": "ok:backdrop:close",
@@ -3833,6 +3841,11 @@
          "name": "open",
          "required": true,
          "type": "boolean"
+        },
+        {
+         "description": "Length of the fade in and out, in ms. Default: the theme's durations.",
+         "name": "transitionDuration",
+         "type": "number"
         }
        ]
       }
@@ -3866,6 +3879,13 @@
        "description": "Transparent: blocks clicks without dimming the page (for example, behind a custom menu).",
        "kind": "flag",
        "name": "invisible"
+      },
+      {
+       "attr": "data-ok-transition-duration",
+       "description": "Length of the fade in and out (ms). Default: the theme's durations.",
+       "kind": "number",
+       "min": 0,
+       "name": "transitionDuration"
       },
       {
        "attr": "data-ok-open",
@@ -3915,7 +3935,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `invisible`, `children` | same; HTML `data-ok-open`, `data-ok-invisible` | kept | |\n| `transitionDuration` | — (fixed `--ok-duration-*`) | deferred (4.9) | |\n| `component` | — | not applicable | one `div` |\n| Fade props (`appear`, `easing`, `timeout`, `addEndListener`, `onEnter`… callbacks) | one CSS fade | not applicable | HTML `ok:backdrop:open` / `close` events |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `invisible`, `children` | same; HTML `data-ok-open`, `data-ok-invisible` | kept | |\n| `transitionDuration` | same, a number of ms for both fades; HTML `data-ok-transition-duration` | kept (4.9) | core `backdropStyle` → `--_ok-backdrop-duration` (React `style`, HTML CSSOM); `{ enter, exit }` not applicable |\n| `component` | — | not applicable | one `div` |\n| Fade props (`appear`, `easing`, `timeout`, `addEndListener`, `onEnter`… callbacks) | one CSS fade | not applicable | HTML `ok:backdrop:open` / `close` events |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -31180,6 +31200,18 @@
          "name": "disableEscapeKeyDown"
         },
         {
+         "attr": "data-ok-disable-restore-focus",
+         "description": "Focus isn't moved back to the element focused before it opened.",
+         "kind": "flag",
+         "name": "disableRestoreFocus"
+        },
+        {
+         "attr": "data-ok-disable-scroll-lock",
+         "description": "The page behind can still scroll while it is open.",
+         "kind": "flag",
+         "name": "disableScrollLock"
+        },
+        {
          "attr": "data-ok-variant",
          "children": "[data-ok-dialog-paper]",
          "default": "fadeIn",
@@ -31267,6 +31299,16 @@
          "type": "boolean"
         },
         {
+         "description": "Focus isn't moved back to the element focused before the dialog opened.",
+         "name": "disableRestoreFocus",
+         "type": "boolean"
+        },
+        {
+         "description": "The page behind can still scroll while the dialog is open.",
+         "name": "disableScrollLock",
+         "type": "boolean"
+        },
+        {
          "description": "Covers the viewport.",
          "name": "fullScreen",
          "type": "boolean"
@@ -31279,6 +31321,12 @@
         {
          "description": "Transparent backdrop (still modal).",
          "name": "hideBackdrop",
+         "type": "boolean"
+        },
+        {
+         "default": "true",
+         "description": "Keeps the children rendered while the dialog is closed. (the HTML markup is always there too); `false` renders them only while it is open (MUI's default), which resets their state on every opening.",
+         "name": "keepMounted",
          "type": "boolean"
         },
         {
@@ -31486,6 +31534,18 @@
        "name": "disableEscapeKeyDown"
       },
       {
+       "attr": "data-ok-disable-restore-focus",
+       "description": "Focus isn't moved back to the element focused before it opened.",
+       "kind": "flag",
+       "name": "disableRestoreFocus"
+      },
+      {
+       "attr": "data-ok-disable-scroll-lock",
+       "description": "The page behind can still scroll while it is open.",
+       "kind": "flag",
+       "name": "disableScrollLock"
+      },
+      {
        "attr": "data-ok-variant",
        "children": "[data-ok-dialog-paper]",
        "default": "fadeIn",
@@ -31568,7 +31628,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |\n| `maxWidth` (`false`) | `\"none\"` | renamed | |\n| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |\n| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred | new batch E row (with 5.1 exit transitions) |\n| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |\n| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |\n| Modal `keepMounted` | always mounted | deferred (4.8) | |\n| Modal `disableRestoreFocus`, `disableScrollLock` | — | deferred | new batch E row |\n| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |\n| Modal `container`, `disablePortal` | — | not applicable | top layer |\n| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |\n| `DialogTitle`, `DialogContentText` `children` | same | kept | |\n| `DialogContent` `dividers` | same | kept | |\n| `DialogActions` `disableSpacing` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |\n| `maxWidth` (`false`) | `\"none\"` | renamed | |\n| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |\n| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred (4.18.44) | waits for 5.1 exit transitions |\n| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |\n| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |\n| Modal `keepMounted` | same (React only), default `true` | kept (4.8) | MUI default `false`; ours keeps the children like the HTML markup (no breaking change); `false` renders them only while open |\n| Modal `disableRestoreFocus`, `disableScrollLock` | same (`data-ok-disable-restore-focus`, `data-ok-disable-scroll-lock`) | kept (4.18.45) | core modal controller `restoreFocus` / `lockScroll`; the browser's own focus return after `dialog.close()` is undone |\n| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |\n| Modal `container`, `disablePortal` | — | not applicable | top layer |\n| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |\n| `DialogTitle`, `DialogContentText` `children` | same | kept | |\n| `DialogContent` `dividers` | same | kept | |\n| `DialogActions` `disableSpacing` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -32100,6 +32160,60 @@
          "name": "disableEscapeKeyDown"
         },
         {
+         "attr": "data-ok-disable-restore-focus",
+         "description": "Temporary only: focus isn't moved back to the trigger on close.",
+         "kind": "flag",
+         "name": "disableRestoreFocus"
+        },
+        {
+         "attr": "data-ok-disable-scroll-lock",
+         "description": "Temporary only: the page behind can still scroll while it is open.",
+         "kind": "flag",
+         "name": "disableScrollLock"
+        },
+        {
+         "attr": "data-ok-elevation",
+         "default": "16",
+         "description": "Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none.",
+         "kind": "style",
+         "name": "elevation",
+         "optional": true,
+         "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24"
+         ]
+        },
+        {
+         "attr": "data-ok-transition-duration",
+         "description": "Length of the slide in and out (ms). Default: the theme's short duration.",
+         "kind": "number",
+         "min": 0,
+         "name": "transitionDuration"
+        },
+        {
          "attr": "open | hidden",
          "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
          "event": "ok:drawer:close",
@@ -32259,9 +32373,35 @@
          "type": "boolean"
         },
         {
+         "description": "Temporary only: focus isn't moved back to the trigger on close.",
+         "name": "disableRestoreFocus",
+         "type": "boolean"
+        },
+        {
+         "description": "Temporary only: the page behind can still scroll while the drawer is open.",
+         "name": "disableScrollLock",
+         "type": "boolean"
+        },
+        {
+         "description": "Shadow depth of the panel, 0–24. Default: each edge's own shadow (docked drawers: none).",
+         "name": "elevation",
+         "type": "number"
+        },
+        {
          "description": "Temporary only: transparent backdrop (still modal; a click outside still closes it).",
          "name": "hideBackdrop",
          "type": "boolean"
+        },
+        {
+         "default": "true",
+         "description": "keepMounted`). (the HTML markup is always there too); `false` renders them only while open.",
+         "name": "keepMounted",
+         "type": "boolean"
+        },
+        {
+         "description": "Length of the slide in and out, in ms. Default: the theme's short duration.",
+         "name": "transitionDuration",
+         "type": "number"
         }
        ]
       }
@@ -32420,6 +32560,60 @@
        "name": "disableEscapeKeyDown"
       },
       {
+       "attr": "data-ok-disable-restore-focus",
+       "description": "Temporary only: focus isn't moved back to the trigger on close.",
+       "kind": "flag",
+       "name": "disableRestoreFocus"
+      },
+      {
+       "attr": "data-ok-disable-scroll-lock",
+       "description": "Temporary only: the page behind can still scroll while it is open.",
+       "kind": "flag",
+       "name": "disableScrollLock"
+      },
+      {
+       "attr": "data-ok-elevation",
+       "default": "16",
+       "description": "Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none.",
+       "kind": "style",
+       "name": "elevation",
+       "optional": true,
+       "values": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24"
+       ]
+      },
+      {
+       "attr": "data-ok-transition-duration",
+       "description": "Length of the slide in and out (ms). Default: the theme's short duration.",
+       "kind": "number",
+       "min": 0,
+       "name": "transitionDuration"
+      },
+      {
        "attr": "open | hidden",
        "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
        "event": "ok:drawer:close",
@@ -32477,7 +32671,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |\n| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |\n| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |\n| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |\n| `elevation`, `transitionDuration` | — | deferred (4.9) | |\n| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |\n| `ModalProps.keepMounted` (default unmount), `disableRestoreFocus`, `disableScrollLock` | always mounted | deferred | new batch E row (with Dialog) |\n| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |\n| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |\n| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |\n| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |\n| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |\n| `elevation`, `transitionDuration` | `DrawerContent` props; HTML `data-ok-elevation` (0–24), `data-ok-transition-duration` (ms) | kept (4.9) | core `drawerStyle` → `--_ok-drawer-shadow` / `--_ok-drawer-duration` (React `style`, HTML CSSOM); without `elevation` each edge keeps its shadow (MUI 16) |\n| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |\n| `ModalProps.keepMounted`, `disableRestoreFocus`, `disableScrollLock` | `DrawerContent` props `keepMounted` (React only, default `true`), `disableRestoreFocus`, `disableScrollLock` (`data-ok-*`, temporary only) | renamed (4.18.45) | props on DrawerContent instead of `ModalProps` |\n| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |\n| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred (4.18.46) | \"could\"; left after batch B (budget, shares a swipe helper with 4.14) |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -62660,8 +62854,10 @@
      "title": "Block clicks without dimming"
     },
     {
-     "body": "The backdrop fades in over 250 ms and fades out over 200 ms. When people turn on reduced motion in their system settings, it appears and disappears at once. A closed backdrop stays in the page, hidden, so its fade-out can play. Hidden backdrops don't catch clicks and screen readers skip them.",
+     "body": "The backdrop fades in over 250 ms and fades out over 200 ms. Set `transitionDuration` to use one length, in milliseconds, for both fades. When people turn on reduced motion in their system settings, it appears and disappears at once. A closed backdrop stays in the page, hidden, so its fade-out can play. Hidden backdrops don't catch clicks and screen readers skip them.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-backdrop-open=\"slow\">\n  <span data-ok-button-label>Show</span>\n</button>\n<div id=\"slow\" data-ok-backdrop data-ok-transition-duration=\"600\" data-ok-backdrop-close></div>",
      "id": "transitions",
+     "react": "import { Backdrop, Button } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SlowBackdrop() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Show\n      </Button>\n      <Backdrop open={open} transitionDuration={600} onClick={() => setOpen(false)} />\n    </>\n  );\n}",
      "title": "Fade in and out"
     },
     {
@@ -64168,6 +64364,13 @@
      "title": "Animate the entrance"
     },
     {
+     "body": "- **Focus:** when a dialog closes, focus returns to the element that was focused before it opened. `disableRestoreFocus` turns this off, for example when the dialog's action moves focus somewhere else.\n- **Scrolling:** while a dialog is open, the page behind it doesn't scroll. `disableScrollLock` lets it scroll.\n- **Mounting:** in React, the dialog's children stay rendered while it is closed, like the HTML markup. Set `keepMounted` to `false` to render them only while it is open, which resets their state each time it opens.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-open=\"notes\" aria-haspopup=\"dialog\"><span data-ok-button-label>Notes</span></button>\n<dialog id=\"notes\" data-ok-dialog data-ok-max-width=\"sm\" data-ok-scroll=\"paper\" data-ok-disable-restore-focus\n  data-ok-disable-scroll-lock aria-labelledby=\"notes-title\">\n  <div data-ok-dialog-paper>\n    <h2 data-ok-dialog-title id=\"notes-title\">Notes</h2>\n    <div data-ok-dialog-content>\n      <p data-ok-dialog-content-text>The page behind keeps scrolling.</p>\n    </div>\n    <div data-ok-dialog-actions>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-close><span data-ok-button-label>Close</span></button>\n    </div>\n  </div>\n</dialog>",
+     "id": "focus-scroll",
+     "react": "import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function NotesDialog() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Notes\n      </Button>\n      <Dialog open={open} onOpenChange={setOpen} disableRestoreFocus disableScrollLock keepMounted={false}>\n        <DialogTitle>Notes</DialogTitle>\n        <DialogContent>\n          <DialogContentText>The page behind keeps scrolling.</DialogContentText>\n        </DialogContent>\n        <DialogActions>\n          <Button onClick={() => setOpen(false)}>Close</Button>\n        </DialogActions>\n      </Dialog>\n    </>\n  );\n}",
+     "title": "Control focus, scrolling and mounting"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -64305,6 +64508,13 @@
      "id": "docked",
      "react": "import { Drawer, DrawerContent, List, ListItem, ListItemButton, ListItemText } from \"@owlky/react\";\n\nexport function DrawerDocked() {\n  return (\n    <div style={{ display: \"flex\" }}>\n      <Drawer variant=\"permanent\">\n        <DrawerContent aria-label=\"Navigation\">\n          <nav aria-label=\"Main\">\n            <List>\n              <ListItem disablePadding>\n                <ListItemButton href=\"/dashboard\">\n                  <ListItemText primary=\"Dashboard\" />\n                </ListItemButton>\n              </ListItem>\n              <ListItem disablePadding>\n                <ListItemButton href=\"/orders\">\n                  <ListItemText primary=\"Orders\" />\n                </ListItemButton>\n              </ListItem>\n            </List>\n          </nav>\n        </DrawerContent>\n      </Drawer>\n      <main>\n        <h1>Dashboard</h1>\n      </main>\n    </div>\n  );\n}",
      "title": "Dock the drawer next to the page"
+    },
+    {
+     "body": "- **Shadow:** `elevation` sets the panel's shadow from `0` (none) to `24`, from the same scale as Paper. Without it, each edge has its own shadow and docked drawers have none.\n- **Speed:** `transitionDuration` sets how long the panel takes to slide in and out, in milliseconds.\n- **Temporary drawers:** `disableRestoreFocus` keeps focus where it is when the drawer closes, and `disableScrollLock` lets the page behind scroll. In React, `keepMounted={false}` renders the content only while the drawer is open.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  data-ok-drawer-open=\"filters\" aria-haspopup=\"dialog\">\n  <span data-ok-button-label>Filters</span>\n</button>\n<dialog id=\"filters\" data-ok-drawer data-ok-anchor=\"right\" data-ok-variant=\"temporary\" data-ok-elevation=\"4\"\n  data-ok-transition-duration=\"150\" aria-label=\"Filters\">\n  <div data-ok-drawer-content>\n    <p data-ok-typography data-ok-variant=\"body2\">Filters slide in quickly.</p>\n  </div>\n</dialog>",
+     "id": "elevation",
+     "react": "import { Drawer, DrawerContent, DrawerTrigger, Typography } from \"@owlky/react\";\n\nexport function FilterDrawer() {\n  return (\n    <Drawer>\n      <DrawerTrigger variant=\"outlined\">Filters</DrawerTrigger>\n      <DrawerContent anchor=\"right\" aria-label=\"Filters\" elevation={4} transitionDuration={150}>\n        <Typography variant=\"body2\">Filters slide in quickly.</Typography>\n      </DrawerContent>\n    </Drawer>\n  );\n}",
+     "title": "Change the shadow and the speed"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

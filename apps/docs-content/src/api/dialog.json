@@ -187,6 +187,18 @@
       "name": "disableEscapeKeyDown"
      },
      {
+      "attr": "data-ok-disable-restore-focus",
+      "description": "Focus isn't moved back to the element focused before it opened.",
+      "kind": "flag",
+      "name": "disableRestoreFocus"
+     },
+     {
+      "attr": "data-ok-disable-scroll-lock",
+      "description": "The page behind can still scroll while it is open.",
+      "kind": "flag",
+      "name": "disableScrollLock"
+     },
+     {
       "attr": "data-ok-variant",
       "children": "[data-ok-dialog-paper]",
       "default": "fadeIn",
@@ -274,6 +286,16 @@
       "type": "boolean"
      },
      {
+      "description": "Focus isn't moved back to the element focused before the dialog opened.",
+      "name": "disableRestoreFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "The page behind can still scroll while the dialog is open.",
+      "name": "disableScrollLock",
+      "type": "boolean"
+     },
+     {
       "description": "Covers the viewport.",
       "name": "fullScreen",
       "type": "boolean"
@@ -286,6 +308,12 @@
      {
       "description": "Transparent backdrop (still modal).",
       "name": "hideBackdrop",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Keeps the children rendered while the dialog is closed. (the HTML markup is always there too); `false` renders them only while it is open (MUI's default), which resets their state on every opening.",
+      "name": "keepMounted",
       "type": "boolean"
      },
      {

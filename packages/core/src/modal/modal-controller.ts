@@ -28,6 +28,10 @@ export interface ModalControllerOptions {
    * outside it is a backdrop click). Default: the element itself.
    */
   contentSelector?: string | undefined;
+  /** Move focus back to where it was on close (MUI `disableRestoreFocus` = false). Default `true`. */
+  restoreFocus?: boolean | undefined;
+  /** Stop the page from scrolling while open (MUI `disableScrollLock` = false). Default `true`. */
+  lockScroll?: boolean | undefined;
   /** Force the non-native fallback. For tests and diagnostics; normally auto-detected. */
   forceFallback?: boolean | undefined;
 }
@@ -86,7 +90,8 @@ export function createModalController(
     returnFocus = null;
     const focusLost =
       !doc.activeElement || doc.activeElement === doc.body || element.contains(doc.activeElement);
-    if (restoreFocus && focusLost && isFocusable(target)) target.focus();
+    if (restoreFocus && options.restoreFocus !== false && focusLost && isFocusable(target))
+      target.focus();
   }
 
   const dismiss = (reason: ModalDismissReason) => {
@@ -176,7 +181,7 @@ export function createModalController(
       }
       isOpen = true;
       layerStack.push(element);
-      releaseScroll = lockScroll(doc);
+      if (options.lockScroll !== false) releaseScroll = lockScroll(doc);
       const selector = options.contentSelector;
       const content = (selector && element.querySelector<HTMLElement>(selector)) || element;
       focusInitial(element, content);
@@ -186,7 +191,13 @@ export function createModalController(
       if (!isOpen) return;
       // Mark closed before calling dialog.close(): its `close` event is then ignored.
       isOpen = false;
+      const keep = options.restoreFocus === false;
+      const active = doc.activeElement;
       nativeDialog?.close();
+      // The browser moves focus back itself when a modal dialog closes: undo it.
+      const moved = doc.activeElement;
+      if (keep && moved !== active && moved instanceof HTMLElement && moved !== doc.body)
+        moved.blur();
       cleanup(true);
     },
 

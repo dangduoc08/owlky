@@ -23,6 +23,7 @@ Root: `data-ok-backdrop`. Unknown values fall back to the default.
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
 | `invisible` | `data-ok-invisible` | flag | boolean | off | Transparent: blocks clicks without dimming the page (for example, behind a custom menu). |
+| `transitionDuration` | `data-ok-transition-duration="…"` | number | number | — | Length of the fade in and out (ms). Default: the theme's durations. |
 | `open` | `data-ok-open` · event `ok:backdrop:close` | state | — | — | Open state (`open`; HTML: `data-ok-open`, a trigger or `open()`). |
 <!-- /options:backdrop -->
 
@@ -66,7 +67,7 @@ Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).
 | Upstream | Owlky | Status | Note |
 |---|---|---|---|
 | `open`, `invisible`, `children` | same; HTML `data-ok-open`, `data-ok-invisible` | kept | |
-| `transitionDuration` | — (fixed `--ok-duration-*`) | deferred (4.9) | |
+| `transitionDuration` | same, a number of ms for both fades; HTML `data-ok-transition-duration` | kept (4.9) | core `backdropStyle` → `--_ok-backdrop-duration` (React `style`, HTML CSSOM); `{ enter, exit }` not applicable |
 | `component` | — | not applicable | one `div` |
 | Fade props (`appear`, `easing`, `timeout`, `addEndListener`, `onEnter`… callbacks) | one CSS fade | not applicable | HTML `ok:backdrop:open` / `close` events |
 | `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |

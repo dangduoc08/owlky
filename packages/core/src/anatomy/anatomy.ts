@@ -325,6 +325,35 @@ export type DrawerVariant = (typeof drawerVariants)[number];
 /** Why the drawer asks to close: Escape, a backdrop click, or a close trigger / the API. */
 export type DrawerCloseReason = "escape" | "backdrop" | "close";
 
+/** MUI's elevation levels, as attribute values (`--ok-elevation-<n>`; 0 = no shadow). */
+export const paperElevations = [
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+] as const;
+
 export const drawerOptions = defineOptions("drawer", "data-ok-drawer", {
   anchor: style("data-ok-anchor", drawerAnchors, "left", "Edge the drawer is attached to."),
   variant: style(
@@ -341,6 +370,27 @@ export const drawerOptions = defineOptions("drawer", "data-ok-drawer", {
     "data-ok-disable-escape-key-down",
     "Temporary only: Escape doesn't request close.",
   ),
+  disableRestoreFocus: flag(
+    "data-ok-disable-restore-focus",
+    "Temporary only: focus isn't moved back to the trigger on close.",
+  ),
+  disableScrollLock: flag(
+    "data-ok-disable-scroll-lock",
+    "Temporary only: the page behind can still scroll while it is open.",
+  ),
+  elevation: style(
+    "data-ok-elevation",
+    paperElevations,
+    "16",
+    "Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none.",
+    { optional: true },
+  ),
+  transitionDuration: number(
+    "data-ok-transition-duration",
+    undefined,
+    "Length of the slide in and out (ms). Default: the theme's short duration.",
+    { min: 0 },
+  ),
   open: state(
     "open | hidden",
     "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
@@ -355,8 +405,48 @@ export const drawerAttributes = (
     variant?: DrawerVariant | undefined;
     hideBackdrop?: boolean | undefined;
     disableEscapeKeyDown?: boolean | undefined;
+    disableRestoreFocus?: boolean | undefined;
+    disableScrollLock?: boolean | undefined;
+    /** 0–24 (a number or its string). */
+    elevation?: number | string | undefined;
+    transitionDuration?: number | undefined;
   } = {},
-): DataAttributes => optionAttributes(drawerOptions, { ...options });
+): DataAttributes =>
+  optionAttributes(drawerOptions, {
+    ...options,
+    elevation: options.elevation === undefined ? undefined : String(options.elevation),
+  });
+
+/** A transition length in ms → a CSS time; invalid → `undefined`. */
+const msValue = (ms: unknown) => {
+  const value = parseNumber(drawerOptions.options.transitionDuration, ms);
+  return typeof value === "number" ? `${value}ms` : undefined;
+};
+
+/**
+ * Private properties of a drawer (React `style`, HTML CSSOM): its panel's shadow for an explicit
+ * `elevation`, and the slide's `transitionDuration`.
+ */
+export function drawerStyle(options: {
+  elevation?: number | string | undefined;
+  transitionDuration?: number | string | undefined;
+}): Record<`--_ok-${string}`, string> {
+  const style: Record<`--_ok-${string}`, string> = {};
+  const level = pick(paperElevations, String(options.elevation), "16");
+  if (options.elevation !== undefined && String(options.elevation) === level)
+    style["--_ok-drawer-shadow"] = level === "0" ? "none" : `var(--ok-elevation-${level})`;
+  const duration = msValue(options.transitionDuration);
+  if (duration) style["--_ok-drawer-duration"] = duration;
+  return style;
+}
+
+/** Private properties of a backdrop (React `style`, HTML CSSOM): the fade's `transitionDuration`. */
+export function backdropStyle(options: {
+  transitionDuration?: number | string | undefined;
+}): Record<`--_ok-${string}`, string> {
+  const duration = msValue(options.transitionDuration);
+  return duration ? { "--_ok-backdrop-duration": duration } : {};
+}
 
 // --- Sortable ---------------------------------------------------------------------------------
 
@@ -1319,34 +1409,6 @@ export const dividerAttributes = (options: DividerAnatomyOptions = {}): DataAttr
 // --- Paper ------------------------------------------------------------------------------------
 
 export const paperVariants = ["elevation", "outlined"] as const;
-/** MUI's elevation levels, as attribute values (`--ok-elevation-<n>`; 0 = no shadow). */
-export const paperElevations = [
-  "0",
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "11",
-  "12",
-  "13",
-  "14",
-  "15",
-  "16",
-  "17",
-  "18",
-  "19",
-  "20",
-  "21",
-  "22",
-  "23",
-  "24",
-] as const;
 export type PaperVariant = (typeof paperVariants)[number];
 
 /** Paper (spec: paper.md). Card and other surfaces spread these options into their own schema. */
@@ -1769,6 +1831,14 @@ export const dialogOptions = defineOptions("dialog", "data-ok-dialog", {
   ),
   hideBackdrop: flag("data-ok-hide-backdrop", "Transparent backdrop (still modal)."),
   disableEscapeKeyDown: flag("data-ok-disable-escape-key-down", "Escape doesn't request close."),
+  disableRestoreFocus: flag(
+    "data-ok-disable-restore-focus",
+    "Focus isn't moved back to the element focused before it opened.",
+  ),
+  disableScrollLock: flag(
+    "data-ok-disable-scroll-lock",
+    "The page behind can still scroll while it is open.",
+  ),
   transition: style(
     "data-ok-variant",
     dialogTransitions,
@@ -1790,6 +1860,8 @@ export interface DialogAnatomyOptions {
   scroll?: DialogScroll | undefined;
   hideBackdrop?: boolean | undefined;
   disableEscapeKeyDown?: boolean | undefined;
+  disableRestoreFocus?: boolean | undefined;
+  disableScrollLock?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a dialog (`<dialog>`). */
@@ -1803,6 +1875,12 @@ export const backdropOptions = defineOptions("backdrop", "data-ok-backdrop", {
     "data-ok-invisible",
     "Transparent: blocks clicks without dimming the page (for example, behind a custom menu).",
   ),
+  transitionDuration: number(
+    "data-ok-transition-duration",
+    undefined,
+    "Length of the fade in and out (ms). Default: the theme's durations.",
+    { min: 0 },
+  ),
   open: state(
     "data-ok-open",
     "Open state (`open`; HTML: `data-ok-open`, a trigger or `open()`).",
@@ -1812,6 +1890,7 @@ export const backdropOptions = defineOptions("backdrop", "data-ok-backdrop", {
 
 export interface BackdropAnatomyOptions {
   invisible?: boolean | undefined;
+  transitionDuration?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a backdrop (`data-ok-open` is the state, written by the caller). */

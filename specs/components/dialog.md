@@ -31,6 +31,8 @@ Root: `data-ok-dialog`. Unknown values fall back to the default.
 | `scroll` | `data-ok-scroll="…"` | style | `paper` `body` | `paper` | `paper`: the content scrolls inside the dialog; `body`: the whole dialog scrolls. |
 | `hideBackdrop` | `data-ok-hide-backdrop` | flag | boolean | off | Transparent backdrop (still modal). |
 | `disableEscapeKeyDown` | `data-ok-disable-escape-key-down` | flag | boolean | off | Escape doesn't request close. |
+| `disableRestoreFocus` | `data-ok-disable-restore-focus` | flag | boolean | off | Focus isn't moved back to the element focused before it opened. |
+| `disableScrollLock` | `data-ok-disable-scroll-lock` | flag | boolean | off | The page behind can still scroll while it is open. |
 | `transition` | `data-ok-variant="…"` on each `[data-ok-dialog-paper]` | style | `slideInUp` `slideInDown` `slideInLeft` `slideInRight` `fadeIn` `fadeInUp` `fadeInDown` `fadeInLeft` `fadeInRight` `zoomIn` `zoomInUp` `zoomInDown` `zoomInLeft` `zoomInRight` `bounceIn` `bounceInUp` `bounceInDown` `bounceInLeft` `bounceInRight` `flipInX` `flipInY` `scaleInX` `scaleInY` `rotateIn` | — | Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…); without it, a short fade and scale. |
 | `open` | `open` · event `ok:dialog:close` | state | — | — | Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`). |
 <!-- /options:dialog -->
@@ -76,11 +78,11 @@ Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, Dia
 | `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |
 | `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |
 | `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |
-| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred | new batch E row (with 5.1 exit transitions) |
+| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred (4.18.44) | waits for 5.1 exit transitions |
 | `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |
 | Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |
-| Modal `keepMounted` | always mounted | deferred (4.8) | |
-| Modal `disableRestoreFocus`, `disableScrollLock` | — | deferred | new batch E row |
+| Modal `keepMounted` | same (React only), default `true` | kept (4.8) | MUI default `false`; ours keeps the children like the HTML markup (no breaking change); `false` renders them only while open |
+| Modal `disableRestoreFocus`, `disableScrollLock` | same (`data-ok-disable-restore-focus`, `data-ok-disable-scroll-lock`) | kept (4.18.45) | core modal controller `restoreFocus` / `lockScroll`; the browser's own focus return after `dialog.close()` is undone |
 | Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |
 | Modal `container`, `disablePortal` | — | not applicable | top layer |
 | Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |

@@ -278,3 +278,42 @@ describe("Drawer behavior", () => {
     expect(getComputedStyle(content).boxShadow).toMatch(shadow);
   });
 });
+
+describe("Drawer options", () => {
+  it("elevation, transitionDuration, keepMounted, disableRestoreFocus, disableScrollLock", async () => {
+    render(
+      <Drawer>
+        <DrawerTrigger variant="outlined">Open</DrawerTrigger>
+        <DrawerContent
+          aria-label="Menu"
+          elevation={0}
+          transitionDuration={50}
+          keepMounted={false}
+          disableRestoreFocus
+          disableScrollLock
+        >
+          <DrawerClose>Close</DrawerClose>
+        </DrawerContent>
+      </Drawer>,
+    );
+    const element = dialog();
+    expect(element.dataset).toMatchObject({
+      okElevation: "0",
+      okTransitionDuration: "50",
+      okDisableRestoreFocus: "",
+      okDisableScrollLock: "",
+    });
+    expect(element.style.getPropertyValue("--_ok-drawer-duration")).toBe("50ms");
+    expect(screen.queryByRole("button", { name: "Close", hidden: true })).toBeNull();
+    const trigger = screen.getByRole("button", { name: "Open" });
+    await userEvent.click(trigger);
+    expect(isScrollLocked()).toBe(false);
+    const content = element.querySelector("[data-ok-drawer-content]") as HTMLElement;
+    expect(getComputedStyle(content).boxShadow).toBe("none");
+    expect(getComputedStyle(content).transitionDuration).toBe("0.05s");
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(element.open).toBe(false);
+    expect(document.activeElement).not.toBe(trigger);
+    expect(screen.queryByRole("button", { name: "Close", hidden: true })).toBeNull();
+  });
+});

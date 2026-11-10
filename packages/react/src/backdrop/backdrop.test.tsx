@@ -150,4 +150,16 @@ describe("Backdrop", () => {
       '<div data-ok-backdrop="" data-ok-runtime="off"></div>',
     );
   });
+
+  it("transitionDuration sets both fades; style still merges", () => {
+    render(
+      <Backdrop open transitionDuration={40} style={{ color: "red" }} data-testid="b">
+        x
+      </Backdrop>,
+    );
+    const backdrop = screen.getByTestId("b");
+    expect(backdrop.dataset["okTransitionDuration"]).toBe("40");
+    expect(backdrop.style.color).toBe("red");
+    expect(getComputedStyle(backdrop).transitionDuration).toMatch(/^0\.04s/);
+  });
 });

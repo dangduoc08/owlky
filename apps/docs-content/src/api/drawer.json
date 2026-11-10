@@ -151,6 +151,60 @@
       "name": "disableEscapeKeyDown"
      },
      {
+      "attr": "data-ok-disable-restore-focus",
+      "description": "Temporary only: focus isn't moved back to the trigger on close.",
+      "kind": "flag",
+      "name": "disableRestoreFocus"
+     },
+     {
+      "attr": "data-ok-disable-scroll-lock",
+      "description": "Temporary only: the page behind can still scroll while it is open.",
+      "kind": "flag",
+      "name": "disableScrollLock"
+     },
+     {
+      "attr": "data-ok-elevation",
+      "default": "16",
+      "description": "Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none.",
+      "kind": "style",
+      "name": "elevation",
+      "optional": true,
+      "values": [
+       "0",
+       "1",
+       "2",
+       "3",
+       "4",
+       "5",
+       "6",
+       "7",
+       "8",
+       "9",
+       "10",
+       "11",
+       "12",
+       "13",
+       "14",
+       "15",
+       "16",
+       "17",
+       "18",
+       "19",
+       "20",
+       "21",
+       "22",
+       "23",
+       "24"
+      ]
+     },
+     {
+      "attr": "data-ok-transition-duration",
+      "description": "Length of the slide in and out (ms). Default: the theme's short duration.",
+      "kind": "number",
+      "min": 0,
+      "name": "transitionDuration"
+     },
+     {
       "attr": "open | hidden",
       "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
       "event": "ok:drawer:close",
@@ -310,9 +364,35 @@
       "type": "boolean"
      },
      {
+      "description": "Temporary only: focus isn't moved back to the trigger on close.",
+      "name": "disableRestoreFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "Temporary only: the page behind can still scroll while the drawer is open.",
+      "name": "disableScrollLock",
+      "type": "boolean"
+     },
+     {
+      "description": "Shadow depth of the panel, 0–24. Default: each edge's own shadow (docked drawers: none).",
+      "name": "elevation",
+      "type": "number"
+     },
+     {
       "description": "Temporary only: transparent backdrop (still modal; a click outside still closes it).",
       "name": "hideBackdrop",
       "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "keepMounted`). (the HTML markup is always there too); `false` renders them only while open.",
+      "name": "keepMounted",
+      "type": "boolean"
+     },
+     {
+      "description": "Length of the slide in and out, in ms. Default: the theme's short duration.",
+      "name": "transitionDuration",
+      "type": "number"
      }
     ]
    }

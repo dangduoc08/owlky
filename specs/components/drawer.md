@@ -29,6 +29,10 @@ Root: `data-ok-drawer`. Unknown values fall back to the default.
 | `variant` | `data-ok-variant="…"` | style | `temporary` `persistent` `permanent` | `temporary` | `temporary`: modal `<dialog>`; `persistent`: docked `<aside>` that opens and closes; `permanent`: docked, always shown. |
 | `hideBackdrop` | `data-ok-hide-backdrop` | flag | boolean | off | Temporary only: transparent backdrop (still modal). |
 | `disableEscapeKeyDown` | `data-ok-disable-escape-key-down` | flag | boolean | off | Temporary only: Escape doesn't request close. |
+| `disableRestoreFocus` | `data-ok-disable-restore-focus` | flag | boolean | off | Temporary only: focus isn't moved back to the trigger on close. |
+| `disableScrollLock` | `data-ok-disable-scroll-lock` | flag | boolean | off | Temporary only: the page behind can still scroll while it is open. |
+| `elevation` | `data-ok-elevation="…"` | style | `0` `1` `2` `3` `4` `5` `6` `7` `8` `9` `10` `11` `12` `13` `14` `15` `16` `17` `18` `19` `20` `21` `22` `23` `24` | — | Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none. |
+| `transitionDuration` | `data-ok-transition-duration="…"` | number | number | — | Length of the slide in and out (ms). Default: the theme's short duration. |
 | `open` | `open | hidden` · event `ok:drawer:close` | state | — | — | Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`). |
 <!-- /options:drawer -->
 
@@ -92,11 +96,11 @@ Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props thro
 | `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |
 | one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |
 | `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |
-| `elevation`, `transitionDuration` | — | deferred (4.9) | |
+| `elevation`, `transitionDuration` | `DrawerContent` props; HTML `data-ok-elevation` (0–24), `data-ok-transition-duration` (ms) | kept (4.9) | core `drawerStyle` → `--_ok-drawer-shadow` / `--_ok-drawer-duration` (React `style`, HTML CSSOM); without `elevation` each edge keeps its shadow (MUI 16) |
 | `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |
-| `ModalProps.keepMounted` (default unmount), `disableRestoreFocus`, `disableScrollLock` | always mounted | deferred | new batch E row (with Dialog) |
+| `ModalProps.keepMounted`, `disableRestoreFocus`, `disableScrollLock` | `DrawerContent` props `keepMounted` (React only, default `true`), `disableRestoreFocus`, `disableScrollLock` (`data-ok-*`, temporary only) | renamed (4.18.45) | props on DrawerContent instead of `ModalProps` |
 | `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |
-| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred | new batch E row |
+| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred (4.18.46) | "could"; left after batch B (budget, shares a swipe helper with 4.14) |
 | `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |
 
 ## Parity notes
