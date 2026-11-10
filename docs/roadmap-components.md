@@ -55,6 +55,8 @@ Commercial add-ons of ApexCharts: behavior and API only, our own code, data and 
 
 ## Phase 4 — Close every gap
 
+**Order (owner 2026-11-10):** batches B and C → ApexTree (one ADR superseding ADR-0036: 4.18.1, 4.18.2, 4.18.5; then 4.18.4) → ApexMaps (ADR: SVG geo maps as a Chart type, 4.18.17, then the MapLibre choropleth 4.18.15 sharing `mapScale()` and the legend) → batch D → the rest of batch E (must → should → could) → batch F.
+
 Known *Deferred* items today; the audits of phases 2 and 3 add rows to batch E. Batch F spreads the
 reference's Utilities page over the components it belongs to (order: 4.19, 4.20, 4.21, 4.26 first,
 then 4.22–4.24, then 4.25 with its ADR).
@@ -80,9 +82,9 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.17 | D | Walktour | `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | ⬜ |
 | 4.18 | E — from the audits | any | rows added by 2.4 and 3.1 | ⬜ |
 | 4.18.1 | E — ApexTree (must, **ADR** superseding ADR-0036) | Organization chart | collapsible nodes (`enableExpandCollapse`, `expandCollapseOnNodeClick`, a badge with the hidden count), `expandAll` / `collapseAll` / `expandToDepth`, lazy children (`loadChildren`), `ok:organization-chart:expand`, a toggle button per branch (`aria-expanded`), Collapse for the children list | ⬜ |
-| 4.18.2 | E (should, **ADR**) | Organization chart | `direction` `top` · `bottom` · `left` · `right` (connectors on logical properties, right to left mirrors) | ⬜ |
+| 4.18.2 | E (must, **ADR**) | Organization chart | `direction` `top` · `bottom` · `left` · `right` (connectors on logical properties, right to left mirrors) | ⬜ |
 | 4.18.3 | E (could) | Organization chart | `groupLeafNodes`: leaf children stacked in one column under their parent (CSS) | ⬜ |
-| 4.18.4 | E (should) | Organization chart | lineage highlight on hover and focus (`highlightOnHover`, `dimOpacity`, path to the root through `:has()`), search that scrolls to and highlights a node (composed Autocomplete) | ⬜ |
+| 4.18.4 | E (must) | Organization chart | lineage highlight on hover and focus (`highlightOnHover`, `dimOpacity`, path to the root through `:has()`), search that scrolls to and highlights a node (composed Autocomplete) | ⬜ |
 | 4.18.5 | E (could, **ADR**) | Organization chart | zoom / fit / center (`enableZoomPan`, `fitScreen`, `zoom`, `centerOnNode`, a toolbar), beyond the Scrollbar's pan | ⬜ |
 | 4.18.6 | E (could) | Organization chart | per-node line options (`edgeColorMode: "node"`: `lineColor` / `lineStyle` on a node) | ⬜ |
 | 4.18.7 | E (could, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | ⬜ |
@@ -95,7 +97,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.14 | E (could) | Data grid | `autoGenerate`: columns and types inferred from `rows` when `columns` is omitted | ⬜ |
 | 4.18.15 | E — ApexMaps (must) | Map | choropleth: core `mapScale(values, { method: quantile · equalInterval · jenks · threshold, classes, palette })` → a MapLibre `step` expression with token colors, a `MapLegend` part (classes / gradient, interactive classes mute regions), hover / selected regions through feature state, regions reachable by keyboard plus a data table, a "Choropleth" story on public-domain geometry | ⬜ |
 | 4.18.16 | E (could) | Map | core `greatCircle(from, to)` (geodesic arcs, antimeridian split), a region drilldown story (click → `fitBounds` → sub-regions, breadcrumbs), `exportMap("png")` | ⬜ |
-| 4.18.17 | E (could, **ADR**) | Chart or a new component | offline SVG geo maps without a tile style: projection (Equal Earth), regions as SVG with the chart's legend, tooltip and keyboard, hex tile layouts | ⬜ |
+| 4.18.17 | E — ApexMaps (must, **ADR**) | Chart or a new component | offline SVG geo maps without a tile style: projection (Equal Earth), regions as SVG with the chart's legend, tooltip and keyboard, hex tile layouts | ⬜ |
 | 4.18.18 | E — Chart Editor (could, **ADR**, after website phase 2) | Website / Storybook | a chart builder page: a form generated from `chartOptions` (style → Select, flag → Switch, number → Text field), a Data grid for the series, a live Chart, HTML \| React code with Copy | ⬜ |
 | 4.18.19 | E — ApexCharts Premium (should) | Chart | crossfilter between charts of a `group` (a slice click or a brush filters the others; Linked Views / Highlight Filter) | ⬜ |
 | 4.18.20 | E (could) | Chart | measure ruler (span · free, keyboard alternative, pinned rulers, `clearMeasures`), draggable annotations that report data coordinates (Ink) | ⬜ |
@@ -169,6 +171,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.24 | F | Text field | "Number input": increment / decrement buttons in the adornment, `min` / `max` / `step`, Arrow / PageUp / PageDown keys, helper text, disabled | ⬜ |
 | 4.25 | F | Text field (+ Select / Autocomplete) | "Phone input": country select (auto, default, fixed, international, hidden select), national / international / raw values. Needs phone metadata (for example `libphonenumber-js`): **ADR**, behind an opt-in entry like Editor / Map | ⬜ |
 | 4.26 | F | Foundations › Settings (or Introduction) | "Styled": no component — a guide "Style components" with CSS variables, `data-ok-*` state selectors (`[data-ok-open]`, `:focus-visible`, `:disabled`), keyframes with tokens, Tailwind (Owlky's answer to MUI's `sx` / `styled()` / `keyframes`) | ⬜ |
+| 4.27 | F | every component (API reference) | review the generated reference's part, state and value descriptions in `core/src/anatomy/parts.ts` (some are generic, such as "The rail."): one useful sentence each, in the docs style | ⬜ |
 
 **Notes:** batch A merged 2026-11-10. Behavior changes to mention in the release notes: Autocomplete `selectOnFocus` follows MUI (the first click in a non-free-solo field selects its text); Slider Page Up / Down move by `shiftStep` (default 10) instead of 10 steps. Budgets: all CSS 51.6 of 52 kB, `owlky.js` 187.1 of 190 kB.
 
