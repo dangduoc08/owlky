@@ -7,6 +7,7 @@ import cellsStatus from "../../../../../packages/html/src/components/data-grid/e
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
 import editorsGroup from "../../../../../packages/html/src/components/data-grid/examples/editors-group.html?raw";
+import footerGroup from "../../../../../packages/html/src/components/data-grid/examples/footer-group.html?raw";
 import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
 import groupingMultiple from "../../../../../packages/html/src/components/data-grid/examples/grouping-multiple.html?raw";
@@ -1571,6 +1572,41 @@ export function Issues() {
 }`,
   },
   {
+    id: "footer",
+    title: "Change the footer and the Tab key",
+    body: 'The footer shows "2 rows selected" while rows are selected, and the pagination. With `hideFooterPagination`, every row shows on one page and the footer shows the row count instead, such as "Total Rows: 6" ("Total Rows: 2 of 6" while filters hide rows). `hideFooterSelectedRowCount` and `hideFooterRowCount` hide the counts. `label` names the grid and shows at the start of the toolbar. By default, Tab moves into and out of the grid in one stop. `tabNavigation` makes Tab move from cell to cell: `content` through the body cells, `header` through the column headers and `all` through both. Tab past the last cell leaves the grid. In HTML, the grid writes both counts itself. Write the label in `span[data-ok-data-grid-toolbar-label]` at the start of the toolbar and in `aria-label` on the grid.',
+    html: `${gridOf(footerGroup)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "priority", headerName: "Priority" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      label="Issues"
+      rows={issues}
+      columns={columns}
+      showToolbar
+      checkboxSelection
+      // Every row on one page, with "Total Rows: 3" in the footer
+      hideFooterPagination
+      // Tab moves through the headers and the cells
+      tabNavigation="all"
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -1602,7 +1638,7 @@ export function Issues() {
   {
     id: "accessibility",
     title: "Accessibility",
-    body: `- Give the grid a name with \`aria-label\` or \`aria-labelledby\`.
+    body: `- Give the grid a name with \`label\`, \`aria-label\` or \`aria-labelledby\`.
 - Sortable headers carry \`aria-sort\`, selected rows \`aria-selected\`, and the grid tells its full row and column count.
 - Buttons and checkboxes inside cells take part in the arrow-key navigation. Name them, such as "Edit Ana Silva".
 - The menu button of each column appears on hover and focus, and always on touch screens.
@@ -1874,6 +1910,10 @@ const PREVIEWS = {
         ["Ctrl + Z on a cell or a header", "Undoes the last edit or paste"],
         ["Ctrl + Shift + Z or Ctrl + Y on a cell or a header", "Redoes it"],
         ["Up / Down in a header filter", "Moves to the cell above / below"],
+        [
+          "Tab / Shift + Tab with tabNavigation",
+          "Moves to the next / previous cell or header, then out of the grid",
+        ],
       ]}
     />
   ),

@@ -833,6 +833,13 @@ export const gridDefaultLabels = {
   statusBarAvg: "Average",
   statusBarMin: "Min",
   statusBarMax: "Max",
+  /** `{count}` is replaced (several rows). */
+  footerRowSelected: "{count} rows selected",
+  /** `{count}` is replaced (one row). */
+  footerRowSelectedOne: "{count} row selected",
+  footerTotalRows: "Total Rows:",
+  /** `{visibleCount}` and `{totalCount}` are replaced (filtered rows). */
+  footerTotalVisibleRows: "{visibleCount} of {totalCount}",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",

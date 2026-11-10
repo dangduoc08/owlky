@@ -836,6 +836,8 @@ export {
   esES,
   frFR,
   gridDisplayedRows,
+  gridFooterRowCount,
+  gridFooterRowSelected,
   jaJP,
   viVN,
   zhCN,
@@ -846,6 +848,7 @@ export {
   type GridEditStartReason,
   type GridNavigation,
   type GridNavigationOptions,
+  type GridTabNavigation,
   gridFocusTarget,
   moveGridCell,
 } from "./data-grid/grid-navigation.js";

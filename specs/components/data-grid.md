@@ -17,6 +17,7 @@ moved and `hidden`).
 ```
 div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-disable-*]?[id]
   div[data-ok-data-grid-toolbar]                                            (showToolbar)
+    span[data-ok-data-grid-toolbar-label]                                   (label)
     div[data-ok-data-grid-quick-filter] › TextField (search)
     div[data-ok-data-grid-toolbar-actions] › IconButton[data-ok-data-grid-history=undo|redo][disabled]? × 2 (undo on)
       › Button × (Columns, Filters, Density, Export)
@@ -133,7 +134,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
   Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=asc|desc|unsort|left|right|pin-left|pin-right|unpin|filter|hide|columns]
   div[data-ok-data-grid-status-bar][role=status]   (statusBar with cellSelection; also with hideFooter)
     › span[data-ok-data-grid-status-item=count|sum|avg|min|max] (written by the owner)
-  div[data-ok-data-grid-footer] › TablePagination[data-ok-count]   (HTML: count written by the grid)
+  div[data-ok-data-grid-footer] › span[data-ok-data-grid-selected-row-count]? (selected rows; written by the grid)
+    › span[data-ok-data-grid-row-count]? (hideFooterPagination) › TablePagination[data-ok-count]?   (HTML: count written by the grid)
 ```
 Every cell, and every control inside one, renders `tabindex="-1"`; the navigation controller moves
 the single `tabindex="0"`.
@@ -193,6 +195,10 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `multipleColumnsSortingMode` | `data-ok-multiple-columns-sorting-mode="…"` | style | `withModifierKey` `always` | — | Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`. |
 | `statusBar` | `data-ok-status-bar` | flag | boolean | off | With cell selection: a bar under the rows counts the selected cells and sums their numbers. |
 | `historyStackSize` | `data-ok-history-stack-size="…"` | number | number | `30` | Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off). |
+| `hideFooterPagination` | `data-ok-hide-footer-pagination` | flag | boolean | off | No pagination in the footer: every row shows, with the row count. |
+| `hideFooterRowCount` | `data-ok-hide-footer-row-count` | flag | boolean | off | No row count in the footer (it shows only without pagination). |
+| `hideFooterSelectedRowCount` | `data-ok-hide-footer-selected-row-count` | flag | boolean | off | No "n rows selected" in the footer. |
+| `tabNavigation` | `data-ok-tab-navigation="…"` | style | `none` `content` `header` `all` | — | Tab moves between body cells (`content`), headers (`header`) or both (`all`); `none` leaves the grid. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -265,7 +271,8 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `startCellEditMode`, `stopCellEditMode`, `startRowEditMode`, `stopRowEditMode`; (4.18.9)
 `historyStackSize` (30; 0: off), `onUndo` / `onRedo` (`{ ids }`), `showHistoryControls` (MUI X:
 `slotProps.toolbar.showHistoryControls`), apiRef `history` (`undo()` / `redo()` → `Promise<boolean>`,
-`clear()`, `canUndo()`, `canRedo()`). Beyond MUI X (4.18.11,
+`clear()`, `canUndo()`, `canRedo()`); (4.18.54) `hideFooterPagination`, `hideFooterRowCount`,
+`hideFooterSelectedRowCount`, `label`, `tabNavigation`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -466,6 +473,16 @@ controlled, a start or stop only reports, and the edit follows the prop (an entr
 mode saves unless `ignoreModifications`; an invalid value stays open). Cells hide controls with
 `hidden` (a CSS rule beats the controls' own `display`).
 
+Footer and toolbar (4.18.54): the footer shows "n rows selected" (start; while the selection has
+ids, unless `hideFooterSelectedRowCount`), "Total Rows: n" (`hideFooterPagination` without
+`hideFooterRowCount`; "Total Rows: 3 of 25" while filters hide data rows; server modes: the total)
+and the pagination (unless `hideFooterPagination`, which also stops paging). Core
+`gridFooterRowSelected` / `gridFooterRowCount` write the texts; HTML adds and removes the spans
+with DOM methods and hides the TablePagination while `data-ok-hide-footer-pagination` is set.
+`label` is the grid's `aria-label` (over `aria-label`) and the toolbar's first part.
+`tabNavigation`: Tab / Shift + Tab move the tab stop (the one `tabindex=0`) to the next / previous
+cell in reading order within the mode's cells, and leave the grid past the ends (not prevented).
+
 Status bar (4.18.11): with `statusBar` and `cellSelection`, the selected cells of the page (data
 rows, shown columns) give Count (cells with a value) and, with numbers in `number` columns, Sum,
 Average, Min and Max through the aggregation functions of those names (core `gridSelectionStats`,
@@ -478,6 +495,7 @@ changes (no repeated announcements). React: custom `aggregationFunctions` apply;
 | Key | Action |
 |---|---|
 | Tab | Into / out of the grid (one stop) |
+| Tab / Shift + Tab (`tabNavigation`) | Next / previous body cell (`content`), column header (`header`) or both (`all`); past the end, out of the grid |
 | Arrow keys | Move between cells (header included); controls inside cells take the focus |
 | Home / End | First / last cell of the row (Ctrl: of the grid) |
 | Page Up / Page Down | One screen of rows |
@@ -580,10 +598,10 @@ the detailed record of what is kept.
 | Undo / redo: `historyStackSize`, `onUndo`, `onRedo`, `slotProps.toolbar.showHistoryControls`, apiRef `history` (`undo`, `redo`, `clear`, `canUndo`, `canRedo`) | same (`showHistoryControls` a grid prop) | kept (4.18.9) | steps: saved cell / row edits and pastes (not pastes with a data source; off with a data source without `updateRow`); `onUndo` / `onRedo` get `{ ids }`; HTML `data-ok-history-stack-size`, `button[data-ok-data-grid-history]`, instance `history`, `ok:data-grid:undo` / `redo` |
 | Undo / redo: `historyEventHandlers`, `historyValidationEvents`, `undoable` setters | — | not applicable | engine events of MUI X; each step checks its rows instead (see Behavior) |
 | Toolbar / footer: `showToolbar`, `hideFooter`, `disableColumnSelector`, `disableDensitySelector`, `disableColumnMenu` | same | kept | `toolbarVariant` added |
-| Toolbar / footer: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label` (toolbar title) | — | deferred | |
+| Toolbar / footer: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label` (toolbar title) | same | kept (4.18.54) | `hideFooterPagination` also shows every row (MUI X keeps paging at its page size); the row count shows only then (MUI X: without `pagination`); locale keys `footerRowSelected` / `footerRowSelectedOne` (MUI X: one function), `footerTotalRows`, `footerTotalVisibleRows`; HTML: the counts are written by the grid, the label is markup |
 | Events: `onRowClick`, `onRowDoubleClick`, `onCellClick`, `onCellDoubleClick`, `onCellKeyDown`, `onColumnHeaderClick`, `onRowsScrollEnd` | same | kept | |
 | Events: `onColumnHeaderDoubleClick`, `-ContextMenu`, `-Enter`, `-Leave`, `-Over`, `-Out`, `onMenuOpen` / `Close`, `onPreferencePanelOpen` / `Close`, `onSidebarOpen` / `Close`, `onResize`, `onFetchRows`, `onExcelExportStateChange` | — | deferred | |
-| Keyboard: `tabNavigation` (`none` · `content` · `header` · `all`) | — | deferred | Tab moves between cells |
+| Keyboard: `tabNavigation` (`none` · `content` · `header` · `all`) | same | kept (4.18.54) | core `createGridNavigation` reads the root's `data-ok-tab-navigation`; headers are the column headers' row (not groups or header filters) |
 | Data source / server: `dataSource`, `dataSourceCache`, `onDataSourceError`, `lazyLoading`, `lazyLoadingRequestThrottleMs`, `disableVirtualization`, `rowBufferPx`, `columnBufferPx` | same | kept | |
 | Data source: `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`; `virtualizeColumnsWithAutoRowHeight` | — | deferred | |
 | Tree data / master-detail / row order / pinned rows: `treeData`, `getTreeDataPath`, `groupingColDef`, `defaultGroupingExpansionDepth`, `isGroupExpandedByDefault`, detail panel props, `rowReordering`, `onRowOrderChange`, `pinnedRows` | same | kept | |

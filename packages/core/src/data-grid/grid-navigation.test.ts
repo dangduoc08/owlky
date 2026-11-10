@@ -272,3 +272,74 @@ describe("createGridNavigation", () => {
     expect(stop(empty)).toHaveLength(0);
   });
 });
+
+describe("tabNavigation", () => {
+  const tabGrid = (mode: string) => {
+    const host = mount(
+      `<div data-ok-data-grid data-ok-tab-navigation="${mode}">${GRID.replace(
+        '<div role="rowgroup"><div role="row">',
+        '<div role="rowgroup" data-ok-data-grid-header><div role="row">',
+      )}</div>`,
+    );
+    const grid = host.querySelector<HTMLElement>("#g") as HTMLElement;
+    createGridNavigation(grid, {
+      onSort: vi.fn(),
+      onColumnMenu: vi.fn(),
+      onToggleRow: vi.fn(),
+      onSelectAll: vi.fn(),
+    });
+    return grid;
+  };
+  /** Presses Tab on the focused element: `true` when the grid moved the focus itself. */
+  const tab = (shift = false) =>
+    !press(document.activeElement as Element, "Tab", { shiftKey: shift });
+  const bodyCell = (grid: HTMLElement, row: number, col: number) =>
+    grid.querySelectorAll<HTMLElement>('[data-ok-data-grid-body] [role="gridcell"]')[
+      (row - 1) * 3 + col
+    ] as HTMLElement;
+
+  it("content: Tab moves through the body cells, then leaves the grid", () => {
+    const grid = tabGrid("content");
+    bodyCell(grid, 1, 1).focus();
+    expect(tab()).toBe(true);
+    expect(document.activeElement?.textContent).toBe("Edit 1");
+    expect(tab()).toBe(true);
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("row 2");
+    expect(tab(true)).toBe(true);
+    expect(document.activeElement?.textContent).toBe("Edit 1");
+    expect(stop(grid)).toHaveLength(1);
+    // The last cell: the browser moves on (not prevented).
+    (bodyCell(grid, 3, 2).querySelector("button") as HTMLElement).focus();
+    expect(tab()).toBe(false);
+    // Headers keep one tab stop.
+    (grid.querySelector('[data-ok-field="name"]') as HTMLElement).focus();
+    expect(tab()).toBe(false);
+  });
+
+  it("header: Tab moves through the column headers only", () => {
+    const grid = tabGrid("header");
+    (grid.querySelector('[data-ok-field="name"]') as HTMLElement).focus();
+    expect(tab()).toBe(true);
+    expect(document.activeElement?.getAttribute("data-ok-field")).toBe("act");
+    expect(tab()).toBe(false);
+    bodyCell(grid, 1, 1).focus();
+    expect(tab()).toBe(false);
+  });
+
+  it("all: from the last header to the first body cell; none and no root leave the grid", () => {
+    const grid = tabGrid("all");
+    (grid.querySelector('[data-ok-field="act"]') as HTMLElement).focus();
+    expect(tab()).toBe(true);
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("row 1");
+    expect(tab(true)).toBe(true);
+    expect(document.activeElement?.getAttribute("data-ok-field")).toBe("act");
+    cleanupDom();
+    const none = tabGrid("none");
+    bodyCell(none, 1, 1).focus();
+    expect(tab()).toBe(false);
+    cleanupDom();
+    const { grid: plain } = setup();
+    bodyCell(plain, 1, 1).focus();
+    expect(tab()).toBe(false);
+  });
+});

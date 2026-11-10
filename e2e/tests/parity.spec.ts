@@ -28,6 +28,7 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "editors"],
   ["datagrid", "edit-modes"],
   ["datagrid", "undo-redo"],
+  ["datagrid", "footer"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

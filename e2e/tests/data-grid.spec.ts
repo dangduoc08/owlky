@@ -556,5 +556,30 @@ for (const impl of implementations) {
       await expect(hours).toHaveText("38");
       await expect(page.getByRole("button", { name: "Save Bao Tran" })).toBeHidden();
     });
+
+    test("footer: row count, selected rows and Tab between cells", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "footer"));
+      const footer = page.locator("[data-ok-data-grid-footer]");
+      await expect(page.getByRole("grid", { name: "Issues" })).toBeVisible();
+      await expect(footer.locator("[data-ok-data-grid-row-count]")).toHaveText("Total Rows: 6");
+      await expect(
+        page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+      ).toHaveCount(6);
+      await page.getByRole("checkbox", { name: "Select row" }).first().check();
+      await expect(footer.locator("[data-ok-data-grid-selected-row-count]")).toHaveText(
+        "1 row selected",
+      );
+      await page.getByRole("textbox", { name: "Search" }).fill("docs");
+      await expect(footer.locator("[data-ok-data-grid-row-count]")).toHaveText(
+        "Total Rows: 1 of 6",
+      );
+      await page.getByRole("textbox", { name: "Search" }).fill("");
+      // tabNavigation="all": Tab moves from header to header.
+      await page.getByRole("columnheader", { name: /^Title/ }).focus();
+      await page.keyboard.press("Tab");
+      await expect(page.getByRole("columnheader", { name: /^Priority/ })).toBeFocused();
+      await page.keyboard.press("Shift+Tab");
+      await expect(page.getByRole("columnheader", { name: /^Title/ })).toBeFocused();
+    });
   });
 }

@@ -115,6 +115,13 @@ const historyColumns: GridColDef<Issue>[] = [
   { field: "points", headerName: "Points", type: "number", width: 110, editable: true },
 ];
 
+/* Read-only issues for the footer, layout and selection stories. */
+const plainColumns: GridColDef<Issue>[] = [
+  { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
+  { field: "priority", headerName: "Priority", width: 130 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+];
+
 /**
  * Story groups beyond the reference's sections (roadmap batch E). Snippets: `node
  * apps/storybook/scripts/data-grid-snippets.mjs`.
@@ -172,6 +179,25 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  footer: [
+    {
+      title: "Footer, label and Tab navigation",
+      content: (
+        // Every row shows with its count; selected rows are counted; Tab moves between cells.
+        <DataGrid
+          id="grid-footer"
+          label="Issues"
+          className="sb-grid"
+          rows={ISSUES}
+          columns={plainColumns}
+          showToolbar
+          checkboxSelection
+          hideFooterPagination
+          tabNavigation="all"
+        />
+      ),
+    },
+  ],
 };
 
 export const MORE_FILES = {
@@ -179,4 +205,5 @@ export const MORE_FILES = {
   editors: [["Custom edit and filter fields", "group"]],
   modes: [["Edit modes", "group"]],
   history: [["Undo and redo", "group"]],
+  footer: [["Footer, label and Tab navigation", "group"]],
 } as const;

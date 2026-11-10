@@ -90,6 +90,8 @@ import {
   gridExportColumns,
   gridFilterOperators,
   gridFilterValues,
+  gridFooterRowCount,
+  gridFooterRowSelected,
   gridGroupComparator,
   gridGroupFooterId,
   gridGroupingField,
@@ -505,6 +507,22 @@ export interface DataGridProps<R>
   multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
   /** Hides the footer (row count and pagination). */
   hideFooter?: boolean | undefined;
+  /**
+   * Hides the footer's pagination: every row shows, and the footer shows the row count instead
+   * ("Total Rows: 25").
+   */
+  hideFooterPagination?: boolean | undefined;
+  /** Hides the footer's row count (it shows only without pagination). */
+  hideFooterRowCount?: boolean | undefined;
+  /** Hides the footer's "2 rows selected". */
+  hideFooterSelectedRowCount?: boolean | undefined;
+  /** The grid's name: the toolbar shows it (with `showToolbar`) and it names the grid. */
+  label?: string | undefined;
+  /**
+   * What Tab does inside the grid: `none` (default) leaves it, `content` moves between body cells,
+   * `header` between column headers, `all` through both. Tab past the last cell leaves the grid.
+   */
+  tabNavigation?: "none" | "content" | "header" | "all" | undefined;
   /** Labels (MUI X locale text keys). */
   localeText?: Partial<GridLabels> | undefined;
   /** Name of the CSV file (without `.csv`). Default "data". */
@@ -996,6 +1014,11 @@ function DataGridInner<R>(
     multipleColumnsSortingMode,
     statusBar,
     hideFooter,
+    hideFooterPagination,
+    hideFooterRowCount,
+    hideFooterSelectedRowCount,
+    label,
+    tabNavigation,
     localeText,
     exportFileName = "data",
     disableMultipleColumnsFiltering,
@@ -1115,12 +1138,14 @@ function DataGridInner<R>(
     activeChartId: activeChartProp,
     onActiveChartIdChange,
     onChartModelChange,
-    "aria-label": ariaLabel,
+    "aria-label": ariaLabelProp,
     "aria-labelledby": ariaLabelledby,
     ...props
   }: DataGridProps<R>,
   ref: Ref<HTMLDivElement>,
 ) {
+  // `label` names the grid (MUI X: always its `aria-label`).
+  const ariaLabel = label ?? ariaLabelProp;
   const labels = { ...gridDefaultLabels, ...localeText };
   const generated = useId();
   // Parts are named after the grid's id, so pages (and snippets) get readable ids.
@@ -1670,7 +1695,7 @@ function DataGridInner<R>(
   const pageCount = Math.max(Math.ceil(total / pagination.pageSize), 1);
   const page = Math.min(pagination.page, pageCount - 1);
   // Rows of the page: all of them with server pagination or without a footer.
-  const unpaged = server.page || hideFooter || lazy;
+  const unpaged = server.page || hideFooter || hideFooterPagination || lazy;
   const pageStart = unpaged ? 0 : page * pagination.pageSize;
   const pageEnd = unpaged ? sorted.length : pageStart + pagination.pageSize;
   const onPage = (index: number) =>
@@ -3474,6 +3499,7 @@ function DataGridInner<R>(
   };
   const toolbar = showToolbar && (
     <div data-ok-data-grid-toolbar="">
+      {label !== undefined && <span data-ok-data-grid-toolbar-label="">{label}</span>}
       <div data-ok-data-grid-quick-filter="">
         <TextField
           id={`${id}-search`}
@@ -4620,6 +4646,10 @@ function DataGridInner<R>(
         multipleColumnsSortingMode,
         statusBar,
         historyStackSize: historyStackSize === 30 ? undefined : historyStackSize,
+        hideFooterPagination,
+        hideFooterRowCount,
+        hideFooterSelectedRowCount,
+        tabNavigation,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(groupingModel.length && !treeData
@@ -5036,21 +5066,37 @@ function DataGridInner<R>(
       )}
       {!hideFooter && (
         <div data-ok-data-grid-footer="">
-          <TablePagination
-            count={total}
-            page={page}
-            rowsPerPage={pagination.pageSize}
-            rowsPerPageOptions={pageSizeOptions}
-            onPageChange={(next) => setPagination({ ...pagination, page: next })}
-            onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
-            labelRowsPerPage={labels.paginationRowsPerPage}
-            {...(localeText?.paginationDisplayedRows
-              ? {
-                  labelDisplayedRows: (range: { from: number; to: number; count: number }) =>
-                    gridDisplayedRows(labels.paginationDisplayedRows, range),
-                }
-              : {})}
-          />
+          {!hideFooterSelectedRowCount && selection.length > 0 && (
+            <span data-ok-data-grid-selected-row-count="">
+              {gridFooterRowSelected(labels, selection.length)}
+            </span>
+          )}
+          {hideFooterPagination && !hideFooterRowCount && (
+            <span data-ok-data-grid-row-count="">
+              {gridFooterRowCount(
+                labels,
+                server.filter ? total : localFilter(orderedRows.filter(isData)).length,
+                server.page ? total : orderedRows.filter(isData).length,
+              )}
+            </span>
+          )}
+          {!hideFooterPagination && (
+            <TablePagination
+              count={total}
+              page={page}
+              rowsPerPage={pagination.pageSize}
+              rowsPerPageOptions={pageSizeOptions}
+              onPageChange={(next) => setPagination({ ...pagination, page: next })}
+              onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
+              labelRowsPerPage={labels.paginationRowsPerPage}
+              {...(localeText?.paginationDisplayedRows
+                ? {
+                    labelDisplayedRows: (range: { from: number; to: number; count: number }) =>
+                      gridDisplayedRows(labels.paginationDisplayedRows, range),
+                  }
+                : {})}
+            />
+          )}
         </div>
       )}
     </div>

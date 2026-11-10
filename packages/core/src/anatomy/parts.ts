@@ -658,8 +658,12 @@ export interface DataGridParts {
   "data-ok-data-grid-reorder-handle": Part;
   /** The handle that resizes a column. */
   "data-ok-data-grid-resize": Part<"span">;
+  /** The footer's row count without pagination, such as "Total Rows: 25". Written by the grid. */
+  "data-ok-data-grid-row-count": Part<"span">;
   /** HTML only: the template of one row, copied by `setRows` and data sources. */
   "data-ok-data-grid-row": Part<"template">;
+  /** The footer's number of selected rows, such as "2 rows selected". Written by the grid. */
+  "data-ok-data-grid-selected-row-count": Part<"span">;
   /** The placeholder of a cell that is still loading. */
   "data-ok-data-grid-skeleton": Part<"span">;
   /** The sort arrow of a column header. */
@@ -670,6 +674,8 @@ export interface DataGridParts {
   "data-ok-data-grid-status-item": Value<"count" | "sum" | "avg" | "min" | "max">;
   /** The toolbar. */
   "data-ok-data-grid-toolbar": Part<"div">;
+  /** The grid's label at the start of the toolbar. */
+  "data-ok-data-grid-toolbar-label": Part<"span">;
   /** The buttons at the end of the toolbar. */
   "data-ok-data-grid-toolbar-actions": Part<"div">;
   /** The number of children of a tree row. */

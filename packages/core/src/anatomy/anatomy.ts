@@ -3427,9 +3427,32 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off).",
     { min: 0 },
   ),
+  hideFooterPagination: flag(
+    "data-ok-hide-footer-pagination",
+    "No pagination in the footer: every row shows, with the row count.",
+  ),
+  hideFooterRowCount: flag(
+    "data-ok-hide-footer-row-count",
+    "No row count in the footer (it shows only without pagination).",
+  ),
+  hideFooterSelectedRowCount: flag(
+    "data-ok-hide-footer-selected-row-count",
+    'No "n rows selected" in the footer.',
+  ),
+  tabNavigation: style(
+    "data-ok-tab-navigation",
+    ["none", "content", "header", "all"] as const,
+    "none",
+    "Tab moves between body cells (`content`), headers (`header`) or both (`all`); `none` leaves the grid.",
+    { optional: true },
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  hideFooterPagination?: boolean | undefined;
+  hideFooterRowCount?: boolean | undefined;
+  hideFooterSelectedRowCount?: boolean | undefined;
+  tabNavigation?: "none" | "content" | "header" | "all" | undefined;
   historyStackSize?: number | undefined;
   multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
   statusBar?: boolean | undefined;

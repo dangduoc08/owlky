@@ -12,7 +12,18 @@ import {
   parseGridFormatOptions,
   sanitizeGridState,
 } from "./grid-layout.js";
-import { deDE, enUS, esES, frFR, gridDisplayedRows, jaJP, viVN, zhCN } from "./grid-locales.js";
+import {
+  deDE,
+  enUS,
+  esES,
+  frFR,
+  gridDisplayedRows,
+  gridFooterRowCount,
+  gridFooterRowSelected,
+  jaJP,
+  viVN,
+  zhCN,
+} from "./grid-locales.js";
 
 afterEach(cleanupDom);
 
@@ -224,5 +235,13 @@ describe("locales", () => {
     expect(gridDisplayedRows(viVN.paginationDisplayedRows, { from: 1, to: 10, count: 25 })).toBe(
       "1–10 trên 25",
     );
+  });
+
+  it("writes the footer's counts", () => {
+    expect(gridFooterRowSelected(enUS, 1)).toBe("1 row selected");
+    expect(gridFooterRowSelected(enUS, 3)).toBe("3 rows selected");
+    expect(gridFooterRowCount(enUS, 25, 25)).toBe("Total Rows: 25");
+    expect(gridFooterRowCount(enUS, 3, 25)).toBe("Total Rows: 3 of 25");
+    expect(gridFooterRowCount(frFR, 3, 25)).toBe("Total de lignes : 3 sur 25");
   });
 });

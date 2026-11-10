@@ -58,6 +58,15 @@
     padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3);
   }
 
+  /* The grid's label (`label`) at the start of the toolbar. */
+  :where([data-ok-data-grid-toolbar-label]) {
+    flex: none;
+    color: var(--ok-text-primary);
+    font-size: var(--ok-typography-h6-font-size);
+    font-weight: var(--ok-typography-h6-font-weight);
+    line-height: var(--ok-typography-h6-line-height);
+  }
+
   :where([data-ok-data-grid-toolbar] > [data-ok-data-grid-quick-filter]) {
     flex: 1 1 calc(var(--ok-spacing) * 60);
     max-width: calc(var(--ok-spacing) * 60);
@@ -304,8 +313,26 @@
 
   :where([data-ok-data-grid-footer]) {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: flex-end;
+    min-height: calc(var(--ok-spacing) * 13);
     border-top: 1px dashed var(--ok-divider);
+  }
+
+  /* Footer counts: the selected rows at the start, the row count before the pagination. */
+  :where([data-ok-data-grid-selected-row-count], [data-ok-data-grid-row-count]) {
+    padding-inline: calc(var(--ok-spacing) * 4);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :where([data-ok-data-grid-selected-row-count]) {
+    margin-inline-end: auto;
+  }
+
+  /* A pagination the runtime hides (`hideFooterPagination`): author `display` beats the UA rule. */
+  :where([data-ok-data-grid-footer] > [hidden]) {
+    display: none;
   }
 
   /* Status bar (cell selection): figures of the selected cells, at the end of the row. */

@@ -87,6 +87,8 @@ import {
   gridExpandedByDepth,
   gridExportColumns,
   gridFilterOperators,
+  gridFooterRowCount,
+  gridFooterRowSelected,
   gridFormats,
   gridFormatValue,
   gridGroupComparator,
@@ -441,6 +443,9 @@ const {
   multipleColumnsSortingMode,
   statusBar: statusBarOption,
   historyStackSize,
+  hideFooterPagination,
+  hideFooterRowCount,
+  hideFooterSelectedRowCount,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -970,6 +975,51 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ) as TablePaginationInstance)
         : null;
     let pageSize = pager()?.rowsPerPage ?? Number.POSITIVE_INFINITY;
+    /** Pages show (a pagination in the footer, not turned off). */
+    const paging = () => !!pagination && !element.hasAttribute(hideFooterPagination.attr);
+    // Footer counts (MUI X footer): "2 rows selected" first, "Total Rows: n" without pagination.
+    // Built with DOM methods, in React's order, so the markup matches.
+    const footer = element.querySelector<HTMLElement>("[data-ok-data-grid-footer]");
+    const footerPart = (name: string, content: string | null, before: Node | null) => {
+      let part = footer?.querySelector<HTMLElement>(`:scope > [${name}]`) ?? null;
+      if (content === null) {
+        part?.remove();
+        return;
+      }
+      if (!footer) return;
+      if (!part) {
+        part = document.createElement("span");
+        part.setAttribute(name, "");
+        footer.insertBefore(part, before);
+      }
+      if (part.textContent !== content) part.textContent = content;
+    };
+    const syncFooter = () => {
+      if (!footer) return;
+      const noPages = element.hasAttribute(hideFooterPagination.attr);
+      if (pagination) pagination.hidden = noPages;
+      footerPart(
+        "data-ok-data-grid-selected-row-count",
+        !element.hasAttribute(hideFooterSelectedRowCount.attr) && selection.length > 0
+          ? gridFooterRowSelected(labels, selection.length)
+          : null,
+        footer.firstChild,
+      );
+      const data = () => rows().filter((row) => !row.hasAttribute("data-ok-generated"));
+      footerPart(
+        "data-ok-data-grid-row-count",
+        noPages && !element.hasAttribute(hideFooterRowCount.attr)
+          ? gridFooterRowCount(
+              labels,
+              serverSide(filterMode)
+                ? total
+                : filterGridRows(data(), filterModel, columns, value, text, filterOptions()).length,
+              serverSide(paginationMode) ? total : data().length,
+            )
+          : null,
+        pagination?.parentElement === footer ? pagination : null,
+      );
+    };
     const overlay = element.querySelector<HTMLElement>(
       "[data-ok-data-grid-overlay]",
     ) as HTMLElement;
@@ -1595,7 +1645,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           sorted.length)
         : sorted.length;
       pagination?.setAttribute("data-ok-count", String(total));
-      const paged = Number.isFinite(pageSize) && !serverPage;
+      const paged = paging() && Number.isFinite(pageSize) && !serverPage;
       // Server pages count too: the page stays within the server's rows.
       const pages = Number.isFinite(pageSize) ? Math.max(Math.ceil(total / pageSize), 1) : 1;
       page = Math.min(page, pages - 1);
@@ -2236,6 +2286,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
 
     /** Selection marks: rows, their checkboxes and "select all". */
     const mark = () => {
+      syncFooter();
       if (!checkbox) return;
       for (const row of rows()) {
         const on = selection.includes(idOf(row));
@@ -4164,6 +4215,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let pivotNow = pivotOn();
     let columnModeNow = readStyle(element, rowGroupingColumnMode);
     let positionsNow = element.getAttribute("data-ok-aggregation-position");
+    let pagingNow = paging();
     const options = new MutationObserver(() => {
       reflect();
       if (pivotOn() !== pivotNow) {
@@ -4179,6 +4231,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         positionsNow = element.getAttribute("data-ok-aggregation-position");
         apply();
       }
+      // Pages on or off: the rows page again; the footer's counts follow.
+      if (paging() !== pagingNow) {
+        pagingNow = paging();
+        apply();
+      } else syncFooter();
       markCells();
       // List view: column cells and headers hide, list cells show.
       if (element.hasAttribute(listView.attr) !== listNow) {
@@ -4205,6 +4262,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cellSelectionOption.attr,
         rowGroupingColumnMode.attr,
         "data-ok-aggregation-position",
+        hideFooterPagination.attr,
+        hideFooterRowCount.attr,
+        hideFooterSelectedRowCount.attr,
       ],
     });
 
@@ -4433,6 +4493,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         else pagination?.removeAttribute("data-ok-label-displayed-rows");
         pager()?.refresh();
         syncOverlays(rows().length);
+        syncFooter();
       },
       setRowChildrenExpansion(rowId, expanded) {
         const row = rows().find((r) => idOf(r) === rowId);
