@@ -16,6 +16,8 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 235 kB since the ApexTree rows (4.18.3, .5, .6, ADR-0056: grouped leaves, zoom / fit / center
+  // with a toolbar and a core controller, per-node lines) on top of the range charts: 230.4 kB.
   // Phase 4 batch E's data grid range charts (4.18.12, ADR-0055: createRangeChart and
   // Alt + F1, cross-filtering, chartsToJSON / restoreCharts, chart regions built by the runtime;
   // about 1.9 kB): 226.1 kB.
@@ -88,7 +90,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 230_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 235_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -175,11 +177,12 @@ const budgets = [
   // since the docs examples became complete (roadmap 3.4, `check:docs`): the guides' HTML repeats
   // whole snippets (data grids, date pickers, the editor, the lightbox) instead of shortened
   // copies, about 0.1 MB gzip.
+  // 1.35 MB since the range charts and the ApexTree rows (stories, docs sections, API entries): 1298.7 kB.
   // 1.3 MB since the data grid and sortable shoulds (stories, docs sections, API entries): 1249.6 kB.
   // 1.25 MB since Phase 4 batch E shoulds (chart stacks, cues, tooltips, legends; button, text field,
   // select and picker field options: their stories, docs sections and API entries): 1202.0 kB.
   // 1.2 MB since Phase 4 batch E (new chart and data grid stories, sections and API entries): 1154.6 kB.
-  ["packages/mcp/manifest.json", 1_300_000, "MCP manifest (npm tarball, not a browser download)"],
+  ["packages/mcp/manifest.json", 1_350_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;

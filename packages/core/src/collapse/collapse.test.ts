@@ -216,6 +216,22 @@ describe("createCollapseController", () => {
     expect(element.getBoundingClientRect().height).toBe(120);
   });
 
+  it("measures in layout px under a zoomed ancestor (a zoomed organization chart)", async () => {
+    const element = setup("hidden");
+    (element.parentElement as HTMLElement).style.zoom = "2";
+    const controller = createCollapseController(element, recorder().callbacks);
+    element.hidden = false;
+    await settle();
+    const [animation] = element.getAnimations();
+    const keyframes = ((animation as Animation).effect as KeyframeEffect).getKeyframes();
+    // The box measures 240px on screen; the keyframes are layout px, zoomed like the rest.
+    expect(keyframes.map((frame) => frame["height"])).toEqual(["0px", "120px"]);
+    animation?.finish();
+    await settle();
+    expect(element.getBoundingClientRect().height).toBe(240);
+    controller.destroy();
+  });
+
   it("exit: keeps an author display during the animation, then hides", async () => {
     const element = setup('class="list"');
     const { phases, callbacks } = recorder();

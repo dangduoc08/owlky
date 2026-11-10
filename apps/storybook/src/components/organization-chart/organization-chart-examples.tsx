@@ -10,7 +10,7 @@ import {
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
-import { CEO, PEOPLE, type Person, type PersonNode } from "./organization-chart-data.js";
+import { CEO, PEOPLE, type Person, type PersonNode, PRODUCT } from "./organization-chart-data.js";
 
 /** A simple node: the name and the role in a tinted box (`.sb-org-simple`, story CSS). */
 export function SimpleCard({ person }: { person: Person }) {
@@ -82,6 +82,48 @@ function TeamChart({ name, dir, ...lines }: LineProps & { name: string; dir?: "r
 }
 TeamChart.displayName = "TeamChart";
 
+/** Line options per lead (ApexTree `edgeColorMode`): each team's lines in its own color. */
+const BRANCH_LINES: Record<string, Pick<LineProps, "lineColor" | "lineStyle">> = {
+  jonah: { lineColor: "primary" },
+  priya: { lineColor: "info", lineStyle: "dashed" },
+  leila: { lineColor: "warning" },
+};
+
+/** A person with the line options of their branch, then their reports. */
+function BranchNode({ person }: { person: PersonNode }) {
+  return (
+    <OrganizationChartNode {...BRANCH_LINES[person.id]} label={<SimpleCard person={person} />}>
+      {person.children?.map((child) => (
+        <BranchNode key={child.id} person={child} />
+      ))}
+    </OrganizationChartNode>
+  );
+}
+BranchNode.displayName = "BranchNode";
+
+/** The small team with the engineer's lines in their own color and style. */
+function PerNodeChart() {
+  const [designer, engineer, writer] = TEAM.children as PersonNode[];
+  return (
+    <Scrollbar className="sb-org-scroll" aria-label="Lines per node, scrollable">
+      <OrganizationChart aria-label="Lines per node" label={<SimpleCard person={TEAM} />}>
+        <SimpleNode person={designer as PersonNode} />
+        <OrganizationChartNode
+          lineColor="error"
+          lineStyle="dashed"
+          label={<SimpleCard person={engineer as PersonNode} />}
+        >
+          {engineer?.children?.map((child) => (
+            <SimpleNode key={child.id} person={child} />
+          ))}
+        </OrganizationChartNode>
+        <SimpleNode person={writer as PersonNode} />
+      </OrganizationChart>
+    </Scrollbar>
+  );
+}
+PerNodeChart.displayName = "PerNodeChart";
+
 /** One person of the small team with an id and a named toggle (collapsible charts). */
 function TeamNode({ person }: { person: PersonNode }) {
   return (
@@ -150,6 +192,24 @@ export const organizationChartStories: Record<string, ReactGroup[]> = {
         <TeamChart name="Short lines" lineHeight={12} nodePadding={16} lineColor="inherit" />
       ),
     },
+    { title: "Per node", content: <PerNodeChart /> },
+    {
+      title: "Branch colors",
+      content: (
+        <Scrollbar className="sb-org-scroll" aria-label="Lines by branch, scrollable">
+          <OrganizationChart
+            aria-label="Lines by branch"
+            edgeColorMode="node"
+            lineHeight={20}
+            label={<SimpleCard person={CEO} />}
+          >
+            {PEOPLE.map((person) => (
+              <BranchNode key={person.id} person={person} />
+            ))}
+          </OrganizationChart>
+        </Scrollbar>
+      ),
+    },
   ],
 };
 
@@ -188,6 +248,70 @@ organizationChartStories["direction"] = [
   },
 ];
 
+/** The product team with grouped leaves, from the given side; collapsible with toggles. */
+function GroupedChart({
+  name,
+  direction,
+  dir,
+  collapsible,
+}: {
+  name: string;
+  direction?: OrganizationChartDirection;
+  dir?: "rtl";
+  collapsible?: boolean;
+}) {
+  return (
+    <Scrollbar className="sb-org-scroll" aria-label={`${name}, scrollable`} dir={dir}>
+      <OrganizationChart
+        aria-label={name}
+        direction={direction}
+        groupLeafNodes
+        lineColor="primary"
+        lineHeight={24}
+        {...(collapsible
+          ? {
+              enableExpandCollapse: true,
+              defaultCollapsedNodes: ["priya"],
+              nodeId: PRODUCT.id,
+              toggleLabel: `${PRODUCT.name}'s reports`,
+            }
+          : {})}
+        label={<SimpleCard person={PRODUCT} />}
+      >
+        {PRODUCT.children?.map((child) =>
+          collapsible ? (
+            <TeamNode key={child.id} person={child} />
+          ) : (
+            <SimpleNode key={child.id} person={child} />
+          ),
+        )}
+      </OrganizationChart>
+    </Scrollbar>
+  );
+}
+GroupedChart.displayName = "GroupedChart";
+
+/** Grouped leaves (4.18.3): the product team's reports in one column under each lead. */
+organizationChartStories["leaves"] = [
+  { title: "Top", content: <GroupedChart name="Grouped leaves" /> },
+  {
+    title: "Bottom",
+    content: <GroupedChart name="Grouped leaves, growing upward" direction="bottom" />,
+  },
+  {
+    title: "Left",
+    content: <GroupedChart name="Grouped leaves, growing to the right" direction="left" />,
+  },
+  {
+    title: "Right, right to left",
+    content: <GroupedChart name="Grouped leaves, right to left" direction="right" dir="rtl" />,
+  },
+  {
+    title: "Collapsible",
+    content: <GroupedChart name="Collapsible grouped leaves" collapsible />,
+  },
+];
+
 export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
   simple: [["Simple", "group"]],
   lines: [
@@ -195,6 +319,8 @@ export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
     ["Dotted, square corners", "dotted"],
     ["Thick and colored", "thick"],
     ["Short and spaced", "short"],
+    ["Per node", "node"],
+    ["Branch colors", "branch"],
   ],
   direction: [
     ["Bottom", "bottom"],
@@ -202,6 +328,13 @@ export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
     ["Right", "right"],
     ["Left, right to left", "rtl"],
     ["Left, collapsible", "collapsible"],
+  ],
+  leaves: [
+    ["Top", "top"],
+    ["Bottom", "bottom"],
+    ["Left", "left"],
+    ["Right, right to left", "rtl"],
+    ["Collapsible", "collapsible"],
   ],
 };
 

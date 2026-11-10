@@ -17,19 +17,19 @@ function connectorGaps(page: Page) {
       const root = list.closest("[data-ok-organization-chart]") as Element;
       const direction = root.getAttribute("data-ok-direction");
       const vertical = direction !== "left" && direction !== "right";
-      const center = (label: Element) => {
+      const center = (label: Element, across = vertical) => {
         const box = (label.firstElementChild ?? label).getBoundingClientRect();
-        return vertical ? box.left + box.width / 2 : box.top + box.height / 2;
+        return across ? box.left + box.width / 2 : box.top + box.height / 2;
       };
-      const lines = (element: Element, which: string) => {
+      const lines = (element: Element, which: string, across = vertical) => {
         const style = getComputedStyle(element, which);
         if (style.content === "none") return [];
         const host = element.getBoundingClientRect();
-        const start = vertical
+        const start = across
           ? host.left + Number.parseFloat(style.left)
           : host.top + Number.parseFloat(style.top);
-        const size = Number.parseFloat(vertical ? style.width : style.height);
-        const sides: [number, number][] = vertical
+        const size = Number.parseFloat(across ? style.width : style.height);
+        const sides: [number, number][] = across
           ? [
               [Number.parseFloat(style.borderLeftWidth), start],
               [-Number.parseFloat(style.borderRightWidth), start + size],
@@ -45,9 +45,15 @@ function connectorGaps(page: Page) {
       const labelOf = (node: Element) =>
         node.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
       gaps.push(gap(lines(list, "::before"), center(labelOf(list.parentElement as Element))));
+      // Grouped leaves (a grid parent): each stub meets its label's center on the other axis.
+      const parent = list.parentElement as Element;
+      const across = getComputedStyle(parent).display === "grid" ? !vertical : vertical;
       for (const child of list.children)
         gaps.push(
-          gap([...lines(child, "::before"), ...lines(child, "::after")], center(labelOf(child))),
+          gap(
+            [...lines(child, "::before", across), ...lines(child, "::after", across)],
+            center(labelOf(child), across),
+          ),
         );
     }
     return gaps;
@@ -67,9 +73,11 @@ for (const impl of implementations) {
         "group",
         "lines",
         "direction",
+        "grouped-leaves",
         "collapsible",
         "search",
         "lazy-children",
+        "zoom-pan",
       ]) {
         await openStory(page, storyId(impl, "organization-chart", story));
         const gaps = await connectorGaps(page);
@@ -211,6 +219,187 @@ for (const impl of implementations) {
       // Reading order stays the tree order.
       const chart = page.getByRole("list", { name: "Chart growing upward" });
       await expect(chart.getByRole("listitem").first()).toContainText("Team lead");
+    });
+
+    test("a node's line options style its lines, or its branch's in node mode", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "lines"));
+      const lines = await page.evaluate(() => {
+        const color = (root: Element, value: string) => {
+          const probe = document.createElement("span");
+          probe.style.color = value;
+          root.append(probe);
+          const result = getComputedStyle(probe).color;
+          probe.remove();
+          return result;
+        };
+        /** The line down from the node whose label holds `text` (its children list's `::before`). */
+        const stem = (root: Element, text: string) => {
+          const label = [...root.querySelectorAll("[data-ok-organization-chart-label]")].find(
+            (element) => element.textContent?.trim().startsWith(text),
+          ) as Element;
+          const list = (label.parentElement as Element).querySelector(
+            ":scope > [data-ok-organization-chart-children]",
+          ) as Element;
+          const style = getComputedStyle(list, "::before");
+          return `${style.borderLeftColor} ${style.borderLeftStyle}`;
+        };
+        const perNode = document.querySelector('[aria-label="Lines per node"]') as Element;
+        const branch = document.querySelector('[aria-label="Lines by branch"]') as Element;
+        const error = color(perNode, "var(--ok-palette-error-light)");
+        const info = color(branch, "var(--ok-palette-info-light)");
+        return {
+          engineer: stem(perNode, "Engineer") === `${error} dashed`,
+          lead: stem(perNode, "Team lead") === `${color(perNode, "var(--ok-divider)")} solid`,
+          // Priya's branch: her own line, and two levels below her.
+          priya: stem(branch, "Priya Raman") === `${info} dashed`,
+          sofia: stem(branch, "Sofia Marchetti") === `${info} dashed`,
+        };
+      });
+      expect(lines).toEqual({ engineer: true, lead: true, priya: true, sofia: true });
+    });
+
+    test("grouped leaves stack in one column per lead and open as one", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "grouped-leaves"));
+      const column = (chart: string, names: string[]) =>
+        Promise.all(
+          names.map((name) =>
+            page
+              .getByRole("list", { name: chart, exact: true })
+              .getByText(name, { exact: true })
+              .evaluate((element) => {
+                const box = element.getBoundingClientRect();
+                return { left: box.left, top: box.top, bottom: box.bottom };
+              }),
+          ),
+        );
+      const [aiko, oskar, zara] = await column("Grouped leaves", [
+        "Aiko Tanaka",
+        "Oskar Berg",
+        "Zara Okafor",
+      ]);
+      expect(oskar?.top).toBeGreaterThan(aiko?.bottom ?? 0);
+      expect(zara?.top).toBeGreaterThan(oskar?.bottom ?? 0);
+      // Left charts: a row after the lead.
+      const [left1, left2] = await column("Grouped leaves, growing to the right", [
+        "Aiko Tanaka",
+        "Oskar Berg",
+      ]);
+      expect(Math.abs((left1?.top ?? 0) - (left2?.top ?? 0))).toBeLessThan(1);
+      expect(left2?.left).toBeGreaterThan(left1?.left ?? 0);
+      // Collapsible: Priya's group starts collapsed and opens as a column.
+      const chart = page.getByRole("list", { name: "Collapsible grouped leaves" });
+      const priya = chart.locator(
+        '[data-ok-node-id="priya"] > [data-ok-organization-chart-toggle]',
+      );
+      await expect(priya).toHaveAccessibleName("Priya Raman's reports 4");
+      await priya.scrollIntoViewIfNeeded();
+      if (isMobile) await priya.tap();
+      else await priya.click();
+      await expect(chart.getByText("Noah Brennan", { exact: true })).toBeVisible();
+      const [elias, noah] = await column("Collapsible grouped leaves", [
+        "Elias Novak",
+        "Noah Brennan",
+      ]);
+      expect(noah?.top).toBeGreaterThan(elias?.bottom ?? 0);
+      const gaps = await connectorGaps(page);
+      for (const gap of gaps) expect(gap).toBeLessThan(1.5);
+    });
+
+    test("zoom: the toolbar, keys and Ctrl + wheel; fit, center, pan; focus stays in view", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "zoom-pan"));
+      const chart = page.getByRole("list", { name: "Zoomable organization chart" });
+      const area = page.getByRole("region", { name: "Zoomable chart, scrollable" });
+      const toolbar = page.getByRole("group", { name: "Zoom" });
+      const level = toolbar.getByRole("status");
+      await expect(level).toHaveText("100%");
+      const press = async (name: string) => {
+        const button = toolbar.getByRole("button", { name });
+        if (isMobile) await button.tap();
+        else await button.click();
+      };
+      await press("Zoom in");
+      await expect(level).toHaveText("125%");
+      await expect(chart).toHaveAttribute("data-ok-zoom", "1.25");
+      expect(await chart.evaluate((element) => getComputedStyle(element).zoom)).toBe("1.25");
+      await press("Fit to screen");
+      const fitted = Number.parseFloat((await level.textContent()) ?? "");
+      expect(fitted).toBeLessThan(100);
+      const fits = await area.evaluate((element) => {
+        const root = element.querySelector("[data-ok-organization-chart] > li") as Element;
+        const box = root.getBoundingClientRect();
+        return box.width <= element.clientWidth + 1 && box.height <= element.clientHeight + 1;
+      });
+      expect(fits).toBe(true);
+      await press("Reset zoom");
+      await expect(level).toHaveText("100%");
+      // Keys on the focused scroll area.
+      await area.focus();
+      await page.keyboard.press("+");
+      await expect(level).toHaveText("125%");
+      await page.keyboard.press("-");
+      await expect(level).toHaveText("100%");
+      await page.keyboard.press("+");
+      await page.keyboard.press("+");
+      await page.keyboard.press("+");
+      await expect(level).toHaveText("195%");
+      // The zoomed chart scrolls inside its area, never the page.
+      expect(await area.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(
+        true,
+      );
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+      ).toBe(true);
+      // Under zoom, Tab brings each focused toggle into view.
+      for (let i = 0; i < 4; i++) {
+        await page.keyboard.press("Tab");
+        const focused = page.locator(":focus");
+        if ((await focused.getAttribute("data-ok-organization-chart-toggle")) === null) break;
+        await expect(focused).toBeInViewport();
+      }
+      await page.keyboard.press("0");
+      // A plain wheel scrolls; Ctrl + wheel zooms the chart, not the page.
+      if (!isMobile) {
+        const box = (await area.boundingBox()) as { x: number; y: number };
+        await page.mouse.move(box.x + 100, box.y + 100);
+        await page.keyboard.down("Control");
+        await page.mouse.wheel(0, -200);
+        await page.keyboard.up("Control");
+        await expect
+          .poll(async () => Number.parseFloat((await level.textContent()) ?? ""))
+          .toBeGreaterThan(100);
+        // A mouse drag on a card pans the area.
+        await press("Zoom in");
+        // Vertically: the 400px area always overflows (a wide screen may fit the width).
+        const card = chart.getByText("Priya Raman", { exact: true });
+        await card.scrollIntoViewIfNeeded();
+        const before = await area.evaluate((element) => element.scrollTop);
+        // Drag toward the side the area can still scroll to.
+        const room = await area.evaluate(
+          (element) => element.scrollHeight - element.clientHeight - element.scrollTop,
+        );
+        const start = (await card.boundingBox()) as { x: number; y: number };
+        await page.mouse.move(start.x + 5, start.y + 5);
+        await page.mouse.down();
+        await page.mouse.move(start.x + 5, start.y + (room > 0 ? -60 : 60), { steps: 5 });
+        await page.mouse.up();
+        const after = await area.evaluate((element) => element.scrollTop);
+        if (room > 0) expect(after).toBeGreaterThan(before);
+        else expect(after).toBeLessThan(before);
+        await expect(chart).not.toHaveAttribute("data-ok-panning");
+      }
+      // Center on a person in a collapsed branch: it opens and the person comes into view.
+      await page.getByRole("button", { name: "Center on Tomás Rivera" }).click();
+      const tomas = chart.getByText("Tomás Rivera", { exact: true });
+      await expect(tomas).toBeVisible();
+      await expect(tomas).toBeInViewport();
     });
 
     test("a collapsible left-to-right chart toggles toward its children", async ({

@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(15));
+  it("covers every story group", () => expect(snippets).toHaveLength(23));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -157,19 +157,19 @@ describe("organization chart CSS without JavaScript", () => {
  */
 function connectorMisses(root: Element, vertical: boolean): string[] {
   const misses: string[] = [];
-  const center = (element: Element) => {
+  const center = (element: Element, across = vertical) => {
     const rect = (element.firstElementChild ?? element).getBoundingClientRect();
-    return vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+    return across ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
   };
-  const lines = (element: Element, which: "::before" | "::after") => {
+  const lines = (element: Element, which: "::before" | "::after", across = vertical) => {
     const style = getComputedStyle(element, which);
     if (style.content === "none") return [];
     const host = element.getBoundingClientRect();
-    const start = vertical
+    const start = across
       ? host.left + Number.parseFloat(style.left)
       : host.top + Number.parseFloat(style.top);
-    const size = Number.parseFloat(vertical ? style.width : style.height);
-    const sides: [number, number][] = vertical
+    const size = Number.parseFloat(across ? style.width : style.height);
+    const sides: [number, number][] = across
       ? [
           [Number.parseFloat(style.borderLeftWidth), start],
           [-Number.parseFloat(style.borderRightWidth), start + size],
@@ -188,10 +188,12 @@ function connectorMisses(root: Element, vertical: boolean): string[] {
     const label = parent.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
     if (!near(lines(list, "::before"), center(label)))
       misses.push(`line from ${label.textContent?.trim()}`);
+    // Grouped leaves (a grid parent): each stub meets its label's center on the other axis.
+    const across = getComputedStyle(parent).display === "grid" ? !vertical : vertical;
     for (const child of list.children) {
       const own = child.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
-      if (!near([...lines(child, "::before"), ...lines(child, "::after")], center(own)))
-        misses.push(`line to ${own.textContent?.trim()}`);
+      const drawn = [...lines(child, "::before", across), ...lines(child, "::after", across)];
+      if (!near(drawn, center(own, across))) misses.push(`line to ${own.textContent?.trim()}`);
     }
   }
   return misses;
@@ -230,6 +232,212 @@ describe("organization chart directions (CSS only)", () => {
     // Unknown values draw the default (top) chart.
     expect(firstAfter(host).borderTopWidth).toBe("1px");
     expect(connectorMisses(root, true)).toEqual([]);
+  });
+});
+
+describe("organization chart per-node lines (CSS only)", () => {
+  /** Lead › First, Middle (own lines) › Report › Deep, plus Other › Leaf under Middle. */
+  const branch = (attrs = "", middle = 'data-ok-line-color="error" data-ok-line-style="dashed"') =>
+    `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid" aria-label="Team" ${attrs}>${node(
+      "Lead",
+      node("First") +
+        `<li data-ok-organization-chart-node ${middle}><div data-ok-organization-chart-label>Middle</div><ul data-ok-organization-chart-children>${
+          node("Report", node("Deep")) +
+          `<li data-ok-organization-chart-node data-ok-line-color="success"><div data-ok-organization-chart-label>Other</div><ul data-ok-organization-chart-children>${node("Leaf")}</ul></li>`
+        }</ul></li>`,
+    )}</ul>`;
+  const nodeOf = (host: Element, text: string) =>
+    [...host.querySelectorAll("[data-ok-organization-chart-node]")].find(
+      (item) => item.firstElementChild?.textContent === text,
+    ) as HTMLElement;
+  /** The line from a node down to its children list (the list's `::before`). */
+  const stem = (host: Element, text: string) =>
+    getComputedStyle(
+      nodeOf(host, text).querySelector(":scope > [data-ok-organization-chart-children]") as Element,
+      "::before",
+    );
+  /** The line from a node's bar to its label (only children: `::after`; others: both halves). */
+  const drop = (host: Element, text: string) => getComputedStyle(nodeOf(host, text), "::after");
+  const color = (host: Element, value: string) => {
+    const probe = document.createElement("span");
+    probe.style.color = value;
+    rootOf(host).append(probe);
+    const result = getComputedStyle(probe).color;
+    probe.remove();
+    return result;
+  };
+
+  it("a node's own color and style draw the lines to its children only", () => {
+    const host = mount(branch());
+    const divider = color(host, "var(--ok-divider)");
+    const error = color(host, "var(--ok-palette-error-light)");
+    const success = color(host, "var(--ok-palette-success-light)");
+    expect(stem(host, "Lead").borderLeftColor).toBe(divider);
+    // Middle's bar half and line to its label belong to the lead's lines.
+    expect(getComputedStyle(nodeOf(host, "Middle"), "::before").borderRightColor).toBe(divider);
+    expect(stem(host, "Middle").borderLeftColor).toBe(error);
+    expect(stem(host, "Middle").borderLeftStyle).toBe("dashed");
+    expect(drop(host, "Report").borderLeftColor).toBe(error);
+    expect(drop(host, "Report").borderTopStyle).toBe("dashed");
+    // One level down, the chart's lines again; a node with its own color keeps it.
+    expect(stem(host, "Report").borderLeftColor).toBe(divider);
+    expect(stem(host, "Report").borderLeftStyle).toBe("solid");
+    expect(drop(host, "Deep").borderLeftColor).toBe(divider);
+    expect(stem(host, "Other").borderLeftColor).toBe(success);
+    expect(stem(host, "Other").borderLeftStyle).toBe("solid");
+    expect(connectorMisses(rootOf(host), true)).toEqual([]);
+  });
+
+  it('edge color mode "node": a node\'s lines carry through its branch', () => {
+    const host = mount(branch('data-ok-edge-color-mode="node"'));
+    const error = color(host, "var(--ok-palette-error-light)");
+    const success = color(host, "var(--ok-palette-success-light)");
+    expect(stem(host, "Lead").borderLeftColor).toBe(color(host, "var(--ok-divider)"));
+    expect(stem(host, "Report").borderLeftColor).toBe(error);
+    expect(stem(host, "Report").borderLeftStyle).toBe("dashed");
+    expect(drop(host, "Deep").borderLeftColor).toBe(error);
+    // A node that sets its own color starts its branch over; the style still carries.
+    expect(stem(host, "Other").borderLeftColor).toBe(success);
+    expect(stem(host, "Other").borderLeftStyle).toBe("dashed");
+  });
+
+  it("follows the chart's line options where a node sets none, and the toggle matches", () => {
+    const host = mount(
+      branch("data-ok-enable-expand-collapse", 'data-ok-line-style="dotted"')
+        .replace('data-ok-line-color="divider"', 'data-ok-line-color="info"')
+        .replace(
+          "<div data-ok-organization-chart-label>Middle</div>",
+          '<div data-ok-organization-chart-label>Middle</div><button type="button" data-ok-organization-chart-toggle aria-expanded="true"><span data-ok-organization-chart-toggle-label>Reports</span></button>',
+        ),
+    );
+    const info = color(host, "var(--ok-palette-info-light)");
+    expect(stem(host, "Middle").borderLeftColor).toBe(info);
+    expect(stem(host, "Middle").borderLeftStyle).toBe("dotted");
+    const toggle = nodeOf(host, "Middle").querySelector(
+      "[data-ok-organization-chart-toggle]",
+    ) as Element;
+    expect(getComputedStyle(toggle).borderTopColor).toBe(info);
+    // Unknown values are ignored: the chart's lines apply.
+    nodeOf(host, "Middle").setAttribute("data-ok-line-color", "url(x)");
+    expect(stem(host, "Middle").borderLeftColor).toBe(info);
+  });
+
+  it("has no axe violations", async () => {
+    const host = mount(branch('data-ok-edge-color-mode="node"'));
+    await expectNoAxeViolations(host);
+  });
+});
+
+describe("organization chart grouped leaves", () => {
+  const leaves = (name: string) =>
+    mount(local(snippets.find(([path]) => path.endsWith(`/leaves-${name}.html`))?.[1] as string));
+  /** The labels of a node's children, in order, by their card's name. */
+  const childLabels = (host: Element, name: string) => {
+    const parent = [...host.querySelectorAll("[data-ok-organization-chart-node]")].find((item) =>
+      item.firstElementChild?.textContent?.includes(name),
+    ) as Element;
+    return [
+      ...parent.querySelectorAll(
+        ":scope > [data-ok-organization-chart-children] > li > [data-ok-organization-chart-label]",
+      ),
+    ].map((label) => label.getBoundingClientRect());
+  };
+
+  it.each([
+    ["top", true],
+    ["bottom", true],
+    ["left", false],
+    ["rtl", false],
+    ["collapsible", true],
+  ] as const)("leaves-%s: one column per lead, every line on its label", (name, vertical) => {
+    const host = leaves(name);
+    expect(connectorMisses(rootOf(host), vertical)).toEqual([]);
+    const reports = childLabels(host, "Jonah Pereira");
+    expect(reports).toHaveLength(3);
+    const [first, second, third] = reports as [DOMRect, DOMRect, DOMRect];
+    if (vertical) {
+      // Stacked: the same start, 8px apart (the default spacing), down (or up) the column.
+      expect(Math.abs(first.left - second.left)).toBeLessThan(1);
+      const gap = name === "bottom" ? first.top - second.bottom : second.top - first.bottom;
+      expect(gap).toBeCloseTo(8, 0);
+      expect(name === "bottom" ? third.bottom < second.top : third.top > second.bottom).toBe(true);
+    } else {
+      // Left and right charts: a row after the lead, away from it.
+      expect(Math.abs(first.top - second.top)).toBeLessThan(1);
+      // (A right chart in a right-to-left page mirrors back: also toward the right.)
+      expect(second.left).toBeGreaterThan(first.right);
+    }
+  });
+
+  it("groups only two or more leaves; follows the flag and the spacing", async () => {
+    const host = mount(
+      chart('data-ok-group-leaf-nodes data-ok-group-leaf-nodes-spacing="16"').replace(
+        node("Report"),
+        node("Report") + node("Second report"),
+      ),
+    );
+    const root = rootOf(host);
+    const middle = [...root.querySelectorAll("li")].find(
+      (item) => item.firstElementChild?.textContent === "Middle",
+    ) as HTMLElement;
+    const lead = root.firstElementChild as HTMLElement;
+    // The lead's children are mixed (Middle has children): a row, not grouped.
+    expect(getComputedStyle(lead).display).toBe("flex");
+    expect(getComputedStyle(middle).display).toBe("grid");
+    start();
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-org-leaf-spacing")).toBe("16px");
+    const [report, second] = childLabels(host, "Middle") as [DOMRect, DOMRect];
+    expect(second.top - report.bottom).toBeCloseTo(16, 0);
+    expect(connectorMisses(root, true)).toEqual([]);
+    // One leaf is a straight line down, as before.
+    middle.querySelector("ul > li:last-child")?.remove();
+    expect(getComputedStyle(middle).display).toBe("flex");
+    root.removeAttribute("data-ok-group-leaf-nodes");
+    await settle();
+    expect(getComputedStyle(middle).display).toBe("flex");
+  });
+
+  it("collapsible: a collapsed group draws nothing; it opens as a column", async () => {
+    const host = leaves("collapsible");
+    start();
+    await settle();
+    const priya = toggle(host, "priya");
+    expect(priya.getAttribute("aria-expanded")).toBe("false");
+    priya.click();
+    await finish();
+    expect(list(host, "priya").hidden).toBe(false);
+    expect(childLabels(host, "Priya Raman")).toHaveLength(4);
+    expect(connectorMisses(rootOf(host), true)).toEqual([]);
+    await expectNoAxeViolations(host);
+  });
+
+  it("the highlighted path runs along the column to the leaf", async () => {
+    const host = leaves("top");
+    const root = rootOf(host);
+    root.setAttribute("data-ok-highlight-on-hover", "");
+    const zara = [...root.querySelectorAll("li")].find((item) =>
+      item.firstElementChild?.textContent?.includes("Zara Okafor"),
+    ) as HTMLElement;
+    zara.setAttribute("data-ok-node-id", "zara");
+    const instance = start().get(root, "organization-chart") as unknown as {
+      highlightNode(id: string): Promise<void>;
+    };
+    await settle();
+    await instance.highlightNode("zara");
+    await settle();
+    const list = zara.parentElement as HTMLElement;
+    const first = (list.firstElementChild as Element).getBoundingClientRect();
+    const segment = getComputedStyle(zara.firstElementChild as Element, "::before");
+    expect(segment.content).not.toBe("none");
+    const top = zara.getBoundingClientRect().top + Number.parseFloat(segment.top);
+    expect(Math.abs(top - first.top)).toBeLessThan(1);
+    // It turns into Zara's label, at its center, with the last leaf's rounded corner.
+    const bottom = top + Number.parseFloat(segment.height);
+    const label = (zara.firstElementChild as Element).getBoundingClientRect();
+    expect(Math.abs(bottom - (label.top + label.height / 2))).toBeLessThan(1.5);
+    expect(segment.borderBottomLeftRadius).not.toBe("0px");
+    expect(zara.style.getPropertyValue("--_ok-org-path-round")).toBe("1");
   });
 });
 
@@ -732,5 +940,163 @@ describe("organization chart highlight and search", () => {
     await api(host).highlightNode("tomas");
     await finish();
     await expectNoAxeViolations(host);
+  });
+});
+
+interface ZoomInstance {
+  zoom(factor: number): void;
+  zoomIn(): void;
+  zoomOut(): void;
+  setZoom(level: number): void;
+  getZoom(): number;
+  resetZoom(): void;
+  fitScreen(): void;
+  centerOnNode(id: string): Promise<void>;
+}
+
+describe("organization chart zoom and pan (ADR-0056)", () => {
+  const zoomed = () => {
+    const html = snippets.find(([path]) => path.endsWith("/zoom-group.html"))?.[1] as string;
+    const host = mount(local(html));
+    // The story's scroll area has a fixed height (story CSS).
+    (host.querySelector("[data-ok-scrollbar]") as HTMLElement).style.height = "400px";
+    return host;
+  };
+  const chartOf = (host: Element) => host.querySelector("#org-zoom") as HTMLElement;
+  const api = (host: Element) =>
+    runtime?.get(chartOf(host), "organization-chart") as unknown as ZoomInstance;
+  const press = (host: Element, name: string) =>
+    (host.querySelector(`[data-ok-organization-chart-${name}]`) as HTMLButtonElement).click();
+  const value = (host: Element) =>
+    host.querySelector("[data-ok-organization-chart-zoom-value]")?.textContent;
+  const key = (target: Element, name: string) =>
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true }),
+    );
+
+  it("the toolbar zooms through a cancelable event; the level is the attribute", async () => {
+    const host = zoomed();
+    start();
+    await settle();
+    const chart = chartOf(host);
+    expect(value(host)).toBe("100%");
+    const events: { zoom: number; previous: number }[] = [];
+    chart.addEventListener("ok:organization-chart:zoom", (event) =>
+      events.push((event as CustomEvent<{ zoom: number; previous: number }>).detail),
+    );
+    press(host, "zoom-in");
+    expect(events).toEqual([{ zoom: 1.25, previous: 1 }]);
+    expect(chart.getAttribute("data-ok-zoom")).toBe("1.25");
+    expect(chart.style.getPropertyValue("--_ok-org-zoom")).toBe("1.25");
+    expect(getComputedStyle(chart).zoom).toBe("1.25");
+    expect(value(host)).toBe("125%");
+    const cancel = (event: Event) => event.preventDefault();
+    chart.addEventListener("ok:organization-chart:zoom", cancel);
+    press(host, "zoom-in");
+    expect(chart.getAttribute("data-ok-zoom")).toBe("1.25");
+    chart.removeEventListener("ok:organization-chart:zoom", cancel);
+    press(host, "reset");
+    expect(chart.getAttribute("data-ok-zoom")).toBe("1");
+    // Fit: the whole chart in the 400px area, never above 100%.
+    press(host, "fit");
+    expect(api(host).getZoom()).toBeLessThan(1);
+    const area = host.querySelector("[data-ok-scrollbar]") as HTMLElement;
+    const box = (chart.firstElementChild as Element).getBoundingClientRect();
+    expect(box.width).toBeLessThanOrEqual(area.clientWidth);
+    expect(box.height).toBeLessThanOrEqual(area.clientHeight);
+    // Zoomed out, the toggles are smaller than 24px (the user's choice); scanned at 100%.
+    press(host, "reset");
+    await expectNoAxeViolations(host);
+  });
+
+  it("keys and Ctrl + wheel zoom; the limits come from the attributes", async () => {
+    const host = zoomed();
+    const chart = chartOf(host);
+    chart.setAttribute("data-ok-max-zoom", "1.5");
+    start();
+    await settle();
+    const area = host.querySelector("[data-ok-scrollbar]") as HTMLElement;
+    key(area, "+");
+    key(area, "+");
+    expect(api(host).getZoom()).toBe(1.5);
+    const zoomIn = host.querySelector("[data-ok-organization-chart-zoom-in]") as Element;
+    expect(zoomIn.getAttribute("aria-disabled")).toBe("true");
+    key(area, "0");
+    expect(api(host).getZoom()).toBe(1);
+    const wheel = new WheelEvent("wheel", {
+      deltaY: 200,
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    area.dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).toBe(true);
+    expect(api(host).getZoom()).toBeLessThan(1);
+    // Turned off: no zoom from the user; the methods still work.
+    chart.removeAttribute("data-ok-enable-zoom-pan");
+    await settle();
+    key(area, "0");
+    expect(api(host).getZoom()).toBeLessThan(1);
+    api(host).resetZoom();
+    expect(api(host).getZoom()).toBe(1);
+  });
+
+  it("instance methods: steps that undo each other, set, factor, fit and center; no events", async () => {
+    const host = zoomed();
+    start();
+    await settle();
+    const chart = chartOf(host);
+    let events = 0;
+    chart.addEventListener("ok:organization-chart:zoom", () => events++);
+    api(host).zoomIn();
+    expect(api(host).getZoom()).toBe(1.25);
+    api(host).zoomOut();
+    expect(api(host).getZoom()).toBe(1);
+    api(host).zoom(0.5);
+    expect(api(host).getZoom()).toBe(1.5);
+    api(host).zoom(-0.5);
+    expect(api(host).getZoom()).toBe(0.75);
+    api(host).setZoom(9);
+    expect(api(host).getZoom()).toBe(2);
+    api(host).fitScreen();
+    expect(api(host).getZoom()).toBeLessThan(1);
+    api(host).fitScreen();
+    expect(events).toBe(0);
+    api(host).setZoom(2);
+    await api(host).centerOnNode("tomas");
+    await api(host).centerOnNode("nobody");
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    const area = host.querySelector("[data-ok-scrollbar]") as HTMLElement;
+    const label = (
+      chart.querySelector(
+        '[data-ok-node-id="tomas"] > [data-ok-organization-chart-label]',
+      ) as Element
+    ).getBoundingClientRect();
+    const frame = area.getBoundingClientRect();
+    // Centered on each axis, unless the area can't scroll further (Tomás is on the last level).
+    const middle = frame.top + area.clientTop + area.clientHeight / 2;
+    const center = frame.left + area.clientLeft + area.clientWidth / 2;
+    const bottom = area.scrollTop >= area.scrollHeight - area.clientHeight - 1;
+    const end = Math.abs(area.scrollLeft) >= area.scrollWidth - area.clientWidth - 1;
+    if (!bottom) expect(Math.abs(label.top + label.height / 2 - middle)).toBeLessThan(2);
+    if (!end) expect(Math.abs(label.left + label.width / 2 - center)).toBeLessThan(2);
+    expect(label.top).toBeGreaterThanOrEqual(frame.top);
+    expect(label.bottom).toBeLessThanOrEqual(frame.bottom);
+    expect(area.scrollTop).toBeGreaterThan(0);
+  });
+
+  it("a chart without the attribute gets it from a method; destroy cleans up", async () => {
+    const host = mount(chart());
+    const root = rootOf(host);
+    const instance = start().get(root, "organization-chart") as unknown as ZoomInstance;
+    await settle();
+    expect(root.hasAttribute("data-ok-zoom")).toBe(false);
+    instance.resetZoom();
+    expect(root.getAttribute("data-ok-zoom")).toBe("1");
+    instance.setZoom(0.5);
+    expect(getComputedStyle(root).zoom).toBe("0.5");
+    runtime?.stop();
+    runtime = undefined;
+    expect(root.style.getPropertyValue("--_ok-org-zoom")).toBe("");
   });
 });

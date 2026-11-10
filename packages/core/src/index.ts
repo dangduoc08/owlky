@@ -365,14 +365,19 @@ export {
   multiSectionDigitalClockOptions,
   type OrganizationChartAnatomyOptions,
   type OrganizationChartDirection,
+  type OrganizationChartEdgeColorMode,
   type OrganizationChartLineColor,
   type OrganizationChartLineStyle,
+  type OrganizationChartNodeAnatomyOptions,
   type Orientation,
   optionSchemas,
   organizationChartAttributes,
   organizationChartDirections,
+  organizationChartEdgeColorModes,
   organizationChartLineColors,
   organizationChartLineStyles,
+  organizationChartNodeAttributes,
+  organizationChartNodeOptions,
   organizationChartOptions,
   orientations,
   type PaginationAnatomyOptions,
@@ -1114,6 +1119,7 @@ export {
 export {
   createOrganizationChartController,
   createOrganizationChartHighlight,
+  ORGANIZATION_CHART_GROUPED,
   ORGANIZATION_CHART_LENGTHS,
   type OrganizationChartAction,
   type OrganizationChartController,
@@ -1126,6 +1132,7 @@ export {
   organizationChartDepth,
   organizationChartDescendants,
   organizationChartExpanded,
+  organizationChartGrouped,
   organizationChartHighlighted,
   organizationChartList,
   organizationChartLoaded,
@@ -1138,6 +1145,17 @@ export {
   organizationChartToggle,
   revealOrganizationChartNode,
 } from "./organization-chart/organization-chart.js";
+export {
+  centerOrganizationChartNode,
+  clampOrganizationChartZoom,
+  createOrganizationChartZoom,
+  ORGANIZATION_CHART_ZOOM_LIMITS,
+  ORGANIZATION_CHART_ZOOM_STEP,
+  type OrganizationChartZoomController,
+  type OrganizationChartZoomOptions,
+  organizationChartFitZoom,
+  organizationChartViewport,
+} from "./organization-chart/organization-chart-zoom.js";
 export { inertOutside } from "./overlay/inert-outside.js";
 export { layerStack } from "./overlay/layer-stack.js";
 export { isScrollLocked, lockScroll } from "./overlay/scroll-lock.js";

@@ -113,3 +113,24 @@ field.addEventListener("ok:autocomplete:change", (event) => {
     status.textContent = "";
   }
 });`;
+
+/** Zoom and pan (HTML): the toolbar needs no script; the button centers a person. */
+export function zoomScript(row: HTMLElement) {
+  const element = row.querySelector("#org-zoom") as HTMLElement;
+  const chart = () =>
+    getRuntime().get(element, "organization-chart") as unknown as {
+      centerOnNode(nodeId: string): Promise<void>;
+    };
+  const center = () => void chart().centerOnNode("tomas");
+  const button = row.querySelector("#org-zoom-center");
+  button?.addEventListener("click", center);
+  return () => button?.removeEventListener("click", center);
+}
+
+export const ZOOM_SCRIPT_SOURCE = `import { getRuntime } from "@owlky/html";
+
+// The toolbar works on its own: it names the chart with data-ok-organization-chart-toolbar
+const chart = getRuntime().get(document.getElementById("org-zoom"), "organization-chart");
+
+// Expands the collapsed branches above the node, then centers it in the scroll area
+document.getElementById("org-zoom-center").addEventListener("click", () => chart.centerOnNode("tomas"));`;

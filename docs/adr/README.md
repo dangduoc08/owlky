@@ -59,5 +59,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0053](0053-sortable-multiple-lists.md) | Sortable: items move between lists of a group (one session per document, intent to the holding list's owner, move-to triggers) | Accepted |
 | [0054](0054-chart-crossfilter.md) | Chart crossfilter: one group filter in the link registry, shown as a filter or a highlight per chart, a Clear control | Accepted |
 | [0055](0055-data-grid-range-charts-crossfilter.md) | Data grid: range charts (a model with `rows`, Alt + F1), cross-filtering as the category field's `isAnyOf` filter, `chartsToJSON` / `restoreCharts` | Accepted |
+| [0056](0056-organization-chart-zoom-pan.md) | Organization chart: zoom, fit and center through CSS `zoom` inside the composed Scrollbar, a toolbar part, intent from a core controller | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

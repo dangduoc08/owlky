@@ -1,5 +1,6 @@
 import { organizationChartOptions } from "../anatomy/anatomy.js";
 import { parseNumber } from "../options/define.js";
+import { clampOrganizationChartZoom } from "./organization-chart-zoom.js";
 
 /** The length options of an organization chart and the private custom property each one sets. */
 export const ORGANIZATION_CHART_LENGTHS = {
@@ -7,25 +8,31 @@ export const ORGANIZATION_CHART_LENGTHS = {
   lineWidth: "--_ok-org-line-width",
   lineBorderRadius: "--_ok-org-line-radius",
   nodePadding: "--_ok-org-node-padding",
+  groupLeafNodesSpacing: "--_ok-org-leaf-spacing",
 } as const;
 
 export type OrganizationChartLength = keyof typeof ORGANIZATION_CHART_LENGTHS;
 
 export type OrganizationChartStyle = Partial<
   Record<
-    (typeof ORGANIZATION_CHART_LENGTHS)[OrganizationChartLength] | "--_ok-org-dim-opacity",
+    | (typeof ORGANIZATION_CHART_LENGTHS)[OrganizationChartLength]
+    | "--_ok-org-dim-opacity"
+    | "--_ok-org-zoom",
     string
   >
 >;
 
 /**
- * Private custom properties of an organization chart root for the given lengths and dim
- * strength (React `style`, the HTML runtime through CSSOM). A length number is in px; a string
- * may carry a unit (`"2rem"`). `dimOpacity` above 1 counts as 1. Invalid or missing values are
- * left out, so the stylesheet's defaults apply.
+ * Private custom properties of an organization chart root for the given lengths, dim strength
+ * and zoom level (React `style`, the HTML runtime through CSSOM). A length number is in px; a
+ * string may carry a unit (`"2rem"`). `dimOpacity` above 1 counts as 1; `zoom` is clamped to
+ * `minZoom` / `maxZoom` (ADR-0056). Invalid or missing values are left out, so the stylesheet's
+ * defaults apply.
  */
 export function organizationChartStyle(
-  values: Partial<Record<OrganizationChartLength | "dimOpacity", unknown>>,
+  values: Partial<
+    Record<OrganizationChartLength | "dimOpacity" | "zoom" | "minZoom" | "maxZoom", unknown>
+  >,
 ): OrganizationChartStyle {
   const style: OrganizationChartStyle = {};
   for (const key of Object.keys(ORGANIZATION_CHART_LENGTHS) as OrganizationChartLength[]) {
@@ -35,6 +42,19 @@ export function organizationChartStyle(
   }
   const dim = parseNumber(organizationChartOptions.options.dimOpacity, values.dimOpacity);
   if (typeof dim === "number") style["--_ok-org-dim-opacity"] = String(Math.min(dim, 1));
+  const { options } = organizationChartOptions;
+  const zoom = parseNumber(options.zoom, values.zoom);
+  if (typeof zoom === "number") {
+    const min = parseNumber(options.minZoom, values.minZoom);
+    const max = parseNumber(options.maxZoom, values.maxZoom);
+    style["--_ok-org-zoom"] = String(
+      clampOrganizationChartZoom(
+        zoom,
+        typeof min === "number" ? min : undefined,
+        typeof max === "number" ? max : undefined,
+      ),
+    );
+  }
   return style;
 }
 
@@ -47,6 +67,19 @@ const TOGGLE = "[data-ok-organization-chart-toggle]";
 /** Content of a label that keeps its own clicks (`expandCollapseOnNodeClick` skips them). */
 const INTERACTIVE =
   "a[href], button, input, select, textarea, label, summary, [contenteditable], [tabindex], [role=button], [role=link], [role=menuitem], [popover]";
+
+/**
+ * A node whose children are grouped (`data-ok-group-leaf-nodes`, 4.18.3): two or more children,
+ * none with a children list of its own (lazy and collapsible branches count as branches). The
+ * stylesheet uses the same condition.
+ */
+export const ORGANIZATION_CHART_GROUPED =
+  "[data-ok-organization-chart][data-ok-group-leaf-nodes] [data-ok-organization-chart-node]:has(> [data-ok-organization-chart-children] > [data-ok-organization-chart-node] + [data-ok-organization-chart-node]):not(:has(> [data-ok-organization-chart-children] > [data-ok-organization-chart-node] > [data-ok-organization-chart-children]))";
+
+/** Whether a node's children are grouped leaves (one column joined by a line along its side). */
+export function organizationChartGrouped(node: Element): boolean {
+  return node.matches(ORGANIZATION_CHART_GROUPED);
+}
 
 /** Whether an element belongs to `root` itself (not to a chart nested in one of its labels). */
 const owns = (root: Element, element: Element) => element.closest(ROOT) === root;
@@ -278,6 +311,8 @@ export function organizationChartPathStyle(node: HTMLElement): OrganizationChart
   if (!list?.matches("[data-ok-organization-chart-children]")) return null;
   const direction = node.closest(ROOT)?.getAttribute("data-ok-direction");
   const across = direction === "left" || direction === "right";
+  if (list.parentElement && organizationChartGrouped(list.parentElement))
+    return groupedPathStyle(node, list, direction);
   const outer = list.getBoundingClientRect();
   const inner = node.getBoundingClientRect();
   const size = across ? outer.height : outer.width;
@@ -297,6 +332,38 @@ export function organizationChartPathStyle(node: HTMLElement): OrganizationChart
     "--_ok-org-path-offset": `${offset}px`,
     "--_ok-org-path-forward": offset >= 0 ? "1" : "0",
     "--_ok-org-path-round": list.childElementCount > 1 && end ? "1" : "0",
+  };
+}
+
+/**
+ * A grouped leaf's path segment: the line along the column, from the first leaf's edge (where the
+ * parent's line meets the column) to this leaf. The offset is the distance from the first leaf's
+ * near edge to this leaf's, along the column, in layout px (zoomed charts measure scaled boxes).
+ */
+function groupedPathStyle(
+  node: HTMLElement,
+  list: HTMLElement,
+  direction: string | null | undefined,
+): OrganizationChartPathStyle {
+  const first = (list.firstElementChild as Element).getBoundingClientRect();
+  const inner = node.getBoundingClientRect();
+  const across = direction === "left" || direction === "right";
+  const rtl = across && getComputedStyle(list).direction === "rtl";
+  // Left charts run their column toward the inline end; right charts toward the start.
+  const toRight = (direction === "left") !== rtl;
+  let distance: number;
+  if (direction === "bottom") distance = first.bottom - inner.bottom;
+  else if (!across) distance = inner.top - first.top;
+  else if (toRight) distance = inner.left - first.left;
+  else distance = first.right - inner.right;
+  const box = list.getBoundingClientRect();
+  const size = across ? box.width : box.height;
+  const layout = across ? list.offsetWidth : list.offsetHeight;
+  const scale = size > 0 && layout > 0 ? layout / size : 1;
+  return {
+    "--_ok-org-path-offset": `${Math.round(distance * scale * 100) / 100}px`,
+    "--_ok-org-path-forward": "1",
+    "--_ok-org-path-round": node === list.lastElementChild ? "1" : "0",
   };
 }
 
@@ -389,7 +456,12 @@ export function createOrganizationChartHighlight(root: HTMLElement): Organizatio
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["hidden", "data-ok-highlighted", "data-ok-direction"],
+    attributeFilter: [
+      "hidden",
+      "data-ok-highlighted",
+      "data-ok-direction",
+      "data-ok-group-leaf-nodes",
+    ],
   });
   const resize = new ResizeObserver(() => sync());
   resize.observe(root);

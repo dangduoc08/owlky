@@ -88,6 +88,39 @@ export const TEAMS: Team[] = [
   { id: "marketing", name: "Marketing", color: "warning", members: [marketing] },
 ];
 
+/** A product team whose two leads only have reports without reports (Grouped leaves story). */
+export const PRODUCT: PersonNode = {
+  id: "ines",
+  name: "Ines Duarte",
+  role: "Head of product",
+  avatar: avatar(5),
+  children: [
+    {
+      id: "jonah",
+      name: "Jonah Pereira",
+      role: "Design lead",
+      avatar: avatar(2),
+      children: [
+        { id: "aiko", name: "Aiko Tanaka", role: "Senior", avatar: avatar(3) },
+        { id: "oskar", name: "Oskar Berg", role: "Researcher", avatar: avatar(2) },
+        { id: "zara", name: "Zara Okafor", role: "Writer", avatar: avatar(6) },
+      ],
+    },
+    {
+      id: "priya",
+      name: "Priya Raman",
+      role: "Development lead",
+      avatar: avatar(4),
+      children: [
+        { id: "elias", name: "Elias Novak", role: "Senior", avatar: avatar(5) },
+        { id: "sofia", name: "Sofia Marchetti", role: "Back end", avatar: avatar(6) },
+        { id: "tomas", name: "Tomás Rivera", role: "Back end", avatar: avatar(7) },
+        { id: "noah", name: "Noah Brennan", role: "Front end", avatar: avatar(1) },
+      ],
+    },
+  ],
+};
+
 /** Number of people in a list of nodes, at every depth. */
 export const headcount = (nodes: PersonNode[]): number =>
   nodes.reduce((total, node) => total + 1 + headcount(node.children ?? []), 0);

@@ -1611,6 +1611,20 @@ export interface OrganizationChartParts {
   "data-ok-node-id": Value<string>;
   /** On a node: it is highlighted (a search result). Its path to the root keeps its colors while the other nodes fade. Written by `highlightNode(id)`. */
   "data-ok-highlighted": State;
+  /** A group of zoom buttons next to the chart; its value is the chart's `id`. Works with `data-ok-enable-zoom-pan`. */
+  "data-ok-organization-chart-toolbar": Part<"div">;
+  /** In the toolbar: zooms in by one step. `aria-disabled` at the largest level. */
+  "data-ok-organization-chart-zoom-in": Part<"button">;
+  /** In the toolbar: zooms out by one step. `aria-disabled` at the smallest level. */
+  "data-ok-organization-chart-zoom-out": Part<"button">;
+  /** In the toolbar: fits the whole chart in its scroll area, up to 100%. */
+  "data-ok-organization-chart-fit": Part<"button">;
+  /** In the toolbar: back to 100%. */
+  "data-ok-organization-chart-reset": Part<"button">;
+  /** In the toolbar: the zoom level as a percentage, written by the script and announced politely. */
+  "data-ok-organization-chart-zoom-value": Part<"output">;
+  /** On the chart: set while a mouse drag pans its scroll area. */
+  "data-ok-panning": State;
 }
 
 /** Pagination: parts, states, values and triggers. */

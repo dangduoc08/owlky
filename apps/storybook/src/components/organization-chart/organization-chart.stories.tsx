@@ -22,11 +22,15 @@ import {
   lazyScript,
   SEARCH_SCRIPT_SOURCE,
   searchScript,
+  ZOOM_SCRIPT_SOURCE,
+  zoomScript,
 } from "./organization-chart-scripts.js";
 import { SearchChartDemo } from "./search-demo.js";
 import searchSource from "./search-demo.tsx?raw";
 import { StandardChartDemo } from "./standard-demo.js";
 import standardSource from "./standard-demo.tsx?raw";
+import { ZoomChartDemo } from "./zoom-demo.js";
+import zoomSource from "./zoom-demo.tsx?raw";
 
 const controls: StoryControls = { ...ORGANIZATION_CHART_CONTROLS, target: OrganizationChart };
 
@@ -118,6 +122,20 @@ export const Direction: StoryObj = frameworkStory({
   react: reactGroupsStory(organizationChartStories["direction"] ?? []),
 });
 
+/** Grouped leaves (4.18.3): each group sets its own direction, so no Controls here. */
+export const GroupedLeaves: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "leaves",
+      ORGANIZATION_CHART_FILES["leaves"] ?? [],
+      htmlSetup(COLLAPSIBLE, true),
+    ),
+    react: reactGroupsStory(organizationChartStories["leaves"] ?? []),
+  }),
+  name: "Grouped leaves",
+};
+
 /** Expand and collapse (ADR-0051): stateful in React (`apiRef`), a page script in HTML. */
 export const Collapsible: StoryObj = {
   ...frameworkStory({
@@ -178,4 +196,24 @@ export const LazyChildren: StoryObj = {
     ),
   }),
   name: "Lazy children",
+};
+
+/** Zoom and pan (ADR-0056): the toolbar, wheel and keys; stateful in React, a page script in HTML. */
+export const ZoomPan: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "zoom",
+      [["Zoom and pan", "group"]],
+      htmlSetup([...COLLAPSIBLE, "icon-button.css"], true),
+      undefined,
+      { group: { script: zoomScript, scriptSource: ZOOM_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Zoom and pan", content: <ZoomChartDemo /> }],
+      undefined,
+      zoomSource,
+    ),
+  }),
+  name: "Zoom and pan",
 };

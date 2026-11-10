@@ -9,6 +9,7 @@ import {
   type OrganizationChartApi,
   OrganizationChartNode,
   type OrganizationChartProps,
+  OrganizationChartToolbar,
   useOrganizationChartApiRef,
 } from "./organization-chart.js";
 
@@ -679,20 +680,20 @@ describe("OrganizationChart expand and collapse", () => {
  */
 function connectorMisses(root: Element, vertical: boolean): string[] {
   const misses: string[] = [];
-  const center = (element: Element) => {
+  const center = (element: Element, across = vertical) => {
     const rect = (element.firstElementChild ?? element).getBoundingClientRect();
-    return vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+    return across ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
   };
   /** Centers of the lines a pseudo-element draws toward a label. */
-  const lines = (element: Element, which: "::before" | "::after") => {
+  const lines = (element: Element, which: "::before" | "::after", across = vertical) => {
     const style = getComputedStyle(element, which);
     if (style.content === "none") return [];
     const host = element.getBoundingClientRect();
-    const start = vertical
+    const start = across
       ? host.left + Number.parseFloat(style.left)
       : host.top + Number.parseFloat(style.top);
-    const size = Number.parseFloat(vertical ? style.width : style.height);
-    const sides: [number, number][] = vertical
+    const size = Number.parseFloat(across ? style.width : style.height);
+    const sides: [number, number][] = across
       ? [
           [Number.parseFloat(style.borderLeftWidth), start],
           [-Number.parseFloat(style.borderRightWidth), start + size],
@@ -711,14 +712,185 @@ function connectorMisses(root: Element, vertical: boolean): string[] {
     const label = parent.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
     if (!near(lines(list, "::before"), center(label)))
       misses.push(`line from ${label.textContent}`);
+    // Grouped leaves (a grid parent): each stub meets its label's center on the other axis.
+    const across = getComputedStyle(parent).display === "grid" ? !vertical : vertical;
     for (const child of list.children) {
       const own = child.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
-      if (!near([...lines(child, "::before"), ...lines(child, "::after")], center(own)))
-        misses.push(`line to ${own.textContent}`);
+      const drawn = [...lines(child, "::before", across), ...lines(child, "::after", across)];
+      if (!near(drawn, center(own, across))) misses.push(`line to ${own.textContent}`);
     }
   }
   return misses;
 }
+
+/** Lead › Middle (own lines) › Report › Deep. */
+function Branch(props: Partial<OrganizationChartProps>) {
+  return (
+    <OrganizationChart aria-label="Team" label={<span>Lead</span>} {...props}>
+      <OrganizationChartNode label={<span>First</span>} />
+      <OrganizationChartNode
+        lineColor="error"
+        lineStyle="dashed"
+        label={<span>Middle</span>}
+        data-testid="middle"
+      >
+        <OrganizationChartNode label={<span>Report</span>}>
+          <OrganizationChartNode label={<span>Deep</span>} />
+        </OrganizationChartNode>
+      </OrganizationChartNode>
+    </OrganizationChart>
+  );
+}
+
+describe("OrganizationChart per-node lines", () => {
+  const stem = (text: string) =>
+    pseudo(
+      nodeOf(text).querySelector(":scope > [data-ok-organization-chart-children]") as Element,
+      "::before",
+    );
+  function error() {
+    const probe = document.createElement("span");
+    probe.style.color = "var(--ok-palette-error-light)";
+    document.body.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }
+
+  it("writes valid node options only, and edgeColorMode only when given", () => {
+    const { unmount } = render(<Branch />);
+    expect(chart().hasAttribute("data-ok-edge-color-mode")).toBe(false);
+    const middle = screen.getByTestId("middle");
+    expect(middle.getAttribute("data-ok-line-color")).toBe("error");
+    expect(middle.getAttribute("data-ok-line-style")).toBe("dashed");
+    expect(nodeOf("First").hasAttribute("data-ok-line-color")).toBe(false);
+    unmount();
+    render(
+      <OrganizationChart aria-label="Team" edgeColorMode={HOSTILE} label="Lead">
+        <OrganizationChartNode lineColor={HOSTILE} lineStyle={HOSTILE} label="Only" />
+      </OrganizationChart>,
+    );
+    expect(chart().hasAttribute("data-ok-edge-color-mode")).toBe(false);
+    expect(nodeOf("Only").getAttributeNames()).toEqual(["data-ok-organization-chart-node"]);
+  });
+
+  it("a node's lines go to its children; edgeColorMode node carries them down the branch", async () => {
+    const { rerender } = render(<Branch />);
+    expect(stem("Lead").borderLeftColor).toBe(divider());
+    expect(stem("Middle").borderLeftColor).toBe(error());
+    expect(stem("Middle").borderLeftStyle).toBe("dashed");
+    expect(stem("Report").borderLeftColor).toBe(divider());
+    rerender(<Branch edgeColorMode="node" />);
+    expect(chart().getAttribute("data-ok-edge-color-mode")).toBe("node");
+    expect(stem("Report").borderLeftColor).toBe(error());
+    expect(stem("Report").borderLeftStyle).toBe("dashed");
+    expect(pseudo(nodeOf("Deep"), "::after").borderLeftColor).toBe(error());
+    await expectNoAxeViolations();
+  });
+});
+
+/** A lead with two leaves and one branch with three leaves. */
+function Leaves(props: Partial<OrganizationChartProps>) {
+  return (
+    <OrganizationChart
+      aria-label="Team"
+      groupLeafNodes
+      nodeId="lead"
+      label={<span>Lead</span>}
+      {...props}
+    >
+      <OrganizationChartNode nodeId="first" label={<span>First</span>} />
+      <OrganizationChartNode nodeId="middle" label={<span>Middle</span>}>
+        <OrganizationChartNode nodeId="a" label={<span>Report A</span>} />
+        <OrganizationChartNode nodeId="b" label={<span>Report B</span>} />
+        <OrganizationChartNode nodeId="c" label={<span>Report C</span>} />
+      </OrganizationChartNode>
+    </OrganizationChart>
+  );
+}
+
+describe("OrganizationChart grouped leaves", () => {
+  const top = (text: string) => box(screen.getByText(text)).top;
+
+  it("is off by default; writes the flag and the spacing", () => {
+    const { rerender } = render(<Team />);
+    expect(chart().hasAttribute("data-ok-group-leaf-nodes")).toBe(false);
+    rerender(<Leaves groupLeafNodesSpacing={12} />);
+    expect(chart().hasAttribute("data-ok-group-leaf-nodes")).toBe(true);
+    expect(chart().getAttribute("data-ok-group-leaf-nodes-spacing")).toBe("12");
+    expect(chart().style.getPropertyValue("--_ok-org-leaf-spacing")).toBe("12px");
+  });
+
+  it("stacks two or more leaves in one column; mixed children stay a row", async () => {
+    render(<Leaves />);
+    expect(getComputedStyle(nodeOf("Middle")).display).toBe("grid");
+    expect(getComputedStyle(nodeOf("Lead")).display).toBe("flex");
+    const [a, b, c] = ["Report A", "Report B", "Report C"].map((text) =>
+      box(screen.getByText(text)),
+    );
+    expect(Math.abs((a as DOMRect).left - (b as DOMRect).left)).toBeLessThan(1);
+    expect((b as DOMRect).top).toBeGreaterThan((a as DOMRect).bottom);
+    expect((c as DOMRect).top).toBeGreaterThan((b as DOMRect).bottom);
+    // The column starts on the lead's center: its line runs straight down from the label.
+    const middle = box(nodeOf("Middle").firstElementChild as Element);
+    const column = box(
+      nodeOf("Middle").querySelector(":scope > [data-ok-organization-chart-children]") as Element,
+    );
+    expect(Math.abs(column.left - (middle.left + middle.width / 2))).toBeLessThan(1);
+    expect(connectorMisses(chart(), true)).toEqual([]);
+    await expectNoAxeViolations();
+  });
+
+  it("works in every direction", () => {
+    for (const direction of ["bottom", "left", "right"] as const) {
+      const { unmount } = render(<Leaves direction={direction} />);
+      expect(connectorMisses(chart(), direction === "bottom")).toEqual([]);
+      if (direction === "bottom") expect(top("Report B")).toBeLessThan(top("Report A"));
+      else expect(Math.abs(top("Report B") - top("Report A"))).toBeLessThan(1);
+      unmount();
+    }
+  });
+
+  it("collapsible and lazy branches are branches, not leaves", async () => {
+    render(
+      <Leaves enableExpandCollapse defaultCollapsedNodes={["middle"]}>
+        <OrganizationChartNode nodeId="first" label={<span>First</span>} />
+        <OrganizationChartNode nodeId="lazy" hasChildren label={<span>Lazy</span>} />
+      </Leaves>,
+    );
+    // The lazy node has an (empty, hidden) children list: the lead's children aren't grouped.
+    expect(getComputedStyle(nodeOf("Lead")).display).toBe("flex");
+    await expectNoAxeViolations();
+  });
+
+  it("a collapsed group opens as a column", async () => {
+    render(<Leaves enableExpandCollapse defaultCollapsedNodes={["middle"]} />);
+    const toggle = nodeOf("Middle").querySelector(
+      ":scope > [data-ok-organization-chart-toggle]",
+    ) as HTMLButtonElement;
+    await userEvent.click(toggle);
+    for (const animation of document.getAnimations()) animation.finish();
+    await settled(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(getComputedStyle(nodeOf("Middle")).display).toBe("grid");
+    expect(connectorMisses(chart(), true)).toEqual([]);
+  });
+
+  it("the highlighted path runs along the column", async () => {
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    render(<Leaves apiRef={apiRef} />);
+    await act(() => apiRef.current?.highlightNode("c"));
+    const c = nodeOf("Report C");
+    expect(c.style.getPropertyValue("--_ok-org-path-round")).toBe("1");
+    const offset = Number.parseFloat(c.style.getPropertyValue("--_ok-org-path-offset"));
+    const a = nodeOf("Report A");
+    expect(offset).toBeCloseTo(box(c).top - box(a).top, 0);
+    const segment = pseudo(c.firstElementChild as Element, "::before");
+    expect(Math.abs(box(c).top + Number.parseFloat(segment.top) - box(a).top)).toBeLessThan(1);
+  });
+});
 
 describe("OrganizationChart direction", () => {
   const labelBox = (text: string) => box(screen.getByText(text));
@@ -1018,5 +1190,134 @@ describe("OrganizationChart highlight", () => {
   it("has no axe violations with a highlighted node", async () => {
     render(<Collapsible highlightOnHover defaultHighlightedNode="c" />);
     await expectNoAxeViolations(document.body);
+  });
+});
+
+/** A zoomable chart in a 300 × 200 scroll area, with its toolbar. */
+function Zoomable(props: Partial<OrganizationChartProps>) {
+  return (
+    <>
+      <OrganizationChartToolbar chartId="zoom-chart" />
+      <section
+        data-ok-scrollbar=""
+        aria-label="Area"
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: a scroll area takes the keyboard
+        tabIndex={0}
+        style={{ width: 300, height: 200, overflow: "auto" }}
+      >
+        <OrganizationChart
+          id="zoom-chart"
+          aria-label="Team"
+          enableZoomPan
+          label={<span style={{ display: "block", width: 500 }}>Lead</span>}
+          {...props}
+        >
+          <OrganizationChartNode nodeId="first" label={<span>First</span>} />
+          <OrganizationChartNode nodeId="last" label={<span>Last</span>} />
+        </OrganizationChart>
+      </section>
+    </>
+  );
+}
+
+describe("OrganizationChart zoom and pan", () => {
+  const zoomValue = () => document.querySelector("[data-ok-organization-chart-zoom-value]");
+
+  it("is off by default: no zoom attribute, the same markup as before", () => {
+    render(<Team />);
+    expect(chart().hasAttribute("data-ok-zoom")).toBe(false);
+    expect(chart().hasAttribute("data-ok-enable-zoom-pan")).toBe(false);
+    expect(chart().style.getPropertyValue("--_ok-org-zoom")).toBe("");
+  });
+
+  it("writes the level while zoom and pan is on, or when it isn't 100%", () => {
+    const { rerender } = render(<Team zoom={1.5} />);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1.5");
+    expect(getComputedStyle(chart()).zoom).toBe("1.5");
+    rerender(<Team zoom={5} maxZoom={3} minZoom={0.5} />);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("3");
+    expect(chart().getAttribute("data-ok-max-zoom")).toBe("3");
+    rerender(<Team enableZoomPan />);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1");
+  });
+
+  it("the toolbar zooms, reports the level and shows it; the limits are aria-disabled", async () => {
+    const onZoomChange = vi.fn();
+    render(<Zoomable onZoomChange={onZoomChange} maxZoom={1.25} />);
+    expect(zoomValue()?.textContent).toBe("100%");
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    await userEvent.click(zoomIn);
+    expect(onZoomChange).toHaveBeenLastCalledWith(1.25);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1.25");
+    expect(zoomValue()?.textContent).toBe("125%");
+    expect(zoomIn.getAttribute("aria-disabled")).toBe("true");
+    await userEvent.click(screen.getByRole("button", { name: "Zoom out" }));
+    expect(onZoomChange).toHaveBeenLastCalledWith(1);
+    await userEvent.click(screen.getByRole("button", { name: "Fit to screen" }));
+    expect(onZoomChange.mock.lastCall?.[0]).toBeLessThan(1);
+    await userEvent.click(screen.getByRole("button", { name: "Reset zoom" }));
+    expect(onZoomChange).toHaveBeenLastCalledWith(1);
+    expect(screen.getByRole("group", { name: "Zoom" })).toBeTruthy();
+    await expectNoAxeViolations();
+  });
+
+  it("controlled: zoom decides; keys ask through onZoomChange", async () => {
+    const onZoomChange = vi.fn();
+    render(<Zoomable zoom={1} onZoomChange={onZoomChange} />);
+    const area = screen.getByRole("region", { name: "Area" });
+    area.focus();
+    await userEvent.keyboard("+");
+    expect(onZoomChange).toHaveBeenLastCalledWith(1.25);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1");
+  });
+
+  it("apiRef: zoom steps, factor, set, reset, fit and center", async () => {
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    const onZoomChange = vi.fn();
+    render(<Zoomable apiRef={apiRef} onZoomChange={onZoomChange} />);
+    const api = () => apiRef.current as OrganizationChartApi;
+    act(() => api().zoomIn());
+    expect(api().getZoom()).toBe(1.25);
+    act(() => api().zoomOut());
+    expect(api().getZoom()).toBe(1);
+    act(() => api().zoom(1));
+    expect(api().getZoom()).toBe(2);
+    act(() => api().setZoom(0.1));
+    expect(api().getZoom()).toBe(0.25);
+    act(() => api().resetZoom());
+    expect(api().getZoom()).toBe(1);
+    act(() => api().fitScreen());
+    expect(api().getZoom()).toBeLessThan(1);
+    expect(onZoomChange).toHaveBeenCalledTimes(6);
+    await act(() => api().centerOnNode("last"));
+    await act(() => api().centerOnNode("nobody"));
+  });
+
+  it("centerOnNode opens collapsed ancestors first", async () => {
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    render(
+      <Leaves
+        apiRef={apiRef}
+        enableExpandCollapse
+        enableZoomPan
+        defaultCollapsedNodes={["middle"]}
+      />,
+    );
+    await act(() => apiRef.current?.centerOnNode("b"));
+    const toggle = nodeOf("Middle").querySelector(
+      ":scope > [data-ok-organization-chart-toggle]",
+    ) as Element;
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("renders the toolbar and the zoom attributes on the server as on the client", () => {
+    const html = renderToString(<Zoomable />);
+    expect(html).toContain('data-ok-organization-chart-toolbar="zoom-chart"');
+    expect(html).toContain('data-ok-zoom="1"');
+    expect(html).toContain("data-ok-enable-zoom-pan");
   });
 });

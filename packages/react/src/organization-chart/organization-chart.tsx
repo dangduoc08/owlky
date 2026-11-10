@@ -1,17 +1,24 @@
 "use client";
 
 import {
+  centerOrganizationChartNode,
+  clampOrganizationChartZoom,
   createOrganizationChartController,
   createOrganizationChartHighlight,
+  createOrganizationChartZoom,
+  ORGANIZATION_CHART_ZOOM_STEP,
   type OrganizationChartAction,
   type OrganizationChartController,
   type OrganizationChartDirection,
+  type OrganizationChartEdgeColorMode,
   type OrganizationChartLineColor,
   type OrganizationChartLineStyle,
+  type OrganizationChartZoomController,
   organizationChartAncestors,
   organizationChartAttributes,
   organizationChartLoaded,
   organizationChartNode,
+  organizationChartNodeAttributes,
   organizationChartPlan,
   organizationChartStyle,
   organizationChartToggle,
@@ -37,6 +44,7 @@ import {
 } from "react";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
 import { Collapse } from "../collapse/collapse.js";
+import { IconButton } from "../icon-button/icon-button.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -83,6 +91,16 @@ interface NodeProps {
   hasChildren?: boolean | undefined;
   /** Accessible name of the node's toggle button, such as "Priya Raman's reports". Default `"Child nodes"`. */
   toggleLabel?: string | undefined;
+  /**
+   * Color of the lines from this node to its children (its whole branch with the chart's
+   * `edgeColorMode="node"`): `divider`, `inherit` or a palette color. Default: the chart's `lineColor`.
+   */
+  lineColor?: OrganizationChartLineColor | undefined;
+  /**
+   * Style of the lines from this node to its children (its whole branch with the chart's
+   * `edgeColorMode="node"`): `solid`, `dashed` or `dotted`. Default: the chart's `lineStyle`.
+   */
+  lineStyle?: OrganizationChartLineStyle | undefined;
 }
 
 /** One `li`: the label, then (collapsible charts) the toggle, then the children list. */
@@ -90,7 +108,16 @@ const NodeItem = forwardRef<
   HTMLLIElement,
   NodeProps & Omit<LiHTMLAttributes<HTMLLIElement>, "children">
 >(function NodeItem(
-  { label, children, nodeId, hasChildren, toggleLabel = "Child nodes", ...props },
+  {
+    label,
+    children,
+    nodeId,
+    hasChildren,
+    toggleLabel = "Child nodes",
+    lineColor,
+    lineStyle,
+    ...props
+  },
   ref,
 ) {
   const chart = useContext(ChartContext);
@@ -143,7 +170,7 @@ const NodeItem = forwardRef<
   return (
     <li
       ref={merged}
-      data-ok-organization-chart-node=""
+      {...organizationChartNodeAttributes({ lineColor, lineStyle })}
       data-ok-node-id={nodeId}
       data-ok-highlighted={nodeId !== undefined && nodeId === highlighted ? "" : undefined}
       {...props}
@@ -181,6 +208,25 @@ export interface OrganizationChartApi {
   clearHighlight(): void;
   /** The highlighted node's `nodeId`, or `null`. */
   getHighlightedNode(): string | null;
+  /** Multiplies the zoom level by `1 + factor`: positive zooms in, negative zooms out. Calls `onZoomChange`. */
+  zoom(factor: number): void;
+  /** Zooms in by one step (× 1.25). */
+  zoomIn(): void;
+  /** Zooms out by one step (÷ 1.25). */
+  zoomOut(): void;
+  /** Sets the zoom level (1 is 100%), within `minZoom` and `maxZoom`. */
+  setZoom(level: number): void;
+  /** The zoom level shown. */
+  getZoom(): number;
+  /** Back to 100%. */
+  resetZoom(): void;
+  /** The largest level up to 100% at which the whole chart fits its scroll area, then scrolls to its start. */
+  fitScreen(): void;
+  /**
+   * Scrolls the chart's scroll area so the node (`nodeId`) is centered, after expanding its
+   * collapsed ancestors. Resolves once the scroll starts.
+   */
+  centerOnNode(nodeId: string): Promise<void>;
 }
 
 /** A ref for `apiRef`. */
@@ -190,7 +236,7 @@ export function useOrganizationChartApiRef(): MutableRefObject<OrganizationChart
 
 export interface OrganizationChartProps
   extends Omit<HTMLAttributes<HTMLUListElement>, "children">,
-    Omit<NodeProps, "label" | "children"> {
+    Omit<NodeProps, "label" | "children" | "lineColor" | "lineStyle"> {
   /** Content of the root node, such as a card. */
   label: ReactNode;
   /** The root's children: `OrganizationChartNode` elements. */
@@ -209,10 +255,23 @@ export interface OrganizationChartProps
   lineColor?: OrganizationChartLineColor | undefined;
   /** `solid` (default), `dashed` or `dotted`. */
   lineStyle?: OrganizationChartLineStyle | undefined;
+  /**
+   * How a node's own `lineColor` and `lineStyle` apply: `default`, to the lines from that node to
+   * its children only; `node`, to its whole branch, down to the nodes that set their own.
+   * Default `"default"`.
+   */
+  edgeColorMode?: OrganizationChartEdgeColorMode | undefined;
   /** Corner radius where a connector turns: px, or a CSS length. Default `24`. */
   lineBorderRadius?: number | string | undefined;
   /** Space on each side of every node: px, or a CSS length. Default `4`. */
   nodePadding?: number | string | undefined;
+  /**
+   * A node with two or more children that have no children of their own stacks them in one
+   * column, joined to it by a line along their side. Default `false`.
+   */
+  groupLeafNodes?: boolean | undefined;
+  /** Space between grouped leaf nodes: px, or a CSS length. Default `8`. */
+  groupLeafNodesSpacing?: number | string | undefined;
   /** Nodes with children get a toggle button that collapses and expands them. Default `false`. */
   enableExpandCollapse?: boolean | undefined;
   /** A click on a node's label, outside its buttons and links, also toggles it. Default `false`. */
@@ -246,6 +305,21 @@ export interface OrganizationChartProps
   defaultHighlightedNode?: string | null | undefined;
   /** Called with the highlighted `nodeId` (or `null`) after `highlightNode` or `clearHighlight`. */
   onHighlightedNodeChange?: ((nodeId: string | null) => void) | undefined;
+  /**
+   * Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and an
+   * `OrganizationChartToolbar` zoom the chart; a mouse drag pans its scroll area. Default `false`.
+   */
+  enableZoomPan?: boolean | undefined;
+  /** Controlled zoom level (1 is 100%), within `minZoom` and `maxZoom`. */
+  zoom?: number | undefined;
+  /** The zoom level at first (uncontrolled). Default `1`. */
+  defaultZoom?: number | undefined;
+  /** Called with the new level after a zoom by the user or a method call. */
+  onZoomChange?: ((level: number) => void) | undefined;
+  /** The smallest zoom level. Default `0.25`. */
+  minZoom?: number | undefined;
+  /** The largest zoom level. Default `2`. */
+  maxZoom?: number | undefined;
   /** Receives the chart's methods (`useOrganizationChartApiRef()`). */
   apiRef?: MutableRefObject<OrganizationChartApi | undefined> | undefined;
 }
@@ -266,8 +340,11 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       lineWidth,
       lineColor,
       lineStyle,
+      edgeColorMode,
       lineBorderRadius,
       nodePadding,
+      groupLeafNodes = false,
+      groupLeafNodesSpacing,
       enableExpandCollapse = false,
       expandCollapseOnNodeClick = false,
       collapseBadgeEnabled = true,
@@ -283,6 +360,12 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       highlightedNode,
       defaultHighlightedNode,
       onHighlightedNodeChange,
+      enableZoomPan = false,
+      zoom,
+      defaultZoom,
+      onZoomChange,
+      minZoom,
+      maxZoom,
       apiRef,
       nodeId,
       hasChildren,
@@ -304,6 +387,14 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       defaultValue: defaultHighlightedNode ?? null,
       onChange: (next) => onHighlightedNodeChange?.(next),
     });
+    const [zoomState, setZoomState] = useControllableState<number>({
+      value: zoom,
+      defaultValue: defaultZoom ?? 1,
+      onChange: (next) => onZoomChange?.(next),
+    });
+    const level = clampOrganizationChartZoom(zoomState, minZoom, maxZoom);
+    const zoomLatest = useRef({ level, setZoomState });
+    zoomLatest.current = { level, setZoomState };
     const [loaded, setLoaded] = useState<ReadonlyMap<string, ReactNode>>(() => new Map());
     const [loading, setLoading] = useState<ReadonlySet<string>>(() => new Set());
 
@@ -419,8 +510,36 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       });
     });
 
+    // Zoom and pan (ADR-0056): core reports intent and keeps the view steady after each level.
+    const zoomer = useRef<OrganizationChartZoomController | null>(null);
+    useLayoutEffect(() => {
+      const created = createOrganizationChartZoom(root.current as HTMLUListElement, {
+        zoom: zoomLatest.current.level,
+      });
+      zoomer.current = created;
+      return () => {
+        created.destroy();
+        zoomer.current = null;
+      };
+    }, []);
+    useLayoutEffect(() => {
+      zoomer.current?.update({
+        enabled: enableZoomPan,
+        zoom: level,
+        min: minZoom,
+        max: maxZoom,
+        onZoom: (next) => zoomLatest.current.setZoomState(next),
+      });
+    });
+
     useEffect(() => {
       if (!apiRef) return;
+      /** Plans a level (the view stays steady), then shows it. */
+      const show = (target: number, start = false) => {
+        const next = zoomer.current?.plan(target, { start });
+        if (next !== undefined && next !== zoomLatest.current.level)
+          zoomLatest.current.setZoomState(next);
+      };
       const plan = (action: OrganizationChartAction) => {
         const changes = new Map<string, boolean>();
         for (const [node, expand] of organizationChartPlan(
@@ -465,6 +584,27 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
           if (latest.current.highlighted !== null) latest.current.setHighlighted(null);
         },
         getHighlightedNode: () => latest.current.highlighted,
+        zoom: (factor) => show(zoomLatest.current.level * (1 + factor)),
+        zoomIn: () => show(zoomLatest.current.level * ORGANIZATION_CHART_ZOOM_STEP),
+        zoomOut: () => show(zoomLatest.current.level / ORGANIZATION_CHART_ZOOM_STEP),
+        setZoom: (next) => show(next),
+        getZoom: () => zoomLatest.current.level,
+        resetZoom: () => show(1),
+        fitScreen: () => {
+          const next = zoomer.current?.fit();
+          if (next !== undefined) show(next, true);
+        },
+        centerOnNode: (id) => {
+          const node = organizationChartNode(root.current as HTMLUListElement, id);
+          if (!node) return Promise.resolve();
+          const changes = new Map<string, boolean>();
+          for (const ancestor of organizationChartAncestors(node)) {
+            const key = keys.current.get(ancestor);
+            if (key !== undefined && latest.current.collapsed.includes(key)) changes.set(key, true);
+          }
+          if (changes.size > 0) apply(changes);
+          return centerOrganizationChartNode(node);
+        },
       };
       return () => {
         apiRef.current = undefined;
@@ -480,8 +620,11 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       [enableExpandCollapse, collapsedSet, loaded, loading, collapseBadgeEnabled, register],
     );
 
-    const lengths = { lineHeight, lineWidth, lineBorderRadius, nodePadding };
-    const look = { ...lengths, dimOpacity };
+    const lengths = { lineHeight, lineWidth, lineBorderRadius, nodePadding, groupLeafNodesSpacing };
+    // The level is written while zoom and pan is on or it isn't 100%, so other charts keep
+    // their markup (and the stylesheet applies `zoom` only with the attribute).
+    const zoomed = enableZoomPan || level !== 1 ? level : undefined;
+    const look = { ...lengths, dimOpacity, zoom: zoomed, minZoom, maxZoom };
     return (
       <ul
         ref={merged}
@@ -490,11 +633,17 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
           ...lengths,
           lineColor,
           lineStyle,
+          edgeColorMode,
+          groupLeafNodes,
           enableExpandCollapse,
           expandCollapseOnNodeClick,
           collapseBadgeThreshold,
           highlightOnHover,
           dimOpacity,
+          enableZoomPan,
+          zoom: zoomed,
+          minZoom,
+          maxZoom,
         })}
         data-ok-runtime="off"
         style={{ ...(organizationChartStyle(look) as CSSProperties), ...style }}
@@ -528,5 +677,130 @@ export interface OrganizationChartNodeProps
 export const OrganizationChartNode = forwardRef<HTMLLIElement, OrganizationChartNodeProps>(
   function OrganizationChartNode(props, ref) {
     return <NodeItem ref={ref} {...props} />;
+  },
+);
+
+/** lucide icons: `zoom-out`, `zoom-in`, `scan` (fit), `rotate-ccw` (reset). */
+const ICONS = {
+  out: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.35-4.35" />
+      <path d="M8 11h6" />
+    </>
+  ),
+  in: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.35-4.35" />
+      <path d="M11 8v6" />
+      <path d="M8 11h6" />
+    </>
+  ),
+  fit: (
+    <>
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+    </>
+  ),
+  reset: (
+    <>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+    </>
+  ),
+} as const;
+
+const icon = (name: keyof typeof ICONS) => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {ICONS[name]}
+  </svg>
+);
+
+export interface OrganizationChartToolbarProps extends HTMLAttributes<HTMLDivElement> {
+  /** The `id` of the chart the buttons zoom (its `enableZoomPan` must be on). */
+  chartId: string;
+  /** Accessible name of the zoom in button. Default `"Zoom in"`. */
+  zoomInLabel?: string | undefined;
+  /** Accessible name of the zoom out button. Default `"Zoom out"`. */
+  zoomOutLabel?: string | undefined;
+  /** Accessible name of the fit button. Default `"Fit to screen"`. */
+  fitLabel?: string | undefined;
+  /** Accessible name of the reset button. Default `"Reset zoom"`. */
+  resetLabel?: string | undefined;
+}
+
+/**
+ * OrganizationChartToolbar — zoom out, the level, zoom in, fit and reset buttons for the chart
+ * whose `id` is `chartId` (ADR-0056). Place it next to the chart's scroll area. The chart writes
+ * the level and the limits (`aria-disabled`) on it. Name the group with `aria-label` (default
+ * "Zoom").
+ */
+export const OrganizationChartToolbar = forwardRef<HTMLDivElement, OrganizationChartToolbarProps>(
+  function OrganizationChartToolbar(
+    {
+      chartId,
+      zoomInLabel = "Zoom in",
+      zoomOutLabel = "Zoom out",
+      fitLabel = "Fit to screen",
+      resetLabel = "Reset zoom",
+      ...props
+    },
+    ref,
+  ) {
+    return (
+      // biome-ignore lint/a11y/useSemanticElements: a group of buttons, not a form field set
+      <div
+        ref={ref}
+        data-ok-organization-chart-toolbar={chartId}
+        role="group"
+        aria-label="Zoom"
+        {...props}
+      >
+        <IconButton
+          size="sm"
+          data-ok-organization-chart-zoom-out=""
+          aria-label={zoomOutLabel}
+          aria-controls={chartId}
+        >
+          {icon("out")}
+        </IconButton>
+        <output data-ok-organization-chart-zoom-value="" />
+        <IconButton
+          size="sm"
+          data-ok-organization-chart-zoom-in=""
+          aria-label={zoomInLabel}
+          aria-controls={chartId}
+        >
+          {icon("in")}
+        </IconButton>
+        <IconButton
+          size="sm"
+          data-ok-organization-chart-fit=""
+          aria-label={fitLabel}
+          aria-controls={chartId}
+        >
+          {icon("fit")}
+        </IconButton>
+        <IconButton
+          size="sm"
+          data-ok-organization-chart-reset=""
+          aria-label={resetLabel}
+          aria-controls={chartId}
+        >
+          {icon("reset")}
+        </IconButton>
+      </div>
+    );
   },
 );

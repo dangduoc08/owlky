@@ -79,6 +79,7 @@ export type {
   MotionTrigger,
   MotionVariant,
   OrganizationChartDirection,
+  OrganizationChartEdgeColorMode,
   OrganizationChartLineColor,
   OrganizationChartLineStyle,
   Orientation,
@@ -521,6 +522,8 @@ export {
   OrganizationChartNode,
   type OrganizationChartNodeProps,
   type OrganizationChartProps,
+  OrganizationChartToolbar,
+  type OrganizationChartToolbarProps,
   useOrganizationChartApiRef,
 } from "./organization-chart/organization-chart.js";
 export {

@@ -1,9 +1,14 @@
-import { organizationChartOptions } from "@owlky/core";
+import { organizationChartNodeOptions, organizationChartOptions } from "@owlky/core";
 import organizationChartApi from "@owlky/docs-content/api/organization-chart.json" with {
   type: "json",
 };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { OrganizationChart, OrganizationChartNode, Scrollbar } from "@owlky/react";
+import {
+  OrganizationChart,
+  OrganizationChartNode,
+  OrganizationChartToolbar,
+  Scrollbar,
+} from "@owlky/react";
 import searchGroup from "../../../../../packages/html/src/components/organization-chart/examples/search-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -68,7 +73,7 @@ export function OrganizationChartNodes() {
   {
     id: "lines",
     title: "Style the lines",
-    body: "The line options are set on the root and apply to the whole chart. `lineColor` is `divider` by default. Set it to a palette color for its light tone, or to `inherit` to use the chart's text color, which you can set with the `color` property. `lineStyle` draws `solid`, `dashed` or `dotted` lines. Lengths are numbers in pixels, or strings with a unit such as `\"1.5rem\"`: `lineHeight` (40 by default) is the height of the lines between two levels, `lineWidth` (1) their thickness, `lineBorderRadius` (24) the corner radius where they turn and `nodePadding` (4) the space on each side of every node. In HTML, the lengths need the script: it turns the attributes into private CSS properties, because CSS can't read lengths from attributes. Without the script, the default lengths apply.",
+    body: "The line options are set on the root and apply to the whole chart, unless a node sets its own. `lineColor` is `divider` by default. Set it to a palette color for its light tone, or to `inherit` to use the chart's text color, which you can set with the `color` property. `lineStyle` draws `solid`, `dashed` or `dotted` lines. Lengths are numbers in pixels, or strings with a unit such as `\"1.5rem\"`: `lineHeight` (40 by default) is the height of the lines between two levels, `lineWidth` (1) their thickness, `lineBorderRadius` (24) the corner radius where they turn and `nodePadding` (4) the space on each side of every node. In HTML, the lengths need the script: it turns the attributes into private CSS properties, because CSS can't read lengths from attributes. Without the script, the default lengths apply.",
     html: `<!-- The lengths need the script (once per page) -->
 <script src="${CDN}/owlky.js" defer></script>
 
@@ -100,6 +105,49 @@ export function OrganizationChartLines() {
     >
       <OrganizationChartNode label="Jonah Pereira, design" />
       <OrganizationChartNode label="Priya Raman, development" />
+    </OrganizationChart>
+  );
+}`,
+  },
+  {
+    id: "node-lines",
+    title: "Style the lines of a node",
+    body: "Set `lineColor` and `lineStyle` on a node to style the lines from that node to its children, and the border of its toggle button. They take the same values as the chart's options. Nodes without them use the chart's lines. By default, a node's lines stop at its children: the next level uses the chart's lines again. Set `edgeColorMode` to `\"node\"` on the chart to carry a node's lines through its whole branch, down to the nodes that set their own, for example to give each team its own color. In HTML, the node options are the same `data-ok-line-color` and `data-ok-line-style` attributes, on the node's `li`. They need no script. Lines are decorative, so don't rely on their color alone to convey meaning: say it in the labels too.",
+    html: `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-edge-color-mode="node" aria-label="Company">
+  <li data-ok-organization-chart-node>
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node data-ok-line-color="primary">
+        <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+        <ul data-ok-organization-chart-children>
+          <li data-ok-organization-chart-node>
+            <div data-ok-organization-chart-label>Aiko Tanaka, design</div>
+          </li>
+        </ul>
+      </li>
+      <li data-ok-organization-chart-node data-ok-line-color="info" data-ok-line-style="dashed">
+        <div data-ok-organization-chart-label>Priya Raman, development</div>
+        <ul data-ok-organization-chart-children>
+          <li data-ok-organization-chart-node>
+            <div data-ok-organization-chart-label>Elias Novak, development</div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function TeamColors() {
+  return (
+    <OrganizationChart aria-label="Company" edgeColorMode="node" label="Maya Lindqvist, CEO">
+      <OrganizationChartNode lineColor="primary" label="Jonah Pereira, design">
+        <OrganizationChartNode label="Aiko Tanaka, design" />
+      </OrganizationChartNode>
+      <OrganizationChartNode lineColor="info" lineStyle="dashed" label="Priya Raman, development">
+        <OrganizationChartNode label="Elias Novak, development" />
+      </OrganizationChartNode>
     </OrganizationChart>
   );
 }`,
@@ -169,6 +217,39 @@ export function SidewaysCompany() {
     <OrganizationChart aria-label="Company" direction="left" label="Maya Lindqvist, CEO">
       <OrganizationChartNode label="Jonah Pereira, design" />
       <OrganizationChartNode label="Priya Raman, development" />
+    </OrganizationChart>
+  );
+}`,
+  },
+  {
+    id: "group-leaves",
+    title: "Group leaf nodes",
+    body: "A wide level of people without reports makes a chart wide. Set `groupLeafNodes` to stack them in one column under their parent instead, joined by a line along their side. A node's children are grouped when there are two or more of them and none has children of its own. A level that mixes leaves with branches keeps its row, and a single child keeps its straight line. Branches that collapse or load their children on demand count as branches. `groupLeafNodesSpacing` sets the space between grouped leaves: 8 pixels by default, or a string with a unit. Grouping follows the `direction`: the column grows upward in a `bottom` chart, and in `left` and `right` charts the leaves form a row after their parent. In HTML, the spacing needs the script, like the other lengths. Grouping itself is CSS only.",
+    html: `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-group-leaf-nodes aria-label="Design team">
+  <li data-ok-organization-chart-node>
+    <div data-ok-organization-chart-label>Jonah Pereira, design lead</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Aiko Tanaka</div>
+      </li>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Oskar Berg</div>
+      </li>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Zara Okafor</div>
+      </li>
+    </ul>
+  </li>
+</ul>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function DesignTeam() {
+  return (
+    <OrganizationChart aria-label="Design team" groupLeafNodes label="Jonah Pereira, design lead">
+      <OrganizationChartNode label="Aiko Tanaka" />
+      <OrganizationChartNode label="Oskar Berg" />
+      <OrganizationChartNode label="Zara Okafor" />
     </OrganizationChart>
   );
 }`,
@@ -435,6 +516,93 @@ export function LazyCompany() {
 }`,
   },
   {
+    id: "zoom",
+    title: "Zoom and pan",
+    body: `Set \`enableZoomPan\` to let people zoom a large chart and drag it around. Put the chart in a \`Scrollbar\` with a fixed height: the zoomed chart scrolls inside it, and the page never scrolls sideways. Then:
+
+- **Zoom with the pointer:** hold **Ctrl** (**Command** on macOS) and turn the mouse wheel, or pinch on a trackpad. The point under the pointer stays in place. A wheel without the key scrolls as usual, so the chart never takes over the page's scrolling.
+- **Zoom with the keyboard:** press **+** to zoom in, **−** to zoom out and **0** to return to 100%, while the scroll area or a control in the chart has the focus.
+- **Pan:** drag the chart with the mouse. Touch screens scroll it natively.
+- **Use the toolbar:** \`OrganizationChartToolbar\` shows zoom out, the level, zoom in, fit and reset buttons for the chart whose \`id\` its \`chartId\` names. Place it next to the scroll area, so it doesn't scroll away. In HTML, the toolbar is a \`div\` whose \`data-ok-organization-chart-toolbar\` attribute names the chart, and it needs no script of its own.
+
+The level goes from \`minZoom\` (0.25) to \`maxZoom\` (2), and 1 is 100%. Control it with \`zoom\` and \`onZoomChange\`, or start from \`defaultZoom\`. In HTML, \`data-ok-zoom\` holds the level. **Fit to screen** picks the largest level up to 100% at which the whole chart fits the scroll area. It doesn't enlarge a small chart, so text never grows past its normal size. To bring a node into view, call \`centerOnNode(id)\`: it opens the collapsed branches above the node first.`,
+    html: `<!-- Zoom and pan need the script (once per page) -->
+<script src="${CDN}/owlky.js" defer></script>
+
+<!-- The toolbar names the chart by its id -->
+<div data-ok-organization-chart-toolbar="company-chart" role="group" aria-label="Zoom">
+  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm"
+          data-ok-organization-chart-zoom-out aria-label="Zoom out" aria-controls="company-chart">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path><path d="M8 11h6"></path></svg>
+  </button>
+  <output data-ok-organization-chart-zoom-value></output>
+  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm"
+          data-ok-organization-chart-zoom-in aria-label="Zoom in" aria-controls="company-chart">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path><path d="M11 8v6"></path><path d="M8 11h6"></path></svg>
+  </button>
+  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm"
+          data-ok-organization-chart-fit aria-label="Fit to screen" aria-controls="company-chart">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></svg>
+  </button>
+  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm"
+          data-ok-organization-chart-reset aria-label="Reset zoom" aria-controls="company-chart">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+  </button>
+</div>
+
+<!-- A scroll area with a fixed height: the zoomed chart scrolls inside it -->
+<section data-ok-scrollbar aria-label="Company chart, scrollable" tabindex="0" style="height: 400px">
+  <ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+      data-ok-enable-zoom-pan data-ok-zoom="1" id="company-chart" aria-label="Company">
+    <li data-ok-organization-chart-node>
+      <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+      <ul data-ok-organization-chart-children>
+        <li data-ok-organization-chart-node>
+          <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+        </li>
+        <li data-ok-organization-chart-node>
+          <div data-ok-organization-chart-label>Priya Raman, development</div>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</section>
+
+<script type="module">
+  // The level changes through a cancelable event, with the new and the previous level
+  document.getElementById("company-chart").addEventListener("ok:organization-chart:zoom", (event) => {
+    console.log(\`Zoom: \${event.detail.previous} to \${event.detail.zoom}\`);
+  });
+</script>`,
+    react: `import {
+  OrganizationChart,
+  OrganizationChartNode,
+  OrganizationChartToolbar,
+  Scrollbar,
+} from "@owlky/react";
+
+export function ZoomableCompany() {
+  return (
+    <>
+      <OrganizationChartToolbar chartId="company-chart" />
+      {/* A scroll area with a fixed height: the zoomed chart scrolls inside it */}
+      <Scrollbar aria-label="Company chart, scrollable" style={{ height: 400 }}>
+        <OrganizationChart
+          id="company-chart"
+          aria-label="Company"
+          enableZoomPan
+          onZoomChange={(level) => console.log(\`Zoom: \${level}\`)}
+          label="Maya Lindqvist, CEO"
+        >
+          <OrganizationChartNode label="Jonah Pereira, design" />
+          <OrganizationChartNode label="Priya Raman, development" />
+        </OrganizationChart>
+      </Scrollbar>
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed, and lengths that aren't valid, fall back to the default.",
@@ -449,14 +617,21 @@ export function LazyCompany() {
     title: "Events and methods",
     body: `- **\`ok:organization-chart:expand\`** (cancelable) fires on the chart before someone expands a node, with \`detail.nodeId\` and \`detail.node\`. Call \`preventDefault()\` to keep the node collapsed.
 - **\`ok:organization-chart:collapse\`** (cancelable) fires before someone collapses a node, with the same details.
+- **\`ok:organization-chart:zoom\`** (cancelable) fires when someone zooms with the wheel, a pinch, the keys or the toolbar, with \`detail.zoom\` (the new level) and \`detail.previous\`. Call \`preventDefault()\` to keep the level.
 - **\`ok:organization-chart:loadchildren\`** fires the first time a node with an empty children list expands, with \`detail.nodeId\`, \`detail.node\` and \`detail.respondWith(nodes)\`.
-- **Instance:** \`runtime.get(element, "organization-chart")\` returns \`{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id), highlightNode(id), clearHighlight(), getHighlightedNode() }\`. \`expand(id)\` returns a promise that resolves once the children are loaded and shown, and \`highlightNode(id)\` one that resolves once the node is in view. The methods don't fire events.
-- **React:** \`onExpand(nodeId)\`, \`onCollapse(nodeId)\`, \`onCollapsedNodesChange(nodeIds)\`, \`onHighlightedNodeChange(nodeId)\` and the same methods on \`apiRef\`.`,
+- **Instance:** \`runtime.get(element, "organization-chart")\` returns \`{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id), highlightNode(id), clearHighlight(), getHighlightedNode(), zoom(factor), zoomIn(), zoomOut(), setZoom(level), getZoom(), resetZoom(), fitScreen(), centerOnNode(id) }\`. \`zoom(factor)\` multiplies the level by 1 + factor, and \`zoomIn()\` and \`zoomOut()\` multiply or divide it by 1.25. \`expand(id)\` returns a promise that resolves once the children are loaded and shown, \`highlightNode(id)\` one that resolves once the node is in view, and \`centerOnNode(id)\` one that resolves once the scroll starts. The methods don't fire events.
+- **React:** \`onExpand(nodeId)\`, \`onCollapse(nodeId)\`, \`onCollapsedNodesChange(nodeIds)\`, \`onHighlightedNodeChange(nodeId)\`, \`onZoomChange(level)\` and the same methods on \`apiRef\`.`,
   },
   {
     id: "keyboard",
     title: "Keyboard",
-    body: "A chart has no keys of its own. Buttons and links in its labels work as usual, in reading order: each node, its toggle button, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it.",
+    body: `Buttons and links in a chart's labels work as usual, in reading order: each node, its toggle button, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it. With \`enableZoomPan\`, these keys work while the scroll area or a control in the chart has the focus:
+
+- **+** or **=:** zooms in.
+- **−:** zooms out.
+- **0:** returns to 100%.
+
+They don't apply in text fields, menus and other widgets with keys of their own, or with **Ctrl**, **Command** or **Alt**, which stay the browser's zoom.`,
   },
   {
     id: "accessibility",
@@ -471,7 +646,11 @@ export function LazyCompany() {
 - Collapsed children are hidden from screen readers too. While children load, the toggle has \`aria-busy="true"\`.
 - A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.
 - The hover highlight follows the keyboard focus too, so keyboard users see the same path. Faded nodes stay readable but drop below the text contrast minimum while the highlight lasts: set \`dimOpacity\` to 0 to keep full contrast, as the path's colors still show it.
-- A node found by a search gets a ring and a colored path, and nothing fades. Announce the result in a \`role="status"\` element: the highlight itself is visual only.`,
+- A node found by a search gets a ring and a colored path, and nothing fades. Announce the result in a \`role="status"\` element: the highlight itself is visual only.
+- Zooming has keyboard and toolbar alternatives to the wheel, pinch and drag. The toolbar's level is an \`output\` element, so screen readers announce each new level politely. At a limit, the zoom in or zoom out button has \`aria-disabled="true"\` and keeps the focus.
+- At every level, the browser scrolls the focused control into view inside the scroll area.
+- Below 100%, buttons in the chart are smaller than the 24 by 24 pixel minimum target size. People choose that view themselves, as with the browser's zoom, and **0** or **Reset zoom** returns to full size. Start charts at 100%.
+- Zoom steps are instant. \`centerOnNode\` and \`highlightNode\` scroll smoothly, unless the user prefers reduced motion.`,
   },
   apiReferenceSection(organizationChartApi),
 ];
@@ -503,6 +682,18 @@ const PREVIEWS = {
       </OrganizationChart>
     </Preview>
   ),
+  "node-lines": () => (
+    <Preview>
+      <OrganizationChart aria-label="Company" edgeColorMode="node" label="Maya Lindqvist, CEO">
+        <OrganizationChartNode lineColor="primary" label="Jonah Pereira, design">
+          <OrganizationChartNode label="Aiko Tanaka, design" />
+        </OrganizationChartNode>
+        <OrganizationChartNode lineColor="info" lineStyle="dashed" label="Priya Raman, development">
+          <OrganizationChartNode label="Elias Novak, development" />
+        </OrganizationChartNode>
+      </OrganizationChart>
+    </Preview>
+  ),
   scroll: () => (
     <Preview>
       <Scrollbar aria-label="Company chart, scrollable" style={{ width: "100%" }}>
@@ -529,6 +720,15 @@ const PREVIEWS = {
           <OrganizationChartNode label="Leila Haddad, marketing" />
         </OrganizationChart>
       </Scrollbar>
+    </Preview>
+  ),
+  "group-leaves": () => (
+    <Preview>
+      <OrganizationChart aria-label="Design team" groupLeafNodes label="Jonah Pereira, design lead">
+        <OrganizationChartNode label="Aiko Tanaka" />
+        <OrganizationChartNode label="Oskar Berg" />
+        <OrganizationChartNode label="Zara Okafor" />
+      </OrganizationChart>
     </Preview>
   ),
   collapse: () => (
@@ -577,7 +777,17 @@ const PREVIEWS = {
       />
     </Preview>
   ),
-  options: () => <OptionsTable schema={organizationChartOptions} />,
+  zoom: () => (
+    <Preview>
+      <ZoomPreview />
+    </Preview>
+  ),
+  options: () => (
+    <>
+      <OptionsTable schema={organizationChartOptions} />
+      <OptionsTable schema={organizationChartNodeOptions} />
+    </>
+  ),
   props: () => (
     <PropsTable
       label="Organization chart parts"
@@ -637,6 +847,32 @@ const PREVIEWS = {
     />
   ),
 };
+
+/** The zoom section's preview: the toolbar over a 320px scroll area. */
+function ZoomPreview() {
+  return (
+    <div style={{ display: "grid", gap: 8, width: "100%" }}>
+      <OrganizationChartToolbar chartId="docs-zoom-chart" />
+      <Scrollbar aria-label="Zoomable company chart, scrollable" style={{ height: 320 }}>
+        <OrganizationChart
+          id="docs-zoom-chart"
+          aria-label="Zoomable company"
+          enableZoomPan
+          label="Maya Lindqvist, CEO"
+        >
+          <OrganizationChartNode label="Jonah Pereira, design">
+            <OrganizationChartNode label="Aiko Tanaka" />
+          </OrganizationChartNode>
+          <OrganizationChartNode label="Priya Raman, development">
+            <OrganizationChartNode label="Elias Novak" />
+            <OrganizationChartNode label="Noah Brennan" />
+          </OrganizationChartNode>
+          <OrganizationChartNode label="Leila Haddad, marketing" />
+        </OrganizationChart>
+      </Scrollbar>
+    </div>
+  );
+}
 
 /** Organization chart docs page (ADR-0019). */
 export function OrganizationChartDocs() {
