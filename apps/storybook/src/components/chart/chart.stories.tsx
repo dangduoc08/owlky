@@ -138,3 +138,8 @@ export const Stock: StoryObj = story("stock");
 export const StockOverlays: StoryObj = story("stock-overlays");
 export const StockOscillators: StoryObj = story("stock-oscillators");
 export const StockLine: StoryObj = story("stock-line");
+// Roadmap 4.18.21: waterfall and dumbbell charts.
+export const Waterfall: StoryObj = story("waterfall");
+export const Dumbbell: StoryObj = story("dumbbell");
+// Roadmap 4.18.19: crossfilter between the charts of a group.
+export const Crossfilter: StoryObj = story("crossfilter");

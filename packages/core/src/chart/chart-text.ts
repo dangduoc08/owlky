@@ -43,6 +43,8 @@ export interface ChartTextOptions {
   /** Grid stripes (`"grey transparent"`, 4.18.64). */
   readonly gridRowColors?: readonly ChartStripeColor[] | undefined;
   readonly gridColumnColors?: readonly ChartStripeColor[] | undefined;
+  /** Dumbbell markers: a start and an end color per series (`"info success; warning error"`, 4.18.21). */
+  readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -63,6 +65,7 @@ export const CHART_TEXT_ATTRIBUTES = {
   customLegendItems: "data-ok-custom-legend-items",
   gridRowColors: "data-ok-grid-row-colors",
   gridColumnColors: "data-ok-grid-column-colors",
+  dumbbellColors: "data-ok-dumbbell-colors",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -115,6 +118,29 @@ export function parseChartStripeColors(text: string | null | undefined): ChartSt
   return text.trim().split(/\s+/).filter(isStripe).slice(0, 100);
 }
 
+/**
+ * Dumbbell colors from text: one pair per series separated by `;`, each a start and an end color
+ * (`"info success; warning error"`); a single color colors both ends. Invalid colors are dropped.
+ */
+export function parseChartDumbbellColors(text: string | null | undefined): ChartColor[][] {
+  if (!text || text.length > 2000) return [];
+  return text
+    .split(";")
+    .slice(0, 100)
+    .flatMap((group) => {
+      const [start, end = start] = group.trim().split(/\s+/).filter(isColor);
+      return start && end ? [[start, end]] : [];
+    });
+}
+
+/** Dumbbell colors as attribute text (the inverse of `parseChartDumbbellColors`). */
+export function chartDumbbellColorsText(pairs: readonly (readonly ChartColor[])[]): string {
+  return pairs
+    .map((pair) => pair.filter(isColor).slice(0, 2).join(" "))
+    .filter(Boolean)
+    .join("; ");
+}
+
 /** A list as attribute text: items separated by `; ` (a `;` inside an item becomes a space). */
 export function chartListText(items: readonly string[]): string {
   return items
@@ -153,6 +179,11 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
       const text = ((value as readonly ChartStripeColor[] | undefined) ?? [])
         .filter(isStripe)
         .join(" ");
+      if (text) out[attr] = text;
+    } else if (key === "dumbbellColors") {
+      const text = chartDumbbellColorsText(
+        (value as readonly (readonly ChartColor[])[] | undefined) ?? [],
+      );
       if (text) out[attr] = text;
     } else if (key === "customLegendItems") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);

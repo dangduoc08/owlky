@@ -11,7 +11,9 @@ annotations, animations, export (SVG, PNG, CSV) and a toolbar; data label format
 legend with values, the donut hole size, heatmap color ranges, horizontal box plots and localized
 texts. ADR-0047 adds the commercial add-ons' features (behavior and option names only): Sankey
 charts (ApexSankey, phase 2.1) and stock charts (ApexStock, phase 2.2: indicators, panes, a
-navigator). Upstream: ApexCharts (`react-apexcharts`, ADR-0015), ApexSankey and ApexStock.
+navigator). Roadmap 4.18.21 adds ApexCharts v8's waterfall and dumbbell charts; 4.18.19 a crossfilter
+between the charts of a group (ADR-0054). Upstream: ApexCharts
+(`react-apexcharts`, ADR-0015), ApexSankey and ApexStock.
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
 HTML source: written by us (ApexCharts' framework-free core is not MIT: the owner chose to write our
@@ -68,6 +70,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
         (bars, areas and slices then carry fill=url(#…)); markers may be
         path[data-ok-chart-marker][data-ok-shape="square|triangle|diamond|cross|plus|star"][data-ok-color]?
         (hover markers too); lines path[data-ok-chart-line][stroke-width]?[stroke-dasharray]?
+      g[data-ok-chart-filter-layer]?                     (crossfilter highlight, 4.18.19; before the crosshair,
+        › rect | path[data-ok-chart-filter-band]          or the series group of cells: bands, slice halos, cell frames)
       g[data-ok-chart-selected]?                         (selected points, 4.18.60; before the active group)
         circle | rect | path[data-ok-chart-selected-mark] (ring around points, frame around blocks
                                                           and cells, outline of slices and rings)
@@ -128,11 +132,22 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-navigator] › rect[data-ok-chart-navigator-frame] + g[transform] › (sparkline of
         the price) + g[data-ok-chart-brush] › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2
       g[data-ok-chart-active]; g[data-ok-chart-pane-titles] › text[data-ok-chart-pane-title]
+    Waterfall (4.18.21; root [data-ok-waterfall-positive-color]?[data-ok-waterfall-negative-color]?
+      [data-ok-waterfall-total-color]?[data-ok-waterfall-subtotal-color]?[data-ok-hide-connectors]?):
+      g[data-ok-chart-series][data-ok-type=waterfall] › line[data-ok-chart-connector]* (unless hideConnectors)
+        + rect[data-ok-chart-bar][data-ok-chart-step="up|down|total|subtotal"][data-ok-color][rx]×n
+    Dumbbell (4.18.21; root [data-ok-dumbbell-colors]?):
+      g[data-ok-chart-series][data-ok-type=dumbbell] › (line[data-ok-chart-dumbbell-line] +
+        circle[data-ok-chart-dumbbell=start][data-ok-color]? + circle[data-ok-chart-dumbbell=end][data-ok-color]?)×n
+      (drawn with the points group, after bars and lines)
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
         + div[data-ok-chart-tooltip-rows]
         div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color][data-ok-shape]?[data-ok-pattern]? + span + span[data-ok-chart-tooltip-value]
+  div[data-ok-chart-filter]                              (crossfilter, 4.18.19: charts with data-ok-crossfilter)
+    button[type=button][data-ok-chart-filter-clear][hidden]? › "Clear filter" (hidden while the group has no filter)
+    span[data-ok-chart-filter-status][role=status]       (visually hidden; announces this chart's filter changes)
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
   template[data-ok-chart-tooltip]?                       (HTML: custom tooltip content, 4.18.63; React: tooltipContent)
     [data-ok-chart-tooltip-slot="title|state|row|name|value|marker"] (text slots; row repeated per value,
@@ -151,6 +166,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Stock: the price series gets a th[data-ok-part="volume"] column after its values when a point has
       `v`; indicator columns th[data-ok-indicator="sma|…"][data-ok-color] (rowspan 2) are written by
       React and the runtime and skipped when the table is read (volume bars have none)
+    Waterfall: one cell per point, the change; total and subtotal cells td[data-ok-sum="total|subtotal"]
+      show the running total as text (read back as `isTotal` / `isSubtotal`: the text isn't input)
     Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
       tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
         + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
@@ -268,6 +285,43 @@ Stock geometry (core `chart-stock.ts`, `chart-indicators.ts`, ADR-0047):
 - Navigator: 12px under the panes, 48px tall, the price's line over the whole axis (a sparkline),
   its own axis map (`layout.navigator`), the zoom (or the whole axis) as a brush selection.
 
+Waterfall geometry (core `chart-model.ts` running totals, `layoutChart`, 4.18.21):
+- Data: each value is a step; `{ isTotal: true }` / `{ isSubtotal: true }` points (their `y` is
+  ignored) show the running total so far. `chartData` keeps the step in `y` and writes
+  `range = [before, after]` (sums: `[0, total]`, `y` = the total), in x order; gaps (`null`) add
+  nothing and break the connectors. A whole type: every series is a waterfall, side by side in its
+  band slot like range bars; `horizontal` turns it. The value scale includes zero.
+- Bars: from `before` to `after`, `rx` = min(4, half the thickness, half the length), at least 1px
+  long. Colors: the point's `color`, else `waterfallTotalColor` (default the series color) for
+  totals, `waterfallSubtotalColor` (default the total color) for subtotals,
+  `waterfallPositiveColor` (`success`) for steps that don't lower the total, `waterfallNegativeColor`
+  (`error`) for the others; always written on the bar (`data-ok-color`).
+- Connectors: a line at the running total from each bar's far edge to the next drawn bar's near
+  edge (CSS: 1px secondary text, dashes 3), before the bars; `hideConnectors` drops them.
+- Data labels (inside, where they fit): steps signed (`+85`, core `chartSigned`), sums plain.
+  Tooltip rows: steps `series: +85` and `Total: <after>` (part label `total`, localizable;
+  "Series (Total)" with several waterfall series); sums one row with the total. Marks are blocks
+  (band highlight, no hover marker; clicks select the bar).
+- The legend lists the series (none for one series): the step colors are explained by the signed
+  values in the tooltip, the labels and the table, so color is never the only cue.
+
+Dumbbell geometry (core `layoutChart`, 4.18.21):
+- Data: two values per point in `y`, kept in the order given (start, end; never sorted), table
+  columns `th[data-ok-part="start|end"]` under the series (part labels `start` / `end`, localizable:
+  "Before" / "After"). A whole type; every series is drawn in its band slot; `horizontal` turns it.
+- The value scale fits the data plus a tenth of its span on both sides (never below zero for
+  positive data), so markers and labels stay in the plot.
+- Each point: a line between the two values (CSS: the series color at 0.48, 4px, round caps),
+  a start ring (paper fill, 3px stroke) and an end disc (paper ring), radius `markerSize`
+  (default 6, at least 2). `dumbbellColors` (`[[start, end], …]`; HTML
+  `data-ok-dumbbell-colors="start end; …"`, core `parseChartDumbbellColors`, one color colors
+  both ends) gives pair n to series n, later series the first pair; a point's `color` colors
+  both ends. Start ring vs end disc tells the direction without color.
+- Data labels: outside, the higher value above (right of) its marker, the lower below (left of)
+  it; one label when both are equal. Tooltip rows `Start` / `End` ("Series (Start)" with several
+  dumbbell series), each with its marker's color. Marks are blocks (the bounding box of the line
+  and the markers: band highlight, click selection, frame outline); zoom works as for columns.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -291,7 +345,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total) or `dumbbell` (a start and an end value per category: two markers joined by a line). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -347,6 +401,12 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `grid` | `data-ok-grid="…"` | style | `y` `x` `both` `none` | — | Grid lines: `y` horizontal (along the value ticks, or between the bars of horizontal bar charts), `x` vertical, `both` or `none`. |
 | `gridRowOpacity` | `data-ok-grid-row-opacity="…"` | number | number | — | Opacity of the row stripes (0 to 1; default 0.5). |
 | `gridColumnOpacity` | `data-ok-grid-column-opacity="…"` | number | number | — | Opacity of the column stripes (0 to 1; default 0.5). |
+| `waterfallPositiveColor` | `data-ok-waterfall-positive-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the steps that raise the total (default `success`). |
+| `waterfallNegativeColor` | `data-ok-waterfall-negative-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the steps that lower the total (default `error`). |
+| `waterfallTotalColor` | `data-ok-waterfall-total-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the total bars (default the series color). |
+| `waterfallSubtotalColor` | `data-ok-waterfall-subtotal-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the subtotal bars (default the total color). |
+| `hideConnectors` | `data-ok-hide-connectors` | flag | boolean | off | Waterfall charts: no dashed lines from the end of each bar to the next one. |
+| `crossfilter` | `data-ok-crossfilter="…"` | style | `filter` `highlight` | — | Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
@@ -363,7 +423,8 @@ names stay out of it: each series column carries its axis, `th[data-ok-y-axis="<
 `chartDiscreteMarkersText` / `parseChartDiscreteMarkers`), `customLegendItems` ↔
 `data-ok-custom-legend-items` (`; `-separated), `gridRowColors` / `gridColumnColors` ↔
 `data-ok-grid-row-colors` / `data-ok-grid-column-colors` (space-separated: palette names, `grey`,
-`transparent`; core `parseChartStripeColors`), `group` ↔ `data-ok-group`, `brushTarget` ↔
+`transparent`; core `parseChartStripeColors`), `dumbbellColors` ↔ `data-ok-dumbbell-colors`
+(`"start end; …"`, core `chartDumbbellColorsText` / `parseChartDumbbellColors`), `group` ↔ `data-ok-group`, `brushTarget` ↔
 `data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
 `chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
 
@@ -469,6 +530,28 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   Shift + Left / Right. Escape hides the tooltip, then resets. Gestures: core
   `createChartGestures` (reports ranges; owns no state). An uncontrolled zoom is kept with the axis
   it was set on: a range that reached the last x value follows new points (live tails).
+- Crossfilter (4.18.19, ADR-0054; core `chart-filter.ts`, the registry of `linkChart`): charts of
+  a `group` with `crossfilter` share one filter, a set of category indexes. Sources: the chart's
+  own selection changed by a click, Enter or Space (`chartFilterCategories`: the unique
+  `dataPointIndex` of the selected points; numeric axes and Sankey charts are no sources) and a
+  brush chart's own brush (`chartBrushCategories`: the whole categories in the range; the whole
+  axis clears). One filter per group, kept with its source: a new one replaces it, a source that
+  empties its selection clears only its own, a source that unlinks takes it along, a chart that
+  links late gets it, a chart that links again republishes its selection. Members are told
+  `{ categories, own }` or `null`. Receivers draw it (`renderChart` `crossfilter` + `filter`):
+  `filter` lays out the data with the other categories as gaps (circular charts: those slices
+  hidden; the legend keeps its state) and fits the value axis to what is left; `highlight` adds
+  `g[data-ok-chart-filter-layer]` (primary at 0.12: the slot's band, a slice's halo of +6px, a
+  cell's frame of +2px). The source draws its selection, not the filter. Legend, table, categories,
+  keyboard slots and zoom extent keep the whole data. Radar, Sankey and numeric-axis charts draw no
+  filter. The **Clear filter** button (shown on every participant while the group is filtered)
+  clears the group and the source's selection (`select` events / `onDataPointSelection` with
+  `selected: false`). Only the chart acted on writes its status: `"<filter>: North, West"` (up to
+  20 names, then `(+n)`) or `"Filter cleared"`; texts `clearFilter`, `filter`, `filterCleared`
+  (`localeText` / `setLocaleText`). Methods (`setSelectedDataPoints`, `toggleDataPointSelection`)
+  don't publish filters. HTML: `ok:chart:filter` (detail `{ categories, own }`), instance `filter`,
+  `clearFilter()`; React: `onFilterChange(categories, own)`. Without the filter, the controls box is
+  out of the flow (no grid gap) but rendered, so its status announces.
 - Groups (`group`): charts share the active category (by index) and the zoom; changes received from
   the group fire no `ok:chart:active` and don't spread again. Brush charts (`brushTarget`): a
   selection with handles over the whole axis (or the target's zoom); a drag inside moves it, its
@@ -524,6 +607,11 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   applies: the selected state is announced by the tooltip's status ("Selected", localizable), and
   drawn as an outline in the primary text color (not color alone). Enter / Space make it
   reachable without a pointer.
+- Crossfilter (4.18.19): filters are set by the same click and Enter / Space as the selection (no
+  drag needed, WCAG 2.5.7); the chart acted on announces the filter in its own polite status (one
+  announcement per action); **Clear filter** is a native button (32px target); filtered charts keep
+  every value in their data table; the highlight tint is behind the series and never the only cue
+  of the source (its selection outline).
 - Legend buttons: `aria-pressed`; hidden series show a hollow marker and crossed-out text (not color
   alone); targets at least 24 × 24px.
 - Non-color cues (4.18.62, WCAG 1.4.1): marker shapes, patterns and dashes tell series apart without
@@ -552,7 +640,8 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   add page scroll (they did before phase 4: the page grew by the table's height).
 
 ## Events / API
-- HTML: `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`,
+- HTML: `ok:chart:filter` (detail `{ categories: number[] | null, own }`, after the group's crossfilter
+  changed as this chart sees it), `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`,
   after the change, one per toggled point), `ok:chart:toggle` (cancelable, detail `{ index, hidden, hiddenSeries }`),
   `ok:chart:active` (detail `{ active: { kind: "index", index } | { kind: "mark", mark } | null }`),
   `ok:chart:zoom` (detail `{ range: { min, max } | null, reason: "user" | "group" | "brush" }`;
@@ -560,11 +649,12 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 - Instance: `{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(f),
   refresh(), updateSeries(series, categories?), appendData(data, { categories?, limit? }),
   zoomRange, setZoomRange(range), exportChart(format), setLocaleText(text), selectedDataPoints,
-  setSelectedDataPoints(list), toggleDataPointSelection(seriesIndex, dataPointIndex) }`;
+  setSelectedDataPoints(list), toggleDataPointSelection(seriesIndex, dataPointIndex), filter,
+  clearFilter() }`;
   methods emit no events. `updateSeries` replaces the data (the current categories unless given);
   `appendData([{ data: [...] }, …])` appends points per series in order, `categories` adds theirs,
   `limit` keeps the last n (a sliding window). `refresh()` reads the table again.
-- React: `onDataPointSelection(detail)`, `selectedDataPoints` (controlled) /
+- React: `crossfilter`, `onFilterChange(categories, own)`; `onDataPointSelection(detail)`, `selectedDataPoints` (controlled) /
   `defaultSelectedDataPoints`; `onHiddenSeriesChange(hidden)`, `onActiveChange(active)`; `hiddenSeries` (controlled) /
   `defaultHiddenSeries`; `zoomRange` / `defaultZoomRange` / `onZoomRangeChange(range, reason)` (also
   for group and brush changes, so controlled charts follow); `ref` → the `figure` (core
@@ -644,7 +734,17 @@ Option areas not covered by the table above:
 
 | Upstream | Owlky | Status | Note |
 |---|---|---|---|
-| ApexCharts v8 types `waterfall`, `dumbbell` (`plotOptions.bar.isDumbbell`, `dumbbellColors`, `dumbbell.*`), `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
+| `chart.type: "waterfall"` (ApexCharts 7.1+) | `type="waterfall"` | kept (4.18.21) | a whole type (every series is a waterfall); `plotOptions.bar.horizontal` → `horizontal` |
+| waterfall datum `isTotal`, `isSubtotal` (no `y`) | point `{ isTotal: true }` / `{ isSubtotal: true }` · HTML `td[data-ok-sum="total|subtotal"]` | kept (4.18.21) | the cell's text is the computed total (the accessible view), never read back |
+| waterfall datum `fillColor` | point `color` | renamed (4.18.21) | |
+| `plotOptions.waterfall.colors.positive` / `.negative` / `.total` / `.subtotal` | `waterfallPositiveColor` (default `success`), `waterfallNegativeColor` (`error`), `waterfallTotalColor` (the series color), `waterfallSubtotalColor` (the total color) | renamed (4.18.21) | palette names (tokens), not CSS colors |
+| `plotOptions.waterfall.connectors.show` | `hideConnectors` (`data-ok-hide-connectors`) | renamed (4.18.21) | on by default as upstream; a flag that turns them off |
+| `plotOptions.waterfall.connectors.color` / `.strokeWidth` / `.strokeDashArray` | — | not applicable | fixed by the design: 1px secondary text, dashes of 3px |
+| `rangeBar` + `plotOptions.bar.isDumbbell`; `chart.type: "dumbbell"` (ApexCharts 7.1+) | `type="dumbbell"` (two values per point in `y`) | renamed (4.18.21) | one type for both upstream forms; `horizontal` as `plotOptions.bar.horizontal` |
+| `plotOptions.bar.dumbbellColors` (`[[start, end], …]`) | `dumbbellColors` (palette names; HTML `data-ok-dumbbell-colors="start end; …"`) | kept (4.18.21) | pair n for series n, later series the first pair; CSS colors: not applicable (tokens) |
+| `markers.size` on dumbbells | `markerSize` (default 6) | renamed (4.18.21) | |
+| dumbbell line style (`stroke.width`, `stroke.colors`), `plotOptions.bar.dumbbell.*` styling | — | not applicable | fixed by the design: the series color at 0.48, 4px; start ring, end disc |
+| ApexCharts v8 types `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | not built in this batch (waterfall and dumbbell first); prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
@@ -652,7 +752,8 @@ Option areas not covered by the table above:
 | method `toggleDataPointSelection(seriesIndex, dataPointIndex)` | HTML instance `toggleDataPointSelection`, `selectedDataPoints`, `setSelectedDataPoints(list)`; React: controlled `selectedDataPoints` / `defaultSelectedDataPoints` + core `toggleChartSelection(selected, points, multiple)` | renamed (4.18.60) | React has no chart instance (`ref` is the `figure`) |
 | `chart.events` `click` (any click), `markerClick`, `xAxisLabelClick` | — | deferred | axis labels are in the `aria-hidden` SVG (the table's row headers are their accessible view); a label selection needs focusable labels first |
 | `chart.events` `animationEnd`, `beforeMount`, `mounted`, `updated`, `keyDown`, `keyUp` | — | not applicable | lifecycle: React effects / runtime setup; DOM key events |
-| `chart.events` `crossFilter`, `filterChange`, `highlightFilterChanged`; `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.19, 4.18.20) | |
+| `chart.events` `crossFilter`, `filterChange`, `highlightFilterChanged` | HTML `ok:chart:filter` (detail `{ categories, own }`) · React `onFilterChange(categories, own)` · instance `filter`, `clearFilter()` | renamed (4.18.19, ADR-0054) | one event for both modes |
+| `chart.events` `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.20) | |
 | drilldown: `drillDown` / `drillUp` / `drillToRoot` / `clearDrilldownCache`, events `drillDownStart` / `End` / `Error`, `drillUp` | — | deferred | category → child series, with a back control |
 | trellis / small multiples: `ApexCharts.trellis`, `rowSeries`, `getPanels`, `getPanel`, `promotePanel`, `restorePanels` | — | deferred | one chart per category on shared axes |
 | `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / deferred (4.18.21) | unit charts with 4.18.21; themes are tokens; `exec`: the element instance |
@@ -660,7 +761,8 @@ Option areas not covered by the table above:
 | `states.active` (the selected look), `.filter`, `states.hover.filter`, `plotOptions.pie.expandOnClick` | the outline `[data-ok-chart-selected-mark]` | renamed (4.18.60) | fixed by the design: a 2px primary-text outline (not color alone); filters not applicable |
 | `chart.brush.targets` (several targets), `chart.brush.autoScaleYaxis` | `brushTarget` (one id) | deferred | several targets; y autoscale not applicable (zoom is x only) |
 | `chart.selection` (preselected range, fill, stroke) | the target's zoom | renamed | style fixed by the design |
-| crossfilter (Premium Linked Views / Highlight Filter) | — | deferred (4.18.19) | |
+| crossfilter (Premium Linked Views / Highlight Filter): a click or brush in one chart filters the others | `crossfilter: "filter" \| "highlight"` (`data-ok-crossfilter`, optional) on charts of a `group` | renamed (4.18.19, ADR-0054) | Linked Views → `filter`, Highlight Filter → `highlight`; sources: the selection (click, Enter, Space) and brushes; categories by position; a **Clear filter** button and a polite status |
+| crossfilter on value ranges (Highlight Filter bins), numeric x ranges, filter persistence, filters across React and HTML charts | — | deferred / not applicable | ranges of values and numeric axes: a later row; groups are per library copy (ADR-0031) |
 | measure tool (`toolbar.tools.measure`), draggable annotations | — | deferred (4.18.20) | |
 | `chart.accessibility` (`description`, keyboard navigation, announcements) | always on: `caption` (`label`), the data table, keyboard slots, live text | kept | |
 | `chart.locales`, `chart.defaultLocale` | `locale` (Intl) + `localeText` | renamed | |
@@ -743,5 +845,12 @@ Option areas not covered by the table above:
 - Tooltip stories (4.18.63): Tooltip options; Custom tooltip (a React demo with `?raw` source and
   the HTML template; no Controls; the tooltip is hidden at rest, so parity compares the same markup).
 - Legend and grid stories (4.18.64): Legend options, Grid lines and stripes.
+- Dumbbell story (4.18.21): Dumbbell (page load before and after with data labels and renamed
+  parts; a horizontal pay gap with `dumbbellColors`).
+- Crossfilter story (4.18.19): Crossfilter (a highlight column chart with several selections, a
+  filtered column chart and a filtered donut in one group). At rest every chart renders its
+  filter controls with the button hidden and an empty status, in both frameworks.
+- Waterfall story (4.18.21): Waterfall (a vertical cash flow with a subtotal, a total, data labels
+  and a prefix; a horizontal headcount change with own colors).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

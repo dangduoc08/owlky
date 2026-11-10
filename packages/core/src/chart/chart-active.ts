@@ -1,6 +1,13 @@
 import { chartMarkerNode } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
-import type { ChartArc, ChartLayout, ChartMark, ChartNode, ChartRect } from "./chart-layout.js";
+import {
+  type ChartArc,
+  type ChartLayout,
+  type ChartMark,
+  type ChartNode,
+  type ChartRect,
+  chartSigned,
+} from "./chart-layout.js";
 import type {
   ChartColor,
   ChartData,
@@ -242,9 +249,17 @@ const BLOCKS: readonly string[] = [
   "candlestick",
   "rangeBar",
   "timeline",
+  "waterfall",
 ];
 /** Series types whose points have their own colors in the tooltip (not the series color). */
-const OWN_COLORS: readonly string[] = ["funnel", "boxPlot", "candlestick", "rangeBar", "timeline"];
+const OWN_COLORS: readonly string[] = [
+  "funnel",
+  "boxPlot",
+  "candlestick",
+  "rangeBar",
+  "timeline",
+  "waterfall",
+];
 
 const circle = (
   cx: number,
@@ -516,12 +531,33 @@ function tooltipOf(
     const series = data.series[mark.series] as (typeof data.series)[number];
     const value = (v: number) => format.value(v, mark.series);
     const { range } = mark;
+    const several = (type: string) => data.series.filter((s) => s.type === type).length > 1;
+    if (mark.type === "waterfall") {
+      // Waterfall steps (4.18.21): the signed change, then the running total after it.
+      if (mark.sum) return [{ name: series.name, value: value(mark.value), color }];
+      const total = format.part("total");
+      return [
+        { name: series.name, value: chartSigned(mark.value, value(mark.value)), color },
+        {
+          name: several("waterfall") ? `${series.name} (${total})` : total,
+          value: value((range as readonly number[])[1] as number),
+          color,
+        },
+      ];
+    }
+    if (mark.type === "dumbbell" && range) {
+      // Dumbbells (4.18.21): the start and the end, each with its marker's color.
+      return (["start", "end"] as const).map((part, i) => ({
+        name: several("dumbbell") ? `${series.name} (${format.part(part)})` : format.part(part),
+        value: value(range[i] as number),
+        color: mark.ends?.[i] ?? color,
+      }));
+    }
     if (range && (range.length === 5 || range.length === 4)) {
       // Box plots list five values, candles four (open, high, low, close).
       const parts = range.length === 5 ? BOX : CANDLE;
-      const several = data.series.filter((s) => s.type === series.type).length > 1;
       return parts.map((part, i) => ({
-        name: several ? `${series.name} (${format.part(part)})` : format.part(part),
+        name: several(series.type) ? `${series.name} (${format.part(part)})` : format.part(part),
         value: value(range[i] as number),
         color,
       }));

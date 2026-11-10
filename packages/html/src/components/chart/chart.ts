@@ -2,6 +2,7 @@ import {
   CHART_TEXT_ATTRIBUTES,
   type ChartActive,
   type ChartColor,
+  type ChartCrossfilter,
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartDataPoint,
@@ -9,6 +10,7 @@ import {
   type ChartFill,
   type ChartGestureMode,
   type ChartGrid,
+  type ChartGroupFilter,
   type ChartLegend,
   type ChartLegendItem,
   type ChartLink,
@@ -37,7 +39,11 @@ import {
   chartActiveAt,
   chartActiveMarks,
   chartActiveNodes,
+  chartBrushCategories,
   chartColors,
+  chartFilterCategories,
+  chartFilterLabels,
+  chartFilterText,
   chartIdPrefix,
   chartMarkAt,
   chartMarkPoint,
@@ -58,6 +64,7 @@ import {
   parseChartColorRanges,
   parseChartColors,
   parseChartDiscreteMarkers,
+  parseChartDumbbellColors,
   parseChartIndicators,
   parseChartList,
   parseChartStripeColors,
@@ -108,6 +115,11 @@ export interface ChartEvents {
    * it toggled), with the point, whether it is selected now and every selected point.
    */
   select: EventSpec<ChartSelectionDetail>;
+  /**
+   * After the group's crossfilter changed (charts with `data-ok-crossfilter`): the filtered
+   * category indexes (`null`: none) and whether this chart set it.
+   */
+  filter: EventSpec<{ categories: number[] | null; own: boolean }>;
 }
 
 export interface ChartInstance extends ComponentInstance {
@@ -150,6 +162,10 @@ export interface ChartInstance extends ComponentInstance {
    * `data-ok-allow-multiple-data-points-selection`, the others are cleared; no event).
    */
   toggleDataPointSelection(seriesIndex: number, dataPointIndex: number): void;
+  /** The group's crossfilter: the filtered category indexes, or `null`. */
+  readonly filter: readonly number[] | null;
+  /** Clears the group's crossfilter (its source clears its selection; no event here). */
+  clearFilter(): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -346,6 +362,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     let linkKey = "";
     /** Selected data points (4.18.60). */
     let selected: ChartDataPoint[] = [];
+    /** Crossfilter (4.18.19, ADR-0054): the group's filter as the registry told it. */
+    let groupFilter: ChartGroupFilter | null = null;
+    const crossfilter = () =>
+      element.hasAttribute(o.crossfilter.attr)
+        ? (readStyle(element, o.crossfilter) as ChartCrossfilter)
+        : undefined;
     let drawnZoom = "";
     const annotationsList = () => element.querySelector(":scope > [data-ok-chart-annotations]");
 
@@ -648,6 +670,14 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         candleUpColor: colorAttribute(element, o.candleUpColor.attr),
         candleDownColor: colorAttribute(element, o.candleDownColor.attr),
         donutSize: readNumber(element, o.donutSize) as number | undefined,
+        waterfallPositiveColor: colorAttribute(element, o.waterfallPositiveColor.attr),
+        waterfallNegativeColor: colorAttribute(element, o.waterfallNegativeColor.attr),
+        waterfallTotalColor: colorAttribute(element, o.waterfallTotalColor.attr),
+        waterfallSubtotalColor: colorAttribute(element, o.waterfallSubtotalColor.attr),
+        hideConnectors: element.hasAttribute(o.hideConnectors.attr),
+        dumbbellColors: parseChartDumbbellColors(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.dumbbellColors),
+        ),
         dataLabelBackground: element.hasAttribute(o.dataLabelBackground.attr),
         legendValues: element.hasAttribute(o.legendValues.attr),
         dataLabelFormatter: formatters.dataLabel,
@@ -659,6 +689,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         selection: brushTarget ? selection : preview,
         brush: brushTarget !== undefined,
         selectedDataPoints: selected,
+        crossfilter: crossfilter(),
+        filter: groupFilter && !groupFilter.own ? groupFilter.categories : null,
         // Rewritten tables keep the author's first header.
         xLabel: (table?.tHead ?? table)?.rows[0]?.cells[0]?.textContent?.trim() || undefined,
         yTitle: text(element, "data-ok-y-title"),
@@ -677,6 +709,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       const { layout } = render;
       drawTools();
       drawLegend(render.legend);
+      drawFilter();
       svg.setAttribute("width", String(layout.width));
       svg.setAttribute("height", String(layout.height));
       svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
@@ -734,6 +767,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       // Brush charts always have a link (their target may be missing: then nothing else moves).
       (link as ChartLink).brush(range);
       draw();
+      // Crossfilter: a brush filters its group by the categories it covers.
+      if (crossfilter()) publishFilter(chartBrushCategories(range));
     };
     const currentRange = () => (mode() === "brush" ? selection : (render?.zoom ?? null));
     const commitRange = (range: ChartZoom | null) =>
@@ -744,11 +779,17 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       const id = element.id || undefined;
       const group = text(element, CHART_TEXT_ATTRIBUTES.group);
       const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
-      const key = JSON.stringify([id, group, brushTarget]);
+      const mode = crossfilter();
+      const key = JSON.stringify([id, group, brushTarget, mode]);
       if (key === linkKey) return;
       linkKey = key;
       link?.unlink();
       link = undefined;
+      if (groupFilter) {
+        groupFilter = null;
+        emit("filter", { categories: null, own: false });
+        draw();
+      }
       if (!id && !group && !brushTarget) return;
       link = linkChart({
         id,
@@ -761,7 +802,78 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           selection = range;
           draw();
         },
+        ...(mode
+          ? {
+              filter: (next: ChartGroupFilter | null) => {
+                groupFilter = next;
+                draw();
+                emit("filter", {
+                  categories: next ? [...next.categories] : null,
+                  own: next?.own ?? false,
+                });
+              },
+              cleared: clearOwn,
+            }
+          : {}),
       });
+      // A chart linking again (new options) still filters with its selection.
+      if (mode && group && render) {
+        const own = chartFilterCategories(render.data, selected);
+        if (own) link.filtered(own);
+      }
+    };
+
+    /** Crossfilter controls after the plot: a Clear button (while filtered) and a polite status. */
+    const drawFilter = () => {
+      let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-filter]");
+      if (!crossfilter()) {
+        box?.remove();
+        return;
+      }
+      if (!box) {
+        box = document.createElement("div");
+        box.setAttribute("data-ok-chart-filter", "");
+        const clear = document.createElement("button");
+        clear.type = "button";
+        clear.setAttribute("data-ok-chart-filter-clear", "");
+        const status = document.createElement("span");
+        status.setAttribute("data-ok-chart-filter-status", "");
+        status.setAttribute("role", "status");
+        box.append(clear, status);
+        plot.after(box);
+        created.push(box);
+      }
+      const clear = box.firstElementChild as HTMLButtonElement;
+      const label = localeText.clearFilter ?? chartFilterLabels.clearFilter;
+      if (clear.textContent !== label) clear.textContent = label;
+      clear.hidden = groupFilter === null;
+    };
+    /** Crossfilter: the status of the chart the user acted on. */
+    const announceFilter = (message: string) => {
+      // Only called on charts with the controls (crossfilter set).
+      (
+        element.querySelector(
+          ":scope > [data-ok-chart-filter] > [data-ok-chart-filter-status]",
+        ) as HTMLElement
+      ).textContent = message;
+    };
+    /** Crossfilter: this chart's selection or brush now filters these categories. */
+    const publishFilter = (categories: number[] | null) => {
+      if (!link || !text(element, CHART_TEXT_ATTRIBUTES.group)) return;
+      // Clearing only matters when this chart's filter is the group's.
+      if (!categories && !groupFilter?.own) return;
+      link.filtered(categories);
+      const current = render as ChartRender;
+      announceFilter(chartFilterText(current.data, categories, current.format.title, localeText));
+    };
+    /** Crossfilter: another chart cleared the group's filter, which was this chart's selection. */
+    const clearOwn = () => {
+      const previous = selected;
+      if (previous.length === 0) return;
+      selected = [];
+      draw();
+      for (const entry of previous)
+        emit("select", { ...entry, selected: false, selectedDataPoints: [] });
     };
 
     /** The toolbar (`data-ok-toolbar`): zoom buttons and downloads, plus a status for errors. */
@@ -862,6 +974,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           selected: hasChartDataPoint(next, entry),
           selectedDataPoints: [...next],
         });
+      // Crossfilter: the selection's categories filter the group.
+      if (crossfilter()) publishFilter(chartFilterCategories((render as ChartRender).data, next));
     };
     // A click selects the point, slice or cell under the pointer (not after a drag or on brushes).
     plot.addEventListener(
@@ -955,6 +1069,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     element.addEventListener(
       "click",
       (event) => {
+        const clear = (event.target as Element).closest?.("[data-ok-chart-filter-clear]");
+        if (clear && clear.parentElement?.parentElement === element) {
+          link?.clearFilter();
+          announceFilter(localeText.filterCleared ?? chartFilterLabels.filterCleared);
+          return;
+        }
         const tool = (event.target as Element).closest?.("[data-ok-chart-tool]");
         if (tool && tool.parentElement?.parentElement === element) {
           const name = tool.getAttribute("data-ok-chart-tool") as ChartTool;
@@ -1096,6 +1216,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       setSelectedDataPoints(points) {
         selected = chartSelection(points);
         draw();
+      },
+      get filter() {
+        return groupFilter ? [...groupFilter.categories] : null;
+      },
+      clearFilter() {
+        link?.clearFilter();
       },
       toggleDataPointSelection(seriesIndex, dataPointIndex) {
         selected = toggleChartSelection(

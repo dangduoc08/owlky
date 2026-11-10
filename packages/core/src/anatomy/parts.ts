@@ -283,10 +283,16 @@ export interface ChartParts {
   "data-ok-chart-center-label": Part<"text">;
   /** The value of the center text. */
   "data-ok-chart-center-value": Part<"text">;
+  /** A waterfall connector: the dashed line from the end of a bar to the next bar. */
+  "data-ok-chart-connector": Part<"line">;
   /** The crosshair that follows the pointer. */
   "data-ok-chart-crosshair": Part<"g">;
   /** One line of the crosshair. */
   "data-ok-chart-crosshair-line": Part<"line">;
+  /** One end of a dumbbell: the `start` (a ring) or the `end` (a disc). */
+  "data-ok-chart-dumbbell": Value<"start" | "end">;
+  /** The line between the two ends of a dumbbell. */
+  "data-ok-chart-dumbbell-line": Part<"line">;
   /** HTML: the data, as a table. Visually hidden once the chart is drawn; without JavaScript it shows. */
   "data-ok-chart-data": Part<"table">;
   /** One data label. */
@@ -295,6 +301,16 @@ export interface ChartParts {
   "data-ok-chart-data-label-badge": Part<"rect">;
   /** The group of data labels. Only labels that fit are drawn. */
   "data-ok-chart-data-labels": Part<"g">;
+  /** Crossfilter: the controls after the plot, a **Clear filter** button and a status. */
+  "data-ok-chart-filter": Part<"div">;
+  /** Crossfilter: the tint behind a filtered category (a band, a slice halo or a cell frame). */
+  "data-ok-chart-filter-band": Part<"rect" | "path">;
+  /** Crossfilter: clears the group's filter. `hidden` while the group has none. */
+  "data-ok-chart-filter-clear": Part<"button">;
+  /** Crossfilter: the group of tints behind the filtered categories (`highlight`), under the series. */
+  "data-ok-chart-filter-layer": Part<"g">;
+  /** Crossfilter: a visually hidden live region that announces the filter this chart set or cleared. */
+  "data-ok-chart-filter-status": Part<"span">;
   /** The grid. */
   "data-ok-chart-grid": Part<"g">;
   /** One grid line. */
@@ -345,6 +361,8 @@ export interface ChartParts {
   "data-ok-chart-selected-mark": Part<"circle" | "rect" | "path">;
   /** The rectangle drawn while selecting a zoom window. */
   "data-ok-chart-selection": Part<"rect">;
+  /** On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`. */
+  "data-ok-chart-step": Value<"up" | "down" | "total" | "subtotal">;
   /** The group of one series. */
   "data-ok-chart-series": Part<"g">;
   /** The group of the series of one kind: areas, bars, lines, then points. */
@@ -427,6 +445,8 @@ export interface ChartParts {
   "data-ok-grid-row-colors": Value<string>;
   /** Column stripe colors separated by spaces: palette names, \`grey\` or \`transparent\`. */
   "data-ok-grid-column-colors": Value<string>;
+  /** Dumbbell marker colors: a start and an end color per series, pairs separated by \`;\`, such as \`info success\`. */
+  "data-ok-dumbbell-colors": Value<string>;
   /** Markers on single points, such as \`0 3 error star 8; 1 2\`. */
   "data-ok-discrete-markers": Value<string>;
   /** On a data table column header: the series' marker shape. */
@@ -451,6 +471,8 @@ export interface ChartParts {
   "data-ok-part": Value<"min" | "q1" | "median" | "q3" | "max" | "low" | "high" | "y" | "z">;
   /** Set by the runtime once the chart is drawn: the data table hides. */
   "data-ok-ready": State;
+  /** On a waterfall data cell: the bar shows the running total (`total` or `subtotal`); the cell's text is that total. */
+  "data-ok-sum": Value<"total" | "subtotal">;
   /** The label of the total in a donut's or a radial bar's center. */
   "data-ok-total-label": Value<string>;
   /** Text before every value, such as `$`. */

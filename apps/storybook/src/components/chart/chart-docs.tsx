@@ -10,7 +10,9 @@ import colorBlindGroup from "../../../../../packages/html/src/components/chart/e
 import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
 import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
+import crossfilterGroup from "../../../../../packages/html/src/components/chart/examples/crossfilter-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
+import dumbbellGroup from "../../../../../packages/html/src/components/chart/examples/dumbbell-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
 import gridGroup from "../../../../../packages/html/src/components/chart/examples/grid-group.html?raw";
 import legendGroup from "../../../../../packages/html/src/components/chart/examples/legend-group.html?raw";
@@ -24,6 +26,7 @@ import stackTotalsGroup from "../../../../../packages/html/src/components/chart/
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
+import waterfallGroup from "../../../../../packages/html/src/components/chart/examples/waterfall-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -104,6 +107,8 @@ export function MonthlySales() {
 - **\`funnel\` and \`slope\`:** stages that narrow, or the change between a few categories. See "Show stages and changes".
 - **Stock charts:** add \`indicators\`, panes and a \`navigator\` to a candlestick, line, area or column chart of dates. See "Show stock prices with indicators".
 - **\`sankey\`:** flows between nodes, each as wide as its value. See "Show flows between stages".
+- **\`waterfall\`:** how a start value changes step by step into an end value. See "Show changes step by step".
+- **\`dumbbell\`:** two values per category, such as before and after, joined by a line. See "Compare two values per category".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -479,6 +484,64 @@ export function ChartBrush() {
 }`,
   },
   {
+    id: "crossfilter",
+    title: "Filter linked charts",
+    body: `Charts of one \`group\` can filter each other: selecting a column, a bar or a slice in one chart filters the others, such as showing the revenue of the regions whose orders you selected. Set \`crossfilter\` (\`data-ok-crossfilter\` in HTML) on every chart that takes part. Its value says how the chart shows the filter that another chart sets:
+
+- **\`filter\`:** only the filtered categories keep their values, and the value axis fits them. Pie and donut charts hide the other slices.
+- **\`highlight\`:** every value stays, and a tint marks the filtered categories.
+
+A click, Enter or Space selects values as described in "Select data points", and the selected categories become the group's filter. Set \`allowMultipleDataPointsSelection\` to filter by several categories. A brush chart with \`crossfilter\` filters its group by the categories its selection covers. The charts of a group match categories by position, so give them the same categories in the same order.
+
+Every chart that takes part shows a **Clear filter** button under the plot while the group is filtered. It clears the filter and the selection that set it. The chart you act on announces the change to screen readers, such as "Filter: North, West". Rename the texts with \`localeText\`: \`clearFilter\`, \`filter\` and \`filterCleared\`.
+
+- **React:** \`onFilterChange(categories, own)\` is called with the filtered category indexes (\`null\` when cleared) and whether this chart set the filter.
+- **HTML:** \`ok:chart:filter\` fires with \`detail.categories\` and \`detail.own\`. The instance has \`filter\` and \`clearFilter()\`.`,
+    html: `${snippetElement(crossfilterGroup, "data-ok-chart ")}
+${snippetElement(crossfilterGroup, "data-ok-chart ", 1)}
+<script>
+  // Each change of the group's filter, as this chart sees it.
+  document.querySelector("[data-ok-chart]").addEventListener("ok:chart:filter", (event) => {
+    console.log(event.detail.categories, event.detail.own);
+  });
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+import { useState } from "react";
+
+const regions = ["North", "South", "East", "West", "Central"];
+const orders = [{ name: "Orders", data: [420, 310, 280, 390, 150] }];
+const revenue = [{ name: "Revenue", data: [96, 71, 64, 88, 35] }];
+
+export function RegionsCrossfilter() {
+  const [filtered, setFiltered] = useState("every region");
+  return (
+    <>
+      <Chart
+        label="Orders by region"
+        type="bar"
+        group="regions"
+        crossfilter="highlight"
+        allowMultipleDataPointsSelection
+        categories={regions}
+        series={orders}
+        onFilterChange={(categories) =>
+          setFiltered(categories ? categories.map((i) => regions[i]).join(", ") : "every region")
+        }
+      />
+      <Chart
+        label="Revenue by region"
+        type="bar"
+        group="regions"
+        crossfilter="filter"
+        categories={regions}
+        series={revenue}
+      />
+      <p>Showing: {filtered}</p>
+    </>
+  );
+}`,
+  },
+  {
     id: "annotations",
     title: "Annotate charts",
     body: `Annotations mark a moment, a range, a threshold or a point, such as a deploy or an incident. In React, pass \`annotations\`. In HTML, list them after the data table in \`ul[data-ok-chart-annotations]\`, one \`li\` each, with its label as text.
@@ -525,6 +588,82 @@ export function ChartFinance() {
       label="Release plan"
       type="timeline"
       series={[{ name: "Release", data: [{ x: "Design", y: ["2026-03-02", "2026-03-13"] }] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "waterfall",
+    title: "Show changes step by step",
+    body: `A waterfall chart shows how a start value becomes an end value through gains and losses, such as a cash flow. Set \`type\` to \`waterfall\` and give each step its change: a positive number raises the running total, a negative number lowers it. Each bar floats from the total before the step to the total after it, and a dashed connector joins it to the next bar.
+
+- **Totals:** a point \`{ isTotal: true }\` draws the running total as a bar from zero, such as a closing balance. \`{ isSubtotal: true }\` does the same in the middle of the chart. In HTML, the cell carries \`data-ok-sum="total"\` or \`data-ok-sum="subtotal"\` and shows the total as its text.
+- **Colors:** rising steps use \`waterfallPositiveColor\` (\`success\` by default) and falling steps \`waterfallNegativeColor\` (\`error\`). Totals use \`waterfallTotalColor\` (the series color) and subtotals \`waterfallSubtotalColor\` (the total color). A point's own \`color\` wins.
+- **Connectors:** \`hideConnectors\` (\`data-ok-hide-connectors\`) removes the dashed lines.
+- **Direction:** \`horizontal\` draws the bars from left to right.
+
+The tooltip and the data labels show each change with its sign, such as +85, so the direction doesn't rely on color. The tooltip also shows the running total after the step.`,
+    html: `${snippetElement(waterfallGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const items = ["Opening", "Sales", "Services", "Salaries", "Rent", "First half", "Taxes", "Closing"];
+const cash = [
+  {
+    name: "Cash",
+    data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
+  },
+];
+
+export function CashFlowWaterfall() {
+  return (
+    <Chart
+      label="Cash flow in 2025 (thousands of dollars)"
+      type="waterfall"
+      dataLabels
+      categories={items}
+      series={cash}
+    />
+  );
+}`,
+  },
+  {
+    id: "dumbbell",
+    title: "Compare two values per category",
+    body: `A dumbbell chart draws two values per category as two markers joined by a line, such as a page's load time before and after an update. Set \`type\` to \`dumbbell\` and give each point a start and an end value in \`y\`, such as \`{ y: [3.2, 1.8] }\`. The order matters: the start is a ring and the end is a filled disc, so the direction of the change doesn't rely on color.
+
+- **Colors:** \`dumbbellColors\` sets the start and end colors of each series, such as \`[["warning-dark", "info-dark"]]\`. In HTML, write the pairs in \`data-ok-dumbbell-colors\`, separated by semicolons. Without it, both ends take the series color.
+- **Size:** \`markerSize\` sets the radius of the markers in pixels (6 by default).
+- **Direction:** \`horizontal\` draws the dumbbells from left to right.
+- **Names:** the table and the tooltip call the values Start and End. Rename them with \`localeText\`, such as \`{ start: "Before", end: "After" }\`. In HTML, the text of the part headers in the table names them.
+
+The value axis fits the data, with some room on both sides for the markers and their data labels.`,
+    html: `${snippetElement(dumbbellGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const pages = ["Home", "Search", "Product", "Cart", "Checkout"];
+const loadTimes = [
+  {
+    name: "Load time",
+    data: [
+      { y: [3.2, 1.8] },
+      { y: [2.6, 1.9] },
+      { y: [4.1, 2.2] },
+      { y: [1.9, 2.3] },
+      { y: [3.6, 2.4] },
+    ],
+  },
+];
+
+export function PageLoadDumbbell() {
+  return (
+    <Chart
+      label="Median page load in seconds, before and after the update"
+      type="dumbbell"
+      dataLabels
+      xLabel="Page"
+      localeText={{ start: "Before", end: "After" }}
+      categories={pages}
+      series={loadTimes}
     />
   );
 }`,
@@ -1064,6 +1203,7 @@ export function ChartLegendGrid() {
 - **\`ok:chart:active\`** fires with \`detail.active\`: the category (\`{ kind: "index", index }\`) or point (\`{ kind: "mark", mark }\`) under the pointer or the keyboard, or \`null\`.
 - **Instance:** \`runtime.get(element, "chart")\` returns \`{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(formatters), refresh(), updateSeries(series, categories), appendData(data, options) }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes. See "Update data live".
 - **\`ok:chart:select\`** fires for each value a click, Enter or Space selects or clears, with \`detail.seriesIndex\`, \`detail.dataPointIndex\`, \`detail.selected\` and \`detail.selectedDataPoints\`. See "Select data points".
+- **\`ok:chart:filter\`** fires when the group's crossfilter changes, with \`detail.categories\` (\`null\` when cleared) and \`detail.own\`. The instance has \`filter\` and \`clearFilter()\`. See "Filter linked charts".
 - **\`ok:chart:zoom\`** fires when the zoom changes, with \`detail.range\` (\`{ min, max }\` or \`null\`) and \`detail.reason\`: \`user\` for the chart's own gestures, keys and buttons (cancelable), \`group\` or \`brush\` when a linked chart zoomed it.
 - **Phase 4 methods:** \`zoomRange\`, \`setZoomRange(range)\` (its group and brushes follow), \`exportChart("svg" | "png" | "csv")\` (a promise that rejects outside a user gesture) and \`setLocaleText(text)\`.
 - **Selection methods:** \`selectedDataPoints\`, \`setSelectedDataPoints(list)\` and \`toggleDataPointSelection(seriesIndex, dataPointIndex)\`.
@@ -1081,6 +1221,7 @@ export function ChartLegendGrid() {
 - The data table holds every value, including hidden series. Screen readers can read it instead of the drawing, which they skip.
 - The tooltip is a status region, so screen readers announce the values the keyboard moves to, and whether they are selected.
 - Selected values get an outline, not only a color change, and Enter or Space selects them without a pointer.
+- Crossfilters are set with the same clicks and keys, the chart you act on announces the filter, and a **Clear filter** button clears it. Filtered charts keep every value in their data table.
 - Marker shapes, patterns and dashes (\`colorBlindMode\` turns them all on) tell series apart without color, and the legend and the tooltip repeat them.
 - Legend buttons report their state with \`aria-pressed\`. A hidden series keeps a hollow marker and crossed-out text, so the state doesn't rely on color.
 - Axis labels use the secondary text color, which meets a contrast ratio of at least 4.5:1 in light and dark mode.`,
@@ -1409,6 +1550,84 @@ const PREVIEWS = {
               { x: "Design", y: ["2026-03-02", "2026-03-13"], color: "info" },
               { x: "Build", y: ["2026-03-09", "2026-04-03"] },
               { x: "Test", y: ["2026-03-30", "2026-04-17"], color: "warning" },
+            ],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  waterfall: () => (
+    <Preview>
+      <Chart
+        label="Cash flow in 2025 (thousands of dollars)"
+        type="waterfall"
+        height={260}
+        dataLabels
+        categories={[
+          "Opening",
+          "Sales",
+          "Services",
+          "Salaries",
+          "Rent",
+          "First half",
+          "Taxes",
+          "Closing",
+        ]}
+        series={[
+          {
+            name: "Cash",
+            data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  crossfilter: () => (
+    <Preview>
+      <Chart
+        label="Orders by region (select columns to filter the revenue)"
+        type="bar"
+        group="docs-regions"
+        crossfilter="highlight"
+        allowMultipleDataPointsSelection
+        height={200}
+        colors={["info"]}
+        categories={["North", "South", "East", "West", "Central"]}
+        series={[{ name: "Orders", data: [420, 310, 280, 390, 150] }]}
+      />
+      <Chart
+        label="Revenue by region (thousands of dollars)"
+        type="bar"
+        group="docs-regions"
+        crossfilter="filter"
+        height={200}
+        colors={["warning"]}
+        categories={["North", "South", "East", "West", "Central"]}
+        series={[{ name: "Revenue", data: [96, 71, 64, 88, 35] }]}
+      />
+    </Preview>
+  ),
+  dumbbell: () => (
+    <Preview>
+      <Chart
+        label="Pay gap by department (women and men, thousands of dollars)"
+        type="dumbbell"
+        horizontal
+        height={260}
+        markerSize={7}
+        dumbbellColors={[["warning-dark", "info-dark"]]}
+        localeText={{ start: "Women", end: "Men" }}
+        categories={["Design", "Engineering", "Finance", "Marketing", "Sales", "Support"]}
+        series={[
+          {
+            name: "Salary",
+            data: [
+              { y: [72, 78] },
+              { y: [96, 104] },
+              { y: [81, 92] },
+              { y: [69, 71] },
+              { y: [74, 86] },
+              { y: [52, 55] },
             ],
           },
         ]}

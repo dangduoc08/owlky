@@ -20,7 +20,20 @@ export const chartTools: readonly ChartTool[] = [
 
 /** Texts a chart shows or announces (localizable): part labels, tool names and messages. */
 export type ChartLocaleText = Readonly<
-  Partial<Record<ChartPart | ChartTool | "toolbar" | "exportFailed" | "selected", string>>
+  Partial<
+    Record<
+      | ChartPart
+      | ChartTool
+      | "toolbar"
+      | "exportFailed"
+      | "selected"
+      // Crossfilter controls (4.18.19, ADR-0054).
+      | "clearFilter"
+      | "filter"
+      | "filterCleared",
+      string
+    >
+  >
 >;
 
 export const chartToolLabels: Readonly<

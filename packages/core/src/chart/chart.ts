@@ -11,6 +11,13 @@ import {
   chartPatternAt,
   withChartCues,
 } from "./chart-cues.js";
+import {
+  type ChartCrossfilter,
+  chartFilter,
+  chartFilterHidden,
+  chartFilterNodes,
+  filterChartData,
+} from "./chart-filter.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
 import {
@@ -167,6 +174,16 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly candleDownColor?: ChartColor | undefined;
   /** Donut hole in % of the radius. Default 72. */
   readonly donutSize?: number | undefined;
+  /** Waterfall charts (4.18.21): rising and falling steps (default `success` and `error`). */
+  readonly waterfallPositiveColor?: ChartColor | undefined;
+  readonly waterfallNegativeColor?: ChartColor | undefined;
+  /** Waterfall charts: total bars (default the series color) and subtotals (default the total's). */
+  readonly waterfallTotalColor?: ChartColor | undefined;
+  readonly waterfallSubtotalColor?: ChartColor | undefined;
+  /** Waterfall charts: no connectors between the bars. */
+  readonly hideConnectors?: boolean | undefined;
+  /** Dumbbell charts: start and end marker colors per series (`[[start, end], …]`). */
+  readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
   /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
@@ -185,6 +202,10 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly brush?: boolean | undefined;
   /** Selected data points (4.18.60): drawn with an outline (`g[data-ok-chart-selected]`). */
   readonly selectedDataPoints?: readonly ChartDataPoint[] | undefined;
+  /** Crossfilter (4.18.19, ADR-0054): how the group's `filter` is drawn. */
+  readonly crossfilter?: ChartCrossfilter | undefined;
+  /** Crossfilter: the categories another chart of the group filters (`null`: none). */
+  readonly filter?: readonly number[] | null | undefined;
   /** Header of the data table's first column. Default "Category", "Date" or "X". */
   readonly xLabel?: string | undefined;
   /** Indexes of the series hidden through the legend (categories for circular charts). */
@@ -281,6 +302,15 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     ? (d, o) =>
         layoutStock(d, { ...o, paneHeight: input.paneHeight, navigator: input.navigator }, format)
     : (layouts[data.type] ?? (circular ? (d, o) => layoutCircular(d, o, format) : layoutChart));
+  // Crossfilter (ADR-0054): `filter` draws only the filtered categories' values (circular charts
+  // hide the other slices); the legend, the table and the axes keep the whole data.
+  const filter = input.crossfilter ? chartFilter(input.filter) : null;
+  const filtering = filter !== null && input.crossfilter === "filter";
+  const drawn = filtering && !circular ? filterChartData(data, filter) : data;
+  const drawnHidden =
+    filtering && circular
+      ? [...new Set([...hidden, ...chartFilterHidden(data, filter)])]
+      : [...hidden];
   const extent = chartZoomExtent(data);
   const kind = data.xType === "numeric" ? "value" : "index";
   // A zoom set on an older x axis (live data) follows it: at the end, it keeps to the end.
@@ -288,7 +318,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     input.zoomFrom !== undefined
       ? followChartZoom(input.zoom ?? null, input.zoomFrom, extent, kind)
       : clampChartZoom(input.zoom, extent, kind);
-  const base = layoutOf(data, {
+  const base = layoutOf(drawn, {
     width: input.width,
     height: input.height,
     format,
@@ -313,7 +343,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     yTitle: input.yTitle,
     yAxes: axes,
     xTitle: input.xTitle,
-    hidden: [...hidden],
+    hidden: drawnHidden,
     dataLabels: input.dataLabels,
     startAngle: input.startAngle,
     endAngle: input.endAngle,
@@ -327,6 +357,12 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     candleUpColor: input.candleUpColor,
     candleDownColor: input.candleDownColor,
     donutSize: input.donutSize,
+    waterfallPositiveColor: input.waterfallPositiveColor,
+    waterfallNegativeColor: input.waterfallNegativeColor,
+    waterfallTotalColor: input.waterfallTotalColor,
+    waterfallSubtotalColor: input.waterfallSubtotalColor,
+    hideConnectors: input.hideConnectors,
+    dumbbellColors: input.dumbbellColors,
     colorRanges: input.colorRanges,
     discreteMarkers: chartDiscreteMarkers(input.discreteMarkers),
     grid: input.grid,
@@ -362,6 +398,12 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     nodes.splice(at < 0 ? before("data-ok-chart-active") : at, 0, ...annotations);
   }
   if (selection.length) nodes.splice(before("data-ok-chart-active"), 0, ...selection);
+  // Highlight filters (ADR-0054): tints behind the filtered categories, under the series.
+  const tints = input.crossfilter === "highlight" ? chartFilterNodes(base, filter) : [];
+  if (tints.length) {
+    const at = before("data-ok-chart-crosshair");
+    nodes.splice(at < 0 ? before("data-ok-chart-series-group") : at, 0, ...tints);
+  }
   // Selected points (4.18.60): outlines over the series, under the hover highlight.
   const marked = chartSelectedNodes(base, chartSelection(input.selectedDataPoints));
   if (marked.length) nodes.splice(before("data-ok-chart-active"), 0, ...marked);

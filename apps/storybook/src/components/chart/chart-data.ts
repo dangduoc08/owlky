@@ -1550,4 +1550,126 @@ export const chartExamples: Record<string, ChartExample> = {
       ],
     },
   },
+  // Roadmap 4.18.21: waterfall charts (ApexCharts `waterfall`, `isTotal`, `isSubtotal`).
+  waterfall: {
+    title: "Waterfall",
+    props: {
+      label: "Cash flow in 2025 (thousands of dollars)",
+      type: "waterfall",
+      dataLabels: true,
+      categories: [
+        "Opening",
+        "Sales",
+        "Services",
+        "Salaries",
+        "Rent",
+        "First half",
+        "Taxes",
+        "Closing",
+      ],
+      series: [
+        {
+          name: "Cash",
+          data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
+        },
+      ],
+    },
+    more: [
+      {
+        label: "Change in headcount by team",
+        type: "waterfall",
+        horizontal: true,
+        barHeight: 60,
+        waterfallPositiveColor: "info",
+        waterfallNegativeColor: "warning-dark",
+        waterfallTotalColor: "secondary",
+        categories: ["Last year", "Design", "Engineering", "Sales", "Support", "This year"],
+        series: [{ name: "People", data: [48, 4, 12, -3, -2, { isTotal: true }] }],
+      },
+    ],
+  },
+  // Roadmap 4.18.19: crossfilter (ApexCharts Premium Linked Views / Highlight Filter, ADR-0054).
+  crossfilter: {
+    title: "Crossfilter",
+    props: {
+      label: "Orders by region (select columns to filter the other charts)",
+      type: "bar",
+      group: "regions",
+      crossfilter: "highlight",
+      allowMultipleDataPointsSelection: true,
+      height: 240,
+      colors: ["info"],
+      categories: ["North", "South", "East", "West", "Central"],
+      series: [{ name: "Orders", data: [420, 310, 280, 390, 150] }],
+    },
+    more: [
+      {
+        label: "Revenue by region (thousands of dollars)",
+        type: "bar",
+        group: "regions",
+        crossfilter: "filter",
+        height: 240,
+        colors: ["warning"],
+        categories: ["North", "South", "East", "West", "Central"],
+        series: [{ name: "Revenue", data: [96, 71, 64, 88, 35] }],
+      },
+      {
+        label: "Returns by region (select a slice to filter the other charts)",
+        type: "donut",
+        group: "regions",
+        crossfilter: "filter",
+        height: 240,
+        categories: ["North", "South", "East", "West", "Central"],
+        series: [{ name: "Returns", data: [18, 25, 9, 14, 6] }],
+      },
+    ],
+  },
+  // Roadmap 4.18.21: dumbbell charts (ApexCharts `rangeBar` + `isDumbbell`, `dumbbellColors`).
+  dumbbell: {
+    title: "Dumbbell",
+    props: {
+      label: "Median page load in seconds, before and after the update",
+      type: "dumbbell",
+      dataLabels: true,
+      xLabel: "Page",
+      localeText: { start: "Before", end: "After" },
+      categories: ["Home", "Search", "Product", "Cart", "Checkout"],
+      series: [
+        {
+          name: "Load time",
+          data: [
+            { y: [3.2, 1.8] },
+            { y: [2.6, 1.9] },
+            { y: [4.1, 2.2] },
+            { y: [1.9, 2.3] },
+            { y: [3.6, 2.4] },
+          ],
+        },
+      ],
+    },
+    more: [
+      {
+        label: "Pay gap by department (women and men, thousands of dollars)",
+        type: "dumbbell",
+        horizontal: true,
+        markerSize: 7,
+        dumbbellColors: [["warning-dark", "info-dark"]],
+        localeText: { start: "Women", end: "Men" },
+        categories: ["Design", "Engineering", "Finance", "Marketing", "Sales", "Support"],
+        series: [
+          {
+            name: "Salary",
+            data: [
+              { y: [72, 78] },
+              { y: [96, 104] },
+              { y: [81, 92] },
+              { y: [69, 71] },
+              { y: [74, 86] },
+              { y: [52, 55] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 };

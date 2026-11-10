@@ -65,6 +65,17 @@ export {
   chartSvgText,
   exportChart,
 } from "./chart-export.js";
+export {
+  type ChartGroupFilter,
+  chartBrushCategories,
+  chartFilter,
+  chartFilterCategories,
+  chartFilterHidden,
+  chartFilterLabels,
+  chartFilterNodes,
+  chartFilterText,
+  filterChartData,
+} from "./chart-filter.js";
 export { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 export {
   type ChartGestureHost,
@@ -104,6 +115,7 @@ export {
   type ChartNodeTag,
   type ChartRect,
   type ChartSlot,
+  chartSigned,
   chartTextWidth,
   layoutChart,
 } from "./chart-layout.js";
@@ -111,6 +123,7 @@ export { type ChartLink, type ChartLinkMember, linkChart } from "./chart-link.js
 export {
   type ChartCircularType,
   type ChartColor,
+  type ChartCrossfilter,
   type ChartCurve,
   type ChartData,
   type ChartDataLabelPosition,
@@ -128,6 +141,7 @@ export {
   type ChartSeries,
   type ChartStackType,
   type ChartStripeColor,
+  type ChartSum,
   type ChartTableCell,
   type ChartTableModel,
   type ChartTooltipCorner,
@@ -136,6 +150,7 @@ export {
   type ChartXType,
   chartCircularTypes,
   chartColors,
+  chartCrossfilters,
   chartCurves,
   chartData,
   chartDataLabelPositions,
@@ -158,6 +173,7 @@ export {
   chartXTypes,
   isChartMarkerShape,
   isChartPattern,
+  isChartSum,
   isCircularChart,
   isPolarChart,
   isWholeChart,
@@ -194,10 +210,12 @@ export {
   CHART_TEXT_ATTRIBUTES,
   type ChartTextOptions,
   chartColorRangesText,
+  chartDumbbellColorsText,
   chartListText,
   chartTextAttributes,
   parseChartColorRanges,
   parseChartColors,
+  parseChartDumbbellColors,
   parseChartList,
   parseChartStripeColors,
 } from "./chart-text.js";

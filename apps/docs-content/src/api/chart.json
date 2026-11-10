@@ -250,6 +250,12 @@
      },
      {
       "cancelable": false,
+      "description": "After the group's crossfilter changed (charts with `data-ok-crossfilter`): the filtered category indexes (`null`: none) and whether this chart set it.",
+      "detail": "{ categories: number[] | null; own: boolean; }",
+      "name": "ok:chart:filter"
+     },
+     {
+      "cancelable": false,
       "description": "After a click, Enter or Space selected or cleared a point, slice or cell (one event per point it toggled), with the point, whether it is selected now and every selected point.",
       "detail": "ChartSelectionDetail",
       "name": "ok:chart:select"
@@ -281,10 +287,22 @@
       "type": "(data: ChartAppendData, options?: ChartAppendOptions | undefined) => void"
      },
      {
+      "description": "Clears the group's crossfilter (its source clears its selection; no event here).",
+      "kind": "method",
+      "name": "clearFilter",
+      "type": "() => void"
+     },
+     {
       "description": "Downloads the chart as SVG, PNG or CSV (only during a user gesture: rejects otherwise).",
       "kind": "method",
       "name": "exportChart",
       "type": "(format: ChartExportFormat) => Promise<void>"
+     },
+     {
+      "description": "The group's crossfilter: the filtered category indexes, or `null`.",
+      "kind": "property",
+      "name": "filter",
+      "type": "readonly number[] | null"
      },
      {
       "description": "Indexes of the series hidden through the legend.",
@@ -326,7 +344,7 @@
       "description": "Localized texts: tool names, the export error and part labels (tables carry their own).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(text: Readonly<Partial<Record<\"exportFailed\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+      "type": "(text: Readonly<Partial<Record<\"clearFilter\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
      },
      {
       "description": "Selects exactly these points (invalid entries are dropped; no event).",
@@ -363,7 +381,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total) or `dumbbell` (a start and an end value per category: two markers joined by a line). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -386,7 +404,9 @@
        "rangeBar",
        "timeline",
        "polarArea",
-       "sankey"
+       "sankey",
+       "waterfall",
+       "dumbbell"
       ]
      },
      {
@@ -999,6 +1019,208 @@
       "name": "gridColumnOpacity"
      },
      {
+      "attr": "data-ok-waterfall-positive-color",
+      "default": "success",
+      "description": "Waterfall charts: color of the steps that raise the total (default `success`).",
+      "kind": "style",
+      "name": "waterfallPositiveColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-waterfall-negative-color",
+      "default": "error",
+      "description": "Waterfall charts: color of the steps that lower the total (default `error`).",
+      "kind": "style",
+      "name": "waterfallNegativeColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-waterfall-total-color",
+      "default": "primary",
+      "description": "Waterfall charts: color of the total bars (default the series color).",
+      "kind": "style",
+      "name": "waterfallTotalColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-waterfall-subtotal-color",
+      "default": "primary",
+      "description": "Waterfall charts: color of the subtotal bars (default the total color).",
+      "kind": "style",
+      "name": "waterfallSubtotalColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-connectors",
+      "description": "Waterfall charts: no dashed lines from the end of each bar to the next one.",
+      "kind": "flag",
+      "name": "hideConnectors"
+     },
+     {
+      "attr": "data-ok-crossfilter",
+      "default": "highlight",
+      "description": "Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them).",
+      "kind": "style",
+      "name": "crossfilter",
+      "optional": true,
+      "values": [
+       "filter",
+       "highlight"
+      ]
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
@@ -1293,6 +1515,14 @@
       "name": "data-ok-chart-center-value"
      },
      {
+      "description": "A waterfall connector: the dashed line from the end of a bar to the next bar.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-connector"
+     },
+     {
       "description": "The crosshair that follows the pointer.",
       "elements": [
        "g"
@@ -1339,6 +1569,64 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-data-labels"
+     },
+     {
+      "description": "One end of a dumbbell: the `start` (a ring) or the `end` (a disc).",
+      "kind": "value",
+      "name": "data-ok-chart-dumbbell",
+      "value": [
+       "end",
+       "start"
+      ]
+     },
+     {
+      "description": "The line between the two ends of a dumbbell.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-dumbbell-line"
+     },
+     {
+      "description": "Crossfilter: the controls after the plot, a **Clear filter** button and a status.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter"
+     },
+     {
+      "description": "Crossfilter: the tint behind a filtered category (a band, a slice halo or a cell frame).",
+      "elements": [
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-band"
+     },
+     {
+      "description": "Crossfilter: clears the group's filter. `hidden` while the group has none.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-clear"
+     },
+     {
+      "description": "Crossfilter: the group of tints behind the filtered categories (`highlight`), under the series.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-layer"
+     },
+     {
+      "description": "Crossfilter: a visually hidden live region that announces the filter this chart set or cleared.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-status"
      },
      {
       "description": "The grid.",
@@ -1602,6 +1890,17 @@
       "name": "data-ok-chart-status"
      },
      {
+      "description": "On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`.",
+      "kind": "value",
+      "name": "data-ok-chart-step",
+      "value": [
+       "down",
+       "subtotal",
+       "total",
+       "up"
+      ]
+     },
+     {
       "description": "A gradient stop of a gradient area.",
       "elements": [
        "stop"
@@ -1820,6 +2119,12 @@
       "value": "string"
      },
      {
+      "description": "Dumbbell marker colors: a start and an end color per series, pairs separated by \\`;\\`, such as \\`info success\\`.",
+      "kind": "value",
+      "name": "data-ok-dumbbell-colors",
+      "value": "string"
+     },
+     {
       "description": "On a data table column header: the series' pattern.",
       "kind": "value",
       "name": "data-ok-fill-pattern",
@@ -1948,6 +2253,15 @@
       "kind": "value",
       "name": "data-ok-stroke-width",
       "value": "string"
+     },
+     {
+      "description": "On a waterfall data cell: the bar shows the running total (`total` or `subtotal`); the cell's text is that total.",
+      "kind": "value",
+      "name": "data-ok-sum",
+      "value": [
+       "subtotal",
+       "total"
+      ]
      },
      {
       "description": "The label of the total in a donut's or a radial bar's center.",
@@ -2121,6 +2435,11 @@
       "type": "number"
      },
      {
+      "description": "Charts of a `group`: a selection in this chart (click, Enter or Space), or its brush, filters the other charts of the group, and this chart shows the group's filter: `\"filter\"` draws only the filtered categories' values, `\"highlight\"` tints them. Charts of a group share their categories by position. A **Clear filter** button under the plot clears it.",
+      "name": "crossfilter",
+      "type": "\"filter\" | \"highlight\""
+     },
+     {
       "default": "\"smooth\"",
       "description": "Line shape: `smooth`, `straight` or `stepline`.",
       "name": "curve",
@@ -2186,6 +2505,11 @@
       "description": "Donut hole in % of the radius (10 to 95). Default 72.",
       "name": "donutSize",
       "type": "number"
+     },
+     {
+      "description": "Dumbbell charts: the start and end marker colors of each series, such as `[[\"info\", \"success\"]]` (pair n for series n; later series take the first pair). Default the series color: a ring at the start, a disc at the end.",
+      "name": "dumbbellColors",
+      "type": "readonly (readonly ChartColor[])[]"
      },
      {
       "description": "Sankey charts: link opacity (0 to 1). 4.",
@@ -2254,6 +2578,11 @@
       "type": "readonly number[]"
      },
      {
+      "description": "Waterfall charts: no dashed lines from the end of each bar to the next one.",
+      "name": "hideConnectors",
+      "type": "boolean"
+     },
+     {
       "description": "Bars run left to right, categories down the side.",
       "name": "horizontal",
       "type": "boolean"
@@ -2299,7 +2628,7 @@
      {
       "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names, the export error and `selected`.",
       "name": "localeText",
-      "type": "Readonly<Partial<Record<\"exportFailed\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
+      "type": "Readonly<Partial<Record<\"clearFilter\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
      },
      {
       "description": "Marker shape of every series: `\"circle\"` (default), `\"square\"`, `\"triangle\"`, `\"diamond\"`, `\"cross\"`, `\"plus\"` or `\"star\"`. Series may set `markerShape` themselves.",
@@ -2335,6 +2664,11 @@
       "description": "Called for each point a click, Enter or Space selects or clears, with the point, whether it is selected now and every selected point (ApexCharts' `dataPointSelection`).",
       "name": "onDataPointSelection",
       "type": "((detail: ChartSelectionDetail) => void)"
+     },
+     {
+      "description": "Called when the group's filter changes: the filtered category indexes (`null`: none) and whether this chart set it.",
+      "name": "onFilterChange",
+      "type": "((categories: number[] | null, own: boolean) => void)"
      },
      {
       "description": "Called with the new hidden series when a legend item is toggled.",
@@ -2464,6 +2798,28 @@
       "type": "string"
      },
      {
+      "default": "\"error\"",
+      "description": "Waterfall charts: color of the steps that lower the total.",
+      "name": "waterfallNegativeColor",
+      "type": "ChartColor"
+     },
+     {
+      "default": "\"success\"",
+      "description": "Waterfall charts: color of the steps that raise the total.",
+      "name": "waterfallPositiveColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Waterfall charts: color of the subtotal bars (`isSubtotal` points). Default the total color.",
+      "name": "waterfallSubtotalColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Waterfall charts: color of the total bars (`isTotal` points). Default the series color.",
+      "name": "waterfallTotalColor",
+      "type": "ChartColor"
+     },
+     {
       "description": "9). 18.",
       "name": "whitespace",
       "type": "number"
@@ -2536,15 +2892,7 @@
   },
   {
    "name": "ChartPart",
-   "type": "\"close\" | \"end\" | \"high\" | \"incoming\" | \"low\" | \"max\" | \"median\" | \"min\" | \"open\" | \"outgoing\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"volume\" | \"y\" | \"z\""
-  },
-  {
-   "name": "ChartPointInput",
-   "type": "number | { readonly x?: string | number | Date; readonly y: number | readonly ChartRangeValue[] | null; readonly z?: number | undefined; readonly color?: ChartColor | undefined; readonly v?: number | undefined; } | readonly [x: string | number | Date, y: number | readonly ChartRangeValue[] | null, z?: number] | null"
-  },
-  {
-   "name": "ChartRangeValue",
-   "type": "string | number | Date"
+   "type": "\"close\" | \"end\" | \"high\" | \"incoming\" | \"low\" | \"max\" | \"median\" | \"min\" | \"open\" | \"outgoing\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
   },
   {
    "name": "ChartStripeColor",
@@ -2556,7 +2904,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\""
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",
