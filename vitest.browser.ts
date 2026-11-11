@@ -14,7 +14,16 @@ const names = (process.env["VITEST_BROWSERS"] ?? "chromium").split(",") as (
 export const browser = {
   enabled: true,
   headless: true,
-  provider: playwright(),
+  provider: playwright({
+    launchOptions: {
+      // CI runners have no GPU: Firefox sometimes starts without WebGL, and every map test then
+      // times out waiting for MapLibre. Always allow software WebGL.
+      firefoxUserPrefs: {
+        "webgl.force-enabled": true,
+        "webgl.disable-fail-if-major-performance-caveat": true,
+      },
+    },
+  }),
   screenshotFailures: false,
   instances: names.map((browser) => ({ browser })),
 };
