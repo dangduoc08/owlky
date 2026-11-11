@@ -1948,7 +1948,6 @@ export const chartExamples: Record<string, ChartExample> = {
         streamOffset: "expand",
         streamOrder: "none",
         curve: "straight",
-        tooltip: "point",
         colorBlindMode: true,
         height: 240,
         valueSuffix: "%",

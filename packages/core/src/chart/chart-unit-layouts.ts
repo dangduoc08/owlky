@@ -230,7 +230,12 @@ export function placeArc(
     }
   });
   all.sort((a, b) => a.angle - b.angle || a.radius - b.radius);
-  const r = blobRadius(options.size, pitch);
+  // Rows given by the author may hold more seats than fit at the row's pitch: the seats shrink.
+  const along = seats.flatMap((count, row) =>
+    count > 1 ? [(((sweep * Math.PI) / 180) * (radii[row] as number)) / count] : [],
+  );
+  const fitted = Math.min(blobRadius(undefined, pitch), (Math.min(pitch, ...along) / 2) * 0.9);
+  const r = options.size !== undefined ? blobRadius(options.size, pitch) : fitted;
   const cells: ChartUnitCell[] = [];
   let at = 0;
   counts.forEach((count, category) => {
