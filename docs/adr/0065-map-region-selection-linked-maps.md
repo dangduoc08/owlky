@@ -1,4 +1,4 @@
-# ADR-0064: Map region selection: multiple regions, Shift + drag box selection, linked maps
+# ADR-0065: Map region selection: multiple regions, Shift + drag box selection, linked maps
 
 **Status:** Accepted (2026-11-11, auto-approved under the roadmap's autorun). Extends ADR-0025
 and the choropleth of roadmap 4.18.15; nothing is superseded.
