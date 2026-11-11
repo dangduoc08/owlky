@@ -389,6 +389,14 @@ export interface ChartParts {
   "data-ok-chart-selection": Part<"rect">;
   /** On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`. */
   "data-ok-chart-step": Value<"up" | "down" | "total" | "subtotal">;
+  /** All the marks of one category of a waffle or unit chart. */
+  "data-ok-chart-unit-group": Part<"g">;
+  /** A mark of a waffle or unit chart. */
+  "data-ok-chart-unit-cell": Part<"rect" | "circle" | "path">;
+  /** An empty cell of a split waffle tile. */
+  "data-ok-chart-unit-track": Part<"rect" | "circle" | "path">;
+  /** A waffle tile's name, or a cluster's label. */
+  "data-ok-chart-unit-title": Part<"text">;
   /** A dot of one observation in a beeswarm chart. */
   "data-ok-chart-bee": Part<"circle" | "path">;
   /** A violin's density outline. */

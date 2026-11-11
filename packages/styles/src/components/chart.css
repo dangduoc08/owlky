@@ -1235,6 +1235,36 @@
     fill: var(--ok-palette-common-white);
   }
 
+  /* Waffle and unit charts (4.18.21): marks take their category's color. */
+  :where([data-ok-chart-unit-cell]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where(
+    [data-ok-chart-unit-cell][data-ok-shape="cross"],
+    [data-ok-chart-unit-cell][data-ok-shape="plus"]
+  ) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2px;
+  }
+
+  :where([data-ok-chart-unit-track]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+  }
+
+  :where([data-ok-chart-unit-track][data-ok-color]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.32;
+  }
+
+  :where([data-ok-chart-unit-title]) {
+    fill: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    pointer-events: none;
+  }
+
   /* Beeswarm dots (4.18.21): a paper ring keeps touching dots apart. */
   :where([data-ok-chart-bee]) {
     fill: var(--_ok-chart-c);

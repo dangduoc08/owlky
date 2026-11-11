@@ -16,6 +16,7 @@ import {
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
+  type ChartFillFrom,
   type ChartGestureMode,
   type ChartGestures,
   type ChartGrid,
@@ -368,6 +369,24 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
   hideConnectors?: boolean | undefined;
+  /** Waffle charts: cells per row. Default 10. */
+  columns?: number | undefined;
+  /** Waffle charts: the row where the cells start filling. Default `"bottom"`. */
+  fillFrom?: ChartFillFrom | undefined;
+  /** Waffle charts: one mini waffle per category, filled to its value. */
+  split?: boolean | undefined;
+  /** Split waffles: tiles per row. Default about a square of tiles. */
+  tileColumns?: number | undefined;
+  /** Split waffles: the value a full tile stands for. Default the largest value. */
+  splitMax?: number | undefined;
+  /** Split waffles: the color of the empty cells. Default a neutral grey. */
+  trackColor?: ChartColor | undefined;
+  /** Waffle and unit charts: how many units of value one mark stands for. Default 1. */
+  unitValue?: number | undefined;
+  /** Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000. */
+  maxUnits?: number | undefined;
+  /** Waffle charts: the corner radius of square cells in pixels. Default 2. */
+  cellRadius?: number | undefined;
   /** Beeswarm charts: dots push apart just enough not to overlap (`swarm`) or spread across the lane by a fixed sequence (`jitter`). Default `"swarm"`. */
   beeswarmSpread?: ChartBeeswarmSpread | undefined;
   /** Violins: each violin fills its slot (`individual`) or all share one density scale (`group`). Default `"individual"`. */
@@ -585,6 +604,15 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     streamLabelMinWidth,
     streamHoverOpacity,
     beeswarmSpread,
+    columns,
+    fillFrom,
+    split,
+    tileColumns,
+    splitMax,
+    trackColor,
+    unitValue,
+    maxUnits,
+    cellRadius,
     violinNormalize,
     violinSide,
     bandwidthScale,
@@ -707,6 +735,15 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     streamLabelMinWidth,
     streamHoverOpacity,
     beeswarmSpread,
+    columns,
+    fillFrom,
+    split,
+    tileColumns,
+    splitMax,
+    trackColor,
+    unitValue,
+    maxUnits,
+    cellRadius,
     violinNormalize,
     violinSide,
     bandwidthScale,
@@ -787,6 +824,15 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validBeeswarmSpread = attributes["data-ok-beeswarm-spread"] as
     | ChartBeeswarmSpread
     | undefined;
+  const validColumns = number("data-ok-columns");
+  const validFillFrom = attributes["data-ok-fill-from"] as ChartFillFrom | undefined;
+  const splitOn = attributes["data-ok-split"] !== undefined;
+  const validTileColumns = number("data-ok-tile-columns");
+  const validSplitMax = number("data-ok-split-max");
+  const validTrackColor = attributes["data-ok-track-color"] as ChartColor | undefined;
+  const validUnitValue = number("data-ok-unit-value");
+  const validMaxUnits = number("data-ok-max-units");
+  const validCellRadius = number("data-ok-cell-radius");
   const validViolinNormalize = attributes["data-ok-violin-normalize"] as
     | ChartViolinNormalize
     | undefined;
@@ -958,6 +1004,15 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         streamLabelMinWidth: validStreamLabelMin,
         streamHoverOpacity: validStreamHover,
         beeswarmSpread: validBeeswarmSpread,
+        columns: validColumns,
+        fillFrom: validFillFrom,
+        split: splitOn,
+        tileColumns: validTileColumns,
+        splitMax: validSplitMax,
+        trackColor: validTrackColor,
+        unitValue: validUnitValue,
+        maxUnits: validMaxUnits,
+        cellRadius: validCellRadius,
         violinNormalize: validViolinNormalize,
         violinSide: validViolinSide,
         bandwidthScale: validBandwidthScale,
@@ -1082,6 +1137,15 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validStreamLabelMin,
       validStreamHover,
       validBeeswarmSpread,
+      validColumns,
+      validFillFrom,
+      splitOn,
+      validTileColumns,
+      validSplitMax,
+      validTrackColor,
+      validUnitValue,
+      validMaxUnits,
+      validCellRadius,
       validViolinNormalize,
       validViolinSide,
       validBandwidthScale,

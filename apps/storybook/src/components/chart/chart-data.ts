@@ -2098,4 +2098,31 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21: waffle charts (ApexCharts `waffle`).
+  waffle: {
+    title: "Waffle",
+    props: {
+      label: "Budget by department, in percent",
+      type: "waffle",
+      total: 100,
+      valueSuffix: "%",
+      height: 320,
+      categories: ["Engineering", "Marketing", "Support", "Operations"],
+      series: [{ name: "Budget", data: [38, 27, 21, 14] }],
+    },
+    more: [
+      {
+        label: "Survey answers per question",
+        type: "waffle",
+        split: true,
+        total: 100,
+        splitMax: 100,
+        tileColumns: 3,
+        colorBlindMode: true,
+        height: 280,
+        categories: ["Agree", "Neutral", "Disagree"],
+        series: [{ name: "Answers", data: [64, 22, 14] }],
+      },
+    ],
+  },
 };

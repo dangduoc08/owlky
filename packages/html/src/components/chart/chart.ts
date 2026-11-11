@@ -11,6 +11,7 @@ import {
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
+  type ChartFillFrom,
   type ChartGestureMode,
   type ChartGrid,
   type ChartGroupFilter,
@@ -740,6 +741,17 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           ? (readStyle(element, o.streamOrder) as ChartStreamOrder)
           : undefined,
         hideStreamLabels: element.hasAttribute(o.hideStreamLabels.attr),
+        columns: readNumber(element, o.columns) as number | undefined,
+        fillFrom: element.hasAttribute(o.fillFrom.attr)
+          ? (readStyle(element, o.fillFrom) as ChartFillFrom)
+          : undefined,
+        split: element.hasAttribute(o.split.attr),
+        tileColumns: readNumber(element, o.tileColumns) as number | undefined,
+        splitMax: readNumber(element, o.splitMax) as number | undefined,
+        trackColor: colorAttribute(element, o.trackColor.attr),
+        unitValue: readNumber(element, o.unitValue) as number | undefined,
+        maxUnits: readNumber(element, o.maxUnits) as number | undefined,
+        cellRadius: readNumber(element, o.cellRadius) as number | undefined,
         beeswarmSpread: element.hasAttribute(o.beeswarmSpread.attr)
           ? (readStyle(element, o.beeswarmSpread) as ChartBeeswarmSpread)
           : undefined,

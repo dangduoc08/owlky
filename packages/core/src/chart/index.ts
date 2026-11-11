@@ -288,6 +288,14 @@ export {
 } from "./chart-toolbar.js";
 export { type ChartTreeOptions, layoutTree } from "./chart-tree.js";
 export {
+  type ChartFillFrom,
+  type ChartUnitCell,
+  type ChartUnitOptions,
+  chartFillFroms,
+  chartUnitCounts,
+  placeUnitGrid,
+} from "./chart-unit.js";
+export {
   type ChartViolinNormalize,
   type ChartViolinOptions,
   type ChartViolinSide,

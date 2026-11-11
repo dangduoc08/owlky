@@ -32,6 +32,7 @@ import {
   unitIndex,
 } from "./chart-scale.js";
 import { timeTicks } from "./chart-time.js";
+import type { ChartUnitCell } from "./chart-unit.js";
 
 /*
  * Chart layout (ADR-0024): data + size → a tree of SVG nodes and the positions of every drawn
@@ -298,6 +299,8 @@ export interface ChartMark {
   readonly ends?: readonly [ChartColor, ChartColor] | undefined;
   /** Violins: the number of observations (a tooltip row). */
   readonly count?: number | undefined;
+  /** Waffle and unit charts: the outline of a category's marks (one path). */
+  readonly unit?: { readonly outline: string } | undefined;
   /** Streamgraphs: the column's total (a tooltip row). */
   readonly total?: number | undefined;
   /** Streamgraphs: the nodes that show one band over the others (per-point tooltips). */
@@ -365,9 +368,12 @@ export interface ChartLayout {
    * `index`: one tooltip per category; `point`: one per point (scatter, bubble); `slice`: one per
    * slice or ring (pie, donut, radial bar); `cell`: one per cell (heatmap, treemap; arrow keys
    * move in their direction); `flow`: one per Sankey node or link; `tree`: one per node of a
-   * hierarchy chart (arrow keys walk parents, children and the nodes of a level).
+   * hierarchy chart (arrow keys walk parents, children and the nodes of a level); `unit`: one per
+   * category of a waffle or unit chart (its marks light up together).
    */
-  readonly mode: "index" | "point" | "slice" | "cell" | "flow" | "tree";
+  readonly mode: "index" | "point" | "slice" | "cell" | "flow" | "tree" | "unit";
+  /** Waffle and unit charts: every mark and its category (pointer hit-testing). */
+  readonly units?: readonly ChartUnitCell[] | undefined;
   /** Hierarchy charts (ADR-0058): the drilled node and the drill path. */
   readonly hierarchy?: ChartHierarchyState | undefined;
   /** Radar: center and radius; slots are categories and `pos` their angle in degrees. */

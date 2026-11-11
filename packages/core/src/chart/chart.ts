@@ -61,8 +61,10 @@ import {
   type ChartXType,
   chartData,
   chartDefaultColors,
+  chartMarkerShapes,
   chartTable,
   isCircularChart,
+  isUnitChart,
   isWholeChart,
 } from "./chart-model.js";
 import { layoutSunburst } from "./chart-partition.js";
@@ -80,6 +82,7 @@ import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 import { layoutStock } from "./chart-stock.js";
 import { type ChartStreamOffset, type ChartStreamOrder, layoutStream } from "./chart-stream.js";
 import { layoutTree } from "./chart-tree.js";
+import { type ChartFillFrom, layoutUnit } from "./chart-unit.js";
 import {
   type ChartViolinNormalize,
   type ChartViolinSide,
@@ -268,6 +271,24 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly unconstrainedViolinPoints?: boolean | undefined;
   /** Violins: dots per violin; extra ones are thinned. Default 3000. */
   readonly violinMaxPoints?: number | undefined;
+  /** Waffle charts (4.18.21): cells per row. Default 10. */
+  readonly columns?: number | undefined;
+  /** Waffle charts: the row where filling starts. Default `"bottom"`. */
+  readonly fillFrom?: ChartFillFrom | undefined;
+  /** Waffle charts: one mini waffle per category. */
+  readonly split?: boolean | undefined;
+  /** Split waffles: tiles per row (default auto). */
+  readonly tileColumns?: number | undefined;
+  /** Split waffles: the value each tile represents in full (default the largest). */
+  readonly splitMax?: number | undefined;
+  /** Split waffles: the color of the empty cells. */
+  readonly trackColor?: ChartColor | undefined;
+  /** Waffle and unit charts: units of value per mark. Default 1. */
+  readonly unitValue?: number | undefined;
+  /** Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000. */
+  readonly maxUnits?: number | undefined;
+  /** Waffle cells: corner radius in px. Default 2. */
+  readonly cellRadius?: number | undefined;
   /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
@@ -371,10 +392,31 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     valueSuffix: input.valueSuffix ?? (data.type === "radialBar" ? "%" : undefined),
   });
   const hidden = new Set(input.hidden ?? []);
-  const circular = isCircularChart(data.type);
+  // Unit charts list and hide categories like slices do, but have no slice patterns.
+  const unitChart = isUnitChart(data.type);
+  const circular = isCircularChart(data.type) || unitChart;
   /** Pie, donut and polar area slices: their pattern (4.18.62; rings have none). */
   const slicePattern = (x: number) =>
-    circular && data.type !== "radialBar" ? chartPatternAt(input, x) : undefined;
+    circular && data.type !== "radialBar" && !unitChart ? chartPatternAt(input, x) : undefined;
+  /** Waffle and unit charts: a category's shape (`colorBlindMode`, non-color cues). */
+  const unitShape = (x: number) =>
+    unitChart && input.colorBlindMode ? chartMarkerShapes[x % chartMarkerShapes.length] : undefined;
+  const unitOptions = {
+    shape: input.markerShape,
+    size: input.markerSize,
+    spacing: input.spacing,
+    unitValue: input.unitValue,
+    maxUnits: input.maxUnits,
+    total: input.total,
+    cellRadius: input.cellRadius,
+    columns: input.columns,
+    fillFrom: input.fillFrom,
+    split: input.split,
+    tileColumns: input.tileColumns,
+    splitMax: input.splitMax,
+    trackColor: input.trackColor,
+    colorBlindMode: input.colorBlindMode,
+  };
   type Layout = (d: ChartData, o: Parameters<typeof layoutChart>[1]) => ChartLayout;
   const layouts: Partial<Record<ChartType, Layout>> = {
     radar: (d, o) => layoutRadar(d, o, format),
@@ -382,6 +424,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     treemap: (d, o) => layoutTreemap(d, o, format),
     funnel: (d, o) => layoutFunnel(d, o, format),
     slope: (d, o) => layoutSlope(d, o, format),
+    waffle: (d, o) => layoutUnit(d, o, unitOptions, format),
     beeswarm: (d, o) =>
       layoutBeeswarm(
         d,
@@ -545,6 +588,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
         hidden: hidden.has(point.x),
         ...(input.legendValues && point.y !== null ? { value: format.value(point.y, 0) } : {}),
         ...(slicePattern(point.x) ? { pattern: slicePattern(point.x) } : {}),
+        ...(unitShape(point.x) ? { shape: unitShape(point.x) } : {}),
       }))
     : data.series.map((series, index) => {
         const last = [...series.points].reverse().find((point) => point.y !== null)?.y;

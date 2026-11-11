@@ -167,6 +167,7 @@ export function chartSelectedNodes(
   const shapes = layout.marks.flatMap((mark): ChartNode[] => {
     if (!hasChartDataPoint(selected, chartMarkPoint(mark))) return [];
     const attrs = { "data-ok-chart-selected-mark": "" };
+    if (mark.unit) return [node("path", { d: mark.unit.outline, ...attrs })];
     const frame = mark.cell ?? mark.box;
     if (frame)
       return [

@@ -417,7 +417,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve) or `beeswarm` (each observation a dot in its series' lane, along the value axis). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis) or `waffle` (a grid of cells, each category filling a share). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -448,7 +448,8 @@
        "icicle",
        "streamgraph",
        "violin",
-       "beeswarm"
+       "beeswarm",
+       "waffle"
       ]
      },
      {
@@ -591,7 +592,7 @@
      },
      {
       "attr": "data-ok-total",
-      "description": "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average).",
+      "description": "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average). Waffle charts: the cells shared out between the categories (`100` for a percentage waffle; default one cell per unit); split waffles: the cells of each tile (default 100).",
       "kind": "number",
       "name": "total"
      },
@@ -1289,6 +1290,112 @@
       "kind": "number",
       "min": 0,
       "name": "streamLabelMinWidth"
+     },
+     {
+      "attr": "data-ok-columns",
+      "description": "Waffle charts: cells per row (default 10).",
+      "kind": "number",
+      "min": 1,
+      "name": "columns"
+     },
+     {
+      "attr": "data-ok-fill-from",
+      "default": "bottom",
+      "description": "Waffle charts: the row where the cells start filling: `bottom` (the default) or `top`.",
+      "kind": "style",
+      "name": "fillFrom",
+      "optional": true,
+      "values": [
+       "bottom",
+       "top"
+      ]
+     },
+     {
+      "attr": "data-ok-split",
+      "description": "Waffle charts: one mini waffle per category, filled to its value.",
+      "kind": "flag",
+      "name": "split"
+     },
+     {
+      "attr": "data-ok-tile-columns",
+      "description": "Split waffles: tiles per row (default about a square of tiles).",
+      "kind": "number",
+      "min": 1,
+      "name": "tileColumns"
+     },
+     {
+      "attr": "data-ok-split-max",
+      "description": "Split waffles: the value a full tile stands for (default the largest value).",
+      "kind": "number",
+      "min": 0,
+      "name": "splitMax"
+     },
+     {
+      "attr": "data-ok-track-color",
+      "default": "primary",
+      "description": "Split waffles: the color of the empty cells (default a neutral grey).",
+      "kind": "style",
+      "name": "trackColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-unit-value",
+      "description": "Waffle and unit charts: how many units of value one mark stands for (default 1).",
+      "kind": "number",
+      "min": 0,
+      "name": "unitValue"
+     },
+     {
+      "attr": "data-ok-max-units",
+      "description": "Waffle and unit charts: the most marks drawn; counts scale down above it (default 5000).",
+      "kind": "number",
+      "min": 1,
+      "name": "maxUnits"
+     },
+     {
+      "attr": "data-ok-cell-radius",
+      "description": "Waffle charts: the corner radius of square cells in pixels (default 2).",
+      "kind": "number",
+      "min": 0,
+      "name": "cellRadius"
      },
      {
       "attr": "data-ok-beeswarm-spread",
@@ -2471,6 +2578,42 @@
       "name": "data-ok-chart-tree-node"
      },
      {
+      "description": "A mark of a waffle or unit chart.",
+      "elements": [
+       "circle",
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-cell"
+     },
+     {
+      "description": "All the marks of one category of a waffle or unit chart.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-group"
+     },
+     {
+      "description": "A waffle tile's name, or a cluster's label.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-title"
+     },
+     {
+      "description": "An empty cell of a split waffle tile.",
+      "elements": [
+       "circle",
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-track"
+     },
+     {
       "description": "A violin's density outline.",
       "elements": [
        "path"
@@ -2906,6 +3049,11 @@
       "type": "readonly (string | number | Date)[]"
      },
      {
+      "description": "Waffle charts: the corner radius of square cells in pixels. Default 2.",
+      "name": "cellRadius",
+      "type": "number"
+     },
+     {
       "description": "Tree charts, controlled: ids of the nodes whose children are hidden.",
       "name": "collapsedNodes",
       "type": "readonly string[]"
@@ -2928,6 +3076,11 @@
      {
       "description": "Column width in % of a category. Default 40.",
       "name": "columnWidth",
+      "type": "number"
+     },
+     {
+      "description": "Waffle charts: cells per row. Default 10.",
+      "name": "columns",
       "type": "number"
      },
      {
@@ -3064,6 +3217,12 @@
       "description": "Area fill. `\"solid\"`, or `\"pattern\"`: bars, areas and slices get a different pattern per series (or `fillPattern`).",
       "name": "fill",
       "type": "\"gradient\" | \"pattern\" | \"solid\""
+     },
+     {
+      "default": "\"bottom\"",
+      "description": "Waffle charts: the row where the cells start filling.",
+      "name": "fillFrom",
+      "type": "\"bottom\" | \"top\""
      },
      {
       "description": "Pattern of every bar, area and slice (turns patterns on): `\"slantedLines\"`, `\"squares\"`, `\"circles\"`, `\"horizontalLines\"` or `\"verticalLines\"`. Series may set `fillPattern`.",
@@ -3216,6 +3375,11 @@
       "type": "number"
      },
      {
+      "description": "Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000.",
+      "name": "maxUnits",
+      "type": "number"
+     },
+     {
       "description": "Stock charts: a navigator under the chart (the whole price line, the zoom as a brush).",
       "name": "navigator",
       "type": "boolean"
@@ -3301,6 +3465,16 @@
       "type": "boolean"
      },
      {
+      "description": "Waffle charts: one mini waffle per category, filled to its value.",
+      "name": "split",
+      "type": "boolean"
+     },
+     {
+      "description": "Split waffles: the value a full tile stands for. Default the largest value.",
+      "name": "splitMax",
+      "type": "number"
+     },
+     {
       "description": "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
       "name": "stackOnlyBar",
       "type": "boolean"
@@ -3353,6 +3527,11 @@
       "type": "number"
      },
      {
+      "description": "Split waffles: tiles per row. Default about a square of tiles.",
+      "name": "tileColumns",
+      "type": "number"
+     },
+     {
       "description": "Sunburst and icicle charts: how much paler each level is (0 to 1). 14.",
       "name": "tint",
       "type": "number"
@@ -3389,6 +3568,11 @@
       "type": "string"
      },
      {
+      "description": "Split waffles: the color of the empty cells. Default a neutral grey.",
+      "name": "trackColor",
+      "type": "ChartColor"
+     },
+     {
       "description": "Radial bar track thickness in % of the bar. Default 50.",
       "name": "trackWidth",
       "type": "number"
@@ -3403,6 +3587,11 @@
       "description": "Violins: the dots may leave the density outline.",
       "name": "unconstrainedViolinPoints",
       "type": "boolean"
+     },
+     {
+      "description": "Waffle and unit charts: how many units of value one mark stands for. Default 1.",
+      "name": "unitValue",
+      "type": "number"
      },
      {
       "description": "Replaces the value text in the tooltip, the table and the value axis (`series` -1).",
@@ -3570,7 +3759,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"beeswarm\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"violin\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"beeswarm\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"violin\" | \"waffle\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

@@ -20,6 +20,7 @@ import type {
 import { polarPoint, slicePath } from "./chart-polar.js";
 import { onSankeyLink } from "./chart-sankey.js";
 import { type ChartDataPoint, chartMarkPoint, hasChartDataPoint } from "./chart-select.js";
+import { chartUnitAt } from "./chart-unit.js";
 
 const BOX: readonly ChartPart[] = ["min", "q1", "median", "q3", "max"];
 const CANDLE: readonly ChartPart[] = ["open", "high", "low", "close"];
@@ -69,6 +70,13 @@ export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartA
       if (tree && onChartTreeMark(tree, x, y)) return { kind: "mark", mark };
     }
     return null;
+  }
+  if (layout.mode === "unit") {
+    // Waffle and unit charts: the category of the mark under the pointer.
+    const index = chartUnitAt(layout.units, x, y);
+    return index === null
+      ? null
+      : { kind: "index", index: (layout.slots[index] as (typeof layout.slots)[number]).index };
   }
   if (layout.mode === "flow") {
     // Sankey: the node under the pointer (3px of slack), else the topmost link.
@@ -360,6 +368,16 @@ export function chartActiveNodes(
   const slot = layout.slots.find((entry) => entry.index === active.index);
   if (!slot) return { under: [], over: [] };
   const under: ChartNode[] = [];
+  if (layout.mode === "unit") {
+    // Waffle and unit charts: an outline around every mark of the category.
+    const mark = layout.marks.find((entry) => entry.index === active.index);
+    return mark?.unit
+      ? {
+          under,
+          over: [{ tag: "path", attrs: { d: mark.unit.outline, "data-ok-chart-active-node": "" } }],
+        }
+      : { under, over: [] };
+  }
   if (layout.mode === "slice") {
     // A wider copy of the slice behind it (a halo); rings show only the tooltip.
     const mark = layout.marks.find((entry) => entry.index === active.index);
@@ -653,8 +671,8 @@ function tooltipOf(
     data.xType === "datetime"
       ? (data.categories[active.index] as number)
       : (data.categories[active.index] ?? String(active.index + 1));
-  if (layout.mode === "slice") {
-    // One slice or ring: its own color, pointing at its middle (bars: their end).
+  if (layout.mode === "slice" || layout.mode === "unit") {
+    // One slice or ring (or a unit chart's category): its own color, pointing at its middle (bars: their end).
     const mark = marks[0];
     if (!mark) return null;
     return {

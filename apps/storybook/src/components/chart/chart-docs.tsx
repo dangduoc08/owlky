@@ -32,6 +32,7 @@ import timelineGroup from "../../../../../packages/html/src/components/chart/exa
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
 import violinGroup from "../../../../../packages/html/src/components/chart/examples/violin-group.html?raw";
+import waffleGroup from "../../../../../packages/html/src/components/chart/examples/waffle-group.html?raw";
 import waterfallGroup from "../../../../../packages/html/src/components/chart/examples/waterfall-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -121,6 +122,7 @@ export function MonthlySales() {
 - **\`streamgraph\`:** stacked bands around a moving baseline, for how a mix changes over time. See "Show a changing mix over time".
 - **\`violin\`:** the distribution of observations in each category as a mirrored density curve. See "Compare distributions".
 - **\`beeswarm\`:** each observation as a dot in its series' lane, along the value axis. See "Show every observation".
+- **\`waffle\`:** a grid of cells where each category fills a share. See "Show parts of a whole as cells".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -963,6 +965,35 @@ export function SalariesByDepartment() {
         { name: "Design", data: [72, 80, 75, 78, 83, 90, 68, 74, null, null, null, null] },
         { name: "Support", data: [41, 44, 39, 47, 45, 42, 40, 43, 46, null, null, null] },
       ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "waffle",
+    title: "Show parts of a whole as cells",
+    body: `A waffle chart fills a grid of cells, where each category colors its share of the cells. Counting cells is easier than comparing slice angles, so it suits rounded percentages. Set \`type\` to \`waffle\` and pass one series with one value per category, as for a pie chart.
+
+- **\`total\`:** the cells shared out between the categories, such as \`100\` for a percentage waffle. The cells always add up exactly (the largest remainders get the extra ones). Without it, one cell stands for one unit, or \`unitValue\` units.
+- **\`columns\`:** cells per row (10 by default). **\`fillFrom\`:** the row where the fill starts, \`bottom\` (the default) or \`top\`.
+- **\`split\`:** one mini waffle per category, filled to its value out of \`splitMax\`, or the largest value. \`tileColumns\` sets the tiles per row and \`trackColor\` the color of the empty cells.
+- **\`cellRadius\`:** the corner radius of the cells in pixels (2 by default). \`spacing\` sets the gap between them.
+- **\`colorBlindMode\` and \`markerShape\`:** draw a different shape per category, so categories differ by more than color.
+
+A category is one item for the tooltip and the keyboard: the arrow keys move between categories and its cells light up together. Selecting a category with a click, Enter or Space works as for pie slices. The legend hides categories.`,
+    html: `${snippetElement(waffleGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+export function BudgetShares() {
+  return (
+    <Chart
+      label="Budget by department, in percent"
+      type="waffle"
+      total={100}
+      valueSuffix="%"
+      height={320}
+      categories={["Engineering", "Marketing", "Support", "Operations"]}
+      series={[{ name: "Budget", data: [38, 27, 21, 14] }]}
     />
   );
 }`,
@@ -1956,6 +1987,20 @@ const PREVIEWS = {
           { name: "Main", data: [4, 5, 6, 6, 7, 8, 8, 9, 11] },
           { name: "Release", data: [9, 10, 12, 13, 15, 16, 18] },
         ]}
+      />
+    </Preview>
+  ),
+  waffle: () => (
+    <Preview>
+      <Chart
+        label="Seats sold by section"
+        type="waffle"
+        total={100}
+        columns={20}
+        fillFrom="top"
+        height={200}
+        categories={["Stalls", "Circle", "Balcony"]}
+        series={[{ name: "Seats", data: [52, 31, 17] }]}
       />
     </Preview>
   ),

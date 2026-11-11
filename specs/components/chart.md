@@ -174,6 +174,12 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Beeswarm (4.18.21; root [data-ok-beeswarm-spread]?[data-ok-orientation]?[data-ok-marker-size]?):
       g[data-ok-chart-grid] + g[data-ok-chart-axis] (lanes = series names; the value axis horizontal by default);
       g[data-ok-chart-series][data-ok-type=beeswarm][data-ok-index] › (circle | path)[data-ok-chart-bee][data-ok-color]?[data-ok-shape]?×n
+    Waffle (4.18.21; root [data-ok-total]?[data-ok-columns]?[data-ok-fill-from]?[data-ok-split]?[data-ok-tile-columns]?
+      [data-ok-split-max]?[data-ok-track-color]?[data-ok-unit-value]?[data-ok-max-units]?[data-ok-cell-radius]?):
+      g[data-ok-chart-series][data-ok-type=waffle] › g[data-ok-chart-unit-group][data-ok-color][data-ok-index]×n ›
+      rect[data-ok-chart-unit-cell][rx] | (circle | path)[data-ok-chart-unit-cell][data-ok-shape]? (colorBlindMode)
+      split tiles: + rect[data-ok-chart-unit-track][data-ok-color]? (empty cells);
+      labels › text[data-ok-chart-unit-title]; active › path[data-ok-chart-active-node] (one path around the category's marks)
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
@@ -463,6 +469,18 @@ Beeswarm geometry (core `chart-beeswarm.ts` on `layoutChart`'s axes, 4.18.21):
 - `point` mode: one tooltip per dot (name, series, value), keyboard in reading order, Enter / click selects.
 - Cues: `colorBlindMode` / `markerShape` shapes per lane, lane labels; a point's `color` wins.
 
+Waffle geometry (core `chart-unit.ts`, 4.18.21):
+- Data like pie: one series, one value per category (the legend lists and hides categories, `data-ok-color`
+  on every table cell). `total` shares that many cells by the largest remainder, so they always add up;
+  without it a value is `value / unitValue` cells, scaled down above `maxUnits` (5000).
+- Grid: `columns` (10) per row, rows from the cell count, pitch from the box (at most 48px), gap `spacing`
+  or 12% (at least 2px), cells filled row by row from `fillFrom` (`bottom` default), in category order.
+  Cells are squares (`cellRadius`, 2), or a shape per category with `colorBlindMode` / `markerShape`.
+- `split`: one tile per category: `total` cells (default 100), `value / splitMax` (default the largest)
+  of them filled, the rest `data-ok-chart-unit-track`; `tileColumns` per row, the name under each tile.
+- Mode `unit`: a category is one item (slots = visible categories; arrows, Home, End); the pointer finds
+  the category of the mark under it; the highlight is one `path` around its marks; `Enter` / clicks select it.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -486,7 +504,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` `violin` `beeswarm` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve) or `beeswarm` (each observation a dot in its series' lane, along the value axis). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` `violin` `beeswarm` `waffle` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis) or `waffle` (a grid of cells, each category filling a share). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -504,7 +522,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `endAngle` | `data-ok-end-angle="…"` | number | number | `360` | Pie, donut and radial bar: where they end (at most one turn after `startAngle`). |
 | `dashArray` | `data-ok-dash-array="…"` | number | number | — | Dash length of lines and radial bars in px (default solid). |
 | `trackWidth` | `data-ok-track-width="…"` | number | number | `50` | Radial bar track thickness in % of the bar. |
-| `total` | `data-ok-total="…"` | number | number | — | Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average). |
+| `total` | `data-ok-total="…"` | number | number | — | Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average). Waffle charts: the cells shared out between the categories (`100` for a percentage waffle; default one cell per unit); split waffles: the cells of each tile (default 100). |
 | `sparkline` | `data-ok-sparkline` | flag | boolean | off | No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px). |
 | `boxUpperColor` | `data-ok-box-upper-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Box plots: color of the box above the median (default the series color). |
 | `boxLowerColor` | `data-ok-box-lower-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Box plots: color of the box below the median (default a lighter tone of the series color). |
@@ -551,6 +569,15 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `streamOrder` | `data-ok-stream-order="…"` | style | `inside-out` `inverse` `none` | — | Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order). |
 | `hideStreamLabels` | `data-ok-hide-stream-labels` | flag | boolean | off | Streamgraphs: no series names on the bands. |
 | `streamLabelMinWidth` | `data-ok-stream-label-min-width="…"` | number | number | — | Streamgraphs: bands thinner than this many pixels get no name (default 24). |
+| `columns` | `data-ok-columns="…"` | number | number | — | Waffle charts: cells per row (default 10). |
+| `fillFrom` | `data-ok-fill-from="…"` | style | `bottom` `top` | — | Waffle charts: the row where the cells start filling: `bottom` (the default) or `top`. |
+| `split` | `data-ok-split` | flag | boolean | off | Waffle charts: one mini waffle per category, filled to its value. |
+| `tileColumns` | `data-ok-tile-columns="…"` | number | number | — | Split waffles: tiles per row (default about a square of tiles). |
+| `splitMax` | `data-ok-split-max="…"` | number | number | — | Split waffles: the value a full tile stands for (default the largest value). |
+| `trackColor` | `data-ok-track-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Split waffles: the color of the empty cells (default a neutral grey). |
+| `unitValue` | `data-ok-unit-value="…"` | number | number | — | Waffle and unit charts: how many units of value one mark stands for (default 1). |
+| `maxUnits` | `data-ok-max-units="…"` | number | number | — | Waffle and unit charts: the most marks drawn; counts scale down above it (default 5000). |
+| `cellRadius` | `data-ok-cell-radius="…"` | number | number | — | Waffle charts: the corner radius of square cells in pixels (default 2). |
 | `beeswarmSpread` | `data-ok-beeswarm-spread="…"` | style | `swarm` `jitter` | — | Beeswarm charts: dots push apart just enough not to overlap (`swarm`, the default) or spread across the lane by a fixed sequence (`jitter`). |
 | `violinNormalize` | `data-ok-violin-normalize="…"` | style | `individual` `group` | — | Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`). |
 | `violinSide` | `data-ok-violin-side="…"` | style | `both` `left` `right` `top` `bottom` | — | Violins: symmetric (`both`, the default) or half a violin: `left`, `right`, `top` or `bottom`. |
@@ -988,6 +1015,10 @@ Option areas not covered by the table above:
 | beeswarm datum `value`, `name` / `label`, `fillColor` | `y`, `x` (or `categories`), `color` | renamed (4.18.21) | |
 | `plotOptions.unit.scatter.xMin` / `.xMax`, `.xTitle`, `.xFormatter`, `.tickAmount`, `.gridlines` | `yMin` / `yMax`, `yTitle`, `valueFormatter`, `yaxis.tickAmount`, `grid` | renamed (4.18.21) | |
 | `plotOptions.unit.scatter.y: "value"` (2D), `.sizeField`, `.sizeRange`, `.laneLabelWidth`, `.yMin` … | — | not applicable | 2D and sized dots are `scatter` and `bubble` charts; labels are sized by the estimated text |
+| `chart.type: "waffle"` (`apexcharts/unit`, Premium; ours) | `type="waffle"` | kept (4.18.21) | a preset of the grid layout with square cells, as upstream |
+| `plotOptions.unit.grid.columns`, `.total`, `.fillFrom` | `columns`, `total`, `fillFrom` | renamed (4.18.21) | `total` also keeps its donut meaning |
+| `plotOptions.unit.grid.split`, `.tileColumns`, `.max`, `.trackColor` | `split`, `tileColumns`, `splitMax`, `trackColor` | renamed (4.18.21) | |
+| `plotOptions.unit.shape` (`circle` · `square`, also `pictogram`, `image`), `size`, `spacing`, `borderRadius`, `unitValue`, `maxUnits` | `markerShape`, `markerSize`, `spacing` (px), `cellRadius`, `unitValue`, `maxUnits` | renamed (4.18.21) | no `pictogram` / `image` marks (not built) |
 | ApexCharts v8 types `streamgraph`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | `type="tree"` | kept (4.18.7, ADR-0058) | see "API mapping" (ApexTree rows) |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
@@ -1110,5 +1141,6 @@ Option areas not covered by the table above:
 - Violin story (4.18.21): Violin (observations with box and dots; a horizontal two-series half-violin
   of precomputed curves with one density scale and patterns).
 - Beeswarm story (4.18.21): Beeswarm (salaries by department, swarm; response times, vertical jitter with shapes).
+- Waffle story (4.18.21): Waffle (a percentage waffle; split tiles with shapes per category).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.
