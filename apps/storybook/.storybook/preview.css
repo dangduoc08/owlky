@@ -1061,6 +1061,26 @@
   gap: calc(var(--ok-spacing) * 10);
 }
 
+/* Color picker demos (story-only): the swatches above the value; six swatches per row. */
+.sb-color-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 4);
+}
+
+.sb-color-picker-swatches {
+  max-width: calc(var(--ok-spacing) * 9 * 6);
+}
+
+/* Countdown demos (story-only): the countdown above its control. */
+.sb-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 4);
+}
+
 /* Data grid demos (story-only): the grid height and custom cell content. */
 .sb-grid {
   width: 100%;

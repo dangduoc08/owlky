@@ -124,6 +124,7 @@ import {
   lightboxTextAligns,
   lightboxThumbnailsPositions,
 } from "../lightbox/lightbox-model.js";
+import { type CountdownUnit, countdownUnits } from "../motion/countdown.js";
 import {
   behavior,
   type DataAttributes,
@@ -895,6 +896,18 @@ export type LabelPlacement = (typeof labelPlacements)[number];
 
 const CONTROL_INPUT = ":scope > input";
 
+/** Shapes of a color swatch (Radio, Checkbox with `swatch`). */
+export const swatchShapes = ["circular", "rounded"] as const;
+export type SwatchShape = (typeof swatchShapes)[number];
+const swatchShape = (fallback: SwatchShape) =>
+  style(
+    "data-ok-shape",
+    swatchShapes,
+    fallback,
+    "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+    { optional: true },
+  );
+
 export const checkboxOptions = defineOptions("checkbox", "data-ok-checkbox", {
   color: style(
     "data-ok-color",
@@ -907,6 +920,7 @@ export const checkboxOptions = defineOptions("checkbox", "data-ok-checkbox", {
     "data-ok-indeterminate",
     "Mixed state: shows a dash and sets the input's `indeterminate` (`aria-checked=mixed`).",
   ),
+  shape: swatchShape("rounded"),
   disabled: native("disabled", "Native `disabled` on the input.", { children: CONTROL_INPUT }),
   checked: state(
     "checked",
@@ -919,6 +933,7 @@ export interface CheckboxAnatomyOptions {
   color?: SelectionControlColor | undefined;
   size?: SelectionControlSize | undefined;
   indeterminate?: boolean | undefined;
+  shape?: SwatchShape | undefined;
 }
 
 /** `data-ok-*` attributes of a checkbox's root span. */
@@ -992,6 +1007,7 @@ export const radioOptions = defineOptions("radio", "data-ok-radio", {
     "Color when selected (`default` = text color).",
   ),
   size: style("data-ok-size", selectionControlSizes, "medium", "Target 40 / 36px, icon 24 / 20px."),
+  shape: swatchShape("circular"),
   disabled: native("disabled", "Native `disabled` on the input.", { children: CONTROL_INPUT }),
   checked: state("checked", "Native `checked` (in a group: the group's `value`).", "change"),
 });
@@ -999,6 +1015,7 @@ export const radioOptions = defineOptions("radio", "data-ok-radio", {
 export interface RadioAnatomyOptions {
   color?: SelectionControlColor | undefined;
   size?: SelectionControlSize | undefined;
+  shape?: SwatchShape | undefined;
 }
 
 /** `data-ok-*` attributes of a radio's root span. */
@@ -3413,6 +3430,35 @@ export const countUpAttributes = (options: CountUpAnatomyOptions = {}): DataAttr
   ...optionAttributes(countUpOptions, { ...options }),
   ...onceAttribute(options.once, countUpOptions.options.once.attr),
 });
+
+export const countdownOptions = defineOptions("countdown", "data-ok-countdown", {
+  seconds: number(
+    "data-ok-seconds",
+    undefined,
+    "Counts down from this many seconds (when there is no `date`).",
+    { min: 0 },
+  ),
+  largestUnit: style(
+    "data-ok-largest-unit",
+    countdownUnits,
+    "days",
+    "The largest unit shown: larger ones fold into it (`minutes`: 90 minutes, not 1 hour 30).",
+  ),
+  paused: flag(
+    "data-ok-paused",
+    "Stops the countdown (WCAG 2.2.2). Seconds keep their time left; a date shows the real time left when it resumes.",
+  ),
+});
+
+export interface CountdownAnatomyOptions {
+  seconds?: number | undefined;
+  largestUnit?: CountdownUnit | undefined;
+  paused?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a Countdown (`date`, `now` and the labels are written by the owner). */
+export const countdownAttributes = (options: CountdownAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(countdownOptions, { ...options });
 
 export const motionBorderShapes = ["rounded", "circle"] as const;
 export type MotionBorderShape = (typeof motionBorderShapes)[number];
@@ -7301,6 +7347,7 @@ export const optionSchemas = {
   "motion-group": motionGroupOptions,
   "motion-text": motionTextOptions,
   "count-up": countUpOptions,
+  countdown: countdownOptions,
   "motion-border": motionBorderOptions,
   "data-grid": dataGridOptions,
   "date-field": dateFieldOptions,

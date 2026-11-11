@@ -3,6 +3,9 @@
 Reference: Minimal UI kit "Checkbox" page, sections Basic, Sizes, Custom icons, Placement, Colors,
 Indeterminate (content only). Upstream: MUI `Checkbox` (ADR-0015). Created with `/component`.
 Reference URL: https://minimals.cc/components/mui/checkbox
+Color picker (multiple): Minimal UI kit "Utilities" page, section Color pickers › Multiple
+(https://minimals.cc/components/extra/utilities, roadmap 4.23; upstream: the kit's own
+`ColorPicker`).
 
 ## Purpose
 Pick any number of options, or accept one statement, in a form. Native `<input type="checkbox">`.
@@ -17,7 +20,17 @@ span[data-ok-checkbox][data-ok-color][data-ok-size][data-ok-indeterminate]?
   span[data-ok-checkbox-icon="checked"][aria-hidden="true"]   › svg (› path[data-ok-checkbox-mark])
   span[data-ok-checkbox-icon="indeterminate"][aria-hidden="true"] › svg (› path[data-ok-checkbox-mark])
 ```
-All three icon slots are always present; CSS shows one. React renders `data-ok-runtime="off"` on
+Color swatch (`swatch`), in a `FormGroup row` for a multiple color picker:
+```
+span[data-ok-checkbox][data-ok-color][data-ok-size][data-ok-swatch=<css color>][data-ok-shape]?
+  input[type=checkbox][data-ok-checkbox-input][aria-label=<color name>]
+  span[data-ok-checkbox-swatch][aria-hidden="true"] › svg (check mark, shown while checked)
+```
+The icon slots give way to the swatch. Swatch colors go through `--_ok-swatch` /
+`--_ok-swatch-mark` (React `style`, HTML `checkbox` runtime through CSSOM); same rules as Radio
+(specs/components/radio.md › Swatch options, Layout and tokens), `rounded` by default.
+
+Without a swatch all three icon slots are always present; CSS shows one. React renders `data-ok-runtime="off"` on
 the root. React `ref` and the remaining props go to the **input**; `className` / `style` to the root.
 
 ## Options
@@ -29,9 +42,13 @@ Root: `data-ok-checkbox`. Unknown values fall back to the default.
 | `color` | `data-ok-color="…"` | style | `default` `primary` `secondary` `info` `success` `warning` `error` | `primary` | Color when checked or indeterminate (`default` = text color). |
 | `size` | `data-ok-size="…"` | style | `medium` `small` | `medium` | Target 40 / 36px, icon 24 / 20px. |
 | `indeterminate` | `data-ok-indeterminate` | flag | boolean | off | Mixed state: shows a dash and sets the input's `indeterminate` (`aria-checked=mixed`). |
+| `shape` | `data-ok-shape="…"` | style | `circular` `rounded` | — | Color swatches only (`swatch`): a circle or a square with rounded corners. |
 | `disabled` | `disabled` on each `input` | native | boolean | off | Native `disabled` on the input. |
 | `checked` | `checked` · event `ok:checkbox:change` | state | — | — | Native `checked` (`checked` / `defaultChecked` + `onChange(checked)`). |
 <!-- /options:checkbox -->
+
+`swatch` (React; HTML `data-ok-swatch`): a CSS color or `var(--ok-…)` token (sanitized like
+Radio's). `shape` (`circular` · `rounded`) applies to swatches only.
 
 React only: `icon`, `checkedIcon`, `indeterminateIcon` (ReactNode; HTML: your SVG in the slot),
 `onChange(checked)`. Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.
@@ -61,7 +78,9 @@ the native flag; the prop stays the truth). HTML runtime `checkbox`:
   its change checks / clears every listed checkbox; any listed checkbox's change recomputes the
   parent (`selectAllState`: all → checked, some → mixed, none → clear), up nested parents.
   Ids resolve in the input's root (shadow-safe); unknown ids and cycles are ignored.
-Without the runtime: toggling and the `data-ok-indeterminate` icon work; `aria-checked=mixed` and
+- writes a swatch's `--_ok-swatch` / `--_ok-swatch-mark` from `data-ok-swatch` (core
+  `swatchStyle`), again when it changes.
+Without the runtime: toggling and the `data-ok-indeterminate` icon work; swatches show grey; `aria-checked=mixed` and
 parents don't.
 
 ## Keyboard
@@ -92,6 +111,9 @@ Upstream: MUI `Checkbox`, mui.com/material-ui/api/checkbox/.
 | `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | `className` / `style` → the root |
 | `disableRipple` | — | not applicable | no ripple |
 | `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
+| ColorPicker (kit) `options`, `value: string[]`, `onChange(values)` | one `Checkbox swatch` per color in a `FormGroup row`; the app keeps the array | renamed | composition |
+| ColorPicker `variant` (`circular` · `rounded`) | `shape` | renamed | as Radio |
+| ColorPicker `size`, `limit`, `slotProps` | `size` / — | renamed / not applicable | as Radio |
 
 ## Parity notes
 HTML parents (`aria-controls`) are runtime behavior; React apps compute the state

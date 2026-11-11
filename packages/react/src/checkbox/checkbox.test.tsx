@@ -201,3 +201,50 @@ describe("Checkbox", () => {
     await expectNoAxeViolations(container);
   });
 });
+
+describe("Checkbox swatches (color picker)", () => {
+  it("renders a rounded swatch that grows with a mark when checked", async () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <div>
+        <Checkbox swatch="#4CAF50" aria-label="Green" onChange={onChange} />
+        <Checkbox swatch="#CDDC39" shape="circular" aria-label="Lime" defaultChecked disabled />
+      </div>,
+    );
+    const green = screen.getByRole("checkbox", { name: "Green" });
+    const root = green.closest("[data-ok-checkbox]") as HTMLElement;
+    expect(root).toHaveAttribute("data-ok-swatch", "#4CAF50");
+    expect(root).toHaveAttribute("data-ok-runtime", "off");
+    expect(root.querySelector("[data-ok-checkbox-icon]")).toBeNull();
+    const swatch = root.querySelector("[data-ok-checkbox-swatch]") as HTMLElement;
+    expect(getComputedStyle(swatch).borderRadius).toBe("6px");
+    expect(getComputedStyle(swatch).width).toBe("20px");
+    await userEvent.click(green);
+    expect(onChange).toHaveBeenCalledWith(true);
+    await settled(swatch);
+    expect(getComputedStyle(swatch).width).toBe("28px");
+    const lime = screen.getByRole("checkbox", { name: "Lime" }).closest("[data-ok-checkbox]");
+    const limeSwatch = lime?.querySelector("[data-ok-checkbox-swatch]") as HTMLElement;
+    expect(getComputedStyle(limeSwatch).borderRadius).toBe("9999px");
+    expect(getComputedStyle(limeSwatch).opacity).toBe("0.48");
+    expect(getComputedStyle(limeSwatch).color).toBe("rgb(0, 0, 0)");
+    await expectNoAxeViolations(container);
+  });
+
+  it("drops colors that aren't colors and keeps a custom mark", () => {
+    render(
+      <Checkbox
+        swatch="url(x)"
+        aria-label="Bad"
+        checkedIcon={<b>x</b>}
+        style={{ margin: 2 }}
+        defaultChecked
+      />,
+    );
+    const root = screen.getByRole("checkbox", { name: "Bad" }).closest("[data-ok-checkbox]");
+    expect(root).toHaveAttribute("data-ok-swatch", "");
+    expect((root as HTMLElement).style.getPropertyValue("--_ok-swatch")).toBe("");
+    expect((root as HTMLElement).style.margin).toBe("2px");
+    expect(root?.querySelector("[data-ok-checkbox-swatch] b")).not.toBeNull();
+  });
+});

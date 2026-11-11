@@ -60,7 +60,7 @@ function stateBecomes(element: Element, value: string): Promise<void> {
 }
 
 describe("motion snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(14));
+  it("covers every story group", () => expect(snippets).toHaveLength(16));
 
   it.each(snippets)("%s: CSP-safe, no state before the runtime (nothing hidden)", (_, html) => {
     const host = mount(local(html));

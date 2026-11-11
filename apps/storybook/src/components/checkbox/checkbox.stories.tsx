@@ -1,6 +1,10 @@
 import { Checkbox } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
+import {
+  MULTIPLE_COLOR_SCRIPT_SOURCE,
+  multipleColorScript,
+} from "../shared/color-picker-scripts.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { CheckboxDocs } from "./checkbox-docs.js";
 import {
@@ -14,6 +18,8 @@ import {
   placementGroups,
   sizeGroups,
 } from "./checkbox-examples.js";
+import { ColorPickerDemo } from "./color-picker-demo.js";
+import colorPickerSource from "./color-picker-demo.tsx?raw";
 import demoSource from "./indeterminate-demo.tsx?raw";
 
 const controls = { ...CHECKBOX_CONTROLS, target: Checkbox };
@@ -71,3 +77,22 @@ export const Indeterminate: StoryObj = frameworkStory({
   html: snippetStory(snippets, "indeterminate", files("Indeterminate"), labelled),
   react: reactGroupsStory(indeterminateGroups, undefined, demoSource),
 });
+
+export const ColorPicker: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "color-picker",
+      [["Multiple", "group"]],
+      htmlSetup(["checkbox.css", "form-control.css", "typography.css"], true),
+      undefined,
+      { group: { script: multipleColorScript, scriptSource: MULTIPLE_COLOR_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Multiple", content: <ColorPickerDemo /> }],
+      undefined,
+      colorPickerSource,
+    ),
+  }),
+  name: "Color picker",
+};

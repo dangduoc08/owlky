@@ -34,6 +34,14 @@
    "value": "#FFFFFF"
   },
   {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
    "name": "--ok-palette-primary-main",
    "value": "#00A76F"
   },
@@ -44,6 +52,14 @@
   {
    "name": "--ok-radius-full",
    "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
   },
   {
    "name": "--ok-spacing",
@@ -99,6 +115,18 @@
       "name": "indeterminate"
      },
      {
+      "attr": "data-ok-shape",
+      "default": "rounded",
+      "description": "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+      "kind": "style",
+      "name": "shape",
+      "optional": true,
+      "values": [
+       "circular",
+       "rounded"
+      ]
+     },
+     {
       "attr": "disabled",
       "children": ":scope > input",
       "description": "Native `disabled` on the input.",
@@ -139,6 +167,20 @@
       ],
       "kind": "part",
       "name": "data-ok-checkbox-mark"
+     },
+     {
+      "description": "A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while checked.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-checkbox-swatch"
+     },
+     {
+      "description": "A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey).",
+      "kind": "value",
+      "name": "data-ok-swatch",
+      "value": "string"
      }
     ],
     "runtime": "checkbox"
@@ -149,7 +191,7 @@
     "native": "HTMLInputElement",
     "props": [
      {
-      "description": "Replaces the checked icon.",
+      "description": "Replaces the checked icon (with `swatch`: the mark on the checked swatch).",
       "name": "checkedIcon",
       "type": "ReactNode"
      },
@@ -185,6 +227,11 @@
       "type": "((checked: boolean) => void)"
      },
      {
+      "description": "Swatch shape: `rounded` (default) or `circular`.",
+      "name": "shape",
+      "type": "\"circular\" | \"rounded\""
+     },
+     {
       "default": "\"medium\"",
       "description": "`medium` (40px target, 24px icon) or `small` (36 / 20px).",
       "name": "size",
@@ -194,6 +241,11 @@
       "description": "Style of the root span.",
       "name": "style",
       "type": "CSSProperties"
+     },
+     {
+      "description": "Shows a color swatch instead of the icons (a color picker): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Name the checkbox with the color's name (`aria-label=\"Orange\"`).",
+      "name": "swatch",
+      "type": "string"
      }
     ]
    }

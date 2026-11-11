@@ -110,7 +110,10 @@ const budgets = [
   // draggable annotations): 263.68 kB; 269 kB with drilldown and the trellis runtime (4.18.68,
   // ADR-0060): 265.08 kB.
   // 275 kB once the data grid and chart coulds merged together: 269.8 kB.
-  ["packages/html/dist/owlky.js", 275_000, "HTML runtime + all components (IIFE)"],
+  // 281 kB after Phase 4 batch F's Countdown (4.22: clock, live region cadence, runtime with
+  // toggle and restart triggers) and color swatches (4.23: sanitized swatch colors, a radio
+  // runtime, checkbox and avatar swatches): 275.75 kB.
+  ["packages/html/dist/owlky.js", 281_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -188,7 +191,9 @@ const budgets = [
   // editing and loading states.
   // 60 kB since Phase 4 batch E (organization chart directions and highlight, data grid layout,
   // footer, set filter and selection options, chart stacks and cues; about 2 kB): 56.2 kB.
-  ["packages/styles/dist/owlky.min.css", 60_000, "All CSS (tokens + components)"],
+  // 63.5 kB after Phase 4 batch F's Countdown (4.22) and the Radio / Checkbox / Avatar color
+  // swatches (4.23; sizes, shapes, checked states, forced colors; about 0.6 kB): 60.49 kB.
+  ["packages/styles/dist/owlky.min.css", 63_500, "All CSS (tokens + components)"],
   // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
   // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
   // reference (ADR-0049: every prop, attribute, part, event, method, type and CSS variable per

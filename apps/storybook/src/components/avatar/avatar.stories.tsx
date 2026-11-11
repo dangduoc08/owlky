@@ -15,6 +15,8 @@ import {
   variantGroups,
   withBadgeGroups,
 } from "./avatar-examples.js";
+import { ColorPreviewDemo } from "./color-preview-demo.js";
+import colorPreviewSource from "./color-preview-demo.tsx?raw";
 
 const controls = { ...AVATAR_CONTROLS, target: Avatar };
 
@@ -66,3 +68,14 @@ export const WithBadge: StoryObj = {
 };
 export const Sizes: StoryObj = story("sizes", "Sizes", sizeGroups);
 export const Spacing: StoryObj = story("spacing", "Spacing", spacingGroups);
+export const ColorPreview: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "color-preview", files("Color preview"), setup),
+    react: reactGroupsStory(
+      [{ title: "Color preview", content: <ColorPreviewDemo /> }],
+      undefined,
+      colorPreviewSource,
+    ),
+  }),
+  name: "Color preview",
+};

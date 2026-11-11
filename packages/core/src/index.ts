@@ -90,6 +90,7 @@ export {
   type CollapseEasing,
   type CollapseOrientation,
   type CollapseTimeout,
+  type CountdownAnatomyOptions,
   type CountUpAnatomyOptions,
   cardActionsAttributes,
   cardActionsOptions,
@@ -126,6 +127,8 @@ export {
   codeEditorThemes,
   collapseAttributes,
   collapseOptions,
+  countdownAttributes,
+  countdownOptions,
   countUpAttributes,
   countUpOptions,
   type DataAttributes,
@@ -449,6 +452,7 @@ export {
   type StepAnatomyOptions,
   type StepperAnatomyOptions,
   type StepperVariant,
+  type SwatchShape,
   type SwitchAnatomyOptions,
   type SwitchEdge,
   scrollbarAttributes,
@@ -476,6 +480,7 @@ export {
   stepperAttributes,
   stepperOptions,
   stepperVariants,
+  swatchShapes,
   switchAttributes,
   switchEdges,
   switchOptions,
@@ -1161,6 +1166,25 @@ export {
   prefersReducedMotion,
 } from "./motion/count-up.js";
 export {
+  COUNTDOWN_PLACEHOLDER,
+  type Countdown,
+  type CountdownOptions,
+  type CountdownUnit,
+  countdownAnnouncement,
+  countdownCompleteLabel,
+  countdownInitial,
+  countdownLabels,
+  countdownParts,
+  countdownShownUnits,
+  countdownStep,
+  countdownText,
+  countdownUnits,
+  countdownValueText,
+  createCountdown,
+  parseCountdownSeconds,
+  parseCountdownTime,
+} from "./motion/countdown.js";
+export {
   createMotionTrigger,
   type MotionState,
   type MotionStyleOptions,
@@ -1370,6 +1394,7 @@ export {
   type StepState,
   stepState,
 } from "./stepper/stepper.js";
+export { swatchChannels, swatchColor, swatchStyle } from "./swatch/swatch.js";
 export {
   compareCellValues,
   defaultLabelDisplayedRows,

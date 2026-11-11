@@ -10,6 +10,8 @@ import {
   avatarOptions,
   parseNumber,
   progressSize,
+  swatchColor,
+  swatchStyle,
 } from "@owlky/core";
 import {
   Children,
@@ -51,6 +53,8 @@ export interface AvatarProps extends Omit<HTMLAttributes<HTMLSpanElement>, "colo
   size?: number | string | undefined;
   /** Other attributes of the `<img>`. */
   imgProps?: ImgHTMLAttributes<HTMLImageElement> | undefined;
+  /** A color dot instead of a picture (a color preview): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. The avatar is then empty: name the group. */
+  swatch?: string | undefined;
 }
 
 /**
@@ -58,13 +62,16 @@ export interface AvatarProps extends Omit<HTMLAttributes<HTMLSpanElement>, "colo
  * letters avatar for assistive technology with `aria-label` (and `role="img"`) when it matters.
  */
 export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
-  { src, srcSet, sizes, alt, variant, color, size, imgProps, children, style, ...props },
+  { src, srcSet, sizes, alt, variant, color, size, imgProps, swatch, children, style, ...props },
   ref,
 ) {
   const [failed, setFailed] = useState<string | null>(null);
   const validSize = parseNumber(avatarOptions.options.size, size);
   const showImage = (src !== undefined || srcSet !== undefined) && failed !== (src ?? srcSet);
-  const custom = validSize !== undefined ? { "--_ok-avatar-size": progressSize(validSize) } : {};
+  const custom = {
+    ...(validSize !== undefined ? { "--_ok-avatar-size": progressSize(validSize) } : {}),
+    ...(swatch !== undefined ? swatchStyle(swatch) : {}),
+  };
   let content: ReactNode = children;
   if (showImage) {
     content = (
@@ -80,13 +87,14 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
         }}
       />
     );
-  } else if (content == null) {
+  } else if (content == null && swatch === undefined) {
     content = alt?.trim() ? alt.trim()[0]?.toUpperCase() : <PersonIcon />;
   }
   return (
     <span
       ref={ref}
       {...avatarAttributes({ variant, color, size: validSize })}
+      {...(swatch !== undefined ? { "data-ok-swatch": swatchColor(swatch) ?? "" } : {})}
       data-ok-runtime="off"
       style={{ ...(custom as CSSProperties), ...style }}
       {...props}

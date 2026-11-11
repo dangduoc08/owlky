@@ -1,4 +1,5 @@
 import {
+  countdownOptions,
   countUpOptions,
   motionBorderOptions,
   motionGroupOptions,
@@ -7,7 +8,7 @@ import {
 } from "@owlky/core";
 import motionApi from "@owlky/docs-content/api/motion.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { CountUp, Motion, MotionBorder, MotionGroup, MotionText } from "@owlky/react";
+import { Countdown, CountUp, Motion, MotionBorder, MotionGroup, MotionText } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
@@ -327,6 +328,54 @@ export function Users() {
 }`,
   },
   {
+    id: "countdown",
+    title: "Count down to a date",
+    body: `Countdown shows the days, hours, minutes and seconds left until \`date\`, or of a number of \`seconds\` when there is no date. It updates once per second and stops at 0.
+
+- **Units:** \`largestUnit\` sets the largest unit shown. With \`seconds\`, a 90-second countdown shows 90 seconds instead of 1 minute and 30 seconds. Write the unit names in your language with \`labels\` in React, or as the text of each label in HTML.
+- **Server rendering:** pass \`now\`, the time of the first render, so the server and the browser show the same time. Without it, a date countdown shows \`--\` until the page runs its script.
+- **Pause:** \`paused\` stops the countdown. A seconds countdown keeps its time left. A date countdown shows the real time left when it resumes, because the date doesn't move. In HTML, a button with \`data-ok-countdown-toggle\` pauses and resumes the countdown it names, and \`data-ok-countdown-restart\` starts it over.
+- **End:** \`onComplete\` (HTML: the \`ok:countdown:complete\` event) runs once at 0, and screen readers hear \`completeLabel\` ("Time's up" by default).`,
+    html: `<span id="launch" data-ok-countdown role="timer" aria-label="Time until the launch" data-ok-largest-unit="days" data-ok-date="2027-01-01T00:00:00Z">
+  <span data-ok-countdown-unit="days"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>days</span></span>
+  <span data-ok-countdown-unit="hours"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>hours</span></span>
+  <span data-ok-countdown-unit="minutes"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>minutes</span></span>
+  <span data-ok-countdown-unit="seconds"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>seconds</span></span>
+  <span data-ok-countdown-status role="status"></span>
+</span>
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-countdown-toggle="launch" aria-pressed="false">
+  <span data-ok-button-label>Pause</span>
+</button>
+
+<script>
+  document.getElementById("launch").addEventListener("ok:countdown:complete", () => {
+    document.getElementById("launch-done").hidden = false;
+  });
+</script>
+<p id="launch-done" hidden>We are live.</p>`,
+    react: `import { Button, Countdown } from "@owlky/react";
+import { useState } from "react";
+
+export function Launch() {
+  const [paused, setPaused] = useState(false);
+  const [live, setLive] = useState(false);
+  return (
+    <>
+      <Countdown
+        aria-label="Time until the launch"
+        date="2027-01-01T00:00:00Z"
+        paused={paused}
+        onComplete={() => setLive(true)}
+      />
+      <Button variant="outlined" aria-pressed={paused} onClick={() => setPaused(!paused)}>
+        Pause
+      </Button>
+      {live && <p>We are live.</p>}
+    </>
+  );
+}`,
+  },
+  {
     id: "border",
     title: "Turn a border around content",
     body: `MotionBorder draws a moving border around its content, such as a logo, an avatar or a button.
@@ -375,6 +424,7 @@ export function ActiveUser() {
     body: `- **\`ok:motion:end\`** fires on a Motion when its animation ends, with the state in \`detail.state\`: \`enter\` or \`exit\`.
 - **\`ok:motion:enter\` and \`ok:motion:leave\`** fire on a Motion with the \`inView\` trigger when it enters or leaves the view, with the visible fraction in \`detail.ratio\`. MotionGroup and MotionText fire \`ok:motion-group:enter\`, \`ok:motion-text:enter\` and the matching \`leave\` events. A Motion inside a group fires none: the group reports for it.
 - **Instance:** \`runtime.get(element, "motion")\` returns \`{ state, replay() }\`. MotionGroup (\`"motion-group"\`) and MotionText (\`"motion-text"\`) have the same instance. \`replay()\` plays the entrance again.
+- **\`ok:countdown:tick\`** fires on a Countdown each time its value changes, with the whole seconds left in \`detail.remaining\`. **\`ok:countdown:complete\`** fires once when it reaches 0. \`runtime.get(element, "countdown")\` returns \`{ remaining, paused, pause(), resume(), restart() }\`. In React, use \`onTick\` and \`onComplete\`, and change the \`key\` to start over.
 - **React:** use \`onAnimationEnd\`, \`onViewportEnter\` and \`onViewportLeave\` (they receive the \`IntersectionObserverEntry\`), and change the \`key\` to play the entrance again.`,
   },
   {
@@ -388,6 +438,7 @@ export function ActiveUser() {
     body: `- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.
 - Looping animations and turning borders stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2).
 - CountUp exposes its end value to assistive technologies, and hides the changing digits.
+- Countdown has the \`timer\` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with \`aria-label\`, and give people a pause control when it runs next to other content (WCAG 2.2.2).
 - MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.
 - Avoid animations on content that people need to read right away, such as errors.
 - Directional animations start outside the content's box. Clip the container (\`overflow: clip\`) if they would widen the page on small screens.`,
@@ -440,6 +491,15 @@ const PREVIEWS = {
       </strong>
     </Preview>
   ),
+  countdown: () => (
+    <Preview>
+      <Countdown
+        aria-label="Time until the launch"
+        date="2027-01-01T00:00:00Z"
+        now="2026-11-09T09:30:15Z"
+      />
+    </Preview>
+  ),
   border: () => (
     <Preview>
       <div className="sb-row">
@@ -458,6 +518,7 @@ const PREVIEWS = {
       <OptionsTable schema={motionGroupOptions} />
       <OptionsTable schema={motionTextOptions} />
       <OptionsTable schema={countUpOptions} />
+      <OptionsTable schema={countdownOptions} />
       <OptionsTable schema={motionBorderOptions} />
     </>
   ),
@@ -512,6 +573,42 @@ const PREVIEWS = {
           html: "replay()",
           type: "—",
           description: "Plays the entrance again.",
+        },
+        {
+          react: "date",
+          html: "data-ok-date",
+          type: "Date · string · number",
+          description: "Countdown: the time to count down to. Wins over `seconds`.",
+        },
+        {
+          react: "now",
+          html: "data-ok-now",
+          type: "Date · string · number",
+          description: "Countdown: the time of the first render. The clock runs from it.",
+        },
+        {
+          react: "labels",
+          html: "data-ok-countdown-label",
+          type: "object · text",
+          description: "Countdown: the unit names. Default `days`, `hours`, `minutes`, `seconds`.",
+        },
+        {
+          react: "completeLabel",
+          html: "data-ok-complete-label",
+          type: "string",
+          description: 'Countdown: announced at the end. Default "Time\'s up".',
+        },
+        {
+          react: "onTick",
+          html: "ok:countdown:tick",
+          type: "event",
+          description: "Countdown: the value changed, with the whole seconds left.",
+        },
+        {
+          react: "onComplete",
+          html: "ok:countdown:complete",
+          type: "event",
+          description: "Countdown: it reached 0.",
         },
       ]}
     />

@@ -885,3 +885,17 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `stepper.css` styles): `data-ok-step-size`, `data-ok-small-step`, `data-ok-large-step`.
   React's static markup keeps `autoComplete` / `inputMode` camelCase: `demo-snippets.mjs`
   lowercases them.
+- Countdown (4.22): the clock is `Date.now()` (anchored to `now` when given), timers fire once
+  per change of the shown value. Unit tests fake `["setTimeout", "clearTimeout", "Date"]` and
+  advance time (React inside `act()`); e2e uses `page.clock`: `install` then `pauseAt` before
+  asserting values (the load time moves the first value), and parity / visual fix `Date.now()`
+  with `setFixedTime` (timers still run, the values don't move). The toggle and restart triggers
+  are HTML-only hooks (parity `IGNORED`); React demos use `paused` and `key`.
+- Color swatches (4.23): `data-ok-swatch` is free text (not in a schema) on Radio, Checkbox and
+  Avatar roots; core `swatchStyle` sanitizes it and returns `--_ok-swatch` / `--_ok-swatch-mark`
+  (React `style`, HTML runtimes through `runtime/swatch.ts`). The Map legend uses the same
+  attribute name on its own parts: never select a bare `[data-ok-swatch]` in CSS or a runtime.
+  Radio got a runtime only for swatches (`[data-ok-radio][data-ok-swatch]`); React Radio still
+  renders no `data-ok-runtime="off"` (the runtime writes the same values). Swatch sizes
+  transition: unit tests finish the swatch's animations (`getAnimations()`) or `await settled()`
+  before reading a checked width.

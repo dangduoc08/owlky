@@ -10,6 +10,7 @@ const STORIES: [component: "text-field" | "radio", story: string][] = [
   ["radio", "sizes"],
   ["radio", "placement"],
   ["radio", "colors"],
+  ["radio", "color-picker"],
 ];
 
 interface Box {

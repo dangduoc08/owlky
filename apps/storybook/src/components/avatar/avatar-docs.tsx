@@ -4,6 +4,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Avatar, AvatarGroup } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { ColorPreviewDemo } from "./color-preview-demo.js";
 import { PEOPLE, portrait } from "./display-icons.js";
 
 export const avatarSections: GuideSection[] = [
@@ -97,6 +98,36 @@ export function TightTeam() {
 }`,
   },
   {
+    id: "color-preview",
+    title: "Preview colors",
+    body: `Set \`swatch\` to a color to turn an avatar into a color dot, such as the colors a product comes in. Put the dots in an avatar group: they overlap like avatars, and the surplus becomes plain text such as "+13".
+
+- **Colors:** use a CSS color or a \`var(--ok-…)\` token. Values that aren't colors are ignored, and the dot stays grey.
+- **Size and overlap:** set \`size\` on the dots, such as \`16\`, and \`spacing\` on the group, such as \`6\`. In React, \`max\` counts the surplus too: \`max={4}\` shows three dots and the surplus.
+- **Name:** the dots are empty, so give the group \`role="img"\` and an \`aria-label\` that lists the colors.
+
+In HTML, \`data-ok-swatch\` holds the color, and the script paints it.`,
+    html: `<div data-ok-avatar-group data-ok-spacing="6" role="img" aria-label="5 colors: Orange, Deep purple, Light green and 2 more">
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default" data-ok-size="16" data-ok-swatch="#FF9800"></span>
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default" data-ok-size="16" data-ok-swatch="#673AB7"></span>
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default" data-ok-size="16" data-ok-swatch="#8BC34A"></span>
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default" data-ok-size="16" data-ok-avatar-surplus>+2</span>
+</div>`,
+    react: `import { Avatar, AvatarGroup } from "@owlky/react";
+
+const COLORS = ["#FF9800", "#673AB7", "#8BC34A", "#009688", "#3F51B5"];
+
+export function ProductColors() {
+  return (
+    <AvatarGroup max={4} spacing={6} role="img" aria-label="5 colors: Orange, Deep purple, Light green and 2 more">
+      {COLORS.map((color) => (
+        <Avatar key={color} swatch={color} size={16} />
+      ))}
+    </AvatarGroup>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -121,12 +152,18 @@ export function TightTeam() {
     title: "Accessibility",
     body: `- Picture avatars are named by the image's \`alt\`. Use \`alt=""\` when a name is already next to the avatar.
 - Initials and icons are decorative by default. Give the avatar \`role="img"\` and \`aria-label\` when it's the only place that says who it is.
+- Color dots are empty: name their group with \`role="img"\` and an \`aria-label\` that lists the colors. Dots keep their color in forced colors mode.
 - Grey avatars use dark grey initials, with a contrast ratio of at least 4.5:1. Palette colors follow the design.`,
   },
   apiReferenceSection(avatarApi),
 ];
 
 const PREVIEWS = {
+  "color-preview": () => (
+    <Preview>
+      <ColorPreviewDemo />
+    </Preview>
+  ),
   overview: () => (
     <Preview>
       <Avatar src={portrait(1)} alt={PEOPLE[0]} />
@@ -187,6 +224,12 @@ const PREVIEWS = {
           html: "text or svg",
           type: "ReactNode",
           description: "Initials or an icon, shown without a picture.",
+        },
+        {
+          react: "swatch",
+          html: "data-ok-swatch",
+          type: "string",
+          description: "A color dot: a CSS color or a `var(--ok-…)` token. The avatar stays empty.",
         },
         {
           react: "imgProps",

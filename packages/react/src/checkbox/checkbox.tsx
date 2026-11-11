@@ -4,6 +4,9 @@ import {
   checkboxAttributes,
   type SelectionControlColor,
   type SelectionControlSize,
+  type SwatchShape,
+  swatchColor,
+  swatchStyle,
 } from "@owlky/core";
 import {
   type CSSProperties,
@@ -57,6 +60,22 @@ function IndeterminateIcon() {
   );
 }
 
+/** The check mark of a checked color swatch (decorative, same SVG as the HTML snippets). */
+function SwatchMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path
+        d="m5 12.5 4.5 4.5L19 7.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export interface CheckboxProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size" | "color" | "onChange"> {
   /** Color when checked or indeterminate; `default` is the text color. Default `"primary"`. */
@@ -67,10 +86,14 @@ export interface CheckboxProps
   indeterminate?: boolean | undefined;
   /** Replaces the unchecked icon. */
   icon?: ReactNode;
-  /** Replaces the checked icon. */
+  /** Replaces the checked icon (with `swatch`: the mark on the checked swatch). */
   checkedIcon?: ReactNode;
   /** Replaces the indeterminate icon. */
   indeterminateIcon?: ReactNode;
+  /** Shows a color swatch instead of the icons (a color picker): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Name the checkbox with the color's name (`aria-label="Orange"`). */
+  swatch?: string | undefined;
+  /** Swatch shape: `rounded` (default) or `circular`. */
+  shape?: SwatchShape | undefined;
   /** Called with the new checked state. */
   onChange?: ((checked: boolean) => void) | undefined;
   /** Class of the root span (other props go to the input). */
@@ -92,6 +115,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
     icon,
     checkedIcon,
     indeterminateIcon,
+    swatch,
+    shape,
     onChange,
     className,
     style,
@@ -99,6 +124,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   },
   ref,
 ) {
+  const swatched = swatch !== undefined;
   const input = useRef<HTMLInputElement>(null);
   const merged = useMergedRefs(input, ref);
   // Every render: a click clears the native flag; the prop stays the source of truth.
@@ -108,10 +134,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   });
   return (
     <span
-      {...checkboxAttributes({ color, size, indeterminate })}
+      {...checkboxAttributes({ color, size, indeterminate, shape })}
+      {...(swatched ? { "data-ok-swatch": swatchColor(swatch) ?? "" } : {})}
       data-ok-runtime="off"
       className={className}
-      style={style}
+      style={swatched ? { ...(swatchStyle(swatch) as CSSProperties), ...style } : style}
     >
       <input
         ref={merged}
@@ -120,15 +147,23 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
         {...props}
         onChange={(event) => onChange?.(event.currentTarget.checked)}
       />
-      <span data-ok-checkbox-icon="unchecked" aria-hidden="true">
-        {icon ?? <UncheckedIcon />}
-      </span>
-      <span data-ok-checkbox-icon="checked" aria-hidden="true">
-        {checkedIcon ?? <CheckedIcon />}
-      </span>
-      <span data-ok-checkbox-icon="indeterminate" aria-hidden="true">
-        {indeterminateIcon ?? <IndeterminateIcon />}
-      </span>
+      {swatched ? (
+        <span data-ok-checkbox-swatch="" aria-hidden="true">
+          {checkedIcon ?? <SwatchMark />}
+        </span>
+      ) : (
+        <>
+          <span data-ok-checkbox-icon="unchecked" aria-hidden="true">
+            {icon ?? <UncheckedIcon />}
+          </span>
+          <span data-ok-checkbox-icon="checked" aria-hidden="true">
+            {checkedIcon ?? <CheckedIcon />}
+          </span>
+          <span data-ok-checkbox-icon="indeterminate" aria-hidden="true">
+            {indeterminateIcon ?? <IndeterminateIcon />}
+          </span>
+        </>
+      )}
     </span>
   );
 });

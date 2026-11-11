@@ -20,6 +20,7 @@ import { circularProgress } from "./circular-progress/circular-progress.js";
 import { clipboard } from "./clipboard/clipboard.js";
 import { collapse } from "./collapse/collapse.js";
 import { countUp } from "./count-up/count-up.js";
+import { countdown } from "./countdown/countdown.js";
 import { dataGrid } from "./data-grid/data-grid.js";
 import { dateCalendar } from "./date-calendar/date-calendar.js";
 import { dateField } from "./date-field/date-field.js";
@@ -47,6 +48,7 @@ import { numberField } from "./number-field/number-field.js";
 import { organizationChart } from "./organization-chart/organization-chart.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
+import { radio } from "./radio/radio.js";
 import { rating } from "./rating/rating.js";
 import { select } from "./select/select.js";
 import { slider } from "./slider/slider.js";
@@ -102,6 +104,7 @@ export const components: readonly ComponentDefinition[] = [
   breadcrumbs as ComponentDefinition,
   stepper as ComponentDefinition,
   mobileStepper as ComponentDefinition,
+  radio as ComponentDefinition,
   rating as ComponentDefinition,
   slider as ComponentDefinition,
   transferList as ComponentDefinition,
@@ -111,6 +114,7 @@ export const components: readonly ComponentDefinition[] = [
   motionGroup as ComponentDefinition,
   motionText as ComponentDefinition,
   countUp as ComponentDefinition,
+  countdown as ComponentDefinition,
   motionBorder as ComponentDefinition,
   dataGrid as ComponentDefinition,
   dateField as ComponentDefinition,

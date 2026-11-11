@@ -7,6 +7,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { FormControlLabel, Radio, RadioGroup } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { ColorPickerDemo } from "./color-picker-demo.js";
 
 const ICONS = `<span data-ok-radio-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
       <span data-ok-radio-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" fill="currentColor" fill-rule="evenodd" /></svg></span>`;
@@ -95,6 +96,50 @@ export function Delivery() {
 }`,
   },
   {
+    id: "color-picker",
+    title: "Pick a color",
+    body: `Set \`swatch\` to a color to turn a radio into a color swatch, and put the swatches in a row to make a color picker. The swatch shows the color, and the selected one grows, casts a shadow and shows a check mark, so the selection doesn't depend on color alone.
+
+- **Colors:** use a CSS color, such as \`#FF9800\`, \`rgb(0 150 136)\` or \`teal\`, or a token such as \`var(--ok-palette-primary-main)\`. Values that aren't colors are ignored, and the swatch stays grey. The check mark is white or black, whichever contrasts more with a \`#hex\` or \`rgb()\` color.
+- **Names:** name each radio after its color with \`aria-label\`, such as "Orange". Screen readers would otherwise read only a value like "#FF9800".
+- **Shape and size:** \`shape\` is \`circular\` (the default) or \`rounded\`. The \`small\` size has a 28px target.
+
+In HTML, \`data-ok-swatch\` holds the color, and the script paints it. Without the script, the swatches are grey, and picking a color still works.`,
+    html: `<div role="radiogroup" data-ok-radio-group data-ok-row aria-label="Color">
+  <span data-ok-radio data-ok-color="primary" data-ok-size="medium" data-ok-swatch="#FF9800">
+    <input type="radio" data-ok-radio-input name="color" value="#FF9800" aria-label="Orange" checked>
+    <span data-ok-radio-swatch aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+  </span>
+  <span data-ok-radio data-ok-color="primary" data-ok-size="medium" data-ok-swatch="#673AB7">
+    <input type="radio" data-ok-radio-input name="color" value="#673AB7" aria-label="Deep purple">
+    <span data-ok-radio-swatch aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+  </span>
+  <span data-ok-radio data-ok-color="primary" data-ok-size="medium" data-ok-swatch="#009688">
+    <input type="radio" data-ok-radio-input name="color" value="#009688" aria-label="Teal">
+    <span data-ok-radio-swatch aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+  </span>
+</div>`,
+    react: `import { Radio, RadioGroup } from "@owlky/react";
+import { useState } from "react";
+
+const COLORS = [
+  { name: "Orange", value: "#FF9800" },
+  { name: "Deep purple", value: "#673AB7" },
+  { name: "Teal", value: "#009688" },
+];
+
+export function ColorField() {
+  const [color, setColor] = useState("#FF9800");
+  return (
+    <RadioGroup row name="color" aria-label="Color" value={color} onChange={setColor}>
+      {COLORS.map(({ name, value }) => (
+        <Radio key={value} value={value} swatch={value} aria-label={name} />
+      ))}
+    </RadioGroup>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The form control label has its own options.",
@@ -120,7 +165,8 @@ export function Delivery() {
     title: "Accessibility",
     body: `- Name the group with \`aria-label\` or \`aria-labelledby\`, and each radio with a form control label (or \`aria-label\`).
 - Only the checked radio is in the tab order; the arrow keys move the selection.
-- Focus is shown with a 2px ring inside the target. The target is at least 36 × 36px.
+- Focus is shown with a 2px ring inside the target. The target is at least 36 × 36px (28 × 28px for small swatches).
+- Color swatches need a name each (the color's name, not its code). The selected swatch is larger and shows a check mark. In forced colors mode, swatches keep their color and the selected one gets an outline.
 - Unselected radios use the secondary text color, with a contrast ratio of at least 4.5:1. Brand colors of selected radios follow the design.`,
   },
   apiReferenceSection(radioApi),
@@ -131,6 +177,11 @@ export function Delivery() {
 ];
 
 const PREVIEWS = {
+  "color-picker": () => (
+    <Preview>
+      <ColorPickerDemo />
+    </Preview>
+  ),
   overview: () => (
     <Preview>
       <RadioGroup name="docs-delivery" defaultValue="standard" aria-label="Delivery">
@@ -187,6 +238,13 @@ const PREVIEWS = {
           html: 'data-ok-radio-icon="…"',
           type: "ReactNode",
           description: "Decorative icons that replace the circle.",
+        },
+        {
+          react: "swatch",
+          html: "data-ok-swatch",
+          type: "string",
+          description:
+            "A color swatch instead of the circle: a CSS color or a `var(--ok-…)` token.",
         },
         {
           react: "ref",

@@ -45,6 +45,7 @@ const pairs: [component: string, story: string][] = [
   ["motion", "tap-hover"],
   ["motion", "path"],
   ["motion", "count-up-story"],
+  ["motion", "countdown-story"],
   ["motion", "logo"],
   ["motion", "avatar-story"],
   ["motion", "border"],
@@ -300,6 +301,7 @@ const pairs: [component: string, story: string][] = [
   ["checkbox", "placement"],
   ["checkbox", "colors"],
   ["checkbox", "indeterminate"],
+  ["checkbox", "color-picker"],
   ["switch", "basic"],
   ["switch", "sizes"],
   ["switch", "placements"],
@@ -309,6 +311,7 @@ const pairs: [component: string, story: string][] = [
   ["radio", "sizes"],
   ["radio", "placement"],
   ["radio", "colors"],
+  ["radio", "color-picker"],
   ["form-control", "radios"],
   ["form-control", "checkboxes"],
   ["form-control", "switches"],
@@ -343,6 +346,7 @@ const pairs: [component: string, story: string][] = [
   ["avatar", "with-badge"],
   ["avatar", "sizes"],
   ["avatar", "spacing"],
+  ["avatar", "color-preview"],
   ["badge", "standard"],
   ["badge", "dot"],
   ["badge", "status"],
@@ -637,8 +641,19 @@ const SCREENSHOT_CSS: Record<string, string> = {
   map: "[data-ok-map-view] canvas { visibility: hidden !important; }",
 };
 
+/**
+ * Stories that show the time: `Date.now()` is fixed (timers still run), so both renderings show
+ * the same values whenever they are read.
+ */
+const FIXED_TIME = new Set(["motion/countdown-story"]);
+
 for (const [component, story] of pairs) {
   test.describe(`${component} / ${story}`, () => {
+    test.beforeEach(async ({ page }) => {
+      if (FIXED_TIME.has(`${component}/${story}`))
+        await page.clock.setFixedTime(new Date("2026-11-09T09:30:15Z"));
+    });
+
     test("has identical anatomy in React and HTML", async ({ page, browserName }) => {
       test.skip(browserName !== "chromium", "Structure is browser-independent.");
       await openStory(page, storyId("react", component, story));
