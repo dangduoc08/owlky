@@ -438,6 +438,21 @@ describe("createDiffEditorController", () => {
     controller.update({ original: "late" });
   });
 
+  it("reveals the line of the modified text", async () => {
+    const text = "x\n".repeat(300);
+    const { controller, ready } = setupDiff({ original: text, modified: text, line: 250 });
+    await ready();
+    const editor = controller.editor as NonNullable<typeof controller.editor>;
+    expect(editor.getModifiedEditor().getScrollTop()).toBeGreaterThan(0);
+    const reveal = vi.spyOn(editor, "revealLine");
+    controller.update({ line: 1 });
+    controller.update({ line: 1 });
+    controller.update({ line: undefined });
+    expect(reveal).toHaveBeenCalledTimes(1);
+    expect(reveal).toHaveBeenCalledWith(1);
+    controller.destroy();
+  });
+
   it("keeps models on request and stops before Monaco is ready", async () => {
     const kept = setupDiff({
       originalModelPath: "file:///ko.txt",

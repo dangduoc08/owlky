@@ -224,6 +224,11 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance, DateRang
     let valueOnOpen = value;
     let lastAccepted = value;
     let view: PickerView = firstView;
+    // A static picker shown as desktop lays out the desktop form inline (MUI X
+    // `displayStaticWrapperAs`): the markup holds the desktop views.
+    const staticDesktop =
+      isStatic && element.getAttribute("data-ok-display-static-wrapper-as") === "desktop";
+    const form = () => (staticDesktop ? "desktop" : mode);
 
     const iso = (range: DateRange) => formatIsoRange(range, type) || null;
     const valid = (range: DateRange): DateRange => [
@@ -232,7 +237,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance, DateRang
     ];
     const actionsShown = (): PickerAction[] =>
       parsePickerActions(element.getAttribute("data-ok-actions")) ??
-      (isDate && mode === "desktop" ? [] : ["cancel", "accept"]);
+      (isDate && form() === "desktop" ? [] : ["cancel", "accept"]);
     const closeOnSelect = () =>
       element.hasAttribute(o.closeOnSelect.attr)
         ? element.getAttribute(o.closeOnSelect.attr) !== "false"
@@ -240,7 +245,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance, DateRang
     const calendarCount = () => {
       if (isDateTime) return 1;
       const count = element.getAttribute(o.calendars.attr);
-      if (mode === "desktop") return parseCalendarCount(count, defaultRangeCalendars("desktop"));
+      if (form() === "desktop") return parseCalendarCount(count, defaultRangeCalendars("desktop"));
       return mode === "static" ? parseCalendarCount(count, 1) : 1;
     };
     const sideText = (date: Date | null, empty: string) => {
@@ -257,7 +262,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance, DateRang
           : formatAccessibleDate(date, locale);
 
     const render = () => {
-      const desktopForm = mode === "desktop";
+      const desktopForm = form() === "desktop";
       const shown = valid(value);
       if (toolbar) {
         toolbar.hidden = desktopForm;
@@ -530,7 +535,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance, DateRang
           }
           change(next, "calendar");
           if (isDateTime) {
-            if (mode !== "desktop" && timeViews.length > 0) setView(timeViews[0] as TimeView);
+            if (form() !== "desktop" && timeViews.length > 0) setView(timeViews[0] as TimeView);
             return;
           }
           if (detail.selectionState === "finish") finish(next);

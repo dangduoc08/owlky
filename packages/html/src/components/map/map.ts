@@ -7,10 +7,14 @@ import {
   type MapEventType,
   type MapLayerSpec,
   type MapLibreMap,
+  type MapLight,
   type MapSettings,
+  type MapSky,
   type MapSourceSpec,
   type MapViewState,
   mapScale,
+  parseMapJson,
+  parseMapPadding,
   readLayerDeclaration,
   readSourceDeclaration,
 } from "@owlky/core/map";
@@ -138,7 +142,11 @@ const SETTINGS_ATTRIBUTES = [
   mapOptions.options.maxPitch.attr,
   mapOptions.options.projection.attr,
   mapOptions.options.renderWorldCopies.attr,
+  mapOptions.options.styleDiffing.attr,
   mapOptions.options.cooperativeGestures.attr,
+  "data-ok-light",
+  "data-ok-sky",
+  "data-ok-padding",
   "data-ok-max-bounds",
   "data-ok-interactive-layer-ids",
   "data-ok-map-style",
@@ -163,6 +171,10 @@ function readSettings(element: Element): Partial<MapSettings> {
   for (const handler of mapHandlers)
     settings[handler] = readBehavior(element, mapOptions.options[handler]);
   settings.renderWorldCopies = readBehavior(element, mapOptions.options.renderWorldCopies);
+  settings.styleDiffing = readBehavior(element, mapOptions.options.styleDiffing);
+  settings.light = parseMapJson<MapLight>(element.getAttribute("data-ok-light"));
+  settings.sky = parseMapJson<MapSky>(element.getAttribute("data-ok-sky"));
+  settings.padding = parseMapPadding(element.getAttribute("data-ok-padding"));
   settings.cooperativeGestures = element.hasAttribute(mapOptions.options.cooperativeGestures.attr);
   settings.minZoom = readNumber(element, mapOptions.options.minZoom) as number;
   settings.maxZoom = readNumber(element, mapOptions.options.maxZoom) as number;

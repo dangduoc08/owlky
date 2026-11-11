@@ -1063,6 +1063,8 @@ export interface DatePickerParts {
   "data-ok-digital-clock-section": Part<"ul">;
   /** The format of the field, such as `MM/DD/YYYY`. */
   "data-ok-format": Value<string>;
+  /** On a single input range field: the text between the two dates (default `–`). */
+  "data-ok-date-separator": Value<string>;
   /** Set on days inside the range previewed under the pointer. */
   "data-ok-in-preview": State;
   /** Set on days inside the selected range. */
@@ -1598,6 +1600,8 @@ export interface MapParts {
   "data-ok-id": Value<string>;
   /** The ids of the layers whose features pointer events report, separated by spaces. */
   "data-ok-interactive-layer-ids": Value<string>;
+  /** The light of 3D extrusions, as MapLibre light JSON (`anchor`, `color`, `intensity`, `position`). */
+  "data-ok-light": Value<string>;
   /** On a GeoJSON source: computes line distances (for gradients). */
   "data-ok-line-metrics": State;
   /** Set by the runtime once the map has drawn fully. */
@@ -1658,6 +1662,8 @@ export interface MapParts {
   "data-ok-narrow": State;
   /** On a marker or a popup: its offset, in pixels, such as `0 -12`. */
   "data-ok-offset": Value<string>;
+  /** Camera padding in px, written like CSS `padding` (1 to 4 numbers: top, right, bottom, left). */
+  "data-ok-padding": Value<string>;
   /** On a layer: its paint properties, as JSON. */
   "data-ok-paint": Value<string>;
   /** On a vector or GeoJSON source: the property used as feature id. */
@@ -1668,6 +1674,8 @@ export interface MapParts {
   "data-ok-scheme": Value<"xyz" | "tms">;
   /** Set by the runtime while the geolocate control shows the accuracy circle. */
   "data-ok-show-accuracy": State;
+  /** The sky and the globe's atmosphere, as MapLibre sky JSON. */
+  "data-ok-sky": Value<string>;
   /** On a layer outside a source: the id of its source. On the terrain control: the DEM source. On regions: the source of the regions. */
   "data-ok-source": Value<string>;
   /** On a layer: the layer of a vector source it draws. On regions: the source layer of the regions. */
@@ -2112,6 +2120,11 @@ export interface TextFieldParts {
   "data-ok-text-field-adornment": Value<"start" | "end">;
   /** On an adornment: presses go through it to the input (React `disablePointerEvents`). */
   "data-ok-disable-pointer-events": State;
+  /**
+   * On the root: a standalone input without a label or a helper text (`InputBase`, `OutlinedInput`,
+   * `FilledInput`, `Input`). Without `data-ok-variant` it draws no box.
+   */
+  "data-ok-input-base": State;
   /** The asterisk of a required field's label. */
   "data-ok-text-field-asterisk": Part<"span">;
   /** The box around the input. */

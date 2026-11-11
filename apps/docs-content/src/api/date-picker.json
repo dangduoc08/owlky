@@ -362,6 +362,18 @@
       ]
      },
      {
+      "attr": "data-ok-display-static-wrapper-as",
+      "default": "mobile",
+      "description": "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+      "kind": "style",
+      "name": "displayStaticWrapperAs",
+      "optional": true,
+      "values": [
+       "mobile",
+       "desktop"
+      ]
+     },
+     {
       "attr": "data-ok-close-on-select",
       "default": true,
       "description": "Picking a day closes the picker. Default: on for desktop, off for mobile (absent attribute).",
@@ -448,6 +460,12 @@
       "description": "The popover of the desktop picker.",
       "kind": "part",
       "name": "data-ok-date-picker-paper"
+     },
+     {
+      "description": "On a single input range field: the text between the two dates (default `–`).",
+      "kind": "value",
+      "name": "data-ok-date-separator",
+      "value": "string"
      },
      {
       "description": "The days of a month (`role=\"grid\"`).",
@@ -785,6 +803,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "A week number column.",
       "name": "displayWeekNumber",
       "type": "boolean"
@@ -1108,6 +1132,12 @@
      },
      {
       "cancelable": false,
+      "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+      "detail": "{ view: \"day\" | \"month\" | \"year\"; hasFocus: boolean; }",
+      "name": "ok:date-calendar:focusedviewchange"
+     },
+     {
+      "cancelable": false,
       "description": "After another month is shown (`YYYY-MM`).",
       "detail": "{ month: string; }",
       "name": "ok:date-calendar:monthchange"
@@ -1139,6 +1169,12 @@
       "type": "() => void"
      },
      {
+      "description": "The view that holds the focus, or `null`.",
+      "kind": "property",
+      "name": "focusedView",
+      "type": "\"day\" | \"month\" | \"year\" | null"
+     },
+     {
       "description": "The shown month (`YYYY-MM`).",
       "kind": "property",
       "name": "month",
@@ -1167,6 +1203,12 @@
       "kind": "method",
       "name": "setDayRenderer",
       "type": "(fn: PickerDayRenderer | null) => void"
+     },
+     {
+      "description": "Moves the focus into a view, when it is shown.",
+      "kind": "method",
+      "name": "setFocusedView",
+      "type": "(view: \"day\" | \"month\" | \"year\") => void"
      },
      {
       "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -1435,6 +1477,11 @@
       "type": "number"
      },
      {
+      "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+      "name": "focusedView",
+      "type": "\"day\" | \"month\" | \"year\" | null"
+     },
+     {
       "description": "Shows the loading content instead of the days.",
       "name": "loading",
       "type": "boolean"
@@ -1463,6 +1510,11 @@
       "description": "Called with the new value; `selectionState` tells whether the last view was used.",
       "name": "onChange",
       "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
+     },
+     {
+      "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+      "name": "onFocusedViewChange",
+      "type": "((view: \"day\" | \"month\" | \"year\", hasFocus: boolean) => void)"
      },
      {
       "description": "Called when another month is shown.",
@@ -2074,6 +2126,12 @@
      },
      {
       "cancelable": false,
+      "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+      "detail": "{ view: \"day\"; hasFocus: boolean; }",
+      "name": "ok:date-range-calendar:focusedviewchange"
+     },
+     {
+      "cancelable": false,
       "description": "After another first month is shown (`YYYY-MM`).",
       "detail": "{ month: string; }",
       "name": "ok:date-range-calendar:monthchange"
@@ -2103,6 +2161,12 @@
       "kind": "method",
       "name": "focus",
       "type": "() => void"
+     },
+     {
+      "description": "The view that holds the focus, or `null`.",
+      "kind": "property",
+      "name": "focusedView",
+      "type": "\"day\" | null"
      },
      {
       "description": "The first shown month (`YYYY-MM`).",
@@ -2151,6 +2215,12 @@
       "kind": "method",
       "name": "setDayRenderer",
       "type": "(fn: PickerDayRenderer | null) => void"
+     },
+     {
+      "description": "Moves the focus into a view, when it is shown.",
+      "kind": "method",
+      "name": "setFocusedView",
+      "type": "(view: \"day\") => void"
      },
      {
       "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -2404,6 +2474,11 @@
       "type": "number"
      },
      {
+      "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+      "name": "focusedView",
+      "type": "\"day\" | null"
+     },
+     {
       "description": "Shows the loading text instead of the days (data on its way).",
       "name": "loading",
       "type": "boolean"
@@ -2427,6 +2502,11 @@
       "description": "Called with the new range; `\"finish\"` once the end is picked (or a drag drops).",
       "name": "onChange",
       "type": "((value: [PickerValidDate | null, PickerValidDate | null], selectionState: PickerSelectionState) => void)"
+     },
+     {
+      "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+      "name": "onFocusedViewChange",
+      "type": "((view: \"day\", hasFocus: boolean) => void)"
      },
      {
       "description": "Called when the first shown month changes.",
@@ -2666,6 +2746,18 @@
       ]
      },
      {
+      "attr": "data-ok-display-static-wrapper-as",
+      "default": "mobile",
+      "description": "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+      "kind": "style",
+      "name": "displayStaticWrapperAs",
+      "optional": true,
+      "values": [
+       "mobile",
+       "desktop"
+      ]
+     },
+     {
       "attr": "data-ok-close-on-select",
       "default": true,
       "description": "Picking the end closes the picker. Default: on for desktop date ranges, off otherwise (absent attribute).",
@@ -2738,6 +2830,12 @@
       "type": "1 | 2 | 3"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Formats the weekday headings of the calendar.",
       "name": "dayOfWeekFormatter",
       "type": "((date: PickerValidDate) => string)"
@@ -2793,6 +2891,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -3430,6 +3534,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "A week number column.",
       "name": "displayWeekNumber",
       "type": "boolean"
@@ -3825,6 +3935,12 @@
       "type": "1 | 2 | 3"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Formats the weekday headings of the calendar.",
       "name": "dayOfWeekFormatter",
       "type": "((date: PickerValidDate) => string)"
@@ -3880,6 +3996,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -4254,6 +4376,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "A week number column.",
       "name": "displayWeekNumber",
       "type": "boolean"
@@ -4603,6 +4731,12 @@
       "type": "1 | 2 | 3"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Formats the weekday headings of the calendar.",
       "name": "dayOfWeekFormatter",
       "type": "((date: PickerValidDate) => string)"
@@ -4658,6 +4792,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -5018,6 +5158,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -5415,6 +5561,12 @@
       "type": "1 | 2 | 3"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Formats the weekday headings of the calendar.",
       "name": "dayOfWeekFormatter",
       "type": "((date: PickerValidDate) => string)"
@@ -5470,6 +5622,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -5844,6 +6002,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
       "name": "endAdornment",
       "type": "ReactNode"
@@ -6140,6 +6304,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "default": "\"start\"",
       "description": "Uncontrolled initial position.",
       "name": "defaultRangePosition",
@@ -6175,6 +6345,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "default": "localeText.end",
@@ -6418,6 +6594,12 @@
       "description": "Before a time is picked (`HH:mm:ss`). Call `preventDefault()` to refuse it.",
       "detail": "{ value: string; selectionState: string; }",
       "name": "ok:digital-clock:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+      "detail": "{ view: \"hours\"; hasFocus: boolean; }",
+      "name": "ok:digital-clock:focusedviewchange"
      }
     ],
     "methods": [
@@ -6426,6 +6608,12 @@
       "kind": "property",
       "name": "date",
       "type": "unknown"
+     },
+     {
+      "description": "The view that holds the focus, or `null`.",
+      "kind": "property",
+      "name": "focusedView",
+      "type": "\"hours\" | null"
      },
      {
       "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
@@ -6438,6 +6626,12 @@
       "kind": "method",
       "name": "setDateAdapter",
       "type": "(adapter: PickerDateAdapter<unknown> | null) => void"
+     },
+     {
+      "description": "Moves the focus into a view, when it is shown.",
+      "kind": "method",
+      "name": "setFocusedView",
+      "type": "(view: \"hours\") => void"
      },
      {
       "description": "The list's name follows `aria-label` in the markup; texts don't change here.",
@@ -6589,6 +6783,11 @@
       "type": "boolean"
      },
      {
+      "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+      "name": "focusedView",
+      "type": "\"hours\" | null"
+     },
+     {
       "description": "Text overrides.",
       "name": "localeText",
       "type": "Partial<PickerLocaleText>"
@@ -6622,6 +6821,11 @@
       "description": "Called with the picked time (always `\"finish\"`: one list picks the whole time).",
       "name": "onChange",
       "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
+     },
+     {
+      "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+      "name": "onFocusedViewChange",
+      "type": "((view: \"hours\", hasFocus: boolean) => void)"
      },
      {
       "description": "Days can be browsed but not picked.",
@@ -6773,6 +6977,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -7124,6 +7334,12 @@
       "type": "1 | 2 | 3"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Formats the weekday headings of the calendar.",
       "name": "dayOfWeekFormatter",
       "type": "((date: PickerValidDate) => string)"
@@ -7179,6 +7395,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -7539,6 +7761,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -7936,6 +8164,12 @@
       "type": "1 | 2 | 3"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Formats the weekday headings of the calendar.",
       "name": "dayOfWeekFormatter",
       "type": "((date: PickerValidDate) => string)"
@@ -7991,6 +8225,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -8365,6 +8605,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
       "name": "endAdornment",
       "type": "ReactNode"
@@ -8661,6 +8907,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "default": "\"start\"",
       "description": "Uncontrolled initial position.",
       "name": "defaultRangePosition",
@@ -8696,6 +8948,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "default": "localeText.end",
@@ -9700,6 +9958,12 @@
       "description": "Before a section's value is picked (`HH:mm:ss`; `finish` on the last section). Call `preventDefault()` to refuse it.",
       "detail": "{ value: string; selectionState: string; }",
       "name": "ok:multi-section-digital-clock:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+      "detail": "{ view: \"hours\" | \"meridiem\" | \"minutes\" | \"seconds\"; hasFocus: boolean; }",
+      "name": "ok:multi-section-digital-clock:focusedviewchange"
      }
     ],
     "methods": [
@@ -9708,6 +9972,12 @@
       "kind": "property",
       "name": "date",
       "type": "unknown"
+     },
+     {
+      "description": "The view that holds the focus, or `null`.",
+      "kind": "property",
+      "name": "focusedView",
+      "type": "\"hours\" | \"meridiem\" | \"minutes\" | \"seconds\" | null"
      },
      {
       "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
@@ -9720,6 +9990,12 @@
       "kind": "method",
       "name": "setDateAdapter",
       "type": "(adapter: PickerDateAdapter<unknown> | null) => void"
+     },
+     {
+      "description": "Moves the focus into a view, when it is shown.",
+      "kind": "method",
+      "name": "setFocusedView",
+      "type": "(view: \"hours\" | \"meridiem\" | \"minutes\" | \"seconds\") => void"
      },
      {
       "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -9837,6 +10113,11 @@
       "type": "boolean"
      },
      {
+      "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+      "name": "focusedView",
+      "type": "\"hours\" | \"meridiem\" | \"minutes\" | \"seconds\" | null"
+     },
+     {
       "description": "Text overrides.",
       "name": "localeText",
       "type": "Partial<PickerLocaleText>"
@@ -9870,6 +10151,11 @@
       "description": "Called with the new time: `\"finish\"` after the last column, `\"partial\"` before.",
       "name": "onChange",
       "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
+     },
+     {
+      "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+      "name": "onFocusedViewChange",
+      "type": "((view: \"hours\" | \"meridiem\" | \"minutes\" | \"seconds\", hasFocus: boolean) => void)"
      },
      {
       "description": "Days can be browsed but not picked.",
@@ -10161,6 +10447,12 @@
       "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
      },
      {
+      "default": "\"–\"",
+      "description": "Text shown between the start and the end dates (with a space on each side).",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Uncontrolled initial range.",
       "name": "defaultValue",
       "type": "[PickerValidDate | null, PickerValidDate | null]"
@@ -10393,6 +10685,12 @@
       "description": "Focus color; `default` is the text color.",
       "name": "color",
       "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "\"–\"",
+      "description": "Text shown between the start and the end dates (with a space on each side).",
+      "name": "dateSeparator",
+      "type": "string"
      },
      {
       "description": "Uncontrolled initial range.",
@@ -10669,6 +10967,12 @@
       "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
      },
      {
+      "default": "\"–\"",
+      "description": "Text shown between the start and the end dates (with a space on each side).",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "description": "Uncontrolled initial range.",
       "name": "defaultValue",
       "type": "[PickerValidDate | null, PickerValidDate | null]"
@@ -10924,6 +11228,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -11192,6 +11502,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "A week number column.",
       "name": "displayWeekNumber",
       "type": "boolean"
@@ -11436,6 +11752,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "description": "A week number column.",
@@ -11773,6 +12095,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
       "name": "endAdornment",
       "type": "ReactNode"
@@ -11963,6 +12291,12 @@
      },
      {
       "cancelable": false,
+      "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+      "detail": "{ view: \"hours\" | \"minutes\" | \"seconds\"; hasFocus: boolean; }",
+      "name": "ok:time-clock:focusedviewchange"
+     },
+     {
+      "cancelable": false,
       "description": "After the clock switched between hours, minutes and seconds.",
       "detail": "{ view: \"hours\" | \"minutes\" | \"seconds\"; }",
       "name": "ok:time-clock:viewchange"
@@ -11976,6 +12310,12 @@
       "type": "unknown"
      },
      {
+      "description": "The view that holds the focus, or `null`.",
+      "kind": "property",
+      "name": "focusedView",
+      "type": "\"hours\" | \"minutes\" | \"seconds\" | null"
+     },
+     {
       "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
       "kind": "method",
       "name": "setDate",
@@ -11986,6 +12326,12 @@
       "kind": "method",
       "name": "setDateAdapter",
       "type": "(adapter: PickerDateAdapter<unknown> | null) => void"
+     },
+     {
+      "description": "Moves the focus into a view, when it is shown.",
+      "kind": "method",
+      "name": "setFocusedView",
+      "type": "(view: \"hours\" | \"minutes\" | \"seconds\") => void"
      },
      {
       "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -12037,6 +12383,13 @@
       "description": "AM / PM buttons on the clock (12-hour clocks).",
       "kind": "flag",
       "name": "ampmInClock"
+     },
+     {
+      "attr": "data-ok-show-view-switcher",
+      "default": true,
+      "description": "Arrow buttons that switch between the views (MUI's default is off).",
+      "kind": "behavior",
+      "name": "showViewSwitcher"
      },
      {
       "attr": "data-ok-minutes-step",
@@ -12200,6 +12553,11 @@
       "type": "boolean"
      },
      {
+      "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+      "name": "focusedView",
+      "type": "\"hours\" | \"minutes\" | \"seconds\" | null"
+     },
+     {
       "description": "Text overrides.",
       "name": "localeText",
       "type": "Partial<PickerLocaleText>"
@@ -12235,6 +12593,11 @@
       "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
      },
      {
+      "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+      "name": "onFocusedViewChange",
+      "type": "((view: \"hours\" | \"minutes\" | \"seconds\", hasFocus: boolean) => void)"
+     },
+     {
       "description": "Called when the view changes.",
       "name": "onViewChange",
       "type": "((view: \"hours\" | \"minutes\" | \"seconds\") => void)"
@@ -12258,6 +12621,12 @@
       "description": "Times that can't be picked, per view.",
       "name": "shouldDisableTime",
       "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+     },
+     {
+      "default": "true",
+      "description": "Arrow buttons that switch between the views.",
+      "name": "showViewSwitcher",
+      "type": "boolean"
      },
      {
       "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -12603,6 +12972,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
+     },
+     {
       "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
       "name": "endAdornment",
       "type": "ReactNode"
@@ -12899,6 +13274,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"–\"",
+      "description": "Single input: text between the start and the end dates.",
+      "name": "dateSeparator",
+      "type": "string"
+     },
+     {
       "default": "\"start\"",
       "description": "Uncontrolled initial position.",
       "name": "defaultRangePosition",
@@ -12934,6 +13315,12 @@
       "description": "Turns the field off.",
       "name": "disabled",
       "type": "boolean"
+     },
+     {
+      "default": "\"mobile\"",
+      "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+      "name": "displayStaticWrapperAs",
+      "type": "\"desktop\" | \"mobile\""
      },
      {
       "default": "localeText.end",

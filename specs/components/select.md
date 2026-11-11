@@ -165,7 +165,7 @@ mui.com/material-ui/api/select/.
 | `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant="standard"` for its look |
 | InputBase `startAdornment` / `endAdornment` | same | kept | 4.18.27: an `InputAdornment` (`[data-ok-text-field-adornment]`) inside the field box: the start one before the trigger (it floats the InputLabel and opens the notch, as in TextField), the end one after the arrow icon in the DOM and drawn before it (the box keeps the arrow's space); native selects too |
 | `IconComponent` | — | not applicable | the arrow is part of the anatomy |
-| `input` | — | not applicable | the field box is the Select |
+| `input` | — | not applicable | the field box is the Select (`variant`, `label` for the notch); the standalone `OutlinedInput` / `FilledInput` / `Input` (4.18.26, text-field.md) are text inputs |
 | InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |
 | InputLabel `color`, `disabled`, `error`, `focused`, `required` | same | kept | from FormLabel |
 | InputLabel `variant`, `size`, `margin` | — | not applicable | CSS reads the Select's |

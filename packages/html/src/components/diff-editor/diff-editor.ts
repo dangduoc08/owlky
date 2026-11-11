@@ -1,4 +1,4 @@
-import { diffEditorOptions } from "@owlky/core";
+import { diffEditorOptions, readNumber } from "@owlky/core";
 import {
   type CodeEditorStatus,
   createDiffEditorController,
@@ -67,6 +67,7 @@ const WATCHED = [
   o.theme.attr,
   o.width.attr,
   o.height.attr,
+  o.line.attr,
   o.originalModelPath.attr,
   o.modifiedModelPath.attr,
   "data-ok-options",
@@ -130,6 +131,7 @@ export const createDiffEditor = (hooks: CreateDiffEditorOptions = {}) =>
           ...readOptions(element),
         };
       };
+      const lineOf = () => readNumber(element, o.line) as number | undefined;
       resize();
       element.setAttribute("data-ok-status", status);
 
@@ -141,6 +143,7 @@ export const createDiffEditor = (hooks: CreateDiffEditorOptions = {}) =>
           ...languages(),
           ...paths(),
           theme: readTheme(element, o.theme),
+          line: lineOf(),
           options: options(),
           keepCurrentOriginalModel: element.hasAttribute(o.keepCurrentOriginalModel.attr),
           keepCurrentModifiedModel: element.hasAttribute(o.keepCurrentModifiedModel.attr),
@@ -174,6 +177,7 @@ export const createDiffEditor = (hooks: CreateDiffEditorOptions = {}) =>
             ? paths()
             : {}),
           ...(changed.has(o.theme.attr) ? { theme: readTheme(element, o.theme) } : {}),
+          ...(changed.has(o.line.attr) ? { line: lineOf() } : {}),
           ...(changed.has("data-ok-options") ? { options: options() } : {}),
         });
       });

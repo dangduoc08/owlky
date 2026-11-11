@@ -914,6 +914,13 @@
       ]
      },
      {
+      "attr": "data-ok-line",
+      "description": "Scrolls both sides to this line of the modified text (1-based).",
+      "kind": "number",
+      "min": 1,
+      "name": "line"
+     },
+     {
       "attr": "data-ok-keep-current-original-model",
       "description": "Keeps the original model when the editor is removed.",
       "kind": "flag",
@@ -1005,6 +1012,11 @@
       "description": "Language of both models.",
       "name": "language",
       "type": "string"
+     },
+     {
+      "description": "Scrolls both sides to this line of the modified text (1-based).",
+      "name": "line",
+      "type": "number"
      },
      {
       "description": "Shown until Monaco is ready. \".",

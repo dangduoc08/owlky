@@ -27,6 +27,7 @@ import {
   type PickerOpenReason,
   type PickerOrientation,
   type PickerShortcut,
+  type PickerStaticWrapper,
   type PickerValidationError,
   type PickerValueType,
   type PickerVariant,
@@ -144,6 +145,11 @@ export interface DatePickerProps
   shortcuts?: readonly PickerShortcut[] | undefined;
   /** Toolbar beside (landscape) or above (portrait) the calendar. Default `"portrait"`. */
   orientation?: PickerOrientation | undefined;
+  /**
+   * Static pickers: the form shown inline. `"desktop"` has no toolbar or action bar by default and
+   * shows the digital clocks. Default `"mobile"`.
+   */
+  displayStaticWrapperAs?: PickerStaticWrapper | undefined;
   /** Media query that picks the desktop form. Default `"@media (pointer: fine)"`. */
   desktopModeMediaQuery?: string | undefined;
   /** Desktop: the popover stays open while the field has focus. */
@@ -309,6 +315,7 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
     actions: actionsProp,
     shortcuts,
     orientation,
+    displayStaticWrapperAs,
     desktopModeMediaQuery,
     keepOpenDuringFieldFocus,
     referenceDate,
@@ -423,6 +430,10 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
   const [mode, setMode] = useState<"desktop" | "mobile" | "static">(
     isStatic ? "static" : pickerVariant === "mobile" ? "mobile" : "desktop",
   );
+  // A static picker shown as desktop lays out the desktop form inline (MUI X).
+  const staticDesktop = isStatic && displayStaticWrapperAs === "desktop";
+  const form = staticDesktop ? "desktop" : mode;
+  const desktopVariant = pickerVariant === "desktop" || staticDesktop;
   const valueOnOpen = useRef<Date | null>(current);
   const lastAccepted = useRef<Date | null>(current);
 
@@ -454,7 +465,7 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
   };
 
   // Time and date time pickers never close on a pick by default (MUI).
-  const effectiveCloseOnSelect = closeOnSelect ?? (isDate ? defaultCloseOnSelect(mode) : false);
+  const effectiveCloseOnSelect = closeOnSelect ?? (isDate ? defaultCloseOnSelect(form) : false);
   // Responsive pickers render the buttons of both forms and hide the other form's.
   let actionList: readonly PickerAction[];
   let actionsShown: readonly PickerAction[];
@@ -462,14 +473,14 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
     actionList = actionsProp;
     actionsShown = actionsProp;
   } else if (isDate) {
-    actionList = pickerVariant === "desktop" ? [] : ["cancel", "accept"];
-    actionsShown = defaultPickerActions(mode);
+    actionList = desktopVariant ? [] : ["cancel", "accept"];
+    actionsShown = defaultPickerActions(form);
   } else if (isDateTime) {
     actionList =
       pickerVariant === "responsive"
         ? ["cancel", "accept", "nextOrAccept"]
-        : defaultDateTimePickerActions(pickerVariant === "desktop" ? "desktop" : "mobile");
-    actionsShown = defaultDateTimePickerActions(mode);
+        : defaultDateTimePickerActions(desktopVariant ? "desktop" : "mobile");
+    actionsShown = defaultDateTimePickerActions(form);
   } else {
     actionList = defaultTimePickerActions();
     actionsShown = actionList;
@@ -493,7 +504,7 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
     if (state !== "finish") return;
     // Date time pickers go on to the time (mobile and static forms; desktop shows both).
     if (isDateTime && timeViews.length > 0) {
-      if (mode !== "desktop") setView(timeViews[0] as TimeView);
+      if (form !== "desktop") setView(timeViews[0] as TimeView);
       return;
     }
     finish(next);
@@ -580,8 +591,8 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
 
   const valid = isValidDate(current) ? current : null;
   const base = valid ?? referenceDate ?? startOfDay(today ?? new Date());
-  const showToolbar = pickerVariant !== "desktop";
-  const desktopForm = mode === "desktop";
+  const showToolbar = !desktopVariant;
+  const desktopForm = form === "desktop";
   const toolbarHidden = desktopForm;
   const title = isDate
     ? localeText.datePickerToolbarTitle
@@ -609,8 +620,9 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
     localeText: localeTextProp,
     ...timeValidation,
   };
-  const hasDesktopClock = !isDate && pickerVariant !== "mobile" && pickerVariant !== "static";
-  const hasTimeClock = !isDate && pickerVariant !== "desktop";
+  const hasDesktopClock =
+    !isDate && pickerVariant !== "mobile" && (pickerVariant !== "static" || staticDesktop);
+  const hasTimeClock = !isDate && !desktopVariant;
   // View renderers: `null` leaves a view out; a function replaces the view's default.
   const renderers = viewRenderers ?? {};
   const shownDateViews = dateViews.filter((v) => renderers[v] !== null);
@@ -857,7 +869,7 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
     view,
     views,
     setView,
-    variant: mode,
+    variant: form,
     orientation: orientation ?? "portrait",
     valueType,
     disabled: disabled === true,
@@ -894,6 +906,7 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
       {...datePickerAttributes({
         pickerVariant,
         orientation,
+        displayStaticWrapperAs: isStatic ? displayStaticWrapperAs : undefined,
         keepOpenDuringFieldFocus,
         valueType: isDate ? undefined : valueType,
       })}

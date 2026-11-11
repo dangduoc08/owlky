@@ -1192,6 +1192,14 @@ export const textFieldOptions = defineOptions("text-field", "data-ok-text-field"
     "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
   ),
   focused: flag("data-ok-focused", "Show the focus colors even when the field doesn't have focus."),
+  notched: flag(
+    "data-ok-notched",
+    "Outlined: keep the notch in the outline open (OutlinedInput: room for its `label`).",
+  ),
+  disableUnderline: flag(
+    "data-ok-disable-underline",
+    "Standard: no underline (give the field another focus style).",
+  ),
   minRows: number("data-ok-min-rows", undefined, "Multiline: rows shown at least.", { min: 1 }),
   maxRows: number("data-ok-max-rows", undefined, "Multiline: rows before it scrolls.", { min: 1 }),
   disabled: native("disabled", "Native `disabled` on the input.", { children: FIELD_INPUT }),
@@ -1215,6 +1223,8 @@ export interface TextFieldAnatomyOptions {
   shrink?: boolean | undefined;
   hiddenLabel?: boolean | undefined;
   focused?: boolean | undefined;
+  notched?: boolean | undefined;
+  disableUnderline?: boolean | undefined;
   minRows?: number | undefined;
   maxRows?: number | undefined;
 }
@@ -3976,6 +3986,10 @@ export const dateCalendarAttributes = (options: DateCalendarAnatomyOptions = {})
     yearsPerRow: options.yearsPerRow === undefined ? undefined : String(options.yearsPerRow),
   });
 
+/** The form a static picker shows (MUI X `displayStaticWrapperAs`). */
+export const pickerStaticWrapperValues = ["mobile", "desktop"] as const;
+export type PickerStaticWrapper = (typeof pickerStaticWrapperValues)[number];
+
 export const datePickerOptions = defineOptions("date-picker", "data-ok-date-picker", {
   pickerVariant: style(
     "data-ok-picker-variant",
@@ -3988,6 +4002,13 @@ export const datePickerOptions = defineOptions("date-picker", "data-ok-date-pick
     pickerOrientationValues,
     "portrait",
     "`landscape` puts the toolbar beside the calendar (mobile and static).",
+  ),
+  displayStaticWrapperAs: style(
+    "data-ok-display-static-wrapper-as",
+    pickerStaticWrapperValues,
+    "mobile",
+    "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+    { optional: true },
   ),
   closeOnSelect: behavior(
     "data-ok-close-on-select",
@@ -4005,6 +4026,7 @@ export const datePickerOptions = defineOptions("date-picker", "data-ok-date-pick
 export interface DatePickerAnatomyOptions {
   pickerVariant?: (typeof pickerVariantValues)[number] | undefined;
   orientation?: (typeof pickerOrientationValues)[number] | undefined;
+  displayStaticWrapperAs?: PickerStaticWrapper | undefined;
   keepOpenDuringFieldFocus?: boolean | undefined;
   valueType?: (typeof pickerValueTypes)[number] | undefined;
 }
@@ -4032,6 +4054,11 @@ const timeRuleFlags = {
 export const timeClockOptions = defineOptions("time-clock", "data-ok-time-clock", {
   ampm: ampmOption,
   ampmInClock: flag("data-ok-ampm-in-clock", "AM / PM buttons on the clock (12-hour clocks)."),
+  showViewSwitcher: behavior(
+    "data-ok-show-view-switcher",
+    true,
+    "Arrow buttons that switch between the views (MUI's default is off).",
+  ),
   minutesStep: minutesStepOption,
   ...timeRuleFlags,
   value: state(
@@ -4211,6 +4238,14 @@ export const dateRangePickerOptions = defineOptions(
       "Months shown in the desktop popover (the dialog and inline forms show one).",
       { optional: true },
     ),
+    displayStaticWrapperAs: style(
+      "data-ok-display-static-wrapper-as",
+      pickerStaticWrapperValues,
+      "mobile",
+      "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+      { optional: true },
+    ),
+
     closeOnSelect: behavior(
       "data-ok-close-on-select",
       true,
@@ -4227,6 +4262,7 @@ export const dateRangePickerOptions = defineOptions(
 
 export interface DateRangePickerAnatomyOptions {
   pickerVariant?: (typeof pickerVariantValues)[number] | undefined;
+  displayStaticWrapperAs?: PickerStaticWrapper | undefined;
   calendars?: 1 | 2 | 3 | (typeof pickerCalendarCounts)[number] | undefined;
   disableDragEditing?: boolean | undefined;
   valueType?: (typeof pickerValueTypes)[number] | undefined;
@@ -4600,6 +4636,12 @@ export const diffEditorOptions = defineOptions("diff-editor", "data-ok-diff-edit
     "Height (number = px, or a CSS length such as `90vh`). Default `100%`, at least 300px when not given.",
     { min: 0, units: CODE_EDITOR_UNITS },
   ),
+  line: number(
+    "data-ok-line",
+    undefined,
+    "Scrolls both sides to this line of the modified text (1-based).",
+    { min: 1 },
+  ),
   keepCurrentOriginalModel: flag(
     "data-ok-keep-current-original-model",
     "Keeps the original model when the editor is removed.",
@@ -4621,6 +4663,7 @@ export type DiffEditorAnatomyOptions = {
   theme?: string | undefined;
   width?: number | string | undefined;
   height?: number | string | undefined;
+  line?: number | undefined;
   keepCurrentOriginalModel?: boolean | undefined;
   keepCurrentModifiedModel?: boolean | undefined;
 };
@@ -5964,6 +6007,11 @@ export const mapOptions = defineOptions("map", "data-ok-map", {
     true,
     "Repeats the world side by side when zoomed out.",
   ),
+  styleDiffing: behavior(
+    "data-ok-style-diffing",
+    true,
+    "A new style is compared with the current one and only the differences are applied (off: the style reloads).",
+  ),
   cooperativeGestures: flag(
     "data-ok-cooperative-gestures",
     "Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling.",
@@ -5988,12 +6036,13 @@ export type MapAnatomyOptions = {
   projection?: MapProjection | undefined;
   cooperativeGestures?: boolean | undefined;
   renderWorldCopies?: boolean | undefined;
+  styleDiffing?: boolean | undefined;
 } & { [K in MapHandler]?: boolean | undefined };
 
 /** `data-ok-*` attributes of a map root: numbers when given, `="false"` for handlers turned off. */
 export const mapAttributes = (options: MapAnatomyOptions = {}): DataAttributes => {
   const attributes = optionAttributes(mapOptions, { ...options });
-  for (const key of [...mapHandlers, "renderWorldCopies"] as const)
+  for (const key of [...mapHandlers, "renderWorldCopies", "styleDiffing"] as const)
     if (options[key] === false) attributes[mapOptions.options[key].attr] = "false";
   return attributes;
 };
@@ -6013,6 +6062,13 @@ export const mapMarkerOptions = defineOptions("map-marker", "data-ok-map-marker"
     "People can drag the marker, or move it with the arrow keys once it has focus.",
   ),
   rotation: number("data-ok-rotation", undefined, "Rotation in degrees clockwise."),
+  scale: number("data-ok-scale", 1, "Size of the default pin (1: 26px).", { min: 0 }),
+  clickTolerance: number(
+    "data-ok-click-tolerance",
+    undefined,
+    "Pixels a press may move and still count as a click, not a drag (default: the map's `clickTolerance`, 3).",
+    { min: 0 },
+  ),
   rotationAlignment: style(
     "data-ok-rotation-alignment",
     mapAlignments,
@@ -6036,6 +6092,8 @@ export type MapMarkerAnatomyOptions = {
   color?: MapMarkerColor | undefined;
   draggable?: boolean | undefined;
   rotation?: number | undefined;
+  scale?: number | undefined;
+  clickTolerance?: number | undefined;
   rotationAlignment?: MapAlignment | undefined;
   pitchAlignment?: MapAlignment | undefined;
 };

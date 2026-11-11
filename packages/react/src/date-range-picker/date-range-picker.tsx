@@ -18,6 +18,7 @@ import {
   type PickerAction,
   type PickerLocaleText,
   type PickerOpenReason,
+  type PickerStaticWrapper,
   type PickerValueType,
   type PickerVariant,
   type PickerView,
@@ -146,6 +147,11 @@ export interface DateRangePickerProps
   actions?: readonly PickerAction[] | undefined;
   /** Shortcut chips beside the calendar ("Last 7 days"…). */
   shortcuts?: readonly RangeShortcut[] | undefined;
+  /**
+   * Static pickers: the form shown inline. `"desktop"` has no toolbar or action bar by default,
+   * shows two calendars and the digital clocks. Default `"mobile"`.
+   */
+  displayStaticWrapperAs?: PickerStaticWrapper | undefined;
   /** Media query that picks the desktop form. Default `"@media (pointer: fine)"`. */
   desktopModeMediaQuery?: string | undefined;
   /** Desktop: the popover stays open while a field has focus. */
@@ -168,6 +174,8 @@ export interface DateRangePickerProps
   onMonthChange?: ((month: Date) => void) | undefined;
   /** Single input: a clear button. */
   clearable?: boolean | undefined;
+  /** Single input: text between the start and the end dates. Default `"–"`. */
+  dateSeparator?: string | undefined;
   /** Called when the clear button empties the field. */
   onClear?: (() => void) | undefined;
   readOnly?: boolean | undefined;
@@ -262,6 +270,7 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
       closeOnSelect,
       actions: actionsProp,
       shortcuts,
+      displayStaticWrapperAs,
       desktopModeMediaQuery,
       keepOpenDuringFieldFocus,
       referenceDate,
@@ -276,6 +285,7 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
       reduceAnimations,
       onMonthChange,
       clearable,
+      dateSeparator,
       onClear,
       readOnly,
       disabled,
@@ -363,6 +373,10 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
     const [mode, setMode] = useState<"desktop" | "mobile" | "static">(
       isStatic ? "static" : pickerVariant === "mobile" ? "mobile" : "desktop",
     );
+    // A static picker shown as desktop lays out the desktop form inline (MUI X).
+    const staticDesktop = isStatic && displayStaticWrapperAs === "desktop";
+    const form = staticDesktop ? "desktop" : mode;
+    const desktopVariant = pickerVariant === "desktop" || staticDesktop;
     const valueOnOpen = useRef<DateRange>(current);
     const lastAccepted = useRef<DateRange>(current);
 
@@ -393,15 +407,15 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
     };
 
     // Date ranges close on the end pick on desktop; time ranges never by default (MUI).
-    const effectiveCloseOnSelect = closeOnSelect ?? (isDate && mode === "desktop");
+    const effectiveCloseOnSelect = closeOnSelect ?? (isDate && form === "desktop");
     let actionList: readonly PickerAction[];
     let actionsShown: readonly PickerAction[];
     if (actionsProp) {
       actionList = actionsProp;
       actionsShown = actionsProp;
     } else if (isDate) {
-      actionList = pickerVariant === "desktop" ? [] : ["cancel", "accept"];
-      actionsShown = mode === "desktop" ? [] : ["cancel", "accept"];
+      actionList = desktopVariant ? [] : ["cancel", "accept"];
+      actionsShown = form === "desktop" ? [] : ["cancel", "accept"];
     } else {
       actionList = ["cancel", "accept"];
       actionsShown = actionList;
@@ -430,7 +444,7 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
       change(next);
       if (isDateTime) {
         // Date time ranges go on to the time of the same end (mobile and static forms).
-        if (mode !== "desktop" && timeViews.length > 0) setView(timeViews[0] as TimeView);
+        if (form !== "desktop" && timeViews.length > 0) setView(timeViews[0] as TimeView);
         return;
       }
       if (state === "finish") finish(next);
@@ -518,8 +532,8 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
       (fieldRootRef.current as HTMLElement).querySelector(
         multiInput ? "[data-ok-date-field]" : "[data-ok-text-field-control]",
       ) as Element;
-    const desktopForm = mode === "desktop";
-    const showToolbar = pickerVariant !== "desktop";
+    const desktopForm = form === "desktop";
+    const showToolbar = !desktopVariant;
     const title = isDate
       ? localeText.dateRangePickerToolbarTitle
       : isDateTime
@@ -555,8 +569,9 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
       localeText: localeTextProp,
       ...timeValidation,
     };
-    const hasDesktopClock = !isDate && pickerVariant !== "mobile" && pickerVariant !== "static";
-    const hasTimeClock = !isDate && pickerVariant !== "desktop";
+    const hasDesktopClock =
+      !isDate && pickerVariant !== "mobile" && (pickerVariant !== "static" || staticDesktop);
+    const hasTimeClock = !isDate && !desktopVariant;
     const shortcutsEnabled = !disabled && !readOnly;
 
     // View renderers: `null` leaves views out; every view `null` leaves only the field.
@@ -775,7 +790,7 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
       view,
       views,
       setView,
-      variant: mode,
+      variant: form,
       orientation: "portrait",
       valueType,
       disabled: disabled === true,
@@ -867,6 +882,7 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
         {...dateRangePickerAttributes({
           pickerVariant,
           calendars: calendarsProp,
+          displayStaticWrapperAs: isStatic ? displayStaticWrapperAs : undefined,
           disableDragEditing,
           valueType: isDate ? undefined : valueType,
         })}
@@ -903,6 +919,7 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
                 id={id}
                 label={label}
                 clearable={clearable}
+                dateSeparator={dateSeparator}
                 onClear={onClear}
                 selectedSections={selectedSections}
                 onSelectedSectionsChange={onSelectedSectionsChange}
@@ -999,6 +1016,7 @@ export interface StaticDateRangePickerProps
     | "name"
     | "inputRef"
     | "clearable"
+    | "dateSeparator"
     | "onClear"
     | "format"
     | "formatDensity"

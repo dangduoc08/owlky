@@ -1,6 +1,8 @@
 import {
   type ClockSectionView,
   createDigitalClockController,
+  createFocusedViewTracker,
+  focusPickerViewPart,
   formatIsoTime,
   isValidDate,
   normalizeTimeViews,
@@ -30,11 +32,17 @@ import { renderOptionList } from "../digital-clock/digital-clock.js";
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface MultiSectionDigitalClockEvents {
+  /** After a view took the focus (`hasFocus` `true`) or lost it. */
+  focusedviewchange: EventSpec<{ view: TimeView | "meridiem"; hasFocus: boolean }>;
   /** Before a section's value is picked (`HH:mm:ss`; `finish` on the last section). Call `preventDefault()` to refuse it. */
   change: EventSpec<{ value: string; selectionState: string }, true>;
 }
 
 export interface MultiSectionDigitalClockInstance extends ComponentInstance, PickerDateApi {
+  /** The view that holds the focus, or `null`. */
+  readonly focusedView: TimeView | "meridiem" | null;
+  /** Moves the focus into a view, when it is shown. */
+  setFocusedView(view: TimeView | "meridiem"): void;
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
@@ -66,6 +74,9 @@ export const multiSectionDigitalClock = defineComponent<
   selector: "[data-ok-multi-section-digital-clock]",
 
   setup(element, { emit }) {
+    const focus = createFocusedViewTracker(element, (view, hasFocus) =>
+      emit("focusedviewchange", { view: view as TimeView | "meridiem", hasFocus }),
+    );
     const locale = readLocale(element);
     let overrides: Partial<PickerLocaleText> | undefined;
     let text = readLocaleText(element);
@@ -160,8 +171,15 @@ export const multiSectionDigitalClock = defineComponent<
         text = readLocaleText(element, overrides);
         render();
       },
+      get focusedView() {
+        return focus.view as TimeView | "meridiem" | null;
+      },
+      setFocusedView(view) {
+        focusPickerViewPart(element, view);
+      },
       destroy() {
         controller.destroy();
+        focus.destroy();
       },
     };
     return instance;

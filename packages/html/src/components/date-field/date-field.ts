@@ -133,12 +133,14 @@ export const dateField = defineComponent<DateFieldInstance, DateFieldEvents>({
         readAmpm(element, locale),
         locale,
       );
-    // Range fields: the format twice, joined by " – " (each section knows its side).
+    // Range fields: the format twice, joined by " – " or `data-ok-date-separator` (each section
+    // knows its side; the markup holds the same separator text).
     const isRange = element.hasAttribute("data-ok-range");
+    const dateSeparator = element.getAttribute("data-ok-date-separator")?.slice(0, 16) ?? undefined;
     // Digit sections show two digits unless the format's padding is kept (MUI default).
     const respectZeros = element.hasAttribute("data-ok-should-respect-leading-zeros");
     const { sections, count } = isRange
-      ? rangeFieldSections(format, respectZeros)
+      ? rangeFieldSections(format, respectZeros, dateSeparator)
       : { sections: fieldSections(format, respectZeros), count: 0 };
     const sides = isRange ? 2 : 1;
     const part = (side: number): [number, number] =>

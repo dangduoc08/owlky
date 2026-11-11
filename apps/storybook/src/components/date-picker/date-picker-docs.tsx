@@ -29,6 +29,7 @@ import {
   TimeRangePicker,
 } from "@owlky/react";
 import jalali from "../../../../../packages/html/src/components/date-picker/examples/calendar-systems-jalali.html?raw";
+import calendarsBasic from "../../../../../packages/html/src/components/date-picker/examples/calendars-basic.html?raw";
 import dateBasic from "../../../../../packages/html/src/components/date-picker/examples/date-basic.html?raw";
 import vietnamese from "../../../../../packages/html/src/components/date-picker/examples/localization-vietnamese.html?raw";
 import rangeInput from "../../../../../packages/html/src/components/date-picker/examples/range-input.html?raw";
@@ -109,10 +110,10 @@ export function DueDate() {
     body: `- **\`DatePicker\`:** a popover on devices with a precise pointer and a dialog on touch screens. It decides when it opens, with \`desktopModeMediaQuery\` (default \`@media (pointer: fine)\`).
 - **\`DesktopDatePicker\`:** always a popover. Picking a day closes it.
 - **\`MobileDatePicker\`:** always a dialog, with a toolbar and **Cancel** and **OK** buttons.
-- **\`StaticDatePicker\`:** the toolbar, the calendar and the buttons inline, without a field.
+- **\`StaticDatePicker\`:** the toolbar, the calendar and the buttons inline, without a field. Set \`displayStaticWrapperAs\` to \`desktop\` to show the desktop form inline instead: no toolbar, no buttons, and digital clocks in time pickers.
 - **\`DateField\`** and **\`DateCalendar\`:** the field or the calendar on their own.
 
-In HTML, \`data-ok-picker-variant\` picks the form: \`responsive\`, \`desktop\`, \`mobile\` or \`static\`.`,
+In HTML, \`data-ok-picker-variant\` picks the form: \`responsive\`, \`desktop\`, \`mobile\` or \`static\`. On a static picker, \`data-ok-display-static-wrapper-as="desktop"\` lays it out as the desktop form; the markup holds the desktop views, as React renders them.`,
     react: `import { DesktopDatePicker, MobileDatePicker, StaticDatePicker } from "@owlky/react";
 
 export function DatePickerForms() {
@@ -121,6 +122,7 @@ export function DatePickerForms() {
       <DesktopDatePicker label="Start" />
       <MobileDatePicker label="End" />
       <StaticDatePicker defaultValue={new Date(2025, 4, 25)} />
+      <StaticDatePicker displayStaticWrapperAs="desktop" defaultValue={new Date(2025, 4, 25)} />
     </>
   );
 }`,
@@ -137,6 +139,42 @@ export function DatePickerViews() {
       <DatePicker label="Month and year" views={["month", "year"]} />
       <DatePicker label="Day" views={["day"]} />
       <DateField label="Date" format="DD.MM.YYYY" />
+    </>
+  );
+}`,
+  },
+  {
+    id: "focused-view",
+    title: "Follow the focus between views",
+    body: "Calendars and clocks report which view holds the focus: `onFocusedViewChange(view, hasFocus)` runs when a view, such as the days or the minutes, takes the focus or loses it. Set `focusedView` to move the focus into a view, for example after your own control switched the view. The focus moves only into a view that is shown. This works on `DateCalendar`, `DateRangeCalendar`, `TimeClock`, `DigitalClock` and `MultiSectionDigitalClock`. In HTML, listen to the component's `focusedviewchange` event, such as `ok:date-calendar:focusedviewchange`, and call `setFocusedView(view)` on its instance.",
+    html: `${snippetElement(calendarsBasic, "data-ok-date-calendar ")}
+<button type="button" id="to-days">Go to the days</button>
+
+<script type="module">
+  const calendar = document.getElementById("dc-basic");
+  calendar.addEventListener("ok:date-calendar:focusedviewchange", (event) => {
+    // Such as "day" and true when the days take the focus.
+    console.log(event.detail.view, event.detail.hasFocus);
+  });
+  document.getElementById("to-days").addEventListener("click", () => {
+    window.Owlky.get(calendar, "date-calendar").setFocusedView("day");
+  });
+</script>`,
+    react: `import type { DateView } from "@owlky/core";
+import { DateCalendar } from "@owlky/react";
+import { useState } from "react";
+
+export function FocusedCalendar() {
+  const [focusedView, setFocusedView] = useState<DateView | null>(null);
+  return (
+    <>
+      <button type="button" onClick={() => setFocusedView("day")}>
+        Go to the days
+      </button>
+      <DateCalendar
+        focusedView={focusedView}
+        onFocusedViewChange={(view, hasFocus) => setFocusedView(hasFocus ? view : null)}
+      />
     </>
   );
 }`,
@@ -190,6 +228,7 @@ export function DatePickerValidation() {
 - **\`ampm\`:** a 12-hour clock with AM and PM. The default follows the locale: English uses 12 hours, Vietnamese uses 24 hours.
 - **\`views\`:** what people pick, from \`hours\`, \`minutes\` and \`seconds\`. The default is \`["hours", "minutes"]\`, and the field's format follows the views.
 - **\`timeSteps\`:** the distance between the digital clock's options, such as \`{ minutes: 15 }\`. When a day holds 24 options or fewer, the desktop form shows one list instead of columns.
+- **\`showViewSwitcher\`:** the arrow buttons of a \`TimeClock\` that switch between hours, minutes and seconds. They show by default; set it to \`false\` when something else switches the views, such as a toolbar (HTML: \`data-ok-show-view-switcher="false"\`).
 
 Time pickers stay open after a pick, so people can change every part. **OK** accepts the time and **Cancel** restores the one from opening. In HTML, the value is an ISO time, such as \`09:30:00\`.`,
     html: `${snippetElement(timeBasic, "data-ok-date-picker ")}`,
@@ -249,6 +288,7 @@ export function DatePickerTimeValidation() {
 - **\`calendars\`:** the number of months in the popover, from 1 to 3. The dialog and the inline form show one month unless you set it.
 - **\`rangePosition\`:** the end the next pick edits, \`start\` or \`end\`. Read it with \`onRangePositionChange\`, or set it to edit one end.
 - **\`disableDragEditing\`** and **\`disableAutoMonthSwitching\`:** turn off dragging the ends, and the jump to the end's month after a new start.
+- **\`dateSeparator\`:** the text between the two dates of a single field, with a space on each side. The default is an en dash, \`–\`. In HTML, set \`data-ok-date-separator\` on the field and write the same text in its markup.
 
 The value is a pair, \`[start, end]\`, and either side can be empty. An end before the start is invalid: both sides report \`invalidRange\`. In HTML, the value is an ISO 8601 interval, such as \`2025-05-20/2025-05-25\`, and the hidden input of a single field submits it.`,
     html: `${snippetElement(rangeInput, "data-ok-date-range-picker ")}`,
@@ -545,9 +585,10 @@ export function DepartureDate() {
 - **\`ok:date-picker:open\`** and **\`ok:date-picker:close\`** fire with \`detail.reason\`, such as \`button\`, \`escape\`, \`select\` or \`cancel\`.
 - **\`ok:date-field:change\`** and **\`ok:date-calendar:change\`** (cancelable) fire for a field or a calendar on its own. The calendar also fires \`viewchange\`, \`monthchange\` and \`yearchange\`.
 - **\`ok:time-clock:change\`**, **\`ok:digital-clock:change\`** and **\`ok:multi-section-digital-clock:change\`** (cancelable) fire for a clock on its own, with \`detail.value\` (an ISO time) and \`detail.selectionState\`: \`shallow\` while dragging the hand, \`partial\` when another view follows, \`finish\` on the last one. The analog clock also fires \`ok:time-clock:viewchange\`.
+- **\`focusedviewchange\`** fires on every calendar and clock, such as \`ok:date-calendar:focusedviewchange\`, with \`detail.view\` and \`detail.hasFocus\` when a view takes the focus or loses it. Their instances have \`focusedView\` and \`setFocusedView(view)\`.
 - **\`ok:date-range-picker:change\`** fires with \`detail.value\` (an ISO interval or \`null\`) and \`detail.validationError\`, the \`[start, end]\` errors. It also fires \`accept\`, \`open\`, \`close\` and \`rangepositionchange\` (\`detail.rangePosition\`). **\`ok:date-range-calendar:change\`** and **\`ok:multi-input-range-field:change\`** (cancelable) fire for a range calendar or a multi input field on its own.
 - **Instance:** \`runtime.get(element, "date-picker")\` returns \`{ value, setValue(value), date, setDate(date), setDateAdapter(adapter), isOpen, open(), close(), setShortcuts(list), setShouldDisableDate(fn), setShouldDisableTime(fn), setDayRenderer(fn), setLocaleText(text) }\`. Every picker, field, calendar and clock instance has \`date\`, \`setDate\` and \`setDateAdapter\`. \`setValue\` doesn't fire events. A range picker's instance (\`"date-range-picker"\`) adds \`rangePosition\`, \`setRangePosition(position)\` and \`open(position)\`; its \`setValue\` takes an ISO interval or a \`[start, end]\` pair.
-- **React:** \`onChange(value, { validationError })\`, \`onAccept(value)\`, \`onError(error, value)\`, \`onOpenChange(open, reason)\`, \`onViewChange(view)\`, \`onMonthChange(month)\` and \`onYearChange(year)\`. The clocks call \`onChange(value, selectionState)\`. Range pickers call \`onChange(range, { validationError: [start, end] })\`, \`onError(errors, range)\` and \`onRangePositionChange(position)\`.`,
+- **React:** \`onChange(value, { validationError })\`, \`onAccept(value)\`, \`onError(error, value)\`, \`onOpenChange(open, reason)\`, \`onViewChange(view)\`, \`onMonthChange(month)\` and \`onYearChange(year)\`. Calendars and clocks call \`onFocusedViewChange(view, hasFocus)\`. The clocks call \`onChange(value, selectionState)\`. Range pickers call \`onChange(range, { validationError: [start, end] })\`, \`onError(errors, range)\` and \`onRangePositionChange(position)\`.`,
   },
   {
     id: "keyboard",

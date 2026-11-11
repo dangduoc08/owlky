@@ -108,6 +108,15 @@ export interface TextFieldProps
   hiddenLabel?: boolean | undefined;
   /** Show the focus colors even when the field doesn't have focus. */
   focused?: boolean | undefined;
+  /** Outlined: keep the outline's notch open even when the label rests in the box. */
+  notched?: boolean | undefined;
+  /** Standard: draw no underline (give the field another focus style). */
+  disableUnderline?: boolean | undefined;
+  /**
+   * The element rendered instead of the `<input>`, such as a masked input. It receives the input's
+   * props and `ref`. Multiline fields and selects keep their own element.
+   */
+  inputComponent?: ElementType | undefined;
   /** The root element. Default `"div"`. */
   component?: ElementType | undefined;
   /** Controlled value. */
@@ -140,16 +149,24 @@ export interface TextFieldProps
   style?: CSSProperties | undefined;
 }
 
+/** What a standalone input (InputBase and its variants) changes in the TextField markup. */
+interface Standalone {
+  /** InputBase: no variant attribute, so no box. */
+  readonly base: boolean;
+  /** OutlinedInput `label`: the text the notch makes room for. */
+  readonly legend: ReactNode;
+}
+
 /**
- * TextField — spec: specs/components/text-field.md. A label, a native `<input>` (or `<textarea>`,
- * `<select>`), optional adornments and helper text. `ref` and the remaining props go to the input.
+ * The TextField markup. Standalone inputs render it without a label and a helper text, with
+ * `data-ok-input-base` on the root.
  */
-export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function TextField(
+function useFieldMarkup(
   {
     variant,
     size,
     color,
-    label,
+    label: labelProp,
     helperText,
     error,
     fullWidth,
@@ -157,6 +174,9 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     shrink,
     hiddenLabel,
     focused,
+    notched,
+    disableUnderline,
+    inputComponent,
     component = "div",
     id,
     onChange,
@@ -175,9 +195,12 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     className,
     style,
     ...props
-  },
-  ref,
+  }: TextFieldProps,
+  ref: Ref<TextFieldElement>,
+  standalone?: Standalone,
 ) {
+  // Standalone inputs have no label element (OutlinedInput's `label` only sizes the notch).
+  const label = standalone ? undefined : labelProp;
   const generated = useId();
   const inputId = id ?? generated;
   const helperId = helperText != null ? `${inputId}-helper-text` : undefined;
@@ -201,9 +224,12 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     shrink,
     hiddenLabel,
     focused,
+    notched,
+    disableUnderline,
     minRows: min,
     maxRows: max,
   });
+  if (standalone?.base) delete attributes["data-ok-variant"];
   const rowStyle = {
     ...(min !== undefined ? { "--_ok-min-rows": String(min) } : {}),
     ...(max !== undefined ? { "--_ok-max-rows": String(max) } : {}),
@@ -239,23 +265,22 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
       />
     );
   } else {
-    input = (
-      <input
-        {...props}
-        {...shared}
-        ref={ref as Ref<HTMLInputElement>}
-        type={type}
-        placeholder={placeholder ?? " "}
-      />
-    );
+    input = createElement(inputComponent ?? "input", {
+      ...props,
+      ...shared,
+      ref,
+      type,
+      placeholder: placeholder ?? " ",
+    });
   }
   const outlined = attributes["data-ok-variant"] === "outlined";
-  const outline = outlined && (
+  const legend = standalone ? standalone.legend : label;
+  const outline = outlined && !standalone?.base && (
     <fieldset data-ok-text-field-outline="" aria-hidden="true">
-      {label != null && (
+      {legend != null && (
         <legend>
           <span>
-            {label}
+            {legend}
             {required ? " *" : null}
           </span>
         </legend>
@@ -310,7 +335,13 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     );
   return createElement(
     component,
-    { ...attributes, "data-ok-runtime": "off", className, style: { ...rowStyle, ...style } },
+    {
+      ...attributes,
+      ...(standalone ? { "data-ok-input-base": "" } : {}),
+      "data-ok-runtime": "off",
+      className,
+      style: { ...rowStyle, ...style },
+    },
     <>
       {label != null && (
         <label data-ok-text-field-label="" htmlFor={inputId} id={labelId}>
@@ -330,4 +361,83 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
       )}
     </>,
   );
+}
+
+/**
+ * TextField — spec: specs/components/text-field.md. A label, a native `<input>` (or `<textarea>`,
+ * `<select>`), optional adornments and helper text. `ref` and the remaining props go to the input.
+ */
+export const TextField = forwardRef<TextFieldElement, TextFieldProps>(
+  function TextField(props, ref) {
+    return useFieldMarkup(props, ref);
+  },
+);
+
+/** Props of `InputBase`: the TextField's input props, without a label, a helper text or a select. */
+export type InputBaseProps = Omit<
+  TextFieldProps,
+  | "variant"
+  | "label"
+  | "helperText"
+  | "margin"
+  | "shrink"
+  | "hiddenLabel"
+  | "focused"
+  | "notched"
+  | "disableUnderline"
+  | "select"
+  | "selectProps"
+  | "children"
+  | "component"
+>;
+
+export interface OutlinedInputProps extends InputBaseProps {
+  /** The text the outline's notch makes room for (the label you show elsewhere, such as an `InputLabel`). */
+  label?: ReactNode;
+  /** Keep the notch open (it needs a `label`). */
+  notched?: boolean | undefined;
+}
+
+export interface FilledInputProps extends InputBaseProps {
+  /** The filled look has no underline: kept for compatibility (the focus ring stays). */
+  disableUnderline?: boolean | undefined;
+  /** The padding of a field without a label (always the case here). */
+  hiddenLabel?: boolean | undefined;
+}
+
+export interface InputProps extends InputBaseProps {
+  /** Draw no underline (give the field another focus style). */
+  disableUnderline?: boolean | undefined;
+}
+
+type StandaloneElement = TextFieldElement;
+
+/**
+ * InputBase — spec: specs/components/text-field.md. A bare input with no box, no label and no
+ * helper text, for fields you style yourself (such as a search bar). Name it with `aria-label`.
+ * `ref` and the remaining props go to the input.
+ */
+export const InputBase = forwardRef<StandaloneElement, InputBaseProps>(
+  function InputBase(props, ref) {
+    return useFieldMarkup(props, ref, { base: true, legend: undefined });
+  },
+);
+
+/** OutlinedInput — the outlined field box without a label or a helper text. */
+export const OutlinedInput = forwardRef<StandaloneElement, OutlinedInputProps>(
+  function OutlinedInput({ label, ...props }, ref) {
+    return useFieldMarkup({ ...props, variant: "outlined" }, ref, { base: false, legend: label });
+  },
+);
+
+/** FilledInput — the filled field box without a label or a helper text. */
+export const FilledInput = forwardRef<StandaloneElement, FilledInputProps>(
+  function FilledInput(props, ref) {
+    return useFieldMarkup({ ...props, variant: "filled" }, ref, { base: false, legend: undefined });
+  },
+);
+
+/** Input — the standard (underlined) field without a label or a helper text. */
+export const Input = forwardRef<StandaloneElement, InputProps>(function Input(props, ref) {
+  return useFieldMarkup({ ...props, variant: "standard" }, ref, { base: false, legend: undefined });
 });

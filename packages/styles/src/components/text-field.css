@@ -21,6 +21,9 @@
  * States:    :focus-within (or data-ok-focused), :disabled / :placeholder-shown of the input (via :has())
  *            data-ok-hidden-label: the label is visually hidden (it still names the input) and the
  *            field is laid out as if it had none; adornment data-ok-disable-pointer-events
+ *            data-ok-notched (outline notch open), data-ok-disable-underline (standard)
+ * Standalone: data-ok-input-base on the root (InputBase / OutlinedInput / FilledInput / Input):
+ *            no label or helper; InputBase has no data-ok-variant (no box)
  *
  * The label floats up when the field has focus or a value, when it starts with an adornment, for
  * selects and with data-ok-shrink. "Has a value" is `:not(:placeholder-shown)`, so inputs and
@@ -176,6 +179,15 @@
   /* Hidden label: visually hidden, still the input's name; the outline keeps no notch for it. */
   :where([data-ok-text-field][data-ok-hidden-label]) {
     --_ok-legend-max: 0.01px;
+  }
+
+  /* Standalone inputs (InputBase, OutlinedInput…) have no label: the notch opens only when notched. */
+  :where([data-ok-text-field][data-ok-input-base]) {
+    --_ok-legend-max: 0.01px;
+  }
+
+  :where([data-ok-text-field][data-ok-notched]) {
+    --_ok-legend-max: 100%;
   }
 
   :where([data-ok-text-field][data-ok-hidden-label] > [data-ok-text-field-label]) {
@@ -360,6 +372,22 @@
     visibility: visible;
   }
 
+  /* InputBase: no variant, no box (no outline, fill or underline); the input keeps a little padding. */
+  :where([data-ok-text-field][data-ok-input-base]:not([data-ok-variant])) {
+    --_ok-pad: var(--ok-spacing) 0;
+    --_ok-pad-x: 0;
+  }
+
+  :where([data-ok-text-field][data-ok-input-base]:not([data-ok-variant])[data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 0.25) 0;
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-input-base]:not([data-ok-variant]) > [data-ok-text-field-control]
+  ) {
+    border-radius: 0;
+  }
+
   /* Filled */
   :where([data-ok-text-field][data-ok-variant="filled"]) {
     --_ok-pad: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
@@ -462,6 +490,21 @@
     transform: scaleX(0);
     pointer-events: none;
     transition: transform var(--ok-duration-shorter) var(--ok-easing-decelerate);
+  }
+
+  /* disableUnderline: neither the line nor the focus line. */
+  :where(
+    [data-ok-text-field][data-ok-variant="standard"][data-ok-disable-underline]
+      > [data-ok-text-field-control]
+  )::before {
+    content: none;
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-variant="standard"][data-ok-disable-underline]
+      > [data-ok-text-field-control]
+  )::after {
+    content: none;
   }
 
   :where([data-ok-text-field][data-ok-variant="standard"] [data-ok-text-field-select-icon]) {

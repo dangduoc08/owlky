@@ -197,6 +197,18 @@
       "name": "focused"
      },
      {
+      "attr": "data-ok-notched",
+      "description": "Outlined: keep the notch in the outline open (OutlinedInput: room for its `label`).",
+      "kind": "flag",
+      "name": "notched"
+     },
+     {
+      "attr": "data-ok-disable-underline",
+      "description": "Standard: no underline (give the field another focus style).",
+      "kind": "flag",
+      "name": "disableUnderline"
+     },
+     {
       "attr": "data-ok-min-rows",
       "description": "Multiline: rows shown at least.",
       "kind": "number",
@@ -237,6 +249,11 @@
       "description": "On an adornment: presses go through it to the input (React `disablePointerEvents`).",
       "kind": "state",
       "name": "data-ok-disable-pointer-events"
+     },
+     {
+      "description": "On the root: a standalone input without a label or a helper text (`InputBase`, `OutlinedInput`, `FilledInput`, `Input`). Without `data-ok-variant` it draws no box.",
+      "kind": "state",
+      "name": "data-ok-input-base"
      },
      {
       "description": "An adornment before or after the input, such as an icon or a unit.",
@@ -341,6 +358,11 @@
       "type": "string | number"
      },
      {
+      "description": "Standard: draw no underline (give the field another focus style).",
+      "name": "disableUnderline",
+      "type": "boolean"
+     },
+     {
       "description": "An `InputAdornment` with `position=\"end\"`.",
       "name": "endAdornment",
       "type": "ReactNode"
@@ -371,6 +393,11 @@
       "type": "boolean"
      },
      {
+      "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+      "name": "inputComponent",
+      "type": "ElementType"
+     },
+     {
       "description": "The floating label; it names the input.",
       "name": "label",
       "type": "ReactNode"
@@ -394,6 +421,11 @@
      {
       "description": "A `<textarea>` instead of an `<input>`.",
       "name": "multiline",
+      "type": "boolean"
+     },
+     {
+      "description": "Outlined: keep the outline's notch open even when the label rests in the box.",
+      "name": "notched",
       "type": "boolean"
      },
      {
@@ -452,6 +484,203 @@
    }
   },
   {
+   "name": "FilledInput",
+   "react": {
+    "description": "The filled field box without a label or a helper text.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Class of the root (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"default\"",
+      "description": "Focus color; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Uncontrolled initial value.",
+      "name": "defaultValue",
+      "type": "string | number"
+     },
+     {
+      "description": "The filled look has no underline: kept for compatibility (the focus ring stays).",
+      "name": "disableUnderline",
+      "type": "boolean"
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"end\"`.",
+      "name": "endAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Error colors and `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "The padding of a field without a label (always the case here).",
+      "name": "hiddenLabel",
+      "type": "boolean"
+     },
+     {
+      "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+      "name": "inputComponent",
+      "type": "ElementType"
+     },
+     {
+      "description": "Multiline: rows before it scrolls.",
+      "name": "maxRows",
+      "type": "number"
+     },
+     {
+      "description": "Multiline: rows shown at least (grows with the content where supported).",
+      "name": "minRows",
+      "type": "number"
+     },
+     {
+      "description": "A `<textarea>` instead of an `<input>`.",
+      "name": "multiline",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the new value.",
+      "name": "onChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "description": "Multiline: fixed number of rows.",
+      "name": "rows",
+      "type": "number"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` or `small` (dense).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"start\"`.",
+      "name": "startAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Style of the root.",
+      "name": "style",
+      "type": "CSSProperties"
+     },
+     {
+      "description": "Controlled value.",
+      "name": "value",
+      "type": "string | number"
+     }
+    ]
+   }
+  },
+  {
+   "name": "Input",
+   "react": {
+    "description": "The standard (underlined) field without a label or a helper text.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Class of the root (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"default\"",
+      "description": "Focus color; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Uncontrolled initial value.",
+      "name": "defaultValue",
+      "type": "string | number"
+     },
+     {
+      "description": "Draw no underline (give the field another focus style).",
+      "name": "disableUnderline",
+      "type": "boolean"
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"end\"`.",
+      "name": "endAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Error colors and `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+      "name": "inputComponent",
+      "type": "ElementType"
+     },
+     {
+      "description": "Multiline: rows before it scrolls.",
+      "name": "maxRows",
+      "type": "number"
+     },
+     {
+      "description": "Multiline: rows shown at least (grows with the content where supported).",
+      "name": "minRows",
+      "type": "number"
+     },
+     {
+      "description": "A `<textarea>` instead of an `<input>`.",
+      "name": "multiline",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the new value.",
+      "name": "onChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "description": "Multiline: fixed number of rows.",
+      "name": "rows",
+      "type": "number"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` or `small` (dense).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"start\"`.",
+      "name": "startAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Style of the root.",
+      "name": "style",
+      "type": "CSSProperties"
+     },
+     {
+      "description": "Controlled value.",
+      "name": "value",
+      "type": "string | number"
+     }
+    ]
+   }
+  },
+  {
    "name": "InputAdornment",
    "react": {
     "description": "An icon, text or button before or after a text field's input.",
@@ -473,6 +702,198 @@
       "name": "position",
       "required": true,
       "type": "\"end\" | \"start\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "InputBase",
+   "react": {
+    "description": "A bare input with no box, no label and no helper text, for fields you style yourself (such as a search bar). Name it with `aria-label`. `ref` and the remaining props go to the input.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Class of the root (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"default\"",
+      "description": "Focus color; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Uncontrolled initial value.",
+      "name": "defaultValue",
+      "type": "string | number"
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"end\"`.",
+      "name": "endAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Error colors and `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+      "name": "inputComponent",
+      "type": "ElementType"
+     },
+     {
+      "description": "Multiline: rows before it scrolls.",
+      "name": "maxRows",
+      "type": "number"
+     },
+     {
+      "description": "Multiline: rows shown at least (grows with the content where supported).",
+      "name": "minRows",
+      "type": "number"
+     },
+     {
+      "description": "A `<textarea>` instead of an `<input>`.",
+      "name": "multiline",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the new value.",
+      "name": "onChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "description": "Multiline: fixed number of rows.",
+      "name": "rows",
+      "type": "number"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` or `small` (dense).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"start\"`.",
+      "name": "startAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Style of the root.",
+      "name": "style",
+      "type": "CSSProperties"
+     },
+     {
+      "description": "Controlled value.",
+      "name": "value",
+      "type": "string | number"
+     }
+    ]
+   }
+  },
+  {
+   "name": "OutlinedInput",
+   "react": {
+    "description": "The outlined field box without a label or a helper text.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Class of the root (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"default\"",
+      "description": "Focus color; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Uncontrolled initial value.",
+      "name": "defaultValue",
+      "type": "string | number"
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"end\"`.",
+      "name": "endAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Error colors and `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+      "name": "inputComponent",
+      "type": "ElementType"
+     },
+     {
+      "description": "The text the outline's notch makes room for (the label you show elsewhere, such as an `InputLabel`).",
+      "name": "label",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Multiline: rows before it scrolls.",
+      "name": "maxRows",
+      "type": "number"
+     },
+     {
+      "description": "Multiline: rows shown at least (grows with the content where supported).",
+      "name": "minRows",
+      "type": "number"
+     },
+     {
+      "description": "A `<textarea>` instead of an `<input>`.",
+      "name": "multiline",
+      "type": "boolean"
+     },
+     {
+      "description": "Keep the notch open (it needs a `label`).",
+      "name": "notched",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the new value.",
+      "name": "onChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "description": "Multiline: fixed number of rows.",
+      "name": "rows",
+      "type": "number"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` or `small` (dense).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"start\"`.",
+      "name": "startAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Style of the root.",
+      "name": "style",
+      "type": "CSSProperties"
+     },
+     {
+      "description": "Controlled value.",
+      "name": "value",
+      "type": "string | number"
      }
     ]
    }

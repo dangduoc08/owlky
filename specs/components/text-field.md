@@ -11,7 +11,7 @@ adornments and helper text.
 
 ## Anatomy
 ```
-div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-hidden-label]?[data-ok-focused]?[data-ok-min-rows]?[data-ok-max-rows]?
+div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-hidden-label]?[data-ok-focused]?[data-ok-notched]?[data-ok-disable-underline]?[data-ok-min-rows]?[data-ok-max-rows]?[data-ok-input-base]?
   label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] " *")
   div[data-ok-text-field-control]
     span[data-ok-text-field-adornment="start"][data-ok-disable-pointer-events]?   (optional; any element)
@@ -21,6 +21,10 @@ div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-e
     fieldset[data-ok-text-field-outline][aria-hidden] › legend? › span (label + " *")   (outlined only)
   div[data-ok-text-field-helper][id]?                  (linked by aria-describedby)
 ```
+Standalone inputs (4.18.26: `InputBase`, `OutlinedInput`, `FilledInput`, `Input`) are this markup
+without the label and the helper, with `data-ok-input-base` on the root; `InputBase` has no
+`data-ok-variant` (no outline, fill or underline; input padding 4px 0, small 1px 0). Their notch
+stays closed unless `data-ok-notched` (OutlinedInput `label` fills the legend only).
 Inputs and textareas always carry a `placeholder` (" " when none): `:not(:placeholder-shown)` is
 how CSS knows there is a value. React renders `data-ok-runtime="off"` on the root; `ref` and the
 remaining props go to the input; `className` / `style` to the root.
@@ -40,6 +44,8 @@ Root: `data-ok-text-field`. Unknown values fall back to the default.
 | `shrink` | `data-ok-shrink` | flag | boolean | off | Keep the label above the value even when empty. |
 | `hiddenLabel` | `data-ok-hidden-label` | flag | boolean | off | Hide the label visually (it still names the input); the field gets the padding of a field without a label. |
 | `focused` | `data-ok-focused` | flag | boolean | off | Show the focus colors even when the field doesn't have focus. |
+| `notched` | `data-ok-notched` | flag | boolean | off | Outlined: keep the notch in the outline open (OutlinedInput: room for its `label`). |
+| `disableUnderline` | `data-ok-disable-underline` | flag | boolean | off | Standard: no underline (give the field another focus style). |
 | `minRows` | `data-ok-min-rows="…"` | number | number | — | Multiline: rows shown at least. |
 | `maxRows` | `data-ok-max-rows="…"` | number | number | — | Multiline: rows before it scrolls. |
 | `disabled` | `disabled` on each `[data-ok-text-field-control] > :is([data-ok-text-field-input]:not([data-ok-select-display]), [data-ok-select-input])` | native | boolean | off | Native `disabled` on the input. |
@@ -59,7 +65,9 @@ with `MenuItem` children composes the Select (select.md) in the control: the con
 `div[data-ok-text-field-input][data-ok-select-display][role=combobox]` replaces the `<select>`,
 followed by the hidden `input[data-ok-select-input]`, the icon (`data-ok-text-field-select-icon
 data-ok-select-icon`), the outline and the Select's popover; the label gets `id` (`<id>-label`).
-`select` alone stays native (MUI's default is the listbox; additive, no DOM change). Single
+`select` alone stays native (MUI's default is the listbox; additive, no DOM change).
+`notched`, `disableUnderline` and `inputComponent` (4.18.26) work on TextField too (MUI
+`slotProps.input.*`). Single
 values only (`value` stays a string): use FormControl + Select for `multiple`. Not applicable:
 `sx`, `classes`, `slots`, `slotProps`.
 
@@ -126,7 +134,12 @@ Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, 
 | InputAdornment `position`, `children` | same | kept | |
 | InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |
 | InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |
-| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |
+| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |
+| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |
+| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |
+| InputBase `margin` (`dense`) | `size="small"` | renamed | Owlky's `margin` is the outer margin of TextField |
+| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |
+| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |
 | `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |
 
 Related reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).

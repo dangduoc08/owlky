@@ -85,6 +85,25 @@ describe("diff editor (HTML)", () => {
     expect(editor.getModifiedEditor().getOption(monaco.editor.EditorOption.readOnly)).toBe(true);
   });
 
+  it("reveals data-ok-line and follows it", async () => {
+    const host = mount(`
+      <div data-ok-diff-editor data-ok-height="300" data-ok-line="250">
+        <textarea data-ok-diff-editor-original aria-label="Before">${"x\n".repeat(300)}</textarea>
+        <textarea data-ok-diff-editor-modified aria-label="After">${"x\n".repeat(300)}</textarea>
+        <div data-ok-diff-editor-content></div>
+      </div>`);
+    const root = host.firstElementChild as HTMLElement;
+    runtime = createRuntime().register(diffEditor).start();
+    await whenAttribute(root, "data-ok-status", "ready");
+    const instance = runtime.get<DiffEditorElementInstance>(root, "diff-editor");
+    const editor = instance?.editor as NonNullable<DiffEditorElementInstance["editor"]>;
+    expect(editor.getModifiedEditor().getScrollTop()).toBeGreaterThan(0);
+    const reveal = vi.spyOn(editor, "revealLine");
+    root.setAttribute("data-ok-line", "3");
+    await tick();
+    expect(reveal).toHaveBeenCalledWith(3);
+  });
+
   it("writes the texts back when the runtime stops", async () => {
     const beforeMount = vi.fn();
     const onMount = vi.fn();

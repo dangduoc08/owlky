@@ -253,6 +253,11 @@
     gap: calc(var(--ok-spacing) * 2);
   }
 
+  /* showViewSwitcher={false}: no arrows (the toolbar or the owner switches the views). */
+  :where([data-ok-time-clock][data-ok-show-view-switcher="false"] > [data-ok-time-clock-nav]) {
+    display: none;
+  }
+
   @media (hover: hover) {
     :where([data-ok-time-clock-meridiem]:hover:not(:disabled):not([aria-pressed="true"])) {
       background-color: var(--ok-action-hover);

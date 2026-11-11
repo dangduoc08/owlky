@@ -361,13 +361,15 @@ describe("createMapController: styles and tokens", () => {
       "style.load",
     );
     expect(map.getPaintProperty("land", "fill-color")).toBe("#f8f8f6");
-    // A new light style without a dark one.
-    c.setMapStyle(mapFixtureStyle("#00ff00"));
-    await nextEvent(
+    // A new light style without a dark one: diffed in place (`style.load` comes during the call).
+    const diffed = nextEvent(
       { addEventListener: (_t: string, h: () => void) => map.once("style.load", h) },
       "style.load",
     );
+    c.setMapStyle(mapFixtureStyle("#00ff00"));
+    await diffed;
     expect(map.getPaintProperty("land", "fill-color")).toBe("#00ff00");
+    expect(map.getLayer("dots")).toBeDefined();
     c.setMapStyle(undefined);
   });
 

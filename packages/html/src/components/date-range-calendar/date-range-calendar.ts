@@ -5,6 +5,7 @@ import {
   calendarWeeks,
   closestEnabledDate,
   createCalendarController,
+  createFocusedViewTracker,
   createRangeDragController,
   type DateRange,
   type DateRules,
@@ -12,6 +13,7 @@ import {
   dateRangeCalendarOptions,
   defaultDayOfWeekFormatter,
   firstDayOfWeek,
+  focusPickerViewPart,
   formatCalendarMonth,
   formatIsoDate,
   formatIsoRange,
@@ -61,6 +63,8 @@ import {
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface DateRangeCalendarEvents {
+  /** After a view took the focus (`hasFocus` `true`) or lost it. */
+  focusedviewchange: EventSpec<{ view: "day"; hasFocus: boolean }>;
   /** Before a day sets one end of the range (`start/end`). Call `preventDefault()` to refuse it. */
   change: EventSpec<{ value: string; selectionState: "partial" | "finish" }, true>;
   /** After the end being edited changed. */
@@ -70,6 +74,10 @@ export interface DateRangeCalendarEvents {
 }
 
 export interface DateRangeCalendarInstance extends ComponentInstance, PickerDateApi {
+  /** The view that holds the focus, or `null`. */
+  readonly focusedView: "day" | null;
+  /** Moves the focus into a view, when it is shown. */
+  setFocusedView(view: "day"): void;
   /** The range as an ISO 8601 interval (`2025-05-20/2025-05-25`), or `null` when empty. */
   readonly value: string | null;
   /** Sets the range (ISO interval, `[start, end]` or `null`) and shows it, without events. */
@@ -148,6 +156,9 @@ export const dateRangeCalendar = defineComponent<
   selector: "[data-ok-date-range-calendar]",
 
   setup(element, { emit }) {
+    const focus = createFocusedViewTracker(element, (view, hasFocus) =>
+      emit("focusedviewchange", { view: view as "day", hasFocus }),
+    );
     const locale = readLocale(element);
     const cal = pickerCalendar(locale);
     let dayRenderer: PickerDayRenderer | undefined;
@@ -534,8 +545,15 @@ export const dateRangeCalendar = defineComponent<
         lastRendered = "";
         render();
       },
+      get focusedView() {
+        return focus.view as "day" | null;
+      },
+      setFocusedView(view) {
+        focusPickerViewPart(element, view);
+      },
       destroy() {
         controller.destroy();
+        focus.destroy();
         drag.destroy();
       },
     };

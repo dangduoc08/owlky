@@ -1,7 +1,15 @@
 import { textFieldOptions } from "@owlky/core";
 import textFieldApi from "@owlky/docs-content/api/text-field.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { IconButton, InputAdornment, TextField } from "@owlky/react";
+import {
+  FilledInput,
+  IconButton,
+  Input,
+  InputAdornment,
+  InputBase,
+  OutlinedInput,
+  TextField,
+} from "@owlky/react";
 import { useState } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -149,6 +157,44 @@ export function SearchField() {
         </InputAdornment>
       }
     />
+  );
+}`,
+  },
+  {
+    id: "standalone",
+    title: "Use an input without a label",
+    body: "For fields you build yourself, such as a search bar or a value inside another control, use a standalone input: the field without its label and helper text. `OutlinedInput`, `FilledInput` and `Input` draw the outlined, filled and standard looks. `InputBase` draws no box at all, so you style it yourself, and it shows no focus ring: give its container one, for example with `:focus-within`. In HTML, write the TextField markup without the label and add `data-ok-input-base` to the root. Leave out `data-ok-variant` for an InputBase.\n\nName every standalone input with `aria-label`, or with `aria-labelledby` that points at visible text. `OutlinedInput`'s `label` doesn't name the input: it only makes room in the outline for a label that you place yourself, and `notched` keeps that room open. `disableUnderline` removes the standard field's line. `inputComponent` renders your own element instead of the `<input>`, such as a masked input; it receives the input's props and `ref`. These props also work on `TextField`.",
+    html: `<div data-ok-text-field data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-input-base>
+  <div data-ok-text-field-control>
+    <span data-ok-text-field-adornment="start" data-ok-disable-pointer-events>${SEARCH_SVG}</span>
+    <input data-ok-text-field-input type="search" aria-label="Search orders" placeholder="Search orders">
+  </div>
+</div>
+<div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-input-base>
+  <div data-ok-text-field-control>
+    <input data-ok-text-field-input aria-label="Quantity" inputmode="numeric" placeholder="0">
+    <fieldset data-ok-text-field-outline aria-hidden="true"></fieldset>
+  </div>
+</div>`,
+    react: `import { InputAdornment, InputBase, OutlinedInput } from "@owlky/react";
+import { SearchIcon } from "lucide-react";
+
+export function StandaloneInputs() {
+  return (
+    <>
+      <InputBase
+        size="small"
+        type="search"
+        aria-label="Search orders"
+        placeholder="Search orders"
+        startAdornment={
+          <InputAdornment position="start" disablePointerEvents>
+            <SearchIcon />
+          </InputAdornment>
+        }
+      />
+      <OutlinedInput size="small" aria-label="Quantity" inputMode="numeric" placeholder="0" />
+    </>
   );
 }`,
   },
@@ -318,6 +364,24 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  standalone: () => (
+    <Preview>
+      <InputBase
+        size="small"
+        type="search"
+        aria-label="Search orders"
+        placeholder="Search orders"
+        startAdornment={
+          <InputAdornment position="start" disablePointerEvents>
+            <SearchPreviewIcon />
+          </InputAdornment>
+        }
+      />
+      <OutlinedInput size="small" aria-label="Quantity" inputMode="numeric" placeholder="0" />
+      <FilledInput size="small" aria-label="Note" placeholder="Note" />
+      <Input aria-label="Title" placeholder="Title" />
+    </Preview>
+  ),
   select: () => (
     <Preview>
       <TextField id="currency" select size="small" label="Currency" defaultValue="EUR">
@@ -395,6 +459,24 @@ const PREVIEWS = {
           html: "data-ok-disable-pointer-events",
           type: "boolean",
           description: "Presses on the adornment go through to the input.",
+        },
+        {
+          react: "InputBase / OutlinedInput / FilledInput / Input",
+          html: "data-ok-input-base (no data-ok-variant for InputBase)",
+          type: "component",
+          description: "The field without a label and helper text; name it with `aria-label`.",
+        },
+        {
+          react: "OutlinedInput label",
+          html: "fieldset › legend › span",
+          type: "ReactNode",
+          description: "Room in the outline for a label you place yourself (with `notched`).",
+        },
+        {
+          react: "inputComponent",
+          html: "any element with data-ok-text-field-input",
+          type: "ElementType",
+          description: "Rendered instead of the `<input>`, with the input's props and `ref`.",
         },
         {
           html: "data-ok-text-field-reveal",

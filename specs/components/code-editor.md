@@ -23,7 +23,7 @@ div[data-ok-code-editor][data-ok-status=loading|ready|error]?[data-ok-language]?
   div[data-ok-code-editor-content][class]?            (Monaco: div.monaco-editor …)
 div[data-ok-diff-editor][data-ok-status]?[data-ok-language]?[data-ok-original-language]?[data-ok-modified-language]?
    [data-ok-original-model-path]?[data-ok-modified-model-path]?[data-ok-monaco-theme]?[data-ok-width]?[data-ok-height]?
-   [data-ok-options]?[data-ok-keep-current-original-model]?[data-ok-keep-current-modified-model]?
+   [data-ok-line]?[data-ok-options]?[data-ok-keep-current-original-model]?[data-ok-keep-current-modified-model]?
   textarea[data-ok-diff-editor-original][aria-label] + textarea[data-ok-diff-editor-modified][aria-label]
   div[data-ok-diff-editor-loading][role=status]
   div[data-ok-diff-editor-content][class]?            (Monaco: div.monaco-diff-editor …)
@@ -58,6 +58,7 @@ Root: `data-ok-diff-editor`. Unknown values fall back to the default.
 | `theme` | `data-ok-monaco-theme="…"` | style | `auto` `owlky-light` `owlky-dark` `light` `vs` `vs-dark` `hc-black` `hc-light` | — | Monaco theme. `auto`: Owlky's light or dark theme after the scope's `data-ok-theme`; others are Monaco's (or one defined in `beforeMount`). |
 | `width` | `data-ok-width="…"` | number | number (px) or `px` `%` `rem` `em` `vh` `vw` `svh` `dvh` `lvh` `ch` length | — | Width (number = px, or a CSS length such as `50%`). Default `100%`. |
 | `height` | `data-ok-height="…"` | number | number (px) or `px` `%` `rem` `em` `vh` `vw` `svh` `dvh` `lvh` `ch` length | — | Height (number = px, or a CSS length such as `90vh`). Default `100%`, at least 300px when not given. |
+| `line` | `data-ok-line="…"` | number | number | — | Scrolls both sides to this line of the modified text (1-based). |
 | `keepCurrentOriginalModel` | `data-ok-keep-current-original-model` | flag | boolean | off | Keeps the original model when the editor is removed. |
 | `keepCurrentModifiedModel` | `data-ok-keep-current-modified-model` | flag | boolean | off | Keeps the modified model when the editor is removed. |
 | `originalModelPath` | `data-ok-original-model-path` | state | — | — | Path of the original model. |
@@ -93,7 +94,8 @@ API mapping: see "Upstream API mapping" below.
   `keepCurrentModel`.
 - Diff: original and modified models from `original` / `modified` with `originalLanguage ??
   language` / `modifiedLanguage ?? language` (default `text`) and their model paths; new values
-  update them (modified as an undoable edit); unmount disposes both models unless kept.
+  update them (modified as an undoable edit); `line` reveals a line of the modified text (both
+  sides scroll together); unmount disposes both models unless kept.
 - Validation: `onValidate(markers)` / `ok:code-editor:validate` whenever the current model's
   markers change (languages with workers: JSON, CSS, HTML, TypeScript / JavaScript).
 - Themes: `auto` → `owlky-light` / `owlky-dark` built from the scope's tokens (`--ok-bg-paper`,
@@ -141,7 +143,7 @@ Upstream: `@monaco-editor/react` 4.7 README (Editor, DiffEditor, `useMonaco`, `l
 | `beforeMount`, `onMount`, `onChange(value, event)`, `onValidate(markers)` | same | kept | |
 | `theme` (default `"light"`) | `theme` (default `"auto"`) | renamed | `auto` follows `data-ok-theme` |
 | DiffEditor `original`, `modified`, `language`, `originalLanguage`, `modifiedLanguage`, `originalModelPath`, `modifiedModelPath`, `keepCurrentOriginalModel`, `keepCurrentModifiedModel`, `theme`, `loading`, `options`, `width`, `height`, `className`, `wrapperProps`, `beforeMount`, `onMount` | same | kept | |
-| DiffEditor `line` | — | deferred | |
+| DiffEditor `line` | same | kept | 4.18.32: `data-ok-line`; `revealLine` on the diff editor (the modified side's line; both sides scroll together), at mount and on every new value |
 | `useMonaco()` | same | kept | |
 | `loader.config({ paths: { vs }, monaco, "vs/nls" })`, `loader.init()` | same | kept | no CDN default (self-hosted `paths.vs`); adds `import`, `getWorker`; `init()` cancelable |
 | `loader.__getMonacoInstance` | `getMonaco()` | renamed | |

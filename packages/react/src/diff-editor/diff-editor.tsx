@@ -43,6 +43,8 @@ export interface DiffEditorProps {
   keepCurrentModifiedModel?: boolean | undefined;
   /** Default `"auto"`: Owlky's light or dark theme, after the scope's `data-ok-theme`. */
   theme?: CodeEditorTheme | undefined;
+  /** Scrolls both sides to this line of the modified text (1-based). */
+  line?: number | undefined;
   /** Shown until Monaco is ready. Default "Loading...". */
   loading?: ReactNode;
   /** Monaco diff editor options (`IStandaloneDiffEditorConstructionOptions`). */
@@ -79,6 +81,7 @@ export const DiffEditor = forwardRef<HTMLDivElement, DiffEditorProps>(function D
     keepCurrentOriginalModel = false,
     keepCurrentModifiedModel = false,
     theme,
+    line,
     loading = "Loading...",
     options,
     width,
@@ -117,6 +120,7 @@ export const DiffEditor = forwardRef<HTMLDivElement, DiffEditorProps>(function D
     keepCurrentOriginalModel,
     keepCurrentModifiedModel,
     theme: theme ?? "auto",
+    line,
     options: monacoOptions,
   });
   const setRoot = (node: HTMLDivElement | null) => {
@@ -161,6 +165,9 @@ export const DiffEditor = forwardRef<HTMLDivElement, DiffEditorProps>(function D
   useEffect(() => {
     controllerRef.current?.update({ theme: theme ?? "auto" });
   }, [theme]);
+  useEffect(() => {
+    controllerRef.current?.update({ line });
+  }, [line]);
   const optionsKey = JSON.stringify(monacoOptions);
   // biome-ignore lint/correctness/useExhaustiveDependencies: compared by content (inline objects).
   useEffect(() => {
@@ -178,6 +185,7 @@ export const DiffEditor = forwardRef<HTMLDivElement, DiffEditorProps>(function D
         theme,
         width,
         height,
+        line,
         keepCurrentOriginalModel,
         keepCurrentModifiedModel,
       })}
