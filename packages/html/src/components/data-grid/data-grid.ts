@@ -5063,6 +5063,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     }
     let edits: Edit[] = [];
     let editRow: HTMLElement | null = null;
+    /** The field the edit started on (row mode: `fieldToFocus` of the row modes model). */
+    let editField = "";
     /** The edited row's values before the editors replaced its cells. */
     let editBefore: DataRow = {};
     const errors = new Map<string, string | true>();
@@ -5090,7 +5092,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ? gridEditModes(
             rowMode() ? "row" : "cell",
             idOf(editRow),
-            (edits[0] as Edit).column.field,
+            rowMode() ? editField : (edits[0] as Edit).column.field,
             "edit",
           )
         : { cells: {}, rows: {} };
@@ -5126,6 +5128,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ...Object.fromEntries(columns.map((c) => [c.field, value(row, c.field)])),
       };
       editRow = row;
+      editField = field;
       if (rowMode()) row.setAttribute("data-ok-editing", "");
       edits = targets.map((c) => {
         const cell = cellOf(row, c.field) as HTMLElement;
@@ -6121,9 +6124,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         return rowMode() ? {} : editModes().cells;
       },
       get rowModesModel() {
-        return rowMode() && editRow && edits.length
-          ? { [idOf(editRow)]: { mode: "edit" as const } }
-          : {};
+        return rowMode() ? editModes().rows : {};
       },
       setCellModesModel(model) {
         if (rowMode()) return;

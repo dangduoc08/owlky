@@ -2145,7 +2145,7 @@ describe("data grid custom editors and edit modes", () => {
     instance.setRowModesModel({ "is-1": { mode: "edit", fieldToFocus: "priority" } });
     expect(document.activeElement).toBe(cell("is-1", "priority").querySelector("select"));
     expect(instance.rowModesModel).toEqual({
-      "is-1": { mode: "edit" },
+      "is-1": { mode: "edit", fieldToFocus: "priority" },
     });
     instance.setRowModesModel({ "is-1": { mode: "view" } });
     expect(root.querySelector('[data-ok-row-id="is-1"]')?.hasAttribute("data-ok-editing")).toBe(
