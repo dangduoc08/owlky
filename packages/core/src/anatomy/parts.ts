@@ -1211,6 +1211,8 @@ export interface DialogParts {
   "data-ok-dialog-paper": Part<"div">;
   /** The title. Name the dialog with it through `aria-labelledby`. */
   "data-ok-dialog-title": Part<"h2">;
+  /** The length of the exit in milliseconds, when it differs from `data-ok-transition-duration`. */
+  "data-ok-transition-duration-exit": Value<string>;
   /** Draws lines above and below the content. */
   "data-ok-dividers": State;
 }
@@ -1780,6 +1782,10 @@ export interface MotionParts {
   "data-ok-now": Value<string>;
   /** One animated character. */
   "data-ok-motion-char": Part<"span">;
+  /** Custom keyframes as JSON, such as `{"rotate": [0, 270]}`: played instead of the variant when the Motion enters, backwards when it exits. */
+  "data-ok-keyframes": Value<string>;
+  /** How custom keyframes play, as JSON: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`"Infinity"` loops), `repeatType`, or a `"spring"` `type` with `stiffness`, `damping`, `mass` or `bounce`. */
+  "data-ok-transition": Value<string>;
   /** The full text for assistive technology. */
   "data-ok-motion-text-label": Part<"span">;
   /** One animated word. */

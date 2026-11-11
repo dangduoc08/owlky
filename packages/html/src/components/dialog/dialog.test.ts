@@ -7,6 +7,7 @@ import {
   expectCspSafe,
   expectNamedButtons,
   expectNoAxeViolations,
+  finishExit,
   mount,
   resetPage,
   settle,
@@ -86,6 +87,8 @@ describe("dialog runtime", () => {
     expect(dialog.matches(":modal")).toBe(true);
     expect(document.activeElement?.id).toBe("field");
     await userEvent.click(host.querySelector("#cancel") as HTMLElement);
+    expect(events).toEqual(["beforeopen:", "open:", "beforeclose:trigger"]);
+    await finishExit(dialog);
     expect(dialog.open).toBe(false);
     expect(events).toEqual(["beforeopen:", "open:", "beforeclose:trigger", "close:trigger"]);
   });
@@ -101,6 +104,7 @@ describe("dialog runtime", () => {
     expect(dialog.open).toBe(true);
     expect(isScrollLocked()).toBe(false);
     await userEvent.click(host.querySelector("#cancel") as HTMLElement);
+    await finishExit(dialog);
     expect(dialog.open).toBe(false);
     expect(document.activeElement).not.toBe(open);
   });
@@ -151,5 +155,85 @@ describe("dialog runtime", () => {
     (host.querySelector('[data-ok-dialog-close="missing"]') as HTMLElement).click();
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
+  });
+});
+
+describe("dialog exit (ADR-0062)", () => {
+  it("fires close after the exit, once the focus is back on the trigger", async () => {
+    const host = mount(markup);
+    start();
+    const dialog = host.querySelector("#d") as HTMLDialogElement;
+    const trigger = host.querySelector("#open") as HTMLElement;
+    const events: string[] = [];
+    dialog.addEventListener("ok:dialog:beforeclose", () => events.push("beforeclose"));
+    dialog.addEventListener("ok:dialog:close", () =>
+      events.push(`close:${document.activeElement === trigger ? "focus-back" : "focus-elsewhere"}`),
+    );
+    await userEvent.click(trigger);
+    const instance = runtime?.get<DialogInstance>(dialog, "dialog") as DialogInstance;
+    expect(instance.close()).toBe(true);
+    expect(instance.isOpen).toBe(false);
+    expect(dialog.open).toBe(true);
+    expect(dialog.getAttribute("data-ok-state")).toBe("exiting");
+    expect(events).toEqual(["beforeclose"]);
+    // A second close during the exit changes nothing.
+    expect(instance.close()).toBe(true);
+    await finishExit(dialog);
+    expect(dialog.open).toBe(false);
+    expect(events).toEqual(["beforeclose", "close:focus-back"]);
+  });
+
+  it("an open() during the exit keeps it open and fires no close", async () => {
+    const host = mount(markup);
+    start();
+    const dialog = host.querySelector("#d") as HTMLDialogElement;
+    const events: string[] = [];
+    for (const type of ["open", "close"])
+      dialog.addEventListener(`ok:dialog:${type}`, () => events.push(type));
+    const instance = runtime?.get<DialogInstance>(dialog, "dialog") as DialogInstance;
+    instance.open();
+    instance.close();
+    instance.open();
+    await finishExit(dialog);
+    expect(dialog.open).toBe(true);
+    expect(events).toEqual(["open", "open"]);
+  });
+
+  it("closes at once without an exit animation", () => {
+    const host = mount(
+      `<style>[data-ok-dialog-paper], dialog::backdrop { animation: none !important; }</style>${markup}`,
+    );
+    start();
+    const dialog = host.querySelector("#d") as HTMLDialogElement;
+    const closed = vi.fn();
+    dialog.addEventListener("ok:dialog:close", closed);
+    const instance = runtime?.get<DialogInstance>(dialog, "dialog") as DialogInstance;
+    instance.open();
+    instance.close();
+    expect(dialog.open).toBe(false);
+    expect(closed).toHaveBeenCalledOnce();
+  });
+
+  it("data-ok-transition-duration [+ -exit] set the lengths through CSSOM", async () => {
+    const host = mount(markup);
+    const dialog = host.querySelector("#d") as HTMLDialogElement;
+    dialog.setAttribute("data-ok-transition-duration", "300");
+    dialog.setAttribute("data-ok-transition-duration-exit", "120");
+    start();
+    expect(dialog.style.getPropertyValue("--_ok-dialog-enter")).toBe("300ms");
+    expect(dialog.style.getPropertyValue("--_ok-dialog-exit")).toBe("120ms");
+    const paper = dialog.querySelector("[data-ok-dialog-paper]") as HTMLElement;
+    const instance = runtime?.get<DialogInstance>(dialog, "dialog") as DialogInstance;
+    instance.open();
+    expect(getComputedStyle(paper).animationDuration).toBe("0.3s");
+    instance.close();
+    expect(getComputedStyle(paper).animationDuration).toBe("0.12s");
+    await finishExit(dialog);
+    dialog.removeAttribute("data-ok-transition-duration-exit");
+    await settle();
+    expect(dialog.style.getPropertyValue("--_ok-dialog-exit")).toBe("300ms");
+    runtime?.stop();
+    runtime = undefined;
+    expect(dialog.style.getPropertyValue("--_ok-dialog-enter")).toBe("");
   });
 });

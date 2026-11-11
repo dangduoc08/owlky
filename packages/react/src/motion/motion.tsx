@@ -1,13 +1,17 @@
 "use client";
 
 import {
+  type AnimateOptions,
+  createMotionKeyframes,
   createMotionTrigger,
+  type MotionKeyframes,
   type MotionState,
   type MotionTrigger,
   type MotionVariant,
   motionAttributes,
   motionGroupAttributes,
   motionGroupOptions,
+  motionKeyframesAttributes,
   motionOptions,
   motionStyle,
   motionTextAttributes,
@@ -63,6 +67,46 @@ export interface MotionTriggerProps {
 
 /** The state of the enclosing MotionGroup (its Motions follow it). */
 const GroupState = createContext<MotionState | undefined>(undefined);
+
+/**
+ * What an enclosing MotionPresence tells the Motions inside it: whether their child is still
+ * present (gone → they exit), whether to skip the first entrance, and where they register so
+ * the presence can wait for their exit.
+ */
+export interface MotionPresenceContextValue {
+  present: boolean;
+  initial: boolean;
+  register(element: HTMLElement): () => void;
+}
+
+export const MotionPresenceContext = createContext<MotionPresenceContextValue | null>(null);
+
+/**
+ * The state a Motion shows inside a presence: `exit` once its child is gone, nothing (no
+ * animation, the content as is) while `initial={false}` skips the first entrance.
+ */
+function usePresence(ref: RefObject<HTMLElement | null>, state: MotionState): MotionState | null {
+  const presence = useContext(MotionPresenceContext);
+  const [skip] = useState(() => presence?.initial === false);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!presence || !element) return;
+    return presence.register(element);
+  }, [presence, ref]);
+  if (!presence) return state;
+  if (!presence.present) return "exit";
+  return skip ? null : state;
+}
+
+/** Plays the element's `data-ok-keyframes` (core player) while it has keyframes. */
+function useKeyframes(ref: RefObject<HTMLElement | null>, active: boolean): void {
+  useEffect(() => {
+    const element = ref.current;
+    if (!active || !element) return;
+    const player = createMotionKeyframes(element);
+    return () => player.destroy();
+  }, [ref, active]);
+}
 
 const numberOr = (spec: { default: number | undefined }, value: number | undefined) =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : spec.default;
@@ -134,6 +178,18 @@ export interface MotionProps extends HTMLAttributes<HTMLElement>, MotionTriggerP
   component?: ElementType | undefined;
   /** Animation. Default `fadeIn`. */
   variant?: MotionVariant | undefined;
+  /**
+   * Custom keyframes, played instead of the variant when the Motion enters and backwards when it
+   * exits: a target or a list of values per property, such as `{ rotate: [0, 270], opacity: 0.5 }`
+   * (`x` / `y` in px, `rotate` in degrees, `scale`, and any CSS property).
+   */
+  keyframes?: MotionKeyframes | undefined;
+  /**
+   * How the custom keyframes play: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`,
+   * `repeat` (`Infinity` loops), `repeatType`, or `type: "spring"` with `stiffness`, `damping`,
+   * `mass` or `bounce`.
+   */
+  transition?: AnimateOptions | undefined;
   /** Entrance length, ms (default 640; loops: about 5 s). */
   duration?: number | undefined;
   /** Travel of directional variants, px (default 160 for slides, 120 for fades). */
@@ -152,6 +208,8 @@ export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
   {
     component: Root = "div",
     variant,
+    keyframes,
+    transition,
     trigger,
     in: shown,
     once,
@@ -186,13 +244,17 @@ export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
     },
     useContext(GroupState),
   );
+  const shownState = usePresence(own, state);
+  const custom = motionKeyframesAttributes(keyframes, transition);
+  useKeyframes(own, custom["data-ok-keyframes"] !== undefined);
   useReplayOnChange(own, `${variant}|${duration}|${distance}`);
   return (
     <Root
       ref={mergedRef}
       {...motionAttributes({ variant, trigger, once, amount, delay, duration, distance, paused })}
+      {...custom}
       {...viewportAttributes(viewportMargin)}
-      data-ok-state={state}
+      data-ok-state={shownState ?? undefined}
       data-ok-runtime="off"
       {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
       style={
@@ -263,6 +325,7 @@ export const MotionGroup = forwardRef<HTMLElement, MotionGroupProps>(function Mo
     },
     undefined,
   );
+  const groupState = usePresence(own, state);
   let index = 0;
   const items = Children.map(children, (child) => {
     if (!isValidElement<{ style?: CSSProperties }>(child)) return child;
@@ -276,7 +339,7 @@ export const MotionGroup = forwardRef<HTMLElement, MotionGroupProps>(function Mo
       ref={mergedRef}
       {...motionGroupAttributes({ trigger, once, amount, delay, stagger })}
       {...viewportAttributes(viewportMargin)}
-      data-ok-state={state}
+      data-ok-state={groupState ?? undefined}
       data-ok-runtime="off"
       {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
       style={
@@ -290,7 +353,7 @@ export const MotionGroup = forwardRef<HTMLElement, MotionGroupProps>(function Mo
       }
       {...props}
     >
-      <GroupState.Provider value={state}>{items}</GroupState.Provider>
+      <GroupState.Provider value={groupState ?? "enter"}>{items}</GroupState.Provider>
     </Root>
   );
 });
@@ -351,6 +414,7 @@ export const MotionText = forwardRef<HTMLElement, MotionTextProps>(function Moti
     },
     undefined,
   );
+  const textState = usePresence(own, state);
   useReplayOnChange(own, `${variant}|${duration}|${distance}`);
   const words = splitMotionText(children);
   let index = 0;
@@ -368,7 +432,7 @@ export const MotionText = forwardRef<HTMLElement, MotionTextProps>(function Moti
         stagger,
       })}
       {...viewportAttributes(viewportMargin)}
-      data-ok-state={state}
+      data-ok-state={textState ?? undefined}
       data-ok-runtime="off"
       {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
       style={

@@ -59,6 +59,28 @@ for (const impl of implementations) {
       }
     });
 
+    test("slides back to its edge before it closes", async ({ page, isMobile }) => {
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      const { drawer } = await open(page, "Left", isMobile);
+      // Let the slide in end: a close at its very start has nothing left to play.
+      await drawer
+        .locator("[data-ok-drawer-content]")
+        .evaluate((content) => Promise.all(content.getAnimations().map((a) => a.finished)));
+      await drawer.evaluate((element) => {
+        const seen: string[] = [];
+        (window as unknown as { seen: string[] }).seen = seen;
+        new MutationObserver(() => {
+          const content = element.querySelector("[data-ok-drawer-content]") as HTMLElement;
+          const sliding = content.getAnimations().length > 0 ? "sliding" : "still";
+          seen.push(`${element.getAttribute("data-ok-state") ?? "none"}:${sliding}`);
+        }).observe(element, { attributes: true, attributeFilter: ["data-ok-state"] });
+      });
+      await page.keyboard.press("Escape");
+      await expect(drawer).toBeHidden();
+      const seen = await page.evaluate(() => (window as unknown as { seen: string[] }).seen);
+      expect(seen).toEqual(["exiting:sliding", "none:still"]);
+    });
+
     test("a click or tap on the backdrop closes it", async ({ page, isMobile }) => {
       const { drawer } = await open(page, "Left", isMobile);
       const { viewport } = await measure(page, "Left");

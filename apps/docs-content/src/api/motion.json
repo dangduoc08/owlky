@@ -161,6 +161,24 @@
     ],
     "methods": [
      {
+      "description": "Plays the exit. Resolves `true` when it ended, `false` when `replay()` interrupted it.",
+      "kind": "method",
+      "name": "exit",
+      "type": "() => Promise<boolean>"
+     },
+     {
+      "description": "Plays the exit, then hides the element (`hidden`). Resolves `false` when interrupted.",
+      "kind": "method",
+      "name": "hide",
+      "type": "() => Promise<boolean>"
+     },
+     {
+      "description": "Plays the exit, then removes the element from the page. Resolves `false` when interrupted.",
+      "kind": "method",
+      "name": "remove",
+      "type": "() => Promise<boolean>"
+     },
+     {
       "description": "Plays the entrance again.",
       "kind": "method",
       "name": "replay",
@@ -320,6 +338,12 @@
       "value": "string"
      },
      {
+      "description": "Custom keyframes as JSON, such as `{\"rotate\": [0, 270]}`: played instead of the variant when the Motion enters, backwards when it exits.",
+      "kind": "value",
+      "name": "data-ok-keyframes",
+      "value": "string"
+     },
+     {
       "description": "One animated character.",
       "elements": [
        "span"
@@ -331,6 +355,12 @@
       "description": "The time of the first render (same formats as `data-ok-date`): the countdown's clock runs from it. Default: the current time.",
       "kind": "value",
       "name": "data-ok-now",
+      "value": "string"
+     },
+     {
+      "description": "How custom keyframes play, as JSON: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`\"Infinity\"` loops), `repeatType`, or a `\"spring\"` `type` with `stiffness`, `damping`, `mass` or `bounce`.",
+      "kind": "value",
+      "name": "data-ok-transition",
       "value": "string"
      },
      {
@@ -391,6 +421,11 @@
       "type": "boolean"
      },
      {
+      "description": "5 }` (`x` / `y` in px, `rotate` in degrees, `scale`, and any CSS property).",
+      "name": "keyframes",
+      "type": "MotionKeyframes"
+     },
+     {
       "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
       "name": "onViewportEnter",
       "type": "((entry: IntersectionObserverEntry) => void)"
@@ -409,6 +444,11 @@
       "description": "2).",
       "name": "paused",
       "type": "boolean"
+     },
+     {
+      "description": "How the custom keyframes play: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`Infinity` loops), `repeatType`, or `type: \"spring\"` with `stiffness`, `damping`, `mass` or `bounce`.",
+      "name": "transition",
+      "type": "AnimateOptions"
      },
      {
       "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
@@ -1046,6 +1086,35 @@
    }
   },
   {
+   "name": "MotionPresence",
+   "react": {
+    "description": "Keeps a removed child rendered until the Motions inside it have played their exit, then removes it. Give every child a `key`.",
+    "props": [
+     {
+      "description": "Elements with a `key` that hold Motions. A removed one stays until its Motions have exited.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "true",
+      "description": "`false` skips the first entrance of the children rendered with the presence.",
+      "name": "initial",
+      "type": "boolean"
+     },
+     {
+      "description": "`sync` (default): new children enter while removed ones exit; `wait`: they enter after.",
+      "name": "mode",
+      "type": "\"sync\" | \"wait\""
+     },
+     {
+      "description": "Called when every removed child has finished its exit.",
+      "name": "onExitComplete",
+      "type": "(() => void)"
+     }
+    ]
+   }
+  },
+  {
    "html": {
     "attribute": "data-ok-motion-text",
     "events": [
@@ -1324,8 +1393,16 @@
  "title": "Motion",
  "types": [
   {
+   "name": "MotionKeyframes",
+   "type": "{ [x: string]: readonly (MotionValue | null)[] | MotionValue; }"
+  },
+  {
    "name": "MotionState",
    "type": "\"enter\" | \"exit\" | \"initial\""
+  },
+  {
+   "name": "MotionValue",
+   "type": "string | number"
   }
  ]
 }

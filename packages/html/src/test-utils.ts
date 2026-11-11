@@ -13,6 +13,18 @@ export function mount(html: string, parent: ParentNode = document.body): HTMLEle
 /** Lets MutationObserver callbacks and the runtime's microtask flush run. */
 export const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
+/**
+ * Ends the exit animations of a closing element (Dialog, Drawer, Motion: ADR-0062) and waits a
+ * task, so the owner has closed or removed it.
+ */
+export async function finishExit(element: Element): Promise<void> {
+  getComputedStyle(element).opacity;
+  for (const animation of element.getAnimations({ subtree: true }))
+    if (animation.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY)
+      animation.finish();
+  await settle();
+}
+
 export function resetPage(): void {
   document.body.replaceChildren();
   document.documentElement.removeAttribute("style");

@@ -6,12 +6,15 @@ import {
   type DialogMaxWidth,
   type DialogScroll,
   type DialogTransition,
+  type DialogTransitionDuration,
   dialogAttributes,
+  dialogStyle,
   type ModalController,
   motionAttributes,
 } from "@owlky/core";
 import {
   type ComponentPropsWithoutRef,
+  type CSSProperties,
   createContext,
   forwardRef,
   type HTMLAttributes,
@@ -19,6 +22,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
 } from "react";
 import { useMergedRefs } from "../utils/refs.js";
 
@@ -59,6 +63,12 @@ export interface DialogProps extends Omit<ComponentPropsWithoutRef<"dialog">, "o
    * and scales in briefly.
    */
   transition?: DialogTransition | undefined;
+  /**
+   * Length of the entrance and the exit in ms, or each on its own (`{ enter, exit }`). Default:
+   * 250 ms in, 200 ms out (a `transition` uses Motion's lengths). The dialog closes when its exit
+   * ends.
+   */
+  transitionDuration?: DialogTransitionDuration | undefined;
   /** Props of the paper (`className`, `style`, …). */
   paperProps?: HTMLAttributes<HTMLDivElement> | undefined;
 }
@@ -83,8 +93,10 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
     disableScrollLock,
     keepMounted = true,
     transition,
+    transitionDuration,
     paperProps,
     children,
+    style,
     ...props
   },
   forwardedRef,
@@ -93,6 +105,9 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
   const ref = useMergedRefs(elementRef, forwardedRef);
   const controllerRef = useRef<ModalController | null>(null);
   const titleId = useId();
+  // Children stay rendered until the exit has played (`keepMounted={false}`).
+  const [shown, setShown] = useState(open);
+  if (open && !shown) setShown(true);
 
   useEffect(() => {
     const controller = createModalController(elementRef.current as HTMLDialogElement, {
@@ -118,9 +133,22 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
 
   useEffect(() => {
     const controller = controllerRef.current as ModalController;
-    if (open) controller.open();
-    else controller.close();
+    if (open) {
+      controller.open();
+      return;
+    }
+    let alive = true;
+    controller.close().then((closed) => {
+      if (closed && alive) setShown(false);
+    });
+    return () => {
+      alive = false;
+    };
   }, [open]);
+
+  const durations = dialogStyle(transitionDuration);
+  const merged =
+    Object.keys(durations).length > 0 ? ({ ...durations, ...style } as CSSProperties) : style;
 
   return (
     <dialog
@@ -134,9 +162,11 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
         disableEscapeKeyDown,
         disableRestoreFocus,
         disableScrollLock,
+        transitionDuration,
       })}
       data-ok-runtime="off"
       aria-labelledby={props["aria-label"] ? undefined : titleId}
+      style={merged}
       {...props}
     >
       <TitleIdContext.Provider value={titleId}>
@@ -150,7 +180,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
             : {})}
           {...paperProps}
         >
-          {keepMounted || open ? children : null}
+          {keepMounted || open || shown ? children : null}
         </div>
       </TitleIdContext.Provider>
     </dialog>

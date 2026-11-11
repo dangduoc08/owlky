@@ -4,7 +4,7 @@ import { createRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, finishExit } from "../test-utils.js";
 import {
   Dialog,
   DialogActions,
@@ -80,12 +80,14 @@ describe("Dialog", () => {
     await expectNoAxeViolations();
     await userEvent.keyboard("{Escape}");
     expect(onChange).toHaveBeenLastCalledWith(false, "escape");
+    await finishExit(dialog);
     expect((dialog as HTMLDialogElement).open).toBe(false);
     await userEvent.click(trigger);
     await userEvent.click(dialog, { position: { x: 4, y: 4 } });
     expect(onChange).toHaveBeenLastCalledWith(false, "backdrop");
     await userEvent.click(trigger);
     await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    await finishExit(dialog);
     expect((dialog as HTMLDialogElement).open).toBe(false);
   });
 
@@ -166,8 +168,124 @@ describe("Dialog", () => {
     expect(screen.getByRole("dialog", { name: "Share your location?" })).toBeTruthy();
     expect(isScrollLocked()).toBe(false);
     await userEvent.keyboard("{Escape}");
+    // The children stay until the exit has played.
+    expect(element.querySelector("[data-ok-dialog-title]")).not.toBeNull();
+    await finishExit(element);
     expect(element.open).toBe(false);
     expect(document.activeElement).not.toBe(open);
     expect(element.querySelector("[data-ok-dialog-title]")).toBeNull();
+  });
+});
+
+function Toggle() {
+  const [open, setOpen] = useState(true);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen((value) => !value)}>
+        Toggle
+      </button>
+      <Dialog open={open} onOpenChange={setOpen} hideBackdrop>
+        <DialogTitle>Toggle</DialogTitle>
+        <DialogActions>
+          <button type="button" onClick={() => setOpen(false)}>
+            Close
+          </button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+}
+
+describe("Dialog exit transitions", () => {
+  it("plays the exit before closing, then returns the focus", async () => {
+    render(<Demo />);
+    const trigger = screen.getByRole("button", { name: "Open" });
+    await userEvent.click(trigger);
+    const element = document.querySelector("dialog") as HTMLDialogElement;
+    const paper = element.querySelector("[data-ok-dialog-paper]") as HTMLElement;
+    await userEvent.keyboard("{Escape}");
+    expect(element.getAttribute("data-ok-state")).toBe("exiting");
+    expect(element.open).toBe(true);
+    expect(getComputedStyle(paper).animationName).toBe("ok-dialog-out");
+    await finishExit(element);
+    expect(element.open).toBe(false);
+    expect(element.hasAttribute("data-ok-state")).toBe(false);
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("reopening during the exit keeps the dialog open", async () => {
+    render(<Toggle />);
+    const element = document.querySelector("dialog") as HTMLDialogElement;
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(element.getAttribute("data-ok-state")).toBe("exiting");
+    // The page is inert while the dialog is modal: reopen as the owner would.
+    (screen.getByRole("button", { name: "Toggle", hidden: true }) as HTMLButtonElement).click();
+    await finishExit(element);
+    expect(element.open).toBe(true);
+    expect(element.hasAttribute("data-ok-state")).toBe(false);
+  });
+
+  it("transitionDuration writes the lengths (a number or { enter, exit })", async () => {
+    const { rerender } = render(
+      <Dialog open={false} transitionDuration={100}>
+        <DialogTitle>T</DialogTitle>
+      </Dialog>,
+    );
+    const element = document.querySelector("dialog") as HTMLDialogElement;
+    expect(element.dataset["okTransitionDuration"]).toBe("100");
+    expect(element.hasAttribute("data-ok-transition-duration-exit")).toBe(false);
+    expect(element.style.getPropertyValue("--_ok-dialog-enter")).toBe("100ms");
+    expect(element.style.getPropertyValue("--_ok-dialog-exit")).toBe("100ms");
+    rerender(
+      <Dialog open transitionDuration={{ enter: 300, exit: 120 }}>
+        <DialogTitle>T</DialogTitle>
+      </Dialog>,
+    );
+    expect(element.dataset["okTransitionDuration"]).toBe("300");
+    expect(element.dataset["okTransitionDurationExit"]).toBe("120");
+    const paper = element.querySelector("[data-ok-dialog-paper]") as HTMLElement;
+    expect(getComputedStyle(paper).animationDuration).toBe("0.3s");
+    rerender(
+      <Dialog open={false} transitionDuration={{ enter: 300, exit: 120 }}>
+        <DialogTitle>T</DialogTitle>
+      </Dialog>,
+    );
+    expect(getComputedStyle(paper).animationDuration).toBe("0.12s");
+    await finishExit(element);
+    expect(element.open).toBe(false);
+  });
+
+  it("a Motion paper plays its exit with transitionDuration", async () => {
+    const { rerender } = render(
+      <Dialog open transition="zoomIn" transitionDuration={{ exit: 90 }}>
+        <DialogTitle>T</DialogTitle>
+      </Dialog>,
+    );
+    const element = document.querySelector("dialog") as HTMLDialogElement;
+    const paper = element.querySelector("[data-ok-dialog-paper]") as HTMLElement;
+    rerender(
+      <Dialog open={false} transition="zoomIn" transitionDuration={{ exit: 90 }}>
+        <DialogTitle>T</DialogTitle>
+      </Dialog>,
+    );
+    expect(paper.getAttribute("data-ok-state")).toBe("exit");
+    expect(getComputedStyle(paper).animationDuration).toBe("0.09s");
+    await finishExit(element);
+    expect(element.open).toBe(false);
+    expect(paper.getAttribute("data-ok-state")).toBe("enter");
+  });
+
+  it("closes at once without an exit animation (reduced motion)", async () => {
+    const style = document.createElement("style");
+    style.textContent = "[data-ok-dialog-paper], dialog::backdrop { animation: none !important; }";
+    document.head.append(style);
+    const onChange = vi.fn();
+    render(<Demo onChange={onChange} keepMounted={false} />);
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    const element = document.querySelector("dialog") as HTMLDialogElement;
+    await userEvent.keyboard("{Escape}");
+    expect(element.open).toBe(false);
+    expect(element.hasAttribute("data-ok-state")).toBe(false);
+    style.remove();
   });
 });

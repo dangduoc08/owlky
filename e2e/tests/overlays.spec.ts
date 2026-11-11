@@ -156,6 +156,30 @@ for (const impl of implementations) {
       await expect(page.getByRole("dialog")).toBeHidden();
     });
 
+    test("dialog: the exit plays before it closes, then the focus returns", async ({ page }) => {
+      await openStory(page, storyId(impl, "dialog", "form"));
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      const trigger = page.getByRole("button", { name: "Form dialog" });
+      await trigger.click();
+      const dialog = page.getByRole("dialog", { name: "Subscribe" });
+      await expect(dialog).toBeVisible();
+      // Record what the dialog shows while it closes (polling could miss a 200 ms exit).
+      await dialog.evaluate((element) => {
+        const seen: string[] = [];
+        (window as unknown as { seen: string[] }).seen = seen;
+        new MutationObserver(() => {
+          const state = element.getAttribute("data-ok-state") ?? "none";
+          seen.push(`${state}:${(element as HTMLDialogElement).open ? "open" : "closed"}`);
+        }).observe(element, { attributes: true, attributeFilter: ["data-ok-state", "open"] });
+      });
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toBeFocused();
+      const seen = await page.evaluate(() => (window as unknown as { seen: string[] }).seen);
+      expect(seen[0]).toBe("exiting:open");
+      expect(seen.at(-1)).toBe("none:closed");
+    });
+
     test("snackbar: toasts appear in the corner, close themselves and on the close button", async ({
       page,
     }) => {

@@ -20,6 +20,7 @@ import {
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
+import { MotionLogoDemo } from "./logo-demo.js";
 import { OwlLogo } from "./owl-logo.js";
 
 const ITEMS = ["Design", "Develop", "Test", "Review", "Release"];
@@ -223,16 +224,7 @@ export const otherStories: Record<string, ReactGroup[]> = {
   logo: [
     {
       title: "Logo",
-      content: (
-        <div className="sb-row">
-          <MotionBorder shape="circle" color="primary" width={3} className="sb-motion-ring">
-            <OwlLogo size={64} label="Owlky logo" />
-          </MotionBorder>
-          <MotionBorder shape="circle" className="sb-motion-ring">
-            <OwlLogo size={40} label="Owlky logo, small" />
-          </MotionBorder>
-        </div>
-      ),
+      content: <MotionLogoDemo />,
     },
   ],
   avatar: [
@@ -341,6 +333,9 @@ export const MOTION_LOOP_CONTROLS = {
   schema: motionOptions,
   keys: ["paused", "duration"],
 } as const;
+
+/** Logo: its loops need a pause control (WCAG 2.2.2); the keyframes set their own lengths. */
+export const MOTION_LOGO_CONTROLS = { schema: motionOptions, keys: ["paused"] } as const;
 
 export const MOTION_TEXT_CONTROLS = {
   schema: motionTextOptions,

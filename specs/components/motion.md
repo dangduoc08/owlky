@@ -6,7 +6,9 @@ page, section Countdown (https://minimals.cc/components/extra/utilities, roadmap
 variants (`initial` / `animate` / `exit`, `whileInView`, `viewport.once` / `amount`,
 `staggerChildren`, `whileHover` / `whileTap`) — mapped to CSS animations, no dependency
 (ADR-0015). Created with `/component`; named Motion because `data-ok-animate` is the
-IconButton / Fab hover flag.
+IconButton / Fab hover flag. Full version (roadmap Phase 5, ADR-0062): 5.1 engine (`animate()`,
+springs, interruption, custom keyframes, exits before removal) done; 5.2 scroll, 5.3 gestures,
+5.4 layout to come.
 Reference URL: https://minimals.cc/components/extra/animate
 
 ## Purpose
@@ -16,12 +18,15 @@ hover / press scaling, counters (CountUp), countdowns to a date or for a number 
 (Countdown) and turning gradient borders (MotionBorder). The CSS plays
 the animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts
 (`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.
+Custom keyframes (`keyframes` / `data-ok-keyframes`) and core `animate()` play with the Web
+Animations API instead (ADR-0062).
 
 ## Anatomy
 ```
 [data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once="false"]?[data-ok-amount]?[data-ok-in]?
   [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]
   [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?
+  [data-ok-keyframes=<JSON>]?[data-ok-transition=<JSON>]?   (custom keyframes, ADR-0062)
   › content (draw: an svg whose shapes have pathLength="1")
   (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the
    viewport attributes also go on MotionGroup and MotionText roots)
@@ -44,7 +49,7 @@ div[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color
 Dialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)
 ```
 Private properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |
--stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only
+-stagger | -index`, `--_ok-motion-exit-duration` (set by a host: Dialog `transitionDuration`), `--_ok-motion-border-width | -duration | -fill`; CSS-only
 `--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on
 every root so nested borders don't inherit them).
 
@@ -145,13 +150,34 @@ Root: `data-ok-motion-border`. Unknown values fall back to the default.
 | `paused` | `data-ok-paused` | flag | boolean | off | Stops the turning border (a looping animation needs a pause control: WCAG 2.2.2). |
 <!-- /options:motion-border -->
 
+Custom keyframes (ADR-0062; free JSON, so not in the schema, like `viewportMargin`): React
+`keyframes` (Framer's `animate` object: a value or a list per property, `null` = the current value;
+`x` / `y` → `translate` px, `scale` / `scaleX` / `scaleY` → `scale`, `rotate` → `rotate` deg, other
+CSS properties as they are) and `transition` (Framer's `transition` in ms: `duration`, `delay`,
+`ease` (CSS easing, token name `standard` · `decelerate` · `accelerate` · `expressive`, Framer
+names, control points, or one per segment), `times`, `repeat` (`Infinity`), `repeatType`
+(`loop` · `reverse` · `mirror`), `repeatDelay`, `type: "spring"` with `stiffness`, `damping`,
+`mass`, `velocity`, `bounce` + `duration` / `visualDuration`, `reducedMotion`). HTML
+`data-ok-keyframes` / `data-ok-transition` (JSON, `"repeat": "Infinity"`); React writes the same
+attributes (`motionKeyframesAttributes`). Values are filtered (property names, no `url(`, `;`,
+braces; at most 64 frames, 200 characters).
+
+MotionPresence (React; Framer `AnimatePresence`): `children` with keys, `initial` (default
+`true`; `false` skips the first entrance of the children rendered with it), `mode` (`sync` ·
+`wait`; `popLayout` deferred to 5.4), `onExitComplete`. Context to the Motions inside a child: a
+removed child renders `data-ok-state="exit"` on its Motion, MotionGroup and MotionText roots and is
+unmounted when their animations end (core `waitForAnimations`, late look for keyframes).
+
 Content: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer
 Motion): variants → `variant` (the reference's 48 entrance / exit names, its background and its
 other effects); `whileInView` + `viewport.once` / `amount` → `trigger="inView"`, `once`, `amount`;
 `animate` / `exit` / `AnimatePresence` → `trigger="manual"` + `in` (exits play the entrance
 backwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /
 MotionText `stagger`; `whileHover` / `whileTap` → `variant="interactive"`; `pathLength` → `draw`.
-Countdown (the reference's
+`animate` object / custom keyframes → `keyframes` + `transition` (ADR-0062); `AnimatePresence` →
+`MotionPresence` (React) / `exit()`, `hide()`, `remove()` (HTML); `animate()` / `useAnimate` →
+core `animate(element, keyframes, options)` (re-exported by both packages; a hook isn't needed: a
+ref and `animate()`). Countdown (the reference's
 `useCountdownDate(date)` / `useCountdownSeconds(seconds)` hooks): `date` → `date`, the hook's
 seconds → `seconds`, `startCountdown` → HTML `data-ok-countdown-restart` / `restart()` (React:
 change the `key`), `counting` → not `paused` and not complete. The reference's negative values
@@ -164,9 +190,11 @@ rules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `vi
 free text, so not in the option schemas: React writes the margin attribute, a ref root has none),
 `onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,
 `ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:
-CountUp `component` / viewport options / viewport events (not in the row), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll
-progress page), exit of a Dialog, the reference's logo rings (shape-morphing,
-custom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.
+CountUp `component` / viewport options / viewport events (not in the row), layout animations
+(5.4), scroll-linked progress (Scroll progress page, 5.2), gestures (5.3). Done in 5.1: spring
+physics, custom keyframes, exit of a Dialog / Drawer, the reference's logo (story "Logo": a pulsing
+logo in two shape-morphing turning rings, a small logo over a turning gradient disc). Not
+applicable: `motion.*` element factories, `useAnimate` (a ref and `animate()`).
 
 ## Layout and tokens
 Entrances: `--ok-duration-enter` (640ms), exits `--ok-duration-exit` (480ms),
@@ -198,6 +226,29 @@ entrance only. Only the element that owns the trigger reports (a Motion in a gro
 whose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances
 and exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows
 the end at once.
+
+Custom keyframes (core `createMotionKeyframes`, both owners): the player watches `data-ok-state`;
+`enter` plays the keyframes with `animate()`, `exit` plays them backwards (single targets go back
+to the value before the first entrance; repeats dropped), `data-ok-paused` pauses them, a change of
+the JSON replays, removing it cancels. The CSS variant is off while `data-ok-keyframes` is present
+(`animation: none`). Without a state (no JavaScript) the element shows its own style. Reduced
+motion (also when it changes while running): non-looping keyframes jump to the end, loops don't
+run.
+
+Engine (`animate()`, ADR-0062): one Web Animation per CSS property, easing per segment (Framer),
+`fill: both`, end values committed to the inline style (`commitStyles()`) and the animation
+cancelled, loops never committed; an interrupted property starts from its computed value; springs
+sampled into `linear()` (rest: within 0.001 and slower than 0.01/s, at most 10 s), fallback where
+`linear()` isn't supported: `cubic-bezier(0.34, 1.56, 0.64, 1)` for bouncy springs,
+`--ok-easing-decelerate` otherwise. Default duration `--ok-duration-standard`, easing
+`--ok-easing-standard` (read from the document's computed style). Controls: `finished` (never
+rejects), `cancel`, `stop`, `complete`, `pause`, `play`, `animations`.
+
+Exit before removal (core `playExit` / `waitForAnimations`): writes `data-ok-state="exit"` (Motion
+roots) or `"exiting"` (other elements), flushes style, waits for the finite animations of the
+subtree (a microtask later again when keyframes are inside), with a safety timer (longest
+remaining + 100 ms). `cancel()` restores the previous state. HTML instance `exit()` / `hide()` /
+`remove()` resolve `false` when `replay()` interrupts them.
 
 Countdown (core `createCountdown`, both owners): the time left is `date − clock` (date mode) or
 `seconds` minus the running time (seconds mode), shown in whole seconds rounded up (10 → 0) and
@@ -231,15 +282,18 @@ entrances start outside the box: clip containers that could widen the page.
 ## Events / API
 HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`
 (`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and
-`ok:motion-text:enter|leave`. Instances: motion / motion-group / motion-text
-`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only),
+`ok:motion-text:enter|leave`. Instances: motion `{ state, replay(), exit(), hide(), remove() }`
+(promises of `boolean`), motion-group / motion-text `{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only),
 countdown `{ remaining, paused, pause(), resume(), restart() }` with `ok:countdown:tick`
 (`{ remaining }`) and `ok:countdown:complete`. React Countdown: `onTick(remaining)`,
 `onComplete()`.
 React: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`
 (`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.
 Core: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;
-`readMotionViewport(element)`.
+`readMotionViewport(element)`; `animate`, `springEasing`, `resolveEasing`, `motionTracks`,
+`supportsLinearEasing`; `createMotionKeyframes`, `parseMotionKeyframes`, `parseMotionTransition`,
+`motionKeyframesAttributes`; `playExit`, `waitForAnimations`, `runningAnimations`. React and
+HTML re-export `animate`, `springEasing` and the option types.
 
 ## Responsive
 Nothing changes per breakpoint. Stories clip their stages (`overflow: clip`).
@@ -257,9 +311,12 @@ reference's own components (rows in the paragraph above).
 | `whileInView`, `viewport.once`, `viewport.amount` | `trigger="inView"`, `once`, `amount` | renamed | |
 | `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root="<id>"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |
 | `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |
-| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |
-| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |
-| `onUpdate` | — | deferred (5.1) | |
+| `animate` (keyframes object), `transition` (springs, easing, `times`, `repeat*`) | `keyframes`, `transition` (ms) · `data-ok-keyframes`, `data-ok-transition` (JSON) | renamed (5.1) | ADR-0062; `animate` also takes variant labels upstream (`variant` here) |
+| `exit` (keyframes object) | the keyframes backwards | renamed (5.1) | |
+| `AnimatePresence` (`initial`, `mode` sync / wait, `onExitComplete`) | `MotionPresence` · HTML `exit()`, `hide()`, `remove()` | renamed (5.1) | `mode="popLayout"`, `custom`, `propagate`: deferred (5.4) |
+| `style` motion values, `transformTemplate` | — | deferred (5.4) | shared values |
+| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event not offered (the trigger's state change is the start) |
+| `onUpdate` | — | deferred (5.4) | per-frame values come with shared values |
 | `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |
 | `whileHover`, `whileTap` | `variant="interactive"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |
 | `whileFocus` | — | deferred (5.3) | |
@@ -268,7 +325,7 @@ reference's own components (rows in the paragraph above).
 | `useScroll` (scroll progress) | — | deferred (5.2) | |
 | `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |
 | `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |
-| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |
+| `useAnimate`, `animate()` | `animate(element, keyframes, options)` (core, re-exported) | kept (5.1) | ms instead of seconds; controls `finished`, `cancel`, `stop`, `complete`, `pause`, `play`; `useAnimate` not applicable (ref + `animate()`) |
 | — | `paused`, MotionBorder, CountUp, Countdown, background and path variants | kept | Owlky / reference additions |
 
 ## Parity notes

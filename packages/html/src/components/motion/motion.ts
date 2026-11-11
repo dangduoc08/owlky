@@ -1,7 +1,9 @@
 import {
+  createMotionKeyframes,
   type MotionState,
   motionOptions,
   motionStyle,
+  playExit,
   readNumber,
   replayMotion,
 } from "@owlky/core";
@@ -28,6 +30,12 @@ export interface MotionInstance extends ComponentInstance {
   readonly state: MotionState;
   /** Plays the entrance again. */
   replay(): void;
+  /** Plays the exit. Resolves `true` when it ended, `false` when `replay()` interrupted it. */
+  exit(): Promise<boolean>;
+  /** Plays the exit, then hides the element (`hidden`). Resolves `false` when interrupted. */
+  hide(): Promise<boolean>;
+  /** Plays the exit, then removes the element from the page. Resolves `false` when interrupted. */
+  remove(): Promise<boolean>;
 }
 
 const { duration, delay, distance } = motionOptions.options;
@@ -45,8 +53,10 @@ const LOOK = [variant.attr, duration.attr, distance.attr];
  *               [data-ok-viewport-margin="0px 0px -100px"] [data-ok-viewport-root="<id>"]>…</div>
  *          (any element, not only a `div`)
  * Behavior: writes `data-ok-state` (initial → enter, exit) from its trigger (core
- *          `createMotionTrigger`); the CSS plays the animation. Without the runtime nothing is
- *          hidden. A Motion inside a MotionGroup is driven by the group.
+ *          `createMotionTrigger`); the CSS plays the animation, or core `createMotionKeyframes`
+ *          plays `data-ok-keyframes` / `data-ok-transition` (JSON). Without the runtime nothing
+ *          is hidden. A Motion inside a MotionGroup is driven by the group. `exit()`, `hide()`
+ *          and `remove()` play the exit before acting (core `playExit`).
  * Events:  ok:motion:end (`{ state }`) when its animation ends; ok:motion:enter / leave
  *          (`{ ratio }`) when an in-view Motion enters or leaves the viewport.
  */
@@ -89,18 +99,44 @@ export const motion = defineComponent<MotionInstance, MotionEvents>({
       if (looks && element.getAttribute(STATE) === "enter") replayMotion(element, write);
     });
     tuning.observe(element, { attributes: true, attributeFilter: [...TUNING, variant.attr] });
+    const keyframes = createMotionKeyframes(element);
+
+    let leaving: ReturnType<typeof playExit> | undefined;
+    const leave = async (after?: () => void) => {
+      leaving?.cancel();
+      const current = playExit(element);
+      leaving = current;
+      const ended = await current.finished;
+      if (leaving === current) leaving = undefined;
+      if (ended) after?.();
+      return ended;
+    };
 
     return {
       get state() {
         return driver ? driver.state : (element.getAttribute(STATE) as MotionState);
       },
       replay() {
+        leaving?.cancel();
+        leaving = undefined;
         if (driver) driver.replay();
         else replayMotion(element, write);
+      },
+      exit() {
+        return leave();
+      },
+      hide() {
+        return leave(() => {
+          element.hidden = true;
+        });
+      },
+      remove() {
+        return leave(() => element.remove());
       },
       destroy() {
         driver?.destroy();
         tuning.disconnect();
+        keyframes.destroy();
         syncCustomProperties(element, {}, written);
       },
     };

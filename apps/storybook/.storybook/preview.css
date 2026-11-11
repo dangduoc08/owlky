@@ -966,10 +966,51 @@
   fill: var(--ok-palette-warning-main);
 }
 
-.sb-motion-ring {
+/* Motion "Logo" (story-only): the logo in the middle of its stage, rings and a disc over it. */
+.sb-motion-logo-stage {
+  position: relative;
   display: grid;
   place-items: center;
-  padding: calc(var(--ok-spacing) * 3);
+  width: calc(var(--ok-spacing) * 30);
+  height: calc(var(--ok-spacing) * 30);
+}
+
+.sb-motion-logo-stage-small {
+  width: calc(var(--ok-spacing) * 24);
+  height: calc(var(--ok-spacing) * 24);
+}
+
+.sb-motion-logo-ring,
+.sb-motion-logo-disc {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 25%;
+  pointer-events: none;
+}
+
+.sb-motion-logo-ring-outer {
+  inset: 0;
+  border: calc(var(--ok-spacing) * 2) solid rgb(var(--ok-palette-primary-dark-channel) / 0.24);
+}
+
+.sb-motion-logo-ring-inner {
+  inset: calc(var(--ok-spacing) * 2.5);
+  border: 3px solid rgb(var(--ok-palette-primary-dark-channel) / 0.24);
+}
+
+/* The docs page's keyframes preview: one ring in the page flow. */
+.sb-motion-logo-ring-preview {
+  position: static;
+  width: calc(var(--ok-spacing) * 24);
+  height: calc(var(--ok-spacing) * 24);
+  border: calc(var(--ok-spacing) * 2) solid var(--ok-palette-primary-light);
+}
+
+.sb-motion-logo-disc {
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, transparent 50%, var(--ok-palette-primary-main));
+  opacity: 0.16;
 }
 
 /* Motion borders (story-only): tiles whose edges and corners come from CSS. */

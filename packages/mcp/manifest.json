@@ -925,6 +925,7 @@
   "data-ok-keep-open-during-field-focus",
   "data-ok-keyboard",
   "data-ok-keyboard-move-distance",
+  "data-ok-keyframes",
   "data-ok-kind",
   "data-ok-label",
   "data-ok-label-close",
@@ -1639,6 +1640,7 @@
   "data-ok-transfer-list-title",
   "data-ok-transition",
   "data-ok-transition-duration",
+  "data-ok-transition-duration-exit",
   "data-ok-tree-chevron",
   "data-ok-tree-collapse-icon",
   "data-ok-tree-data",
@@ -4449,7 +4451,7 @@
      "title": "Parity notes"
     },
     {
-     "body": "Their modal paths keep the native `::backdrop` (top layer: a DOM element can't sit between a\ntop-layer `<dialog>` and its `::backdrop`), painted with the same `--ok-backdrop`; their\n`hideBackdrop` matches `invisible`.",
+     "body": "Their exits (ADR-0062) run in the core modal controller, which Backdrop doesn't use: its own fade\nout is already a CSS transition in both directions, so Backdrop is unchanged by 5.1.\n\nTheir modal paths keep the native `::backdrop` (top layer: a DOM element can't sit between a\ntop-layer `<dialog>` and its `::backdrop`), painted with the same `--ok-backdrop`; their\n`hideBackdrop` matches `invisible`.",
      "id": "relation-to-dialog-and-drawer",
      "title": "Relation to Dialog and Drawer"
     }
@@ -40018,12 +40020,28 @@
       "value": "color-mix(in srgb, #919EAB 20%, transparent)"
      },
      {
+      "name": "--ok-duration-exit",
+      "value": "480ms"
+     },
+     {
       "name": "--ok-duration-short",
       "value": "250ms"
      },
      {
+      "name": "--ok-duration-shorter",
+      "value": "200ms"
+     },
+     {
+      "name": "--ok-easing-accelerate",
+      "value": "cubic-bezier(0.4, 0, 1, 1)"
+     },
+     {
       "name": "--ok-easing-decelerate",
       "value": "cubic-bezier(0, 0, 0.2, 1)"
+     },
+     {
+      "name": "--ok-easing-standard",
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)"
      },
      {
       "name": "--ok-font-family",
@@ -40095,7 +40113,7 @@
         },
         {
          "cancelable": false,
-         "description": "After the dialog closed, with what closed it (`native`: a form with `method=\"dialog\"`).",
+         "description": "After the dialog closed (once its exit animation ended and the focus is back), with what closed it (`native`: a form with `method=\"dialog\"`).",
          "detail": "{ reason: DialogCloseReason; }",
          "name": "ok:dialog:close"
         },
@@ -40108,7 +40126,7 @@
        ],
        "methods": [
         {
-         "description": "Closes it. Returns `false` if `ok:dialog:beforeclose` was prevented.",
+         "description": "Closes it after its exit animation (`ok:dialog:close` fires then). Returns `false` if `ok:dialog:beforeclose` was prevented.",
          "kind": "method",
          "name": "close",
          "type": "(reason?: DialogCloseReason | undefined) => boolean"
@@ -40225,6 +40243,13 @@
          ]
         },
         {
+         "attr": "data-ok-transition-duration",
+         "description": "Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations.",
+         "kind": "number",
+         "min": 0,
+         "name": "transitionDuration"
+        },
+        {
          "attr": "open",
          "description": "Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`).",
          "event": "ok:dialog:close",
@@ -40262,6 +40287,12 @@
          "description": "Draws lines above and below the content.",
          "kind": "state",
          "name": "data-ok-dividers"
+        },
+        {
+         "description": "The length of the exit in milliseconds, when it differs from `data-ok-transition-duration`.",
+         "kind": "value",
+         "name": "data-ok-transition-duration-exit",
+         "value": "string"
         }
        ],
        "runtime": "dialog"
@@ -40338,6 +40369,11 @@
          "description": "Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…). Without it, the paper fades and scales in briefly.",
          "name": "transition",
          "type": "DialogTransition"
+        },
+        {
+         "description": "Length of the entrance and the exit in ms, or each on its own (`{ enter, exit }`). Default: 250 ms in, 200 ms out (a `transition` uses Motion's lengths). The dialog closes when its exit ends.",
+         "name": "transitionDuration",
+         "type": "DialogTransitionDuration"
         }
        ]
       }
@@ -40429,6 +40465,10 @@
      {
       "name": "DialogTransition",
       "type": "\"bounceIn\" | \"bounceInDown\" | \"bounceInLeft\" | \"bounceInRight\" | \"bounceInUp\" | \"fadeIn\" | \"fadeInDown\" | \"fadeInLeft\" | \"fadeInRight\" | \"fadeInUp\" | \"flipInX\" | \"flipInY\" | \"rotateIn\" | \"scaleInX\" | \"scaleInY\" | \"slideInDown\" | \"slideInLeft\" | \"slideInRight\" | \"slideInUp\" | \"zoomIn\" | \"zoomInDown\" | \"zoomInLeft\" | \"zoomInRight\" | \"zoomInUp\""
+     },
+     {
+      "name": "DialogTransitionDuration",
+      "type": "number | { enter?: number | undefined; exit?: number | undefined; }"
      }
     ]
    },
@@ -40559,6 +40599,13 @@
        ]
       },
       {
+       "attr": "data-ok-transition-duration",
+       "description": "Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations.",
+       "kind": "number",
+       "min": 0,
+       "name": "transitionDuration"
+      },
+      {
        "attr": "open",
        "description": "Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`).",
        "event": "ok:dialog:close",
@@ -40581,14 +40628,19 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `dialog`: listed under \"options\".)\n\nReact: `open` / `onOpenChange(open, reason)` (escape | backdrop | close), `paperProps`; the title\nnames the dialog automatically (`aria-labelledby`, unless `aria-label` is given). Parts:\n`DialogContent dividers`, `DialogActions disableSpacing`. Renamed: `onClose(event, reason)` →\n`onOpenChange`; `PaperProps` → `paperProps`; `maxWidth={false}` → `\"none\"`;\n`TransitionComponent` → `transition` (a Motion entrance on the paper: `data-ok-motion`,\n`data-ok-variant`, `data-ok-trigger=\"mount\"`; without it, the paper's own fade and scale).\nDeferred: `keepMounted` (always mounted), exit transitions. Not applicable: `slots`, `slotProps`, `sx`, `BackdropComponent` (native `::backdrop`,\n`--ok-backdrop`, the Backdrop component's token: a DOM Backdrop can't sit between a top-layer\n`<dialog>` and its `::backdrop`), `disablePortal` (top layer).",
+     "body": "(Options of `dialog`: listed under \"options\".)\n\nReact: `open` / `onOpenChange(open, reason)` (escape | backdrop | close), `paperProps`; the title\nnames the dialog automatically (`aria-labelledby`, unless `aria-label` is given). Parts:\n`DialogContent dividers`, `DialogActions disableSpacing`. Renamed: `onClose(event, reason)` →\n`onOpenChange`; `PaperProps` → `paperProps`; `maxWidth={false}` → `\"none\"`;\n`TransitionComponent` → `transition` (a Motion entrance on the paper: `data-ok-motion`,\n`data-ok-variant`, `data-ok-trigger=\"mount\"`; without it, the paper's own fade and scale).\n`transitionDuration` (4.18.44): a number (both directions) or `{ enter, exit }` in ms; HTML\n`data-ok-transition-duration` and `data-ok-transition-duration-exit` (written when the exit\ndiffers), core `dialogStyle` → `--_ok-dialog-enter` / `--_ok-dialog-exit` (React `style`, HTML\nCSSOM); a Motion paper gets them as `--_ok-motion-duration` / `--_ok-motion-exit-duration`\n(nested Motions in the content inherit them unless they set their own). Exit transitions\n(ADR-0062): see Behavior. Not applicable: `slots`, `slotProps`, `sx`, `BackdropComponent` (native `::backdrop`,\n`--ok-backdrop`, the Backdrop component's token: a DOM Backdrop can't sit between a top-layer\n`<dialog>` and its `::backdrop`), `disablePortal` (top layer).",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "Paper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16px (32px from\n600px), max height viewport − 2 × margin; widths xs 444px, sm 600px, md/lg/xl the breakpoint\ntokens. Title h6 (600) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content\ntext `--ok-text-secondary` body1; actions padding 24px, gap 12px. Full screen: no margin, radius,\nshadow. Backdrop `--ok-backdrop`. Opening: fade + scale 0.96 (`--ok-duration-short`).",
+     "body": "Paper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16px (32px from\n600px), max height viewport − 2 × margin; widths xs 444px, sm 600px, md/lg/xl the breakpoint\ntokens. Title h6 (600) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content\ntext `--ok-text-secondary` body1; actions padding 24px, gap 12px. Full screen: no margin, radius,\nshadow. Backdrop `--ok-backdrop`. Opening: paper fade + scale 0.96 (`--ok-duration-short`,\ndecelerate), backdrop fade. Closing (`data-ok-state=\"exiting\"`): the same backwards\n(`ok-dialog-out`, `--ok-duration-shorter`, accelerate; a Motion paper: its exit, `--ok-duration-exit`,\nand the backdrop with it). Reduced motion: none.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
+    },
+    {
+     "body": "Exit before close (core modal controller, ADR-0062): `close()` writes `data-ok-state=\"exiting\"` on\nthe dialog (and `exit` on a Motion paper), waits for the subtree's animations, then\n`dialog.close()`, cleanup, focus return. During the exit the dialog stays modal (focus trapped,\npage inert, Escape and backdrop ignored), `isOpen` is already `false`; `open()` cancels the exit\n(no focus move, no close event); destroy / unmount ends it at once. Nothing to play (reduced\nmotion, no animation): synchronous as before. HTML `ok:dialog:close` fires after the exit (focus\nalready back); React `onOpenChange` is unchanged (it is the request), `keepMounted={false}`\nchildren stay until the exit ends.",
+     "id": "behavior",
+     "title": "Behavior"
     },
     {
      "body": "Mobile-first margin (16px → 32px at 600px); the paper never exceeds the viewport.",
@@ -40601,12 +40653,12 @@
      "title": "Keyboard / Accessibility"
     },
     {
-     "body": "HTML: `ok:dialog:beforeopen` (cancelable), `ok:dialog:open`, `ok:dialog:beforeclose` (cancelable,\n`detail.reason`: escape | backdrop | trigger | api), `ok:dialog:close` (also `native`). Instance:\n`{ isOpen, open(trigger?), close(reason?) }`. `data-ok-open` opens on load.",
+     "body": "HTML: `ok:dialog:beforeopen` (cancelable), `ok:dialog:open`, `ok:dialog:beforeclose` (cancelable,\n`detail.reason`: escape | backdrop | trigger | api), `ok:dialog:close` (also `native`). Instance:\n`{ isOpen, open(trigger?), close(reason?) }`. `data-ok-open` opens on load. `ok:dialog:close`\nfires after the exit animation (none when an `open()` interrupted it).",
      "id": "events-api",
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |\n| `maxWidth` (`false`) | `\"none\"` | renamed | |\n| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |\n| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred (4.18.44) | waits for 5.1 exit transitions |\n| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |\n| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |\n| Modal `keepMounted` | same (React only), default `true` | kept (4.8) | MUI default `false`; ours keeps the children like the HTML markup (no breaking change); `false` renders them only while open |\n| Modal `disableRestoreFocus`, `disableScrollLock` | same (`data-ok-disable-restore-focus`, `data-ok-disable-scroll-lock`) | kept (4.18.45) | core modal controller `restoreFocus` / `lockScroll`; the browser's own focus return after `dialog.close()` is undone |\n| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |\n| Modal `container`, `disablePortal` | — | not applicable | top layer |\n| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |\n| `DialogTitle`, `DialogContentText` `children` | same | kept | |\n| `DialogContent` `dividers` | same | kept | |\n| `DialogActions` `disableSpacing` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |\n| `maxWidth` (`false`) | `\"none\"` | renamed | |\n| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |\n| `transitionDuration` (number or `{ appear, enter, exit }`) | same, number or `{ enter, exit }`; HTML `data-ok-transition-duration` [+ `-exit`] | kept (4.18.44) | `appear` not applicable (the entrance plays on every opening) |\n| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |\n| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |\n| Modal `keepMounted` | same (React only), default `true` | kept (4.8) | MUI default `false`; ours keeps the children like the HTML markup (no breaking change); `false` renders them only while open |\n| Modal `disableRestoreFocus`, `disableScrollLock` | same (`data-ok-disable-restore-focus`, `data-ok-disable-scroll-lock`) | kept (4.18.45) | core modal controller `restoreFocus` / `lockScroll`; the browser's own focus return after `dialog.close()` is undone |\n| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |\n| Modal `container`, `disablePortal` | — | not applicable | top layer |\n| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close` (after the exit); native `::backdrop` | not applicable | always closes after its transition (ADR-0062); `onBackdropClick` deprecated upstream |\n| `DialogTitle`, `DialogContentText` `children` | same | kept | |\n| `DialogContent` `dividers` | same | kept | |\n| `DialogActions` `disableSpacing` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -41006,6 +41058,14 @@
       "value": "250ms"
      },
      {
+      "name": "--ok-duration-shorter",
+      "value": "200ms"
+     },
+     {
+      "name": "--ok-easing-accelerate",
+      "value": "cubic-bezier(0.4, 0, 1, 1)"
+     },
+     {
       "name": "--ok-easing-decelerate",
       "value": "cubic-bezier(0, 0, 0.2, 1)"
      },
@@ -41075,7 +41135,7 @@
        ],
        "methods": [
         {
-         "description": "Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent.",
+         "description": "Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent. A temporary drawer slides out first: `ok:drawer:close` fires once it is closed.",
          "kind": "method",
          "name": "close",
          "type": "(reason?: DrawerCloseReason | undefined) => boolean"
@@ -41629,12 +41689,12 @@
      "title": "Options"
     },
     {
-     "body": "- Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop: native `::backdrop` with `--ok-backdrop` (shared with the Backdrop component, which can't\n  sit in the top layer; `hideBackdrop` matches its `invisible`); stacking `--ok-z-modal`\n  (fallback path).\n- `left` / `right`: full height, width from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-dialog-start` (left) / `--ok-shadow-dialog` (right).\n- `top` / `bottom`: full width, height from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-z16`. Taller content scrolls inside the Scrollbar placed in the paper (without one,\n  the paper itself scrolls).\n- Opening slides the paper in from its edge and fades the backdrop (`--ok-duration-short`,\n  `--ok-easing-decelerate`) where `@starting-style` is supported; closing is immediate.\n  `prefers-reduced-motion` disables both.",
+     "body": "- Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop: native `::backdrop` with `--ok-backdrop` (shared with the Backdrop component, which can't\n  sit in the top layer; `hideBackdrop` matches its `invisible`); stacking `--ok-z-modal`\n  (fallback path).\n- `left` / `right`: full height, width from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-dialog-start` (left) / `--ok-shadow-dialog` (right).\n- `top` / `bottom`: full width, height from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-z16`. Taller content scrolls inside the Scrollbar placed in the paper (without one,\n  the paper itself scrolls).\n- Opening slides the paper in from its edge and fades the backdrop (`--ok-duration-short`,\n  `--ok-easing-decelerate`) where `@starting-style` is supported. Closing (temporary,\n  `data-ok-state=\"exiting\"`, ADR-0062) slides it back and fades the backdrop out\n  (`--ok-duration-shorter`, `--ok-easing-accelerate`; `transitionDuration` sets both directions);\n  the dialog closes when the slide ends. `prefers-reduced-motion` disables both (closing is then\n  immediate). Docked drawers open and close at once.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "- **Open:** `showModal()` (fallback: `open` + `data-ok-fallback`, siblings inert, ADR-0006); push onto\n  the layer stack; lock page scroll; focus `[autofocus]` → first tabbable → content.\n- **Dismiss requests** (Escape, backdrop) are reported, not acted on: React updates state (controlled\n  drawers may refuse); HTML emits cancelable `beforeclose`. Only the topmost layer reacts.\n- **Close:** release lock and stack; focus returns to the trigger if focus was lost.\n- **External close** (`<form method=\"dialog\">`): state syncs. **Removal / unmount while open:**\n  cleanup without focus restoration.",
+     "body": "- **Open:** `showModal()` (fallback: `open` + `data-ok-fallback`, siblings inert, ADR-0006); push onto\n  the layer stack; lock page scroll; focus `[autofocus]` → first tabbable → content.\n- **Dismiss requests** (Escape, backdrop) are reported, not acted on: React updates state (controlled\n  drawers may refuse); HTML emits cancelable `beforeclose`. Only the topmost layer reacts.\n- **Close:** temporary drawers play their exit first (still modal, Escape and backdrop ignored;\n  `open()` during it keeps the drawer open), then release lock and stack; focus returns to the\n  trigger if focus was lost. HTML `ok:drawer:close` fires after that; React `keepMounted={false}`\n  content stays until then.\n- **External close** (`<form method=\"dialog\">`): state syncs. **Removal / unmount while open:**\n  cleanup without focus restoration.",
      "id": "behavior-core-createmodalcontroller",
      "title": "Behavior (`core` `createModalController`)"
     },
@@ -55819,6 +55879,24 @@
        ],
        "methods": [
         {
+         "description": "Plays the exit. Resolves `true` when it ended, `false` when `replay()` interrupted it.",
+         "kind": "method",
+         "name": "exit",
+         "type": "() => Promise<boolean>"
+        },
+        {
+         "description": "Plays the exit, then hides the element (`hidden`). Resolves `false` when interrupted.",
+         "kind": "method",
+         "name": "hide",
+         "type": "() => Promise<boolean>"
+        },
+        {
+         "description": "Plays the exit, then removes the element from the page. Resolves `false` when interrupted.",
+         "kind": "method",
+         "name": "remove",
+         "type": "() => Promise<boolean>"
+        },
+        {
          "description": "Plays the entrance again.",
          "kind": "method",
          "name": "replay",
@@ -55978,6 +56056,12 @@
          "value": "string"
         },
         {
+         "description": "Custom keyframes as JSON, such as `{\"rotate\": [0, 270]}`: played instead of the variant when the Motion enters, backwards when it exits.",
+         "kind": "value",
+         "name": "data-ok-keyframes",
+         "value": "string"
+        },
+        {
          "description": "One animated character.",
          "elements": [
           "span"
@@ -55989,6 +56073,12 @@
          "description": "The time of the first render (same formats as `data-ok-date`): the countdown's clock runs from it. Default: the current time.",
          "kind": "value",
          "name": "data-ok-now",
+         "value": "string"
+        },
+        {
+         "description": "How custom keyframes play, as JSON: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`\"Infinity\"` loops), `repeatType`, or a `\"spring\"` `type` with `stiffness`, `damping`, `mass` or `bounce`.",
+         "kind": "value",
+         "name": "data-ok-transition",
          "value": "string"
         },
         {
@@ -56049,6 +56139,11 @@
          "type": "boolean"
         },
         {
+         "description": "5 }` (`x` / `y` in px, `rotate` in degrees, `scale`, and any CSS property).",
+         "name": "keyframes",
+         "type": "MotionKeyframes"
+        },
+        {
          "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
          "name": "onViewportEnter",
          "type": "((entry: IntersectionObserverEntry) => void)"
@@ -56067,6 +56162,11 @@
          "description": "2).",
          "name": "paused",
          "type": "boolean"
+        },
+        {
+         "description": "How the custom keyframes play: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`Infinity` loops), `repeatType`, or `type: \"spring\"` with `stiffness`, `damping`, `mass` or `bounce`.",
+         "name": "transition",
+         "type": "AnimateOptions"
         },
         {
          "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
@@ -56704,6 +56804,35 @@
       }
      },
      {
+      "name": "MotionPresence",
+      "react": {
+       "description": "Keeps a removed child rendered until the Motions inside it have played their exit, then removes it. Give every child a `key`.",
+       "props": [
+        {
+         "description": "Elements with a `key` that hold Motions. A removed one stays until its Motions have exited.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "default": "true",
+         "description": "`false` skips the first entrance of the children rendered with the presence.",
+         "name": "initial",
+         "type": "boolean"
+        },
+        {
+         "description": "`sync` (default): new children enter while removed ones exit; `wait`: they enter after.",
+         "name": "mode",
+         "type": "\"sync\" | \"wait\""
+        },
+        {
+         "description": "Called when every removed child has finished its exit.",
+         "name": "onExitComplete",
+         "type": "(() => void)"
+        }
+       ]
+      }
+     },
+     {
       "html": {
        "attribute": "data-ok-motion-text",
        "events": [
@@ -56979,8 +57108,16 @@
     ],
     "types": [
      {
+      "name": "MotionKeyframes",
+      "type": "{ [x: string]: readonly (MotionValue | null)[] | MotionValue; }"
+     },
+     {
       "name": "MotionState",
       "type": "\"enter\" | \"exit\" | \"initial\""
+     },
+     {
+      "name": "MotionValue",
+      "type": "string | number"
      }
     ]
    },
@@ -56992,6 +57129,7 @@
     "Motion",
     "MotionBorder",
     "MotionGroup",
+    "MotionPresence",
     "MotionText"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/animate",
@@ -57529,17 +57667,17 @@
    ],
    "sections": [
     {
-     "body": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by\nletter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing,\nhover / press scaling, counters (CountUp), countdowns to a date or for a number of seconds\n(Countdown) and turning gradient borders (MotionBorder). The CSS plays\nthe animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts\n(`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.",
+     "body": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by\nletter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing,\nhover / press scaling, counters (CountUp), countdowns to a date or for a number of seconds\n(Countdown) and turning gradient borders (MotionBorder). The CSS plays\nthe animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts\n(`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.\nCustom keyframes (`keyframes` / `data-ok-keyframes`) and core `animate()` play with the Web\nAnimations API instead (ADR-0062).",
      "id": "purpose",
      "title": "Purpose"
     },
     {
-     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\nspan[data-ok-countdown][role=timer][data-ok-largest-unit][data-ok-date=<date>]?[data-ok-seconds]?[data-ok-now=<date>]?\n  [data-ok-paused]?[data-ok-complete-label]?\n  › span[data-ok-countdown-unit=days|hours|minutes|seconds]… (from the largest unit down)\n      › span[data-ok-countdown-value] + \" \" + span[data-ok-countdown-label]\n  + span[data-ok-countdown-status][role=status] (visually hidden, polite: the announcements)\nTriggers: button[data-ok-countdown-toggle=<id>][aria-pressed] (pause / resume),\n  button[data-ok-countdown-restart=<id>] (from the start, running)\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
+     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  [data-ok-keyframes=<JSON>]?[data-ok-transition=<JSON>]?   (custom keyframes, ADR-0062)\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\nspan[data-ok-countdown][role=timer][data-ok-largest-unit][data-ok-date=<date>]?[data-ok-seconds]?[data-ok-now=<date>]?\n  [data-ok-paused]?[data-ok-complete-label]?\n  › span[data-ok-countdown-unit=days|hours|minutes|seconds]… (from the largest unit down)\n      › span[data-ok-countdown-value] + \" \" + span[data-ok-countdown-label]\n  + span[data-ok-countdown-status][role=status] (visually hidden, polite: the announcements)\nTriggers: button[data-ok-countdown-toggle=<id>][aria-pressed] (pause / resume),\n  button[data-ok-countdown-restart=<id>] (from the start, running)\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-exit-duration` (set by a host: Dialog `transitionDuration`), `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nCountdown:\n(Options of `countdown`: listed under \"options\".)\n\nCountdown content and behavior (not options: free text or functions): `date` (React `Date`, ISO\nstring or epoch ms; HTML `data-ok-date`, anything `Date.parse` reads; wins over `seconds`), `now`\n(the time of the first render, so server and client markup agree; HTML `data-ok-now`; the clock\nthen runs from it), `labels` (React `{ days, hours, minutes, seconds }`, default English plurals;\nHTML: the text of each `[data-ok-countdown-label]`), `completeLabel` (announced at the end,\ndefault \"Time's up\"; HTML `data-ok-complete-label`), `onTick(remaining)` (whole seconds left, each\ntime the shown value changes), `onComplete()`.\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\nCountdown (the reference's\n`useCountdownDate(date)` / `useCountdownSeconds(seconds)` hooks): `date` → `date`, the hook's\nseconds → `seconds`, `startCountdown` → HTML `data-ok-countdown-restart` / `restart()` (React:\nchange the `key`), `counting` → not `paused` and not complete. The reference's negative values\nafter the date are clamped at 0 (the countdown completes). Beyond the reference: `paused`\n(WCAG 2.2.2), a polite live region, `largestUnit`, `labels`, `now`. MotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll\nprogress page), exit of a Dialog, the reference's logo rings (shape-morphing,\ncustom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.",
+     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nCountdown:\n(Options of `countdown`: listed under \"options\".)\n\nCountdown content and behavior (not options: free text or functions): `date` (React `Date`, ISO\nstring or epoch ms; HTML `data-ok-date`, anything `Date.parse` reads; wins over `seconds`), `now`\n(the time of the first render, so server and client markup agree; HTML `data-ok-now`; the clock\nthen runs from it), `labels` (React `{ days, hours, minutes, seconds }`, default English plurals;\nHTML: the text of each `[data-ok-countdown-label]`), `completeLabel` (announced at the end,\ndefault \"Time's up\"; HTML `data-ok-complete-label`), `onTick(remaining)` (whole seconds left, each\ntime the shown value changes), `onComplete()`.\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nCustom keyframes (ADR-0062; free JSON, so not in the schema, like `viewportMargin`): React\n`keyframes` (Framer's `animate` object: a value or a list per property, `null` = the current value;\n`x` / `y` → `translate` px, `scale` / `scaleX` / `scaleY` → `scale`, `rotate` → `rotate` deg, other\nCSS properties as they are) and `transition` (Framer's `transition` in ms: `duration`, `delay`,\n`ease` (CSS easing, token name `standard` · `decelerate` · `accelerate` · `expressive`, Framer\nnames, control points, or one per segment), `times`, `repeat` (`Infinity`), `repeatType`\n(`loop` · `reverse` · `mirror`), `repeatDelay`, `type: \"spring\"` with `stiffness`, `damping`,\n`mass`, `velocity`, `bounce` + `duration` / `visualDuration`, `reducedMotion`). HTML\n`data-ok-keyframes` / `data-ok-transition` (JSON, `\"repeat\": \"Infinity\"`); React writes the same\nattributes (`motionKeyframesAttributes`). Values are filtered (property names, no `url(`, `;`,\nbraces; at most 64 frames, 200 characters).\n\nMotionPresence (React; Framer `AnimatePresence`): `children` with keys, `initial` (default\n`true`; `false` skips the first entrance of the children rendered with it), `mode` (`sync` ·\n`wait`; `popLayout` deferred to 5.4), `onExitComplete`. Context to the Motions inside a child: a\nremoved child renders `data-ok-state=\"exit\"` on its Motion, MotionGroup and MotionText roots and is\nunmounted when their animations end (core `waitForAnimations`, late look for keyframes).\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\n`animate` object / custom keyframes → `keyframes` + `transition` (ADR-0062); `AnimatePresence` →\n`MotionPresence` (React) / `exit()`, `hide()`, `remove()` (HTML); `animate()` / `useAnimate` →\ncore `animate(element, keyframes, options)` (re-exported by both packages; a hook isn't needed: a\nref and `animate()`). Countdown (the reference's\n`useCountdownDate(date)` / `useCountdownSeconds(seconds)` hooks): `date` → `date`, the hook's\nseconds → `seconds`, `startCountdown` → HTML `data-ok-countdown-restart` / `restart()` (React:\nchange the `key`), `counting` → not `paused` and not complete. The reference's negative values\nafter the date are clamped at 0 (the countdown completes). Beyond the reference: `paused`\n(WCAG 2.2.2), a polite live region, `largestUnit`, `labels`, `now`. MotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), layout animations\n(5.4), scroll-linked progress (Scroll progress page, 5.2), gestures (5.3). Done in 5.1: spring\nphysics, custom keyframes, exit of a Dialog / Drawer, the reference's logo (story \"Logo\": a pulsing\nlogo in two shape-morphing turning rings, a small logo over a turning gradient disc). Not\napplicable: `motion.*` element factories, `useAnimate` (a ref and `animate()`).",
      "id": "options",
      "title": "Options"
     },
@@ -57549,7 +57687,7 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.\n\nCountdown (core `createCountdown`, both owners): the time left is `date − clock` (date mode) or\n`seconds` minus the running time (seconds mode), shown in whole seconds rounded up (10 → 0) and\nsplit from `largestUnit` down (a larger unit folds into it: 90 seconds with `minutes` = `1` minute\n`30` seconds). The clock is `now + (Date.now() − mount time)` when `now` is given, otherwise\n`Date.now()`. Without `now` a date countdown renders `--` for every value until it mounts (no\nserver / client mismatch); a seconds countdown renders its full time. A timer fires when the shown\nvalue changes (aligned to the next whole second, not every frame). At 0 it stops, reports\n`complete` once and announces `completeLabel`; a date in the past completes at mount. `paused`:\na seconds countdown keeps its time left; a date countdown freezes its text and shows the real time\nleft when it resumes (the date doesn't move). Changing `date` / `seconds` starts over.\nLive region cadence (`[data-ok-countdown-status]`, polite): nothing at mount, then the time left\n(non-zero units, such as \"2 hours, 15 minutes\") each time it crosses a whole hour while at least\nan hour is left, each whole minute while at least a minute is left, at 30 and 10 seconds, and\n`completeLabel` at the end. Announcing every second would flood screen readers and stop them from\nreading anything else; the visible text stays readable at any time (the root's `timer` role is\nnot live). Triggers: `data-ok-countdown-toggle` flips `data-ok-paused` and mirrors it in its\n`aria-pressed`; `data-ok-countdown-restart` starts over and runs.",
+     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.\n\nCustom keyframes (core `createMotionKeyframes`, both owners): the player watches `data-ok-state`;\n`enter` plays the keyframes with `animate()`, `exit` plays them backwards (single targets go back\nto the value before the first entrance; repeats dropped), `data-ok-paused` pauses them, a change of\nthe JSON replays, removing it cancels. The CSS variant is off while `data-ok-keyframes` is present\n(`animation: none`). Without a state (no JavaScript) the element shows its own style. Reduced\nmotion (also when it changes while running): non-looping keyframes jump to the end, loops don't\nrun.\n\nEngine (`animate()`, ADR-0062): one Web Animation per CSS property, easing per segment (Framer),\n`fill: both`, end values committed to the inline style (`commitStyles()`) and the animation\ncancelled, loops never committed; an interrupted property starts from its computed value; springs\nsampled into `linear()` (rest: within 0.001 and slower than 0.01/s, at most 10 s), fallback where\n`linear()` isn't supported: `cubic-bezier(0.34, 1.56, 0.64, 1)` for bouncy springs,\n`--ok-easing-decelerate` otherwise. Default duration `--ok-duration-standard`, easing\n`--ok-easing-standard` (read from the document's computed style). Controls: `finished` (never\nrejects), `cancel`, `stop`, `complete`, `pause`, `play`, `animations`.\n\nExit before removal (core `playExit` / `waitForAnimations`): writes `data-ok-state=\"exit\"` (Motion\nroots) or `\"exiting\"` (other elements), flushes style, waits for the finite animations of the\nsubtree (a microtask later again when keyframes are inside), with a safety timer (longest\nremaining + 100 ms). `cancel()` restores the previous state. HTML instance `exit()` / `hide()` /\n`remove()` resolve `false` when `replay()` interrupts them.\n\nCountdown (core `createCountdown`, both owners): the time left is `date − clock` (date mode) or\n`seconds` minus the running time (seconds mode), shown in whole seconds rounded up (10 → 0) and\nsplit from `largestUnit` down (a larger unit folds into it: 90 seconds with `minutes` = `1` minute\n`30` seconds). The clock is `now + (Date.now() − mount time)` when `now` is given, otherwise\n`Date.now()`. Without `now` a date countdown renders `--` for every value until it mounts (no\nserver / client mismatch); a seconds countdown renders its full time. A timer fires when the shown\nvalue changes (aligned to the next whole second, not every frame). At 0 it stops, reports\n`complete` once and announces `completeLabel`; a date in the past completes at mount. `paused`:\na seconds countdown keeps its time left; a date countdown freezes its text and shows the real time\nleft when it resumes (the date doesn't move). Changing `date` / `seconds` starts over.\nLive region cadence (`[data-ok-countdown-status]`, polite): nothing at mount, then the time left\n(non-zero units, such as \"2 hours, 15 minutes\") each time it crosses a whole hour while at least\nan hour is left, each whole minute while at least a minute is left, at 30 and 10 seconds, and\n`completeLabel` at the end. Announcing every second would flood screen readers and stop them from\nreading anything else; the visible text stays readable at any time (the root's `timer` role is\nnot live). Triggers: `data-ok-countdown-toggle` flips `data-ok-paused` and mirrors it in its\n`aria-pressed`; `data-ok-countdown-restart` starts over and runs.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -57564,7 +57702,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion / motion-group / motion-text\n`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only),\ncountdown `{ remaining, paused, pause(), resume(), restart() }` with `ok:countdown:tick`\n(`{ remaining }`) and `ok:countdown:complete`. React Countdown: `onTick(remaining)`,\n`onComplete()`.\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`.",
+     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion `{ state, replay(), exit(), hide(), remove() }`\n(promises of `boolean`), motion-group / motion-text `{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only),\ncountdown `{ remaining, paused, pause(), resume(), restart() }` with `ok:countdown:tick`\n(`{ remaining }`) and `ok:countdown:complete`. React Countdown: `onTick(remaining)`,\n`onComplete()`.\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`; `animate`, `springEasing`, `resolveEasing`, `motionTracks`,\n`supportsLinearEasing`; `createMotionKeyframes`, `parseMotionKeyframes`, `parseMotionTransition`,\n`motionKeyframesAttributes`; `playExit`, `waitForAnimations`, `runningAnimations`. React and\nHTML re-export `animate`, `springEasing` and the option types.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -57574,7 +57712,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |\n| `onUpdate` | — | deferred (5.1) | |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |\n| — | `paused`, MotionBorder, CountUp, Countdown, background and path variants | kept | Owlky / reference additions |",
+     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `animate` (keyframes object), `transition` (springs, easing, `times`, `repeat*`) | `keyframes`, `transition` (ms) · `data-ok-keyframes`, `data-ok-transition` (JSON) | renamed (5.1) | ADR-0062; `animate` also takes variant labels upstream (`variant` here) |\n| `exit` (keyframes object) | the keyframes backwards | renamed (5.1) | |\n| `AnimatePresence` (`initial`, `mode` sync / wait, `onExitComplete`) | `MotionPresence` · HTML `exit()`, `hide()`, `remove()` | renamed (5.1) | `mode=\"popLayout\"`, `custom`, `propagate`: deferred (5.4) |\n| `style` motion values, `transformTemplate` | — | deferred (5.4) | shared values |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event not offered (the trigger's state change is the start) |\n| `onUpdate` | — | deferred (5.4) | per-frame values come with shared values |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | `animate(element, keyframes, options)` (core, re-exported) | kept (5.1) | ms instead of seconds; controls `finished`, `cancel`, `stop`, `complete`, `pause`, `play`; `useAnimate` not applicable (ref + `animate()`) |\n| — | `paused`, MotionBorder, CountUp, Countdown, background and path variants | kept | Owlky / reference additions |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -57672,10 +57810,10 @@
      ]
     },
     {
-     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/motion-border.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Logo -->\n<div class=\"sb-row\">\n  <div data-ok-motion-border data-ok-shape=\"circle\" data-ok-color=\"primary\" data-ok-width=\"3\" class=\"sb-motion-ring\"><svg class=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width=\"64\" height=\"64\" role=\"img\" aria-label=\"Owlky logo\"><path pathLength=\"1\" d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"24\" cy=\"30\" r=\"7\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"40\" cy=\"30\" r=\"7\" /><path class=\"sb-motion-logo-beak\" pathLength=\"1\" d=\"M28 39 L32 46 L36 39 Z\" /></svg></div>\n  <div data-ok-motion-border data-ok-shape=\"circle\" data-ok-color=\"multi\" class=\"sb-motion-ring\"><svg class=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width=\"40\" height=\"40\" role=\"img\" aria-label=\"Owlky logo, small\"><path pathLength=\"1\" d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"24\" cy=\"30\" r=\"7\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"40\" cy=\"30\" r=\"7\" /><path class=\"sb-motion-logo-beak\" pathLength=\"1\" d=\"M28 39 L32 46 L36 39 Z\" /></svg></div>\n</div>",
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/motion.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Logo -->\n<div class=\"sb-row\">\n  <div class=\"sb-motion-logo-stage\">\n    <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"mount\" data-ok-keyframes='{\"scale\":[1,0.9,0.9,1,1],\"opacity\":[1,0.48,0.48,1,1]}' data-ok-transition='{\"duration\":2000,\"repeatDelay\":1000,\"repeat\":\"Infinity\",\"ease\":\"easeInOut\"}'>\n      <svg class=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width=\"64\" height=\"64\" role=\"img\" aria-label=\"Owlky logo\"><path pathLength=\"1\" d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\"></path><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"24\" cy=\"30\" r=\"7\"></circle><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"40\" cy=\"30\" r=\"7\"></circle><path class=\"sb-motion-logo-beak\" pathLength=\"1\" d=\"M28 39 L32 46 L36 39 Z\"></path></svg>\n    </div>\n    <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"mount\" data-ok-keyframes='{\"scale\":[1,1.2,1.2,1,1],\"rotate\":[0,270,270,0,0],\"opacity\":[1,0.25,0.25,0.25,1],\"borderRadius\":[\"25%\",\"25%\",\"50%\",\"50%\",\"25%\"]}' data-ok-transition='{\"duration\":3200,\"repeat\":\"Infinity\",\"ease\":\"linear\"}' class=\"sb-motion-logo-ring sb-motion-logo-ring-outer\">\n    </div>\n    <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"mount\" data-ok-keyframes='{\"scale\":[1.6,1,1,1.6,1.6],\"rotate\":[270,0,0,270,270],\"opacity\":[0.25,1,1,1,0.25],\"borderRadius\":[\"25%\",\"25%\",\"50%\",\"50%\",\"25%\"]}' data-ok-transition='{\"duration\":3200,\"repeat\":\"Infinity\",\"ease\":\"linear\"}' class=\"sb-motion-logo-ring sb-motion-logo-ring-inner\">\n    </div>\n  </div>\n  <div class=\"sb-motion-logo-stage sb-motion-logo-stage-small\">\n    <svg class=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width=\"40\" height=\"40\" role=\"img\" aria-label=\"Owlky logo, small\"><path pathLength=\"1\" d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\"></path><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"24\" cy=\"30\" r=\"7\"></circle><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"40\" cy=\"30\" r=\"7\"></circle><path class=\"sb-motion-logo-beak\" pathLength=\"1\" d=\"M28 39 L32 46 L36 39 Z\"></path></svg>\n    <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"mount\" data-ok-keyframes='{\"rotate\":[0,360]}' data-ok-transition='{\"duration\":10000,\"repeat\":\"Infinity\",\"ease\":\"linear\"}' class=\"sb-motion-logo-disc\">\n    </div>\n  </div>\n</div>",
      "id": "components-motion--logo",
      "name": "Logo",
-     "react": "import \"@owlky/styles/owlky.css\";\nimport { MotionBorder } from \"@owlky/react\";\n\n{/* Logo */}\n<div className=\"sb-row\">\n  <MotionBorder shape=\"circle\" color=\"primary\" width={3} className=\"sb-motion-ring\">\n    <svg className=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width={64} height={64} role=\"img\" aria-label=\"Owlky logo\">\n      <path pathLength={1} d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" />\n      <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"24\" cy=\"30\" r=\"7\" />\n      <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"40\" cy=\"30\" r=\"7\" />\n      <path className=\"sb-motion-logo-beak\" pathLength={1} d=\"M28 39 L32 46 L36 39 Z\" />\n    </svg>\n  </MotionBorder>\n  <MotionBorder shape=\"circle\" className=\"sb-motion-ring\">\n    <svg className=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width={40} height={40} role=\"img\" aria-label=\"Owlky logo, small\">\n      <path pathLength={1} d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" />\n      <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"24\" cy=\"30\" r=\"7\" />\n      <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"40\" cy=\"30\" r=\"7\" />\n      <path className=\"sb-motion-logo-beak\" pathLength={1} d=\"M28 39 L32 46 L36 39 Z\" />\n    </svg>\n  </MotionBorder>\n</div>\n",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Motion } from \"@owlky/react\";\n\n{/* Logo */}\n<div className=\"sb-row\">\n  <div className=\"sb-motion-logo-stage\">\n    <Motion trigger=\"mount\" keyframes={{\"scale\":[1,0.9,0.9,1,1],\"opacity\":[1,0.48,0.48,1,1]}} transition={{\"duration\":2000,\"repeatDelay\":1000,\"repeat\":Infinity,\"ease\":\"easeInOut\"}}>\n      <svg className=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width={64} height={64} role=\"img\" aria-label=\"Owlky logo\">\n        <path pathLength={1} d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" />\n        <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"24\" cy=\"30\" r=\"7\" />\n        <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"40\" cy=\"30\" r=\"7\" />\n        <path className=\"sb-motion-logo-beak\" pathLength={1} d=\"M28 39 L32 46 L36 39 Z\" />\n      </svg>\n    </Motion>\n    <Motion trigger=\"mount\" className=\"sb-motion-logo-ring sb-motion-logo-ring-outer\" keyframes={{\"scale\":[1,1.2,1.2,1,1],\"rotate\":[0,270,270,0,0],\"opacity\":[1,0.25,0.25,0.25,1],\"borderRadius\":[\"25%\",\"25%\",\"50%\",\"50%\",\"25%\"]}} transition={{\"duration\":3200,\"ease\":\"linear\",\"repeat\":Infinity}} />\n    <Motion trigger=\"mount\" className=\"sb-motion-logo-ring sb-motion-logo-ring-inner\" keyframes={{\"scale\":[1.6,1,1,1.6,1.6],\"rotate\":[270,0,0,270,270],\"opacity\":[0.25,1,1,1,0.25],\"borderRadius\":[\"25%\",\"25%\",\"50%\",\"50%\",\"25%\"]}} transition={{\"duration\":3200,\"ease\":\"linear\",\"repeat\":Infinity}} />\n  </div>\n  <div className=\"sb-motion-logo-stage sb-motion-logo-stage-small\">\n    <svg className=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width={40} height={40} role=\"img\" aria-label=\"Owlky logo, small\">\n      <path pathLength={1} d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" />\n      <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"24\" cy=\"30\" r=\"7\" />\n      <circle className=\"sb-motion-logo-eye\" pathLength={1} cx=\"40\" cy=\"30\" r=\"7\" />\n      <path className=\"sb-motion-logo-beak\" pathLength={1} d=\"M28 39 L32 46 L36 39 Z\" />\n    </svg>\n    <Motion trigger=\"mount\" className=\"sb-motion-logo-disc\" keyframes={{\"rotate\":[0,360]}} transition={{\"duration\":10000,\"ease\":\"linear\",\"repeat\":Infinity}} />\n  </div>\n</div>\n",
      "snippets": [
       "logo-group.html"
      ]
@@ -57700,7 +57838,7 @@
     }
    ],
    "storybookTitle": "Components/Motion",
-   "summary": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by letter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing, hover / press scaling, counters (CountUp), countdowns to a date or for a number of seconds (Countdown) and turning gradient borders (MotionBorder). The CSS plays the animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts (`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.",
+   "summary": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by letter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing, hover / press scaling, counters (CountUp), countdowns to a date or for a number of seconds (Countdown) and turning gradient borders (MotionBorder). The CSS plays the animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts (`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`. Custom keyframes (`keyframes` / `data-ok-keyframes`) and core `animate()` play with the Web Animations API instead (ADR-0062).",
    "title": "Motion"
   },
   {
@@ -79541,14 +79679,14 @@
      "title": "Scroll long content"
     },
     {
-     "body": "By default, the paper fades and scales in briefly. Set `transition` to a Motion entrance, such as `slideInUp` or `zoomIn`, to play that animation instead. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles. With reduced motion, the dialog appears at once.",
-     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-open=\"welcome\" aria-haspopup=\"dialog\"><span data-ok-button-label>Open</span></button>\n<dialog id=\"welcome\" data-ok-dialog data-ok-max-width=\"sm\" data-ok-scroll=\"paper\" aria-labelledby=\"welcome-title\">\n  <div data-ok-dialog-paper data-ok-motion data-ok-variant=\"slideInUp\" data-ok-trigger=\"mount\">\n    <h2 data-ok-dialog-title id=\"welcome-title\">Welcome</h2>\n    <div data-ok-dialog-content>\n      <p data-ok-dialog-content-text>The dialog slides up as it opens.</p>\n    </div>\n    <div data-ok-dialog-actions>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-close><span data-ok-button-label>Close</span></button>\n    </div>\n  </div>\n</dialog>",
+     "body": "By default, the paper fades and scales in briefly, and the backdrop fades in. When the dialog closes, both play backwards, and the dialog closes when they end. Focus returns to the trigger after that, and `ok:dialog:close` fires last.\n\n- **Animation:** set `transition` to a Motion entrance, such as `slideInUp` or `zoomIn`, to play that animation instead. Its exit is the same animation backwards. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles.\n- **Length:** set `transitionDuration` in milliseconds, for both directions or as `{ enter, exit }`. In HTML, write `data-ok-transition-duration` and, for a different exit, `data-ok-transition-duration-exit`.\n\nWith reduced motion, the dialog appears and closes at once.",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-open=\"welcome\" aria-haspopup=\"dialog\"><span data-ok-button-label>Open</span></button>\n<dialog id=\"welcome\" data-ok-dialog data-ok-max-width=\"sm\" data-ok-scroll=\"paper\" data-ok-transition-duration=\"400\"\n  data-ok-transition-duration-exit=\"250\" aria-labelledby=\"welcome-title\">\n  <div data-ok-dialog-paper data-ok-motion data-ok-variant=\"slideInUp\" data-ok-trigger=\"mount\">\n    <h2 data-ok-dialog-title id=\"welcome-title\">Welcome</h2>\n    <div data-ok-dialog-content>\n      <p data-ok-dialog-content-text>The dialog slides up as it opens.</p>\n    </div>\n    <div data-ok-dialog-actions>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-close><span data-ok-button-label>Close</span></button>\n    </div>\n  </div>\n</dialog>",
      "id": "transition",
-     "react": "import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function WelcomeDialog() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Open\n      </Button>\n      <Dialog open={open} onOpenChange={setOpen} transition=\"slideInUp\" aria-labelledby=\"welcomedialog-title\">\n        <DialogTitle id=\"welcomedialog-title\">Welcome</DialogTitle>\n        <DialogContent>\n          <DialogContentText>The dialog slides up as it opens.</DialogContentText>\n        </DialogContent>\n        <DialogActions>\n          <Button onClick={() => setOpen(false)}>Close</Button>\n        </DialogActions>\n      </Dialog>\n    </>\n  );\n}",
-     "title": "Animate the entrance"
+     "react": "import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function WelcomeDialog() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Open\n      </Button>\n      <Dialog\n        open={open}\n        onOpenChange={setOpen}\n        transition=\"slideInUp\"\n        transitionDuration={{ enter: 400, exit: 250 }}\n        aria-labelledby=\"welcomedialog-title\"\n      >\n        <DialogTitle id=\"welcomedialog-title\">Welcome</DialogTitle>\n        <DialogContent>\n          <DialogContentText>The dialog slides up as it opens.</DialogContentText>\n        </DialogContent>\n        <DialogActions>\n          <Button onClick={() => setOpen(false)}>Close</Button>\n        </DialogActions>\n      </Dialog>\n    </>\n  );\n}",
+     "title": "Animate the entrance and the exit"
     },
     {
-     "body": "- **Focus:** when a dialog closes, focus returns to the element that was focused before it opened. `disableRestoreFocus` turns this off, for example when the dialog's action moves focus somewhere else.\n- **Scrolling:** while a dialog is open, the page behind it doesn't scroll. `disableScrollLock` lets it scroll.\n- **Mounting:** in React, the dialog's children stay rendered while it is closed, like the HTML markup. Set `keepMounted` to `false` to render them only while it is open, which resets their state each time it opens.",
+     "body": "- **Focus:** when a dialog closes, focus returns to the element that was focused before it opened. `disableRestoreFocus` turns this off, for example when the dialog's action moves focus somewhere else.\n- **Scrolling:** while a dialog is open, the page behind it doesn't scroll. `disableScrollLock` lets it scroll.\n- **Mounting:** in React, the dialog's children stay rendered while it is closed, like the HTML markup. Set `keepMounted` to `false` to render them only while it is open (and while it plays its exit), which resets their state each time it opens.",
      "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-open=\"notes\" aria-haspopup=\"dialog\"><span data-ok-button-label>Notes</span></button>\n<dialog id=\"notes\" data-ok-dialog data-ok-max-width=\"sm\" data-ok-scroll=\"paper\" data-ok-disable-restore-focus\n  data-ok-disable-scroll-lock aria-labelledby=\"notes-title\">\n  <div data-ok-dialog-paper>\n    <h2 data-ok-dialog-title id=\"notes-title\">Notes</h2>\n    <div data-ok-dialog-content>\n      <p data-ok-dialog-content-text>The page behind keeps scrolling.</p>\n    </div>\n    <div data-ok-dialog-actions>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-close><span data-ok-button-label>Close</span></button>\n    </div>\n  </div>\n</dialog>",
      "id": "focus-scroll",
      "react": "import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function NotesDialog() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Notes\n      </Button>\n      <Dialog open={open} onOpenChange={setOpen} disableRestoreFocus disableScrollLock keepMounted={false}>\n        <DialogTitle>Notes</DialogTitle>\n        <DialogContent>\n          <DialogContentText>The page behind keeps scrolling.</DialogContentText>\n        </DialogContent>\n        <DialogActions>\n          <Button onClick={() => setOpen(false)}>Close</Button>\n        </DialogActions>\n      </Dialog>\n    </>\n  );\n}",
@@ -79565,7 +79703,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:dialog:beforeopen`** (cancelable) and **`ok:dialog:open`** fire on the dialog.\n- **`ok:dialog:beforeclose`** (cancelable) and **`ok:dialog:close`** carry `detail.reason`: `escape`, `backdrop`, `trigger`, `api` or `native` (a `form[method=dialog]`).\n- **Instance:** `runtime.get(element, \"dialog\")` returns `{ isOpen, open(trigger?), close(reason?) }`.\n- **React:** `onOpenChange(false, reason)` with `escape`, `backdrop` or `close`. Set `open` to close it.",
+     "body": "- **`ok:dialog:beforeopen`** (cancelable) and **`ok:dialog:open`** fire on the dialog.\n- **`ok:dialog:beforeclose`** (cancelable) and **`ok:dialog:close`** carry `detail.reason`: `escape`, `backdrop`, `trigger`, `api` or `native` (a `form[method=dialog]`). `ok:dialog:close` fires after the exit animation, once focus is back on the trigger. If the dialog opens again during its exit, it stays open and `ok:dialog:close` doesn't fire.\n- **Instance:** `runtime.get(element, \"dialog\")` returns `{ isOpen, open(trigger?), close(reason?) }`. `isOpen` turns `false` as soon as the exit starts.\n- **React:** `onOpenChange(false, reason)` with `escape`, `backdrop` or `close`. Set `open` to close it.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -79694,7 +79832,7 @@
      "title": "Dock the drawer next to the page"
     },
     {
-     "body": "- **Shadow:** `elevation` sets the panel's shadow from `0` (none) to `24`, from the same scale as Paper. Without it, each edge has its own shadow and docked drawers have none.\n- **Speed:** `transitionDuration` sets how long the panel takes to slide in and out, in milliseconds.\n- **Temporary drawers:** `disableRestoreFocus` keeps focus where it is when the drawer closes, and `disableScrollLock` lets the page behind scroll. In React, `keepMounted={false}` renders the content only while the drawer is open.",
+     "body": "- **Shadow:** `elevation` sets the panel's shadow from `0` (none) to `24`, from the same scale as Paper. Without it, each edge has its own shadow and docked drawers have none.\n- **Speed:** `transitionDuration` sets how long the panel takes to slide in and out, in milliseconds. A temporary drawer slides back to its edge before it closes, and focus returns to the trigger after that.\n- **Temporary drawers:** `disableRestoreFocus` keeps focus where it is when the drawer closes, and `disableScrollLock` lets the page behind scroll. In React, `keepMounted={false}` renders the content only while the drawer is open.",
      "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  data-ok-drawer-open=\"filters\" aria-haspopup=\"dialog\">\n  <span data-ok-button-label>Filters</span>\n</button>\n<dialog id=\"filters\" data-ok-drawer data-ok-anchor=\"right\" data-ok-variant=\"temporary\" data-ok-elevation=\"4\"\n  data-ok-transition-duration=\"150\" aria-label=\"Filters\">\n  <div data-ok-drawer-content>\n    <p data-ok-typography data-ok-variant=\"body2\">Filters slide in quickly.</p>\n  </div>\n</dialog>",
      "id": "elevation",
      "react": "import { Drawer, DrawerContent, DrawerTrigger, Typography } from \"@owlky/react\";\n\nexport function FilterDrawer() {\n  return (\n    <Drawer>\n      <DrawerTrigger variant=\"outlined\">Filters</DrawerTrigger>\n      <DrawerContent anchor=\"right\" aria-label=\"Filters\" elevation={4} transitionDuration={150}>\n        <Typography variant=\"body2\">Filters slide in quickly.</Typography>\n      </DrawerContent>\n    </Drawer>\n  );\n}",
@@ -79711,7 +79849,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:drawer:beforeopen`** (cancelable) fires before the drawer opens, and **`ok:drawer:open`** after.\n- **`ok:drawer:beforeclose`** (cancelable) fires before it closes, with `detail.reason`. **`ok:drawer:close`** fires after, with the reason: `escape`, `backdrop`, `trigger`, `api` or `native`.\n- **Instance:** `runtime.get(element, \"drawer\")` returns `{ isOpen, open(trigger?), close(reason?), toggle() }`.\n- **React:** `onOpenChange(open, reason)` on `Drawer`.",
+     "body": "- **`ok:drawer:beforeopen`** (cancelable) fires before the drawer opens, and **`ok:drawer:open`** after.\n- **`ok:drawer:beforeclose`** (cancelable) fires before it closes, with `detail.reason`. **`ok:drawer:close`** fires once it has closed (a temporary drawer slides out first), with the reason: `escape`, `backdrop`, `trigger`, `api` or `native`.\n- **Instance:** `runtime.get(element, \"drawer\")` returns `{ isOpen, open(trigger?), close(reason?), toggle() }`.\n- **React:** `onOpenChange(open, reason)` on `Drawer`.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -81485,7 +81623,7 @@
      "title": "Render another element"
     },
     {
-     "body": "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. Without it, the paper fades and scales in briefly.",
+     "body": "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. When the dialog closes, the entrance plays backwards before the dialog goes away. Without `transition`, the paper fades and scales in briefly, and out when it closes.",
      "html": "<dialog id=\"share\" data-ok-dialog data-ok-max-width=\"sm\" aria-labelledby=\"share-title\">\n  <div data-ok-dialog-paper data-ok-motion data-ok-variant=\"slideInUp\" data-ok-trigger=\"mount\">\n    <h2 id=\"share-title\" data-ok-dialog-title>Share your location?</h2>\n    <div data-ok-dialog-content>\n      <p data-ok-dialog-content-text>Nearby stores show up first when you share your location.</p>\n    </div>\n    <div data-ok-dialog-actions>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-dialog-close><span data-ok-button-label>Not now</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\" data-ok-dialog-close><span data-ok-button-label>Share</span></button>\n    </div>\n  </div>\n</dialog>",
      "id": "dialog",
      "react": "import {\n  Button,\n  Dialog,\n  DialogActions,\n  DialogContent,\n  DialogContentText,\n  DialogTitle,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function MotionDialog() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button variant=\"outlined\" onClick={() => setOpen(true)}>\n        Share location\n      </Button>\n      <Dialog open={open} onOpenChange={setOpen} transition=\"slideInUp\" aria-labelledby=\"share-title\">\n        <DialogTitle id=\"share-title\">Share your location?</DialogTitle>\n        <DialogContent>\n          <DialogContentText>Nearby stores show up first when you share your location.</DialogContentText>\n        </DialogContent>\n        <DialogActions>\n          <Button onClick={() => setOpen(false)}>Not now</Button>\n          <Button variant=\"contained\" color=\"primary\" onClick={() => setOpen(false)}>\n            Share\n          </Button>\n        </DialogActions>\n      </Dialog>\n    </>\n  );\n}",
@@ -81527,6 +81665,34 @@
      "title": "Turn a border around content"
     },
     {
+     "body": "Set `keyframes` to animate any CSS property along your own values, such as a ring that turns and rounds its corners. Give each property a target or a list of values. `x` and `y` move the content in pixels, `rotate` turns it in degrees and `scale` resizes it. Set `transition` to choose how the keyframes play:\n\n- **Timing:** `duration`, `delay` and `repeatDelay` in milliseconds, `ease` (a CSS easing, a theme easing such as `decelerate`, or one easing per segment) and `times` (the position of each keyframe, from 0 to 1).\n- **Repeats:** `repeat` plays the keyframes again (`Infinity` loops), and `repeatType` set to `reverse` plays every other repeat backwards.\n\nThe keyframes play when the Motion enters, from its trigger, and backwards when it exits. They replace the variant. In HTML, write both as JSON in `data-ok-keyframes` and `data-ok-transition`, and write `\"Infinity\"` as a string, because JSON has no infinity. Loops need a pause control (`paused`), and they don't run when users ask for reduced motion.",
+     "html": "<div class=\"loader\">\n  <div data-ok-motion data-ok-trigger=\"mount\"\n    data-ok-keyframes='{\"rotate\": [0, 270, 270, 0], \"borderRadius\": [\"25%\", \"50%\", \"50%\", \"25%\"]}'\n    data-ok-transition='{\"duration\": 3200, \"ease\": \"linear\", \"repeat\": \"Infinity\"}'\n    class=\"ring\"></div>\n</div>",
+     "id": "keyframes",
+     "react": "import { Motion } from \"@owlky/react\";\n\n// The ring's size and border come from your CSS:\n// .ring { width: 96px; height: 96px; border: 8px solid var(--ok-palette-primary-light); }\nexport function Loader() {\n  return (\n    <Motion\n      trigger=\"mount\"\n      className=\"ring\"\n      keyframes={{ rotate: [0, 270, 270, 0], borderRadius: [\"25%\", \"50%\", \"50%\", \"25%\"] }}\n      transition={{ duration: 3200, ease: \"linear\", repeat: Infinity }}\n    />\n  );\n}",
+     "title": "Play your own keyframes"
+    },
+    {
+     "body": "Set `type` to `spring` in `transition` to move between two keyframes with a physical spring instead of a fixed curve. Describe it in one of two ways:\n\n- **How it feels:** `duration` (the time to reach the target, in milliseconds) and `bounce`, from `0` (no overshoot) to `1` (very bouncy).\n- **Physics:** `stiffness`, `damping` and `mass`. A low damping bounces more.\n\nThe spring decides how long the animation lasts: it ends when the content rests. Browsers without `linear()` easing, such as Safari before version 17.2, play the same length with a smooth curve and no bounce.",
+     "html": "<div data-ok-motion data-ok-trigger=\"mount\"\n  data-ok-keyframes='{\"y\": [40, 0], \"opacity\": [0, 1]}'\n  data-ok-transition='{\"type\": \"spring\", \"duration\": 500, \"bounce\": 0.4}'>\n  <p>Your order is on its way.</p>\n</div>",
+     "id": "spring",
+     "react": "import { Motion } from \"@owlky/react\";\n\nexport function OrderStatus() {\n  return (\n    <Motion\n      trigger=\"mount\"\n      keyframes={{ y: [40, 0], opacity: [0, 1] }}\n      transition={{ type: \"spring\", duration: 500, bounce: 0.4 }}\n    >\n      <p>Your order is on its way.</p>\n    </Motion>\n  );\n}",
+     "title": "Move with a spring"
+    },
+    {
+     "body": "`animate(element, keyframes, options)` plays keyframes on any element, with the same keyframes and options as `keyframes` and `transition`. Import it from `@owlky/html` or `@owlky/react`.\n\n- **Interruption:** a new animation of a property starts where the running one is, so quick changes never jump.\n- **End state:** the final values stay on the element as inline styles.\n- **Controls:** it returns `finished` (a promise), `stop()` (keep the current values), `complete()` (jump to the end), `cancel()` (go back to the element's own style), `pause()` and `play()`.\n\nWith reduced motion, the element jumps to the end and loops don't start.",
+     "html": "<button type=\"button\" id=\"like\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"primary\" data-ok-size=\"md\">\n  <span data-ok-button-label>Like</span>\n</button>\n\n<script type=\"module\">\n  // With a bundler: animate comes from the package\n  import { animate } from \"@owlky/html\";\n\n  const like = document.getElementById(\"like\");\n  like.addEventListener(\"click\", () => {\n    animate(like, { scale: [1, 1.2, 1] }, { duration: 400, ease: \"easeOut\" });\n  });\n</script>",
+     "id": "animate",
+     "react": "import { animate, Button } from \"@owlky/react\";\nimport { useRef } from \"react\";\n\nexport function LikeButton() {\n  const ref = useRef<HTMLButtonElement>(null);\n  return (\n    <Button\n      ref={ref}\n      variant=\"outlined\"\n      color=\"primary\"\n      onClick={() => animate(ref.current, { scale: [1, 1.2, 1] }, { duration: 400, ease: \"easeOut\" })}\n    >\n      Like\n    </Button>\n  );\n}",
+     "title": "Animate from JavaScript"
+    },
+    {
+     "body": "Content that leaves the page usually disappears at once, so its exit never shows. Let it play first:\n\n- **React:** wrap the content in `MotionPresence` and give each child a `key`. A removed child stays until the Motions inside it have played their exit. `mode=\"wait\"` shows a new child only after the old one left, `initial={false}` skips the entrance of the children shown at first, and `onExitComplete` runs when every exit ended.\n- **HTML:** call `remove()` or `hide()` on the Motion's instance. They play the exit, then remove the element or set `hidden`. `exit()` plays it alone. Each returns a promise.",
+     "html": "<div id=\"notice\" data-ok-motion data-ok-variant=\"fadeInUp\" data-ok-trigger=\"mount\">\n  <p>Your changes are saved.</p>\n  <button type=\"button\" id=\"dismiss\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\">\n    <span data-ok-button-label>Dismiss</span>\n  </button>\n</div>\n\n<script>\n  document.getElementById(\"dismiss\").addEventListener(\"click\", () => {\n    const notice = document.getElementById(\"notice\");\n    // Plays the exit, then removes the notice\n    window.Owlky.get(notice, \"motion\").remove();\n  });\n</script>",
+     "id": "presence",
+     "react": "import { Button, Motion, MotionPresence } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SavedNotice() {\n  const [shown, setShown] = useState(true);\n  return (\n    <MotionPresence>\n      {shown ? (\n        <Motion key=\"notice\" variant=\"fadeInUp\" trigger=\"mount\">\n          <p>Your changes are saved.</p>\n          <Button color=\"inherit\" onClick={() => setShown(false)}>\n            Dismiss\n          </Button>\n        </Motion>\n      ) : null}\n    </MotionPresence>\n  );\n}",
+     "title": "Play the exit before removing content"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -81537,7 +81703,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay() }`. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have the same instance. `replay()` plays the entrance again.\n- **`ok:countdown:tick`** fires on a Countdown each time its value changes, with the whole seconds left in `detail.remaining`. **`ok:countdown:complete`** fires once when it reaches 0. `runtime.get(element, \"countdown\")` returns `{ remaining, paused, pause(), resume(), restart() }`. In React, use `onTick` and `onComplete`, and change the `key` to start over.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again.",
+     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay(), exit(), hide(), remove() }`. `replay()` plays the entrance again. `exit()` plays the exit, and `hide()` and `remove()` then hide or remove the element. Each of these three returns a promise that resolves to `true` when the exit ended, or `false` when `replay()` interrupted it. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have `{ state, replay() }`.\n- **`ok:countdown:tick`** fires on a Countdown each time its value changes, with the whole seconds left in `detail.remaining`. **`ok:countdown:complete`** fires once when it reaches 0. `runtime.get(element, \"countdown\")` returns `{ remaining, paused, pause(), resume(), restart() }`. In React, use `onTick` and `onComplete`, and change the `key` to start over.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -81547,7 +81713,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.\n- Looping animations and turning borders stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2).\n- CountUp exposes its end value to assistive technologies, and hides the changing digits.\n- Countdown has the `timer` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with `aria-label`, and give people a pause control when it runs next to other content (WCAG 2.2.2).\n- MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.\n- Avoid animations on content that people need to read right away, such as errors.\n- Directional animations start outside the content's box. Clip the container (`overflow: clip`) if they would widen the page on small screens.",
+     "body": "- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.\n- Looping animations, turning borders and looping keyframes stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2). Other keyframes and `animate()` jump to their end.\n- CountUp exposes its end value to assistive technologies, and hides the changing digits.\n- Countdown has the `timer` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with `aria-label`, and give people a pause control when it runs next to other content (WCAG 2.2.2).\n- MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.\n- Avoid animations on content that people need to read right away, such as errors.\n- Directional animations start outside the content's box. Clip the container (`overflow: clip`) if they would widen the page on small screens.",
      "id": "accessibility",
      "title": "Accessibility"
     },

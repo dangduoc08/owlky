@@ -34,6 +34,7 @@ Root: `data-ok-dialog`. Unknown values fall back to the default.
 | `disableRestoreFocus` | `data-ok-disable-restore-focus` | flag | boolean | off | Focus isn't moved back to the element focused before it opened. |
 | `disableScrollLock` | `data-ok-disable-scroll-lock` | flag | boolean | off | The page behind can still scroll while it is open. |
 | `transition` | `data-ok-variant="…"` on each `[data-ok-dialog-paper]` | style | `slideInUp` `slideInDown` `slideInLeft` `slideInRight` `fadeIn` `fadeInUp` `fadeInDown` `fadeInLeft` `fadeInRight` `zoomIn` `zoomInUp` `zoomInDown` `zoomInLeft` `zoomInRight` `bounceIn` `bounceInUp` `bounceInDown` `bounceInLeft` `bounceInRight` `flipInX` `flipInY` `scaleInX` `scaleInY` `rotateIn` | — | Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…); without it, a short fade and scale. |
+| `transitionDuration` | `data-ok-transition-duration="…"` | number | number | — | Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations. |
 | `open` | `open` · event `ok:dialog:close` | state | — | — | Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`). |
 <!-- /options:dialog -->
 
@@ -43,7 +44,12 @@ names the dialog automatically (`aria-labelledby`, unless `aria-label` is given)
 `onOpenChange`; `PaperProps` → `paperProps`; `maxWidth={false}` → `"none"`;
 `TransitionComponent` → `transition` (a Motion entrance on the paper: `data-ok-motion`,
 `data-ok-variant`, `data-ok-trigger="mount"`; without it, the paper's own fade and scale).
-Deferred: `keepMounted` (always mounted), exit transitions. Not applicable: `slots`, `slotProps`, `sx`, `BackdropComponent` (native `::backdrop`,
+`transitionDuration` (4.18.44): a number (both directions) or `{ enter, exit }` in ms; HTML
+`data-ok-transition-duration` and `data-ok-transition-duration-exit` (written when the exit
+differs), core `dialogStyle` → `--_ok-dialog-enter` / `--_ok-dialog-exit` (React `style`, HTML
+CSSOM); a Motion paper gets them as `--_ok-motion-duration` / `--_ok-motion-exit-duration`
+(nested Motions in the content inherit them unless they set their own). Exit transitions
+(ADR-0062): see Behavior. Not applicable: `slots`, `slotProps`, `sx`, `BackdropComponent` (native `::backdrop`,
 `--ok-backdrop`, the Backdrop component's token: a DOM Backdrop can't sit between a top-layer
 `<dialog>` and its `::backdrop`), `disablePortal` (top layer).
 
@@ -52,7 +58,20 @@ Paper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16
 600px), max height viewport − 2 × margin; widths xs 444px, sm 600px, md/lg/xl the breakpoint
 tokens. Title h6 (600) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content
 text `--ok-text-secondary` body1; actions padding 24px, gap 12px. Full screen: no margin, radius,
-shadow. Backdrop `--ok-backdrop`. Opening: fade + scale 0.96 (`--ok-duration-short`).
+shadow. Backdrop `--ok-backdrop`. Opening: paper fade + scale 0.96 (`--ok-duration-short`,
+decelerate), backdrop fade. Closing (`data-ok-state="exiting"`): the same backwards
+(`ok-dialog-out`, `--ok-duration-shorter`, accelerate; a Motion paper: its exit, `--ok-duration-exit`,
+and the backdrop with it). Reduced motion: none.
+
+## Behavior
+Exit before close (core modal controller, ADR-0062): `close()` writes `data-ok-state="exiting"` on
+the dialog (and `exit` on a Motion paper), waits for the subtree's animations, then
+`dialog.close()`, cleanup, focus return. During the exit the dialog stays modal (focus trapped,
+page inert, Escape and backdrop ignored), `isOpen` is already `false`; `open()` cancels the exit
+(no focus move, no close event); destroy / unmount ends it at once. Nothing to play (reduced
+motion, no animation): synchronous as before. HTML `ok:dialog:close` fires after the exit (focus
+already back); React `onOpenChange` is unchanged (it is the request), `keepMounted={false}`
+children stay until the exit ends.
 
 ## Responsive behavior
 Mobile-first margin (16px → 32px at 600px); the paper never exceeds the viewport.
@@ -66,7 +85,8 @@ or `[autofocus]`, else the paper; returns to the trigger. Scrollable content get
 ## Events / API
 HTML: `ok:dialog:beforeopen` (cancelable), `ok:dialog:open`, `ok:dialog:beforeclose` (cancelable,
 `detail.reason`: escape | backdrop | trigger | api), `ok:dialog:close` (also `native`). Instance:
-`{ isOpen, open(trigger?), close(reason?) }`. `data-ok-open` opens on load.
+`{ isOpen, open(trigger?), close(reason?) }`. `data-ok-open` opens on load. `ok:dialog:close`
+fires after the exit animation (none when an `open()` interrupted it).
 
 ## Upstream API mapping
 Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.
@@ -78,14 +98,14 @@ Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, Dia
 | `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |
 | `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |
 | `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |
-| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred (4.18.44) | waits for 5.1 exit transitions |
+| `transitionDuration` (number or `{ appear, enter, exit }`) | same, number or `{ enter, exit }`; HTML `data-ok-transition-duration` [+ `-exit`] | kept (4.18.44) | `appear` not applicable (the entrance plays on every opening) |
 | `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |
 | Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |
 | Modal `keepMounted` | same (React only), default `true` | kept (4.8) | MUI default `false`; ours keeps the children like the HTML markup (no breaking change); `false` renders them only while open |
 | Modal `disableRestoreFocus`, `disableScrollLock` | same (`data-ok-disable-restore-focus`, `data-ok-disable-scroll-lock`) | kept (4.18.45) | core modal controller `restoreFocus` / `lockScroll`; the browser's own focus return after `dialog.close()` is undone |
 | Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |
 | Modal `container`, `disablePortal` | — | not applicable | top layer |
-| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |
+| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close` (after the exit); native `::backdrop` | not applicable | always closes after its transition (ADR-0062); `onBackdropClick` deprecated upstream |
 | `DialogTitle`, `DialogContentText` `children` | same | kept | |
 | `DialogContent` `dividers` | same | kept | |
 | `DialogActions` `disableSpacing` | same | kept | |

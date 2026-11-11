@@ -5,6 +5,7 @@ import type { Runtime } from "../../runtime/types.js";
 import {
   expectCspSafe,
   expectNoAxeViolations,
+  finishExit,
   mount,
   resetPage,
   settle,
@@ -222,6 +223,7 @@ describe("date pickers (HTML)", () => {
     expect(dialog.querySelector("[data-ok-picker-toolbar-title]")?.textContent).toBe("Sat, May 3");
     expect(dialog.open).toBe(true);
     await userEvent.click(dialog.querySelector('[data-ok-picker-action="cancel"]') as HTMLElement);
+    await finishExit(dialog);
     expect(log.at(-2)).toEqual([
       "ok:date-picker:change",
       { value: "2025-05-25", validationError: null },
@@ -231,6 +233,7 @@ describe("date pickers (HTML)", () => {
     await userEvent.click(day(dialog, "2025-05-04"));
     await settle();
     await userEvent.click(dialog.querySelector('[data-ok-picker-action="accept"]') as HTMLElement);
+    await finishExit(dialog);
     expect(log.filter(([n]) => n === "ok:date-picker:accept")).toEqual([
       ["ok:date-picker:accept", { value: "2025-05-04" }],
     ]);
@@ -239,7 +242,7 @@ describe("date pickers (HTML)", () => {
     await userEvent.click(day(dialog, "2025-05-06"));
     await settle();
     await userEvent.keyboard("{Escape}");
-    await settle();
+    await finishExit(dialog);
     expect(texts("dp-mobile")).toEqual(["05", "04", "2025"]);
   });
 

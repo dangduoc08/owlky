@@ -10,7 +10,10 @@
  *            data-ok-paused
  * States:    data-ok-state = initial | enter | exit (written by the owner). Without a state
  *            (no JavaScript yet) nothing is hidden.
- * Private:   --_ok-motion-duration | -delay | -distance | -stagger | -index (owner, CSSOM / style)
+ * Private:   --_ok-motion-duration | -delay | -distance | -stagger | -index (owner, CSSOM / style),
+ *            --_ok-motion-exit-duration (a host such as Dialog `transitionDuration`)
+ * Keyframes: [data-ok-keyframes] (JSON, ADR-0062): the core engine plays them, the variant's CSS
+ *            animation is off.
  *
  * One keyframe animates from the variant's start (custom properties set per family and
  * direction) to the element's own style. In-variants play it forwards when entering; out-variants
@@ -224,8 +227,8 @@
     [data-ok-motion][data-ok-state="exit"],
     [data-ok-motion-text][data-ok-state="exit"] [data-ok-motion-char]
   ) {
-    animation: var(--_ok-motion-exit-name) var(--ok-duration-exit) var(--ok-easing-expressive) 0s
-      var(--_ok-motion-out-fill) var(--_ok-motion-out);
+    animation: var(--_ok-motion-exit-name) var(--_ok-motion-exit-duration, var(--ok-duration-exit))
+      var(--ok-easing-expressive) 0s var(--_ok-motion-out-fill) var(--_ok-motion-out);
   }
 
   /* Out-variants start as the element itself. */
@@ -391,6 +394,11 @@
 
   :where([data-ok-motion][data-ok-variant="interactive"]:active) {
     transform: scale(0.97);
+  }
+
+  /* Declarative keyframes: the engine (core `createMotionKeyframes`) plays them instead. */
+  :where([data-ok-motion][data-ok-keyframes][data-ok-state]) {
+    animation: none;
   }
 
   @keyframes ok-motion {

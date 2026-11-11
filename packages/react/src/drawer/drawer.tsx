@@ -177,7 +177,12 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
     const custom = drawerStyle({ elevation, transitionDuration });
     const merged =
       Object.keys(custom).length > 0 ? ({ ...custom, ...style } as CSSProperties) : style;
-    const content = <div data-ok-drawer-content="">{keepMounted || open ? children : null}</div>;
+    // Children stay rendered until the exit has played (`keepMounted={false}`).
+    const [shown, setShown] = useState(open);
+    if (open && !shown) setShown(true);
+    const content = (
+      <div data-ok-drawer-content="">{keepMounted || open || shown ? children : null}</div>
+    );
 
     // Effects run in declaration order: create the controller, sync options, then open/close.
     useEffect(() => {
@@ -206,9 +211,21 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
 
     useEffect(() => {
       const controller = controllerRef.current;
-      if (!controller) return;
-      if (open) controller.open(triggerRef.current);
-      else controller.close();
+      if (!controller) {
+        if (!open) setShown(false);
+        return;
+      }
+      if (open) {
+        controller.open(triggerRef.current);
+        return;
+      }
+      let alive = true;
+      controller.close().then((closed) => {
+        if (closed && alive) setShown(false);
+      });
+      return () => {
+        alive = false;
+      };
     }, [open, triggerRef]);
 
     if (!temporary) {

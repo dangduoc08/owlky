@@ -19,6 +19,14 @@
    "value": "250ms"
   },
   {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-accelerate",
+   "value": "cubic-bezier(0.4, 0, 1, 1)"
+  },
+  {
    "name": "--ok-easing-decelerate",
    "value": "cubic-bezier(0, 0, 0.2, 1)"
   },
@@ -88,7 +96,7 @@
     ],
     "methods": [
      {
-      "description": "Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent.",
+      "description": "Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent. A temporary drawer slides out first: `ok:drawer:close` fires once it is closed.",
       "kind": "method",
       "name": "close",
       "type": "(reason?: DrawerCloseReason | undefined) => boolean"

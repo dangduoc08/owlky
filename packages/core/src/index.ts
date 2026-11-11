@@ -143,6 +143,7 @@ export {
   type DialogMaxWidth,
   type DialogScroll,
   type DialogTransition,
+  type DialogTransitionDuration,
   type DiffEditorAnatomyOptions,
   type DigitalClockAnatomyOptions,
   type DividerAnatomyOptions,
@@ -164,9 +165,11 @@ export {
   dateRangePickerAttributes,
   dateRangePickerOptions,
   dialogAttributes,
+  dialogDurations,
   dialogMaxWidths,
   dialogOptions,
   dialogScrolls,
+  dialogStyle,
   diffEditorAttributes,
   diffEditorOptions,
   digitalClockAttributes,
@@ -440,6 +443,7 @@ export {
   ratingAttributes,
   ratingOptions,
   ratingSizes,
+  readDialogTransitionDuration,
   readSlidesToShow,
   type SelectAnatomyOptions,
   type SelectionControlColor,
@@ -1161,6 +1165,23 @@ export {
   type ModalDismissReason,
 } from "./modal/modal-controller.js";
 export {
+  type AnimateOptions,
+  type AnimationControls,
+  animate,
+  type MotionEasing,
+  type MotionEasingName,
+  type MotionKeyframes,
+  type MotionTrack,
+  type MotionValue,
+  motionTracks,
+  parseTime,
+  resolveEasing,
+  type SpringEasing,
+  type SpringOptions,
+  springEasing,
+  supportsLinearEasing,
+} from "./motion/animate.js";
+export {
   type CountUp,
   type CountUpOptions,
   countUpText,
@@ -1188,6 +1209,15 @@ export {
   parseCountdownTime,
 } from "./motion/countdown.js";
 export {
+  createMotionKeyframes,
+  KEYFRAMES_ATTR,
+  type MotionKeyframesPlayer,
+  motionKeyframesAttributes,
+  parseMotionKeyframes,
+  parseMotionTransition,
+  TRANSITION_ATTR,
+} from "./motion/keyframes.js";
+export {
   createMotionTrigger,
   type MotionState,
   type MotionStyleOptions,
@@ -1200,6 +1230,13 @@ export {
   replayMotion,
   splitMotionText,
 } from "./motion/motion.js";
+export {
+  type AnimationWait,
+  type ExitHandle,
+  playExit,
+  runningAnimations,
+  waitForAnimations,
+} from "./motion/presence.js";
 export {
   clampNumber,
   createNumberFieldController,

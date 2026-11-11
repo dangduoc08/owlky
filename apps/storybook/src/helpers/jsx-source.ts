@@ -32,7 +32,9 @@ function propSource(key: string, value: unknown, used: Set<string>): string | nu
   if (value === true) return key;
   if (typeof value === "string") return `${key}="${value}"`;
   if (isValidElement(value)) return `${key}={${render(value, 0, used).trim()}}`;
-  return `${key}={${JSON.stringify(value)}}`;
+  // JSON has no Infinity (`repeat: Infinity` loops): print it as the JavaScript value.
+  const json = JSON.stringify(value, (_, item) => (item === Infinity ? "@@Infinity@@" : item));
+  return `${key}={${json?.replaceAll('"@@Infinity@@"', "Infinity")}}`;
 }
 
 function render(node: ReactNode, depth: number, used: Set<string>): string {

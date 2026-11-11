@@ -1,4 +1,5 @@
 import axe from "axe-core";
+import { act } from "react";
 import { expect } from "vitest";
 import { userEvent } from "vitest/browser";
 
@@ -47,6 +48,20 @@ export const CONTRAST_EXEMPT = [
 ];
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+
+/**
+ * Ends the exit animations of a closing element (Dialog, Drawer, MotionPresence: ADR-0062) and
+ * waits a task inside `act()`, so the owner has closed or unmounted it.
+ */
+export async function finishExit(element: Element): Promise<void> {
+  await act(async () => {
+    getComputedStyle(element).opacity;
+    for (const animation of element.getAnimations({ subtree: true }))
+      if (animation.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY)
+        animation.finish();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+}
 
 /**
  * Waits until the element's CSS transitions and animations (hover colors, shadows) have finished,

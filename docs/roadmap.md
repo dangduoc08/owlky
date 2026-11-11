@@ -524,7 +524,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
 
 ## ✅ Components — Form control (2026-11-09)
 Wave 8 (primitives, batch B), created with `/component` from MUI's FormControl, FormLabel,

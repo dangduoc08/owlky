@@ -8,11 +8,18 @@
  */
 
 export {
+  type AnimateOptions,
+  type AnimationControls,
+  animate,
   applyThemeSettings,
   defaultThemeSettings,
+  type MotionEasing,
+  type MotionKeyframes,
   normalizeThemeSettings,
   readThemeSettings,
   resetThemeSettings,
+  type SpringOptions,
+  springEasing,
   THEME_SETTINGS_KEY,
   type ThemeSettings,
   type ThemeSettingsOptions,
