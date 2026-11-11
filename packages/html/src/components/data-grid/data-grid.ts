@@ -11,6 +11,8 @@ import {
   createGridColumnControls,
   createGridContextMenu,
   createGridDataSourceCache,
+  createGridDebounce,
+  createGridFillHandle,
   createGridHistoryKeys,
   createGridHistoryStack,
   createGridNavigation,
@@ -41,10 +43,12 @@ import {
   type GridComparators,
   type GridCsvOptions,
   type GridDataSource,
+  type GridDataSourceCache,
   type GridDensity,
   type GridEditStartReason,
   type GridEditTarget,
   type GridExcelOptions,
+  type GridFillCell,
   type GridFilterGroup,
   type GridFilterItem,
   type GridFilterModel,
@@ -55,11 +59,13 @@ import {
   type GridHistoryApi,
   type GridHistoryChange,
   type GridLabels,
+  type GridMenuName,
   type GridPinnedColumns,
   type GridPivotColumn,
   type GridPivotModel,
   type GridPivotResult,
   type GridPivotSection,
+  type GridPreferencePanelName,
   type GridPrintLayout,
   type GridRangeChart,
   type GridRangeChartParams,
@@ -67,6 +73,7 @@ import {
   type GridRowSelectionPropagation,
   type GridRowWindow,
   type GridSelectionTree,
+  type GridSidebarName,
   type GridSortDirection,
   type GridSortModel,
   type GridState,
@@ -108,6 +115,10 @@ import {
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
+  gridFillCells,
+  gridFillSelection,
+  gridFillSource,
+  gridFillWithin,
   gridFilterGroupName,
   gridFilterGroupSuffix,
   gridFilterOperators,
@@ -129,6 +140,8 @@ import {
   gridLockedFields,
   gridMissingRanges,
   gridOperatorNeedsValue,
+  gridOverlayOf,
+  gridPaginationCount,
   gridPinSide,
   gridPivot,
   gridPivotDerivedColumns,
@@ -154,7 +167,9 @@ import {
   gridToCsv,
   gridToTsv,
   gridToXlsx,
+  gridTreeRowMove,
   gridTreeRows,
+  gridUnknownCountPattern,
   gridWithGroupFooters,
   isGridCellSelected,
   isGridGroupingField,
@@ -292,8 +307,20 @@ export interface DataGridEvents {
   expand: EventSpec<{ id: string; expanded: boolean }, true>;
   /** Before a row's detail panel opens or closes. Call `preventDefault()` to refuse. */
   detailpanel: EventSpec<{ id: string; expanded: boolean }, true>;
-  /** Before a dragged row moves to `targetIndex`. Call `preventDefault()` to keep the order. */
-  roworder: EventSpec<{ id: string; oldIndex: number; targetIndex: number }, true>;
+  /**
+   * Before a dragged row moves to `targetIndex` (tree rows: from `oldParentId` to `parentId`,
+   * `null` at the top level). Call `preventDefault()` to keep the order.
+   */
+  roworder: EventSpec<
+    {
+      id: string;
+      oldIndex: number;
+      targetIndex: number;
+      oldParentId?: string | null;
+      parentId?: string | null;
+    },
+    true
+  >;
   /** After cells were copied, with the copied text. */
   clipboardcopy: EventSpec<{ data: string }>;
   /** Before pasted cells are written. Call `preventDefault()` to refuse them. */
@@ -308,7 +335,81 @@ export interface DataGridEvents {
   celldoubleclick: EventSpec<{ id: string; field: string; value: unknown }>;
   /** After a click on a column header. */
   columnheaderclick: EventSpec<{ field: string }>;
+  /** After a double click on a column header (not on its buttons or resize handle). */
+  columnheaderdoubleclick: EventSpec<{ field: string }>;
+  /** A right click on a column header. Call `preventDefault()` to keep the browser's own menu closed. */
+  columnheadercontextmenu: EventSpec<{ field: string }, true>;
+  /** After the pointer entered a column header. */
+  columnheaderenter: EventSpec<{ field: string }>;
+  /** After the pointer left a column header. */
+  columnheaderleave: EventSpec<{ field: string }>;
+  /** After the pointer moved onto a column header or an element inside it. */
+  columnheaderover: EventSpec<{ field: string }>;
+  /** After the pointer moved off a column header or an element inside it. */
+  columnheaderout: EventSpec<{ field: string }>;
+  /** After a grid menu opened: the column menu, Density, Export or the cell menu. */
+  menuopen: EventSpec<{ menu: GridMenuName; target: Element | null }>;
+  /** After a grid menu closed. */
+  menuclose: EventSpec<{ menu: GridMenuName; target: Element | null }>;
+  /** After the Columns or Filters panel opened. */
+  preferencepanelopen: EventSpec<{ openedPanelValue: GridPreferencePanelName }>;
+  /** After the Columns or Filters panel closed. */
+  preferencepanelclose: EventSpec<{ openedPanelValue: GridPreferencePanelName }>;
+  /** After the Pivot or Chart panel opened. */
+  sidebaropen: EventSpec<{ value: GridSidebarName }>;
+  /** After the Pivot or Chart panel closed. */
+  sidebarclose: EventSpec<{ value: GridSidebarName }>;
+  /** After the grid's own size changed, in pixels (the first one: the size at setup). */
+  containerresize: EventSpec<{ width: number; height: number }>;
+  /** While a column's edge is dragged, with each new width (`resize`: on release). */
+  columnresize: EventSpec<{ field: string; width: number | undefined }>;
+  /**
+   * The rendered rows changed while `data-ok-row-count` is more than the rows in the grid (client
+   * pagination, no data source): load the rows of `firstRowToRender` up to, and not including,
+   * `lastRowToRender`.
+   */
+  fetchrows: EventSpec<{
+    firstRowToRender: number;
+    lastRowToRender: number;
+    sortModel: GridSortModel;
+    filterModel: GridFilterModel;
+  }>;
+  /** After the row count changed (`-1`: not known). */
+  rowcountchange: EventSpec<{ count: number }>;
+  /** After a data source reported a new `pageInfo`. */
+  paginationmetachange: EventSpec<{ hasNextPage?: boolean | undefined }>;
+  /**
+   * Before the fill handle (or Ctrl / Cmd + D, + R) writes cells: each one with the cell its value
+   * comes from. Call `preventDefault()` to refuse; each row still fires `edit`.
+   */
+  fill: EventSpec<{ cells: GridFillCell[] }, true>;
+  /** An Excel export started (`pending`) or ended (`finished`). */
+  excelexportstate: EventSpec<{ state: "pending" | "finished" }>;
+  /**
+   * Before a paste writes any cell. Call `preventDefault()` to cancel it, or pass a promise to
+   * `waitUntil`: the grid waits for it, and a rejection cancels the paste.
+   */
+  beforeclipboardpaste: EventSpec<
+    { data: string[][]; waitUntil(promise: Promise<unknown>): void },
+    true
+  >;
 }
+
+/** What a pivot column may change (MUI X `pivotingColDef`). */
+export type GridHtmlPivotingColDefOverrides = Partial<
+  Pick<GridColumn, "headerName" | "width" | "minWidth" | "maxWidth" | "align" | "headerAlign">
+>;
+/** One set of overrides, or a function of the source field and the column's keys. */
+export type GridHtmlPivotingColDef =
+  | GridHtmlPivotingColDefOverrides
+  | ((originalColumnField: string, columnGroupPath: string[]) => GridHtmlPivotingColDefOverrides);
+
+const PIVOT_OVERRIDES = ["headerName", "width", "minWidth", "maxWidth", "align", "headerAlign"];
+/** Only the keys a pivot column may change. */
+const pickPivotOverrides = (own: GridHtmlPivotingColDefOverrides) =>
+  Object.fromEntries(
+    Object.entries(own).filter(([key]) => PIVOT_OVERRIDES.includes(key)),
+  ) as GridHtmlPivotingColDefOverrides;
 
 export interface DataGridInstance extends ComponentInstance {
   /** The sort model. */
@@ -395,6 +496,11 @@ export interface DataGridInstance extends ComponentInstance {
       | ((value: unknown, row: HTMLElement) => string | number | Date | null | undefined)
       | null,
   ): void;
+  /**
+   * Overrides for the pivot's value columns (MUI X `pivotingColDef`): one object for all, or a
+   * function of the source field and the column's keys; `null` removes them.
+   */
+  setPivotingColDef(def: GridHtmlPivotingColDef | null): void;
   /** Tree data: opens or closes a row's children. */
   setRowChildrenExpansion(id: string, expanded: boolean): void;
   /** Master-detail: opens or closes a row's detail panel. */
@@ -407,8 +513,14 @@ export interface DataGridInstance extends ComponentInstance {
    * `[data-ok-data-grid-value]` elements get the value). Needs `id` on each row.
    */
   setRows(rows: readonly DataRow[]): void;
-  /** Loads the rows from a server for the current sort, filter and page (`null`: stop). */
-  setDataSource(source: GridDataSource<DataRow> | null): void;
+  /**
+   * Loads the rows from a server for the current sort, filter and page (`null`: stop). `cache`
+   * replaces the default cache of responses (`null`: none), the grid's `dataSourceCache`.
+   */
+  setDataSource(
+    source: GridDataSource<DataRow> | null,
+    options?: { cache?: GridDataSourceCache<DataRow> | null },
+  ): void;
   /** Phase 6 (MUI X Premium). These setters don't emit events. */
   readonly rowGroupingModel: string[];
   /** The aggregation (field to function). */
@@ -522,6 +634,18 @@ const {
   autoPageSize,
   contextMenu: contextMenuOption,
   filterGroups: filterGroupsOption,
+  estimatedRowCount,
+  dataSourceKeepPreviousData,
+  dataSourceRevalidateMs,
+  filterDebounceMs,
+  columnFilterDebounceMs,
+  disableChildrenFiltering,
+  disableChildrenSorting,
+  disableAutosize,
+  keepColumnPositionIfDraggedOutside,
+  pivotPanelOpen,
+  virtualizeColumnsWithAutoRowHeight,
+  cellSelectionFillHandle,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -1029,6 +1153,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         },
       };
     };
+    /** Tree data, not from a server: a flag that limits filtering or sorting to top-level rows. */
+    const rootsOnly = (option: { attr: string }) =>
+      element.hasAttribute(treeData.attr) && !source && element.hasAttribute(option.attr);
     const filterOptions = () => ({
       ignoreDiacritics: element.hasAttribute(ignoreDiacritics.attr),
       quickFilterLogicOperator: readStyle(element, quickFilterLogicOperator) as "and" | "or",
@@ -1643,7 +1770,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         !body.querySelector(
           '[role="gridcell"][aria-colspan]:not([data-ok-data-grid-list-cell]):not([data-ok-data-grid-detail-content])',
         ) &&
-        middle.length
+        middle.length &&
+        // "auto" rows measure their cells: hidden columns would change their height (MUI X).
+        (element.hasAttribute(virtualizeColumnsWithAutoRowHeight.attr) ||
+          !pageList.some((row) => row.getAttribute("data-ok-row-height") === "auto"))
       ) {
         const pinnedPx =
           specialFields.reduce((sum, f) => sum + specialWidth(f), 0) +
@@ -1721,10 +1851,40 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let sortedList: HTMLElement[] = [];
     let rowShift = 0;
     let total = 0;
+    let lastTotal: number | null = null;
+    const hasNextAttribute = () => {
+      const given = element.getAttribute("data-ok-has-next-page");
+      return given === null ? undefined : given === "true";
+    };
+    /** The pagination's text while the total isn't known: "around n", else "more than". */
+    const syncUnknownCount = () => {
+      if (total !== -1) {
+        if (unknownPattern !== null) {
+          // Back to the words given in the page.
+          if (unknownPattern)
+            pagination?.setAttribute("data-ok-label-displayed-rows", unknownPattern);
+          else pagination?.removeAttribute("data-ok-label-displayed-rows");
+          unknownPattern = null;
+        }
+        return;
+      }
+      unknownPattern ??= pagination?.getAttribute("data-ok-label-displayed-rows") ?? "";
+      pagination?.setAttribute(
+        "data-ok-label-displayed-rows",
+        gridUnknownCountPattern(
+          unknownPattern || labels.paginationDisplayedRows,
+          labels,
+          readNumber(element, estimatedRowCount) as number | undefined,
+          Number.isFinite(pageSize) ? (page + 1) * pageSize : 0,
+        ),
+      );
+    };
+    let unknownPattern: string | null = null;
     let viewport: GridViewport | null = null;
     let spacers: string[] = [];
     let source: GridDataSource<DataRow> | null = null;
     let sourceCount: number | undefined;
+    let sourceInfo: { hasNextPage?: boolean | undefined } | undefined;
     // Server-side aggregation: the data source's values of every row (the footer row).
     let sourceAggregateRow: Record<string, unknown> | undefined;
     /** The aggregation the data source is asked for (none while pivoting or not aggregating). */
@@ -1784,6 +1944,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           parentOf: (row) => row.getAttribute("data-ok-parent"),
           expanded: (rowId, level) => expansion.get(rowId) ?? gridExpandedByDepth(depth, level),
           keep: pass ? (row) => pass.has(row) : undefined,
+          filterRootsOnly: rootsOnly(disableChildrenFiltering),
+          sortRootsOnly: rootsOnly(disableChildrenSorting),
           compare: place
             ? (a, b) => (place.get(a) as number) - (place.get(b) as number)
             : undefined,
@@ -1884,7 +2046,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           idOf,
           parentOf: (row) => nodes.parentOf.get(idOf(row)) ?? null,
           expanded: (rowId, level) => expansion.get(rowId) ?? gridExpandedByDepth(depth, level),
-          keep: pass ? (row) => !generatedRow(row) && pass.has(row) : undefined,
+          keep: pass
+            ? (row) => (generatedRow(row) ? rootsOnly(disableChildrenFiltering) : pass.has(row))
+            : undefined,
+          filterRootsOnly: rootsOnly(disableChildrenFiltering),
+          sortRootsOnly: rootsOnly(disableChildrenSorting),
           compare: place
             ? gridGroupComparator<HTMLElement>({
                 isGroup: generatedRow,
@@ -1988,16 +2154,31 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           : sortGridRows(filtered, sortModel, columns, value, comparatorOf);
       }
       const serverPage = serverSide(paginationMode);
-      total = serverPage
-        ? (sourceCount ??
-          (readNumber(element, rowCountOption) as number | undefined) ??
-          sorted.length)
-        : sorted.length;
+      const hasNext = sourceInfo?.hasNextPage ?? hasNextAttribute();
+      total = gridPaginationCount(
+        serverPage
+          ? (sourceCount ??
+              (sourceInfo ? -1 : undefined) ??
+              (readNumber(element, rowCountOption) as number | undefined) ??
+              sorted.length)
+          : sorted.length,
+        { hasNextPage: hasNext, page, pageSize, pageRows: sorted.length },
+      );
+      if (total !== lastTotal) {
+        if (lastTotal !== null) emit("rowcountchange", { count: total });
+        lastTotal = total;
+      }
       pagination?.setAttribute("data-ok-count", String(total));
       const paged = paging() && Number.isFinite(pageSize) && !serverPage;
       // Server pages count too: the page stays within the server's rows.
-      const pages = Number.isFinite(pageSize) ? Math.max(Math.ceil(total / pageSize), 1) : 1;
+      const pages =
+        total === -1
+          ? Number.POSITIVE_INFINITY
+          : Number.isFinite(pageSize)
+            ? Math.max(Math.ceil(total / pageSize), 1)
+            : 1;
       page = Math.min(page, pages - 1);
+      syncUnknownCount();
       pager()?.refresh();
       const pageStart = paged ? page * pageSize : 0;
       pageList = paged ? sorted.slice(pageStart, pageStart + pageSize) : sorted;
@@ -2033,9 +2214,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ),
       ];
       bottom.forEach((row, index) => {
-        row.setAttribute("aria-rowindex", String(first + total + index));
+        row.setAttribute("aria-rowindex", String(first + Math.max(total, 0) + index));
       });
-      main.setAttribute("aria-rowcount", String(first - 1 + total + bottom.length));
+      main.setAttribute(
+        "aria-rowcount",
+        total === -1 ? "-1" : String(first - 1 + total + bottom.length),
+      );
     };
     /** Aggregation: the function's name in headers and the footer row of every filtered row. */
     const syncAggregation = (first: number) => {
@@ -2403,6 +2587,28 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (wait > 0) lazyState.timer = setTimeout(run, wait);
       else run();
     };
+    // Rendered rows that the page may still have to load (MUI X `onFetchRows`).
+    let fetchWindow = "";
+    const reportFetch = (virtual: boolean, range: GridRowWindow) => {
+      const count = readNumber(element, rowCountOption) as number | undefined;
+      if (
+        !virtual ||
+        source ||
+        serverSide(paginationMode) ||
+        count === undefined ||
+        count <= rowEls.length
+      )
+        return;
+      const key = `${range.start}:${range.end}`;
+      if (key === fetchWindow) return;
+      fetchWindow = key;
+      emit("fetchrows", {
+        firstRowToRender: range.start,
+        lastRowToRender: range.end,
+        sortModel,
+        filterModel,
+      });
+    };
     let drawing = false;
     const draw = () => {
       const vp = viewport as GridViewport;
@@ -2443,6 +2649,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         };
       }
       const shownRows = pageList.slice(range.start, range.end);
+      reportFetch(virtual, range);
       for (const row of shownRows) layoutRow(row);
       // Rows, each followed by its open detail panel.
       const items: HTMLElement[] = [];
@@ -2528,7 +2735,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const size = gridAutoPageSize(main, baseHeight() + 1);
       if (size === pageSize) return;
       // The pagination reports each change (resetting the page): set the target after.
-      const target = Math.min(page, Math.max(Math.ceil(total / size), 1) - 1);
+      const target = total === -1 ? page : Math.min(page, Math.max(Math.ceil(total / size), 1) - 1);
       pagination?.setAttribute("data-ok-rows-per-page", String(size));
       pager()?.setRowsPerPage(size);
       pageSize = size;
@@ -2540,6 +2747,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       fit.observe(main);
       signal.addEventListener("abort", () => fit.disconnect());
     }
+    const debounce = createGridDebounce();
+    signal.addEventListener("abort", () => debounce.clear());
     const scrollWatcher = createGridScrollWatcher(main, {
       onChange: (next) => {
         viewport = next;
@@ -2619,7 +2828,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         return row;
       }
     };
-    const sourceCache = createGridDataSourceCache<DataRow>();
+    // `setDataSource(source, { cache })` replaces it (`null`: no cache).
+    let sourceCache: GridDataSourceCache<DataRow> | null = createGridDataSourceCache<DataRow>();
     let request = 0;
     const load = () => {
       if (lazy()) {
@@ -2638,11 +2848,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
           : {}),
       };
-      const cached = sourceCache.get(params);
+      const cached = sourceCache?.get(params);
       const show = (response: GridGetRowsResponse<DataRow>) => {
         sourceCount = response.rowCount;
         sourceAggregateRow = response.aggregateRow;
+        const nextInfo = JSON.stringify(response.pageInfo ?? null);
+        const changed = nextInfo !== JSON.stringify(sourceInfo ?? null);
+        sourceInfo = response.pageInfo;
         buildRows(response.rows);
+        if (changed && response.pageInfo)
+          emit("paginationmetachange", response.pageInfo as { hasNextPage?: boolean });
       };
       if (cached) {
         show(cached);
@@ -2650,19 +2865,67 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       }
       const id = ++request;
       element.setAttribute(loadingOption.attr, "");
+      // While it loads, the rows go away (MUI X) unless asked to stay (flat rows only). The
+      // selection stays: `rowEls` comes back when the new rows are built, or on a failure.
+      const previous = rowEls;
+      if (!element.hasAttribute(dataSourceKeepPreviousData.attr) || isTree() || serverGrouping()) {
+        rowEls = [];
+        apply();
+      }
       current
         .getRows(params)
         .then((response) => {
-          sourceCache.set(params, response);
+          sourceCache?.set(params, response);
           if (id === request) show(response);
         })
         .catch((error: unknown) => {
-          if (id === request) emit("datasourceerror", { error });
+          if (id !== request) return;
+          rowEls = previous;
+          apply();
+          emit("datasourceerror", { error });
         })
         .finally(() => {
           if (id === request) element.removeAttribute(loadingOption.attr);
         });
     };
+    // Rows whose cache entry expired load again in the background (MUI X `dataSourceRevalidateMs`).
+    let revalidating = false;
+    let revalidateTimer: ReturnType<typeof setInterval> | undefined;
+    const syncRevalidate = () => {
+      clearInterval(revalidateTimer);
+      const ms = readNumber(element, dataSourceRevalidateMs) as number;
+      revalidateTimer = undefined;
+      if (ms <= 0) return;
+      revalidateTimer = setInterval(() => {
+        if (!source || revalidating || lazy() || isTree() || serverGrouping()) return;
+        const params = {
+          sortModel,
+          filterModel,
+          paginationModel: { page, pageSize: Number.isFinite(pageSize) ? pageSize : 0 },
+          ...(serverAggregationModel()
+            ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
+            : {}),
+        };
+        if (sourceCache?.get(params)) return;
+        const asked = request;
+        revalidating = true;
+        source
+          .getRows(params)
+          .then((response) => {
+            sourceCache?.set(params, response);
+            if (asked !== request) return;
+            sourceCount = response.rowCount;
+            sourceInfo = response.pageInfo;
+            sourceAggregateRow = response.aggregateRow;
+            buildRows(response.rows);
+          })
+          .catch((error: unknown) => emit("datasourceerror", { error }))
+          .finally(() => {
+            revalidating = false;
+          });
+      }, ms);
+    };
+    signal.addEventListener("abort", () => clearInterval(revalidateTimer));
     /** After a sort, filter or page change: ask the data source, or apply locally. */
     const refresh = () => {
       if (source && (isTree() || serverGrouping())) loadedChildren.clear();
@@ -2732,17 +2995,40 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       draw();
       navigation.sync();
     };
-    // Row reordering (`ok:data-grid:roworder`, cancelable): no sort, filter, tree or lazy rows.
+    // Row reordering (`ok:data-grid:roworder`, cancelable): no sort, filter or lazy rows; tree
+    // rows (not from a server) move with their children, among siblings or to another parent.
     const live = element.querySelector<HTMLElement>("[data-ok-data-grid-live]");
+    const parentOfRow = (row: HTMLElement) => row.getAttribute("data-ok-parent");
+    const treeMove = (rowId: string, drop: { target: string; position: "above" | "below" }) => {
+      if (!isTree()) return undefined;
+      // Every tree row in display order, open or not.
+      const order = gridTreeRows(rowEls, {
+        idOf,
+        parentOf: parentOfRow,
+        expanded: () => true,
+      }).map((node) => node.id);
+      const byRowId = new Map(rowEls.map((row) => [idOf(row), row]));
+      return gridTreeRowMove(
+        order,
+        (nodeId) => {
+          const row = byRowId.get(nodeId);
+          return row ? parentOfRow(row) : null;
+        },
+        rowId,
+        drop,
+        true,
+      );
+    };
     const rowReorder = createGridRowReorder(main, {
       canReorder: () =>
         element.hasAttribute(rowReordering.attr) &&
-        !isTree() &&
+        (!isTree() || !source) &&
         !lazy() &&
         sortModel.length === 0 &&
         filterModel.items.length === 0 &&
         !filterModel.quickFilterValues?.length,
-      onMove: (rowId, rowIndex) => {
+      canDrop: (rowId, drop) => treeMove(rowId, drop) !== null,
+      onMove: (rowId, rowIndex, drop) => {
         const ids = sortedList.map(idOf);
         const oldIndex = ids.indexOf(rowId);
         const targetIndex = Math.min(
@@ -2750,9 +3036,23 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ids.length - 1,
         );
         if (oldIndex < 0 || oldIndex === targetIndex) return;
-        if (!emit("roworder", { id: rowId, oldIndex, targetIndex }, { cancelable: true })) return;
         const byRowId = new Map(rowEls.map((row) => [idOf(row), row]));
-        rowEls = moveGridRow(ids, rowId, targetIndex).map((rid) => byRowId.get(rid) as HTMLElement);
+        const tree = treeMove(rowId, drop);
+        if (tree === null) return;
+        const moving = byRowId.get(rowId) as HTMLElement;
+        const oldParentId = parentOfRow(moving);
+        const detail = tree
+          ? { id: rowId, oldIndex, targetIndex, oldParentId, parentId: tree.parent }
+          : { id: rowId, oldIndex, targetIndex };
+        if (!emit("roworder", detail, { cancelable: true })) return;
+        if (tree) {
+          rowEls = tree.order.map((rid) => byRowId.get(rid) as HTMLElement);
+          if (tree.parent) moving.setAttribute("data-ok-parent", tree.parent);
+          else moving.removeAttribute("data-ok-parent");
+        } else
+          rowEls = moveGridRow(ids, rowId, targetIndex).map(
+            (rid) => byRowId.get(rid) as HTMLElement,
+          );
         apply();
         if (live)
           live.textContent = labels.rowReorderingMoved
@@ -2955,6 +3255,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       cell.append(title);
       return cell;
     };
+    let pivotingColDef: GridHtmlPivotingColDef | null = null;
     const showPivot = () => {
       pivotNow = pivotOn();
       if (!pivotOn()) {
@@ -2985,7 +3286,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           labelOf,
         );
         const result = pivot;
-        columns = result.columns;
+        columns = result.columns.map((column) => {
+          const own =
+            typeof pivotingColDef === "function"
+              ? pivotingColDef(column.pivotValueField, [...column.pivotKeys])
+              : pivotingColDef;
+          return own ? { ...column, ...pickPivotOverrides(own) } : column;
+        });
         groupPaths = gridGroupPaths(result.columnGroupingModel);
         // Specials stay (without the markup's group column), then the pivot's columns.
         const specials = (baseHeader as Node[]).filter(
@@ -3003,11 +3310,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cells.forEach((cell, i) => {
           cell.setAttribute("aria-colindex", String(i + 1));
         });
-        for (const column of result.columns) {
+        for (const column of columns) {
           const cell = headerCell(column.field, column.headerName as string);
           cell.setAttribute("data-ok-type", column.type ?? "string");
           cell.setAttribute("data-ok-align", gridHeaderAlign(column));
           cell.setAttribute("data-ok-width", String(column.width));
+          if (column.minWidth !== undefined)
+            cell.setAttribute("data-ok-min-width", String(column.minWidth));
+          if (column.maxWidth !== undefined)
+            cell.setAttribute("data-ok-max-width", String(column.maxWidth));
           cell.setAttribute("data-ok-hideable", "false");
           cell.setAttribute("aria-sort", "none");
           const path = groupPaths.get(column.field);
@@ -3248,8 +3559,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     headerGroup.addEventListener(
       "input",
       (event) => {
-        if ((event.target as Element).closest("[data-ok-data-grid-header-filters]"))
-          onHeaderFilter(event);
+        const target = event.target as Element;
+        if (!target.closest("[data-ok-data-grid-header-filters]")) return;
+        if (target.matches("input"))
+          debounce.run(
+            `header-${target.closest("[data-ok-filter-field]")?.getAttribute("data-ok-filter-field")}`,
+            readNumber(element, columnFilterDebounceMs) as number,
+            () => onHeaderFilter(event),
+          );
+        else onHeaderFilter(event);
       },
       { signal },
     );
@@ -3329,9 +3647,23 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cell.removeAttribute("aria-selected");
         cell.removeAttribute("data-ok-range-edge");
       }
+      for (const handle of body.querySelectorAll("[data-ok-data-grid-fill-handle]"))
+        handle.remove();
       if (!cellsOn()) return;
       const ids = pageIds();
       const fields = shownFields();
+      // The fill handle sits in the bottom end cell of a whole rectangle.
+      const block = fillOn() ? gridFillSource(cellModel, ids, fields) : null;
+      const cornerRow = block && rowEls.find((r) => idOf(r) === block.ids.at(-1));
+      const corner = cornerRow?.isConnected
+        ? cellOf(cornerRow, block?.fields.at(-1) as string)
+        : null;
+      if (corner && !corner.hasAttribute("data-ok-editing")) {
+        const handle = document.createElement("span");
+        handle.setAttribute("data-ok-data-grid-fill-handle", "");
+        handle.setAttribute("aria-hidden", "true");
+        corner.append(handle);
+      }
       for (const [rowId, cells] of Object.entries(cellModel)) {
         const row = rowEls.find((r) => idOf(r) === rowId);
         if (!row?.isConnected) continue;
@@ -3346,6 +3678,61 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }
       }
     };
+    // Fill handle (MUI X `cellSelectionFillHandle`): the selection repeats where the handle goes.
+    const fillOn = () => cellsOn() && element.hasAttribute(cellSelectionFillHandle.attr);
+    const fillSourceNow = () =>
+      fillOn() ? gridFillSource(cellModel, pageIds(), shownFields()) : null;
+    const writeFill = (cells: GridFillCell[]) => {
+      const block = fillSourceNow();
+      if (!block || !cells.length || !emit("fill", { cells }, { cancelable: true })) return;
+      const byRow = new Map<string, GridFillCell[]>();
+      for (const cell of cells) byRow.set(cell.id, [...(byRow.get(cell.id) ?? []), cell]);
+      const changes: GridHistoryChange<DataRow>[] = [];
+      for (const [rowId, list] of byRow) {
+        const row = rowEls.find((el) => idOf(el) === rowId);
+        if (!row) continue;
+        const values: DataRow = {};
+        for (const cell of list) {
+          const column = columns.find((c) => c.field === cell.field);
+          const from = rowEls.find((el) => idOf(el) === cell.from.id);
+          if (!column || !from || !cellEditable(row, column)) continue;
+          // The same column copies the value; another one parses the source's text.
+          values[cell.field] =
+            cell.from.field === cell.field
+              ? value(from, cell.field)
+              : parseGridEditValue(cellText(from, cell.from.field), column.type);
+        }
+        if (
+          !Object.keys(values).length ||
+          !emit("edit", { id: rowId, row: values }, { cancelable: true })
+        )
+          continue;
+        changes.push({ id: rowId, before: valuesOf(row, Object.keys(values)), after: values });
+        writeCells(row, values);
+      }
+      // One undo step for the whole fill (not with a data source, as pastes).
+      if (!changes.length) return;
+      if (!source) recordStep(changes);
+      apply();
+      setCells(gridFillSelection(block, cells));
+      markCells();
+    };
+    const fillHandle = createGridFillHandle(main, {
+      enabled: fillOn,
+      preview: (target) => {
+        const block = fillSourceNow();
+        return block ? (gridFillCells(block, pageIds(), shownFields(), target)?.cells ?? []) : [];
+      },
+      onFill: (target) => {
+        const block = fillSourceNow();
+        if (block) writeFill(gridFillCells(block, pageIds(), shownFields(), target)?.cells ?? []);
+      },
+      onFillKey: (direction) => {
+        const block = fillSourceNow();
+        if (block) writeFill(gridFillWithin(block, pageIds(), shownFields(), direction));
+      },
+    });
+    signal.addEventListener("abort", () => fillHandle.destroy());
     const cellSelection = createGridCellSelection(main, {
       enabled: cellsOn,
       onRangeChart: () => rangeChart({}, true),
@@ -3409,6 +3796,33 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         left = fields.indexOf(cell?.getAttribute("data-ok-field") ?? "");
         if (top < 0 || left < 0) return;
       }
+      const waits: Promise<unknown>[] = [];
+      const allowed = emit(
+        "beforeclipboardpaste",
+        { data, waitUntil: (promise) => waits.push(promise) },
+        { cancelable: true },
+      );
+      if (!allowed) return;
+      const write = () => writePaste(data, top, left, fill, picked);
+      if (!waits.length) write();
+      // A rejection cancels the paste (the grid may be gone by the time it settles).
+      else
+        Promise.all(waits).then(
+          () => {
+            if (!signal.aborted) write();
+          },
+          () => {},
+        );
+    };
+    const writePaste = (
+      data: string[][],
+      top: number,
+      left: number,
+      fill: boolean,
+      picked: ReturnType<typeof gridSelectedBlock> | null,
+    ) => {
+      const ids = pageIds();
+      const fields = shownFields();
       if (!emit("clipboardpaste", { data }, { cancelable: true })) return;
       const rowIds = fill ? (picked as { ids: string[] }).ids : ids.slice(top, top + data.length);
       const changes: GridHistoryChange<DataRow>[] = [];
@@ -3520,7 +3934,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             Promise.resolve(source.updateRow({ rowId: idOf(row), updatedRow, previousRow }))
               .then((saved) => {
                 fillCells(row, saved);
-                sourceCache.clear();
+                sourceCache?.clear();
               })
               .catch((error: unknown) => {
                 fillCells(row, previousRow);
@@ -4385,7 +4799,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (list) {
           if (!(event.target as Element).matches('input[type="checkbox"]'))
             setListChange(list, event.target as Element);
-        } else setFilter(readFilters());
+        } else if ((event.target as Element).matches("input"))
+          debounce.run("panel", readNumber(element, filterDebounceMs) as number, () =>
+            setFilter(readFilters()),
+          );
+        else setFilter(readFilters());
       },
       { signal },
     );
@@ -4439,10 +4857,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       ?.addEventListener(
         "input",
         (event) =>
-          setFilter({
-            ...filterModel,
-            quickFilterValues: gridQuickFilterValues((event.target as HTMLInputElement).value),
-          }),
+          debounce.run("quick", readNumber(element, filterDebounceMs) as number, () =>
+            setFilter({
+              ...filterModel,
+              quickFilterValues: gridQuickFilterValues((event.target as HTMLInputElement).value),
+            }),
+          ),
         { signal },
       );
 
@@ -4514,8 +4934,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const exportExcel = (
       given: GridExcelOptions = {},
       options = { ...excelDefaults(), ...given },
-    ) =>
+    ) => {
+      emit("excelexportstate", { state: "pending" });
       download(`${fileName(options.fileName)}.xlsx`, toExcel(options) as BlobPart, GRID_XLSX_TYPE);
+      emit("excelexportstate", { state: "finished" });
+    };
     const print = (
       given: GridPrintOptions = {},
       options: GridPrintOptions = {
@@ -4575,6 +4998,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         return;
       widths = { ...widths, [field]: clampGridWidth(column, width) };
       layout();
+      emit("columnresize", { field, width: widths[field] });
       if (done) emit("resize", { field, width: widths[field] });
     };
     const setOrder = (fields: string[]) =>
@@ -4599,7 +5023,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         );
       },
       canReorder: () => !element.hasAttribute(disableColumnReorder.attr),
-      onAutosize: (field) => autosize({ columns: [field] }),
+      onAutosize: (field) => {
+        if (!element.hasAttribute(disableAutosize.attr)) autosize({ columns: [field] });
+      },
+      keepPositionOutside: () => element.hasAttribute(keepColumnPositionIfDraggedOutside.attr),
     });
     const autosize = (options: { columns?: readonly string[]; includeHeaders?: boolean } = {}) => {
       const fields =
@@ -4851,7 +5278,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         Promise.resolve(source.updateRow({ rowId: idOf(row), updatedRow, previousRow }))
           .then((saved) => {
             fillCells(row, saved);
-            sourceCache.clear();
+            sourceCache?.clear();
           })
           .catch((error: unknown) => {
             fillCells(row, previousRow);
@@ -5192,6 +5619,117 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       { signal },
     );
 
+    // Column header pointer events (MUI X `onColumnHeaderEnter`…): the data columns' headers.
+    const headerField = (target: EventTarget | null) => {
+      const header = (target as Element | null)?.closest?.('[role="columnheader"][data-ok-field]');
+      const field = header?.getAttribute("data-ok-field");
+      return field && main.contains(header as Element) && !isSpecial(field)
+        ? { field, header: header as Element }
+        : null;
+    };
+    main.addEventListener(
+      "dblclick",
+      (event) => {
+        const hit = headerField(event.target);
+        if (hit && !(event.target as Element).closest("button, input, [data-ok-data-grid-resize]"))
+          emit("columnheaderdoubleclick", { field: hit.field });
+      },
+      { signal },
+    );
+    main.addEventListener(
+      "contextmenu",
+      (event) => {
+        const hit = headerField(event.target);
+        if (hit && !emit("columnheadercontextmenu", { field: hit.field }, { cancelable: true }))
+          event.preventDefault();
+      },
+      { signal },
+    );
+    main.addEventListener(
+      "mouseover",
+      (event) => {
+        const hit = headerField(event.target);
+        if (!hit) return;
+        if (!hit.header.contains(event.relatedTarget as Node | null))
+          emit("columnheaderenter", { field: hit.field });
+        emit("columnheaderover", { field: hit.field });
+      },
+      { signal },
+    );
+    main.addEventListener(
+      "mouseout",
+      (event) => {
+        const hit = headerField(event.target);
+        if (!hit) return;
+        emit("columnheaderout", { field: hit.field });
+        if (!hit.header.contains(event.relatedTarget as Node | null))
+          emit("columnheaderleave", { field: hit.field });
+      },
+      { signal },
+    );
+    // Menus and panels report opening and closing (MUI X `onMenuOpen`…); they are Popovers.
+    const menuTargets = new WeakMap<Element, Element | null>();
+    const overlayEvent = (open: boolean) => (event: Event) => {
+      const popover = event.target as Element;
+      if (!id || !popover.id.startsWith(`${id}-`)) return;
+      const overlay = gridOverlayOf(popover.id.slice(id.length + 1));
+      if (overlay?.kind === "menu") {
+        if (open) {
+          const anchor = (event as CustomEvent<{ anchor: unknown }>).detail.anchor;
+          menuTargets.set(popover, anchor instanceof Element ? anchor : null);
+        }
+        emit(open ? "menuopen" : "menuclose", {
+          menu: overlay.value,
+          target: menuTargets.get(popover) ?? null,
+        });
+      } else if (overlay?.kind === "preference")
+        emit(open ? "preferencepanelopen" : "preferencepanelclose", {
+          openedPanelValue: overlay.value,
+        });
+      else if (overlay?.kind === "sidebar")
+        emit(open ? "sidebaropen" : "sidebarclose", { value: overlay.value });
+    };
+    element.addEventListener("ok:popover:open", overlayEvent(true), { signal });
+    element.addEventListener("ok:popover:close", overlayEvent(false), { signal });
+    // The pivot panel follows `data-ok-pivot-panel-open`, and the attribute follows the panel.
+    const pivotPopover = () => byId("pivot");
+    for (const [type, open] of [
+      ["ok:popover:open", true],
+      ["ok:popover:close", false],
+    ] as const)
+      element.addEventListener(
+        type,
+        (event) => {
+          if (event.target === pivotPopover() && element.hasAttribute(pivotPanelOpen.attr) !== open)
+            element.toggleAttribute(pivotPanelOpen.attr, open);
+        },
+        { signal },
+      );
+    const followPivotPanelOpen = () => {
+      const popover = pivotPopover();
+      if (!popover) return;
+      const want = element.hasAttribute(pivotPanelOpen.attr);
+      const instance = runtime.getOrCreate<PopoverInstance>(popover, "popover");
+      if (want === popover.hasAttribute("data-ok-open")) return;
+      if (want)
+        instance?.open(
+          element.querySelector(`[aria-controls="${CSS.escape(popover.id)}"]`) ?? element,
+        );
+      else instance?.close();
+    };
+    // The grid's own size (MUI X `onResize`): the first event is the size at setup.
+    if (typeof ResizeObserver === "function") {
+      let last = "";
+      const sized = new ResizeObserver(() => {
+        const { width, height } = element.getBoundingClientRect();
+        if (last === `${width}x${height}`) return;
+        last = `${width}x${height}`;
+        emit("containerresize", { width, height });
+      });
+      sized.observe(element);
+      signal.addEventListener("abort", () => sized.disconnect());
+    }
+
     // Pointer: header sorting, menu buttons, row selection, checkboxes.
     element.addEventListener(
       "click",
@@ -5331,6 +5869,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let columnModeNow = readStyle(element, rowGroupingColumnMode);
     let positionsNow = element.getAttribute("data-ok-aggregation-position");
     let pagingNow = paging();
+    let countsNow = [
+      element.getAttribute(rowCountOption.attr),
+      element.getAttribute(estimatedRowCount.attr),
+      element.getAttribute("data-ok-has-next-page"),
+    ].join("|");
+    let revalidateNow = element.getAttribute(dataSourceRevalidateMs.attr);
     const options = new MutationObserver(() => {
       reflect();
       if (pivotOn() !== pivotNow) {
@@ -5345,6 +5889,21 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (element.getAttribute("data-ok-aggregation-position") !== positionsNow) {
         positionsNow = element.getAttribute("data-ok-aggregation-position");
         apply();
+      }
+      // A new server count or next page: the pagination follows.
+      const nextCounts = [
+        element.getAttribute(rowCountOption.attr),
+        element.getAttribute(estimatedRowCount.attr),
+        element.getAttribute("data-ok-has-next-page"),
+      ].join("|");
+      if (nextCounts !== countsNow) {
+        countsNow = nextCounts;
+        apply();
+      }
+      followPivotPanelOpen();
+      if (element.getAttribute(dataSourceRevalidateMs.attr) !== revalidateNow) {
+        revalidateNow = element.getAttribute(dataSourceRevalidateMs.attr);
+        syncRevalidate();
       }
       // Pages on or off: the rows page again; the footer's counts follow.
       if (paging() !== pagingNow) {
@@ -5380,6 +5939,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         hideFooterPagination.attr,
         hideFooterRowCount.attr,
         hideFooterSelectedRowCount.attr,
+        estimatedRowCount.attr,
+        "data-ok-has-next-page",
+        rowCountOption.attr,
+        dataSourceRevalidateMs.attr,
+        pivotPanelOpen.attr,
         columnHeaderHeight.attr,
         columnGroupHeaderHeight.attr,
         headerFilterHeight.attr,
@@ -5395,6 +5959,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     if (pivotOn()) showPivot();
     else apply();
     reflect();
+    syncRevalidate();
+    // A pivot panel open from the start, once its Popover runtime is set up.
+    if (element.hasAttribute(pivotPanelOpen.attr)) queueMicrotask(followPivotPanelOpen);
     scrollWatcher.measure();
     if (element.hasAttribute(autosizeOnMount.attr)) {
       autosize();
@@ -5613,6 +6180,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         syncOverlays(rows().length);
         syncFooter();
       },
+      setPivotingColDef(def) {
+        pivotingColDef = def;
+        if (pivotOn()) showPivot();
+      },
       setRowChildrenExpansion(rowId, expanded) {
         const row = rows().find((r) => idOf(r) === rowId);
         if (row) toggleExpansion(row, expanded);
@@ -5624,13 +6195,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       setRows(data) {
         buildRows(data);
       },
-      setDataSource(next) {
+      setDataSource(next, sourceOptions) {
         source = next;
+        if (sourceOptions?.cache !== undefined) sourceCache = sourceOptions.cache;
         // A new source: lazily loaded rows belonged to the old one.
         lazyLoaded.clear();
         lazyState.key = "";
         sourceCount = undefined;
-        sourceCache.clear();
+        sourceCache?.clear();
         if (next) load();
         else apply();
       },

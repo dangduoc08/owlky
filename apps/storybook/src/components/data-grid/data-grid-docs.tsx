@@ -24,6 +24,7 @@ import largeGroup from "../../../../../packages/html/src/components/data-grid/ex
 import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
 import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
 import modesGroup from "../../../../../packages/html/src/components/data-grid/examples/modes-group.html?raw";
+import orderingGroup from "../../../../../packages/html/src/components/data-grid/examples/ordering-group.html?raw";
 import pivotDerived from "../../../../../packages/html/src/components/data-grid/examples/pivot-derived.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
 import selectionGroups from "../../../../../packages/html/src/components/data-grid/examples/selection-groups.html?raw";
@@ -354,7 +355,7 @@ export function Customers() {
   {
     id: "server",
     title: "Load rows from a server",
-    body: 'A data source lets the server sort, filter and page the rows. The grid calls `getRows()` with the sort model, the filter model and the page, and shows the rows it returns. `rowCount` is the total number of rows on the server, for the pagination. Responses are kept in a cache, so going back to a page doesn\'t ask the server again. Pass `dataSourceCache={null}` to turn the cache off. Errors go to `onDataSourceError` in React and to `ok:data-grid:datasourceerror` in HTML. To handle the requests yourself, set `sortingMode`, `filterMode` and `paginationMode` to `"server"`, pass `rowCount`, and load the rows in the change callbacks. While data loads, `loadingVariant` picks a progress bar, a spinner or placeholder rows (`"skeleton"`).',
+    body: 'A data source lets the server sort, filter and page the rows. The grid calls `getRows()` with the sort model, the filter model and the page, and shows the rows it returns. `rowCount` is the total number of rows on the server, for the pagination. Responses are kept in a cache, so going back to a page doesn\'t ask the server again. Pass `dataSourceCache={null}` to turn the cache off. While a request is pending, flat rows go away; pass `dataSourceKeepPreviousData` to keep them until the new rows arrive. Errors go to `onDataSourceError` in React and to `ok:data-grid:datasourceerror` in HTML. To handle the requests yourself, set `sortingMode`, `filterMode` and `paginationMode` to `"server"`, pass `rowCount`, and load the rows in the change callbacks. While data loads, `loadingVariant` picks a progress bar, a spinner or placeholder rows (`"skeleton"`).',
     html: `<script type="module">
   const element = document.getElementById("customers");
   const grid = window.Owlky.get(element, "data-grid");
@@ -2076,6 +2077,200 @@ export function Tasks() {
 }`,
   },
   {
+    id: "fill-handle",
+    title: "Fill cells by dragging",
+    body: "With `cellSelection` and `cellSelectionFillHandle`, a small square shows at the bottom end corner of the selected cells. Drag it down, up, right or left: the selection repeats into the cells it passes, and the selection grows over them. From the keyboard, select the cells with Shift + arrows, then press Ctrl + D (Cmd + D on a Mac) to copy the first row into the others, or Ctrl + R (Cmd + R) to copy the first column. With one row selected, Ctrl + D copies the row above it. A cell in the same column gets the value itself; a cell in another column gets the text, read the way a paste reads it. Each changed row goes through `processRowUpdate`, and the whole fill is one undo step. Only editable cells change. In HTML, the cancelable `ok:data-grid:fill` reports the cells first, then each row fires `ok:data-grid:edit`.",
+    html: `<!-- The grid's data-ok-cell-selection and data-ok-cell-selection-fill-handle -->
+${gridOf(cellsGroup, { attrs: "data-ok-cell-selection-fill-handle" })}
+<script>
+  const grid = document.getElementById("grid-cells");
+  grid.addEventListener("ok:data-grid:fill", (event) => {
+    console.log("Cells to fill:", event.detail.cells.length);
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
+
+type Task = { id: number; title: string; owner: string; points: number };
+
+const initialTasks: Task[] = [
+  { id: 1, title: "Fix the login form", owner: "Ana", points: 3 },
+  { id: 2, title: "Update the docs", owner: "", points: 0 },
+  { id: 3, title: "Add dark mode", owner: "", points: 0 },
+];
+
+const columns: GridColDef<Task>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "owner", headerName: "Owner", editable: true },
+  { field: "points", headerName: "Points", type: "number", editable: true },
+];
+
+export function Tasks() {
+  const [tasks, setTasks] = useState(initialTasks);
+  return (
+    <DataGrid
+      aria-label="Tasks"
+      rows={tasks}
+      columns={columns}
+      cellSelection
+      cellSelectionFillHandle
+      processRowUpdate={(row) => {
+        setTasks((current) => current.map((task) => (task.id === row.id ? row : task)));
+        return row;
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "reorder-tree",
+    title: "Reorder tree rows and pinned edges",
+    body: "With `treeData` and `rowReordering`, a row moves with its children. Drag its handle above or below another row, or press Alt + Up or Alt + Down on the handle. The row joins the siblings of the row it lands next to. To let rows change parent, pass `setTreeDataPath`: the grid gives it the new path and saves each moved row through `processRowUpdate`. `isRowReorderable` keeps some rows in place (their handle goes away), and `isValidRowReorder` refuses some places. `pinnedColumnsSectionSeparator` and `pinnedRowsSectionSeparator` draw the edge of pinned columns and rows as a line (the default), a shadow, or both. `disableAutosize` turns off the double click on a column's edge. In HTML, tree rows change parent through `data-ok-parent`, and the cancelable `ok:data-grid:roworder` reports `detail.oldParentId` and `detail.parentId`.",
+    html: `<!-- Rows with a reorder handle; the edge of pinned columns casts a shadow -->
+${gridOf(orderingGroup, { attrs: 'data-ok-pinned-columns-section-separator="border-and-shadow"' })}
+<script>
+  const grid = document.getElementById("grid-agenda");
+  grid.addEventListener("ok:data-grid:roworder", (event) => {
+    // Tree rows report their old and new parent; this keeps rows out of the first place
+    if (event.detail.targetIndex === 0) event.preventDefault();
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
+
+type File = { id: string; path: string[]; size: number };
+
+const initialFiles: File[] = [
+  { id: "docs", path: ["docs"], size: 0 },
+  { id: "intro", path: ["docs", "intro.md"], size: 12 },
+  { id: "src", path: ["src"], size: 0 },
+  { id: "main", path: ["src", "main.ts"], size: 40 },
+];
+
+const columns: GridColDef<File>[] = [{ field: "size", headerName: "Size (kB)", type: "number" }];
+
+export function Files() {
+  const [files, setFiles] = useState(initialFiles);
+  return (
+    <DataGrid
+      aria-label="Files"
+      rows={files}
+      columns={columns}
+      treeData
+      getTreeDataPath={(row) => row.path}
+      setTreeDataPath={(path, row) => ({ ...row, path })}
+      defaultGroupingExpansionDepth={-1}
+      rowReordering
+      // Folders stay where they are
+      isRowReorderable={({ row }) => row.size > 0}
+      processRowUpdate={(row) => {
+        setFiles((current) => current.map((file) => (file.id === row.id ? row : file)));
+        return row;
+      }}
+      pinnedColumnsSectionSeparator="border-and-shadow"
+    />
+  );
+}`,
+  },
+  {
+    id: "unknown-row-count",
+    title: "Page through rows of unknown length",
+    body: 'When the server doesn\'t know the total, set `rowCount={-1}`. The pagination shows "1–25 of more than 25", and the next page stays available. `estimatedRowCount` shows "1–25 of around 500" instead, for as long as the estimate is ahead of the page. Pass `paginationMeta={{ hasNextPage: false }}` on the last page: the grid then fixes the total at the rows seen so far and turns the next page off. A data source can return `pageInfo: { hasNextPage }` in place of `rowCount`, and `onPaginationMetaChange` reports it. `onRowCountChange` reports each new count. `filterDebounceMs` and `columnFilterDebounceMs` make the quick filter, the filter panel and the header filters wait after each keystroke before they ask for rows. The field shows what people type at once. With tree data, `disableChildrenFiltering` and `disableChildrenSorting` limit filtering and sorting to the top-level rows.',
+    html: `<!-- An unknown total: the grid's data-ok-pagination-mode="server" and data-ok-row-count="-1" -->
+${gridOf(serverGroup, { attrs: 'data-ok-pagination-mode="server" data-ok-row-count="-1" data-ok-estimated-row-count="500"' })}
+<script>
+  const grid = document.getElementById("grid-server");
+  grid.addEventListener("ok:data-grid:rowcountchange", (event) => {
+    console.log("Row count:", event.detail.count);
+  });
+  // On the last page, tell the grid that no page follows
+  grid.setAttribute("data-ok-has-next-page", "false");
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
+
+const allIssues = Array.from({ length: 120 }, (_, i) => ({
+  id: i + 1,
+  title: \`Issue \${i + 1}\`,
+}));
+
+const columns: GridColDef<(typeof allIssues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+];
+
+export function Issues() {
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 25 });
+  const start = paginationModel.page * paginationModel.pageSize;
+  const rows = allIssues.slice(start, start + paginationModel.pageSize);
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={rows}
+      columns={columns}
+      paginationMode="server"
+      paginationModel={paginationModel}
+      onPaginationModelChange={setPaginationModel}
+      rowCount={-1}
+      estimatedRowCount={500}
+      paginationMeta={{ hasNextPage: start + paginationModel.pageSize < allIssues.length }}
+    />
+  );
+}`,
+  },
+  {
+    id: "listen",
+    title: "Listen to the grid",
+    body: "The grid reports what happens around its cells. Column headers report double clicks, right clicks and the pointer moving over them. Menus and panels report opening and closing, however they opened: the column menu, **Density**, **Export** and the cell menu as menus, **Columns** and **Filters** as preference panels, **Pivot** and **Chart** as sidebars. `onResize` reports the size of the grid, and `onColumnResize` reports each width while a column's edge is dragged. `onColumnWidthChange` still reports the width on release. `onBeforeClipboardPasteStart` runs before a paste writes any cell. Throw or return a promise that rejects to cancel the paste, for example after a confirmation. In HTML, these are events on the grid, and a listener passes a promise to `detail.waitUntil` to make a paste wait.",
+    html: `${gridOf(filtersGroup)}
+<script>
+  const grid = document.getElementById("grid-filters");
+  grid.addEventListener("ok:data-grid:menuopen", (event) => {
+    console.log("Menu opened:", event.detail.menu);
+  });
+  grid.addEventListener("ok:data-grid:preferencepanelopen", (event) => {
+    console.log("Panel opened:", event.detail.openedPanelValue);
+  });
+  grid.addEventListener("ok:data-grid:containerresize", (event) => {
+    console.log("Grid size:", event.detail.width, event.detail.height);
+  });
+  grid.addEventListener("ok:data-grid:beforeclipboardpaste", (event) => {
+    // Cancels the paste unless the visitor agrees
+    if (!window.confirm("Paste these cells?")) event.preventDefault();
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", points: 3 },
+  { id: 2, title: "Update the docs", points: 2 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1, editable: true },
+  { field: "points", headerName: "Points", type: "number", editable: true },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      showToolbar
+      onMenuOpen={({ menu }) => console.log("Menu opened:", menu)}
+      onPreferencePanelOpen={({ openedPanelValue }) =>
+        console.log("Panel opened:", openedPanelValue)
+      }
+      onResize={({ width, height }) => console.log("Grid size:", width, height)}
+      onBeforeClipboardPasteStart={() => {
+        // Throwing cancels the paste
+        if (!window.confirm("Paste these cells?")) throw new Error("Canceled");
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -2097,6 +2292,13 @@ export function Tasks() {
 - **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. **\`ok:data-grid:activechart\`** reports the chart the panel switches to in \`detail.id\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
 - **\`ok:data-grid:undo\`** and **\`ok:data-grid:redo\`** report the ids of the rows an undo or a redo changed, in \`detail.ids\`. The instance's \`history\` has \`undo()\`, \`redo()\`, \`canUndo()\`, \`canRedo()\` and \`clear()\`.
 - **\`ok:data-grid:cellmodes\`** and **\`ok:data-grid:rowmodes\`** fire when people start or stop editing, with the next modes model in \`detail.model\`. They're cancelable. The instance has \`cellModesModel\` and \`rowModesModel\` with their setters, and \`setEditCellValue({ id, field, value })\`.
+- **\`ok:data-grid:columnheaderdoubleclick\`**, **\`ok:data-grid:columnheadercontextmenu\`** (cancelable: \`preventDefault()\` closes the browser's menu), **\`ok:data-grid:columnheaderenter\`**, **\`ok:data-grid:columnheaderleave\`**, **\`ok:data-grid:columnheaderover\`** and **\`ok:data-grid:columnheaderout\`** report \`detail.field\`.
+- **\`ok:data-grid:menuopen\`** and **\`ok:data-grid:menuclose\`** report \`detail.menu\` and \`detail.target\`. **\`ok:data-grid:preferencepanelopen\`** and **\`ok:data-grid:preferencepanelclose\`** report \`detail.openedPanelValue\`. **\`ok:data-grid:sidebaropen\`** and **\`ok:data-grid:sidebarclose\`** report \`detail.value\`.
+- **\`ok:data-grid:containerresize\`** reports the grid's \`detail.width\` and \`detail.height\`. **\`ok:data-grid:columnresize\`** reports \`detail.field\` and \`detail.width\` while an edge is dragged.
+- **\`ok:data-grid:fetchrows\`** reports \`detail.firstRowToRender\` and \`detail.lastRowToRender\` when the rendered rows change and \`data-ok-row-count\` is more than the rows in the grid. **\`ok:data-grid:excelexportstate\`** reports \`detail.state\`, \`pending\` then \`finished\`. **\`ok:data-grid:beforeclipboardpaste\`** is cancelable and takes a promise in \`detail.waitUntil(promise)\`.
+- **\`ok:data-grid:fill\`** reports the cells the fill handle (or Ctrl + D, Ctrl + R) is about to write, each with the cell it repeats, in \`detail.cells\`. It's cancelable.
+- **\`ok:data-grid:roworder\`** also reports \`detail.oldParentId\` and \`detail.parentId\` for tree rows. \`setPivotingColDef(def)\` changes the pivot's columns (\`headerName\`, \`width\`, \`minWidth\`, \`maxWidth\`, \`align\`, \`headerAlign\`), and \`data-ok-pivot-panel-open\` opens the pivot panel.
+- **\`ok:data-grid:rowcountchange\`** reports \`detail.count\`, and **\`ok:data-grid:paginationmetachange\`** reports a data source's \`detail.hasNextPage\`. \`setDataSource(source, { cache })\` replaces the cache of responses (\`null\` turns it off).
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {
@@ -2401,6 +2603,10 @@ const PREVIEWS = {
         ["Shift + arrow keys (cell selection)", "Extends the selected range"],
         ["Alt + F1 on a cell (cell selection)", "Charts the selected cells"],
         ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
+        [
+          "Ctrl + D / Ctrl + R on a cell (cellSelectionFillHandle)",
+          "Fills the selected cells down / right from the first row / column",
+        ],
         ["Ctrl + Z on a cell or a header", "Undoes the last edit or paste"],
         ["Ctrl + Shift + Z or Ctrl + Y on a cell or a header", "Redoes it"],
         ["Shift + F10 or the Menu key on a cell (contextMenu)", "Opens the cell menu"],

@@ -135,6 +135,8 @@ export interface GridGetRowsResponse<R> {
   rowCount?: number | undefined;
   /** Server-side aggregation: the values of every row, for the footer row (MUI X). */
   aggregateRow?: Record<string, unknown> | undefined;
+  /** An unknown row count: whether a page follows (MUI X `pageInfo`). */
+  pageInfo?: { hasNextPage?: boolean | undefined } | undefined;
 }
 
 /** A server data source (MUI X Pro `dataSource`). */

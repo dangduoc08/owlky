@@ -882,6 +882,17 @@ export {
   parseGridExcelOptions,
 } from "./data-grid/grid-excel.js";
 export {
+  createGridFillHandle,
+  type GridFillCell,
+  type GridFillDirection,
+  type GridFillHandle,
+  type GridFillHandleOptions,
+  gridFillCells,
+  gridFillSelection,
+  gridFillSource,
+  gridFillWithin,
+} from "./data-grid/grid-fill.js";
+export {
   type GridFormat,
   type GridHeaderHeights,
   type GridRowSpans,
@@ -924,6 +935,13 @@ export {
   gridFocusTarget,
   moveGridCell,
 } from "./data-grid/grid-navigation.js";
+export {
+  type GridMenuName,
+  type GridOverlay,
+  type GridPreferencePanelName,
+  type GridSidebarName,
+  gridOverlayOf,
+} from "./data-grid/grid-overlays.js";
 export {
   createGridPivotDrag,
   type GridPivotDerivedColumn,
@@ -992,9 +1010,17 @@ export {
   setGridPivotRole,
 } from "./data-grid/grid-premium.js";
 export {
+  createGridDebounce,
+  type GridDebounce,
+  type GridPaginationMeta,
+  gridPaginationCount,
+  gridUnknownCountPattern,
+} from "./data-grid/grid-server.js";
+export {
   createGridRowReorder,
   type GridColumnGroup,
   type GridGroupCell,
+  type GridRowDrop,
   type GridRowReorder,
   type GridRowReorderOptions,
   type GridTreeOptions,
@@ -1006,7 +1032,9 @@ export {
   gridGroupRows,
   gridGroupsById,
   gridMissingRanges,
+  gridMovedTreePath,
   gridParentsFromPaths,
+  gridTreeRowMove,
   gridTreeRows,
   moveGridRow,
   parseGridExportOptions,

@@ -3445,7 +3445,18 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "client",
     "`server`: the rows are the current page; `rowCount` is the total.",
   ),
-  rowCount: number("data-ok-row-count", undefined, "Total rows on the server.", { min: 0 }),
+  rowCount: number(
+    "data-ok-row-count",
+    undefined,
+    "Total rows on the server (`-1`: not known yet).",
+    { min: -1 },
+  ),
+  estimatedRowCount: number(
+    "data-ok-estimated-row-count",
+    undefined,
+    'With an unknown row count: the pagination shows "around" this number while the page is before it.',
+    { min: 0 },
+  ),
   loading: flag("data-ok-loading", "Data is loading: an overlay shows progress."),
   loadingVariant: style(
     "data-ok-loading-variant",
@@ -3582,6 +3593,67 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "withModifierKey",
     "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
     { optional: true },
+  ),
+  disableAutosize: flag(
+    "data-ok-disable-autosize",
+    "A double click on a column's edge doesn't fit it to its content.",
+  ),
+  keepColumnPositionIfDraggedOutside: flag(
+    "data-ok-keep-column-position-if-dragged-outside",
+    "A column dropped outside the grid takes the place of the last header it passed.",
+  ),
+  pinnedColumnsSectionSeparator: style(
+    "data-ok-pinned-columns-section-separator",
+    ["border", "shadow", "border-and-shadow"] as const,
+    "border",
+    "The edge between pinned and scrolling columns: a line, a shadow or both.",
+    { optional: true },
+  ),
+  pinnedRowsSectionSeparator: style(
+    "data-ok-pinned-rows-section-separator",
+    ["border", "border-and-shadow"] as const,
+    "border",
+    "The edge between pinned and scrolling rows: a line, or a line and a shadow.",
+    { optional: true },
+  ),
+  pivotPanelOpen: flag("data-ok-pivot-panel-open", "The pivot panel is open."),
+  virtualizeColumnsWithAutoRowHeight: flag(
+    "data-ok-virtualize-columns-with-auto-row-height",
+    'Columns virtualize with `"auto"` row heights too (rows may change height while scrolling sideways).',
+  ),
+  dataSourceKeepPreviousData: flag(
+    "data-ok-data-source-keep-previous-data",
+    "With a data source: the rows stay until the new ones arrive (flat rows; tree and grouped rows reset).",
+  ),
+  dataSourceRevalidateMs: number(
+    "data-ok-data-source-revalidate-ms",
+    0,
+    "With a data source: how often (ms) rows whose cache entry expired load again (`0`: never).",
+    { min: 0 },
+  ),
+  filterDebounceMs: number(
+    "data-ok-filter-debounce-ms",
+    0,
+    "Wait (ms) after a keystroke in the quick filter or the filter panel before filtering.",
+    { min: 0 },
+  ),
+  columnFilterDebounceMs: number(
+    "data-ok-column-filter-debounce-ms",
+    0,
+    "Wait (ms) after a keystroke in a header filter before filtering.",
+    { min: 0 },
+  ),
+  disableChildrenFiltering: flag(
+    "data-ok-disable-children-filtering",
+    "Tree data: filters apply to top-level rows only; a row's children show with it.",
+  ),
+  disableChildrenSorting: flag(
+    "data-ok-disable-children-sorting",
+    "Tree data: sorting orders top-level rows only.",
+  ),
+  cellSelectionFillHandle: flag(
+    "data-ok-cell-selection-fill-handle",
+    "With cell selection: a handle at the selection's corner repeats its cells where it is dragged (Ctrl / Cmd + D or R from the keyboard).",
   ),
   statusBar: flag(
     "data-ok-status-bar",
@@ -3735,6 +3807,20 @@ export interface DataGridAnatomyOptions {
   filterMode?: "client" | "server" | undefined;
   paginationMode?: "client" | "server" | undefined;
   rowCount?: number | undefined;
+  estimatedRowCount?: number | undefined;
+  cellSelectionFillHandle?: boolean | undefined;
+  disableAutosize?: boolean | undefined;
+  keepColumnPositionIfDraggedOutside?: boolean | undefined;
+  pinnedColumnsSectionSeparator?: "border" | "shadow" | "border-and-shadow" | undefined;
+  pinnedRowsSectionSeparator?: "border" | "border-and-shadow" | undefined;
+  pivotPanelOpen?: boolean | undefined;
+  virtualizeColumnsWithAutoRowHeight?: boolean | undefined;
+  dataSourceKeepPreviousData?: boolean | undefined;
+  dataSourceRevalidateMs?: number | undefined;
+  filterDebounceMs?: number | undefined;
+  columnFilterDebounceMs?: number | undefined;
+  disableChildrenFiltering?: boolean | undefined;
+  disableChildrenSorting?: boolean | undefined;
   loading?: boolean | undefined;
   loadingVariant?: "linear-progress" | "circular-progress" | "skeleton" | undefined;
   scrollEndThreshold?: number | undefined;

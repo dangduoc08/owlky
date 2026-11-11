@@ -9,6 +9,8 @@ import {
   createGridColumnControls,
   createGridContextMenu,
   createGridDataSourceCache,
+  createGridDebounce,
+  createGridFillHandle,
   createGridHistoryKeys,
   createGridHistoryStack,
   createGridNavigation,
@@ -47,6 +49,7 @@ import {
   type GridDensity,
   type GridEditStartReason,
   type GridExcelOptions,
+  type GridFillCell,
   type GridFilterGroup,
   type GridFilterItem,
   type GridFilterModel,
@@ -56,17 +59,22 @@ import {
   type GridHistoryChange,
   type GridHistoryStack,
   type GridLabels,
+  type GridMenuName,
   type GridNavigation,
+  type GridPaginationMeta,
   type GridPinnedColumns,
   type GridPivotModel,
   type GridPivotSection,
+  type GridPreferencePanelName,
   type GridRangeChart,
   type GridRangeChartParams,
+  type GridRowDrop,
   type GridRowModesModel,
   type GridRowSelectionPropagation,
   type GridRowWindow,
   type GridSelectionTree,
   type GridSetFilterValue,
+  type GridSidebarName,
   type GridSortDirection,
   type GridSortingOrder,
   type GridSortModel,
@@ -113,6 +121,10 @@ import {
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
+  gridFillCells,
+  gridFillSelection,
+  gridFillSource,
+  gridFillWithin,
   gridFilterGroupName,
   gridFilterGroupSuffix,
   gridFilterOperators,
@@ -132,7 +144,10 @@ import {
   gridHistoryRow,
   gridLockedFields,
   gridMissingRanges,
+  gridMovedTreePath,
   gridOperatorNeedsValue,
+  gridOverlayOf,
+  gridPaginationCount,
   gridPinSide,
   gridPivot,
   gridPivotDerivedColumns,
@@ -160,7 +175,9 @@ import {
   gridToTsv,
   gridToXlsx,
   gridTreeGroups,
+  gridTreeRowMove,
   gridTreeRows,
+  gridUnknownCountPattern,
   gridWithGroupFooters,
   isGridCellSelected,
   isGridFilterable,
@@ -512,6 +529,83 @@ export interface GridPaginationModel {
 /** The state a grid starts with (the shape `exportState()` returns). */
 export type GridInitialState = GridState;
 
+/** Called with the column header it happened on and the native event. */
+export type GridColumnHeaderHandler<R> = (
+  params: { field: string; colDef: GridColDef<R> },
+  event: MouseEvent<HTMLElement>,
+) => void;
+
+/** What opened or closed in `onMenuOpen` / `onMenuClose`. */
+export interface GridMenuParams {
+  /** Which menu. */
+  menu: GridMenuName;
+  /** The button it opened from (`null`: the cell menu, opened at a point). */
+  target: HTMLElement | null;
+}
+
+/** What opened or closed in `onPreferencePanelOpen` / `onPreferencePanelClose`. */
+export interface GridPreferencePanelParams {
+  /** Which panel. */
+  openedPanelValue: GridPreferencePanelName;
+}
+
+/** What opened or closed in `onSidebarOpen` / `onSidebarClose`. */
+export interface GridSidebarParams {
+  /** Which panel. */
+  value: GridSidebarName;
+}
+
+/** What `onRowOrderChange` reports. */
+export interface GridRowOrderChangeParams<R> {
+  row: R;
+  /** Index among the shown rows before and after the move. */
+  oldIndex: number;
+  targetIndex: number;
+  /** Tree data: the parent ids before and after (`null`: top level). */
+  oldParent?: string | null | undefined;
+  newParent?: string | null | undefined;
+}
+
+/** What `isValidRowReorder` checks. */
+export interface GridRowReorderContext<R> {
+  sourceRow: R;
+  targetRow: R;
+  /** Indexes among the shown rows. */
+  sourceRowIndex: number;
+  targetRowIndex: number;
+  /** The dragged row lands above or below the target. */
+  dropPosition: "above" | "below";
+  dragDirection: "up" | "down";
+}
+
+/** What `pivotingColDef` may change on a pivot column. */
+export type GridPivotingColDefOverrides = Partial<
+  Pick<
+    GridColDef<unknown>,
+    | "headerName"
+    | "description"
+    | "width"
+    | "minWidth"
+    | "maxWidth"
+    | "flex"
+    | "align"
+    | "headerAlign"
+    | "headerClassName"
+    | "cellClassName"
+    | "resizable"
+  >
+>;
+
+/** What `onFetchRows` asks for. */
+export interface GridFetchRowsParams {
+  /** Index of the first rendered row. */
+  firstRowToRender: number;
+  /** Index after the last rendered row. */
+  lastRowToRender: number;
+  sortModel: GridSortModel;
+  filterModel: GridFilterModel;
+}
+
 export interface DataGridProps<R>
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onChange" | "contextMenu"> {
   /** The rows: one object per row. */
@@ -669,7 +763,16 @@ export interface DataGridProps<R>
   filterMode?: "client" | "server" | undefined;
   /** `server`: `rows` are the current page and `rowCount` the total. */
   paginationMode?: "client" | "server" | undefined;
+  /** Total rows on the server; `-1` when it isn't known yet. */
   rowCount?: number | undefined;
+  /** With `rowCount={-1}`: the pagination shows "around" this number until the page passes it. */
+  estimatedRowCount?: number | undefined;
+  /** With `rowCount={-1}`: `hasNextPage: false` fixes the total at the rows seen so far. */
+  paginationMeta?: GridPaginationMeta | undefined;
+  /** Called when a data source reports a new `pageInfo`. */
+  onPaginationMetaChange?: ((meta: GridPaginationMeta) => void) | undefined;
+  /** Called when the row count changes. */
+  onRowCountChange?: ((count: number) => void) | undefined;
   /** Shows the loading overlay. */
   loading?: boolean | undefined;
   /** Default `linear-progress`. */
@@ -684,6 +787,18 @@ export interface DataGridProps<R>
   dataSourceCache?: GridDataSourceCache<R> | null | undefined;
   /** Called when the data source fails to load rows. */
   onDataSourceError?: ((error: unknown) => void) | undefined;
+  /** The rows stay on screen until the new ones arrive (flat rows; tree and grouped rows reset). */
+  dataSourceKeepPreviousData?: boolean | undefined;
+  /** How often (ms) rows whose cache entry expired load again in the background. Default `0`: never. */
+  dataSourceRevalidateMs?: number | undefined;
+  /** Wait (ms) after a keystroke in the quick filter or the filter panel before filtering. Default `0`. */
+  filterDebounceMs?: number | undefined;
+  /** Wait (ms) after a keystroke in a header filter before filtering. Default `0`. */
+  columnFilterDebounceMs?: number | undefined;
+  /** Tree data: filters apply to top-level rows only; a row's children show with it. */
+  disableChildrenFiltering?: boolean | undefined;
+  /** Tree data: sorting orders top-level rows only. */
+  disableChildrenSorting?: boolean | undefined;
   /** One row at a time (no select all). */
   disableMultipleRowSelection?: boolean | undefined;
   /** Returns whether a row can be selected. */
@@ -757,6 +872,47 @@ export interface DataGridProps<R>
   onColumnHeaderClick?:
     | ((params: { field: string; colDef: GridColDef<R> }, event: MouseEvent<HTMLElement>) => void)
     | undefined;
+  /** Called on a double click on a column header (not on its buttons or resize handle). */
+  onColumnHeaderDoubleClick?: GridColumnHeaderHandler<R> | undefined;
+  /** Called on a right click on a column header. */
+  onColumnHeaderContextMenu?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer enters a column header. */
+  onColumnHeaderEnter?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer leaves a column header. */
+  onColumnHeaderLeave?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer moves onto a column header or an element inside it. */
+  onColumnHeaderOver?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer moves off a column header or an element inside it. */
+  onColumnHeaderOut?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when a grid menu opens: the column menu, Density, Export or the cell menu. */
+  onMenuOpen?: ((params: GridMenuParams) => void) | undefined;
+  /** Called when a grid menu closes. */
+  onMenuClose?: ((params: GridMenuParams) => void) | undefined;
+  /** Called when the Columns or Filters panel opens. */
+  onPreferencePanelOpen?: ((params: GridPreferencePanelParams) => void) | undefined;
+  /** Called when the Columns or Filters panel closes. */
+  onPreferencePanelClose?: ((params: GridPreferencePanelParams) => void) | undefined;
+  /** Called when the Pivot or Chart panel opens. */
+  onSidebarOpen?: ((params: GridSidebarParams) => void) | undefined;
+  /** Called when the Pivot or Chart panel closes. */
+  onSidebarClose?: ((params: GridSidebarParams) => void) | undefined;
+  /** Called when the grid's own size changes, with its width and height in pixels. */
+  onResize?: ((containerSize: { width: number; height: number }) => void) | undefined;
+  /** Called while a column's edge is dragged, with each new width (`onColumnWidthChange`: on release). */
+  onColumnResize?: ((field: string, width: number) => void) | undefined;
+  /**
+   * Called when the rendered rows change while `rowCount` is more than the rows given (with
+   * client-side pagination, no data source): load the rows of `firstRowToRender` up to, and not
+   * including, `lastRowToRender`.
+   */
+  onFetchRows?: ((params: GridFetchRowsParams) => void) | undefined;
+  /** Called when an Excel export starts (`"pending"`) and ends (`"finished"`). */
+  onExcelExportStateChange?: ((state: "pending" | "finished") => void) | undefined;
+  /**
+   * Called before a paste writes any cell. Throw, or return a promise that rejects, to cancel the
+   * paste; a promise makes the grid wait for it (a confirmation dialog, for example).
+   */
+  onBeforeClipboardPasteStart?: ((params: { data: string[][] }) => unknown) | undefined;
   /** Receives the grid's methods. */
   apiRef?: RefObject<GridApi<R> | null> | undefined;
   /** Returns whether a cell can be edited (over the column's `editable`). */
@@ -810,10 +966,28 @@ export interface DataGridProps<R>
   onDetailPanelExpandedRowIdsChange?: ((ids: string[]) => void) | undefined;
   /** Rows move by dragging their handle (or Alt + Up / Down on it). */
   rowReordering?: boolean | undefined;
-  /** Called when a dragged row moves. */
-  onRowOrderChange?:
-    | ((params: { row: R; oldIndex: number; targetIndex: number }) => void)
-    | undefined;
+  /** Called when a dragged row moves (tree data: with its old and new parent ids). */
+  onRowOrderChange?: ((params: GridRowOrderChangeParams<R>) => void) | undefined;
+  /** Returns whether a row can be moved; `false` leaves out its handle. */
+  isRowReorderable?: ((params: { id: string; row: R }) => boolean) | undefined;
+  /** Returns whether a row may land there; refused places get no drop mark and no move. */
+  isValidRowReorder?: ((context: GridRowReorderContext<R>) => boolean) | undefined;
+  /**
+   * Tree data: the row with a new path, when reordering moves it under another parent (the
+   * reverse of `getTreeDataPath`). Each moved row then goes through `processRowUpdate`. Without
+   * it, rows move among their siblings only.
+   */
+  setTreeDataPath?: ((path: string[], row: R) => R) | undefined;
+  /** A double click on a column's edge doesn't fit it to its content. */
+  disableAutosize?: boolean | undefined;
+  /** A column dropped outside the grid takes the place of the last header it passed. */
+  keepColumnPositionIfDraggedOutside?: boolean | undefined;
+  /** The edge between pinned and scrolling columns. Default `"border"`. */
+  pinnedColumnsSectionSeparator?: "border" | "shadow" | "border-and-shadow" | undefined;
+  /** The edge between pinned and scrolling rows. Default `"border"`. */
+  pinnedRowsSectionSeparator?: "border" | "border-and-shadow" | undefined;
+  /** Columns virtualize with `"auto"` row heights too (rows may change height while scrolling sideways). */
+  virtualizeColumnsWithAutoRowHeight?: boolean | undefined;
   /** Rows kept above or below the others (not sorted, filtered or paged). */
   pinnedRows?: { top?: readonly R[] | undefined; bottom?: readonly R[] | undefined } | undefined;
   /** Header groups over the columns (multi-level headers). */
@@ -874,10 +1048,28 @@ export interface DataGridProps<R>
     | ((column: GridColDef<R>) => GridColDef<R>[] | undefined)
     | null
     | undefined;
+  /**
+   * Overrides for the pivot's value columns: one object for all, or a function of the source
+   * field and the column's keys (`columnGroupPath`).
+   */
+  pivotingColDef?:
+    | GridPivotingColDefOverrides
+    | ((originalColumnField: string, columnGroupPath: string[]) => GridPivotingColDefOverrides)
+    | undefined;
+  /** The pivot panel is open (controlled with `onPivotPanelOpenChange`). */
+  pivotPanelOpen?: boolean | undefined;
+  /** Called when the pivot panel opens or closes, or is asked to. */
+  onPivotPanelOpenChange?: ((open: boolean) => void) | undefined;
   /** Options of the Excel export. */
   excelOptions?: GridExcelOptions | undefined;
   /** Cells are selected in ranges (press, drag, Shift + click, Shift + arrows). */
   cellSelection?: boolean | undefined;
+  /**
+   * With `cellSelection`: a handle at the selection's corner repeats its cells down, up, right or
+   * left where it is dragged; Ctrl / Cmd + D and + R fill down and right from the keyboard. Each
+   * row goes through `processRowUpdate`; one fill is one undo step.
+   */
+  cellSelectionFillHandle?: boolean | undefined;
   /** The selected cells (row id to fields), controlled. */
   cellSelectionModel?: GridCellSelectionModel | undefined;
   /** Called when the cell selection changes. */
@@ -1224,6 +1416,8 @@ interface FilterRowAt {
   onRemove: () => void;
 }
 
+/** Parts of a header whose double click isn't the header's own. */
+const HEADER_CONTROLS = "button, input, [data-ok-data-grid-resize]";
 type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" | null;
 
 function DataGridInner<R>(
@@ -1294,6 +1488,16 @@ function DataGridInner<R>(
     filterMode = "client",
     paginationMode = "client",
     rowCount,
+    estimatedRowCount,
+    paginationMeta,
+    onPaginationMetaChange,
+    onRowCountChange,
+    dataSourceKeepPreviousData,
+    dataSourceRevalidateMs = 0,
+    filterDebounceMs = 0,
+    columnFilterDebounceMs = 0,
+    disableChildrenFiltering,
+    disableChildrenSorting,
     loading,
     loadingVariant = "linear-progress",
     onRowsScrollEnd,
@@ -1328,6 +1532,23 @@ function DataGridInner<R>(
     onCellDoubleClick,
     onCellKeyDown,
     onColumnHeaderClick,
+    onColumnHeaderDoubleClick,
+    onColumnHeaderContextMenu,
+    onColumnHeaderEnter,
+    onColumnHeaderLeave,
+    onColumnHeaderOver,
+    onColumnHeaderOut,
+    onMenuOpen,
+    onMenuClose,
+    onPreferencePanelOpen,
+    onPreferencePanelClose,
+    onSidebarOpen,
+    onSidebarClose,
+    onResize,
+    onColumnResize,
+    onFetchRows,
+    onExcelExportStateChange,
+    onBeforeClipboardPasteStart,
     apiRef,
     isCellEditable,
     onCellEditStart,
@@ -1350,6 +1571,17 @@ function DataGridInner<R>(
     detailPanelExpandedRowIds,
     onDetailPanelExpandedRowIdsChange,
     rowReordering,
+    isRowReorderable,
+    isValidRowReorder,
+    setTreeDataPath,
+    disableAutosize,
+    keepColumnPositionIfDraggedOutside,
+    pinnedColumnsSectionSeparator,
+    pinnedRowsSectionSeparator,
+    virtualizeColumnsWithAutoRowHeight,
+    pivotingColDef,
+    pivotPanelOpen,
+    onPivotPanelOpenChange,
     onRowOrderChange,
     pinnedRows,
     columnGroupingModel: columnGroupingProp,
@@ -1377,6 +1609,7 @@ function DataGridInner<R>(
     getPivotDerivedColumns,
     excelOptions,
     cellSelection,
+    cellSelectionFillHandle,
     cellSelectionModel,
     onCellSelectionModelChange,
     disableClipboardPaste,
@@ -1552,6 +1785,7 @@ function DataGridInner<R>(
     rows: readonly R[];
     rowCount?: number | undefined;
     aggregateRow?: Record<string, unknown> | undefined;
+    pageInfo?: { hasNextPage?: boolean | undefined } | undefined;
   }>({
     rows: [],
   });
@@ -1582,7 +1816,11 @@ function DataGridInner<R>(
   };
   const idOf = (row: R) =>
     isHole(row) ? `__loading__-${row[HOLE]}` : isGroup(row) ? row[GROUP].id : String(getRowId(row));
-  const view = base.map((row) => overrides.get(idOf(row)) ?? row);
+  // While a data source loads, the rows go away (MUI X) unless asked to stay. Not for selections:
+  // they follow `base`, so a reload doesn't drop what's still in the new rows.
+  const hideWhileLoading =
+    !!dataSource && !lazy && sourceLoading && !(dataSourceKeepPreviousData && !serverTree);
+  const view = hideWhileLoading ? [] : base.map((row) => overrides.get(idOf(row)) ?? row);
   const rank = rowOrder ? new Map(rowOrder.map((rowId, i) => [rowId, i])) : null;
   const orderedRows = rank
     ? [...view].sort((a, b) => (rank.get(idOf(a)) ?? rank.size) - (rank.get(idOf(b)) ?? rank.size))
@@ -1639,8 +1877,13 @@ function DataGridInner<R>(
   const columns: readonly GridColDef<R>[] = pivot
     ? pivot.columns.map((c) => {
         const formatter = sourceOf(c.pivotValueField).valueFormatter;
+        const overrides =
+          typeof pivotingColDef === "function"
+            ? pivotingColDef(c.pivotValueField, [...c.pivotKeys])
+            : pivotingColDef;
         return {
           ...c,
+          ...(overrides as Partial<GridColDef<R>>),
           valueGetter: (row: R) => pivot.value(row, c.field),
           ...(formatter && pivot.aggregationModel[c.field] !== "size"
             ? { valueFormatter: formatter }
@@ -1883,10 +2126,14 @@ function DataGridInner<R>(
         node.id,
         Math.min(...node.leafIds.map((leaf) => place?.get(byId.get(leaf) as R) ?? 0)),
       );
+    const rootsFilter = !!treeData && !!disableChildrenFiltering && !serverTree;
     const options = {
       idOf,
       parentOf: (row: R) => parents.get(idOf(row)) ?? null,
-      keep: pass ? (row: R) => !isGroup(row) && pass.has(row) : undefined,
+      // Roots only: a generated root (no data of its own) stays, with its children.
+      keep: pass ? (row: R) => (isGroup(row) ? rootsFilter : pass.has(row)) : undefined,
+      filterRootsOnly: rootsFilter,
+      sortRootsOnly: !!treeData && !!disableChildrenSorting && !serverTree,
       compare: place
         ? gridGroupComparator<R>({
             isGroup,
@@ -1976,10 +2223,23 @@ function DataGridInner<R>(
                 : localFilter(orderedRows),
           )
       : null;
-  const total = server.page
-    ? ((dataSource ? sourced.rowCount : rowCount) ?? sorted.length)
-    : sorted.length;
-  const pageCount = Math.max(Math.ceil(total / pagination.pageSize), 1);
+  const pageMeta = paginationMeta ?? sourced.pageInfo;
+  const total = gridPaginationCount(
+    server.page
+      ? ((dataSource ? (sourced.rowCount ?? (sourced.pageInfo ? -1 : undefined)) : rowCount) ??
+          sorted.length)
+      : sorted.length,
+    {
+      hasNextPage: pageMeta?.hasNextPage,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      pageRows: sorted.length,
+    },
+  );
+  // aria-rowcount -1: the total isn't known.
+  const knownTotal = Math.max(total, 0);
+  const pageCount =
+    total === -1 ? Number.POSITIVE_INFINITY : Math.max(Math.ceil(total / pagination.pageSize), 1);
   const page = Math.min(pagination.page, pageCount - 1);
   // Rows of the page: all of them with server pagination or without a footer.
   const unpaged = server.page || hideFooter || hideFooterPagination || lazy;
@@ -2197,7 +2457,9 @@ function DataGridInner<R>(
     !listView &&
     headerLevels === 0 &&
     !shown.some((c) => c.colSpan !== undefined) &&
-    middleCols.length > 0
+    middleCols.length > 0 &&
+    // "auto" rows measure their cells: hidden columns would change their height (MUI X).
+    (!!virtualizeColumnsWithAutoRowHeight || !pageRows.some((row) => heightOf(row) === "auto"))
   ) {
     const pinnedPx =
       specials.reduce((sum, c) => sum + c.width, 0) +
@@ -2266,12 +2528,17 @@ function DataGridInner<R>(
     return () => handle.destroy();
   }, []);
   useEffect(() => navigation.current?.sync());
+  const columnFlags = useRef({ disableAutosize, keepColumnPositionIfDraggedOutside });
+  columnFlags.current = { disableAutosize, keepColumnPositionIfDraggedOutside };
   useEffect(() => {
     const handle = createGridColumnControls(gridRef.current as HTMLDivElement, {
       onResize: (field, width, done) => resizeTo.current(field, width, done),
       onMove: (field, target) => moveTo.current(field, target),
       canReorder: () => reorderable.current,
-      onAutosize: (field) => autosize.current({ columns: [field] }),
+      onAutosize: (field) => {
+        if (!columnFlags.current.disableAutosize) autosize.current({ columns: [field] });
+      },
+      keepPositionOutside: () => !!columnFlags.current.keepColumnPositionIfDraggedOutside,
     });
     return () => handle.destroy();
   }, []);
@@ -2299,22 +2566,87 @@ function DataGridInner<R>(
   const [announcement, setAnnouncement] = useState("");
   const firstRowIndex = headerLevels + filterRow + topRows.length + 2;
   const canReorder = useRef(false);
+  // Tree data (client side) reorders among siblings, or between parents with setTreeDataPath.
+  const treeReorder = !!treeData && !serverTree;
   canReorder.current =
     !!rowReordering &&
-    !treeLike &&
+    (!treeLike || treeReorder) &&
     !lazy &&
     sortModel.length === 0 &&
     filterModel.items.length === 0 &&
     !filterModel.quickFilterValues?.length;
   const refocusHandle = useRef<string | null>(null);
-  const reorderMove = useRef<(rowId: string, rowIndex: number) => void>(undefined as never);
-  reorderMove.current = (rowId, rowIndex) => {
+  const reorderMove = useRef<(rowId: string, rowIndex: number, drop: GridRowDrop) => void>(
+    undefined as never,
+  );
+  /** isValidRowReorder's view of a drop (indexes among the shown rows). */
+  const reorderContext = (rowId: string, drop: GridRowDrop): GridRowReorderContext<R> | null => {
+    const ids = sorted.map(idOf);
+    const sourceRowIndex = ids.indexOf(rowId);
+    const targetRowIndex = ids.indexOf(drop.target);
+    if (sourceRowIndex < 0 || targetRowIndex < 0) return null;
+    return {
+      sourceRow: sorted[sourceRowIndex] as R,
+      targetRow: sorted[targetRowIndex] as R,
+      sourceRowIndex,
+      targetRowIndex,
+      dropPosition: drop.position,
+      dragDirection: targetRowIndex < sourceRowIndex ? "up" : "down",
+    };
+  };
+  /** A tree move: the new order of every tree row and the new parent (`null`: refused). */
+  const treeMoveOf = (rowId: string, drop: GridRowDrop) =>
+    treeReorder && tree && treeOrder
+      ? gridTreeRowMove(
+          treeOrder.map(idOf),
+          (nodeId) => tree?.get(nodeId)?.parentId ?? null,
+          rowId,
+          drop,
+          !!setTreeDataPath,
+        )
+      : undefined;
+  const canDrop = useRef<(rowId: string, drop: GridRowDrop) => boolean>(undefined as never);
+  canDrop.current = (rowId, drop) => {
+    if (treeMoveOf(rowId, drop) === null) return false;
+    const context = isValidRowReorder ? reorderContext(rowId, drop) : null;
+    return !context || (isValidRowReorder?.(context) ?? true);
+  };
+  reorderMove.current = (rowId, rowIndex, drop) => {
     const ids = sorted.map(idOf);
     const oldIndex = ids.indexOf(rowId);
     const targetIndex = Math.min(Math.max(rowIndex - firstRowIndex - rowOffset, 0), ids.length - 1);
-    if (oldIndex < 0 || oldIndex === targetIndex) return;
-    setRowOrder(moveGridRow(ids, rowId, targetIndex));
-    onRowOrderChange?.({ row: sorted[oldIndex] as R, oldIndex, targetIndex });
+    if (oldIndex < 0 || oldIndex === targetIndex || !canDrop.current(rowId, drop)) return;
+    const treeMove = treeMoveOf(rowId, drop);
+    if (treeMove && tree) {
+      // Every tree row in its new place; rows under another parent get a new path.
+      const oldParent = tree.get(rowId)?.parentId ?? null;
+      setRowOrder(treeMove.order);
+      if (oldParent !== treeMove.parent && setTreeDataPath && getTreeDataPath) {
+        const pathOf = (row: R) => (isGroup(row) ? row[GROUP].path : getTreeDataPath(row));
+        const target = tree.get(drop.target)?.row as R;
+        const parentPath = pathOf(target).slice(0, -1);
+        const depth = pathOf(tree.get(rowId)?.row as R).length - 1;
+        for (const movedId of treeMove.moved) {
+          const row = tree.get(movedId)?.row;
+          if (!row || isGroup(row)) continue;
+          commitRow(
+            movedId,
+            row,
+            setTreeDataPath(gridMovedTreePath(pathOf(row), depth, parentPath), row),
+          );
+        }
+      }
+      onRowOrderChange?.({
+        row: sorted[oldIndex] as R,
+        oldIndex,
+        targetIndex,
+        oldParent,
+        newParent: treeMove.parent,
+      });
+    } else {
+      setRowOrder(moveGridRow(ids, rowId, targetIndex));
+      onRowOrderChange?.({ row: sorted[oldIndex] as R, oldIndex, targetIndex });
+    }
     setAnnouncement(
       labels.rowReorderingMoved
         .replace("{position}", String(targetIndex + 1))
@@ -2325,7 +2657,8 @@ function DataGridInner<R>(
   useEffect(() => {
     const handle = createGridRowReorder(gridRef.current as HTMLDivElement, {
       canReorder: () => canReorder.current,
-      onMove: (rowId, rowIndex) => reorderMove.current(rowId, rowIndex),
+      onMove: (rowId, rowIndex, drop) => reorderMove.current(rowId, rowIndex, drop),
+      canDrop: (rowId, drop) => canDrop.current(rowId, drop),
     });
     return () => handle.destroy();
   }, []);
@@ -2379,6 +2712,41 @@ function DataGridInner<R>(
     setDetailIds(
       detailIds.includes(rowId) ? detailIds.filter((d) => d !== rowId) : [...detailIds, rowId],
     );
+  // The grid's own size (MUI X `onResize`): the first report is the size at mount.
+  const resized = useRef(onResize);
+  resized.current = onResize;
+  useEffect(() => {
+    if (typeof ResizeObserver !== "function") return;
+    const root = rootRef.current as HTMLDivElement;
+    let last = "";
+    const observer = new ResizeObserver(() => {
+      const { width, height } = root.getBoundingClientRect();
+      if (last === `${width}x${height}`) return;
+      last = `${width}x${height}`;
+      resized.current?.({ width, height });
+    });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
+  // Rendered rows that the page may still have to load (MUI X `onFetchRows`).
+  const fetchWindow =
+    onFetchRows &&
+    range &&
+    !dataSource &&
+    !server.page &&
+    rowCount !== undefined &&
+    rowCount > rows.length
+      ? `${range.start}:${range.end}`
+      : null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reports each new window once.
+  useEffect(() => {
+    if (fetchWindow === null) return;
+    const [firstRowToRender, lastRowToRender] = fetchWindow.split(":").map(Number) as [
+      number,
+      number,
+    ];
+    onFetchRows?.({ firstRowToRender, lastRowToRender, sortModel, filterModel });
+  }, [fetchWindow]);
   // Sticky offsets of pinned columns, after every layout.
   useLayoutEffect(() => syncGridPinning(gridRef.current as HTMLDivElement));
   const scrollEnd = useRef<() => void>(undefined as never);
@@ -2422,7 +2790,7 @@ function DataGridInner<R>(
     if (!autoPageSize || !main || hideFooter || hideFooterPagination || lazy) return;
     const size = gridAutoPageSize(main, baseHeight + 1);
     if (size === pagination.pageSize) return;
-    const last = Math.max(Math.ceil(total / size), 1) - 1;
+    const last = total === -1 ? pagination.page : Math.max(Math.ceil(total / size), 1) - 1;
     setPagination({ page: Math.min(pagination.page, last), pageSize: size });
   };
   useEffect(() => {
@@ -2472,6 +2840,44 @@ function DataGridInner<R>(
       current = false;
     };
   }, [dataSource, cache, request, onDataSourceError, lazy]);
+  // Server pagination reports (MUI X `onRowCountChange`, `onPaginationMetaChange`).
+  const reportedCount = useRef(total);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reports when the count changes.
+  useEffect(() => {
+    if (reportedCount.current === total) return;
+    reportedCount.current = total;
+    onRowCountChange?.(total);
+  }, [total]);
+  const reportedInfo = useRef(JSON.stringify(sourced.pageInfo ?? null));
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reports when the source's info changes.
+  useEffect(() => {
+    const next = JSON.stringify(sourced.pageInfo ?? null);
+    if (reportedInfo.current === next) return;
+    reportedInfo.current = next;
+    if (sourced.pageInfo) onPaginationMetaChange?.(sourced.pageInfo);
+  }, [JSON.stringify(sourced.pageInfo ?? null)]);
+  // Rows whose cache entry expired load again in the background (`dataSourceRevalidateMs`).
+  const revalidateRequest = useRef(request);
+  revalidateRequest.current = request;
+  useEffect(() => {
+    if (!dataSource || lazy || serverTree || dataSourceRevalidateMs <= 0) return;
+    const timer = setInterval(() => {
+      const asked = revalidateRequest.current;
+      const params = JSON.parse(asked);
+      if (cache?.get(params)) return;
+      dataSource
+        .getRows(params)
+        .then((response) => {
+          cache?.set(params, response);
+          if (revalidateRequest.current === asked)
+            setSourced((current) =>
+              JSON.stringify(current) === JSON.stringify(response) ? current : response,
+            );
+        })
+        .catch((error: unknown) => onDataSourceError?.(error));
+    }, dataSourceRevalidateMs);
+    return () => clearInterval(timer);
+  }, [dataSource, lazy, serverTree, dataSourceRevalidateMs, cache, onDataSourceError]);
   // Lazy loading: ask for the chunks the window misses (throttled); a new sort or filter restarts.
   const lazyAggregation = aggregating && !pivot ? requestedAggregation : null;
   const lazyKey = JSON.stringify({ sortModel, filterModel, lazyAggregation });
@@ -2634,6 +3040,7 @@ function DataGridInner<R>(
     if (!column || disableColumnResize || !isGridResizable(column)) return;
     const next = clampGridWidth(column, width);
     setWidths((current) => ({ ...current, [field]: next }));
+    onColumnResize?.(field, next);
     if (done) onColumnWidthChange?.(field, next);
   };
   const autosize = useRef<(options?: GridAutosizeOptions) => void>(undefined as never);
@@ -2998,6 +3405,74 @@ function DataGridInner<R>(
     }
     setCellModel(mergeGridCellSelection(cellBase.current, range));
   };
+  // Fill handle: the selection (a whole rectangle) repeats where its handle is dragged.
+  const fillOn = !!cellSelection && !!cellSelectionFillHandle;
+  const fillSource = fillOn ? gridFillSource(cellModel, cellRowIds, cellFields) : null;
+  const fillCorner = fillSource
+    ? { id: fillSource.ids.at(-1) as string, field: fillSource.fields.at(-1) as string }
+    : null;
+  const fill = useRef<{
+    preview: (target: { id: string; field: string }) => GridFillCell[];
+    drop: (target: { id: string; field: string }) => void;
+    key: (direction: "down" | "right") => void;
+  }>(null as never);
+  /** Writes each filled row through `processRowUpdate`; the whole fill is one undo step. */
+  const writeFill = (cells: readonly GridFillCell[]) => {
+    if (!fillSource || !cells.length) return;
+    const byRow = new Map<string, GridFillCell[]>();
+    for (const cell of cells) byRow.set(cell.id, [...(byRow.get(cell.id) ?? []), cell]);
+    const updates: Promise<GridHistoryChange<R> | null>[] = [];
+    for (const [rowId, list] of byRow) {
+      const row = dataById.get(rowId);
+      if (!row) continue;
+      let next = { ...row } as R;
+      let changed = false;
+      for (const cell of list) {
+        const column = columns.find((c) => c.field === cell.field);
+        const from = dataById.get(cell.from.id);
+        if (!column || from === undefined || !cellEditable(column, row)) continue;
+        // The same column copies the value; another one parses the source's text.
+        const value =
+          cell.from.field === cell.field
+            ? rawValue(column, from)
+            : parse(column, copyValue(columnOf(cell.from.field), from), row);
+        next = column.valueSetter
+          ? column.valueSetter(value, next)
+          : ({ ...next, [column.field]: value } as R);
+        changed = true;
+      }
+      if (changed)
+        updates.push(
+          commitRow(rowId, row, next).then((saved) =>
+            saved ? { id: rowId, before: row, after: saved } : null,
+          ),
+        );
+    }
+    setCellModel(gridFillSelection(fillSource, cells));
+    Promise.all(updates).then((changes) => {
+      if (!dataSource) record(changes);
+    });
+  };
+  fill.current = {
+    preview: (target) =>
+      fillSource ? (gridFillCells(fillSource, cellRowIds, cellFields, target)?.cells ?? []) : [],
+    drop: (target) =>
+      fillSource &&
+      writeFill(gridFillCells(fillSource, cellRowIds, cellFields, target)?.cells ?? []),
+    key: (direction) =>
+      fillSource && writeFill(gridFillWithin(fillSource, cellRowIds, cellFields, direction)),
+  };
+  const fillEnabled = useRef(fillOn);
+  fillEnabled.current = fillOn;
+  useEffect(() => {
+    const handle = createGridFillHandle(gridRef.current as HTMLDivElement, {
+      enabled: () => fillEnabled.current,
+      preview: (target) => fill.current.preview(target),
+      onFill: (target) => fill.current.drop(target),
+      onFillKey: (direction) => fill.current.key(direction),
+    });
+    return () => handle.destroy();
+  }, []);
   // Status bar: figures of the selected cells of the page, through the aggregation functions.
   const statusItems =
     statusBar && cellSelection
@@ -3057,6 +3532,22 @@ function DataGridInner<R>(
     const data = splitClipboardPastedText
       ? splitClipboardPastedText(text)
       : parseGridClipboard(text);
+    const cell = (document.activeElement as Element | null)?.closest(
+      '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
+    );
+    // Read now: a confirmation may move the focus before the cells are written.
+    const origin = {
+      id: cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
+      field: cell?.getAttribute("data-ok-field") ?? "",
+    };
+    if (!onBeforeClipboardPasteStart) return writePaste(data, origin);
+    new Promise((resolve) => resolve(onBeforeClipboardPasteStart({ data }))).then(
+      () => clipboard.current.writePaste(data, origin),
+      // A rejection cancels the paste.
+      () => {},
+    );
+  };
+  const writePaste = (data: string[][], origin: { id: string; field: string }) => {
     const picked = cellSelection ? gridSelectedBlock(cellModel, cellRowIds, cellFields) : null;
     let top: number;
     let left: number;
@@ -3066,13 +3557,8 @@ function DataGridInner<R>(
       top = cellRowIds.indexOf(picked.ids[0] as string);
       left = cellFields.indexOf(picked.fields[0] as string);
     } else {
-      const cell = (document.activeElement as Element | null)?.closest(
-        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
-      );
-      top = cellRowIds.indexOf(
-        cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
-      );
-      left = cellFields.indexOf(cell?.getAttribute("data-ok-field") ?? "");
+      top = cellRowIds.indexOf(origin.id);
+      left = cellFields.indexOf(origin.field);
       if (top < 0 || left < 0) return;
     }
     onClipboardPasteStart?.({ data });
@@ -3118,11 +3604,13 @@ function DataGridInner<R>(
   const clipboard = useRef<{
     copyText: () => string | null;
     pasteText: (text: string) => void;
+    writePaste: (data: string[][], origin: { id: string; field: string }) => void;
     canPaste: () => boolean;
   }>(null as never);
   clipboard.current = {
     copyText,
     pasteText,
+    writePaste,
     canPaste: () => !disableClipboardPaste && columns.some(editable),
   };
   const copied = useRef(onClipboardCopy);
@@ -3210,6 +3698,39 @@ function DataGridInner<R>(
     };
   }, []);
 
+  // Menus and panels report opening and closing (MUI X `onMenuOpen`…), whatever opened them.
+  const overlays = useRef<Record<string, { name: string; target: HTMLElement | null } | null>>({});
+  const reportOverlay = useRef<(name: string, open: boolean, target: HTMLElement | null) => void>(
+    undefined as never,
+  );
+  reportOverlay.current = (name, open, target) => {
+    const overlay = gridOverlayOf(name);
+    if (overlay?.kind === "menu")
+      (open ? onMenuOpen : onMenuClose)?.({ menu: overlay.value, target });
+    else if (overlay?.kind === "preference")
+      (open ? onPreferencePanelOpen : onPreferencePanelClose)?.({
+        openedPanelValue: overlay.value,
+      });
+    else if (overlay?.kind === "sidebar") {
+      (open ? onSidebarOpen : onSidebarClose)?.({ value: overlay.value });
+      if (overlay.value === "pivot" && !pivotControlled) onPivotPanelOpenChange?.(open);
+    }
+  };
+  useEffect(() => {
+    const next = {
+      panel: panel ? { name: panel as string, target: anchor } : null,
+      column: menuAnchor ? { name: "column-menu", target: menuAnchor } : null,
+      context: cellMenu ? { name: "context-menu", target: null } : null,
+    };
+    for (const key of Object.keys(next) as (keyof typeof next)[]) {
+      const before = overlays.current[key] ?? null;
+      const now = next[key];
+      if (before?.name === now?.name) continue;
+      if (before) reportOverlay.current(before.name, false, before.target);
+      if (now) reportOverlay.current(now.name, true, now.target);
+    }
+    overlays.current = next;
+  }, [panel, anchor, menuAnchor, cellMenu]);
   // Exports hold data rows (filtered, sorted): grouped and pivoted grids export their rows.
   const exportRows = () =>
     pivot
@@ -3234,12 +3755,15 @@ function DataGridInner<R>(
       (row, field) => textOf(sourceOf(field), row),
       options,
     );
-  const exportExcel = (options: GridExcelOptions = excelOptions ?? {}) =>
+  const exportExcel = (options: GridExcelOptions = excelOptions ?? {}) => {
+    onExcelExportStateChange?.("pending");
     download(
       `${options.fileName ?? exportFileName}.xlsx`,
       getExcel(options) as BlobPart,
       GRID_XLSX_TYPE,
     );
+    onExcelExportStateChange?.("finished");
+  };
   const exportCsv = (options: GridCsvOptions = csvOptions ?? {}) =>
     downloadCsv(options.fileName ?? exportFileName, getCsv(options));
   const print = (options: GridPrintOptions = printOptions ?? {}) => setPrinting({ ...options });
@@ -3473,11 +3997,36 @@ function DataGridInner<R>(
           label: labels.filterOperator[value] ?? value,
         }));
 
+  // pivotPanelOpen given: the pivot panel follows it; people's opening and closing only report.
+  const pivotControlled = pivotPanelOpen !== undefined;
   const open = (which: Panel) => (event: MouseEvent<HTMLElement>) => {
+    if (pivotControlled && which === "pivot") {
+      onPivotPanelOpenChange?.(panel !== "pivot");
+      return;
+    }
+    if (pivotControlled && panel === "pivot") onPivotPanelOpenChange?.(false);
     setAnchor(event.currentTarget);
     setPanel(which);
   };
-  const closePanel = () => setPanel(null);
+  const closePanel = () => {
+    if (pivotControlled && panel === "pivot") {
+      onPivotPanelOpenChange?.(false);
+      return;
+    }
+    setPanel(null);
+  };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: follows the prop only.
+  useEffect(() => {
+    if (pivotPanelOpen === undefined) return;
+    if (pivotPanelOpen && panel !== "pivot") {
+      setAnchor(
+        rootRef.current?.querySelector<HTMLElement>(
+          `[aria-controls="${CSS.escape(`${id}-pivot`)}"]`,
+        ) ?? null,
+      );
+      setPanel("pivot");
+    } else if (!pivotPanelOpen && panel === "pivot") setPanel(null);
+  }, [pivotPanelOpen]);
   // Date and date time filters: a partly typed value stays in its picker until it is whole.
   const [pickerDrafts, setPickerDrafts] = useState<Record<string, Date>>({});
   const pickerValue = (key: string, iso: string) => pickerDrafts[key] ?? parseIsoDate(iso);
@@ -3493,12 +4042,32 @@ function DataGridInner<R>(
     setPickerDrafts(drafts);
     if (!(key in drafts)) apply(isoValue(date, type));
   };
+  // Debounced filter fields show the typed text at once; the model follows after the wait, with
+  // whatever the latest render knows (other fields may have changed meanwhile).
+  const [filterDrafts, setFilterDrafts] = useState<Record<string, string>>({});
+  const debounce = useRef(createGridDebounce());
+  useEffect(() => () => debounce.current.clear(), []);
+  const filterFlushers = useRef<Record<string, (text: string) => void>>({});
+  const typedFilter = (key: string, ms: number, apply: (text: string) => void) => {
+    filterFlushers.current[key] = apply;
+    return (text: string) => {
+      if (ms <= 0) return apply(text);
+      setFilterDrafts((current) => ({ ...current, [key]: text }));
+      debounce.current.run(key, ms, () => {
+        setFilterDrafts(({ [key]: _, ...rest }) => rest);
+        filterFlushers.current[key]?.(text);
+      });
+    };
+  };
   // The typed text (with its spaces); the model keeps the words.
   const [quickText, setQuickText] = useState(() => (filterModel.quickFilterValues ?? []).join(" "));
-  const setQuick = (text: string) => {
-    setQuickText(text);
+  const applyQuick = typedFilter("quick", filterDebounceMs, (text) => {
     setFilterModel({ ...filterModel, quickFilterValues: gridQuickFilterValues(text) });
     setPagination({ ...pagination, page: 0 });
+  });
+  const setQuick = (text: string) => {
+    setQuickText(text);
+    applyQuick(text);
   };
   const newItem = (): GridFilterItem => ({
     field: columnsProp.find(isGridFilterable)?.field ?? "",
@@ -3621,8 +4190,13 @@ function DataGridInner<R>(
             label={labels.filterPanelInputLabel}
             placeholder={labels.filterPanelInputPlaceholder}
             disabled={!gridOperatorNeedsValue(item.operator, column?.filterOperators)}
-            value={typeof item.value === "string" ? item.value : (item.value ?? []).join(", ")}
-            onChange={(value) => at.onItem({ ...item, value })}
+            value={
+              filterDrafts[`panel${suffix}`] ??
+              (typeof item.value === "string" ? item.value : (item.value ?? []).join(", "))
+            }
+            onChange={typedFilter(`panel${suffix}`, filterDebounceMs, (value) =>
+              at.onItem({ ...item, value }),
+            )}
           />
         )}
       </div>
@@ -4659,8 +5233,10 @@ function DataGridInner<R>(
             id={fieldId}
             size="small"
             label={label}
-            value={value}
-            onChange={(next) => setHeaderFilter(column, next)}
+            value={filterDrafts[`header-${column.field}`] ?? value}
+            onChange={typedFilter(`header-${column.field}`, columnFilterDebounceMs, (next) =>
+              setHeaderFilter(column, next),
+            )}
           />
         )}
       </div>
@@ -4810,7 +5386,7 @@ function DataGridInner<R>(
       place === "top"
         ? headerLevels + filterRow + 2 + index
         : place === "bottom"
-          ? headerLevels + filterRow + topRows.length + total + 2 + index
+          ? headerLevels + filterRow + topRows.length + knownTotal + 2 + index
           : firstRowIndex + index + rowOffset;
     const detail = place === "body" ? detailOf(row) : null;
     const detailHeight =
@@ -4840,6 +5416,9 @@ function DataGridInner<R>(
         {...(space.bottom !== undefined ? { "data-ok-spacing-bottom": space.bottom } : {})}
         {...(checkboxSelection && place === "body" ? { "aria-selected": selected } : {})}
         {...(checkboxSelection && !selectable(row) ? { "data-ok-selectable": "false" } : {})}
+        {...(rowReordering && isData(row) && isRowReorderable?.({ id: rowId, row }) === false
+          ? { "data-ok-reorderable": "false" }
+          : {})}
         {...(editing?.rowId === rowId && editing.field === null ? { "data-ok-editing": "" } : {})}
         style={Object.keys(rowStyle).length ? (rowStyle as CSSProperties) : undefined}
         onClick={onRowClick(row, i)}
@@ -5051,6 +5630,9 @@ function DataGridInner<R>(
                   {error}
                 </span>
               )}
+              {fillCorner?.id === rowId && fillCorner.field === column.field && !inEdit && (
+                <span data-ok-data-grid-fill-handle="" aria-hidden="true" />
+              )}
             </div>
           );
         })}
@@ -5187,7 +5769,7 @@ function DataGridInner<R>(
   const footerRowElement = rootAggregates && (
     <div
       role="row"
-      aria-rowindex={headerLevels + filterRow + topRows.length + total + 2 + bottomRows.length}
+      aria-rowindex={headerLevels + filterRow + topRows.length + knownTotal + 2 + bottomRows.length}
       data-ok-row-id={GRID_AGGREGATION_ROOT_ID}
       data-ok-data-grid-aggregation-row=""
     >
@@ -5269,6 +5851,8 @@ function DataGridInner<R>(
       isFooter(row) ||
       (isGroup(row) && field !== groupCellOf(row) && !groupBox)
     )
+      return <div {...common} />;
+    if (field === REORDER_FIELD && isRowReorderable?.({ id: idOf(row), row }) === false)
       return <div {...common} />;
     if (field === REORDER_FIELD)
       return (
@@ -5502,6 +6086,19 @@ function DataGridInner<R>(
         filterMode,
         paginationMode,
         rowCount,
+        estimatedRowCount,
+        disableAutosize,
+        keepColumnPositionIfDraggedOutside,
+        pinnedColumnsSectionSeparator,
+        pinnedRowsSectionSeparator,
+        pivotPanelOpen: pivotPanelOpen ?? panel === "pivot",
+        virtualizeColumnsWithAutoRowHeight,
+        dataSourceKeepPreviousData,
+        dataSourceRevalidateMs: dataSourceRevalidateMs || undefined,
+        filterDebounceMs: filterDebounceMs || undefined,
+        columnFilterDebounceMs: columnFilterDebounceMs || undefined,
+        disableChildrenFiltering,
+        disableChildrenSorting,
         loading: busy,
         loadingVariant,
         scrollEndThreshold: scrollEndThreshold === 80 ? undefined : scrollEndThreshold,
@@ -5532,6 +6129,7 @@ function DataGridInner<R>(
         disablePivoting,
         pivotActive: pivotOn,
         cellSelection,
+        cellSelectionFillHandle,
         disableClipboardPaste,
         headerFilters,
         chartsIntegration,
@@ -5588,6 +6186,9 @@ function DataGridInner<R>(
             ),
           }
         : {})}
+      {...(paginationMeta?.hasNextPage !== undefined
+        ? { "data-ok-has-next-page": String(paginationMeta.hasNextPage) }
+        : {})}
       {...(csvOptions
         ? {
             "data-ok-csv-options": JSON.stringify(
@@ -5625,7 +6226,9 @@ function DataGridInner<R>(
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledby}
         aria-rowcount={
-          headerLevels + filterRow + 1 + topRows.length + total + bottomRows.length + footerRow
+          total === -1
+            ? -1
+            : headerLevels + filterRow + 1 + topRows.length + total + bottomRows.length + footerRow
         }
         aria-colcount={colCount}
         {...(checkboxSelection && multiple ? { "aria-multiselectable": true } : {})}
@@ -5646,6 +6249,7 @@ function DataGridInner<R>(
               const name = column.headerName ?? column.field;
               const start = colStart(column);
               const header = (
+                // biome-ignore lint/a11y/useKeyWithMouseEvents: the pointer events only report; the keyboard reaches the header through focus.
                 <div
                   key={column.field}
                   role="columnheader"
@@ -5706,6 +6310,25 @@ function DataGridInner<R>(
                     onColumnHeaderClick?.({ field: column.field, colDef: column }, event);
                     sortBy.current(column.field, event.shiftKey);
                   }}
+                  onDoubleClick={(event) => {
+                    if ((event.target as Element).closest(HEADER_CONTROLS)) return;
+                    onColumnHeaderDoubleClick?.({ field: column.field, colDef: column }, event);
+                  }}
+                  onContextMenu={(event) =>
+                    onColumnHeaderContextMenu?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseEnter={(event) =>
+                    onColumnHeaderEnter?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseLeave={(event) =>
+                    onColumnHeaderLeave?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseOver={(event) =>
+                    onColumnHeaderOver?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseOut={(event) =>
+                    onColumnHeaderOut?.({ field: column.field, colDef: column }, event)
+                  }
                 >
                   <span data-ok-data-grid-header-title="">
                     {column.renderHeader
@@ -6023,10 +6646,20 @@ function DataGridInner<R>(
               onPageChange={(next) => setPagination({ ...pagination, page: next })}
               onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
               labelRowsPerPage={labels.paginationRowsPerPage}
-              {...(localeText?.paginationDisplayedRows
+              {...(localeText?.paginationDisplayedRows || total === -1
                 ? {
                     labelDisplayedRows: (range: { from: number; to: number; count: number }) =>
-                      gridDisplayedRows(labels.paginationDisplayedRows, range),
+                      gridDisplayedRows(
+                        total === -1
+                          ? gridUnknownCountPattern(
+                              labels.paginationDisplayedRows,
+                              labels,
+                              estimatedRowCount,
+                              range.to,
+                            )
+                          : labels.paginationDisplayedRows,
+                        range,
+                      ),
                   }
                 : {})}
             />

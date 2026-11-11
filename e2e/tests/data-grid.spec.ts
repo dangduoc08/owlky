@@ -779,6 +779,39 @@ for (const impl of implementations) {
       );
     });
 
+    test("fill handle: drag to repeat cells, Ctrl + D from the keyboard, one undo step", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "fill-handle"));
+      const points = (id: string) =>
+        page.locator(`#grid-fill [data-ok-row-id="${id}"] [data-ok-field="points"]`);
+      await points("is-1").click();
+      await page.keyboard.press("Shift+ArrowDown");
+      const handle = page.locator("#grid-fill [data-ok-data-grid-fill-handle]");
+      await expect(handle).toHaveCount(1);
+      const from = await handle.boundingBox();
+      const to = await points("is-4").boundingBox();
+      if (!from || !to) throw new Error("no boxes");
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 4 });
+      await expect(points("is-3")).toHaveAttribute("data-ok-fill-target", "");
+      await page.mouse.up();
+      // 3, 2 repeat down: 3, 2, 3, 2.
+      await expect(points("is-3")).toHaveText("3");
+      await expect(points("is-4")).toHaveText("2");
+      await expect(points("is-4")).toHaveAttribute("aria-selected", "true");
+      await points("is-4").click();
+      await page.keyboard.press("ControlOrMeta+z");
+      await expect(points("is-3")).toHaveText("8");
+      await expect(points("is-4")).toHaveText("5");
+      // Keyboard: select two cells, Ctrl + D copies the first one down.
+      await points("is-5").click();
+      await page.keyboard.press("Shift+ArrowDown");
+      await page.keyboard.press("ControlOrMeta+d");
+      await expect(points("is-6")).toHaveText("1");
+    });
+
     test("layout options: header heights, borders and a page size from the height", async ({
       page,
     }) => {

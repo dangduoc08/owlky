@@ -472,6 +472,96 @@
     box-shadow: 1px 0 0 var(--ok-divider);
   }
 
+  /*
+   * pinnedColumnsSectionSeparator: a shadow (from the elevation tokens) over the scrolling
+   * columns, cut to the edge's outer side; "shadow" alone drops the line. Not on a cell being
+   * edited (its error overflows downward).
+   */
+  :where(
+    [data-ok-pinned-columns-section-separator="shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(0 calc(var(--ok-spacing) * -6) 0 0);
+  }
+
+  :where(
+    [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    box-shadow:
+      1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+    clip-path: inset(0 calc(var(--ok-spacing) * -6) 0 0);
+  }
+
+  :where(
+    [data-ok-pinned-columns-section-separator="shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(0 0 0 calc(var(--ok-spacing) * -6));
+  }
+
+  :where(
+    [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    box-shadow:
+      -1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+    clip-path: inset(0 0 0 calc(var(--ok-spacing) * -6));
+  }
+
+  /* Right to left, the outer sides swap. */
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator$="shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    clip-path: inset(0 0 0 calc(var(--ok-spacing) * -6));
+  }
+
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator$="shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    clip-path: inset(0 calc(var(--ok-spacing) * -6) 0 0);
+  }
+
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    box-shadow:
+      -1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+  }
+
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    box-shadow:
+      1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+  }
+
   /* Resize handle: the header's end edge; a line shows on hover and while dragging. */
   :where([data-ok-data-grid-resize]) {
     position: absolute;
@@ -802,6 +892,23 @@
     border-top: 1px solid var(--ok-divider);
   }
 
+  /* pinnedRowsSectionSeparator="border-and-shadow": a shadow over the scrolling rows too. */
+  :where(
+    [data-ok-pinned-rows-section-separator="border-and-shadow"]
+      [data-ok-data-grid-pinned-rows="top"]
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(0 0 calc(var(--ok-spacing) * -6) 0);
+  }
+
+  :where(
+    [data-ok-pinned-rows-section-separator="border-and-shadow"]
+      [data-ok-data-grid-pinned-rows="bottom"]
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(calc(var(--ok-spacing) * -6) 0 0 0);
+  }
+
   /* Column groups: header rows above the column headers. */
   :where([data-ok-data-grid-header] > [role="row"]:not(:last-child)) {
     border-bottom: 1px solid var(--ok-divider);
@@ -916,6 +1023,30 @@
 
   :where(:is([role="gridcell"], [role="rowheader"])[data-ok-range-edge~="left"]) {
     --_ok-data-grid-edge-left: inset 1px 0 0 var(--_ok-data-grid-edge);
+  }
+
+  /* Fill handle (cellSelectionFillHandle): a square at the selection's bottom end corner. */
+  :where([data-ok-data-grid-body] :has(> [data-ok-data-grid-fill-handle]):not([data-ok-pinned])) {
+    position: relative;
+  }
+
+  :where([data-ok-data-grid-fill-handle]) {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    z-index: 1;
+    inline-size: calc(var(--ok-spacing) * 2);
+    block-size: calc(var(--ok-spacing) * 2);
+    border: 1px solid var(--ok-bg-paper);
+    background-color: var(--ok-palette-primary-main);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  /* The cells a drag of the handle would fill. */
+  :where([data-ok-data-grid-body] [data-ok-fill-target]) {
+    box-shadow: inset 0 0 0 1px var(--ok-palette-primary-main);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.04);
   }
 
   /* Header filters: a row of small fields under the column headers. */

@@ -857,6 +857,14 @@ export interface DataGridParts {
   "data-ok-editing": State;
   /** Options of the Excel export, as JSON. */
   "data-ok-excel-options": Value<string>;
+  /** In the cell at the selection's bottom end corner: the fill handle (`cellSelectionFillHandle`). */
+  "data-ok-data-grid-fill-handle": Value<"">;
+  /** While the fill handle is dragged: on the cells it would fill. */
+  "data-ok-fill-target": Value<"">;
+  /** On a row: `false` when it can't be moved (`isRowReorderable`). */
+  "data-ok-reorderable": Value<"false">;
+  /** With an unknown row count: `false` when no page follows the current one. */
+  "data-ok-has-next-page": Value<"true" | "false">;
   /** On a header or a cell: the column's field. */
   "data-ok-field": Value<string>;
   /** On a header cell: `set` filters the column with a checklist of its values. */

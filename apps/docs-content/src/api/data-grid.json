@@ -71,6 +71,10 @@
    "value": "6px"
   },
   {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
@@ -143,6 +147,12 @@
       "name": "ok:data-grid:aggregation"
      },
      {
+      "cancelable": true,
+      "description": "Before a paste writes any cell. Call `preventDefault()` to cancel it, or pass a promise to `waitUntil`: the grid waits for it, and a rejection cancels the paste.",
+      "detail": "{ data: string[][]; waitUntil(promise: Promise<unknown>): void; }",
+      "name": "ok:data-grid:beforeclipboardpaste"
+     },
+     {
       "cancelable": false,
       "description": "After a click on a cell, with its raw value.",
       "detail": "{ id: string; field: string; value: unknown; }",
@@ -192,9 +202,57 @@
      },
      {
       "cancelable": true,
+      "description": "A right click on a column header. Call `preventDefault()` to keep the browser's own menu closed.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheadercontextmenu"
+     },
+     {
+      "cancelable": false,
+      "description": "After a double click on a column header (not on its buttons or resize handle).",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderdoubleclick"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer entered a column header.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderenter"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer left a column header.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderleave"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer moved off a column header or an element inside it.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderout"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer moved onto a column header or an element inside it.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderover"
+     },
+     {
+      "cancelable": false,
+      "description": "While a column's edge is dragged, with each new width (`resize`: on release).",
+      "detail": "{ field: string; width: number | undefined; }",
+      "name": "ok:data-grid:columnresize"
+     },
+     {
+      "cancelable": true,
       "description": "Before the column visibility changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: Record<string, boolean>; }",
       "name": "ok:data-grid:columns"
+     },
+     {
+      "cancelable": false,
+      "description": "After the grid's own size changed, in pixels (the first one: the size at setup).",
+      "detail": "{ width: number; height: number; }",
+      "name": "ok:data-grid:containerresize"
      },
      {
       "cancelable": true,
@@ -245,10 +303,28 @@
       "name": "ok:data-grid:editstop"
      },
      {
+      "cancelable": false,
+      "description": "An Excel export started (`pending`) or ended (`finished`).",
+      "detail": "{ state: \"finished\" | \"pending\"; }",
+      "name": "ok:data-grid:excelexportstate"
+     },
+     {
       "cancelable": true,
       "description": "Before a tree row expands or collapses. Call `preventDefault()` to refuse.",
       "detail": "{ id: string; expanded: boolean; }",
       "name": "ok:data-grid:expand"
+     },
+     {
+      "cancelable": false,
+      "description": "The rendered rows changed while `data-ok-row-count` is more than the rows in the grid (client pagination, no data source): load the rows of `firstRowToRender` up to, and not including, `lastRowToRender`.",
+      "detail": "{ firstRowToRender: number; lastRowToRender: number; sortModel: GridSortModel; filterModel: GridFilterModel; }",
+      "name": "ok:data-grid:fetchrows"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the fill handle (or Ctrl / Cmd + D, + R) writes cells: each one with the cell its value comes from. Call `preventDefault()` to refuse; each row still fires `edit`.",
+      "detail": "{ cells: GridFillCell[]; }",
+      "name": "ok:data-grid:fill"
      },
      {
       "cancelable": true,
@@ -257,10 +333,28 @@
       "name": "ok:data-grid:filter"
      },
      {
+      "cancelable": false,
+      "description": "After a grid menu closed.",
+      "detail": "{ menu: GridMenuName; target: Element | null; }",
+      "name": "ok:data-grid:menuclose"
+     },
+     {
+      "cancelable": false,
+      "description": "After a grid menu opened: the column menu, Density, Export or the cell menu.",
+      "detail": "{ menu: GridMenuName; target: Element | null; }",
+      "name": "ok:data-grid:menuopen"
+     },
+     {
       "cancelable": true,
       "description": "Before the column order changes (fields). Call `preventDefault()` to keep it.",
       "detail": "{ model: string[]; }",
       "name": "ok:data-grid:order"
+     },
+     {
+      "cancelable": false,
+      "description": "After a data source reported a new `pageInfo`.",
+      "detail": "{ hasNextPage?: boolean | undefined; }",
+      "name": "ok:data-grid:paginationmetachange"
      },
      {
       "cancelable": true,
@@ -273,6 +367,18 @@
       "description": "Before the pivot model or mode changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: GridPivotModel; active: boolean; }",
       "name": "ok:data-grid:pivot"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Columns or Filters panel closed.",
+      "detail": "{ openedPanelValue: GridPreferencePanelName; }",
+      "name": "ok:data-grid:preferencepanelclose"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Columns or Filters panel opened.",
+      "detail": "{ openedPanelValue: GridPreferencePanelName; }",
+      "name": "ok:data-grid:preferencepanelopen"
      },
      {
       "cancelable": false,
@@ -294,6 +400,12 @@
      },
      {
       "cancelable": false,
+      "description": "After the row count changed (`-1`: not known).",
+      "detail": "{ count: number; }",
+      "name": "ok:data-grid:rowcountchange"
+     },
+     {
+      "cancelable": false,
       "description": "After a double click on a row.",
       "detail": "{ id: string; }",
       "name": "ok:data-grid:rowdoubleclick"
@@ -312,8 +424,8 @@
      },
      {
       "cancelable": true,
-      "description": "Before a dragged row moves to `targetIndex`. Call `preventDefault()` to keep the order.",
-      "detail": "{ id: string; oldIndex: number; targetIndex: number; }",
+      "description": "Before a dragged row moves to `targetIndex` (tree rows: from `oldParentId` to `parentId`, `null` at the top level). Call `preventDefault()` to keep the order.",
+      "detail": "{ id: string; oldIndex: number; targetIndex: number; oldParentId?: string | null; parentId?: string | null; }",
       "name": "ok:data-grid:roworder"
      },
      {
@@ -327,6 +439,18 @@
       "description": "Before the row selection changes (row ids). Call `preventDefault()` to keep it.",
       "detail": "{ model: string[]; }",
       "name": "ok:data-grid:selection"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Pivot or Chart panel closed.",
+      "detail": "{ value: GridSidebarName; }",
+      "name": "ok:data-grid:sidebarclose"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Pivot or Chart panel opened.",
+      "detail": "{ value: GridSidebarName; }",
+      "name": "ok:data-grid:sidebaropen"
      },
      {
       "cancelable": true,
@@ -565,10 +689,10 @@
       "type": "(field: string, width: number) => void"
      },
      {
-      "description": "Loads the rows from a server for the current sort, filter and page (`null`: stop).",
+      "description": "Loads the rows from a server for the current sort, filter and page (`null`: stop). `cache` replaces the default cache of responses (`null`: none), the grid's `dataSourceCache`.",
       "kind": "method",
       "name": "setDataSource",
-      "type": "(source: GridDataSource<DataRow> | null) => void"
+      "type": "(source: GridDataSource<DataRow> | null, options?: { cache?: GridDataSourceCache<DataRow> | null; } | undefined) => void"
      },
      {
       "description": "Sets the value of a field being edited, such as from a custom editor's widget.",
@@ -598,7 +722,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 126 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 128 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's values, returns the value to write. `null`: back to parsing by the column type.",
@@ -629,6 +753,12 @@
       "kind": "method",
       "name": "setPivotModel",
       "type": "(model: GridPivotModel) => void"
+     },
+     {
+      "description": "Overrides for the pivot's value columns (MUI X `pivotingColDef`): one object for all, or a function of the source field and the column's keys; `null` removes them.",
+      "kind": "method",
+      "name": "setPivotingColDef",
+      "type": "(def: GridHtmlPivotingColDef | null) => void"
      },
      {
       "description": "Tree data: opens or closes a row's children.",
@@ -816,10 +946,17 @@
      },
      {
       "attr": "data-ok-row-count",
-      "description": "Total rows on the server.",
+      "description": "Total rows on the server (`-1`: not known yet).",
+      "kind": "number",
+      "min": -1,
+      "name": "rowCount"
+     },
+     {
+      "attr": "data-ok-estimated-row-count",
+      "description": "With an unknown row count: the pagination shows \"around\" this number while the page is before it.",
       "kind": "number",
       "min": 0,
-      "name": "rowCount"
+      "name": "estimatedRowCount"
      },
      {
       "attr": "data-ok-loading",
@@ -1054,6 +1191,103 @@
        "withModifierKey",
        "always"
       ]
+     },
+     {
+      "attr": "data-ok-disable-autosize",
+      "description": "A double click on a column's edge doesn't fit it to its content.",
+      "kind": "flag",
+      "name": "disableAutosize"
+     },
+     {
+      "attr": "data-ok-keep-column-position-if-dragged-outside",
+      "description": "A column dropped outside the grid takes the place of the last header it passed.",
+      "kind": "flag",
+      "name": "keepColumnPositionIfDraggedOutside"
+     },
+     {
+      "attr": "data-ok-pinned-columns-section-separator",
+      "default": "border",
+      "description": "The edge between pinned and scrolling columns: a line, a shadow or both.",
+      "kind": "style",
+      "name": "pinnedColumnsSectionSeparator",
+      "optional": true,
+      "values": [
+       "border",
+       "shadow",
+       "border-and-shadow"
+      ]
+     },
+     {
+      "attr": "data-ok-pinned-rows-section-separator",
+      "default": "border",
+      "description": "The edge between pinned and scrolling rows: a line, or a line and a shadow.",
+      "kind": "style",
+      "name": "pinnedRowsSectionSeparator",
+      "optional": true,
+      "values": [
+       "border",
+       "border-and-shadow"
+      ]
+     },
+     {
+      "attr": "data-ok-pivot-panel-open",
+      "description": "The pivot panel is open.",
+      "kind": "flag",
+      "name": "pivotPanelOpen"
+     },
+     {
+      "attr": "data-ok-virtualize-columns-with-auto-row-height",
+      "description": "Columns virtualize with `\"auto\"` row heights too (rows may change height while scrolling sideways).",
+      "kind": "flag",
+      "name": "virtualizeColumnsWithAutoRowHeight"
+     },
+     {
+      "attr": "data-ok-data-source-keep-previous-data",
+      "description": "With a data source: the rows stay until the new ones arrive (flat rows; tree and grouped rows reset).",
+      "kind": "flag",
+      "name": "dataSourceKeepPreviousData"
+     },
+     {
+      "attr": "data-ok-data-source-revalidate-ms",
+      "default": 0,
+      "description": "With a data source: how often (ms) rows whose cache entry expired load again (`0`: never).",
+      "kind": "number",
+      "min": 0,
+      "name": "dataSourceRevalidateMs"
+     },
+     {
+      "attr": "data-ok-filter-debounce-ms",
+      "default": 0,
+      "description": "Wait (ms) after a keystroke in the quick filter or the filter panel before filtering.",
+      "kind": "number",
+      "min": 0,
+      "name": "filterDebounceMs"
+     },
+     {
+      "attr": "data-ok-column-filter-debounce-ms",
+      "default": 0,
+      "description": "Wait (ms) after a keystroke in a header filter before filtering.",
+      "kind": "number",
+      "min": 0,
+      "name": "columnFilterDebounceMs"
+     },
+     {
+      "attr": "data-ok-disable-children-filtering",
+      "description": "Tree data: filters apply to top-level rows only; a row's children show with it.",
+      "kind": "flag",
+      "name": "disableChildrenFiltering"
+     },
+     {
+      "attr": "data-ok-disable-children-sorting",
+      "description": "Tree data: sorting orders top-level rows only.",
+      "kind": "flag",
+      "name": "disableChildrenSorting"
+     },
+     {
+      "attr": "data-ok-cell-selection-fill-handle",
+      "description": "With cell selection: a handle at the selection's corner repeats its cells where it is dragged (Ctrl / Cmd + D or R from the keyboard).",
+      "kind": "flag",
+      "name": "cellSelectionFillHandle"
      },
      {
       "attr": "data-ok-status-bar",
@@ -1413,6 +1647,14 @@
        "csv",
        "excel",
        "print"
+      ]
+     },
+     {
+      "description": "In the cell at the selection's bottom end corner: the fill handle (`cellSelectionFillHandle`).",
+      "kind": "value",
+      "name": "data-ok-data-grid-fill-handle",
+      "value": [
+       ""
       ]
      },
      {
@@ -1915,6 +2157,14 @@
       "value": "string"
      },
      {
+      "description": "While the fill handle is dragged: on the cells it would fill.",
+      "kind": "value",
+      "name": "data-ok-fill-target",
+      "value": [
+       ""
+      ]
+     },
+     {
       "description": "On a filter row: the field it filters.",
       "kind": "value",
       "name": "data-ok-filter-field",
@@ -1998,6 +2248,15 @@
       "value": "string"
      },
      {
+      "description": "With an unknown row count: `false` when no page follows the current one.",
+      "kind": "value",
+      "name": "data-ok-has-next-page",
+      "value": [
+       "false",
+       "true"
+      ]
+     },
+     {
       "description": "Hides the number of children of tree rows.",
       "kind": "state",
       "name": "data-ok-hide-descendant-count"
@@ -2061,6 +2320,14 @@
       "kind": "value",
       "name": "data-ok-range-edge",
       "value": "string"
+     },
+     {
+      "description": "On a row: `false` when it can't be moved (`isRowReorderable`).",
+      "kind": "value",
+      "name": "data-ok-reorderable",
+      "value": [
+       "false"
+      ]
      },
      {
       "description": "On a header cell: `false` turns resizing off for the column.",
@@ -2209,6 +2476,11 @@
       "type": "boolean"
      },
      {
+      "description": "With `cellSelection`: a handle at the selection's corner repeats its cells down, up, right or left where it is dragged; Ctrl / Cmd + D and + R fill down and right from the keyboard. Each row goes through `processRowUpdate`; one fill is one undo step.",
+      "name": "cellSelectionFillHandle",
+      "type": "boolean"
+     },
+     {
       "description": "The selected cells (row id to fields), controlled.",
       "name": "cellSelectionModel",
       "type": "GridCellSelectionModel"
@@ -2251,6 +2523,12 @@
      {
       "description": "Columns rendered beyond the visible ones, px. Default 150.",
       "name": "columnBufferPx",
+      "type": "number"
+     },
+     {
+      "default": "0",
+      "description": "Wait (ms) after a keystroke in a header filter before filtering.",
+      "name": "columnFilterDebounceMs",
       "type": "number"
      },
      {
@@ -2305,6 +2583,17 @@
       "type": "GridDataSourceCache<R> | null"
      },
      {
+      "description": "The rows stay on screen until the new ones arrive (flat rows; tree and grouped rows reset).",
+      "name": "dataSourceKeepPreviousData",
+      "type": "boolean"
+     },
+     {
+      "default": "0",
+      "description": "How often (ms) rows whose cache entry expired load again in the background. never.",
+      "name": "dataSourceRevalidateMs",
+      "type": "number"
+     },
+     {
       "description": "Levels open at first (`-1`: all). Default 0.",
       "name": "defaultGroupingExpansionDepth",
       "type": "number"
@@ -2323,6 +2612,21 @@
      {
       "description": "No aggregation (no Aggregation items in the column menu).",
       "name": "disableAggregation",
+      "type": "boolean"
+     },
+     {
+      "description": "A double click on a column's edge doesn't fit it to its content.",
+      "name": "disableAutosize",
+      "type": "boolean"
+     },
+     {
+      "description": "Tree data: filters apply to top-level rows only; a row's children show with it.",
+      "name": "disableChildrenFiltering",
+      "type": "boolean"
+     },
+     {
+      "description": "Tree data: sorting orders top-level rows only.",
+      "name": "disableChildrenSorting",
       "type": "boolean"
      },
      {
@@ -2411,6 +2715,11 @@
       "type": "\"cell\" | \"row\""
      },
      {
+      "description": "With `rowCount={-1}`: the pagination shows \"around\" this number until the page passes it.",
+      "name": "estimatedRowCount",
+      "type": "number"
+     },
+     {
       "description": "Options of the Excel export.",
       "name": "excelOptions",
       "type": "GridExcelOptions"
@@ -2419,6 +2728,12 @@
       "description": "csv`). Default \"data\".",
       "name": "exportFileName",
       "type": "string"
+     },
+     {
+      "default": "0",
+      "description": "Wait (ms) after a keystroke in the quick filter or the filter panel before filtering.",
+      "name": "filterDebounceMs",
+      "type": "number"
      },
      {
       "description": "groups`.",
@@ -2566,9 +2881,24 @@
       "type": "((node: { id: string; depth: number; row: R; }) => boolean)"
      },
      {
+      "description": "Returns whether a row can be moved; `false` leaves out its handle.",
+      "name": "isRowReorderable",
+      "type": "((params: { id: string; row: R; }) => boolean)"
+     },
+     {
       "description": "Returns whether a row can be selected.",
       "name": "isRowSelectable",
       "type": "((params: { id: string; row: R; }) => boolean)"
+     },
+     {
+      "description": "Returns whether a row may land there; refused places get no drop mark and no move.",
+      "name": "isValidRowReorder",
+      "type": "((context: GridRowReorderContext<R>) => boolean)"
+     },
+     {
+      "description": "A column dropped outside the grid takes the place of the last header it passed.",
+      "name": "keepColumnPositionIfDraggedOutside",
+      "type": "boolean"
      },
      {
       "description": "Selected ids stay selected when their rows go away (server pages, new data).",
@@ -2631,6 +2961,11 @@
       "description": "Called when the aggregation changes.",
       "name": "onAggregationModelChange",
       "type": "((model: GridAggregationModel) => void)"
+     },
+     {
+      "description": "Called before a paste writes any cell. Throw, or return a promise that rejects, to cancel the paste; a promise makes the grid wait for it (a confirmation dialog, for example).",
+      "name": "onBeforeClipboardPasteStart",
+      "type": "((params: { data: string[][]; }) => unknown)"
      },
      {
       "description": "Called on a click on a cell.",
@@ -2698,9 +3033,44 @@
       "type": "((params: { field: string; colDef: GridColDef<R>; }, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
      },
      {
+      "description": "Called on a right click on a column header.",
+      "name": "onColumnHeaderContextMenu",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called on a double click on a column header (not on its buttons or resize handle).",
+      "name": "onColumnHeaderDoubleClick",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer enters a column header.",
+      "name": "onColumnHeaderEnter",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer leaves a column header.",
+      "name": "onColumnHeaderLeave",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer moves off a column header or an element inside it.",
+      "name": "onColumnHeaderOut",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer moves onto a column header or an element inside it.",
+      "name": "onColumnHeaderOver",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
       "description": "Called when the column order changes, with the fields in their new order.",
       "name": "onColumnOrderChange",
       "type": "((fields: string[]) => void)"
+     },
+     {
+      "description": "Called while a column's edge is dragged, with each new width (`onColumnWidthChange`: on release).",
+      "name": "onColumnResize",
+      "type": "((field: string, width: number) => void)"
      },
      {
       "description": "Called when the column visibility changes.",
@@ -2728,9 +3098,34 @@
       "type": "((ids: string[]) => void)"
      },
      {
+      "description": "Called when an Excel export starts (`\"pending\"`) and ends (`\"finished\"`).",
+      "name": "onExcelExportStateChange",
+      "type": "((state: \"finished\" | \"pending\") => void)"
+     },
+     {
+      "description": "Called when the rendered rows change while `rowCount` is more than the rows given (with client-side pagination, no data source): load the rows of `firstRowToRender` up to, and not including, `lastRowToRender`.",
+      "name": "onFetchRows",
+      "type": "((params: GridFetchRowsParams) => void)"
+     },
+     {
       "description": "Called when the filter model changes.",
       "name": "onFilterModelChange",
       "type": "((model: GridFilterModel) => void)"
+     },
+     {
+      "description": "Called when a grid menu closes.",
+      "name": "onMenuClose",
+      "type": "((params: GridMenuParams) => void)"
+     },
+     {
+      "description": "Called when a grid menu opens: the column menu, Density, Export or the cell menu.",
+      "name": "onMenuOpen",
+      "type": "((params: GridMenuParams) => void)"
+     },
+     {
+      "description": "Called when a data source reports a new `pageInfo`.",
+      "name": "onPaginationMetaChange",
+      "type": "((meta: GridPaginationMeta) => void)"
      },
      {
       "description": "Called when the page or the page size changes.",
@@ -2753,6 +3148,21 @@
       "type": "((model: GridPivotModel) => void)"
      },
      {
+      "description": "Called when the pivot panel opens or closes, or is asked to.",
+      "name": "onPivotPanelOpenChange",
+      "type": "((open: boolean) => void)"
+     },
+     {
+      "description": "Called when the Columns or Filters panel closes.",
+      "name": "onPreferencePanelClose",
+      "type": "((params: GridPreferencePanelParams) => void)"
+     },
+     {
+      "description": "Called when the Columns or Filters panel opens.",
+      "name": "onPreferencePanelOpen",
+      "type": "((params: GridPreferencePanelParams) => void)"
+     },
+     {
       "description": "Called when `processRowUpdate` throws or rejects.",
       "name": "onProcessRowUpdateError",
       "type": "((error: unknown) => void)"
@@ -2763,9 +3173,19 @@
       "type": "((params: { ids: string[]; }) => void)"
      },
      {
+      "description": "Called when the grid's own size changes, with its width and height in pixels.",
+      "name": "onResize",
+      "type": "((containerSize: { width: number; height: number; }) => void)"
+     },
+     {
       "description": "Called on a click on a row.",
       "name": "onRowClick",
       "type": "((params: GridRowParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
+     },
+     {
+      "description": "Called when the row count changes.",
+      "name": "onRowCountChange",
+      "type": "((count: number) => void)"
      },
      {
       "description": "Called on a double click on a row.",
@@ -2793,9 +3213,9 @@
       "type": "((model: GridRowModesModel) => void)"
      },
      {
-      "description": "Called when a dragged row moves.",
+      "description": "Called when a dragged row moves (tree data: with its old and new parent ids).",
       "name": "onRowOrderChange",
-      "type": "((params: { row: R; oldIndex: number; targetIndex: number; }) => void)"
+      "type": "((params: GridRowOrderChangeParams<R>) => void)"
      },
      {
       "description": "Called when the row selection changes.",
@@ -2806,6 +3226,16 @@
       "description": "The rows were scrolled near their end (infinite loading). Called once per row count.",
       "name": "onRowsScrollEnd",
       "type": "((params: { visibleRowsCount: number; }) => void)"
+     },
+     {
+      "description": "Called when the Pivot or Chart panel closes.",
+      "name": "onSidebarClose",
+      "type": "((params: GridSidebarParams) => void)"
+     },
+     {
+      "description": "Called when the Pivot or Chart panel opens.",
+      "name": "onSidebarOpen",
+      "type": "((params: GridSidebarParams) => void)"
      },
      {
       "description": "Called when the sort model changes.",
@@ -2824,6 +3254,11 @@
       "type": "readonly number[]"
      },
      {
+      "description": "With `rowCount={-1}`: `hasNextPage: false` fixes the total at the rows seen so far.",
+      "name": "paginationMeta",
+      "type": "GridPaginationMeta"
+     },
+     {
       "description": "`server`: `rows` are the current page and `rowCount` the total.",
       "name": "paginationMode",
       "type": "\"client\" | \"server\""
@@ -2839,9 +3274,21 @@
       "type": "GridPinnedColumns"
      },
      {
+      "default": "\"border\"",
+      "description": "The edge between pinned and scrolling columns.",
+      "name": "pinnedColumnsSectionSeparator",
+      "type": "\"border\" | \"border-and-shadow\" | \"shadow\""
+     },
+     {
       "description": "Rows kept above or below the others (not sorted, filtered or paged).",
       "name": "pinnedRows",
       "type": "{ top?: readonly R[] | undefined; bottom?: readonly R[] | undefined; }"
+     },
+     {
+      "default": "\"border\"",
+      "description": "The edge between pinned and scrolling rows.",
+      "name": "pinnedRowsSectionSeparator",
+      "type": "\"border\" | \"border-and-shadow\""
      },
      {
       "description": "Shows the pivot of the rows instead of the rows.",
@@ -2852,6 +3299,16 @@
       "description": "The pivot model (rows, columns and values), controlled.",
       "name": "pivotModel",
       "type": "GridPivotModel"
+     },
+     {
+      "description": "The pivot panel is open (controlled with `onPivotPanelOpenChange`).",
+      "name": "pivotPanelOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Overrides for the pivot's value columns: one object for all, or a function of the source field and the column's keys (`columnGroupPath`).",
+      "name": "pivotingColDef",
+      "type": "| GridPivotingColDefOverrides | ((originalColumnField: string, columnGroupPath: string[]) => GridPivotingColDefOverrides)"
      },
      {
       "description": "Options of the print export (title, fields…).",
@@ -2879,7 +3336,7 @@
       "type": "number"
      },
      {
-      "description": "Total rows on the server.",
+      "description": "Total rows on the server; `-1` when it isn't known yet.",
       "name": "rowCount",
       "type": "number"
      },
@@ -2946,6 +3403,11 @@
       "type": "number"
      },
      {
+      "description": "Tree data: the row with a new path, when reordering moves it under another parent (the reverse of `getTreeDataPath`). Each moved row then goes through `processRowUpdate`. Without it, rows move among their siblings only.",
+      "name": "setTreeDataPath",
+      "type": "((path: string[], row: R) => R)"
+     },
+     {
       "description": "Vertical lines between the cells.",
       "name": "showCellVerticalBorder",
       "type": "boolean"
@@ -3007,6 +3469,11 @@
       "description": "Rows form a tree (`getTreeDataPath`, or a data source with `getChildrenCount`).",
       "name": "treeData",
       "type": "boolean"
+     },
+     {
+      "description": "Columns virtualize with `\"auto\"` row heights too (rows may change height while scrolling sideways).",
+      "name": "virtualizeColumnsWithAutoRowHeight",
+      "type": "boolean"
      }
     ]
    }
@@ -3049,8 +3516,24 @@
    "type": "\"cellDoubleClick\" | \"enterKeyDown\" | \"f2KeyDown\" | \"printableKeyDown\""
   },
   {
+   "name": "GridHtmlPivotingColDef",
+   "type": "Partial<Pick<GridColumn, \"align\" | \"headerAlign\" | \"headerName\" | \"maxWidth\" | \"minWidth\" | \"width\">> | ((originalColumnField: string, columnGroupPath: string[]) => Partial<Pick<GridColumn, \"align\" | \"headerAlign\" | \"headerName\" | \"maxWidth\" | \"minWidth\" | \"width\">>)"
+  },
+  {
+   "name": "GridMenuName",
+   "type": "\"column\" | \"context\" | \"density\" | \"export\""
+  },
+  {
+   "name": "GridPreferencePanelName",
+   "type": "\"columns\" | \"filters\""
+  },
+  {
    "name": "GridRowModesModel",
    "type": "{ [x: string]: GridRowModeEntry; }"
+  },
+  {
+   "name": "GridSidebarName",
+   "type": "\"charts\" | \"pivot\""
   },
   {
    "name": "GridSortDirection",

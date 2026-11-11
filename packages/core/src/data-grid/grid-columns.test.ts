@@ -265,6 +265,32 @@ describe("createGridColumnControls", () => {
     handle.destroy();
   });
 
+  it("keepPositionOutside: a drop outside the grid lands on the last header passed", () => {
+    const grid = mount(GRID).firstElementChild as HTMLElement;
+    const onMove = vi.fn();
+    let keep = false;
+    createGridColumnControls(grid, {
+      onResize: vi.fn(),
+      onMove,
+      canReorder: () => true,
+      keepPositionOutside: () => keep,
+    });
+    const a = grid.querySelector('[data-ok-field="a"]') as HTMLElement;
+    const b = grid.querySelector('[data-ok-field="b"]') as HTMLElement;
+    const bx = b.getBoundingClientRect().left + 20;
+    const outside = { clientY: grid.getBoundingClientRect().bottom + 200 };
+    const drag = () => {
+      pointer(a, "pointerdown", 10);
+      pointer(a, "pointermove", bx);
+      pointer(a, "pointerup", bx, outside);
+    };
+    drag();
+    expect(onMove).not.toHaveBeenCalled();
+    keep = true;
+    drag();
+    expect(onMove).toHaveBeenCalledExactlyOnceWith("a", "b");
+  });
+
   it("double click on a resize handle autosizes; right to left, dragging left widens", () => {
     const grid = mount(GRID).firstElementChild as HTMLElement;
     const onAutosize = vi.fn();
