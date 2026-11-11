@@ -226,6 +226,19 @@ const plainColumns: GridColDef<Issue>[] = [
   { field: "points", headerName: "Points", type: "number", width: 110 },
 ];
 
+const fillColumns: GridColDef<Issue>[] = [
+  { field: "title", headerName: "Title", minWidth: 180, width: 200 },
+  {
+    field: "priority",
+    headerName: "Priority",
+    width: 130,
+    type: "singleSelect",
+    valueOptions: ["High", "Medium", "Low"],
+    editable: true,
+  },
+  { field: "points", headerName: "Points", type: "number", width: 110, editable: true },
+];
+
 /* Releases with numbers, yes / no values and dates, for generated columns (story data). */
 export const RELEASES = [
   { id: 1, name: "Alpha", downloads: 120, stable: false, releaseDate: "2025-01-15" },
@@ -496,6 +509,26 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  fill: [
+    {
+      title: "Fill handle",
+      content: (
+        // Select cells, then drag the square at their corner (or press Ctrl + D / Ctrl + R).
+        <DataGrid
+          id="grid-fill"
+          aria-label="Estimates"
+          className="sb-grid-wide"
+          rows={ISSUES}
+          columns={fillColumns}
+          cellSelection
+          cellSelectionFillHandle
+          pinnedColumns={{ left: ["title"] }}
+          pinnedColumnsSectionSeparator="border-and-shadow"
+          hideFooter
+        />
+      ),
+    },
+  ],
 };
 
 export const MORE_FILES = {
@@ -517,4 +550,5 @@ export const MORE_FILES = {
     ["Header heights, borders and row spacing", "borders"],
     ["Page size from the height", "pages"],
   ],
+  fill: [["Fill handle", "group"]],
 } as const;

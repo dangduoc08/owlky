@@ -36,6 +36,7 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "context-menu"],
   ["datagrid", "filter-groups"],
   ["datagrid", "generated-columns"],
+  ["datagrid", "fill-handle"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

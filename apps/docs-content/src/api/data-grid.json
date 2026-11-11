@@ -322,6 +322,12 @@
      },
      {
       "cancelable": true,
+      "description": "Before the fill handle (or Ctrl / Cmd + D, + R) writes cells: each one with the cell its value comes from. Call `preventDefault()` to refuse; each row still fires `edit`.",
+      "detail": "{ cells: GridFillCell[]; }",
+      "name": "ok:data-grid:fill"
+     },
+     {
+      "cancelable": true,
       "description": "Before the filter model changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: GridFilterModel; }",
       "name": "ok:data-grid:filter"
@@ -1278,6 +1284,12 @@
       "name": "disableChildrenSorting"
      },
      {
+      "attr": "data-ok-cell-selection-fill-handle",
+      "description": "With cell selection: a handle at the selection's corner repeats its cells where it is dragged (Ctrl / Cmd + D or R from the keyboard).",
+      "kind": "flag",
+      "name": "cellSelectionFillHandle"
+     },
+     {
       "attr": "data-ok-status-bar",
       "description": "With cell selection: a bar under the rows counts the selected cells and sums their numbers.",
       "kind": "flag",
@@ -1635,6 +1647,14 @@
        "csv",
        "excel",
        "print"
+      ]
+     },
+     {
+      "description": "In the cell at the selection's bottom end corner: the fill handle (`cellSelectionFillHandle`).",
+      "kind": "value",
+      "name": "data-ok-data-grid-fill-handle",
+      "value": [
+       ""
       ]
      },
      {
@@ -2137,6 +2157,14 @@
       "value": "string"
      },
      {
+      "description": "While the fill handle is dragged: on the cells it would fill.",
+      "kind": "value",
+      "name": "data-ok-fill-target",
+      "value": [
+       ""
+      ]
+     },
+     {
       "description": "On a filter row: the field it filters.",
       "kind": "value",
       "name": "data-ok-filter-field",
@@ -2445,6 +2473,11 @@
      {
       "description": "Cells are selected in ranges (press, drag, Shift + click, Shift + arrows).",
       "name": "cellSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "With `cellSelection`: a handle at the selection's corner repeats its cells down, up, right or left where it is dragged; Ctrl / Cmd + D and + R fill down and right from the keyboard. Each row goes through `processRowUpdate`; one fill is one undo step.",
+      "name": "cellSelectionFillHandle",
       "type": "boolean"
      },
      {

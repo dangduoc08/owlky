@@ -882,6 +882,17 @@ export {
   parseGridExcelOptions,
 } from "./data-grid/grid-excel.js";
 export {
+  createGridFillHandle,
+  type GridFillCell,
+  type GridFillDirection,
+  type GridFillHandle,
+  type GridFillHandleOptions,
+  gridFillCells,
+  gridFillSelection,
+  gridFillSource,
+  gridFillWithin,
+} from "./data-grid/grid-fill.js";
+export {
   type GridFormat,
   type GridHeaderHeights,
   type GridRowSpans,

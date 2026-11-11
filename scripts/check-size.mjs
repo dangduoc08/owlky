@@ -103,7 +103,9 @@ const budgets = [
   // 250 kB since the geo charts (ADR-0059: projections, hex tiles, `mapScale`): 246.84 kB.
   // 260 kB once the geo charts merged with the ApexCharts v8 types (streamgraph, violin, beeswarm,
   // waffle, unit, roadmap 4.18.21): 256.7 kB. Optimization is deferred to 1.0 prep.
-  ["packages/html/dist/owlky.js", 260_000, "HTML runtime + all components (IIFE)"],
+  // 265 kB with the data grid coulds (roadmap 4.18.55–4.18.58: events, server options, tree
+  // reordering, the fill handle): 261.4 kB.
+  ["packages/html/dist/owlky.js", 265_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -198,7 +200,8 @@ const budgets = [
   // select and picker field options: their stories, docs sections and API entries): 1202.0 kB.
   // 1.2 MB since Phase 4 batch E (new chart and data grid stories, sections and API entries): 1154.6 kB.
   // 1.4 MB since the geo charts and the ApexCharts v8 types (stories, docs sections, API entries): 1364.4 kB.
-  ["packages/mcp/manifest.json", 1_400_000, "MCP manifest (npm tarball, not a browser download)"],
+  // 1.45 MB with the data grid coulds (roadmap 4.18.55–4.18.58: docs sections, API entries): 1389.5 kB.
+  ["packages/mcp/manifest.json", 1_450_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;

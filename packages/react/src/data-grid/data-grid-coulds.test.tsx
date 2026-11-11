@@ -864,3 +864,120 @@ describe("DataGrid columns, rows and pivot options (4.18.57)", () => {
     expect(cells()).toBeLessThan(30);
   });
 });
+
+describe("DataGrid fill handle (4.18.58)", () => {
+  const press = (el: Element, init: PointerEventInit = {}) =>
+    act(() => {
+      el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, ...init }));
+      document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
+    });
+  const centre = (el: Element) => {
+    const box = el.getBoundingClientRect();
+    return { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
+  };
+  const handle = () => document.querySelector("[data-ok-data-grid-fill-handle]");
+  const setup = (extra: Record<string, unknown> = {}) => {
+    const processRowUpdate = vi.fn((row: Row) => row);
+    const apiRef = { current: null as GridApi<Row> | null };
+    render(
+      <DataGrid
+        aria-label="People"
+        apiRef={apiRef}
+        rows={ROWS.slice(0, 5)}
+        columns={COLUMNS}
+        cellSelection
+        cellSelectionFillHandle
+        processRowUpdate={processRowUpdate}
+        disableVirtualization
+        hideFooter
+        {...extra}
+      />,
+    );
+    return { processRowUpdate, apiRef };
+  };
+
+  it("shows the handle in the selection's bottom end cell", async () => {
+    setup();
+    expect(handle()).toBeNull();
+    press(cell(1, "name"));
+    press(cell(2, "age"), { shiftKey: true });
+    expect(handle()?.parentElement).toBe(cell(2, "age"));
+    expect(handle()?.getAttribute("aria-hidden")).toBe("true");
+    // Not a rectangle: no handle.
+    press(cell(4, "name"), { ctrlKey: true });
+    expect(handle()).toBeNull();
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("dragging the handle repeats the cells, through processRowUpdate, as one undo step", async () => {
+    const { processRowUpdate, apiRef } = setup();
+    press(cell(1, "name"));
+    press(cell(2, "name"), { shiftKey: true });
+    const fillHandle = handle() as HTMLElement;
+    await act(async () => {
+      fillHandle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+      document.dispatchEvent(new PointerEvent("pointermove", centre(cell(5, "name"))));
+      await tick();
+    });
+    expect(cell(4, "name").hasAttribute("data-ok-fill-target")).toBe(true);
+    await act(async () => {
+      document.dispatchEvent(new PointerEvent("pointerup", centre(cell(5, "name"))));
+      await tick();
+    });
+    expect(processRowUpdate.mock.calls.map((call) => [call[0].id, call[0].name])).toEqual([
+      [3, "Person 1"],
+      [4, "Person 2"],
+      [5, "Person 1"],
+    ]);
+    expect(cell(5, "name").textContent).toBe("Person 1");
+    expect(cell(5, "name").getAttribute("aria-selected")).toBe("true");
+    expect(apiRef.current?.history.canUndo()).toBe(true);
+    await act(async () => {
+      await apiRef.current?.history.undo();
+    });
+    expect(cell(3, "name").textContent).toBe("Person 3");
+    expect(cell(5, "name").textContent).toBe("Person 5");
+  });
+
+  it("Ctrl + D fills down and Ctrl + R fills right from the keyboard", async () => {
+    const { processRowUpdate } = setup({
+      columns: [
+        { field: "name", headerName: "Name", width: 140, editable: true },
+        { field: "age", headerName: "Age", type: "number", width: 90, editable: true },
+        { field: "age2", headerName: "Age 2", type: "number", width: 90, editable: true },
+      ],
+    });
+    press(cell(1, "age"));
+    press(cell(3, "age"), { shiftKey: true });
+    cell(3, "age").focus();
+    await act(async () => {
+      fireEvent.keyDown(cell(3, "age"), { key: "d", ctrlKey: true });
+      await tick();
+    });
+    expect(processRowUpdate.mock.calls.map((call) => [call[0].id, call[0].age])).toEqual([
+      [2, 20],
+      [3, 20],
+    ]);
+    processRowUpdate.mockClear();
+    press(cell(1, "age2"));
+    await act(async () => {
+      fireEvent.keyDown(cell(1, "age2"), { key: "r", ctrlKey: true });
+      await tick();
+    });
+    // Another column: the source's text, parsed by the target column.
+    expect(processRowUpdate.mock.calls[0]?.[0]).toMatchObject({ id: 1, age2: 20 });
+  });
+
+  it("leaves non-editable cells and grids without the option alone", async () => {
+    const { processRowUpdate } = setup({
+      cellSelectionFillHandle: false,
+    });
+    press(cell(1, "name"));
+    expect(handle()).toBeNull();
+    await act(async () => {
+      fireEvent.keyDown(cell(1, "name"), { key: "d", ctrlKey: true });
+      await tick();
+    });
+    expect(processRowUpdate).not.toHaveBeenCalled();
+  });
+});

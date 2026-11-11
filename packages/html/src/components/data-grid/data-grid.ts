@@ -12,6 +12,7 @@ import {
   createGridContextMenu,
   createGridDataSourceCache,
   createGridDebounce,
+  createGridFillHandle,
   createGridHistoryKeys,
   createGridHistoryStack,
   createGridNavigation,
@@ -47,6 +48,7 @@ import {
   type GridEditStartReason,
   type GridEditTarget,
   type GridExcelOptions,
+  type GridFillCell,
   type GridFilterGroup,
   type GridFilterItem,
   type GridFilterModel,
@@ -113,6 +115,10 @@ import {
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
+  gridFillCells,
+  gridFillSelection,
+  gridFillSource,
+  gridFillWithin,
   gridFilterGroupName,
   gridFilterGroupSuffix,
   gridFilterOperators,
@@ -372,6 +378,11 @@ export interface DataGridEvents {
   rowcountchange: EventSpec<{ count: number }>;
   /** After a data source reported a new `pageInfo`. */
   paginationmetachange: EventSpec<{ hasNextPage?: boolean | undefined }>;
+  /**
+   * Before the fill handle (or Ctrl / Cmd + D, + R) writes cells: each one with the cell its value
+   * comes from. Call `preventDefault()` to refuse; each row still fires `edit`.
+   */
+  fill: EventSpec<{ cells: GridFillCell[] }, true>;
   /** An Excel export started (`pending`) or ended (`finished`). */
   excelexportstate: EventSpec<{ state: "pending" | "finished" }>;
   /**
@@ -634,6 +645,7 @@ const {
   keepColumnPositionIfDraggedOutside,
   pivotPanelOpen,
   virtualizeColumnsWithAutoRowHeight,
+  cellSelectionFillHandle,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -3635,9 +3647,23 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cell.removeAttribute("aria-selected");
         cell.removeAttribute("data-ok-range-edge");
       }
+      for (const handle of body.querySelectorAll("[data-ok-data-grid-fill-handle]"))
+        handle.remove();
       if (!cellsOn()) return;
       const ids = pageIds();
       const fields = shownFields();
+      // The fill handle sits in the bottom end cell of a whole rectangle.
+      const block = fillOn() ? gridFillSource(cellModel, ids, fields) : null;
+      const cornerRow = block && rowEls.find((r) => idOf(r) === block.ids.at(-1));
+      const corner = cornerRow?.isConnected
+        ? cellOf(cornerRow, block?.fields.at(-1) as string)
+        : null;
+      if (corner && !corner.hasAttribute("data-ok-editing")) {
+        const handle = document.createElement("span");
+        handle.setAttribute("data-ok-data-grid-fill-handle", "");
+        handle.setAttribute("aria-hidden", "true");
+        corner.append(handle);
+      }
       for (const [rowId, cells] of Object.entries(cellModel)) {
         const row = rowEls.find((r) => idOf(r) === rowId);
         if (!row?.isConnected) continue;
@@ -3652,6 +3678,61 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }
       }
     };
+    // Fill handle (MUI X `cellSelectionFillHandle`): the selection repeats where the handle goes.
+    const fillOn = () => cellsOn() && element.hasAttribute(cellSelectionFillHandle.attr);
+    const fillSourceNow = () =>
+      fillOn() ? gridFillSource(cellModel, pageIds(), shownFields()) : null;
+    const writeFill = (cells: GridFillCell[]) => {
+      const block = fillSourceNow();
+      if (!block || !cells.length || !emit("fill", { cells }, { cancelable: true })) return;
+      const byRow = new Map<string, GridFillCell[]>();
+      for (const cell of cells) byRow.set(cell.id, [...(byRow.get(cell.id) ?? []), cell]);
+      const changes: GridHistoryChange<DataRow>[] = [];
+      for (const [rowId, list] of byRow) {
+        const row = rowEls.find((el) => idOf(el) === rowId);
+        if (!row) continue;
+        const values: DataRow = {};
+        for (const cell of list) {
+          const column = columns.find((c) => c.field === cell.field);
+          const from = rowEls.find((el) => idOf(el) === cell.from.id);
+          if (!column || !from || !cellEditable(row, column)) continue;
+          // The same column copies the value; another one parses the source's text.
+          values[cell.field] =
+            cell.from.field === cell.field
+              ? value(from, cell.field)
+              : parseGridEditValue(cellText(from, cell.from.field), column.type);
+        }
+        if (
+          !Object.keys(values).length ||
+          !emit("edit", { id: rowId, row: values }, { cancelable: true })
+        )
+          continue;
+        changes.push({ id: rowId, before: valuesOf(row, Object.keys(values)), after: values });
+        writeCells(row, values);
+      }
+      // One undo step for the whole fill (not with a data source, as pastes).
+      if (!changes.length) return;
+      if (!source) recordStep(changes);
+      apply();
+      setCells(gridFillSelection(block, cells));
+      markCells();
+    };
+    const fillHandle = createGridFillHandle(main, {
+      enabled: fillOn,
+      preview: (target) => {
+        const block = fillSourceNow();
+        return block ? (gridFillCells(block, pageIds(), shownFields(), target)?.cells ?? []) : [];
+      },
+      onFill: (target) => {
+        const block = fillSourceNow();
+        if (block) writeFill(gridFillCells(block, pageIds(), shownFields(), target)?.cells ?? []);
+      },
+      onFillKey: (direction) => {
+        const block = fillSourceNow();
+        if (block) writeFill(gridFillWithin(block, pageIds(), shownFields(), direction));
+      },
+    });
+    signal.addEventListener("abort", () => fillHandle.destroy());
     const cellSelection = createGridCellSelection(main, {
       enabled: cellsOn,
       onRangeChart: () => rangeChart({}, true),

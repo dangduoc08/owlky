@@ -2077,6 +2077,52 @@ export function Tasks() {
 }`,
   },
   {
+    id: "fill-handle",
+    title: "Fill cells by dragging",
+    body: "With `cellSelection` and `cellSelectionFillHandle`, a small square shows at the bottom end corner of the selected cells. Drag it down, up, right or left: the selection repeats into the cells it passes, and the selection grows over them. From the keyboard, select the cells with Shift + arrows, then press Ctrl + D (Cmd + D on a Mac) to copy the first row into the others, or Ctrl + R (Cmd + R) to copy the first column. With one row selected, Ctrl + D copies the row above it. A cell in the same column gets the value itself; a cell in another column gets the text, read the way a paste reads it. Each changed row goes through `processRowUpdate`, and the whole fill is one undo step. Only editable cells change. In HTML, the cancelable `ok:data-grid:fill` reports the cells first, then each row fires `ok:data-grid:edit`.",
+    html: `<!-- The grid's data-ok-cell-selection and data-ok-cell-selection-fill-handle -->
+${gridOf(cellsGroup, { attrs: "data-ok-cell-selection-fill-handle" })}
+<script>
+  const grid = document.getElementById("grid-cells");
+  grid.addEventListener("ok:data-grid:fill", (event) => {
+    console.log("Cells to fill:", event.detail.cells.length);
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
+
+type Task = { id: number; title: string; owner: string; points: number };
+
+const initialTasks: Task[] = [
+  { id: 1, title: "Fix the login form", owner: "Ana", points: 3 },
+  { id: 2, title: "Update the docs", owner: "", points: 0 },
+  { id: 3, title: "Add dark mode", owner: "", points: 0 },
+];
+
+const columns: GridColDef<Task>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "owner", headerName: "Owner", editable: true },
+  { field: "points", headerName: "Points", type: "number", editable: true },
+];
+
+export function Tasks() {
+  const [tasks, setTasks] = useState(initialTasks);
+  return (
+    <DataGrid
+      aria-label="Tasks"
+      rows={tasks}
+      columns={columns}
+      cellSelection
+      cellSelectionFillHandle
+      processRowUpdate={(row) => {
+        setTasks((current) => current.map((task) => (task.id === row.id ? row : task)));
+        return row;
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "reorder-tree",
     title: "Reorder tree rows and pinned edges",
     body: "With `treeData` and `rowReordering`, a row moves with its children. Drag its handle above or below another row, or press Alt + Up or Alt + Down on the handle. The row joins the siblings of the row it lands next to. To let rows change parent, pass `setTreeDataPath`: the grid gives it the new path and saves each moved row through `processRowUpdate`. `isRowReorderable` keeps some rows in place (their handle goes away), and `isValidRowReorder` refuses some places. `pinnedColumnsSectionSeparator` and `pinnedRowsSectionSeparator` draw the edge of pinned columns and rows as a line (the default), a shadow, or both. `disableAutosize` turns off the double click on a column's edge. In HTML, tree rows change parent through `data-ok-parent`, and the cancelable `ok:data-grid:roworder` reports `detail.oldParentId` and `detail.parentId`.",
@@ -2250,6 +2296,7 @@ export function Issues() {
 - **\`ok:data-grid:menuopen\`** and **\`ok:data-grid:menuclose\`** report \`detail.menu\` and \`detail.target\`. **\`ok:data-grid:preferencepanelopen\`** and **\`ok:data-grid:preferencepanelclose\`** report \`detail.openedPanelValue\`. **\`ok:data-grid:sidebaropen\`** and **\`ok:data-grid:sidebarclose\`** report \`detail.value\`.
 - **\`ok:data-grid:containerresize\`** reports the grid's \`detail.width\` and \`detail.height\`. **\`ok:data-grid:columnresize\`** reports \`detail.field\` and \`detail.width\` while an edge is dragged.
 - **\`ok:data-grid:fetchrows\`** reports \`detail.firstRowToRender\` and \`detail.lastRowToRender\` when the rendered rows change and \`data-ok-row-count\` is more than the rows in the grid. **\`ok:data-grid:excelexportstate\`** reports \`detail.state\`, \`pending\` then \`finished\`. **\`ok:data-grid:beforeclipboardpaste\`** is cancelable and takes a promise in \`detail.waitUntil(promise)\`.
+- **\`ok:data-grid:fill\`** reports the cells the fill handle (or Ctrl + D, Ctrl + R) is about to write, each with the cell it repeats, in \`detail.cells\`. It's cancelable.
 - **\`ok:data-grid:roworder\`** also reports \`detail.oldParentId\` and \`detail.parentId\` for tree rows. \`setPivotingColDef(def)\` changes the pivot's columns (\`headerName\`, \`width\`, \`minWidth\`, \`maxWidth\`, \`align\`, \`headerAlign\`), and \`data-ok-pivot-panel-open\` opens the pivot panel.
 - **\`ok:data-grid:rowcountchange\`** reports \`detail.count\`, and **\`ok:data-grid:paginationmetachange\`** reports a data source's \`detail.hasNextPage\`. \`setDataSource(source, { cache })\` replaces the cache of responses (\`null\` turns it off).
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
@@ -2556,6 +2603,10 @@ const PREVIEWS = {
         ["Shift + arrow keys (cell selection)", "Extends the selected range"],
         ["Alt + F1 on a cell (cell selection)", "Charts the selected cells"],
         ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
+        [
+          "Ctrl + D / Ctrl + R on a cell (cellSelectionFillHandle)",
+          "Fills the selected cells down / right from the first row / column",
+        ],
         ["Ctrl + Z on a cell or a header", "Undoes the last edit or paste"],
         ["Ctrl + Shift + Z or Ctrl + Y on a cell or a header", "Redoes it"],
         ["Shift + F10 or the Menu key on a cell (contextMenu)", "Opens the cell menu"],

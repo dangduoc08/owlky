@@ -501,3 +501,69 @@ describe("data grid columns, rows and pivot options (4.18.57)", () => {
     expect(root.hasAttribute("data-ok-pivot-panel-open")).toBe(true);
   });
 });
+
+describe("data grid fill handle (4.18.58)", () => {
+  const pressed = (el: Element, init: PointerEventInit = {}) => {
+    el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, ...init }));
+    document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
+  };
+  const centre = (el: Element) => {
+    const box = el.getBoundingClientRect();
+    return { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
+  };
+  const open = () =>
+    setup(
+      snippet("cells-group").replace(
+        "<div data-ok-data-grid ",
+        "<div data-ok-data-grid data-ok-cell-selection-fill-handle data-ok-disable-virtualization ",
+      ),
+    );
+
+  it("shows the handle in the selection's bottom end cell", () => {
+    const { root } = open();
+    pressed(cell(root, "i-1", "name"));
+    pressed(cell(root, "i-2", "name"), { shiftKey: true });
+    const fillHandle = root.querySelector("[data-ok-data-grid-fill-handle]");
+    expect(fillHandle?.parentElement).toBe(cell(root, "i-2", "name"));
+    pressed(cell(root, "i-4", "name"), { ctrlKey: true });
+    expect(root.querySelector("[data-ok-data-grid-fill-handle]")).toBeNull();
+  });
+
+  it("dragging the handle repeats the cells as one undo step; fill is cancelable", async () => {
+    const { root, instance } = open();
+    const edits = events(root, "edit");
+    const fills = events(root, "fill");
+    pressed(cell(root, "i-1", "name"));
+    const before = cell(root, "i-1", "name").textContent;
+    const third = cell(root, "i-3", "name").textContent;
+    const drag = (to: HTMLElement) => {
+      (root.querySelector("[data-ok-data-grid-fill-handle]") as Element).dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true, button: 0 }),
+      );
+      document.dispatchEvent(new PointerEvent("pointermove", centre(to)));
+      document.dispatchEvent(new PointerEvent("pointerup", centre(to)));
+    };
+    root.addEventListener("ok:data-grid:fill", (e) => e.preventDefault(), { once: true });
+    drag(cell(root, "i-3", "name"));
+    expect(edits).toEqual([]);
+    drag(cell(root, "i-3", "name"));
+    expect(fills).toHaveLength(2);
+    expect(edits.map((e) => e["id"])).toEqual(["i-2", "i-3"]);
+    expect(cell(root, "i-3", "name").textContent).toBe(before);
+    expect(cell(root, "i-3", "name").getAttribute("aria-selected")).toBe("true");
+    expect(await instance.history.undo()).toBe(true);
+    expect(cell(root, "i-3", "name").textContent).toBe(third);
+  });
+
+  it("Ctrl + D fills down from the keyboard", () => {
+    const { root } = open();
+    const edits = events(root, "edit");
+    pressed(cell(root, "i-1", "name"));
+    pressed(cell(root, "i-2", "name"), { shiftKey: true });
+    cell(root, "i-2", "name").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "d", ctrlKey: true, bubbles: true, cancelable: true }),
+    );
+    expect(edits.map((e) => e["id"])).toEqual(["i-2"]);
+    expect(cell(root, "i-2", "name").textContent).toBe(cell(root, "i-1", "name").textContent);
+  });
+});

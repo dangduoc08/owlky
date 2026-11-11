@@ -1025,6 +1025,30 @@
     --_ok-data-grid-edge-left: inset 1px 0 0 var(--_ok-data-grid-edge);
   }
 
+  /* Fill handle (cellSelectionFillHandle): a square at the selection's bottom end corner. */
+  :where([data-ok-data-grid-body] :has(> [data-ok-data-grid-fill-handle]):not([data-ok-pinned])) {
+    position: relative;
+  }
+
+  :where([data-ok-data-grid-fill-handle]) {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    z-index: 1;
+    inline-size: calc(var(--ok-spacing) * 2);
+    block-size: calc(var(--ok-spacing) * 2);
+    border: 1px solid var(--ok-bg-paper);
+    background-color: var(--ok-palette-primary-main);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  /* The cells a drag of the handle would fill. */
+  :where([data-ok-data-grid-body] [data-ok-fill-target]) {
+    box-shadow: inset 0 0 0 1px var(--ok-palette-primary-main);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.04);
+  }
+
   /* Header filters: a row of small fields under the column headers. */
   :where([data-ok-data-grid-header] > [data-ok-data-grid-header-filters]) {
     --_ok-data-grid-header-height: var(

@@ -172,7 +172,8 @@ export function parseGridClipboard(text: string, delimiter = "\t"): string[][] {
 
 const BODY_CELL =
   '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]';
-const CONTROL = "button, a, input, label, select, textarea, [contenteditable]";
+const CONTROL =
+  "button, a, input, label, select, textarea, [contenteditable], [data-ok-data-grid-fill-handle]";
 
 export interface GridCellSelectionOptions {
   /** Cell selection is on (read on each press). */

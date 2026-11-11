@@ -238,6 +238,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `columnFilterDebounceMs` | `data-ok-column-filter-debounce-ms="…"` | number | number | `0` | Wait (ms) after a keystroke in a header filter before filtering. |
 | `disableChildrenFiltering` | `data-ok-disable-children-filtering` | flag | boolean | off | Tree data: filters apply to top-level rows only; a row's children show with it. |
 | `disableChildrenSorting` | `data-ok-disable-children-sorting` | flag | boolean | off | Tree data: sorting orders top-level rows only. |
+| `cellSelectionFillHandle` | `data-ok-cell-selection-fill-handle` | flag | boolean | off | With cell selection: a handle at the selection's corner repeats its cells where it is dragged (Ctrl / Cmd + D or R from the keyboard). |
 | `statusBar` | `data-ok-status-bar` | flag | boolean | off | With cell selection: a bar under the rows counts the selected cells and sums their numbers. |
 | `historyStackSize` | `data-ok-history-stack-size="…"` | number | number | `30` | Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off). |
 | `hideFooterPagination` | `data-ok-hide-footer-pagination` | flag | boolean | off | No pagination in the footer: every row shows, with the row count. |
@@ -705,6 +706,7 @@ runs before anything is written, and the target (selection corner or focused cel
 ## Keyboard
 | Key | Action |
 |---|---|
+| Ctrl / Cmd + D, Ctrl / Cmd + R (cell, `cellSelectionFillHandle`) | Fill the selection down / right from its first row / column (one line: from the row above / the column before) |
 | Tab | Into / out of the grid (one stop) |
 | Tab / Shift + Tab (`tabNavigation`) | Next / previous body cell (`content`), column header (`header`) or both (`all`); past the end, out of the grid |
 | Arrow keys | Move between cells (header included); controls inside cells take the focus |
@@ -777,6 +779,7 @@ the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
 (`{ menu, target }`), `preferencepanelopen` / `preferencepanelclose` (`{ openedPanelValue }`), `sidebaropen` /
 `sidebarclose` (`{ value }`), `containerresize` (`{ width, height }`), `columnresize` (`{ field, width }`),
 `fetchrows`, `excelexportstate` (`{ state }`), `beforeclipboardpaste` (cancelable, `{ data, waitUntil }`).
+(4.18.58) `ok:data-grid:fill` (cancelable, `{ cells }`: each cell with the cell it repeats).
 (4.18.57) `ok:data-grid:roworder` adds `oldParentId` / `parentId` for tree rows; instance
 `setPivotingColDef(def | null)`.
 (4.18.56) `ok:data-grid:rowcountchange` (`{ count }`), `paginationmetachange` (`{ hasNextPage }`); `setDataSource(source, { cache })`.
@@ -865,7 +868,7 @@ the detailed record of what is kept.
 | (not in MUI X; MUI X: `slotProps.cell.onContextMenu`) cell context menu (ApexGrid "Context menu", AG Grid `getContextMenuItems`) | `contextMenu`, `getContextMenuItems` | added (4.18.13, ADR-0057) | AG Grid names in kebab case (`copy`, `paste`, `export` = AG Grid's `csvExport` / `excelExport` in a submenu with Print, `chart-range` = `chartRange`, `pin` = `pinSubMenu`, `separator`); custom items flat (no `subMenu`), `icon`, `shortcut`, `cssClasses`, `suppressContextMenu`, `allowContextMenuWithControlKey`, `preventDefaultOnContextMenu`, `popupParent`: not done; HTML `data-ok-context-menu`, markup items, `ok:data-grid:contextmenu` / `contextmenuselect` |
 | (not in MUI X: one flat `items` list) nested filter groups (ApexGrid filter builder, AG Grid advanced filter) | filter model `groups` (`GridFilterGroup`), `filterGroups` | added (4.18.13, ADR-0057) | each group's own `logicOperator`; JSON (`exportState` / `restoreState`, sanitized, 8 levels); the panel builds them (no separate builder element, no drag to move a condition between groups) |
 | (not in MUI X: `columns` is required) generated columns (ApexGrid `autoGenerate`) | `columns` optional, `autoGenerate`; HTML `data-ok-auto-generate` + `table[data-ok-data-grid-data]` | added (4.18.14, ADR-0057) | ApexGrid's column types `currency` / `percent` aren't inferred (no such types; use `valueFormatter` / `data-ok-format`); React regenerates when `rows` change (ApexGrid: on the first render only); HTML generates once at setup |
-| `cellSelectionFillHandle` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
+| `cellSelectionFillHandle` | same | kept (4.18.58) | with `cellSelection`: `span[data-ok-data-grid-fill-handle][aria-hidden]` in the bottom end cell of a whole rectangle (none for other selections, or on a cell being edited); drag it to repeat the cells down, up, right or left (the longer way out; `data-ok-fill-target` marks the cells while dragging, Escape cancels); keyboard (WCAG 2.5.7): Ctrl / Cmd + D fills down and + R right, from the selection's first row or column (one line: from the row above or the column before), as spreadsheets; the same column copies the value, another one parses the source's text (as a paste); each row through `processRowUpdate` (HTML: cancelable `ok:data-grid:fill` `{ cells }`, then `edit` per row); one undo step (not with a data source, as pastes); the selection grows over the filled cells. No series (1, 2, 3 → 4): values repeat; core `grid-fill.ts` (`gridFillSource`, `gridFillCells`, `gridFillWithin`, `gridFillSelection`, `createGridFillHandle`); story **Fill handle** (with `pinnedColumnsSectionSeparator="border-and-shadow"`) |
 | `onBeforeClipboardPasteStart` | same | kept (4.18.55) | `({ data })`; awaited, a throw or a rejection cancels the paste; the paste lands where the focus was when it started; HTML `ok:data-grid:beforeclipboardpaste` (cancelable, `{ data, waitUntil(promise) }`), then the existing cancelable `clipboardpaste` |
 | Columns: `onColumnResize` | same | kept (4.18.55) | see Events |
 | (not in MUI X) range charts (ApexGrid / AG Grid `createRangeChart`, spreadsheets' Alt + F1) | apiRef / instance `createRangeChart({ cellRange, chartType, label, id })`, Alt + F1, panel **Chart from selection**, model `rows` | added (4.18.12, ADR-0055) | AG Grid's `cellRange: { rowStartIndex, rowEndIndex, columns }` → a cell selection model; returns `{ id, model }` (AG Grid: a `ChartRef`); categories from the first column (series by rows, AG Grid `seriesChartTypes` / combination charts, chart windows and `chartThemes`: not done) |

@@ -3651,6 +3651,10 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-disable-children-sorting",
     "Tree data: sorting orders top-level rows only.",
   ),
+  cellSelectionFillHandle: flag(
+    "data-ok-cell-selection-fill-handle",
+    "With cell selection: a handle at the selection's corner repeats its cells where it is dragged (Ctrl / Cmd + D or R from the keyboard).",
+  ),
   statusBar: flag(
     "data-ok-status-bar",
     "With cell selection: a bar under the rows counts the selected cells and sums their numbers.",
@@ -3804,6 +3808,7 @@ export interface DataGridAnatomyOptions {
   paginationMode?: "client" | "server" | undefined;
   rowCount?: number | undefined;
   estimatedRowCount?: number | undefined;
+  cellSelectionFillHandle?: boolean | undefined;
   disableAutosize?: boolean | undefined;
   keepColumnPositionIfDraggedOutside?: boolean | undefined;
   pinnedColumnsSectionSeparator?: "border" | "shadow" | "border-and-shadow" | undefined;

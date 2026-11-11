@@ -10,6 +10,7 @@ import {
   createGridContextMenu,
   createGridDataSourceCache,
   createGridDebounce,
+  createGridFillHandle,
   createGridHistoryKeys,
   createGridHistoryStack,
   createGridNavigation,
@@ -48,6 +49,7 @@ import {
   type GridDensity,
   type GridEditStartReason,
   type GridExcelOptions,
+  type GridFillCell,
   type GridFilterGroup,
   type GridFilterItem,
   type GridFilterModel,
@@ -119,6 +121,10 @@ import {
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
+  gridFillCells,
+  gridFillSelection,
+  gridFillSource,
+  gridFillWithin,
   gridFilterGroupName,
   gridFilterGroupSuffix,
   gridFilterOperators,
@@ -1058,6 +1064,12 @@ export interface DataGridProps<R>
   excelOptions?: GridExcelOptions | undefined;
   /** Cells are selected in ranges (press, drag, Shift + click, Shift + arrows). */
   cellSelection?: boolean | undefined;
+  /**
+   * With `cellSelection`: a handle at the selection's corner repeats its cells down, up, right or
+   * left where it is dragged; Ctrl / Cmd + D and + R fill down and right from the keyboard. Each
+   * row goes through `processRowUpdate`; one fill is one undo step.
+   */
+  cellSelectionFillHandle?: boolean | undefined;
   /** The selected cells (row id to fields), controlled. */
   cellSelectionModel?: GridCellSelectionModel | undefined;
   /** Called when the cell selection changes. */
@@ -1597,6 +1609,7 @@ function DataGridInner<R>(
     getPivotDerivedColumns,
     excelOptions,
     cellSelection,
+    cellSelectionFillHandle,
     cellSelectionModel,
     onCellSelectionModelChange,
     disableClipboardPaste,
@@ -3392,6 +3405,74 @@ function DataGridInner<R>(
     }
     setCellModel(mergeGridCellSelection(cellBase.current, range));
   };
+  // Fill handle: the selection (a whole rectangle) repeats where its handle is dragged.
+  const fillOn = !!cellSelection && !!cellSelectionFillHandle;
+  const fillSource = fillOn ? gridFillSource(cellModel, cellRowIds, cellFields) : null;
+  const fillCorner = fillSource
+    ? { id: fillSource.ids.at(-1) as string, field: fillSource.fields.at(-1) as string }
+    : null;
+  const fill = useRef<{
+    preview: (target: { id: string; field: string }) => GridFillCell[];
+    drop: (target: { id: string; field: string }) => void;
+    key: (direction: "down" | "right") => void;
+  }>(null as never);
+  /** Writes each filled row through `processRowUpdate`; the whole fill is one undo step. */
+  const writeFill = (cells: readonly GridFillCell[]) => {
+    if (!fillSource || !cells.length) return;
+    const byRow = new Map<string, GridFillCell[]>();
+    for (const cell of cells) byRow.set(cell.id, [...(byRow.get(cell.id) ?? []), cell]);
+    const updates: Promise<GridHistoryChange<R> | null>[] = [];
+    for (const [rowId, list] of byRow) {
+      const row = dataById.get(rowId);
+      if (!row) continue;
+      let next = { ...row } as R;
+      let changed = false;
+      for (const cell of list) {
+        const column = columns.find((c) => c.field === cell.field);
+        const from = dataById.get(cell.from.id);
+        if (!column || from === undefined || !cellEditable(column, row)) continue;
+        // The same column copies the value; another one parses the source's text.
+        const value =
+          cell.from.field === cell.field
+            ? rawValue(column, from)
+            : parse(column, copyValue(columnOf(cell.from.field), from), row);
+        next = column.valueSetter
+          ? column.valueSetter(value, next)
+          : ({ ...next, [column.field]: value } as R);
+        changed = true;
+      }
+      if (changed)
+        updates.push(
+          commitRow(rowId, row, next).then((saved) =>
+            saved ? { id: rowId, before: row, after: saved } : null,
+          ),
+        );
+    }
+    setCellModel(gridFillSelection(fillSource, cells));
+    Promise.all(updates).then((changes) => {
+      if (!dataSource) record(changes);
+    });
+  };
+  fill.current = {
+    preview: (target) =>
+      fillSource ? (gridFillCells(fillSource, cellRowIds, cellFields, target)?.cells ?? []) : [],
+    drop: (target) =>
+      fillSource &&
+      writeFill(gridFillCells(fillSource, cellRowIds, cellFields, target)?.cells ?? []),
+    key: (direction) =>
+      fillSource && writeFill(gridFillWithin(fillSource, cellRowIds, cellFields, direction)),
+  };
+  const fillEnabled = useRef(fillOn);
+  fillEnabled.current = fillOn;
+  useEffect(() => {
+    const handle = createGridFillHandle(gridRef.current as HTMLDivElement, {
+      enabled: () => fillEnabled.current,
+      preview: (target) => fill.current.preview(target),
+      onFill: (target) => fill.current.drop(target),
+      onFillKey: (direction) => fill.current.key(direction),
+    });
+    return () => handle.destroy();
+  }, []);
   // Status bar: figures of the selected cells of the page, through the aggregation functions.
   const statusItems =
     statusBar && cellSelection
@@ -5549,6 +5630,9 @@ function DataGridInner<R>(
                   {error}
                 </span>
               )}
+              {fillCorner?.id === rowId && fillCorner.field === column.field && !inEdit && (
+                <span data-ok-data-grid-fill-handle="" aria-hidden="true" />
+              )}
             </div>
           );
         })}
@@ -6045,6 +6129,7 @@ function DataGridInner<R>(
         disablePivoting,
         pivotActive: pivotOn,
         cellSelection,
+        cellSelectionFillHandle,
         disableClipboardPaste,
         headerFilters,
         chartsIntegration,
