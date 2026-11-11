@@ -67,5 +67,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0061](0061-phone-input.md) | Phone input: libphonenumber-js `min` behind opt-in entries (`@owlky/core/phone`, `owlky-phone.js`), a bare Select of countries with emoji flags, E.164 values | Accepted |
 | [0062](0062-motion-engine.md) | Motion full version: a Web Animations API engine in core (`animate()`, springs as `linear()`, interruption), exits before removal, Dialog / Drawer exits and `transitionDuration` | Accepted |
 | [0063](0063-organization-chart-tree-selection-keyboard.md) | Organization chart: an opt-in ARIA tree written by core (`enableKeyboardNavigation`, `enableSelection`), roving focus and arrow keys, `data-ok-selected`, a composed lineage breadcrumb (supersedes part of ADR-0036) | Accepted |
+| [0064](0064-map-region-selection-linked-maps.md) | Map: multiple region selection, Shift + drag box selection by label anchor (MapLibre `boxZoom` off while it is on), linked maps by `group` with a bidirectional filter | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).
