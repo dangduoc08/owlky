@@ -1,5 +1,5 @@
-import type { GridGetRowsToExportParams } from "@owlky/core";
-import { act, render, within } from "@testing-library/react";
+import type { GridDataSource, GridGetRowsParams, GridGetRowsToExportParams } from "@owlky/core";
+import { act, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
@@ -417,5 +417,82 @@ describe("DataGrid chart aggregation, combo and a second axis (4.18.88)", () => 
     const select = document.querySelector('select[id$="-chart-type"]') as HTMLSelectElement;
     expect(select.value).toBe("combo");
     expect([...select.options].map((o) => o.textContent)).toContain("Combo");
+  });
+});
+
+describe("DataGrid server-side pivoting (4.18.93)", () => {
+  type Sale = { id: string; region: string; year?: number; revenue?: number; count?: number };
+  const pivotModel = {
+    rows: [{ field: "region" }],
+    columns: [{ field: "year" }],
+    values: [{ field: "revenue", aggFunc: "sum" }],
+  };
+  const saleColumns: GridColDef<Sale>[] = [
+    { field: "region", headerName: "Region" },
+    { field: "year", headerName: "Year", type: "number" },
+    { field: "revenue", headerName: "Revenue", type: "number" },
+  ];
+
+  it("asks with the pivot model; columns come from the response's pivotColumns", async () => {
+    const asked: GridGetRowsParams[] = [];
+    const source: GridDataSource<Sale> = {
+      getRows: async (params) => {
+        asked.push(params);
+        if (params.groupKeys?.length)
+          return {
+            rows: [{ id: "north-ana", region: "Ana", "2024>->revenue": 4, count: 0 } as Sale],
+          };
+        return {
+          rows: [
+            { id: "north", region: "North", "2024>->revenue": 10, "2025>->revenue": 20, count: 1 },
+            { id: "south", region: "South", "2025>->revenue": 7, count: 0 },
+          ] as Sale[],
+          rowCount: 2,
+          pivotColumns: [{ group: "2024" }, { group: { year: 2025 } }],
+        };
+      },
+      getChildrenCount: (row) => row.count ?? 0,
+      getGroupKey: (row) => row.region,
+    };
+    render(
+      <DataGrid
+        aria-label="Revenue by region and year"
+        rows={[]}
+        columns={saleColumns}
+        dataSource={source}
+        dataSourceCache={null}
+        pivotActive
+        pivotModel={pivotModel}
+      />,
+    );
+    expect(await screen.findByText("North")).toBeTruthy();
+    expect(asked[0]).toMatchObject({ pivotModel, groupKeys: [], groupFields: ["region"] });
+    expect(asked[0]?.aggregationModel).toBeUndefined();
+    const groups = [
+      ...document.querySelectorAll("[data-ok-data-grid-group-row] [data-ok-group-id]"),
+    ];
+    expect(groups.map((g) => g.textContent?.trim())).toEqual(["2024", "2025"]);
+    const headers = [
+      ...document.querySelectorAll('[role="columnheader"][data-ok-field^="pivot:"]'),
+    ];
+    expect(
+      headers.map((h) => h.querySelector("[data-ok-data-grid-header-title]")?.textContent),
+    ).toEqual(["Revenue (sum)", "Revenue (sum)"]);
+    const cells = (rowId: string) =>
+      [
+        ...document.querySelectorAll(
+          `[data-ok-row-id="${rowId}"] [role="gridcell"][data-ok-field^="pivot:"]`,
+        ),
+      ].map((cell) => cell.textContent);
+    expect(cells("north")).toEqual(["10", "20"]);
+    expect(cells("south")).toEqual(["", "7"]);
+    // Children load with the pivot model too.
+    const toggle = document.querySelector(
+      '[data-ok-row-id="north"] [data-ok-data-grid-tree-toggle]',
+    ) as HTMLElement;
+    await userEvent.click(toggle);
+    expect(await screen.findByText("Ana")).toBeTruthy();
+    expect(asked.at(-1)).toMatchObject({ pivotModel, groupKeys: ["North"] });
+    await expectNoAxeViolations(document.body);
   });
 });

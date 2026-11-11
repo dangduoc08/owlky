@@ -575,7 +575,38 @@ export function gridPivot<R>(
     }
     return 0;
   });
-  const keyed = colFields.length ? sorted : [[]];
+  const {
+    columns: pivotColumns,
+    columnGroupingModel,
+    aggregationModel,
+  } = gridPivotLayout(sorted, colFields.length, values, columns, labelOf);
+  const byField = new Map(pivotColumns.map((c) => [c.field, c]));
+  return {
+    columns: pivotColumns,
+    columnGroupingModel,
+    aggregationModel,
+    rowGroupingModel: model.rows.filter((r) => !r.hidden && has(r.field)).map((r) => r.field),
+    value(row, field) {
+      const column = byField.get(field);
+      if (!column) return value(row, field);
+      const inBucket = colFields.every((c, i) => text(row, c.field) === column.pivotKeys[i]);
+      return inBucket ? value(row, column.pivotValueField) : undefined;
+    },
+  };
+}
+
+/**
+ * The pivot's columns and column groups from its key tuples (in order) and values: one column per
+ * tuple and value, column groups one level per column field, named by its key.
+ */
+export function gridPivotLayout(
+  tuples: readonly (readonly string[])[],
+  levels: number,
+  values: readonly { field: string; aggFunc: string }[],
+  columns: readonly GridColumn[],
+  labelOf: (fn: string) => string = (fn) => fn,
+): Pick<GridPivotResult<never>, "columns" | "columnGroupingModel" | "aggregationModel"> {
+  const keyed = levels ? tuples : [[]];
   const pivotColumns: GridPivotColumn[] = [];
   const aggregationModel: GridAggregationModel = {};
   for (const keys of keyed)
@@ -590,16 +621,15 @@ export function gridPivot<R>(
         hideable: false,
         resizable: true,
         pivotValueField: v.field,
-        pivotKeys: keys,
+        pivotKeys: [...keys],
       });
       aggregationModel[field] = v.aggFunc;
     }
-  // Column groups: one level per column field, named by its key.
   const columnGroupingModel: GridColumnGroup[] = [];
-  if (colFields.length) {
-    const build = (level: number, prefix: string[]): GridColumnGroup[] => {
+  if (levels) {
+    const build = (level: number, prefix: readonly string[]): GridColumnGroup[] => {
       const seen: string[] = [];
-      for (const keys of sorted)
+      for (const keys of tuples)
         if (JSON.stringify(keys.slice(0, level)) === JSON.stringify(prefix)) {
           const key = keys[level] as string;
           if (!seen.includes(key)) seen.push(key);
@@ -610,7 +640,7 @@ export function gridPivot<R>(
           groupId: `pivot-group:${path.map(encodeURIComponent).join("/")}`,
           headerName: key,
           children:
-            level === colFields.length - 1
+            level === levels - 1
               ? values.map((v) => ({ field: gridPivotField(path, v.field, v.aggFunc) }))
               : build(level + 1, path),
         };
@@ -618,18 +648,72 @@ export function gridPivot<R>(
     };
     columnGroupingModel.push(...build(0, []));
   }
-  const byField = new Map(pivotColumns.map((c) => [c.field, c]));
+  return { columns: pivotColumns, columnGroupingModel, aggregationModel };
+}
+
+/**
+ * A pivot column of a server response (MUI X `GridGetRowsResponsePivotColumn`): one key of a
+ * pivot column field, with the keys of the next field in `children`. `group` is the key's text, or
+ * a row whose value of that field is the key; `key` (optional) names the key in the rows' fields.
+ */
+export interface GridGetRowsResponsePivotColumn {
+  key?: string | undefined;
+  group: string | Record<string, unknown>;
+  children?: GridGetRowsResponsePivotColumn[] | undefined;
+}
+
+/** The field of a server row that holds a pivot value: its keys and value field, `>->` between. */
+export const gridServerPivotField = (keys: readonly string[], valueField: string): string =>
+  [...keys, valueField].join(">->");
+
+/** A server pivot (4.18.93): the layout from the response's columns, and the rows' fields. */
+export interface GridServerPivot {
+  columns: GridPivotColumn[];
+  columnGroupingModel: GridColumnGroup[];
+  aggregationModel: GridAggregationModel;
+  rowGroupingModel: string[];
+  /** The server row field that holds a pivot column's value (`undefined`: not a pivot column). */
+  serverField(field: string): string | undefined;
+}
+
+/**
+ * The pivot of a data source (MUI X server-side pivoting): columns from the response's
+ * `pivotColumns` tree (in its order; leaves at the depth of the model's column fields), one per
+ * leaf path and value; the server rows hold the values in `gridServerPivotField` fields.
+ */
+export function gridServerPivot(
+  pivotColumns: readonly GridGetRowsResponsePivotColumn[] | undefined,
+  columns: readonly GridColumn[],
+  model: GridPivotModel,
+  labelOf: (fn: string) => string = (fn) => fn,
+): GridServerPivot {
+  const has = (field: string) => columns.some((c) => c.field === field);
+  const colFields = model.columns.filter((c) => !c.hidden && has(c.field));
+  const values = model.values.filter((v) => !v.hidden && has(v.field));
+  const keyOf = (node: GridGetRowsResponsePivotColumn, level: number): string => {
+    if (typeof node.key === "string") return node.key;
+    if (typeof node.group === "string") return node.group;
+    const own = node.group[(colFields[level] as { field: string }).field];
+    return own === null || own === undefined ? "" : String(own);
+  };
+  const tuples: string[][] = [];
+  const walk = (nodes: readonly GridGetRowsResponsePivotColumn[], prefix: string[]) => {
+    for (const node of nodes) {
+      if (!node || typeof node !== "object") continue;
+      const path = [...prefix, keyOf(node, prefix.length)];
+      if (path.length >= colFields.length) tuples.push(path);
+      else if (Array.isArray(node.children)) walk(node.children, path);
+    }
+  };
+  if (colFields.length) walk(pivotColumns ?? [], []);
+  const layout = gridPivotLayout(tuples, colFields.length, values, columns, labelOf);
+  const fields = new Map(
+    layout.columns.map((c) => [c.field, gridServerPivotField(c.pivotKeys, c.pivotValueField)]),
+  );
   return {
-    columns: pivotColumns,
-    columnGroupingModel,
-    aggregationModel,
+    ...layout,
     rowGroupingModel: model.rows.filter((r) => !r.hidden && has(r.field)).map((r) => r.field),
-    value(row, field) {
-      const column = byField.get(field);
-      if (!column) return value(row, field);
-      const inBucket = colFields.every((c, i) => text(row, c.field) === column.pivotKeys[i]);
-      return inBucket ? value(row, column.pivotValueField) : undefined;
-    },
+    serverField: (field) => fields.get(field),
   };
 }
 

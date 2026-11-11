@@ -57,6 +57,7 @@ import {
   type GridFilterOperator,
   type GridFormat,
   type GridGetRowsResponse,
+  type GridGetRowsResponsePivotColumn,
   type GridGetRowsToExportParams,
   type GridGroupNode,
   type GridHistoryApi,
@@ -167,6 +168,7 @@ import {
   gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
+  gridServerPivot,
   gridSetFilterSearch,
   gridSetFilterSummary,
   gridSetFilterValues,
@@ -1931,6 +1933,18 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let sourceInfo: { hasNextPage?: boolean | undefined } | undefined;
     // Server-side aggregation: the data source's values of every row (the footer row).
     let sourceAggregateRow: Record<string, unknown> | undefined;
+    // Server-side pivoting (ADR-0063): the response's pivot columns and each server row's data.
+    let sourcePivotColumns: GridGetRowsResponsePivotColumn[] | undefined;
+    const rowData = new WeakMap<HTMLElement, DataRow>();
+    /** The data source pivots (MUI X server-side pivoting): a source, the pivot on. */
+    const serverPivotOn = () => !!source && pivotOn() && !lazy();
+    const pivotRowFields = () =>
+      pivotModel.rows
+        .filter((r) => !r.hidden && baseColumns.some((c) => c.field === r.field))
+        .map((r) => r.field);
+    /** Fields the server groups by: the pivot's rows while it pivots, else the grouping model. */
+    const serverGroupFields = () => (serverPivotOn() ? pivotRowFields() : [...rowGrouping]);
+    let pivotFromLoad = false;
     /** The aggregation the data source is asked for (none while pivoting or not aggregating). */
     const serverAggregationModel = () => {
       const model = activeAggregation();
@@ -1958,8 +1972,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const serverGrouping = () =>
       !!source &&
       !isTree() &&
-      !element.hasAttribute(disableRowGrouping.attr) &&
-      rowGrouping.length > 0;
+      (serverPivotOn()
+        ? pivotRowFields().length > 0
+        : !element.hasAttribute(disableRowGrouping.attr) && rowGrouping.length > 0);
     const groupFieldSelector = `[data-ok-field="${GRID_TREE_FIELD}"], [data-ok-field="${GRID_GROUPING_FIELD}"]`;
     const filterRowEl = () =>
       headerGroup.querySelector<HTMLElement>(":scope > [data-ok-data-grid-header-filters]");
@@ -2028,7 +2043,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           (row) => row.getAttribute("data-ok-parent"),
           pass ? (row) => pass.has(row) : undefined,
         );
-      } else if (pivot || grouping().length) {
+      } else if ((pivot && !serverPivotOn()) || grouping().length) {
         // Row grouping (and the pivot, which shows its groups only).
         const fields = grouping();
         const source = pivot ? pivotRows() : all;
@@ -2813,7 +2828,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     );
     const buildRows = (data: readonly DataRow[]) => {
       // Without a row template only an empty list can be shown.
-      if (!rowTemplate && data.length) return;
+      if (!rowTemplate && data.length && !(pivot && serverPivotOn())) return;
       rowEls = data.map((item) => fillRow(item));
       if (!element.hasAttribute(keepNonExistentRowsSelected.attr))
         selection = pruneGridSelection(selection, rowEls.map(idOf));
@@ -2824,6 +2839,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
     /** A row copied from the template, its cells filled as text (formatted). */
     const fillRow = (item: DataRow, parent?: string) => {
+      if (pivot && serverPivotOn()) return fillPivotRow(item, parent);
       {
         const row = (
           (rowTemplate as HTMLTemplateElement).content.firstElementChild as HTMLElement
@@ -2873,6 +2889,28 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         return row;
       }
     };
+    /** A server pivot row: the group cell (its key, a toggle with children) and pivot values. */
+    const fillPivotRow = (item: DataRow, parent?: string) => {
+      const row = document.createElement("div");
+      row.setAttribute("role", "row");
+      row.setAttribute("data-ok-row-id", String(item["id"]));
+      if (parent) row.setAttribute("data-ok-parent", parent);
+      rowData.set(row, item);
+      fillGroupRow(row);
+      const groupCell = row.querySelector<HTMLElement>(`[data-ok-field="${GRID_GROUPING_FIELD}"]`);
+      if (groupCell)
+        groupLabel(
+          groupCell,
+          source?.getGroupKey?.(item) ?? String(item["id"]),
+          null,
+          (source?.getChildrenCount?.(item) ?? 0) > 0 ? false : null,
+        );
+      for (const column of columns) {
+        const cell = cellOf(row, column.field);
+        if (cell) cell.textContent = aggregateText(column.field, value(row, column.field));
+      }
+      return row;
+    };
     // `setDataSource(source, { cache })` replaces it (`null`: no cache).
     let sourceCache: GridDataSourceCache<DataRow> | null = createGridDataSourceCache<DataRow>();
     let request = 0;
@@ -2888,10 +2926,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         sortModel,
         filterModel,
         paginationModel: { page, pageSize: Number.isFinite(pageSize) ? pageSize : 0 },
-        ...(serverGrouping() ? { groupKeys: [], groupFields: [...rowGrouping] } : {}),
+        ...(serverGrouping() ? { groupKeys: [], groupFields: serverGroupFields() } : {}),
         ...(serverAggregationModel()
           ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
           : {}),
+        ...(serverPivotOn() ? { pivotModel } : {}),
       };
       const cached = sourceCache?.get(params);
       const show = (response: GridGetRowsResponse<DataRow>) => {
@@ -2900,6 +2939,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const nextInfo = JSON.stringify(response.pageInfo ?? null);
         const changed = nextInfo !== JSON.stringify(sourceInfo ?? null);
         sourceInfo = response.pageInfo;
+        if (serverPivotOn()) {
+          // The pivot's columns come with the rows: lay them out first.
+          sourcePivotColumns = response.pivotColumns;
+          pivotFromLoad = true;
+          showPivot();
+          pivotFromLoad = false;
+        }
         buildRows(response.rows);
         if (changed && response.pageInfo)
           emit("paginationmetachange", response.pageInfo as { hasNextPage?: boolean });
@@ -3000,10 +3046,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             sortModel,
             filterModel,
             groupKeys: keys,
-            ...(serverGrouping() ? { groupFields: [...rowGrouping] } : {}),
+            ...(serverGrouping() ? { groupFields: serverGroupFields() } : {}),
             ...(serverAggregationModel()
               ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
               : {}),
+            ...(serverPivotOn() ? { pivotModel } : {}),
           })
           .then((response) => {
             if (source !== current) return;
@@ -3380,17 +3427,25 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           for (const row of baseGroupRows) row.remove();
         }
         syncDerived();
-        pivot = gridPivot(
-          pivotRows(),
-          [
-            ...baseColumns.filter((c) => c.type !== "actions"),
-            ...[...derived.values()].map((d) => d.column),
-          ],
-          pivotModel,
-          pivotValue,
-          pivotText,
-          labelOf,
-        );
+        const pivotable = [
+          ...baseColumns.filter((c) => c.type !== "actions"),
+          ...[...derived.values()].map((d) => d.column),
+        ];
+        if (serverPivotOn()) {
+          // The server's rows hold the values (`getAggregatedValue`, else the row's field).
+          const served = gridServerPivot(sourcePivotColumns, pivotable, pivotModel, labelOf);
+          pivot = {
+            ...served,
+            value: (row, field) => {
+              const own = served.serverField(field);
+              if (own === undefined) return cellValue(row, field);
+              const item = rowData.get(row);
+              if (!item) return undefined;
+              return source?.getAggregatedValue ? source.getAggregatedValue(item, own) : item[own];
+            },
+          };
+        } else
+          pivot = gridPivot(pivotRows(), pivotable, pivotModel, pivotValue, pivotText, labelOf);
         const result = pivot;
         columns = result.columns.map((column) => {
           const own =
@@ -3473,7 +3528,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       main.setAttribute("role", grouping().length || isTree() ? "treegrid" : "grid");
       syncPivotPanel();
       layout();
-      apply();
+      // A data source pivots itself: ask it again (unless its answer is being shown).
+      if (source && !pivotFromLoad) refresh();
+      else apply();
       navigation.sync();
     };
     const pivotPanel = byId("pivot");

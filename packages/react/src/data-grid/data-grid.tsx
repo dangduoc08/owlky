@@ -56,6 +56,7 @@ import {
   type GridFilterItem,
   type GridFilterModel,
   type GridFilterOperator,
+  type GridGetRowsResponsePivotColumn,
   type GridGetRowsToExportParams,
   type GridGroupNode,
   type GridHistoryApi,
@@ -174,6 +175,7 @@ import {
   gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
+  gridServerPivot,
   gridSetFilterSearch,
   gridSetFilterSummary,
   gridSetFilterValues,
@@ -1825,6 +1827,7 @@ function DataGridInner<R>(
     rowCount?: number | undefined;
     aggregateRow?: Record<string, unknown> | undefined;
     pageInfo?: { hasNextPage?: boolean | undefined } | undefined;
+    pivotColumns?: GridGetRowsResponsePivotColumn[] | undefined;
   }>({
     rows: [],
   });
@@ -1838,9 +1841,14 @@ function DataGridInner<R>(
   // Server tree data: children loaded per parent id; parents whose children are loading.
   const [childRows, setChildRows] = useState<ReadonlyMap<string, readonly R[]>>(new Map());
   const [loadingChildren, setLoadingChildren] = useState<ReadonlySet<string>>(new Set());
+  // Server-side pivoting (ADR-0063): the data source pivots, grouped by the pivot's row fields.
+  const serverPivotOn =
+    !!dataSource && !!pivotActive && !disablePivoting && !treeData && !lazyLoading;
   const serverTree =
     !!dataSource &&
-    (!!treeData || (!disableRowGrouping && !lazyLoading && groupingModel.length > 0));
+    (!!treeData ||
+      (!disableRowGrouping && !lazyLoading && groupingModel.length > 0) ||
+      (serverPivotOn && pivotModel.rows.some((r) => !r.hidden)));
   const base: readonly R[] = lazy
     ? [...lazyRows.values()]
     : dataSource
@@ -1906,7 +1914,7 @@ function DataGridInner<R>(
       derivedColumns.find((c) => c.field === field)) as GridColDef<R>;
   const pivotOn = !!pivotActive && !disablePivoting && !treeData && !lazy;
   const pivotRows = pivotOn
-    ? server.filter
+    ? server.filter || serverPivotOn
       ? orderedRows
       : filterGridRows(
           orderedRows,
@@ -1917,16 +1925,37 @@ function DataGridInner<R>(
           { ignoreDiacritics, quickFilterLogicOperator },
         )
     : [];
-  const pivot = pivotOn
-    ? gridPivot(
-        pivotRows,
-        [...columnsProp, ...derivedColumns].filter((c) => c.pivotable !== false),
-        pivotModel,
-        (row, field) => rawValue(sourceOf(field), row),
-        (row, field) => textOf(sourceOf(field), row),
-        aggLabel,
-      )
-    : null;
+  const serverPivot =
+    pivotOn && serverPivotOn
+      ? gridServerPivot(
+          sourced.pivotColumns,
+          [...columnsProp, ...derivedColumns].filter((c) => c.pivotable !== false),
+          pivotModel,
+          aggLabel,
+        )
+      : null;
+  const pivot = serverPivot
+    ? {
+        ...serverPivot,
+        // Server rows hold the values (`getAggregatedValue`, else the row's field).
+        value: (row: R, field: string) => {
+          const own = serverPivot.serverField(field);
+          if (own === undefined) return rawValue(sourceOf(field), row);
+          return dataSource?.getAggregatedValue
+            ? dataSource.getAggregatedValue(row, own)
+            : (row as Record<string, unknown>)[own];
+        },
+      }
+    : pivotOn
+      ? gridPivot(
+          pivotRows,
+          [...columnsProp, ...derivedColumns].filter((c) => c.pivotable !== false),
+          pivotModel,
+          (row, field) => rawValue(sourceOf(field), row),
+          (row, field) => textOf(sourceOf(field), row),
+          aggLabel,
+        )
+      : null;
   const columns: readonly GridColDef<R>[] = pivot
     ? pivot.columns.map((c) => {
         const formatter = sourceOf(c.pivotValueField).valueFormatter;
@@ -2124,14 +2153,14 @@ function DataGridInner<R>(
   } else if (treeLike) {
     // Tree data (generated rows for missing parents) or row grouping (one row per group);
     // the pivot shows its groups only.
-    const source = pivot ? pivotRows : orderedRows;
+    const source = pivot && !serverPivot ? pivotRows : orderedRows;
     const nodes = serverTree
       ? null
       : treeData
         ? gridTreeGroups(source, idOf, getTreeDataPath ?? (() => []))
         : gridRowGroups(source, grouping, idOf, groupingKeyOf);
     const generated = (nodes?.groups ?? []).map((node) => asGroupRow<R>(node));
-    const items = pivot ? generated : [...generated, ...source];
+    const items = pivot && !serverPivot ? generated : [...generated, ...source];
     const parents: ReadonlyMap<string, string | null> = nodes ? nodes.parentOf : serverParents;
     const byId = new Map([...items, ...source].map((row) => [idOf(row), row]));
     const passed = server.filter || pivot ? null : localFilter(source);
@@ -2233,7 +2262,7 @@ function DataGridInner<R>(
     treeOrder = all.map((node) => node.row);
     sorted = list.map((node) => node.row);
     filtered = sorted;
-  } else if (pivot) {
+  } else if (pivot && !serverPivot) {
     // A pivot without row fields shows its totals only (the footer row).
     filtered = [];
     sorted = [];
@@ -2755,6 +2784,7 @@ function DataGridInner<R>(
           groupKeys: keys,
           ...(treeData ? {} : { groupFields: grouping }),
           ...(aggregating && !pivot ? { aggregationModel: requestedAggregation } : {}),
+          ...(serverPivot ? { pivotModel } : {}),
         })
         .then((response) => setChildRows((current) => new Map(current).set(rowId, response.rows)))
         .catch((error: unknown) => onDataSourceError?.(error))
@@ -2869,6 +2899,7 @@ function DataGridInner<R>(
     ...(serverTree ? { groupKeys: [] } : {}),
     ...(serverTree && !treeData ? { groupFields: grouping } : {}),
     ...(aggregating && !pivot ? { aggregationModel: requestedAggregation } : {}),
+    ...(serverPivot ? { pivotModel } : {}),
   });
   // New top-level rows: children loaded before belong to the old ones.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the request changes.

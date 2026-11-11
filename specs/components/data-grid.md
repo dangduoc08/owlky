@@ -702,6 +702,21 @@ Shift + arrows extend the cell range only. A Shift + press clears the page's tex
 `preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
 checkbox's click, which comes before its `change`.
 
+Server-side pivoting (4.18.93, ADR-0063, MUI X server-side pivoting; core `gridServerPivot`,
+`gridServerPivotField`, `gridPivotLayout`): a pivoted grid with a data source (not lazy, not tree
+data) sends `pivotModel` in every request (top level and children) and `groupKeys` / `groupFields` =
+the pivot's visible row fields, no `aggregationModel`. The response's `pivotColumns` (a tree of `{
+key?, group: string | row, children? }`) gives the columns in its order: a path of keys as deep as
+the model's column fields (`key`, else the text `group`, else the group row's value of the level's
+field) × each visible value, with the client pivot's fields, headers and column groups. Values come
+from the rows' `<key>>-><key>>-><value field>` fields (no column fields: the value field), through
+`getAggregatedValue(row, field)` when given; rows are the server's (groups by `getGroupKey`, toggles by
+`getChildrenCount`), not filtered, sorted or aggregated by the grid. A new pivot model or turning the
+pivot on or off asks again. HTML keeps the server rows' data in memory and builds pivot rows with DOM
+methods (no row template needed). Behavior change: a data source grid used to pivot its loaded rows.
+Not provided: the pivot's totals row from `aggregateRow`, formatting group headers with the column's
+formatter, pivoting with lazy loading.
+
 Chart aggregation, combo and a second axis (4.18.88, ApexGrid chart `definition`: `aggregation`,
 `type: "combo"`, `secondaryMeasures`; core `gridChartAggregate`, `gridChartTwoAxes`): model
 `aggregation` (`sum` · `avg` · `count` · `min` · `max` · `median`; `count` counts rows, the others
@@ -927,6 +942,7 @@ the detailed record of what is kept.
 | Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef` | same | kept (4.18.57) | object or `(originalColumnField, columnGroupPath)` (the column's keys); React overrides `headerName`, `description`, `width`, `minWidth`, `maxWidth`, `flex`, `align`, `headerAlign`, `headerClassName`, `cellClassName`, `resizable`; HTML `setPivotingColDef(def | null)` with `headerName`, `width`, `minWidth`, `maxWidth`, `align`, `headerAlign` (the headers the runtime builds) |
 | Pivot: `pivotPanelOpen` / `onPivotPanelOpenChange` | same | kept (4.18.57) | deprecated upstream (sidebar), kept as asked: the toolbar's Pivot popover; given, the prop decides and clicks only call `onPivotPanelOpenChange`; React writes `data-ok-pivot-panel-open`; HTML: the attribute opens and closes the panel, and follows it (the panel's own events stay `ok:data-grid:sidebaropen` / `sidebarclose`) |
+| Server-side pivoting: params `pivotModel`, response `pivotColumns` (`GridGetRowsResponsePivotColumn`), value fields `<keys>>-><field>` | same | kept (4.18.93, ADR-0063) | default `pivotingColDef` naming as MUI X; root totals from `aggregateRow` not shown while pivoting |
 | (not in MUI X; ApexGrid chart `definition.aggregation`, `type: "combo"`, `secondaryMeasures`) | chart model `aggregation`, type `combo` + `seriesTypes`, `secondaryValues` | added (4.18.88) | renamed `secondaryMeasures` → `secondaryValues` (the model's `values`); combo series types per value field |
 | `onStateChange`; `initialState.detailPanel.expandedRowIds` | same | kept (4.18.91) | `onStateChange(state)` gets `exportState()` once settled (MUI X: the internal state on every change, with `event` and `details`); state keys added beyond MUI X: `rowSelection`, `pinnedRows` (ids), `rowOrder`; HTML `ok:data-grid:statechange` |
 | Export: `csvOptions.getRowsToExport`, `excelOptions.getRowsToExport`, `printOptions.getRowsToExport` (`GridGetRowsToExportParams`) | same (+ `source`) | kept (4.18.92) | params carry `apiRef` and id lists instead of selectors; `source` (`filtered` · `selected` · `page` · `all`, ApexGrid) added; default stays the filtered rows (MUI X: the selected rows when any) |

@@ -1,3 +1,4 @@
+import type { GridDataSource, GridGetRowsParams } from "@owlky/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRuntime } from "../../runtime/runtime.js";
 import type { Runtime } from "../../runtime/types.js";
@@ -283,5 +284,76 @@ describe("HTML data grid chart aggregation, combo and a second axis (4.18.88)", 
     // Back to one axis: the attribute goes.
     instance.setChartModel({ dimension: "region", values: ["revenue"] });
     expect(figure.hasAttribute("data-ok-yaxis")).toBe(false);
+  });
+});
+
+describe("HTML data grid server-side pivoting (4.18.93)", () => {
+  /** Resolves once the grid holds a row with this id. */
+  const rowAppears = (root: Element, rowId: string) =>
+    new Promise<void>((resolve) => {
+      const found = () => root.querySelector(`[data-ok-row-id="${rowId}"]`);
+      if (found()) return resolve();
+      const observer = new MutationObserver(() => {
+        if (!found()) return;
+        observer.disconnect();
+        resolve();
+      });
+      observer.observe(root, { childList: true, subtree: true });
+    });
+
+  it("asks with the pivot model, builds the columns and rows from the response", async () => {
+    const { root, instance } = setup(snippet("pivot-group"));
+    const asked: GridGetRowsParams[] = [];
+    const source: GridDataSource<Record<string, unknown>> = {
+      getRows: async (params) => {
+        asked.push(params);
+        if (params.groupKeys?.length)
+          return { rows: [{ id: "north-ana", region: "Ana", "2024>->revenue": 4 }] };
+        return {
+          rows: [
+            { id: "north", region: "North", "2024>->revenue": 10, "2025>->revenue": 20, n: 1 },
+            { id: "south", region: "South", "2025>->revenue": 7, n: 0 },
+          ],
+          pivotColumns: [{ group: "2024" }, { group: { year: 2025 } }],
+        };
+      },
+      getChildrenCount: (row) => Number(row["n"] ?? 0),
+      getGroupKey: (row) => String(row["region"]),
+    };
+    instance.setPivotModel({
+      rows: [{ field: "region" }],
+      columns: [{ field: "year" }],
+      values: [{ field: "revenue", aggFunc: "sum" }],
+    });
+    instance.setDataSource(source, { cache: null });
+    await rowAppears(root, "north");
+    expect(asked.at(-1)).toMatchObject({
+      groupKeys: [],
+      groupFields: ["region"],
+      pivotModel: { rows: [{ field: "region" }], columns: [{ field: "year" }] },
+    });
+    const groups = [...root.querySelectorAll("[data-ok-data-grid-group-row] [data-ok-group-id]")];
+    expect(groups.map((g) => g.textContent?.trim())).toEqual(["2024", "2025"]);
+    const cells = (rowId: string) =>
+      [
+        ...root.querySelectorAll(
+          `[data-ok-row-id="${rowId}"] [role="gridcell"][data-ok-field^="pivot:"]`,
+        ),
+      ].map((cell) => cell.textContent);
+    expect(cells("north")).toEqual(["10", "20"]);
+    expect(cells("south")).toEqual(["", "7"]);
+    expect(
+      root.querySelector('[data-ok-row-id="north"] [data-ok-data-grid-tree-label]')?.textContent,
+    ).toBe("North");
+    (
+      root.querySelector('[data-ok-row-id="north"] [data-ok-data-grid-tree-toggle]') as HTMLElement
+    ).click();
+    await rowAppears(root, "north-ana");
+    expect(asked.at(-1)).toMatchObject({ groupKeys: ["North"], groupFields: ["region"] });
+    expect(asked.at(-1)?.pivotModel).toBeDefined();
+    // Turning the pivot off asks again without it.
+    instance.setPivotActive(false);
+    await Promise.resolve();
+    expect(asked.at(-1)?.pivotModel).toBeUndefined();
   });
 });

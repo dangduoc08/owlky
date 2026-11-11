@@ -25,6 +25,8 @@ import {
   gridPivotRole,
   gridRowGroups,
   gridSelectionStats,
+  gridServerPivot,
+  gridServerPivotField,
   gridStatusItems,
   gridTreeGroups,
   gridWithGroupFooters,
@@ -898,5 +900,65 @@ describe("chart aggregation, combo and a second axis (4.18.88)", () => {
       seriesTypes: { a: "line" },
     });
     expect(sanitizeGridChartModel({ aggregation: "mode", seriesTypes: [] })).toEqual({});
+  });
+});
+
+describe("server-side pivoting (4.18.93)", () => {
+  const columns: GridColumn[] = [
+    { field: "region", headerName: "Region" },
+    { field: "year", headerName: "Year", type: "number" },
+    { field: "quarter", headerName: "Quarter" },
+    { field: "revenue", headerName: "Revenue", type: "number" },
+  ];
+  it("columns from the response's tree, rows' fields with >-> between keys", () => {
+    const pivot = gridServerPivot(
+      [
+        { group: "2024", children: [{ group: "Q1" }, { group: { quarter: "Q2" } }] },
+        { key: "y25", group: "2025", children: [{ group: "Q1" }, null as never] },
+        { group: "2026" },
+      ],
+      columns,
+      {
+        rows: [{ field: "region" }, { field: "gone" }],
+        columns: [{ field: "year" }, { field: "quarter" }],
+        values: [{ field: "revenue", aggFunc: "sum" }],
+      },
+      (fn) => fn.toUpperCase(),
+    );
+    expect(pivot.rowGroupingModel).toEqual(["region"]);
+    expect(pivot.columns.map((c) => c.pivotKeys)).toEqual([
+      ["2024", "Q1"],
+      ["2024", "Q2"],
+      ["y25", "Q1"],
+    ]);
+    expect(pivot.columns[0]?.headerName).toBe("Revenue (SUM)");
+    const field = pivot.columns[2]?.field as string;
+    expect(pivot.serverField(field)).toBe("y25>->Q1>->revenue");
+    expect(gridServerPivotField([], "revenue")).toBe("revenue");
+    expect(pivot.serverField("revenue")).toBeUndefined();
+    expect(pivot.columnGroupingModel.map((g) => g.headerName)).toEqual(["2024", "y25"]);
+    expect(pivot.aggregationModel[field]).toBe("sum");
+  });
+  it("without column fields: one column per value; a missing tree is no keys", () => {
+    const pivot = gridServerPivot(undefined, columns, {
+      rows: [],
+      columns: [],
+      values: [{ field: "revenue", aggFunc: "avg" }],
+    });
+    expect(pivot.columns).toHaveLength(1);
+    expect(pivot.serverField(pivot.columns[0]?.field as string)).toBe("revenue");
+    expect(pivot.columnGroupingModel).toEqual([]);
+    const none = gridServerPivot(undefined, columns, {
+      rows: [],
+      columns: [{ field: "year" }],
+      values: [{ field: "revenue", aggFunc: "sum" }],
+    });
+    expect(none.columns).toEqual([]);
+    const blank = gridServerPivot([{ group: {} }], columns, {
+      rows: [],
+      columns: [{ field: "year" }],
+      values: [{ field: "revenue", aggFunc: "sum" }],
+    });
+    expect(blank.columns[0]?.pivotKeys).toEqual([""]);
   });
 });

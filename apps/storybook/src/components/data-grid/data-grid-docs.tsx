@@ -444,6 +444,70 @@ export function CustomersWithTotals() {
 }`,
   },
   {
+    id: "server-pivoting",
+    title: "Pivot on the server",
+    body: "With a data source, a pivoted grid lets the server compute the pivot. `getRows()` receives the `pivotModel`, and the grid asks for the groups of the pivot's row fields in `groupFields` and `groupKeys`, as with server-side grouping. The response adds `pivotColumns`: the keys of the pivot's column fields as a tree, such as `[{ group: \"2024\", children: [{ group: \"Q1\" }] }]`. A `group` can also be a row whose value of the field is the key, and `key` names the key when it differs from the text. Each row holds a pivot value in a field named by its keys and the value field, joined by `>->`, such as `2024>->Q1>->revenue`. `getGroupKey(row)` and `getChildrenCount(row)` tell the grid each group's key and whether it has children, and `getAggregatedValue(row, field)` reads a value when your rows keep them elsewhere. A change to the pivot model asks the server again. In HTML, give the same data source to `setDataSource()` on a grid with `data-ok-pivot-model` and `data-ok-pivot-active`. The pivot's rows don't need a row template.",
+    html: `<script type="module">
+  const grid = window.Owlky.get(document.getElementById("grid-pivot"), "data-grid");
+  grid.setDataSource({
+    // params: { sortModel, filterModel, paginationModel, groupKeys, groupFields, pivotModel }
+    async getRows(params) {
+      const response = await fetch("/api/sales/pivot", {
+        method: "POST",
+        body: JSON.stringify(params),
+      });
+      // { rows: [{ id: "north", region: "North", "2024>->revenue": 5400 }],
+      //   pivotColumns: [{ group: "2024" }, { group: "2025" }] }
+      return response.json();
+    },
+    getGroupKey: (row) => row.region,
+    getChildrenCount: (row) => row.childCount,
+  });
+</script>`,
+    react: `import type { GridDataSource } from "@owlky/core";
+import { DataGrid, type GridColDef } from "@owlky/react";
+
+type Sale = { id: string; region: string; year: number; revenue: number; childCount: number };
+
+const sales: GridDataSource<Sale> = {
+  // params: { sortModel, filterModel, paginationModel, groupKeys, groupFields, pivotModel }
+  async getRows(params) {
+    const response = await fetch("/api/sales/pivot", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    // { rows, rowCount, pivotColumns }
+    return response.json();
+  },
+  getGroupKey: (row) => row.region,
+  getChildrenCount: (row) => row.childCount,
+};
+
+const columns: GridColDef<Sale>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "year", headerName: "Year", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+const noRows: Sale[] = [];
+
+export function SalesPivot() {
+  return (
+    <DataGrid
+      aria-label="Revenue by region and year"
+      rows={noRows}
+      columns={columns}
+      dataSource={sales}
+      pivotActive
+      pivotModel={{
+        rows: [{ field: "region" }],
+        columns: [{ field: "year" }],
+        values: [{ field: "revenue", aggFunc: "sum" }],
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "rows-from-data",
     title: "Build HTML rows from data",
     body: 'In HTML, the grid can build its rows from data instead of markup. Put one row inside `<template data-ok-data-grid-row>` in the grid: `setRows(rows)` copies it for each item, sets `data-ok-row-id` from `id`, and fills each cell with the value of its field as text. For cells with more than text, add `<template data-ok-data-grid-cell="<field>">`: its elements marked `data-ok-data-grid-value` receive the value. Values are always set as text, never as markup, so data from a server can\'t add scripts to the page.',
@@ -566,7 +630,7 @@ export function People() {
     localStorage.setItem("agenda-grid", JSON.stringify(event.detail.state)),
   );
 </script>`,
-    react: `import { DataGrid, type GridColDef, type GridState } from "@owlky/react";
+    react: `import { DataGrid, type GridColDef, type GridInitialState } from "@owlky/react";
 
 const rows = [
   { id: 1, title: "Welcome", speaker: "Ana Lima" },
@@ -579,7 +643,7 @@ const columns: GridColDef<(typeof rows)[number]>[] = [
   { field: "speaker", headerName: "Speaker", flex: 1 },
 ];
 
-const saved: GridState = JSON.parse(localStorage.getItem("agenda-grid") ?? "{}");
+const saved: GridInitialState = JSON.parse(localStorage.getItem("agenda-grid") ?? "{}");
 
 export function Agenda() {
   return (
