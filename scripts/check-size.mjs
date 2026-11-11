@@ -208,7 +208,9 @@ const budgets = [
   // 1.45 MB with the data grid coulds (roadmap 4.18.55–4.18.58: docs sections, API entries): 1389.5 kB.
   // 1.45 MB after the chart coulds 4.18.65 to .68 and .20 (21 stories, their docs sections and
   // API entries): 1399.5 kB.
-  ["packages/mcp/manifest.json", 1_450_000, "MCP manifest (npm tarball, not a browser download)"],
+  // 1.5 MB after batch F (Text max line, gradients, Style components guide, copy to clipboard,
+  // number input: stories, guides, docs sections and API entries): 1450.8 kB.
+  ["packages/mcp/manifest.json", 1_500_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;
