@@ -16,6 +16,11 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 245 kB once the chart hierarchy types (tree, sunburst, icicle, ADR-0058) merged with the data
+  // grid's cell menu, filter groups and generated columns: 241.9 kB. Optimization is deferred to 1.0 prep.
+  // 239 kB since the tree chart type (4.18.7, ADR-0058: the hierarchy model and table, tidy /
+  // cluster / radial layouts, keyboard over the hierarchy, collapse): 235.5 kB, 238.2 kB with the
+  // sunburst and icicle partitions and their drill controls; size work is deferred to 1.0 prep.
   // 235 kB since the ApexTree rows (4.18.3, .5, .6, ADR-0056: grouped leaves, zoom / fit / center
   // with a toolbar and a core controller, per-node lines) on top of the range charts: 230.4 kB.
   // 235 kB since the data grid's cell menu, filter groups (4.18.13, ADR-0057; 229.5 kB) and
@@ -93,7 +98,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 235_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 245_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables

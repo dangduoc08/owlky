@@ -47,6 +47,9 @@ const STORIES = [
   "sankey-cycles",
   "sankey-alluvial",
   "sankey-links",
+  "tree",
+  "sunburst",
+  "icicle",
   "stock",
   "stock-overlays",
   "stock-oscillators",
@@ -143,7 +146,11 @@ for (const viewport of viewports) {
           const page = await context.newPage();
           await openStory(page, storyId(impl, "chart", story));
           await expect(page.locator("[data-ok-chart][data-ok-ready]")).toHaveCount(
-            story === "sparklines" || story === "synchronized" ? 3 : story === "brush" ? 2 : 1,
+            story === "sparklines" || story === "synchronized" || story === "tree"
+              ? 3
+              : story === "brush" || story === "sunburst" || story === "icicle"
+                ? 2
+                : 1,
           );
           const { problems, result } = await measure(page);
           expect(problems, `${impl} ${story}`).toEqual([]);

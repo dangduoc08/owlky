@@ -1672,4 +1672,243 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.7 (ADR-0058): tree charts (ApexTree `direction`, `layoutType`, `edgeStyle`).
+  tree: {
+    title: "Tree",
+    props: {
+      label: "Product teams and their engineers",
+      type: "tree",
+      enableExpandCollapse: true,
+      dataLabels: true,
+      height: 360,
+      hierarchy: {
+        name: "Product",
+        children: [
+          {
+            name: "Web",
+            children: [
+              { name: "Checkout", value: 6 },
+              { name: "Search", value: 4 },
+              { name: "Accounts", value: 3 },
+            ],
+          },
+          {
+            name: "Mobile",
+            children: [
+              { name: "iOS", value: 5 },
+              { name: "Android", value: 5 },
+            ],
+          },
+          {
+            name: "Platform",
+            children: [
+              { name: "Payments", value: 4 },
+              { name: "Data", value: 7 },
+            ],
+          },
+        ],
+      },
+    },
+    more: [
+      {
+        label: "Plant families and their genera",
+        type: "tree",
+        direction: "radial",
+        layoutType: "cluster",
+        edgeStyle: "curved",
+        height: 440,
+        hierarchy: {
+          name: "Plants",
+          children: [
+            {
+              name: "Rosaceae",
+              children: [
+                { name: "Rosa" },
+                { name: "Malus" },
+                { name: "Prunus" },
+                { name: "Rubus" },
+              ],
+            },
+            {
+              name: "Fabaceae",
+              children: [{ name: "Pisum" }, { name: "Lupinus" }, { name: "Acacia" }],
+            },
+            {
+              name: "Asteraceae",
+              children: [
+                { name: "Aster" },
+                { name: "Bellis" },
+                { name: "Helianthus" },
+                { name: "Lactuca" },
+              ],
+            },
+            { name: "Poaceae", children: [{ name: "Oryza" }, { name: "Zea" }, { name: "Avena" }] },
+          ],
+        },
+      },
+      {
+        label: "Website sections and their pages",
+        type: "tree",
+        direction: "left",
+        edgeStyle: "curved",
+        enableExpandCollapse: true,
+        defaultCollapsedNodes: ["Blog"],
+        height: 320,
+        hierarchy: {
+          name: "Home",
+          children: [
+            { name: "Products", children: [{ name: "Laptops" }, { name: "Phones" }] },
+            { name: "Blog", children: [{ name: "News" }, { name: "Guides" }, { name: "Events" }] },
+            { name: "Support", children: [{ name: "Contact" }, { name: "Returns" }] },
+          ],
+        },
+      },
+    ],
+  },
+  // Roadmap 4.18.21 (ADR-0058): sunburst charts (ApexCharts v8 `sunburst`, `zoomOnClick`).
+  sunburst: {
+    title: "Sunburst",
+    props: {
+      label: "Cloud spend by service, thousands of dollars per month",
+      type: "sunburst",
+      valuePrefix: "$",
+      valueSuffix: "k",
+      height: 400,
+      hierarchy: [
+        {
+          name: "Compute",
+          children: [
+            { name: "Virtual machines", value: 42 },
+            { name: "Containers", value: 28 },
+            { name: "Functions", value: 9 },
+          ],
+        },
+        {
+          name: "Storage",
+          children: [
+            { name: "Objects", value: 21 },
+            { name: "Disks", value: 14 },
+            {
+              name: "Backups",
+              children: [
+                { name: "Daily", value: 5 },
+                { name: "Archive", value: 3 },
+              ],
+            },
+          ],
+        },
+        {
+          name: "Network",
+          children: [
+            { name: "Transfer", value: 12 },
+            { name: "CDN", value: 7 },
+          ],
+        },
+        { name: "Databases", value: 24 },
+      ],
+    },
+    more: [
+      {
+        label: "Support tickets by channel and topic this week",
+        type: "sunburst",
+        startAngle: -90,
+        endAngle: 90,
+        innerSize: 40,
+        leaf: "stop",
+        dataLabels: true,
+        disableZoomOnClick: true,
+        height: 260,
+        colors: ["info", "warning", "success"],
+        hierarchy: [
+          {
+            name: "Email",
+            children: [
+              { name: "Billing", value: 34 },
+              { name: "Login", value: 21 },
+            ],
+          },
+          {
+            name: "Chat",
+            children: [
+              { name: "Orders", value: 28 },
+              { name: "Returns", value: 12 },
+            ],
+          },
+          { name: "Phone", value: 18 },
+        ],
+      },
+    ],
+  },
+  // Roadmap 4.18.21 (ADR-0058): icicle charts (ApexCharts v8 `icicle`, `direction`, `zoomType`).
+  icicle: {
+    title: "Icicle",
+    props: {
+      label: "Page load time by step, milliseconds",
+      type: "icicle",
+      valueSuffix: " ms",
+      height: 320,
+      hierarchy: {
+        name: "Page load",
+        children: [
+          {
+            name: "Network",
+            children: [
+              { name: "DNS", value: 40 },
+              { name: "Connect", value: 90 },
+              { name: "Download", value: 220 },
+            ],
+          },
+          {
+            name: "Scripts",
+            children: [
+              { name: "Parse", value: 120 },
+              {
+                name: "Run",
+                children: [
+                  { name: "Framework", value: 160 },
+                  { name: "App", value: 110 },
+                ],
+              },
+            ],
+          },
+          {
+            name: "Render",
+            children: [
+              { name: "Layout", value: 70 },
+              { name: "Paint", value: 50 },
+            ],
+          },
+        ],
+      },
+    },
+    more: [
+      {
+        label: "Online store visits by source and campaign this month",
+        type: "icicle",
+        direction: "left",
+        leaf: "extend",
+        zoomType: "both",
+        dataLabels: true,
+        height: 300,
+        hierarchy: [
+          {
+            name: "Search",
+            children: [
+              { name: "Organic", value: 4200 },
+              { name: "Ads", value: 1800 },
+            ],
+          },
+          {
+            name: "Social",
+            children: [
+              { name: "Video", value: 1500 },
+              { name: "Photos", value: 900 },
+            ],
+          },
+          { name: "Direct", value: 2600 },
+          { name: "Email", value: 1100 },
+        ],
+      },
+    ],
+  },
 };

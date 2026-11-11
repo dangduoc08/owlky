@@ -19,6 +19,18 @@ import {
   filterChartData,
 } from "./chart-filter.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
+import {
+  type ChartDirection,
+  type ChartEdgeStyle,
+  type ChartHierarchyNode,
+  type ChartLayoutType,
+  type ChartLeaf,
+  type ChartZoomType,
+  chartHierarchy,
+  chartHierarchyTable,
+  isHierarchyChart,
+} from "./chart-hierarchy.js";
+import { layoutIcicle } from "./chart-icicle.js";
 import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
 import {
   type ChartColorRange,
@@ -52,6 +64,7 @@ import {
   isCircularChart,
   isWholeChart,
 } from "./chart-model.js";
+import { layoutSunburst } from "./chart-partition.js";
 import { layoutCircular, layoutRadar } from "./chart-polar.js";
 import {
   type ChartOrientation,
@@ -64,6 +77,7 @@ import {
 import { type ChartDataPoint, chartSelectedNodes, chartSelection } from "./chart-select.js";
 import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 import { layoutStock } from "./chart-stock.js";
+import { layoutTree } from "./chart-tree.js";
 import {
   type ChartZoom,
   chartSelectionNodes,
@@ -91,6 +105,32 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly edgeOpacity?: number | undefined;
   /** Sankey charts: a title above each rank. */
   readonly axisTitles?: readonly string[] | undefined;
+  /** Hierarchy charts (ADR-0058): nested nodes (one root, or several). */
+  readonly hierarchy?: ChartHierarchyNode | readonly ChartHierarchyNode[] | undefined;
+  /** Tree and icicle charts: where the root sits (`radial`: trees around the center). Default `"top"`. */
+  readonly direction?: ChartDirection | undefined;
+  /** Tree charts: `tree` (tidy, default) or `cluster` (a dendrogram: leaves on one level). */
+  readonly layoutType?: ChartLayoutType | undefined;
+  /** Tree charts: links `orthogonal` (default), `curved` or `straight`. */
+  readonly edgeStyle?: ChartEdgeStyle | undefined;
+  /** Tree charts: Enter and clicks expand and collapse nodes. */
+  readonly enableExpandCollapse?: boolean | undefined;
+  /** Tree charts: ids of the nodes whose children are hidden. */
+  readonly collapsedNodes?: readonly string[] | undefined;
+  /** Sunburst and icicle charts: the node zoomed into (an id; `null`: none). */
+  readonly drillNode?: string | null | undefined;
+  /** Sunburst and icicle charts: clicks, Enter and Space don't zoom into nodes. */
+  readonly disableZoomOnClick?: boolean | undefined;
+  /** Sunburst charts: the hole in % of the radius. Default 15. */
+  readonly innerSize?: number | undefined;
+  /** Sunburst and icicle charts: the gap between arcs or cells in px. Default 1. */
+  readonly spacing?: number | undefined;
+  /** Sunburst and icicle charts: shallow branches `extend` to the edge or `stop` (default `extend` on sunbursts, `stop` on icicles). */
+  readonly leaf?: ChartLeaf | undefined;
+  /** Sunburst and icicle charts: how much paler each level gets (0 to 1). Default 0.14. */
+  readonly tint?: number | undefined;
+  /** Icicle charts: a zoomed branch keeps its ancestors (`value`, default) or is the top (`both`). */
+  readonly zoomType?: ChartZoomType | undefined;
   /** Stock charts (ADR-0047): indicators of the first series (overlays and panes). */
   readonly indicators?: readonly ChartIndicator[] | undefined;
   /** Stock charts: a navigator under the panes (the whole axis, the zoom as a brush). */
@@ -254,6 +294,7 @@ export const chartIdPrefix = (raw: string): string =>
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
   if (input.type === "sankey") return renderSankey(input);
+  if (isHierarchyChart(input.type)) return renderHierarchy(input);
   const axes = chartYAxes(input.yaxis);
   // Several value axes (4.18.59): every series gets its axis (written on its table column).
   const plain = withChartAxes(chartData({ ...input, series: input.series ?? [] }), axes);
@@ -498,6 +539,68 @@ function renderSankey(input: ChartRenderInput): ChartRender {
     layout,
     legend: null,
     table: chartSankeyTable(graph, format),
+    extent: null,
+    zoom: null,
+    zoomable: false,
+  };
+}
+
+/** Hierarchy charts (ADR-0058): nested nodes instead of series; no legend, no zoom. */
+function renderHierarchy(input: ChartRenderInput): ChartRender {
+  const data = chartData({ type: input.type, series: [] });
+  const format = chartFormat(data, input);
+  const hierarchy = chartHierarchy(input);
+  const partition = {
+    width: input.width,
+    height: input.height,
+    drill: input.drillNode,
+    disableZoomOnClick: input.disableZoomOnClick,
+    leaf: input.leaf,
+    spacing: input.spacing,
+    tint: input.tint,
+    dataLabels: input.dataLabels,
+  };
+  const layout =
+    input.type === "sunburst"
+      ? layoutSunburst(
+          hierarchy,
+          {
+            ...partition,
+            innerSize: input.innerSize,
+            startAngle: input.startAngle,
+            endAngle: input.endAngle,
+          },
+          format,
+        )
+      : input.type === "icicle"
+        ? layoutIcicle(
+            hierarchy,
+            { ...partition, direction: input.direction, zoomType: input.zoomType },
+            format,
+          )
+        : layoutTree(
+            hierarchy,
+            {
+              width: input.width,
+              height: input.height,
+              direction: input.direction,
+              layoutType: input.layoutType,
+              edgeStyle: input.edgeStyle,
+              markerSize: input.markerSize,
+              collapsed: input.collapsedNodes,
+              expandCollapse: input.enableExpandCollapse,
+              dataLabels: input.dataLabels,
+              startAngle: input.startAngle,
+              endAngle: input.endAngle,
+            },
+            format,
+          );
+  return {
+    data,
+    format,
+    layout,
+    legend: null,
+    table: chartHierarchyTable(hierarchy, format),
     extent: null,
     zoom: null,
     zoomable: false,

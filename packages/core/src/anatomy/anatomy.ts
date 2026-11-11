@@ -37,6 +37,18 @@ import {
   slidesToShowAttr,
 } from "../carousel/carousel-model.js";
 import {
+  type ChartDirection,
+  type ChartEdgeStyle,
+  type ChartLayoutType,
+  type ChartLeaf,
+  type ChartZoomType,
+  chartDirections,
+  chartEdgeStyles,
+  chartLayoutTypes,
+  chartLeaves,
+  chartZoomTypes,
+} from "../chart/chart-hierarchy.js";
+import {
   type ChartColor,
   type ChartCrossfilter,
   type ChartCurve,
@@ -4508,7 +4520,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total) or `dumbbell` (a start and an end value per category: two markers joined by a line). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) or `icicle` (the same hierarchy as bands, each node a cell sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4830,6 +4842,67 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-hide-connectors",
     "Waterfall charts: no dashed lines from the end of each bar to the next one.",
   ),
+  direction: style(
+    "data-ok-direction",
+    chartDirections,
+    "top",
+    "Tree and icicle charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (trees: the root in the center, levels as rings).",
+    { optional: true },
+  ),
+  layoutType: style(
+    "data-ok-layout-type",
+    chartLayoutTypes,
+    "tree",
+    "Tree charts: `tree` (a tidy tree, the default) or `cluster` (a dendrogram: every leaf on the last level).",
+    { optional: true },
+  ),
+  edgeStyle: style(
+    "data-ok-edge-style",
+    chartEdgeStyles,
+    "orthogonal",
+    "Tree charts: links with right angles (`orthogonal`, the default), `curved` or `straight`.",
+    { optional: true },
+  ),
+  enableExpandCollapse: flag(
+    "data-ok-enable-expand-collapse",
+    "Tree charts: a click, Enter or Space on a node with children hides or shows them.",
+  ),
+  innerSize: number(
+    "data-ok-inner-size",
+    undefined,
+    "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15).",
+    { min: 0 },
+  ),
+  spacing: number(
+    "data-ok-spacing",
+    undefined,
+    "Sunburst and icicle charts: the gap between arcs or cells in px (default 1).",
+    { min: 0 },
+  ),
+  leaf: style(
+    "data-ok-leaf",
+    chartLeaves,
+    "extend",
+    "Sunburst and icicle charts: branches that end before the deepest level `extend` to the edge or `stop` at their level (default `extend` on sunbursts, `stop` on icicles).",
+    { optional: true },
+  ),
+  tint: number(
+    "data-ok-tint",
+    undefined,
+    "Sunburst and icicle charts: how much paler each level is than the level its color starts at (0 to 1; default 0.14).",
+    { min: 0 },
+  ),
+  disableZoomOnClick: flag(
+    "data-ok-disable-zoom-on-click",
+    "Sunburst and icicle charts: a click, Enter or Space on a node doesn't zoom into it.",
+  ),
+  zoomType: style(
+    "data-ok-zoom-type",
+    chartZoomTypes,
+    "value",
+    "Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`, the default) or becomes the top level (`both`).",
+    { optional: true },
+  ),
   crossfilter: style(
     "data-ok-crossfilter",
     chartCrossfilters,
@@ -4916,6 +4989,16 @@ export interface ChartAnatomyOptions {
   waterfallTotalColor?: ChartColor | undefined;
   waterfallSubtotalColor?: ChartColor | undefined;
   hideConnectors?: boolean | undefined;
+  direction?: ChartDirection | undefined;
+  layoutType?: ChartLayoutType | undefined;
+  edgeStyle?: ChartEdgeStyle | undefined;
+  enableExpandCollapse?: boolean | undefined;
+  innerSize?: number | undefined;
+  spacing?: number | undefined;
+  leaf?: ChartLeaf | undefined;
+  tint?: number | undefined;
+  disableZoomOnClick?: boolean | undefined;
+  zoomType?: ChartZoomType | undefined;
   crossfilter?: ChartCrossfilter | undefined;
 }
 

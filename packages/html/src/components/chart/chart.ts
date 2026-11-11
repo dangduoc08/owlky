@@ -6,11 +6,16 @@ import {
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartDataPoint,
+  type ChartDirection,
+  type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
   type ChartGrid,
   type ChartGroupFilter,
+  type ChartHierarchyAction,
+  type ChartLayoutType,
+  type ChartLeaf,
   type ChartLegend,
   type ChartLegendItem,
   type ChartLink,
@@ -36,15 +41,20 @@ import {
   type ChartXType,
   type ChartZoom,
   type ChartZoomReason,
+  type ChartZoomType,
   chartActiveAt,
   chartActiveMarks,
   chartActiveNodes,
   chartBrushCategories,
   chartColors,
+  chartDrillLabels,
+  chartDrillUp,
   chartFilterCategories,
   chartFilterLabels,
   chartFilterText,
+  chartHierarchyAction,
   chartIdPrefix,
+  chartListText,
   chartMarkAt,
   chartMarkPoint,
   chartOptions,
@@ -55,10 +65,12 @@ import {
   chartTooltip,
   chartTooltipContext,
   chartTooltipFixed,
+  chartTreeMarkOf,
   chartZoomKey,
   createChartGestures,
   exportChart,
   hasChartDataPoint,
+  isHierarchyChart,
   linkChart,
   nextChartActive,
   parseChartColorRanges,
@@ -71,12 +83,14 @@ import {
   parseChartYAxes,
   placeChartTooltip,
   readChartAnnotations,
+  readChartHierarchyTable,
   readChartSankeyTable,
   readChartTable,
   readNumber,
   readStyle,
   renderChart,
   sameChartActive,
+  toggleChartCollapsed,
   toggleChartSelection,
   zoomChartBy,
 } from "@owlky/core";
@@ -120,6 +134,17 @@ export interface ChartEvents {
    * category indexes (`null`: none) and whether this chart set it.
    */
   filter: EventSpec<{ categories: number[] | null; own: boolean }>;
+  /**
+   * Tree charts with `data-ok-enable-expand-collapse`: before a click, Enter or Space hides or
+   * shows a node's children. Call `preventDefault()` to refuse.
+   */
+  expand: EventSpec<{ id: string; expanded: boolean; collapsedNodes: string[] }, true>;
+  /**
+   * Sunburst and icicle charts: before a click, Enter, Space, Escape or the **Back** button zooms into a node
+   * (`id`, and the names from the root in `path`) or out (`null` at the top). Call
+   * `preventDefault()` to refuse.
+   */
+  drill: EventSpec<{ id: string | null; path: string[] }, true>;
 }
 
 export interface ChartInstance extends ComponentInstance {
@@ -166,6 +191,14 @@ export interface ChartInstance extends ComponentInstance {
   readonly filter: readonly number[] | null;
   /** Clears the group's crossfilter (its source clears its selection; no event here). */
   clearFilter(): void;
+  /** Tree charts: ids of the nodes whose children are hidden (`data-ok-collapsed-nodes`). */
+  readonly collapsedNodes: readonly string[];
+  /** Tree charts: hides the children of exactly these nodes (no event). */
+  setCollapsedNodes(ids: readonly string[]): void;
+  /** Sunburst and icicle charts: the id of the node zoomed into (`data-ok-drill-node`), or `null`. */
+  readonly drillNode: string | null;
+  /** Sunburst and icicle charts: zooms into a node (`null`: the whole chart; no event). */
+  setDrillNode(id: string | null): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -574,11 +607,14 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       element.setAttribute("data-ok-ready", "");
       const xType = readStyle(element, o.xType) as ChartXType;
       const type = readStyle(element, o.type) as ChartType;
-      // Sankey charts (ADR-0047): the table lists links, not series.
+      // Sankey charts (ADR-0047): the table lists links, not series; hierarchy charts (ADR-0058)
+      // one node per row.
       const flow = type === "sankey" && table ? readChartSankeyTable(table) : undefined;
-      const read = flow ? EMPTY : data();
+      const tree = isHierarchyChart(type) && table ? readChartHierarchyTable(table) : undefined;
+      const read = flow || tree ? EMPTY : data();
       const { series, categories } = read;
       if (flow) partLabels = flow.partLabels;
+      else if (tree) partLabels = tree.partLabels;
       else if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
       const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
       const label = table?.caption?.textContent?.trim() ?? "";
@@ -605,6 +641,22 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         whitespace: readNumber(element, o.whitespace) as number | undefined,
         edgeOpacity: readNumber(element, o.edgeOpacity) as number | undefined,
         axisTitles: parseChartList(element.getAttribute(CHART_TEXT_ATTRIBUTES.axisTitles)),
+        hierarchy: tree?.hierarchy,
+        direction: readStyle(element, o.direction) as ChartDirection | undefined,
+        layoutType: readStyle(element, o.layoutType) as ChartLayoutType | undefined,
+        edgeStyle: readStyle(element, o.edgeStyle) as ChartEdgeStyle | undefined,
+        enableExpandCollapse: element.hasAttribute(o.enableExpandCollapse.attr),
+        collapsedNodes: collapsedNodes(),
+        drillNode: text(element, CHART_TEXT_ATTRIBUTES.drillNode),
+        disableZoomOnClick: element.hasAttribute(o.disableZoomOnClick.attr),
+        innerSize: readNumber(element, o.innerSize) as number | undefined,
+        spacing: readNumber(element, o.spacing) as number | undefined,
+        // The default depends on the type (sunburst extend, icicle stop): only a given value.
+        leaf: element.hasAttribute(o.leaf.attr)
+          ? (readStyle(element, o.leaf) as ChartLeaf)
+          : undefined,
+        tint: readNumber(element, o.tint) as number | undefined,
+        zoomType: readStyle(element, o.zoomType) as ChartZoomType | undefined,
         indicators: parseChartIndicators(element.getAttribute(CHART_TEXT_ATTRIBUTES.indicators)),
         navigator: element.hasAttribute(o.navigator.attr),
         paneHeight: readNumber(element, o.paneHeight) as number | undefined,
@@ -710,6 +762,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       drawTools();
       drawLegend(render.legend);
       drawFilter();
+      drawDrill();
       svg.setAttribute("width", String(layout.width));
       svg.setAttribute("height", String(layout.height));
       svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
@@ -729,6 +782,76 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         drawnZoom = zoomed;
         link?.drawn(render.zoom);
       }
+    };
+
+    /** Tree charts: the collapsed nodes, kept in `data-ok-collapsed-nodes`. */
+    const collapsedNodes = () =>
+      parseChartList(element.getAttribute(CHART_TEXT_ATTRIBUTES.collapsedNodes)).filter(Boolean);
+    const writeCollapsed = (ids: readonly string[]) => {
+      const textValue = chartListText(ids);
+      if (textValue) element.setAttribute(CHART_TEXT_ATTRIBUTES.collapsedNodes, textValue);
+      else element.removeAttribute(CHART_TEXT_ATTRIBUTES.collapsedNodes);
+      // The runtime's own write: drawn here, not by the observer.
+      changes.takeRecords();
+      draw();
+    };
+    /**
+     * Hierarchy charts: what a click, Enter or Space on a node does (expand or collapse it); the
+     * node stays active after the redraw. Returns whether the press did something.
+     */
+    const act = (action: ChartHierarchyAction | null) => {
+      if (!action) return false;
+      if (action.kind === "toggle") {
+        const current = collapsedNodes();
+        const next = toggleChartCollapsed(current, action.id);
+        const expanded = current.includes(action.id);
+        if (emit("expand", { id: action.id, expanded, collapsedNodes: next }, { cancelable: true }))
+          writeCollapsed(next);
+        const mark = chartTreeMarkOf((render as ChartRender).layout, action.id);
+        setActive(mark === null ? null : { kind: "mark", mark }, true);
+        return true;
+      }
+      if (!(render as ChartRender).layout.hierarchy?.drillable) return false;
+      if (emit("drill", { id: action.id, path: [...action.path] }, { cancelable: true }))
+        writeDrill(action.id);
+      const mark = chartTreeMarkOf((render as ChartRender).layout, action.focus);
+      setActive(mark === null ? null : { kind: "mark", mark }, true);
+      return true;
+    };
+    /** Sunburst and icicle charts: the drilled node, kept in `data-ok-drill-node`. */
+    const writeDrill = (id: string | null) => {
+      if (id === null) element.removeAttribute(CHART_TEXT_ATTRIBUTES.drillNode);
+      else element.setAttribute(CHART_TEXT_ATTRIBUTES.drillNode, id);
+      changes.takeRecords();
+      draw();
+    };
+    /** Sunburst and icicle charts: a **Back** button and the drilled path (a status) before the plot. */
+    const drawDrill = () => {
+      let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-drill]");
+      const state = (render as ChartRender).layout.hierarchy;
+      if (!state?.drillable || state.type === "tree") {
+        box?.remove();
+        return;
+      }
+      if (!box) {
+        box = document.createElement("div");
+        box.setAttribute("data-ok-chart-drill", "");
+        const up = document.createElement("button");
+        up.type = "button";
+        up.setAttribute("data-ok-chart-drill-up", "");
+        const path = document.createElement("span");
+        path.setAttribute("data-ok-chart-drill-path", "");
+        path.setAttribute("role", "status");
+        box.append(up, path);
+        element.insertBefore(box, plot);
+        created.push(box);
+      }
+      const [up, path] = [...box.children] as [HTMLButtonElement, HTMLElement];
+      const label = localeText.drillUp ?? chartDrillLabels.drillUp;
+      if (up.textContent !== label) up.textContent = label;
+      up.hidden = state.drill === null;
+      const shown = state.path.join(" › ");
+      if (path.textContent !== shown) path.textContent = shown;
     };
 
     /** The data: set through the API, or read from the table. */
@@ -990,6 +1113,16 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         const layout = (render as ChartRender).layout;
         const box = plot.getBoundingClientRect();
         const scale = layout.width / (box.width || layout.width);
+        if (layout.mode === "tree") {
+          // Hierarchy charts: the node under the pointer expands, collapses or drills.
+          const hit = chartActiveAt(
+            layout,
+            (event.clientX - box.left) * scale,
+            (event.clientY - box.top) * scale,
+          );
+          act(chartHierarchyAction(layout, hit?.kind === "mark" ? hit.mark : null));
+          return;
+        }
         const mark = chartMarkAt(
           layout,
           (event.clientX - box.left) * scale,
@@ -1013,6 +1146,11 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       "keydown",
       (event) => {
         if (event.key === "Escape") {
+          // Sunburst and icicle charts: one level up before anything else.
+          if (act(chartDrillUp((render as ChartRender).layout))) {
+            event.preventDefault();
+            return;
+          }
           if (active) {
             event.preventDefault();
             setActive(null, true);
@@ -1035,6 +1173,16 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           if (range !== undefined) {
             event.preventDefault();
             commitRange(range);
+            return;
+          }
+        }
+        if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
+          const layout = (render as ChartRender).layout;
+          if (
+            layout.mode === "tree" &&
+            act(chartHierarchyAction(layout, active?.kind === "mark" ? active.mark : null))
+          ) {
+            event.preventDefault();
             return;
           }
         }
@@ -1074,6 +1222,13 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     element.addEventListener(
       "click",
       (event) => {
+        const back = (event.target as Element).closest?.("[data-ok-chart-drill-up]");
+        if (back && back.parentElement?.parentElement === element) {
+          act(chartDrillUp((render as ChartRender).layout));
+          // At the top the button hides: the focus goes to the plot.
+          if ((back as HTMLElement).hidden) plot.focus();
+          return;
+        }
         const clear = (event.target as Element).closest?.("[data-ok-chart-filter-clear]");
         if (clear && clear.parentElement?.parentElement === element) {
           link?.clearFilter();
@@ -1227,6 +1382,18 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       },
       clearFilter() {
         link?.clearFilter();
+      },
+      get drillNode() {
+        return element.getAttribute(CHART_TEXT_ATTRIBUTES.drillNode);
+      },
+      setDrillNode(id) {
+        writeDrill(id === null ? null : String(id));
+      },
+      get collapsedNodes() {
+        return collapsedNodes();
+      },
+      setCollapsedNodes(ids) {
+        writeCollapsed([...new Set(ids.map(String))]);
       },
       toggleDataPointSelection(seriesIndex, dataPointIndex) {
         selected = toggleChartSelection(

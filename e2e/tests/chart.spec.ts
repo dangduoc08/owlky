@@ -67,6 +67,9 @@ const STORIES = [
   "grid",
   "waterfall",
   "dumbbell",
+  "tree",
+  "sunburst",
+  "icicle",
   "crossfilter",
 ];
 
@@ -626,6 +629,34 @@ for (const impl of implementations) {
     });
   });
 
+  // Roadmap 4.18.7 (ADR-0058): tree charts.
+  test.describe(`chart tree (${impl})`, () => {
+    test("arrows walk the hierarchy; Enter and clicks collapse nodes", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "tree"));
+      const first = page.locator("[data-ok-chart]").first();
+      const title = first.locator("[data-ok-chart-tooltip-title]");
+      await expect(first.locator("[data-ok-chart-tree-node]")).toHaveCount(11);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(title).toHaveText("Product");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("ArrowRight");
+      await expect(title).toHaveText("Product › Mobile");
+      await page.keyboard.press("Enter");
+      await expect(first.locator("[data-ok-chart-tree-node]")).toHaveCount(9);
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText([
+        "Value10",
+        "Level2",
+        "Collapsed2",
+      ]);
+      await first.locator("[data-ok-chart-tree-node][data-ok-collapsed]").click();
+      await expect(first.locator("[data-ok-chart-tree-node]")).toHaveCount(11);
+      const table = page.getByRole("table", { name: "Product teams and their engineers" });
+      await expect(table.getByRole("columnheader")).toHaveText(["Name", "Parent", "Value"]);
+      await expect(table.getByRole("row")).toHaveCount(12);
+    });
+  });
+
   // Roadmap 4.18.19: crossfilter (ADR-0054).
   test.describe(`chart crossfilter (${impl})`, () => {
     test("clicks filter and highlight the group; Clear filter clears it", async ({ page }) => {
@@ -671,6 +702,86 @@ test("chart crossfilter: after the same actions, React and HTML draw the same SV
     await page.keyboard.press("Escape");
     await page.mouse.move(0, 0);
     await expect(page.locator("[data-ok-chart-filter-band]")).toHaveCount(1);
+    return svgTree(page);
+  };
+  const react = await after("react");
+  const html = await after("html");
+  expect(html).toEqual(react);
+});
+
+// Roadmap 4.18.21 (ADR-0058): sunburst charts.
+for (const impl of implementations) {
+  test.describe(`chart sunburst (${impl})`, () => {
+    test("Enter and clicks zoom into a branch; Escape and Back zoom out", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "sunburst"));
+      const first = page.locator("[data-ok-chart]").first();
+      const title = first.locator("[data-ok-chart-tooltip-title]");
+      const back = first.getByRole("button", { name: "Back" });
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(14);
+      await expect(back).toBeHidden();
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("ArrowDown");
+      await expect(title).toHaveText("Storage");
+      await page.keyboard.press("Enter");
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(6);
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Storage");
+      await expect(back).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(14);
+      await first.locator("[data-ok-chart-arc]").nth(10).click();
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Network");
+      await back.click();
+      await expect(first.locator("[data-ok-chart-arc]")).toHaveCount(14);
+      await expect(back).toBeHidden();
+      const table = page.getByRole("table", { name: /^Cloud spend by service/ });
+      await expect(table.getByRole("row")).toHaveCount(15);
+    });
+  });
+}
+
+// Roadmap 4.18.21 (ADR-0058): icicle charts.
+for (const impl of implementations) {
+  test.describe(`chart icicle (${impl})`, () => {
+    test("Enter zooms into a branch; its ancestor band and Back zoom out", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "icicle"));
+      const first = page.locator("[data-ok-chart]").first();
+      const cells = first.locator("[data-ok-chart-icicle-cell]");
+      await expect(cells).toHaveCount(13);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("ArrowRight");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText(
+        "Page load › Scripts",
+      );
+      await page.keyboard.press("Enter");
+      await expect(cells).toHaveCount(6);
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Page load › Scripts");
+      await first.getByRole("button", { name: "Back" }).click();
+      await expect(cells).toHaveCount(13);
+      await cells.nth(5).click();
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Page load › Scripts");
+      await cells.first().click();
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Page load");
+    });
+  });
+}
+
+test("chart sunburst: after drilling, React and HTML draw the same SVG", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== "chromium", "Structure is browser-independent.");
+  const after = async (impl: "react" | "html") => {
+    await openStory(page, storyId(impl, "chart", "sunburst"));
+    await page.locator("[data-ok-chart-plot]").first().focus();
+    await page.keyboard.press("Home");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("[data-ok-chart-drill-path]").first()).toHaveText("Storage");
+    // Leaving the plot hides the tooltip and its highlight.
+    await page.locator("[data-ok-chart-plot]").first().blur();
     return svgTree(page);
   };
   const react = await after("react");

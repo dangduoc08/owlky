@@ -1,5 +1,6 @@
 import { chartMarkerNode } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
+import { nextChartTreeMark, onChartTreeMark } from "./chart-hierarchy.js";
 import {
   type ChartArc,
   type ChartLayout,
@@ -61,6 +62,14 @@ const turn = (a: number, b: number) => {
 /** Pointer position in SVG px → the active item, or `null` outside the plot. */
 export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartActive | null {
   const { plot } = layout;
+  if (layout.mode === "tree") {
+    // Hierarchy charts (ADR-0058): the topmost node shape under the pointer.
+    for (let mark = layout.marks.length - 1; mark >= 0; mark--) {
+      const tree = layout.marks[mark]?.tree;
+      if (tree && onChartTreeMark(tree, x, y)) return { kind: "mark", mark };
+    }
+    return null;
+  }
   if (layout.mode === "flow") {
     // Sankey: the node under the pointer (3px of slack), else the topmost link.
     const node = layout.marks.findIndex(({ flow }) => {
@@ -209,6 +218,10 @@ export function nextChartActive(
   const forward = key === "ArrowRight" || key === "ArrowDown";
   const backward = key === "ArrowLeft" || key === "ArrowUp";
   if (!forward && !backward && key !== "Home" && key !== "End") return undefined;
+  if (layout.mode === "tree") {
+    const next = nextChartTreeMark(layout.marks, active?.kind === "mark" ? active.mark : null, key);
+    return next === undefined ? undefined : next === null ? null : { kind: "mark", mark: next };
+  }
   if (layout.mode === "cell") return nextCell(layout, active, key);
   if (layout.mode === "point" || layout.mode === "flow") {
     const sorted = order(layout);
@@ -298,6 +311,7 @@ export function chartActiveNodes(
     const mark = layout.marks[active.mark];
     if (!mark) return { under: [], over: [] };
     if (mark.flow) return { under: [], over: flowNodes(layout, mark) };
+    if (mark.tree) return { under: [], over: [...treeNodes(layout, mark), mark.tree.outline] };
     if (mark.cell) {
       // An outline around the cell (heatmap, treemap).
       const { x, y, width, height } = mark.cell;
@@ -430,6 +444,20 @@ function bandNode(layout: ChartLayout, pos: number): ChartNode | undefined {
   };
 }
 
+/** Hierarchy highlight (ADR-0058): the links from the root to the active node (trees). */
+function treeNodes(layout: ChartLayout, mark: ChartMark): ChartNode[] {
+  const out: ChartNode[] = [];
+  for (let at: ChartMark | undefined = mark; at?.tree; ) {
+    if (at.tree.link)
+      out.unshift({
+        tag: "path",
+        attrs: { d: at.tree.link, "data-ok-chart-active-path": "", "data-ok-color": at.color },
+      });
+    at = at.tree.parent >= 0 ? layout.marks[at.tree.parent] : undefined;
+  }
+  return out;
+}
+
 /** Sankey highlight: the active link, or a node's links and an outline around the node. */
 function flowNodes(layout: ChartLayout, mark: ChartMark): ChartNode[] {
   const flow = mark.flow as NonNullable<ChartMark["flow"]>;
@@ -498,7 +526,7 @@ export function chartTooltip(
       ? [layout.marks[active.mark]]
       : layout.marks.filter((mark) => mark.index === active.index);
   const on = marks.some(
-    (mark) => mark && !mark.flow && hasChartDataPoint(selected, chartMarkPoint(mark)),
+    (mark) => mark && !mark.flow && !mark.tree && hasChartDataPoint(selected, chartMarkPoint(mark)),
   );
   return on ? { ...tooltip, selected: true } : tooltip;
 }
@@ -579,6 +607,7 @@ function tooltipOf(
     const mark = layout.marks[active.mark];
     if (!mark) return null;
     if (mark.flow) return { title: mark.flow.title, rows: mark.flow.rows, x: mark.px, y: mark.py };
+    if (mark.tree) return { title: mark.tree.title, rows: mark.tree.rows, x: mark.px, y: mark.py };
     return {
       title: format.title(xOf(mark.x)),
       rows: rowsOf(mark, mark.color),
