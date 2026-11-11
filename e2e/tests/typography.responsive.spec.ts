@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { implementations, openStory, storyId } from "./helpers.js";
 import { viewports } from "./viewports.js";
 
-const STORIES = ["usage", "theme-keys", "semantic-element", "colors", "alignment"];
+const STORIES = ["usage", "theme-keys", "semantic-element", "colors", "alignment", "text-max-line"];
 
 interface Box {
   width: number;
@@ -31,6 +31,14 @@ function measure(page: Page) {
       if (noWrap) {
         const lineHeight = Number.parseFloat(getComputedStyle(part).lineHeight);
         if (Math.round(box.height) !== Math.round(lineHeight)) problems.push(`#${i}: not one line`);
+      }
+      // maxLines: clamped to that many lines (persistent text takes all of them).
+      const maxLines = Number(part.dataset["okMaxLines"] ?? 0);
+      if (maxLines > 0) {
+        const lines = box.height / Number.parseFloat(getComputedStyle(part).lineHeight);
+        const persistent = part.hasAttribute("data-ok-persistent");
+        if (persistent ? Math.round(lines) !== maxLines : Math.round(lines) > maxLines)
+          problems.push(`#${i}: ${lines} lines, max ${maxLines}`);
       }
     }
     const boxes: Box[] = parts.map((p) => ({

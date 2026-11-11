@@ -1,5 +1,5 @@
 import { type TypographyColor, typographyOptions } from "@owlky/core";
-import { Typography } from "@owlky/react";
+import { Link, Typography } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
@@ -141,6 +141,51 @@ export const alignmentGroups: ReactGroup[] = [
       </div>
     ),
   },
+];
+
+const LONG_TEXT =
+  "Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.";
+
+/** Text max line: one group per line count, a link, and persistent short text. */
+export const maxLineGroups: ReactGroup[] = [
+  ...([1, 2, 3, 4] as const).map((lines) => ({
+    title: lines === 1 ? "1 line" : `${lines} lines`,
+    content: (
+      <div className="sb-typography-narrow">
+        <Typography maxLines={lines}>{LONG_TEXT}</Typography>
+      </div>
+    ),
+  })),
+  {
+    title: "As link",
+    content: (
+      <div className="sb-typography-narrow">
+        <Link href="#text-max-line-link" variant="body1" underline="hover" maxLines={3}>
+          {LONG_TEXT}
+        </Link>
+      </div>
+    ),
+  },
+  {
+    title: "Persistent",
+    content: (
+      <div className="sb-typography-narrow">
+        <Typography variant="h6" component="p" maxLines={3} persistent>
+          Short text keeps the height of three lines.
+        </Typography>
+      </div>
+    ),
+  },
+];
+
+/** Snippet files of the Text max line story, in group order. */
+export const MAX_LINE_FILES: GroupFiles = [
+  ["1 line", "1-line"],
+  ["2 lines", "2-lines"],
+  ["3 lines", "3-lines"],
+  ["4 lines", "4-lines"],
+  ["As link", "as-link"],
+  ["Persistent", "persistent"],
 ];
 
 /** Options that change every example at once (Usage). */

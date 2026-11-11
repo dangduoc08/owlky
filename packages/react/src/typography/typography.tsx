@@ -1,6 +1,7 @@
 import {
   type TypographyAlign,
   type TypographyColor,
+  type TypographyMaxLines,
   type TypographyVariantName,
   typographyAttributes,
   typographyElement,
@@ -18,6 +19,10 @@ export interface TypographyProps extends Omit<AllHTMLAttributes<HTMLElement>, "c
   gutterBottom?: boolean | undefined;
   /** One line; overflowing text ends with an ellipsis. */
   noWrap?: boolean | undefined;
+  /** At most this many lines, from 1 to 10: longer text ends with an ellipsis on the last line. Default: every line. */
+  maxLines?: TypographyMaxLines | number | undefined;
+  /** With `maxLines`, the text always takes the height of that many lines, even when it is shorter. */
+  persistent?: boolean | undefined;
   /** The element to render, whatever the variant (for example `"h2"` with `variant="h4"`). */
   component?: ElementType | undefined;
   /** The element per variant, over the default mapping (`h1`–`h6`, subtitles `h6`, body `p`, others `span`). */
@@ -29,10 +34,29 @@ export interface TypographyProps extends Omit<AllHTMLAttributes<HTMLElement>, "c
  * element follows the variant (`variantMapping`) unless `component` picks one.
  */
 export const Typography = forwardRef<HTMLElement, TypographyProps>(function Typography(
-  { variant, color, align, gutterBottom, noWrap, component, variantMapping, ...props },
+  {
+    variant,
+    color,
+    align,
+    gutterBottom,
+    noWrap,
+    maxLines,
+    persistent,
+    component,
+    variantMapping,
+    ...props
+  },
   ref,
 ) {
-  const attributes = typographyAttributes({ variant, color, align, gutterBottom, noWrap });
+  const attributes = typographyAttributes({
+    variant,
+    color,
+    align,
+    gutterBottom,
+    noWrap,
+    maxLines,
+    persistent,
+  });
   const type =
     component ?? typographyElement<ElementType>(attributes["data-ok-variant"], variantMapping);
   return createElement(type, { ref, ...attributes, ...props });

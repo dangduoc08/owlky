@@ -7,6 +7,8 @@ import {
   alignmentGroups,
   colorGroups,
   files,
+  MAX_LINE_FILES,
+  maxLineGroups,
   semanticGroups,
   TYPOGRAPHY_CONTROLS,
   themeKeysGroups,
@@ -75,4 +77,17 @@ export const Alignment: StoryObj = {
     react: reactGroupsStory(alignmentGroups),
   }),
   name: "Alignment and wrapping",
+};
+
+export const TextMaxLine: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "text-max-line",
+      MAX_LINE_FILES,
+      htmlSetup(["typography.css", "link.css"]),
+    ),
+    react: reactGroupsStory(maxLineGroups),
+  }),
+  name: "Text max line",
 };

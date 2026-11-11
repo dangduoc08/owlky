@@ -14,7 +14,8 @@ schema (MUI's defaults differ: `variant` `inherit`, `color` `primary`). CSS only
 ## Anatomy
 ```
 a[href][data-ok-typography][data-ok-link][data-ok-variant][data-ok-color][data-ok-underline]
-  [data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?[target][rel]?
+  [data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?[data-ok-max-lines]?[data-ok-persistent]?
+  [target][rel]?
 button[type="button"][data-ok-typography][data-ok-link]…        (an action: no destination)
 ```
 React: `a` with `href`; `<button type="button">` without `href` and `component` (MUI renders an
@@ -32,6 +33,8 @@ Root: `data-ok-link`. Unknown values fall back to the default.
 | `align` | `data-ok-align="…"` | style | `inherit` `left` `center` `right` `justify` | — | Text alignment. Without it, the text keeps the parent's alignment. |
 | `gutterBottom` | `data-ok-gutter-bottom` | flag | boolean | off | A bottom margin of 0.35em. |
 | `noWrap` | `data-ok-no-wrap` | flag | boolean | off | One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width). |
+| `maxLines` | `data-ok-max-lines="…"` | style | `1` `2` `3` `4` `5` `6` `7` `8` `9` `10` | — | At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line. |
+| `persistent` | `data-ok-persistent` | flag | boolean | off | With `maxLines`: the text always takes the height of that many lines, even when it is shorter. |
 | `underline` | `data-ok-underline="…"` | style | `always` `hover` `none` | `always` | When the link is underlined: `always`, on `hover` (pointer devices), or `none`. |
 <!-- /options:link -->
 
@@ -50,7 +53,9 @@ box (no padding, border, background; `vertical-align: middle`). Focus ring: 2px
 `--ok-text-primary`, offset 2px, `--ok-radius-xs`.
 
 ## Responsive behavior
-Inline text; wraps with the text around it (except `noWrap`). Same at every breakpoint.
+Inline text; wraps with the text around it (except `noWrap`). With `maxLines` (Typography's,
+the Minimals "Text max line › As link" demo) the link becomes a block box clamped to that many
+lines. Same at every breakpoint.
 
 ## Keyboard
 Native: Tab focuses, Enter follows a link or activates a button link, Space activates a button
@@ -81,5 +86,6 @@ Upstream: MUI `Link` (mui.com/material-ui/api/link, checked 2026-11-09; inherits
 | `variant` | `variant` / `data-ok-variant` | kept | default `inherit` as MUI |
 | `component` | `component` | kept | without `href` / `component` renders a `button` (MUI: `a` without `href`) |
 | Typography `align`, `gutterBottom`, `noWrap` | same / `data-ok-align`, `-gutter-bottom`, `-no-wrap` | kept | |
+| Typography `maxLines`, `persistent` (Minimals `TextMaxLine asLink`) | same / `data-ok-max-lines`, `-persistent` | kept (4.19) | |
 | Typography `variantMapping` | — | not applicable | element is `a` / `button` / `component` |
 | `TypographyClasses`, `classes`, `sx` | — | not applicable | by decision |

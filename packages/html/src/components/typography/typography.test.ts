@@ -14,7 +14,7 @@ const snippets = Object.entries(
 afterEach(resetPage);
 
 describe("typography snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(6));
+  it("covers every story group", () => expect(snippets).toHaveLength(12));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
@@ -53,6 +53,19 @@ describe("typography snippets", () => {
     host.append(probe);
     expect(style.fontSize).toBe(getComputedStyle(probe).fontSize);
     expect(style.color).toBe(getComputedStyle(probe).color);
+  });
+
+  it("clamps text to data-ok-max-lines lines; persistent keeps their height", () => {
+    const text = "A sentence far too long for eighty pixels, ".repeat(8);
+    const host = mount(
+      `<div style="width: 80px"><p data-ok-typography data-ok-variant="body1" data-ok-max-lines="2">${text}</p><p data-ok-typography data-ok-variant="body1" data-ok-max-lines="4" data-ok-persistent>Short</p><p data-ok-typography data-ok-variant="body1" data-ok-max-lines="11">Short</p></div>`,
+    );
+    const [clamped, persistent, unknown] = host.querySelectorAll("p") as unknown as HTMLElement[];
+    expect(getComputedStyle(clamped as Element).webkitLineClamp).toBe("2");
+    expect((clamped as Element).getBoundingClientRect().height).toBe(48);
+    expect((persistent as Element).getBoundingClientRect().height).toBe(96);
+    // A line count outside 1–10 has no rule: every line shows.
+    expect(getComputedStyle(unknown as Element).webkitLineClamp).toBe("none");
   });
 
   it("an unknown variant gets no type scale styles", () => {

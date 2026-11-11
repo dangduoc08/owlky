@@ -18,6 +18,8 @@ describe("linkAttributes", () => {
     expect(linkOptions.options.align).toBe(typographyOptions.options.align);
     expect(linkOptions.options.gutterBottom).toBe(typographyOptions.options.gutterBottom);
     expect(linkOptions.options.noWrap).toBe(typographyOptions.options.noWrap);
+    expect(linkOptions.options.maxLines).toBe(typographyOptions.options.maxLines);
+    expect(linkOptions.options.persistent).toBe(typographyOptions.options.persistent);
   });
 
   it("emits Typography's marker first, then MUI's defaults", () => {
@@ -50,6 +52,10 @@ describe("linkAttributes", () => {
       "data-ok-gutter-bottom": "",
       "data-ok-no-wrap": "",
     });
+    expect(linkAttributes({ maxLines: 3, persistent: true })).toMatchObject({
+      "data-ok-max-lines": "3",
+      "data-ok-persistent": "",
+    });
   });
 
   it("refuses invalid values", () => {
@@ -61,6 +67,7 @@ describe("linkAttributes", () => {
         underline: HOSTILE,
         gutterBottom: HOSTILE,
         noWrap: HOSTILE,
+        maxLines: HOSTILE,
       }),
     ).toEqual(linkAttributes());
   });

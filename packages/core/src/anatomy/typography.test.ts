@@ -5,6 +5,7 @@ import {
   typographyAttributes,
   typographyColors,
   typographyElement,
+  typographyMaxLines,
   typographyOptions,
   typographyVariantMapping,
   typographyVariantNames,
@@ -48,6 +49,24 @@ describe("typographyAttributes", () => {
         noWrap: HOSTILE,
       }),
     ).toEqual(typographyAttributes());
+  });
+});
+
+describe("typographyAttributes maxLines", () => {
+  it.each(typographyMaxLines)("maxLines %s", (lines) => {
+    expect(typographyAttributes({ maxLines: Number(lines) })["data-ok-max-lines"]).toBe(lines);
+    expect(typographyAttributes({ maxLines: lines })["data-ok-max-lines"]).toBe(lines);
+  });
+
+  it("writes persistent as a flag and drops invalid line counts", () => {
+    expect(typographyAttributes({ maxLines: 2, persistent: true })).toEqual({
+      "data-ok-typography": "",
+      "data-ok-variant": "body1",
+      "data-ok-max-lines": "2",
+      "data-ok-persistent": "",
+    });
+    for (const maxLines of [0, 11, 2.5, -1, "two", HOSTILE])
+      expect(typographyAttributes({ maxLines })).not.toHaveProperty("data-ok-max-lines");
   });
 });
 

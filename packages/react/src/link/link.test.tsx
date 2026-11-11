@@ -138,6 +138,25 @@ describe("Link", () => {
     expect(css(link)).toMatchObject({ whiteSpace: "nowrap", textOverflow: "ellipsis" });
   });
 
+  it("maxLines clamps a link like Typography (As link)", async () => {
+    const text = "A link text far too long for eighty pixels, ".repeat(6);
+    const { container } = render(
+      <div style={{ width: 80 }}>
+        <Link href="#x" variant="body2" maxLines={3} persistent>
+          {text}
+        </Link>
+      </div>,
+    );
+    const link = screen.getByRole("link");
+    expect(link.dataset).toMatchObject({ okMaxLines: "3", okPersistent: "" });
+    expect(css(link).webkitLineClamp).toBe("3");
+    expect(link.getBoundingClientRect().height).toBeCloseTo(
+      Number.parseFloat(css(link).lineHeight) * 3,
+      0,
+    );
+    await expectNoAxeViolations(container);
+  });
+
   it("without href or component, renders an accessible button", async () => {
     const onClick = vi.fn();
     render(

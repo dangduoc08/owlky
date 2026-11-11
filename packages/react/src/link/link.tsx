@@ -27,7 +27,15 @@ export interface LinkProps extends Omit<TypographyProps, "color" | "variantMappi
 /** Link's own props (the options), shared by both call signatures. */
 type LinkOwnProps = Pick<
   LinkProps,
-  "color" | "underline" | "variant" | "align" | "gutterBottom" | "noWrap" | "children"
+  | "color"
+  | "underline"
+  | "variant"
+  | "align"
+  | "gutterBottom"
+  | "noWrap"
+  | "maxLines"
+  | "persistent"
+  | "children"
 >;
 
 /**
@@ -60,6 +68,8 @@ export const Link = forwardRef<HTMLElement, LinkProps>(function Link(
     align,
     gutterBottom,
     noWrap,
+    maxLines,
+    persistent,
     component,
     href,
     target,
@@ -72,7 +82,16 @@ export const Link = forwardRef<HTMLElement, LinkProps>(function Link(
     "data-ok-typography": _,
     "data-ok-variant": linkVariant,
     ...attributes
-  } = linkAttributes({ color, underline, variant, align, gutterBottom, noWrap });
+  } = linkAttributes({
+    color,
+    underline,
+    variant,
+    align,
+    gutterBottom,
+    noWrap,
+    maxLines,
+    persistent,
+  });
   const element = component ?? (href === undefined ? "button" : "a");
   const safeRel = linkRel(target, rel);
   return (

@@ -353,6 +353,32 @@
       "description": "One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width).",
       "kind": "flag",
       "name": "noWrap"
+     },
+     {
+      "attr": "data-ok-max-lines",
+      "default": "1",
+      "description": "At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line.",
+      "kind": "style",
+      "name": "maxLines",
+      "optional": true,
+      "values": [
+       "1",
+       "2",
+       "3",
+       "4",
+       "5",
+       "6",
+       "7",
+       "8",
+       "9",
+       "10"
+      ]
+     },
+     {
+      "attr": "data-ok-persistent",
+      "description": "With `maxLines`: the text always takes the height of that many lines, even when it is shorter.",
+      "kind": "flag",
+      "name": "persistent"
      }
     ]
    },
@@ -382,8 +408,18 @@
       "type": "boolean"
      },
      {
+      "description": "At most this many lines, from 1 to 10: longer text ends with an ellipsis on the last line. Default: every line.",
+      "name": "maxLines",
+      "type": "number | \"1\" | \"10\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\""
+     },
+     {
       "description": "One line; overflowing text ends with an ellipsis.",
       "name": "noWrap",
+      "type": "boolean"
+     },
+     {
+      "description": "With `maxLines`, the text always takes the height of that many lines, even when it is shorter.",
+      "name": "persistent",
       "type": "boolean"
      },
      {
