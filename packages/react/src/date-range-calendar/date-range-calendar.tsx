@@ -62,6 +62,7 @@ import {
 import { type DateValidationProps, dateRules, ruleAttributes } from "../date-field/date-field.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { usePickerLocalization } from "../localization-provider/localization-provider.js";
+import { useFocusedView } from "../pickers/use-focused-view.js";
 import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
@@ -83,6 +84,10 @@ export interface DateRangeCalendarProps
   defaultRangePosition?: RangePosition | undefined;
   /** Called when the end being edited (`start` or `end`) changes. */
   onRangePositionChange?: ((position: RangePosition) => void) | undefined;
+  /** The view that holds the focus (controlled): a new value moves the focus into that view. */
+  focusedView?: "day" | null | undefined;
+  /** Called when a view takes the focus (`hasFocus` `true`) or loses it. */
+  onFocusedViewChange?: ((view: "day", hasFocus: boolean) => void) | undefined;
   /** The ends a pick may edit. Default both. */
   availableRangePositions?: readonly RangePosition[] | undefined;
   /** Months side by side. Default 2. */
@@ -173,6 +178,8 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
       rangePosition: positionProp,
       defaultRangePosition = "start",
       onRangePositionChange,
+      focusedView,
+      onFocusedViewChange,
       availableRangePositions,
       calendars: calendarsProp,
       currentMonthCalendarPosition,
@@ -360,6 +367,7 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
     const mergedRef = useMergedRefs(ref, rootRef);
     const controllerRef = useRef<CalendarController | null>(null);
     const drag = useRef<RangeDragController | null>(null);
+    useFocusedView(rootRef, focusedView, onFocusedViewChange);
     useLayoutEffect(() => {
       const root = rootRef.current as HTMLElement;
       const controller = createCalendarController(root, {

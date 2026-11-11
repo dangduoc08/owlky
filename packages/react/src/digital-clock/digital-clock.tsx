@@ -9,6 +9,7 @@ import {
 } from "@owlky/core";
 import { forwardRef, type HTMLAttributes, useLayoutEffect, useRef } from "react";
 import type { PickerSelectionState } from "../date-calendar/date-calendar.js";
+import { useFocusedView } from "../pickers/use-focused-view.js";
 import {
   type ClockBaseProps,
   clockRootAttributes,
@@ -27,6 +28,10 @@ export interface DigitalClockProps
   skipDisabled?: boolean | undefined;
   /** Focuses the selected option on mount. */
   autoFocus?: boolean | undefined;
+  /** The view that holds the focus (controlled): a new value moves the focus into that view. */
+  focusedView?: "hours" | null | undefined;
+  /** Called when a view takes the focus (`hasFocus` `true`) or loses it. */
+  onFocusedViewChange?: ((view: "hours", hasFocus: boolean) => void) | undefined;
 }
 
 /** Imperative focus and scroll of the digital clocks (shared by both). */
@@ -81,6 +86,8 @@ export const DigitalClock = forwardRef<HTMLDivElement, DigitalClockProps>(
       disabled = false,
       localeText: _localeText,
       autoFocus,
+      focusedView,
+      onFocusedViewChange,
       "aria-label": ariaLabel,
       ...rest
     } = props;
@@ -106,6 +113,7 @@ export const DigitalClock = forwardRef<HTMLDivElement, DigitalClockProps>(
       },
       autoFocus,
     );
+    useFocusedView(rootRef, focusedView, onFocusedViewChange);
     const mergedRef = useMergedRefs(ref, rootRef);
 
     return (

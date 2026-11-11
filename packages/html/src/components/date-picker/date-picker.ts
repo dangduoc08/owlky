@@ -226,6 +226,11 @@ export const datePicker = defineComponent<DatePickerInstance, DatePickerEvents>(
         : "desktop";
     let valueOnOpen = value;
     let lastAccepted = value;
+    // A static picker shown as desktop lays out the desktop form inline (MUI X
+    // `displayStaticWrapperAs`): the markup holds the desktop views.
+    const staticDesktop =
+      isStatic && element.getAttribute("data-ok-display-static-wrapper-as") === "desktop";
+    const form = () => (staticDesktop ? "desktop" : mode);
     // Time and date time pickers keep their view here; date pickers ask the calendar.
     let view: PickerView = isDate
       ? "day"
@@ -236,9 +241,9 @@ export const datePicker = defineComponent<DatePickerInstance, DatePickerEvents>(
     const actionsShown = (): PickerAction[] =>
       parsePickerActions(element.getAttribute("data-ok-actions")) ??
       (isDate
-        ? defaultPickerActions(mode)
+        ? defaultPickerActions(form())
         : isDateTime
-          ? defaultDateTimePickerActions(mode)
+          ? defaultDateTimePickerActions(form())
           : defaultTimePickerActions());
     const closeOnSelect = () =>
       element.hasAttribute(closeSpec.attr)
@@ -277,7 +282,7 @@ export const datePicker = defineComponent<DatePickerInstance, DatePickerEvents>(
     };
 
     const render = () => {
-      const desktopForm = mode === "desktop";
+      const desktopForm = form() === "desktop";
       if (toolbar) toolbar.hidden = desktopForm;
       if (isDate && toolbarTitle)
         toolbarTitle.textContent = pickerToolbarText(
@@ -516,7 +521,7 @@ export const datePicker = defineComponent<DatePickerInstance, DatePickerEvents>(
           if (detail.selectionState !== "finish") return;
           if (isDateTime && timeViews.length > 0) {
             // Mobile and static forms go on to the time; desktop shows both.
-            if (mode !== "desktop") setView(timeViews[0] as TimeView);
+            if (form() !== "desktop") setView(timeViews[0] as TimeView);
             return;
           }
           finish(date);

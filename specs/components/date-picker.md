@@ -31,10 +31,10 @@ values are `[start, end]` pairs (React) and ISO 8601 intervals `start/end` (HTML
 
 ## Anatomy
 ```
-div[data-ok-date-picker][data-ok-picker-variant][data-ok-orientation][data-ok-open]?
+div[data-ok-date-picker][data-ok-picker-variant][data-ok-orientation][data-ok-open]?[data-ok-display-static-wrapper-as]? (static)
     [data-ok-actions]?[data-ok-close-on-select]?[data-ok-desktop-mode-media-query]?[data-ok-locale]?
   div[data-ok-text-field][data-ok-date-field][data-ok-format][data-ok-format-density][data-ok-value]?
-      [data-ok-shrink]?[data-ok-error]?[data-ok-clearable]?[data-ok-read-only]?
+      [data-ok-shrink]?[data-ok-error]?[data-ok-clearable]?[data-ok-read-only]?[data-ok-date-separator]? (range)
       [data-ok-min-date]?[data-ok-max-date]?[data-ok-disable-past]?[data-ok-disable-future]?   (TextField; not static)
     label[data-ok-text-field-label][id=<id>-label]?
     div[data-ok-text-field-control]
@@ -80,7 +80,7 @@ MonthCalendar / YearCalendar on their own are the radio group above as the root.
 
 Time views (ADR-0026) — in `div[data-ok-picker-content]`, or on their own:
 ```
-div[id][data-ok-time-clock][data-ok-ampm][data-ok-view][data-ok-views][data-ok-value]?[data-ok-ampm-in-clock]?
+div[id][data-ok-time-clock][data-ok-ampm][data-ok-view][data-ok-views][data-ok-value]?[data-ok-ampm-in-clock]?[data-ok-show-view-switcher="false"]?
     [data-ok-minutes-step]?[data-ok-min-time]?[data-ok-max-time]?[data-ok-read-only]?[data-ok-disabled]?[hidden]?
   div[data-ok-time-clock-dial]
     span[data-ok-time-clock-pin]
@@ -154,6 +154,7 @@ Root: `data-ok-date-picker`. Unknown values fall back to the default.
 |---|---|---|---|---|---|
 | `pickerVariant` | `data-ok-picker-variant="…"` | style | `responsive` `desktop` `mobile` `static` | `responsive` | `responsive` (desktop or mobile by `desktopModeMediaQuery`), `desktop` (popover), `mobile` (dialog), `static` (inline). React: the component (`DatePicker`, `DesktopDatePicker`, `MobileDatePicker`, `StaticDatePicker`). |
 | `orientation` | `data-ok-orientation="…"` | style | `portrait` `landscape` | `portrait` | `landscape` puts the toolbar beside the calendar (mobile and static). |
+| `displayStaticWrapperAs` | `data-ok-display-static-wrapper-as="…"` | style | `mobile` `desktop` | — | Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars). |
 | `closeOnSelect` | `data-ok-close-on-select="false"` turns it off | behavior | boolean | on | Picking a day closes the picker. Default: on for desktop, off for mobile (absent attribute). |
 | `keepOpenDuringFieldFocus` | `data-ok-keep-open-during-field-focus` | flag | boolean | off | Desktop: the popover stays open while the field has focus (typing doesn't close it). |
 | `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
@@ -204,6 +205,7 @@ Root: `data-ok-time-clock`. Unknown values fall back to the default.
 |---|---|---|---|---|---|
 | `ampm` | `data-ok-ampm="false"` turns it off | behavior | boolean | on | 12-hour clock with AM / PM. Default: from the locale (en-US: on, vi-VN: off). |
 | `ampmInClock` | `data-ok-ampm-in-clock` | flag | boolean | off | AM / PM buttons on the clock (12-hour clocks). |
+| `showViewSwitcher` | `data-ok-show-view-switcher="false"` turns it off | behavior | boolean | on | Arrow buttons that switch between the views (MUI's default is off). |
 | `minutesStep` | `data-ok-minutes-step="…"` | number | number | `1` | Minutes must be a multiple of this. |
 | `disablePast` | `data-ok-disable-past` | flag | boolean | off | Times before now can't be picked. |
 | `disableFuture` | `data-ok-disable-future` | flag | boolean | off | Times after now can't be picked. |
@@ -247,6 +249,7 @@ Root: `data-ok-date-range-picker`. Unknown values fall back to the default.
 |---|---|---|---|---|---|
 | `pickerVariant` | `data-ok-picker-variant="…"` | style | `responsive` `desktop` `mobile` `static` | `responsive` | `responsive` (desktop or mobile by `desktopModeMediaQuery`), `desktop` (popover), `mobile` (dialog), `static` (inline). React: the component (`DateRangePicker`, `DesktopDateRangePicker`, `MobileDateRangePicker`, `StaticDateRangePicker`, and the time and date time range families). |
 | `calendars` | `data-ok-calendars="…"` | style | `1` `2` `3` | — | Months shown in the desktop popover (the dialog and inline forms show one). |
+| `displayStaticWrapperAs` | `data-ok-display-static-wrapper-as="…"` | style | `mobile` `desktop` | — | Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars). |
 | `closeOnSelect` | `data-ok-close-on-select="false"` turns it off | behavior | boolean | on | Picking the end closes the picker. Default: on for desktop date ranges, off otherwise (absent attribute). |
 | `disableDragEditing` | `data-ok-disable-drag-editing` | flag | boolean | off | The range's start and end can't be dragged to other days. |
 | `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
@@ -443,7 +446,9 @@ time"; the date time tabs are named "pick date" / "pick time".
 HTML: `ok:date-picker:change` (`{ value, validationError }`), `:accept` (`{ value }`), `:open` /
 `:close` (`{ reason }`); `ok:date-field:change` (cancelable), `:clear`; `ok:date-calendar:change`
 (cancelable, `{ value, selectionState }`), `:viewchange`, `:monthchange`, `:yearchange`;
-`ok:month-calendar:change`, `ok:year-calendar:change` (cancelable). Instances: date-picker `{ value,
+`ok:month-calendar:change`, `ok:year-calendar:change` (cancelable). Every calendar and clock (4.18.30): `ok:<name>:focusedviewchange` (`{ view, hasFocus }`), instance
+`focusedView`, `setFocusedView(view)`; React `focusedView`, `onFocusedViewChange(view, hasFocus)`.
+Instances: date-picker `{ value,
 setValue, isOpen, open, close, setShortcuts, setShouldDisableDate / Month / Year, setLocaleText }`;
 date-field `{ value, validationError, setValue, focus, setShouldDisable…, setLocaleText }`;
 date-calendar `{ value, setValue, view, setView, month, focus, setShouldDisable…,
@@ -507,10 +512,10 @@ Applies to every picker, field, calendar and clock that has the prop upstream.
 | fields `shouldRespectLeadingZeros` | same | kept | 4.18.29: default `false` as in MUI: digit sections without padding (`D`, `M`, `H`, `h`, `m`, `s`) show two digits (`fieldSections`); `data-ok-should-respect-leading-zeros` keeps the format's padding. Behavior change: such formats used to keep their padding |
 | fields `fieldRef` (field API) | same | kept | 4.18.29: `getSections` (type, format token, content type, value, placeholder, separators), `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused` (core `createFieldApi`); HTML: the same methods on the `date-field` instance (pickers: the field's instance). Fields, single input range fields, single-value pickers |
 | fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | same | kept | 4.18.29, see `slotProps.textField`. Multi input range fields and range pickers: deferred (each end is a field of its own) |
-| single input range fields `dateSeparator` | — | deferred | fixed `" – "` |
-| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |
-| TimeClock `showViewSwitcher` | — | deferred | |
-| static pickers `displayStaticWrapperAs` | — | deferred | |
+| single input range fields `dateSeparator` | same | kept | 4.18.30: default `"–"`, shown between spaces (core `rangeFieldSections(format, zeros, separator)`); HTML `data-ok-date-separator` on the field (the markup writes the same text); range pickers pass it to their single input field (MUI `slotProps.field.dateSeparator`). The open button's name keeps " – " |
+| calendars / clocks `focusedView` / `onFocusedViewChange` | same | kept | 4.18.30: DateCalendar (`year` · `month` · `day`), DateRangeCalendar (`day`), TimeClock (its views), DigitalClock (`hours`), MultiSectionDigitalClock (its columns, `meridiem` too). Core `createFocusedViewTracker` (focusin / focusout, checked again after the owner's renders) and `focusPickerViewPart` (a new `focusedView`, or a new shown view equal to it, moves the focus into that view's tab stop when it is shown). HTML: event `focusedviewchange` (`{ view, hasFocus }`) on each root, instance `focusedView` / `setFocusedView(view)` |
+| TimeClock `showViewSwitcher` | same | kept | 4.18.30: default `true` (Owlky has always shown the arrows, as the reference; MUI's default is off). `false` = `data-ok-show-view-switcher="false"`: CSS hides `[data-ok-time-clock-nav]` (the markup keeps it, parity) |
+| static pickers `displayStaticWrapperAs` | same | kept | 4.18.30: `mobile` (default) · `desktop` = `data-ok-display-static-wrapper-as` on static date, time, date time and date range pickers. Desktop: no toolbar or tabs, desktop default actions (none for dates), the desktop clocks (DigitalClock / MultiSectionDigitalClock instead of the TimeClock), date time pickers keep the calendar beside the clocks after a day pick, range pickers show the desktop calendar count (2). `usePickerContext().variant` is `desktop` |
 | `dateFormats` | — | not applicable | `format` per picker |
 | `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |
 | `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |

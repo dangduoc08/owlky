@@ -272,12 +272,14 @@ export function monthsShowing(
 }
 
 /**
- * The sections of a single input range field: the format twice, joined by " – ", each section
- * marked with its `part` (0 start, 1 end); `count` is the number of sections of one date.
+ * The sections of a single input range field: the format twice, joined by the date separator
+ * between spaces (" – " by default, MUI `dateSeparator`), each section marked with its `part`
+ * (0 start, 1 end); `count` is the number of sections of one date.
  */
 export function rangeFieldSections(
   format: string,
   respectLeadingZeros = false,
+  dateSeparator = "–",
 ): { sections: FormatSection[]; count: number } {
   const one = fieldSections(format, respectLeadingZeros);
   const start = one.map((s) => ({ ...s, part: 0 as const }));
@@ -286,7 +288,8 @@ export function rangeFieldSections(
   const first = end[0];
   if (last && first) {
     // " – " joins the dates; a format that starts with a literal keeps it before the end date.
-    last.endSeparator = `${last.endSeparator}${RANGE_SEPARATOR}${first.startSeparator}`;
+    const joint = dateSeparator === "–" ? RANGE_SEPARATOR : ` ${dateSeparator} `;
+    last.endSeparator = `${last.endSeparator}${joint}${first.startSeparator}`;
     first.startSeparator = "";
   }
   return { sections: [...start, ...end], count: one.length };

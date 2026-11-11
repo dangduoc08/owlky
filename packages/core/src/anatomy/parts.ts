@@ -1013,6 +1013,8 @@ export interface DatePickerParts {
   "data-ok-digital-clock-section": Part<"ul">;
   /** The format of the field, such as `MM/DD/YYYY`. */
   "data-ok-format": Value<string>;
+  /** On a single input range field: the text between the two dates (default `–`). */
+  "data-ok-date-separator": Value<string>;
   /** Set on days inside the range previewed under the pointer. */
   "data-ok-in-preview": State;
   /** Set on days inside the selected range. */

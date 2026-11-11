@@ -1,7 +1,9 @@
 import {
   createDigitalClockController,
+  createFocusedViewTracker,
   digitalClockItems,
   digitalClockOptions,
+  focusPickerViewPart,
   formatIsoTime,
   isValidDate,
   type PickerLocaleText,
@@ -29,11 +31,17 @@ import {
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface DigitalClockEvents {
+  /** After a view took the focus (`hasFocus` `true`) or lost it. */
+  focusedviewchange: EventSpec<{ view: "hours"; hasFocus: boolean }>;
   /** Before a time is picked (`HH:mm:ss`). Call `preventDefault()` to refuse it. */
   change: EventSpec<{ value: string; selectionState: string }, true>;
 }
 
 export interface DigitalClockInstance extends ComponentInstance, PickerDateApi {
+  /** The view that holds the focus, or `null`. */
+  readonly focusedView: "hours" | null;
+  /** Moves the focus into a view, when it is shown. */
+  setFocusedView(view: "hours"): void;
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
@@ -95,6 +103,9 @@ export const digitalClock = defineComponent<DigitalClockInstance, DigitalClockEv
   selector: "[data-ok-digital-clock]",
 
   setup(element, { emit }) {
+    const focus = createFocusedViewTracker(element, (view, hasFocus) =>
+      emit("focusedviewchange", { view: view as "hours", hasFocus }),
+    );
     const locale = readLocale(element);
     const functions: TimeRuleFunctions = {};
     const ampm = readAmpm(element, locale);
@@ -173,8 +184,15 @@ export const digitalClock = defineComponent<DigitalClockInstance, DigitalClockEv
       setLocaleText() {
         render();
       },
+      get focusedView() {
+        return focus.view as "hours" | null;
+      },
+      setFocusedView(view) {
+        focusPickerViewPart(element, view);
+      },
       destroy() {
         controller.destroy();
+        focus.destroy();
       },
     };
     return instance;

@@ -30,7 +30,10 @@ export interface PickerViewRendererProps {
   /** Everything the picker passes to its calendar (validation, week numbers, slots…). */
   calendarProps: DateCalendarProps;
   /** Everything the picker passes to its clocks (value, validation, `ampm`, limits…). */
-  clockProps: Omit<TimeClockProps, "views" | "view" | "onViewChange" | "onChange">;
+  clockProps: Omit<
+    TimeClockProps,
+    "views" | "view" | "onViewChange" | "onChange" | "focusedView" | "onFocusedViewChange"
+  >;
   timeSteps: ResolvedTimeSteps;
   skipDisabled?: boolean | undefined;
 }

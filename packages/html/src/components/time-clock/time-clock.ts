@@ -1,7 +1,9 @@
 import {
   clockAngle,
   clockNumbers,
+  createFocusedViewTracker,
   createTimeClockController,
+  focusPickerViewPart,
   formatIsoTime,
   formatTimeText,
   isInnerHour,
@@ -36,6 +38,8 @@ import {
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface TimeClockEvents {
+  /** After a view took the focus (`hasFocus` `true`) or lost it. */
+  focusedviewchange: EventSpec<{ view: TimeView; hasFocus: boolean }>;
   /** Before the dial sets the time (`HH:mm:ss`). Call `preventDefault()` to refuse it. */
   change: EventSpec<{ value: string; selectionState: "shallow" | "partial" | "finish" }, true>;
   /** After the clock switched between hours, minutes and seconds. */
@@ -43,6 +47,10 @@ export interface TimeClockEvents {
 }
 
 export interface TimeClockInstance extends ComponentInstance, PickerDateApi {
+  /** The view that holds the focus, or `null`. */
+  readonly focusedView: TimeView | null;
+  /** Moves the focus into a view, when it is shown. */
+  setFocusedView(view: TimeView): void;
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
@@ -82,6 +90,9 @@ export const timeClock = defineComponent<TimeClockInstance, TimeClockEvents>({
   selector: "[data-ok-time-clock]",
 
   setup(element, { emit, signal }) {
+    const focus = createFocusedViewTracker(element, (view, hasFocus) =>
+      emit("focusedviewchange", { view: view as TimeView, hasFocus }),
+    );
     if (!element.id) element.id = `ok-time-clock-${++uid}`;
     const locale = readLocale(element);
     let overrides: Partial<PickerLocaleText> | undefined;
@@ -296,8 +307,15 @@ export const timeClock = defineComponent<TimeClockInstance, TimeClockEvents>({
         text = readLocaleText(element, overrides);
         render();
       },
+      get focusedView() {
+        return focus.view as TimeView | null;
+      },
+      setFocusedView(view) {
+        focusPickerViewPart(element, view);
+      },
       destroy() {
         controller.destroy();
+        focus.destroy();
       },
     };
     return instance;

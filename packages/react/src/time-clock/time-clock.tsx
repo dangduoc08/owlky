@@ -37,6 +37,7 @@ import {
 } from "../date-field/date-field.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { usePickerLocalization } from "../localization-provider/localization-provider.js";
+import { useFocusedView } from "../pickers/use-focused-view.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 /** Props shared by the clock views (TimeClock, DigitalClock, MultiSectionDigitalClock). */
@@ -103,8 +104,14 @@ export interface TimeClockProps
   onViewChange?: ((view: TimeView) => void) | undefined;
   /** AM / PM buttons on the clock (12-hour clocks). */
   ampmInClock?: boolean | undefined;
+  /** Arrow buttons that switch between the views. Default `true`. */
+  showViewSwitcher?: boolean | undefined;
   /** Focuses the clock on mount. */
   autoFocus?: boolean | undefined;
+  /** The view that holds the focus (controlled): a new value moves the focus into that view. */
+  focusedView?: TimeView | null | undefined;
+  /** Called when a view takes the focus (`hasFocus` `true`) or loses it. */
+  onFocusedViewChange?: ((view: TimeView, hasFocus: boolean) => void) | undefined;
 }
 
 /**
@@ -123,6 +130,9 @@ export const TimeClock = forwardRef<HTMLDivElement, TimeClockProps>(function Tim
     onViewChange,
     ampm: _ampm,
     ampmInClock,
+    showViewSwitcher,
+    focusedView,
+    onFocusedViewChange,
     referenceDate: _referenceDate,
     today: _today,
     minTime: _minTime,
@@ -201,6 +211,7 @@ export const TimeClock = forwardRef<HTMLDivElement, TimeClockProps>(function Tim
     if (autoFocus)
       rootRef.current?.querySelector<HTMLElement>("[data-ok-time-clock-options]")?.focus();
   }, [autoFocus]);
+  useFocusedView(rootRef, focusedView, onFocusedViewChange, shown);
 
   const numbers = clockNumbers(shown, ampm);
   const timeText = valid ? formatTimeText(valid, views, ampm, locale) : null;
@@ -224,6 +235,7 @@ export const TimeClock = forwardRef<HTMLDivElement, TimeClockProps>(function Tim
       ref={setRef}
       id={id}
       {...timeClockAttributes({ ampmInClock, minutesStep, disablePast, disableFuture, readOnly })}
+      {...(showViewSwitcher === false ? { "data-ok-show-view-switcher": "false" } : {})}
       {...clockRootAttributes(props, state)}
       data-ok-view={shown}
       data-ok-views={views.join(" ")}

@@ -487,6 +487,7 @@
   "data-ok-date-range-calendar-header",
   "data-ok-date-range-calendar-month",
   "data-ok-date-range-picker",
+  "data-ok-date-separator",
   "data-ok-day-calendar",
   "data-ok-day-calendar-header",
   "data-ok-day-filler",
@@ -588,6 +589,7 @@
   "data-ok-discrete-markers",
   "data-ok-display",
   "data-ok-display-empty",
+  "data-ok-display-static-wrapper-as",
   "data-ok-display-week-number",
   "data-ok-distance",
   "data-ok-divider",
@@ -1313,6 +1315,7 @@
   "data-ok-show-skip-button",
   "data-ok-show-today",
   "data-ok-show-user-location",
+  "data-ok-show-view-switcher",
   "data-ok-shrink",
   "data-ok-sibling-count",
   "data-ok-side",
@@ -23466,6 +23469,18 @@
          ]
         },
         {
+         "attr": "data-ok-display-static-wrapper-as",
+         "default": "mobile",
+         "description": "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+         "kind": "style",
+         "name": "displayStaticWrapperAs",
+         "optional": true,
+         "values": [
+          "mobile",
+          "desktop"
+         ]
+        },
+        {
          "attr": "data-ok-close-on-select",
          "default": true,
          "description": "Picking a day closes the picker. Default: on for desktop, off for mobile (absent attribute).",
@@ -23552,6 +23567,12 @@
          "description": "The popover of the desktop picker.",
          "kind": "part",
          "name": "data-ok-date-picker-paper"
+        },
+        {
+         "description": "On a single input range field: the text between the two dates (default `–`).",
+         "kind": "value",
+         "name": "data-ok-date-separator",
+         "value": "string"
         },
         {
          "description": "The days of a month (`role=\"grid\"`).",
@@ -23889,6 +23910,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "A week number column.",
          "name": "displayWeekNumber",
          "type": "boolean"
@@ -24212,6 +24239,12 @@
         },
         {
          "cancelable": false,
+         "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+         "detail": "{ view: \"day\" | \"month\" | \"year\"; hasFocus: boolean; }",
+         "name": "ok:date-calendar:focusedviewchange"
+        },
+        {
+         "cancelable": false,
          "description": "After another month is shown (`YYYY-MM`).",
          "detail": "{ month: string; }",
          "name": "ok:date-calendar:monthchange"
@@ -24243,6 +24276,12 @@
          "type": "() => void"
         },
         {
+         "description": "The view that holds the focus, or `null`.",
+         "kind": "property",
+         "name": "focusedView",
+         "type": "\"day\" | \"month\" | \"year\" | null"
+        },
+        {
          "description": "The shown month (`YYYY-MM`).",
          "kind": "property",
          "name": "month",
@@ -24271,6 +24310,12 @@
          "kind": "method",
          "name": "setDayRenderer",
          "type": "(fn: PickerDayRenderer | null) => void"
+        },
+        {
+         "description": "Moves the focus into a view, when it is shown.",
+         "kind": "method",
+         "name": "setFocusedView",
+         "type": "(view: \"day\" | \"month\" | \"year\") => void"
         },
         {
          "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -24539,6 +24584,11 @@
          "type": "number"
         },
         {
+         "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+         "name": "focusedView",
+         "type": "\"day\" | \"month\" | \"year\" | null"
+        },
+        {
          "description": "Shows the loading content instead of the days.",
          "name": "loading",
          "type": "boolean"
@@ -24567,6 +24617,11 @@
          "description": "Called with the new value; `selectionState` tells whether the last view was used.",
          "name": "onChange",
          "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
+        },
+        {
+         "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+         "name": "onFocusedViewChange",
+         "type": "((view: \"day\" | \"month\" | \"year\", hasFocus: boolean) => void)"
         },
         {
          "description": "Called when another month is shown.",
@@ -25178,6 +25233,12 @@
         },
         {
          "cancelable": false,
+         "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+         "detail": "{ view: \"day\"; hasFocus: boolean; }",
+         "name": "ok:date-range-calendar:focusedviewchange"
+        },
+        {
+         "cancelable": false,
          "description": "After another first month is shown (`YYYY-MM`).",
          "detail": "{ month: string; }",
          "name": "ok:date-range-calendar:monthchange"
@@ -25207,6 +25268,12 @@
          "kind": "method",
          "name": "focus",
          "type": "() => void"
+        },
+        {
+         "description": "The view that holds the focus, or `null`.",
+         "kind": "property",
+         "name": "focusedView",
+         "type": "\"day\" | null"
         },
         {
          "description": "The first shown month (`YYYY-MM`).",
@@ -25255,6 +25322,12 @@
          "kind": "method",
          "name": "setDayRenderer",
          "type": "(fn: PickerDayRenderer | null) => void"
+        },
+        {
+         "description": "Moves the focus into a view, when it is shown.",
+         "kind": "method",
+         "name": "setFocusedView",
+         "type": "(view: \"day\") => void"
         },
         {
          "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -25508,6 +25581,11 @@
          "type": "number"
         },
         {
+         "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+         "name": "focusedView",
+         "type": "\"day\" | null"
+        },
+        {
          "description": "Shows the loading text instead of the days (data on its way).",
          "name": "loading",
          "type": "boolean"
@@ -25531,6 +25609,11 @@
          "description": "Called with the new range; `\"finish\"` once the end is picked (or a drag drops).",
          "name": "onChange",
          "type": "((value: [PickerValidDate | null, PickerValidDate | null], selectionState: PickerSelectionState) => void)"
+        },
+        {
+         "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+         "name": "onFocusedViewChange",
+         "type": "((view: \"day\", hasFocus: boolean) => void)"
         },
         {
          "description": "Called when the first shown month changes.",
@@ -25770,6 +25853,18 @@
          ]
         },
         {
+         "attr": "data-ok-display-static-wrapper-as",
+         "default": "mobile",
+         "description": "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+         "kind": "style",
+         "name": "displayStaticWrapperAs",
+         "optional": true,
+         "values": [
+          "mobile",
+          "desktop"
+         ]
+        },
+        {
          "attr": "data-ok-close-on-select",
          "default": true,
          "description": "Picking the end closes the picker. Default: on for desktop date ranges, off otherwise (absent attribute).",
@@ -25842,6 +25937,12 @@
          "type": "1 | 2 | 3"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Formats the weekday headings of the calendar.",
          "name": "dayOfWeekFormatter",
          "type": "((date: PickerValidDate) => string)"
@@ -25897,6 +25998,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -26534,6 +26641,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "A week number column.",
          "name": "displayWeekNumber",
          "type": "boolean"
@@ -26929,6 +27042,12 @@
          "type": "1 | 2 | 3"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Formats the weekday headings of the calendar.",
          "name": "dayOfWeekFormatter",
          "type": "((date: PickerValidDate) => string)"
@@ -26984,6 +27103,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -27358,6 +27483,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "A week number column.",
          "name": "displayWeekNumber",
          "type": "boolean"
@@ -27707,6 +27838,12 @@
          "type": "1 | 2 | 3"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Formats the weekday headings of the calendar.",
          "name": "dayOfWeekFormatter",
          "type": "((date: PickerValidDate) => string)"
@@ -27762,6 +27899,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -28122,6 +28265,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -28519,6 +28668,12 @@
          "type": "1 | 2 | 3"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Formats the weekday headings of the calendar.",
          "name": "dayOfWeekFormatter",
          "type": "((date: PickerValidDate) => string)"
@@ -28574,6 +28729,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -28948,6 +29109,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
@@ -29244,6 +29411,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "default": "\"start\"",
          "description": "Uncontrolled initial position.",
          "name": "defaultRangePosition",
@@ -29279,6 +29452,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "default": "localeText.end",
@@ -29522,6 +29701,12 @@
          "description": "Before a time is picked (`HH:mm:ss`). Call `preventDefault()` to refuse it.",
          "detail": "{ value: string; selectionState: string; }",
          "name": "ok:digital-clock:change"
+        },
+        {
+         "cancelable": false,
+         "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+         "detail": "{ view: \"hours\"; hasFocus: boolean; }",
+         "name": "ok:digital-clock:focusedviewchange"
         }
        ],
        "methods": [
@@ -29530,6 +29715,12 @@
          "kind": "property",
          "name": "date",
          "type": "unknown"
+        },
+        {
+         "description": "The view that holds the focus, or `null`.",
+         "kind": "property",
+         "name": "focusedView",
+         "type": "\"hours\" | null"
         },
         {
          "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
@@ -29542,6 +29733,12 @@
          "kind": "method",
          "name": "setDateAdapter",
          "type": "(adapter: PickerDateAdapter<unknown> | null) => void"
+        },
+        {
+         "description": "Moves the focus into a view, when it is shown.",
+         "kind": "method",
+         "name": "setFocusedView",
+         "type": "(view: \"hours\") => void"
         },
         {
          "description": "The list's name follows `aria-label` in the markup; texts don't change here.",
@@ -29693,6 +29890,11 @@
          "type": "boolean"
         },
         {
+         "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+         "name": "focusedView",
+         "type": "\"hours\" | null"
+        },
+        {
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
@@ -29726,6 +29928,11 @@
          "description": "Called with the picked time (always `\"finish\"`: one list picks the whole time).",
          "name": "onChange",
          "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
+        },
+        {
+         "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+         "name": "onFocusedViewChange",
+         "type": "((view: \"hours\", hasFocus: boolean) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -29877,6 +30084,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -30228,6 +30441,12 @@
          "type": "1 | 2 | 3"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Formats the weekday headings of the calendar.",
          "name": "dayOfWeekFormatter",
          "type": "((date: PickerValidDate) => string)"
@@ -30283,6 +30502,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -30643,6 +30868,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -31040,6 +31271,12 @@
          "type": "1 | 2 | 3"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Formats the weekday headings of the calendar.",
          "name": "dayOfWeekFormatter",
          "type": "((date: PickerValidDate) => string)"
@@ -31095,6 +31332,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -31469,6 +31712,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
@@ -31765,6 +32014,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "default": "\"start\"",
          "description": "Uncontrolled initial position.",
          "name": "defaultRangePosition",
@@ -31800,6 +32055,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "default": "localeText.end",
@@ -32804,6 +33065,12 @@
          "description": "Before a section's value is picked (`HH:mm:ss`; `finish` on the last section). Call `preventDefault()` to refuse it.",
          "detail": "{ value: string; selectionState: string; }",
          "name": "ok:multi-section-digital-clock:change"
+        },
+        {
+         "cancelable": false,
+         "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+         "detail": "{ view: \"hours\" | \"meridiem\" | \"minutes\" | \"seconds\"; hasFocus: boolean; }",
+         "name": "ok:multi-section-digital-clock:focusedviewchange"
         }
        ],
        "methods": [
@@ -32812,6 +33079,12 @@
          "kind": "property",
          "name": "date",
          "type": "unknown"
+        },
+        {
+         "description": "The view that holds the focus, or `null`.",
+         "kind": "property",
+         "name": "focusedView",
+         "type": "\"hours\" | \"meridiem\" | \"minutes\" | \"seconds\" | null"
         },
         {
          "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
@@ -32824,6 +33097,12 @@
          "kind": "method",
          "name": "setDateAdapter",
          "type": "(adapter: PickerDateAdapter<unknown> | null) => void"
+        },
+        {
+         "description": "Moves the focus into a view, when it is shown.",
+         "kind": "method",
+         "name": "setFocusedView",
+         "type": "(view: \"hours\" | \"meridiem\" | \"minutes\" | \"seconds\") => void"
         },
         {
          "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -32941,6 +33220,11 @@
          "type": "boolean"
         },
         {
+         "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+         "name": "focusedView",
+         "type": "\"hours\" | \"meridiem\" | \"minutes\" | \"seconds\" | null"
+        },
+        {
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
@@ -32974,6 +33258,11 @@
          "description": "Called with the new time: `\"finish\"` after the last column, `\"partial\"` before.",
          "name": "onChange",
          "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
+        },
+        {
+         "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+         "name": "onFocusedViewChange",
+         "type": "((view: \"hours\" | \"meridiem\" | \"minutes\" | \"seconds\", hasFocus: boolean) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -33265,6 +33554,12 @@
          "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
+         "default": "\"–\"",
+         "description": "Text shown between the start and the end dates (with a space on each side).",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Uncontrolled initial range.",
          "name": "defaultValue",
          "type": "[PickerValidDate | null, PickerValidDate | null]"
@@ -33497,6 +33792,12 @@
          "description": "Focus color; `default` is the text color.",
          "name": "color",
          "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+        },
+        {
+         "default": "\"–\"",
+         "description": "Text shown between the start and the end dates (with a space on each side).",
+         "name": "dateSeparator",
+         "type": "string"
         },
         {
          "description": "Uncontrolled initial range.",
@@ -33773,6 +34074,12 @@
          "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
+         "default": "\"–\"",
+         "description": "Text shown between the start and the end dates (with a space on each side).",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "description": "Uncontrolled initial range.",
          "name": "defaultValue",
          "type": "[PickerValidDate | null, PickerValidDate | null]"
@@ -34028,6 +34335,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -34296,6 +34609,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "A week number column.",
          "name": "displayWeekNumber",
          "type": "boolean"
@@ -34540,6 +34859,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "description": "A week number column.",
@@ -34877,6 +35202,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
@@ -35067,6 +35398,12 @@
         },
         {
          "cancelable": false,
+         "description": "After a view took the focus (`hasFocus` `true`) or lost it.",
+         "detail": "{ view: \"hours\" | \"minutes\" | \"seconds\"; hasFocus: boolean; }",
+         "name": "ok:time-clock:focusedviewchange"
+        },
+        {
+         "cancelable": false,
          "description": "After the clock switched between hours, minutes and seconds.",
          "detail": "{ view: \"hours\" | \"minutes\" | \"seconds\"; }",
          "name": "ok:time-clock:viewchange"
@@ -35080,6 +35417,12 @@
          "type": "unknown"
         },
         {
+         "description": "The view that holds the focus, or `null`.",
+         "kind": "property",
+         "name": "focusedView",
+         "type": "\"hours\" | \"minutes\" | \"seconds\" | null"
+        },
+        {
          "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
          "kind": "method",
          "name": "setDate",
@@ -35090,6 +35433,12 @@
          "kind": "method",
          "name": "setDateAdapter",
          "type": "(adapter: PickerDateAdapter<unknown> | null) => void"
+        },
+        {
+         "description": "Moves the focus into a view, when it is shown.",
+         "kind": "method",
+         "name": "setFocusedView",
+         "type": "(view: \"hours\" | \"minutes\" | \"seconds\") => void"
         },
         {
          "description": "Replaces the text of the labels and buttons, such as for another language.",
@@ -35141,6 +35490,13 @@
          "description": "AM / PM buttons on the clock (12-hour clocks).",
          "kind": "flag",
          "name": "ampmInClock"
+        },
+        {
+         "attr": "data-ok-show-view-switcher",
+         "default": true,
+         "description": "Arrow buttons that switch between the views (MUI's default is off).",
+         "kind": "behavior",
+         "name": "showViewSwitcher"
         },
         {
          "attr": "data-ok-minutes-step",
@@ -35304,6 +35660,11 @@
          "type": "boolean"
         },
         {
+         "description": "The view that holds the focus (controlled): a new value moves the focus into that view.",
+         "name": "focusedView",
+         "type": "\"hours\" | \"minutes\" | \"seconds\" | null"
+        },
+        {
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
@@ -35339,6 +35700,11 @@
          "type": "((value: PickerValidDate | null, selectionState: PickerSelectionState) => void)"
         },
         {
+         "description": "Called when a view takes the focus (`hasFocus` `true`) or loses it.",
+         "name": "onFocusedViewChange",
+         "type": "((view: \"hours\" | \"minutes\" | \"seconds\", hasFocus: boolean) => void)"
+        },
+        {
          "description": "Called when the view changes.",
          "name": "onViewChange",
          "type": "((view: \"hours\" | \"minutes\" | \"seconds\") => void)"
@@ -35362,6 +35728,12 @@
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "true",
+         "description": "Arrow buttons that switch between the views.",
+         "name": "showViewSwitcher",
+         "type": "boolean"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -35707,6 +36079,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default and shows the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
+        },
+        {
          "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
@@ -36003,6 +36381,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"–\"",
+         "description": "Single input: text between the start and the end dates.",
+         "name": "dateSeparator",
+         "type": "string"
+        },
+        {
          "default": "\"start\"",
          "description": "Uncontrolled initial position.",
          "name": "defaultRangePosition",
@@ -36038,6 +36422,12 @@
          "description": "Turns the field off.",
          "name": "disabled",
          "type": "boolean"
+        },
+        {
+         "default": "\"mobile\"",
+         "description": "Static pickers: the form shown inline. `\"desktop\"` has no toolbar or action bar by default, shows two calendars and the digital clocks.",
+         "name": "displayStaticWrapperAs",
+         "type": "\"desktop\" | \"mobile\""
         },
         {
          "default": "localeText.end",
@@ -36607,6 +36997,18 @@
        ]
       },
       {
+       "attr": "data-ok-display-static-wrapper-as",
+       "default": "mobile",
+       "description": "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+       "kind": "style",
+       "name": "displayStaticWrapperAs",
+       "optional": true,
+       "values": [
+        "mobile",
+        "desktop"
+       ]
+      },
+      {
        "attr": "data-ok-close-on-select",
        "default": true,
        "description": "Picking a day closes the picker. Default: on for desktop, off for mobile (absent attribute).",
@@ -36858,6 +37260,13 @@
        "name": "ampmInClock"
       },
       {
+       "attr": "data-ok-show-view-switcher",
+       "default": true,
+       "description": "Arrow buttons that switch between the views (MUI's default is off).",
+       "kind": "behavior",
+       "name": "showViewSwitcher"
+      },
+      {
        "attr": "data-ok-minutes-step",
        "default": 1,
        "description": "Minutes must be a multiple of this.",
@@ -37035,6 +37444,18 @@
        ]
       },
       {
+       "attr": "data-ok-display-static-wrapper-as",
+       "default": "mobile",
+       "description": "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+       "kind": "style",
+       "name": "displayStaticWrapperAs",
+       "optional": true,
+       "values": [
+        "mobile",
+        "desktop"
+       ]
+      },
+      {
        "attr": "data-ok-close-on-select",
        "default": true,
        "description": "Picking the end closes the picker. Default: on for desktop date ranges, off otherwise (absent attribute).",
@@ -37189,7 +37610,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-date-picker][data-ok-picker-variant][data-ok-orientation][data-ok-open]?\n    [data-ok-actions]?[data-ok-close-on-select]?[data-ok-desktop-mode-media-query]?[data-ok-locale]?\n  div[data-ok-text-field][data-ok-date-field][data-ok-format][data-ok-format-density][data-ok-value]?\n      [data-ok-shrink]?[data-ok-error]?[data-ok-clearable]?[data-ok-read-only]?\n      [data-ok-min-date]?[data-ok-max-date]?[data-ok-disable-past]?[data-ok-disable-future]?   (TextField; not static)\n    label[data-ok-text-field-label][id=<id>-label]?\n    div[data-ok-text-field-control]\n      div[id][role=group][data-ok-text-field-input][data-ok-date-field-sections][aria-labelledby]\n          [aria-invalid]?[data-ok-all-selected]?\n        span[data-ok-date-field-section]\n          span[data-ok-date-field-separator=\"start\"]?\n          span[data-ok-date-field-content][data-ok-section][role=spinbutton][aria-label][aria-valuenow]?\n              [aria-valuemin][aria-valuemax][aria-valuetext][tabindex][contenteditable][inputmode]…\n          span[data-ok-date-field-separator]?\n      input[type=hidden][data-ok-date-field-input][name]?[value=ISO][disabled]?\n      span[data-ok-text-field-adornment=end]?\n        button[data-ok-icon-button][data-ok-date-field-clear][hidden]?            (clearable)\n        button[data-ok-icon-button][data-ok-date-picker-open][aria-label][aria-haspopup=dialog]   (pickers)\n      fieldset[data-ok-text-field-outline] (outlined)\n  div[popover=manual][data-ok-popover][data-ok-placement=bottom-start][data-ok-disable-auto-focus]\n      [role=dialog][aria-label][data-ok-date-picker-paper]                         (desktop, responsive)\n  dialog[data-ok-dialog][data-ok-max-width=xs][aria-label][data-ok-date-picker-dialog]\n    div[data-ok-dialog-paper]                                                     (mobile, responsive)\n  div[data-ok-picker-layout][data-ok-orientation]                                 (in the popover, the dialog paper, or inline)\n    div[data-ok-picker-toolbar][hidden]? › span[data-ok-picker-toolbar-overline][id] + span[data-ok-picker-toolbar-title]\n    ul[data-ok-picker-shortcuts][aria-label]? › li › span[data-ok-chip][data-ok-picker-shortcut][data-ok-value]? › button[data-ok-chip-action]\n    div[data-ok-picker-content]\n      div[id][data-ok-date-calendar][data-ok-view][data-ok-views][data-ok-month][data-ok-value]?…\n        div[data-ok-date-calendar-header]\n          div[data-ok-date-calendar-label][id=<id>-label][aria-live=polite]\n          button[data-ok-icon-button][data-ok-date-calendar-switch][aria-label]?   (views include year)\n          div[data-ok-date-calendar-nav] › button[data-ok-date-calendar-prev] + button[data-ok-date-calendar-next]   (day view)\n        div[role=grid][data-ok-day-calendar][aria-labelledby]                      (day view)\n          div[role=row][data-ok-day-calendar-header] › span[role=columnheader][aria-label]…\n          div[role=rowgroup] › div[role=row][aria-rowindex]\n            span[role=rowheader][aria-label]?                                     (displayWeekNumber)\n            button[role=gridcell][data-ok-picker-day][data-ok-date][aria-colindex][aria-selected]\n                [aria-current=date]?[data-ok-today]?[data-ok-outside]?[disabled]?[tabindex]\n            | span[role=gridcell][data-ok-day-filler]                             (outside days, hidden)\n          | div[data-ok-date-calendar-loading]                                    (loading)\n        | div[role=radiogroup][data-ok-month-calendar][data-ok-year] › button[role=radio][data-ok-picker-month][data-ok-value][aria-checked]\n        | div[role=radiogroup][data-ok-year-calendar] › button[role=radio][data-ok-picker-year][data-ok-value][aria-checked]\n    div[data-ok-picker-actions][hidden]? › button[data-ok-button][data-ok-picker-action][hidden]?…\n```\nMonthCalendar / YearCalendar on their own are the radio group above as the root. React renders\n`data-ok-runtime=\"off\"` on every root.\n\nTime views (ADR-0026) — in `div[data-ok-picker-content]`, or on their own:\n```\ndiv[id][data-ok-time-clock][data-ok-ampm][data-ok-view][data-ok-views][data-ok-value]?[data-ok-ampm-in-clock]?\n    [data-ok-minutes-step]?[data-ok-min-time]?[data-ok-max-time]?[data-ok-read-only]?[data-ok-disabled]?[hidden]?\n  div[data-ok-time-clock-dial]\n    span[data-ok-time-clock-pin]\n    span[data-ok-time-clock-pointer][data-ok-inner]?[data-ok-between]?[hidden]?          (--_ok-clock-angle)\n    div[role=listbox][data-ok-time-clock-options][tabindex][aria-label][aria-activedescendant]?\n      span[role=option][id][data-ok-time-clock-number][data-ok-position=0…11][data-ok-inner]?[data-ok-value]\n          [aria-label][aria-selected]?[aria-disabled]?\n  div[data-ok-time-clock-meridiems]? › button[data-ok-time-clock-meridiem=am|pm][aria-pressed]   (ampmInClock)\n  div[data-ok-time-clock-nav] › button[data-ok-icon-button][data-ok-time-clock-prev] + button[…-next]\ndiv[data-ok-digital-clock][data-ok-ampm][data-ok-time-step][data-ok-value]?[data-ok-skip-disabled]?…\n  ul[role=listbox][data-ok-digital-clock-list][aria-label]\n    li[role=option][data-ok-digital-clock-item][data-ok-value=HH:mm:ss][tabindex][aria-selected][aria-disabled]?\ndiv[role=group][data-ok-multi-section-digital-clock][data-ok-ampm][data-ok-views][data-ok-time-steps][data-ok-value]?…\n  ul[role=listbox][data-ok-digital-clock-section=hours|minutes|seconds|meridiem][aria-label]\n    li[role=option][data-ok-digital-clock-item][data-ok-value][tabindex][aria-selected][aria-disabled]?\n```\nRange components (ADR-0028):\n```\ndiv[id][data-ok-date-range-calendar][data-ok-calendars][data-ok-current-month-calendar-position]\n    [data-ok-range-position][data-ok-month][data-ok-value=start/end]?[data-ok-disable-drag-editing]?…\n  div[data-ok-date-range-calendar-month]                                   (1–3)\n    div[data-ok-date-range-calendar-header]\n      button[data-ok-icon-button][data-ok-date-calendar-prev]?             (first month)\n      div[data-ok-date-calendar-label][id=<id>-label-<n>][aria-live=polite]\n      button[data-ok-icon-button][data-ok-date-calendar-next]?             (last month)\n    div[role=grid][data-ok-day-calendar][aria-labelledby][aria-multiselectable=true]   (the day grid above)\n      … button[data-ok-picker-day][aria-selected][data-ok-range-start]?[data-ok-range-end]?[data-ok-in-range]?\n          [data-ok-preview-start]?[data-ok-preview-end]?[data-ok-in-preview]?\ndiv[data-ok-text-field][data-ok-date-field][data-ok-range][data-ok-value=start/end]?…   (single input range field:\n    the sections of both dates, \" – \" between them; input[type=hidden] carries the interval)\ndiv[role=group][data-ok-multi-input-range-field][data-ok-value-type]?[data-ok-value]?[data-ok-full-width]?\n  div[data-ok-date-field] (start) + span[data-ok-multi-input-range-field-separator][aria-hidden] + div[data-ok-date-field] (end)\n  div[data-ok-text-field-helper][data-ok-multi-input-range-field-helper]?\ndiv[data-ok-date-range-picker][data-ok-picker-variant][data-ok-calendars]?[data-ok-value-type]?[data-ok-open]?…\n  single input range field | multi input range field   (open buttons: button[data-ok-date-picker-open][data-ok-range-position]? )\n  popover / dialog / inline as the date picker, holding div[data-ok-picker-layout]:\n    div[data-ok-picker-toolbar][data-ok-range-toolbar]? › overline + div[data-ok-picker-toolbar-content] ›\n        span[data-ok-picker-toolbar-part] › (span[data-ok-picker-toolbar-separator])? button[data-ok-picker-toolbar-button][data-ok-range-position][aria-pressed]\n    div[data-ok-tabs][data-ok-picker-tabs][data-ok-picker-range-tabs]?     (time and date time ranges: Start / End)\n    ul[data-ok-picker-shortcuts]? › … span[data-ok-chip][data-ok-picker-shortcut][data-ok-value=start/end]\n    div[data-ok-picker-content] › date range calendar? + digital clock (desktop)? + time clock (mobile / static)?\n    div[data-ok-picker-actions]?\n```\n\nPhase 4 (ADR-0030) adds no part: `data-ok-timezone` (`UTC` or an IANA name) and\n`data-ok-calendar` (`persian`, `islamic-umalqura`, `islamic-civil`, `islamic-tbla`, `buddhist`,\n`indian`) sit on any root or ancestor, as `data-ok-locale` does (the locale's `-u-ca-` extension\nnames the calendar too). A view from a custom renderer is wrapped in `div[data-ok-picker-view]`\n(`hidden` in the other tab); the built-in renderers render their view directly. A picker whose\nviews are all `null` has no open button, popover or dialog. Custom slots keep the hooks:\n`[data-ok-picker-actions] › [data-ok-picker-action]`, `[data-ok-picker-toolbar-title]`,\n`[data-ok-picker-shortcut][data-ok-value]`.\n\nTime and date time pickers: `div[data-ok-date-picker][data-ok-value-type][data-ok-open-to]?` with a\nfield `[data-ok-value-type]`; the toolbar is `span[data-ok-picker-toolbar-overline]` +\n`div[data-ok-picker-toolbar-content] › div[data-ok-picker-toolbar-date]? ›\nbutton[data-ok-picker-toolbar-button][data-ok-view=year|day…][data-ok-selected]?` +\n`div[data-ok-picker-toolbar-time] › span[data-ok-picker-toolbar-part] › (span[data-ok-picker-toolbar-separator])?\nbutton[data-ok-picker-toolbar-button][data-ok-view=hours|minutes|seconds]` +\n`div[data-ok-picker-toolbar-ampm]? › button[data-ok-picker-toolbar-meridiem=am|pm][aria-pressed]`;\ndate time pickers add `div[data-ok-tabs][data-ok-picker-tabs]` (the Tabs component, `fullWidth`,\nicon tabs `value=\"date\" | \"time\"`). The content holds the calendar (date views), the desktop\ndigital clock (`DigitalClock` or `MultiSectionDigitalClock`, desktop and responsive) and the\n`TimeClock` (mobile, static and responsive); the views of the other form are `hidden`.",
+     "body": "```\ndiv[data-ok-date-picker][data-ok-picker-variant][data-ok-orientation][data-ok-open]?[data-ok-display-static-wrapper-as]? (static)\n    [data-ok-actions]?[data-ok-close-on-select]?[data-ok-desktop-mode-media-query]?[data-ok-locale]?\n  div[data-ok-text-field][data-ok-date-field][data-ok-format][data-ok-format-density][data-ok-value]?\n      [data-ok-shrink]?[data-ok-error]?[data-ok-clearable]?[data-ok-read-only]?[data-ok-date-separator]? (range)\n      [data-ok-min-date]?[data-ok-max-date]?[data-ok-disable-past]?[data-ok-disable-future]?   (TextField; not static)\n    label[data-ok-text-field-label][id=<id>-label]?\n    div[data-ok-text-field-control]\n      div[id][role=group][data-ok-text-field-input][data-ok-date-field-sections][aria-labelledby]\n          [aria-invalid]?[data-ok-all-selected]?\n        span[data-ok-date-field-section]\n          span[data-ok-date-field-separator=\"start\"]?\n          span[data-ok-date-field-content][data-ok-section][role=spinbutton][aria-label][aria-valuenow]?\n              [aria-valuemin][aria-valuemax][aria-valuetext][tabindex][contenteditable][inputmode]…\n          span[data-ok-date-field-separator]?\n      input[type=hidden][data-ok-date-field-input][name]?[value=ISO][disabled]?\n      span[data-ok-text-field-adornment=end]?\n        button[data-ok-icon-button][data-ok-date-field-clear][hidden]?            (clearable)\n        button[data-ok-icon-button][data-ok-date-picker-open][aria-label][aria-haspopup=dialog]   (pickers)\n      fieldset[data-ok-text-field-outline] (outlined)\n  div[popover=manual][data-ok-popover][data-ok-placement=bottom-start][data-ok-disable-auto-focus]\n      [role=dialog][aria-label][data-ok-date-picker-paper]                         (desktop, responsive)\n  dialog[data-ok-dialog][data-ok-max-width=xs][aria-label][data-ok-date-picker-dialog]\n    div[data-ok-dialog-paper]                                                     (mobile, responsive)\n  div[data-ok-picker-layout][data-ok-orientation]                                 (in the popover, the dialog paper, or inline)\n    div[data-ok-picker-toolbar][hidden]? › span[data-ok-picker-toolbar-overline][id] + span[data-ok-picker-toolbar-title]\n    ul[data-ok-picker-shortcuts][aria-label]? › li › span[data-ok-chip][data-ok-picker-shortcut][data-ok-value]? › button[data-ok-chip-action]\n    div[data-ok-picker-content]\n      div[id][data-ok-date-calendar][data-ok-view][data-ok-views][data-ok-month][data-ok-value]?…\n        div[data-ok-date-calendar-header]\n          div[data-ok-date-calendar-label][id=<id>-label][aria-live=polite]\n          button[data-ok-icon-button][data-ok-date-calendar-switch][aria-label]?   (views include year)\n          div[data-ok-date-calendar-nav] › button[data-ok-date-calendar-prev] + button[data-ok-date-calendar-next]   (day view)\n        div[role=grid][data-ok-day-calendar][aria-labelledby]                      (day view)\n          div[role=row][data-ok-day-calendar-header] › span[role=columnheader][aria-label]…\n          div[role=rowgroup] › div[role=row][aria-rowindex]\n            span[role=rowheader][aria-label]?                                     (displayWeekNumber)\n            button[role=gridcell][data-ok-picker-day][data-ok-date][aria-colindex][aria-selected]\n                [aria-current=date]?[data-ok-today]?[data-ok-outside]?[disabled]?[tabindex]\n            | span[role=gridcell][data-ok-day-filler]                             (outside days, hidden)\n          | div[data-ok-date-calendar-loading]                                    (loading)\n        | div[role=radiogroup][data-ok-month-calendar][data-ok-year] › button[role=radio][data-ok-picker-month][data-ok-value][aria-checked]\n        | div[role=radiogroup][data-ok-year-calendar] › button[role=radio][data-ok-picker-year][data-ok-value][aria-checked]\n    div[data-ok-picker-actions][hidden]? › button[data-ok-button][data-ok-picker-action][hidden]?…\n```\nMonthCalendar / YearCalendar on their own are the radio group above as the root. React renders\n`data-ok-runtime=\"off\"` on every root.\n\nTime views (ADR-0026) — in `div[data-ok-picker-content]`, or on their own:\n```\ndiv[id][data-ok-time-clock][data-ok-ampm][data-ok-view][data-ok-views][data-ok-value]?[data-ok-ampm-in-clock]?[data-ok-show-view-switcher=\"false\"]?\n    [data-ok-minutes-step]?[data-ok-min-time]?[data-ok-max-time]?[data-ok-read-only]?[data-ok-disabled]?[hidden]?\n  div[data-ok-time-clock-dial]\n    span[data-ok-time-clock-pin]\n    span[data-ok-time-clock-pointer][data-ok-inner]?[data-ok-between]?[hidden]?          (--_ok-clock-angle)\n    div[role=listbox][data-ok-time-clock-options][tabindex][aria-label][aria-activedescendant]?\n      span[role=option][id][data-ok-time-clock-number][data-ok-position=0…11][data-ok-inner]?[data-ok-value]\n          [aria-label][aria-selected]?[aria-disabled]?\n  div[data-ok-time-clock-meridiems]? › button[data-ok-time-clock-meridiem=am|pm][aria-pressed]   (ampmInClock)\n  div[data-ok-time-clock-nav] › button[data-ok-icon-button][data-ok-time-clock-prev] + button[…-next]\ndiv[data-ok-digital-clock][data-ok-ampm][data-ok-time-step][data-ok-value]?[data-ok-skip-disabled]?…\n  ul[role=listbox][data-ok-digital-clock-list][aria-label]\n    li[role=option][data-ok-digital-clock-item][data-ok-value=HH:mm:ss][tabindex][aria-selected][aria-disabled]?\ndiv[role=group][data-ok-multi-section-digital-clock][data-ok-ampm][data-ok-views][data-ok-time-steps][data-ok-value]?…\n  ul[role=listbox][data-ok-digital-clock-section=hours|minutes|seconds|meridiem][aria-label]\n    li[role=option][data-ok-digital-clock-item][data-ok-value][tabindex][aria-selected][aria-disabled]?\n```\nRange components (ADR-0028):\n```\ndiv[id][data-ok-date-range-calendar][data-ok-calendars][data-ok-current-month-calendar-position]\n    [data-ok-range-position][data-ok-month][data-ok-value=start/end]?[data-ok-disable-drag-editing]?…\n  div[data-ok-date-range-calendar-month]                                   (1–3)\n    div[data-ok-date-range-calendar-header]\n      button[data-ok-icon-button][data-ok-date-calendar-prev]?             (first month)\n      div[data-ok-date-calendar-label][id=<id>-label-<n>][aria-live=polite]\n      button[data-ok-icon-button][data-ok-date-calendar-next]?             (last month)\n    div[role=grid][data-ok-day-calendar][aria-labelledby][aria-multiselectable=true]   (the day grid above)\n      … button[data-ok-picker-day][aria-selected][data-ok-range-start]?[data-ok-range-end]?[data-ok-in-range]?\n          [data-ok-preview-start]?[data-ok-preview-end]?[data-ok-in-preview]?\ndiv[data-ok-text-field][data-ok-date-field][data-ok-range][data-ok-value=start/end]?…   (single input range field:\n    the sections of both dates, \" – \" between them; input[type=hidden] carries the interval)\ndiv[role=group][data-ok-multi-input-range-field][data-ok-value-type]?[data-ok-value]?[data-ok-full-width]?\n  div[data-ok-date-field] (start) + span[data-ok-multi-input-range-field-separator][aria-hidden] + div[data-ok-date-field] (end)\n  div[data-ok-text-field-helper][data-ok-multi-input-range-field-helper]?\ndiv[data-ok-date-range-picker][data-ok-picker-variant][data-ok-calendars]?[data-ok-value-type]?[data-ok-open]?…\n  single input range field | multi input range field   (open buttons: button[data-ok-date-picker-open][data-ok-range-position]? )\n  popover / dialog / inline as the date picker, holding div[data-ok-picker-layout]:\n    div[data-ok-picker-toolbar][data-ok-range-toolbar]? › overline + div[data-ok-picker-toolbar-content] ›\n        span[data-ok-picker-toolbar-part] › (span[data-ok-picker-toolbar-separator])? button[data-ok-picker-toolbar-button][data-ok-range-position][aria-pressed]\n    div[data-ok-tabs][data-ok-picker-tabs][data-ok-picker-range-tabs]?     (time and date time ranges: Start / End)\n    ul[data-ok-picker-shortcuts]? › … span[data-ok-chip][data-ok-picker-shortcut][data-ok-value=start/end]\n    div[data-ok-picker-content] › date range calendar? + digital clock (desktop)? + time clock (mobile / static)?\n    div[data-ok-picker-actions]?\n```\n\nPhase 4 (ADR-0030) adds no part: `data-ok-timezone` (`UTC` or an IANA name) and\n`data-ok-calendar` (`persian`, `islamic-umalqura`, `islamic-civil`, `islamic-tbla`, `buddhist`,\n`indian`) sit on any root or ancestor, as `data-ok-locale` does (the locale's `-u-ca-` extension\nnames the calendar too). A view from a custom renderer is wrapped in `div[data-ok-picker-view]`\n(`hidden` in the other tab); the built-in renderers render their view directly. A picker whose\nviews are all `null` has no open button, popover or dialog. Custom slots keep the hooks:\n`[data-ok-picker-actions] › [data-ok-picker-action]`, `[data-ok-picker-toolbar-title]`,\n`[data-ok-picker-shortcut][data-ok-value]`.\n\nTime and date time pickers: `div[data-ok-date-picker][data-ok-value-type][data-ok-open-to]?` with a\nfield `[data-ok-value-type]`; the toolbar is `span[data-ok-picker-toolbar-overline]` +\n`div[data-ok-picker-toolbar-content] › div[data-ok-picker-toolbar-date]? ›\nbutton[data-ok-picker-toolbar-button][data-ok-view=year|day…][data-ok-selected]?` +\n`div[data-ok-picker-toolbar-time] › span[data-ok-picker-toolbar-part] › (span[data-ok-picker-toolbar-separator])?\nbutton[data-ok-picker-toolbar-button][data-ok-view=hours|minutes|seconds]` +\n`div[data-ok-picker-toolbar-ampm]? › button[data-ok-picker-toolbar-meridiem=am|pm][aria-pressed]`;\ndate time pickers add `div[data-ok-tabs][data-ok-picker-tabs]` (the Tabs component, `fullWidth`,\nicon tabs `value=\"date\" | \"time\"`). The content holds the calendar (date views), the desktop\ndigital clock (`DigitalClock` or `MultiSectionDigitalClock`, desktop and responsive) and the\n`TimeClock` (mobile, static and responsive); the views of the other form are `hidden`.",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -37229,12 +37650,12 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML: `ok:date-picker:change` (`{ value, validationError }`), `:accept` (`{ value }`), `:open` /\n`:close` (`{ reason }`); `ok:date-field:change` (cancelable), `:clear`; `ok:date-calendar:change`\n(cancelable, `{ value, selectionState }`), `:viewchange`, `:monthchange`, `:yearchange`;\n`ok:month-calendar:change`, `ok:year-calendar:change` (cancelable). Instances: date-picker `{ value,\nsetValue, isOpen, open, close, setShortcuts, setShouldDisableDate / Month / Year, setLocaleText }`;\ndate-field `{ value, validationError, setValue, focus, setShouldDisable…, setLocaleText }`;\ndate-calendar `{ value, setValue, view, setView, month, focus, setShouldDisable…,\nsetDayOfWeekFormatter, setLocaleText }`. React: callbacks above.\nPhase 2: `ok:time-clock:change` (cancelable, `{ value: \"HH:mm:ss\", selectionState }`),\n`:viewchange` (`{ view }`); `ok:digital-clock:change`, `ok:multi-section-digital-clock:change`\n(cancelable, `{ value, selectionState }`). Instances: time-clock `{ value, setValue, view,\nsetView, setShouldDisableTime, setLocaleText }`; digital clocks `{ value, setValue,\nsetShouldDisableTime, setLocaleText }`; date-field and date-picker add `setShouldDisableTime`.\nValues are ISO by type (`HH:mm:ss`, `YYYY-MM-DDTHH:mm:ss`).\nPhase 4 (ADR-0030): every picker, field, calendar and clock instance adds `date` (the adapter's\ndates, or `Date` instants; ranges `[start, end]`), `setDate(value)` and\n`setDateAdapter(adapter | null)`; date-calendar, date-range-calendar, date-picker and\ndate-range-picker add `setDayRenderer((button, date) => void | null)` (runs on each built day,\nerrors ignored); `setLocaleText` also relabels the action bar. `setValue` takes ISO text with an\noffset. React: `usePickerContext()` in custom slots, `usePickerDateConverter()`.\nPhase 3 (ADR-0028): `ok:date-range-picker:change` (`{ value: \"start/end\" | null, validationError:\n[start, end] }`), `:accept`, `:open` / `:close` (`{ reason }`), `:rangepositionchange`\n(`{ rangePosition }`); `ok:date-range-calendar:change` (cancelable, `{ value, selectionState }`),\n`:rangepositionchange`, `:monthchange`; `ok:multi-input-range-field:change` (cancelable; canceling\ncancels the field's change); range `ok:date-field:change` reports `validationError: [start, end]`.\nInstances: date-range-picker `{ value, setValue, rangePosition, setRangePosition, isOpen,\nopen(position?), close, setShortcuts, setShouldDisableDate, setShouldDisableTime, setLocaleText }`;\ndate-range-calendar `{ value, setValue, rangePosition, setRangePosition,\nsetAvailableRangePositions, calendars, setCalendars, month, focus, setShouldDisable…,\nsetDayOfWeekFormatter, setLocaleText }`; multi-input-range-field `{ value, validationError,\nsetValue }`; date-field adds `setError(error | null)`. React: `onChange(range, { validationError\n})`, `onError(errors, range)`, `onRangePositionChange(position)`.",
+     "body": "HTML: `ok:date-picker:change` (`{ value, validationError }`), `:accept` (`{ value }`), `:open` /\n`:close` (`{ reason }`); `ok:date-field:change` (cancelable), `:clear`; `ok:date-calendar:change`\n(cancelable, `{ value, selectionState }`), `:viewchange`, `:monthchange`, `:yearchange`;\n`ok:month-calendar:change`, `ok:year-calendar:change` (cancelable). Every calendar and clock (4.18.30): `ok:<name>:focusedviewchange` (`{ view, hasFocus }`), instance\n`focusedView`, `setFocusedView(view)`; React `focusedView`, `onFocusedViewChange(view, hasFocus)`.\nInstances: date-picker `{ value,\nsetValue, isOpen, open, close, setShortcuts, setShouldDisableDate / Month / Year, setLocaleText }`;\ndate-field `{ value, validationError, setValue, focus, setShouldDisable…, setLocaleText }`;\ndate-calendar `{ value, setValue, view, setView, month, focus, setShouldDisable…,\nsetDayOfWeekFormatter, setLocaleText }`. React: callbacks above.\nPhase 2: `ok:time-clock:change` (cancelable, `{ value: \"HH:mm:ss\", selectionState }`),\n`:viewchange` (`{ view }`); `ok:digital-clock:change`, `ok:multi-section-digital-clock:change`\n(cancelable, `{ value, selectionState }`). Instances: time-clock `{ value, setValue, view,\nsetView, setShouldDisableTime, setLocaleText }`; digital clocks `{ value, setValue,\nsetShouldDisableTime, setLocaleText }`; date-field and date-picker add `setShouldDisableTime`.\nValues are ISO by type (`HH:mm:ss`, `YYYY-MM-DDTHH:mm:ss`).\nPhase 4 (ADR-0030): every picker, field, calendar and clock instance adds `date` (the adapter's\ndates, or `Date` instants; ranges `[start, end]`), `setDate(value)` and\n`setDateAdapter(adapter | null)`; date-calendar, date-range-calendar, date-picker and\ndate-range-picker add `setDayRenderer((button, date) => void | null)` (runs on each built day,\nerrors ignored); `setLocaleText` also relabels the action bar. `setValue` takes ISO text with an\noffset. React: `usePickerContext()` in custom slots, `usePickerDateConverter()`.\nPhase 3 (ADR-0028): `ok:date-range-picker:change` (`{ value: \"start/end\" | null, validationError:\n[start, end] }`), `:accept`, `:open` / `:close` (`{ reason }`), `:rangepositionchange`\n(`{ rangePosition }`); `ok:date-range-calendar:change` (cancelable, `{ value, selectionState }`),\n`:rangepositionchange`, `:monthchange`; `ok:multi-input-range-field:change` (cancelable; canceling\ncancels the field's change); range `ok:date-field:change` reports `validationError: [start, end]`.\nInstances: date-range-picker `{ value, setValue, rangePosition, setRangePosition, isOpen,\nopen(position?), close, setShortcuts, setShouldDisableDate, setShouldDisableTime, setLocaleText }`;\ndate-range-calendar `{ value, setValue, rangePosition, setRangePosition,\nsetAvailableRangePositions, calendars, setCalendars, month, focus, setShouldDisable…,\nsetDayOfWeekFormatter, setLocaleText }`; multi-input-range-field `{ value, validationError,\nsetValue }`; date-field adds `setError(error | null)`. React: `onChange(range, { validationError\n})`, `onError(errors, range)`, `onRangePositionChange(position)`.",
      "id": "events-api",
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.\nApplies to every picker, field, calendar and clock that has the prop upstream.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |\n| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |\n| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |\n| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |\n| `selectedSections` / `onSelectedSectionsChange` | same | kept | 4.18.29: a section index, a section type (its first section), `\"all\"` or `null` (`FieldSelectedSections`); the callback reports the focused section's index, or `\"all\"` on select-all (Ctrl / ⌘ + A). HTML: instance `setSelectedSections` |\n| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |\n| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |\n| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |\n| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |\n| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |\n| `timezone` | same | kept | `\"default\"` · `\"system\"` · `\"UTC\"` · IANA |\n| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |\n| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |\n| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |\n| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |\n| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required`, `color`, `margin`, `hiddenLabel`, `focused` | renamed | 4.18.29 added `color` / `margin` / `hiddenLabel` / `focused` (`data-ok-color`, `data-ok-margin`, `data-ok-hidden-label`, `data-ok-focused` on the TextField root; an empty field shows its sections when focused, with a hidden label or a start adornment) |\n| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |\n| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |\n| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |\n| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |\n| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |\n| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |\n| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |\n| fields `clearButtonPosition`, `openPickerButtonPosition` | same | kept | 4.18.29: `start` puts the button in a start adornment (open button first, `edge=\"start\"`); `data-ok-clear-button-position` / `data-ok-open-picker-button-position` on the field root mark it, HTML markup places the button. Fields, single input range fields (clear), single-value pickers; range pickers keep their buttons at the end (deferred) |\n| fields `startAdornment` / `endAdornment` | same | kept | 4.18.29: an `InputAdornment` around the sections; the end one comes before the buttons' adornment. Fields, single input range fields, single-value pickers |\n| fields `shouldRespectLeadingZeros` | same | kept | 4.18.29: default `false` as in MUI: digit sections without padding (`D`, `M`, `H`, `h`, `m`, `s`) show two digits (`fieldSections`); `data-ok-should-respect-leading-zeros` keeps the format's padding. Behavior change: such formats used to keep their padding |\n| fields `fieldRef` (field API) | same | kept | 4.18.29: `getSections` (type, format token, content type, value, placeholder, separators), `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused` (core `createFieldApi`); HTML: the same methods on the `date-field` instance (pickers: the field's instance). Fields, single input range fields, single-value pickers |\n| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | same | kept | 4.18.29, see `slotProps.textField`. Multi input range fields and range pickers: deferred (each end is a field of its own) |\n| single input range fields `dateSeparator` | — | deferred | fixed `\" – \"` |\n| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |\n| TimeClock `showViewSwitcher` | — | deferred | |\n| static pickers `displayStaticWrapperAs` | — | deferred | |\n| `dateFormats` | — | not applicable | `format` per picker |\n| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |\n| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |\n| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |\n\nBeyond MUI: `today` (React: pins \"today\"), `aria-current=\"date\"`, HTML `data-ok-locale` /\n`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,\nopen buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,\ncalendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /\n`setDateAdapter` / `setDayRenderer`.",
+     "body": "Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.\nApplies to every picker, field, calendar and clock that has the prop upstream.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |\n| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |\n| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |\n| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |\n| `selectedSections` / `onSelectedSectionsChange` | same | kept | 4.18.29: a section index, a section type (its first section), `\"all\"` or `null` (`FieldSelectedSections`); the callback reports the focused section's index, or `\"all\"` on select-all (Ctrl / ⌘ + A). HTML: instance `setSelectedSections` |\n| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |\n| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |\n| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |\n| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |\n| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |\n| `timezone` | same | kept | `\"default\"` · `\"system\"` · `\"UTC\"` · IANA |\n| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |\n| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |\n| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |\n| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |\n| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required`, `color`, `margin`, `hiddenLabel`, `focused` | renamed | 4.18.29 added `color` / `margin` / `hiddenLabel` / `focused` (`data-ok-color`, `data-ok-margin`, `data-ok-hidden-label`, `data-ok-focused` on the TextField root; an empty field shows its sections when focused, with a hidden label or a start adornment) |\n| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |\n| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |\n| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |\n| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |\n| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |\n| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |\n| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |\n| fields `clearButtonPosition`, `openPickerButtonPosition` | same | kept | 4.18.29: `start` puts the button in a start adornment (open button first, `edge=\"start\"`); `data-ok-clear-button-position` / `data-ok-open-picker-button-position` on the field root mark it, HTML markup places the button. Fields, single input range fields (clear), single-value pickers; range pickers keep their buttons at the end (deferred) |\n| fields `startAdornment` / `endAdornment` | same | kept | 4.18.29: an `InputAdornment` around the sections; the end one comes before the buttons' adornment. Fields, single input range fields, single-value pickers |\n| fields `shouldRespectLeadingZeros` | same | kept | 4.18.29: default `false` as in MUI: digit sections without padding (`D`, `M`, `H`, `h`, `m`, `s`) show two digits (`fieldSections`); `data-ok-should-respect-leading-zeros` keeps the format's padding. Behavior change: such formats used to keep their padding |\n| fields `fieldRef` (field API) | same | kept | 4.18.29: `getSections` (type, format token, content type, value, placeholder, separators), `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused` (core `createFieldApi`); HTML: the same methods on the `date-field` instance (pickers: the field's instance). Fields, single input range fields, single-value pickers |\n| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | same | kept | 4.18.29, see `slotProps.textField`. Multi input range fields and range pickers: deferred (each end is a field of its own) |\n| single input range fields `dateSeparator` | same | kept | 4.18.30: default `\"–\"`, shown between spaces (core `rangeFieldSections(format, zeros, separator)`); HTML `data-ok-date-separator` on the field (the markup writes the same text); range pickers pass it to their single input field (MUI `slotProps.field.dateSeparator`). The open button's name keeps \" – \" |\n| calendars / clocks `focusedView` / `onFocusedViewChange` | same | kept | 4.18.30: DateCalendar (`year` · `month` · `day`), DateRangeCalendar (`day`), TimeClock (its views), DigitalClock (`hours`), MultiSectionDigitalClock (its columns, `meridiem` too). Core `createFocusedViewTracker` (focusin / focusout, checked again after the owner's renders) and `focusPickerViewPart` (a new `focusedView`, or a new shown view equal to it, moves the focus into that view's tab stop when it is shown). HTML: event `focusedviewchange` (`{ view, hasFocus }`) on each root, instance `focusedView` / `setFocusedView(view)` |\n| TimeClock `showViewSwitcher` | same | kept | 4.18.30: default `true` (Owlky has always shown the arrows, as the reference; MUI's default is off). `false` = `data-ok-show-view-switcher=\"false\"`: CSS hides `[data-ok-time-clock-nav]` (the markup keeps it, parity) |\n| static pickers `displayStaticWrapperAs` | same | kept | 4.18.30: `mobile` (default) · `desktop` = `data-ok-display-static-wrapper-as` on static date, time, date time and date range pickers. Desktop: no toolbar or tabs, desktop default actions (none for dates), the desktop clocks (DigitalClock / MultiSectionDigitalClock instead of the TimeClock), date time pickers keep the calendar beside the clocks after a day pick, range pickers show the desktop calendar count (2). `usePickerContext().variant` is `desktop` |\n| `dateFormats` | — | not applicable | `format` per picker |\n| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |\n| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |\n| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |\n\nBeyond MUI: `today` (React: pins \"today\"), `aria-current=\"date\"`, HTML `data-ok-locale` /\n`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,\nopen buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,\ncalendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /\n`setDateAdapter` / `setDayRenderer`.",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -75118,9 +75539,9 @@
      "title": "Read and write values"
     },
     {
-     "body": "- **`DatePicker`:** a popover on devices with a precise pointer and a dialog on touch screens. It decides when it opens, with `desktopModeMediaQuery` (default `@media (pointer: fine)`).\n- **`DesktopDatePicker`:** always a popover. Picking a day closes it.\n- **`MobileDatePicker`:** always a dialog, with a toolbar and **Cancel** and **OK** buttons.\n- **`StaticDatePicker`:** the toolbar, the calendar and the buttons inline, without a field.\n- **`DateField`** and **`DateCalendar`:** the field or the calendar on their own.\n\nIn HTML, `data-ok-picker-variant` picks the form: `responsive`, `desktop`, `mobile` or `static`.",
+     "body": "- **`DatePicker`:** a popover on devices with a precise pointer and a dialog on touch screens. It decides when it opens, with `desktopModeMediaQuery` (default `@media (pointer: fine)`).\n- **`DesktopDatePicker`:** always a popover. Picking a day closes it.\n- **`MobileDatePicker`:** always a dialog, with a toolbar and **Cancel** and **OK** buttons.\n- **`StaticDatePicker`:** the toolbar, the calendar and the buttons inline, without a field. Set `displayStaticWrapperAs` to `desktop` to show the desktop form inline instead: no toolbar, no buttons, and digital clocks in time pickers.\n- **`DateField`** and **`DateCalendar`:** the field or the calendar on their own.\n\nIn HTML, `data-ok-picker-variant` picks the form: `responsive`, `desktop`, `mobile` or `static`. On a static picker, `data-ok-display-static-wrapper-as=\"desktop\"` lays it out as the desktop form; the markup holds the desktop views, as React renders them.",
      "id": "forms",
-     "react": "import { DesktopDatePicker, MobileDatePicker, StaticDatePicker } from \"@owlky/react\";\n\nexport function DatePickerForms() {\n  return (\n    <>\n      <DesktopDatePicker label=\"Start\" />\n      <MobileDatePicker label=\"End\" />\n      <StaticDatePicker defaultValue={new Date(2025, 4, 25)} />\n    </>\n  );\n}",
+     "react": "import { DesktopDatePicker, MobileDatePicker, StaticDatePicker } from \"@owlky/react\";\n\nexport function DatePickerForms() {\n  return (\n    <>\n      <DesktopDatePicker label=\"Start\" />\n      <MobileDatePicker label=\"End\" />\n      <StaticDatePicker defaultValue={new Date(2025, 4, 25)} />\n      <StaticDatePicker displayStaticWrapperAs=\"desktop\" defaultValue={new Date(2025, 4, 25)} />\n    </>\n  );\n}",
      "title": "Choose desktop, mobile or static"
     },
     {
@@ -75128,6 +75549,13 @@
      "id": "views",
      "react": "import { DateField, DatePicker } from \"@owlky/react\";\n\nexport function DatePickerViews() {\n  return (\n    <>\n      <DatePicker label=\"Month and year\" views={[\"month\", \"year\"]} />\n      <DatePicker label=\"Day\" views={[\"day\"]} />\n      <DateField label=\"Date\" format=\"DD.MM.YYYY\" />\n    </>\n  );\n}",
      "title": "Pick years, months and days"
+    },
+    {
+     "body": "Calendars and clocks report which view holds the focus: `onFocusedViewChange(view, hasFocus)` runs when a view, such as the days or the minutes, takes the focus or loses it. Set `focusedView` to move the focus into a view, for example after your own control switched the view. The focus moves only into a view that is shown. This works on `DateCalendar`, `DateRangeCalendar`, `TimeClock`, `DigitalClock` and `MultiSectionDigitalClock`. In HTML, listen to the component's `focusedviewchange` event, such as `ok:date-calendar:focusedviewchange`, and call `setFocusedView(view)` on its instance.",
+     "html": "<div id=\"dc-basic\" data-ok-date-calendar data-ok-months-per-row=\"3\" data-ok-years-per-row=\"4\" data-ok-years-order=\"asc\" data-ok-view=\"day\" data-ok-views=\"year day\" data-ok-month=\"2025-05\" data-ok-value=\"2025-05-25\">\n  <div data-ok-date-calendar-header>\n    <div data-ok-date-calendar-label id=\"dc-basic-label\" aria-live=\"polite\">May 2025</div>\n    <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-date-calendar-switch aria-label=\"calendar view is open, switch to year view\">\n      <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n    </button>\n    <div data-ok-date-calendar-nav>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-date-calendar-prev aria-label=\"Previous month\" title=\"Previous month\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 6-6 6 6 6\"></path></svg>\n      </button>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-date-calendar-next aria-label=\"Next month\" title=\"Next month\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 6 6 6-6 6\"></path></svg>\n      </button>\n    </div>\n  </div>\n  <div role=\"grid\" data-ok-day-calendar aria-labelledby=\"dc-basic-label\">\n    <div role=\"row\" data-ok-day-calendar-header>\n      <span role=\"columnheader\" aria-label=\"Sunday\">S</span>\n      <span role=\"columnheader\" aria-label=\"Monday\">M</span>\n      <span role=\"columnheader\" aria-label=\"Tuesday\">T</span>\n      <span role=\"columnheader\" aria-label=\"Wednesday\">W</span>\n      <span role=\"columnheader\" aria-label=\"Thursday\">T</span>\n      <span role=\"columnheader\" aria-label=\"Friday\">F</span>\n      <span role=\"columnheader\" aria-label=\"Saturday\">S</span>\n    </div>\n    <div role=\"rowgroup\">\n      <div role=\"row\" aria-rowindex=\"1\">\n        <span role=\"gridcell\" data-ok-day-filler></span>\n        <span role=\"gridcell\" data-ok-day-filler></span>\n        <span role=\"gridcell\" data-ok-day-filler></span>\n        <span role=\"gridcell\" data-ok-day-filler></span>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-01\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">1</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-02\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">2</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-03\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">3</button>\n      </div>\n      <div role=\"row\" aria-rowindex=\"2\">\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-04\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">4</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-05\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">5</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-06\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">6</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-07\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">7</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-08\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">8</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-09\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">9</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-10\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">10</button>\n      </div>\n      <div role=\"row\" aria-rowindex=\"3\">\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-11\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">11</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-12\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">12</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-13\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">13</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-14\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">14</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-15\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">15</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-16\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">16</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-17\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">17</button>\n      </div>\n      <div role=\"row\" aria-rowindex=\"4\">\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-18\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">18</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-19\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">19</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-20\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">20</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-21\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">21</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-22\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">22</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-23\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">23</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-24\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">24</button>\n      </div>\n      <div role=\"row\" aria-rowindex=\"5\">\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-25\" aria-colindex=\"1\" aria-selected=\"true\" tabindex=\"0\">25</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-26\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">26</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-27\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">27</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-28\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">28</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-29\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">29</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-30\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">30</button>\n        <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-31\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">31</button>\n      </div>\n    </div>\n  </div>\n</div>\n<button type=\"button\" id=\"to-days\">Go to the days</button>\n\n<script type=\"module\">\n  const calendar = document.getElementById(\"dc-basic\");\n  calendar.addEventListener(\"ok:date-calendar:focusedviewchange\", (event) => {\n    // Such as \"day\" and true when the days take the focus.\n    console.log(event.detail.view, event.detail.hasFocus);\n  });\n  document.getElementById(\"to-days\").addEventListener(\"click\", () => {\n    window.Owlky.get(calendar, \"date-calendar\").setFocusedView(\"day\");\n  });\n</script>",
+     "id": "focused-view",
+     "react": "import type { DateView } from \"@owlky/core\";\nimport { DateCalendar } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function FocusedCalendar() {\n  const [focusedView, setFocusedView] = useState<DateView | null>(null);\n  return (\n    <>\n      <button type=\"button\" onClick={() => setFocusedView(\"day\")}>\n        Go to the days\n      </button>\n      <DateCalendar\n        focusedView={focusedView}\n        onFocusedViewChange={(view, hasFocus) => setFocusedView(hasFocus ? view : null)}\n      />\n    </>\n  );\n}",
+     "title": "Follow the focus between views"
     },
     {
      "body": "`displayWeekNumber` adds a week number column. `showDaysOutsideCurrentMonth` fills the first and last weeks with days of the other months. `fixedWeekNumber={6}` keeps six rows, so the height never changes. `monthsPerRow`, `yearsPerRow` and `yearsOrder` lay out the month and year views. `MonthCalendar` and `YearCalendar` show those views on their own.",
@@ -75147,7 +75575,7 @@
      "title": "Validate dates"
     },
     {
-     "body": "`TimePicker` edits a time. On devices with a mouse it opens digital clocks: one column per view, plus AM and PM. On touch screens it opens a dialog with an analog clock: press or drag the hand, and the release moves on to the minutes. `DesktopTimePicker`, `MobileTimePicker` and `StaticTimePicker` always use one form. `TimeField`, `TimeClock`, `DigitalClock` and `MultiSectionDigitalClock` work on their own too.\n\n- **`ampm`:** a 12-hour clock with AM and PM. The default follows the locale: English uses 12 hours, Vietnamese uses 24 hours.\n- **`views`:** what people pick, from `hours`, `minutes` and `seconds`. The default is `[\"hours\", \"minutes\"]`, and the field's format follows the views.\n- **`timeSteps`:** the distance between the digital clock's options, such as `{ minutes: 15 }`. When a day holds 24 options or fewer, the desktop form shows one list instead of columns.\n\nTime pickers stay open after a pick, so people can change every part. **OK** accepts the time and **Cancel** restores the one from opening. In HTML, the value is an ISO time, such as `09:30:00`.",
+     "body": "`TimePicker` edits a time. On devices with a mouse it opens digital clocks: one column per view, plus AM and PM. On touch screens it opens a dialog with an analog clock: press or drag the hand, and the release moves on to the minutes. `DesktopTimePicker`, `MobileTimePicker` and `StaticTimePicker` always use one form. `TimeField`, `TimeClock`, `DigitalClock` and `MultiSectionDigitalClock` work on their own too.\n\n- **`ampm`:** a 12-hour clock with AM and PM. The default follows the locale: English uses 12 hours, Vietnamese uses 24 hours.\n- **`views`:** what people pick, from `hours`, `minutes` and `seconds`. The default is `[\"hours\", \"minutes\"]`, and the field's format follows the views.\n- **`timeSteps`:** the distance between the digital clock's options, such as `{ minutes: 15 }`. When a day holds 24 options or fewer, the desktop form shows one list instead of columns.\n- **`showViewSwitcher`:** the arrow buttons of a `TimeClock` that switch between hours, minutes and seconds. They show by default; set it to `false` when something else switches the views, such as a toolbar (HTML: `data-ok-show-view-switcher=\"false\"`).\n\nTime pickers stay open after a pick, so people can change every part. **OK** accepts the time and **Cancel** restores the one from opening. In HTML, the value is an ISO time, such as `09:30:00`.",
      "html": "<div data-ok-date-picker data-ok-picker-variant=\"responsive\" data-ok-orientation=\"portrait\" data-ok-value-type=\"time\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-shrink data-ok-date-field data-ok-format-density=\"dense\" data-ok-value-type=\"time\" data-ok-value=\"09:30:00\" data-ok-format=\"hh:mm A\">\n    <label data-ok-text-field-label id=\"tp-basic-label\" for=\"tp-basic\">Time picker</label>\n    <div data-ok-text-field-control>\n      <div id=\"tp-basic\" role=\"group\" data-ok-text-field-input data-ok-date-field-sections aria-labelledby=\"tp-basic-label\">\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"hours\" role=\"spinbutton\" aria-label=\"Hours\" aria-valuenow=\"9\" aria-valuemin=\"1\" aria-valuemax=\"12\" aria-valuetext=\"09\" tabindex=\"0\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">09</span>\n          <span data-ok-date-field-separator>:</span>\n        </span>\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"minutes\" role=\"spinbutton\" aria-label=\"Minutes\" aria-valuenow=\"30\" aria-valuemin=\"0\" aria-valuemax=\"59\" aria-valuetext=\"30\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">30</span>\n          <span data-ok-date-field-separator> </span>\n        </span>\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"meridiem\" role=\"spinbutton\" aria-label=\"Meridiem\" aria-valuenow=\"0\" aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuetext=\"AM\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"text\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"done\">AM</span>\n        </span>\n      </div>\n      <input type=\"hidden\" data-ok-date-field-input value=\"09:30:00\">\n      <span data-ok-text-field-adornment=\"end\">\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"end\" data-ok-date-picker-open aria-label=\"Choose time, selected time is 09:30 AM\" aria-haspopup=\"dialog\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z\"></path></svg>\n        </button>\n      </span>\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Time picker</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus role=\"dialog\" aria-label=\"Select time\" data-ok-date-picker-paper>\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-picker-layout data-ok-orientation=\"portrait\">\n      <div data-ok-picker-toolbar hidden>\n        <span data-ok-picker-toolbar-overline id=\"tp-basic-toolbar\">Select time</span>\n        <div data-ok-picker-toolbar-content>\n          <div data-ok-picker-toolbar-time>\n            <span data-ok-picker-toolbar-part>\n              <button type=\"button\" data-ok-picker-toolbar-button data-ok-view=\"hours\" data-ok-selected tabindex=\"-1\">09</button>\n            </span>\n            <span data-ok-picker-toolbar-part>\n              <span data-ok-picker-toolbar-separator aria-hidden=\"true\">:</span>\n              <button type=\"button\" data-ok-picker-toolbar-button data-ok-view=\"minutes\" tabindex=\"-1\">30</button>\n            </span>\n          </div>\n          <div data-ok-picker-toolbar-ampm>\n            <button type=\"button\" data-ok-picker-toolbar-meridiem=\"am\" aria-pressed=\"true\">AM</button>\n            <button type=\"button\" data-ok-picker-toolbar-meridiem=\"pm\" aria-pressed=\"false\">PM</button>\n          </div>\n        </div>\n      </div>\n      <div data-ok-picker-content>\n        <div role=\"group\" data-ok-multi-section-digital-clock data-ok-ampm=\"true\" data-ok-value=\"09:30:00\" data-ok-views=\"hours minutes\" data-ok-time-steps=\"1 5 5\" id=\"tp-basic-digital-clock\">\n          <ul role=\"listbox\" data-ok-digital-clock-section=\"hours\" aria-label=\"Select hours\">\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"12\" tabindex=\"-1\" aria-selected=\"false\">12</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"1\" tabindex=\"-1\" aria-selected=\"false\">01</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"2\" tabindex=\"-1\" aria-selected=\"false\">02</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"3\" tabindex=\"-1\" aria-selected=\"false\">03</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"4\" tabindex=\"-1\" aria-selected=\"false\">04</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"5\" tabindex=\"-1\" aria-selected=\"false\">05</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"6\" tabindex=\"-1\" aria-selected=\"false\">06</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"7\" tabindex=\"-1\" aria-selected=\"false\">07</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"8\" tabindex=\"-1\" aria-selected=\"false\">08</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"9\" tabindex=\"0\" aria-selected=\"true\">09</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"10\" tabindex=\"-1\" aria-selected=\"false\">10</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"11\" tabindex=\"-1\" aria-selected=\"false\">11</li>\n          </ul>\n          <ul role=\"listbox\" data-ok-digital-clock-section=\"minutes\" aria-label=\"Select minutes\">\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"0\" tabindex=\"-1\" aria-selected=\"false\">00</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"5\" tabindex=\"-1\" aria-selected=\"false\">05</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"10\" tabindex=\"-1\" aria-selected=\"false\">10</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"15\" tabindex=\"-1\" aria-selected=\"false\">15</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"20\" tabindex=\"-1\" aria-selected=\"false\">20</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"25\" tabindex=\"-1\" aria-selected=\"false\">25</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"30\" tabindex=\"0\" aria-selected=\"true\">30</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"35\" tabindex=\"-1\" aria-selected=\"false\">35</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"40\" tabindex=\"-1\" aria-selected=\"false\">40</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"45\" tabindex=\"-1\" aria-selected=\"false\">45</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"50\" tabindex=\"-1\" aria-selected=\"false\">50</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"55\" tabindex=\"-1\" aria-selected=\"false\">55</li>\n          </ul>\n          <ul role=\"listbox\" data-ok-digital-clock-section=\"meridiem\" aria-label=\"Select meridiem\">\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"0\" tabindex=\"0\" aria-selected=\"true\">AM</li>\n            <li role=\"option\" data-ok-digital-clock-item data-ok-value=\"1\" tabindex=\"-1\" aria-selected=\"false\">PM</li>\n          </ul>\n        </div>\n        <div id=\"tp-basic-clock\" data-ok-time-clock data-ok-ampm=\"true\" data-ok-value=\"09:30:00\" data-ok-view=\"hours\" data-ok-views=\"hours minutes\" hidden>\n          <div data-ok-time-clock-dial>\n            <span data-ok-time-clock-pin></span>\n            <span data-ok-time-clock-pointer></span>\n            <div role=\"listbox\" data-ok-time-clock-options tabindex=\"0\" aria-label=\"Select hours. Selected time is 09:30 AM\" aria-activedescendant=\"tp-basic-clock-hours-9\">\n              <span id=\"tp-basic-clock-hours-1\" role=\"option\" data-ok-time-clock-number data-ok-position=\"1\" data-ok-value=\"1\" aria-label=\"1 hours\">1</span>\n              <span id=\"tp-basic-clock-hours-2\" role=\"option\" data-ok-time-clock-number data-ok-position=\"2\" data-ok-value=\"2\" aria-label=\"2 hours\">2</span>\n              <span id=\"tp-basic-clock-hours-3\" role=\"option\" data-ok-time-clock-number data-ok-position=\"3\" data-ok-value=\"3\" aria-label=\"3 hours\">3</span>\n              <span id=\"tp-basic-clock-hours-4\" role=\"option\" data-ok-time-clock-number data-ok-position=\"4\" data-ok-value=\"4\" aria-label=\"4 hours\">4</span>\n              <span id=\"tp-basic-clock-hours-5\" role=\"option\" data-ok-time-clock-number data-ok-position=\"5\" data-ok-value=\"5\" aria-label=\"5 hours\">5</span>\n              <span id=\"tp-basic-clock-hours-6\" role=\"option\" data-ok-time-clock-number data-ok-position=\"6\" data-ok-value=\"6\" aria-label=\"6 hours\">6</span>\n              <span id=\"tp-basic-clock-hours-7\" role=\"option\" data-ok-time-clock-number data-ok-position=\"7\" data-ok-value=\"7\" aria-label=\"7 hours\">7</span>\n              <span id=\"tp-basic-clock-hours-8\" role=\"option\" data-ok-time-clock-number data-ok-position=\"8\" data-ok-value=\"8\" aria-label=\"8 hours\">8</span>\n              <span id=\"tp-basic-clock-hours-9\" role=\"option\" data-ok-time-clock-number data-ok-position=\"9\" data-ok-value=\"9\" aria-label=\"9 hours\" aria-selected=\"true\">9</span>\n              <span id=\"tp-basic-clock-hours-10\" role=\"option\" data-ok-time-clock-number data-ok-position=\"10\" data-ok-value=\"10\" aria-label=\"10 hours\">10</span>\n              <span id=\"tp-basic-clock-hours-11\" role=\"option\" data-ok-time-clock-number data-ok-position=\"11\" data-ok-value=\"11\" aria-label=\"11 hours\">11</span>\n              <span id=\"tp-basic-clock-hours-12\" role=\"option\" data-ok-time-clock-number data-ok-position=\"0\" data-ok-value=\"12\" aria-label=\"12 hours\">12</span>\n            </div>\n          </div>\n          <div data-ok-time-clock-nav>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-time-clock-prev aria-label=\"Open previous view\" title=\"Open previous view\" disabled>\n              <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 6-6 6 6 6\"></path></svg>\n            </button>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-time-clock-next aria-label=\"Open next view\" title=\"Open next view\">\n              <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 6 6 6-6 6\"></path></svg>\n            </button>\n          </div>\n        </div>\n      </div>\n      <div data-ok-picker-actions>\n        <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-picker-action=\"cancel\">\n          <span data-ok-button-label>Cancel</span>\n        </button>\n        <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-picker-action=\"accept\">\n          <span data-ok-button-label>OK</span>\n        </button>\n      </div>\n    </div>\n  </div>\n  <dialog data-ok-dialog data-ok-max-width=\"xs\" data-ok-scroll=\"paper\" aria-label=\"Select time\" data-ok-date-picker-dialog>\n    <div data-ok-dialog-paper></div>\n  </dialog>\n</div>",
      "id": "time",
      "react": "import { TimePicker } from \"@owlky/react\";\n\nexport function Alarm() {\n  return (\n    <TimePicker\n      label=\"Alarm\"\n      views={[\"hours\", \"minutes\", \"seconds\"]}\n      timeSteps={{ minutes: 1, seconds: 15 }}\n    />\n  );\n}",
@@ -75166,7 +75594,7 @@
      "title": "Validate times"
     },
     {
-     "body": "`DateRangePicker` edits a start and an end date. On devices with a mouse it opens two months side by side in a popover. On touch screens it opens a dialog with one month and a toolbar that shows both ends. The first pick sets the start, the second one sets the end, and a day before the start starts again. While you move the pointer, a dashed outline previews the range. Drag the start or the end to another day to move it, with a mouse or a finger. `DesktopDateRangePicker`, `MobileDateRangePicker` and `StaticDateRangePicker` always use one form, and `DateRangeCalendar` works on its own.\n\n- **`multiInput`:** two fields, the start and the end, instead of one. Each field's button opens the picker on its end.\n- **`calendars`:** the number of months in the popover, from 1 to 3. The dialog and the inline form show one month unless you set it.\n- **`rangePosition`:** the end the next pick edits, `start` or `end`. Read it with `onRangePositionChange`, or set it to edit one end.\n- **`disableDragEditing`** and **`disableAutoMonthSwitching`:** turn off dragging the ends, and the jump to the end's month after a new start.\n\nThe value is a pair, `[start, end]`, and either side can be empty. An end before the start is invalid: both sides report `invalidRange`. In HTML, the value is an ISO 8601 interval, such as `2025-05-20/2025-05-25`, and the hidden input of a single field submits it.",
+     "body": "`DateRangePicker` edits a start and an end date. On devices with a mouse it opens two months side by side in a popover. On touch screens it opens a dialog with one month and a toolbar that shows both ends. The first pick sets the start, the second one sets the end, and a day before the start starts again. While you move the pointer, a dashed outline previews the range. Drag the start or the end to another day to move it, with a mouse or a finger. `DesktopDateRangePicker`, `MobileDateRangePicker` and `StaticDateRangePicker` always use one form, and `DateRangeCalendar` works on its own.\n\n- **`multiInput`:** two fields, the start and the end, instead of one. Each field's button opens the picker on its end.\n- **`calendars`:** the number of months in the popover, from 1 to 3. The dialog and the inline form show one month unless you set it.\n- **`rangePosition`:** the end the next pick edits, `start` or `end`. Read it with `onRangePositionChange`, or set it to edit one end.\n- **`disableDragEditing`** and **`disableAutoMonthSwitching`:** turn off dragging the ends, and the jump to the end's month after a new start.\n- **`dateSeparator`:** the text between the two dates of a single field, with a space on each side. The default is an en dash, `–`. In HTML, set `data-ok-date-separator` on the field and write the same text in its markup.\n\nThe value is a pair, `[start, end]`, and either side can be empty. An end before the start is invalid: both sides report `invalidRange`. In HTML, the value is an ISO 8601 interval, such as `2025-05-20/2025-05-25`, and the hidden input of a single field submits it.",
      "html": "<div data-ok-date-range-picker data-ok-picker-variant=\"responsive\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-shrink data-ok-date-field data-ok-format-density=\"dense\" data-ok-range data-ok-value=\"2025-05-20/2025-05-25\" data-ok-format=\"MM/DD/YYYY\">\n    <label data-ok-text-field-label id=\"dr-basic-label\" for=\"dr-basic\">Date range picker</label>\n    <div data-ok-text-field-control>\n      <div id=\"dr-basic\" role=\"group\" data-ok-text-field-input data-ok-date-field-sections aria-labelledby=\"dr-basic-label\">\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"month\" role=\"spinbutton\" aria-label=\"Month\" aria-valuenow=\"5\" aria-valuemin=\"1\" aria-valuemax=\"12\" aria-valuetext=\"May\" tabindex=\"0\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">05</span>\n          <span data-ok-date-field-separator>/</span>\n        </span>\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"day\" role=\"spinbutton\" aria-label=\"Day\" aria-valuenow=\"20\" aria-valuemin=\"1\" aria-valuemax=\"31\" aria-valuetext=\"20\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">20</span>\n          <span data-ok-date-field-separator>/</span>\n        </span>\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"year\" role=\"spinbutton\" aria-label=\"Year\" aria-valuenow=\"2025\" aria-valuemin=\"0\" aria-valuemax=\"9999\" aria-valuetext=\"2025\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">2025</span>\n          <span data-ok-date-field-separator> – </span>\n        </span>\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"month\" role=\"spinbutton\" aria-label=\"Month\" aria-valuenow=\"5\" aria-valuemin=\"1\" aria-valuemax=\"12\" aria-valuetext=\"May\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">05</span>\n          <span data-ok-date-field-separator>/</span>\n        </span>\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"day\" role=\"spinbutton\" aria-label=\"Day\" aria-valuenow=\"25\" aria-valuemin=\"1\" aria-valuemax=\"31\" aria-valuetext=\"25\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">25</span>\n          <span data-ok-date-field-separator>/</span>\n        </span>\n        <span data-ok-date-field-section>\n          <span data-ok-date-field-content data-ok-section=\"year\" role=\"spinbutton\" aria-label=\"Year\" aria-valuenow=\"2025\" aria-valuemin=\"0\" aria-valuemax=\"9999\" aria-valuetext=\"2025\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"done\">2025</span>\n        </span>\n      </div>\n      <input type=\"hidden\" data-ok-date-field-input value=\"2025-05-20/2025-05-25\">\n      <span data-ok-text-field-adornment=\"end\">\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"end\" data-ok-date-picker-open aria-label=\"Choose range, selected range is May 20, 2025 – May 25, 2025\" aria-haspopup=\"dialog\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Zm-4 5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1Z\"></path></svg>\n        </button>\n      </span>\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Date range picker</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" data-ok-disable-auto-focus role=\"dialog\" aria-label=\"Select date range\" data-ok-date-picker-paper>\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-picker-layout data-ok-orientation=\"portrait\">\n      <div data-ok-picker-toolbar data-ok-range-toolbar hidden>\n        <span data-ok-picker-toolbar-overline id=\"dr-basic-toolbar\">Select date range</span>\n        <div data-ok-picker-toolbar-content>\n          <span data-ok-picker-toolbar-part>\n            <button type=\"button\" data-ok-picker-toolbar-button data-ok-range-position=\"start\" data-ok-selected aria-pressed=\"true\">May 20</button>\n          </span>\n          <span data-ok-picker-toolbar-part>\n            <span data-ok-picker-toolbar-separator aria-hidden=\"true\">–</span>\n            <button type=\"button\" data-ok-picker-toolbar-button data-ok-range-position=\"end\" aria-pressed=\"false\">May 25</button>\n          </span>\n        </div>\n      </div>\n      <div data-ok-picker-content>\n        <div id=\"dr-basic-calendar\" data-ok-date-range-calendar data-ok-calendars=\"2\" data-ok-current-month-calendar-position=\"1\" data-ok-range-position=\"start\" data-ok-month=\"2025-05\" data-ok-value=\"2025-05-20/2025-05-25\">\n          <div data-ok-date-range-calendar-month>\n            <div data-ok-date-range-calendar-header>\n              <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-date-calendar-prev aria-label=\"Previous month\" title=\"Previous month\">\n                <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 6-6 6 6 6\"></path></svg>\n              </button>\n              <div data-ok-date-calendar-label id=\"dr-basic-calendar-label-0\" aria-live=\"polite\">May 2025</div>\n            </div>\n            <div role=\"grid\" data-ok-day-calendar aria-labelledby=\"dr-basic-calendar-label-0\" aria-multiselectable=\"true\">\n              <div role=\"row\" data-ok-day-calendar-header>\n                <span role=\"columnheader\" aria-label=\"Sunday\">S</span>\n                <span role=\"columnheader\" aria-label=\"Monday\">M</span>\n                <span role=\"columnheader\" aria-label=\"Tuesday\">T</span>\n                <span role=\"columnheader\" aria-label=\"Wednesday\">W</span>\n                <span role=\"columnheader\" aria-label=\"Thursday\">T</span>\n                <span role=\"columnheader\" aria-label=\"Friday\">F</span>\n                <span role=\"columnheader\" aria-label=\"Saturday\">S</span>\n              </div>\n              <div role=\"rowgroup\">\n                <div role=\"row\" aria-rowindex=\"1\">\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-01\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">1</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-02\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">2</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-03\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">3</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"2\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-04\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">4</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-05\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">5</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-06\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">6</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-07\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">7</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-08\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">8</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-09\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">9</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-10\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">10</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"3\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-11\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">11</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-12\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">12</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-13\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">13</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-14\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">14</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-15\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">15</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-16\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">16</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-17\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">17</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"4\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-18\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">18</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-19\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">19</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-20\" aria-colindex=\"3\" aria-selected=\"true\" data-ok-range-start data-ok-in-range tabindex=\"0\">20</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-21\" aria-colindex=\"4\" aria-selected=\"true\" data-ok-in-range tabindex=\"-1\">21</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-22\" aria-colindex=\"5\" aria-selected=\"true\" data-ok-in-range tabindex=\"-1\">22</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-23\" aria-colindex=\"6\" aria-selected=\"true\" data-ok-in-range tabindex=\"-1\">23</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-24\" aria-colindex=\"7\" aria-selected=\"true\" data-ok-in-range tabindex=\"-1\">24</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"5\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-25\" aria-colindex=\"1\" aria-selected=\"true\" data-ok-range-end data-ok-in-range tabindex=\"-1\">25</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-26\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">26</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-27\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">27</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-28\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">28</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-29\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">29</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-30\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">30</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-05-31\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">31</button>\n                </div>\n              </div>\n            </div>\n          </div>\n          <div data-ok-date-range-calendar-month>\n            <div data-ok-date-range-calendar-header>\n              <div data-ok-date-calendar-label id=\"dr-basic-calendar-label-1\" aria-live=\"polite\">June 2025</div>\n              <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-date-calendar-next aria-label=\"Next month\" title=\"Next month\">\n                <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 6 6 6-6 6\"></path></svg>\n              </button>\n            </div>\n            <div role=\"grid\" data-ok-day-calendar aria-labelledby=\"dr-basic-calendar-label-1\" aria-multiselectable=\"true\">\n              <div role=\"row\" data-ok-day-calendar-header>\n                <span role=\"columnheader\" aria-label=\"Sunday\">S</span>\n                <span role=\"columnheader\" aria-label=\"Monday\">M</span>\n                <span role=\"columnheader\" aria-label=\"Tuesday\">T</span>\n                <span role=\"columnheader\" aria-label=\"Wednesday\">W</span>\n                <span role=\"columnheader\" aria-label=\"Thursday\">T</span>\n                <span role=\"columnheader\" aria-label=\"Friday\">F</span>\n                <span role=\"columnheader\" aria-label=\"Saturday\">S</span>\n              </div>\n              <div role=\"rowgroup\">\n                <div role=\"row\" aria-rowindex=\"1\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-01\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">1</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-02\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">2</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-03\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">3</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-04\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">4</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-05\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">5</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-06\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">6</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-07\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">7</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"2\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-08\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">8</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-09\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">9</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-10\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">10</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-11\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">11</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-12\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">12</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-13\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">13</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-14\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">14</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"3\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-15\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">15</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-16\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">16</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-17\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">17</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-18\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">18</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-19\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">19</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-20\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">20</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-21\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">21</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"4\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-22\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">22</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-23\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">23</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-24\" aria-colindex=\"3\" aria-selected=\"false\" tabindex=\"-1\">24</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-25\" aria-colindex=\"4\" aria-selected=\"false\" tabindex=\"-1\">25</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-26\" aria-colindex=\"5\" aria-selected=\"false\" tabindex=\"-1\">26</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-27\" aria-colindex=\"6\" aria-selected=\"false\" tabindex=\"-1\">27</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-28\" aria-colindex=\"7\" aria-selected=\"false\" tabindex=\"-1\">28</button>\n                </div>\n                <div role=\"row\" aria-rowindex=\"5\">\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-29\" aria-colindex=\"1\" aria-selected=\"false\" tabindex=\"-1\">29</button>\n                  <button type=\"button\" role=\"gridcell\" data-ok-picker-day data-ok-date=\"2025-06-30\" aria-colindex=\"2\" aria-selected=\"false\" tabindex=\"-1\">30</button>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                  <span role=\"gridcell\" data-ok-day-filler></span>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div data-ok-picker-actions hidden>\n        <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-picker-action=\"cancel\" hidden>\n          <span data-ok-button-label>Cancel</span>\n        </button>\n        <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-picker-action=\"accept\" hidden>\n          <span data-ok-button-label>OK</span>\n        </button>\n      </div>\n    </div>\n  </div>\n  <dialog data-ok-dialog data-ok-max-width=\"xs\" data-ok-scroll=\"paper\" aria-label=\"Select date range\" data-ok-date-picker-dialog>\n    <div data-ok-dialog-paper></div>\n  </dialog>\n</div>",
      "id": "range",
      "react": "import { DateRangePicker, type DateRange } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function StayDates() {\n  const [stay, setStay] = useState<DateRange>([null, null]);\n  return (\n    <DateRangePicker\n      multiInput\n      startLabel=\"Check-in\"\n      endLabel=\"Check-out\"\n      disablePast\n      value={stay}\n      onChange={(value) => setStay(value)}\n    />\n  );\n}",
@@ -75244,7 +75672,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:date-picker:change`** fires on every change with `detail.value` (ISO or `null`) and `detail.validationError`. **`ok:date-picker:accept`** fires when a value is accepted.\n- **`ok:date-picker:open`** and **`ok:date-picker:close`** fire with `detail.reason`, such as `button`, `escape`, `select` or `cancel`.\n- **`ok:date-field:change`** and **`ok:date-calendar:change`** (cancelable) fire for a field or a calendar on its own. The calendar also fires `viewchange`, `monthchange` and `yearchange`.\n- **`ok:time-clock:change`**, **`ok:digital-clock:change`** and **`ok:multi-section-digital-clock:change`** (cancelable) fire for a clock on its own, with `detail.value` (an ISO time) and `detail.selectionState`: `shallow` while dragging the hand, `partial` when another view follows, `finish` on the last one. The analog clock also fires `ok:time-clock:viewchange`.\n- **`ok:date-range-picker:change`** fires with `detail.value` (an ISO interval or `null`) and `detail.validationError`, the `[start, end]` errors. It also fires `accept`, `open`, `close` and `rangepositionchange` (`detail.rangePosition`). **`ok:date-range-calendar:change`** and **`ok:multi-input-range-field:change`** (cancelable) fire for a range calendar or a multi input field on its own.\n- **Instance:** `runtime.get(element, \"date-picker\")` returns `{ value, setValue(value), date, setDate(date), setDateAdapter(adapter), isOpen, open(), close(), setShortcuts(list), setShouldDisableDate(fn), setShouldDisableTime(fn), setDayRenderer(fn), setLocaleText(text) }`. Every picker, field, calendar and clock instance has `date`, `setDate` and `setDateAdapter`. `setValue` doesn't fire events. A range picker's instance (`\"date-range-picker\"`) adds `rangePosition`, `setRangePosition(position)` and `open(position)`; its `setValue` takes an ISO interval or a `[start, end]` pair.\n- **React:** `onChange(value, { validationError })`, `onAccept(value)`, `onError(error, value)`, `onOpenChange(open, reason)`, `onViewChange(view)`, `onMonthChange(month)` and `onYearChange(year)`. The clocks call `onChange(value, selectionState)`. Range pickers call `onChange(range, { validationError: [start, end] })`, `onError(errors, range)` and `onRangePositionChange(position)`.",
+     "body": "- **`ok:date-picker:change`** fires on every change with `detail.value` (ISO or `null`) and `detail.validationError`. **`ok:date-picker:accept`** fires when a value is accepted.\n- **`ok:date-picker:open`** and **`ok:date-picker:close`** fire with `detail.reason`, such as `button`, `escape`, `select` or `cancel`.\n- **`ok:date-field:change`** and **`ok:date-calendar:change`** (cancelable) fire for a field or a calendar on its own. The calendar also fires `viewchange`, `monthchange` and `yearchange`.\n- **`ok:time-clock:change`**, **`ok:digital-clock:change`** and **`ok:multi-section-digital-clock:change`** (cancelable) fire for a clock on its own, with `detail.value` (an ISO time) and `detail.selectionState`: `shallow` while dragging the hand, `partial` when another view follows, `finish` on the last one. The analog clock also fires `ok:time-clock:viewchange`.\n- **`focusedviewchange`** fires on every calendar and clock, such as `ok:date-calendar:focusedviewchange`, with `detail.view` and `detail.hasFocus` when a view takes the focus or loses it. Their instances have `focusedView` and `setFocusedView(view)`.\n- **`ok:date-range-picker:change`** fires with `detail.value` (an ISO interval or `null`) and `detail.validationError`, the `[start, end]` errors. It also fires `accept`, `open`, `close` and `rangepositionchange` (`detail.rangePosition`). **`ok:date-range-calendar:change`** and **`ok:multi-input-range-field:change`** (cancelable) fire for a range calendar or a multi input field on its own.\n- **Instance:** `runtime.get(element, \"date-picker\")` returns `{ value, setValue(value), date, setDate(date), setDateAdapter(adapter), isOpen, open(), close(), setShortcuts(list), setShouldDisableDate(fn), setShouldDisableTime(fn), setDayRenderer(fn), setLocaleText(text) }`. Every picker, field, calendar and clock instance has `date`, `setDate` and `setDateAdapter`. `setValue` doesn't fire events. A range picker's instance (`\"date-range-picker\"`) adds `rangePosition`, `setRangePosition(position)` and `open(position)`; its `setValue` takes an ISO interval or a `[start, end]` pair.\n- **React:** `onChange(value, { validationError })`, `onAccept(value)`, `onError(error, value)`, `onOpenChange(open, reason)`, `onViewChange(view)`, `onMonthChange(month)` and `onYearChange(year)`. Calendars and clocks call `onFocusedViewChange(view, hasFocus)`. The clocks call `onChange(value, selectionState)`. Range pickers call `onChange(range, { validationError: [start, end] })`, `onError(errors, range)` and `onRangePositionChange(position)`.",
      "id": "events",
      "title": "Events and methods"
     },

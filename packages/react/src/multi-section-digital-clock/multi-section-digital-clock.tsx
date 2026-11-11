@@ -14,6 +14,7 @@ import {
 import { forwardRef, type HTMLAttributes, useLayoutEffect, useRef } from "react";
 import type { PickerSelectionState } from "../date-calendar/date-calendar.js";
 import { useDigitalClockController } from "../digital-clock/digital-clock.js";
+import { useFocusedView } from "../pickers/use-focused-view.js";
 import {
   type ClockBaseProps,
   clockRootAttributes,
@@ -34,6 +35,10 @@ export interface MultiSectionDigitalClockProps
   skipDisabled?: boolean | undefined;
   /** Focuses the first column on mount. */
   autoFocus?: boolean | undefined;
+  /** The view that holds the focus (controlled): a new value moves the focus into that view. */
+  focusedView?: TimeView | "meridiem" | null | undefined;
+  /** Called when a view takes the focus (`hasFocus` `true`) or loses it. */
+  onFocusedViewChange?: ((view: TimeView | "meridiem", hasFocus: boolean) => void) | undefined;
 }
 
 /**
@@ -65,6 +70,8 @@ export const MultiSectionDigitalClock = forwardRef<HTMLDivElement, MultiSectionD
       disabled = false,
       localeText: _localeText,
       autoFocus,
+      focusedView,
+      onFocusedViewChange,
       ...rest
     } = props;
     const state = useClockState(props);
@@ -98,6 +105,7 @@ export const MultiSectionDigitalClock = forwardRef<HTMLDivElement, MultiSectionD
       },
       autoFocus,
     );
+    useFocusedView(rootRef, focusedView, onFocusedViewChange);
     // After a pick: focus moves to the next column (MUI).
     useLayoutEffect(() => {
       if (focusNext.current === null) return;

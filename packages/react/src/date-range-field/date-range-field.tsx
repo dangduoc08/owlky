@@ -129,6 +129,8 @@ export interface SingleInputRangeFieldProps extends RangeFieldProps {
   fieldRef?: Ref<FieldApi> | undefined;
   /** Side of the clear button. Default `"end"`. */
   clearButtonPosition?: PickerButtonPosition | undefined;
+  /** Text shown between the start and the end dates (with a space on each side). Default `"–"`. */
+  dateSeparator?: string | undefined;
   /** An `InputAdornment` with `position="start"`, before the sections. */
   startAdornment?: ReactNode;
   /** An `InputAdornment` with `position="end"`, after the sections (before the buttons). */
@@ -254,6 +256,7 @@ export const SingleInputRangeField = forwardRef<
     label,
     clearable,
     clearButtonPosition,
+    dateSeparator,
     onClear,
     selectedSections,
     onSelectedSectionsChange,
@@ -282,8 +285,8 @@ export const SingleInputRangeField = forwardRef<
   const generated = useId();
   const id = idProp ?? generated;
   const { sections, count } = useMemo(
-    () => rangeFieldSections(format, shouldRespectLeadingZeros),
-    [format, shouldRespectLeadingZeros],
+    () => rangeFieldSections(format, shouldRespectLeadingZeros, dateSeparator),
+    [format, shouldRespectLeadingZeros, dateSeparator],
   );
 
   const [current, setCurrent] = useControllableState<DateRange>({
@@ -363,6 +366,7 @@ export const SingleInputRangeField = forwardRef<
         ...(iso ? { "data-ok-value": iso } : {}),
         ...(explicit ? { "data-ok-locale": locale } : {}),
         "data-ok-format": format,
+        ...(dateSeparator === undefined ? {} : { "data-ok-date-separator": dateSeparator }),
       }}
       className={className}
       style={style}

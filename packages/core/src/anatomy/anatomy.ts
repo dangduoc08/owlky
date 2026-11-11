@@ -3981,6 +3981,10 @@ export const dateCalendarAttributes = (options: DateCalendarAnatomyOptions = {})
     yearsPerRow: options.yearsPerRow === undefined ? undefined : String(options.yearsPerRow),
   });
 
+/** The form a static picker shows (MUI X `displayStaticWrapperAs`). */
+export const pickerStaticWrapperValues = ["mobile", "desktop"] as const;
+export type PickerStaticWrapper = (typeof pickerStaticWrapperValues)[number];
+
 export const datePickerOptions = defineOptions("date-picker", "data-ok-date-picker", {
   pickerVariant: style(
     "data-ok-picker-variant",
@@ -3993,6 +3997,13 @@ export const datePickerOptions = defineOptions("date-picker", "data-ok-date-pick
     pickerOrientationValues,
     "portrait",
     "`landscape` puts the toolbar beside the calendar (mobile and static).",
+  ),
+  displayStaticWrapperAs: style(
+    "data-ok-display-static-wrapper-as",
+    pickerStaticWrapperValues,
+    "mobile",
+    "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+    { optional: true },
   ),
   closeOnSelect: behavior(
     "data-ok-close-on-select",
@@ -4010,6 +4021,7 @@ export const datePickerOptions = defineOptions("date-picker", "data-ok-date-pick
 export interface DatePickerAnatomyOptions {
   pickerVariant?: (typeof pickerVariantValues)[number] | undefined;
   orientation?: (typeof pickerOrientationValues)[number] | undefined;
+  displayStaticWrapperAs?: PickerStaticWrapper | undefined;
   keepOpenDuringFieldFocus?: boolean | undefined;
   valueType?: (typeof pickerValueTypes)[number] | undefined;
 }
@@ -4037,6 +4049,11 @@ const timeRuleFlags = {
 export const timeClockOptions = defineOptions("time-clock", "data-ok-time-clock", {
   ampm: ampmOption,
   ampmInClock: flag("data-ok-ampm-in-clock", "AM / PM buttons on the clock (12-hour clocks)."),
+  showViewSwitcher: behavior(
+    "data-ok-show-view-switcher",
+    true,
+    "Arrow buttons that switch between the views (MUI's default is off).",
+  ),
   minutesStep: minutesStepOption,
   ...timeRuleFlags,
   value: state(
@@ -4216,6 +4233,14 @@ export const dateRangePickerOptions = defineOptions(
       "Months shown in the desktop popover (the dialog and inline forms show one).",
       { optional: true },
     ),
+    displayStaticWrapperAs: style(
+      "data-ok-display-static-wrapper-as",
+      pickerStaticWrapperValues,
+      "mobile",
+      "Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars).",
+      { optional: true },
+    ),
+
     closeOnSelect: behavior(
       "data-ok-close-on-select",
       true,
@@ -4232,6 +4257,7 @@ export const dateRangePickerOptions = defineOptions(
 
 export interface DateRangePickerAnatomyOptions {
   pickerVariant?: (typeof pickerVariantValues)[number] | undefined;
+  displayStaticWrapperAs?: PickerStaticWrapper | undefined;
   calendars?: 1 | 2 | 3 | (typeof pickerCalendarCounts)[number] | undefined;
   disableDragEditing?: boolean | undefined;
   valueType?: (typeof pickerValueTypes)[number] | undefined;

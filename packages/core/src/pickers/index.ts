@@ -107,6 +107,14 @@ export {
   resolveSelectedSection,
 } from "./field-controller.js";
 export {
+  createFocusedViewTracker,
+  type FocusedViewTracker,
+  focusPickerViewPart,
+  type PickerFocusedView,
+  pickerViewOf,
+  pickerViewTarget,
+} from "./focused-view.js";
+export {
   defaultDateFormat,
   escapeFormatLiteral,
   type FormatSection,

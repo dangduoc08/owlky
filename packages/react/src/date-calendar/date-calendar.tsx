@@ -54,6 +54,7 @@ import {
 import { type DateValidationProps, dateRules, ruleAttributes } from "../date-field/date-field.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { usePickerLocalization } from "../localization-provider/localization-provider.js";
+import { useFocusedView } from "../pickers/use-focused-view.js";
 import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
@@ -166,6 +167,10 @@ export interface DateCalendarProps
   view?: DateView | undefined;
   /** Called when the view changes. */
   onViewChange?: ((view: DateView) => void) | undefined;
+  /** The view that holds the focus (controlled): a new value moves the focus into that view. */
+  focusedView?: DateView | null | undefined;
+  /** Called when a view takes the focus (`hasFocus` `true`) or loses it. */
+  onFocusedViewChange?: ((view: DateView, hasFocus: boolean) => void) | undefined;
   /** The month shown when there's no value. Default: today. */
   referenceDate?: Date | undefined;
   /** "Today" (for tests and fixed demos). Default: now. */
@@ -367,6 +372,8 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
     openTo,
     view: viewProp,
     onViewChange,
+    focusedView,
+    onFocusedViewChange,
     referenceDate,
     today: todayProp,
     displayWeekNumber,
@@ -588,6 +595,7 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
   useEffect(() => {
     if (autoFocus) controllerRef.current?.focus();
   }, [autoFocus]);
+  useFocusedView(rootRef, focusedView, onFocusedViewChange, view);
 
   const weekStart = firstDayOfWeek(locale);
   const weeks = calendarWeeks(month, weekStart, fixedWeekNumber, cal);
