@@ -379,7 +379,9 @@
     padding: calc(var(--ok-spacing) * 4);
   }
 
-  :where([data-ok-data-grid-panel] > [data-ok-data-grid-filter]) {
+  :where(
+    :is([data-ok-data-grid-panel], [data-ok-data-grid-filter-group]) > [data-ok-data-grid-filter]
+  ) {
     display: grid;
     /* The remove button, then fields of at least 128px (auto-fit needs fixed tracks around it). */
     grid-template-columns: calc(var(--ok-spacing) * 8) repeat(
@@ -389,6 +391,37 @@
     align-items: center;
     gap: calc(var(--ok-spacing) * 2);
     width: min(calc(var(--ok-spacing) * 170), calc(100vw - var(--ok-spacing) * 16));
+  }
+
+  /* Filter groups: a framed box per group, its rows filling it. */
+  :where([data-ok-data-grid-filter-group]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 2);
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
+    border: 1px solid var(--ok-divider);
+    border-radius: var(--ok-radius-md);
+  }
+
+  :where([data-ok-data-grid-filter-group] > [data-ok-data-grid-filter]) {
+    width: auto;
+  }
+
+  :where([data-ok-data-grid-filter-group-header]) {
+    display: grid;
+    grid-template-columns: calc(var(--ok-spacing) * 8) minmax(calc(var(--ok-spacing) * 32), 1fr);
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-data-grid-filter-group-header] > [data-ok-text-field]) {
+    max-width: calc(var(--ok-spacing) * 40);
+  }
+
+  :where([data-ok-data-grid-filter-group-actions]) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--ok-spacing) * 2);
   }
 
   /* Pinned columns stick to their side over the scrolling ones (offsets from the owner). */
@@ -496,7 +529,10 @@
     accent-color: var(--ok-palette-primary-main);
   }
 
-  :where([data-ok-data-grid-panel] > [data-ok-data-grid-filter-add]) {
+  :where(
+    [data-ok-data-grid-panel]
+      > :is([data-ok-data-grid-filter-add], [data-ok-data-grid-filter-add-group])
+  ) {
     align-self: flex-start;
   }
 

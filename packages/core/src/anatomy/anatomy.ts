@@ -3621,9 +3621,24 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     true,
     'Rows can be selected (`"false"`: no selection, no checkboxes, no `aria-selected`).',
   ),
+  contextMenu: flag(
+    "data-ok-context-menu",
+    "A right click, Shift + F10 or the Menu key on a cell opens a menu: copy, paste, export, chart, pin.",
+  ),
+  filterGroups: flag(
+    "data-ok-filter-groups",
+    "The filter panel nests groups of filters, each with its own And / Or (Add group).",
+  ),
+  autoGenerate: flag(
+    "data-ok-auto-generate",
+    "Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`).",
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  contextMenu?: boolean | undefined;
+  filterGroups?: boolean | undefined;
+  autoGenerate?: boolean | undefined;
   columnHeaderHeight?: number | undefined;
   columnGroupHeaderHeight?: number | undefined;
   headerFilterHeight?: number | undefined;

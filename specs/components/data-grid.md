@@ -28,7 +28,15 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          › div[data-ok-data-grid-filter]… › IconButton[data-ok-data-grid-filter-remove],
            (rows 2+) TextField select #<id>-filter-logic-<n> (and / or; disabled after row 2),
            TextField select (column), TextField select (operator), TextField (value)
+         › div[data-ok-data-grid-filter-group][role=group][aria-label="Filter group 1.2"][id=<id>-filter-group-g0-g1]…
+             (4.18.13, after the rows; nested in groups too)
+             › div[data-ok-data-grid-filter-group-header] › IconButton[data-ok-data-grid-filter-group-remove]
+               (from its second place in its box) TextField select #<id>-filter-logic-g0 (the box's and / or)
+             › div[data-ok-data-grid-filter]… (ids -g0-<n>; the first without a logic field) › groups…
+             › div[data-ok-data-grid-filter-group-actions]? › Button[data-ok-data-grid-filter-add]?,
+               Button[data-ok-data-grid-filter-add-group]?
          › Button[data-ok-data-grid-filter-add]                              (not disableMultipleColumnsFiltering)
+         › Button[data-ok-data-grid-filter-add-group]                        (filterGroups, not disableMultipleColumnsFiltering)
     Menu#<id>-density › MenuItem[data-ok-density][data-ok-selected]? ×3
     Menu#<id>-export › MenuItem[data-ok-data-grid-export=csv|print]
   div[role=grid][data-ok-data-grid-main][aria-label][aria-rowcount][aria-colcount][aria-multiselectable]?[aria-busy]?
@@ -58,6 +66,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
            [aria-colspan]? (covered cells: [hidden][data-ok-covered]) [aria-rowspan]? (covered:
            [data-ok-covered][aria-hidden=true], kept in place) [data-ok-editable=false]? [class]?
   template[data-ok-data-grid-row]                (HTML only: one row, copied by setRows / data sources)
+  table[data-ok-data-grid-data] › thead › tr › th[data-ok-field]?… · tbody › tr[data-ok-row-id]? › td…
+                                                 (HTML only, data-ok-auto-generate, 4.18.14: read and removed at setup)
   template[data-ok-data-grid-detail="<row id>"][data-ok-detail-height]? (HTML only: a panel's content)
   Popover#<id>-filters › template[data-ok-data-grid-any-of="<id>-filter-value"] › Autocomplete (HTML only)
   div[data-ok-data-grid-live][role=status]       (rowReordering: "Row moved to position n of m")
@@ -148,6 +158,12 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     › LinearProgress | CircularProgress | span[data-ok-data-grid-skeleton] × 5
   div[data-ok-data-grid-overlay][role=status][hidden]?   ("No rows" / "No results found."; hidden while loading)
   Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=asc|desc|unsort|left|right|pin-left|pin-right|unpin|filter|hide|columns]
+  Menu#<id>-context-menu[data-ok-anchor-reference=anchorPosition][data-ok-anchor-position]?   (contextMenu, 4.18.13)
+    › ul[role=menu][aria-label="Cell actions"] › MenuItem[data-ok-data-grid-context-action=copy|paste|chart-range|<name>]
+      [data-ok-show-divider]?[aria-disabled]?, MenuSubmenu (trigger [data-ok-data-grid-context-action=export|pin],
+      popover #<id>-context-menu-export | -pin) › MenuItem[…=export-csv|export-excel|print] | […=pin-left|pin-right|unpin]
+    (React: the items of the cell it opened on, the default ones at rest; HTML: the markup's items)
+  div[data-ok-data-grid-live][role=status] (also with contextMenu: refused pastes)
   div[data-ok-data-grid-status-bar][role=status]   (statusBar with cellSelection; also with hideFooter)
     › span[data-ok-data-grid-status-item=count|sum|avg|min|max] (written by the owner)
   div[data-ok-data-grid-footer] › span[data-ok-data-grid-selected-row-count]? (selected rows; written by the grid)
@@ -224,6 +240,9 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `autoHeight` | `data-ok-auto-height` | flag | boolean | off | The grid grows with its rows: no scroll area, so no virtualization. |
 | `autoPageSize` | `data-ok-auto-page-size` | flag | boolean | off | The page size fits the grid's height (no rows per page choice). The grid needs a height. |
 | `rowSelection` | `data-ok-row-selection="false"` turns it off | behavior | boolean | on | Rows can be selected (`"false"`: no selection, no checkboxes, no `aria-selected`). |
+| `contextMenu` | `data-ok-context-menu` | flag | boolean | off | A right click, Shift + F10 or the Menu key on a cell opens a menu: copy, paste, export, chart, pin. |
+| `filterGroups` | `data-ok-filter-groups` | flag | boolean | off | The filter panel nests groups of filters, each with its own And / Or (Add group). |
+| `autoGenerate` | `data-ok-auto-generate` | flag | boolean | off | Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`). |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -310,7 +329,14 @@ ApexGrid / AG Grid / spreadsheets): apiRef `createRangeChart({ cellRange?, chart
 `{ id, model } | null`, Alt + F1, chart model `rows` (range charts) and `crossFilter`, apiRef
 `chartsToJSON()` / `restoreCharts(config)` (ApexGrid `chart.toJSON()` / `chart.restore()`), locale keys
 `chartsRange`, `chartsRangeLabel`, `chartsRangeCreated`, `chartsRangeRefused`, `chartsCrossFilter`,
-`chartsCrossFilterApplied`, `chartsCrossFilterCleared`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+`chartsCrossFilterApplied`, `chartsCrossFilterCleared`. Beyond MUI X (4.18.13, ADR-0057, ApexGrid /
+AG Grid): `contextMenu`, `getContextMenuItems(params)` (built-in names `copy`, `paste`, `export`,
+`chart-range`, `pin`, `separator`; items `{ name, label, onClick, disabled }`; params `{ id, field, row,
+value, colDef, defaultItems }`), `filterGroups`, filter model `groups` (`GridFilterGroup { items,
+logicOperator, groups }`), locale keys `contextMenuLabel`, `contextMenuCopy`, `contextMenuPaste`,
+`contextMenuExport`, `contextMenuPin`, `contextMenuPasteRefused`, `filterPanelAddGroup`,
+`filterPanelRemoveGroup`, `filterPanelGroup`. Beyond MUI X (4.18.14, ApexGrid `autoGenerate`):
+`columns` optional, `autoGenerate`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
@@ -597,6 +623,58 @@ missing or refuses `number` leaves its figure out. The bar is a `role=status` re
 exists while the flag is on and is empty without a selection; HTML rewrites it only when the text
 changes (no repeated announcements). React: custom `aggregationFunctions` apply; HTML: built-ins.
 
+Cell menu (4.18.13, ADR-0057, core `grid-context-menu.ts`): with `contextMenu`, a right click on a
+data cell (at the pointer), Shift + F10 or the Menu key on the focused cell (at its lower start
+corner) opens `Menu#<id>-context-menu` through the Popover's `anchorPosition`; the cell takes the
+focus first and gets it back when the menu closes (Escape, a choice, Tab). Headers, fields being
+edited, `actions` columns, special and generated rows and grids inside cells keep the browser's menu
+(so do Shift + F10 / the Menu key there); the browser's `contextmenu` that follows the key is
+swallowed. A cell outside the selected cells becomes the selection (cell selection on). Default
+items (core `gridDefaultContextMenuItems`): Copy (the selected cells, else the selected rows, else the
+cell: the Clipboard API, else the copy command), Paste (editable columns and paste on:
+`navigator.clipboard.readText()`, then the same path as Ctrl / Cmd + V; refused → "Press Ctrl + V
+(Cmd + V on a Mac) to paste" in the live region), Export › Download as CSV / Download as Excel /
+Print, Chart from selection (`cellSelection` + `chartsIntegration`: `createRangeChart`, announced),
+Pin column › Pin to left / Pin to right / Unpin (not `disableColumnPinning`; the submenu is disabled
+for `pinnable: false`, the current side disabled). Separators draw the line under the item before
+them (core `gridContextMenuEntries`). React `getContextMenuItems` decides the items of each cell
+(custom items run `onClick(params)` on the cell); HTML authors add items to the menu's markup or in
+`ok:data-grid:contextmenu` (cancelable: the browser's menu stays), and `ok:data-grid:contextmenuselect`
+reports each choice (cancelable: skips a built-in action).
+
+Filter groups (4.18.13, ADR-0057): the filter model is a group (`items`, `logicOperator`, `groups`),
+groups nest up to 8 levels (deeper ones are ignored and dropped by `sanitizeGridState`), and each
+combines its items and groups with its own And / Or. Items without a value don't count at any level
+(behavior change: an empty row no longer lets every row through an Or at the top level). With
+`filterGroups`, **Add group** (in the panel and in each group) adds a group with one row; a group's
+remove button removes it with everything in it; removing a group's last row removes the group. A
+group's And / Or is its second entry's select (rows first, then groups); its own place in its box
+shows the box's And / Or from the second place on (disabled after the second, as rows). Ids follow
+the path (`<id>-filter-field-g0-g1-<n>`, groups `<id>-filter-group-g0`), so every label stays
+unique. HTML reads the panel's tree on every change (`ok:data-grid:filter` carries the groups), builds
+groups and rows from copies of the panel's first row and buttons, and renames ids after each change.
+Header filters, the column menu's Filter item and cross-filtering edit the top-level items.
+
+Generated columns (4.18.14, ADR-0057, core `grid-auto-columns.ts`): React generates the columns when
+`columns` is left out, or empty with `autoGenerate` (given columns always win; ApexGrid ignores
+`autoGenerate` when columns exist), again whenever `rows` changes, and writes `data-ok-auto-generate`.
+Core `gridAutoColumns`: one column per field of the first 200 rows (`GRID_AUTO_SAMPLE`), in first-seen
+order (`__proto__`, `constructor`, `prototype` skipped), `flex: 1`, `minWidth: 120`, header
+`gridHeaderName` (sentence case split at capitals, `_`, `-` and spaces, acronyms kept, `id` → "ID"),
+type `gridInferColumnType` over the non-blank values: all booleans → `boolean`, all finite numbers →
+`number`, all dates (at midnight) or `YYYY-MM-DD` → `date`, with a time or ISO date times → `dateTime`,
+else `string`. HTML (`data-ok-auto-generate`, header row without data columns, and a
+`table[data-ok-data-grid-data]` child): before the grid reads its markup, the runtime reads the table
+as text (`fromText`: "42" a number, "true" a boolean; `gridAutoValue`), writes the headers (title, sort
+icon, menu button unless `data-ok-disable-column-menu`, resize handle unless
+`data-ok-disable-column-resize`), the body rows (ids: the `id` field, else the `tr`'s
+`data-ok-row-id`, else 1…n; a copy of the checkbox header with "Select row" when the header row has
+one), a row template when there is none, the counts, the columns panel's switches and the filter
+fields' options, then removes the table. `th[data-ok-field]` names the field and its text the
+header. Not generated in HTML: other special columns (reorder, detail panels, tree data), column
+groups, header filter cells; JSON data and late data (generation runs once, at setup: `setRows` then
+fills the generated columns).
+
 ## Keyboard
 | Key | Action |
 |---|---|
@@ -620,6 +698,7 @@ changes (no repeated announcements). React: custom `aggregationFunctions` apply;
 | Ctrl / Cmd + Z (cell, header) | Undo the last edit or paste |
 | Ctrl / Cmd + Shift + Z, Ctrl / Cmd + Y (cell, header) | Redo it |
 | Up / Down (header filter field) | Move to the cell above / below |
+| Shift + F10, Menu key (cell, `contextMenu`) | Open the cell menu; in it: the Menu's keys (arrows, Enter, Space, Right / Left for submenus, Escape back to the cell) |
 
 ## Accessibility
 `role=grid` named by `aria-label` / `aria-labelledby` (never the root), counts and indexes,
@@ -629,7 +708,10 @@ changes (no repeated announcements). React: custom `aggregationFunctions` apply;
 `[data-ok-data-grid-live]` (polite `status`, visually hidden): "Chart created: <label>", "Select
 cells with numbers to create a chart", "Filtered by <header>: <values>", "Filter cleared". Every
 pointer path has a keyboard one: Alt + F1 or the panel's button (WCAG 2.5.7), Enter / Space on the
-chart's plot for category clicks.
+chart's plot for category clicks, Shift + F10 or the Menu key for the right click menu. The cell menu
+is a WAI-ARIA menu named "Cell actions" with submenus; refused pastes are announced. Filter groups
+are `role=group` named "Filter group 1", "Filter group 1.2"; their remove buttons are named "Remove
+group".
 
 ## Events / API
 HTML: `ok:data-grid:sort | filter | selection | columns | density | order | pinned` (cancelable,
@@ -669,7 +751,10 @@ start or stop people make); instance `cellModesModel`, `rowModesModel`, `setCell
 `setRowModesModel(model)` (no events), `setEditCellValue({ id, field, value })`;
 `setSortComparator(field, { sortComparator?, getSortComparator? } | null)`
 (values: `data-ok-value`, else the cell text; rows: the row elements); (4.18.51)
-`setPastedValueParser(field, parser | null)` (gets the pasted text and the row's values).
+`setPastedValueParser(field, parser | null)` (gets the pasted text and the row's values);
+(4.18.13) `ok:data-grid:contextmenu` (cancelable, `{ id, field, value, menu }`: the menu's list, to
+add or change items), `ok:data-grid:contextmenuselect` (cancelable, `{ action, id, field }`);
+`ok:data-grid:filter` models carry `groups`.
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`,
 `data-ok-sorting-order` (root and headers, JSON).
 
@@ -733,6 +818,9 @@ the detailed record of what is kept.
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |
 | (not in MUI X) set filter (ApexGrid, spreadsheets): a checklist of a column's values | column `filterVariant: "set"` | added (4.18.10) | on the `isAnyOf` model (string, number, singleSelect columns); filter panel and header filter; HTML `data-ok-filter-variant="set"` on the header |
+| (not in MUI X; MUI X: `slotProps.cell.onContextMenu`) cell context menu (ApexGrid "Context menu", AG Grid `getContextMenuItems`) | `contextMenu`, `getContextMenuItems` | added (4.18.13, ADR-0057) | AG Grid names in kebab case (`copy`, `paste`, `export` = AG Grid's `csvExport` / `excelExport` in a submenu with Print, `chart-range` = `chartRange`, `pin` = `pinSubMenu`, `separator`); custom items flat (no `subMenu`), `icon`, `shortcut`, `cssClasses`, `suppressContextMenu`, `allowContextMenuWithControlKey`, `preventDefaultOnContextMenu`, `popupParent`: not done; HTML `data-ok-context-menu`, markup items, `ok:data-grid:contextmenu` / `contextmenuselect` |
+| (not in MUI X: one flat `items` list) nested filter groups (ApexGrid filter builder, AG Grid advanced filter) | filter model `groups` (`GridFilterGroup`), `filterGroups` | added (4.18.13, ADR-0057) | each group's own `logicOperator`; JSON (`exportState` / `restoreState`, sanitized, 8 levels); the panel builds them (no separate builder element, no drag to move a condition between groups) |
+| (not in MUI X: `columns` is required) generated columns (ApexGrid `autoGenerate`) | `columns` optional, `autoGenerate`; HTML `data-ok-auto-generate` + `table[data-ok-data-grid-data]` | added (4.18.14, ADR-0057) | ApexGrid's column types `currency` / `percent` aren't inferred (no such types; use `valueFormatter` / `data-ok-format`); React regenerates when `rows` change (ApexGrid: on the first render only); HTML generates once at setup |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
 | (not in MUI X) range charts (ApexGrid / AG Grid `createRangeChart`, spreadsheets' Alt + F1) | apiRef / instance `createRangeChart({ cellRange, chartType, label, id })`, Alt + F1, panel **Chart from selection**, model `rows` | added (4.18.12, ADR-0055) | AG Grid's `cellRange: { rowStartIndex, rowEndIndex, columns }` → a cell selection model; returns `{ id, model }` (AG Grid: a `ChartRef`); categories from the first column (series by rows, AG Grid `seriesChartTypes` / combination charts, chart windows and `chartThemes`: not done) |
 | (not in MUI X) cross-filtering (ApexGrid `chart.crossFilter`, AG Grid cross-filter charts) | model `crossFilter` (panel switch) | added (4.18.12, ADR-0055) | the field's `isAnyOf` filter item; the chart draws the rows that pass the other filters; not pivoted, server-filtered or numeric scatter charts; one grid (no filters across grids) |

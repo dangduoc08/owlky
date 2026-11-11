@@ -584,6 +584,11 @@ export interface DataGridParts {
   "data-ok-data-grid-any-of": Part<"template">;
   /** The rows. */
   "data-ok-data-grid-body": Part<"div">;
+  /**
+   * HTML only, with `data-ok-auto-generate`: the data the runtime builds the columns and rows from
+   * (header cells name the fields, or carry `data-ok-field`); removed once read.
+   */
+  "data-ok-data-grid-data": Part<"table">;
   /** HTML only: the template of a column's custom cells, named by its field. */
   "data-ok-data-grid-cell": Part<"template">;
   /** Several charts: the chart the panel edits. */
@@ -630,6 +635,21 @@ export interface DataGridParts {
   "data-ok-data-grid-filter-add": Part;
   /** The button that removes a filter. */
   "data-ok-data-grid-filter-remove": Part;
+  /** With `filterGroups`: the button that adds a group of filters (in the panel or in a group). */
+  "data-ok-data-grid-filter-add-group": Part<"button">;
+  /** A group of filters with its own And / Or: its filters, its groups and its buttons. */
+  "data-ok-data-grid-filter-group": Part<"div">;
+  /** A filter group's first line: its remove button and, after the first entry, the And / Or. */
+  "data-ok-data-grid-filter-group-header": Part<"div">;
+  /** The button that removes a filter group and everything in it. */
+  "data-ok-data-grid-filter-group-remove": Part<"button">;
+  /** A filter group's Add filter and Add group buttons. */
+  "data-ok-data-grid-filter-group-actions": Part<"div">;
+  /**
+   * On a cell menu item: what it does (`copy`, `paste`, `export`, `export-csv`, `export-excel`,
+   * `print`, `chart-range`, `pin`, `pin-left`, `pin-right`, `unpin`, or your own item's name).
+   */
+  "data-ok-data-grid-context-action": Value<string>;
   /** The footer: the selected rows and the pagination. */
   "data-ok-data-grid-footer": Part<"div">;
   /** A panel with a form, such as the columns or the filters. */

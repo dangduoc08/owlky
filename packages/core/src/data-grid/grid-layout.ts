@@ -6,12 +6,13 @@
 import type {
   GridColumnVisibilityModel,
   GridDensity,
+  GridFilterGroup,
   GridFilterItem,
   GridFilterModel,
   GridPinnedColumns,
   GridSortModel,
 } from "./data-grid.js";
-import { gridDensities } from "./data-grid.js";
+import { GRID_FILTER_MAX_DEPTH, gridDensities } from "./data-grid.js";
 import { type GridChartsState, sanitizeGridChartsState } from "./grid-charts.js";
 import {
   type GridAggregationModel,
@@ -256,6 +257,37 @@ const entries = <T>(
 };
 
 /**
+ * A filter group (or a model's items, logic and groups) from untrusted input: known keys and
+ * value types only, groups nested at most `GRID_FILTER_MAX_DEPTH` levels.
+ */
+export function sanitizeGridFilterGroup(input: unknown, depth = 0): GridFilterGroup {
+  if (!isRecord(input)) return { items: [] };
+  const items = Array.isArray(input["items"]) ? input["items"] : [];
+  const group: GridFilterGroup = {
+    items: items.flatMap((item): GridFilterItem[] => {
+      if (!isRecord(item) || typeof item["field"] !== "string") return [];
+      if (typeof item["operator"] !== "string") return [];
+      const value = item["value"];
+      return [
+        {
+          field: item["field"],
+          operator: item["operator"],
+          ...(typeof value === "string" ? { value } : {}),
+          ...(Array.isArray(value) ? { value: strings(value) as string[] } : {}),
+        },
+      ];
+    }),
+  };
+  if (input["logicOperator"] === "and" || input["logicOperator"] === "or")
+    group.logicOperator = input["logicOperator"];
+  if (Array.isArray(input["groups"]) && depth < GRID_FILTER_MAX_DEPTH) {
+    const groups = input["groups"].map((g) => sanitizeGridFilterGroup(g, depth + 1));
+    if (groups.length) group.groups = groups;
+  }
+  return group;
+}
+
+/**
  * A grid state from untrusted input (stored JSON, URLs): only known keys and value types are kept,
  * never `__proto__`, `constructor` or `prototype`.
  */
@@ -275,24 +307,7 @@ export function sanitizeGridState(input: unknown): GridState {
     };
   const filter = isRecord(input["filter"]) ? input["filter"]["filterModel"] : undefined;
   if (isRecord(filter)) {
-    const items = Array.isArray(filter["items"]) ? filter["items"] : [];
-    const model: GridFilterModel = {
-      items: items.flatMap((item): GridFilterItem[] => {
-        if (!isRecord(item) || typeof item["field"] !== "string") return [];
-        if (typeof item["operator"] !== "string") return [];
-        const value = item["value"];
-        return [
-          {
-            field: item["field"],
-            operator: item["operator"],
-            ...(typeof value === "string" ? { value } : {}),
-            ...(Array.isArray(value) ? { value: strings(value) as string[] } : {}),
-          },
-        ];
-      }),
-    };
-    if (filter["logicOperator"] === "and" || filter["logicOperator"] === "or")
-      model.logicOperator = filter["logicOperator"];
+    const model: GridFilterModel = sanitizeGridFilterGroup(filter, 0);
     const words = strings(filter["quickFilterValues"]);
     if (words) model.quickFilterValues = words;
     state.filter = { filterModel: model };

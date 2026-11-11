@@ -9,6 +9,7 @@ import {
   createGridCellSelection,
   createGridClipboard,
   createGridColumnControls,
+  createGridContextMenu,
   createGridDataSourceCache,
   createGridHistoryKeys,
   createGridHistoryStack,
@@ -44,6 +45,8 @@ import {
   type GridEditStartReason,
   type GridEditTarget,
   type GridExcelOptions,
+  type GridFilterGroup,
+  type GridFilterItem,
   type GridFilterModel,
   type GridFilterOperator,
   type GridFormat,
@@ -74,7 +77,9 @@ import {
   gridAggregationPositionOf,
   gridAlign,
   gridAriaSort,
+  gridAutoColumns,
   gridAutoPageSize,
+  gridAutoValue,
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
@@ -103,6 +108,8 @@ import {
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
+  gridFilterGroupName,
+  gridFilterGroupSuffix,
   gridFilterOperators,
   gridFilterValues,
   gridFooterRowCount,
@@ -257,6 +264,16 @@ export interface DataGridEvents {
   editstart: EventSpec<{ id: string; field?: string; reason: string }>;
   /** After editing stopped. */
   editstop: EventSpec<{ id: string; field?: string; reason: string }>;
+  /**
+   * Before the cell menu opens on a cell (`data-ok-context-menu`): add, hide or disable items of
+   * `menu` (its list). Call `preventDefault()` to keep the browser's own menu.
+   */
+  contextmenu: EventSpec<{ id: string; field: string; value: unknown; menu: HTMLElement }, true>;
+  /**
+   * A cell menu item was chosen (`action`: its `data-ok-data-grid-context-action`), on the cell the
+   * menu opened on. Call `preventDefault()` to skip a built-in item's action.
+   */
+  contextmenuselect: EventSpec<{ action: string; id: string; field: string }, true>;
   /** After Ctrl / Cmd + Z (or `history.undo()`) restored rows, with their ids. */
   undo: EventSpec<{ ids: string[] }>;
   /** After a redo changed rows again, with their ids. */
@@ -503,6 +520,8 @@ const {
   headerFilterHeight,
   rowSpacingType,
   autoPageSize,
+  contextMenu: contextMenuOption,
+  filterGroups: filterGroupsOption,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -590,6 +609,203 @@ const parseJson = (json: string | null): unknown => {
   }
 };
 
+/** The column menu button's three dots (the React icon). */
+const dotsIcon = () => {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("fill", "currentColor");
+  for (const cy of ["5", "12", "19"]) {
+    const circle = document.createElementNS(SVG, "circle");
+    circle.setAttribute("cx", "12");
+    circle.setAttribute("cy", cy);
+    circle.setAttribute("r", "2");
+    svg.append(circle);
+  }
+  return svg;
+};
+
+/** A switch of the columns panel (the FormControlLabel + Switch markup React renders). */
+const columnSwitch = (field: string, name: string) => {
+  const label = document.createElement("label");
+  label.setAttribute("data-ok-form-control-label", "");
+  label.setAttribute("data-ok-label-placement", "end");
+  const box = document.createElement("span");
+  box.setAttribute("data-ok-switch", "");
+  box.setAttribute("data-ok-color", "primary");
+  box.setAttribute("data-ok-size", "small");
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.setAttribute("role", "switch");
+  input.setAttribute("data-ok-switch-input", "");
+  input.setAttribute("data-ok-field", field);
+  input.defaultChecked = true;
+  input.checked = true;
+  const part = (name: string) => {
+    const span = document.createElement("span");
+    span.setAttribute(name, "");
+    span.setAttribute("aria-hidden", "true");
+    return span;
+  };
+  box.append(input, part("data-ok-switch-track"), part("data-ok-switch-thumb"));
+  const text = document.createElement("span");
+  text.setAttribute("data-ok-form-control-label-text", "");
+  text.textContent = name;
+  label.append(box, text);
+  return label;
+};
+
+/**
+ * `data-ok-auto-generate` (ApexGrid `autoGenerate`): a grid whose markup has no data columns gets
+ * them from its `table[data-ok-data-grid-data]` — headers, body rows, a row template, the columns
+ * panel's switches and the filter fields' columns — before the grid reads its markup. A header
+ * cell's `data-ok-field` names the field (its text the header); else its text is the field.
+ */
+function generateColumns(element: HTMLElement, main: HTMLElement, headerRow: HTMLElement): void {
+  const table = element.querySelector<HTMLTableElement>(":scope > table[data-ok-data-grid-data]");
+  if (!table || !element.hasAttribute("data-ok-auto-generate")) return;
+  const own = [...headerRow.querySelectorAll('[role="columnheader"][data-ok-field]')].filter(
+    (header) => !isSpecial(header.getAttribute("data-ok-field") ?? ""),
+  );
+  if (own.length) return;
+  const heads = [...(table.tHead?.rows[0]?.cells ?? [])];
+  const fields = heads.map((th) =>
+    (th.getAttribute("data-ok-field") ?? th.textContent ?? "").trim(),
+  );
+  const texts = [...table.tBodies]
+    .flatMap((section) => [...section.rows])
+    .map((tr) => ({
+      tr,
+      values: Object.fromEntries(fields.map((field, i) => [field, tr.cells[i]?.textContent ?? ""])),
+    }));
+  const columns = gridAutoColumns(
+    texts.map((row) => row.values),
+    { fromText: true, sample: Number.POSITIVE_INFINITY },
+  ).map((column, i) => {
+    const th = heads[fields.indexOf(column.field)] ?? heads[i];
+    return th?.hasAttribute("data-ok-field")
+      ? { ...column, headerName: th.textContent?.trim() || column.headerName }
+      : column;
+  });
+  const specials = [
+    ...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]'),
+  ];
+  const offset = specials.length;
+  const id = element.id;
+  const noMenu = element.hasAttribute("data-ok-disable-column-menu");
+  const noResize = element.hasAttribute("data-ok-disable-column-resize");
+  const labels = gridDefaultLabels;
+  columns.forEach((column, i) => {
+    const header = document.createElement("div");
+    header.setAttribute("role", "columnheader");
+    header.setAttribute("aria-colindex", String(i + 1 + offset));
+    header.setAttribute("data-ok-field", column.field);
+    header.setAttribute("data-ok-type", column.type ?? "string");
+    header.setAttribute("data-ok-align", gridHeaderAlign(column));
+    header.setAttribute("data-ok-min-width", String(column.minWidth));
+    header.setAttribute("data-ok-flex", String(column.flex));
+    header.setAttribute("aria-sort", "none");
+    header.tabIndex = -1;
+    const title = document.createElement("span");
+    title.setAttribute("data-ok-data-grid-header-title", "");
+    title.textContent = column.headerName ?? column.field;
+    const sortIcon = document.createElement("span");
+    sortIcon.setAttribute("data-ok-data-grid-sort-icon", "");
+    sortIcon.append(icon(SORT_ARROW));
+    header.append(title, sortIcon);
+    if (!noMenu) {
+      const button = document.createElement("button");
+      button.type = "button";
+      for (const [name, value] of [
+        ["data-ok-icon-button", ""],
+        ["data-ok-color", "default"],
+        ["data-ok-size", "sm"],
+        ["data-ok-data-grid-menu-button", ""],
+        ["tabindex", "-1"],
+        ["aria-label", `${column.headerName} ${labels.columnHeaderMenuLabel}`],
+        ["aria-haspopup", "menu"],
+        ["aria-expanded", "false"],
+        ["aria-controls", `${id}-column-menu`],
+      ])
+        button.setAttribute(name as string, value as string);
+      button.append(dotsIcon());
+      header.append(button);
+    }
+    if (!noResize) {
+      const resize = document.createElement("span");
+      resize.setAttribute("data-ok-data-grid-resize", "");
+      resize.setAttribute("aria-hidden", "true");
+      header.append(resize);
+    }
+    headerRow.append(header);
+  });
+  // Body rows (and a template for setRows), cells as React writes them.
+  const body = main.querySelector("[data-ok-data-grid-body]") as HTMLElement;
+  const checkHeader = specials.find((s) => s.getAttribute("data-ok-field") === GRID_CHECKBOX_FIELD);
+  const rowOf = (values: Record<string, string>, rowId: string, index: number) => {
+    const row = document.createElement("div");
+    row.setAttribute("role", "row");
+    row.setAttribute("aria-rowindex", String(index + 2));
+    row.setAttribute("data-ok-row-id", rowId);
+    if (checkHeader) {
+      const cell = checkHeader.cloneNode(true) as HTMLElement;
+      cell.setAttribute("role", "gridcell");
+      cell.querySelector("input")?.setAttribute("aria-label", labels.checkboxSelectionSelectRow);
+      row.append(cell);
+    }
+    columns.forEach((column, c) => {
+      const cell = document.createElement("div");
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("aria-colindex", String(c + 1 + offset));
+      cell.setAttribute("data-ok-field", column.field);
+      cell.setAttribute("data-ok-align", gridAlign(column));
+      const text = values[column.field] ?? "";
+      const value = gridAutoValue(text, column.type ?? "string");
+      // Raw values that aren't the text they show (numbers, booleans, blanks), as React writes.
+      if (typeof value !== "string")
+        cell.setAttribute("data-ok-value", value === null ? "" : String(value));
+      cell.tabIndex = -1;
+      cell.textContent = value === null ? "" : text.trim();
+      row.append(cell);
+    });
+    return row;
+  };
+  body.replaceChildren(
+    ...texts.map(({ tr, values }, index) =>
+      rowOf(
+        values,
+        values["id"]?.trim() || tr.getAttribute("data-ok-row-id") || String(index + 1),
+        index,
+      ),
+    ),
+  );
+  if (!element.querySelector("template[data-ok-data-grid-row]")) {
+    const template = document.createElement("template");
+    template.setAttribute("data-ok-data-grid-row", "");
+    template.content.append(rowOf({}, "", 0));
+    element.append(template);
+  }
+  main.setAttribute("aria-colcount", String(columns.length + offset));
+  main.setAttribute("aria-rowcount", String(texts.length + 1));
+  // The toolbar's panels list the columns.
+  const panel = id
+    ? document.getElementById(`${id}-columns`)?.querySelector("[data-ok-data-grid-panel]")
+    : null;
+  panel?.append(...columns.map((c) => columnSwitch(c.field, c.headerName ?? c.field)));
+  const filters = id ? document.getElementById(`${id}-filters`) : null;
+  for (const select of filters?.querySelectorAll<HTMLSelectElement>(
+    'select[id*="-filter-field"]',
+  ) ?? [])
+    select.replaceChildren(
+      ...columns.map((column) => {
+        const option = document.createElement("option");
+        option.value = column.field;
+        option.textContent = column.headerName ?? column.field;
+        return option;
+      }),
+    );
+  table.remove();
+}
 /**
  * DataGrid — spec: specs/components/data-grid.md (ADR-0020, phase 1)
  *
@@ -618,6 +834,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const headerRow = headerGroup.querySelector<HTMLElement>(
       ':scope > [role="row"]:not([data-ok-data-grid-group-row])',
     ) as HTMLElement;
+    // data-ok-auto-generate: the columns and rows from the data table, before anything reads them.
+    generateColumns(element, main, headerRow);
     const pinnedRowEls = () => [
       ...main.querySelectorAll<HTMLElement>('[data-ok-data-grid-pinned-rows] > [role="row"]'),
     ];
@@ -3146,28 +3364,29 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       (document.activeElement as Element | null)?.closest<HTMLElement>(
         '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
       );
+    const copyCellsText = (): string | null => {
+      const fields = shownNow.filter((c) => c.type !== "actions").map((c) => c.field);
+      const picked = cellsOn() ? gridSelectedBlock(cellModel, pageIds(), fields) : null;
+      const byRow = (rowId: string) => rowEls.find((r) => idOf(r) === rowId) as HTMLElement;
+      let block: string[][] | null = picked?.ids.length
+        ? picked.ids.map((rowId) =>
+            picked.fields.map((f) =>
+              isGridCellSelected(cellModel, rowId, f) ? text(byRow(rowId), f) : "",
+            ),
+          )
+        : null;
+      const chosen = sortedList.filter(
+        (row) => !row.hasAttribute("data-ok-generated") && selection.includes(idOf(row)),
+      );
+      if (!block && chosen.length) block = chosen.map((row) => fields.map((f) => text(row, f)));
+      const cell = focusedCell();
+      const row = cell?.closest<HTMLElement>(ROW);
+      if (!block && cell && row && !row.hasAttribute("data-ok-generated"))
+        block = [[text(row, cell.getAttribute("data-ok-field") as string)]];
+      return block ? gridToTsv(block) : null;
+    };
     const clipboard = createGridClipboard(main, {
-      copyText: () => {
-        const fields = shownNow.filter((c) => c.type !== "actions").map((c) => c.field);
-        const picked = cellsOn() ? gridSelectedBlock(cellModel, pageIds(), fields) : null;
-        const byRow = (rowId: string) => rowEls.find((r) => idOf(r) === rowId) as HTMLElement;
-        let block: string[][] | null = picked?.ids.length
-          ? picked.ids.map((rowId) =>
-              picked.fields.map((f) =>
-                isGridCellSelected(cellModel, rowId, f) ? text(byRow(rowId), f) : "",
-              ),
-            )
-          : null;
-        const chosen = sortedList.filter(
-          (row) => !row.hasAttribute("data-ok-generated") && selection.includes(idOf(row)),
-        );
-        if (!block && chosen.length) block = chosen.map((row) => fields.map((f) => text(row, f)));
-        const cell = focusedCell();
-        const row = cell?.closest<HTMLElement>(ROW);
-        if (!block && cell && row && !row.hasAttribute("data-ok-generated"))
-          block = [[text(row, cell.getAttribute("data-ok-field") as string)]];
-        return block ? gridToTsv(block) : null;
-      },
+      copyText: copyCellsText,
       canPaste: () =>
         !element.hasAttribute(disableClipboardPaste.attr) && columns.some((c) => c.editable),
       onCopy: (data) => emit("clipboardcopy", { data }),
@@ -3785,8 +4004,20 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
 
     // Filter panel: rows of (logic,) column, operator, value; Add filter clones the first row.
+    // Filter groups (data-ok-filter-groups) nest rows and groups; each box has its own And / Or.
     const filterPanel = byId("filters");
-    const filterRows = () => [
+    const panelBox = filterPanel?.querySelector<HTMLElement>("[data-ok-data-grid-panel]") ?? null;
+    const GROUP = "[data-ok-data-grid-filter-group]";
+    const rowsIn = (box: HTMLElement | null) => [
+      ...(box?.querySelectorAll<HTMLElement>(":scope > [data-ok-data-grid-filter]") ?? []),
+    ];
+    const groupsIn = (box: HTMLElement | null) => [
+      ...(box?.querySelectorAll<HTMLElement>(`:scope > ${GROUP}`) ?? []),
+    ];
+    /** The rows of the panel itself (not those in groups). */
+    const filterRows = () => rowsIn(panelBox);
+    /** Every row, in groups too. */
+    const allFilterRows = () => [
       ...(filterPanel?.querySelectorAll<HTMLElement>("[data-ok-data-grid-filter]") ?? []),
     ];
     const partsOf = (row: HTMLElement) => {
@@ -3917,41 +4148,139 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       );
       if (choices.some((c) => c.value === current)) operatorSelect.value = current;
     };
-    const readFilters = (): GridFilterModel => {
-      const rowsNow = filterRows();
-      const logic = rowsNow[1] ? partsOf(rowsNow[1]).logic?.value : undefined;
+    /** A filter row's item. */
+    const readItem = (row: HTMLElement): GridFilterItem => {
+      const { field, operator, input, chips, date, set } = partsOf(row);
+      if (set) return { field: field.value, operator: operator.value, value: setChecked(set) };
+      if (chips) return { field: field.value, operator: operator.value, value: chipValues(chips) };
+      if (date)
+        return {
+          field: field.value,
+          operator: operator.value,
+          value: runtime.getOrCreate<DatePickerInstance>(date, "date-picker")?.value ?? "",
+        };
+      (input as HTMLInputElement).disabled = !gridOperatorNeedsValue(
+        operator.value,
+        operators[field.value],
+      );
       return {
-        ...filterModel,
-        items: rowsNow.map((row) => {
-          const { field, operator, input, chips, date, set } = partsOf(row);
-          if (set) return { field: field.value, operator: operator.value, value: setChecked(set) };
-          if (chips)
-            return { field: field.value, operator: operator.value, value: chipValues(chips) };
-          if (date)
-            return {
-              field: field.value,
-              operator: operator.value,
-              value: runtime.getOrCreate<DatePickerInstance>(date, "date-picker")?.value ?? "",
-            };
-          (input as HTMLInputElement).disabled = !gridOperatorNeedsValue(
-            operator.value,
-            operators[field.value],
-          );
-          return {
-            field: field.value,
-            operator: operator.value,
-            value: (input as HTMLInputElement).value,
-          };
-        }),
-        logicOperator: logic === "or" ? "or" : logic === "and" ? "and" : filterModel.logicOperator,
+        field: field.value,
+        operator: operator.value,
+        value: (input as HTMLInputElement).value,
       };
     };
-    const renameIds = (row: HTMLElement, index: number) => {
-      for (const node of row.querySelectorAll("[id], label[for]")) {
-        const attr = node.hasAttribute("id") ? "id" : "for";
-        const base = (node.getAttribute(attr) as string).replace(/-\d+$/, "");
-        node.setAttribute(attr, index === 0 ? base : `${base}-${index}`);
+    /** The And / Or select of an entry (a row or a group) of a box. */
+    const entryLogic = (entry: HTMLElement) =>
+      entry.matches(GROUP)
+        ? entry.querySelector<HTMLSelectElement>(
+            ':scope > [data-ok-data-grid-filter-group-header] select[id*="-filter-logic"]',
+          )
+        : partsOf(entry).logic;
+    const entriesIn = (box: HTMLElement) => [...rowsIn(box), ...groupsIn(box)];
+    /** A box's own And / Or: its second entry's select (one entry: none). */
+    const boxLogic = (box: HTMLElement) => {
+      const second = entriesIn(box)[1];
+      const logic = second ? entryLogic(second)?.value : undefined;
+      return logic === "or" ? "or" : logic === "and" ? "and" : undefined;
+    };
+    const readGroup = (box: HTMLElement): GridFilterGroup => {
+      const logic = boxLogic(box);
+      const groups = groupsIn(box).map(readGroup);
+      return {
+        items: rowsIn(box).map(readItem),
+        ...(logic ? { logicOperator: logic } : {}),
+        ...(groups.length ? { groups } : {}),
+      };
+    };
+    const readFilters = (): GridFilterModel => {
+      const root = readGroup(panelBox as HTMLElement);
+      const { groups: _, ...rest } = filterModel;
+      return {
+        ...rest,
+        items: root.items,
+        logicOperator: root.logicOperator ?? filterModel.logicOperator,
+        ...(root.groups ? { groups: root.groups } : {}),
+      };
+    };
+    /** A row's ids follow its place: `""` / `-<n>` in the panel, `-g<k>…-<n>` in a group. */
+    const ID_KINDS = "(field|operator|value|logic)";
+    const renameRow = (row: HTMLElement, suffix: string) => {
+      const field = partsOf(row).field;
+      const old = field.id.slice(`${id}-filter-field`.length);
+      if (old === suffix) return;
+      const pattern = new RegExp(
+        `-filter-${ID_KINDS}${old.replace(/[-]/g, "\\-")}(?=$|-(?![0-9]|g[0-9]))`,
+        "g",
+      );
+      for (const node of [row, ...row.querySelectorAll("*")])
+        for (const attr of ["id", "for", "aria-controls", "aria-labelledby"]) {
+          const value = node.getAttribute(attr);
+          if (value?.includes("-filter-"))
+            node.setAttribute(attr, value.replace(pattern, `-filter-$1${suffix}`));
+        }
+    };
+    /** An And / Or field: a copy of the panel's first column field. */
+    const logicBox = () => {
+      const fieldBox = partsOf(filterRows()[0] as HTMLElement).field.closest(
+        "[data-ok-text-field]",
+      ) as HTMLElement;
+      const box = fieldBox.cloneNode(true) as HTMLElement;
+      for (const label of box.querySelectorAll("label, legend > span"))
+        label.textContent = labels.filterPanelLogicOperator;
+      (box.querySelector("select") as HTMLSelectElement).replaceChildren(
+        ...(["and", "or"] as const).map((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent =
+            value === "and" ? labels.filterPanelOperatorAnd : labels.filterPanelOperatorOr;
+          return option;
+        }),
+      );
+      return box;
+    };
+    /** Entries after the first carry their box's And / Or (only the second one can change it). */
+    const syncLogic = (entry: HTMLElement, index: number, logic: string, selectId: string) => {
+      let select = entryLogic(entry);
+      if (index === 0) {
+        select?.closest("[data-ok-text-field]")?.remove();
+        return;
       }
+      if (!select) {
+        const box = logicBox();
+        if (entry.matches(GROUP))
+          entry.querySelector(":scope > [data-ok-data-grid-filter-group-header]")?.append(box);
+        else partsOf(entry).field.closest("[data-ok-text-field]")?.before(box);
+        select = box.querySelector("select") as HTMLSelectElement;
+        select.value = logic;
+      }
+      select.id = selectId;
+      select.closest("[data-ok-text-field]")?.querySelector("label")?.setAttribute("for", selectId);
+      select.disabled = index > 1;
+    };
+    /** Renames every row and group after a change, and fixes their And / Or fields. */
+    const renumberFilters = (box = panelBox as HTMLElement, path: number[] = []) => {
+      const own = gridFilterGroupSuffix(path);
+      const logic = boxLogic(box) ?? (path.length ? "and" : (filterModel.logicOperator ?? "and"));
+      const rows = rowsIn(box);
+      const groups = groupsIn(box);
+      rows.forEach((row, index) => {
+        const suffix = path.length ? `${own}-${index}` : index === 0 ? "" : `-${index}`;
+        // The select is made with the row's current ids, then renamed with the row.
+        const current = partsOf(row).field.id.slice(`${id}-filter-field`.length);
+        syncLogic(row, index, logic, `${id}-filter-logic${current}`);
+        renameRow(row, suffix);
+      });
+      groups.forEach((group, index) => {
+        const at = [...path, index];
+        const suffix = gridFilterGroupSuffix(at);
+        group.id = `${id}-filter-group${suffix}`;
+        group.setAttribute(
+          "aria-label",
+          labels.filterPanelGroup.replaceAll("{index}", gridFilterGroupName(at)),
+        );
+        syncLogic(group, rows.length + index, logic, `${id}-filter-logic${suffix}`);
+        renumberFilters(group, at);
+      });
     };
     const resetRow = (row: HTMLElement) => {
       const { field, operator } = partsOf(row);
@@ -3964,41 +4293,58 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         input.disabled = false;
       }
     };
-    const addFilterRow = () => {
-      const rowsNow = filterRows();
-      const first = rowsNow[0] as HTMLElement;
+    /** Where new rows and groups go in a box: before its groups or its buttons. */
+    const insertIn = (box: HTMLElement, node: HTMLElement, group: boolean) => {
+      const last = group ? groupsIn(box).at(-1) : rowsIn(box).at(-1);
+      if (last) return last.after(node);
+      const next =
+        (group ? null : groupsIn(box)[0]) ??
+        box.querySelector(
+          ":scope > :is([data-ok-data-grid-filter-group-actions], [data-ok-data-grid-filter-add], [data-ok-data-grid-filter-add-group])",
+        );
+      if (next) next.before(node);
+      else box.append(node);
+    };
+    /** Add filter: a copy of the panel's first row, reset, at the end of the box's rows. */
+    const addFilterRow = (box = panelBox as HTMLElement) => {
+      const first = filterRows()[0] as HTMLElement;
       const row = first.cloneNode(true) as HTMLElement;
       // A copy of chips has no runtime: copy the plain value field instead.
       const firstBox = valueBoxes.get(first);
       if (firstBox)
         row
-          .querySelector("[data-ok-autocomplete], [data-ok-date-picker]")
+          .querySelector(
+            "[data-ok-autocomplete], [data-ok-date-picker], [data-ok-data-grid-set-filter]",
+          )
           ?.replaceWith(firstBox.cloneNode(true));
-      const index = rowsNow.length;
-      // The first row has no logic field: add a copy of the column field with and / or.
-      const fieldBox = partsOf(row).field.closest("[data-ok-text-field]") as HTMLElement;
-      const logicBox = fieldBox.cloneNode(true) as HTMLElement;
-      const select = logicBox.querySelector("select") as HTMLSelectElement;
-      select.id = `${id}-filter-logic`;
-      logicBox.querySelector("label")?.setAttribute("for", select.id);
-      for (const label of logicBox.querySelectorAll("label, legend > span"))
-        label.textContent = labels.filterPanelLogicOperator;
-      select.replaceChildren(
-        ...(["and", "or"] as const).map((value) => {
-          const option = document.createElement("option");
-          option.value = value;
-          option.textContent =
-            value === "and" ? labels.filterPanelOperatorAnd : labels.filterPanelOperatorOr;
-          return option;
-        }),
-      );
-      fieldBox.before(logicBox);
-      renameIds(row, index);
+      partsOf(row).logic?.closest("[data-ok-text-field]")?.remove();
       resetRow(row);
-      const logic = partsOf(row).logic as HTMLSelectElement;
-      logic.value = filterModel.logicOperator ?? "and";
-      logic.disabled = index > 1;
-      (rowsNow[rowsNow.length - 1] as HTMLElement).after(row);
+      insertIn(box, row, false);
+      renumberFilters();
+    };
+    /** Add group: a group holding one new row, with the panel's buttons copied into it. */
+    const addFilterGroup = (box = panelBox as HTMLElement) => {
+      const group = document.createElement("div");
+      group.setAttribute("data-ok-data-grid-filter-group", "");
+      group.setAttribute("role", "group");
+      const header = document.createElement("div");
+      header.setAttribute("data-ok-data-grid-filter-group-header", "");
+      const remove = (filterRows()[0] as HTMLElement)
+        .querySelector("[data-ok-data-grid-filter-remove]")
+        ?.cloneNode(true) as HTMLElement;
+      remove.removeAttribute("data-ok-data-grid-filter-remove");
+      remove.setAttribute("data-ok-data-grid-filter-group-remove", "");
+      remove.setAttribute("aria-label", labels.filterPanelRemoveGroup);
+      header.append(remove);
+      const actions = document.createElement("div");
+      actions.setAttribute("data-ok-data-grid-filter-group-actions", "");
+      for (const button of panelBox?.querySelectorAll(
+        ":scope > :is([data-ok-data-grid-filter-add], [data-ok-data-grid-filter-add-group])",
+      ) ?? [])
+        actions.append(button.cloneNode(true));
+      group.append(header, actions);
+      insertIn(box, group, true);
+      addFilterRow(group);
     };
     filterPanel?.addEventListener(
       "change",
@@ -4015,11 +4361,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (row && partsOf(row).field === target)
           fillOperators(partsOf(row).operator, target.value);
         if (row && target.tagName === "SELECT") syncValueField(row);
-        if (target.matches('select[id*="-filter-logic"]'))
-          for (const other of filterPanel.querySelectorAll<HTMLSelectElement>(
-            'select[id*="-filter-logic"]',
-          ))
-            other.value = target.value;
+        // An And / Or applies to its whole box: the other entries' fields follow.
+        if (target.matches('select[id*="-filter-logic"]')) {
+          const box = target.closest<HTMLElement>(`[data-ok-data-grid-filter], ${GROUP}`)
+            ?.parentElement as HTMLElement;
+          for (const entry of entriesIn(box)) {
+            const select = entryLogic(entry);
+            if (select) select.value = target.value;
+          }
+        }
         setFilter(readFilters());
       },
       { signal },
@@ -4048,30 +4398,41 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       "click",
       (event) => {
         const target = event.target as Element;
-        if (target.closest("[data-ok-data-grid-filter-add]")) {
-          addFilterRow();
+        const boxOf = (from: Element) =>
+          from.closest<HTMLElement>(GROUP) ?? (panelBox as HTMLElement);
+        const add = target.closest("[data-ok-data-grid-filter-add]");
+        const addGroup = target.closest("[data-ok-data-grid-filter-add-group]");
+        const removeGroup = target.closest("[data-ok-data-grid-filter-group-remove]");
+        if (add || addGroup) {
+          if (add) addFilterRow(boxOf(add));
+          else addFilterGroup(boxOf(addGroup as Element));
+          setFilter(readFilters());
+          return;
+        }
+        if (removeGroup) {
+          removeGroup.closest(GROUP)?.remove();
+          renumberFilters();
           setFilter(readFilters());
           return;
         }
         const remove = target.closest("[data-ok-data-grid-filter-remove]");
         if (!remove) return;
         const row = remove.closest<HTMLElement>("[data-ok-data-grid-filter]") as HTMLElement;
-        const rowsNow = filterRows();
-        if (rowsNow.length === 1) {
+        const box = row.parentElement as HTMLElement;
+        if (box === panelBox && filterRows().length === 1) {
+          // The panel always keeps a row: the last one is reset.
           resetRow(row);
-          setFilter({ ...filterModel, items: [] });
+          setFilter({ ...readFilters(), items: [] });
           return;
         }
         row.remove();
-        // The first row never has a logic field.
-        const first = filterRows()[0] as HTMLElement;
-        partsOf(first).logic?.closest("[data-ok-text-field]")?.remove();
-        for (const [i, r] of filterRows().entries()) renameIds(r, i);
+        // A group without rows or groups goes away.
+        if (box !== panelBox && entriesIn(box).length === 0) box.remove();
+        renumberFilters();
         setFilter(readFilters());
       },
       { signal },
     );
-
     // Quick filter.
     element
       .querySelector<HTMLInputElement>("[data-ok-data-grid-quick-filter] input")
@@ -4746,6 +5107,91 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       { signal },
     );
 
+    // Cell menu (data-ok-context-menu): a right click, Shift + F10 or the Menu key on a cell.
+    const cellMenuEl = byId("context-menu");
+    let cellMenuAt: { id: string; field: string; cell: HTMLElement } | null = null;
+    const cellMenu = createGridContextMenu(main, {
+      enabled: () => !!cellMenuEl && element.hasAttribute(contextMenuOption.attr),
+      onOpen: (cell, point) => {
+        const row = cell.closest<HTMLElement>(ROW);
+        const field = cell.getAttribute("data-ok-field") as string;
+        const column = columns.find((c) => c.field === field);
+        const menu = cellMenuEl?.querySelector<HTMLElement>('[role="menu"]');
+        // Data cells only: special and generated rows keep the browser's menu.
+        if (!row || !menu || !column || column.type === "actions") return false;
+        if (row.hasAttribute("data-ok-generated")) return false;
+        const rowId = idOf(row);
+        const item = (action: string) =>
+          cellMenuEl?.querySelector<HTMLElement>(`[data-ok-data-grid-context-action="${action}"]`);
+        const disable = (action: string, off: boolean) => {
+          if (off) item(action)?.setAttribute("aria-disabled", "true");
+          else item(action)?.removeAttribute("aria-disabled");
+        };
+        const side = gridPinSide(pinned, field);
+        disable("pin", column.pinnable === false);
+        disable("pin-left", side === "left");
+        disable("pin-right", side === "right");
+        disable("unpin", !side);
+        if (
+          !emit(
+            "contextmenu",
+            { id: rowId, field, value: cellValue(row, field), menu },
+            { cancelable: true },
+          )
+        )
+          return false;
+        // A cell outside the selected cells becomes the selection (spreadsheets).
+        if (cellsOn() && !isGridCellSelected(cellModel, rowId, field))
+          setCells(
+            gridCellRange(pageIds(), shownFields(), { id: rowId, field }, { id: rowId, field }),
+          );
+        cellMenuAt = { id: rowId, field, cell };
+        (cellMenuEl as HTMLElement).setAttribute(
+          "data-ok-anchor-position",
+          `${Math.round(point.top)},${Math.round(point.left)}`,
+        );
+        runtime.getOrCreate<PopoverInstance>(cellMenuEl as HTMLElement, "popover")?.open(cell);
+        return true;
+      },
+    });
+    signal.addEventListener("abort", () => cellMenu.destroy());
+    cellMenuEl?.addEventListener(
+      "ok:menu:select",
+      (event) => {
+        const at = cellMenuAt;
+        const action = (event as CustomEvent<{ item: Element }>).detail.item.getAttribute(
+          "data-ok-data-grid-context-action",
+        );
+        if (!at || !action) return;
+        // The action runs on the cell the menu opened on.
+        at.cell.focus({ preventScroll: true });
+        if (
+          !emit("contextmenuselect", { action, id: at.id, field: at.field }, { cancelable: true })
+        )
+          return;
+        if (action === "copy") {
+          const copied = copyCellsText();
+          if (copied !== null) void clipboard.copy(copied);
+        } else if (action === "paste")
+          void clipboard.paste().then((pasted) => {
+            if (!pasted) announce(labels.contextMenuPasteRefused);
+          });
+        else if (action === "export-csv") exportCsv();
+        else if (action === "export-excel") exportExcel();
+        else if (action === "print") print();
+        else if (action === "chart-range") rangeChart({}, true);
+        else if (action === "pin-left" || action === "pin-right" || action === "unpin")
+          setPinned(
+            pinGridColumn(
+              pinned,
+              at.field,
+              action === "unpin" ? null : action === "pin-left" ? "left" : "right",
+            ),
+          );
+      },
+      { signal },
+    );
+
     // Pointer: header sorting, menu buttons, row selection, checkboxes.
     element.addEventListener(
       "click",
@@ -4846,6 +5292,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         '[data-ok-data-grid-action="pin-left"], [data-ok-data-grid-action="pin-right"], [data-ok-data-grid-action="unpin"]',
       );
       off(disableMultipleColumnsFiltering.attr, "[data-ok-data-grid-filter-add]");
+      for (const part of element.querySelectorAll<HTMLElement>(
+        "[data-ok-data-grid-filter-add-group]",
+      ))
+        part.hidden =
+          element.hasAttribute(disableMultipleColumnsFiltering.attr) ||
+          !element.hasAttribute(filterGroupsOption.attr);
       if (checkbox) {
         if (multiple()) main.setAttribute("aria-multiselectable", "true");
         else main.removeAttribute("aria-multiselectable");
@@ -4935,7 +5387,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       ],
     });
 
-    for (const row of filterRows()) fillOperators(partsOf(row).operator, partsOf(row).field.value);
+    for (const row of allFilterRows())
+      fillOperators(partsOf(row).operator, partsOf(row).field.value);
     styleRows();
     syncGroupColumns();
     layout();
@@ -5092,7 +5545,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       },
       setFilterOperators(field, list) {
         operators[field] = list;
-        for (const row of filterRows())
+        for (const row of allFilterRows())
           if (partsOf(row).field.value === field) fillOperators(partsOf(row).operator, field);
         apply();
       },
@@ -5151,7 +5604,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       },
       setLocaleText(next) {
         labels = { ...gridDefaultLabels, ...next };
-        for (const row of filterRows())
+        for (const row of allFilterRows())
           fillOperators(partsOf(row).operator, partsOf(row).field.value);
         if (next.paginationDisplayedRows)
           pagination?.setAttribute("data-ok-label-displayed-rows", next.paginationDisplayedRows);

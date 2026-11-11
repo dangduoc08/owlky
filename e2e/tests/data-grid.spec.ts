@@ -649,6 +649,83 @@ for (const impl of implementations) {
       await expect(button).toHaveText("is any of: 3 selected");
     });
 
+    test("context menu: keyboard and pointer, a submenu, the focus back on the cell", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "context-menu"));
+      const cell = page.locator(
+        '[data-ok-row-id="is-2"] [role="gridcell"][data-ok-field="priority"]',
+      );
+      await cell.click();
+      await page.keyboard.press("Shift+F10");
+      const menu = page.getByRole("menu", { name: "Cell actions" });
+      await expect(menu).toBeVisible();
+      await expect(menu.getByRole("menuitem", { name: "Copy" })).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(menu).toBeHidden();
+      await expect(cell).toBeFocused();
+      // A right click; Pin column › Pin to left with the keyboard.
+      await cell.click({ button: "right" });
+      await expect(menu).toBeVisible();
+      await page.keyboard.press("End");
+      await expect(menu.getByRole("menuitem", { name: "Pin column" })).toBeFocused();
+      await page.keyboard.press("ArrowRight");
+      await expect(page.getByRole("menuitem", { name: "Pin to left" })).toBeFocused();
+      await page.keyboard.press("Enter");
+      await expect(menu).toBeHidden();
+      await expect(
+        page.locator('[data-ok-data-grid-header] [role="columnheader"][data-ok-field="priority"]'),
+      ).toHaveAttribute("data-ok-pinned", /./);
+      await expect(cell).toBeFocused();
+    });
+
+    test("filter groups: nested And / Or, added and removed by keyboard", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "filter-groups"));
+      expect(await visible(page, "title")).toHaveLength(4);
+      await page.getByRole("button", { name: "Filters" }).click();
+      const group = page.getByRole("group", { name: "Filter group 1" });
+      await expect(group).toBeVisible();
+      const logic = group.locator('select[id$="-filter-logic-g0-1"]');
+      await logic.selectOption("and");
+      await expect.poll(() => visible(page, "title")).toEqual([]);
+      await logic.selectOption("or");
+      await expect.poll(() => visible(page, "title")).toHaveLength(4);
+      await page
+        .locator("[data-ok-data-grid-panel] > [data-ok-data-grid-filter-add-group]")
+        .focus();
+      await page.keyboard.press("Enter");
+      const second = page.getByRole("group", { name: "Filter group 2" });
+      await expect(second).toBeVisible();
+      await second.getByLabel("Columns").selectOption("title");
+      await second.getByLabel("Value").fill("search");
+      await expect.poll(() => visible(page, "title")).toEqual(["Speed up search"]);
+      await second.getByRole("button", { name: "Remove group" }).focus();
+      await page.keyboard.press("Enter");
+      await expect(second).toHaveCount(0);
+      await expect.poll(() => visible(page, "title")).toHaveLength(4);
+    });
+
+    test("generated columns: typed from the data, sorted and filtered", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "generated-columns"));
+      await expect(page.locator('[role="columnheader"][data-ok-field]')).toHaveText([
+        /^ID/,
+        /^Name/,
+        /^Downloads/,
+        /^Stable/,
+        /^Release date/,
+      ]);
+      const downloads = page.getByRole("columnheader", { name: /^Downloads/ });
+      await expect(downloads).toHaveAttribute("data-ok-type", "number");
+      await downloads.click();
+      expect(await visible(page, "downloads")).toEqual(["120", "860", "2975", "4210"]);
+      await page.getByRole("button", { name: "Filters" }).click();
+      const panel = page.getByRole("group", { name: "Filters" });
+      await panel.getByLabel("Columns").selectOption("downloads");
+      await panel.getByLabel("Operator").selectOption(">");
+      await panel.getByLabel("Value").fill("1000");
+      await expect.poll(() => visible(page, "name")).toEqual(["Fixes", "First release"]);
+    });
+
     test("selection propagation: parents, children and group checkboxes", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "selection-propagation"));
       const tree = page.getByRole("treegrid", { name: "Work breakdown" });

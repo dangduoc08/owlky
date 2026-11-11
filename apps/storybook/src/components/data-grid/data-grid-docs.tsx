@@ -1,6 +1,7 @@
 import { dataGridOptions } from "@owlky/core";
 import dataGridApi from "@owlky/docs-content/api/data-grid.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
+import autoGroup from "../../../../../packages/html/src/components/data-grid/examples/auto-group.html?raw";
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
@@ -8,9 +9,11 @@ import chartsGroup from "../../../../../packages/html/src/components/data-grid/e
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
 import chartsRange from "../../../../../packages/html/src/components/data-grid/examples/charts-range.html?raw";
 import columnsGroup from "../../../../../packages/html/src/components/data-grid/examples/columns-group.html?raw";
+import contextGroup from "../../../../../packages/html/src/components/data-grid/examples/context-group.html?raw";
 import dimensionsBorders from "../../../../../packages/html/src/components/data-grid/examples/dimensions-borders.html?raw";
 import dimensionsPages from "../../../../../packages/html/src/components/data-grid/examples/dimensions-pages.html?raw";
 import editorsGroup from "../../../../../packages/html/src/components/data-grid/examples/editors-group.html?raw";
+import filtersGroup from "../../../../../packages/html/src/components/data-grid/examples/filters-group.html?raw";
 import footerGroup from "../../../../../packages/html/src/components/data-grid/examples/footer-group.html?raw";
 import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
@@ -1797,6 +1800,125 @@ export function Issues() {
 }`,
   },
   {
+    id: "context-menu",
+    title: "Open a menu on a cell",
+    body: "Set `contextMenu` to give the cells a menu, like a spreadsheet. A right click opens it at the pointer. On the keyboard, press Shift + F10 or the Menu key on the focused cell. The menu offers **Copy** and **Paste**, **Export** (CSV, Excel and Print), **Chart from selection** with `cellSelection` and `chartsIntegration`, and **Pin column**. Items that the grid's options turn off are left out: **Paste** needs editable columns, and **Pin column** needs column pinning. With cell selection, a right click on a cell outside the selection selects that cell first. **Copy** copies what Ctrl + C copies: the selected cells, else the selected rows, else the cell. **Paste** reads the clipboard, so the browser may ask the person first. If it can't read it, the grid tells screen reader users to press Ctrl + V instead. Escape or a choice closes the menu and puts the focus back on the cell. Headers and fields being edited keep the browser's own menu. In React, `getContextMenuItems` returns the items for each cell: built-in names such as `\"copy\"`, `\"separator\"` for a line, and your own items with a `name`, a `label` and an `onClick` that gets the cell. In HTML, add `data-ok-context-menu` to the grid and your own items to the menu's markup, or add them in the cancelable `ok:data-grid:contextmenu` event, which gets the cell and the menu. `ok:data-grid:contextmenuselect` reports each choice.",
+    html: `${gridOf(contextGroup)}
+<script type="module">
+  const element = document.getElementById("grid-context");
+  // Add an item for the cell the menu opens on
+  element.addEventListener("ok:data-grid:contextmenu", (event) => {
+    const { menu } = event.detail;
+    if (menu.querySelector('[data-ok-data-grid-context-action="details"]')) return;
+    const item = document.createElement("li");
+    item.setAttribute("role", "menuitem");
+    item.setAttribute("tabindex", "-1");
+    item.setAttribute("data-ok-menu-item", "");
+    item.setAttribute("data-ok-data-grid-context-action", "details");
+    item.textContent = "Show details";
+    menu.append(item);
+  });
+  element.addEventListener("ok:data-grid:contextmenuselect", (event) => {
+    if (event.detail.action === "details") console.log("Details of row", event.detail.id);
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1, editable: true },
+  { field: "priority", headerName: "Priority", width: 140 },
+  { field: "points", headerName: "Points", type: "number", width: 110, editable: true },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      contextMenu
+      cellSelection
+      getContextMenuItems={({ defaultItems }) => [
+        ...defaultItems,
+        "separator",
+        // Your own item gets the cell it opened on
+        { name: "details", label: "Show details", onClick: ({ row }) => console.log(row.title) },
+      ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "filter-groups",
+    title: "Group filters with And and Or",
+    body: "Set `filterGroups` to let people group filters in the filter panel, such as (Priority is High or Priority is Medium) and Points is more than 2. **Add group** adds a group with one filter, in the panel or inside another group. Each group has its own **Logic operator**: its filters and groups must all match (And), or any of them (Or). The group's place among its neighbours shows the operator that joins them. The remove button of a group removes it with everything in it, and a group whose last filter you remove goes away. Filters without a value don't count, so an empty filter never makes an Or match every row. The filter model keeps the groups in `groups`, nested up to eight levels, each with its own `items` and `logicOperator`. It's plain JSON, so you can store it with `exportState()` and apply it again with `restoreState()` or `filterModel`. Each group is a named group for screen readers, such as \"Filter group 1.2\", and every field in it is a native control. In HTML, add `data-ok-filter-groups` to the grid. The `ok:data-grid:filter` event carries the groups.",
+    html: `${gridOf(filtersGroup)}`,
+    react: `import { DataGrid, type GridColDef, type GridFilterModel } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "priority", headerName: "Priority", width: 140 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+];
+
+// (Priority is High or Medium) and more than 2 points
+const filterModel: GridFilterModel = {
+  items: [{ field: "points", operator: ">", value: "2" }],
+  groups: [
+    {
+      logicOperator: "or",
+      items: [
+        { field: "priority", operator: "equals", value: "High" },
+        { field: "priority", operator: "equals", value: "Medium" },
+      ],
+    },
+  ],
+};
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      showToolbar
+      filterGroups
+      initialState={{ filter: { filterModel } }}
+    />
+  );
+}`,
+  },
+  {
+    id: "generated-columns",
+    title: "Generate the columns from the data",
+    body: 'Leave `columns` out and the grid makes one column per field of the rows, in the order the fields first appear. Each column\'s type comes from its values: numbers make a `number` column, `true` and `false` a `boolean` column, dates or `YYYY-MM-DD` text a `date` column, dates with a time a `dateTime` column, and anything else a `string` column. Empty values don\'t count. Headers come from the field names in sentence case: `releaseDate` becomes "Release date" and `id` becomes "ID". The columns share the width and are at least 120px wide. They sort, filter, hide and export like any column. With `autoGenerate`, an empty `columns` array generates them too. Columns you give always win. The grid looks at the first 200 rows. In HTML, add `data-ok-auto-generate` to a grid without columns and put the data in a `<table data-ok-data-grid-data>` inside it: a header cell per field, then one row per data row. The script reads the text of the cells ("42" is a number, "true" a boolean), builds the headers, the rows and the panels\' lists, and removes the table. To name a column yourself, write the field in the header cell\'s `data-ok-field` and the header as its text. A field named `id` gives the rows their ids. Without one, the rows are numbered from 1.',
+    html: gridElement(autoGroup),
+    react: `import { DataGrid } from "@owlky/react";
+
+const releases = [
+  { id: 1, name: "Alpha", downloads: 120, stable: false, releaseDate: "2025-01-15" },
+  { id: 2, name: "Beta", downloads: 860, stable: false, releaseDate: "2025-03-02" },
+  { id: 3, name: "First release", downloads: 4210, stable: true, releaseDate: "2025-05-20" },
+];
+
+export function Releases() {
+  // No columns: ID and Downloads are numbers, Stable a boolean, Release date a date
+  return <DataGrid aria-label="Releases" rows={releases} showToolbar />;
+}`,
+  },
+  {
     id: "selection-propagation",
     title: "Select parents and children together",
     body: 'With tree data or grouped rows and `checkboxSelection`, a selection reaches related rows. Selecting a parent selects its children, and selecting all children selects the parent. A parent with only some selected children shows a mixed checkbox. Each group row of grouped rows gets a checkbox that selects its rows. Group rows never enter the selection model: their checkbox shows the state of their rows. `rowSelectionPropagation` turns each direction on or off: `{ descendants: true, parents: false }` keeps parents out. Only rows that pass the filters follow. `checkboxColDef` sets the checkbox column\'s `width`, `headerClassName` and `cellClassName`. `rowSelection={false}` turns selection off, so no checkboxes show and clicks select nothing. In HTML, write the propagation as JSON in `data-ok-row-selection-propagation` and `data-ok-row-selection="false"` to turn selection off.',
@@ -2023,6 +2145,24 @@ const PREVIEWS = {
           html: "aria-sort · ok:data-grid:sort",
           type: "GridSortModel",
           description: "Sorted columns, in order.",
+        },
+        {
+          react: "columns left out · autoGenerate",
+          html: "data-ok-auto-generate · table[data-ok-data-grid-data]",
+          type: "boolean",
+          description: "Columns made from the rows' fields, typed from their values.",
+        },
+        {
+          react: "contextMenu · getContextMenuItems",
+          html: "data-ok-context-menu · ok:data-grid:contextmenu · contextmenuselect",
+          type: "(params) => (name | GridContextMenuItemDef)[]",
+          description: "A menu on the cells (right click, Shift + F10, Menu key) and its items.",
+        },
+        {
+          react: "filterGroups · filterModel.groups",
+          html: "data-ok-filter-groups",
+          type: "GridFilterGroup[]",
+          description: "Nested groups of filters, each with its own And / Or.",
         },
         {
           react: "filterModel / onFilterModelChange",
@@ -2263,6 +2403,7 @@ const PREVIEWS = {
         ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
         ["Ctrl + Z on a cell or a header", "Undoes the last edit or paste"],
         ["Ctrl + Shift + Z or Ctrl + Y on a cell or a header", "Redoes it"],
+        ["Shift + F10 or the Menu key on a cell (contextMenu)", "Opens the cell menu"],
         ["Up / Down in a header filter", "Moves to the cell above / below"],
         [
           "Tab / Shift + Tab with tabNavigation",

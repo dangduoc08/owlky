@@ -333,3 +333,59 @@ describe("createGridClipboard", () => {
     document.getSelection()?.removeAllRanges();
   });
 });
+
+describe("createGridClipboard copy() and paste() (menus)", () => {
+  const setup = (paste = true) => {
+    const grid = mount(GRID).firstElementChild as HTMLElement;
+    const onPaste = vi.fn();
+    const onCopy = vi.fn();
+    const handle = createGridClipboard(grid, {
+      copyText: () => "1",
+      canPaste: () => paste,
+      onPaste,
+      onCopy,
+    });
+    return { handle, onPaste, onCopy };
+  };
+  const clipboard = (value: unknown) =>
+    Object.defineProperty(navigator, "clipboard", { value, configurable: true });
+  afterEach(() => {
+    delete (navigator as { clipboard?: unknown }).clipboard;
+  });
+
+  it("copies with the Clipboard API, else the copy command", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    clipboard({ writeText });
+    let { handle, onCopy } = setup();
+    expect(await handle.copy("a\tb")).toBe(true);
+    expect(writeText).toHaveBeenCalledWith("a\tb");
+    expect(onCopy).toHaveBeenCalledWith("a\tb");
+    handle.destroy();
+    clipboard({ writeText: vi.fn().mockRejectedValue(new Error("denied")) });
+    ({ handle, onCopy } = setup());
+    const exec = vi.spyOn(document, "execCommand").mockImplementation(() => {
+      document.activeElement?.dispatchEvent(new Event("copy", { bubbles: true, cancelable: true }));
+      return true;
+    });
+    expect(await handle.copy("x")).toBe(true);
+    expect(exec).toHaveBeenCalledWith("copy");
+    expect(onCopy).toHaveBeenCalledWith("x");
+    expect(document.querySelector("textarea")).toBeNull();
+  });
+
+  it("pastes the clipboard's text, unless pasting is off or refused", async () => {
+    const readText = vi.fn().mockResolvedValue("5\t6");
+    clipboard({ readText });
+    const on = setup();
+    expect(await on.handle.paste()).toBe(true);
+    expect(on.onPaste).toHaveBeenCalledWith("5\t6");
+    const off = setup(false);
+    expect(await off.handle.paste()).toBe(false);
+    readText.mockRejectedValue(new Error("denied"));
+    expect(await on.handle.paste()).toBe(false);
+    clipboard(undefined);
+    const none = setup();
+    expect(await none.handle.paste()).toBe(false);
+    expect(none.onPaste).not.toHaveBeenCalled();
+  });
+});

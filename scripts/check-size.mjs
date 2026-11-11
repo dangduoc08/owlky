@@ -18,6 +18,9 @@ async function withImports(file, seen = new Set()) {
 const budgets = [
   // 235 kB since the ApexTree rows (4.18.3, .5, .6, ADR-0056: grouped leaves, zoom / fit / center
   // with a toolbar and a core controller, per-node lines) on top of the range charts: 230.4 kB.
+  // 235 kB since the data grid's cell menu, filter groups (4.18.13, ADR-0057; 229.5 kB) and
+  // generated columns (4.18.14: the HTML runtime builds headers, rows and panel lists from a data
+  // table): 231.1 kB. Optimization is deferred to 1.0 prep.
   // Phase 4 batch E's data grid range charts (4.18.12, ADR-0055: createRangeChart and
   // Alt + F1, cross-filtering, chartsToJSON / restoreCharts, chart regions built by the runtime;
   // about 1.9 kB): 226.1 kB.
@@ -178,6 +181,8 @@ const budgets = [
   // whole snippets (data grids, date pickers, the editor, the lightbox) instead of shortened
   // copies, about 0.1 MB gzip.
   // 1.35 MB since the range charts and the ApexTree rows (stories, docs sections, API entries): 1298.7 kB.
+  // 1.35 MB since the data grid's cell menu and filter groups (4.18.13, ADR-0057: two stories with
+  // their snippets, two docs sections, API entries): 1300.4 kB.
   // 1.3 MB since the data grid and sortable shoulds (stories, docs sections, API entries): 1249.6 kB.
   // 1.25 MB since Phase 4 batch E shoulds (chart stacks, cues, tooltips, legends; button, text field,
   // select and picker field options: their stories, docs sections and API entries): 1202.0 kB.

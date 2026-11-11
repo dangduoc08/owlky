@@ -63,6 +63,10 @@
    "value": "0 167 111"
   },
   {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
    "name": "--ok-radius-sm",
    "value": "6px"
   },
@@ -191,6 +195,18 @@
       "description": "Before the column visibility changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: Record<string, boolean>; }",
       "name": "ok:data-grid:columns"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the cell menu opens on a cell (`data-ok-context-menu`): add, hide or disable items of `menu` (its list). Call `preventDefault()` to keep the browser's own menu.",
+      "detail": "{ id: string; field: string; value: unknown; menu: HTMLElement; }",
+      "name": "ok:data-grid:contextmenu"
+     },
+     {
+      "cancelable": true,
+      "description": "A cell menu item was chosen (`action`: its `data-ok-data-grid-context-action`), on the cell the menu opened on. Call `preventDefault()` to skip a built-in item's action.",
+      "detail": "{ action: string; id: string; field: string; }",
+      "name": "ok:data-grid:contextmenuselect"
      },
      {
       "cancelable": false,
@@ -582,7 +598,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 117 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 126 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's values, returns the value to write. `null`: back to parsing by the column type.",
@@ -1148,6 +1164,24 @@
       "description": "Rows can be selected (`\"false\"`: no selection, no checkboxes, no `aria-selected`).",
       "kind": "behavior",
       "name": "rowSelection"
+     },
+     {
+      "attr": "data-ok-context-menu",
+      "description": "A right click, Shift + F10 or the Menu key on a cell opens a menu: copy, paste, export, chart, pin.",
+      "kind": "flag",
+      "name": "contextMenu"
+     },
+     {
+      "attr": "data-ok-filter-groups",
+      "description": "The filter panel nests groups of filters, each with its own And / Or (Add group).",
+      "kind": "flag",
+      "name": "filterGroups"
+     },
+     {
+      "attr": "data-ok-auto-generate",
+      "description": "Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`).",
+      "kind": "flag",
+      "name": "autoGenerate"
      }
     ],
     "parts": [
@@ -1297,6 +1331,20 @@
       "name": "data-ok-data-grid-checkbox"
      },
      {
+      "description": "On a cell menu item: what it does (`copy`, `paste`, `export`, `export-csv`, `export-excel`, `print`, `chart-range`, `pin`, `pin-left`, `pin-right`, `unpin`, or your own item's name).",
+      "kind": "value",
+      "name": "data-ok-data-grid-context-action",
+      "value": "string"
+     },
+     {
+      "description": "HTML only, with `data-ok-auto-generate`: the data the runtime builds the columns and rows from (header cells name the fields, or carry `data-ok-field`); removed once read.",
+      "elements": [
+       "table"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-data"
+     },
+     {
       "description": "HTML only: the template of the date filter input.",
       "elements": [
        "template"
@@ -1379,6 +1427,46 @@
       "description": "The button that adds a filter.",
       "kind": "part",
       "name": "data-ok-data-grid-filter-add"
+     },
+     {
+      "description": "With `filterGroups`: the button that adds a group of filters (in the panel or in a group).",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-filter-add-group"
+     },
+     {
+      "description": "A group of filters with its own And / Or: its filters, its groups and its buttons.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-filter-group"
+     },
+     {
+      "description": "A filter group's Add filter and Add group buttons.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-filter-group-actions"
+     },
+     {
+      "description": "A filter group's first line: its remove button and, after the first entry, the And / Or.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-filter-group-header"
+     },
+     {
+      "description": "The button that removes a filter group and everything in it.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-filter-group-remove"
      },
      {
       "description": "The button that removes a filter.",
@@ -2086,6 +2174,11 @@
       "type": "RefObject<GridApi<R> | null>"
      },
      {
+      "description": "Generates the columns from the rows when `columns` is empty: one per field, typed number, boolean, date, date time or string from the values, headers from the field names. Leaving `columns` out does the same.",
+      "name": "autoGenerate",
+      "type": "boolean"
+     },
+     {
       "description": "The grid grows with its rows (no scroll area, so no virtualization). Don't give it a height.",
       "name": "autoHeight",
       "type": "boolean"
@@ -2187,10 +2280,14 @@
       "type": "GridColumnVisibilityModel"
      },
      {
-      "description": "The columns: field, header, type, width and how cells render.",
+      "description": "The columns: field, header, type, width and how cells render. Left out (or empty with `autoGenerate`): one column per field of the rows, typed from their values.",
       "name": "columns",
-      "required": true,
       "type": "readonly GridColDef<R>[]"
+     },
+     {
+      "description": "A menu on the cells: a right click, Shift + F10 or the Menu key opens it at the cell, with Copy, Paste, Export, Chart from selection and Pin column (the ones the grid's options allow).",
+      "name": "contextMenu",
+      "type": "boolean"
      },
      {
       "description": "Options of the CSV export (file name, delimiter, fields…).",
@@ -2324,6 +2421,11 @@
       "type": "string"
      },
      {
+      "description": "groups`.",
+      "name": "filterGroups",
+      "type": "boolean"
+     },
+     {
       "default": "client",
       "description": "`server`: the grid reports the filter model and shows the rows as given.",
       "name": "filterMode",
@@ -2343,6 +2445,12 @@
       "description": "Returns a class name for a cell.",
       "name": "getCellClassName",
       "type": "((params: GridCellParams<R>) => string)"
+     },
+     {
+      "default": "defaultItems",
+      "description": "The cell menu's items for a cell: built-in names, `\"separator\"` and your own items. Gets the cell and `defaultItems`.",
+      "name": "getContextMenuItems",
+      "type": "((params: GridContextMenuParams<R>) => readonly (\"chart-range\" | \"copy\" | \"export\" | \"paste\" | \"pin\" | \"separator\" | GridContextMenuItemDef<R>)[])"
      },
      {
       "description": "A row's detail panel (`null`: none, no toggle).",
