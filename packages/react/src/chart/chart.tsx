@@ -1630,7 +1630,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       annotationIndexes,
       localeText,
       description,
-      JSON.stringify(descriptionStrings ?? null),
+      descriptionStrings,
       zoomControlled,
       zoomRange,
       innerZoom,
