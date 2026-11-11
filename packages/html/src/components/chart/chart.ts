@@ -364,7 +364,8 @@ const SPARKLINE_HEIGHT = 40;
 
 interface ChartSource {
   readonly series: readonly ChartSeries[];
-  readonly categories: readonly (string | number | Date)[];
+  /** `undefined`: points name their categories (bars sharing a row). */
+  readonly categories: readonly (string | number | Date)[] | undefined;
 }
 const EMPTY: ChartSource = { series: [], categories: [] };
 
@@ -868,6 +869,9 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         xLabelRotate: readNumber(element, o.xLabelRotate) as number | undefined,
         xLabelRotateAlways: element.hasAttribute(o.xLabelRotateAlways.attr),
         xaxisGroups: parseChartXGroups(element.getAttribute(CHART_TEXT_ATTRIBUTES.xaxisGroups)),
+        rangeBarGroupRows: element.hasAttribute(o.rangeBarGroupRows.attr),
+        disableRangeBarOverlap: element.hasAttribute(o.disableRangeBarOverlap.attr),
+        hideZeroBarsWhenGrouped: element.hasAttribute(o.hideZeroBarsWhenGrouped.attr),
         dataReducer: element.hasAttribute(o.dataReducer.attr),
         dataReducerTargetPoints: readNumber(element, o.dataReducerTargetPoints) as
           | number
@@ -1467,7 +1471,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       updateSeries(series, categories) {
         source = {
           series: [...series],
-          categories: categories ? [...categories] : data().categories,
+          categories: categories ? [...categories] : (data().categories ?? []),
         };
         draw();
       },
@@ -1483,7 +1487,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
             ...entry,
             data: keep([...entry.data, ...(points[index]?.data ?? [])]),
           })),
-          categories: keep([...current.categories, ...(options.categories ?? [])]),
+          categories: keep([...(current.categories ?? []), ...(options.categories ?? [])]),
         };
         draw();
       },

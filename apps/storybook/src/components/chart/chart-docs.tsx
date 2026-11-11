@@ -12,6 +12,7 @@ import colorBlindGroup from "../../../../../packages/html/src/components/chart/e
 import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
 import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
+import columnZeroBarsGroup from "../../../../../packages/html/src/components/chart/examples/column-zero-bars-group.html?raw";
 import crossfilterGroup from "../../../../../packages/html/src/components/chart/examples/crossfilter-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import dataReducerGroup from "../../../../../packages/html/src/components/chart/examples/data-reducer-group.html?raw";
@@ -33,6 +34,7 @@ import streamgraphGroup from "../../../../../packages/html/src/components/chart/
 import sunburstGroup from "../../../../../packages/html/src/components/chart/examples/sunburst-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
+import timelineRowsGroup from "../../../../../packages/html/src/components/chart/examples/timeline-rows-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
 import unitGroup from "../../../../../packages/html/src/components/chart/examples/unit-group.html?raw";
@@ -1795,6 +1797,53 @@ export function ChartDataReducer() {
 }`,
   },
   {
+    id: "timeline-rows",
+    title: "Arrange timeline rows",
+    body: "By default each series of a timeline has its own lane in every category. Set `rangeBarGroupRows` (`data-ok-range-bar-group-rows`) to put every series in one lane per category, as a schedule does. Write several points with the same `x` to place several bars in a row; in HTML, repeat the row header for each bar. Bars that overlap in time are drawn over each other. Set `disableRangeBarOverlap` (`data-ok-disable-range-bar-overlap`) to give them lanes of their own, which also works for several bars of one series in a category.",
+    html: snippetElement(timelineRowsGroup, "data-ok-chart ", 1),
+    react: `import { Chart } from "@owlky/react";
+
+const series = [
+  {
+    name: "Design",
+    data: [
+      { x: "Team A", y: ["2025-01-01", "2025-01-20"] },
+      { x: "Team B", y: ["2025-01-10", "2025-01-30"] },
+    ],
+  },
+  {
+    name: "Build",
+    data: [
+      { x: "Team A", y: ["2025-01-12", "2025-02-05"] },
+      { x: "Team B", y: ["2025-02-01", "2025-02-20"] },
+    ],
+  },
+];
+
+export function ChartTimelineRows() {
+  return (
+    <Chart label="Team schedules" type="timeline" rangeBarGroupRows disableRangeBarOverlap series={series} />
+  );
+}`,
+  },
+  {
+    id: "zero-bars",
+    title: "Close up grouped columns",
+    body: "When a grouped column chart has zero or empty values, set `hideZeroBarsWhenGrouped` (`data-ok-hide-zero-bars-when-grouped`). Zero bars then take no slot and the other bars of the category close up around its center.",
+    html: snippetElement(columnZeroBarsGroup, "data-ok-chart "),
+    react: `import { Chart } from "@owlky/react";
+
+const series = [
+  { name: "Hats", data: [14, 0, 21, 9] },
+  { name: "Bags", data: [0, 18, null, 12] },
+  { name: "Shoes", data: [8, 15, 11, 0] },
+];
+
+export function ChartZeroBars() {
+  return <Chart label="Sales per product" type="bar" hideZeroBarsWhenGrouped categories={["North", "South", "East", "West"]} series={series} />;
+}`,
+  },
+  {
     id: "no-data",
     title: "Show a message without data",
     body: "Set `noDataText` (`data-ok-no-data-text`) to draw a message when a chart has nothing to draw. Without it the plot stays empty. `noDataAlign` (`left`, `center`, `right`) and `noDataVerticalAlign` (`top`, `middle`, `bottom`) place it. The message is added to the plot's accessible name.",
@@ -1856,6 +1905,37 @@ export function ChartNoData() {
 ];
 
 const PREVIEWS = {
+  "timeline-rows": () => (
+    <Preview>
+      <Chart
+        label="Team schedules"
+        type="timeline"
+        rangeBarGroupRows
+        disableRangeBarOverlap
+        height={220}
+        series={[
+          { name: "Design", data: [{ x: "Team A", y: ["2025-01-01", "2025-01-20"] }] },
+          { name: "Build", data: [{ x: "Team A", y: ["2025-01-12", "2025-02-05"] }] },
+        ]}
+      />
+    </Preview>
+  ),
+  "zero-bars": () => (
+    <Preview>
+      <Chart
+        label="Sales per product"
+        type="bar"
+        height={220}
+        hideZeroBarsWhenGrouped
+        categories={["North", "South"]}
+        series={[
+          { name: "Hats", data: [14, 0] },
+          { name: "Bags", data: [0, 18] },
+          { name: "Shoes", data: [8, 15] },
+        ]}
+      />
+    </Preview>
+  ),
   "data-reducer": () => (
     <Preview>
       <Chart

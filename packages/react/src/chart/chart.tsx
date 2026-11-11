@@ -538,6 +538,12 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   xLabelRotateAlways?: boolean | undefined;
   /** A second row of x labels: each `{ title, cols }` spans `cols` categories. */
   xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** Range bars and timelines: the series share one lane per category. */
+  rangeBarGroupRows?: boolean | undefined;
+  /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
+  disableRangeBarOverlap?: boolean | undefined;
+  /** Grouped columns: zero and empty bars take no slot, so the others close up. */
+  hideZeroBarsWhenGrouped?: boolean | undefined;
   /**
    * Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets).
    * The table, the tooltip and the keyboard keep every point.
@@ -762,6 +768,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     xLabelRotate,
     xLabelRotateAlways,
     xaxisGroups,
+    rangeBarGroupRows,
+    disableRangeBarOverlap,
+    hideZeroBarsWhenGrouped,
     dataReducer,
     dataReducerTargetPoints,
     dataReducerThreshold,
@@ -891,6 +900,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     xRange,
     xLabelRotate,
     xLabelRotateAlways,
+    rangeBarGroupRows,
+    disableRangeBarOverlap,
+    hideZeroBarsWhenGrouped,
     dataReducer,
     dataReducerTargetPoints,
     dataReducerThreshold,
@@ -1037,6 +1049,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validXRange = number("data-ok-x-range");
   const validXRotate = number("data-ok-x-label-rotate");
   const xRotateAlways = attributes["data-ok-x-label-rotate-always"] !== undefined;
+  const groupRowsOn = attributes["data-ok-range-bar-group-rows"] !== undefined;
+  const overlapOff = attributes["data-ok-disable-range-bar-overlap"] !== undefined;
+  const hideZeroOn = attributes["data-ok-hide-zero-bars-when-grouped"] !== undefined;
   const reducerOn = attributes["data-ok-data-reducer"] !== undefined;
   const validReducerTarget = number("data-ok-data-reducer-target-points");
   const validReducerThreshold = number("data-ok-data-reducer-threshold");
@@ -1230,6 +1245,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         xLabelRotate: validXRotate,
         xLabelRotateAlways: xRotateAlways,
         xaxisGroups,
+        rangeBarGroupRows: groupRowsOn,
+        disableRangeBarOverlap: overlapOff,
+        hideZeroBarsWhenGrouped: hideZeroOn,
         dataReducer: reducerOn,
         dataReducerTargetPoints: validReducerTarget,
         dataReducerThreshold: validReducerThreshold,
@@ -1396,6 +1414,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validXRotate,
       xRotateAlways,
       xaxisGroups,
+      groupRowsOn,
+      overlapOff,
+      hideZeroOn,
       reducerOn,
       validReducerTarget,
       validReducerThreshold,

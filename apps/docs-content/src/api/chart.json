@@ -1731,6 +1731,24 @@
       "name": "xLabelRotateAlways"
      },
      {
+      "attr": "data-ok-range-bar-group-rows",
+      "description": "Range bars and timelines: the series share one lane per category, so bars of different series line up in a row.",
+      "kind": "flag",
+      "name": "rangeBarGroupRows"
+     },
+     {
+      "attr": "data-ok-disable-range-bar-overlap",
+      "description": "Range bars and timelines: bars that overlap in time go to lanes of their own instead of being drawn over each other.",
+      "kind": "flag",
+      "name": "disableRangeBarOverlap"
+     },
+     {
+      "attr": "data-ok-hide-zero-bars-when-grouped",
+      "description": "Grouped columns: zero and empty bars take no slot, so the other bars of a category close up around its center.",
+      "kind": "flag",
+      "name": "hideZeroBarsWhenGrouped"
+     },
+     {
       "attr": "data-ok-data-reducer",
       "description": "Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point.",
       "kind": "flag",
@@ -3547,6 +3565,11 @@
       "type": "boolean"
      },
      {
+      "description": "Range bars and timelines: bars that overlap in time go to lanes of their own.",
+      "name": "disableRangeBarOverlap",
+      "type": "boolean"
+     },
+     {
       "description": "Packed unit charts: keep the given order instead of the smallest group in the middle.",
       "name": "disableSortByGroup",
       "type": "boolean"
@@ -3713,6 +3736,11 @@
      {
       "description": "Violins: no dots for the observations.",
       "name": "hideViolinPoints",
+      "type": "boolean"
+     },
+     {
+      "description": "Grouped columns: zero and empty bars take no slot, so the others close up.",
+      "name": "hideZeroBarsWhenGrouped",
       "type": "boolean"
      },
      {
@@ -3897,6 +3925,11 @@
       "description": "Geo charts: `equalEarth` (equal areas), `mercator` or `equirectangular`.",
       "name": "projection",
       "type": "\"equalEarth\" | \"equirectangular\" | \"mercator\""
+     },
+     {
+      "description": "Range bars and timelines: the series share one lane per category.",
+      "name": "rangeBarGroupRows",
+      "type": "boolean"
      },
      {
       "description": "Geo charts: one region's id, name, short tile label and value, joined to the geometry by id.",

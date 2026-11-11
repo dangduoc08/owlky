@@ -820,7 +820,8 @@ export function readChartTable(
   type?: ChartType,
 ): {
   series: ChartSeries[];
-  categories: (string | number)[];
+  /** `undefined` when points name their categories (range bars sharing a row, 4.18.67). */
+  categories: (string | number)[] | undefined;
   /** The text of each part's header (localized labels, phase 4). */
   partLabels?: Partial<Record<ChartPart, string>>;
 } {
@@ -939,5 +940,19 @@ export function readChartTable(
       partLabels,
     };
   }
+  // Bars that share a row (4.18.67) repeat their row header: each point names its category.
+  if ((type === "timeline" || type === "rangeBar") && new Set(categories).size < categories.length)
+    return {
+      categories: undefined,
+      series: series.map((entry) => ({
+        ...entry,
+        data: entry.data.flatMap((point, index) =>
+          point !== null && typeof point === "object" && (point as { y?: unknown }).y != null
+            ? [{ ...(point as object), x: categories[index] as string } as ChartPointInput]
+            : [],
+        ),
+      })),
+      partLabels,
+    };
   return { series, categories, partLabels };
 }

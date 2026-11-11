@@ -190,3 +190,6 @@ export const AnnotationsText: StoryObj = story("annotations-text");
 export const BrushTargets: StoryObj = story("brush-targets");
 // Roadmap 4.18.66: data reduction of long lines.
 export const DataReducer: StoryObj = story("data-reducer");
+// Roadmap 4.18.67: timeline rows and zero bars of grouped columns.
+export const TimelineRows: StoryObj = story("timeline-rows");
+export const ColumnZeroBars: StoryObj = story("column-zero-bars");

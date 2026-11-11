@@ -199,6 +199,12 @@ export interface ChartLayoutOptions {
   readonly forecast?: ChartForecast | undefined;
   /** Lines and areas draw fewer points when they have many (4.18.66; the marks keep them all). */
   readonly reducer?: ChartReducer | undefined;
+  /** Range bars and timelines (4.18.67): every series in one lane per category. */
+  readonly rangeBarGroupRows?: boolean | undefined;
+  /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
+  readonly disableRangeBarOverlap?: boolean | undefined;
+  /** Grouped columns: zero and empty bars take no slot; the others close up and center. */
+  readonly hideZeroBarsWhenGrouped?: boolean | undefined;
 }
 
 /** A group of the x axis' second row (ApexCharts `xaxis.group.groups`). */
@@ -1323,6 +1329,42 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const forecastOpacity = (scale = 1) =>
     fmt(clamp(options.forecast?.fillOpacity ?? 0.5, 0, 1) * scale);
 
+  // Lanes of range bars that overlap in time (4.18.67): a bar takes the first lane free at its start.
+  const laneOf = new Map<ChartPoint, { lane: number; lanes: number }>();
+  if (options.disableRangeBarOverlap) {
+    const rows = new Map<string, ChartPoint[]>();
+    for (const index of rangeSeries)
+      for (const point of (data.series[index] as ChartDataSeries).points) {
+        if (!point.range) continue;
+        const key = `${options.rangeBarGroupRows ? "" : index}:${point.x}`;
+        rows.set(key, [...(rows.get(key) ?? []), point]);
+      }
+    for (const row of rows.values()) {
+      const sorted = [...row].sort(
+        (a, b) => Math.min(...(a.range as number[])) - Math.min(...(b.range as number[])),
+      );
+      const ends: number[] = [];
+      const taken: { point: ChartPoint; lane: number }[] = [];
+      for (const point of sorted) {
+        const start = Math.min(...(point.range as number[]));
+        let lane = ends.findIndex((end) => end <= start);
+        if (lane < 0) lane = ends.length;
+        ends[lane] = Math.max(...(point.range as number[]));
+        taken.push({ point, lane });
+      }
+      for (const { point, lane } of taken) laneOf.set(point, { lane, lanes: ends.length });
+    }
+  }
+  /** Grouped columns without their zero bars (4.18.67): the values of each bar series by x. */
+  const barValues = options.hideZeroBarsWhenGrouped
+    ? new Map(
+        barSeries.map((index) => [
+          index,
+          new Map((data.series[index] as ChartDataSeries).points.map((p) => [p.x, p.y])),
+        ]),
+      )
+    : undefined;
+
   for (const { series, index } of visible) {
     const seriesAttrs = {
       "data-ok-chart-series": "",
@@ -1365,7 +1407,19 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         const [from, to] = stacks
           ? (stack.get(`${index}:${point.x}`) as readonly [number, number])
           : [log ? (scales[axis] as ChartValueScale).min : 0, point.y];
-        const a = toCat(point.x) - groupSize / 2 + offset;
+        // Without zero bars (4.18.67), the bars of a category close up around its center.
+        const present =
+          barValues && !stacks
+            ? barSeries.filter((other) => {
+                const value = barValues.get(other)?.get(point.x);
+                return value !== null && value !== undefined && value !== 0;
+              })
+            : undefined;
+        const a = present
+          ? toCat(point.x) -
+            (present.length * size) / 2 +
+            Math.max(0, present.indexOf(index)) * size
+          : toCat(point.x) - groupSize / 2 + offset;
         const start = toValue(from);
         const end = toValue(to);
         const rounded = !stacks || ends.get(endKey(index, point.y, point.x)) === index;
@@ -1568,13 +1622,18 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     }
     if (series.type === "rangeBar" || series.type === "timeline") {
       // Bars from the start to the end value, rounded at both ends; timelines run left to right.
-      const slot = rangeSeries.indexOf(index);
-      const size = groupSize / Math.max(1, rangeSeries.length);
+      // Group rows (4.18.67): the series share one lane per category.
+      const slot = options.rangeBarGroupRows ? 0 : rangeSeries.indexOf(index);
+      const slotSize = options.rangeBarGroupRows
+        ? groupSize
+        : groupSize / Math.max(1, rangeSeries.length);
       const children: ChartNode[] = [];
       for (const point of points) {
         if (!point.range) continue;
         const [from, to] = point.range.map(toValue) as [number, number];
-        const a = posOf(point.x) - groupSize / 2 + slot * size;
+        const lane = laneOf.get(point);
+        const size = lane ? slotSize / lane.lanes : slotSize;
+        const a = posOf(point.x) - groupSize / 2 + slot * slotSize + (lane ? lane.lane * size : 0);
         const length = Math.abs(to - from);
         const end = horizontal ? Math.max(from, to) : Math.min(from, to);
         marks.push({

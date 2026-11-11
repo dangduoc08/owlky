@@ -18,6 +18,23 @@ export interface ChartExample {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
 const YEAR = [...MONTHS, "Oct", "Nov", "Dec"];
+/** Timelines whose series share rows: Design and Build overlap in Team A. */
+const TIMELINE_ROWS = [
+  {
+    name: "Design",
+    data: [
+      { x: "Team A", y: ["2025-01-01", "2025-01-20"] },
+      { x: "Team B", y: ["2025-01-10", "2025-01-30"] },
+    ],
+  },
+  {
+    name: "Build",
+    data: [
+      { x: "Team A", y: ["2025-01-12", "2025-02-05"] },
+      { x: "Team B", y: ["2025-02-01", "2025-02-20"] },
+    ],
+  },
+];
 /** A long, smooth series for the data reducer: the same on every run. */
 const READINGS = Array.from(
   { length: 600 },
@@ -2454,6 +2471,42 @@ export const chartExamples: Record<string, ChartExample> = {
       annotations: [
         { axis: "text", x: "Mar", y: 15, label: "Campaign paused" },
         { axis: "text", x: "Aug", y: 95, label: "New pricing", textAnchor: "end", color: "error" },
+      ],
+    },
+  },
+  "timeline-rows": {
+    title: "Timeline rows",
+    props: {
+      label: "Team schedules, one row per team",
+      type: "timeline",
+      xType: "category",
+      rangeBarGroupRows: true,
+      height: 240,
+      series: TIMELINE_ROWS,
+    },
+    more: [
+      {
+        label: "Team schedules, overlapping work in its own lane",
+        type: "timeline",
+        xType: "category",
+        rangeBarGroupRows: true,
+        disableRangeBarOverlap: true,
+        height: 240,
+        series: TIMELINE_ROWS,
+      },
+    ],
+  },
+  "column-zero-bars": {
+    title: "Column without zero bars",
+    props: {
+      label: "Sales per product, products without sales take no slot",
+      type: "bar",
+      hideZeroBarsWhenGrouped: true,
+      categories: ["North", "South", "East", "West"],
+      series: [
+        { name: "Hats", data: [14, 0, 21, 9] },
+        { name: "Bags", data: [0, 18, null, 12] },
+        { name: "Shoes", data: [8, 15, 11, 0] },
       ],
     },
   },

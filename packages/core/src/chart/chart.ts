@@ -338,6 +338,12 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly xLabelRotateAlways?: boolean | undefined;
   /** A second row of x labels: `{ title, cols }`, each spanning `cols` categories. */
   readonly xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** Range bars and timelines (4.18.67): every series in one lane per category. */
+  readonly rangeBarGroupRows?: boolean | undefined;
+  /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
+  readonly disableRangeBarOverlap?: boolean | undefined;
+  /** Grouped columns: zero and empty bars take no slot. */
+  readonly hideZeroBarsWhenGrouped?: boolean | undefined;
   /** Lines and areas draw fewer points when they have many (ApexCharts `chart.dataReducer`). */
   readonly dataReducer?: boolean | undefined;
   /** Points kept per series when reducing. Default 250. */
@@ -652,6 +658,9 @@ function renderChartData(input: ChartRenderInput): ChartRender {
     xLabelRotate: input.xLabelRotate,
     xLabelRotateAlways: input.xLabelRotateAlways,
     xGroups,
+    rangeBarGroupRows: input.rangeBarGroupRows,
+    disableRangeBarOverlap: input.disableRangeBarOverlap,
+    hideZeroBarsWhenGrouped: input.hideZeroBarsWhenGrouped,
     reducer: input.dataReducer
       ? {
           target: input.dataReducerTargetPoints ?? 250,

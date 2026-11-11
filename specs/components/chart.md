@@ -663,6 +663,9 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `xRange` | `data-ok-x-range="…"` | number | number | — | Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data). |
 | `xLabelRotate` | `data-ok-x-label-rotate="…"` | number | number | — | X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out. |
 | `xLabelRotateAlways` | `data-ok-x-label-rotate-always` | flag | boolean | off | X labels turn by `xLabelRotate` even when they fit flat. |
+| `rangeBarGroupRows` | `data-ok-range-bar-group-rows` | flag | boolean | off | Range bars and timelines: the series share one lane per category, so bars of different series line up in a row. |
+| `disableRangeBarOverlap` | `data-ok-disable-range-bar-overlap` | flag | boolean | off | Range bars and timelines: bars that overlap in time go to lanes of their own instead of being drawn over each other. |
+| `hideZeroBarsWhenGrouped` | `data-ok-hide-zero-bars-when-grouped` | flag | boolean | off | Grouped columns: zero and empty bars take no slot, so the other bars of a category close up around its center. |
 | `dataReducer` | `data-ok-data-reducer` | flag | boolean | off | Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point. |
 | `dataReducerTargetPoints` | `data-ok-data-reducer-target-points="…"` | number | number | — | Points kept per series when reducing (default 250). |
 | `dataReducerThreshold` | `data-ok-data-reducer-threshold="…"` | number | number | — | A series with more visible points than this is reduced (default 500). |
@@ -1169,7 +1172,10 @@ Option areas not covered by the table above:
 | `plotOptions.bar.dataLabels.total.enabled` | `stackTotals` (`data-ok-stack-totals`) | renamed (4.18.61) | `total.formatter` → `valueFormatter` (series -1); `total.style` / `offset*`: not applicable |
 | `plotOptions.bar.dataLabels.position` (`top`, `center`, `bottom`) | `dataLabelPosition` (`data-ok-data-label-position`, optional) | renamed (4.18.61) | inside the bar; `top` = by the value end |
 | `plotOptions.bar.dataLabels.orientation`, `.maxItems`, `.hideOverflowingLabels` | — | not applicable | labels are always horizontal and only drawn where they fit |
-| `plotOptions.bar.rangeBarGroupRows`, `.rangeBarOverlap`, `.hideZeroBarsWhenGrouped`, `.isFunnel3d` | — | deferred | timeline rows shared by series; 3D funnel not applicable |
+| `plotOptions.bar.rangeBarGroupRows` | `rangeBarGroupRows` (`data-ok-range-bar-group-rows`) | kept (4.18.67) | the series share one lane per category; in HTML a table row is repeated for each bar of a category |
+| `plotOptions.bar.rangeBarOverlap` (default `true`) | `disableRangeBarOverlap` (`data-ok-disable-range-bar-overlap`) | renamed (4.18.67) | a flag that turns overlap off: bars that overlap in time go to lanes of their own (interval partitioning), inside a series' slot or a shared row |
+| `plotOptions.bar.hideZeroBarsWhenGrouped` | `hideZeroBarsWhenGrouped` (`data-ok-hide-zero-bars-when-grouped`) | kept (4.18.67) | grouped columns (not stacked): zero and empty bars take no slot, the others close up around the category's center |
+| `plotOptions.bar.isFunnel3d` | — | not applicable | |
 | `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | `forecastCount`, `forecastFillOpacity`, `forecastStrokeWidth`, `forecastDashArray` (`data-ok-forecast-*`) | renamed (4.18.65) | lines, areas and bars; tooltip rows `Series (Forecast)` and `aria-label` on the table cells, so the dash isn't the only cue (part label `forecast`) |
 | `title.text` (`align`, `floating`, `style`…) | `label` → `caption` | renamed | style not applicable (tokens); a subtitle: compose a Card header |
 | `noData.text`, `.align`, `.verticalAlign` | `noDataText` (`data-ok-no-data-text`), `noDataAlign`, `noDataVerticalAlign` | renamed (4.18.65) | `text[data-ok-chart-no-data]` over the plot when no series has a value; the message joins the plot's `aria-label`; `style`: not applicable (tokens) |

@@ -5148,6 +5148,18 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-x-label-rotate-always",
     "X labels turn by `xLabelRotate` even when they fit flat.",
   ),
+  rangeBarGroupRows: flag(
+    "data-ok-range-bar-group-rows",
+    "Range bars and timelines: the series share one lane per category, so bars of different series line up in a row.",
+  ),
+  disableRangeBarOverlap: flag(
+    "data-ok-disable-range-bar-overlap",
+    "Range bars and timelines: bars that overlap in time go to lanes of their own instead of being drawn over each other.",
+  ),
+  hideZeroBarsWhenGrouped: flag(
+    "data-ok-hide-zero-bars-when-grouped",
+    "Grouped columns: zero and empty bars take no slot, so the other bars of a category close up around its center.",
+  ),
   dataReducer: flag(
     "data-ok-data-reducer",
     "Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point.",
@@ -5352,6 +5364,9 @@ export interface ChartAnatomyOptions {
   xRange?: number | undefined;
   xLabelRotate?: number | undefined;
   xLabelRotateAlways?: boolean | undefined;
+  rangeBarGroupRows?: boolean | undefined;
+  disableRangeBarOverlap?: boolean | undefined;
+  hideZeroBarsWhenGrouped?: boolean | undefined;
   dataReducer?: boolean | undefined;
   dataReducerTargetPoints?: number | undefined;
   dataReducerThreshold?: number | undefined;
