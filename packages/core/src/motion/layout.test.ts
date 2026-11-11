@@ -50,6 +50,11 @@ const rect = (element: Element) => {
   const { left, top, width, height } = element.getBoundingClientRect();
   return { left, top, width, height };
 };
+/** A keyframe's transform as a matrix (engines serialize the functions differently). */
+const matrix = (transform: unknown) => {
+  const { a, d, e, f } = new DOMMatrix(String(transform));
+  return { a, d, e, f };
+};
 const keyframes = (element: Element) =>
   (element.getAnimations()[0]?.effect as KeyframeEffect | undefined)?.getKeyframes() ?? [];
 
@@ -65,7 +70,7 @@ describe("layout animations (FLIP)", () => {
     a.style.top = "100px";
     flushLayout();
     const [first, last] = keyframes(a);
-    expect(first?.["transform"]).toMatch(/translate\(-200px, -100px\)/);
+    expect(matrix(first?.["transform"])).toMatchObject({ a: 1, d: 1, e: -200, f: -100 });
     expect(last?.["transform"]).toBe("none");
     seek(a, 0);
     expect(rect(a).left).toBeCloseTo(start.left, 1);
@@ -236,7 +241,7 @@ describe("layout animations (FLIP)", () => {
     // Scaled to half its width at the start: the corners are drawn twice as wide.
     expect(first?.["borderTopLeftRadius"]).toBe("16px 8px");
     expect(last?.["borderTopLeftRadius"]).toMatch(/^8px( 8px)?$/);
-    expect(last?.["transform"]).toMatch(/scale\(1, 1\)/);
+    expect(matrix(last?.["transform"])).toMatchObject({ a: 1, d: 1 });
   });
 
   it("hands a layoutId's box over to the next element with that id", () => {
@@ -389,7 +394,7 @@ describe("layout animations (FLIP)", () => {
     flushLayout();
     seek(a, 0);
     expect(rect(a).left).toBeCloseTo(start.left, 1);
-    expect(keyframes(a)[0]?.["transform"]).toMatch(/translate\(-100px, 0px\)/);
+    expect(matrix(keyframes(a)[0]?.["transform"])).toMatchObject({ a: 1, e: -100, f: 0 });
   });
 
   it("measures without animating, and forgets destroyed or disabled nodes", () => {
@@ -454,7 +459,7 @@ describe("layout edge cases", () => {
     empty.style.width = "50px";
     round.style.width = "200px";
     flushLayout();
-    expect(keyframes(empty)[0]?.["transform"]).toMatch(/scale\(1, 1\)/);
+    expect(matrix(keyframes(empty)[0]?.["transform"])).toMatchObject({ a: 1, d: 1 });
     // A percent radius scales with its box: no correction, two keyframes.
     expect(keyframes(round)).toHaveLength(2);
     const fixed = measureLayoutBox(byId("fixed"));
@@ -511,7 +516,9 @@ describe("layout edge cases", () => {
     }).snapshot();
     a.style.left = "10px";
     flushLayout();
-    expect(a.getAnimations()[0]?.effect?.getTiming().easing).toBe("cubic-bezier(0, 0, 0.58, 1)");
+    expect(a.getAnimations()[0]?.effect?.getTiming().easing).toMatch(
+      /^(ease-out|cubic-bezier\(0, 0, 0\.58, 1\))$/,
+    );
   });
 });
 
