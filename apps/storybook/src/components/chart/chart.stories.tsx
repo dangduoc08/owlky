@@ -180,3 +180,22 @@ export const Violin: StoryObj = story("violin");
 export const Beeswarm: StoryObj = story("beeswarm");
 export const Waffle: StoryObj = story("waffle");
 export const Unit: StoryObj = story("unit");
+// Roadmap 4.18.65: x axis groups, rotation and fixed windows; forecasts, no data, text annotations.
+export const XAxisGroups: StoryObj = story("x-axis-groups");
+export const XAxisRotation: StoryObj = story("x-axis-rotation");
+export const XAxisWindow: StoryObj = story("x-axis-window");
+export const Forecast: StoryObj = story("forecast");
+export const NoData: StoryObj = story("no-data");
+export const AnnotationsText: StoryObj = story("annotations-text");
+export const BrushTargets: StoryObj = story("brush-targets");
+// Roadmap 4.18.66: data reduction of long lines.
+export const DataReducer: StoryObj = story("data-reducer");
+// Roadmap 4.18.67: timeline rows and zero bars of grouped columns.
+export const TimelineRows: StoryObj = story("timeline-rows");
+export const ColumnZeroBars: StoryObj = story("column-zero-bars");
+// Roadmap 4.18.20: measure rulers and draggable annotations.
+export const Measure: StoryObj = story("measure");
+export const AnnotationsDrag: StoryObj = story("annotations-drag");
+// Roadmap 4.18.68 (ADR-0060): drilldown levels and trellis small multiples.
+export const Drilldown: StoryObj = story("drilldown");
+export const Trellis: StoryObj = story("trellis");

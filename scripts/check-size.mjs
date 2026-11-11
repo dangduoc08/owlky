@@ -105,7 +105,12 @@ const budgets = [
   // waffle, unit, roadmap 4.18.21): 256.7 kB. Optimization is deferred to 1.0 prep.
   // 265 kB with the data grid coulds (roadmap 4.18.55–4.18.58: events, server options, tree
   // reordering, the fill handle): 261.4 kB.
-  ["packages/html/dist/owlky.js", 265_000, "HTML runtime + all components (IIFE)"],
+  // 268 kB after the chart coulds 4.18.65, .66, .67 and .20 (x axis groups, rotation and windows,
+  // forecasts, no data, text annotations, the data reducer, timeline rows, measure rulers and
+  // draggable annotations): 263.68 kB; 269 kB with drilldown and the trellis runtime (4.18.68,
+  // ADR-0060): 265.08 kB.
+  // 275 kB once the data grid and chart coulds merged together: 269.8 kB.
+  ["packages/html/dist/owlky.js", 275_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -201,6 +206,8 @@ const budgets = [
   // 1.2 MB since Phase 4 batch E (new chart and data grid stories, sections and API entries): 1154.6 kB.
   // 1.4 MB since the geo charts and the ApexCharts v8 types (stories, docs sections, API entries): 1364.4 kB.
   // 1.45 MB with the data grid coulds (roadmap 4.18.55–4.18.58: docs sections, API entries): 1389.5 kB.
+  // 1.45 MB after the chart coulds 4.18.65 to .68 and .20 (21 stories, their docs sections and
+  // API entries): 1399.5 kB.
   ["packages/mcp/manifest.json", 1_450_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 

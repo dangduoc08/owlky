@@ -1,9 +1,11 @@
 import { chartOptions } from "@owlky/core";
 import chartApi from "@owlky/docs-content/api/chart.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { Chart } from "@owlky/react";
+import { Chart, ChartTrellis } from "@owlky/react";
 import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
+import annotationsDragGroup from "../../../../../packages/html/src/components/chart/examples/annotations-drag-group.html?raw";
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
+import annotationsTextGroup from "../../../../../packages/html/src/components/chart/examples/annotations-text-group.html?raw";
 import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
 import beeswarmGroup from "../../../../../packages/html/src/components/chart/examples/beeswarm-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
@@ -11,17 +13,23 @@ import colorBlindGroup from "../../../../../packages/html/src/components/chart/e
 import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
 import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
+import columnZeroBarsGroup from "../../../../../packages/html/src/components/chart/examples/column-zero-bars-group.html?raw";
 import crossfilterGroup from "../../../../../packages/html/src/components/chart/examples/crossfilter-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
+import dataReducerGroup from "../../../../../packages/html/src/components/chart/examples/data-reducer-group.html?raw";
+import drilldownGroup from "../../../../../packages/html/src/components/chart/examples/drilldown-group.html?raw";
 import dumbbellGroup from "../../../../../packages/html/src/components/chart/examples/dumbbell-group.html?raw";
+import forecastGroup from "../../../../../packages/html/src/components/chart/examples/forecast-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
 import gridGroup from "../../../../../packages/html/src/components/chart/examples/grid-group.html?raw";
 import icicleGroup from "../../../../../packages/html/src/components/chart/examples/icicle-group.html?raw";
 import legendGroup from "../../../../../packages/html/src/components/chart/examples/legend-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
 import markerShapesGroup from "../../../../../packages/html/src/components/chart/examples/marker-shapes-group.html?raw";
+import measureGroup from "../../../../../packages/html/src/components/chart/examples/measure-group.html?raw";
 import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
 import multipleYAxesGroup from "../../../../../packages/html/src/components/chart/examples/multiple-y-axes-group.html?raw";
+import noDataGroup from "../../../../../packages/html/src/components/chart/examples/no-data-group.html?raw";
 import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
 import stackTotalsGroup from "../../../../../packages/html/src/components/chart/examples/stack-totals-group.html?raw";
@@ -29,18 +37,31 @@ import streamgraphGroup from "../../../../../packages/html/src/components/chart/
 import sunburstGroup from "../../../../../packages/html/src/components/chart/examples/sunburst-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
+import timelineRowsGroup from "../../../../../packages/html/src/components/chart/examples/timeline-rows-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
+import trellisGroup from "../../../../../packages/html/src/components/chart/examples/trellis-group.html?raw";
 import unitGroup from "../../../../../packages/html/src/components/chart/examples/unit-group.html?raw";
 import violinGroup from "../../../../../packages/html/src/components/chart/examples/violin-group.html?raw";
 import waffleGroup from "../../../../../packages/html/src/components/chart/examples/waffle-group.html?raw";
 import waterfallGroup from "../../../../../packages/html/src/components/chart/examples/waterfall-group.html?raw";
+import xAxisGroupsGroup from "../../../../../packages/html/src/components/chart/examples/x-axis-groups-group.html?raw";
+import xAxisRotationGroup from "../../../../../packages/html/src/components/chart/examples/x-axis-rotation-group.html?raw";
+import xAxisWindowGroup from "../../../../../packages/html/src/components/chart/examples/x-axis-window-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+/** A chart's markup with only the first rows of its table, for long data. */
+const firstRows = (markup: string, count: number) => {
+  let rows = 0;
+  return markup
+    .split("\n")
+    .filter((line) => !line.includes('<tr><th scope="row"') || rows++ < count)
+    .join("\n");
+};
 const SALES = [
   { name: "Online", data: [31, 40, 28, 51, 42, 69] },
   { name: "In store", data: [11, 32, 45, 32, 34, 52] },
@@ -1676,6 +1697,290 @@ export function ChartLegendGrid() {
 }`,
   },
   {
+    id: "x-axis",
+    title: "Configure the x axis",
+    body: `Use these options to change what the x axis shows:
+
+- **Groups:** \`xaxisGroups\` adds a second row of labels. Each group spans the next \`cols\` categories, such as quarters under a year. In HTML, write \`data-ok-xaxis-groups="4 2024; 4 2025"\`: the number of columns, then the title. Screen readers hear the group with each row of the data table.
+- **Rotation:** \`xLabelRotate\` (\`data-ok-x-label-rotate\`) turns the labels by that many degrees, from -90 to 90, when they don't fit flat. Without it, labels that don't fit are left out. \`xLabelRotateAlways\` turns them at every width. Long labels are cut with an ellipsis so that they take at most a third of the chart's height.
+- **Fixed window:** \`xMin\` and \`xMax\` (\`data-ok-x-min\`, \`data-ok-x-max\`) set the part of the axis shown when nothing has zoomed the chart: category indexes, timestamps in milliseconds on date axes, or x values on numeric axes, which may lie beyond the data. \`xRange\` (\`data-ok-x-range\`) shows the last so many units, which suits live data. The zoom buttons and keys still work, and resetting the zoom returns to this window.`,
+    html: `${snippetElement(xAxisGroupsGroup, "data-ok-chart ")}
+${snippetElement(xAxisRotationGroup, "data-ok-chart ")}
+${snippetElement(xAxisWindowGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const quarters = ["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"];
+const revenue = [{ name: "Revenue", data: [18, 24, 31, 27, 29, 34, 40, 38] }];
+const areas = ["Billing and invoices", "Account settings", "Mobile application"];
+const tickets = [{ name: "Tickets", data: [31, 22, 17] }];
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+const visits = [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }];
+
+export function ChartXAxis() {
+  return (
+    <>
+      <Chart
+        label="Revenue per quarter and year"
+        type="bar"
+        categories={quarters}
+        xaxisGroups={[
+          { title: "2024", cols: 4 },
+          { title: "2025", cols: 4 },
+        ]}
+        series={revenue}
+      />
+      <Chart
+        label="Support tickets by product area"
+        type="bar"
+        categories={areas}
+        xLabelRotate={-45}
+        xLabelRotateAlways
+        series={tickets}
+      />
+      <Chart label="Visits, months three to seven" categories={months} xMin={2} xMax={6} series={visits} />
+    </>
+  );
+}`,
+  },
+  {
+    id: "forecast",
+    title: "Show a forecast",
+    body: "Set `forecastCount` (`data-ok-forecast-count`) to the number of points at the end of each series that are a forecast. Lines become dashed from the last real point on, and areas and bars become fainter. `forecastDashArray` sets the dash length (4 by default), `forecastStrokeWidth` the line width and `forecastFillOpacity` the opacity (0.5 by default). The tooltip and the data table name these values as a forecast, so the dash isn't the only sign of it.",
+    html: snippetElement(forecastGroup, "data-ok-chart "),
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+const sales = [{ name: "Sales", data: [30, 41, 35, 51, 49, 62, 69, 91, 108] }];
+
+export function ChartForecast() {
+  return <Chart label="Monthly sales" categories={months} forecastCount={3} markerSize={4} series={sales} />;
+}`,
+  },
+  {
+    id: "annotations-text",
+    title: "Add text annotations",
+    body: 'Set an annotation\'s `axis` to `text` to draw its label alone at a position on the chart, in the units of the axes. In HTML, write `data-ok-annotation="text"` on the list item. `textAnchor` (`data-ok-text-anchor`) lines the text up with its position: `start`, `middle` (the default) or `end`.',
+    html: snippetElement(annotationsTextGroup, "data-ok-chart "),
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+const visits = [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }];
+
+export function ChartTextAnnotations() {
+  return (
+    <Chart
+      label="Weekly visits with notes"
+      categories={months}
+      series={visits}
+      annotations={[{ axis: "text", x: "Mar", y: 15, label: "Campaign paused" }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "data-reducer",
+    title: "Draw long series faster",
+    body: "Set `dataReducer` (`data-ok-data-reducer`) on line and area charts with many points. A series with more visible points than `dataReducerThreshold` (500 by default) draws only about `dataReducerTargetPoints` of them (250 by default), chosen so that the line keeps its shape. Only the drawing changes: the data table, the tooltip and the keyboard still reach every point, and zooming in draws more detail.",
+    html: firstRows(snippetElement(dataReducerGroup, "data-ok-chart "), 12),
+    react: `import { Chart } from "@owlky/react";
+
+// A long series of readings, for example from a sensor.
+const readings = Array.from({ length: 5000 }, (_, i) => Math.sin(i / 18) * 40 + 100);
+const categories = readings.map((_, index) => String(index + 1));
+
+export function ChartDataReducer() {
+  return (
+    <Chart
+      label="Sensor readings"
+      dataReducer
+      dataReducerTargetPoints={400}
+      categories={categories}
+      series={[{ name: "Reading", data: readings }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "drilldown",
+    title: "Drill down into details",
+    body: `List the levels a chart can open in \`drilldown\`: each has an \`id\`, a \`name\`, \`categories\` and \`series\`, and may have its own \`type\`. A point opens a level when it names it, such as \`{ y: 120, drilldown: "q1" }\`. Levels can name deeper levels.
+
+- **Open a level:** select the point, or move to it with the arrow keys and press Enter or Space.
+- **Go back:** select **Back**, or press Escape. The status next to it shows the path, such as "All › Q1 › January". Set \`localeText.drilldownRoot\` to rename "All".
+- **HTML:** write each level as another table after the chart's own, \`<table data-ok-chart-drilldown="q1">\` with the level's name as its caption, and mark the cells that open a level with \`data-ok-drilldown\`. Every level stays in the page as a table, so screen readers reach all of the data.
+
+The path is \`data-ok-drilldown-path\` on the chart. React keeps it in \`drilldownPath\` (controlled) or \`defaultDrilldownPath\` and calls \`onDrilldownChange(path)\`. In HTML, \`ok:chart:drilldown\` fires before the change (call \`preventDefault()\` to refuse it), and the instance has \`drilldownPath\`, \`drillDown(id)\`, \`drillUp()\` and \`drillToRoot()\`.`,
+    html: snippetElement(drilldownGroup, "data-ok-chart "),
+    react: `import { Chart } from "@owlky/react";
+
+const quarters = [
+  { name: "Sales", data: [{ y: 120, drilldown: "q1" }, { y: 150, drilldown: "q2" }] },
+];
+const levels = [
+  { id: "q1", name: "Q1", categories: ["Jan", "Feb", "Mar"], series: [{ name: "Sales", data: [35, 40, 45] }] },
+  { id: "q2", name: "Q2", type: "line" as const, categories: ["Apr", "May", "Jun"], series: [{ name: "Sales", data: [52, 48, 50] }] },
+];
+
+export function ChartDrilldown() {
+  return <Chart label="Sales per quarter" type="bar" categories={["Q1", "Q2"]} series={quarters} drilldown={levels} />;
+}`,
+  },
+  {
+    id: "trellis",
+    title: "Compare small multiples",
+    body: `\`ChartTrellis\` splits one data set into small charts, one per series (\`by="series"\`, the default) or one per category (\`by="category"\`), in a grid. It takes the same options as a chart and passes them to every panel.
+
+- **Scales:** by default every panel shares one value scale, so a taller shape is a bigger number. Set \`scaleY="independent"\` to let each panel fit its own values.
+- **Columns:** \`columns\` (\`data-ok-columns\`, 1 to 6) sets the panels per row from 600px up. Without it, as many panels fit as are at least 220px wide. Narrower screens show one per row.
+- **Promote:** \`promote\` (\`data-ok-promote\`) turns the headers into buttons that show their panel alone across the grid. **All panels** shows every panel again. React keeps the panel in \`promoted\` or \`defaultPromoted\` and calls \`onPromotedChange(index)\`. In HTML, \`ok:chart-trellis:promote\` fires before the change, and the instance has \`promoted\`, \`promotePanel(index)\` and \`restorePanels()\`.
+
+In HTML, write the panels yourself: each \`data-ok-chart-trellis-panel\` holds a header and an ordinary chart, with the shared scale as \`data-ok-y-min\` and \`data-ok-y-max\`.`,
+    html: snippetElement(trellisGroup, "data-ok-chart-trellis "),
+    react: `import { ChartTrellis } from "@owlky/react";
+
+const regions = [
+  { name: "North", data: [30, 41, 35, 51, 49, 62] },
+  { name: "South", data: [12, 18, 22, 19, 25, 28] },
+  { name: "East", data: [44, 39, 47, 52, 58, 61] },
+];
+
+export function ChartSmallMultiples() {
+  return (
+    <ChartTrellis
+      label="Monthly visits per region"
+      type="area"
+      columns={3}
+      promote
+      categories={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+      series={regions}
+    />
+  );
+}`,
+  },
+  {
+    id: "measure",
+    title: "Measure changes",
+    body: `Set \`measure\` (\`data-ok-measure\`) to add a **Measure** button to the chart's toolbar. Select it, then drag across the plot to draw a ruler. Its tag shows the two positions and the change, such as "Mar → Jul: +19 (+126.7%)", and the chart announces it.
+
+- **Span:** \`measure="span"\` measures between two x positions, with the values of the first series there.
+- **Free:** \`measure="free"\` measures between the two points where the drag starts and ends.
+- **Pinned rulers:** \`measurePinOnRelease\` keeps every ruler, up to 20. Without it, a new ruler replaces the last one. **Clear measures** removes them.
+- **Keyboard:** in measure mode, move to a value with the arrow keys and press Enter or Space, then do the same at a second value. Escape forgets the first one.
+
+React keeps the rulers in \`measures\` (controlled) or \`defaultMeasures\` and calls \`onMeasured\` and \`onMeasuresChange\`. In HTML, the \`ok:chart:measure\` event fires, and the instance has \`measures\`, \`setMeasures(list)\` and \`clearMeasures()\`.`,
+    html: snippetElement(measureGroup, "data-ok-chart ", 1),
+    react: `import type { ChartMeasure } from "@owlky/core";
+import { Chart } from "@owlky/react";
+import { useState } from "react";
+
+const points = [
+  { name: "Samples", data: [[20, 31], [35, 42], [50, 47], [62, 58], [75, 61]] as [number, number][] },
+];
+
+export function ChartMeasureExample() {
+  const [rulers, setRulers] = useState<ChartMeasure[]>([]);
+  return (
+    <Chart
+      label="Height and weight"
+      type="scatter"
+      measure="free"
+      measurePinOnRelease
+      toolbar
+      measures={rulers}
+      onMeasuresChange={setRulers}
+      series={points}
+    />
+  );
+}`,
+  },
+  {
+    id: "annotations-drag",
+    title: "Move annotations",
+    body: "Set `draggable` on an annotation (`data-ok-draggable` on its list item) to let people move it. A drag moves a vertical line along the x axis, a horizontal line along the value axis, and points and text in both directions, snapped to the categories. Without a pointer, press A on the focused chart to pick up the next draggable annotation, move it with the arrow keys, and drop it with Enter, Space or Escape. The chart announces where it is. React calls `onAnnotationChange` with its index and new coordinates: update `annotations` with them. The HTML runtime writes the new coordinates on the list item and fires `ok:chart:annotation`.",
+    html: snippetElement(annotationsDragGroup, "data-ok-chart "),
+    react: `import type { ChartAnnotation } from "@owlky/core";
+import { Chart } from "@owlky/react";
+import { useState } from "react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+const visits = [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }];
+
+export function ChartMovableTarget() {
+  const [annotations, setAnnotations] = useState<ChartAnnotation[]>([
+    { axis: "y", y: 60, label: "Target", color: "success", draggable: true },
+  ]);
+  return (
+    <Chart
+      label="Weekly visits with a target"
+      categories={months}
+      series={visits}
+      annotations={annotations}
+      onAnnotationChange={({ index, annotation }) =>
+        setAnnotations((list) => list.map((entry, i) => (i === index ? annotation : entry)))
+      }
+    />
+  );
+}`,
+  },
+  {
+    id: "timeline-rows",
+    title: "Arrange timeline rows",
+    body: "By default each series of a timeline has its own lane in every category. Set `rangeBarGroupRows` (`data-ok-range-bar-group-rows`) to put every series in one lane per category, as a schedule does. Write several points with the same `x` to place several bars in a row; in HTML, repeat the row header for each bar. Bars that overlap in time are drawn over each other. Set `disableRangeBarOverlap` (`data-ok-disable-range-bar-overlap`) to give them lanes of their own, which also works for several bars of one series in a category.",
+    html: snippetElement(timelineRowsGroup, "data-ok-chart ", 1),
+    react: `import { Chart } from "@owlky/react";
+
+const series = [
+  {
+    name: "Design",
+    data: [
+      { x: "Team A", y: ["2025-01-01", "2025-01-20"] },
+      { x: "Team B", y: ["2025-01-10", "2025-01-30"] },
+    ],
+  },
+  {
+    name: "Build",
+    data: [
+      { x: "Team A", y: ["2025-01-12", "2025-02-05"] },
+      { x: "Team B", y: ["2025-02-01", "2025-02-20"] },
+    ],
+  },
+];
+
+export function ChartTimelineRows() {
+  return (
+    <Chart label="Team schedules" type="timeline" rangeBarGroupRows disableRangeBarOverlap series={series} />
+  );
+}`,
+  },
+  {
+    id: "zero-bars",
+    title: "Close up grouped columns",
+    body: "When a grouped column chart has zero or empty values, set `hideZeroBarsWhenGrouped` (`data-ok-hide-zero-bars-when-grouped`). Zero bars then take no slot and the other bars of the category close up around its center.",
+    html: snippetElement(columnZeroBarsGroup, "data-ok-chart "),
+    react: `import { Chart } from "@owlky/react";
+
+const series = [
+  { name: "Hats", data: [14, 0, 21, 9] },
+  { name: "Bags", data: [0, 18, null, 12] },
+  { name: "Shoes", data: [8, 15, 11, 0] },
+];
+
+export function ChartZeroBars() {
+  return <Chart label="Sales per product" type="bar" hideZeroBarsWhenGrouped categories={["North", "South", "East", "West"]} series={series} />;
+}`,
+  },
+  {
+    id: "no-data",
+    title: "Show a message without data",
+    body: "Set `noDataText` (`data-ok-no-data-text`) to draw a message when a chart has nothing to draw. Without it the plot stays empty. `noDataAlign` (`left`, `center`, `right`) and `noDataVerticalAlign` (`top`, `middle`, `bottom`) place it. The message is added to the plot's accessible name.",
+    html: snippetElement(noDataGroup, "data-ok-chart "),
+    react: `import { Chart } from "@owlky/react";
+
+export function ChartNoData() {
+  return <Chart label="Orders this week" noDataText="No orders yet" height={200} categories={[]} series={[{ name: "Orders", data: [] }]} />;
+}`,
+  },
+  {
     id: "size",
     title: "Size",
     body: "A chart fills the width of its container and redraws when that width changes, so text keeps its size. `height` sets the height of the plot in pixels (320 by default). Before the width is measured, for example while the page loads, the chart is drawn 640px wide and scaled to fit.",
@@ -1726,6 +2031,126 @@ export function ChartLegendGrid() {
 ];
 
 const PREVIEWS = {
+  drilldown: () => (
+    <Preview>
+      <Chart
+        label="Sales per quarter"
+        type="bar"
+        height={220}
+        categories={["Q1", "Q2"]}
+        series={[
+          {
+            name: "Sales",
+            data: [
+              { y: 120, drilldown: "q1" },
+              { y: 150, drilldown: "q2" },
+            ],
+          },
+        ]}
+        drilldown={[
+          {
+            id: "q1",
+            name: "Q1",
+            categories: ["Jan", "Feb", "Mar"],
+            series: [{ name: "Sales", data: [35, 40, 45] }],
+          },
+          {
+            id: "q2",
+            name: "Q2",
+            categories: ["Apr", "May", "Jun"],
+            series: [{ name: "Sales", data: [52, 48, 50] }],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  trellis: () => (
+    <Preview>
+      <ChartTrellis
+        label="Monthly visits per region"
+        type="area"
+        height={140}
+        promote
+        categories={MONTHS}
+        series={[
+          { name: "North", data: [30, 41, 35, 51, 49, 62] },
+          { name: "South", data: [12, 18, 22, 19, 25, 28] },
+        ]}
+      />
+    </Preview>
+  ),
+  measure: () => (
+    <Preview>
+      <Chart
+        label="Monthly sales"
+        height={220}
+        measure="span"
+        defaultMeasures={[{ x1: 1, y1: 41, x2: 4, y2: 49 }]}
+        categories={MONTHS}
+        series={SALES}
+      />
+    </Preview>
+  ),
+  "annotations-drag": () => (
+    <Preview>
+      <Chart
+        label="Weekly visits with a target"
+        height={220}
+        categories={MONTHS}
+        series={[{ name: "Visits", data: [30, 41, 27, 43, 63, 71] }]}
+        annotations={[{ axis: "y", y: 50, label: "Target", color: "success", draggable: true }]}
+      />
+    </Preview>
+  ),
+  "timeline-rows": () => (
+    <Preview>
+      <Chart
+        label="Team schedules"
+        type="timeline"
+        rangeBarGroupRows
+        disableRangeBarOverlap
+        height={220}
+        series={[
+          { name: "Design", data: [{ x: "Team A", y: ["2025-01-01", "2025-01-20"] }] },
+          { name: "Build", data: [{ x: "Team A", y: ["2025-01-12", "2025-02-05"] }] },
+        ]}
+      />
+    </Preview>
+  ),
+  "zero-bars": () => (
+    <Preview>
+      <Chart
+        label="Sales per product"
+        type="bar"
+        height={220}
+        hideZeroBarsWhenGrouped
+        categories={["North", "South"]}
+        series={[
+          { name: "Hats", data: [14, 0] },
+          { name: "Bags", data: [0, 18] },
+          { name: "Shoes", data: [8, 15] },
+        ]}
+      />
+    </Preview>
+  ),
+  "data-reducer": () => (
+    <Preview>
+      <Chart
+        label="Sensor readings"
+        height={220}
+        dataReducer
+        dataReducerTargetPoints={80}
+        dataReducerThreshold={100}
+        categories={Array.from({ length: 400 }, (_, index) => String(index + 1))}
+        series={[
+          {
+            name: "Reading",
+            data: Array.from({ length: 400 }, (_, i) => Math.round(Math.sin(i / 12) * 40) + 100),
+          },
+        ]}
+      />
+    </Preview>
+  ),
   overview: () => (
     <Preview>
       <Chart label="Monthly sales" categories={MONTHS} series={SALES} />
@@ -1864,6 +2289,55 @@ const PREVIEWS = {
         height={240}
         categories={MONTHS}
         series={SALES}
+      />
+    </Preview>
+  ),
+  "x-axis": () => (
+    <Preview>
+      <Chart
+        label="Revenue per quarter and year"
+        type="bar"
+        height={240}
+        categories={["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"]}
+        xaxisGroups={[
+          { title: "2024", cols: 4 },
+          { title: "2025", cols: 4 },
+        ]}
+        series={[{ name: "Revenue", data: [18, 24, 31, 27, 29, 34, 40, 38] }]}
+      />
+    </Preview>
+  ),
+  forecast: () => (
+    <Preview>
+      <Chart
+        label="Monthly sales"
+        height={240}
+        categories={MONTHS}
+        forecastCount={2}
+        markerSize={4}
+        series={[{ name: "Sales", data: [30, 41, 35, 51, 49, 62] }]}
+      />
+    </Preview>
+  ),
+  "annotations-text": () => (
+    <Preview>
+      <Chart
+        label="Weekly visits with notes"
+        height={240}
+        categories={MONTHS}
+        series={[{ name: "Visits", data: [30, 41, 27, 43, 63, 71] }]}
+        annotations={[{ axis: "text", x: "Mar", y: 15, label: "Campaign paused" }]}
+      />
+    </Preview>
+  ),
+  "no-data": () => (
+    <Preview>
+      <Chart
+        label="Orders this week"
+        noDataText="No orders yet"
+        height={160}
+        categories={[]}
+        series={[{ name: "Orders", data: [] }]}
       />
     </Preview>
   ),
@@ -2497,8 +2971,9 @@ const PREVIEWS = {
         {
           react: "annotations",
           html: "ul[data-ok-chart-annotations] › li",
-          type: "{ axis, x?, x2?, y?, y2?, label?, color? }[]",
-          description: "Lines, bands and points with a label.",
+          type: "{ axis, x?, x2?, y?, y2?, label?, color?, textAnchor? }[]",
+          description:
+            'Lines, bands and points with a label; `axis: "text"` draws the label alone at (`x`, `y`) in data coordinates. HTML writes `data-ok-annotation="text"` and `data-ok-text-anchor`.',
         },
         {
           react: "colorRanges",
@@ -2510,8 +2985,22 @@ const PREVIEWS = {
         {
           react: "group / brushTarget",
           html: "data-ok-group / data-ok-brush-target",
+          type: "string (brushTarget: or string[])",
+          description:
+            'Synchronized group name; the id of the chart a brush chart zooms, or several. HTML separates the ids with spaces: `"sales orders"`.',
+        },
+        {
+          react: "xaxisGroups",
+          html: "data-ok-xaxis-groups",
+          type: "{ title, cols }[]",
+          description:
+            'A second row of x labels; each group spans `cols` categories. HTML writes `"4 2024; 4 2025"`.',
+        },
+        {
+          react: "noDataText",
+          html: "data-ok-no-data-text",
           type: "string",
-          description: "Synchronized group name; the id of the chart a brush chart zooms.",
+          description: "The message drawn when there is nothing to draw.",
         },
         {
           react: "zoomRange / defaultZoomRange / onZoomRangeChange",

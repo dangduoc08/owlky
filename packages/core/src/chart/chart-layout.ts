@@ -22,8 +22,10 @@ import {
   type ChartStripeColor,
   type ChartSum,
   type ChartType,
+  chartForecastStart,
   lighterTone,
 } from "./chart-model.js";
+import { type ChartReducer, chartReduceRuns } from "./chart-reducer.js";
 import {
   type DateLabel,
   type DateUnit,
@@ -187,6 +189,39 @@ export interface ChartLayoutOptions {
    * layout's axes. Whole-chart types only, so no other series goes through it.
    */
   readonly drawSeries?: ((context: ChartSeriesContext) => ChartSeriesPaint) | undefined;
+  /** X labels turned by this many degrees (-90 to 90), when they don't fit flat (4.18.65). */
+  readonly xLabelRotate?: number | undefined;
+  /** X labels turn even when they fit flat. */
+  readonly xLabelRotateAlways?: boolean | undefined;
+  /** A second row of x labels: each group spans `cols` categories (validated by `chartXGroups`). */
+  readonly xGroups?: readonly ChartXGroup[] | undefined;
+  /** The last points of each series drawn as a forecast (dashed, faint; validated in `renderChart`). */
+  readonly forecast?: ChartForecast | undefined;
+  /** Lines and areas draw fewer points when they have many (4.18.66; the marks keep them all). */
+  readonly reducer?: ChartReducer | undefined;
+  /** Range bars and timelines (4.18.67): every series in one lane per category. */
+  readonly rangeBarGroupRows?: boolean | undefined;
+  /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
+  readonly disableRangeBarOverlap?: boolean | undefined;
+  /** Grouped columns: zero and empty bars take no slot; the others close up and center. */
+  readonly hideZeroBarsWhenGrouped?: boolean | undefined;
+}
+
+/** A group of the x axis' second row (ApexCharts `xaxis.group.groups`). */
+export interface ChartXGroup {
+  readonly title: string;
+  readonly cols: number;
+}
+
+/** A dashed forecast tail (ApexCharts `forecastDataPoints`). */
+export interface ChartForecast {
+  readonly count: number;
+  /** Dash length in px. Default 4. */
+  readonly dashArray?: number | undefined;
+  /** Line width in px (default the series'). */
+  readonly strokeWidth?: number | undefined;
+  /** Opacity of forecast areas and bars (0 to 1). Default 0.5. */
+  readonly fillOpacity?: number | undefined;
 }
 
 /** What `drawSeries` gets: the series, the axes in px and where to add marks and labels. */
@@ -304,6 +339,10 @@ export interface ChartMark {
   readonly count?: number | undefined;
   /** Waffle and unit charts: the outline of a category's marks (one path). */
   readonly unit?: { readonly outline: string } | undefined;
+  /** Drilldown (4.18.68): the level a click, Enter or Space on the mark opens. */
+  readonly drilldown?: string | undefined;
+  /** Forecast tail (4.18.65): the point is a forecast (a tooltip row says so). */
+  readonly forecast?: boolean | undefined;
   /** Streamgraphs: the column's total (a tooltip row). */
   readonly total?: number | undefined;
   /** Streamgraphs: the nodes that show one band over the others (per-point tooltips). */
@@ -435,6 +474,14 @@ export const chartTextWidth = (text: string, size = FONT): number => {
   for (const c of text) em += glyph(c);
   return Math.ceil(em * size);
 };
+
+/** `text` cut to `room` px (estimated widths) with an ellipsis; whole when it fits. */
+export function fitChartText(text: string, room: number): string {
+  if (chartTextWidth(text) <= room) return text;
+  const chars = [...text];
+  while (chars.length > 1 && chartTextWidth(`${chars.join("").trimEnd()}…`) > room) chars.pop();
+  return `${chars.join("").trimEnd()}…`;
+}
 
 export const r2 = (value: number) => Math.round(value * 100) / 100;
 /** A change as text with its sign: `+12` (rising waterfall steps; falling ones carry their minus). */
@@ -775,7 +822,38 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const gap = 12;
   const xLabels = options.xLabels !== false;
   const xTitle = !sparkline && xLabels && options.xTitle ? options.xTitle : undefined;
-  const labelHeight = (sparkline ? 0 : xLabels ? FONT + gap + 6 : 6) + (xTitle ? FONT + 8 : 0);
+  const categoryLabels = Array.from({ length: count }, (_, index) =>
+    format.axis(
+      data.xType === "datetime"
+        ? (data.categories[index] as number)
+        : (data.categories[index] ?? String(index + 1)),
+    ),
+  );
+  // Rotated x labels (4.18.65): when asked for, or when they wouldn't fit flat in an estimated
+  // plot width (the real one comes later and depends on the room these labels take).
+  const widestX = Math.max(
+    0,
+    ...categoryLabels.slice(first, last + 1).map((label) => chartTextWidth(label.text)),
+  );
+  const givenAngle = clamp(Math.round(options.xLabelRotate ?? 0), -90, 90);
+  const rotation =
+    sparkline || horizontal || numeric || !xLabels
+      ? 0
+      : options.xLabelRotateAlways || widestX + 8 > (width - 56) / Math.max(1, shown)
+        ? givenAngle
+        : 0;
+  const sin = Math.abs(Math.sin((rotation * Math.PI) / 180));
+  // A rotated label is cut so that it takes at most a third of the chart's height.
+  const rotatedRoom = sin > 0 ? (height / 3 - FONT) / sin : 0;
+  const rotatedExtra = sin > 0 ? Math.ceil(Math.min(widestX, rotatedRoom) * sin) : 0;
+  // The groups' row under the labels (4.18.65).
+  const xGroups = !sparkline && !horizontal && !numeric && xLabels ? (options.xGroups ?? []) : [];
+  const groupRow = xGroups.length > 0 ? FONT + 8 : 0;
+  const labelHeight =
+    (sparkline ? 0 : xLabels ? FONT + gap + 6 : 6) +
+    (xTitle ? FONT + 8 : 0) +
+    rotatedExtra +
+    groupRow;
   const top = sparkline ? 0 : 10;
   const yTitleSpace = titleOf(0) ? FONT + 10 : 0;
 
@@ -904,14 +982,6 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       undefined,
       text,
     );
-  const categoryLabels = Array.from({ length: count }, (_, index) =>
-    format.axis(
-      data.xType === "datetime"
-        ? (data.categories[index] as number)
-        : (data.categories[index] ?? String(index + 1)),
-    ),
-  );
-
   if (sparkline) {
     // No axes: the plot fills the SVG, less room for line strokes and markers.
     const pad = banded ? 1 : Math.max(3, (options.markerSize ?? 0) + 1);
@@ -1102,18 +1172,77 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       const unit = data.xType === "datetime" ? format.dateUnit : "index";
       const key = (i: number) =>
         data.xType === "datetime" ? unitIndex(data.categories[i] as number, format.dateUnit) : i;
-      const show = shownLabels(count, band, widest, unit, key);
+      // Rotated labels only need a line of text between them along the axis.
+      const across = sin > 0 ? FONT / sin : 0;
+      const show = shownLabels(count, band, sin > 0 ? across : widest, unit, key);
       // Dates with gaps (trading days) aren't evenly spaced: a label that would touch the one
       // before it is left out.
       let edge = Number.NEGATIVE_INFINITY;
       inWindow.forEach((label, offset) => {
         const i = first + offset;
         if (!show(i)) return;
-        const half = chartTextWidth(label.text) / 2;
+        const half = sin > 0 ? across / 2 : chartTextWidth(label.text) / 2;
         if (toCat(i) - half < edge + 8) return;
         edge = toCat(i) + half;
-        axisX.push(tickNode(toCat(i), labelY, "middle", label.text, label.major, "0.71em"));
+        if (sin > 0) {
+          const tick = tickNode(
+            toCat(i),
+            labelY,
+            rotation < 0 ? "end" : "start",
+            fitChartText(label.text, rotatedRoom),
+            label.major,
+          );
+          axisX.push({
+            ...tick,
+            attrs: {
+              ...tick.attrs,
+              transform: `rotate(${rotation} ${fmt(toCat(i))} ${fmt(labelY)})`,
+            },
+          });
+        } else axisX.push(tickNode(toCat(i), labelY, "middle", label.text, label.major, "0.71em"));
       });
+      // Groups (4.18.65): a title centered under the categories each one spans, cut to its room.
+      if (xGroups.length) {
+        const rowY = labelY + FONT + 6 + rotatedExtra;
+        const halfBand = shown > 1 || banded ? band / 2 : 0;
+        const right = plot.x + plot.width;
+        let start = 0;
+        for (const [index, group] of xGroups.entries()) {
+          const end = start + group.cols - 1;
+          const a = Math.max(start, first);
+          const b = Math.min(end, last);
+          start = end + 1;
+          if (b < a) continue;
+          const from = Math.max(plot.x, toCat(a) - halfBand);
+          const to = Math.min(right, toCat(b) + halfBand);
+          const room = to - from - 4;
+          if (room >= 12)
+            axisX.push(
+              node(
+                "text",
+                {
+                  x: fmt((from + to) / 2),
+                  y: fmt(rowY),
+                  dy: "0.71em",
+                  "text-anchor": "middle",
+                  "data-ok-chart-axis-group": "",
+                },
+                undefined,
+                fitChartText(group.title, room),
+              ),
+            );
+          if (index < xGroups.length - 1 && b < last)
+            axisX.push(
+              node("line", {
+                x1: fmt(to),
+                x2: fmt(to),
+                y1: fmt(rowY - 2),
+                y2: fmt(rowY + FONT + 2),
+                "data-ok-chart-axis-group-tick": "",
+              }),
+            );
+        }
+      }
     }
   }
 
@@ -1196,6 +1325,48 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     }
   }
 
+  /** Forecast tail (4.18.65): the first forecast x of a series (its last `count` points). */
+  const forecastFrom = (series: ChartDataSeries) =>
+    chartForecastStart(series, options.forecast?.count);
+  const forecastOpacity = (scale = 1) =>
+    fmt(clamp(options.forecast?.fillOpacity ?? 0.5, 0, 1) * scale);
+
+  // Lanes of range bars that overlap in time (4.18.67): a bar takes the first lane free at its start.
+  const laneOf = new Map<ChartPoint, { lane: number; lanes: number }>();
+  if (options.disableRangeBarOverlap) {
+    const rows = new Map<string, ChartPoint[]>();
+    for (const index of rangeSeries)
+      for (const point of (data.series[index] as ChartDataSeries).points) {
+        if (!point.range) continue;
+        const key = `${options.rangeBarGroupRows ? "" : index}:${point.x}`;
+        rows.set(key, [...(rows.get(key) ?? []), point]);
+      }
+    for (const row of rows.values()) {
+      const sorted = [...row].sort(
+        (a, b) => Math.min(...(a.range as number[])) - Math.min(...(b.range as number[])),
+      );
+      const ends: number[] = [];
+      const taken: { point: ChartPoint; lane: number }[] = [];
+      for (const point of sorted) {
+        const start = Math.min(...(point.range as number[]));
+        let lane = ends.findIndex((end) => end <= start);
+        if (lane < 0) lane = ends.length;
+        ends[lane] = Math.max(...(point.range as number[]));
+        taken.push({ point, lane });
+      }
+      for (const { point, lane } of taken) laneOf.set(point, { lane, lanes: ends.length });
+    }
+  }
+  /** Grouped columns without their zero bars (4.18.67): the values of each bar series by x. */
+  const barValues = options.hideZeroBarsWhenGrouped
+    ? new Map(
+        barSeries.map((index) => [
+          index,
+          new Map((data.series[index] as ChartDataSeries).points.map((p) => [p.x, p.y])),
+        ]),
+      )
+    : undefined;
+
   for (const { series, index } of visible) {
     const seriesAttrs = {
       "data-ok-chart-series": "",
@@ -1231,12 +1402,26 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       const size = stacks ? groupSize : groupSize / Math.max(1, barSeries.length);
       const offset = stacks ? 0 : slot * size;
       const children: ChartNode[] = [];
+      const firstForecast = forecastFrom(series);
       for (const point of points) {
         if (point.y === null) continue;
+        const forecast = firstForecast !== undefined && point.x >= firstForecast;
         const [from, to] = stacks
           ? (stack.get(`${index}:${point.x}`) as readonly [number, number])
           : [log ? (scales[axis] as ChartValueScale).min : 0, point.y];
-        const a = toCat(point.x) - groupSize / 2 + offset;
+        // Without zero bars (4.18.67), the bars of a category close up around its center.
+        const present =
+          barValues && !stacks
+            ? barSeries.filter((other) => {
+                const value = barValues.get(other)?.get(point.x);
+                return value !== null && value !== undefined && value !== 0;
+              })
+            : undefined;
+        const a = present
+          ? toCat(point.x) -
+            (present.length * size) / 2 +
+            Math.max(0, present.indexOf(index)) * size
+          : toCat(point.x) - groupSize / 2 + offset;
         const start = toValue(from);
         const end = toValue(to);
         const rounded = !stacks || ends.get(endKey(index, point.y, point.x)) === index;
@@ -1255,6 +1440,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           color,
           box: box(a, size, start, end),
           ...(series.pattern ? { pattern: series.pattern } : {}),
+          ...(forecast ? { forecast } : {}),
         });
         if (from === to) continue;
         if (options.dataLabels) {
@@ -1291,6 +1477,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
             "data-ok-chart-bar": "",
             ...(own ? { "data-ok-color": own } : {}),
             ...fill,
+            ...(forecast
+              ? { "data-ok-chart-forecast": "", "fill-opacity": forecastOpacity() }
+              : {}),
           }),
         );
       }
@@ -1435,13 +1624,18 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     }
     if (series.type === "rangeBar" || series.type === "timeline") {
       // Bars from the start to the end value, rounded at both ends; timelines run left to right.
-      const slot = rangeSeries.indexOf(index);
-      const size = groupSize / Math.max(1, rangeSeries.length);
+      // Group rows (4.18.67): the series share one lane per category.
+      const slot = options.rangeBarGroupRows ? 0 : rangeSeries.indexOf(index);
+      const slotSize = options.rangeBarGroupRows
+        ? groupSize
+        : groupSize / Math.max(1, rangeSeries.length);
       const children: ChartNode[] = [];
       for (const point of points) {
         if (!point.range) continue;
         const [from, to] = point.range.map(toValue) as [number, number];
-        const a = posOf(point.x) - groupSize / 2 + slot * size;
+        const lane = laneOf.get(point);
+        const size = lane ? slotSize / lane.lanes : slotSize;
+        const a = posOf(point.x) - groupSize / 2 + slot * slotSize + (lane ? lane.lane * size : 0);
         const length = Math.abs(to - from);
         const end = horizontal ? Math.max(from, to) : Math.min(from, to);
         marks.push({
@@ -1761,6 +1955,20 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     );
     const at = (point: { x: number; y: number }): Pt =>
       numeric ? [toX(point.x), toValue(point.y)] : [toCat(point.x), toValue(stackedValue(point))];
+    const firstForecast = forecastFrom(series);
+    const inForecast = (point: { x: number }) =>
+      firstForecast !== undefined && point.x >= firstForecast;
+    // Data reduction (4.18.66): lines and areas draw these points only; marks keep them all.
+    const byX = [...points].sort((a, b) => a.x - b.x);
+    const kept =
+      options.reducer && (series.type === "line" || series.type === "area")
+        ? chartReduceRuns(
+            byX.map((point) => (point.y === null ? null : at(point as { x: number; y: number }))),
+            options.reducer,
+          )
+        : undefined;
+    const drawn = kept ? byX.filter((_, position) => kept.has(position)) : byX;
+    const dropped = kept ? new Set(byX.filter((_, position) => !kept.has(position))) : undefined;
     for (const point of pts) {
       const [px, py] = at(point);
       marks.push({
@@ -1774,8 +1982,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         color: series.color,
         ...pointOf(point),
         ...(series.shape ? { shape: series.shape } : {}),
+        ...(inForecast(point) ? { forecast: true } : {}),
       });
-      if (options.dataLabels && series.type !== "scatter") {
+      if (options.dataLabels && series.type !== "scatter" && !dropped?.has(point)) {
         const entry = percent && stacks ? stack.get(`${index}:${point.x}`) : undefined;
         labels.push(
           dataLabel(
@@ -1826,15 +2035,24 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     }
     // Lines break at gaps (null values).
     const segments: Pt[][] = [];
+    // The forecast tail starts at the last solid point, so the line has no hole.
+    const forecasts: Pt[][] = [];
     let current: Pt[] = [];
-    const sorted = [...points].sort((a, b) => a.x - b.x);
+    let tail: Pt[] = [];
+    const sorted = drawn;
     for (const point of sorted) {
       if (point.y === null) {
         if (current.length) segments.push(current);
+        if (tail.length) forecasts.push(tail);
         current = [];
+        tail = [];
+      } else if (inForecast(point)) {
+        if (tail.length === 0 && current.length) tail.push(current[current.length - 1] as Pt);
+        tail.push(at(point as { x: number; y: number }));
       } else current.push(at(point as { x: number; y: number }));
     }
     if (current.length) segments.push(current);
+    if (tail.length) forecasts.push(tail);
     const curve = options.curve ?? "smooth";
     const children: ChartNode[] = [];
     if (series.type === "area") {
@@ -1867,6 +2085,21 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           }),
         );
       }
+      for (const segment of forecasts) {
+        const first = segment[0] as Pt;
+        const last = segment[segment.length - 1] as Pt;
+        const close = `L${fmt(last[0])},${fmt(base)}L${fmt(first[0])},${fmt(base)}Z`;
+        children.push(
+          node("path", {
+            d: linePath(segment, curve) + close,
+            "data-ok-chart-area": "",
+            "data-ok-chart-forecast": "",
+            // Solid areas are 0.24 opaque: the tail is fainter than that.
+            "fill-opacity": forecastOpacity(gradient || pattern ? 1 : 0.24),
+            ...(gradient ? { fill: `url(#${id})` } : pattern ? { fill: pattern } : {}),
+          }),
+        );
+      }
     }
     // Dashes and widths per series (4.18.62), else the chart's.
     const dash = series.dash
@@ -1883,6 +2116,19 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           "data-ok-chart-line": "",
           ...dash,
           ...stroke,
+        }),
+      );
+    }
+    for (const segment of forecasts) {
+      if (segment.length < 2) continue;
+      const width = options.forecast?.strokeWidth ?? lineWidth;
+      children.push(
+        node("path", {
+          d: linePath(segment, curve),
+          "data-ok-chart-line": "",
+          "data-ok-chart-forecast": "",
+          "stroke-dasharray": fmt(Math.max(1, options.forecast?.dashArray ?? 4)),
+          ...(width !== undefined ? { "stroke-width": fmt(width) } : {}),
         }),
       );
     }
@@ -2034,7 +2280,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         "text",
         {
           x: fmt(plot.x + plot.width / 2),
-          y: fmt(plot.y + plot.height + gap + FONT + 8),
+          y: fmt(plot.y + plot.height + gap + FONT + 8 + rotatedExtra + groupRow),
           dy: "0.71em",
           "text-anchor": "middle",
           "data-ok-chart-axis-title": "x",

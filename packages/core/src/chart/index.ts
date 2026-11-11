@@ -2,6 +2,7 @@
 
 export {
   CHART_DEFAULT_WIDTH,
+  type ChartDrilldownState,
   type ChartLegendItem,
   type ChartRender,
   type ChartRenderInput,
@@ -23,9 +24,14 @@ export {
 } from "./chart-active.js";
 export {
   type ChartAnnotation,
+  type ChartAnnotationAnchor,
   type ChartAnnotationAxis,
+  chartAnnotationAnchors,
+  chartAnnotationHits,
+  chartAnnotationIndexes,
   chartAnnotationItems,
   chartAnnotations,
+  readChartAnnotation,
   readChartAnnotations,
 } from "./chart-annotations.js";
 export {
@@ -63,6 +69,21 @@ export {
   parseChartDiscreteMarkers,
   withChartCues,
 } from "./chart-cues.js";
+export {
+  type ChartDrilldownLevel,
+  type ChartTrellisBy,
+  type ChartTrellisPanel,
+  type ChartTrellisScale,
+  chartDrilldownActive,
+  chartDrilldownLabels,
+  chartDrilldownLevels,
+  chartDrilldownPath,
+  chartDrilldownTarget,
+  chartTrellisBys,
+  chartTrellisPanels,
+  chartTrellisScales,
+  readChartDrilldownTables,
+} from "./chart-drilldown.js";
 export {
   type ChartExportFormat,
   chartCsv,
@@ -102,6 +123,7 @@ export {
   type ChartGestureHost,
   type ChartGestureMode,
   type ChartGestures,
+  type ChartPxPoint,
   createChartGestures,
 } from "./chart-gestures.js";
 export {
@@ -163,6 +185,7 @@ export {
   type ChartAxisMap,
   type ChartColorRange,
   type ChartFlow,
+  type ChartForecast,
   type ChartLayout,
   type ChartLayoutOptions,
   type ChartMark,
@@ -170,11 +193,31 @@ export {
   type ChartNodeTag,
   type ChartRect,
   type ChartSlot,
+  type ChartXGroup,
   chartSigned,
   chartTextWidth,
   layoutChart,
 } from "./chart-layout.js";
 export { type ChartLink, type ChartLinkMember, linkChart } from "./chart-link.js";
+export {
+  CHART_MAX_MEASURES,
+  type ChartAnnotationHit,
+  type ChartMeasure,
+  type ChartMeasureMode,
+  chartAnnotationAt,
+  chartAnnotationKey,
+  chartAnnotationText,
+  chartAnnotationX,
+  chartMeasureActive,
+  chartMeasureAt,
+  chartMeasureBetween,
+  chartMeasureModes,
+  chartMeasureNodes,
+  chartMeasures,
+  chartMeasureText,
+  dragChartAnnotation,
+  moveChartAnnotation,
+} from "./chart-measure.js";
 export {
   type ChartCircularType,
   type ChartColor,
@@ -188,6 +231,8 @@ export {
   type ChartLegend,
   type ChartLegendAlign,
   type ChartMarkerShape,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartPart,
   type ChartPattern,
   type ChartPoint,
@@ -215,6 +260,8 @@ export {
   chartLegendAligns,
   chartLegends,
   chartMarkerShapes,
+  chartNoDataAligns,
+  chartNoDataVerticalAligns,
   chartPartLabels,
   chartPartNames,
   chartParts,
@@ -237,6 +284,7 @@ export {
   readChartTable,
 } from "./chart-model.js";
 export { type ChartPartitionOptions, layoutSunburst } from "./chart-partition.js";
+export { type ChartReducer, chartLttb, chartReduceRuns } from "./chart-reducer.js";
 export {
   type ChartOrientation,
   type ChartSankeyEdge,
@@ -325,6 +373,14 @@ export {
   chartViolinSides,
   chartViolinWhiskers,
 } from "./chart-violin.js";
+export {
+  type ChartFixedWindowOptions,
+  chartFixedWindow,
+  chartXGroupAt,
+  chartXGroups,
+  chartXGroupsText,
+  parseChartXGroups,
+} from "./chart-xaxis.js";
 export {
   type ChartZoom,
   type ChartZoomReason,

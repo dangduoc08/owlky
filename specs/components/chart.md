@@ -115,6 +115,17 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
                      g[data-ok-chart-annotation="x|y|point"][data-ok-color] ›
                        line[data-ok-chart-annotation-line] | rect[data-ok-chart-annotation-band] | circle[data-ok-chart-annotation-marker]
                        + rect[data-ok-chart-annotation-tag] + text[data-ok-chart-annotation-label]
+                     g[data-ok-chart-annotation=text][data-ok-color] › text[data-ok-chart-annotation-text][text-anchor] (4.18.65)
+      x axis (4.18.65): text[data-ok-chart-tick][transform=rotate(…)] (xLabelRotate), text[data-ok-chart-axis-group] + line[data-ok-chart-axis-group-tick]
+                        inside g[data-ok-chart-axis=x] (xaxisGroups)
+      forecast (4.18.65): path[data-ok-chart-line][data-ok-chart-forecast][stroke-dasharray], path[data-ok-chart-area][data-ok-chart-forecast][fill-opacity],
+                          path[data-ok-chart-bar][data-ok-chart-forecast][fill-opacity]
+      no data (4.18.65): text[data-ok-chart-no-data] (last child of the SVG, only when `noDataText` is set and nothing is drawn)
+      measure rulers (4.18.20): g[data-ok-chart-measures] (before the active group) › g[data-ok-chart-measure="span|free"] ›
+                          rect[data-ok-chart-measure-band] | line[data-ok-chart-measure-line], circle[data-ok-chart-measure-end]×2,
+                          rect[data-ok-chart-measure-tag] + text[data-ok-chart-measure-label][data-ok-trend="up|down|flat"]
+      draggable annotations (4.18.20): g[data-ok-chart-annotation][data-ok-draggable]?[data-ok-picked]?
+  span[data-ok-chart-status][role=status]                (after the plot: charts with draggable annotations and no toolbar; announces moves)
       selection:   g[data-ok-chart-brush] (before the active group) › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2 (brush charts)
       badges:      g[data-ok-chart-data-labels] › (rect[data-ok-chart-data-label-badge] + text[data-ok-chart-data-label=outside])×n
     Sankey (ADR-0047; root [data-ok-orientation]?[data-ok-node-width]?[data-ok-whitespace]?
@@ -192,13 +203,14 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
         + div[data-ok-chart-tooltip-rows]
         div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color][data-ok-shape]?[data-ok-pattern]? + span + span[data-ok-chart-tooltip-value]
-  div[data-ok-chart-drill]                               (sunburst and icicle charts unless disableZoomOnClick; before the plot)
+  div[data-ok-chart-drill]                               (sunburst and icicle charts unless disableZoomOnClick, and charts with drilldown levels; before the plot)
     button[type=button][data-ok-chart-drill-up][hidden]? › "Back" (localeText `drillUp`; hidden while not drilled)
     span[data-ok-chart-drill-path][role=status] › the drilled path ("Storage › Backups"; empty at the top)
   div[data-ok-chart-filter]                              (crossfilter, 4.18.19: charts with data-ok-crossfilter)
     button[type=button][data-ok-chart-filter-clear][hidden]? › "Clear filter" (hidden while the group has no filter)
     span[data-ok-chart-filter-status][role=status]       (visually hidden; announces this chart's filter changes)
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
+  table[data-ok-chart-drilldown="<id>"][data-ok-type]?*  (drilldown levels, ADR-0060: caption = the level's name; cells td[data-ok-drilldown]? open deeper levels)
   template[data-ok-chart-tooltip]?                       (HTML: custom tooltip content, 4.18.63; React: tooltipContent)
     [data-ok-chart-tooltip-slot="title|state|row|name|value|marker"] (text slots; row repeated per value,
       marker gets data-ok-color / data-ok-shape / data-ok-pattern; state removed unless selected)
@@ -229,8 +241,16 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Violin: thead › tr › th[scope=col][rowspan=2] + th[scope=colgroup][colspan=6]; second row th[data-ok-part="count|min|q1|median|q3|max"];
       one row per category: tbody › tr › th[scope=row] + td[data-ok-samples] (the count; observations) | td[data-ok-density] (empty; value:weight pairs) + td×5 (the summary, never read back)
   ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
-    li[data-ok-annotation="x|y|point"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]? › label text
+    li[data-ok-annotation="x|y|point|text"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]?[data-ok-text-anchor]? › label text
 Root text attributes (phase 4): [data-ok-group]? [data-ok-brush-target]? [data-ok-color-ranges]?
+  (4.18.65) [data-ok-xaxis-groups]? [data-ok-no-data-text]? (4.18.68) [data-ok-drilldown-path]?
+
+Trellis (ADR-0060):
+div[data-ok-chart-trellis][role=group][aria-label][data-ok-columns]?[data-ok-promote]?
+  button[type=button][data-ok-chart-trellis-back][hidden]? › "All panels"   (with data-ok-promote)
+  div[data-ok-chart-trellis-panel][data-ok-promoted]?[hidden]?×n
+    button[type=button][data-ok-chart-trellis-header][aria-expanded] | div[data-ok-chart-trellis-header] › the series or category
+    figure[data-ok-chart][data-ok-y-min][data-ok-y-max] (shared scales) … an ordinary chart named "<label>: <panel>"
 ```
 Colors: `data-ok-color` = `<palette>` or `<palette>-<lighter|light|main|dark|darker>` (allowlist).
 Default series order: `primary-dark`, `warning`, `info`, `error`, `success`, `warning-dark`,
@@ -652,6 +672,25 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `projection` | `data-ok-projection="…"` | style | `equalEarth` `mercator` `equirectangular` | — | Geo charts: `equalEarth` (equal areas, the default), `mercator` (straight rhumb lines) or `equirectangular`. |
 | `geoLayout` | `data-ok-geo-layout="…"` | style | `geographic` `hex` | — | Geo charts: real boundaries (`geographic`, the default) or equal hex tiles (`hex`). |
 | `scaleMethod` | `data-ok-scale-method="…"` | style | `quantile` `equalInterval` `jenks` `threshold` | — | Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`). |
+| `xMin` | `data-ok-x-min="…"` | number | number | — | The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes). |
+| `xMax` | `data-ok-x-max="…"` | number | number | — | The last x position shown when nothing has zoomed the chart (see `xMin`). |
+| `xRange` | `data-ok-x-range="…"` | number | number | — | Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data). |
+| `xLabelRotate` | `data-ok-x-label-rotate="…"` | number | number | — | X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out. |
+| `xLabelRotateAlways` | `data-ok-x-label-rotate-always` | flag | boolean | off | X labels turn by `xLabelRotate` even when they fit flat. |
+| `measure` | `data-ok-measure="…"` | style | `span` `free` | — | Measure rulers: a **Measure** button in the toolbar; a drag (or Enter at two points) then measures the change between two x positions (`span`, the series' values) or two points (`free`). |
+| `measurePinOnRelease` | `data-ok-measure-pin-on-release` | flag | boolean | off | Measure rulers stay on the chart when the drag ends, up to 20 of them (without it, a new ruler replaces the last one). |
+| `rangeBarGroupRows` | `data-ok-range-bar-group-rows` | flag | boolean | off | Range bars and timelines: the series share one lane per category, so bars of different series line up in a row. |
+| `disableRangeBarOverlap` | `data-ok-disable-range-bar-overlap` | flag | boolean | off | Range bars and timelines: bars that overlap in time go to lanes of their own instead of being drawn over each other. |
+| `hideZeroBarsWhenGrouped` | `data-ok-hide-zero-bars-when-grouped` | flag | boolean | off | Grouped columns: zero and empty bars take no slot, so the other bars of a category close up around its center. |
+| `dataReducer` | `data-ok-data-reducer` | flag | boolean | off | Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point. |
+| `dataReducerTargetPoints` | `data-ok-data-reducer-target-points="…"` | number | number | — | Points kept per series when reducing (default 250). |
+| `dataReducerThreshold` | `data-ok-data-reducer-threshold="…"` | number | number | — | A series with more visible points than this is reduced (default 500). |
+| `forecastCount` | `data-ok-forecast-count="…"` | number | number | — | How many points at the end of each line, area or bar series are a forecast: lines are dashed, areas and bars faint. |
+| `forecastDashArray` | `data-ok-forecast-dash-array="…"` | number | number | — | Forecast line dashes in px (default 4). |
+| `forecastStrokeWidth` | `data-ok-forecast-stroke-width="…"` | number | number | — | Forecast line width in px (default the series' width). |
+| `forecastFillOpacity` | `data-ok-forecast-fill-opacity="…"` | number | number | — | Opacity of forecast areas and bars (0 to 1; default 0.5). |
+| `noDataAlign` | `data-ok-no-data-align="…"` | style | `left` `center` `right` | — | Where the `noDataText` message sits across the plot: `left`, `center` (the default) or `right`. |
+| `noDataVerticalAlign` | `data-ok-no-data-vertical-align="…"` | style | `top` `middle` `bottom` | — | Where the `noDataText` message sits down the plot: `top`, `middle` (the default) or `bottom`. |
 | `scaleClasses` | `data-ok-scale-classes="…"` | number | number | `5` | Geo charts: how many value classes (at most the colors available). |
 | `sphere` | `data-ok-sphere` | flag | boolean | off | Geo charts: the outline of the globe behind the regions. |
 | `graticule` | `data-ok-graticule` | flag | boolean | off | Geo charts: lines of longitude and latitude every 30 degrees. |
@@ -660,6 +699,16 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
 <!-- /options:chart -->
+
+Trellis (`ChartTrellis`, ADR-0060):
+<!-- options:chart-trellis (generated by `pnpm specs:options` from the schema in packages/core/src/anatomy/anatomy.ts) -->
+Root: `data-ok-chart-trellis`. Unknown values fall back to the default.
+
+| React | HTML | Kind | Values | Default | Description |
+|---|---|---|---|---|---|
+| `columns` | `data-ok-columns="…"` | number | number | — | Panels per row from 600px up (1 to 6; default as many as fit, at least 220px wide). Narrower screens show one per row. |
+| `promote` | `data-ok-promote` | flag | boolean | off | Panel headers are buttons: pressing one shows that panel alone across the grid, with an **All panels** button to go back. |
+<!-- /options:chart-trellis -->
 
 Text attributes (React prop ↔ HTML attribute, written by React too): `yTitle` ↔
 `data-ok-y-title`, `xTitle` ↔ `data-ok-x-title`, `yaxis` ↔ `data-ok-yaxis` (core `chartYAxesText` /
@@ -863,7 +912,10 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | Enter / Space (sunburst) | Zooms into the active arc's branch; on the center disc, zooms out one level |
 | Arrows (icicle) | Away from the root: the first child; toward it: the parent; the other two: the next / previous cell drawn on the band (top: Down / Up, Right / Left; bottom: Up / Down; left: Right / Left, Down / Up; right: Left / Right) |
 | Enter / Space (icicle) | Zooms into the active cell's branch; on the drilled band, out one level; on an ancestor band, out to it |
-| Escape | Sunbursts and icicles: zooms out one level first. Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
+| Escape | Sunbursts, icicles and drilldown charts: go up one level first. Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
+| Enter / Space (drilldown) | Opens the level of the active point (a category: the first of its points with a level) instead of selecting it |
+| Enter / Space (measure mode) | The first press sets where the ruler starts, the second adds it; Escape forgets the start |
+| A | Picks up the next draggable annotation; arrows then move it, Enter, Space or Escape drop it |
 | `+` / `=`, `-` | Zoom in / out around the middle (zoom and brush charts) |
 | Shift + Left / Right | Pans the zoomed range by one category (a tenth on numeric axes) |
 | `0` | Resets the zoom |
@@ -1088,27 +1140,46 @@ Option areas not covered by the table above:
 | `chart.events` `click` (any click), `markerClick`, `xAxisLabelClick` | — | deferred | axis labels are in the `aria-hidden` SVG (the table's row headers are their accessible view); a label selection needs focusable labels first |
 | `chart.events` `animationEnd`, `beforeMount`, `mounted`, `updated`, `keyDown`, `keyUp` | — | not applicable | lifecycle: React effects / runtime setup; DOM key events |
 | `chart.events` `crossFilter`, `filterChange`, `highlightFilterChanged` | HTML `ok:chart:filter` (detail `{ categories, own }`) · React `onFilterChange(categories, own)` · instance `filter`, `clearFilter()` | renamed (4.18.19, ADR-0054) | one event for both modes |
-| `chart.events` `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.20) | |
-| drilldown: `drillDown` / `drillUp` / `drillToRoot` / `clearDrilldownCache`, events `drillDownStart` / `End` / `Error`, `drillUp` | — | deferred | category → child series, with a back control |
-| trellis / small multiples: `ApexCharts.trellis`, `rowSeries`, `getPanels`, `getPanel`, `promotePanel`, `restorePanels` | — | deferred | one chart per category on shared axes |
+| `chart.events.measured` | React `onMeasured({ measure, measures, text })` · HTML `ok:chart:measure` | renamed (4.18.20) | after a ruler is drawn (drag end, or the second Enter / Space) |
+| annotation `draggable`, `chart.events.annotationDragged` | `annotations[].draggable` (`li[data-ok-draggable]`) · React `onAnnotationChange({ index, annotation })` · HTML `ok:chart:annotation` (the runtime rewrites the item's `data-ok-x` / `-x2` / `-y` / `-y2`) | renamed (4.18.20) | data coordinates, snapped to categories on index axes; `x` lines move along x, `y` lines along y, points and text both; bands move whole. Keyboard (WCAG 2.5.7): A picks up the next draggable annotation, arrows move it (a category or a tenth of a numeric window; a twentieth of the value axis), Enter / Space / Escape drop it; the status announces the position |
+| `chart.events` `annotationEdited` / `Created` / `Styled` / `Deleted` (ApexCharts Ink) | — | not built | drawing tools (an editor of annotations) are not part of the chart |
+| `drilldown.enabled`, `drilldown.series` (`id`, `name`, `data` · `series`), point `drilldown: "id"` | `drilldown` (`{ id, name, type, categories, series }[]`) · point `{ y, drilldown }`; HTML `table[data-ok-chart-drilldown="id"]` after the chart's table (caption = name, `data-ok-type`), cells `td[data-ok-drilldown]` | renamed (4.18.68, ADR-0060) | levels are data (no `onDrillDown` resolver: HTML has no function); a level's single-series `data` is `series: [{ name, data }]`; every level's table stays in the accessible view |
+| `drillDown(id)`, `drillUp()`, `drillToRoot()` | HTML instance `drillDown`, `drillUp`, `drillToRoot`, `drilldownPath`; React `drilldownPath` (controlled) / `defaultDrilldownPath` / `onDrilldownChange(path)`; root `data-ok-drilldown-path="q1; jan"` | renamed (4.18.68) | synchronous (no promises); methods fire no events |
+| events `drillDownStart` / `drillDownEnd` / `drillUp` | HTML `ok:chart:drilldown` (cancelable, before the change, detail `{ id, path }`); React `onDrilldownChange` | renamed (4.18.68) | one event for every direction; `drillDownError` and `clearDrilldownCache`: not applicable (levels are data) |
+| `drilldown.breadcrumb` (`show`, `rootLabel`, position, separator) | the ADR-0058 drill row: **Back** + the path status (`"All › Q1 › January"`), `localeText.drilldownRoot` | renamed (4.18.68) | always shown with levels; a click, Enter or Space on a point with a level opens it instead of selecting it; Escape goes up; at the root **Back** hides and the focus moves to the plot |
+| `ApexCharts.trellis(el, options)`, `trellis.by` | React `ChartTrellis` (`by="series"` · `"category"`); HTML `div[data-ok-chart-trellis]` with authored panels (runtime `chart-trellis`) | renamed (4.18.68, ADR-0060) | a container of ordinary charts; `by` as a function, `row` / `column` grids: not built |
+| `trellis.scales.y` (`shared` · `independent`…) | `scaleY` (`shared`, default; `independent`) | renamed (4.18.68) | shared = one nice domain from 0 (core `chartTrellisPanels`), written as each panel's `yMin` / `yMax`; `independent-row` / `-column`, `scales.x: "independent"`: not built |
+| `trellis.columns` (`auto` · n), `gap` | `columns` (`data-ok-columns`, 1–6, from 600px up; default auto-fill ≥ 220px) | kept (4.18.68) | the gap is a token (12px): not applicable |
+| `trellis.promote`, `promotePanel(key)`, `restorePanels()` | `promote` (`data-ok-promote`): header buttons (`aria-expanded`) + **All panels** (`localeText.allPanels`); React `promoted` / `defaultPromoted` / `onPromotedChange`; HTML `ok:chart-trellis:promote` (cancelable), `promoted`, `promotePanel(index)`, `restorePanels()` | renamed (4.18.68) | panels that aren't shown are `hidden` |
+| `trellis.header.show` / `.formatter`, `panel`, `emptyPanels`, `order`, `limit`, `virtualize`, `minPanelWidth`, `aspectRatio`, `panelHeight`, `axes.labels`, `legend`, `toolbar`, `tooltip`, `zoom: "sync"`, `getPanels`, `getPanel` | `height` (each panel, default 200) | not built / renamed | headers always show the series or category; panels are the container's children; shared legends and zoom: use `group` |
 | `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / not built (4.18.21) | `beatChange` and the register methods are callback APIs with no HTML form; themes are tokens; `exec`: the element instance |
 | `states.active.allowMultipleDataPointsSelection` | `allowMultipleDataPointsSelection` (`data-ok-allow-multiple-data-points-selection`) | kept (4.18.60) | |
 | `states.active` (the selected look), `.filter`, `states.hover.filter`, `plotOptions.pie.expandOnClick` | the outline `[data-ok-chart-selected-mark]` | renamed (4.18.60) | fixed by the design: a 2px primary-text outline (not color alone); filters not applicable |
-| `chart.brush.targets` (several targets), `chart.brush.autoScaleYaxis` | `brushTarget` (one id) | deferred | several targets; y autoscale not applicable (zoom is x only) |
+| `chart.brush.targets` (several targets) | `brushTarget` (one id or a list; HTML ids separated by spaces in `data-ok-brush-target`) | kept (4.18.65) | the selection zooms every target and their groups; the first target found gives the initial selection |
+| `chart.brush.autoScaleYaxis` | — | not applicable | zoom is x only |
 | `chart.selection` (preselected range, fill, stroke) | the target's zoom | renamed | style fixed by the design |
 | crossfilter (Premium Linked Views / Highlight Filter): a click or brush in one chart filters the others | `crossfilter: "filter" \| "highlight"` (`data-ok-crossfilter`, optional) on charts of a `group` | renamed (4.18.19, ADR-0054) | Linked Views → `filter`, Highlight Filter → `highlight`; sources: the selection (click, Enter, Space) and brushes; categories by position; a **Clear filter** button and a polite status |
 | crossfilter on value ranges (Highlight Filter bins), numeric x ranges, filter persistence, filters across React and HTML charts | — | deferred / not applicable | ranges of values and numeric axes: a later row; groups are per library copy (ADR-0031) |
-| measure tool (`toolbar.tools.measure`), draggable annotations | — | deferred (4.18.20) | |
+| `chart.measure.enabled`, `.mode` (`span` · `free`), `toolbar.tools.measure` | `measure` (`data-ok-measure="span|free"`, optional): a **Measure** toggle (`aria-pressed`) and **Clear measures** in the toolbar (shown for them even without `toolbar`) | renamed (4.18.20) | measure mode replaces zoom and pan drags (the pan tool turns it off); span rulers read the first drawn series at both x positions; the ruler's text (`"Mar → Jul: +19 (+126.7%)"`) is on its tag and announced by the toolbar status; vertical charts with an x axis |
+| `chart.measure.pinOnRelease` | `measurePinOnRelease` (`data-ok-measure-pin-on-release`) | kept (4.18.20) | up to 20 pinned rulers; without it a new ruler replaces the last |
+| `clearMeasures` method | HTML `clearMeasures()`, `measures`, `setMeasures(list)`; React `measures` (controlled) / `defaultMeasures` / `onMeasuresChange` | renamed (4.18.20) | rulers are `{ x1, y1, x2, y2 }` in data coordinates (core `chartMeasures` validates them) |
+| measure keyboard alternative | in measure mode, Enter / Space at one value then another; Escape forgets the first | kept (4.18.20) | WCAG 2.5.7 |
+| `chart.measure.key`, `.colors`, `.band`, `.guides`, `.markers`, `.format`, `.label` | — | not applicable | license keys; colors and parts fixed by the design (tokens); texts from the chart's formatters |
 | `chart.accessibility` (`description`, keyboard navigation, announcements) | always on: `caption` (`label`), the data table, keyboard slots, live text | kept | |
 | `chart.locales`, `chart.defaultLocale` | `locale` (Intl) + `localeText` | renamed | |
-| `chart.dataReducer` (`enabled`, `algorithm`, `targetPoints`, `threshold`) | — | deferred | downsampling large series (LTTB) for drawing; the table keeps every point |
+| `chart.dataReducer` (`enabled`, `targetPoints`, `threshold`) | `dataReducer`, `dataReducerTargetPoints` (250), `dataReducerThreshold` (500) (`data-ok-data-reducer*`) | renamed (4.18.66) | lines and areas (core `chart-reducer.ts`, LTTB per run between gaps on the zoomed window, so zooming shows detail); only the drawing: the table, the marks (tooltip, keyboard, selection) and the value scale keep every point; the markers and data labels of dropped points are not drawn |
+| `chart.dataReducer.algorithm` | always LTTB | not applicable | the only algorithm upstream |
+| bucket aggregation of range and candlestick series | — | not built | those series keep their points |
 | `chart.print`, `chart.perspectives`, `chart.license`, `chart.nonce`, `chart.injectStyleSheet`, `chart.redrawOn*Resize`, `chart.parentHeightOffset`, `chart.offsetX` / `Y`, `chart.width`, `chart.foreColor`, `chart.background`, `chart.dropShadow`, `theme` | — | not applicable | CSS / tokens / ResizeObserver; perspectives: app code (roadmap 2.4 notes) |
 | `yaxis` (one object or an array), `.seriesName` (string or list), `.opposite`, `.logarithmic`, `.logBase`, `.reversed`, `.tickAmount`, `.min`, `.max`, `.show` | `yaxis` (same names; HTML `data-ok-yaxis` text, series' axes on `th[data-ok-y-axis]`) | kept (4.18.59) | several axes on vertical charts with an x axis; one axis: its options apply to the value axis (horizontal bars too); sparklines and timelines ignore them |
 | `yaxis.title.text` | `yaxis[].title` (axis 0 falls back to `yTitle`) | renamed (4.18.59) | |
 | `yaxis.alignZero`, `.stepSize`, `.forceNiceScale`, `.decimalsInFloat`, `.floating`, `.labels.formatter` (per axis), `.axisBorder` / `.axisTicks` / `.crosshairs` per axis | — | deferred | ticks are always nice (`tickAmount` keeps nice steps when it can); per-axis formatters with the tooltip / custom content row |
 | `xaxis.title.text` | `xTitle` (drawn under the x labels; also the table's first header unless `xLabel`) | renamed (4.18.59) | |
-| `xaxis.min` / `.max` / `.range`, `.tickAmount`, `.stepSize`, `.tickPlacement`, `.decimalsInFloat` | zoom window | deferred | fixed x window (`range`: sliding window, see `appendData` `limit`), tick count |
-| `xaxis.group.groups` (grouped categories), `xaxis.labels.rotate` / `.rotateAlways` / `.hideOverlappingLabels` / `.trim` | — | deferred | two-level category labels; label rotation (labels skip today) |
+| `xaxis.min` / `.max` / `.range` | `xMin`, `xMax`, `xRange` (`data-ok-x-min`, `-max`, `-range`) | renamed (4.18.65) | the window shown when nothing has zoomed the chart; on vertical charts with an x axis (as zoom); category axes: 0-based indexes (ApexCharts: 1-based positions), date axes: timestamps in ms, numeric axes: x values, may lie beyond the data; zoom and reset work on top |
+| `xaxis.tickAmount`, `.stepSize`, `.tickPlacement`, `.decimalsInFloat` | — | deferred | a tick count on the x axis |
+| `xaxis.group.groups` (`title`, `cols`) | `xaxisGroups` (`{ title, cols }`; HTML `data-ok-xaxis-groups="4 2024; 4 2025"`) | renamed (4.18.65) | a second row; the group is part of each row header's accessible name; category and date axes on vertical charts; `xaxis.group.style`: not applicable (tokens) |
+| `xaxis.labels.rotate`, `.rotateAlways` | `xLabelRotate`, `xLabelRotateAlways` (`data-ok-x-label-rotate`, `data-ok-x-label-rotate-always`) | renamed (4.18.65) | opt-in (ApexCharts: `-45` by default), so existing charts keep their labels; the need to rotate uses an estimated plot width; rotated labels are cut to a third of the chart's height |
+| `xaxis.labels.hideOverlappingLabels`, `.trim` | always on | kept | labels that don't fit are left out; rotated ones are cut with an ellipsis |
 | `xaxis.labels.datetimeFormatter`, `.format`, `.datetimeUTC` | `labelFormatter`, `locale` | renamed | |
 | `xaxis.crosshairs`, `yaxis.crosshairs`, `xaxis.tooltip` | the hover crosshair | kept | style fixed by the design |
 | axis `style` / `cssClass` / `offsetX` / `offsetY`, `axisBorder`, `axisTicks` | — | not applicable | tokens / CSS |
@@ -1143,15 +1214,19 @@ Option areas not covered by the table above:
 | `plotOptions.bar.dataLabels.total.enabled` | `stackTotals` (`data-ok-stack-totals`) | renamed (4.18.61) | `total.formatter` → `valueFormatter` (series -1); `total.style` / `offset*`: not applicable |
 | `plotOptions.bar.dataLabels.position` (`top`, `center`, `bottom`) | `dataLabelPosition` (`data-ok-data-label-position`, optional) | renamed (4.18.61) | inside the bar; `top` = by the value end |
 | `plotOptions.bar.dataLabels.orientation`, `.maxItems`, `.hideOverflowingLabels` | — | not applicable | labels are always horizontal and only drawn where they fit |
-| `plotOptions.bar.rangeBarGroupRows`, `.rangeBarOverlap`, `.hideZeroBarsWhenGrouped`, `.isFunnel3d` | — | deferred | timeline rows shared by series; 3D funnel not applicable |
-| `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | — | deferred | dashed forecast tail |
+| `plotOptions.bar.rangeBarGroupRows` | `rangeBarGroupRows` (`data-ok-range-bar-group-rows`) | kept (4.18.67) | the series share one lane per category; in HTML a table row is repeated for each bar of a category |
+| `plotOptions.bar.rangeBarOverlap` (default `true`) | `disableRangeBarOverlap` (`data-ok-disable-range-bar-overlap`) | renamed (4.18.67) | a flag that turns overlap off: bars that overlap in time go to lanes of their own (interval partitioning), inside a series' slot or a shared row |
+| `plotOptions.bar.hideZeroBarsWhenGrouped` | `hideZeroBarsWhenGrouped` (`data-ok-hide-zero-bars-when-grouped`) | kept (4.18.67) | grouped columns (not stacked): zero and empty bars take no slot, the others close up around the category's center |
+| `plotOptions.bar.isFunnel3d` | — | not applicable | |
+| `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | `forecastCount`, `forecastFillOpacity`, `forecastStrokeWidth`, `forecastDashArray` (`data-ok-forecast-*`) | renamed (4.18.65) | lines, areas and bars; tooltip rows `Series (Forecast)` and `aria-label` on the table cells, so the dash isn't the only cue (part label `forecast`) |
 | `title.text` (`align`, `floating`, `style`…) | `label` → `caption` | renamed | style not applicable (tokens); a subtitle: compose a Card header |
-| `noData.text` (`align`, `verticalAlign`; `style` not applicable) | — | deferred | empty state text in the plot |
+| `noData.text`, `.align`, `.verticalAlign` | `noDataText` (`data-ok-no-data-text`), `noDataAlign`, `noDataVerticalAlign` | renamed (4.18.65) | `text[data-ok-chart-no-data]` over the plot when no series has a value; the message joins the plot's `aria-label`; `style`: not applicable (tokens) |
 | `responsive` (`breakpoint`, `options` overrides) | — | not applicable | container width drives the layout; options per breakpoint are app code |
 | `theme.palette`, `.mode`, `.tokens`, `.follow`, `.name`, `.designSystem` | `colors` (palette names), `data-ok-theme` | renamed | |
 | `theme.monochrome` | — | not applicable | shades of one palette color: `colors` |
 | `theme.accessibility.colorBlindMode` (`deuteranopia`, `protanopia`, `tritanopia`, `highContrast`) | `colorBlindMode` flag (`data-ok-color-blind-mode`) | renamed (4.18.62) | no palette swap (colors are tokens): each series gets a distinct marker shape (lines get 4px markers), pattern and dash instead, so color is never the only cue (WCAG 1.4.1) |
-| `annotations.texts`, points `click` / `mouseEnter` / `mouseLeave` / `tooltip`, `yAxisIndex` | `annotations` | deferred | free text annotations; interactive point annotations |
+| `annotations.texts` (`x`, `y`, `text`, `textAnchor`) | `annotations` with `axis: "text"` (`label`, `textAnchor`; HTML `li[data-ok-annotation=text][data-ok-text-anchor]`) | renamed (4.18.65) | `x`, `y` are data coordinates (ApexCharts: px), since the chart redraws at its container's width; font and box styles: not applicable (tokens) |
+| annotation points `click` / `mouseEnter` / `mouseLeave` / `tooltip`, `yAxisIndex` | — | deferred | interactive point annotations |
 | `annotations.images`, points `image` / `customSVG`, label `style` / `offset*`, `fillColor` / `borderColor` | — | not applicable | design / tokens |
 | methods `render`, `updateOptions`, `appendSeries`, `add*Annotation` / `removeAnnotation` / `clearAnnotations`, `destroy`, `highlightSeries`, `showSeries` / `hideSeries`, `dataURI`, `setLocale`, `getRadialScales` | instance API above | renamed | see the table above; `setLocale` → `setLocaleText`; `destroy` = runtime `stop()` / unmount; `getRadialScales` not applicable |
 
@@ -1203,5 +1278,11 @@ Option areas not covered by the table above:
 - Beeswarm story (4.18.21): Beeswarm (salaries by department, swarm; response times, vertical jitter with shapes).
 - Waffle story (4.18.21): Waffle (a percentage waffle; split tiles with shapes per category).
 - Unit story (4.18.21): Unit (grouped with cluster labels; seats on an arc; stacked columns; packed marks of 1,000 with shapes).
+- 4.18.65 stories: X axis groups, X axis label rotation, Fixed x axis window, Forecast, No data, Text
+  annotations, Brush several charts (three charts with fixed ids). 4.18.66: Large series (600
+  points drawn as about 100). 4.18.67: Timeline rows (repeated row headers in HTML), Column without
+  zero bars. 4.18.20: Measure (the toolbar's measure tools; no ruler at rest), Draggable
+  annotations (a status after the plot in both frameworks). 4.18.68: Drilldown (four level tables),
+  Trellis (three panels, `promote`).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

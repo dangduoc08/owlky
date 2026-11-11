@@ -62,6 +62,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0056](0056-organization-chart-zoom-pan.md) | Organization chart: zoom, fit and center through CSS `zoom` inside the composed Scrollbar, a toolbar part, intent from a core controller | Accepted |
 | [0057](0057-data-grid-cell-menu-filter-groups.md) | Data grid: a cell menu (`contextMenu`, right click, Shift + F10, Menu key; extensible), nested filter groups with their own And / Or (JSON), generated columns (`autoGenerate`, HTML from a data table) | Accepted |
 | [0058](0058-chart-hierarchy-tree-sunburst-icicle.md) | Chart: hierarchy charts (tree, sunburst, icicle) on one nested model, a nodes-with-parents table, tidy and partition layouts, drill and collapse as root attributes | Accepted |
+| [0060](0060-chart-drilldown-trellis.md) | Chart: drilldown levels next to the series (`drilldown`, a path of level ids on the root, the ADR-0058 drill row) and trellis small multiples (`ChartTrellis`, shared nice scales, `promote`) | Accepted |
 | [0059](0059-chart-geo-maps.md) | Chart: offline SVG geo maps (`type="geo"`): regions and hex tiles with the chart's legend, tooltip and keyboard, `mapScale`, geometry from GeoJSON (React) or a JSON element / script (HTML) | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

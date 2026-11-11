@@ -13,6 +13,7 @@ import {
   type ChartDataPoint,
   type ChartDirection,
   type ChartDiscreteMarker,
+  type ChartDrilldownLevel,
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
@@ -35,10 +36,16 @@ import {
   type ChartLink,
   type ChartLocaleText,
   type ChartMarkerShape,
+  type ChartMeasure,
+  type ChartMeasureMode,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartNode,
   type ChartOrientation,
   type ChartPattern,
   type ChartProjection,
+  type ChartPxPoint,
+  type ChartRender,
   type ChartSankeyEdge,
   type ChartSankeyNode,
   type ChartScaleMethod,
@@ -57,6 +64,7 @@ import {
   type ChartViolinNormalize,
   type ChartViolinSide,
   type ChartViolinWhiskers,
+  type ChartXGroup,
   type ChartXType,
   type ChartYAxis,
   type ChartZoom,
@@ -65,9 +73,15 @@ import {
   chartActiveAt,
   chartActiveMarks,
   chartActiveNodes,
+  chartAnnotationAt,
+  chartAnnotationIndexes,
   chartAnnotationItems,
+  chartAnnotationKey,
+  chartAnnotations,
+  chartAnnotationText,
   chartAttributes,
   chartBrushCategories,
+  chartDrilldownActive,
   chartDrillLabels,
   chartDrillUp,
   chartFilterCategories,
@@ -77,6 +91,11 @@ import {
   chartIdPrefix,
   chartMarkAt,
   chartMarkPoint,
+  chartMeasureActive,
+  chartMeasureAt,
+  chartMeasureBetween,
+  chartMeasures,
+  chartMeasureText,
   chartSelection,
   chartTextAttributes,
   chartToolbar,
@@ -87,6 +106,7 @@ import {
   chartTreeMarkOf,
   chartZoomKey,
   createChartGestures,
+  dragChartAnnotation,
   exportChart,
   hasChartDataPoint,
   linkChart,
@@ -487,7 +507,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   /** Synchronized charts: charts of one group share the active category and the zoom. */
   group?: string | undefined;
   /** A brush chart: its selection zooms the chart with this `id`. */
-  brushTarget?: string | undefined;
+  brushTarget?: string | readonly string[] | undefined;
   /**
    * Charts of a `group`: a selection in this chart (click, Enter or Space), or its brush, filters
    * the other charts of the group, and this chart shows the group's filter: `"filter"` draws only
@@ -520,12 +540,95 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   onDataPointSelection?: ((detail: ChartSelectionDetail) => void) | undefined;
   /** Clicks and Enter or Space add points to the selection instead of replacing it. */
   allowMultipleDataPointsSelection?: boolean | undefined;
+  /**
+   * The first x position shown when nothing has zoomed the chart: a category index, a timestamp in
+   * milliseconds (date axes) or an x value (numeric axes, which may lie beyond the data).
+   */
+  xMin?: number | undefined;
+  /** The last x position shown when nothing has zoomed the chart (see `xMin`). */
+  xMax?: number | undefined;
+  /** Shows the last so many x units, ending at `xMax` or the last x value. */
+  xRange?: number | undefined;
+  /** X labels turn by this many degrees (-90 to 90) when they don't fit flat. */
+  xLabelRotate?: number | undefined;
+  /** X labels turn by `xLabelRotate` even when they fit flat. */
+  xLabelRotateAlways?: boolean | undefined;
+  /** A second row of x labels: each `{ title, cols }` spans `cols` categories. */
+  xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /**
+   * Measure rulers: a **Measure** button in the toolbar. In measure mode a drag, or Enter or Space
+   * at two points, measures the change between two x positions (`span`: the series' values) or two
+   * points (`free`).
+   */
+  measure?: ChartMeasureMode | undefined;
+  /** Rulers stay on the chart when the drag ends (up to 20); without it a new one replaces the last. */
+  measurePinOnRelease?: boolean | undefined;
+  /** Controlled: the rulers, in data coordinates (`{ x1, y1, x2, y2 }`). */
+  measures?: readonly ChartMeasure[] | undefined;
+  /** Uncontrolled initial rulers. */
+  defaultMeasures?: readonly ChartMeasure[] | undefined;
+  /** Called with the rulers after one is added or they are cleared. */
+  onMeasuresChange?: ((measures: ChartMeasure[]) => void) | undefined;
+  /** Called after a ruler is drawn, with it, every ruler and its text (ApexCharts' `measured`). */
+  onMeasured?:
+    | ((detail: { measure: ChartMeasure; measures: ChartMeasure[]; text: string }) => void)
+    | undefined;
+  /**
+   * Called after a draggable annotation was moved (a drag, or the keyboard: A picks it up, arrows
+   * move it, Enter drops it), with its index in `annotations` and its new coordinates. Update
+   * `annotations` to keep it there (ApexCharts' `annotationDragged`).
+   */
+  onAnnotationChange?:
+    | ((detail: { index: number; annotation: ChartAnnotation }) => void)
+    | undefined;
+  /**
+   * Drilldown levels: `{ id, name, type, categories, series }`. A point names the level it opens in
+   * `drilldown` (`{ y: 12, drilldown: "q1" }`); a click, Enter or Space opens it, Escape and
+   * **Back** go up.
+   */
+  drilldown?: readonly ChartDrilldownLevel[] | undefined;
+  /** Controlled: the ids of the levels opened, outermost first (`[]`: the root). */
+  drilldownPath?: readonly string[] | undefined;
+  /** Uncontrolled initial path. */
+  defaultDrilldownPath?: readonly string[] | undefined;
+  /** Called with the new path when a level opens or closes. */
+  onDrilldownChange?: ((path: string[]) => void) | undefined;
+  /** Range bars and timelines: the series share one lane per category. */
+  rangeBarGroupRows?: boolean | undefined;
+  /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
+  disableRangeBarOverlap?: boolean | undefined;
+  /** Grouped columns: zero and empty bars take no slot, so the others close up. */
+  hideZeroBarsWhenGrouped?: boolean | undefined;
+  /**
+   * Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets).
+   * The table, the tooltip and the keyboard keep every point.
+   */
+  dataReducer?: boolean | undefined;
+  /** Points kept per series when reducing. Default 250. */
+  dataReducerTargetPoints?: number | undefined;
+  /** A series with more visible points than this is reduced. Default 500. */
+  dataReducerThreshold?: number | undefined;
+  /** How many points at the end of each line, area or bar series are a forecast. */
+  forecastCount?: number | undefined;
+  /** Forecast line dashes in px. Default 4. */
+  forecastDashArray?: number | undefined;
+  /** Forecast line width in px. Default the series' width. */
+  forecastStrokeWidth?: number | undefined;
+  /** Opacity of forecast areas and bars (0 to 1). Default 0.5. */
+  forecastFillOpacity?: number | undefined;
+  /** The message drawn when there is nothing to draw (none by default). */
+  noDataText?: string | undefined;
+  /** Where the message sits across the plot. Default `center`. */
+  noDataAlign?: ChartNoDataAlign | undefined;
+  /** Where the message sits down the plot. Default `middle`. */
+  noDataVerticalAlign?: ChartNoDataVerticalAlign | undefined;
 }
 
 const NO_HIDDEN: readonly number[] = [];
 const NO_IDS: readonly string[] = [];
 const NO_POINTS: readonly ChartDataPoint[] = [];
 const NO_SERIES: readonly ChartSeries[] = [];
+const NO_MEASURES: readonly ChartMeasure[] = [];
 /** Least height of a sparkline without `height` (the CSS default of `--_ok-chart-height`). */
 const SPARKLINE_HEIGHT = 40;
 const PRESERVED = /^(data-|aria-)/;
@@ -543,6 +646,56 @@ function toElements(nodes: readonly ChartNode[]): ReactNode[] {
       node.text ?? (node.children ? toElements(node.children) : undefined),
     );
   });
+}
+
+/** The head and body of a chart data table (the chart's own, and each drilldown level's). */
+function ChartTableRows({ table }: { table: ChartRender["table"] }) {
+  return (
+    <>
+      <thead>
+        <tr>
+          {table.head.map((cell, index) => (
+            <th
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+              key={index}
+              scope={cell.colSpan ? "colgroup" : "col"}
+              colSpan={cell.colSpan}
+              rowSpan={cell.rowSpan}
+              {...cell.attrs}
+            >
+              {cell.text}
+            </th>
+          ))}
+        </tr>
+        {table.parts.length > 0 && (
+          <tr>
+            {table.parts.map((cell, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+              <th key={index} scope="col" {...cell.attrs}>
+                {cell.text}
+              </th>
+            ))}
+          </tr>
+        )}
+      </thead>
+      <tbody>
+        {table.rows.map((row, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: rows are positional
+          <tr key={index}>
+            <th scope="row" {...row.header.attrs}>
+              {row.header.text}
+            </th>
+            {row.cells.map((cell, column) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+              <td key={column} {...cell.attrs}>
+                {cell.text}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </>
+  );
 }
 
 /**
@@ -715,6 +868,36 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     gridColumnColors,
     gridRowOpacity,
     gridColumnOpacity,
+    xMin,
+    xMax,
+    xRange,
+    xLabelRotate,
+    xLabelRotateAlways,
+    xaxisGroups,
+    drilldown,
+    drilldownPath,
+    defaultDrilldownPath = NO_IDS,
+    onDrilldownChange,
+    measure,
+    measurePinOnRelease,
+    measures: measuresProp,
+    defaultMeasures = NO_MEASURES,
+    onMeasuresChange,
+    onMeasured,
+    onAnnotationChange,
+    rangeBarGroupRows,
+    disableRangeBarOverlap,
+    hideZeroBarsWhenGrouped,
+    dataReducer,
+    dataReducerTargetPoints,
+    dataReducerThreshold,
+    forecastCount,
+    forecastDashArray,
+    forecastStrokeWidth,
+    forecastFillOpacity,
+    noDataText,
+    noDataAlign,
+    noDataVerticalAlign,
     ...rest
   },
   ref,
@@ -829,6 +1012,25 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     leaf,
     tint,
     zoomType,
+    xMin,
+    xMax,
+    xRange,
+    xLabelRotate,
+    xLabelRotateAlways,
+    measure,
+    measurePinOnRelease,
+    rangeBarGroupRows,
+    disableRangeBarOverlap,
+    hideZeroBarsWhenGrouped,
+    dataReducer,
+    dataReducerTargetPoints,
+    dataReducerThreshold,
+    forecastCount,
+    forecastDashArray,
+    forecastStrokeWidth,
+    forecastFillOpacity,
+    noDataAlign,
+    noDataVerticalAlign,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -961,6 +1163,73 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validLeaf = attributes["data-ok-leaf"] as ChartLeaf | undefined;
   const validTint = number("data-ok-tint");
   const validZoomType = attributes["data-ok-zoom-type"] as ChartZoomType | undefined;
+  const validXMin = number("data-ok-x-min");
+  const validXMax = number("data-ok-x-max");
+  const validXRange = number("data-ok-x-range");
+  const validXRotate = number("data-ok-x-label-rotate");
+  const xRotateAlways = attributes["data-ok-x-label-rotate-always"] !== undefined;
+  // Drilldown (4.18.68): the path of levels opened, controlled or kept here.
+  const [levelPath, setLevelPath] = useControllableState<readonly string[]>({
+    value: drilldownPath,
+    defaultValue: defaultDrilldownPath,
+    onChange: onDrilldownChange as ((value: readonly string[]) => void) | undefined,
+  });
+  // Measure rulers and draggable annotations (4.18.20).
+  const validMeasure = attributes["data-ok-measure"] as ChartMeasureMode | undefined;
+  const pinOn = attributes["data-ok-measure-pin-on-release"] !== undefined;
+  const [rulers, setRulers] = useControllableState<readonly ChartMeasure[]>({
+    value: measuresProp,
+    defaultValue: defaultMeasures,
+    onChange: onMeasuresChange as ((value: readonly ChartMeasure[]) => void) | undefined,
+  });
+  const validRulers = useMemo(() => chartMeasures(rulers), [rulers]);
+  const [measuring, setMeasuring] = useState(false);
+  const [rulerPreview, setRulerPreview] = useState<ChartMeasure | null>(null);
+  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  /** Annotations moved here but not yet given back through `annotations` (by index). */
+  const [moved, setMoved] = useState<ReadonlyMap<number, ChartAnnotation>>(() => new Map());
+  const [picked, setPicked] = useState<number | null>(null);
+  const lastPicked = useRef(-1);
+  // New annotations from the owner replace the moves made here.
+  const [annotationSource, setAnnotationSource] = useState(annotations);
+  if (annotationSource !== annotations) {
+    setAnnotationSource(annotations);
+    setMoved(new Map());
+  }
+  const shownAnnotations = useMemo(
+    () =>
+      moved.size === 0
+        ? annotations
+        : (annotations ?? []).map((entry, index) => moved.get(index) ?? entry),
+    [annotations, moved],
+  );
+  /** Positions in `annotations` of the valid ones (core indexes them in that order). */
+  const annotationIndexes = useMemo(
+    () => chartAnnotationIndexes(shownAnnotations),
+    [shownAnnotations],
+  );
+  const drawnRulers = useMemo(
+    () => (rulerPreview ? [...(pinOn ? validRulers : []), rulerPreview] : validRulers),
+    [rulerPreview, pinOn, validRulers],
+  );
+  const groupRowsOn = attributes["data-ok-range-bar-group-rows"] !== undefined;
+  const overlapOff = attributes["data-ok-disable-range-bar-overlap"] !== undefined;
+  const hideZeroOn = attributes["data-ok-hide-zero-bars-when-grouped"] !== undefined;
+  const reducerOn = attributes["data-ok-data-reducer"] !== undefined;
+  const validReducerTarget = number("data-ok-data-reducer-target-points");
+  const validReducerThreshold = number("data-ok-data-reducer-threshold");
+  const validForecastCount = number("data-ok-forecast-count");
+  const validForecastDash = number("data-ok-forecast-dash-array");
+  const validForecastWidth = number("data-ok-forecast-stroke-width");
+  const validForecastOpacity = number("data-ok-forecast-fill-opacity");
+  const validNoDataAlign = attributes["data-ok-no-data-align"] as ChartNoDataAlign | undefined;
+  const validNoDataVertical = attributes["data-ok-no-data-vertical-align"] as
+    | ChartNoDataVerticalAlign
+    | undefined;
+  // Several brush targets are one attribute text, so linking depends on a stable value.
+  const brushTargets = Array.isArray(brushTarget)
+    ? brushTarget.filter(Boolean).join(" ") || undefined
+    : (brushTarget as string | undefined);
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -1111,12 +1380,17 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         dataLabelFormatter,
         legendValues,
         colorRanges,
-        annotations,
+        annotations: shownAnnotations,
+        drilldown,
+        drilldownPath: levelPath,
+        measures: drawnRulers,
+        measureMode: validMeasure,
+        pickedAnnotation: picked === null ? undefined : annotationIndexes.indexOf(picked),
         partLabels: localeText,
         zoom: zoomControlled ? zoomRange : innerZoom.range,
         zoomFrom: zoomControlled ? undefined : innerZoom.from,
-        selection: brushTarget ? selection : preview,
-        brush: Boolean(brushTarget),
+        selection: brushTargets ? selection : preview,
+        brush: Boolean(brushTargets),
         selectedDataPoints: validSelected,
         crossfilter: validCrossfilter,
         filter: shownFilter,
@@ -1133,6 +1407,25 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         width,
         height: svgHeight,
         idPrefix: chartIdPrefix(id),
+        xMin: validXMin,
+        xMax: validXMax,
+        xRange: validXRange,
+        xLabelRotate: validXRotate,
+        xLabelRotateAlways: xRotateAlways,
+        xaxisGroups,
+        rangeBarGroupRows: groupRowsOn,
+        disableRangeBarOverlap: overlapOff,
+        hideZeroBarsWhenGrouped: hideZeroOn,
+        dataReducer: reducerOn,
+        dataReducerTargetPoints: validReducerTarget,
+        dataReducerThreshold: validReducerThreshold,
+        forecastCount: validForecastCount,
+        forecastDashArray: validForecastDash,
+        forecastStrokeWidth: validForecastWidth,
+        forecastFillOpacity: validForecastOpacity,
+        noDataText,
+        noDataAlign: validNoDataAlign,
+        noDataVerticalAlign: validNoDataVertical,
       }),
     [
       chartType,
@@ -1259,12 +1552,18 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       dataLabelFormatter,
       legendValues,
       colorRanges,
-      annotations,
+      shownAnnotations,
+      drilldown,
+      levelPath,
+      drawnRulers,
+      validMeasure,
+      picked,
+      annotationIndexes,
       localeText,
       zoomControlled,
       zoomRange,
       innerZoom,
-      brushTarget,
+      brushTargets,
       selection,
       preview,
       validSelected,
@@ -1283,6 +1582,25 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       width,
       svgHeight,
       id,
+      validXMin,
+      validXMax,
+      validXRange,
+      validXRotate,
+      xRotateAlways,
+      xaxisGroups,
+      groupRowsOn,
+      overlapOff,
+      hideZeroOn,
+      reducerOn,
+      validReducerTarget,
+      validReducerThreshold,
+      validForecastCount,
+      validForecastDash,
+      validForecastWidth,
+      validForecastOpacity,
+      noDataText,
+      validNoDataAlign,
+      validNoDataVertical,
     ],
   );
   const { layout } = render;
@@ -1290,13 +1608,15 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   renderRef.current = render;
   const kind = render.data.xType === "numeric" ? "value" : "index";
   /** Gestures and keys: zoomable charts zoom, brush charts move their selection. */
-  const gestureMode: ChartGestureMode = brushTarget
+  const gestureMode: ChartGestureMode = brushTargets
     ? "brush"
-    : zoomOn && render.zoomable
-      ? pan
-        ? "pan"
-        : "zoom"
-      : "none";
+    : measuring && validMeasure
+      ? "measure"
+      : zoomOn && render.zoomable
+        ? pan
+          ? "pan"
+          : "zoom"
+        : "none";
   const modeRef = useRef(gestureMode);
   modeRef.current = gestureMode;
 
@@ -1322,9 +1642,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const setBrushRef = useRef(setBrush);
   setBrushRef.current = setBrush;
   /** The range gestures and keys change: the zoom, or a brush chart's selection. */
-  const currentRange = () => (brushTarget ? selection : render.zoom);
+  const currentRange = () => (brushTargets ? selection : render.zoom);
   const commitRange = (range: ChartZoom | null) =>
-    brushTarget ? setBrush(range) : setZoom(range, "user");
+    brushTargets ? setBrush(range) : setZoom(range, "user");
 
   const onActiveRef = useRef(onActiveChange);
   onActiveRef.current = onActiveChange;
@@ -1364,11 +1684,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
 
   // Synchronized groups and brush charts (phase 4): linked by `group`, `id` and `brushTarget`.
   useEffect(() => {
-    if (!group && !brushTarget && !elementId) return;
+    if (!group && !brushTargets && !elementId) return;
     const link = linkChart({
       id: elementId,
       group,
-      brushTarget,
+      brushTarget: brushTargets,
       zoom: () => renderRef.current.zoom,
       showIndex: (index) => {
         // The keyboard drives a focused plot: another chart of the group (a pointer leaving it
@@ -1402,7 +1722,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       linkRef.current = null;
       setGroupFilter(null);
     };
-  }, [elementId, group, brushTarget, validCrossfilter]);
+  }, [elementId, group, brushTargets, validCrossfilter]);
 
   // A zoom that follows live data moves by itself: brushes of this chart redraw.
   const drawnMin = render.zoom?.min;
@@ -1427,12 +1747,59 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         modeRef.current === "brush"
           ? setBrushRef.current(range)
           : setZoomRef.current(range, "user"),
+      measure: (from, to, end) => measureRef.current(from, to, end),
+      annotationAt: (point) => {
+        const hits = renderRef.current.annotationHits;
+        return hits ? chartAnnotationAt(hits, point.px, point.py) : undefined;
+      },
+      dragAnnotation: (index, from, to, end) => dragRef.current(index, from, to, end),
     });
     gesturesRef.current = gestures;
     return () => gestures.destroy();
   }, []);
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
+
+  /** Adds a ruler (or replaces the last one without pinning) and announces it. */
+  const addRuler = (ruler: ChartMeasure) => {
+    const next = [...(pinOn ? validRulers : []), ruler].slice(-20);
+    setRulers(next);
+    const text = chartMeasureText(render.data, render.format, ruler);
+    setStatus(text);
+    onMeasured?.({ measure: ruler, measures: next, text });
+  };
+  /** Measure mode: a drag draws a ruler between its ends. */
+  const measureDrag = (from: ChartPxPoint, to: ChartPxPoint, end: boolean) => {
+    const current = renderRef.current.layout;
+    const a = chartMeasureAt(current, from.px, from.py);
+    const b = chartMeasureAt(current, to.px, to.py);
+    if (!a || !b || !validMeasure) return;
+    const ruler = chartMeasureBetween(current, validMeasure, a, b);
+    if (!end) setRulerPreview(ruler);
+    else {
+      setRulerPreview(null);
+      addRuler(ruler);
+    }
+  };
+  const measureRef = useRef(measureDrag);
+  measureRef.current = measureDrag;
+  /** The annotation at a position of the shown list, moved (a drag or the keyboard). */
+  const moveAnnotation = (index: number, next: ChartAnnotation, end: boolean) => {
+    setMoved((map) => new Map(map).set(index, next));
+    if (end) onAnnotationChange?.({ index, annotation: next });
+  };
+  const annotationDrag = (hit: number, from: ChartPxPoint, to: ChartPxPoint, end: boolean) => {
+    const index = annotationIndexes[hit];
+    const source = index === undefined ? undefined : annotations?.[index];
+    if (index === undefined || !source) return;
+    const valid = chartAnnotations([source])[0];
+    if (!valid) return;
+    const next = dragChartAnnotation(renderRef.current.layout, render.data, valid, from, to);
+    moveAnnotation(index, next, end);
+    if (end) setStatus(chartAnnotationText(next));
+  };
+  const dragRef = useRef(annotationDrag);
+  dragRef.current = annotationDrag;
 
   // Draw at the measured width (the first render uses the default, scaled by the viewBox).
   // Sparklines also take the plot's height (their SVG is out of flow, so no feedback loop).
@@ -1525,7 +1892,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     return true;
   };
   /** The **Back** button: one level up; at the top the button hides and the plot takes focus. */
+  /** Drilldown: opens a level (or goes back to `path`); the active item is cleared. */
+  const drillTo = (path: readonly string[]) => {
+    setLevelPath(path);
+    setActive(null);
+  };
+  const levels = render.drilldown;
   const drillUp = () => {
+    if (levels) {
+      if (levels.path.length === 0) return;
+      drillTo(levels.path.slice(0, -1));
+      if (levels.path.length === 1) plotRef.current?.focus();
+      return;
+    }
     const action = chartDrillUp(layout);
     act(action);
     if (action?.id === null) plotRef.current?.focus();
@@ -1540,7 +1919,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   });
   // A click selects the point, slice or cell under the pointer (not after a drag or on brushes).
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (brushTarget || gesturesRef.current?.moved) return;
+    if (brushTargets || gesturesRef.current?.moved) return;
     const box = event.currentTarget.getBoundingClientRect();
     const scale = layout.width / (box.width || layout.width);
     if (layout.mode === "tree") {
@@ -1558,10 +1937,24 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       (event.clientX - box.left) * scale,
       (event.clientY - box.top) * scale,
     );
+    // Drilldown: a point with a level opens it instead of being selected.
+    const level = mark === null ? undefined : layout.marks[mark]?.drilldown;
+    if (levels && level) {
+      drillTo([...levels.path, level]);
+      return;
+    }
     if (mark !== null)
       select([chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number])]);
   };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (annotationKey(event)) {
+      event.preventDefault();
+      return;
+    }
+    if (measureKey(event)) {
+      event.preventDefault();
+      return;
+    }
     if (
       (event.key === "Enter" || event.key === " ") &&
       !event.repeat &&
@@ -1576,7 +1969,18 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       event.preventDefault();
       return;
     }
-    if ((event.key === "Enter" || event.key === " ") && !event.repeat && !brushTarget) {
+    const level = levels ? chartDrilldownActive(layout, activeRef.current) : undefined;
+    if ((event.key === "Enter" || event.key === " ") && !event.repeat && levels && level) {
+      event.preventDefault();
+      drillTo([...levels.path, level]);
+      return;
+    }
+    if (event.key === "Escape" && levels && levels.path.length > 0) {
+      event.preventDefault();
+      drillTo(levels.path.slice(0, -1));
+      return;
+    }
+    if ((event.key === "Enter" || event.key === " ") && !event.repeat && !brushTargets) {
       // Enter or Space selects the active item's points (a category: every series' point).
       const marks = chartActiveMarks(layout, activeRef.current);
       if (marks.length === 0) return;
@@ -1616,6 +2020,70 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     setActive(next);
   };
 
+  /**
+   * The keyboard alternative to dragging annotations (WCAG 2.5.7): A picks up the next draggable
+   * one, arrows move it, Enter, Space or Escape drops it. Returns whether the key was used.
+   */
+  function annotationKey(event: KeyboardEvent<HTMLDivElement>) {
+    const draggable = (render.annotationHits ?? []).map((hit) => hit.index);
+    if (picked !== null) {
+      const index = picked;
+      const current = shownAnnotations?.[index];
+      const valid = current ? chartAnnotations([current])[0] : undefined;
+      if (event.key === "Enter" || event.key === " " || event.key === "Escape") {
+        setPicked(null);
+        if (valid) {
+          moveAnnotation(index, valid, true);
+          setStatus(
+            `${localeText?.annotationDropped ?? chartToolLabels.annotationDropped}: ${chartAnnotationText(valid)}`,
+          );
+        }
+        return true;
+      }
+      const next = valid ? chartAnnotationKey(layout, render.data, valid, event.key) : undefined;
+      if (!next) return false;
+      moveAnnotation(index, next, false);
+      setStatus(chartAnnotationText(next));
+      return true;
+    }
+    if (event.key.toLowerCase() !== "a" || event.ctrlKey || event.metaKey || event.altKey)
+      return false;
+    if (draggable.length === 0) return false;
+    // A again picks the next draggable annotation after the last one picked.
+    const positions = draggable.map((hit) => annotationIndexes[hit] as number);
+    const next = positions.find((index) => index > lastPicked.current) ?? positions[0];
+    if (next === undefined) return false;
+    lastPicked.current = next;
+    setPicked(next);
+    const entry = chartAnnotations([shownAnnotations?.[next] as ChartAnnotation])[0];
+    if (entry) setStatus(chartAnnotationText(entry));
+    return true;
+  }
+  /**
+   * The keyboard alternative to measuring with a drag: in measure mode Enter or Space at one point
+   * sets where the ruler starts, at another adds it; Escape forgets the start.
+   */
+  function measureKey(event: KeyboardEvent<HTMLDivElement>) {
+    if (!measuring || !validMeasure) return false;
+    if (event.key === "Escape" && anchor) {
+      setAnchor(null);
+      return true;
+    }
+    if ((event.key !== "Enter" && event.key !== " ") || event.repeat) return false;
+    const at = chartMeasureActive(layout, activeRef.current);
+    if (!at) return false;
+    if (!anchor) {
+      setAnchor(at);
+      setStatus(
+        `${localeText?.measureFrom ?? chartToolLabels.measureFrom} ${chartMeasureText(render.data, render.format, { x1: at.x, y1: at.y, x2: at.x, y2: at.y }).split(" → ")[0]}`,
+      );
+    } else {
+      setAnchor(null);
+      addRuler(chartMeasureBetween(layout, validMeasure, anchor, at));
+    }
+    return true;
+  }
+
   const hover = chartActiveNodes(layout, shown ? active : null);
   const nodes = layout.nodes.map((node) =>
     node.attrs["data-ok-chart-crosshair"] !== undefined
@@ -1632,17 +2100,31 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     setHidden(next);
   };
 
-  const tools = toolbar
-    ? chartToolbar({
-        zoom: zoomOn && render.zoomable,
-        zoomed: render.zoom !== null,
-        pan,
-        text: localeText,
-      })
-    : [];
+  const tools =
+    toolbar || validMeasure
+      ? chartToolbar({
+          zoom: Boolean(toolbar) && zoomOn && render.zoomable,
+          zoomed: render.zoom !== null,
+          pan,
+          text: localeText,
+          measure: Boolean(validMeasure) && render.zoomable,
+          measuring,
+          measured: validRulers.length > 0,
+          downloads: Boolean(toolbar),
+        })
+      : [];
   const runTool = (tool: ChartTool) => {
-    if (tool === "pan") setPan((on) => !on);
-    else if (tool === "reset") setZoom(null, "user");
+    if (tool === "measure") {
+      setMeasuring((on) => !on);
+      setPan(false);
+      setAnchor(null);
+    } else if (tool === "clearMeasures") {
+      setRulers([]);
+      setStatus("");
+    } else if (tool === "pan") {
+      setPan((on) => !on);
+      setMeasuring(false);
+    } else if (tool === "reset") setZoom(null, "user");
     else if (tool === "zoomIn" || tool === "zoomOut")
       setZoom(zoomChartBy(render.zoom, render.extent, kind, tool === "zoomIn" ? 0.5 : 2), "user");
     else {
@@ -1652,7 +2134,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       );
     }
   };
-  const annotationItems = chartAnnotationItems(annotations ?? []);
+  const annotationItems = chartAnnotationItems(shownAnnotations ?? []);
 
   return (
     <figure
@@ -1667,7 +2149,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         valueSuffix,
         locale,
         group,
-        brushTarget,
+        brushTarget: brushTargets,
+        xaxisGroups,
+        noDataText,
         colorRanges,
         joinBy,
         scaleThresholds,
@@ -1683,6 +2167,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         dumbbellColors,
         collapsedNodes: collapsed,
         drillNode: drill,
+        drilldownPath: levels?.path,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
@@ -1749,20 +2234,37 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           })}
         </div>
       )}
-      {layout.hierarchy?.drillable && layout.hierarchy.type !== "tree" && (
+      {levels ? (
         <div data-ok-chart-drill="">
           <button
             type="button"
             data-ok-chart-drill-up=""
-            hidden={layout.hierarchy.drill === null}
+            hidden={levels.path.length === 0}
             onClick={drillUp}
           >
             {localeText?.drillUp ?? chartDrillLabels.drillUp}
           </button>
           <span data-ok-chart-drill-path="" role="status">
-            {layout.hierarchy.path.join(" › ")}
+            {levels.text}
           </span>
         </div>
+      ) : (
+        layout.hierarchy?.drillable &&
+        layout.hierarchy.type !== "tree" && (
+          <div data-ok-chart-drill="">
+            <button
+              type="button"
+              data-ok-chart-drill-up=""
+              hidden={layout.hierarchy.drill === null}
+              onClick={drillUp}
+            >
+              {localeText?.drillUp ?? chartDrillLabels.drillUp}
+            </button>
+            <span data-ok-chart-drill-path="" role="status">
+              {layout.hierarchy.path.join(" › ")}
+            </span>
+          </div>
+        )
       )}
       {/* A focusable group (biome.json override): arrow keys move through the chart's values. */}
       <div
@@ -1770,7 +2272,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         data-ok-chart-plot=""
         role="group"
         aria-roledescription="chart"
-        aria-label={label}
+        aria-label={render.noData ? `${label}: ${render.noData}` : label}
         tabIndex={0}
         // Sparklines: the least height (CSSOM in HTML; parity ignores `style`).
         style={
@@ -1832,6 +2334,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
               )}
         </div>
       </div>
+      {tools.length === 0 && render.annotationHits && (
+        <span data-ok-chart-status="" role="status">
+          {status}
+        </span>
+      )}
       {validCrossfilter && (
         <div data-ok-chart-filter="">
           <button
@@ -1895,6 +2402,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           ))}
         </tbody>
       </table>
+      {levels?.tables.map((level) => (
+        <table key={level.id} data-ok-chart-drilldown={level.id} data-ok-type={level.type}>
+          <caption>{level.name}</caption>
+          <ChartTableRows table={level.table} />
+        </table>
+      ))}
       {annotationItems.length > 0 && (
         <ul data-ok-chart-annotations="">
           {annotationItems.map((item, index) => (

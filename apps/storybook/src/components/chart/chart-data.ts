@@ -14,9 +14,50 @@ export interface ChartExample {
   readonly more?: readonly ChartProps[];
   /** HTML only: markup inside the first figure, after its table (a custom tooltip template). */
   readonly html?: readonly string[];
+  /** Trellis stories (ADR-0060): `props` are split into panels, one chart each. */
+  readonly trellis?: {
+    readonly by?: "series" | "category";
+    readonly scaleY?: "shared" | "independent";
+    readonly columns?: number;
+    readonly promote?: boolean;
+  };
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+const YEAR = [...MONTHS, "Oct", "Nov", "Dec"];
+/** Timelines whose series share rows: Design and Build overlap in Team A. */
+const TIMELINE_ROWS = [
+  {
+    name: "Design",
+    data: [
+      { x: "Team A", y: ["2025-01-01", "2025-01-20"] },
+      { x: "Team B", y: ["2025-01-10", "2025-01-30"] },
+    ],
+  },
+  {
+    name: "Build",
+    data: [
+      { x: "Team A", y: ["2025-01-12", "2025-02-05"] },
+      { x: "Team B", y: ["2025-02-01", "2025-02-20"] },
+    ],
+  },
+];
+/** A long, smooth series for the data reducer: the same on every run. */
+const READINGS = Array.from(
+  { length: 600 },
+  (_, i) => Math.round((Math.sin(i / 18) * 40 + Math.sin(i / 3) * 6 + 100) * 10) / 10,
+);
+const QUARTERS = ["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"];
+const LONG_LABELS = [
+  "Billing and invoices",
+  "Account settings",
+  "Mobile application",
+  "Data export tools",
+  "Single sign-on",
+  "Notification center",
+  "Team permissions",
+  "Reporting dashboards",
+];
 
 /** Days from 1 January 2011 (stacked columns). */
 const DAYS = ["2011-01-01", "2011-01-02", "2011-01-03", "2011-01-04", "2011-01-05", "2011-01-06"];
@@ -2292,6 +2333,330 @@ export const chartExamples: Record<string, ChartExample> = {
         height: 280,
         categories: ["North", "South", "Islands"],
         series: [{ name: "People", data: [42000, 31000, 9000] }],
+      },
+    ],
+  },
+  "x-axis-groups": {
+    title: "X axis groups",
+    props: {
+      label: "Revenue per quarter and year",
+      type: "bar",
+      categories: QUARTERS,
+      xaxisGroups: [
+        { title: "2024", cols: 4 },
+        { title: "2025", cols: 4 },
+      ],
+      series: [{ name: "Revenue", data: [18, 24, 31, 27, 29, 34, 40, 38] }],
+    },
+    more: [
+      {
+        label: "Sign-ups per quarter and half",
+        categories: QUARTERS.slice(0, 4),
+        xaxisGroups: [
+          { title: "First half", cols: 2 },
+          { title: "Second half", cols: 2 },
+        ],
+        xTitle: "Quarter",
+        series: [{ name: "Sign-ups", data: [120, 180, 150, 210] }],
+      },
+    ],
+  },
+  "x-axis-rotation": {
+    title: "X axis label rotation",
+    props: {
+      label: "Support tickets by product area",
+      type: "bar",
+      categories: LONG_LABELS,
+      xLabelRotate: -45,
+      series: [{ name: "Tickets", data: [31, 22, 17, 40, 12, 26, 19, 33] }],
+    },
+    more: [
+      {
+        label: "Support tickets by product area, turned at every width",
+        type: "bar",
+        categories: LONG_LABELS.slice(0, 5),
+        xLabelRotate: -30,
+        xLabelRotateAlways: true,
+        series: [{ name: "Tickets", data: [31, 22, 17, 40, 12] }],
+      },
+    ],
+  },
+  "x-axis-window": {
+    title: "Fixed x axis window",
+    props: {
+      label: "Daily visits, months three to seven",
+      categories: MONTHS,
+      xMin: 2,
+      xMax: 6,
+      markerSize: 4,
+      series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+    },
+    more: [
+      {
+        label: "Daily visits, the last four months",
+        categories: MONTHS,
+        xRange: 3,
+        markerSize: 4,
+        series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+      },
+      {
+        label: "Height and weight, an axis wider than the data",
+        type: "scatter",
+        xMin: 0,
+        xMax: 100,
+        series: [
+          {
+            name: "Samples",
+            data: [
+              [20, 31],
+              [35, 42],
+              [50, 47],
+              [62, 58],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  forecast: {
+    title: "Forecast",
+    props: {
+      label: "Monthly sales with a forecast for the last three months",
+      categories: MONTHS,
+      forecastCount: 3,
+      markerSize: 4,
+      series: [{ name: "Sales", data: [30, 41, 35, 51, 49, 62, 69, 91, 108] }],
+    },
+    more: [
+      {
+        label: "Quarterly revenue with a forecast",
+        type: "area",
+        categories: MONTHS,
+        forecastCount: 2,
+        forecastDashArray: 6,
+        forecastFillOpacity: 0.3,
+        series: [{ name: "Revenue", data: [12, 19, 15, 25, 22, 30, 34, 40, 44] }],
+      },
+      {
+        label: "Orders with a forecast",
+        type: "bar",
+        categories: MONTHS.slice(0, 6),
+        forecastCount: 2,
+        series: [{ name: "Orders", data: [44, 55, 41, 67, 22, 43] }],
+      },
+    ],
+  },
+  "no-data": {
+    title: "No data",
+    props: {
+      label: "Orders this week",
+      noDataText: "No orders yet",
+      height: 200,
+      categories: [],
+      series: [{ name: "Orders", data: [] }],
+    },
+    more: [
+      {
+        label: "Sales by region",
+        type: "donut",
+        noDataText: "Add a region to see the chart",
+        noDataVerticalAlign: "top",
+        noDataAlign: "left",
+        height: 200,
+        categories: [],
+        series: [{ name: "Sales", data: [] }],
+      },
+    ],
+  },
+  "annotations-text": {
+    title: "Text annotations",
+    props: {
+      label: "Weekly visits with notes",
+      categories: MONTHS,
+      markerSize: 4,
+      series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+      annotations: [
+        { axis: "text", x: "Mar", y: 15, label: "Campaign paused" },
+        { axis: "text", x: "Aug", y: 95, label: "New pricing", textAnchor: "end", color: "error" },
+      ],
+    },
+  },
+  drilldown: {
+    title: "Drilldown",
+    props: {
+      label: "Sales per quarter, select a quarter for its months",
+      type: "bar",
+      categories: ["Q1", "Q2", "Q3"],
+      series: [
+        {
+          name: "Sales",
+          data: [
+            { y: 120, drilldown: "q1" },
+            { y: 150, drilldown: "q2" },
+            { y: 90, drilldown: "q3" },
+          ],
+        },
+      ],
+      drilldown: [
+        {
+          id: "q1",
+          name: "Q1",
+          categories: ["Jan", "Feb", "Mar"],
+          series: [{ name: "Sales", data: [{ y: 35, drilldown: "jan" }, 40, 45] }],
+        },
+        {
+          id: "q2",
+          name: "Q2",
+          categories: ["Apr", "May", "Jun"],
+          series: [{ name: "Sales", data: [52, 48, 50] }],
+        },
+        {
+          id: "q3",
+          name: "Q3",
+          type: "line",
+          categories: ["Jul", "Aug", "Sep"],
+          series: [{ name: "Sales", data: [28, 30, 32] }],
+        },
+        {
+          id: "jan",
+          name: "January",
+          categories: ["Week 1", "Week 2", "Week 3", "Week 4"],
+          series: [{ name: "Sales", data: [8, 9, 10, 8] }],
+        },
+      ],
+    },
+  },
+  trellis: {
+    title: "Trellis",
+    trellis: { columns: 3, promote: true },
+    props: {
+      label: "Monthly visits per region",
+      type: "area",
+      categories: MONTHS.slice(0, 6),
+      series: [
+        { name: "North", data: [30, 41, 35, 51, 49, 62] },
+        { name: "South", data: [12, 18, 22, 19, 25, 28] },
+        { name: "East", data: [44, 39, 47, 52, 58, 61] },
+      ],
+    },
+  },
+  measure: {
+    title: "Measure",
+    props: {
+      label: "Monthly sales, measured between two months",
+      categories: YEAR,
+      measure: "span",
+      markerSize: 4,
+      series: [{ name: "Sales", data: [12, 19, 15, 25, 22, 30, 34, 40, 44, 38, 42, 50] }],
+    },
+    more: [
+      {
+        label: "Height and weight, measured between two points",
+        type: "scatter",
+        measure: "free",
+        measurePinOnRelease: true,
+        toolbar: true,
+        series: [
+          {
+            name: "Samples",
+            data: [
+              [20, 31],
+              [35, 42],
+              [50, 47],
+              [62, 58],
+              [75, 61],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "annotations-drag": {
+    title: "Draggable annotations",
+    props: {
+      label: "Weekly visits with a target you can move",
+      categories: MONTHS,
+      markerSize: 4,
+      series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+      annotations: [
+        { axis: "y", y: 60, label: "Target", color: "success", draggable: true },
+        { axis: "x", x: "Jun", label: "Launch", draggable: true },
+        { axis: "point", x: "Aug", y: 81, label: "Record", color: "error" },
+      ],
+    },
+  },
+  "timeline-rows": {
+    title: "Timeline rows",
+    props: {
+      label: "Team schedules, one row per team",
+      type: "timeline",
+      xType: "category",
+      rangeBarGroupRows: true,
+      height: 240,
+      series: TIMELINE_ROWS,
+    },
+    more: [
+      {
+        label: "Team schedules, overlapping work in its own lane",
+        type: "timeline",
+        xType: "category",
+        rangeBarGroupRows: true,
+        disableRangeBarOverlap: true,
+        height: 240,
+        series: TIMELINE_ROWS,
+      },
+    ],
+  },
+  "column-zero-bars": {
+    title: "Column without zero bars",
+    props: {
+      label: "Sales per product, products without sales take no slot",
+      type: "bar",
+      hideZeroBarsWhenGrouped: true,
+      categories: ["North", "South", "East", "West"],
+      series: [
+        { name: "Hats", data: [14, 0, 21, 9] },
+        { name: "Bags", data: [0, 18, null, 12] },
+        { name: "Shoes", data: [8, 15, 11, 0] },
+      ],
+    },
+  },
+  "data-reducer": {
+    title: "Large series",
+    props: {
+      label: "Sensor readings, 600 points drawn as about 100",
+      type: "line",
+      dataReducer: true,
+      dataReducerTargetPoints: 100,
+      dataReducerThreshold: 200,
+      categories: READINGS.map((_, index) => String(index + 1)),
+      series: [{ name: "Reading", data: READINGS }],
+    },
+  },
+  "brush-targets": {
+    title: "Brush several charts",
+    props: {
+      id: "brush-targets-a",
+      label: "Visits of the whole year, the first detail chart",
+      categories: YEAR,
+      height: 180,
+      series: [{ name: "Visits", data: [12, 19, 15, 25, 22, 30, 34, 40, 44, 38, 42, 50] }],
+    },
+    more: [
+      {
+        id: "brush-targets-b",
+        label: "Orders of the whole year, the second detail chart",
+        type: "bar",
+        categories: YEAR,
+        height: 180,
+        series: [{ name: "Orders", data: [4, 9, 6, 11, 8, 13, 15, 12, 17, 14, 19, 21] }],
+      },
+      {
+        label: "Brush over both charts",
+        brushTarget: ["brush-targets-a", "brush-targets-b"],
+        categories: YEAR,
+        height: 96,
+        series: [{ name: "Visits", data: [12, 19, 15, 25, 22, 30, 34, 40, 44, 38, 42, 50] }],
       },
     ],
   },

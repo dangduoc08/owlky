@@ -1,6 +1,7 @@
 import {
   CHART_TEXT_ATTRIBUTES,
   type ChartActive,
+  type ChartAnnotation,
   type ChartBeeswarmSpread,
   type ChartColor,
   type ChartCrossfilter,
@@ -25,12 +26,17 @@ import {
   type ChartLink,
   type ChartLocaleText,
   type ChartMarkerShape,
+  type ChartMeasure,
+  type ChartMeasureMode,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartNode,
   type ChartOrientation,
   type ChartPart,
   type ChartPattern,
   type ChartPointInput,
   type ChartProjection,
+  type ChartPxPoint,
   type ChartRender,
   type ChartScaleMethod,
   type ChartSelectionDetail,
@@ -57,8 +63,13 @@ import {
   chartActiveAt,
   chartActiveMarks,
   chartActiveNodes,
+  chartAnnotationAt,
+  chartAnnotationKey,
+  chartAnnotations,
+  chartAnnotationText,
   chartBrushCategories,
   chartColors,
+  chartDrilldownActive,
   chartDrillLabels,
   chartDrillUp,
   chartFilterCategories,
@@ -69,6 +80,11 @@ import {
   chartListText,
   chartMarkAt,
   chartMarkPoint,
+  chartMeasureActive,
+  chartMeasureAt,
+  chartMeasureBetween,
+  chartMeasures,
+  chartMeasureText,
   chartOptions,
   chartSelection,
   chartToolbar,
@@ -80,6 +96,7 @@ import {
   chartTreeMarkOf,
   chartZoomKey,
   createChartGestures,
+  dragChartAnnotation,
   exportChart,
   hasChartDataPoint,
   isHierarchyChart,
@@ -92,9 +109,11 @@ import {
   parseChartIndicators,
   parseChartList,
   parseChartStripeColors,
+  parseChartXGroups,
   parseChartYAxes,
   placeChartTooltip,
-  readChartAnnotations,
+  readChartAnnotation,
+  readChartDrilldownTables,
   readChartGeoTable,
   readChartHierarchyTable,
   readChartSankeyTable,
@@ -158,6 +177,22 @@ export interface ChartEvents {
    * `preventDefault()` to refuse.
    */
   drill: EventSpec<{ id: string | null; path: string[] }, true>;
+  /**
+   * Before a click, Enter or Space opens a drilldown level (`id`), or Escape, **Back** or a method
+   * goes up (`id` is the level shown next, `null` for the root); `path` is the new path. Call
+   * `preventDefault()` to refuse.
+   */
+  drilldown: EventSpec<{ id: string | null; path: string[] }, true>;
+  /**
+   * After a drag, or Enter or Space at a second point in measure mode, drew a ruler: the ruler,
+   * every ruler and its text.
+   */
+  measure: EventSpec<{ measure: ChartMeasure; measures: ChartMeasure[]; text: string }>;
+  /**
+   * After a draggable annotation (`li[data-ok-draggable]`) was moved by a drag or the keyboard and
+   * its list item rewritten: its index among the valid list items and its new coordinates.
+   */
+  annotation: EventSpec<{ index: number; annotation: ChartAnnotation }>;
 }
 
 export interface ChartInstance extends ComponentInstance {
@@ -214,6 +249,20 @@ export interface ChartInstance extends ComponentInstance {
   setDrillNode(id: string | null): void;
   /** Geo charts: the regions' shapes as GeoJSON, for pages that don't use `data-ok-geometry` (`null`: back to the attribute). */
   setGeometry(geometry: ChartGeometry | null): void;
+  /** Drilldown: the ids of the levels opened (`data-ok-drilldown-path`), outermost first. */
+  readonly drilldownPath: readonly string[];
+  /** Drilldown: opens a level from the one shown (no event). */
+  drillDown(id: string): void;
+  /** Drilldown: goes up one level (no event). */
+  drillUp(): void;
+  /** Drilldown: goes back to the root (no event). */
+  drillToRoot(): void;
+  /** Measure rulers (`data-ok-measure`), in data coordinates. */
+  readonly measures: readonly ChartMeasure[];
+  /** Shows exactly these rulers (invalid ones are dropped; no event). */
+  setMeasures(measures: readonly ChartMeasure[]): void;
+  /** Removes every ruler (no event). */
+  clearMeasures(): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -361,7 +410,8 @@ const SPARKLINE_HEIGHT = 40;
 
 interface ChartSource {
   readonly series: readonly ChartSeries[];
-  readonly categories: readonly (string | number | Date)[];
+  /** `undefined`: points name their categories (bars sharing a row). */
+  readonly categories: readonly (string | number | Date)[] | undefined;
 }
 const EMPTY: ChartSource = { series: [], categories: [] };
 
@@ -419,6 +469,46 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         : undefined;
     let drawnZoom = "";
     const annotationsList = () => element.querySelector(":scope > [data-ok-chart-annotations]");
+    // Measure rulers and draggable annotations (4.18.20).
+    let measuring = false;
+    let rulers: ChartMeasure[] = [];
+    let rulerPreview: ChartMeasure | null = null;
+    let anchor: { x: number; y: number } | null = null;
+    /** An annotation being moved (its index among the valid items, and where it is now). */
+    let movedAnnotation: { index: number; annotation: ChartAnnotation } | null = null;
+    let picked: number | null = null;
+    let lastPicked = -1;
+    const measureMode = () =>
+      element.hasAttribute(o.measure.attr)
+        ? (readStyle(element, o.measure) as ChartMeasureMode)
+        : undefined;
+    const pinning = () => element.hasAttribute(o.measurePinOnRelease.attr);
+    /** The valid annotation list items, in the order core indexes them. */
+    const annotationItems = () =>
+      [...(annotationsList()?.children ?? [])].filter(
+        (item) => chartAnnotations([readChartAnnotation(item)]).length > 0,
+      );
+    const shownAnnotations = () => {
+      const list = annotationItems().map(
+        (item) => chartAnnotations([readChartAnnotation(item)])[0] as ChartAnnotation,
+      );
+      if (movedAnnotation) list[movedAnnotation.index] = movedAnnotation.annotation;
+      return list;
+    };
+    /** Announces a ruler or a move (the toolbar's status, or the chart's own). */
+    const announce = (message: string) => {
+      let status = element.querySelector<HTMLElement>(
+        ":scope > [data-ok-chart-toolbar] > [data-ok-chart-status], :scope > [data-ok-chart-status]",
+      );
+      if (!status) {
+        status = document.createElement("span");
+        status.setAttribute("data-ok-chart-status", "");
+        status.setAttribute("role", "status");
+        plot.after(status);
+        created.push(status);
+      }
+      status.textContent = message;
+    };
 
     const legend = element.querySelector<HTMLElement>(":scope > [data-ok-chart-legend]");
     let hidden: number[] = legend
@@ -654,8 +744,6 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       else if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
       const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
       const label = table?.caption?.textContent?.trim() ?? "";
-      if (label) plot.setAttribute("aria-label", label);
-      else plot.removeAttribute("aria-label");
       const sparkline = element.hasAttribute(o.sparkline.attr);
       const given = readNumber(element, o.height) as number;
       // Sparklines: the container's height, at least `data-ok-height` (CSSOM, strict CSP).
@@ -838,7 +926,16 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         legendValues: element.hasAttribute(o.legendValues.attr),
         dataLabelFormatter: formatters.dataLabel,
         colorRanges: parseChartColorRanges(element.getAttribute(CHART_TEXT_ATTRIBUTES.colorRanges)),
-        annotations: readChartAnnotations(annotationsList()),
+        annotations: shownAnnotations(),
+        drilldown: levelTables().length
+          ? readChartDrilldownTables(element, xType, type)
+          : undefined,
+        drilldownPath: parseChartList(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.drilldownPath),
+        ).filter(Boolean),
+        measures: rulerPreview ? [...(pinning() ? rulers : []), rulerPreview] : rulers,
+        measureMode: measureMode(),
+        pickedAnnotation: picked ?? undefined,
         partLabels: { ...partLabels, ...localeText },
         zoom: zoomState.range,
         zoomFrom: zoomState.from,
@@ -861,9 +958,44 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         width: measured(),
         height,
         idPrefix: id,
+        xMin: readNumber(element, o.xMin) as number | undefined,
+        xMax: readNumber(element, o.xMax) as number | undefined,
+        xRange: readNumber(element, o.xRange) as number | undefined,
+        xLabelRotate: readNumber(element, o.xLabelRotate) as number | undefined,
+        xLabelRotateAlways: element.hasAttribute(o.xLabelRotateAlways.attr),
+        xaxisGroups: parseChartXGroups(element.getAttribute(CHART_TEXT_ATTRIBUTES.xaxisGroups)),
+        rangeBarGroupRows: element.hasAttribute(o.rangeBarGroupRows.attr),
+        disableRangeBarOverlap: element.hasAttribute(o.disableRangeBarOverlap.attr),
+        hideZeroBarsWhenGrouped: element.hasAttribute(o.hideZeroBarsWhenGrouped.attr),
+        dataReducer: element.hasAttribute(o.dataReducer.attr),
+        dataReducerTargetPoints: readNumber(element, o.dataReducerTargetPoints) as
+          | number
+          | undefined,
+        dataReducerThreshold: readNumber(element, o.dataReducerThreshold) as number | undefined,
+        forecastCount: readNumber(element, o.forecastCount) as number | undefined,
+        forecastDashArray: readNumber(element, o.forecastDashArray) as number | undefined,
+        forecastStrokeWidth: readNumber(element, o.forecastStrokeWidth) as number | undefined,
+        forecastFillOpacity: readNumber(element, o.forecastFillOpacity) as number | undefined,
+        noDataText: text(element, CHART_TEXT_ATTRIBUTES.noDataText),
+        noDataAlign: element.hasAttribute(o.noDataAlign.attr)
+          ? (readStyle(element, o.noDataAlign) as ChartNoDataAlign)
+          : undefined,
+        noDataVerticalAlign: element.hasAttribute(o.noDataVerticalAlign.attr)
+          ? (readStyle(element, o.noDataVerticalAlign) as ChartNoDataVerticalAlign)
+          : undefined,
       });
+      const name = render.noData && label ? `${label}: ${render.noData}` : label;
+      if (name) plot.setAttribute("aria-label", name);
+      else plot.removeAttribute("aria-label");
       const { layout } = render;
       drawTools();
+      // Draggable annotations without a toolbar announce their moves in a status of their own.
+      const lone = element.querySelector(":scope > [data-ok-chart-status]");
+      const needed =
+        render.annotationHits !== undefined &&
+        !element.querySelector(":scope > [data-ok-chart-toolbar]");
+      if (needed && !lone) announce("");
+      else if (!needed) lone?.remove();
       drawLegend(render.legend);
       drawFilter();
       drawDrill();
@@ -929,11 +1061,28 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       changes.takeRecords();
       draw();
     };
+    /** Drilldown (4.18.68): the level tables after the chart's own. */
+    const levelTables = () =>
+      element.querySelectorAll<HTMLTableElement>(":scope > table[data-ok-chart-drilldown]");
+    /** Drilldown: shows another path of levels (the root attribute is the state). */
+    const writeLevels = (path: readonly string[], notify: boolean) => {
+      const current = (render as ChartRender).drilldown;
+      if (!current) return;
+      const id = path.at(-1) ?? null;
+      if (notify && !emit("drilldown", { id, path: [...path] }, { cancelable: true })) return;
+      const textValue = chartListText(path);
+      if (textValue) element.setAttribute(CHART_TEXT_ATTRIBUTES.drilldownPath, textValue);
+      else element.removeAttribute(CHART_TEXT_ATTRIBUTES.drilldownPath);
+      changes.takeRecords();
+      setActive(null, notify);
+      draw();
+    };
     /** Sunburst and icicle charts: a **Back** button and the drilled path (a status) before the plot. */
     const drawDrill = () => {
       let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-drill]");
       const state = (render as ChartRender).layout.hierarchy;
-      if (!state?.drillable || state.type === "tree") {
+      const levels = (render as ChartRender).drilldown;
+      if (!levels && (!state?.drillable || state.type === "tree")) {
         box?.remove();
         return;
       }
@@ -953,8 +1102,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       const [up, path] = [...box.children] as [HTMLButtonElement, HTMLElement];
       const label = localeText.drillUp ?? chartDrillLabels.drillUp;
       if (up.textContent !== label) up.textContent = label;
-      up.hidden = state.drill === null;
-      const shown = state.path.join(" › ");
+      up.hidden = levels ? levels.path.length === 0 : state?.drill === null;
+      const shown = levels ? levels.text : (state?.path ?? []).join(" › ");
       if (path.textContent !== shown) path.textContent = shown;
     };
 
@@ -973,12 +1122,14 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     const mode = (): ChartGestureMode =>
       element.hasAttribute(CHART_TEXT_ATTRIBUTES.brushTarget)
         ? "brush"
-        : (element.hasAttribute(o.zoom.attr) || element.hasAttribute(o.navigator.attr)) &&
-            render?.zoomable
-          ? pan
-            ? "pan"
-            : "zoom"
-          : "none";
+        : measuring && measureMode()
+          ? "measure"
+          : (element.hasAttribute(o.zoom.attr) || element.hasAttribute(o.navigator.attr)) &&
+              render?.zoomable
+            ? pan
+              ? "pan"
+              : "zoom"
+            : "none";
     const kind = () => ((render as ChartRender).data.xType === "numeric" ? "value" : "index");
 
     /** Applies a zoom; the chart's own changes (`user`) are cancelable and reach its group. */
@@ -1111,7 +1262,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     /** The toolbar (`data-ok-toolbar`): zoom buttons and downloads, plus a status for errors. */
     const drawTools = () => {
       let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-toolbar]");
-      if (!element.hasAttribute(o.toolbar.attr)) {
+      const downloads = element.hasAttribute(o.toolbar.attr);
+      if (!downloads && !measureMode()) {
         box?.remove();
         return;
       }
@@ -1132,11 +1284,16 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         box,
         chartToolbar({
           zoom:
+            downloads &&
             (element.hasAttribute(o.zoom.attr) || element.hasAttribute(o.navigator.attr)) &&
             current.zoomable,
           zoomed: current.zoom !== null,
           pan,
           text: localeText,
+          measure: measureMode() !== undefined && current.zoomable,
+          measuring,
+          measured: rulers.length > 0,
+          downloads,
         }),
       );
     };
@@ -1144,8 +1301,18 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     /** A toolbar button was pressed. */
     const runTool = (tool: ChartTool) => {
       const current = render as ChartRender;
-      if (tool === "pan") {
+      if (tool === "measure") {
+        measuring = !measuring;
+        pan = false;
+        anchor = null;
+        draw();
+      } else if (tool === "clearMeasures") {
+        rulers = [];
+        announce("");
+        draw();
+      } else if (tool === "pan") {
         pan = !pan;
+        measuring = false;
         draw();
       } else if (tool === "reset") setZoom(null, "user");
       else if (tool === "zoomIn" || tool === "zoomOut")
@@ -1174,6 +1341,128 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         // The chart's own changes: its synchronized group shows the same category.
         link?.shown(next?.kind === "index" ? next.index : null);
       }
+    };
+
+    /** Adds a ruler (or replaces the last one without pinning), announces and reports it. */
+    const addRuler = (ruler: ChartMeasure) => {
+      rulers = [...(pinning() ? rulers : []), ruler].slice(-20);
+      draw();
+      const current = render as ChartRender;
+      const textValue = chartMeasureText(current.data, current.format, ruler);
+      announce(textValue);
+      emit("measure", { measure: ruler, measures: [...rulers], text: textValue });
+    };
+    const measureDrag = (from: ChartPxPoint, to: ChartPxPoint, end: boolean) => {
+      const layout = (render as ChartRender).layout;
+      const kind = measureMode();
+      const a = chartMeasureAt(layout, from.px, from.py);
+      const b = chartMeasureAt(layout, to.px, to.py);
+      if (!a || !b || !kind) return;
+      const ruler = chartMeasureBetween(layout, kind, a, b);
+      if (end) {
+        rulerPreview = null;
+        addRuler(ruler);
+      } else {
+        rulerPreview = ruler;
+        draw();
+      }
+    };
+    /** Writes a moved annotation into its list item (the list is the state) and reports it. */
+    const dropAnnotation = (index: number, annotation: ChartAnnotation) => {
+      const item = annotationItems()[index];
+      movedAnnotation = null;
+      if (item) {
+        const write = (name: string, value: unknown) => {
+          if (value === undefined) item.removeAttribute(name);
+          else item.setAttribute(name, String(value));
+        };
+        write("data-ok-x", annotation.x);
+        write("data-ok-x2", annotation.x2);
+        write("data-ok-y", annotation.y);
+        write("data-ok-y2", annotation.y2);
+        changes.takeRecords();
+      }
+      draw();
+      emit("annotation", { index, annotation });
+    };
+    const annotationDrag = (hit: number, from: ChartPxPoint, to: ChartPxPoint, end: boolean) => {
+      const current = render as ChartRender;
+      const item = annotationItems()[hit];
+      const valid = item ? chartAnnotations([readChartAnnotation(item)])[0] : undefined;
+      if (!valid) return;
+      const next = dragChartAnnotation(current.layout, current.data, valid, from, to);
+      if (end) {
+        dropAnnotation(hit, next);
+        announce(chartAnnotationText(next));
+      } else {
+        movedAnnotation = { index: hit, annotation: next };
+        draw();
+      }
+    };
+    /** A picks up the next draggable annotation, arrows move it, Enter, Space or Escape drops it. */
+    const annotationKey = (event: KeyboardEvent) => {
+      const current = render as ChartRender;
+      if (picked !== null) {
+        const shown = shownAnnotations()[picked];
+        if (event.key === "Enter" || event.key === " " || event.key === "Escape") {
+          const index = picked;
+          picked = null;
+          if (shown) {
+            dropAnnotation(index, shown);
+            announce(
+              `${localeText.annotationDropped ?? chartToolLabels.annotationDropped}: ${chartAnnotationText(shown)}`,
+            );
+          } else draw();
+          return true;
+        }
+        const next = shown
+          ? chartAnnotationKey(current.layout, current.data, shown, event.key)
+          : undefined;
+        if (!next) return false;
+        movedAnnotation = { index: picked, annotation: next };
+        draw();
+        announce(chartAnnotationText(next));
+        return true;
+      }
+      if (event.key.toLowerCase() !== "a" || event.ctrlKey || event.metaKey || event.altKey)
+        return false;
+      const positions = (current.annotationHits ?? []).map((hit) => hit.index);
+      const next = positions.find((index) => index > lastPicked) ?? positions[0];
+      if (next === undefined) return false;
+      lastPicked = next;
+      picked = next;
+      draw();
+      const shown = shownAnnotations()[next];
+      if (shown) announce(chartAnnotationText(shown));
+      return true;
+    };
+    /** Measure mode without a pointer: Enter or Space at two points adds a ruler. */
+    const measureKey = (event: KeyboardEvent) => {
+      const kind = measureMode();
+      if (!measuring || !kind) return false;
+      if (event.key === "Escape" && anchor) {
+        anchor = null;
+        return true;
+      }
+      if ((event.key !== "Enter" && event.key !== " ") || event.repeat) return false;
+      const current = render as ChartRender;
+      const at = chartMeasureActive(current.layout, active);
+      if (!at) return false;
+      if (!anchor) {
+        anchor = at;
+        const from = chartMeasureText(current.data, current.format, {
+          x1: at.x,
+          y1: at.y,
+          x2: at.x,
+          y2: at.y,
+        }).split(" → ")[0];
+        announce(`${localeText.measureFrom ?? chartToolLabels.measureFrom} ${from}`);
+      } else {
+        const start = anchor;
+        anchor = null;
+        addRuler(chartMeasureBetween(current.layout, kind, start, at));
+      }
+      return true;
     };
 
     // Pointer moves and touches (a tap is a pointerdown) pick the nearest category or point.
@@ -1232,6 +1521,13 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           (event.clientX - box.left) * scale,
           (event.clientY - box.top) * scale,
         );
+        // Drilldown: a point with a level opens it instead of being selected.
+        const levels = (render as ChartRender).drilldown;
+        const level = mark === null ? undefined : layout.marks[mark]?.drilldown;
+        if (levels && level) {
+          writeLevels([...levels.path, level], true);
+          return;
+        }
         if (mark !== null)
           select([chartMarkPoint(layout.marks[mark] as ChartRender["layout"]["marks"][number])]);
       },
@@ -1249,6 +1545,25 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     plot.addEventListener(
       "keydown",
       (event) => {
+        if (annotationKey(event) || measureKey(event)) {
+          event.preventDefault();
+          return;
+        }
+        // Drilldown: Enter or Space opens the active item's level, Escape goes up.
+        const levels = (render as ChartRender).drilldown;
+        if (levels) {
+          const level = chartDrilldownActive((render as ChartRender).layout, active);
+          if ((event.key === "Enter" || event.key === " ") && !event.repeat && level) {
+            event.preventDefault();
+            writeLevels([...levels.path, level], true);
+            return;
+          }
+          if (event.key === "Escape" && levels.path.length > 0) {
+            event.preventDefault();
+            writeLevels(levels.path.slice(0, -1), true);
+            return;
+          }
+        }
         if (event.key === "Escape") {
           // Sunburst and icicle charts: one level up before anything else.
           if (act(chartDrillUp((render as ChartRender).layout))) {
@@ -1328,6 +1643,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       (event) => {
         const back = (event.target as Element).closest?.("[data-ok-chart-drill-up]");
         if (back && back.parentElement?.parentElement === element) {
+          const levels = (render as ChartRender).drilldown;
+          if (levels) {
+            writeLevels(levels.path.slice(0, -1), true);
+            if ((back as HTMLElement).hidden) plot.focus();
+            return;
+          }
           act(chartDrillUp((render as ChartRender).layout));
           // At the top the button hides: the focus goes to the plot.
           if ((back as HTMLElement).hidden) plot.focus();
@@ -1389,6 +1710,14 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         characterData: true,
         attributes: true,
       });
+    // Drilldown levels' tables redraw too.
+    for (const level of levelTables())
+      changes.observe(level, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+      });
     // Annotations (phase 4): edits of the list redraw (the list itself is never rewritten).
     const notes = annotationsList();
     if (notes)
@@ -1410,6 +1739,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         draw();
       },
       commit: commitRange,
+      measure: measureDrag,
+      annotationAt: (point) => {
+        const hits = render?.annotationHits;
+        return hits ? chartAnnotationAt(hits, point.px, point.py) : undefined;
+      },
+      dragAnnotation: annotationDrag,
     });
 
     draw();
@@ -1441,7 +1776,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       updateSeries(series, categories) {
         source = {
           series: [...series],
-          categories: categories ? [...categories] : data().categories,
+          categories: categories ? [...categories] : (data().categories ?? []),
         };
         draw();
       },
@@ -1457,7 +1792,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
             ...entry,
             data: keep([...entry.data, ...(points[index]?.data ?? [])]),
           })),
-          categories: keep([...current.categories, ...(options.categories ?? [])]),
+          categories: keep([...(current.categories ?? []), ...(options.categories ?? [])]),
         };
         draw();
       },
@@ -1502,6 +1837,31 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       },
       setCollapsedNodes(ids) {
         writeCollapsed([...new Set(ids.map(String))]);
+      },
+      get drilldownPath() {
+        return render?.drilldown ? [...render.drilldown.path] : [];
+      },
+      drillDown(id) {
+        const levels = render?.drilldown;
+        if (levels) writeLevels([...levels.path, String(id)], false);
+      },
+      drillUp() {
+        const levels = render?.drilldown;
+        if (levels?.path.length) writeLevels(levels.path.slice(0, -1), false);
+      },
+      drillToRoot() {
+        if (render?.drilldown) writeLevels([], false);
+      },
+      get measures() {
+        return [...rulers];
+      },
+      setMeasures(list) {
+        rulers = chartMeasures(list);
+        draw();
+      },
+      clearMeasures() {
+        rulers = [];
+        draw();
       },
       toggleDataPointSelection(seriesIndex, dataPointIndex) {
         selected = toggleChartSelection(

@@ -1,5 +1,6 @@
 import {
   type ChartAnnotation,
+  chartAnnotationHits,
   chartAnnotationNodes,
   chartAnnotations,
 } from "./chart-annotations.js";
@@ -12,6 +13,12 @@ import {
   chartPatternAt,
   withChartCues,
 } from "./chart-cues.js";
+import {
+  type ChartDrilldownLevel,
+  chartDrilldownLabels,
+  chartDrilldownLevels,
+  chartDrilldownPath,
+} from "./chart-drilldown.js";
 import {
   type ChartCrossfilter,
   chartFilter,
@@ -38,11 +45,20 @@ import {
   type ChartColorRange,
   type ChartLayout,
   type ChartNode,
+  type ChartXGroup,
   chartTextWidth,
+  FONT,
   fmt,
   layoutChart,
   node,
 } from "./chart-layout.js";
+import {
+  type ChartAnnotationHit,
+  type ChartMeasure,
+  type ChartMeasureMode,
+  chartMeasureNodes,
+  chartMeasures,
+} from "./chart-measure.js";
 import {
   type ChartColor,
   type ChartCurve,
@@ -52,6 +68,8 @@ import {
   type ChartGrid,
   type ChartLegend,
   type ChartMarkerShape,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartPattern,
   type ChartSeries,
   type ChartStackType,
@@ -91,6 +109,7 @@ import {
   type ChartViolinWhiskers,
   layoutViolin,
 } from "./chart-violin.js";
+import { chartFixedWindow, chartXGroupAt, chartXGroups } from "./chart-xaxis.js";
 import {
   type ChartZoom,
   chartSelectionNodes,
@@ -321,6 +340,54 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly crossfilter?: ChartCrossfilter | undefined;
   /** Crossfilter: the categories another chart of the group filters (`null`: none). */
   readonly filter?: readonly number[] | null | undefined;
+  /** The first x position shown when nothing has zoomed the chart (4.18.65). */
+  readonly xMin?: number | undefined;
+  /** The last x position shown when nothing has zoomed the chart. */
+  readonly xMax?: number | undefined;
+  /** A window of this many x units ending at `xMax` or the last x value. */
+  readonly xRange?: number | undefined;
+  /** X labels turn by this many degrees (-90 to 90) when they don't fit flat. */
+  readonly xLabelRotate?: number | undefined;
+  /** X labels turn even when they fit flat. */
+  readonly xLabelRotateAlways?: boolean | undefined;
+  /** A second row of x labels: `{ title, cols }`, each spanning `cols` categories. */
+  readonly xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** Drilldown levels (4.18.68): points name them in `drilldown`. */
+  readonly drilldown?: readonly ChartDrilldownLevel[] | undefined;
+  /** The ids of the levels opened, outermost first; the last one is drawn. */
+  readonly drilldownPath?: readonly string[] | undefined;
+  /** Measure rulers (4.18.20), in data coordinates (validated by `chartMeasures`). */
+  readonly measures?: readonly ChartMeasure[] | undefined;
+  /** How rulers measure: `span` (default) or `free`. */
+  readonly measureMode?: ChartMeasureMode | undefined;
+  /** The draggable annotation the keyboard picked up (an index in `annotations`). */
+  readonly pickedAnnotation?: number | undefined;
+  /** Range bars and timelines (4.18.67): every series in one lane per category. */
+  readonly rangeBarGroupRows?: boolean | undefined;
+  /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
+  readonly disableRangeBarOverlap?: boolean | undefined;
+  /** Grouped columns: zero and empty bars take no slot. */
+  readonly hideZeroBarsWhenGrouped?: boolean | undefined;
+  /** Lines and areas draw fewer points when they have many (ApexCharts `chart.dataReducer`). */
+  readonly dataReducer?: boolean | undefined;
+  /** Points kept per series when reducing. Default 250. */
+  readonly dataReducerTargetPoints?: number | undefined;
+  /** Series longer than this many visible points are reduced. Default 500. */
+  readonly dataReducerThreshold?: number | undefined;
+  /** How many points at the end of each series are a forecast (dashed, faint). */
+  readonly forecastCount?: number | undefined;
+  /** Forecast line dashes in px. Default 4. */
+  readonly forecastDashArray?: number | undefined;
+  /** Forecast line width in px (default the series'). */
+  readonly forecastStrokeWidth?: number | undefined;
+  /** Opacity of forecast areas and bars (0 to 1). Default 0.5. */
+  readonly forecastFillOpacity?: number | undefined;
+  /** The message drawn when there is nothing to draw. */
+  readonly noDataText?: string | undefined;
+  /** Where the message sits across the plot. Default `center`. */
+  readonly noDataAlign?: ChartNoDataAlign | undefined;
+  /** Where the message sits down the plot. Default `middle`. */
+  readonly noDataVerticalAlign?: ChartNoDataVerticalAlign | undefined;
   /** Header of the data table's first column. Default "Category", "Date" or "X". */
   readonly xLabel?: string | undefined;
   /** Indexes of the series hidden through the legend (categories for circular charts). */
@@ -357,6 +424,25 @@ export interface ChartRender {
   readonly zoom: ChartZoom | null;
   /** The chart has an x axis that zooms (vertical charts drawn by `layoutChart`). */
   readonly zoomable: boolean;
+  /** The message drawn because there is nothing to draw (4.18.65; also added to the plot's name). */
+  readonly noData?: string | undefined;
+  /** Where the draggable annotations are drawn (4.18.20; pointer hits). */
+  readonly annotationHits?: readonly ChartAnnotationHit[] | undefined;
+  /** Drilldown (4.18.68): the valid path, its names and the level tables (absent without levels). */
+  readonly drilldown?: ChartDrilldownState | undefined;
+}
+
+/** What owners draw for drilldown charts: the path and the level tables. */
+export interface ChartDrilldownState {
+  readonly path: readonly string[];
+  /** The status text: the root label, then the levels' names (empty at the root). */
+  readonly text: string;
+  readonly tables: readonly {
+    id: string;
+    name: string;
+    type?: ChartType;
+    table: ChartTableModel;
+  }[];
 }
 
 /** Default SVG width before the chart is measured (server render, first paint). */
@@ -368,6 +454,97 @@ export const chartIdPrefix = (raw: string): string =>
 
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
+  const levels = chartDrilldownLevels(input.drilldown);
+  if (levels.length === 0) return renderMessage(input);
+  // Drilldown (4.18.68): the last level of the path is drawn; the table stays the root's.
+  const path = chartDrilldownPath(levels, input.drilldownPath);
+  const root = renderMessage({ ...input, drilldown: undefined });
+  const level = levels.find((entry) => entry.id === path.at(-1));
+  const drawn = level
+    ? renderMessage({
+        ...input,
+        drilldown: undefined,
+        type: level.type ?? input.type,
+        series: level.series,
+        categories: level.categories,
+        zoom: null,
+        selectedDataPoints: undefined,
+        filter: null,
+        annotations: undefined,
+        measures: undefined,
+      })
+    : root;
+  const names = path.map((id) => levels.find((entry) => entry.id === id)?.name ?? id);
+  // `localeText` reaches the render as `partLabels` (React and HTML pass every text).
+  const rootLabel =
+    (input.partLabels as Readonly<Record<string, string>> | undefined)?.["drilldownRoot"] ??
+    chartDrilldownLabels.drilldownRoot;
+  const tables = levels.map((entry) => {
+    const own = renderMessage({
+      ...input,
+      drilldown: undefined,
+      type: entry.type ?? input.type,
+      series: entry.series,
+      categories: entry.categories,
+      width: 640,
+      height: 320,
+    });
+    return {
+      id: entry.id,
+      name: entry.name ?? entry.id,
+      ...(entry.type && entry.type !== input.type ? { type: entry.type } : {}),
+      table: own.table,
+    };
+  });
+  return {
+    ...drawn,
+    table: root.table,
+    drilldown: { path, text: path.length ? [rootLabel, ...names].join(" › ") : "", tables },
+  };
+}
+
+function renderMessage(input: ChartRenderInput): ChartRender {
+  const render = renderChartData(input);
+  const text = input.noDataText ? String(input.noDataText).slice(0, 200) : "";
+  const empty =
+    render.layout.marks.length === 0 &&
+    !render.data.series.some((series) => series.points.some((point) => point.y !== null));
+  if (!text || !empty) return render;
+  // Nothing to draw (4.18.65): the message over the plot, also part of the plot's name.
+  const { plot } = render.layout;
+  const x =
+    input.noDataAlign === "left"
+      ? plot.x + 8
+      : input.noDataAlign === "right"
+        ? plot.x + plot.width - 8
+        : plot.x + plot.width / 2;
+  const y =
+    input.noDataVerticalAlign === "top"
+      ? plot.y + FONT
+      : input.noDataVerticalAlign === "bottom"
+        ? plot.y + plot.height - FONT
+        : plot.y + plot.height / 2;
+  const message = node(
+    "text",
+    {
+      x: fmt(x),
+      y: fmt(y),
+      dy: "0.35em",
+      "text-anchor":
+        input.noDataAlign === "left" ? "start" : input.noDataAlign === "right" ? "end" : "middle",
+      "data-ok-chart-no-data": "",
+    },
+    undefined,
+    text,
+  );
+  return {
+    ...render,
+    noData: text,
+    layout: { ...render.layout, nodes: [...render.layout.nodes, message] },
+  };
+}
+
+function renderChartData(input: ChartRenderInput): ChartRender {
   if (input.type === "sankey") return renderSankey(input);
   if (input.type === "geo") return renderGeo(input);
   if (isHierarchyChart(input.type)) return renderHierarchy(input);
@@ -504,6 +681,13 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     input.zoomFrom !== undefined
       ? followChartZoom(input.zoom ?? null, input.zoomFrom, extent, kind)
       : clampChartZoom(input.zoom, extent, kind);
+  // A fixed window (4.18.65) shows when nothing has zoomed the chart; zoom and reset work on top.
+  const fixedWindow = chartFixedWindow(data, input);
+  const xGroups = chartXGroups(input.xaxisGroups);
+  const forecastCount =
+    input.forecastCount !== undefined && input.forecastCount >= 1
+      ? Math.floor(input.forecastCount)
+      : undefined;
   const base = layoutOf(drawn, {
     width: input.width,
     height: input.height,
@@ -561,12 +745,33 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     slicePatterns: circular
       ? (data.series[0]?.points ?? []).map((point) => slicePattern(point.x))
       : undefined,
-    zoom,
+    zoom: zoom ?? fixedWindow,
+    xLabelRotate: input.xLabelRotate,
+    xLabelRotateAlways: input.xLabelRotateAlways,
+    xGroups,
+    rangeBarGroupRows: input.rangeBarGroupRows,
+    disableRangeBarOverlap: input.disableRangeBarOverlap,
+    hideZeroBarsWhenGrouped: input.hideZeroBarsWhenGrouped,
+    reducer: input.dataReducer
+      ? {
+          target: input.dataReducerTargetPoints ?? 250,
+          threshold: input.dataReducerThreshold ?? 500,
+        }
+      : undefined,
+    forecast: forecastCount
+      ? {
+          count: forecastCount,
+          dashArray: input.forecastDashArray,
+          strokeWidth: input.forecastStrokeWidth,
+          fillOpacity: input.forecastFillOpacity,
+        }
+      : undefined,
   });
   const zoomable = base.x !== undefined && extent !== null && !input.sparkline;
   // Phase 4 overlays: annotations over the series, then a selection (brush or drag), badges.
   let nodes: ChartNode[] = [...base.nodes];
-  const annotations = chartAnnotationNodes(data, base, chartAnnotations(input.annotations));
+  const validAnnotations = chartAnnotations(input.annotations);
+  const annotations = chartAnnotationNodes(data, base, validAnnotations, input.pickedAnnotation);
   const selected = input.brush
     ? (clampChartZoom(input.selection, extent, kind) ?? extent)
     : input.selection
@@ -584,6 +789,15 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     nodes.splice(at < 0 ? before("data-ok-chart-active") : at, 0, ...annotations);
   }
   if (selection.length) nodes.splice(before("data-ok-chart-active"), 0, ...selection);
+  // Measure rulers (4.18.20): over the series, under the hover highlight.
+  const rulers = chartMeasureNodes(
+    base,
+    data,
+    format,
+    input.measureMode ?? "span",
+    chartMeasures(input.measures),
+  );
+  if (rulers.length) nodes.splice(before("data-ok-chart-active"), 0, ...rulers);
   // Highlight filters (ADR-0054): tints behind the filtered categories, under the series.
   const tints = input.crossfilter === "highlight" ? chartFilterNodes(base, filter) : [];
   if (tints.length) {
@@ -654,8 +868,34 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     // Indicator columns carry their indicator, not a type (they are never read back).
     seriesTypes: data.series.some((series) => !series.indicator && series.type !== data.type),
     partLabels: input.partLabels,
+    groupAt: xGroups.length ? (index) => chartXGroupAt(xGroups, index) : undefined,
+    forecastCount,
   });
-  return { data, format, layout, legend, table, extent, zoom: zoomable ? zoom : null, zoomable };
+  const hits = chartAnnotationHits(data, base, validAnnotations);
+  // Drilldown (4.18.68): marks know the level their point opens.
+  const drillable = data.series.some((series) => series.points.some((point) => point.drilldown));
+  const layoutOut: ChartLayout = drillable
+    ? {
+        ...layout,
+        marks: layout.marks.map((mark) => {
+          const id = data.series[mark.series]?.points.find(
+            (point) => point.x === mark.x,
+          )?.drilldown;
+          return id ? { ...mark, drilldown: id } : mark;
+        }),
+      }
+    : layout;
+  return {
+    data,
+    format,
+    layout: layoutOut,
+    legend,
+    table,
+    extent,
+    zoom: zoomable ? zoom : null,
+    zoomable,
+    ...(hits.length ? { annotationHits: hits } : {}),
+  };
 }
 
 /** Geo charts (ADR-0059): regions or hex tiles; the legend lists value classes. */

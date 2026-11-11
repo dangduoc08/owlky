@@ -531,6 +531,10 @@
   /* Solid areas (gradient areas carry their own fill). */
   :where([data-ok-chart-area]:not([fill])) {
     fill: var(--_ok-chart-c);
+  }
+
+  /* Forecast tails (4.18.65) write their own fill-opacity attribute: CSS leaves them alone. */
+  :where([data-ok-chart-area]:not([fill], [fill-opacity])) {
     fill-opacity: 0.24;
   }
 
@@ -925,23 +929,24 @@
     font-weight: var(--ok-font-weight-semibold);
   }
 
-  /* Data table: readable without JavaScript, visually hidden once the chart is drawn. */
-  :where([data-ok-chart-data]) {
+  /* Data table (and drilldown levels' tables, 4.18.68): readable without JavaScript, visually
+     hidden once the chart is drawn. */
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown])) {
     border-collapse: collapse;
     font-size: var(--ok-font-size-sm);
   }
 
-  :where([data-ok-chart-data] :is(th, td)) {
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(th, td)) {
     padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
     border-bottom: 1px solid var(--ok-divider);
     text-align: end;
   }
 
-  :where([data-ok-chart-data] :is(thead th, tbody th)) {
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(thead th, tbody th)) {
     text-align: start;
   }
 
-  :where([data-ok-chart-data] caption) {
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) caption) {
     padding-block-end: var(--ok-spacing);
     font-weight: var(--ok-font-weight-semibold);
     text-align: start;
@@ -949,7 +954,9 @@
 
   /* Tables grow to their content: a fixed layout keeps the hidden table 1px wide, and anchored
      at the bottom it grows upward, so a long table never makes the page scroll. */
-  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-data]) {
+  :where(
+    [data-ok-chart][data-ok-ready] > :is([data-ok-chart-data], table[data-ok-chart-drilldown])
+  ) {
     position: absolute;
     inset-block-end: 0;
     inset-inline-start: 0;
@@ -965,7 +972,11 @@
   }
 
   /* Captions and cells are at least one word wide: let hidden text break anywhere. */
-  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-data] :is(caption, th, td)) {
+  :where(
+    [data-ok-chart][data-ok-ready]
+      > :is([data-ok-chart-data], table[data-ok-chart-drilldown])
+      :is(caption, th, td)
+  ) {
     padding: 0;
     border: 0;
     white-space: normal;
@@ -1380,6 +1391,172 @@
   :where([data-ok-chart-annotation-marker]) {
     stroke: var(--ok-bg-paper);
     stroke-width: 2px;
+  }
+
+  /* Trellis (ADR-0060): small multiples in a grid; a promoted panel spans it. */
+  :where([data-ok-chart-trellis]) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: calc(var(--ok-spacing) * 3);
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-chart-trellis][data-ok-columns="1"]) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="2"]) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="3"]) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="4"]) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="5"]) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="6"]) {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  :where([data-ok-chart-trellis-panel]) {
+    display: grid;
+    gap: var(--ok-spacing);
+    min-width: 0;
+  }
+
+  :where([data-ok-chart-trellis-panel][data-ok-promoted]) {
+    grid-column: 1 / -1;
+  }
+
+  :where([data-ok-chart-trellis-panel][hidden], [data-ok-chart-trellis-back][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-chart-trellis-header]) {
+    justify-self: start;
+    min-height: calc(var(--ok-spacing) * 8);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-sm);
+    font-weight: var(--ok-font-weight-semibold);
+    text-align: start;
+  }
+
+  :where(button[data-ok-chart-trellis-header]) {
+    padding: 0 var(--ok-spacing);
+    border-radius: var(--ok-radius-sm);
+    cursor: pointer;
+  }
+
+  :where([data-ok-chart-trellis-back]) {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-height: calc(var(--ok-spacing) * 8);
+    margin: 0;
+    padding: 0 calc(var(--ok-spacing) * 2);
+    border: 1px solid var(--ok-divider);
+    border-radius: var(--ok-radius-sm);
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    :where(button[data-ok-chart-trellis-header]:hover, [data-ok-chart-trellis-back]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where(
+    button[data-ok-chart-trellis-header]:focus-visible,
+    [data-ok-chart-trellis-back]:focus-visible
+  ) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  /* Measure rulers (4.18.20): a band or a line, two ends and a tag with the change. */
+  :where([data-ok-chart-measure-band]) {
+    fill: var(--ok-text-primary);
+    fill-opacity: 0.08;
+    stroke: var(--ok-text-secondary);
+    stroke-dasharray: 4 3;
+  }
+
+  :where([data-ok-chart-measure-line]) {
+    stroke: var(--ok-text-primary);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+
+  :where([data-ok-chart-measure-end]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-text-primary);
+    stroke-width: 2;
+  }
+
+  :where([data-ok-chart-measure-tag]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-divider);
+  }
+
+  :where([data-ok-chart-measure-label]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Draggable annotations (4.18.20): a grab cursor; the one the keyboard holds is outlined. */
+  :where([data-ok-chart-plot]:has([data-ok-chart-annotation][data-ok-draggable])) {
+    touch-action: pan-y;
+  }
+
+  :where([data-ok-chart-annotation][data-ok-draggable]) {
+    cursor: grab;
+  }
+
+  :where([data-ok-chart-annotation][data-ok-picked]) {
+    outline: 2px dashed var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  /* X axis groups (4.18.65): a second row of labels and the ticks between the groups. */
+  :where([data-ok-chart-axis-group]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-chart-axis-group-tick]) {
+    stroke: var(--ok-divider);
+  }
+
+  /* The message shown when there is nothing to draw (4.18.65). */
+  :where([data-ok-chart-no-data]) {
+    fill: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-sm);
+  }
+
+  /* Free text annotations (4.18.65): text alone, in the primary text color (AA in both themes). */
+  :where([data-ok-chart-annotation-text]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
   }
 
   :where([data-ok-chart-annotation-label]) {

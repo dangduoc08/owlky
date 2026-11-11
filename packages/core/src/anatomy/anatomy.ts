@@ -57,6 +57,7 @@ import {
   chartLeaves,
   chartZoomTypes,
 } from "../chart/chart-hierarchy.js";
+import { type ChartMeasureMode, chartMeasureModes } from "../chart/chart-measure.js";
 import {
   type ChartColor,
   type ChartCrossfilter,
@@ -67,6 +68,8 @@ import {
   type ChartLegend,
   type ChartLegendAlign,
   type ChartMarkerShape,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartPattern,
   type ChartStackType,
   type ChartTooltipCorner,
@@ -82,6 +85,8 @@ import {
   chartLegendAligns,
   chartLegends,
   chartMarkerShapes,
+  chartNoDataAligns,
+  chartNoDataVerticalAligns,
   chartPatterns,
   chartStackTypes,
   chartTooltipCorners,
@@ -5204,6 +5209,109 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`).",
     { optional: true },
   ),
+  xMin: number(
+    "data-ok-x-min",
+    undefined,
+    "The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes).",
+  ),
+  xMax: number(
+    "data-ok-x-max",
+    undefined,
+    "The last x position shown when nothing has zoomed the chart (see `xMin`).",
+  ),
+  xRange: number(
+    "data-ok-x-range",
+    undefined,
+    "Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data).",
+    { min: 0 },
+  ),
+  xLabelRotate: number(
+    "data-ok-x-label-rotate",
+    undefined,
+    "X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out.",
+    { min: -90 },
+  ),
+  xLabelRotateAlways: flag(
+    "data-ok-x-label-rotate-always",
+    "X labels turn by `xLabelRotate` even when they fit flat.",
+  ),
+  measure: style(
+    "data-ok-measure",
+    chartMeasureModes,
+    "span",
+    "Measure rulers: a **Measure** button in the toolbar; a drag (or Enter at two points) then measures the change between two x positions (`span`, the series' values) or two points (`free`).",
+    { optional: true },
+  ),
+  measurePinOnRelease: flag(
+    "data-ok-measure-pin-on-release",
+    "Measure rulers stay on the chart when the drag ends, up to 20 of them (without it, a new ruler replaces the last one).",
+  ),
+  rangeBarGroupRows: flag(
+    "data-ok-range-bar-group-rows",
+    "Range bars and timelines: the series share one lane per category, so bars of different series line up in a row.",
+  ),
+  disableRangeBarOverlap: flag(
+    "data-ok-disable-range-bar-overlap",
+    "Range bars and timelines: bars that overlap in time go to lanes of their own instead of being drawn over each other.",
+  ),
+  hideZeroBarsWhenGrouped: flag(
+    "data-ok-hide-zero-bars-when-grouped",
+    "Grouped columns: zero and empty bars take no slot, so the other bars of a category close up around its center.",
+  ),
+  dataReducer: flag(
+    "data-ok-data-reducer",
+    "Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point.",
+  ),
+  dataReducerTargetPoints: number(
+    "data-ok-data-reducer-target-points",
+    undefined,
+    "Points kept per series when reducing (default 250).",
+    { min: 3 },
+  ),
+  dataReducerThreshold: number(
+    "data-ok-data-reducer-threshold",
+    undefined,
+    "A series with more visible points than this is reduced (default 500).",
+    { min: 3 },
+  ),
+  forecastCount: number(
+    "data-ok-forecast-count",
+    undefined,
+    "How many points at the end of each line, area or bar series are a forecast: lines are dashed, areas and bars faint.",
+    { min: 1 },
+  ),
+  forecastDashArray: number(
+    "data-ok-forecast-dash-array",
+    undefined,
+    "Forecast line dashes in px (default 4).",
+    { min: 1 },
+  ),
+  forecastStrokeWidth: number(
+    "data-ok-forecast-stroke-width",
+    undefined,
+    "Forecast line width in px (default the series' width).",
+    { min: 0 },
+  ),
+  forecastFillOpacity: number(
+    "data-ok-forecast-fill-opacity",
+    undefined,
+    "Opacity of forecast areas and bars (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
+  noDataAlign: style(
+    "data-ok-no-data-align",
+    chartNoDataAligns,
+    "center",
+    "Where the `noDataText` message sits across the plot: `left`, `center` (the default) or `right`.",
+    { optional: true },
+  ),
+  noDataVerticalAlign: style(
+    "data-ok-no-data-vertical-align",
+    chartNoDataVerticalAligns,
+    "middle",
+    "Where the `noDataText` message sits down the plot: `top`, `middle` (the default) or `bottom`.",
+    { optional: true },
+  ),
   scaleClasses: number(
     "data-ok-scale-classes",
     5,
@@ -5349,11 +5457,53 @@ export interface ChartAnatomyOptions {
   violinJitter?: number | undefined;
   unconstrainedViolinPoints?: boolean | undefined;
   violinMaxPoints?: number | undefined;
+  xMin?: number | undefined;
+  xMax?: number | undefined;
+  xRange?: number | undefined;
+  xLabelRotate?: number | undefined;
+  xLabelRotateAlways?: boolean | undefined;
+  measure?: ChartMeasureMode | undefined;
+  measurePinOnRelease?: boolean | undefined;
+  rangeBarGroupRows?: boolean | undefined;
+  disableRangeBarOverlap?: boolean | undefined;
+  hideZeroBarsWhenGrouped?: boolean | undefined;
+  dataReducer?: boolean | undefined;
+  dataReducerTargetPoints?: number | undefined;
+  dataReducerThreshold?: number | undefined;
+  forecastCount?: number | undefined;
+  forecastDashArray?: number | undefined;
+  forecastStrokeWidth?: number | undefined;
+  forecastFillOpacity?: number | undefined;
+  noDataAlign?: ChartNoDataAlign | undefined;
+  noDataVerticalAlign?: ChartNoDataVerticalAlign | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */
 export const chartAttributes = (options: ChartAnatomyOptions = {}): DataAttributes =>
   optionAttributes(chartOptions, { ...options });
+
+/** Chart trellis (ADR-0060): small multiples of one data set, one chart per panel. */
+export const chartTrellisOptions = defineOptions("chart-trellis", "data-ok-chart-trellis", {
+  columns: number(
+    "data-ok-columns",
+    undefined,
+    "Panels per row from 600px up (1 to 6; default as many as fit, at least 220px wide). Narrower screens show one per row.",
+    { min: 1 },
+  ),
+  promote: flag(
+    "data-ok-promote",
+    "Panel headers are buttons: pressing one shows that panel alone across the grid, with an **All panels** button to go back.",
+  ),
+});
+
+export interface ChartTrellisAnatomyOptions {
+  columns?: number | undefined;
+  promote?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a chart trellis root. */
+export const chartTrellisAttributes = (options: ChartTrellisAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(chartTrellisOptions, { ...options });
 
 // --- Carousel (ADR-0033) ------------------------------------------------------------------------
 
@@ -7013,6 +7163,7 @@ export const optionSchemas = {
   editor: editorOptions,
   markdown: markdownOptions,
   chart: chartOptions,
+  "chart-trellis": chartTrellisOptions,
   gantt: ganttOptions,
   carousel: carouselOptions,
   "carousel-arrows": carouselArrowsOptions,

@@ -1,5 +1,5 @@
 import { chartOptions } from "@owlky/core";
-import { Chart, type ChartProps } from "@owlky/react";
+import { Chart, type ChartProps, ChartTrellis } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { type ChartExample, chartExamples } from "./chart-data.js";
@@ -9,25 +9,26 @@ import { CustomTooltipChart } from "./chart-tooltip.js";
 
 /** Story groups: one chart per reference section, the same data as the HTML snippets. */
 export const chartStories: Record<string, ReactGroup[]> = Object.fromEntries(
-  Object.entries(chartExamples).map(([story, { title, props, more = [] }]) => [
+  Object.entries(chartExamples).map(([story, { title, props, more = [], trellis }]) => [
     story,
     [
       {
         title,
-        content:
-          story.startsWith("geo") && !story.endsWith("-hex") ? (
-            [props, ...more].map((chart) => (
-              <Chart key={chart.label} {...chart} geometry={US_STATES_GEOMETRY} />
-            ))
-          ) : story === "live-data" ? (
-            <LiveChart />
-          ) : story === "tooltip-custom" ? (
-            <CustomTooltipChart />
-          ) : more.length ? (
-            [props, ...more].map((chart) => <Chart key={chart.label} {...chart} />)
-          ) : (
-            <Chart {...props} />
-          ),
+        content: trellis ? (
+          <ChartTrellis {...props} {...trellis} series={props.series ?? []} />
+        ) : story.startsWith("geo") && !story.endsWith("-hex") ? (
+          [props, ...more].map((chart) => (
+            <Chart key={chart.label} {...chart} geometry={US_STATES_GEOMETRY} />
+          ))
+        ) : story === "live-data" ? (
+          <LiveChart />
+        ) : story === "tooltip-custom" ? (
+          <CustomTooltipChart />
+        ) : more.length ? (
+          [props, ...more].map((chart) => <Chart key={chart.label} {...chart} />)
+        ) : (
+          <Chart {...props} />
+        ),
       },
     ],
   ]),
@@ -51,8 +52,16 @@ const element = (props: ChartProps, indent: string) => {
 };
 
 /** The Code panel source of an example (the data is long: shown as written, not expanded). */
-export function chartCode({ title, props, more = [] }: ChartExample): string {
+export function chartCode({ title, props, more = [], trellis }: ChartExample): string {
   const name = `${title.replace(/(^|\s)(\w)/g, (_, __, c: string) => c.toUpperCase())}Chart`;
+  if (trellis)
+    return `import { ChartTrellis } from "@owlky/react";
+
+export function ${name}() {
+  return (
+${element({ ...props, ...trellis } as ChartProps, "    ").replace("<Chart\n", "<ChartTrellis\n")}
+  );
+}`;
   const body = more.length
     ? `    <>\n${[props, ...more].map((chart) => element(chart, "      ")).join("\n")}\n    </>`
     : element(props, "    ");

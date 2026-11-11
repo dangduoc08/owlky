@@ -1,4 +1,5 @@
 import { type ChartLayout, type ChartNode, chartTextWidth, fmt, node } from "./chart-layout.js";
+import type { ChartAnnotationHit } from "./chart-measure.js";
 import { type ChartColor, type ChartData, chartColors, parseChartNumber } from "./chart-model.js";
 import { toTimestamp } from "./chart-scale.js";
 import { chartPxOf } from "./chart-zoom.js";
@@ -10,10 +11,16 @@ import { chartPxOf } from "./chart-zoom.js";
  * list: it is visually hidden once the chart is drawn and stays readable by assistive technologies.
  */
 
-export type ChartAnnotationAxis = "x" | "y" | "point";
+export type ChartAnnotationAxis = "x" | "y" | "point" | "text";
+/** How a text annotation lines up with its position (ApexCharts `annotations.texts.textAnchor`). */
+export const chartAnnotationAnchors = ["start", "middle", "end"] as const;
+export type ChartAnnotationAnchor = (typeof chartAnnotationAnchors)[number];
 
 export interface ChartAnnotation {
-  /** `x`: a vertical line (or band to `x2`); `y`: a horizontal line (or band to `y2`); `point`. */
+  /**
+   * `x`: a vertical line (or band to `x2`); `y`: a horizontal line (or band to `y2`); `point`; `text`:
+   * the label alone at (`x`, `y`, in data coordinates).
+   */
   readonly axis: ChartAnnotationAxis;
   /** A category label, a date (date axes) or a number (numeric axes; category indexes too). */
   readonly x?: string | number | Date | undefined;
@@ -23,9 +30,13 @@ export interface ChartAnnotation {
   readonly label?: string | undefined;
   /** Palette color (default `info`). */
   readonly color?: ChartColor | undefined;
+  /** Text annotations: how the label lines up with its position. Default `middle`. */
+  readonly textAnchor?: ChartAnnotationAnchor | undefined;
+  /** The annotation can be moved by a drag, or by the keyboard (4.18.20). */
+  readonly draggable?: boolean | undefined;
 }
 
-const AXES: readonly ChartAnnotationAxis[] = ["x", "y", "point"];
+const AXES: readonly ChartAnnotationAxis[] = ["x", "y", "point", "text"];
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
 
 const xText = (value: string | number | Date | undefined) =>
@@ -47,6 +58,7 @@ export function chartAnnotations(list: readonly ChartAnnotation[] | undefined): 
     const x2 = xText(entry.x2);
     if (entry.axis !== "y" && x === undefined) return [];
     if (entry.axis !== "x" && y === null) return [];
+    if (entry.axis === "text" && !entry.label) return [];
     return [
       {
         axis: entry.axis,
@@ -56,9 +68,18 @@ export function chartAnnotations(list: readonly ChartAnnotation[] | undefined): 
         ...(y2 !== null && entry.axis === "y" ? { y2 } : {}),
         ...(entry.label ? { label: String(entry.label).slice(0, 200) } : {}),
         ...(isColor(entry.color) ? { color: entry.color } : {}),
+        ...(entry.axis === "text" && chartAnnotationAnchors.includes(entry.textAnchor as "start")
+          ? { textAnchor: entry.textAnchor }
+          : {}),
+        ...(entry.draggable === true ? { draggable: true } : {}),
       },
     ];
   });
+}
+
+/** The positions in `list` of the annotations `chartAnnotations` keeps (moves report these). */
+export function chartAnnotationIndexes(list: readonly ChartAnnotation[] | undefined): number[] {
+  return (list ?? []).flatMap((entry, index) => (chartAnnotations([entry]).length ? [index] : []));
 }
 
 /** The annotation list items React renders and HTML authors write (`li` attributes and text). */
@@ -73,28 +94,33 @@ export function chartAnnotationItems(
       ...(entry.y !== undefined ? { "data-ok-y": String(entry.y) } : {}),
       ...(entry.y2 !== undefined ? { "data-ok-y2": String(entry.y2) } : {}),
       ...(entry.color ? { "data-ok-color": entry.color } : {}),
+      ...(entry.textAnchor ? { "data-ok-text-anchor": entry.textAnchor } : {}),
+      ...(entry.draggable ? { "data-ok-draggable": "" } : {}),
     },
     text: entry.label ?? "",
   }));
 }
 
+/** One annotation list item as written (not validated). */
+export function readChartAnnotation(item: Element): ChartAnnotation {
+  const attr = (name: string) => item.getAttribute(name) ?? undefined;
+  return {
+    axis: attr("data-ok-annotation") as ChartAnnotationAxis,
+    x: attr("data-ok-x"),
+    x2: attr("data-ok-x2"),
+    y: attr("data-ok-y") as unknown as number,
+    y2: attr("data-ok-y2") as unknown as number,
+    label: item.textContent?.trim() || undefined,
+    color: attr("data-ok-color") as ChartColor,
+    textAnchor: attr("data-ok-text-anchor") as ChartAnnotationAnchor,
+    draggable: item.hasAttribute("data-ok-draggable"),
+  };
+}
+
 /** Reads the annotations of a `ul[data-ok-chart-annotations]` (HTML). */
 export function readChartAnnotations(list: Element | null): ChartAnnotation[] {
   if (!list) return [];
-  return chartAnnotations(
-    [...list.children].map((item) => {
-      const attr = (name: string) => item.getAttribute(name) ?? undefined;
-      return {
-        axis: attr("data-ok-annotation") as ChartAnnotationAxis,
-        x: attr("data-ok-x"),
-        x2: attr("data-ok-x2"),
-        y: attr("data-ok-y") as unknown as number,
-        y2: attr("data-ok-y2") as unknown as number,
-        label: item.textContent?.trim() || undefined,
-        color: attr("data-ok-color") as ChartColor,
-      };
-    }),
-  );
+  return chartAnnotations([...list.children].map(readChartAnnotation));
 }
 
 /** An x value's position on the axis: a category, a date between categories or a number. */
@@ -123,6 +149,8 @@ export function chartAnnotationNodes(
   data: ChartData,
   layout: ChartLayout,
   list: readonly ChartAnnotation[],
+  /** The annotation the keyboard picked up (4.18.20): drawn with `data-ok-picked`. */
+  picked?: number,
 ): ChartNode[] {
   const { x: xMap, y: yMap, plot } = layout;
   if (!xMap || !yMap || list.length === 0) return [];
@@ -167,7 +195,12 @@ export function chartAnnotationNodes(
     ];
   };
   const groups: ChartNode[] = [];
-  for (const entry of list) {
+  /** Draggable annotations say so (a grab cursor); the picked one is outlined. */
+  const marks = (entry: ChartAnnotation, index: number) => ({
+    ...(entry.draggable ? { "data-ok-draggable": "" } : {}),
+    ...(picked === index ? { "data-ok-picked": "" } : {}),
+  });
+  for (const [index, entry] of list.entries()) {
     const children: ChartNode[] = [];
     if (entry.axis === "x") {
       const a = pxOf(entry.x);
@@ -240,6 +273,34 @@ export function chartAnnotationNodes(
       const px = pxOf(entry.x);
       const py = pyOf(entry.y as number);
       if (px === undefined || !inX(px) || !inY(py)) continue;
+      if (entry.axis === "text") {
+        children.push(
+          node(
+            "text",
+            {
+              x: fmt(px),
+              y: fmt(py),
+              dy: "0.35em",
+              "text-anchor": entry.textAnchor ?? "middle",
+              "data-ok-chart-annotation-text": "",
+            },
+            undefined,
+            entry.label,
+          ),
+        );
+        groups.push(
+          node(
+            "g",
+            {
+              "data-ok-chart-annotation": "text",
+              "data-ok-color": entry.color ?? "info",
+              ...marks(entry, index),
+            },
+            children,
+          ),
+        );
+        continue;
+      }
       children.push(
         node("circle", {
           cx: fmt(px),
@@ -253,10 +314,33 @@ export function chartAnnotationNodes(
     groups.push(
       node(
         "g",
-        { "data-ok-chart-annotation": entry.axis, "data-ok-color": entry.color ?? "info" },
+        {
+          "data-ok-chart-annotation": entry.axis,
+          "data-ok-color": entry.color ?? "info",
+          ...marks(entry, index),
+        },
         children,
       ),
     );
   }
   return groups.length ? [node("g", { "data-ok-chart-annotation-layer": "" }, groups)] : [];
+}
+
+/** Where the draggable annotations are drawn (4.18.20): lines by one coordinate, points by both. */
+export function chartAnnotationHits(
+  data: ChartData,
+  layout: ChartLayout,
+  list: readonly ChartAnnotation[],
+): ChartAnnotationHit[] {
+  const { x: xMap, y: yMap } = layout;
+  if (!xMap || !yMap) return [];
+  return list.flatMap((entry, index): ChartAnnotationHit[] => {
+    if (!entry.draggable) return [];
+    const at = entry.x === undefined ? undefined : xValue(data, entry.x);
+    const px = at === undefined ? undefined : chartPxOf(xMap, at);
+    const py = entry.y === undefined ? undefined : chartPxOf(yMap, entry.y);
+    if (entry.axis === "x") return px === undefined ? [] : [{ index, axis: "x", px }];
+    if (entry.axis === "y") return py === undefined ? [] : [{ index, axis: "y", py }];
+    return px === undefined || py === undefined ? [] : [{ index, axis: entry.axis, px, py }];
+  });
 }

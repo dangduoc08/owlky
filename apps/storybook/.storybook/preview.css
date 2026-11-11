@@ -1225,7 +1225,9 @@
 
 /* Chart: fills the story row and the docs preview (charts take the width of their container). */
 .sb-row > [data-ok-chart],
-.sb-unstyled > [data-ok-chart] {
+.sb-row > [data-ok-chart-trellis],
+.sb-unstyled > [data-ok-chart],
+.sb-unstyled > [data-ok-chart-trellis] {
   flex: 1 1 100%;
   min-width: 0;
 }
