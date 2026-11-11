@@ -265,11 +265,22 @@ export function gridMissingRanges(
 
 /* ------------------------------------------------------------------ row reordering */
 
+/** Where a dragged row lands: above or below the row `target`. */
+export interface GridRowDrop {
+  target: string;
+  position: "above" | "below";
+}
+
 export interface GridRowReorderOptions {
   /** Reordering is allowed now (no sort, no filter; read on each move). */
   canReorder(): boolean;
-  /** Move the row `id` to the place of the row with this `aria-rowindex` (owners convert it). */
-  onMove(id: string, rowIndex: number): void;
+  /**
+   * Move the row `id` to the place of the row with this `aria-rowindex` (owners convert it);
+   * `drop` names the row it lands next to (tree data moves between parents with it).
+   */
+  onMove(id: string, rowIndex: number, drop: GridRowDrop): void;
+  /** Whether `id` may land there (MUI X `isValidRowReorder`); refused targets get no drop mark. */
+  canDrop?(id: string, drop: GridRowDrop): boolean;
 }
 
 export interface GridRowReorder {
@@ -296,6 +307,14 @@ export function createGridRowReorder(
   const clearMarks = () => {
     for (const row of grid.querySelectorAll("[data-ok-drop]")) row.removeAttribute("data-ok-drop");
   };
+  const levelOf = (row: HTMLElement) => Number(row.getAttribute("aria-level") ?? 1);
+  const dropOf = (row: HTMLElement, after: boolean): GridRowDrop => ({
+    target: row.getAttribute("data-ok-row-id") as string,
+    position: after ? "below" : "above",
+  });
+  const allowed = (source: HTMLElement, row: HTMLElement, after: boolean) =>
+    !options.canDrop ||
+    options.canDrop(source.getAttribute("data-ok-row-id") as string, dropOf(row, after));
 
   grid.addEventListener(
     "pointerdown",
@@ -303,7 +322,8 @@ export function createGridRowReorder(
       const handle = (event.target as Element).closest(HANDLE);
       if (!handle || event.button !== 0 || !options.canReorder()) return;
       const source = handle.closest<HTMLElement>(BODY_ROW);
-      if (!source) return;
+      // `isRowReorderable` false: the row stays (its handle is left out or hidden).
+      if (!source || source.getAttribute("data-ok-reorderable") === "false") return;
       event.preventDefault();
       source.setAttribute("data-ok-dragging", "");
       let over: { row: HTMLElement; after: boolean } | null = null;
@@ -315,7 +335,12 @@ export function createGridRowReorder(
           return;
         }
         const box = row.getBoundingClientRect();
-        over = { row, after: e.clientY > box.top + box.height / 2 };
+        const after = e.clientY > box.top + box.height / 2;
+        if (!allowed(source, row, after)) {
+          over = null;
+          return;
+        }
+        over = { row, after };
         row.setAttribute("data-ok-drop", over.after ? "after" : "before");
       };
       const up = () => {
@@ -328,7 +353,12 @@ export function createGridRowReorder(
         const from = indexOf(source);
         let to = indexOf(over.row) + (over.after ? 1 : 0);
         if (to > from) to--;
-        if (to !== from) options.onMove(source.getAttribute("data-ok-row-id") as string, to);
+        if (to !== from)
+          options.onMove(
+            source.getAttribute("data-ok-row-id") as string,
+            to,
+            dropOf(over.row, over.after),
+          );
       };
       doc.addEventListener("pointermove", move, { signal });
       doc.addEventListener("pointerup", up, { signal });
@@ -345,10 +375,19 @@ export function createGridRowReorder(
       event.preventDefault();
       if (!options.canReorder()) return;
       const row = handle.closest<HTMLElement>(BODY_ROW) as HTMLElement;
+      if (row.getAttribute("data-ok-reorderable") === "false") return;
       const rows = rowsNow();
-      const neighbour = rows[rows.indexOf(row) + (event.key === "ArrowUp" ? -1 : 1)];
-      if (neighbour)
-        options.onMove(row.getAttribute("data-ok-row-id") as string, indexOf(neighbour));
+      const up = event.key === "ArrowUp";
+      let at = rows.indexOf(row) + (up ? -1 : 1);
+      // Tree rows: down goes past the row's own children (they move with it).
+      if (!up) while (rows[at] && levelOf(rows[at] as HTMLElement) > levelOf(row)) at++;
+      const neighbour = rows[at];
+      if (neighbour && allowed(row, neighbour, !up))
+        options.onMove(
+          row.getAttribute("data-ok-row-id") as string,
+          indexOf(neighbour),
+          dropOf(neighbour, !up),
+        );
     },
     { signal },
   );
@@ -359,6 +398,52 @@ export function createGridRowReorder(
     },
   };
 }
+
+/**
+ * Tree data reordering (MUI X `setTreeDataPath`): `source` and its descendants move above or below
+ * `drop.target`, among the target's siblings. `order` is every tree row in display order (open or
+ * not), `parentOf` their parents. `null`: a move into its own subtree, onto itself, or to another
+ * parent without `crossParents`.
+ */
+export function gridTreeRowMove(
+  order: readonly string[],
+  parentOf: (id: string) => string | null,
+  source: string,
+  drop: GridRowDrop,
+  crossParents: boolean,
+): { order: string[]; parent: string | null; moved: string[] } | null {
+  const inside = (id: string, ancestor: string) => {
+    let parent = parentOf(id);
+    // A loop in the data ends the walk.
+    for (let guard = 0; parent !== null && guard < order.length; guard++) {
+      if (parent === ancestor) return true;
+      parent = parentOf(parent);
+    }
+    return false;
+  };
+  const { target, position } = drop;
+  if (target === source || inside(target, source) || !order.includes(source)) return null;
+  const parent = parentOf(target);
+  if (!crossParents && parent !== parentOf(source)) return null;
+  const moved = order.filter((id) => id === source || inside(id, source));
+  const block = new Set(moved);
+  const rest = order.filter((id) => !block.has(id));
+  let at = rest.indexOf(target);
+  if (at < 0) return null;
+  // Below a row: after its own children too.
+  if (position === "below") {
+    at++;
+    while (at < rest.length && inside(rest[at] as string, target)) at++;
+  }
+  return { order: [...rest.slice(0, at), ...moved, ...rest.slice(at)], parent, moved };
+}
+
+/** A path moved under a new parent: the parent's path, then the part from the moved row on. */
+export const gridMovedTreePath = (
+  path: readonly string[],
+  depth: number,
+  parentPath: readonly string[],
+): string[] => [...parentPath, ...path.slice(depth)];
 
 /** The order after moving `id` to `index`. */
 export function moveGridRow(ids: readonly string[], id: string, index: number): string[] {

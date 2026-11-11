@@ -472,6 +472,96 @@
     box-shadow: 1px 0 0 var(--ok-divider);
   }
 
+  /*
+   * pinnedColumnsSectionSeparator: a shadow (from the elevation tokens) over the scrolling
+   * columns, cut to the edge's outer side; "shadow" alone drops the line. Not on a cell being
+   * edited (its error overflows downward).
+   */
+  :where(
+    [data-ok-pinned-columns-section-separator="shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(0 calc(var(--ok-spacing) * -6) 0 0);
+  }
+
+  :where(
+    [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    box-shadow:
+      1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+    clip-path: inset(0 calc(var(--ok-spacing) * -6) 0 0);
+  }
+
+  :where(
+    [data-ok-pinned-columns-section-separator="shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(0 0 0 calc(var(--ok-spacing) * -6));
+  }
+
+  :where(
+    [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    box-shadow:
+      -1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+    clip-path: inset(0 0 0 calc(var(--ok-spacing) * -6));
+  }
+
+  /* Right to left, the outer sides swap. */
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator$="shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    clip-path: inset(0 0 0 calc(var(--ok-spacing) * -6));
+  }
+
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator$="shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    clip-path: inset(0 calc(var(--ok-spacing) * -6) 0 0);
+  }
+
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
+  ) {
+    box-shadow:
+      -1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+  }
+
+  :where(
+    [dir="rtl"]
+      [data-ok-pinned-columns-section-separator="border-and-shadow"]
+      [data-ok-data-grid-main]
+      :not([data-ok-pinned="right"])
+      + [data-ok-pinned="right"]:not([data-ok-editing])
+  ) {
+    box-shadow:
+      1px 0 0 var(--ok-divider),
+      var(--ok-shadow-z8);
+  }
+
   /* Resize handle: the header's end edge; a line shows on hover and while dragging. */
   :where([data-ok-data-grid-resize]) {
     position: absolute;
@@ -800,6 +890,23 @@
   :where([data-ok-data-grid-pinned-rows="bottom"]) {
     bottom: 0;
     border-top: 1px solid var(--ok-divider);
+  }
+
+  /* pinnedRowsSectionSeparator="border-and-shadow": a shadow over the scrolling rows too. */
+  :where(
+    [data-ok-pinned-rows-section-separator="border-and-shadow"]
+      [data-ok-data-grid-pinned-rows="top"]
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(0 0 calc(var(--ok-spacing) * -6) 0);
+  }
+
+  :where(
+    [data-ok-pinned-rows-section-separator="border-and-shadow"]
+      [data-ok-data-grid-pinned-rows="bottom"]
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+    clip-path: inset(calc(var(--ok-spacing) * -6) 0 0 0);
   }
 
   /* Column groups: header rows above the column headers. */

@@ -857,6 +857,8 @@ export interface DataGridParts {
   "data-ok-editing": State;
   /** Options of the Excel export, as JSON. */
   "data-ok-excel-options": Value<string>;
+  /** On a row: `false` when it can't be moved (`isRowReorderable`). */
+  "data-ok-reorderable": Value<"false">;
   /** With an unknown row count: `false` when no page follows the current one. */
   "data-ok-has-next-page": Value<"true" | "false">;
   /** On a header or a cell: the column's field. */

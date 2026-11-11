@@ -3594,6 +3594,33 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
     { optional: true },
   ),
+  disableAutosize: flag(
+    "data-ok-disable-autosize",
+    "A double click on a column's edge doesn't fit it to its content.",
+  ),
+  keepColumnPositionIfDraggedOutside: flag(
+    "data-ok-keep-column-position-if-dragged-outside",
+    "A column dropped outside the grid takes the place of the last header it passed.",
+  ),
+  pinnedColumnsSectionSeparator: style(
+    "data-ok-pinned-columns-section-separator",
+    ["border", "shadow", "border-and-shadow"] as const,
+    "border",
+    "The edge between pinned and scrolling columns: a line, a shadow or both.",
+    { optional: true },
+  ),
+  pinnedRowsSectionSeparator: style(
+    "data-ok-pinned-rows-section-separator",
+    ["border", "border-and-shadow"] as const,
+    "border",
+    "The edge between pinned and scrolling rows: a line, or a line and a shadow.",
+    { optional: true },
+  ),
+  pivotPanelOpen: flag("data-ok-pivot-panel-open", "The pivot panel is open."),
+  virtualizeColumnsWithAutoRowHeight: flag(
+    "data-ok-virtualize-columns-with-auto-row-height",
+    'Columns virtualize with `"auto"` row heights too (rows may change height while scrolling sideways).',
+  ),
   dataSourceKeepPreviousData: flag(
     "data-ok-data-source-keep-previous-data",
     "With a data source: the rows stay until the new ones arrive (flat rows; tree and grouped rows reset).",
@@ -3777,6 +3804,12 @@ export interface DataGridAnatomyOptions {
   paginationMode?: "client" | "server" | undefined;
   rowCount?: number | undefined;
   estimatedRowCount?: number | undefined;
+  disableAutosize?: boolean | undefined;
+  keepColumnPositionIfDraggedOutside?: boolean | undefined;
+  pinnedColumnsSectionSeparator?: "border" | "shadow" | "border-and-shadow" | undefined;
+  pinnedRowsSectionSeparator?: "border" | "border-and-shadow" | undefined;
+  pivotPanelOpen?: boolean | undefined;
+  virtualizeColumnsWithAutoRowHeight?: boolean | undefined;
   dataSourceKeepPreviousData?: boolean | undefined;
   dataSourceRevalidateMs?: number | undefined;
   filterDebounceMs?: number | undefined;

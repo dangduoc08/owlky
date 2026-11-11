@@ -71,6 +71,10 @@
    "value": "6px"
   },
   {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
@@ -414,8 +418,8 @@
      },
      {
       "cancelable": true,
-      "description": "Before a dragged row moves to `targetIndex`. Call `preventDefault()` to keep the order.",
-      "detail": "{ id: string; oldIndex: number; targetIndex: number; }",
+      "description": "Before a dragged row moves to `targetIndex` (tree rows: from `oldParentId` to `parentId`, `null` at the top level). Call `preventDefault()` to keep the order.",
+      "detail": "{ id: string; oldIndex: number; targetIndex: number; oldParentId?: string | null; parentId?: string | null; }",
       "name": "ok:data-grid:roworder"
      },
      {
@@ -743,6 +747,12 @@
       "kind": "method",
       "name": "setPivotModel",
       "type": "(model: GridPivotModel) => void"
+     },
+     {
+      "description": "Overrides for the pivot's value columns (MUI X `pivotingColDef`): one object for all, or a function of the source field and the column's keys; `null` removes them.",
+      "kind": "method",
+      "name": "setPivotingColDef",
+      "type": "(def: GridHtmlPivotingColDef | null) => void"
      },
      {
       "description": "Tree data: opens or closes a row's children.",
@@ -1175,6 +1185,55 @@
        "withModifierKey",
        "always"
       ]
+     },
+     {
+      "attr": "data-ok-disable-autosize",
+      "description": "A double click on a column's edge doesn't fit it to its content.",
+      "kind": "flag",
+      "name": "disableAutosize"
+     },
+     {
+      "attr": "data-ok-keep-column-position-if-dragged-outside",
+      "description": "A column dropped outside the grid takes the place of the last header it passed.",
+      "kind": "flag",
+      "name": "keepColumnPositionIfDraggedOutside"
+     },
+     {
+      "attr": "data-ok-pinned-columns-section-separator",
+      "default": "border",
+      "description": "The edge between pinned and scrolling columns: a line, a shadow or both.",
+      "kind": "style",
+      "name": "pinnedColumnsSectionSeparator",
+      "optional": true,
+      "values": [
+       "border",
+       "shadow",
+       "border-and-shadow"
+      ]
+     },
+     {
+      "attr": "data-ok-pinned-rows-section-separator",
+      "default": "border",
+      "description": "The edge between pinned and scrolling rows: a line, or a line and a shadow.",
+      "kind": "style",
+      "name": "pinnedRowsSectionSeparator",
+      "optional": true,
+      "values": [
+       "border",
+       "border-and-shadow"
+      ]
+     },
+     {
+      "attr": "data-ok-pivot-panel-open",
+      "description": "The pivot panel is open.",
+      "kind": "flag",
+      "name": "pivotPanelOpen"
+     },
+     {
+      "attr": "data-ok-virtualize-columns-with-auto-row-height",
+      "description": "Columns virtualize with `\"auto\"` row heights too (rows may change height while scrolling sideways).",
+      "kind": "flag",
+      "name": "virtualizeColumnsWithAutoRowHeight"
      },
      {
       "attr": "data-ok-data-source-keep-previous-data",
@@ -2235,6 +2294,14 @@
       "value": "string"
      },
      {
+      "description": "On a row: `false` when it can't be moved (`isRowReorderable`).",
+      "kind": "value",
+      "name": "data-ok-reorderable",
+      "value": [
+       "false"
+      ]
+     },
+     {
       "description": "On a header cell: `false` turns resizing off for the column.",
       "kind": "value",
       "name": "data-ok-resizable",
@@ -2515,6 +2582,11 @@
       "type": "boolean"
      },
      {
+      "description": "A double click on a column's edge doesn't fit it to its content.",
+      "name": "disableAutosize",
+      "type": "boolean"
+     },
+     {
       "description": "Tree data: filters apply to top-level rows only; a row's children show with it.",
       "name": "disableChildrenFiltering",
       "type": "boolean"
@@ -2776,9 +2848,24 @@
       "type": "((node: { id: string; depth: number; row: R; }) => boolean)"
      },
      {
+      "description": "Returns whether a row can be moved; `false` leaves out its handle.",
+      "name": "isRowReorderable",
+      "type": "((params: { id: string; row: R; }) => boolean)"
+     },
+     {
       "description": "Returns whether a row can be selected.",
       "name": "isRowSelectable",
       "type": "((params: { id: string; row: R; }) => boolean)"
+     },
+     {
+      "description": "Returns whether a row may land there; refused places get no drop mark and no move.",
+      "name": "isValidRowReorder",
+      "type": "((context: GridRowReorderContext<R>) => boolean)"
+     },
+     {
+      "description": "A column dropped outside the grid takes the place of the last header it passed.",
+      "name": "keepColumnPositionIfDraggedOutside",
+      "type": "boolean"
      },
      {
       "description": "Selected ids stay selected when their rows go away (server pages, new data).",
@@ -3028,6 +3115,11 @@
       "type": "((model: GridPivotModel) => void)"
      },
      {
+      "description": "Called when the pivot panel opens or closes, or is asked to.",
+      "name": "onPivotPanelOpenChange",
+      "type": "((open: boolean) => void)"
+     },
+     {
       "description": "Called when the Columns or Filters panel closes.",
       "name": "onPreferencePanelClose",
       "type": "((params: GridPreferencePanelParams) => void)"
@@ -3088,9 +3180,9 @@
       "type": "((model: GridRowModesModel) => void)"
      },
      {
-      "description": "Called when a dragged row moves.",
+      "description": "Called when a dragged row moves (tree data: with its old and new parent ids).",
       "name": "onRowOrderChange",
-      "type": "((params: { row: R; oldIndex: number; targetIndex: number; }) => void)"
+      "type": "((params: GridRowOrderChangeParams<R>) => void)"
      },
      {
       "description": "Called when the row selection changes.",
@@ -3149,9 +3241,21 @@
       "type": "GridPinnedColumns"
      },
      {
+      "default": "\"border\"",
+      "description": "The edge between pinned and scrolling columns.",
+      "name": "pinnedColumnsSectionSeparator",
+      "type": "\"border\" | \"border-and-shadow\" | \"shadow\""
+     },
+     {
       "description": "Rows kept above or below the others (not sorted, filtered or paged).",
       "name": "pinnedRows",
       "type": "{ top?: readonly R[] | undefined; bottom?: readonly R[] | undefined; }"
+     },
+     {
+      "default": "\"border\"",
+      "description": "The edge between pinned and scrolling rows.",
+      "name": "pinnedRowsSectionSeparator",
+      "type": "\"border\" | \"border-and-shadow\""
      },
      {
       "description": "Shows the pivot of the rows instead of the rows.",
@@ -3162,6 +3266,16 @@
       "description": "The pivot model (rows, columns and values), controlled.",
       "name": "pivotModel",
       "type": "GridPivotModel"
+     },
+     {
+      "description": "The pivot panel is open (controlled with `onPivotPanelOpenChange`).",
+      "name": "pivotPanelOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Overrides for the pivot's value columns: one object for all, or a function of the source field and the column's keys (`columnGroupPath`).",
+      "name": "pivotingColDef",
+      "type": "| GridPivotingColDefOverrides | ((originalColumnField: string, columnGroupPath: string[]) => GridPivotingColDefOverrides)"
      },
      {
       "description": "Options of the print export (title, fields…).",
@@ -3256,6 +3370,11 @@
       "type": "number"
      },
      {
+      "description": "Tree data: the row with a new path, when reordering moves it under another parent (the reverse of `getTreeDataPath`). Each moved row then goes through `processRowUpdate`. Without it, rows move among their siblings only.",
+      "name": "setTreeDataPath",
+      "type": "((path: string[], row: R) => R)"
+     },
+     {
       "description": "Vertical lines between the cells.",
       "name": "showCellVerticalBorder",
       "type": "boolean"
@@ -3317,6 +3436,11 @@
       "description": "Rows form a tree (`getTreeDataPath`, or a data source with `getChildrenCount`).",
       "name": "treeData",
       "type": "boolean"
+     },
+     {
+      "description": "Columns virtualize with `\"auto\"` row heights too (rows may change height while scrolling sideways).",
+      "name": "virtualizeColumnsWithAutoRowHeight",
+      "type": "boolean"
      }
     ]
    }
@@ -3357,6 +3481,10 @@
   {
    "name": "GridEditStartReason",
    "type": "\"cellDoubleClick\" | \"enterKeyDown\" | \"f2KeyDown\" | \"printableKeyDown\""
+  },
+  {
+   "name": "GridHtmlPivotingColDef",
+   "type": "Partial<Pick<GridColumn, \"align\" | \"headerAlign\" | \"headerName\" | \"maxWidth\" | \"minWidth\" | \"width\">> | ((originalColumnField: string, columnGroupPath: string[]) => Partial<Pick<GridColumn, \"align\" | \"headerAlign\" | \"headerName\" | \"maxWidth\" | \"minWidth\" | \"width\">>)"
   },
   {
    "name": "GridMenuName",

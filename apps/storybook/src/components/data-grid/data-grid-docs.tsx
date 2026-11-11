@@ -24,6 +24,7 @@ import largeGroup from "../../../../../packages/html/src/components/data-grid/ex
 import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
 import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
 import modesGroup from "../../../../../packages/html/src/components/data-grid/examples/modes-group.html?raw";
+import orderingGroup from "../../../../../packages/html/src/components/data-grid/examples/ordering-group.html?raw";
 import pivotDerived from "../../../../../packages/html/src/components/data-grid/examples/pivot-derived.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
 import selectionGroups from "../../../../../packages/html/src/components/data-grid/examples/selection-groups.html?raw";
@@ -2076,6 +2077,56 @@ export function Tasks() {
 }`,
   },
   {
+    id: "reorder-tree",
+    title: "Reorder tree rows and pinned edges",
+    body: "With `treeData` and `rowReordering`, a row moves with its children. Drag its handle above or below another row, or press Alt + Up or Alt + Down on the handle. The row joins the siblings of the row it lands next to. To let rows change parent, pass `setTreeDataPath`: the grid gives it the new path and saves each moved row through `processRowUpdate`. `isRowReorderable` keeps some rows in place (their handle goes away), and `isValidRowReorder` refuses some places. `pinnedColumnsSectionSeparator` and `pinnedRowsSectionSeparator` draw the edge of pinned columns and rows as a line (the default), a shadow, or both. `disableAutosize` turns off the double click on a column's edge. In HTML, tree rows change parent through `data-ok-parent`, and the cancelable `ok:data-grid:roworder` reports `detail.oldParentId` and `detail.parentId`.",
+    html: `<!-- Rows with a reorder handle; the edge of pinned columns casts a shadow -->
+${gridOf(orderingGroup, { attrs: 'data-ok-pinned-columns-section-separator="border-and-shadow"' })}
+<script>
+  const grid = document.getElementById("grid-agenda");
+  grid.addEventListener("ok:data-grid:roworder", (event) => {
+    // Tree rows report their old and new parent; this keeps rows out of the first place
+    if (event.detail.targetIndex === 0) event.preventDefault();
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
+
+type File = { id: string; path: string[]; size: number };
+
+const initialFiles: File[] = [
+  { id: "docs", path: ["docs"], size: 0 },
+  { id: "intro", path: ["docs", "intro.md"], size: 12 },
+  { id: "src", path: ["src"], size: 0 },
+  { id: "main", path: ["src", "main.ts"], size: 40 },
+];
+
+const columns: GridColDef<File>[] = [{ field: "size", headerName: "Size (kB)", type: "number" }];
+
+export function Files() {
+  const [files, setFiles] = useState(initialFiles);
+  return (
+    <DataGrid
+      aria-label="Files"
+      rows={files}
+      columns={columns}
+      treeData
+      getTreeDataPath={(row) => row.path}
+      setTreeDataPath={(path, row) => ({ ...row, path })}
+      defaultGroupingExpansionDepth={-1}
+      rowReordering
+      // Folders stay where they are
+      isRowReorderable={({ row }) => row.size > 0}
+      processRowUpdate={(row) => {
+        setFiles((current) => current.map((file) => (file.id === row.id ? row : file)));
+        return row;
+      }}
+      pinnedColumnsSectionSeparator="border-and-shadow"
+    />
+  );
+}`,
+  },
+  {
     id: "unknown-row-count",
     title: "Page through rows of unknown length",
     body: 'When the server doesn\'t know the total, set `rowCount={-1}`. The pagination shows "1–25 of more than 25", and the next page stays available. `estimatedRowCount` shows "1–25 of around 500" instead, for as long as the estimate is ahead of the page. Pass `paginationMeta={{ hasNextPage: false }}` on the last page: the grid then fixes the total at the rows seen so far and turns the next page off. A data source can return `pageInfo: { hasNextPage }` in place of `rowCount`, and `onPaginationMetaChange` reports it. `onRowCountChange` reports each new count. `filterDebounceMs` and `columnFilterDebounceMs` make the quick filter, the filter panel and the header filters wait after each keystroke before they ask for rows. The field shows what people type at once. With tree data, `disableChildrenFiltering` and `disableChildrenSorting` limit filtering and sorting to the top-level rows.',
@@ -2199,6 +2250,7 @@ export function Issues() {
 - **\`ok:data-grid:menuopen\`** and **\`ok:data-grid:menuclose\`** report \`detail.menu\` and \`detail.target\`. **\`ok:data-grid:preferencepanelopen\`** and **\`ok:data-grid:preferencepanelclose\`** report \`detail.openedPanelValue\`. **\`ok:data-grid:sidebaropen\`** and **\`ok:data-grid:sidebarclose\`** report \`detail.value\`.
 - **\`ok:data-grid:containerresize\`** reports the grid's \`detail.width\` and \`detail.height\`. **\`ok:data-grid:columnresize\`** reports \`detail.field\` and \`detail.width\` while an edge is dragged.
 - **\`ok:data-grid:fetchrows\`** reports \`detail.firstRowToRender\` and \`detail.lastRowToRender\` when the rendered rows change and \`data-ok-row-count\` is more than the rows in the grid. **\`ok:data-grid:excelexportstate\`** reports \`detail.state\`, \`pending\` then \`finished\`. **\`ok:data-grid:beforeclipboardpaste\`** is cancelable and takes a promise in \`detail.waitUntil(promise)\`.
+- **\`ok:data-grid:roworder\`** also reports \`detail.oldParentId\` and \`detail.parentId\` for tree rows. \`setPivotingColDef(def)\` changes the pivot's columns (\`headerName\`, \`width\`, \`minWidth\`, \`maxWidth\`, \`align\`, \`headerAlign\`), and \`data-ok-pivot-panel-open\` opens the pivot panel.
 - **\`ok:data-grid:rowcountchange\`** reports \`detail.count\`, and **\`ok:data-grid:paginationmetachange\`** reports a data source's \`detail.hasNextPage\`. \`setDataSource(source, { cache })\` replaces the cache of responses (\`null\` turns it off).
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },

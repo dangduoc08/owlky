@@ -13,6 +13,11 @@ export interface GridColumnControlsOptions {
   canReorder(): boolean;
   /** Double click on a resize handle: fit the column to its content. */
   onAutosize?(field: string): void;
+  /**
+   * A header dropped outside the grid lands where the pointer last was over a header (MUI X
+   * `keepColumnPositionIfDraggedOutside`); otherwise it stays where it was.
+   */
+  keepPositionOutside?(): boolean;
 }
 
 export interface GridColumnControls {
@@ -45,6 +50,7 @@ export function createGridColumnControls(
       // Right to left, the handle is on the left edge: dragging left widens.
       const sign = getComputedStyle(header).direction === "rtl" ? -1 : 1;
       let dragging = false;
+      let lastOver: string | null = null;
       // A column with disableReorder stays: no drag (resizing still works).
       if (
         !handle &&
@@ -68,6 +74,9 @@ export function createGridColumnControls(
         if (!dragging && Math.abs(dx) < DRAG_THRESHOLD) return;
         dragging = true;
         header.setAttribute("data-ok-dragging", "");
+        const over = doc.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>(HEADER);
+        const at = over && grid.contains(over) ? over.getAttribute("data-ok-field") : null;
+        if (at) lastOver = at;
       };
       const up = (e: PointerEvent) => {
         doc.removeEventListener("pointermove", move);
@@ -80,8 +89,14 @@ export function createGridColumnControls(
           header.removeAttribute("data-ok-dragging");
           header.setAttribute("data-ok-just-dragged", "");
           const over = doc.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>(HEADER);
-          const to = over?.getAttribute("data-ok-field");
-          if (over && grid.contains(over) && to && to !== field) options.onMove(field, to);
+          const inGrid = !!over && grid.contains(over);
+          const outside = !grid.contains(doc.elementFromPoint(e.clientX, e.clientY));
+          const to = inGrid
+            ? over?.getAttribute("data-ok-field")
+            : outside && options.keepPositionOutside?.()
+              ? lastOver
+              : null;
+          if (to && to !== field) options.onMove(field, to);
         }
         setTimeout(() => header.removeAttribute("data-ok-just-dragged"), 0);
       };

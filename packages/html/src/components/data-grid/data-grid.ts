@@ -161,6 +161,7 @@ import {
   gridToCsv,
   gridToTsv,
   gridToXlsx,
+  gridTreeRowMove,
   gridTreeRows,
   gridUnknownCountPattern,
   gridWithGroupFooters,
@@ -300,8 +301,20 @@ export interface DataGridEvents {
   expand: EventSpec<{ id: string; expanded: boolean }, true>;
   /** Before a row's detail panel opens or closes. Call `preventDefault()` to refuse. */
   detailpanel: EventSpec<{ id: string; expanded: boolean }, true>;
-  /** Before a dragged row moves to `targetIndex`. Call `preventDefault()` to keep the order. */
-  roworder: EventSpec<{ id: string; oldIndex: number; targetIndex: number }, true>;
+  /**
+   * Before a dragged row moves to `targetIndex` (tree rows: from `oldParentId` to `parentId`,
+   * `null` at the top level). Call `preventDefault()` to keep the order.
+   */
+  roworder: EventSpec<
+    {
+      id: string;
+      oldIndex: number;
+      targetIndex: number;
+      oldParentId?: string | null;
+      parentId?: string | null;
+    },
+    true
+  >;
   /** After cells were copied, with the copied text. */
   clipboardcopy: EventSpec<{ data: string }>;
   /** Before pasted cells are written. Call `preventDefault()` to refuse them. */
@@ -370,6 +383,22 @@ export interface DataGridEvents {
     true
   >;
 }
+
+/** What a pivot column may change (MUI X `pivotingColDef`). */
+export type GridHtmlPivotingColDefOverrides = Partial<
+  Pick<GridColumn, "headerName" | "width" | "minWidth" | "maxWidth" | "align" | "headerAlign">
+>;
+/** One set of overrides, or a function of the source field and the column's keys. */
+export type GridHtmlPivotingColDef =
+  | GridHtmlPivotingColDefOverrides
+  | ((originalColumnField: string, columnGroupPath: string[]) => GridHtmlPivotingColDefOverrides);
+
+const PIVOT_OVERRIDES = ["headerName", "width", "minWidth", "maxWidth", "align", "headerAlign"];
+/** Only the keys a pivot column may change. */
+const pickPivotOverrides = (own: GridHtmlPivotingColDefOverrides) =>
+  Object.fromEntries(
+    Object.entries(own).filter(([key]) => PIVOT_OVERRIDES.includes(key)),
+  ) as GridHtmlPivotingColDefOverrides;
 
 export interface DataGridInstance extends ComponentInstance {
   /** The sort model. */
@@ -456,6 +485,11 @@ export interface DataGridInstance extends ComponentInstance {
       | ((value: unknown, row: HTMLElement) => string | number | Date | null | undefined)
       | null,
   ): void;
+  /**
+   * Overrides for the pivot's value columns (MUI X `pivotingColDef`): one object for all, or a
+   * function of the source field and the column's keys; `null` removes them.
+   */
+  setPivotingColDef(def: GridHtmlPivotingColDef | null): void;
   /** Tree data: opens or closes a row's children. */
   setRowChildrenExpansion(id: string, expanded: boolean): void;
   /** Master-detail: opens or closes a row's detail panel. */
@@ -596,6 +630,10 @@ const {
   columnFilterDebounceMs,
   disableChildrenFiltering,
   disableChildrenSorting,
+  disableAutosize,
+  keepColumnPositionIfDraggedOutside,
+  pivotPanelOpen,
+  virtualizeColumnsWithAutoRowHeight,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -1720,7 +1758,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         !body.querySelector(
           '[role="gridcell"][aria-colspan]:not([data-ok-data-grid-list-cell]):not([data-ok-data-grid-detail-content])',
         ) &&
-        middle.length
+        middle.length &&
+        // "auto" rows measure their cells: hidden columns would change their height (MUI X).
+        (element.hasAttribute(virtualizeColumnsWithAutoRowHeight.attr) ||
+          !pageList.some((row) => row.getAttribute("data-ok-row-height") === "auto"))
       ) {
         const pinnedPx =
           specialFields.reduce((sum, f) => sum + specialWidth(f), 0) +
@@ -2942,17 +2983,40 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       draw();
       navigation.sync();
     };
-    // Row reordering (`ok:data-grid:roworder`, cancelable): no sort, filter, tree or lazy rows.
+    // Row reordering (`ok:data-grid:roworder`, cancelable): no sort, filter or lazy rows; tree
+    // rows (not from a server) move with their children, among siblings or to another parent.
     const live = element.querySelector<HTMLElement>("[data-ok-data-grid-live]");
+    const parentOfRow = (row: HTMLElement) => row.getAttribute("data-ok-parent");
+    const treeMove = (rowId: string, drop: { target: string; position: "above" | "below" }) => {
+      if (!isTree()) return undefined;
+      // Every tree row in display order, open or not.
+      const order = gridTreeRows(rowEls, {
+        idOf,
+        parentOf: parentOfRow,
+        expanded: () => true,
+      }).map((node) => node.id);
+      const byRowId = new Map(rowEls.map((row) => [idOf(row), row]));
+      return gridTreeRowMove(
+        order,
+        (nodeId) => {
+          const row = byRowId.get(nodeId);
+          return row ? parentOfRow(row) : null;
+        },
+        rowId,
+        drop,
+        true,
+      );
+    };
     const rowReorder = createGridRowReorder(main, {
       canReorder: () =>
         element.hasAttribute(rowReordering.attr) &&
-        !isTree() &&
+        (!isTree() || !source) &&
         !lazy() &&
         sortModel.length === 0 &&
         filterModel.items.length === 0 &&
         !filterModel.quickFilterValues?.length,
-      onMove: (rowId, rowIndex) => {
+      canDrop: (rowId, drop) => treeMove(rowId, drop) !== null,
+      onMove: (rowId, rowIndex, drop) => {
         const ids = sortedList.map(idOf);
         const oldIndex = ids.indexOf(rowId);
         const targetIndex = Math.min(
@@ -2960,9 +3024,23 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ids.length - 1,
         );
         if (oldIndex < 0 || oldIndex === targetIndex) return;
-        if (!emit("roworder", { id: rowId, oldIndex, targetIndex }, { cancelable: true })) return;
         const byRowId = new Map(rowEls.map((row) => [idOf(row), row]));
-        rowEls = moveGridRow(ids, rowId, targetIndex).map((rid) => byRowId.get(rid) as HTMLElement);
+        const tree = treeMove(rowId, drop);
+        if (tree === null) return;
+        const moving = byRowId.get(rowId) as HTMLElement;
+        const oldParentId = parentOfRow(moving);
+        const detail = tree
+          ? { id: rowId, oldIndex, targetIndex, oldParentId, parentId: tree.parent }
+          : { id: rowId, oldIndex, targetIndex };
+        if (!emit("roworder", detail, { cancelable: true })) return;
+        if (tree) {
+          rowEls = tree.order.map((rid) => byRowId.get(rid) as HTMLElement);
+          if (tree.parent) moving.setAttribute("data-ok-parent", tree.parent);
+          else moving.removeAttribute("data-ok-parent");
+        } else
+          rowEls = moveGridRow(ids, rowId, targetIndex).map(
+            (rid) => byRowId.get(rid) as HTMLElement,
+          );
         apply();
         if (live)
           live.textContent = labels.rowReorderingMoved
@@ -3165,6 +3243,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       cell.append(title);
       return cell;
     };
+    let pivotingColDef: GridHtmlPivotingColDef | null = null;
     const showPivot = () => {
       pivotNow = pivotOn();
       if (!pivotOn()) {
@@ -3195,7 +3274,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           labelOf,
         );
         const result = pivot;
-        columns = result.columns;
+        columns = result.columns.map((column) => {
+          const own =
+            typeof pivotingColDef === "function"
+              ? pivotingColDef(column.pivotValueField, [...column.pivotKeys])
+              : pivotingColDef;
+          return own ? { ...column, ...pickPivotOverrides(own) } : column;
+        });
         groupPaths = gridGroupPaths(result.columnGroupingModel);
         // Specials stay (without the markup's group column), then the pivot's columns.
         const specials = (baseHeader as Node[]).filter(
@@ -3213,11 +3298,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cells.forEach((cell, i) => {
           cell.setAttribute("aria-colindex", String(i + 1));
         });
-        for (const column of result.columns) {
+        for (const column of columns) {
           const cell = headerCell(column.field, column.headerName as string);
           cell.setAttribute("data-ok-type", column.type ?? "string");
           cell.setAttribute("data-ok-align", gridHeaderAlign(column));
           cell.setAttribute("data-ok-width", String(column.width));
+          if (column.minWidth !== undefined)
+            cell.setAttribute("data-ok-min-width", String(column.minWidth));
+          if (column.maxWidth !== undefined)
+            cell.setAttribute("data-ok-max-width", String(column.maxWidth));
           cell.setAttribute("data-ok-hideable", "false");
           cell.setAttribute("aria-sort", "none");
           const path = groupPaths.get(column.field);
@@ -4853,7 +4942,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         );
       },
       canReorder: () => !element.hasAttribute(disableColumnReorder.attr),
-      onAutosize: (field) => autosize({ columns: [field] }),
+      onAutosize: (field) => {
+        if (!element.hasAttribute(disableAutosize.attr)) autosize({ columns: [field] });
+      },
+      keepPositionOutside: () => element.hasAttribute(keepColumnPositionIfDraggedOutside.attr),
     });
     const autosize = (options: { columns?: readonly string[]; includeHeaders?: boolean } = {}) => {
       const fields =
@@ -5518,6 +5610,32 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
     element.addEventListener("ok:popover:open", overlayEvent(true), { signal });
     element.addEventListener("ok:popover:close", overlayEvent(false), { signal });
+    // The pivot panel follows `data-ok-pivot-panel-open`, and the attribute follows the panel.
+    const pivotPopover = () => byId("pivot");
+    for (const [type, open] of [
+      ["ok:popover:open", true],
+      ["ok:popover:close", false],
+    ] as const)
+      element.addEventListener(
+        type,
+        (event) => {
+          if (event.target === pivotPopover() && element.hasAttribute(pivotPanelOpen.attr) !== open)
+            element.toggleAttribute(pivotPanelOpen.attr, open);
+        },
+        { signal },
+      );
+    const followPivotPanelOpen = () => {
+      const popover = pivotPopover();
+      if (!popover) return;
+      const want = element.hasAttribute(pivotPanelOpen.attr);
+      const instance = runtime.getOrCreate<PopoverInstance>(popover, "popover");
+      if (want === popover.hasAttribute("data-ok-open")) return;
+      if (want)
+        instance?.open(
+          element.querySelector(`[aria-controls="${CSS.escape(popover.id)}"]`) ?? element,
+        );
+      else instance?.close();
+    };
     // The grid's own size (MUI X `onResize`): the first event is the size at setup.
     if (typeof ResizeObserver === "function") {
       let last = "";
@@ -5701,6 +5819,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         countsNow = nextCounts;
         apply();
       }
+      followPivotPanelOpen();
       if (element.getAttribute(dataSourceRevalidateMs.attr) !== revalidateNow) {
         revalidateNow = element.getAttribute(dataSourceRevalidateMs.attr);
         syncRevalidate();
@@ -5743,6 +5862,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         "data-ok-has-next-page",
         rowCountOption.attr,
         dataSourceRevalidateMs.attr,
+        pivotPanelOpen.attr,
         columnHeaderHeight.attr,
         columnGroupHeaderHeight.attr,
         headerFilterHeight.attr,
@@ -5759,6 +5879,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     else apply();
     reflect();
     syncRevalidate();
+    // A pivot panel open from the start, once its Popover runtime is set up.
+    if (element.hasAttribute(pivotPanelOpen.attr)) queueMicrotask(followPivotPanelOpen);
     scrollWatcher.measure();
     if (element.hasAttribute(autosizeOnMount.attr)) {
       autosize();
@@ -5976,6 +6098,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         pager()?.refresh();
         syncOverlays(rows().length);
         syncFooter();
+      },
+      setPivotingColDef(def) {
+        pivotingColDef = def;
+        if (pivotOn()) showPivot();
       },
       setRowChildrenExpansion(rowId, expanded) {
         const row = rows().find((r) => idOf(r) === rowId);

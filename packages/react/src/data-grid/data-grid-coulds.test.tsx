@@ -583,3 +583,284 @@ describe("DataGrid server options (4.18.56)", () => {
     });
   });
 });
+
+describe("DataGrid columns, rows and pivot options (4.18.57)", () => {
+  const rowEl = (id: number | string) =>
+    grid().querySelector(`[data-ok-data-grid-body] > [data-ok-row-id="${id}"]`) as HTMLElement;
+  const handleOf = (id: number | string) =>
+    rowEl(id).querySelector("[data-ok-data-grid-reorder-handle]") as HTMLElement | null;
+  const names = () =>
+    [...grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]')].map(
+      (row) => row.querySelector('[data-ok-field="name"]')?.textContent,
+    );
+
+  it("disableAutosize: a double click on a column's edge does nothing", () => {
+    const onColumnWidthChange = vi.fn();
+    const { rerender } = render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        onColumnWidthChange={onColumnWidthChange}
+        disableAutosize
+      />,
+    );
+    const edge = () => header("name").querySelector("[data-ok-data-grid-resize]") as Element;
+    act(() => {
+      edge().dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    });
+    expect(onColumnWidthChange).not.toHaveBeenCalled();
+    expect(
+      document.querySelector("[data-ok-data-grid]")?.hasAttribute("data-ok-disable-autosize"),
+    ).toBe(true);
+    rerender(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        onColumnWidthChange={onColumnWidthChange}
+      />,
+    );
+    act(() => {
+      edge().dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    });
+    expect(onColumnWidthChange).toHaveBeenCalled();
+  });
+
+  it("keepColumnPositionIfDraggedOutside: a drop outside the grid keeps the new place", () => {
+    const onColumnOrderChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        onColumnOrderChange={onColumnOrderChange}
+        keepColumnPositionIfDraggedOutside
+      />,
+    );
+    const from = header("name").getBoundingClientRect();
+    const to = header("age").getBoundingClientRect();
+    act(() => {
+      header("name").dispatchEvent(
+        new PointerEvent("pointerdown", {
+          bubbles: true,
+          button: 0,
+          clientX: from.left + 10,
+          clientY: from.top + 5,
+        }),
+      );
+      document.dispatchEvent(
+        new PointerEvent("pointermove", { clientX: to.left + 20, clientY: to.top + 5 }),
+      );
+      document.dispatchEvent(
+        new PointerEvent("pointerup", { clientX: to.left + 20, clientY: to.bottom + 600 }),
+      );
+    });
+    expect(onColumnOrderChange).toHaveBeenCalledExactlyOnceWith(["age", "name"]);
+  });
+
+  it("pinned section separators: a line by default, a shadow on request", () => {
+    const props = {
+      "aria-label": "People",
+      rows: ROWS,
+      columns: COLUMNS,
+      pinnedColumns: { left: ["name"] },
+      disableVirtualization: true,
+    };
+    const { rerender } = render(<DataGrid {...props} />);
+    const edge = () => getComputedStyle(cell(1, "name"));
+    expect(edge().clipPath).toBe("none");
+    rerender(<DataGrid {...props} pinnedColumnsSectionSeparator="border-and-shadow" />);
+    expect(
+      document
+        .querySelector("[data-ok-data-grid]")
+        ?.getAttribute("data-ok-pinned-columns-section-separator"),
+    ).toBe("border-and-shadow");
+    expect(edge().clipPath).not.toBe("none");
+    expect(edge().boxShadow.split("px").length).toBeGreaterThan(5);
+    rerender(
+      <DataGrid
+        {...props}
+        pinnedRows={{ top: [{ id: 90, name: "Top", age: 1 }] }}
+        pinnedRowsSectionSeparator="border-and-shadow"
+      />,
+    );
+    const top = grid().querySelector('[data-ok-data-grid-pinned-rows="top"]') as Element;
+    expect(getComputedStyle(top).boxShadow).not.toBe("none");
+  });
+
+  it("isRowReorderable leaves out a row's handle; isValidRowReorder refuses drops", () => {
+    const onRowOrderChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS.slice(0, 4)}
+        columns={COLUMNS}
+        rowReordering
+        onRowOrderChange={onRowOrderChange}
+        isRowReorderable={({ row }) => row.id !== 2}
+        isValidRowReorder={({ targetRowIndex }) => targetRowIndex !== 3}
+      />,
+    );
+    expect(handleOf(2)).toBeNull();
+    expect(rowEl(2).getAttribute("data-ok-reorderable")).toBe("false");
+    fireEvent.keyDown(handleOf(1) as HTMLElement, { key: "ArrowDown", altKey: true });
+    expect(onRowOrderChange).toHaveBeenCalledOnce();
+    expect(names()).toEqual(["Person 2", "Person 1", "Person 3", "Person 4"]);
+    fireEvent.keyDown(handleOf(3) as HTMLElement, { key: "ArrowDown", altKey: true });
+    expect(onRowOrderChange).toHaveBeenCalledOnce();
+  });
+
+  describe("tree data reordering", () => {
+    interface File {
+      id: string;
+      path: string[];
+      name: string;
+    }
+    const FILES: File[] = [
+      { id: "d", path: ["docs"], name: "docs" },
+      { id: "d1", path: ["docs", "a.md"], name: "a.md" },
+      { id: "d2", path: ["docs", "b.md"], name: "b.md" },
+      { id: "s", path: ["src"], name: "src" },
+      { id: "s1", path: ["src", "c.ts"], name: "c.ts" },
+    ];
+    const FILE_COLUMNS: GridColDef<File>[] = [{ field: "name", headerName: "Name", width: 160 }];
+    const order = () =>
+      [...grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]')].map((row) =>
+        row.getAttribute("data-ok-row-id"),
+      );
+    const base = {
+      "aria-label": "Files",
+      rows: FILES,
+      columns: FILE_COLUMNS,
+      treeData: true,
+      getTreeDataPath: (row: File) => row.path,
+      defaultGroupingExpansionDepth: -1,
+      rowReordering: true,
+      hideFooter: true,
+      disableVirtualization: true,
+    };
+
+    it("moves a parent with its children among its siblings", () => {
+      const onRowOrderChange = vi.fn();
+      render(<DataGrid {...base} onRowOrderChange={onRowOrderChange} />);
+      expect(order()).toEqual(["d", "d1", "d2", "s", "s1"]);
+      fireEvent.keyDown(handleOf("d") as HTMLElement, { key: "ArrowDown", altKey: true });
+      expect(order()).toEqual(["s", "s1", "d", "d1", "d2"]);
+      expect(onRowOrderChange.mock.lastCall?.[0]).toMatchObject({
+        oldParent: null,
+        newParent: null,
+      });
+    });
+
+    it("needs setTreeDataPath to move a row under another parent", async () => {
+      const processRowUpdate = vi.fn((row: File) => row);
+      const onRowOrderChange = vi.fn();
+      const { rerender } = render(<DataGrid {...base} processRowUpdate={processRowUpdate} />);
+      // d2 → below s: another parent (top level) without setTreeDataPath: refused.
+      fireEvent.keyDown(handleOf("d2") as HTMLElement, { key: "ArrowDown", altKey: true });
+      expect(order()).toEqual(["d", "d1", "d2", "s", "s1"]);
+      rerender(
+        <DataGrid
+          {...base}
+          processRowUpdate={processRowUpdate}
+          onRowOrderChange={onRowOrderChange}
+          setTreeDataPath={(path, row) => ({ ...row, path })}
+        />,
+      );
+      await act(async () => {
+        fireEvent.keyDown(handleOf("s1") as HTMLElement, { key: "ArrowUp", altKey: true });
+        await tick();
+      });
+      expect(processRowUpdate.mock.calls[0]?.[0]).toEqual({
+        id: "s1",
+        path: ["c.ts"],
+        name: "c.ts",
+      });
+      expect(onRowOrderChange.mock.lastCall?.[0]).toMatchObject({
+        oldParent: "s",
+        newParent: null,
+      });
+      expect(rowEl("s1").getAttribute("aria-level")).toBe("1");
+    });
+  });
+
+  it("pivotingColDef overrides the pivot's columns", () => {
+    interface Sale {
+      id: number;
+      region: string;
+      units: number;
+    }
+    render(
+      <DataGrid<Sale>
+        aria-label="Sales"
+        rows={[
+          { id: 1, region: "North", units: 3 },
+          { id: 2, region: "South", units: 4 },
+        ]}
+        columns={[
+          { field: "region", headerName: "Region" },
+          { field: "units", headerName: "Units", type: "number" },
+        ]}
+        pivotActive
+        pivotModel={{
+          rows: [{ field: "region" }],
+          columns: [],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        pivotingColDef={(field) => ({ headerName: `Total ${field}`, width: 180 })}
+        disableVirtualization
+        hideFooter
+      />,
+    );
+    const pivotHeader = grid().querySelector('[role="columnheader"][data-ok-field^="pivot:"]');
+    expect(pivotHeader?.textContent).toContain("Total units");
+  });
+
+  it("pivotPanelOpen opens the pivot panel; clicks only report", async () => {
+    const onPivotPanelOpenChange = vi.fn();
+    const props = {
+      "aria-label": "People",
+      showToolbar: true,
+      rows: ROWS,
+      columns: COLUMNS,
+      pivotModel: { rows: [], columns: [], values: [] },
+      onPivotPanelOpenChange,
+    };
+    const { rerender } = render(<DataGrid {...props} pivotPanelOpen={false} />);
+    const panel = () => document.querySelector('[id$="-pivot"][popover]') as HTMLElement;
+    await userEvent.click(screen.getByRole("button", { name: "Pivot" }));
+    expect(onPivotPanelOpenChange).toHaveBeenCalledExactlyOnceWith(true);
+    expect(panel().hasAttribute("data-ok-open")).toBe(false);
+    rerender(<DataGrid {...props} pivotPanelOpen />);
+    await act(tick);
+    expect(panel().hasAttribute("data-ok-open")).toBe(true);
+    expect(
+      document.querySelector("[data-ok-data-grid]")?.hasAttribute("data-ok-pivot-panel-open"),
+    ).toBe(true);
+    rerender(<DataGrid {...props} pivotPanelOpen={false} />);
+    await act(tick);
+    expect(panel().hasAttribute("data-ok-open")).toBe(false);
+  });
+
+  it("columns don't virtualize with auto row heights unless asked", () => {
+    const wide: GridColDef<Row>[] = Array.from({ length: 30 }, (_, i) => ({
+      field: i === 0 ? "name" : `c${i}`,
+      headerName: `C${i}`,
+      width: 120,
+      valueGetter: (row: Row) => row.name,
+    }));
+    const props = {
+      "aria-label": "Wide",
+      rows: ROWS,
+      columns: wide,
+      getRowHeight: () => "auto" as const,
+      style: { width: 300, height: 300 },
+    };
+    const cells = () => rowEl(1).querySelectorAll('[role="gridcell"]').length;
+    const { rerender } = render(<DataGrid {...props} />);
+    expect(cells()).toBe(30);
+    rerender(<DataGrid {...props} virtualizeColumnsWithAutoRowHeight />);
+    expect(cells()).toBeLessThan(30);
+  });
+});

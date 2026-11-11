@@ -388,3 +388,116 @@ describe("data grid server options (4.18.56)", () => {
     expect(all).toBeGreaterThan(0);
   });
 });
+
+describe("data grid columns, rows and pivot options (4.18.57)", () => {
+  const key = (target: Element, k: string) =>
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { key: k, altKey: true, bubbles: true, cancelable: true }),
+    );
+  const ids = (root: Element) =>
+    [...root.querySelectorAll('[data-ok-data-grid-body] > [role="row"][data-ok-row-id]')].map((r) =>
+      r.getAttribute("data-ok-row-id"),
+    );
+
+  it("disableAutosize: a double click on a column's edge does nothing", () => {
+    const { root } = setup(
+      snippet("filters-group").replace(
+        "<div data-ok-data-grid ",
+        "<div data-ok-data-grid data-ok-disable-autosize ",
+      ),
+    );
+    const seen = events(root, "resize");
+    (root.querySelector("[data-ok-data-grid-resize]") as Element).dispatchEvent(
+      new MouseEvent("dblclick", { bubbles: true }),
+    );
+    expect(seen).toEqual([]);
+    root.removeAttribute("data-ok-disable-autosize");
+    (root.querySelector("[data-ok-data-grid-resize]") as Element).dispatchEvent(
+      new MouseEvent("dblclick", { bubbles: true }),
+    );
+    expect(seen.length).toBeGreaterThan(0);
+  });
+
+  it("rows with data-ok-reorderable=false stay", () => {
+    const { root } = setup(snippet("ordering-group"));
+    const first = root.querySelector('[data-ok-data-grid-body] > [role="row"]') as HTMLElement;
+    const before = ids(root);
+    first.setAttribute("data-ok-reorderable", "false");
+    key(first.querySelector("[data-ok-data-grid-reorder-handle]") as Element, "ArrowDown");
+    expect(ids(root)).toEqual(before);
+  });
+
+  it("tree rows move with their children, to another parent too", async () => {
+    const host = mount(snippet("tree-group"));
+    const root = host.querySelector("[data-ok-data-grid]") as HTMLElement;
+    root.setAttribute("data-ok-row-reordering", "");
+    // A reorder column, as React renders it for rowReordering.
+    const headerRow = root.querySelector(
+      '[data-ok-data-grid-header] > [role="row"]',
+    ) as HTMLElement;
+    const head = document.createElement("div");
+    head.setAttribute("role", "columnheader");
+    head.setAttribute("data-ok-field", "__reorder__");
+    headerRow.prepend(head);
+    for (const row of root.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')) {
+      const cellEl = document.createElement("div");
+      cellEl.setAttribute("role", "gridcell");
+      cellEl.setAttribute("data-ok-field", "__reorder__");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.setAttribute("data-ok-data-grid-reorder-handle", "");
+      button.setAttribute("aria-label", "Move");
+      cellEl.append(button);
+      row.prepend(cellEl);
+    }
+    runtime = createRuntime()
+      .register(...components)
+      .start();
+    const instance = runtime.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    instance.setRowChildrenExpansion("m-1", true);
+    instance.setRowChildrenExpansion("m-2", true);
+    await settle();
+    const seen = events(root, "roworder");
+    const row = (id: string) =>
+      root.querySelector(`[data-ok-data-grid-body] > [data-ok-row-id="${id}"]`) as HTMLElement;
+    // m-3 (under m-2) up past m-2: it lands above m-2, under m-1.
+    key(row("m-3").querySelector("[data-ok-data-grid-reorder-handle]") as Element, "ArrowUp");
+    expect(seen.at(-1)).toMatchObject({ id: "m-3", oldParentId: "m-2", parentId: "m-1" });
+    expect(row("m-3").getAttribute("data-ok-parent")).toBe("m-1");
+    expect(row("m-3").getAttribute("aria-level")).toBe("2");
+    // A parent can't go into its own subtree.
+    const count = seen.length;
+    root.addEventListener("ok:data-grid:roworder", (e) => e.preventDefault(), { once: true });
+    key(row("m-2").querySelector("[data-ok-data-grid-reorder-handle]") as Element, "ArrowDown");
+    expect(seen.length).toBe(count + 1);
+    expect(row("m-3").getAttribute("data-ok-parent")).toBe("m-1");
+  });
+
+  it("setPivotingColDef overrides the pivot's columns", async () => {
+    const { root, instance } = setup(snippet("pivot-group"));
+    instance.setPivotingColDef((field) => ({ headerName: `Total ${field}`, width: 180 }));
+    await settle();
+    const pivotHeader = root.querySelector('[role="columnheader"][data-ok-field^="pivot:"]');
+    expect(pivotHeader?.textContent).toMatch(/^Total /);
+    expect(pivotHeader?.getAttribute("data-ok-width")).toBe("180");
+    instance.setPivotingColDef(null);
+    await settle();
+    expect(
+      root.querySelector('[role="columnheader"][data-ok-field^="pivot:"]')?.textContent,
+    ).not.toMatch(/^Total /);
+  });
+
+  it("data-ok-pivot-panel-open opens the pivot panel, and follows it", async () => {
+    const { root } = setup(snippet("pivot-group"));
+    const panel = root.querySelector('[id$="-pivot"][popover]') as HTMLElement;
+    root.setAttribute("data-ok-pivot-panel-open", "");
+    await settle();
+    expect(panel.hasAttribute("data-ok-open")).toBe(true);
+    await userEvent.keyboard("{Escape}");
+    await settle();
+    expect(root.hasAttribute("data-ok-pivot-panel-open")).toBe(false);
+    await userEvent.click(root.querySelector('[aria-controls$="-pivot"]') as HTMLElement);
+    await settle();
+    expect(root.hasAttribute("data-ok-pivot-panel-open")).toBe(true);
+  });
+});
