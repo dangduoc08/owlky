@@ -390,8 +390,11 @@ export const drawerAnchors = ["left", "right", "top", "bottom"] as const;
 export const drawerVariants = ["temporary", "persistent", "permanent"] as const;
 export type DrawerAnchor = (typeof drawerAnchors)[number];
 export type DrawerVariant = (typeof drawerVariants)[number];
-/** Why the drawer asks to close: Escape, a backdrop click, or a close trigger / the API. */
-export type DrawerCloseReason = "escape" | "backdrop" | "close";
+/**
+ * Why the drawer asks to close (or, `swipe`, to open): Escape, a backdrop click, a close trigger /
+ * the API, or a swipe.
+ */
+export type DrawerCloseReason = "escape" | "backdrop" | "close" | "swipe";
 
 /** MUI's elevation levels, as attribute values (`--ok-elevation-<n>`; 0 = no shadow). */
 export const paperElevations = [
@@ -459,6 +462,40 @@ export const drawerOptions = defineOptions("drawer", "data-ok-drawer", {
     "Length of the slide in and out (ms). Default: the theme's short duration.",
     { min: 0 },
   ),
+  swipeable: flag(
+    "data-ok-swipeable",
+    "Temporary only: a touch or pen swipe towards the edge closes the drawer, and one from the edge of the screen opens it. Keep a button that opens and closes it too.",
+  ),
+  swipeAreaWidth: number(
+    "data-ok-swipe-area-width",
+    20,
+    "Swipeable: width of the strip along the edge of the screen where a swipe opens the drawer (px).",
+    { min: 0 },
+  ),
+  hysteresis: number(
+    "data-ok-hysteresis",
+    0.52,
+    "Swipeable: how far the panel must be pulled to open or close, as a share of its size (0 to 1).",
+    { min: 0 },
+  ),
+  minFlingVelocity: number(
+    "data-ok-min-fling-velocity",
+    450,
+    "Swipeable: speed from which a shorter swipe still opens or closes the drawer (px per second).",
+    { min: 0 },
+  ),
+  disableSwipeToOpen: flag(
+    "data-ok-disable-swipe-to-open",
+    "Swipeable: no strip at the edge of the screen, so a swipe only closes the drawer.",
+  ),
+  disableDiscovery: flag(
+    "data-ok-disable-discovery",
+    "Swipeable: touching the edge strip doesn't slide a sliver of the panel in.",
+  ),
+  disableBackdropTransition: flag(
+    "data-ok-disable-backdrop-transition",
+    "Swipeable: the backdrop doesn't fade with the panel while it is swiped (less work on slow devices).",
+  ),
   open: state(
     "open | hidden",
     "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
@@ -478,6 +515,13 @@ export const drawerAttributes = (
     /** 0–24 (a number or its string). */
     elevation?: number | string | undefined;
     transitionDuration?: number | undefined;
+    swipeable?: boolean | undefined;
+    swipeAreaWidth?: number | undefined;
+    hysteresis?: number | undefined;
+    minFlingVelocity?: number | undefined;
+    disableSwipeToOpen?: boolean | undefined;
+    disableDiscovery?: boolean | undefined;
+    disableBackdropTransition?: boolean | undefined;
   } = {},
 ): DataAttributes =>
   optionAttributes(drawerOptions, {

@@ -569,6 +569,7 @@
   "data-ok-disable-auto-focus-item",
   "data-ok-disable-auto-month-switching",
   "data-ok-disable-autosize",
+  "data-ok-disable-backdrop-transition",
   "data-ok-disable-beacon",
   "data-ok-disable-captions",
   "data-ok-disable-children-filtering",
@@ -581,6 +582,7 @@
   "data-ok-disable-column-pinning",
   "data-ok-disable-column-reorder",
   "data-ok-disable-column-resize",
+  "data-ok-disable-discovery",
   "data-ok-disable-drag-editing",
   "data-ok-disable-elevation",
   "data-ok-disable-escape-key-down",
@@ -619,6 +621,7 @@
   "data-ok-disable-sticky",
   "data-ok-disable-swap",
   "data-ok-disable-swipe-navigation",
+  "data-ok-disable-swipe-to-open",
   "data-ok-disable-thumbnails",
   "data-ok-disable-tooltip",
   "data-ok-disable-total",
@@ -644,17 +647,24 @@
   "data-ok-download",
   "data-ok-download-filename",
   "data-ok-drag",
+  "data-ok-drag-constraints",
+  "data-ok-drag-direction-lock",
+  "data-ok-drag-elastic",
   "data-ok-drag-free",
   "data-ok-drag-global",
+  "data-ok-drag-momentum",
   "data-ok-drag-pan",
   "data-ok-drag-rotate",
+  "data-ok-drag-snap-to-origin",
   "data-ok-drag-threshold",
+  "data-ok-drag-transition",
   "data-ok-draggable",
   "data-ok-dragging",
   "data-ok-drawer",
   "data-ok-drawer-close",
   "data-ok-drawer-content",
   "data-ok-drawer-open",
+  "data-ok-drawer-swipe-area",
   "data-ok-drill-node",
   "data-ok-drilldown",
   "data-ok-drilldown-path",
@@ -870,6 +880,7 @@
   "data-ok-hover",
   "data-ok-hovered",
   "data-ok-hovering",
+  "data-ok-hysteresis",
   "data-ok-icon-button",
   "data-ok-icon-button-loader",
   "data-ok-icon-position",
@@ -1110,6 +1121,7 @@
   "data-ok-min",
   "data-ok-min-date",
   "data-ok-min-date-time",
+  "data-ok-min-fling-velocity",
   "data-ok-min-pitch",
   "data-ok-min-rows",
   "data-ok-min-size",
@@ -1498,7 +1510,10 @@
   "data-ok-sum",
   "data-ok-swap-target",
   "data-ok-swatch",
+  "data-ok-swipe-area-width",
   "data-ok-swipe-directions",
+  "data-ok-swipe-settling",
+  "data-ok-swipeable",
   "data-ok-swiping",
   "data-ok-switch",
   "data-ok-switch-checked-icon",
@@ -1750,6 +1765,11 @@
   "data-ok-week-start",
   "data-ok-wheel-gestures",
   "data-ok-wheel-zoom-distance-factor",
+  "data-ok-while",
+  "data-ok-while-drag",
+  "data-ok-while-focus",
+  "data-ok-while-hover",
+  "data-ok-while-tap",
   "data-ok-whitespace",
   "data-ok-width",
   "data-ok-working-weekdays",
@@ -41116,7 +41136,7 @@
         },
         {
          "cancelable": true,
-         "description": "Before the drawer opens. Call `preventDefault()` to keep it closed.",
+         "description": "Before the drawer opens. Call `preventDefault()` to keep it closed. A swipe from the edge (`data-ok-swipeable`) fires it with `trigger: null` once the finger lifts.",
          "detail": "{ trigger: HTMLElement | null; }",
          "name": "ok:drawer:beforeopen"
         },
@@ -41252,6 +41272,54 @@
          "name": "transitionDuration"
         },
         {
+         "attr": "data-ok-swipeable",
+         "description": "Temporary only: a touch or pen swipe towards the edge closes the drawer, and one from the edge of the screen opens it. Keep a button that opens and closes it too.",
+         "kind": "flag",
+         "name": "swipeable"
+        },
+        {
+         "attr": "data-ok-swipe-area-width",
+         "default": 20,
+         "description": "Swipeable: width of the strip along the edge of the screen where a swipe opens the drawer (px).",
+         "kind": "number",
+         "min": 0,
+         "name": "swipeAreaWidth"
+        },
+        {
+         "attr": "data-ok-hysteresis",
+         "default": 0.52,
+         "description": "Swipeable: how far the panel must be pulled to open or close, as a share of its size (0 to 1).",
+         "kind": "number",
+         "min": 0,
+         "name": "hysteresis"
+        },
+        {
+         "attr": "data-ok-min-fling-velocity",
+         "default": 450,
+         "description": "Swipeable: speed from which a shorter swipe still opens or closes the drawer (px per second).",
+         "kind": "number",
+         "min": 0,
+         "name": "minFlingVelocity"
+        },
+        {
+         "attr": "data-ok-disable-swipe-to-open",
+         "description": "Swipeable: no strip at the edge of the screen, so a swipe only closes the drawer.",
+         "kind": "flag",
+         "name": "disableSwipeToOpen"
+        },
+        {
+         "attr": "data-ok-disable-discovery",
+         "description": "Swipeable: touching the edge strip doesn't slide a sliver of the panel in.",
+         "kind": "flag",
+         "name": "disableDiscovery"
+        },
+        {
+         "attr": "data-ok-disable-backdrop-transition",
+         "description": "Swipeable: the backdrop doesn't fade with the panel while it is swiped (less work on slow devices).",
+         "kind": "flag",
+         "name": "disableBackdropTransition"
+        },
+        {
          "attr": "open | hidden",
          "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
          "event": "ok:drawer:close",
@@ -41276,6 +41344,24 @@
          "value": [
           "id"
          ]
+        },
+        {
+         "description": "Swipeable drawers: an empty `aria-hidden` strip right after the dialog, along the edge of the screen, where a touch swipe opens it. Shown on touch screens only.",
+         "elements": [
+          "div"
+         ],
+         "kind": "part",
+         "name": "data-ok-drawer-swipe-area"
+        },
+        {
+         "description": "Swipeable drawers: the panel slides to rest after a swipe. Written by the script.",
+         "kind": "state",
+         "name": "data-ok-swipe-settling"
+        },
+        {
+         "description": "Swipeable drawers: the panel follows a finger. Written by the script.",
+         "kind": "state",
+         "name": "data-ok-swiping"
         }
        ],
        "runtime": "drawer"
@@ -41296,7 +41382,7 @@
          "type": "boolean"
         },
         {
-         "description": "Called whenever the drawer asks to open or close, with the reason for closing: `\"escape\"`, `\"backdrop\"` or `\"close\"` (a trigger or DrawerClose). Controlled drawers may refuse.",
+         "description": "Called whenever the drawer asks to open or close, with the reason: `\"escape\"`, `\"backdrop\"`, `\"close\"` (a trigger or DrawerClose) or `\"swipe\"` (a swipeable drawer, opening or closing). Controlled drawers may refuse.",
          "name": "onOpenChange",
          "type": "((open: boolean, reason?: DrawerCloseReason | undefined) => void)"
         },
@@ -41411,6 +41497,16 @@
          "type": "\"bottom\" | \"left\" | \"right\" | \"top\""
         },
         {
+         "description": "Swipeable: the backdrop doesn't fade with the panel while it is swiped (less work on slow devices).",
+         "name": "disableBackdropTransition",
+         "type": "boolean"
+        },
+        {
+         "description": "Swipeable: touching the edge strip doesn't slide a sliver of the panel in.",
+         "name": "disableDiscovery",
+         "type": "boolean"
+        },
+        {
          "description": "Temporary only: Escape doesn't ask to close.",
          "name": "disableEscapeKeyDown",
          "type": "boolean"
@@ -41426,6 +41522,11 @@
          "type": "boolean"
         },
         {
+         "description": "Swipeable: no strip along the edge, so a swipe only closes the drawer.",
+         "name": "disableSwipeToOpen",
+         "type": "boolean"
+        },
+        {
          "description": "Shadow depth of the panel, 0–24. Default: each edge's own shadow (docked drawers: none).",
          "name": "elevation",
          "type": "number"
@@ -41436,9 +41537,29 @@
          "type": "boolean"
         },
         {
+         "description": "Swipeable: how far the panel must be pulled to open or close, as a share of its size (0 to 1). 52.",
+         "name": "hysteresis",
+         "type": "number"
+        },
+        {
          "default": "true",
          "description": "keepMounted`). (the HTML markup is always there too); `false` renders them only while open.",
          "name": "keepMounted",
+         "type": "boolean"
+        },
+        {
+         "description": "Swipeable: speed from which a shorter swipe still opens or closes it, px per second. Default 450.",
+         "name": "minFlingVelocity",
+         "type": "number"
+        },
+        {
+         "description": "Swipeable: width of the strip along the edge of the screen where a swipe opens it, px. Default 20.",
+         "name": "swipeAreaWidth",
+         "type": "number"
+        },
+        {
+         "description": "Temporary only: a touch or pen swipe towards the edge closes the drawer, and one from a strip along the edge of the screen opens it (`onOpenChange(open, \"swipe\")`). Keep a button that opens and closes it too: a swipe is a pointer gesture.",
+         "name": "swipeable",
          "type": "boolean"
         },
         {
@@ -41536,12 +41657,12 @@
      {
       "framework": "react",
       "name": "DrawerCloseReason",
-      "type": "\"backdrop\" | \"close\" | \"escape\""
+      "type": "\"backdrop\" | \"close\" | \"escape\" | \"swipe\""
      },
      {
       "framework": "html",
       "name": "DrawerCloseReason",
-      "type": "\"api\" | \"backdrop\" | \"escape\" | \"native\" | \"trigger\""
+      "type": "\"api\" | \"backdrop\" | \"escape\" | \"native\" | \"swipe\" | \"trigger\""
      }
     ]
    },
@@ -41558,7 +41679,8 @@
     "button",
     "divider",
     "list",
-    "scrollbar"
+    "scrollbar",
+    "typography"
    ],
    "requiredParts": {
     "data-ok-drawer": [
@@ -41662,6 +41784,54 @@
        "name": "transitionDuration"
       },
       {
+       "attr": "data-ok-swipeable",
+       "description": "Temporary only: a touch or pen swipe towards the edge closes the drawer, and one from the edge of the screen opens it. Keep a button that opens and closes it too.",
+       "kind": "flag",
+       "name": "swipeable"
+      },
+      {
+       "attr": "data-ok-swipe-area-width",
+       "default": 20,
+       "description": "Swipeable: width of the strip along the edge of the screen where a swipe opens the drawer (px).",
+       "kind": "number",
+       "min": 0,
+       "name": "swipeAreaWidth"
+      },
+      {
+       "attr": "data-ok-hysteresis",
+       "default": 0.52,
+       "description": "Swipeable: how far the panel must be pulled to open or close, as a share of its size (0 to 1).",
+       "kind": "number",
+       "min": 0,
+       "name": "hysteresis"
+      },
+      {
+       "attr": "data-ok-min-fling-velocity",
+       "default": 450,
+       "description": "Swipeable: speed from which a shorter swipe still opens or closes the drawer (px per second).",
+       "kind": "number",
+       "min": 0,
+       "name": "minFlingVelocity"
+      },
+      {
+       "attr": "data-ok-disable-swipe-to-open",
+       "description": "Swipeable: no strip at the edge of the screen, so a swipe only closes the drawer.",
+       "kind": "flag",
+       "name": "disableSwipeToOpen"
+      },
+      {
+       "attr": "data-ok-disable-discovery",
+       "description": "Swipeable: touching the edge strip doesn't slide a sliver of the panel in.",
+       "kind": "flag",
+       "name": "disableDiscovery"
+      },
+      {
+       "attr": "data-ok-disable-backdrop-transition",
+       "description": "Swipeable: the backdrop doesn't fade with the panel while it is swiped (less work on slow devices).",
+       "kind": "flag",
+       "name": "disableBackdropTransition"
+      },
+      {
        "attr": "open | hidden",
        "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
        "event": "ok:drawer:close",
@@ -41679,22 +41849,22 @@
      "title": "Purpose"
     },
     {
-     "body": "```\n[trigger] button[data-ok-button][aria-haspopup=\"dialog\"]     HTML: [data-ok-drawer-open=\"<id>\"]\ndialog[data-ok-drawer][data-ok-anchor][aria-label | aria-labelledby]   React: + data-ok-runtime=\"off\"\n  div[data-ok-drawer-content]                                the paper; any content\n    … HTML close: [data-ok-drawer-close] (inside) or [data-ok-drawer-close=\"<id>\"]\n```\nScrolling content: put it in a Scrollbar inside the content — `[data-ok-drawer-content] ›\nsection[data-ok-scrollbar]`; the Scrollbar fills the panel and scrolls (the panel stops scrolling).\nThe dialog then focuses the Scrollbar first on open (it is the first focusable element).\nThe `<dialog>` is a transparent full-viewport container; the content is the paper. A click whose\ntarget is the `<dialog>` itself is a backdrop click.",
+     "body": "```\n[trigger] button[data-ok-button][aria-haspopup=\"dialog\"]     HTML: [data-ok-drawer-open=\"<id>\"]\ndialog[data-ok-drawer][data-ok-anchor][aria-label | aria-labelledby]   React: + data-ok-runtime=\"off\"\n  div[data-ok-drawer-content]                                the paper; any content\n    … HTML close: [data-ok-drawer-close] (inside) or [data-ok-drawer-close=\"<id>\"]\ndiv[data-ok-drawer-swipe-area][aria-hidden=true]             swipeable only: right after the dialog\nStates (swipeable, written by core): [data-ok-swiping], [data-ok-swipe-settling] on the dialog;\nprivate --_ok-drawer-swipe-x|y (paper), --_ok-drawer-swipe-progress (dialog),\n--_ok-drawer-swipe-area (strip; set when swipeAreaWidth isn't 20).\n```\nScrolling content: put it in a Scrollbar inside the content — `[data-ok-drawer-content] ›\nsection[data-ok-scrollbar]`; the Scrollbar fills the panel and scrolls (the panel stops scrolling).\nThe dialog then focuses the Scrollbar first on open (it is the first focusable element).\nThe `<dialog>` is a transparent full-viewport container; the content is the paper. A click whose\ntarget is the `<dialog>` itself is a backdrop click.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `drawer`: listed under \"options\".)\n\nReact: `<Drawer variant open | defaultOpen onOpenChange(open, reason)>` holds the state (reason:\n`\"escape\"` · `\"backdrop\"` · `\"close\"`; refuse by not changing `open`); `anchor`, `hideBackdrop` and\n`disableEscapeKeyDown` are props of `DrawerContent`. HTML initial state: `data-ok-open` (temporary)\nor no `hidden` attribute (persistent); refuse a close with `ok:drawer:beforeclose`.\n\nDocked variants (`persistent`, `permanent`) render `<aside>` in the page flow — no backdrop, no focus\ntrap, no scroll lock; their trigger toggles and carries `aria-expanded` + `aria-controls`. Put the\ndrawer and the page area in a flex row (left / right) or column (top / bottom).",
+     "body": "(Options of `drawer`: listed under \"options\".)\n\nReact: `<Drawer variant open | defaultOpen onOpenChange(open, reason)>` holds the state (reason:\n`\"escape\"` · `\"backdrop\"` · `\"close\"`; refuse by not changing `open`); `anchor`, `hideBackdrop` and\n`disableEscapeKeyDown` are props of `DrawerContent`. HTML initial state: `data-ok-open` (temporary)\nor no `hidden` attribute (persistent); refuse a close with `ok:drawer:beforeclose`.\n\nDocked variants (`persistent`, `permanent`) render `<aside>` in the page flow — no backdrop, no focus\ntrap, no scroll lock; their trigger toggles and carries `aria-expanded` + `aria-controls`. Put the\ndrawer and the page area in a flex row (left / right) or column (top / bottom).\n\nSwipeable (MUI `SwipeableDrawer`, roadmap 4.18.46): React `DrawerContent swipeable` (plus the\nswipe props) renders the strip after the dialog and reports `onOpenChange(true, \"swipe\")` /\n`onOpenChange(false, \"swipe\")`; HTML `data-ok-swipeable` on a temporary dialog and\n`<div data-ok-drawer-swipe-area aria-hidden=\"true\"></div>` right after it (optional: without it,\nonly swipes to close). Keep the trigger and a close control: a swipe is a pointer gesture\n(WCAG 2.5.7).",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "- Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop: native `::backdrop` with `--ok-backdrop` (shared with the Backdrop component, which can't\n  sit in the top layer; `hideBackdrop` matches its `invisible`); stacking `--ok-z-modal`\n  (fallback path).\n- `left` / `right`: full height, width from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-dialog-start` (left) / `--ok-shadow-dialog` (right).\n- `top` / `bottom`: full width, height from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-z16`. Taller content scrolls inside the Scrollbar placed in the paper (without one,\n  the paper itself scrolls).\n- Opening slides the paper in from its edge and fades the backdrop (`--ok-duration-short`,\n  `--ok-easing-decelerate`) where `@starting-style` is supported. Closing (temporary,\n  `data-ok-state=\"exiting\"`, ADR-0062) slides it back and fades the backdrop out\n  (`--ok-duration-shorter`, `--ok-easing-accelerate`; `transitionDuration` sets both directions);\n  the dialog closes when the slide ends. `prefers-reduced-motion` disables both (closing is then\n  immediate). Docked drawers open and close at once.",
+     "body": "- Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop: native `::backdrop` with `--ok-backdrop` (shared with the Backdrop component, which can't\n  sit in the top layer; `hideBackdrop` matches its `invisible`); stacking `--ok-z-modal`\n  (fallback path).\n- `left` / `right`: full height, width from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-dialog-start` (left) / `--ok-shadow-dialog` (right).\n- `top` / `bottom`: full width, height from the content, at most `100% - 56px`; shadow\n  `--ok-shadow-z16`. Taller content scrolls inside the Scrollbar placed in the paper (without one,\n  the paper itself scrolls).\n- Opening slides the paper in from its edge and fades the backdrop (`--ok-duration-short`,\n  `--ok-easing-decelerate`) where `@starting-style` is supported. Closing (temporary,\n  `data-ok-state=\"exiting\"`, ADR-0062) slides it back and fades the backdrop out\n  (`--ok-duration-shorter`, `--ok-easing-accelerate`; `transitionDuration` sets both directions);\n  the dialog closes when the slide ends. `prefers-reduced-motion` disables both (closing is then\n  immediate). Docked drawers open and close at once.\n\n- Swipeable: while a finger moves the panel, `data-ok-swiping` turns its transition off and\n  translates it by `--_ok-drawer-swipe-x|y`; the native `::backdrop` is clear and the dialog's\n  `::before` draws `--ok-backdrop` at `--_ok-drawer-swipe-progress` (the open share; 1 with\n  `disableBackdropTransition`, and transparent with `hideBackdrop`). `data-ok-swipe-settling` keeps\n  that `::before` while the panel slides to rest (`--_ok-drawer-duration` /\n  `--ok-duration-short`, `--ok-easing-standard`; the exit's durations while closing). The strip is\n  `position: fixed` along the anchor's edge, `--ok-spacing` × 5 (20px) wide by default\n  (`--_ok-drawer-swipe-area`), `z-index: calc(var(--ok-z-modal) - 1)`, `touch-action: pan-y`\n  (left / right) or `pan-x` (top / bottom), shown only under `@media (any-pointer: coarse)` and\n  not with `data-ok-disable-swipe-to-open`. The paper of a swipeable drawer has\n  `touch-action: pan-y` (left / right; a Scrollbar inside it too) or `pan-x` (top / bottom: a\n  swipe starts outside their scrolling area).",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "- **Open:** `showModal()` (fallback: `open` + `data-ok-fallback`, siblings inert, ADR-0006); push onto\n  the layer stack; lock page scroll; focus `[autofocus]` → first tabbable → content.\n- **Dismiss requests** (Escape, backdrop) are reported, not acted on: React updates state (controlled\n  drawers may refuse); HTML emits cancelable `beforeclose`. Only the topmost layer reacts.\n- **Close:** temporary drawers play their exit first (still modal, Escape and backdrop ignored;\n  `open()` during it keeps the drawer open), then release lock and stack; focus returns to the\n  trigger if focus was lost. HTML `ok:drawer:close` fires after that; React `keepMounted={false}`\n  content stays until then.\n- **External close** (`<form method=\"dialog\">`): state syncs. **Removal / unmount while open:**\n  cleanup without focus restoration.",
+     "body": "- **Open:** `showModal()` (fallback: `open` + `data-ok-fallback`, siblings inert, ADR-0006); push onto\n  the layer stack; lock page scroll; focus `[autofocus]` → first tabbable → content.\n- **Dismiss requests** (Escape, backdrop) are reported, not acted on: React updates state (controlled\n  drawers may refuse); HTML emits cancelable `beforeclose`. Only the topmost layer reacts.\n- **Close:** temporary drawers play their exit first (still modal, Escape and backdrop ignored;\n  `open()` during it keeps the drawer open), then release lock and stack; focus returns to the\n  trigger if focus was lost. HTML `ok:drawer:close` fires after that; React `keepMounted={false}`\n  content stays until then.\n- **External close** (`<form method=\"dialog\">`): state syncs. **Removal / unmount while open:**\n  cleanup without focus restoration.\n\n- **Swipe** (core `createDrawerSwipe` on `createSwipe`, both owners; touch and pen only, like\n  MUI): on an open drawer, a swipe towards its edge moves the panel with the finger (not from a\n  text field, a slider or a press another handler prevented); released past `hysteresis` of the\n  panel's size, or faster than `minFlingVelocity` px/s towards the edge, it asks to close\n  (React `onOpenChange(false, \"swipe\")`, HTML `instance.close(\"swipe\")` → cancelable\n  `beforeclose` with reason `swipe`); the panel stays where the finger left it until the exit\n  slides it on, or goes back open when the owner refuses (within 8 frames). From the strip, on a\n  closed drawer: a touch slides `swipeAreaWidth` of the panel in (discovery; not with\n  `disableDiscovery`) by showing the dialog non-modally (the page keeps the pointer), the panel\n  follows the finger, and a release past `hysteresis` (or a fling) opens it modally (focus moves\n  in, page inert) and asks to open (React `onOpenChange(true, \"swipe\")`, HTML cancelable\n  `beforeopen` with `trigger: null`, then `open`); refused (React: the state stays closed for 8\n  frames, HTML: `beforeopen` prevented) → it closes again with its exit. A shorter release slides\n  it back out and hides it. Reduced motion: no slides (the CSS transitions are off), the state\n  changes at once.",
      "id": "behavior-core-createmodalcontroller",
      "title": "Behavior (`core` `createModalController`)"
     },
@@ -41719,7 +41889,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |\n| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |\n| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |\n| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |\n| `elevation`, `transitionDuration` | `DrawerContent` props; HTML `data-ok-elevation` (0–24), `data-ok-transition-duration` (ms) | kept (4.9) | core `drawerStyle` → `--_ok-drawer-shadow` / `--_ok-drawer-duration` (React `style`, HTML CSSOM); without `elevation` each edge keeps its shadow (MUI 16) |\n| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |\n| `ModalProps.keepMounted`, `disableRestoreFocus`, `disableScrollLock` | `DrawerContent` props `keepMounted` (React only, default `true`), `disableRestoreFocus`, `disableScrollLock` (`data-ok-*`, temporary only) | renamed (4.18.45) | props on DrawerContent instead of `ModalProps` |\n| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |\n| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred (4.18.46) | \"could\"; left after batch B (budget, shares a swipe helper with 4.14) |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "body": "Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |\n| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |\n| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |\n| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |\n| `elevation`, `transitionDuration` | `DrawerContent` props; HTML `data-ok-elevation` (0–24), `data-ok-transition-duration` (ms) | kept (4.9) | core `drawerStyle` → `--_ok-drawer-shadow` / `--_ok-drawer-duration` (React `style`, HTML CSSOM); without `elevation` each edge keeps its shadow (MUI 16) |\n| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |\n| `ModalProps.keepMounted`, `disableRestoreFocus`, `disableScrollLock` | `DrawerContent` props `keepMounted` (React only, default `true`), `disableRestoreFocus`, `disableScrollLock` (`data-ok-*`, temporary only) | renamed (4.18.45) | props on DrawerContent instead of `ModalProps` |\n| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |\n| `SwipeableDrawer` | `DrawerContent swipeable`; HTML `data-ok-swipeable` + `[data-ok-drawer-swipe-area]` after the dialog | renamed (4.18.46) | the compound API: a prop on the panel, not a component; temporary drawers only |\n| `onOpen`, `onClose` | `onOpenChange(true, \"swipe\")` / `onOpenChange(false, \"swipe\")`; HTML `ok:drawer:beforeopen` (`trigger: null`) / `beforeclose` (`reason: \"swipe\"`) | renamed (4.18.46) | |\n| `swipeAreaWidth` (20), `hysteresis` (0.52), `minFlingVelocity` (450) | same; `data-ok-swipe-area-width`, `data-ok-hysteresis`, `data-ok-min-fling-velocity` | kept (4.18.46) | |\n| `disableSwipeToOpen`, `disableDiscovery`, `disableBackdropTransition` | same; `data-ok-disable-swipe-to-open`, `-disable-discovery`, `-disable-backdrop-transition` | kept (4.18.46) | `disableSwipeToOpen` defaults to `false` everywhere (MUI: `true` on iOS, whose edge swipe goes back): set it there yourself |\n| `allowSwipeInChildren` | — | not applicable | it lets a swipe on a partly visible closed drawer's children open it; a closed Owlky drawer isn't rendered (native `<dialog>`), so the strip opens it |\n| `SwipeAreaProps` | the `[data-ok-drawer-swipe-area]` element (React renders it; style it with CSS) | renamed (4.18.46) | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -41748,6 +41918,15 @@
      "snippets": [
       "variants-permanent.html",
       "variants-persistent.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/scrollbar.css + components/list.css + components/typography.css + components/drawer.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Swipeable -->\n<div class=\"sb-row\">\n  <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" aria-haspopup=\"dialog\" data-ok-drawer-open=\"swipeable-left\"><span data-ok-button-label>Left</span></button>\n  <dialog data-ok-drawer data-ok-anchor=\"left\" data-ok-variant=\"temporary\" data-ok-swipeable id=\"swipeable-left\" aria-label=\"Left swipeable drawer\">\n    <div data-ok-drawer-content>\n      <h2 data-ok-typography data-ok-variant=\"subtitle1\" class=\"sb-drawer-swipe-title\">Mailbox</h2>\n      <section data-ok-scrollbar aria-label=\"scrollable content\" tabindex=\"0\">\n        <nav aria-label=\"Left menu\">\n          <ul data-ok-list>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Inbox</span></span></button>\n            </li>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Starred</span></span></button>\n            </li>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Drafts</span></span></button>\n            </li>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Trash</span></span></button>\n            </li>\n          </ul>\n        </nav>\n      </section>\n    </div>\n  </dialog>\n  <div data-ok-drawer-swipe-area aria-hidden=\"true\">\n  </div>\n  <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" aria-haspopup=\"dialog\" data-ok-drawer-open=\"swipeable-bottom\"><span data-ok-button-label>Bottom</span></button>\n  <dialog data-ok-drawer data-ok-anchor=\"bottom\" data-ok-variant=\"temporary\" data-ok-swipeable id=\"swipeable-bottom\" aria-label=\"Bottom swipeable drawer\">\n    <div data-ok-drawer-content>\n      <h2 data-ok-typography data-ok-variant=\"subtitle1\" class=\"sb-drawer-swipe-title\">Mailbox</h2>\n      <section data-ok-scrollbar aria-label=\"scrollable content\" tabindex=\"0\">\n        <nav aria-label=\"Bottom menu\">\n          <ul data-ok-list>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Inbox</span></span></button>\n            </li>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Starred</span></span></button>\n            </li>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Drafts</span></span></button>\n            </li>\n            <li data-ok-list-item data-ok-disable-padding>\n              <button type=\"button\" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Trash</span></span></button>\n            </li>\n          </ul>\n        </nav>\n      </section>\n    </div>\n  </dialog>\n  <div data-ok-drawer-swipe-area aria-hidden=\"true\">\n  </div>\n  <p data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">On a touch screen, swipe from the left or bottom edge to open a drawer, and towards its edge to close it.</p>\n</div>",
+     "id": "components-drawer--swipeable",
+     "name": "Swipeable",
+     "react": "import {\n  Drawer,\n  type DrawerAnchor,\n  DrawerContent,\n  DrawerTrigger,\n  List,\n  ListItem,\n  ListItemButton,\n  ListItemText,\n  Scrollbar,\n  Typography,\n} from \"@owlky/react\";\n\nconst DRAWERS: [DrawerAnchor, string][] = [\n  [\"left\", \"Left\"],\n  [\"bottom\", \"Bottom\"],\n];\n\n/**\n * Swipeable drawers (MUI `SwipeableDrawer`, roadmap 4.18.46): on a touch screen, swipe from the\n * edge to open and towards the edge to close. The button stays (WCAG 2.5.7).\n */\nexport function SwipeableDrawerDemo() {\n  return (\n    <div className=\"sb-row\">\n      {DRAWERS.map(([anchor, label]) => (\n        <Drawer key={anchor}>\n          <DrawerTrigger variant=\"outlined\">{label}</DrawerTrigger>\n          <DrawerContent\n            id={`swipeable-${anchor}`}\n            anchor={anchor}\n            swipeable\n            aria-label={`${label} swipeable drawer`}\n          >\n            {/* Top and bottom drawers swipe from outside their scrolling list: the title. */}\n            <Typography variant=\"subtitle1\" component=\"h2\" className=\"sb-drawer-swipe-title\">\n              Mailbox\n            </Typography>\n            <Scrollbar>\n              <nav aria-label={`${label} menu`}>\n                <List>\n                  {[\"Inbox\", \"Starred\", \"Drafts\", \"Trash\"].map((item) => (\n                    <ListItem key={item} disablePadding>\n                      <ListItemButton>\n                        <ListItemText primary={item} />\n                      </ListItemButton>\n                    </ListItem>\n                  ))}\n                </List>\n              </nav>\n            </Scrollbar>\n          </DrawerContent>\n        </Drawer>\n      ))}\n      <Typography variant=\"body2\" color=\"textSecondary\">\n        On a touch screen, swipe from the left or bottom edge to open a drawer, and towards its edge\n        to close it.\n      </Typography>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "swipeable-group.html"
      ]
     }
    ],
@@ -55860,6 +56039,36 @@
        "events": [
         {
          "cancelable": false,
+         "description": "With `data-ok-drag-direction-lock`: the axis the drag locked to (`x` or `y`).",
+         "detail": "{ axis: PanAxis; }",
+         "name": "ok:motion:directionlock"
+        },
+        {
+         "cancelable": false,
+         "description": "The dragged element moved. Same detail as `dragstart`.",
+         "detail": "PanInfo",
+         "name": "ok:motion:drag"
+        },
+        {
+         "cancelable": false,
+         "description": "The pointer was released (or an arrow key's move ended). `velocity` is the release speed.",
+         "detail": "PanInfo",
+         "name": "ok:motion:dragend"
+        },
+        {
+         "cancelable": false,
+         "description": "A drag started (`data-ok-drag`): the pointer moved 3 px, or an arrow key moved the focused element. `point` is the pointer on the page, `delta` the movement since the last event, `offset` since the press, `velocity` in px per second.",
+         "detail": "PanInfo",
+         "name": "ok:motion:dragstart"
+        },
+        {
+         "cancelable": false,
+         "description": "The glide or spring after a release came to rest.",
+         "detail": "undefined",
+         "name": "ok:motion:dragtransitionend"
+        },
+        {
+         "cancelable": false,
          "description": "After the root's own animation ended. `state` is its `data-ok-state`.",
          "detail": "{ state: string | null; }",
          "name": "ok:motion:end"
@@ -55872,9 +56081,39 @@
         },
         {
          "cancelable": false,
+         "description": "The pointer left the element.",
+         "detail": "undefined",
+         "name": "ok:motion:hoverend"
+        },
+        {
+         "cancelable": false,
+         "description": "A mouse or pen pointer entered the element.",
+         "detail": "undefined",
+         "name": "ok:motion:hoverstart"
+        },
+        {
+         "cancelable": false,
          "description": "In view trigger with `data-ok-once=\"false\"`: the element left the viewport (nothing visible).",
          "detail": "MotionViewportDetail",
          "name": "ok:motion:leave"
+        },
+        {
+         "cancelable": false,
+         "description": "The press ended on the element (a tap).",
+         "detail": "TapInfo",
+         "name": "ok:motion:tap"
+        },
+        {
+         "cancelable": false,
+         "description": "The press ended outside the element, was cancelled or turned into a drag.",
+         "detail": "TapInfo",
+         "name": "ok:motion:tapcancel"
+        },
+        {
+         "cancelable": false,
+         "description": "A press started: a primary pointer, or Enter or Space on the focused element. `point` is on the page.",
+         "detail": "TapInfo",
+         "name": "ok:motion:tapstart"
         }
        ],
        "methods": [
@@ -56056,6 +56295,57 @@
          "value": "string"
         },
         {
+         "description": "Makes the Motion draggable: on both axes without a value, or `x` / `y` for one axis (the page still scrolls along the other). Arrow keys move it while it has the focus.",
+         "kind": "value",
+         "name": "data-ok-drag",
+         "value": [
+          "",
+          "x",
+          "y"
+         ]
+        },
+        {
+         "description": "Where it may be dragged: a JSON box in px from where it sits, such as `{\"left\": -100, \"right\": 100}`, or the `id` of an element to stay inside.",
+         "kind": "value",
+         "name": "data-ok-drag-constraints",
+         "value": "string"
+        },
+        {
+         "description": "Moves only along the first axis the pointer moves on.",
+         "kind": "state",
+         "name": "data-ok-drag-direction-lock"
+        },
+        {
+         "description": "How far it may be pulled past its constraints: a number from 0 (not at all) to 1 (freely), `true` / `false`, or a JSON box per side. 5.",
+         "kind": "value",
+         "name": "data-ok-drag-elastic",
+         "value": "string"
+        },
+        {
+         "description": "`false`: no glide after a release (it stops where the pointer let go).",
+         "kind": "value",
+         "name": "data-ok-drag-momentum",
+         "value": [
+          "false"
+         ]
+        },
+        {
+         "description": "Springs back to where it started when released.",
+         "kind": "state",
+         "name": "data-ok-drag-snap-to-origin"
+        },
+        {
+         "description": "The glide after a release, as JSON (times in ms): `power`, `timeConstant`, `bounceStiffness`, `bounceDamping`, `restDelta`, `restSpeed`.",
+         "kind": "value",
+         "name": "data-ok-drag-transition",
+         "value": "string"
+        },
+        {
+         "description": "While dragged. Written by the script.",
+         "kind": "state",
+         "name": "data-ok-dragging"
+        },
+        {
          "description": "Custom keyframes as JSON, such as `{\"rotate\": [0, 270]}`: played instead of the variant when the Motion enters, backwards when it exits.",
          "kind": "value",
          "name": "data-ok-keyframes",
@@ -56092,13 +56382,37 @@
          "kind": "value",
          "name": "data-ok-viewport-root",
          "value": "string"
+        },
+        {
+         "description": "Keyframes as JSON while it is dragged.",
+         "kind": "value",
+         "name": "data-ok-while-drag",
+         "value": "string"
+        },
+        {
+         "description": "Keyframes as JSON while it, or something inside it, shows a keyboard focus ring.",
+         "kind": "value",
+         "name": "data-ok-while-focus",
+         "value": "string"
+        },
+        {
+         "description": "05}`; a `transition` key tunes them.",
+         "kind": "value",
+         "name": "data-ok-while-hover",
+         "value": "string"
+        },
+        {
+         "description": "Keyframes as JSON while it is pressed (a pointer, or Enter or Space on it or on a button inside it).",
+         "kind": "value",
+         "name": "data-ok-while-tap",
+         "value": "string"
         }
        ],
        "runtime": "motion"
       },
       "name": "Motion",
       "react": {
-       "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`.",
+       "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`. Gesture props (`drag`, `whileHover`, `whileTap`…) animate it while it is dragged, hovered, pressed or focused.",
        "native": "HTMLElement",
        "props": [
         {
@@ -56128,6 +56442,42 @@
          "type": "number"
         },
         {
+         "description": "Makes it draggable: `true` on both axes, `\"x\"` or `\"y\"` on one (the page still scrolls on the other).",
+         "name": "drag",
+         "type": "\"x\" | \"y\" | boolean"
+        },
+        {
+         "description": "Where it may be dragged: a box in px from where it sits, such as `{ left: -100, right: 100 }`, a ref to an element to stay inside, or that element's `id`.",
+         "name": "dragConstraints",
+         "type": "string | DragConstraints | RefObject<Element | null>"
+        },
+        {
+         "description": "Moves only along the first axis the pointer moves on.",
+         "name": "dragDirectionLock",
+         "type": "boolean"
+        },
+        {
+         "description": "How far it may be pulled past its constraints: 0 (not at all) to 1 (freely), or per side. 5.",
+         "name": "dragElastic",
+         "type": "DragElastic"
+        },
+        {
+         "default": "true",
+         "description": "Glides on after a release, from the release velocity.",
+         "name": "dragMomentum",
+         "type": "boolean"
+        },
+        {
+         "description": "Springs back to where it started when released.",
+         "name": "dragSnapToOrigin",
+         "type": "boolean"
+        },
+        {
+         "description": "Tunes the glide after a release (times in ms): `power`, `timeConstant`, `bounceStiffness`, `bounceDamping`, `restDelta`, `restSpeed`, `modifyTarget(target, axis)`.",
+         "name": "dragTransition",
+         "type": "DragTransition"
+        },
+        {
          "description": "Entrance length, ms (default 640; loops: about 5 s).",
          "name": "duration",
          "type": "number"
@@ -56142,6 +56492,56 @@
          "description": "5 }` (`x` / `y` in px, `rotate` in degrees, `scale`, and any CSS property).",
          "name": "keyframes",
          "type": "MotionKeyframes"
+        },
+        {
+         "description": "With `dragDirectionLock`: the axis the drag locked to.",
+         "name": "onDirectionLock",
+         "type": "((axis: PanAxis) => void)"
+        },
+        {
+         "description": "It moved while dragged. `info` has `point`, `delta`, `offset` and `velocity` (px per second).",
+         "name": "onDrag",
+         "type": "((event: KeyboardEvent | PointerEvent, info: PanInfo) => void)"
+        },
+        {
+         "description": "The drag ended (`event` is `null` when the browser cancelled the pointer).",
+         "name": "onDragEnd",
+         "type": "((event: KeyboardEvent | PointerEvent | null, info: PanInfo) => void)"
+        },
+        {
+         "description": "A drag started: the pointer moved 3 px, or an arrow key moved it.",
+         "name": "onDragStart",
+         "type": "((event: KeyboardEvent | PointerEvent, info: PanInfo) => void)"
+        },
+        {
+         "description": "The glide or spring after a release came to rest.",
+         "name": "onDragTransitionEnd",
+         "type": "(() => void)"
+        },
+        {
+         "description": "The pointer left it.",
+         "name": "onHoverEnd",
+         "type": "((event: PointerEvent) => void)"
+        },
+        {
+         "description": "A mouse or pen pointer entered it.",
+         "name": "onHoverStart",
+         "type": "((event: PointerEvent) => void)"
+        },
+        {
+         "description": "A press ended on it.",
+         "name": "onTap",
+         "type": "((event: KeyboardEvent | PointerEvent, info: TapInfo) => void)"
+        },
+        {
+         "description": "A press ended outside it, was cancelled or became a drag.",
+         "name": "onTapCancel",
+         "type": "((event: Event, info: TapInfo) => void)"
+        },
+        {
+         "description": "A press started. point` is on the page.",
+         "name": "onTapStart",
+         "type": "((event: KeyboardEvent | PointerEvent, info: TapInfo) => void)"
         },
         {
          "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
@@ -56188,6 +56588,26 @@
          "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
          "name": "viewportRoot",
          "type": "RefObject<Element | null>"
+        },
+        {
+         "description": "Keyframes while it is dragged.",
+         "name": "whileDrag",
+         "type": "GestureTarget"
+        },
+        {
+         "description": "Keyframes while it, or something inside it, shows a keyboard focus ring.",
+         "name": "whileFocus",
+         "type": "GestureTarget"
+        },
+        {
+         "description": "05 }` (a `transition` key tunes them).",
+         "name": "whileHover",
+         "type": "GestureTarget"
+        },
+        {
+         "description": "Keyframes while it is pressed (a pointer, or Enter or Space on it or on a button inside it).",
+         "name": "whileTap",
+         "type": "GestureTarget"
         }
        ]
       }
@@ -57108,6 +57528,10 @@
     ],
     "types": [
      {
+      "name": "DragElastic",
+      "type": "number | boolean | DragConstraints"
+     },
+     {
       "name": "MotionKeyframes",
       "type": "{ [x: string]: readonly (MotionValue | null)[] | MotionValue; }"
      },
@@ -57118,6 +57542,10 @@
      {
       "name": "MotionValue",
       "type": "string | number"
+     },
+     {
+      "name": "PanAxis",
+      "type": "\"x\" | \"y\""
      }
     ]
    },
@@ -57672,12 +58100,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  [data-ok-keyframes=<JSON>]?[data-ok-transition=<JSON>]?   (custom keyframes, ADR-0062)\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\nspan[data-ok-countdown][role=timer][data-ok-largest-unit][data-ok-date=<date>]?[data-ok-seconds]?[data-ok-now=<date>]?\n  [data-ok-paused]?[data-ok-complete-label]?\n  › span[data-ok-countdown-unit=days|hours|minutes|seconds]… (from the largest unit down)\n      › span[data-ok-countdown-value] + \" \" + span[data-ok-countdown-label]\n  + span[data-ok-countdown-status][role=status] (visually hidden, polite: the announcements)\nTriggers: button[data-ok-countdown-toggle=<id>][aria-pressed] (pause / resume),\n  button[data-ok-countdown-restart=<id>] (from the start, running)\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-exit-duration` (set by a host: Dialog `transitionDuration`), `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
+     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  [data-ok-keyframes=<JSON>]?[data-ok-transition=<JSON>]?   (custom keyframes, ADR-0062)\n  [data-ok-drag=\"\"|x|y]?[data-ok-drag-constraints=<JSON box | id>]?[data-ok-drag-elastic]?\n  [data-ok-drag-momentum=\"false\"]?[data-ok-drag-snap-to-origin]?[data-ok-drag-direction-lock]?\n  [data-ok-drag-transition=<JSON>]?[data-ok-while-hover|-tap|-focus|-drag=<JSON>]?\n  [data-ok-dragging] (state, while dragged)                  (gestures, 5.3)\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\nspan[data-ok-countdown][role=timer][data-ok-largest-unit][data-ok-date=<date>]?[data-ok-seconds]?[data-ok-now=<date>]?\n  [data-ok-paused]?[data-ok-complete-label]?\n  › span[data-ok-countdown-unit=days|hours|minutes|seconds]… (from the largest unit down)\n      › span[data-ok-countdown-value] + \" \" + span[data-ok-countdown-label]\n  + span[data-ok-countdown-status][role=status] (visually hidden, polite: the announcements)\nTriggers: button[data-ok-countdown-toggle=<id>][aria-pressed] (pause / resume),\n  button[data-ok-countdown-restart=<id>] (from the start, running)\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-exit-duration` (set by a host: Dialog `transitionDuration`), `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nCountdown:\n(Options of `countdown`: listed under \"options\".)\n\nCountdown content and behavior (not options: free text or functions): `date` (React `Date`, ISO\nstring or epoch ms; HTML `data-ok-date`, anything `Date.parse` reads; wins over `seconds`), `now`\n(the time of the first render, so server and client markup agree; HTML `data-ok-now`; the clock\nthen runs from it), `labels` (React `{ days, hours, minutes, seconds }`, default English plurals;\nHTML: the text of each `[data-ok-countdown-label]`), `completeLabel` (announced at the end,\ndefault \"Time's up\"; HTML `data-ok-complete-label`), `onTick(remaining)` (whole seconds left, each\ntime the shown value changes), `onComplete()`.\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nCustom keyframes (ADR-0062; free JSON, so not in the schema, like `viewportMargin`): React\n`keyframes` (Framer's `animate` object: a value or a list per property, `null` = the current value;\n`x` / `y` → `translate` px, `scale` / `scaleX` / `scaleY` → `scale`, `rotate` → `rotate` deg, other\nCSS properties as they are) and `transition` (Framer's `transition` in ms: `duration`, `delay`,\n`ease` (CSS easing, token name `standard` · `decelerate` · `accelerate` · `expressive`, Framer\nnames, control points, or one per segment), `times`, `repeat` (`Infinity`), `repeatType`\n(`loop` · `reverse` · `mirror`), `repeatDelay`, `type: \"spring\"` with `stiffness`, `damping`,\n`mass`, `velocity`, `bounce` + `duration` / `visualDuration`, `reducedMotion`). HTML\n`data-ok-keyframes` / `data-ok-transition` (JSON, `\"repeat\": \"Infinity\"`); React writes the same\nattributes (`motionKeyframesAttributes`). Values are filtered (property names, no `url(`, `;`,\nbraces; at most 64 frames, 200 characters).\n\nMotionPresence (React; Framer `AnimatePresence`): `children` with keys, `initial` (default\n`true`; `false` skips the first entrance of the children rendered with it), `mode` (`sync` ·\n`wait`; `popLayout` deferred to 5.4), `onExitComplete`. Context to the Motions inside a child: a\nremoved child renders `data-ok-state=\"exit\"` on its Motion, MotionGroup and MotionText roots and is\nunmounted when their animations end (core `waitForAnimations`, late look for keyframes).\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\n`animate` object / custom keyframes → `keyframes` + `transition` (ADR-0062); `AnimatePresence` →\n`MotionPresence` (React) / `exit()`, `hide()`, `remove()` (HTML); `animate()` / `useAnimate` →\ncore `animate(element, keyframes, options)` (re-exported by both packages; a hook isn't needed: a\nref and `animate()`). Countdown (the reference's\n`useCountdownDate(date)` / `useCountdownSeconds(seconds)` hooks): `date` → `date`, the hook's\nseconds → `seconds`, `startCountdown` → HTML `data-ok-countdown-restart` / `restart()` (React:\nchange the `key`), `counting` → not `paused` and not complete. The reference's negative values\nafter the date are clamped at 0 (the countdown completes). Beyond the reference: `paused`\n(WCAG 2.2.2), a polite live region, `largestUnit`, `labels`, `now`. MotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), layout animations\n(5.4), scroll-linked progress (Scroll progress page, 5.2), gestures (5.3). Done in 5.1: spring\nphysics, custom keyframes, exit of a Dialog / Drawer, the reference's logo (story \"Logo\": a pulsing\nlogo in two shape-morphing turning rings, a small logo over a turning gradient disc). Not\napplicable: `motion.*` element factories, `useAnimate` (a ref and `animate()`).",
+     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nCountdown:\n(Options of `countdown`: listed under \"options\".)\n\nCountdown content and behavior (not options: free text or functions): `date` (React `Date`, ISO\nstring or epoch ms; HTML `data-ok-date`, anything `Date.parse` reads; wins over `seconds`), `now`\n(the time of the first render, so server and client markup agree; HTML `data-ok-now`; the clock\nthen runs from it), `labels` (React `{ days, hours, minutes, seconds }`, default English plurals;\nHTML: the text of each `[data-ok-countdown-label]`), `completeLabel` (announced at the end,\ndefault \"Time's up\"; HTML `data-ok-complete-label`), `onTick(remaining)` (whole seconds left, each\ntime the shown value changes), `onComplete()`.\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nCustom keyframes (ADR-0062; free JSON, so not in the schema, like `viewportMargin`): React\n`keyframes` (Framer's `animate` object: a value or a list per property, `null` = the current value;\n`x` / `y` → `translate` px, `scale` / `scaleX` / `scaleY` → `scale`, `rotate` → `rotate` deg, other\nCSS properties as they are) and `transition` (Framer's `transition` in ms: `duration`, `delay`,\n`ease` (CSS easing, token name `standard` · `decelerate` · `accelerate` · `expressive`, Framer\nnames, control points, or one per segment), `times`, `repeat` (`Infinity`), `repeatType`\n(`loop` · `reverse` · `mirror`), `repeatDelay`, `type: \"spring\"` with `stiffness`, `damping`,\n`mass`, `velocity`, `bounce` + `duration` / `visualDuration`, `reducedMotion`). HTML\n`data-ok-keyframes` / `data-ok-transition` (JSON, `\"repeat\": \"Infinity\"`); React writes the same\nattributes (`motionKeyframesAttributes`). Values are filtered (property names, no `url(`, `;`,\nbraces; at most 64 frames, 200 characters).\n\nGestures (5.3; free values, so not in the schema, like the keyframes): React props on `Motion`\n(Framer's names) and the same attributes in HTML (`motionGestureAttributes`): `drag` (`true` →\n`data-ok-drag`, `\"x\"` / `\"y\"` → its value), `dragConstraints` (a box in px from where the element\nsits → JSON; an element's `id` → the id; a ref → React only, no attribute), `dragElastic` (0–1,\n`true` = 0.5, `false` = 0, or a box per side; default 0.5), `dragMomentum` (default `true`;\n`false` → `\"false\"`), `dragSnapToOrigin`, `dragDirectionLock`, `dragTransition` (inertia: `power`\n0.8, `timeConstant` 750 ms, `bounceStiffness` 200, `bounceDamping` 40, `restDelta` 1,\n`restSpeed` 10; `modifyTarget(target, axis)` React only), `whileHover`, `whileTap`, `whileFocus`,\n`whileDrag` (keyframes like `keyframes`, plus an optional `transition` key; filtered the same way).\nThe element's `transition` is written as `data-ok-transition` with any gesture and applies to\nstates without their own. Callbacks (React, Framer's order `(event, info)`): `onDragStart`,\n`onDrag`, `onDragEnd` (`info`: `point` on the page, `delta`, `offset`, `velocity` px/s; `event`\n`null` when the browser cancelled the pointer), `onDirectionLock(axis)`, `onDragTransitionEnd()`,\n`onHoverStart(event)`, `onHoverEnd(event)`, `onTapStart(event, { point })`, `onTap`, `onTapCancel`.\n\nMotionPresence (React; Framer `AnimatePresence`): `children` with keys, `initial` (default\n`true`; `false` skips the first entrance of the children rendered with it), `mode` (`sync` ·\n`wait`; `popLayout` deferred to 5.4), `onExitComplete`. Context to the Motions inside a child: a\nremoved child renders `data-ok-state=\"exit\"` on its Motion, MotionGroup and MotionText roots and is\nunmounted when their animations end (core `waitForAnimations`, late look for keyframes).\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\n`animate` object / custom keyframes → `keyframes` + `transition` (ADR-0062); `AnimatePresence` →\n`MotionPresence` (React) / `exit()`, `hide()`, `remove()` (HTML); `animate()` / `useAnimate` →\ncore `animate(element, keyframes, options)` (re-exported by both packages; a hook isn't needed: a\nref and `animate()`). Countdown (the reference's\n`useCountdownDate(date)` / `useCountdownSeconds(seconds)` hooks): `date` → `date`, the hook's\nseconds → `seconds`, `startCountdown` → HTML `data-ok-countdown-restart` / `restart()` (React:\nchange the `key`), `counting` → not `paused` and not complete. The reference's negative values\nafter the date are clamped at 0 (the countdown completes). Beyond the reference: `paused`\n(WCAG 2.2.2), a polite live region, `largestUnit`, `labels`, `now`. MotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), layout animations\n(5.4), scroll-linked progress (Scroll progress page, 5.2). Done in 5.3: drag, gesture states,\nthe swipe helper, story \"Gestures\" (the reference has no drag section: Drag, Axis and direction\nlock, Elastic and snap back, Hover, tap and focus). Done in 5.1: spring\nphysics, custom keyframes, exit of a Dialog / Drawer, the reference's logo (story \"Logo\": a pulsing\nlogo in two shape-morphing turning rings, a small logo over a turning gradient disc). Not\napplicable: `motion.*` element factories, `useAnimate` (a ref and `animate()`).",
      "id": "options",
      "title": "Options"
     },
@@ -57687,22 +58115,22 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.\n\nCustom keyframes (core `createMotionKeyframes`, both owners): the player watches `data-ok-state`;\n`enter` plays the keyframes with `animate()`, `exit` plays them backwards (single targets go back\nto the value before the first entrance; repeats dropped), `data-ok-paused` pauses them, a change of\nthe JSON replays, removing it cancels. The CSS variant is off while `data-ok-keyframes` is present\n(`animation: none`). Without a state (no JavaScript) the element shows its own style. Reduced\nmotion (also when it changes while running): non-looping keyframes jump to the end, loops don't\nrun.\n\nEngine (`animate()`, ADR-0062): one Web Animation per CSS property, easing per segment (Framer),\n`fill: both`, end values committed to the inline style (`commitStyles()`) and the animation\ncancelled, loops never committed; an interrupted property starts from its computed value; springs\nsampled into `linear()` (rest: within 0.001 and slower than 0.01/s, at most 10 s), fallback where\n`linear()` isn't supported: `cubic-bezier(0.34, 1.56, 0.64, 1)` for bouncy springs,\n`--ok-easing-decelerate` otherwise. Default duration `--ok-duration-standard`, easing\n`--ok-easing-standard` (read from the document's computed style). Controls: `finished` (never\nrejects), `cancel`, `stop`, `complete`, `pause`, `play`, `animations`.\n\nExit before removal (core `playExit` / `waitForAnimations`): writes `data-ok-state=\"exit\"` (Motion\nroots) or `\"exiting\"` (other elements), flushes style, waits for the finite animations of the\nsubtree (a microtask later again when keyframes are inside), with a safety timer (longest\nremaining + 100 ms). `cancel()` restores the previous state. HTML instance `exit()` / `hide()` /\n`remove()` resolve `false` when `replay()` interrupts them.\n\nCountdown (core `createCountdown`, both owners): the time left is `date − clock` (date mode) or\n`seconds` minus the running time (seconds mode), shown in whole seconds rounded up (10 → 0) and\nsplit from `largestUnit` down (a larger unit folds into it: 90 seconds with `minutes` = `1` minute\n`30` seconds). The clock is `now + (Date.now() − mount time)` when `now` is given, otherwise\n`Date.now()`. Without `now` a date countdown renders `--` for every value until it mounts (no\nserver / client mismatch); a seconds countdown renders its full time. A timer fires when the shown\nvalue changes (aligned to the next whole second, not every frame). At 0 it stops, reports\n`complete` once and announces `completeLabel`; a date in the past completes at mount. `paused`:\na seconds countdown keeps its time left; a date countdown freezes its text and shows the real time\nleft when it resumes (the date doesn't move). Changing `date` / `seconds` starts over.\nLive region cadence (`[data-ok-countdown-status]`, polite): nothing at mount, then the time left\n(non-zero units, such as \"2 hours, 15 minutes\") each time it crosses a whole hour while at least\nan hour is left, each whole minute while at least a minute is left, at 30 and 10 seconds, and\n`completeLabel` at the end. Announcing every second would flood screen readers and stop them from\nreading anything else; the visible text stays readable at any time (the root's `timer` role is\nnot live). Triggers: `data-ok-countdown-toggle` flips `data-ok-paused` and mirrors it in its\n`aria-pressed`; `data-ok-countdown-restart` starts over and runs.",
+     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.\n\nCustom keyframes (core `createMotionKeyframes`, both owners): the player watches `data-ok-state`;\n`enter` plays the keyframes with `animate()`, `exit` plays them backwards (single targets go back\nto the value before the first entrance; repeats dropped), `data-ok-paused` pauses them, a change of\nthe JSON replays, removing it cancels. The CSS variant is off while `data-ok-keyframes` is present\n(`animation: none`). Without a state (no JavaScript) the element shows its own style. Reduced\nmotion (also when it changes while running): non-looping keyframes jump to the end, loops don't\nrun.\n\nEngine (`animate()`, ADR-0062): one Web Animation per CSS property, easing per segment (Framer),\n`fill: both`, end values committed to the inline style (`commitStyles()`) and the animation\ncancelled, loops never committed; an interrupted property starts from its computed value; springs\nsampled into `linear()` (rest: within 0.001 and slower than 0.01/s, at most 10 s), fallback where\n`linear()` isn't supported: `cubic-bezier(0.34, 1.56, 0.64, 1)` for bouncy springs,\n`--ok-easing-decelerate` otherwise. Default duration `--ok-duration-standard`, easing\n`--ok-easing-standard` (read from the document's computed style). Controls: `finished` (never\nrejects), `cancel`, `stop`, `complete`, `pause`, `play`, `animations`.\n\nExit before removal (core `playExit` / `waitForAnimations`): writes `data-ok-state=\"exit\"` (Motion\nroots) or `\"exiting\"` (other elements), flushes style, waits for the finite animations of the\nsubtree (a microtask later again when keyframes are inside), with a safety timer (longest\nremaining + 100 ms). `cancel()` restores the previous state. HTML instance `exit()` / `hide()` /\n`remove()` resolve `false` when `replay()` interrupts them.\n\nGestures (core `createMotionGestures`, both owners; `drag.ts`, `gesture.ts`, ADR-0062 5.3):\n- **Drag** (`createDrag` on `trackPan`): a primary pointer press, then 3 px of movement start a\n  drag (pointer captured where allowed); the element follows through its `translate` (CSSOM),\n  from where it was (a running glide stops where it is when pressed). Axis lock keeps the other\n  axis; the direction lock waits for 10 px on one axis (vertical first, Framer). Constraints are\n  read when a drag starts: a box, or an element whose box it stays in (its layout box without\n  transforms; larger than the element → it may move while it covers it). Past a constraint it\n  moves by `dragElastic` (0 stops at it). On release: with momentum, an inertia glide from the\n  release velocity (last 100 ms) towards `from + power × velocity`, with a spring back once it\n  crosses a constraint (`dragElastic` 0 on both sides of an axis: a hard stop); without momentum,\n  only the spring back from an elastic overdrag; `dragSnapToOrigin`: a spring back to no\n  translate. The glide is simulated per axis (1 ms steps, rest under `restDelta` / `restSpeed`,\n  at most 10 s) and played by `animate()` as `translate` keyframes every 1/60 s (linear), so the\n  end is committed inline. `pointercancel` ends a drag like a release without velocity. A press\n  inside a nested draggable drags only the innermost one. Native image / link drag is prevented\n  while draggable. CSS: `cursor: grab` (`grabbing` while `data-ok-dragging`), no text selection,\n  `touch-action: none` (`pan-y` for `x`, `pan-x` for `y`, so the page scrolls along the free axis).\n- **Keyboard alternative** (Owlky addition, WCAG 2.1.1 / 2.5.7): while the draggable element\n  itself has the focus, arrow keys move it 10 px (50 px with Shift) along its axes, clamped to its\n  constraints, and report a drag start, a move and an end (velocity 0). Make it focusable\n  (`tabindex=\"0\"`) and give it a name (`role=\"group\"` + `aria-label`) and a visible hint.\n- **States**: hover (`pointerenter` / `pointerleave`, mouse and pen only), tap (a primary pointer\n  press until its release: on the element → `tap`, outside → `tapcancel`; `pointercancel` and a\n  drag that starts → `tapcancel`; Enter or Space on the focused element or a `button`, `a[href]`,\n  `[role=\"button\"]` or `summary` inside it, until the key's release; losing the focus cancels),\n  focus (`focusin` whose target matches `:focus-visible`, until the focus leaves the element),\n  drag (while dragging). Order (lowest first): focus, hover, tap, drag; each property follows the\n  highest active state that names it. A property's own value (computed, and its inline value) is\n  kept when a state first takes it; when no state names it any more it animates back and its\n  inline value is restored (none → removed). Unchanged targets don't replay. Transitions: the\n  state's own, else the element's `transition`, else Framer's defaults (springs: `translate`,\n  `rotate` stiffness 500 damping 25, `scale` 550 / 30; anything else a 300 ms tween,\n  `[0.25, 0.1, 0.35, 1]`).\n- **Reduced motion** (`prefers-reduced-motion: reduce`): the element still follows the pointer\n  and the arrow keys; a release settles at once (clamped to the constraints, or at the origin):\n  no glide, no spring; states jump to their values (the engine's rule).\n\nSwipe (core `createSwipe` on `trackPan`, shared helper): the first 3 px pick the axis; an axis\nwithout an allowed direction (`top` · `right` · `bottom` · `left`) lets the press go; moves report\n`distance` towards the direction (moving back is negative with one allowed direction) and\n`speed`; the release is a swipe at `threshold` px (default 50) or `velocity` px/s (default 450)\ntowards an allowed direction, otherwise a cancel. Used by the swipeable Drawer. The Snackbar's\ntoast swipe (`createToastSwipe`) stays as it is: it measures the average speed of the whole swipe\nand resists moves in other directions; moving it onto the helper would change when a toast\ndismisses (no behavior change in 5.3).\n\nCountdown (core `createCountdown`, both owners): the time left is `date − clock` (date mode) or\n`seconds` minus the running time (seconds mode), shown in whole seconds rounded up (10 → 0) and\nsplit from `largestUnit` down (a larger unit folds into it: 90 seconds with `minutes` = `1` minute\n`30` seconds). The clock is `now + (Date.now() − mount time)` when `now` is given, otherwise\n`Date.now()`. Without `now` a date countdown renders `--` for every value until it mounts (no\nserver / client mismatch); a seconds countdown renders its full time. A timer fires when the shown\nvalue changes (aligned to the next whole second, not every frame). At 0 it stops, reports\n`complete` once and announces `completeLabel`; a date in the past completes at mount. `paused`:\na seconds countdown keeps its time left; a date countdown freezes its text and shows the real time\nleft when it resumes (the date doesn't move). Changing `date` / `seconds` starts over.\nLive region cadence (`[data-ok-countdown-status]`, polite): nothing at mount, then the time left\n(non-zero units, such as \"2 hours, 15 minutes\") each time it crosses a whole hour while at least\nan hour is left, each whole minute while at least a minute is left, at 30 and 10 seconds, and\n`completeLabel` at the end. Announcing every second would flood screen readers and stop them from\nreading anything else; the visible text stays readable at any time (the root's `timer` role is\nnot live). Triggers: `data-ok-countdown-toggle` flips `data-ok-paused` and mirrors it in its\n`aria-pressed`; `data-ok-countdown-restart` starts over and runs.",
      "id": "behavior",
      "title": "Behavior"
     },
     {
-     "body": "Not interactive. Content inside keeps its own keyboard behavior.",
+     "body": "Not interactive, except gestures. A draggable Motion with the focus: arrow keys move it (10 px,\nShift: 50 px). With `whileTap`: Enter and Space press it (on the Motion or a button inside it).\nContent inside keeps its own keyboard behavior.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "Content never depends on the animation (no JavaScript → shown; reduced motion → shown at once).\nMotionText and CountUp hide the moving copy (`aria-hidden`) and expose a visually hidden label with\nthe whole text / end value. Countdown: `role=\"timer\"` (not live; name it with `aria-label`), a\npolite status region on the cadence above, a pause control for anything that runs more than 5\nseconds next to other content (WCAG 2.2.2: `data-ok-countdown-toggle` or React `paused`). Loops need a pause control (WCAG 2.2.2): `paused`. Directional\nentrances start outside the box: clip containers that could widen the page.",
+     "body": "Content never depends on the animation (no JavaScript → shown; reduced motion → shown at once).\nMotionText and CountUp hide the moving copy (`aria-hidden`) and expose a visually hidden label with\nthe whole text / end value. Countdown: `role=\"timer\"` (not live; name it with `aria-label`), a\npolite status region on the cadence above, a pause control for anything that runs more than 5\nseconds next to other content (WCAG 2.2.2: `data-ok-countdown-toggle` or React `paused`). Loops need a pause control (WCAG 2.2.2): `paused`. Directional\nentrances start outside the box: clip containers that could widen the page. Gestures: dragging is\na pointer gesture, so anything a drag does needs another way (WCAG 2.5.7 Dragging Movements,\n2.1.1): the arrow keys on a focusable draggable, or buttons; hover-only states never carry\ninformation; a tap state also answers Enter and Space. Owlky never adds a `tabindex` (Framer\ndoes for tap elements): put `whileTap` on a focusable element or around a button.",
      "id": "accessibility",
      "title": "Accessibility"
     },
     {
-     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion `{ state, replay(), exit(), hide(), remove() }`\n(promises of `boolean`), motion-group / motion-text `{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only),\ncountdown `{ remaining, paused, pause(), resume(), restart() }` with `ok:countdown:tick`\n(`{ remaining }`) and `ok:countdown:complete`. React Countdown: `onTick(remaining)`,\n`onComplete()`.\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`; `animate`, `springEasing`, `resolveEasing`, `motionTracks`,\n`supportsLinearEasing`; `createMotionKeyframes`, `parseMotionKeyframes`, `parseMotionTransition`,\n`motionKeyframesAttributes`; `playExit`, `waitForAnimations`, `runningAnimations`. React and\nHTML re-export `animate`, `springEasing` and the option types.",
+     "body": "HTML gestures (`ok:motion:<name>`): `dragstart`, `drag`, `dragend` (`{ point, delta, offset,\nvelocity }`), `directionlock` (`{ axis }`), `dragtransitionend`, `hoverstart`, `hoverend`,\n`tapstart`, `tap`, `tapcancel` (`{ point }`). Core gestures: `createMotionGestures`,\n`createDrag`, `trackPan`, `createSwipe`, `inertiaPath`, `panVelocity`, `lockDirection`,\n`dragRanges`, `dragElastic`, `applyElastic`, `readTranslate`, `gestureTransition`,\n`motionGestureAttributes`, `readMotionGestures`, `parseGestureTarget`, `parseDragBox`,\n`parseDragElastic`, `parseDragTransition`; React and HTML re-export the gesture types\n(`PanInfo`, `TapInfo`, `GestureTarget`, `DragConstraints`, `DragElastic`, `DragTransition`,\n`PanAxis`).\nHTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion `{ state, replay(), exit(), hide(), remove() }`\n(promises of `boolean`), motion-group / motion-text `{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only),\ncountdown `{ remaining, paused, pause(), resume(), restart() }` with `ok:countdown:tick`\n(`{ remaining }`) and `ok:countdown:complete`. React Countdown: `onTick(remaining)`,\n`onComplete()`.\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`; `animate`, `springEasing`, `resolveEasing`, `motionTracks`,\n`supportsLinearEasing`; `createMotionKeyframes`, `parseMotionKeyframes`, `parseMotionTransition`,\n`motionKeyframesAttributes`; `playExit`, `waitForAnimations`, `runningAnimations`. React and\nHTML re-export `animate`, `springEasing` and the option types.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -57712,7 +58140,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `animate` (keyframes object), `transition` (springs, easing, `times`, `repeat*`) | `keyframes`, `transition` (ms) · `data-ok-keyframes`, `data-ok-transition` (JSON) | renamed (5.1) | ADR-0062; `animate` also takes variant labels upstream (`variant` here) |\n| `exit` (keyframes object) | the keyframes backwards | renamed (5.1) | |\n| `AnimatePresence` (`initial`, `mode` sync / wait, `onExitComplete`) | `MotionPresence` · HTML `exit()`, `hide()`, `remove()` | renamed (5.1) | `mode=\"popLayout\"`, `custom`, `propagate`: deferred (5.4) |\n| `style` motion values, `transformTemplate` | — | deferred (5.4) | shared values |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event not offered (the trigger's state change is the start) |\n| `onUpdate` | — | deferred (5.4) | per-frame values come with shared values |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | `animate(element, keyframes, options)` (core, re-exported) | kept (5.1) | ms instead of seconds; controls `finished`, `cancel`, `stop`, `complete`, `pause`, `play`; `useAnimate` not applicable (ref + `animate()`) |\n| — | `paused`, MotionBorder, CountUp, Countdown, background and path variants | kept | Owlky / reference additions |",
+     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `animate` (keyframes object), `transition` (springs, easing, `times`, `repeat*`) | `keyframes`, `transition` (ms) · `data-ok-keyframes`, `data-ok-transition` (JSON) | renamed (5.1) | ADR-0062; `animate` also takes variant labels upstream (`variant` here) |\n| `exit` (keyframes object) | the keyframes backwards | renamed (5.1) | |\n| `AnimatePresence` (`initial`, `mode` sync / wait, `onExitComplete`) | `MotionPresence` · HTML `exit()`, `hide()`, `remove()` | renamed (5.1) | `mode=\"popLayout\"`, `custom`, `propagate`: deferred (5.4) |\n| `style` motion values, `transformTemplate` | — | deferred (5.4) | shared values |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event not offered (the trigger's state change is the start) |\n| `onUpdate` | — | deferred (5.4) | per-frame values come with shared values |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap`, `whileFocus`, `whileDrag` | same · `data-ok-while-hover` / `-tap` / `-focus` / `-drag` (JSON) | kept (5.3) | the named `variant=\"interactive\"` stays (CSS); springs by default; tap answers Enter and Space; focus needs `:focus-visible` |\n| `onHoverStart`, `onHoverEnd`, `onTapStart`, `onTap`, `onTapCancel` | same · `ok:motion:hoverstart` / `hoverend` / `tapstart` / `tap` / `tapcancel` | kept (5.3) | hover callbacks get the event only; tap `info` is `{ point }` |\n| `drag`, `dragConstraints`, `dragElastic`, `dragMomentum`, `dragSnapToOrigin`, `dragDirectionLock`, `dragTransition` | same · `data-ok-drag`, `data-ok-drag-constraints` (JSON box or id), `-elastic`, `-momentum=\"false\"`, `-snap-to-origin`, `-direction-lock`, `-transition` (JSON) | kept (5.3) | ms; `dragConstraints` also takes an element id (React and HTML); `modifyTarget` React only |\n| `onDragStart`, `onDrag`, `onDragEnd`, `onDirectionLock`, `onDragTransitionEnd` | same · `ok:motion:dragstart` / `drag` / `dragend` / `directionlock` / `dragtransitionend` | kept (5.3) | `onDragEnd`'s event is `null` after a `pointercancel` |\n| `dragPropagation` | — | not applicable | the innermost draggable drags (Framer's default); no `stopPropagation` (AGENTS.md rule 7) |\n| `dragControls` / `useDragControls`, `dragListener`, `onMeasureDragConstraints` | — | deferred | starting a drag from another element (a handle) needs a trigger design for HTML |\n| `onPan*`, `pinch`, `whilePinch`, `propagate` | core `trackPan` / `createSwipe` | deferred | no React / HTML props yet; `propagate` not applicable (no `stopPropagation`) |\n| tap's automatic `tabindex=\"0\"` | — | not applicable | Owlky doesn't make elements focusable: use a focusable element or a button inside |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | `animate(element, keyframes, options)` (core, re-exported) | kept (5.1) | ms instead of seconds; controls `finished`, `cancel`, `stop`, `complete`, `pause`, `play`; `useAnimate` not applicable (ref + `animate()`) |\n| — | `paused`, MotionBorder, CountUp, Countdown, background and path variants | kept | Owlky / reference additions |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -57825,6 +58253,18 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { Avatar, MotionBorder } from \"@owlky/react\";\n\n{/* Avatar */}\n<div className=\"sb-motion-avatars\">\n  <MotionBorder shape=\"circle\" color=\"secondary\" secondaryColor=\"warning\" className=\"sb-motion-avatar sb-motion-avatar-circular\">\n    <Avatar variant=\"circular\" size={108} src=\"avatars/avatar-1.svg\" alt=\"Team member 1\" />\n  </MotionBorder>\n  <MotionBorder shape=\"circle\" color=\"primary\" className=\"sb-motion-avatar sb-motion-avatar-circular\">\n    <Avatar variant=\"circular\" size={108} src=\"avatars/avatar-2.svg\" alt=\"Team member 2\" />\n  </MotionBorder>\n  <MotionBorder shape=\"circle\" color=\"warning\" secondaryColor=\"primary\" className=\"sb-motion-avatar sb-motion-avatar-circular\">\n    <Avatar variant=\"circular\" size={108} src=\"avatars/avatar-3.svg\" alt=\"Team member 3\" />\n  </MotionBorder>\n  <MotionBorder shape=\"rounded\" color=\"secondary\" secondaryColor=\"info\" className=\"sb-motion-avatar sb-motion-avatar-square\">\n    <Avatar variant=\"square\" size={108} src=\"avatars/avatar-4.svg\" alt=\"Team member 4\" />\n  </MotionBorder>\n  <MotionBorder shape=\"rounded\" color=\"primary\" className=\"sb-motion-avatar sb-motion-avatar-square\">\n    <Avatar variant=\"square\" size={108} src=\"avatars/avatar-5.svg\" alt=\"Team member 5\" />\n  </MotionBorder>\n  <MotionBorder shape=\"rounded\" color=\"warning\" secondaryColor=\"success\" className=\"sb-motion-avatar sb-motion-avatar-square\">\n    <Avatar variant=\"square\" size={108} src=\"avatars/avatar-6.svg\" alt=\"Team member 6\" />\n  </MotionBorder>\n  <MotionBorder shape=\"rounded\" color=\"info\" secondaryColor=\"secondary\" className=\"sb-motion-avatar sb-motion-avatar-rounded\">\n    <Avatar variant=\"rounded\" size={108} src=\"avatars/avatar-7.svg\" alt=\"Team member 7\" />\n  </MotionBorder>\n  <MotionBorder shape=\"rounded\" color=\"primary\" secondaryColor=\"warning\" className=\"sb-motion-avatar sb-motion-avatar-rounded\">\n    <Avatar variant=\"rounded\" size={108} src=\"avatars/avatar-1.svg\" alt=\"Team member 8\" />\n  </MotionBorder>\n  <MotionBorder shape=\"rounded\" color=\"error\" secondaryColor=\"warning\" className=\"sb-motion-avatar sb-motion-avatar-rounded\">\n    <Avatar variant=\"rounded\" size={108} src=\"avatars/avatar-2.svg\" alt=\"Team member 9\" />\n  </MotionBorder>\n</div>\n",
      "snippets": [
       "avatar-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/paper.css + components/typography.css + components/card.css + components/button.css + components/motion.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Drag -->\n<div class=\"sb-gesture\">\n  <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"0\" id=\"gesture-drag-stage\" class=\"sb-motion-stage sb-gesture-stage\">\n    <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-drag data-ok-drag-constraints=\"gesture-drag-stage\" data-ok-while-drag='{\"scale\":1.05}' class=\"sb-gesture-item\" tabindex=\"0\" role=\"group\" aria-label=\"Movable card\" aria-describedby=\"gesture-drag-hint\">\n      <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\" data-ok-card class=\"sb-motion-card\">\n        <h6 data-ok-typography data-ok-variant=\"subtitle2\">Drag me</h6>\n      </div>\n    </div>\n  </div>\n  <p data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\" id=\"gesture-drag-hint\">Drag the card, or focus it and use the arrow keys. Hold Shift to move it further.</p>\n</div>\n\n<!-- Axis and direction lock -->\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"0\" id=\"gesture-axis-stage\" class=\"sb-motion-stage sb-gesture-stage\">\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-drag=\"x\" data-ok-drag-constraints=\"gesture-axis-stage\" class=\"sb-gesture-item\" tabindex=\"0\" role=\"group\" aria-label=\"Card that moves left and right\">\n    <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\" data-ok-card class=\"sb-motion-card\">\n      <h6 data-ok-typography data-ok-variant=\"subtitle2\">Left and right</h6>\n    </div>\n  </div>\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-drag=\"y\" data-ok-drag-constraints=\"gesture-axis-stage\" class=\"sb-gesture-item\" tabindex=\"0\" role=\"group\" aria-label=\"Card that moves up and down\">\n    <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\" data-ok-card class=\"sb-motion-card\">\n      <h6 data-ok-typography data-ok-variant=\"subtitle2\">Up and down</h6>\n    </div>\n  </div>\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-drag data-ok-drag-constraints=\"gesture-axis-stage\" data-ok-drag-direction-lock class=\"sb-gesture-item\" tabindex=\"0\" role=\"group\" aria-label=\"Card that keeps its first direction\">\n    <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\" data-ok-card class=\"sb-motion-card\">\n      <h6 data-ok-typography data-ok-variant=\"subtitle2\">First direction</h6>\n    </div>\n  </div>\n</div>\n\n<!-- Elastic and snap back -->\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"0\" class=\"sb-motion-stage sb-gesture-stage\">\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-drag data-ok-drag-constraints='{\"top\":-40,\"right\":40,\"bottom\":40,\"left\":-40}' data-ok-drag-elastic=\"0.2\" class=\"sb-gesture-item\" tabindex=\"0\" role=\"group\" aria-label=\"Card on a short elastic leash\">\n    <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\" data-ok-card class=\"sb-motion-card\">\n      <h6 data-ok-typography data-ok-variant=\"subtitle2\">Elastic</h6>\n    </div>\n  </div>\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-drag data-ok-drag-snap-to-origin data-ok-while-drag='{\"scale\":1.1}' class=\"sb-gesture-item\" tabindex=\"0\" role=\"group\" aria-label=\"Card that springs back\">\n    <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"1\" data-ok-card class=\"sb-motion-card\">\n      <h6 data-ok-typography data-ok-variant=\"subtitle2\">Springs back</h6>\n    </div>\n  </div>\n</div>\n\n<!-- Hover, tap and focus -->\n<div class=\"sb-row\">\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-while-hover='{\"scale\":1.1}' data-ok-while-tap='{\"scale\":0.9}' class=\"sb-gesture-press\">\n    <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\"><span data-ok-button-label>Spring</span></button>\n  </div>\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-while-hover='{\"y\":-6}' data-ok-while-tap='{\"scale\":0.95}' data-ok-transition='{\"duration\":400,\"bounce\":0.5,\"type\":\"spring\"}' class=\"sb-gesture-press\">\n    <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"><span data-ok-button-label>Bouncy</span></button>\n  </div>\n  <div data-ok-motion data-ok-variant=\"fadeIn\" data-ok-trigger=\"inView\" data-ok-while-hover='{\"rotate\":4}' data-ok-while-focus='{\"scale\":1.08}' class=\"sb-gesture-press\">\n    <button type=\"button\" data-ok-button data-ok-variant=\"soft\" data-ok-color=\"inherit\" data-ok-size=\"md\"><span data-ok-button-label>Focus me</span></button>\n  </div>\n</div>",
+     "id": "components-motion--gestures",
+     "name": "Gestures",
+     "react": "import { Button, Card, Motion, Paper, Typography } from \"@owlky/react\";\n\n/**\n * Gestures (roadmap 5.3): every draggable card is focusable and moves with the arrow keys too\n * (WCAG 2.5.7, 2.1.1). Constraints name their stage by id, so React and HTML write the same\n * markup. `.sb-gesture-*` classes are story-only layout.\n */\nexport function GestureDragDemo() {\n  return (\n    <div className=\"sb-gesture\">\n      <Paper id=\"gesture-drag-stage\" className=\"sb-motion-stage sb-gesture-stage\" elevation={0}>\n        <Motion\n          className=\"sb-gesture-item\"\n          drag\n          dragConstraints=\"gesture-drag-stage\"\n          whileDrag={{ scale: 1.05 }}\n          tabIndex={0}\n          role=\"group\"\n          aria-label=\"Movable card\"\n          aria-describedby=\"gesture-drag-hint\"\n        >\n          <Card className=\"sb-motion-card\">\n            <Typography variant=\"subtitle2\">Drag me</Typography>\n          </Card>\n        </Motion>\n      </Paper>\n      <Typography id=\"gesture-drag-hint\" variant=\"body2\" color=\"textSecondary\">\n        Drag the card, or focus it and use the arrow keys. Hold Shift to move it further.\n      </Typography>\n    </div>\n  );\n}\n\n/** Axis lock and direction lock: the page still scrolls along the free axis. */\nexport function GestureAxisDemo() {\n  return (\n    <Paper id=\"gesture-axis-stage\" className=\"sb-motion-stage sb-gesture-stage\" elevation={0}>\n      <Motion\n        className=\"sb-gesture-item\"\n        drag=\"x\"\n        dragConstraints=\"gesture-axis-stage\"\n        tabIndex={0}\n        role=\"group\"\n        aria-label=\"Card that moves left and right\"\n      >\n        <Card className=\"sb-motion-card\">\n          <Typography variant=\"subtitle2\">Left and right</Typography>\n        </Card>\n      </Motion>\n      <Motion\n        className=\"sb-gesture-item\"\n        drag=\"y\"\n        dragConstraints=\"gesture-axis-stage\"\n        tabIndex={0}\n        role=\"group\"\n        aria-label=\"Card that moves up and down\"\n      >\n        <Card className=\"sb-motion-card\">\n          <Typography variant=\"subtitle2\">Up and down</Typography>\n        </Card>\n      </Motion>\n      <Motion\n        className=\"sb-gesture-item\"\n        drag\n        dragDirectionLock\n        dragConstraints=\"gesture-axis-stage\"\n        tabIndex={0}\n        role=\"group\"\n        aria-label=\"Card that keeps its first direction\"\n      >\n        <Card className=\"sb-motion-card\">\n          <Typography variant=\"subtitle2\">First direction</Typography>\n        </Card>\n      </Motion>\n    </Paper>\n  );\n}\n\n/** Elastic constraints and a spring back to the start. */\nexport function GestureSnapDemo() {\n  return (\n    <Paper className=\"sb-motion-stage sb-gesture-stage\" elevation={0}>\n      <Motion\n        className=\"sb-gesture-item\"\n        drag\n        dragConstraints={{ left: -40, right: 40, top: -40, bottom: 40 }}\n        dragElastic={0.2}\n        tabIndex={0}\n        role=\"group\"\n        aria-label=\"Card on a short elastic leash\"\n      >\n        <Card className=\"sb-motion-card\">\n          <Typography variant=\"subtitle2\">Elastic</Typography>\n        </Card>\n      </Motion>\n      <Motion\n        className=\"sb-gesture-item\"\n        drag\n        dragSnapToOrigin\n        whileDrag={{ scale: 1.1 }}\n        tabIndex={0}\n        role=\"group\"\n        aria-label=\"Card that springs back\"\n      >\n        <Card className=\"sb-motion-card\">\n          <Typography variant=\"subtitle2\">Springs back</Typography>\n        </Card>\n      </Motion>\n    </Paper>\n  );\n}\n\n/** Spring hover, tap and focus states: Enter and Space press the buttons too. */\nexport function GestureHoverTapDemo() {\n  return (\n    <div className=\"sb-row\">\n      <Motion className=\"sb-gesture-press\" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>\n        <Button variant=\"contained\">Spring</Button>\n      </Motion>\n      <Motion\n        className=\"sb-gesture-press\"\n        whileHover={{ y: -6 }}\n        whileTap={{ scale: 0.95 }}\n        transition={{ type: \"spring\", bounce: 0.5, duration: 400 }}\n      >\n        <Button variant=\"outlined\">Bouncy</Button>\n      </Motion>\n      <Motion className=\"sb-gesture-press\" whileHover={{ rotate: 4 }} whileFocus={{ scale: 1.08 }}>\n        <Button variant=\"soft\">Focus me</Button>\n      </Motion>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "gestures-axis.html",
+      "gestures-drag.html",
+      "gestures-hover-tap.html",
+      "gestures-snap.html"
      ]
     },
     {
@@ -79839,6 +80279,13 @@
      "title": "Change the shadow and the speed"
     },
     {
+     "body": "Add `swipeable` to a temporary drawer so people on touch screens can swipe it. A swipe towards the drawer's edge closes it, and a swipe from a strip along the edge of the screen opens it. The panel follows the finger, and the backdrop fades with it.\n\n- **Distance and speed:** `hysteresis` is how far the panel must be pulled to open or close, as a share of its size (default `0.52`). `minFlingVelocity` is the speed, in pixels per second, from which a shorter swipe still counts (default `450`).\n- **Edge strip:** `swipeAreaWidth` sets its width in pixels (default `20`). The strip only shows on touch screens, and it covers the page under it. `disableSwipeToOpen` removes it, so a swipe only closes the drawer. Consider it on iOS, where a swipe from the left edge goes back. In HTML, place an empty `data-ok-drawer-swipe-area` element right after the dialog.\n- **Discovery:** touching the strip slides a sliver of the panel in. `disableDiscovery` turns this off.\n- **Backdrop:** `disableBackdropTransition` keeps the backdrop fully shown during a swipe, which is less work on slow devices.\n\nIn React, `onOpenChange` receives `\"swipe\"` as the reason. In HTML, `ok:drawer:beforeopen` fires with `trigger: null`, and `ok:drawer:beforeclose` with the reason `swipe`. A swipe is a pointer gesture: keep a button that opens the drawer and one that closes it (WCAG 2.5.7).",
+     "html": "<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  data-ok-drawer-open=\"menu\" aria-haspopup=\"dialog\">\n  <span data-ok-button-label>Menu</span>\n</button>\n<dialog id=\"menu\" data-ok-drawer data-ok-anchor=\"left\" data-ok-variant=\"temporary\" data-ok-swipeable aria-label=\"Menu\">\n  <div data-ok-drawer-content>\n    <p data-ok-typography data-ok-variant=\"body2\">Swipe left to close.</p>\n    <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-drawer-close>\n      <span data-ok-button-label>Close</span>\n    </button>\n  </div>\n</dialog>\n<!-- The strip along the left edge where a swipe opens the drawer -->\n<div data-ok-drawer-swipe-area aria-hidden=\"true\"></div>",
+     "id": "swipeable",
+     "react": "import { Drawer, DrawerClose, DrawerContent, DrawerTrigger, Typography } from \"@owlky/react\";\n\nexport function SwipeableMenu() {\n  return (\n    <Drawer onOpenChange={(open, reason) => console.log(open, reason)}>\n      <DrawerTrigger variant=\"outlined\">Menu</DrawerTrigger>\n      <DrawerContent anchor=\"left\" aria-label=\"Menu\" swipeable>\n        <Typography variant=\"body2\">Swipe left to close.</Typography>\n        <DrawerClose color=\"inherit\">Close</DrawerClose>\n      </DrawerContent>\n    </Drawer>\n  );\n}",
+     "title": "Open and close with a swipe"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -79849,7 +80296,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:drawer:beforeopen`** (cancelable) fires before the drawer opens, and **`ok:drawer:open`** after.\n- **`ok:drawer:beforeclose`** (cancelable) fires before it closes, with `detail.reason`. **`ok:drawer:close`** fires once it has closed (a temporary drawer slides out first), with the reason: `escape`, `backdrop`, `trigger`, `api` or `native`.\n- **Instance:** `runtime.get(element, \"drawer\")` returns `{ isOpen, open(trigger?), close(reason?), toggle() }`.\n- **React:** `onOpenChange(open, reason)` on `Drawer`.",
+     "body": "- **`ok:drawer:beforeopen`** (cancelable) fires before the drawer opens, and **`ok:drawer:open`** after.\n- **`ok:drawer:beforeclose`** (cancelable) fires before it closes, with `detail.reason`. **`ok:drawer:close`** fires once it has closed (a temporary drawer slides out first), with the reason: `escape`, `backdrop`, `trigger`, `api`, `native` or `swipe`.\n- **Instance:** `runtime.get(element, \"drawer\")` returns `{ isOpen, open(trigger?), close(reason?), toggle() }`.\n- **React:** `onOpenChange(open, reason)` on `Drawer`. A swipeable drawer reports `swipe` when a swipe opens or closes it.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -79859,7 +80306,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- A drawer needs a name: set `aria-label`, or `aria-labelledby` pointing to its title.\n- When a temporary drawer opens, focus moves into it and the rest of the page becomes inert. When it closes, focus returns to the button that opened it.\n- Triggers carry `aria-haspopup=\"dialog\"`. Docked drawers' triggers carry `aria-expanded` and `aria-controls` instead.\n- If the content can scroll, put it in a **Scrollbar**: it becomes a named region that keyboard users can scroll, and it's the first thing focused when the drawer opens.",
+     "body": "- A drawer needs a name: set `aria-label`, or `aria-labelledby` pointing to its title.\n- When a temporary drawer opens, focus moves into it and the rest of the page becomes inert. When it closes, focus returns to the button that opened it.\n- Triggers carry `aria-haspopup=\"dialog\"`. Docked drawers' triggers carry `aria-expanded` and `aria-controls` instead.\n- If the content can scroll, put it in a **Scrollbar**: it becomes a named region that keyboard users can scroll, and it's the first thing focused when the drawer opens.\n- A swipeable drawer still needs its buttons: swipes only work with touch and a pen, and some people can't make them (WCAG 2.5.7).",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -81693,6 +82140,27 @@
      "title": "Play the exit before removing content"
     },
     {
+     "body": "Add `drag` to make a Motion follow the pointer. Without a value it moves on both axes. `\"x\"` or `\"y\"` keeps it on one axis, so the page still scrolls along the other one on touch screens.\n\n- **Release:** it glides on in the direction it was thrown and slows down. Turn this off with `dragMomentum` set to `false`, or bring it back to where it started with `dragSnapToOrigin`.\n- **Direction lock:** with `dragDirectionLock`, it moves only along the first axis the pointer moves on.\n- **While dragged:** `whileDrag` takes keyframes, such as `{ scale: 1.05 }`, played while the pointer holds it.\n- **Events:** `onDragStart`, `onDrag` and `onDragEnd` (HTML: `ok:motion:dragstart`, `ok:motion:drag` and `ok:motion:dragend`) report the pointer's `point`, `offset` from the press, `delta` and `velocity` in pixels per second.\n\nDragging needs a pointer, so give people another way to do what a drag does (WCAG 2.5.7). Make the Motion focusable with `tabindex=\"0\"` and name it: the arrow keys then move it by 10 pixels, or 50 pixels with Shift, and report the same events. With reduced motion, the content still follows the pointer but stops at once when released.",
+     "html": "<div data-ok-motion data-ok-trigger=\"mount\" data-ok-drag\n  data-ok-while-drag='{\"scale\": 1.05}'\n  id=\"note\" tabindex=\"0\" role=\"group\" aria-label=\"Movable note\" aria-describedby=\"note-hint\">\n  <p>Drag me</p>\n</div>\n<p id=\"note-hint\">Drag the note, or focus it and use the arrow keys.</p>\n\n<script>\n  document.getElementById(\"note\").addEventListener(\"ok:motion:dragend\", (event) => {\n    // How far it moved from the press, in pixels\n    console.log(event.detail.offset);\n  });\n</script>",
+     "id": "drag",
+     "react": "import { Motion } from \"@owlky/react\";\n\nexport function MovableNote() {\n  return (\n    <>\n      <Motion\n        trigger=\"mount\"\n        drag\n        whileDrag={{ scale: 1.05 }}\n        tabIndex={0}\n        role=\"group\"\n        aria-label=\"Movable note\"\n        aria-describedby=\"note-hint\"\n        onDragEnd={(_event, info) => console.log(info.offset)}\n      >\n        <p>Drag me</p>\n      </Motion>\n      <p id=\"note-hint\">Drag the note, or focus it and use the arrow keys.</p>\n    </>\n  );\n}",
+     "title": "Drag content"
+    },
+    {
+     "body": "`dragConstraints` limits where the content can go:\n\n- **A box:** pixels from where the content sits, such as `{ left: -100, right: 100 }`. In HTML, write it as JSON.\n- **An element:** the content stays inside that element's box. In React, pass a ref or the element's `id`. In HTML, write the `id`.\n\n`dragElastic` sets how far it can be pulled past the limits before it springs back: from `0` (not at all) to `1` (freely). The default is `0.5`. A number per side, such as `{ left: 0, right: 0.5 }`, also works. `dragTransition` tunes the glide after a release, such as `power` (how far it travels) and `timeConstant` (how long it slows down, in milliseconds).",
+     "html": "<div id=\"board\" data-ok-paper data-ok-variant=\"outlined\">\n  <div data-ok-motion data-ok-trigger=\"mount\" data-ok-drag\n    data-ok-drag-constraints=\"board\" data-ok-drag-elastic=\"0.2\"\n    tabindex=\"0\" role=\"group\" aria-label=\"Sticky note\">\n    <p>Sticky note</p>\n  </div>\n</div>",
+     "id": "drag-constraints",
+     "react": "import { Motion, Paper } from \"@owlky/react\";\nimport { useRef } from \"react\";\n\nexport function Board() {\n  const board = useRef<HTMLElement>(null);\n  return (\n    <Paper ref={board} variant=\"outlined\">\n      <Motion\n        trigger=\"mount\"\n        drag\n        dragConstraints={board}\n        dragElastic={0.2}\n        tabIndex={0}\n        role=\"group\"\n        aria-label=\"Sticky note\"\n      >\n        <p>Sticky note</p>\n      </Motion>\n    </Paper>\n  );\n}",
+     "title": "Keep a drag inside an area"
+    },
+    {
+     "body": "`whileHover`, `whileTap` and `whileFocus` take keyframes that play while the pointer is over the content, while it is pressed, and while it shows a keyboard focus ring. When the gesture ends, the content goes back to its own style.\n\n- **Springs:** moves, turns and scales use a spring by default. `transition` changes it for every gesture, and a `transition` key inside one state changes it for that state only.\n- **Keyboard:** a press also answers Enter and Space on the Motion or on a button inside it.\n- **Touch:** hover states only follow a mouse or a pen, so a tap never leaves one behind.\n- **Events:** `onHoverStart`, `onHoverEnd`, `onTapStart`, `onTap` and `onTapCancel` (HTML: `ok:motion:hoverstart` and the matching names).\n\nWith reduced motion, the states apply at once, without a bounce.",
+     "html": "<div data-ok-motion data-ok-trigger=\"mount\"\n  data-ok-while-hover='{\"scale\": 1.05}'\n  data-ok-while-tap='{\"scale\": 0.95}'\n  data-ok-transition='{\"type\": \"spring\", \"duration\": 300, \"bounce\": 0.4}'>\n  <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\">\n    <span data-ok-button-label>Subscribe</span>\n  </button>\n</div>",
+     "id": "gestures",
+     "react": "import { Button, Motion } from \"@owlky/react\";\n\nexport function Subscribe() {\n  return (\n    <Motion\n      trigger=\"mount\"\n      whileHover={{ scale: 1.05 }}\n      whileTap={{ scale: 0.95 }}\n      transition={{ type: \"spring\", duration: 300, bounce: 0.4 }}\n    >\n      <Button variant=\"contained\" color=\"primary\">\n        Subscribe\n      </Button>\n    </Motion>\n  );\n}",
+     "title": "React to hover, press and focus"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -81703,17 +82171,17 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay(), exit(), hide(), remove() }`. `replay()` plays the entrance again. `exit()` plays the exit, and `hide()` and `remove()` then hide or remove the element. Each of these three returns a promise that resolves to `true` when the exit ended, or `false` when `replay()` interrupted it. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have `{ state, replay() }`.\n- **`ok:countdown:tick`** fires on a Countdown each time its value changes, with the whole seconds left in `detail.remaining`. **`ok:countdown:complete`** fires once when it reaches 0. `runtime.get(element, \"countdown\")` returns `{ remaining, paused, pause(), resume(), restart() }`. In React, use `onTick` and `onComplete`, and change the `key` to start over.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again.",
+     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay(), exit(), hide(), remove() }`. `replay()` plays the entrance again. `exit()` plays the exit, and `hide()` and `remove()` then hide or remove the element. Each of these three returns a promise that resolves to `true` when the exit ended, or `false` when `replay()` interrupted it. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have `{ state, replay() }`.\n- **`ok:countdown:tick`** fires on a Countdown each time its value changes, with the whole seconds left in `detail.remaining`. **`ok:countdown:complete`** fires once when it reaches 0. `runtime.get(element, \"countdown\")` returns `{ remaining, paused, pause(), resume(), restart() }`. In React, use `onTick` and `onComplete`, and change the `key` to start over.\n- **Gestures:** `ok:motion:dragstart`, `ok:motion:drag` and `ok:motion:dragend` carry `point`, `delta`, `offset` and `velocity` in `detail`. `ok:motion:directionlock` carries the locked `axis`, and `ok:motion:dragtransitionend` fires when the glide after a release stops. `ok:motion:hoverstart` and `ok:motion:hoverend` follow the pointer, and `ok:motion:tapstart`, `ok:motion:tap` and `ok:motion:tapcancel` follow a press, with its `point`.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again. Gesture callbacks receive the event first, then the information, such as `onDrag(event, info)`.",
      "id": "events",
      "title": "Events and methods"
     },
     {
-     "body": "Motion isn't interactive. Links and buttons inside it work as usual, also while they move.",
+     "body": "Motion isn't interactive, except for its gestures. Links and buttons inside it work as usual, also while they move.\n\n- **Arrow keys:** move a draggable Motion that has the focus by 10 pixels. Hold Shift to move it by 50 pixels.\n- **Enter and Space:** press a Motion with `whileTap` when it, or a button inside it, has the focus.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.\n- Looping animations, turning borders and looping keyframes stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2). Other keyframes and `animate()` jump to their end.\n- CountUp exposes its end value to assistive technologies, and hides the changing digits.\n- Countdown has the `timer` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with `aria-label`, and give people a pause control when it runs next to other content (WCAG 2.2.2).\n- MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.\n- Avoid animations on content that people need to read right away, such as errors.\n- Directional animations start outside the content's box. Clip the container (`overflow: clip`) if they would widen the page on small screens.",
+     "body": "- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.\n- Looping animations, turning borders and looping keyframes stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2). Other keyframes and `animate()` jump to their end.\n- CountUp exposes its end value to assistive technologies, and hides the changing digits.\n- Countdown has the `timer` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with `aria-label`, and give people a pause control when it runs next to other content (WCAG 2.2.2).\n- MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.\n- Avoid animations on content that people need to read right away, such as errors.\n- Dragging needs a pointer. Anything a drag does needs another way that works with a keyboard or a single tap (WCAG 2.5.7 and 2.1.1), such as the arrow keys on a focusable draggable Motion, or buttons. Give a draggable Motion a name and a visible hint.\n- Owlky doesn't make content focusable for you: put `whileTap` on content around a button, or make it focusable yourself.\n- Hover states only decorate. Never put information in them that a touch screen can't show.\n- Directional animations start outside the content's box. Clip the container (`overflow: clip`) if they would widen the page on small screens.",
      "id": "accessibility",
      "title": "Accessibility"
     },

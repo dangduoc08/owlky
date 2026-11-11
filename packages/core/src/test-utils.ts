@@ -1,4 +1,87 @@
 /** Test helpers (not exported from the package). */
+import { vi } from "vitest";
+
+/* Gestures (ADR-0062, 5.3): synthetic pointers on a fake clock. */
+let time = 1000;
+
+/** Fakes `performance.now()` (the pan velocity clock); `advance` moves it. */
+export function fakeClock(): { advance(ms: number): void; restore(): void } {
+  time = 1000;
+  const spy = vi.spyOn(performance, "now").mockImplementation(() => time);
+  return {
+    advance(ms) {
+      time += ms;
+    },
+    restore() {
+      spy.mockRestore();
+    },
+  };
+}
+
+export interface PointerInit {
+  x: number;
+  y: number;
+  id?: number;
+  type?: string;
+  button?: number;
+  primary?: boolean;
+}
+
+const pointer = (
+  type: string,
+  { x, y, id = 1, type: kind = "mouse", button = 0, primary = true }: PointerInit,
+) =>
+  new PointerEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    clientX: x,
+    clientY: y,
+    pointerId: id,
+    pointerType: kind,
+    button,
+    isPrimary: primary,
+  });
+
+export const press = (target: Element, init: PointerInit) =>
+  target.dispatchEvent(pointer("pointerdown", init));
+export const move = (init: PointerInit, target: EventTarget = window) =>
+  target.dispatchEvent(pointer("pointermove", init));
+export const release = (init: PointerInit, target: EventTarget = window) =>
+  target.dispatchEvent(pointer("pointerup", init));
+export const cancelPointer = (init: PointerInit) =>
+  window.dispatchEvent(pointer("pointercancel", init));
+export const enter = (target: Element, type = "mouse") =>
+  target.dispatchEvent(pointer("pointerenter", { x: 0, y: 0, type }));
+export const leave = (target: Element, type = "mouse") =>
+  target.dispatchEvent(pointer("pointerleave", { x: 0, y: 0, type }));
+
+/** A press at `from`, `steps` moves (`ms` apart on the clock) to `to`, then a release there. */
+export function swipe(
+  target: Element,
+  clock: { advance(ms: number): void },
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  {
+    steps = 5,
+    ms = 16,
+    type = "mouse",
+    hold = 0,
+  }: { steps?: number; ms?: number; type?: string; hold?: number } = {},
+): void {
+  press(target, { ...from, type });
+  for (let i = 1; i <= steps; i++) {
+    clock.advance(ms);
+    move({
+      x: from.x + ((to.x - from.x) * i) / steps,
+      y: from.y + ((to.y - from.y) * i) / steps,
+      type,
+    });
+  }
+  clock.advance(hold || ms);
+  release({ ...to, type });
+}
+
 export function mount(html: string): HTMLElement {
   const host = document.createElement("div");
   host.innerHTML = html;

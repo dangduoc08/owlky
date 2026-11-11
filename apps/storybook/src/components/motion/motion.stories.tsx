@@ -6,6 +6,13 @@ import { CountdownDateDemo, CountdownSecondsDemo } from "./countdown-demo.js";
 import countdownSource from "./countdown-demo.tsx?raw";
 import { MotionDialogDemo } from "./dialog-demo.js";
 import source from "./dialog-demo.tsx?raw";
+import {
+  GestureAxisDemo,
+  GestureDragDemo,
+  GestureHoverTapDemo,
+  GestureSnapDemo,
+} from "./gestures-demo.js";
+import gesturesSource from "./gestures-demo.tsx?raw";
 import { MotionDocs } from "./motion-docs.js";
 import {
   COUNT_UP_CONTROLS,
@@ -32,6 +39,23 @@ const SCROLL_SETUP = htmlSetup(
   true,
 );
 const DIALOG_SETUP = htmlSetup(["button.css", "dialog.css", "motion.css"], true);
+/** Gestures (roadmap 5.3): drag, hover, tap and focus; one generated snippet per group. */
+const GESTURE_SETUP = htmlSetup(
+  ["paper.css", "typography.css", "card.css", "button.css", "motion.css"],
+  true,
+);
+const GESTURE_GROUPS = [
+  { title: "Drag", content: <GestureDragDemo /> },
+  { title: "Axis and direction lock", content: <GestureAxisDemo /> },
+  { title: "Elastic and snap back", content: <GestureSnapDemo /> },
+  { title: "Hover, tap and focus", content: <GestureHoverTapDemo /> },
+];
+const GESTURE_FILES: [string, string][] = [
+  ["Drag", "drag"],
+  ["Axis and direction lock", "axis"],
+  ["Elastic and snap back", "snap"],
+  ["Hover, tap and focus", "hover-tap"],
+];
 
 type Controls = typeof MOTION_CONTROLS | typeof MOTION_LOOP_CONTROLS | typeof MOTION_TEXT_CONTROLS;
 
@@ -139,6 +163,12 @@ export const AvatarStory: StoryObj = other(
   BORDER,
   "Avatar",
 );
+export const Gestures: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "gestures", GESTURE_FILES, GESTURE_SETUP),
+    react: reactGroupsStory(GESTURE_GROUPS, undefined, gesturesSource),
+  }),
+};
 export const Border: StoryObj = other(
   "border",
   htmlSetup(["button.css", "motion-border.css"], true),

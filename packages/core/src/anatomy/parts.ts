@@ -1231,6 +1231,12 @@ export interface DrawerParts {
   "data-ok-drawer-content": Part<"div">;
   /** Opens the drawer whose `id` it names. */
   "data-ok-drawer-open": Trigger<"id">;
+  /** Swipeable drawers: an empty `aria-hidden` strip right after the dialog, along the edge of the screen, where a touch swipe opens it. Shown on touch screens only. */
+  "data-ok-drawer-swipe-area": Part<"div">;
+  /** Swipeable drawers: the panel follows a finger. Written by the script. */
+  "data-ok-swiping": State;
+  /** Swipeable drawers: the panel slides to rest after a swipe. Written by the script. */
+  "data-ok-swipe-settling": State;
 }
 
 /** Editor: parts, states, values and triggers. */
@@ -1794,6 +1800,30 @@ export interface MotionParts {
   "data-ok-viewport-margin": Value<string>;
   /** In view: the id of the scrolling ancestor whose box counts as the viewport. Default: the browser viewport. */
   "data-ok-viewport-root": Value<string>;
+  /** Makes the Motion draggable: on both axes without a value, or `x` / `y` for one axis (the page still scrolls along the other). Arrow keys move it while it has the focus. */
+  "data-ok-drag": Value<"" | "x" | "y">;
+  /** Where it may be dragged: a JSON box in px from where it sits, such as `{"left": -100, "right": 100}`, or the `id` of an element to stay inside. */
+  "data-ok-drag-constraints": Value<string>;
+  /** How far it may be pulled past its constraints: a number from 0 (not at all) to 1 (freely), `true` / `false`, or a JSON box per side. Default 0.5. */
+  "data-ok-drag-elastic": Value<string>;
+  /** `false`: no glide after a release (it stops where the pointer let go). */
+  "data-ok-drag-momentum": Value<"false">;
+  /** Springs back to where it started when released. */
+  "data-ok-drag-snap-to-origin": State;
+  /** Moves only along the first axis the pointer moves on. */
+  "data-ok-drag-direction-lock": State;
+  /** The glide after a release, as JSON (times in ms): `power`, `timeConstant`, `bounceStiffness`, `bounceDamping`, `restDelta`, `restSpeed`. */
+  "data-ok-drag-transition": Value<string>;
+  /** While dragged. Written by the script. */
+  "data-ok-dragging": State;
+  /** Keyframes as JSON while a mouse or pen pointer is over it, such as `{"scale": 1.05}`; a `transition` key tunes them. */
+  "data-ok-while-hover": Value<string>;
+  /** Keyframes as JSON while it is pressed (a pointer, or Enter or Space on it or on a button inside it). */
+  "data-ok-while-tap": Value<string>;
+  /** Keyframes as JSON while it, or something inside it, shows a keyboard focus ring. */
+  "data-ok-while-focus": Value<string>;
+  /** Keyframes as JSON while it is dragged. */
+  "data-ok-while-drag": Value<string>;
 }
 
 /** Organization chart: parts, states, values and triggers. */

@@ -8,7 +8,17 @@ import {
 } from "@owlky/core";
 import motionApi from "@owlky/docs-content/api/motion.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { Countdown, CountUp, Motion, MotionBorder, MotionGroup, MotionText } from "@owlky/react";
+import {
+  Button,
+  Card,
+  Countdown,
+  CountUp,
+  Motion,
+  MotionBorder,
+  MotionGroup,
+  MotionText,
+  Typography,
+} from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
@@ -547,6 +557,126 @@ export function SavedNotice() {
 }`,
   },
   {
+    id: "drag",
+    title: "Drag content",
+    body: `Add \`drag\` to make a Motion follow the pointer. Without a value it moves on both axes. \`"x"\` or \`"y"\` keeps it on one axis, so the page still scrolls along the other one on touch screens.
+
+- **Release:** it glides on in the direction it was thrown and slows down. Turn this off with \`dragMomentum\` set to \`false\`, or bring it back to where it started with \`dragSnapToOrigin\`.
+- **Direction lock:** with \`dragDirectionLock\`, it moves only along the first axis the pointer moves on.
+- **While dragged:** \`whileDrag\` takes keyframes, such as \`{ scale: 1.05 }\`, played while the pointer holds it.
+- **Events:** \`onDragStart\`, \`onDrag\` and \`onDragEnd\` (HTML: \`ok:motion:dragstart\`, \`ok:motion:drag\` and \`ok:motion:dragend\`) report the pointer's \`point\`, \`offset\` from the press, \`delta\` and \`velocity\` in pixels per second.
+
+Dragging needs a pointer, so give people another way to do what a drag does (WCAG 2.5.7). Make the Motion focusable with \`tabindex="0"\` and name it: the arrow keys then move it by 10 pixels, or 50 pixels with Shift, and report the same events. With reduced motion, the content still follows the pointer but stops at once when released.`,
+    html: `<div data-ok-motion data-ok-trigger="mount" data-ok-drag
+  data-ok-while-drag='{"scale": 1.05}'
+  id="note" tabindex="0" role="group" aria-label="Movable note" aria-describedby="note-hint">
+  <p>Drag me</p>
+</div>
+<p id="note-hint">Drag the note, or focus it and use the arrow keys.</p>
+
+<script>
+  document.getElementById("note").addEventListener("ok:motion:dragend", (event) => {
+    // How far it moved from the press, in pixels
+    console.log(event.detail.offset);
+  });
+</script>`,
+    react: `import { Motion } from "@owlky/react";
+
+export function MovableNote() {
+  return (
+    <>
+      <Motion
+        trigger="mount"
+        drag
+        whileDrag={{ scale: 1.05 }}
+        tabIndex={0}
+        role="group"
+        aria-label="Movable note"
+        aria-describedby="note-hint"
+        onDragEnd={(_event, info) => console.log(info.offset)}
+      >
+        <p>Drag me</p>
+      </Motion>
+      <p id="note-hint">Drag the note, or focus it and use the arrow keys.</p>
+    </>
+  );
+}`,
+  },
+  {
+    id: "drag-constraints",
+    title: "Keep a drag inside an area",
+    body: `\`dragConstraints\` limits where the content can go:
+
+- **A box:** pixels from where the content sits, such as \`{ left: -100, right: 100 }\`. In HTML, write it as JSON.
+- **An element:** the content stays inside that element's box. In React, pass a ref or the element's \`id\`. In HTML, write the \`id\`.
+
+\`dragElastic\` sets how far it can be pulled past the limits before it springs back: from \`0\` (not at all) to \`1\` (freely). The default is \`0.5\`. A number per side, such as \`{ left: 0, right: 0.5 }\`, also works. \`dragTransition\` tunes the glide after a release, such as \`power\` (how far it travels) and \`timeConstant\` (how long it slows down, in milliseconds).`,
+    html: `<div id="board" data-ok-paper data-ok-variant="outlined">
+  <div data-ok-motion data-ok-trigger="mount" data-ok-drag
+    data-ok-drag-constraints="board" data-ok-drag-elastic="0.2"
+    tabindex="0" role="group" aria-label="Sticky note">
+    <p>Sticky note</p>
+  </div>
+</div>`,
+    react: `import { Motion, Paper } from "@owlky/react";
+import { useRef } from "react";
+
+export function Board() {
+  const board = useRef<HTMLElement>(null);
+  return (
+    <Paper ref={board} variant="outlined">
+      <Motion
+        trigger="mount"
+        drag
+        dragConstraints={board}
+        dragElastic={0.2}
+        tabIndex={0}
+        role="group"
+        aria-label="Sticky note"
+      >
+        <p>Sticky note</p>
+      </Motion>
+    </Paper>
+  );
+}`,
+  },
+  {
+    id: "gestures",
+    title: "React to hover, press and focus",
+    body: `\`whileHover\`, \`whileTap\` and \`whileFocus\` take keyframes that play while the pointer is over the content, while it is pressed, and while it shows a keyboard focus ring. When the gesture ends, the content goes back to its own style.
+
+- **Springs:** moves, turns and scales use a spring by default. \`transition\` changes it for every gesture, and a \`transition\` key inside one state changes it for that state only.
+- **Keyboard:** a press also answers Enter and Space on the Motion or on a button inside it.
+- **Touch:** hover states only follow a mouse or a pen, so a tap never leaves one behind.
+- **Events:** \`onHoverStart\`, \`onHoverEnd\`, \`onTapStart\`, \`onTap\` and \`onTapCancel\` (HTML: \`ok:motion:hoverstart\` and the matching names).
+
+With reduced motion, the states apply at once, without a bounce.`,
+    html: `<div data-ok-motion data-ok-trigger="mount"
+  data-ok-while-hover='{"scale": 1.05}'
+  data-ok-while-tap='{"scale": 0.95}'
+  data-ok-transition='{"type": "spring", "duration": 300, "bounce": 0.4}'>
+  <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md">
+    <span data-ok-button-label>Subscribe</span>
+  </button>
+</div>`,
+    react: `import { Button, Motion } from "@owlky/react";
+
+export function Subscribe() {
+  return (
+    <Motion
+      trigger="mount"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: "spring", duration: 300, bounce: 0.4 }}
+    >
+      <Button variant="contained" color="primary">
+        Subscribe
+      </Button>
+    </Motion>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -563,12 +693,16 @@ export function SavedNotice() {
 - **\`ok:motion:enter\` and \`ok:motion:leave\`** fire on a Motion with the \`inView\` trigger when it enters or leaves the view, with the visible fraction in \`detail.ratio\`. MotionGroup and MotionText fire \`ok:motion-group:enter\`, \`ok:motion-text:enter\` and the matching \`leave\` events. A Motion inside a group fires none: the group reports for it.
 - **Instance:** \`runtime.get(element, "motion")\` returns \`{ state, replay(), exit(), hide(), remove() }\`. \`replay()\` plays the entrance again. \`exit()\` plays the exit, and \`hide()\` and \`remove()\` then hide or remove the element. Each of these three returns a promise that resolves to \`true\` when the exit ended, or \`false\` when \`replay()\` interrupted it. MotionGroup (\`"motion-group"\`) and MotionText (\`"motion-text"\`) have \`{ state, replay() }\`.
 - **\`ok:countdown:tick\`** fires on a Countdown each time its value changes, with the whole seconds left in \`detail.remaining\`. **\`ok:countdown:complete\`** fires once when it reaches 0. \`runtime.get(element, "countdown")\` returns \`{ remaining, paused, pause(), resume(), restart() }\`. In React, use \`onTick\` and \`onComplete\`, and change the \`key\` to start over.
-- **React:** use \`onAnimationEnd\`, \`onViewportEnter\` and \`onViewportLeave\` (they receive the \`IntersectionObserverEntry\`), and change the \`key\` to play the entrance again.`,
+- **Gestures:** \`ok:motion:dragstart\`, \`ok:motion:drag\` and \`ok:motion:dragend\` carry \`point\`, \`delta\`, \`offset\` and \`velocity\` in \`detail\`. \`ok:motion:directionlock\` carries the locked \`axis\`, and \`ok:motion:dragtransitionend\` fires when the glide after a release stops. \`ok:motion:hoverstart\` and \`ok:motion:hoverend\` follow the pointer, and \`ok:motion:tapstart\`, \`ok:motion:tap\` and \`ok:motion:tapcancel\` follow a press, with its \`point\`.
+- **React:** use \`onAnimationEnd\`, \`onViewportEnter\` and \`onViewportLeave\` (they receive the \`IntersectionObserverEntry\`), and change the \`key\` to play the entrance again. Gesture callbacks receive the event first, then the information, such as \`onDrag(event, info)\`.`,
   },
   {
     id: "keyboard",
     title: "Keyboard",
-    body: "Motion isn't interactive. Links and buttons inside it work as usual, also while they move.",
+    body: `Motion isn't interactive, except for its gestures. Links and buttons inside it work as usual, also while they move.
+
+- **Arrow keys:** move a draggable Motion that has the focus by 10 pixels. Hold Shift to move it by 50 pixels.
+- **Enter and Space:** press a Motion with \`whileTap\` when it, or a button inside it, has the focus.`,
   },
   {
     id: "accessibility",
@@ -579,6 +713,9 @@ export function SavedNotice() {
 - Countdown has the \`timer\` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with \`aria-label\`, and give people a pause control when it runs next to other content (WCAG 2.2.2).
 - MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.
 - Avoid animations on content that people need to read right away, such as errors.
+- Dragging needs a pointer. Anything a drag does needs another way that works with a keyboard or a single tap (WCAG 2.5.7 and 2.1.1), such as the arrow keys on a focusable draggable Motion, or buttons. Give a draggable Motion a name and a visible hint.
+- Owlky doesn't make content focusable for you: put \`whileTap\` on content around a button, or make it focusable yourself.
+- Hover states only decorate. Never put information in them that a touch screen can't show.
 - Directional animations start outside the content's box. Clip the container (\`overflow: clip\`) if they would widen the page on small screens.`,
   },
   apiReferenceSection(motionApi),
@@ -671,6 +808,39 @@ const PREVIEWS = {
       </div>
     </Preview>
   ),
+  gestures: () => (
+    <Preview>
+      <Motion
+        trigger="mount"
+        className="sb-gesture-press"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", duration: 300, bounce: 0.4 }}
+      >
+        <Button variant="contained" color="primary">
+          Subscribe
+        </Button>
+      </Motion>
+    </Preview>
+  ),
+  drag: () => (
+    <Preview>
+      <Motion
+        trigger="mount"
+        className="sb-gesture-item"
+        drag
+        dragConstraints={{ left: -80, right: 80, top: -20, bottom: 20 }}
+        whileDrag={{ scale: 1.05 }}
+        tabIndex={0}
+        role="group"
+        aria-label="Movable note"
+      >
+        <Card className="sb-motion-card">
+          <Typography variant="subtitle2">Drag me</Typography>
+        </Card>
+      </Motion>
+    </Preview>
+  ),
   options: () => (
     <>
       <OptionsTable schema={motionOptions} />
@@ -738,6 +908,90 @@ const PREVIEWS = {
           html: "ok:motion:end",
           type: "event",
           description: "The entrance or the exit ended.",
+        },
+        {
+          react: "drag",
+          html: "data-ok-drag",
+          type: 'boolean · "x" · "y"',
+          description: "Makes it draggable on both axes, or on one.",
+        },
+        {
+          react: "dragConstraints",
+          html: "data-ok-drag-constraints",
+          type: "object · RefObject · id",
+          description: "A box in pixels, or an element to stay inside.",
+        },
+        {
+          react: "dragElastic",
+          html: "data-ok-drag-elastic",
+          type: "number · boolean · object",
+          description: "How far it can be pulled past its constraints, 0 to 1. Default `0.5`.",
+        },
+        {
+          react: "dragMomentum",
+          html: "data-ok-drag-momentum",
+          type: "boolean",
+          description: 'Glides on after a release. Default `true` (HTML: `"false"` turns it off).',
+        },
+        {
+          react: "dragSnapToOrigin",
+          html: "data-ok-drag-snap-to-origin",
+          type: "boolean",
+          description: "Springs back to where it started when released.",
+        },
+        {
+          react: "dragDirectionLock",
+          html: "data-ok-drag-direction-lock",
+          type: "boolean",
+          description: "Moves only along the first axis the pointer moves on.",
+        },
+        {
+          react: "dragTransition",
+          html: "data-ok-drag-transition",
+          type: "object · JSON",
+          description: "The glide after a release, such as `power` and `timeConstant`.",
+        },
+        {
+          react: "whileHover",
+          html: "data-ok-while-hover",
+          type: "object · JSON",
+          description: "Keyframes while a mouse or pen pointer is over it.",
+        },
+        {
+          react: "whileTap",
+          html: "data-ok-while-tap",
+          type: "object · JSON",
+          description: "Keyframes while it is pressed, also with Enter or Space.",
+        },
+        {
+          react: "whileFocus",
+          html: "data-ok-while-focus",
+          type: "object · JSON",
+          description: "Keyframes while it shows a keyboard focus ring.",
+        },
+        {
+          react: "whileDrag",
+          html: "data-ok-while-drag",
+          type: "object · JSON",
+          description: "Keyframes while it is dragged.",
+        },
+        {
+          react: "onDragStart, onDrag, onDragEnd",
+          html: "ok:motion:dragstart, drag, dragend",
+          type: "event",
+          description: "A drag started, moved or ended, with the pointer's offset and velocity.",
+        },
+        {
+          react: "onHoverStart, onHoverEnd",
+          html: "ok:motion:hoverstart, hoverend",
+          type: "event",
+          description: "A mouse or pen pointer entered or left it.",
+        },
+        {
+          react: "onTapStart, onTap, onTapCancel",
+          html: "ok:motion:tapstart, tap, tapcancel",
+          type: "event",
+          description: "A press started, ended on it, or ended elsewhere.",
         },
         {
           react: "key",

@@ -1102,6 +1102,34 @@
   gap: calc(var(--ok-spacing) * 10);
 }
 
+/* Swipeable drawer demo (story-only layout): the title a swipe can start on. */
+.sb-drawer-swipe-title {
+  margin: 0;
+  padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 5);
+}
+
+/* Motion gestures (story-only layout): stages that hold draggable cards. */
+.sb-gesture {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 2);
+  width: min(100%, 480px);
+}
+
+.sb-gesture-stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: calc(var(--ok-spacing) * 3);
+  min-height: 240px;
+}
+
+.sb-gesture-item,
+.sb-gesture-press {
+  width: fit-content;
+  height: fit-content;
+}
+
 /* Color picker demos (story-only): the swatches above the value; six swatches per row. */
 .sb-color-picker {
   display: flex;

@@ -7,8 +7,9 @@ variants (`initial` / `animate` / `exit`, `whileInView`, `viewport.once` / `amou
 `staggerChildren`, `whileHover` / `whileTap`) — mapped to CSS animations, no dependency
 (ADR-0015). Created with `/component`; named Motion because `data-ok-animate` is the
 IconButton / Fab hover flag. Full version (roadmap Phase 5, ADR-0062): 5.1 engine (`animate()`,
-springs, interruption, custom keyframes, exits before removal) done; 5.2 scroll, 5.3 gestures,
-5.4 layout to come.
+springs, interruption, custom keyframes, exits before removal) done; 5.3 gestures (drag with
+inertia and constraints, spring hover / tap / focus / drag states, a shared swipe helper) done;
+5.2 scroll, 5.4 layout to come.
 Reference URL: https://minimals.cc/components/extra/animate
 
 ## Purpose
@@ -27,6 +28,10 @@ Animations API instead (ADR-0062).
   [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]
   [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?
   [data-ok-keyframes=<JSON>]?[data-ok-transition=<JSON>]?   (custom keyframes, ADR-0062)
+  [data-ok-drag=""|x|y]?[data-ok-drag-constraints=<JSON box | id>]?[data-ok-drag-elastic]?
+  [data-ok-drag-momentum="false"]?[data-ok-drag-snap-to-origin]?[data-ok-drag-direction-lock]?
+  [data-ok-drag-transition=<JSON>]?[data-ok-while-hover|-tap|-focus|-drag=<JSON>]?
+  [data-ok-dragging] (state, while dragged)                  (gestures, 5.3)
   › content (draw: an svg whose shapes have pathLength="1")
   (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the
    viewport attributes also go on MotionGroup and MotionText roots)
@@ -162,6 +167,21 @@ names, control points, or one per segment), `times`, `repeat` (`Infinity`), `rep
 attributes (`motionKeyframesAttributes`). Values are filtered (property names, no `url(`, `;`,
 braces; at most 64 frames, 200 characters).
 
+Gestures (5.3; free values, so not in the schema, like the keyframes): React props on `Motion`
+(Framer's names) and the same attributes in HTML (`motionGestureAttributes`): `drag` (`true` →
+`data-ok-drag`, `"x"` / `"y"` → its value), `dragConstraints` (a box in px from where the element
+sits → JSON; an element's `id` → the id; a ref → React only, no attribute), `dragElastic` (0–1,
+`true` = 0.5, `false` = 0, or a box per side; default 0.5), `dragMomentum` (default `true`;
+`false` → `"false"`), `dragSnapToOrigin`, `dragDirectionLock`, `dragTransition` (inertia: `power`
+0.8, `timeConstant` 750 ms, `bounceStiffness` 200, `bounceDamping` 40, `restDelta` 1,
+`restSpeed` 10; `modifyTarget(target, axis)` React only), `whileHover`, `whileTap`, `whileFocus`,
+`whileDrag` (keyframes like `keyframes`, plus an optional `transition` key; filtered the same way).
+The element's `transition` is written as `data-ok-transition` with any gesture and applies to
+states without their own. Callbacks (React, Framer's order `(event, info)`): `onDragStart`,
+`onDrag`, `onDragEnd` (`info`: `point` on the page, `delta`, `offset`, `velocity` px/s; `event`
+`null` when the browser cancelled the pointer), `onDirectionLock(axis)`, `onDragTransitionEnd()`,
+`onHoverStart(event)`, `onHoverEnd(event)`, `onTapStart(event, { point })`, `onTap`, `onTapCancel`.
+
 MotionPresence (React; Framer `AnimatePresence`): `children` with keys, `initial` (default
 `true`; `false` skips the first entrance of the children rendered with it), `mode` (`sync` ·
 `wait`; `popLayout` deferred to 5.4), `onExitComplete`. Context to the Motions inside a child: a
@@ -191,7 +211,9 @@ free text, so not in the option schemas: React writes the margin attribute, a re
 `onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,
 `ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:
 CountUp `component` / viewport options / viewport events (not in the row), layout animations
-(5.4), scroll-linked progress (Scroll progress page, 5.2), gestures (5.3). Done in 5.1: spring
+(5.4), scroll-linked progress (Scroll progress page, 5.2). Done in 5.3: drag, gesture states,
+the swipe helper, story "Gestures" (the reference has no drag section: Drag, Axis and direction
+lock, Elastic and snap back, Hover, tap and focus). Done in 5.1: spring
 physics, custom keyframes, exit of a Dialog / Drawer, the reference's logo (story "Logo": a pulsing
 logo in two shape-morphing turning rings, a small logo over a turning gradient disc). Not
 applicable: `motion.*` element factories, `useAnimate` (a ref and `animate()`).
@@ -250,6 +272,52 @@ subtree (a microtask later again when keyframes are inside), with a safety timer
 remaining + 100 ms). `cancel()` restores the previous state. HTML instance `exit()` / `hide()` /
 `remove()` resolve `false` when `replay()` interrupts them.
 
+Gestures (core `createMotionGestures`, both owners; `drag.ts`, `gesture.ts`, ADR-0062 5.3):
+- **Drag** (`createDrag` on `trackPan`): a primary pointer press, then 3 px of movement start a
+  drag (pointer captured where allowed); the element follows through its `translate` (CSSOM),
+  from where it was (a running glide stops where it is when pressed). Axis lock keeps the other
+  axis; the direction lock waits for 10 px on one axis (vertical first, Framer). Constraints are
+  read when a drag starts: a box, or an element whose box it stays in (its layout box without
+  transforms; larger than the element → it may move while it covers it). Past a constraint it
+  moves by `dragElastic` (0 stops at it). On release: with momentum, an inertia glide from the
+  release velocity (last 100 ms) towards `from + power × velocity`, with a spring back once it
+  crosses a constraint (`dragElastic` 0 on both sides of an axis: a hard stop); without momentum,
+  only the spring back from an elastic overdrag; `dragSnapToOrigin`: a spring back to no
+  translate. The glide is simulated per axis (1 ms steps, rest under `restDelta` / `restSpeed`,
+  at most 10 s) and played by `animate()` as `translate` keyframes every 1/60 s (linear), so the
+  end is committed inline. `pointercancel` ends a drag like a release without velocity. A press
+  inside a nested draggable drags only the innermost one. Native image / link drag is prevented
+  while draggable. CSS: `cursor: grab` (`grabbing` while `data-ok-dragging`), no text selection,
+  `touch-action: none` (`pan-y` for `x`, `pan-x` for `y`, so the page scrolls along the free axis).
+- **Keyboard alternative** (Owlky addition, WCAG 2.1.1 / 2.5.7): while the draggable element
+  itself has the focus, arrow keys move it 10 px (50 px with Shift) along its axes, clamped to its
+  constraints, and report a drag start, a move and an end (velocity 0). Make it focusable
+  (`tabindex="0"`) and give it a name (`role="group"` + `aria-label`) and a visible hint.
+- **States**: hover (`pointerenter` / `pointerleave`, mouse and pen only), tap (a primary pointer
+  press until its release: on the element → `tap`, outside → `tapcancel`; `pointercancel` and a
+  drag that starts → `tapcancel`; Enter or Space on the focused element or a `button`, `a[href]`,
+  `[role="button"]` or `summary` inside it, until the key's release; losing the focus cancels),
+  focus (`focusin` whose target matches `:focus-visible`, until the focus leaves the element),
+  drag (while dragging). Order (lowest first): focus, hover, tap, drag; each property follows the
+  highest active state that names it. A property's own value (computed, and its inline value) is
+  kept when a state first takes it; when no state names it any more it animates back and its
+  inline value is restored (none → removed). Unchanged targets don't replay. Transitions: the
+  state's own, else the element's `transition`, else Framer's defaults (springs: `translate`,
+  `rotate` stiffness 500 damping 25, `scale` 550 / 30; anything else a 300 ms tween,
+  `[0.25, 0.1, 0.35, 1]`).
+- **Reduced motion** (`prefers-reduced-motion: reduce`): the element still follows the pointer
+  and the arrow keys; a release settles at once (clamped to the constraints, or at the origin):
+  no glide, no spring; states jump to their values (the engine's rule).
+
+Swipe (core `createSwipe` on `trackPan`, shared helper): the first 3 px pick the axis; an axis
+without an allowed direction (`top` · `right` · `bottom` · `left`) lets the press go; moves report
+`distance` towards the direction (moving back is negative with one allowed direction) and
+`speed`; the release is a swipe at `threshold` px (default 50) or `velocity` px/s (default 450)
+towards an allowed direction, otherwise a cancel. Used by the swipeable Drawer. The Snackbar's
+toast swipe (`createToastSwipe`) stays as it is: it measures the average speed of the whole swipe
+and resists moves in other directions; moving it onto the helper would change when a toast
+dismisses (no behavior change in 5.3).
+
 Countdown (core `createCountdown`, both owners): the time left is `date − clock` (date mode) or
 `seconds` minus the running time (seconds mode), shown in whole seconds rounded up (10 → 0) and
 split from `largestUnit` down (a larger unit folds into it: 90 seconds with `minutes` = `1` minute
@@ -269,7 +337,9 @@ not live). Triggers: `data-ok-countdown-toggle` flips `data-ok-paused` and mirro
 `aria-pressed`; `data-ok-countdown-restart` starts over and runs.
 
 ## Keyboard
-Not interactive. Content inside keeps its own keyboard behavior.
+Not interactive, except gestures. A draggable Motion with the focus: arrow keys move it (10 px,
+Shift: 50 px). With `whileTap`: Enter and Space press it (on the Motion or a button inside it).
+Content inside keeps its own keyboard behavior.
 
 ## Accessibility
 Content never depends on the animation (no JavaScript → shown; reduced motion → shown at once).
@@ -277,9 +347,22 @@ MotionText and CountUp hide the moving copy (`aria-hidden`) and expose a visuall
 the whole text / end value. Countdown: `role="timer"` (not live; name it with `aria-label`), a
 polite status region on the cadence above, a pause control for anything that runs more than 5
 seconds next to other content (WCAG 2.2.2: `data-ok-countdown-toggle` or React `paused`). Loops need a pause control (WCAG 2.2.2): `paused`. Directional
-entrances start outside the box: clip containers that could widen the page.
+entrances start outside the box: clip containers that could widen the page. Gestures: dragging is
+a pointer gesture, so anything a drag does needs another way (WCAG 2.5.7 Dragging Movements,
+2.1.1): the arrow keys on a focusable draggable, or buttons; hover-only states never carry
+information; a tap state also answers Enter and Space. Owlky never adds a `tabindex` (Framer
+does for tap elements): put `whileTap` on a focusable element or around a button.
 
 ## Events / API
+HTML gestures (`ok:motion:<name>`): `dragstart`, `drag`, `dragend` (`{ point, delta, offset,
+velocity }`), `directionlock` (`{ axis }`), `dragtransitionend`, `hoverstart`, `hoverend`,
+`tapstart`, `tap`, `tapcancel` (`{ point }`). Core gestures: `createMotionGestures`,
+`createDrag`, `trackPan`, `createSwipe`, `inertiaPath`, `panVelocity`, `lockDirection`,
+`dragRanges`, `dragElastic`, `applyElastic`, `readTranslate`, `gestureTransition`,
+`motionGestureAttributes`, `readMotionGestures`, `parseGestureTarget`, `parseDragBox`,
+`parseDragElastic`, `parseDragTransition`; React and HTML re-export the gesture types
+(`PanInfo`, `TapInfo`, `GestureTarget`, `DragConstraints`, `DragElastic`, `DragTransition`,
+`PanAxis`).
 HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`
 (`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and
 `ok:motion-text:enter|leave`. Instances: motion `{ state, replay(), exit(), hide(), remove() }`
@@ -318,9 +401,14 @@ reference's own components (rows in the paragraph above).
 | `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event not offered (the trigger's state change is the start) |
 | `onUpdate` | — | deferred (5.4) | per-frame values come with shared values |
 | `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |
-| `whileHover`, `whileTap` | `variant="interactive"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |
-| `whileFocus` | — | deferred (5.3) | |
-| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |
+| `whileHover`, `whileTap`, `whileFocus`, `whileDrag` | same · `data-ok-while-hover` / `-tap` / `-focus` / `-drag` (JSON) | kept (5.3) | the named `variant="interactive"` stays (CSS); springs by default; tap answers Enter and Space; focus needs `:focus-visible` |
+| `onHoverStart`, `onHoverEnd`, `onTapStart`, `onTap`, `onTapCancel` | same · `ok:motion:hoverstart` / `hoverend` / `tapstart` / `tap` / `tapcancel` | kept (5.3) | hover callbacks get the event only; tap `info` is `{ point }` |
+| `drag`, `dragConstraints`, `dragElastic`, `dragMomentum`, `dragSnapToOrigin`, `dragDirectionLock`, `dragTransition` | same · `data-ok-drag`, `data-ok-drag-constraints` (JSON box or id), `-elastic`, `-momentum="false"`, `-snap-to-origin`, `-direction-lock`, `-transition` (JSON) | kept (5.3) | ms; `dragConstraints` also takes an element id (React and HTML); `modifyTarget` React only |
+| `onDragStart`, `onDrag`, `onDragEnd`, `onDirectionLock`, `onDragTransitionEnd` | same · `ok:motion:dragstart` / `drag` / `dragend` / `directionlock` / `dragtransitionend` | kept (5.3) | `onDragEnd`'s event is `null` after a `pointercancel` |
+| `dragPropagation` | — | not applicable | the innermost draggable drags (Framer's default); no `stopPropagation` (AGENTS.md rule 7) |
+| `dragControls` / `useDragControls`, `dragListener`, `onMeasureDragConstraints` | — | deferred | starting a drag from another element (a handle) needs a trigger design for HTML |
+| `onPan*`, `pinch`, `whilePinch`, `propagate` | core `trackPan` / `createSwipe` | deferred | no React / HTML props yet; `propagate` not applicable (no `stopPropagation`) |
+| tap's automatic `tabindex="0"` | — | not applicable | Owlky doesn't make elements focusable: use a focusable element or a button inside |
 | `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |
 | `useScroll` (scroll progress) | — | deferred (5.2) | |
 | `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |

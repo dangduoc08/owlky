@@ -49,6 +49,7 @@ const pairs: [component: string, story: string][] = [
   ["motion", "logo"],
   ["motion", "avatar-story"],
   ["motion", "border"],
+  ["motion", "gestures"],
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
   ...["grouped", "asynchronous", "single-value", "virtualization"].map(
@@ -265,6 +266,7 @@ const pairs: [component: string, story: string][] = [
   ["alert", "actions"],
   ["drawer", "anchor"],
   ["drawer", "variants"],
+  ["drawer", "swipeable"],
   ["sortable", "grid"],
   ["pagination", "shapes"],
   ["pagination", "variants"],

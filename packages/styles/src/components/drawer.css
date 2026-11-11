@@ -222,10 +222,128 @@
       var(--ok-easing-standard);
   }
 
+  /* Swipeable (data-ok-swipeable, core createDrawerSwipe): the panel follows the finger
+     (--_ok-drawer-swipe-x|y through CSSOM, data-ok-swiping) and the backdrop fades with it: while
+     swiping and settling, the dialog's ::before draws it (--_ok-drawer-swipe-progress) and the
+     native ::backdrop is clear. These rules come before the exit, so an exit that starts while
+     the panel is held slides it on from there. */
+  :where([data-ok-drawer][data-ok-swipeable] > [data-ok-drawer-content]) {
+    touch-action: pan-y;
+  }
+
+  :where(
+    [data-ok-drawer][data-ok-swipeable][data-ok-anchor="top"] > [data-ok-drawer-content],
+    [data-ok-drawer][data-ok-swipeable][data-ok-anchor="bottom"] > [data-ok-drawer-content]
+  ) {
+    touch-action: pan-x;
+  }
+
+  /* A Scrollbar in a left / right drawer scrolls vertically and leaves horizontal swipes. */
+  :where(
+    [data-ok-drawer][data-ok-swipeable][data-ok-anchor="left"]
+      > [data-ok-drawer-content]
+      > [data-ok-scrollbar],
+    [data-ok-drawer][data-ok-swipeable][data-ok-anchor="right"]
+      > [data-ok-drawer-content]
+      > [data-ok-scrollbar]
+  ) {
+    touch-action: pan-y;
+  }
+
+  :where([data-ok-drawer][data-ok-swiping], [data-ok-drawer][data-ok-swipe-settling]) {
+    /* A swipe to open shows the dialog non-modally (no top layer) until it opens. */
+    z-index: var(--ok-z-modal);
+  }
+
+  :where(
+    [data-ok-drawer][data-ok-fallback][data-ok-swiping],
+    [data-ok-drawer][data-ok-fallback][data-ok-swipe-settling]
+  ) {
+    background-color: transparent;
+  }
+
+  :where([data-ok-drawer][data-ok-swiping], [data-ok-drawer][data-ok-swipe-settling])::backdrop {
+    background-color: transparent;
+  }
+
+  :where([data-ok-drawer][data-ok-swiping], [data-ok-drawer][data-ok-swipe-settling])::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-color: var(--ok-backdrop);
+    opacity: var(--_ok-drawer-swipe-progress, 1);
+    transition: opacity var(--_ok-drawer-duration, var(--ok-duration-short))
+      var(--ok-easing-standard);
+  }
+
+  :where(
+    [data-ok-drawer][data-ok-hide-backdrop][data-ok-swiping],
+    [data-ok-drawer][data-ok-hide-backdrop][data-ok-swipe-settling]
+  )::before {
+    background-color: transparent;
+  }
+
+  :where([data-ok-drawer][data-ok-swiping])::before {
+    transition: none;
+  }
+
+  :where(
+    [data-ok-drawer][data-ok-swiping] > [data-ok-drawer-content],
+    [data-ok-drawer][data-ok-swipe-settling] > [data-ok-drawer-content]
+  ) {
+    position: relative;
+  }
+
+  :where([data-ok-drawer][data-ok-swiping] > [data-ok-drawer-content]) {
+    transform: translate(var(--_ok-drawer-swipe-x, 0px), var(--_ok-drawer-swipe-y, 0px));
+    transition: none;
+  }
+
+  /* The strip along the edge of the screen where a swipe opens the drawer (its next sibling):
+     touch screens only, under the drawer, so the page scrolls along the edge. */
+  :where([data-ok-drawer-swipe-area]) {
+    display: none;
+  }
+
+  @media (any-pointer: coarse) {
+    :where([data-ok-drawer]:not([data-ok-disable-swipe-to-open]) + [data-ok-drawer-swipe-area]) {
+      display: block;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: calc(var(--ok-z-modal) - 1);
+      width: var(--_ok-drawer-swipe-area, calc(var(--ok-spacing) * 5));
+      touch-action: pan-y;
+    }
+
+    :where([data-ok-drawer][data-ok-anchor="right"] + [data-ok-drawer-swipe-area]) {
+      right: 0;
+      left: auto;
+    }
+
+    :where(
+        [data-ok-drawer][data-ok-anchor="top"] + [data-ok-drawer-swipe-area],
+        [data-ok-drawer][data-ok-anchor="bottom"] + [data-ok-drawer-swipe-area]
+      ) {
+      right: 0;
+      bottom: auto;
+      width: auto;
+      height: var(--_ok-drawer-swipe-area, calc(var(--ok-spacing) * 5));
+      touch-action: pan-x;
+    }
+
+    :where([data-ok-drawer][data-ok-anchor="bottom"] + [data-ok-drawer-swipe-area]) {
+      top: auto;
+      bottom: 0;
+    }
+  }
+
   /* Exit (data-ok-state="exiting", core modal controller, ADR-0062): back to the edge, the
      backdrop fades out; the dialog closes when the slide ends. */
   :where([data-ok-drawer][data-ok-state="exiting"] > [data-ok-drawer-content]) {
     transform: translateX(-100%);
+    transition-property: transform;
     transition-duration: var(--_ok-drawer-duration, var(--ok-duration-shorter));
     transition-timing-function: var(--ok-easing-accelerate);
   }
@@ -253,6 +371,10 @@
     transition-duration: var(--_ok-drawer-duration, var(--ok-duration-shorter));
   }
 
+  :where([data-ok-drawer][data-ok-state="exiting"])::before {
+    transition-duration: var(--_ok-drawer-duration, var(--ok-duration-shorter));
+  }
+
   /* An explicit elevation (data-ok-elevation, --_ok-drawer-shadow through CSSOM) wins. */
   :where([data-ok-drawer][data-ok-elevation] > [data-ok-drawer-content]) {
     box-shadow: var(--_ok-drawer-shadow);
@@ -273,6 +395,10 @@
     }
 
     :where([data-ok-drawer])::backdrop {
+      transition: none;
+    }
+
+    :where([data-ok-drawer])::before {
       transition: none;
     }
   }

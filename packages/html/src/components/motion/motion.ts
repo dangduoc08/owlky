@@ -3,14 +3,18 @@ import {
   type MotionState,
   motionOptions,
   motionStyle,
+  type PanAxis,
+  type PanInfo,
   playExit,
   readNumber,
   replayMotion,
+  type TapInfo,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import { driveMotion, type MotionViewportDetail, STATE } from "./drive.js";
+import { driveGestures, type GestureEmitter } from "./gestures.js";
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface MotionEvents {
@@ -23,6 +27,30 @@ export interface MotionEvents {
   enter: EventSpec<MotionViewportDetail>;
   /** In view trigger with `data-ok-once="false"`: the element left the viewport (nothing visible). */
   leave: EventSpec<MotionViewportDetail>;
+  /**
+   * A drag started (`data-ok-drag`): the pointer moved 3 px, or an arrow key moved the focused
+   * element. `point` is the pointer on the page, `delta` the movement since the last event,
+   * `offset` since the press, `velocity` in px per second.
+   */
+  dragstart: EventSpec<PanInfo>;
+  /** The dragged element moved. Same detail as `dragstart`. */
+  drag: EventSpec<PanInfo>;
+  /** The pointer was released (or an arrow key's move ended). `velocity` is the release speed. */
+  dragend: EventSpec<PanInfo>;
+  /** With `data-ok-drag-direction-lock`: the axis the drag locked to (`x` or `y`). */
+  directionlock: EventSpec<{ axis: PanAxis }>;
+  /** The glide or spring after a release came to rest. */
+  dragtransitionend: EventSpec;
+  /** A mouse or pen pointer entered the element. */
+  hoverstart: EventSpec;
+  /** The pointer left the element. */
+  hoverend: EventSpec;
+  /** A press started: a primary pointer, or Enter or Space on the focused element. `point` is on the page. */
+  tapstart: EventSpec<TapInfo>;
+  /** The press ended on the element (a tap). */
+  tap: EventSpec<TapInfo>;
+  /** The press ended outside the element, was cancelled or turned into a drag. */
+  tapcancel: EventSpec<TapInfo>;
 }
 
 export interface MotionInstance extends ComponentInstance {
@@ -58,7 +86,10 @@ const LOOK = [variant.attr, duration.attr, distance.attr];
  *          is hidden. A Motion inside a MotionGroup is driven by the group. `exit()`, `hide()`
  *          and `remove()` play the exit before acting (core `playExit`).
  * Events:  ok:motion:end (`{ state }`) when its animation ends; ok:motion:enter / leave
- *          (`{ ratio }`) when an in-view Motion enters or leaves the viewport.
+ *          (`{ ratio }`) when an in-view Motion enters or leaves the viewport. Gestures
+ *          (`data-ok-drag*`, `data-ok-while-*`, core `createMotionGestures`): dragstart, drag,
+ *          dragend, directionlock, dragtransitionend, hoverstart, hoverend, tapstart, tap,
+ *          tapcancel.
  */
 export const motion = defineComponent<MotionInstance, MotionEvents>({
   name: "motion",
@@ -100,6 +131,7 @@ export const motion = defineComponent<MotionInstance, MotionEvents>({
     });
     tuning.observe(element, { attributes: true, attributeFilter: [...TUNING, variant.attr] });
     const keyframes = createMotionKeyframes(element);
+    const gestures = driveGestures(element, emit as GestureEmitter);
 
     let leaving: ReturnType<typeof playExit> | undefined;
     const leave = async (after?: () => void) => {
@@ -137,6 +169,7 @@ export const motion = defineComponent<MotionInstance, MotionEvents>({
         driver?.destroy();
         tuning.disconnect();
         keyframes.destroy();
+        gestures.destroy();
         syncCustomProperties(element, {}, written);
       },
     };

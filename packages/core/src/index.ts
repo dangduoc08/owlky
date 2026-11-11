@@ -1088,6 +1088,13 @@ export {
 export { focusInitial, getTabbables, isFocusable, trapTab } from "./dom/focus.js";
 export { createId } from "./dom/id.js";
 export { type Supports, supports } from "./dom/support.js";
+export {
+  createDrawerSwipe,
+  type DrawerSwipe,
+  type DrawerSwipeOptions,
+  SWIPE_SETTLING_ATTR,
+  SWIPING_ATTR,
+} from "./drawer/drawer-swipe.js";
 export * from "./gantt/index.js";
 export {
   type Illustration,
@@ -1208,6 +1215,54 @@ export {
   parseCountdownSeconds,
   parseCountdownTime,
 } from "./motion/countdown.js";
+// Gestures (ADR-0062, roadmap 5.3): drag, hover / tap / focus states, swipes.
+export {
+  applyElastic,
+  createDrag,
+  DRAGGING_ATTR,
+  type DragConstraints,
+  type DragController,
+  type DragElastic,
+  type DragOptions,
+  type DragRanges,
+  type DragTransition,
+  dragElastic,
+  dragRanges,
+  type InertiaOptions,
+  inertiaPath,
+  lockDirection,
+  type PanAxis,
+  type PanHandle,
+  type PanInfo,
+  type PanOptions,
+  type PanSample,
+  type Point,
+  panVelocity,
+  readTranslate,
+  trackPan,
+} from "./motion/drag.js";
+export {
+  createMotionGestures,
+  type GestureState,
+  type GestureTarget,
+  gestureTransition,
+  type MotionGestureOptions,
+  type MotionGestures,
+  splitGestureTarget,
+  type TapInfo,
+} from "./motion/gesture.js";
+export {
+  GESTURE_ATTR_NAMES,
+  GESTURE_ATTRS,
+  hasMotionGestures,
+  type MotionGestureValues,
+  motionGestureAttributes,
+  parseDragBox,
+  parseDragElastic,
+  parseDragTransition,
+  parseGestureTarget,
+  readMotionGestures,
+} from "./motion/gesture-attributes.js";
 export {
   createMotionKeyframes,
   KEYFRAMES_ATTR,
@@ -1237,6 +1292,12 @@ export {
   runningAnimations,
   waitForAnimations,
 } from "./motion/presence.js";
+export {
+  createSwipe,
+  type SwipeHandle,
+  type SwipeInfo,
+  type SwipeOptions,
+} from "./motion/swipe.js";
 export {
   clampNumber,
   createNumberFieldController,

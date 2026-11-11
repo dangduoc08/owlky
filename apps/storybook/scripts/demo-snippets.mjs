@@ -43,6 +43,25 @@ const motionKeyframesSnippet = (markup) =>
       (_, name, value) => ` ${name}='${value.replaceAll("&quot;", '"')}'`,
     );
 
+/**
+ * Motion gestures (roadmap 5.3): like the keyframes, the JSON values (`while…` states, a box of
+ * constraints, the drag transition) are written in single quotes.
+ */
+const motionGestureSnippet = (markup) =>
+  motionKeyframesSnippet(markup).replace(
+    / (data-ok-while-[a-z]+|data-ok-drag-constraints|data-ok-drag-elastic|data-ok-drag-transition)="(\{[^"]*)"/g,
+    (_, name, value) => ` ${name}='${value.replaceAll("&quot;", '"')}'`,
+  );
+
+/** Drawer triggers (`aria-haspopup="dialog"`) open the next drawer dialog (`data-ok-drawer-open`). */
+const drawerTriggers = (markup) => {
+  const ids = [...markup.matchAll(/<dialog\b[^>]*\bid="([^"]+)"/g)].map(([, id]) => id);
+  let index = 0;
+  return markup.replace(/<button\b[^>]*aria-haspopup="dialog"[^>]*>/g, (tag) =>
+    tag.replace(/>$/, ` data-ok-drawer-open="${ids[index++]}">`),
+  );
+};
+
 const editorContent = await import("../src/components/editor/editor-feature-content.ts");
 
 /**
@@ -212,6 +231,15 @@ const DEMOS = [
   ],
   // Motion "Logo" (ADR-0062): custom keyframes as JSON attributes; Motions carry no state.
   ["motion", "logo-demo.tsx", "MotionLogoDemo", "logo-group", motionKeyframesSnippet],
+  // Motion "Gestures" (roadmap 5.3): drag and `while…` states as attributes; no state.
+  ...[
+    ["GestureDragDemo", "gestures-drag"],
+    ["GestureAxisDemo", "gestures-axis"],
+    ["GestureSnapDemo", "gestures-snap"],
+    ["GestureHoverTapDemo", "gestures-hover-tap"],
+  ].map(([name, snippet]) => ["motion", "gestures-demo.tsx", name, snippet, motionGestureSnippet]),
+  // Swipeable drawers (roadmap 4.18.46): each trigger opens the dialog that follows it.
+  ["drawer", "swipeable-demo.tsx", "SwipeableDrawerDemo", "swipeable-group", drawerTriggers],
   // Color pickers (roadmap 4.23): swatch colors are written by the runtimes (no `style`).
   ["radio", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],
   ["checkbox", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],

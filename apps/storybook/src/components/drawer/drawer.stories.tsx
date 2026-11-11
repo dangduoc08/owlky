@@ -10,6 +10,8 @@ import {
   VARIANT_FILES,
   variantGroups,
 } from "./drawer-examples.js";
+import { SwipeableDrawerDemo } from "./swipeable-demo.js";
+import swipeableSource from "./swipeable-demo.tsx?raw";
 
 const snippets = import.meta.glob(
   "../../../../../packages/html/src/components/drawer/examples/*.html",
@@ -59,4 +61,18 @@ export const Variants: StoryObj = frameworkStory({
     ...reactGroupsStory(variantGroups),
     name: "Persistent & permanent",
   },
+});
+
+export const Swipeable: StoryObj = frameworkStory({
+  html: snippetStory(
+    snippets,
+    "swipeable",
+    [["Swipeable", "group"]],
+    htmlSetup(["button.css", "scrollbar.css", "list.css", "typography.css", "drawer.css"], true),
+  ),
+  react: reactGroupsStory(
+    [{ title: "Swipeable", content: <SwipeableDrawerDemo /> }],
+    undefined,
+    swipeableSource,
+  ),
 });

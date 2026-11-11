@@ -33,6 +33,13 @@ Safari 17 (ADR-0006). `linear()` easing is in Chrome 113, Firefox 112 and Safari
   sets `currentTime` on the engine's paused animations elsewhere (Firefox).
 - **5.3 Gestures:** Pointer Events (as Slider and Sortable); release velocity feeds the spring
   generator below (`velocity`), constraints clamp the target.
+  *Note 2026-11-11 (5.3 built):* the glide after a release isn't a `springEasing` curve: each
+  axis needs a decay that turns into a spring where it crosses a constraint (Framer's inertia),
+  which no single easing describes. `inertiaPath` simulates each axis (1 ms steps) and `animate()`
+  plays the result as `translate` keyframes every 1/60 s with linear easing, so interruption,
+  the committed end and reduced motion still go through the engine. Hover / tap / focus / drag
+  states use `animate()` with springs as sketched. The swipe helper (`createSwipe`) shares the
+  pan layer (`trackPan`), not the element movement.
 - **5.4 Layout:** measure before and after, play the inverse transform with `animate()`; shared
   values are a small store with React hooks and HTML callbacks.
 
