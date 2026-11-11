@@ -65,5 +65,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0060](0060-chart-drilldown-trellis.md) | Chart: drilldown levels next to the series (`drilldown`, a path of level ids on the root, the ADR-0058 drill row) and trellis small multiples (`ChartTrellis`, shared nice scales, `promote`) | Accepted |
 | [0059](0059-chart-geo-maps.md) | Chart: offline SVG geo maps (`type="geo"`): regions and hex tiles with the chart's legend, tooltip and keyboard, `mapScale`, geometry from GeoJSON (React) or a JSON element / script (HTML) | Accepted |
 | [0061](0061-phone-input.md) | Phone input: libphonenumber-js `min` behind opt-in entries (`@owlky/core/phone`, `owlky-phone.js`), a bare Select of countries with emoji flags, E.164 values | Accepted |
+| [0062](0062-motion-engine.md) | Motion full version: a Web Animations API engine in core (`animate()`, springs as `linear()`, interruption), exits before removal, Dialog / Drawer exits and `transitionDuration` | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).
