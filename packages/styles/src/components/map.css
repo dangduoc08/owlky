@@ -276,9 +276,10 @@
     border-radius: var(--ok-radius-sm);
   }
 
+  /* The marker's `scale` (CSSOM: --_ok-map-pin-scale) sizes the default pin. */
   :where([data-ok-map-pin]) {
-    width: calc(var(--ok-spacing) * 6.5);
-    height: calc(var(--ok-spacing) * 6.5);
+    width: calc(var(--ok-spacing) * 6.5 * var(--_ok-map-pin-scale, 1));
+    height: calc(var(--ok-spacing) * 6.5 * var(--_ok-map-pin-scale, 1));
     filter: var(--ok-drop-shadow-z1);
   }
 

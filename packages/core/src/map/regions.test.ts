@@ -251,11 +251,13 @@ describe("map regions", () => {
     await ready(c);
     (root.querySelector("button") as HTMLButtonElement).click();
     expect(root.querySelector("button")?.getAttribute("aria-pressed")).toBe("false");
-    c.setMapStyle(mapFixtureStyle("#00ff00"));
-    await nextEvent(
+    // A style diff fires `style.load` during the call: listen first.
+    const diffed = nextEvent(
       { addEventListener: (_t: string, h: () => void) => c.map?.once("style.load", h) },
       "style.load",
     );
+    c.setMapStyle(mapFixtureStyle("#00ff00"));
+    await diffed;
     expect(state(c, "B")).toMatchObject({ value: 5 });
     // A changed source spec re-creates the source: its states come back.
     c.setSource("boxes", { type: "geojson", data: DATA, promoteId: "name", buffer: 64 });

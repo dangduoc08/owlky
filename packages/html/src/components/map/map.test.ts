@@ -129,7 +129,8 @@ describe("map runtime", () => {
   });
 
   it("follows root attributes: view, settings, style and label", async () => {
-    const { root, instance } = await setup(BASIC());
+    // Without diffing, an equal style at a new URL still reloads (`style.load`).
+    const { root, instance } = await setup(BASIC("", 'data-ok-style-diffing="false"'));
     const m = instance.map as NonNullable<MapInstance["map"]>;
     root.setAttribute("data-ok-zoom", "4");
     root.setAttribute("data-ok-scroll-zoom", "false");
@@ -154,6 +155,40 @@ describe("map runtime", () => {
     root.removeAttribute("data-ok-map-style-dark");
     root.removeAttribute("data-ok-map-style");
     await settle();
+  });
+
+  it("follows light, sky and padding attributes, and marker scale and click tolerance", async () => {
+    const { root, instance } = await setup(
+      BASIC(
+        `<div data-ok-map-marker data-ok-longitude="-95" data-ok-latitude="38" data-ok-draggable data-ok-scale="2" data-ok-click-tolerance="10"></div>`,
+        `data-ok-light='{"intensity":0.8}' data-ok-sky='{"atmosphere-blend":0.25}' data-ok-padding="0 0 0 120"`,
+      ),
+    );
+    const m = instance.map as NonNullable<MapInstance["map"]>;
+    expect(m.getLight()).toMatchObject({ intensity: 0.8 });
+    expect(m.getSky()).toMatchObject({ "atmosphere-blend": 0.25 });
+    expect(m.getPadding()).toEqual({ top: 0, right: 0, bottom: 0, left: 120 });
+    root.setAttribute("data-ok-light", '{"intensity":0.3}');
+    root.setAttribute("data-ok-sky", "not json");
+    root.setAttribute("data-ok-padding", "20");
+    await settle();
+    expect(m.getLight()).toMatchObject({ intensity: 0.3 });
+    expect(m.getSky()).toBeUndefined();
+    expect(m.getPadding()).toEqual({ top: 20, right: 20, bottom: 20, left: 20 });
+    const marker = root.querySelector<HTMLElement>("[data-ok-map-marker]") as HTMLElement;
+    expect(marker.style.getPropertyValue("--_ok-map-pin-scale")).toBe("2");
+    const drags = vi.fn();
+    marker.addEventListener("ok:map:markerdragstart", drags);
+    const pointer = (type: string, x: number) =>
+      marker.dispatchEvent(
+        new PointerEvent(type, { bubbles: true, clientX: x, clientY: 0, button: 0, pointerId: 1 }),
+      );
+    pointer("pointerdown", 0);
+    pointer("pointermove", 8);
+    expect(drags).not.toHaveBeenCalled();
+    pointer("pointermove", 14);
+    pointer("pointerup", 14);
+    expect(drags).toHaveBeenCalledTimes(1);
   });
 
   it("reads bounds, interactive layers and reports features under the pointer", async () => {

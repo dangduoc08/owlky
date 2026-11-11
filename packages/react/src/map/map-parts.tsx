@@ -64,6 +64,13 @@ export interface MarkerProps
   /** People can drag it (or move it with the arrow keys once focused). */
   draggable?: boolean | undefined;
   rotation?: number | undefined;
+  /** Size of the default pin: `2` doubles it. Default `1` (26px). */
+  scale?: number | undefined;
+  /**
+   * Pixels a press may move and still count as a click, not a drag. Default: the map's
+   * `clickTolerance` (`mapOptions`), 3.
+   */
+  clickTolerance?: number | undefined;
   rotationAlignment?: MapAlignment | undefined;
   pitchAlignment?: MapAlignment | undefined;
   /** Called when a drag of the marker starts. */
@@ -89,6 +96,8 @@ export const Marker = forwardRef<HTMLDivElement, MarkerProps>(function Marker(
     color,
     draggable,
     rotation,
+    scale,
+    clickTolerance,
     rotationAlignment,
     pitchAlignment,
     onDragStart,
@@ -133,6 +142,8 @@ export const Marker = forwardRef<HTMLDivElement, MarkerProps>(function Marker(
         color,
         draggable,
         rotation,
+        scale,
+        clickTolerance,
         rotationAlignment,
         pitchAlignment,
       })}

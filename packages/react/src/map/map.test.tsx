@@ -256,6 +256,46 @@ describe("Map", () => {
     expect(map.getLayer("land")).toBeUndefined();
   });
 
+  it("follows light, sky, padding and styleDiffing, and writes them as attributes", async () => {
+    const ref = createRef<MapRef>();
+    const { rerender, root } = await renderMap(
+      { light: { intensity: 0.8 }, sky: { "atmosphere-blend": 0.25 }, padding: { left: 100 } },
+      ref,
+    );
+    const map = mapOf(ref);
+    expect(map.getLight()).toMatchObject({ intensity: 0.8 });
+    expect(map.getSky()).toMatchObject({ "atmosphere-blend": 0.25 });
+    expect(map.getPadding()).toMatchObject({ left: 100 });
+    expect(root.getAttribute("data-ok-light")).toBe('{"intensity":0.8}');
+    expect(root.getAttribute("data-ok-sky")).toBe('{"atmosphere-blend":0.25}');
+    expect(root.getAttribute("data-ok-padding")).toBe("0 0 0 100");
+    expect(root.hasAttribute("data-ok-style-diffing")).toBe(false);
+    const setStyle = vi.spyOn(map, "setStyle");
+    const props = {
+      ref,
+      style: { width: 600, height: 400 },
+      initialViewState: { longitude: -95, latitude: 38, zoom: 2 },
+    };
+    const reloaded = new Promise<void>((resolve) => map.once("style.load", () => resolve()));
+    rerender(
+      <MapView
+        {...props}
+        mapStyle={{ ...STYLE, layers: STYLE.layers.slice(0, 1) }}
+        light={{ intensity: 0.3 }}
+        sky={null}
+        padding={{ top: 20 }}
+        styleDiffing={false}
+      />,
+    );
+    // Without diffing the style reloads: the light comes back once it is in.
+    await reloaded;
+    expect(map.getLight()).toMatchObject({ intensity: 0.3 });
+    expect(map.getPadding()).toMatchObject({ top: 20, left: 0 });
+    expect(setStyle).toHaveBeenLastCalledWith(expect.anything(), { diff: false });
+    expect(root.getAttribute("data-ok-style-diffing")).toBe("false");
+    expect(root.hasAttribute("data-ok-sky")).toBe(false);
+  });
+
   it("renders controls in the corners, and the attribution unless turned off", async () => {
     const { root, rerender } = await renderMap({
       children: (
@@ -460,6 +500,8 @@ describe("Marker, Popup, Source, Layer, MapPanel", () => {
             onDragStart={onDragStart}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
+            scale={1.5}
+            clickTolerance={8}
           />
           <Marker
             longitude={-90}
@@ -479,6 +521,9 @@ describe("Marker, Popup, Source, Layer, MapPanel", () => {
     expect(pin.getAttribute("data-ok-color")).toBe("error");
     expect(pin.getAttribute("data-ok-offset")).toBe("0,-4");
     expect(pin.getAttribute("tabindex")).toBe("0");
+    expect(pin.getAttribute("data-ok-scale")).toBe("1.5");
+    expect(pin.getAttribute("data-ok-click-tolerance")).toBe("8");
+    expect(pin.style.getPropertyValue("--_ok-map-pin-scale")).toBe("1.5");
     expect(pin.querySelector("[data-ok-map-pin]")).not.toBeNull();
     const custom = root.querySelectorAll("[data-ok-map-marker]")[1] as HTMLElement;
     expect(custom.getAttribute("role")).toBeNull();
@@ -502,6 +547,17 @@ describe("Marker, Popup, Source, Layer, MapPanel", () => {
       pin.click();
     });
     expect(onClick).toHaveBeenCalledTimes(1);
+    // Within the click tolerance a press stays a click (after the swallowed click's task).
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    onDragStart.mockClear();
+    act(() => {
+      pointer("pointerdown", 0);
+      pointer("pointermove", 6);
+      pointer("pointerup", 6);
+      pin.click();
+    });
+    expect(onDragStart).not.toHaveBeenCalled();
+    expect(onClick).toHaveBeenCalledTimes(2);
   });
 
   it("shows popups, closes them through onClose and focuses them", async () => {

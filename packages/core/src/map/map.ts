@@ -3,10 +3,12 @@ import {
   type FitBoundsOptions,
   type FlyToOptions,
   type JumpToOptions,
+  type LightSpecification,
   type LngLatBoundsLike,
   type MapGeoJSONFeature,
   Map as MapLibreMap,
   type MapOptions,
+  type SkySpecification,
 } from "maplibre-gl";
 import {
   type MapAnchor,
@@ -36,6 +38,17 @@ export type MapStyle = Exclude<Parameters<MapLibreMap["setStyle"]>[0], null>;
 export type MapSourceSpec = Parameters<MapLibreMap["addSource"]>[1];
 /** A MapLibre layer specification (`{ id, type, source, paint, … }`). */
 export type MapLayerSpec = Parameters<MapLibreMap["addLayer"]>[0];
+/** The 3D light of extrusions (MapLibre `LightSpecification`: `anchor`, `color`, `intensity`, `position`). */
+export type MapLight = LightSpecification;
+/** The sky and the atmosphere of the globe (MapLibre `SkySpecification`). */
+export type MapSky = SkySpecification;
+/** Camera padding in px: the part of the map the camera centers on leaves these edges out. */
+export interface MapPadding {
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+  readonly left: number;
+}
 /** The MapLibre map (escape hatch for everything Owlky doesn't wrap). */
 export type { MapLibreMap };
 
@@ -79,6 +92,14 @@ export interface MapSettings extends Record<MapHandler, boolean> {
   cursor: string | null;
   /** 3D terrain from a `raster-dem` source, or `null`. */
   terrain: { source: string; exaggeration?: number } | null;
+  /** The light of 3D extrusions, or `null` (MapLibre's default light). */
+  light: MapLight | null;
+  /** The sky and the globe's atmosphere, or `null` (none). */
+  sky: MapSky | null;
+  /** Camera padding in px (`null`: none): the center sits in the rest of the map. */
+  padding: Partial<MapPadding> | null;
+  /** A new style is compared with the current one and only the differences are applied. */
+  styleDiffing: boolean;
 }
 
 export const mapEventTypes = [
@@ -241,7 +262,55 @@ const DEFAULTS: MapSettings = {
   interactiveLayerIds: [],
   cursor: null,
   terrain: null,
+  light: null,
+  sky: null,
+  padding: null,
+  styleDiffing: true,
 };
+
+/** MapLibre's default light (a light set to `null` goes back to it). */
+const DEFAULT_LIGHT: MapLight = {
+  anchor: "viewport",
+  color: "#ffffff",
+  intensity: 0.5,
+  position: [1.15, 210, 30],
+};
+
+/** Every side of a padding, missing or invalid ones 0 (negative ones too). */
+export function mapPadding(padding: Partial<MapPadding> | null | undefined): MapPadding {
+  const side = (value: number | undefined) =>
+    typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
+  return {
+    top: side(padding?.top),
+    right: side(padding?.right),
+    bottom: side(padding?.bottom),
+    left: side(padding?.left),
+  };
+}
+
+/**
+ * Padding written like CSS `padding` (1–4 px numbers: top, right, bottom, left), or `null` when the
+ * text isn't one (HTML `data-ok-padding`).
+ */
+export function parseMapPadding(text: string | null): MapPadding | null {
+  const parts = (text ?? "").trim().split(/\s+/).filter(Boolean);
+  const numbers = parts.map((part) => Number(part.replace(/px$/, "")));
+  if (numbers.length === 0 || numbers.length > 4 || numbers.some((n) => !Number.isFinite(n)))
+    return null;
+  const [top, right = top, bottom = top, left = right] = numbers as [number, ...number[]];
+  return mapPadding({ top, right, bottom, left });
+}
+
+/** A JSON object attribute (`data-ok-light`, `data-ok-sky`), or `null`; MapLibre validates it. */
+export function parseMapJson<T extends object>(text: string | null): T | null {
+  if (!text) return null;
+  try {
+    const value: unknown = JSON.parse(text);
+    return value && typeof value === "object" && !Array.isArray(value) ? (value as T) : null;
+  } catch {
+    return null;
+  }
+}
 
 /** Mouse and touch events: they carry a point and report interactive features. */
 const POINTER_EVENTS = new Set<string>([
@@ -266,6 +335,7 @@ const OVERLAY_ATTRIBUTES = [
   "data-ok-rotation",
   "data-ok-rotation-alignment",
   "data-ok-pitch-alignment",
+  "data-ok-scale",
   "data-ok-max-width",
   "hidden",
   // Regions and legends (choropleth).
@@ -438,7 +508,7 @@ export function createMapController(
   const addLayerToMap = (map: MapLibreMap, spec: MapLayerSpec, beforeId: string | undefined) =>
     map.addLayer(resolved(spec), beforeId && map.getLayer(beforeId) ? beforeId : undefined);
   /** Adds every registered source and layer the style lacks (after each style load). */
-  const restore = (map: MapLibreMap) => {
+  const restore = (map: MapLibreMap, reloaded = false) => {
     for (const [id, spec] of sources) if (!map.getSource(id)) map.addSource(id, spec);
     for (const { spec, beforeId } of layers.values())
       if (
@@ -446,13 +516,23 @@ export function createMapController(
         (!("source" in spec) || typeof spec.source !== "string" || map.getSource(spec.source))
       )
         addLayerToMap(map, spec, beforeId);
-    applyStyleSettings();
+    applyStyleSettings(reloaded);
   };
-  const applyStyleSettings = () => {
+  // Whether a light / sky of ours is on the map (a style's own ones stay until we set ours).
+  let lightSet = false;
+  let skySet = false;
+  const applyStyleSettings = (reloaded = false) => {
     if (!map || !styleReady) return;
     map.setProjection({ type: settings.projection });
     const terrain = settings.terrain;
     map.setTerrain(terrain && map.getSource(terrain.source) ? terrain : null);
+    // A style load brings its own light and sky: ours are set again. A `null` light after ours
+    // goes back to MapLibre's default, a `null` sky removes ours.
+    if (reloaded) lightSet = skySet = false;
+    if (settings.light || lightSet) map.setLight(settings.light ?? DEFAULT_LIGHT);
+    lightSet = settings.light !== null;
+    if (settings.sky || skySet) map.setSky(settings.sky ?? (undefined as unknown as MapSky));
+    skySet = settings.sky !== null;
   };
 
   // --- Events -----------------------------------------------------------------------------------
@@ -563,6 +643,7 @@ export function createMapController(
     const projected = map.project([point.lng, point.lat]);
     const [dx, dy] = mapOffset(marker.getAttribute("data-ok-offset"), "center");
     const rotation = finite(marker.getAttribute("data-ok-rotation")) ?? 0;
+    const scale = finite(marker.getAttribute("data-ok-scale"));
     const rotateWithMap = marker.getAttribute("data-ok-rotation-alignment") === "map";
     const flat = marker.getAttribute("data-ok-pitch-alignment") === "map";
     write(marker, {
@@ -571,6 +652,7 @@ export function createMapController(
       "--_ok-map-y": `${Math.round((projected.y + dy) * 100) / 100}px`,
       "--_ok-map-rotate-x": `${flat ? map.getPitch() : 0}deg`,
       "--_ok-map-rotate-z": `${rotation - (rotateWithMap ? map.getBearing() : 0)}deg`,
+      "--_ok-map-pin-scale": scale !== undefined && scale > 0 ? String(scale) : "",
     });
   };
 
@@ -1004,6 +1086,12 @@ export function createMapController(
   // --- Settings ---------------------------------------------------------------------------------
 
   const applySettings = (next: Partial<MapSettings>) => {
+    // Objects compared by content: owners pass new ones on every render.
+    const changed = (key: "light" | "sky" | "padding") =>
+      next[key] !== undefined && json(next[key]) !== json(settings[key]);
+    const lightChanged = changed("light");
+    const skyChanged = changed("sky");
+    const paddingChanged = changed("padding");
     for (const [key, value] of Object.entries(next))
       if (value !== undefined) (settings as unknown as Record<string, unknown>)[key] = value;
     if (!map) {
@@ -1025,7 +1113,9 @@ export function createMapController(
     if (next.maxPitch !== undefined) map.setMaxPitch(next.maxPitch);
     if (next.maxBounds !== undefined) map.setMaxBounds(next.maxBounds ?? undefined);
     if (next.renderWorldCopies !== undefined) map.setRenderWorldCopies(next.renderWorldCopies);
-    if (next.projection !== undefined || next.terrain !== undefined) applyStyleSettings();
+    if (next.projection !== undefined || next.terrain !== undefined || lightChanged || skyChanged)
+      applyStyleSettings();
+    if (paddingChanged) map.setPadding(mapPadding(settings.padding));
     if (next.cursor !== undefined) map.getCanvas().style.cursor = next.cursor ?? "";
     paintControls();
   };
@@ -1034,8 +1124,10 @@ export function createMapController(
     const style = currentStyle();
     if (!map || style === undefined || style === appliedStyle) return;
     appliedStyle = style;
-    styleReady = false;
-    map.setStyle(style, { diff: false });
+    // A diff keeps the style loaded: MapLibre fires `style.load` after it (the sources and layers
+    // come back there), or rebuilds the style when it can't diff.
+    if (!settings.styleDiffing) styleReady = false;
+    map.setStyle(style, { diff: settings.styleDiffing });
   };
   const schemeChanged = () => {
     applyStyle();
@@ -1073,6 +1165,7 @@ export function createMapController(
         if (initial.fitBoundsOptions) mapOptions.fitBoundsOptions = initial.fitBoundsOptions;
       }
       map = new MapLibreMap(mapOptions);
+      if (settings.padding) map.setPadding(mapPadding(settings.padding));
     } catch {
       map = null;
       enterFallback("error");
@@ -1083,7 +1176,7 @@ export function createMapController(
     const instance = map;
     instance.on("style.load", () => {
       styleReady = true;
-      restore(instance);
+      restore(instance, true);
       regions.apply();
       // Ready once the first style is in: overlays are placed (tiles may still be loading, and a
       // source updated every frame can hold MapLibre's `load` back).
@@ -1273,6 +1366,11 @@ export function createMapController(
       const tilt = Boolean(compass?.closest("[data-ok-visualize-pitch]"));
       const from = marker ? lngLatOf(marker) : null;
       if (!compass && !from) return;
+      // A marker's own tolerance, else the map's (MapLibre `clickTolerance`, default 3px).
+      const tolerance =
+        finite(marker?.getAttribute("data-ok-click-tolerance") ?? null) ??
+        options.mapOptions?.clickTolerance ??
+        TOLERANCE;
       const origin = from ? instance.project([from.lng, from.lat]) : null;
       let moving = false;
       compassDragged = false;
@@ -1284,7 +1382,7 @@ export function createMapController(
       const move = (next: PointerEvent) => {
         const dx = next.clientX - startX;
         const dy = next.clientY - startY;
-        if (!moving && Math.hypot(dx, dy) <= TOLERANCE) return;
+        if (!moving && Math.hypot(dx, dy) <= (compass ? TOLERANCE : tolerance)) return;
         if (compass) {
           moving = compassDragged = true;
           instance.setBearing(startBearing + dx * 0.8);

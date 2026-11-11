@@ -313,6 +313,7 @@
   "data-ok-clear-on-blur",
   "data-ok-clear-on-escape",
   "data-ok-clearable",
+  "data-ok-click-tolerance",
   "data-ok-close-button",
   "data-ok-close-button-action",
   "data-ok-close-on-backdrop-click",
@@ -896,6 +897,7 @@
   "data-ok-legend",
   "data-ok-legend-align",
   "data-ok-legend-values",
+  "data-ok-light",
   "data-ok-lightbox",
   "data-ok-lightbox-caption",
   "data-ok-lightbox-captions",
@@ -1252,6 +1254,7 @@
   "data-ok-runtime",
   "data-ok-samples",
   "data-ok-save-view-state",
+  "data-ok-scale",
   "data-ok-scale-classes",
   "data-ok-scale-method",
   "data-ok-scale-thresholds",
@@ -1314,6 +1317,7 @@
   "data-ok-skip-disabled",
   "data-ok-skip-html",
   "data-ok-skip-snaps",
+  "data-ok-sky",
   "data-ok-slide-spacing",
   "data-ok-slider",
   "data-ok-slider-mark",
@@ -1403,6 +1407,7 @@
   "data-ok-stream-order",
   "data-ok-stroke",
   "data-ok-stroke-width",
+  "data-ok-style-diffing",
   "data-ok-sum",
   "data-ok-swap-target",
   "data-ok-swatch",
@@ -49239,6 +49244,13 @@
          "name": "renderWorldCopies"
         },
         {
+         "attr": "data-ok-style-diffing",
+         "default": true,
+         "description": "A new style is compared with the current one and only the differences are applied (off: the style reloads).",
+         "kind": "behavior",
+         "name": "styleDiffing"
+        },
+        {
          "attr": "data-ok-cooperative-gestures",
          "description": "Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling.",
          "kind": "flag",
@@ -49391,6 +49403,12 @@
          "description": "On regions: the id of the fill layer that pointer hovers and clicks hit.",
          "kind": "value",
          "name": "data-ok-layer",
+         "value": "string"
+        },
+        {
+         "description": "The light of 3D extrusions, as MapLibre light JSON (`anchor`, `color`, `intensity`, `position`).",
+         "kind": "value",
+         "name": "data-ok-light",
          "value": "string"
         },
         {
@@ -49569,6 +49587,12 @@
          "value": "string"
         },
         {
+         "description": "Camera padding in px, written like CSS `padding` (1 to 4 numbers: top, right, bottom, left).",
+         "kind": "value",
+         "name": "data-ok-padding",
+         "value": "string"
+        },
+        {
          "description": "On a layer: its paint properties, as JSON.",
          "kind": "value",
          "name": "data-ok-paint",
@@ -49598,6 +49622,12 @@
          "description": "Set by the runtime while the geolocate control shows the accuracy circle.",
          "kind": "state",
          "name": "data-ok-show-accuracy"
+        },
+        {
+         "description": "The sky and the globe's atmosphere, as MapLibre sky JSON.",
+         "kind": "value",
+         "name": "data-ok-sky",
+         "value": "string"
         },
         {
          "description": "On a layer outside a source: the id of its source. On the terrain control: the DEM source. On regions: the source of the regions.",
@@ -50073,6 +50103,21 @@
          "name": "rotation"
         },
         {
+         "attr": "data-ok-scale",
+         "default": 1,
+         "description": "Size of the default pin (1: 26px).",
+         "kind": "number",
+         "min": 0,
+         "name": "scale"
+        },
+        {
+         "attr": "data-ok-click-tolerance",
+         "description": "Pixels a press may move and still count as a click, not a drag (default: the map's `clickTolerance`, 3).",
+         "kind": "number",
+         "min": 0,
+         "name": "clickTolerance"
+        },
+        {
          "attr": "data-ok-rotation-alignment",
          "default": "auto",
          "description": "`map`: turns with the map; `viewport` and `auto`: stays upright.",
@@ -50465,6 +50510,11 @@
          "type": "number"
         },
         {
+         "description": "The light of 3D extrusions (MapLibre light: `anchor`, `color`, `intensity`, `position`).",
+         "name": "light",
+         "type": "LightSpecification | null"
+        },
+        {
          "default": "0",
          "description": "Center longitude in degrees (HTML: changing it moves the map).",
          "name": "longitude",
@@ -50525,6 +50575,11 @@
          "type": "((fullscreen: boolean) => void)"
         },
         {
+         "description": "Camera padding in px, such as `{ left: 320 }` for a panel over the map's left side.",
+         "name": "padding",
+         "type": "Partial<MapPadding> | null"
+        },
+        {
          "default": "0",
          "description": "Tilt in degrees (0: looking straight down).",
          "name": "pitch",
@@ -50540,6 +50595,17 @@
          "default": "true",
          "description": "Repeats the world side by side when zoomed out.",
          "name": "renderWorldCopies",
+         "type": "boolean"
+        },
+        {
+         "description": "The sky and the globe's atmosphere (MapLibre sky, such as `atmosphere-blend`).",
+         "name": "sky",
+         "type": "SkySpecification | null"
+        },
+        {
+         "default": "true",
+         "description": "Compares a new `mapStyle` with the current one and applies only the differences. `false` reloads the style.",
+         "name": "styleDiffing",
          "type": "boolean"
         },
         {
@@ -50577,6 +50643,11 @@
          "description": "Content (default: a pin).",
          "name": "children",
          "type": "ReactNode"
+        },
+        {
+         "description": "Pixels a press may move and still count as a click, not a drag. Default: the map's `clickTolerance` (`mapOptions`), 3.",
+         "name": "clickTolerance",
+         "type": "number"
         },
         {
          "default": "primary",
@@ -50639,6 +50710,12 @@
          "description": "`map`: turns with the map; `viewport` and `auto`: stays upright.",
          "name": "rotationAlignment",
          "type": "\"auto\" | \"map\" | \"viewport\""
+        },
+        {
+         "default": "1",
+         "description": "Size of the default pin: `2` doubles it. (26px).",
+         "name": "scale",
+         "type": "number"
         }
        ]
       }
@@ -51028,6 +51105,13 @@
        "name": "renderWorldCopies"
       },
       {
+       "attr": "data-ok-style-diffing",
+       "default": true,
+       "description": "A new style is compared with the current one and only the differences are applied (off: the style reloads).",
+       "kind": "behavior",
+       "name": "styleDiffing"
+      },
+      {
        "attr": "data-ok-cooperative-gestures",
        "description": "Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling.",
        "kind": "flag",
@@ -51102,6 +51186,21 @@
        "description": "Rotation in degrees clockwise.",
        "kind": "number",
        "name": "rotation"
+      },
+      {
+       "attr": "data-ok-scale",
+       "default": 1,
+       "description": "Size of the default pin (1: 26px).",
+       "kind": "number",
+       "min": 0,
+       "name": "scale"
+      },
+      {
+       "attr": "data-ok-click-tolerance",
+       "description": "Pixels a press may move and still count as a click, not a drag (default: the map's `clickTolerance`, 3).",
+       "kind": "number",
+       "min": 0,
+       "name": "clickTolerance"
       },
       {
        "attr": "data-ok-rotation-alignment",
@@ -51310,12 +51409,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoom|max-zoom|min-pitch|max-pitch]?\n   [data-ok-projection][data-ok-<handler>=\"false\"]?[data-ok-cooperative-gestures]?[data-ok-render-world-copies=\"false\"]?\n   [data-ok-map-style][data-ok-map-style-dark]?[data-ok-bounds=\"w,s,e,n\"]?[data-ok-max-bounds]?\n   [data-ok-interactive-layer-ids=\"a b\"]?[data-ok-label]?\n   [data-ok-ready]? (style in) [data-ok-loaded]? (first full render) [data-ok-fallback]? [data-ok-fullscreen]?\n  div[data-ok-map-view]                       MapLibre: div.maplibregl-canvas-container › canvas[role=region][tabindex=0]\n                                                [aria-label][aria-describedby][aria-roledescription=map]; div[data-ok-map-user-location]?\n  div[data-ok-map-fallback]                   text (default from labels.fallback when empty)\n  p[data-ok-map-description][id]?             text alternative (visually hidden; shown with the fallback)\n  div[data-ok-map-status][role=status]        location announcements (visually hidden)\n  div[data-ok-map-marker][data-ok-longitude][data-ok-latitude][data-ok-anchor][data-ok-color][data-ok-offset]?\n     [data-ok-draggable]?[data-ok-rotation]?[data-ok-rotation-alignment]?[data-ok-pitch-alignment]?\n     [role=button][tabindex=0][aria-label]? (interactive) [data-ok-dragging]? (state)\n    svg[data-ok-map-pin] | content\n  div[data-ok-map-popup][role=dialog|tooltip][tabindex=-1][aria-label]?[data-ok-longitude][data-ok-latitude]\n     [data-ok-anchor]?[data-ok-offset]?[data-ok-max-width]?[data-ok-close-on-click=\"false\"]?[data-ok-close-on-move]?\n     [data-ok-focus-after-open=\"false\"]?[data-ok-current-anchor] (controller) [hidden]? (HTML: closed)\n    span[data-ok-map-popup-tip][aria-hidden] + div[data-ok-map-popup-content] + button[data-ok-map-popup-close][aria-label]?\n  div[data-ok-map-source][data-ok-id][data-ok-type][hidden] › div[data-ok-map-layer][data-ok-id][data-ok-type][hidden]   (HTML only)\n  div[data-ok-map-panel][data-ok-position][data-ok-theme=dark]\n  div[data-ok-map-regions][data-ok-source][data-ok-layer]?[data-ok-source-layer]?[id]?   (choropleth)\n    div[data-ok-map-regions-list][role=listbox][tabindex=0][aria-label]? [id] [aria-activedescendant] [data-ok-hovering]? (controller)\n      div[data-ok-map-region][role=option][id][data-ok-id][aria-selected][data-ok-active]?[data-ok-hovered]?   (controller, from the rows)\n    table › caption + thead (th[scope=col] × 2) + tbody › tr[data-ok-id] › th[scope=row] + td[data-ok-value]?\n  div[data-ok-map-corner=top-left|top-right|bottom-left|bottom-right]   (always the four, in this order)\n    div[data-ok-map-control][data-ok-map-navigation][data-ok-visualize-pitch]?\n      button[data-ok-map-action=zoom-in|zoom-out][aria-label][aria-disabled]\n      button[data-ok-map-action=compass] › svg[data-ok-map-compass-icon] › path[data-ok-map-compass-north|south]\n    div[data-ok-map-control][data-ok-map-geolocate][data-ok-track-user-location]?[data-ok-show-user-location=\"false\"]?[data-ok-show-accuracy-circle=\"false\"]?\n      button[data-ok-map-action=geolocate][data-ok-state=off|waiting|active|error][aria-pressed]? (tracking)\n    div[data-ok-map-control] › button[data-ok-map-action=fullscreen][aria-pressed] › svg[data-ok-map-icon=enter] + svg[data-ok-map-icon=exit]\n    div[data-ok-map-control] › button[data-ok-map-action=globe|terrain][aria-pressed] (terrain: data-ok-source, data-ok-exaggeration)\n    div[data-ok-map-scale][data-ok-unit][data-ok-max-width]?   text and width from the controller\n    details[data-ok-map-attribution][data-ok-compact]?[data-ok-narrow]? (controller) › summary[aria-label] › svg + div[data-ok-map-attribution-text]\n    div[data-ok-map-legend][data-ok-variant=classes|gradient][data-ok-interactive=\"false\"]?[role=group][aria-labelledby|aria-label]\n      p[data-ok-map-legend-title][id]?\n      ul[data-ok-map-legend-classes] › li › button[data-ok-map-legend-class][data-ok-min][data-ok-max][aria-pressed] | [data-ok-null]\n                                           (static: span[data-ok-map-legend-class]) › span[data-ok-map-legend-swatch][data-ok-swatch][aria-hidden] + span[data-ok-map-legend-label]\n      | div[data-ok-map-legend-gradient] › span[data-ok-map-legend-bar][aria-hidden] › span[data-ok-map-legend-stop][data-ok-swatch]×n\n                                         + div[data-ok-map-legend-ticks] › span (min) + span (max)\n  div[data-ok-map-control] (MapControl: author content)\n```\nSources and layers: `data-ok-data` (URL or inline JSON), `data-ok-url`, `data-ok-tiles` (URLs\nseparated by spaces), `data-ok-tile-size`, `data-ok-min-zoom`, `data-ok-max-zoom`, `data-ok-bounds`\n(JSON), `data-ok-scheme`, `data-ok-attribution`, `data-ok-cluster`, `data-ok-cluster-radius`,\n`data-ok-cluster-max-zoom`, `data-ok-cluster-min-points`, `data-ok-cluster-properties` (JSON),\n`data-ok-promote-id`, `data-ok-generate-id`, `data-ok-buffer`, `data-ok-tolerance`,\n`data-ok-line-metrics`, `data-ok-encoding`, `data-ok-coordinates` (JSON); layers `data-ok-paint`,\n`data-ok-layout`, `data-ok-filter` (JSON), `data-ok-source-layer`, `data-ok-min-zoom`,\n`data-ok-max-zoom`, `data-ok-before-id`, and `data-ok-source` when not inside a source. Anything\nelse is ignored (allowlist). Paint and layout strings `\"var(--ok-…)\"` resolve to the token's value\n(again when the color scheme changes).",
+     "body": "```\ndiv[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoom|max-zoom|min-pitch|max-pitch]?\n   [data-ok-projection][data-ok-<handler>=\"false\"]?[data-ok-cooperative-gestures]?[data-ok-render-world-copies=\"false\"]?\n   [data-ok-map-style][data-ok-map-style-dark]?[data-ok-bounds=\"w,s,e,n\"]?[data-ok-max-bounds]?\n   [data-ok-interactive-layer-ids=\"a b\"]?[data-ok-label]?[data-ok-style-diffing=\"false\"]?\n   [data-ok-light=JSON]?[data-ok-sky=JSON]?[data-ok-padding=\"t r b l\"]?\n   [data-ok-ready]? (style in) [data-ok-loaded]? (first full render) [data-ok-fallback]? [data-ok-fullscreen]?\n  div[data-ok-map-view]                       MapLibre: div.maplibregl-canvas-container › canvas[role=region][tabindex=0]\n                                                [aria-label][aria-describedby][aria-roledescription=map]; div[data-ok-map-user-location]?\n  div[data-ok-map-fallback]                   text (default from labels.fallback when empty)\n  p[data-ok-map-description][id]?             text alternative (visually hidden; shown with the fallback)\n  div[data-ok-map-status][role=status]        location announcements (visually hidden)\n  div[data-ok-map-marker][data-ok-longitude][data-ok-latitude][data-ok-anchor][data-ok-color][data-ok-offset]?\n     [data-ok-draggable]?[data-ok-rotation]?[data-ok-rotation-alignment]?[data-ok-pitch-alignment]?\n     [data-ok-scale]?[data-ok-click-tolerance]?\n     [role=button][tabindex=0][aria-label]? (interactive) [data-ok-dragging]? (state)\n    svg[data-ok-map-pin] | content\n  div[data-ok-map-popup][role=dialog|tooltip][tabindex=-1][aria-label]?[data-ok-longitude][data-ok-latitude]\n     [data-ok-anchor]?[data-ok-offset]?[data-ok-max-width]?[data-ok-close-on-click=\"false\"]?[data-ok-close-on-move]?\n     [data-ok-focus-after-open=\"false\"]?[data-ok-current-anchor] (controller) [hidden]? (HTML: closed)\n    span[data-ok-map-popup-tip][aria-hidden] + div[data-ok-map-popup-content] + button[data-ok-map-popup-close][aria-label]?\n  div[data-ok-map-source][data-ok-id][data-ok-type][hidden] › div[data-ok-map-layer][data-ok-id][data-ok-type][hidden]   (HTML only)\n  div[data-ok-map-panel][data-ok-position][data-ok-theme=dark]\n  div[data-ok-map-regions][data-ok-source][data-ok-layer]?[data-ok-source-layer]?[id]?   (choropleth)\n    div[data-ok-map-regions-list][role=listbox][tabindex=0][aria-label]? [id] [aria-activedescendant] [data-ok-hovering]? (controller)\n      div[data-ok-map-region][role=option][id][data-ok-id][aria-selected][data-ok-active]?[data-ok-hovered]?   (controller, from the rows)\n    table › caption + thead (th[scope=col] × 2) + tbody › tr[data-ok-id] › th[scope=row] + td[data-ok-value]?\n  div[data-ok-map-corner=top-left|top-right|bottom-left|bottom-right]   (always the four, in this order)\n    div[data-ok-map-control][data-ok-map-navigation][data-ok-visualize-pitch]?\n      button[data-ok-map-action=zoom-in|zoom-out][aria-label][aria-disabled]\n      button[data-ok-map-action=compass] › svg[data-ok-map-compass-icon] › path[data-ok-map-compass-north|south]\n    div[data-ok-map-control][data-ok-map-geolocate][data-ok-track-user-location]?[data-ok-show-user-location=\"false\"]?[data-ok-show-accuracy-circle=\"false\"]?\n      button[data-ok-map-action=geolocate][data-ok-state=off|waiting|active|error][aria-pressed]? (tracking)\n    div[data-ok-map-control] › button[data-ok-map-action=fullscreen][aria-pressed] › svg[data-ok-map-icon=enter] + svg[data-ok-map-icon=exit]\n    div[data-ok-map-control] › button[data-ok-map-action=globe|terrain][aria-pressed] (terrain: data-ok-source, data-ok-exaggeration)\n    div[data-ok-map-scale][data-ok-unit][data-ok-max-width]?   text and width from the controller\n    details[data-ok-map-attribution][data-ok-compact]?[data-ok-narrow]? (controller) › summary[aria-label] › svg + div[data-ok-map-attribution-text]\n    div[data-ok-map-legend][data-ok-variant=classes|gradient][data-ok-interactive=\"false\"]?[role=group][aria-labelledby|aria-label]\n      p[data-ok-map-legend-title][id]?\n      ul[data-ok-map-legend-classes] › li › button[data-ok-map-legend-class][data-ok-min][data-ok-max][aria-pressed] | [data-ok-null]\n                                           (static: span[data-ok-map-legend-class]) › span[data-ok-map-legend-swatch][data-ok-swatch][aria-hidden] + span[data-ok-map-legend-label]\n      | div[data-ok-map-legend-gradient] › span[data-ok-map-legend-bar][aria-hidden] › span[data-ok-map-legend-stop][data-ok-swatch]×n\n                                         + div[data-ok-map-legend-ticks] › span (min) + span (max)\n  div[data-ok-map-control] (MapControl: author content)\n```\nSources and layers: `data-ok-data` (URL or inline JSON), `data-ok-url`, `data-ok-tiles` (URLs\nseparated by spaces), `data-ok-tile-size`, `data-ok-min-zoom`, `data-ok-max-zoom`, `data-ok-bounds`\n(JSON), `data-ok-scheme`, `data-ok-attribution`, `data-ok-cluster`, `data-ok-cluster-radius`,\n`data-ok-cluster-max-zoom`, `data-ok-cluster-min-points`, `data-ok-cluster-properties` (JSON),\n`data-ok-promote-id`, `data-ok-generate-id`, `data-ok-buffer`, `data-ok-tolerance`,\n`data-ok-line-metrics`, `data-ok-encoding`, `data-ok-coordinates` (JSON); layers `data-ok-paint`,\n`data-ok-layout`, `data-ok-filter` (JSON), `data-ok-source-layer`, `data-ok-min-zoom`,\n`data-ok-max-zoom`, `data-ok-before-id`, and `data-ok-source` when not inside a source. Anything\nelse is ignored (allowlist). Paint and layout strings `\"var(--ok-…)\"` resolve to the token's value\n(again when the color scheme changes).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `map`: listed under \"options\".)\n\n(Options of `map-marker`: listed under \"options\".)\n\n(Options of `map-popup`: listed under \"options\".)\n\n(Options of `map-navigation`: listed under \"options\".)\n\n(Options of `map-geolocate`: listed under \"options\".)\n\n(Options of `map-scale`: listed under \"options\".)\n\n(Options of `map-legend`: listed under \"options\".)\n\n(Options of `map-attribution`: listed under \"options\".)\n\nOther props (React) ↔ HTML: `mapStyle` / `mapStyleDark` (URL or style object; HTML URLs only:\n`data-ok-map-style` / `data-ok-map-style-dark`), `initialViewState` (`longitude`, `latitude`,\n`zoom`, `pitch`, `bearing`, `bounds`, `fitBoundsOptions`; HTML root numbers and `data-ok-bounds`),\n`viewState` / `longitude` … `bearing` (controlled; HTML: change the root numbers), `maxBounds`\n(`data-ok-max-bounds`), `interactiveLayerIds` (`data-ok-interactive-layer-ids`), `cursor`,\n`terrain`, `mapOptions` (any other MapLibre option, read once), `labels` (control names and\nmessages), `aria-label` (`data-ok-label`, the canvas name, default \"Map\"), `description`\n(`p[data-ok-map-description]`), `fallback` (content of `[data-ok-map-fallback]`),\n`attributionControl` (default `true`; HTML writes the attribution in the bottom-right corner).\nEvent props: `onLoad`, `onError`, `onIdle`, `onResize`, `onRemove`, `onRender`, `onData`,\n`onStyleData`, `onSourceData`, `onMoveStart|Move|MoveEnd`, `onZoom…`, `onRotate…`, `onPitch…`,\n`onDrag…`, `onBoxZoom…`, `onClick`, `onDblClick`, `onContextMenu`, `onMouseDown|Up|Move|Over|Out|\nEnter|Leave`, `onWheel`, `onTouch…` (event: `{ type, viewState, lngLat?, point?, features?,\noriginalEvent?, error?, sourceId? }`), `onFullscreenChange`, `onFallback`.\nParts: `Marker` (`longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`,\n`rotationAlignment`, `pitchAlignment`, `onDragStart|Drag|DragEnd({ lngLat })`, `onClick`,\nchildren), `Popup` (`longitude`, `latitude`, `anchor`, `offset`, `closeButton`, `closeOnClick`,\n`closeOnMove`, `focusAfterOpen`, `maxWidth`, `onClose(reason)`, `onOpen`), `Source` (MapLibre source\nspec + `id`), `Layer` (MapLibre layer spec + `id`, `source`, `beforeId`), controls\n`NavigationControl` (`showZoom`, `showCompass`, `visualizePitch`), `GeolocateControl`\n(`trackUserLocation`, `showUserLocation`, `showAccuracyCircle`, `onGeolocate`, `onError`,\n`onTrackUserLocationStart|End`), `FullscreenControl`, `ScaleControl` (`maxWidth`, `unit`),\n`AttributionControl` (`compact`), `GlobeControl`, `TerrainControl` (`source`, `exaggeration`),\n`MapControl` (custom), each with `position`; `MapPanel` (`position`); `MapProvider` + `useMap()`;\nref `MapRef` (`getMap()`, `controller`, `getViewState()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`,\n`exportMap(format?, { fileName?, download? })`).\nChoropleth parts: `MapRegions` (`source`, `sourceLayer`, `layer`, `data: { id, name, value }[]`,\n`caption`, `nameLabel`, `valueLabel`, `formatValue`, `listLabel`, `onRegionSelect({ id })`) and\n`MapLegend` (`scale`, `position` default `bottom-left`, `variant`, `title`, `interactive`, `showNull`,\n`nullLabel`, `formatter(item, index)`, `tickFormatter(value)`, `onLegendToggle({ classIndex, active })`);\nhelpers (core `@owlky/core/map`, re-exported by `@owlky/react`): `mapScale`, `mapRegionLayers`,\n`mapScaleLabel`, `mapPaletteColors`, `jenksBreaks`, `greatCircle`.\n\nAPI mapping (react-map-gl): renamed `Map` → `MapView` (a component named `Map` shadows the global `Map` in consumer modules, Biome `noShadowRestrictedNames`). Kept `mapStyle`, `initialViewState`, `viewState` and the view props,\n`minZoom` … `maxPitch`, `maxBounds`, `projection`, `renderWorldCopies`, `cooperativeGestures`, the\neight handler props, `interactiveLayerIds`, `cursor`, `terrain`, `attributionControl`, every event\nprop, `Marker` / `Popup` / `Source` / `Layer` props, the controls and their options, `MapProvider`,\n`useMap`, `MapRef.getMap()`. Added `mapStyleDark` (theme), `description`, `fallback`, `labels`,\n`onFullscreenChange`, `onFallback`, `MapPanel`, `Popup.onClose(reason)`. Renamed: other MapLibre\noptions go through `mapOptions` (`transformRequest`, `hash`, `fadeDuration`, `locale`,\n`pixelRatio`…). Not applicable: `mapLib` (MapLibre is built in), `reuseMaps`, `RTLTextPlugin` (call\nMapLibre's `setRTLTextPlugin` from `@owlky/core/map`'s MapLibre), `Marker.popup` (compose a\n`Popup`; HTML `data-ok-map-popup-open`), `Marker.color` as any CSS color (palette names), `style`\nprops of parts (class names / CSS), `useControl` (use `MapControl`), `LogoControl` (MapLibre logo\nis off; the attribution credits the data).",
+     "body": "(Options of `map`: listed under \"options\".)\n\n(Options of `map-marker`: listed under \"options\".)\n\n(Options of `map-popup`: listed under \"options\".)\n\n(Options of `map-navigation`: listed under \"options\".)\n\n(Options of `map-geolocate`: listed under \"options\".)\n\n(Options of `map-scale`: listed under \"options\".)\n\n(Options of `map-legend`: listed under \"options\".)\n\n(Options of `map-attribution`: listed under \"options\".)\n\nOther props (React) ↔ HTML: `mapStyle` / `mapStyleDark` (URL or style object; HTML URLs only:\n`data-ok-map-style` / `data-ok-map-style-dark`), `initialViewState` (`longitude`, `latitude`,\n`zoom`, `pitch`, `bearing`, `bounds`, `fitBoundsOptions`; HTML root numbers and `data-ok-bounds`),\n`viewState` / `longitude` … `bearing` (controlled; HTML: change the root numbers), `maxBounds`\n(`data-ok-max-bounds`), `interactiveLayerIds` (`data-ok-interactive-layer-ids`), `cursor`,\n`terrain`, `light` / `sky` (MapLibre light and sky; HTML JSON in `data-ok-light` / `data-ok-sky`,\nre-applied after every style load; `null`: MapLibre's default light, no sky of ours), `padding`\n(camera padding in px, `{ top, right, bottom, left }`; HTML `data-ok-padding` like CSS `padding`,\n1–4 numbers; `map.setPadding`), `styleDiffing` (`data-ok-style-diffing=\"false\"`; default `true`:\n`setStyle(style, { diff })`, MapLibre fires `style.load` after a diff and the controller restores its\nsources, layers, light and sky there),\n`mapOptions` (any other MapLibre option, read once), `labels` (control names and\nmessages), `aria-label` (`data-ok-label`, the canvas name, default \"Map\"), `description`\n(`p[data-ok-map-description]`), `fallback` (content of `[data-ok-map-fallback]`),\n`attributionControl` (default `true`; HTML writes the attribution in the bottom-right corner).\nEvent props: `onLoad`, `onError`, `onIdle`, `onResize`, `onRemove`, `onRender`, `onData`,\n`onStyleData`, `onSourceData`, `onMoveStart|Move|MoveEnd`, `onZoom…`, `onRotate…`, `onPitch…`,\n`onDrag…`, `onBoxZoom…`, `onClick`, `onDblClick`, `onContextMenu`, `onMouseDown|Up|Move|Over|Out|\nEnter|Leave`, `onWheel`, `onTouch…` (event: `{ type, viewState, lngLat?, point?, features?,\noriginalEvent?, error?, sourceId? }`), `onFullscreenChange`, `onFallback`.\nParts: `Marker` (`longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`,\n`scale` (default pin size, `--_ok-map-pin-scale` through CSSOM), `clickTolerance` (px a press may move\nbefore a drag starts; default the map's `mapOptions.clickTolerance`, 3), `rotationAlignment`,\n`pitchAlignment`, `onDragStart|Drag|DragEnd({ lngLat })`, `onClick`,\nchildren), `Popup` (`longitude`, `latitude`, `anchor`, `offset`, `closeButton`, `closeOnClick`,\n`closeOnMove`, `focusAfterOpen`, `maxWidth`, `onClose(reason)`, `onOpen`), `Source` (MapLibre source\nspec + `id`), `Layer` (MapLibre layer spec + `id`, `source`, `beforeId`), controls\n`NavigationControl` (`showZoom`, `showCompass`, `visualizePitch`), `GeolocateControl`\n(`trackUserLocation`, `showUserLocation`, `showAccuracyCircle`, `onGeolocate`, `onError`,\n`onTrackUserLocationStart|End`), `FullscreenControl`, `ScaleControl` (`maxWidth`, `unit`),\n`AttributionControl` (`compact`), `GlobeControl`, `TerrainControl` (`source`, `exaggeration`),\n`MapControl` (custom), each with `position`; `MapPanel` (`position`); `MapProvider` + `useMap()`;\nref `MapRef` (`getMap()`, `controller`, `getViewState()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`,\n`exportMap(format?, { fileName?, download? })`).\nChoropleth parts: `MapRegions` (`source`, `sourceLayer`, `layer`, `data: { id, name, value }[]`,\n`caption`, `nameLabel`, `valueLabel`, `formatValue`, `listLabel`, `onRegionSelect({ id })`) and\n`MapLegend` (`scale`, `position` default `bottom-left`, `variant`, `title`, `interactive`, `showNull`,\n`nullLabel`, `formatter(item, index)`, `tickFormatter(value)`, `onLegendToggle({ classIndex, active })`);\nhelpers (core `@owlky/core/map`, re-exported by `@owlky/react`): `mapScale`, `mapRegionLayers`,\n`mapScaleLabel`, `mapPaletteColors`, `jenksBreaks`, `greatCircle`.\n\nAPI mapping (react-map-gl): renamed `Map` → `MapView` (a component named `Map` shadows the global `Map` in consumer modules, Biome `noShadowRestrictedNames`). Kept `mapStyle`, `initialViewState`, `viewState` and the view props,\n`minZoom` … `maxPitch`, `maxBounds`, `projection`, `renderWorldCopies`, `cooperativeGestures`, the\neight handler props, `interactiveLayerIds`, `cursor`, `terrain`, `light`, `sky`, `padding`,\n`styleDiffing`, `attributionControl`, every event\nprop, `Marker` / `Popup` / `Source` / `Layer` props, the controls and their options, `MapProvider`,\n`useMap`, `MapRef.getMap()`. Added `mapStyleDark` (theme), `description`, `fallback`, `labels`,\n`onFullscreenChange`, `onFallback`, `MapPanel`, `Popup.onClose(reason)`. Renamed: other MapLibre\noptions go through `mapOptions` (`transformRequest`, `hash`, `fadeDuration`, `locale`,\n`pixelRatio`…). Not applicable: `mapLib` (MapLibre is built in), `reuseMaps`, `RTLTextPlugin` (call\nMapLibre's `setRTLTextPlugin` from `@owlky/core/map`'s MapLibre), `Marker.popup` (compose a\n`Popup`; HTML `data-ok-map-popup-open`), `Marker.color` as any CSS color (palette names), `style`\nprops of parts (class names / CSS), `useControl` (use `MapControl`), `LogoControl` (MapLibre logo\nis off; the attribution credits the data).",
      "id": "options",
      "title": "Options"
     },
@@ -51365,7 +51464,7 @@
      "title": "Security"
     },
     {
-     "body": "Upstream: react-map-gl (maplibre) `Map`, `Marker`, `Popup`, `Source`, `Layer`, controls\n(visgl.github.io/react-map-gl/docs/api-reference/maplibre/…, checked 2026-11-09) on MapLibre GL JS.\nThe \"API mapping\" paragraph above records the details; this table adds a status per area.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Map` | `MapView` | renamed | avoids shadowing the global `Map` |\n| Layout: `id`, `cursor` | same (`id` names the map for `useMap`) | kept | `style`: class names / CSS |\n| Styling: `mapStyle`, `projection`, `renderWorldCopies`, `terrain` | same / `data-ok-map-style`, `-projection`, `-render-world-copies` | kept | `mapStyleDark` added (theme) |\n| Styling: `light`, `sky` | `mapOptions` (read once) | deferred | reactive props (sky / atmosphere on the globe, 3D light) |\n| Styling: `styleDiffing` | — | deferred | diff style changes instead of reloading |\n| Camera: `initialViewState` (`bounds`, `fitBoundsOptions`), `longitude` … `bearing`, `viewState`, `minZoom` / `maxZoom` / `minPitch` / `maxPitch`, `maxBounds` | same / root numbers, `data-ok-bounds`, `-max-bounds` | kept | |\n| Camera: `padding` | — | deferred | camera padding (a side panel over the map) |\n| Input handlers (8 flags), `interactiveLayerIds` | same / `data-ok-<handler>=\"false\"`, `-interactive-layer-ids` | kept | `cooperativeGestures` too |\n| Callbacks: `onLoad` … `onSourceData` (every map, mouse, touch, move, zoom, rotate, pitch, drag, box zoom, data event) | same · `ok:map:*` | kept | HTML emits a subset (Events / API) |\n| Other: `mapLib`, `reuseMaps` | — | not applicable | MapLibre built in |\n| Other: `RTLTextPlugin`, `workerCount`, `maxParallelImageRequests` | MapLibre from `@owlky/core/map` | not applicable | global MapLibre settings, called by the app |\n| Other: `workerUrl` | `setMapWorkerUrl(url)` | renamed | |\n| Methods: `getMap()` (+ safe map methods on the ref) | `MapRef.getMap()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`, `getViewState()` | kept | |\n| Marker `longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`, `rotationAlignment`, `pitchAlignment`, `onClick`, `onDragStart` / `onDrag` / `onDragEnd` | same | kept | `color`: palette names |\n| Marker `scale`, `clickTolerance` | — | deferred | default pin size; click vs drag tolerance |\n| Marker `popup` | compose a `Popup` | not applicable | HTML `data-ok-map-popup-open` |\n| Popup `longitude`, `latitude`, `anchor`, `offset`, `maxWidth`, `closeButton`, `closeOnClick`, `closeOnMove`, `focusAfterOpen`, `onOpen`, `onClose` | same | kept | `onClose(reason)` |\n| Popup / Marker `style`, `className` | `className` | kept | `style` not applicable (strict CSP in HTML) |\n| `Source`, `Layer` (MapLibre specs, `beforeId`) | same / hidden `data-ok-map-source` / `-layer` (allowlist) | kept | |\n| `NavigationControl`, `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `AttributionControl`, `GlobeControl`, `TerrainControl` (+ `position`) | same | kept | Owlky markup |\n| `LogoControl`, `useControl` | — / `MapControl` | not applicable | |\n| `MapProvider`, `useMap` | same | kept | |\n| ApexMaps `scale.type` (`quantile`, `equalInterval` / `quantize`, `jenks` / `naturalBreaks`, `threshold`), `classes`, `breaks`, `palette`, `nullColor` | `mapScale({ method, classes, thresholds, palette, nullColor })` | renamed | `type` → `method`, `breaks` → `thresholds` (the result's `breaks` are the computed ones); continuous `linear` / `log` / `sqrt` and `ordinal` deferred |\n| ApexMaps `legend.style` (`classes` · `gradient`), `interactive`, `title`, `position`, `showNull`, `formatter`, `tickFormatter`, event `legendToggle` | `MapLegend` `variant`, `interactive`, `title`, `position`, `showNull`, `formatter`, `tickFormatter`, `onLegendToggle` / `ok:map:legendtoggle` | kept | `style` → `variant`; `scale.nullLabel` → `nullLabel`; `align`, `width`, `marker` deferred |\n| ApexMaps `states.muted.opacity`, `states.active` | `mapRegionLayers({ mutedOpacity })`, outline of `selected` | kept | |\n| ApexMaps `series.joinBy`, `series.data` | `MapRegions data` joined by feature id (`promoteId`) | renamed | |\n| ApexMaps accessibility (roving keyboard, data table) | `MapRegions` listbox + table | kept | |\n| ApexMaps `tooltip`, `dataLabels`, `setSelection()`, `frameFeature()` | compose `Popup` / symbol layers; `fitBounds` | deferred | |\n| ApexMaps arc series (`from`, `to`, `geodesic`) | `greatCircle(from, to)` + a `line` layer | renamed | `curvature`, `width.range`, `endpoints`, `flow` not built (compose layers) |\n| ApexMaps `drilldown`, `breadcrumb`, `drilldown` / `drillup` events, `drillTo`, `drillUp` | `MapRegions` + `fitBounds` + `Breadcrumbs` (composition) | not applicable | app code owns the levels |\n| ApexMaps `geo.projection`, `geo.layout: 'hex'`, `geo.sphere`, `geo.graticule` | Chart `type=\"geo\"` (ADR-0059) | renamed | SVG charts without tiles; `orthographic`, rotation, morphing not built |",
+     "body": "Upstream: react-map-gl (maplibre) `Map`, `Marker`, `Popup`, `Source`, `Layer`, controls\n(visgl.github.io/react-map-gl/docs/api-reference/maplibre/…, checked 2026-11-09) on MapLibre GL JS.\nThe \"API mapping\" paragraph above records the details; this table adds a status per area.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Map` | `MapView` | renamed | avoids shadowing the global `Map` |\n| Layout: `id`, `cursor` | same (`id` names the map for `useMap`) | kept | `style`: class names / CSS |\n| Styling: `mapStyle`, `projection`, `renderWorldCopies`, `terrain` | same / `data-ok-map-style`, `-projection`, `-render-world-copies` | kept | `mapStyleDark` added (theme) |\n| Styling: `light`, `sky` | same / `data-ok-light`, `data-ok-sky` (JSON) | kept | 4.18.79: reactive (compared by content), set again after every style load; `null` goes back to MapLibre's default light and removes the sky set before (a style's own sky stays until one is set) |\n| Styling: `styleDiffing` | same / `data-ok-style-diffing=\"false\"` | kept | 4.18.79: default `true` as upstream. Behavior change: a new style used to reload (`diff: false`); now it is diffed, and an equal style changes nothing (no `style.load`) |\n| Camera: `initialViewState` (`bounds`, `fitBoundsOptions`), `longitude` … `bearing`, `viewState`, `minZoom` / `maxZoom` / `minPitch` / `maxPitch`, `maxBounds` | same / root numbers, `data-ok-bounds`, `-max-bounds` | kept | |\n| Camera: `padding` | same / `data-ok-padding` | kept | 4.18.79: a root prop (`Partial<{ top, right, bottom, left }>`, missing sides 0); `initialViewState.padding` / `viewState.padding` deferred (use `padding`) |\n| Input handlers (8 flags), `interactiveLayerIds` | same / `data-ok-<handler>=\"false\"`, `-interactive-layer-ids` | kept | `cooperativeGestures` too |\n| Callbacks: `onLoad` … `onSourceData` (every map, mouse, touch, move, zoom, rotate, pitch, drag, box zoom, data event) | same · `ok:map:*` | kept | HTML emits a subset (Events / API) |\n| Other: `mapLib`, `reuseMaps` | — | not applicable | MapLibre built in |\n| Other: `RTLTextPlugin`, `workerCount`, `maxParallelImageRequests` | MapLibre from `@owlky/core/map` | not applicable | global MapLibre settings, called by the app |\n| Other: `workerUrl` | `setMapWorkerUrl(url)` | renamed | |\n| Methods: `getMap()` (+ safe map methods on the ref) | `MapRef.getMap()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`, `getViewState()` | kept | |\n| Marker `longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`, `rotationAlignment`, `pitchAlignment`, `onClick`, `onDragStart` / `onDrag` / `onDragEnd` | same | kept | `color`: palette names |\n| Marker `scale`, `clickTolerance` | same / `data-ok-scale`, `data-ok-click-tolerance` | kept | 4.18.79: `scale` sizes the default pin (custom content keeps its size, as upstream); `clickTolerance` default: the map's `mapOptions.clickTolerance` (3) |\n| Marker `popup` | compose a `Popup` | not applicable | HTML `data-ok-map-popup-open` |\n| Popup `longitude`, `latitude`, `anchor`, `offset`, `maxWidth`, `closeButton`, `closeOnClick`, `closeOnMove`, `focusAfterOpen`, `onOpen`, `onClose` | same | kept | `onClose(reason)` |\n| Popup / Marker `style`, `className` | `className` | kept | `style` not applicable (strict CSP in HTML) |\n| `Source`, `Layer` (MapLibre specs, `beforeId`) | same / hidden `data-ok-map-source` / `-layer` (allowlist) | kept | |\n| `NavigationControl`, `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `AttributionControl`, `GlobeControl`, `TerrainControl` (+ `position`) | same | kept | Owlky markup |\n| `LogoControl`, `useControl` | — / `MapControl` | not applicable | |\n| `MapProvider`, `useMap` | same | kept | |\n| ApexMaps `scale.type` (`quantile`, `equalInterval` / `quantize`, `jenks` / `naturalBreaks`, `threshold`), `classes`, `breaks`, `palette`, `nullColor` | `mapScale({ method, classes, thresholds, palette, nullColor })` | renamed | `type` → `method`, `breaks` → `thresholds` (the result's `breaks` are the computed ones); continuous `linear` / `log` / `sqrt` and `ordinal` deferred |\n| ApexMaps `legend.style` (`classes` · `gradient`), `interactive`, `title`, `position`, `showNull`, `formatter`, `tickFormatter`, event `legendToggle` | `MapLegend` `variant`, `interactive`, `title`, `position`, `showNull`, `formatter`, `tickFormatter`, `onLegendToggle` / `ok:map:legendtoggle` | kept | `style` → `variant`; `scale.nullLabel` → `nullLabel`; `align`, `width`, `marker` deferred |\n| ApexMaps `states.muted.opacity`, `states.active` | `mapRegionLayers({ mutedOpacity })`, outline of `selected` | kept | |\n| ApexMaps `series.joinBy`, `series.data` | `MapRegions data` joined by feature id (`promoteId`) | renamed | |\n| ApexMaps accessibility (roving keyboard, data table) | `MapRegions` listbox + table | kept | |\n| ApexMaps `tooltip`, `dataLabels`, `setSelection()`, `frameFeature()` | compose `Popup` / symbol layers; `fitBounds` | deferred | |\n| ApexMaps arc series (`from`, `to`, `geodesic`) | `greatCircle(from, to)` + a `line` layer | renamed | `curvature`, `width.range`, `endpoints`, `flow` not built (compose layers) |\n| ApexMaps `drilldown`, `breadcrumb`, `drilldown` / `drillup` events, `drillTo`, `drillUp` | `MapRegions` + `fitBounds` + `Breadcrumbs` (composition) | not applicable | app code owns the levels |\n| ApexMaps `geo.projection`, `geo.layout: 'hex'`, `geo.sphere`, `geo.graticule` | Chart `type=\"geo\"` (ADR-0059) | renamed | SVG charts without tiles; `orthographic`, rotation, morphing not built |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -76313,14 +76412,14 @@
      "title": "Overview"
     },
     {
-     "body": "`mapStyle` sets the style: a URL of a MapLibre style JSON, or the style object itself. Add `mapStyleDark` to switch styles when the map sits in a dark theme, such as the **Theme** menu's dark mode or a `data-ok-theme=\"dark\"` area. Without it, the map keeps one style in both themes.\n\nIn HTML, change `data-ok-map-style` to switch the style later. In React, pass a new `mapStyle`, and keep style objects in a constant or `useMemo`, because a new object reloads the style.\n\nLayer colors can use Owlky tokens: write `\"var(--ok-palette-info-main)\"` as a paint value. The map reads the token's value, and reads it again when the theme changes.",
+     "body": "`mapStyle` sets the style: a URL of a MapLibre style JSON, or the style object itself. Add `mapStyleDark` to switch styles when the map sits in a dark theme, such as the **Theme** menu's dark mode or a `data-ok-theme=\"dark\"` area. Without it, the map keeps one style in both themes.\n\nIn HTML, change `data-ok-map-style` to switch the style later. In React, pass a new `mapStyle`, and keep style objects in a constant or `useMemo`, because the map compares every new object with the current style. It applies only the differences, so the camera and your own sources and layers stay as they are. Set `styleDiffing` to `false` (HTML: `data-ok-style-diffing=\"false\"`) to reload the whole style instead.\n\nLayer colors can use Owlky tokens: write `\"var(--ok-palette-info-main)\"` as a paint value. The map reads the token's value, and reads it again when the theme changes.",
      "html": "<div data-ok-map data-ok-label=\"Map\"\n  data-ok-map-style=\"https://tiles.openfreemap.org/styles/positron\"\n  data-ok-map-style-dark=\"https://tiles.openfreemap.org/styles/dark\">\n  <div data-ok-map-view></div>\n  <div data-ok-map-fallback></div>\n  <div data-ok-map-status role=\"status\"></div>\n  <div data-ok-map-corner=\"top-left\"></div>\n  <div data-ok-map-corner=\"top-right\"></div>\n  <div data-ok-map-corner=\"bottom-left\"></div>\n  <div data-ok-map-corner=\"bottom-right\">\n    <details data-ok-map-attribution>\n      <summary aria-label=\"Map credits\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01\"></path></svg></summary>\n      <div data-ok-map-attribution-text></div>\n    </details>\n  </div>\n</div>",
      "id": "styles",
      "react": "import { MapView } from \"@owlky/react\";\n\nexport function ThemedMap() {\n  return (\n    <MapView\n      aria-label=\"Map\"\n      mapStyle=\"https://tiles.openfreemap.org/styles/positron\"\n      mapStyleDark=\"https://tiles.openfreemap.org/styles/dark\"\n      initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}\n    />\n  );\n}",
      "title": "Choose the map style"
     },
     {
-     "body": "A marker sits on a point given by `longitude` and `latitude`. By default it is a pin in the `color` you choose. Set `anchor` to `bottom` for pins, so the tip touches the point. Give interactive markers a name with `aria-label`: a marker with a click handler or `draggable` is a button that people reach with Tab.\n\nA popup is a dialog that points at a place. It picks the side where it fits unless you set `anchor`, and `offset` moves it away from its marker. Escape, the close button and a click on the map close it. In React, a popup shows while you render it, and `onClose` asks you to remove it. In HTML, write popups with `hidden` and open them from a marker with `data-ok-map-popup-open`.\n\nWith `draggable`, people drag a marker or move it with the arrow keys. In HTML the marker stores its new position in its attributes. In React, update `longitude` and `latitude` in `onDragEnd`. Also let people place a marker with a click, because dragging is hard for some people.",
+     "body": "A marker sits on a point given by `longitude` and `latitude`. By default it is a pin in the `color` you choose. Set `anchor` to `bottom` for pins, so the tip touches the point. Give interactive markers a name with `aria-label`: a marker with a click handler or `draggable` is a button that people reach with Tab.\n\nA popup is a dialog that points at a place. It picks the side where it fits unless you set `anchor`, and `offset` moves it away from its marker. Escape, the close button and a click on the map close it. In React, a popup shows while you render it, and `onClose` asks you to remove it. In HTML, write popups with `hidden` and open them from a marker with `data-ok-map-popup-open`.\n\nWith `draggable`, people drag a marker or move it with the arrow keys. In HTML the marker stores its new position in its attributes. In React, update `longitude` and `latitude` in `onDragEnd`. Also let people place a marker with a click, because dragging is hard for some people. A press that moves less than `clickTolerance` pixels stays a click (default 3, or the map's `clickTolerance`). `scale` sizes the default pin: `2` doubles it.",
      "html": "<div data-ok-map-marker data-ok-longitude=\"2.35\" data-ok-latitude=\"48.86\"\n  data-ok-anchor=\"bottom\" data-ok-color=\"error\"\n  role=\"button\" tabindex=\"0\" aria-label=\"Paris\" data-ok-map-popup-open=\"paris\">\n  <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\" data-ok-map-pin><path d=\"M12 2.5A7.5 7.5 0 0 0 4.5 10c0 5.3 6.2 11 6.9 11.6a.9.9 0 0 0 1.2 0c.7-.6 6.9-6.3 6.9-11.6A7.5 7.5 0 0 0 12 2.5Zm0 10.25a2.75 2.75 0 1 1 0-5.5 2.75 2.75 0 0 1 0 5.5Z\" fill=\"currentColor\"></path></svg>\n</div>\n<div id=\"paris\" data-ok-map-popup data-ok-longitude=\"2.35\" data-ok-latitude=\"48.86\"\n  data-ok-offset=\"28\" role=\"dialog\" tabindex=\"-1\" aria-label=\"Paris\" hidden>\n  <span data-ok-map-popup-tip aria-hidden=\"true\"></span>\n  <div data-ok-map-popup-content>Capital of France</div>\n  <button type=\"button\" data-ok-map-popup-close aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6 6l12 12M18 6 6 18\"></path></svg></button>\n</div>",
      "id": "markers",
      "react": "import { MapView, Marker, Popup } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Capital() {\n  const [open, setOpen] = useState(false);\n  return (\n    <MapView aria-label=\"Map of France\" mapStyle=\"https://tiles.openfreemap.org/styles/positron\"\n      initialViewState={{ longitude: 2.35, latitude: 48.86, zoom: 5 }}>\n      <Marker longitude={2.35} latitude={48.86} anchor=\"bottom\" color=\"error\"\n        aria-label=\"Paris\" onClick={() => setOpen(true)} />\n      {open ? (\n        <Popup longitude={2.35} latitude={48.86} offset={28} aria-label=\"Paris\"\n          onClose={() => setOpen(false)}>\n          Capital of France\n        </Popup>\n      ) : null}\n    </MapView>\n  );\n}",
@@ -76353,6 +76452,20 @@
      "id": "view",
      "react": "import { MapView, type MapRef } from \"@owlky/react\";\nimport { useRef } from \"react\";\n\n// Any MapLibre style URL, such as OpenFreeMap's\nconst MAP_STYLE = \"https://tiles.openfreemap.org/styles/positron\";\n\nexport function FlyToTokyo() {\n  const mapRef = useRef<MapRef>(null);\n  return (\n    <>\n      <MapView\n        ref={mapRef}\n        aria-label=\"Map\"\n        mapStyle={MAP_STYLE}\n        initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}\n      />\n      <button type=\"button\" onClick={() => mapRef.current?.flyTo({ center: [139.69, 35.69], zoom: 10 })}>\n        Tokyo\n      </button>\n    </>\n  );\n}",
      "title": "Move the map"
+    },
+    {
+     "body": "When a panel covers part of the map, set `padding` in pixels for that side. The camera then centers, flies and fits bounds in the rest of the map, so places don't end up under the panel. In HTML, write `data-ok-padding` like CSS `padding`: one to four numbers for the top, right, bottom and left sides. The map follows a new padding at once.",
+     "html": "<div data-ok-map data-ok-label=\"Map beside a panel\"\n  data-ok-map-style=\"https://tiles.openfreemap.org/styles/positron\"\n  data-ok-longitude=\"10\" data-ok-latitude=\"50\" data-ok-zoom=\"3\"\n  data-ok-padding=\"0 0 0 320\">\n  <div data-ok-map-view></div>\n  <div data-ok-map-fallback></div>\n  <div data-ok-map-status role=\"status\"></div>\n  <div data-ok-map-corner=\"top-left\"></div>\n  <div data-ok-map-corner=\"top-right\"></div>\n  <div data-ok-map-corner=\"bottom-left\"></div>\n  <div data-ok-map-corner=\"bottom-right\">\n    <details data-ok-map-attribution>\n      <summary aria-label=\"Map credits\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01\"></path></svg></summary>\n      <div data-ok-map-attribution-text></div>\n    </details>\n  </div>\n</div>",
+     "id": "padding",
+     "react": "import { MapView } from \"@owlky/react\";\n\n// Any MapLibre style URL, such as OpenFreeMap's\nconst MAP_STYLE = \"https://tiles.openfreemap.org/styles/positron\";\n\nexport function MapBesidePanel() {\n  return (\n    <MapView\n      aria-label=\"Map beside a panel\"\n      mapStyle={MAP_STYLE}\n      initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}\n      padding={{ left: 320 }}\n    />\n  );\n}",
+     "title": "Keep the center clear of a panel"
+    },
+    {
+     "body": "`light` lights 3D extrusions, such as buildings: `anchor`, `color`, `intensity` and `position`, as in a MapLibre style. `sky` sets the sky above a tilted map and the atmosphere around the globe, such as `atmosphere-blend`. Both follow new values. They replace the style's own light and sky, and stay when the style changes. Set them to `null` to go back to the default light and to remove the sky. In HTML, write them as JSON in `data-ok-light` and `data-ok-sky`.",
+     "html": "<div data-ok-map data-ok-label=\"Globe\"\n  data-ok-map-style=\"https://tiles.openfreemap.org/styles/positron\"\n  data-ok-projection=\"globe\" data-ok-zoom=\"1.5\"\n  data-ok-light='{\"anchor\":\"map\",\"intensity\":0.6}'\n  data-ok-sky='{\"atmosphere-blend\":0.8}'>\n  <div data-ok-map-view></div>\n  <div data-ok-map-fallback></div>\n  <div data-ok-map-status role=\"status\"></div>\n  <div data-ok-map-corner=\"top-left\"></div>\n  <div data-ok-map-corner=\"top-right\"></div>\n  <div data-ok-map-corner=\"bottom-left\"></div>\n  <div data-ok-map-corner=\"bottom-right\">\n    <details data-ok-map-attribution>\n      <summary aria-label=\"Map credits\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01\"></path></svg></summary>\n      <div data-ok-map-attribution-text></div>\n    </details>\n  </div>\n</div>",
+     "id": "light-sky",
+     "react": "import { MapView } from \"@owlky/react\";\n\n// Any MapLibre style URL, such as OpenFreeMap's\nconst MAP_STYLE = \"https://tiles.openfreemap.org/styles/positron\";\n\nexport function Globe() {\n  return (\n    <MapView\n      aria-label=\"Globe\"\n      mapStyle={MAP_STYLE}\n      projection=\"globe\"\n      initialViewState={{ zoom: 1.5 }}\n      light={{ anchor: \"map\", intensity: 0.6 }}\n      sky={{ \"atmosphere-blend\": 0.8 }}\n    />\n  );\n}",
+     "title": "Set the light and the sky"
     },
     {
      "body": "Controls sit in the corners of the map: `NavigationControl` (zoom and a compass you can drag to turn the map), `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `GlobeControl`, `TerrainControl` and `AttributionControl`, which every map shows unless you turn it off with `attributionControl={false}`. Place them with `position`, and add your own buttons in a `MapControl`. In HTML, write the controls inside the four corner elements.\n\nPut settings and readouts in a `MapPanel`: a dark, translucent card in a corner of the map.",

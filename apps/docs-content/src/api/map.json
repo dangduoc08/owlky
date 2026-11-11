@@ -597,6 +597,13 @@
       "name": "renderWorldCopies"
      },
      {
+      "attr": "data-ok-style-diffing",
+      "default": true,
+      "description": "A new style is compared with the current one and only the differences are applied (off: the style reloads).",
+      "kind": "behavior",
+      "name": "styleDiffing"
+     },
+     {
       "attr": "data-ok-cooperative-gestures",
       "description": "Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling.",
       "kind": "flag",
@@ -749,6 +756,12 @@
       "description": "On regions: the id of the fill layer that pointer hovers and clicks hit.",
       "kind": "value",
       "name": "data-ok-layer",
+      "value": "string"
+     },
+     {
+      "description": "The light of 3D extrusions, as MapLibre light JSON (`anchor`, `color`, `intensity`, `position`).",
+      "kind": "value",
+      "name": "data-ok-light",
       "value": "string"
      },
      {
@@ -927,6 +940,12 @@
       "value": "string"
      },
      {
+      "description": "Camera padding in px, written like CSS `padding` (1 to 4 numbers: top, right, bottom, left).",
+      "kind": "value",
+      "name": "data-ok-padding",
+      "value": "string"
+     },
+     {
       "description": "On a layer: its paint properties, as JSON.",
       "kind": "value",
       "name": "data-ok-paint",
@@ -956,6 +975,12 @@
       "description": "Set by the runtime while the geolocate control shows the accuracy circle.",
       "kind": "state",
       "name": "data-ok-show-accuracy"
+     },
+     {
+      "description": "The sky and the globe's atmosphere, as MapLibre sky JSON.",
+      "kind": "value",
+      "name": "data-ok-sky",
+      "value": "string"
      },
      {
       "description": "On a layer outside a source: the id of its source. On the terrain control: the DEM source. On regions: the source of the regions.",
@@ -1431,6 +1456,21 @@
       "name": "rotation"
      },
      {
+      "attr": "data-ok-scale",
+      "default": 1,
+      "description": "Size of the default pin (1: 26px).",
+      "kind": "number",
+      "min": 0,
+      "name": "scale"
+     },
+     {
+      "attr": "data-ok-click-tolerance",
+      "description": "Pixels a press may move and still count as a click, not a drag (default: the map's `clickTolerance`, 3).",
+      "kind": "number",
+      "min": 0,
+      "name": "clickTolerance"
+     },
+     {
       "attr": "data-ok-rotation-alignment",
       "default": "auto",
       "description": "`map`: turns with the map; `viewport` and `auto`: stays upright.",
@@ -1823,6 +1863,11 @@
       "type": "number"
      },
      {
+      "description": "The light of 3D extrusions (MapLibre light: `anchor`, `color`, `intensity`, `position`).",
+      "name": "light",
+      "type": "LightSpecification | null"
+     },
+     {
       "default": "0",
       "description": "Center longitude in degrees (HTML: changing it moves the map).",
       "name": "longitude",
@@ -1883,6 +1928,11 @@
       "type": "((fullscreen: boolean) => void)"
      },
      {
+      "description": "Camera padding in px, such as `{ left: 320 }` for a panel over the map's left side.",
+      "name": "padding",
+      "type": "Partial<MapPadding> | null"
+     },
+     {
       "default": "0",
       "description": "Tilt in degrees (0: looking straight down).",
       "name": "pitch",
@@ -1898,6 +1948,17 @@
       "default": "true",
       "description": "Repeats the world side by side when zoomed out.",
       "name": "renderWorldCopies",
+      "type": "boolean"
+     },
+     {
+      "description": "The sky and the globe's atmosphere (MapLibre sky, such as `atmosphere-blend`).",
+      "name": "sky",
+      "type": "SkySpecification | null"
+     },
+     {
+      "default": "true",
+      "description": "Compares a new `mapStyle` with the current one and applies only the differences. `false` reloads the style.",
+      "name": "styleDiffing",
       "type": "boolean"
      },
      {
@@ -1935,6 +1996,11 @@
       "description": "Content (default: a pin).",
       "name": "children",
       "type": "ReactNode"
+     },
+     {
+      "description": "Pixels a press may move and still count as a click, not a drag. Default: the map's `clickTolerance` (`mapOptions`), 3.",
+      "name": "clickTolerance",
+      "type": "number"
      },
      {
       "default": "primary",
@@ -1997,6 +2063,12 @@
       "description": "`map`: turns with the map; `viewport` and `auto`: stays upright.",
       "name": "rotationAlignment",
       "type": "\"auto\" | \"map\" | \"viewport\""
+     },
+     {
+      "default": "1",
+      "description": "Size of the default pin: `2` doubles it. (26px).",
+      "name": "scale",
+      "type": "number"
      }
     ]
    }

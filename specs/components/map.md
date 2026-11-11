@@ -20,7 +20,8 @@ around the canvas (controls, markers, popups, panels, credits, scale) is Owlky m
 div[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoom|max-zoom|min-pitch|max-pitch]?
    [data-ok-projection][data-ok-<handler>="false"]?[data-ok-cooperative-gestures]?[data-ok-render-world-copies="false"]?
    [data-ok-map-style][data-ok-map-style-dark]?[data-ok-bounds="w,s,e,n"]?[data-ok-max-bounds]?
-   [data-ok-interactive-layer-ids="a b"]?[data-ok-label]?
+   [data-ok-interactive-layer-ids="a b"]?[data-ok-label]?[data-ok-style-diffing="false"]?
+   [data-ok-light=JSON]?[data-ok-sky=JSON]?[data-ok-padding="t r b l"]?
    [data-ok-ready]? (style in) [data-ok-loaded]? (first full render) [data-ok-fallback]? [data-ok-fullscreen]?
   div[data-ok-map-view]                       MapLibre: div.maplibregl-canvas-container › canvas[role=region][tabindex=0]
                                                 [aria-label][aria-describedby][aria-roledescription=map]; div[data-ok-map-user-location]?
@@ -29,6 +30,7 @@ div[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoo
   div[data-ok-map-status][role=status]        location announcements (visually hidden)
   div[data-ok-map-marker][data-ok-longitude][data-ok-latitude][data-ok-anchor][data-ok-color][data-ok-offset]?
      [data-ok-draggable]?[data-ok-rotation]?[data-ok-rotation-alignment]?[data-ok-pitch-alignment]?
+     [data-ok-scale]?[data-ok-click-tolerance]?
      [role=button][tabindex=0][aria-label]? (interactive) [data-ok-dragging]? (state)
     svg[data-ok-map-pin] | content
   div[data-ok-map-popup][role=dialog|tooltip][tabindex=-1][aria-label]?[data-ok-longitude][data-ok-latitude]
@@ -95,6 +97,7 @@ Root: `data-ok-map`. Unknown values fall back to the default.
 | `touchPitch` | `data-ok-touch-pitch="false"` turns it off | behavior | boolean | on | Two-finger vertical drag tilts the map. |
 | `touchZoomRotate` | `data-ok-touch-zoom-rotate="false"` turns it off | behavior | boolean | on | Pinch zooms and two-finger twist rotates. |
 | `renderWorldCopies` | `data-ok-render-world-copies="false"` turns it off | behavior | boolean | on | Repeats the world side by side when zoomed out. |
+| `styleDiffing` | `data-ok-style-diffing="false"` turns it off | behavior | boolean | on | A new style is compared with the current one and only the differences are applied (off: the style reloads). |
 | `cooperativeGestures` | `data-ok-cooperative-gestures` | flag | boolean | off | Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling. |
 | `fullscreen` | `data-ok-fullscreen` · event `ok:map:fullscreen` | state | — | — | Fills the screen (the fullscreen control; Escape leaves). |
 <!-- /options:map -->
@@ -110,6 +113,8 @@ Root: `data-ok-map-marker`. Unknown values fall back to the default.
 | `color` | `data-ok-color="…"` | style | `primary` `secondary` `info` `success` `warning` `error` | `primary` | Color of the default pin. |
 | `draggable` | `data-ok-draggable` | flag | boolean | off | People can drag the marker, or move it with the arrow keys once it has focus. |
 | `rotation` | `data-ok-rotation="…"` | number | number | — | Rotation in degrees clockwise. |
+| `scale` | `data-ok-scale="…"` | number | number | `1` | Size of the default pin (1: 26px). |
+| `clickTolerance` | `data-ok-click-tolerance="…"` | number | number | — | Pixels a press may move and still count as a click, not a drag (default: the map's `clickTolerance`, 3). |
 | `rotationAlignment` | `data-ok-rotation-alignment="…"` | style | `auto` `map` `viewport` | — | `map`: turns with the map; `viewport` and `auto`: stays upright. |
 | `pitchAlignment` | `data-ok-pitch-alignment="…"` | style | `auto` `map` `viewport` | — | `map`: lies flat on a tilted map; `viewport` and `auto`: faces the screen. |
 <!-- /options:map-marker -->
@@ -177,7 +182,13 @@ Other props (React) ↔ HTML: `mapStyle` / `mapStyleDark` (URL or style object; 
 `zoom`, `pitch`, `bearing`, `bounds`, `fitBoundsOptions`; HTML root numbers and `data-ok-bounds`),
 `viewState` / `longitude` … `bearing` (controlled; HTML: change the root numbers), `maxBounds`
 (`data-ok-max-bounds`), `interactiveLayerIds` (`data-ok-interactive-layer-ids`), `cursor`,
-`terrain`, `mapOptions` (any other MapLibre option, read once), `labels` (control names and
+`terrain`, `light` / `sky` (MapLibre light and sky; HTML JSON in `data-ok-light` / `data-ok-sky`,
+re-applied after every style load; `null`: MapLibre's default light, no sky of ours), `padding`
+(camera padding in px, `{ top, right, bottom, left }`; HTML `data-ok-padding` like CSS `padding`,
+1–4 numbers; `map.setPadding`), `styleDiffing` (`data-ok-style-diffing="false"`; default `true`:
+`setStyle(style, { diff })`, MapLibre fires `style.load` after a diff and the controller restores its
+sources, layers, light and sky there),
+`mapOptions` (any other MapLibre option, read once), `labels` (control names and
 messages), `aria-label` (`data-ok-label`, the canvas name, default "Map"), `description`
 (`p[data-ok-map-description]`), `fallback` (content of `[data-ok-map-fallback]`),
 `attributionControl` (default `true`; HTML writes the attribution in the bottom-right corner).
@@ -187,7 +198,9 @@ Event props: `onLoad`, `onError`, `onIdle`, `onResize`, `onRemove`, `onRender`, 
 Enter|Leave`, `onWheel`, `onTouch…` (event: `{ type, viewState, lngLat?, point?, features?,
 originalEvent?, error?, sourceId? }`), `onFullscreenChange`, `onFallback`.
 Parts: `Marker` (`longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`,
-`rotationAlignment`, `pitchAlignment`, `onDragStart|Drag|DragEnd({ lngLat })`, `onClick`,
+`scale` (default pin size, `--_ok-map-pin-scale` through CSSOM), `clickTolerance` (px a press may move
+before a drag starts; default the map's `mapOptions.clickTolerance`, 3), `rotationAlignment`,
+`pitchAlignment`, `onDragStart|Drag|DragEnd({ lngLat })`, `onClick`,
 children), `Popup` (`longitude`, `latitude`, `anchor`, `offset`, `closeButton`, `closeOnClick`,
 `closeOnMove`, `focusAfterOpen`, `maxWidth`, `onClose(reason)`, `onOpen`), `Source` (MapLibre source
 spec + `id`), `Layer` (MapLibre layer spec + `id`, `source`, `beforeId`), controls
@@ -207,7 +220,8 @@ helpers (core `@owlky/core/map`, re-exported by `@owlky/react`): `mapScale`, `ma
 
 API mapping (react-map-gl): renamed `Map` → `MapView` (a component named `Map` shadows the global `Map` in consumer modules, Biome `noShadowRestrictedNames`). Kept `mapStyle`, `initialViewState`, `viewState` and the view props,
 `minZoom` … `maxPitch`, `maxBounds`, `projection`, `renderWorldCopies`, `cooperativeGestures`, the
-eight handler props, `interactiveLayerIds`, `cursor`, `terrain`, `attributionControl`, every event
+eight handler props, `interactiveLayerIds`, `cursor`, `terrain`, `light`, `sky`, `padding`,
+`styleDiffing`, `attributionControl`, every event
 prop, `Marker` / `Popup` / `Source` / `Layer` props, the controls and their options, `MapProvider`,
 `useMap`, `MapRef.getMap()`. Added `mapStyleDark` (theme), `description`, `fallback`, `labels`,
 `onFullscreenChange`, `onFallback`, `MapPanel`, `Popup.onClose(reason)`. Renamed: other MapLibre
@@ -385,10 +399,10 @@ The "API mapping" paragraph above records the details; this table adds a status 
 | `Map` | `MapView` | renamed | avoids shadowing the global `Map` |
 | Layout: `id`, `cursor` | same (`id` names the map for `useMap`) | kept | `style`: class names / CSS |
 | Styling: `mapStyle`, `projection`, `renderWorldCopies`, `terrain` | same / `data-ok-map-style`, `-projection`, `-render-world-copies` | kept | `mapStyleDark` added (theme) |
-| Styling: `light`, `sky` | `mapOptions` (read once) | deferred | reactive props (sky / atmosphere on the globe, 3D light) |
-| Styling: `styleDiffing` | — | deferred | diff style changes instead of reloading |
+| Styling: `light`, `sky` | same / `data-ok-light`, `data-ok-sky` (JSON) | kept | 4.18.79: reactive (compared by content), set again after every style load; `null` goes back to MapLibre's default light and removes the sky set before (a style's own sky stays until one is set) |
+| Styling: `styleDiffing` | same / `data-ok-style-diffing="false"` | kept | 4.18.79: default `true` as upstream. Behavior change: a new style used to reload (`diff: false`); now it is diffed, and an equal style changes nothing (no `style.load`) |
 | Camera: `initialViewState` (`bounds`, `fitBoundsOptions`), `longitude` … `bearing`, `viewState`, `minZoom` / `maxZoom` / `minPitch` / `maxPitch`, `maxBounds` | same / root numbers, `data-ok-bounds`, `-max-bounds` | kept | |
-| Camera: `padding` | — | deferred | camera padding (a side panel over the map) |
+| Camera: `padding` | same / `data-ok-padding` | kept | 4.18.79: a root prop (`Partial<{ top, right, bottom, left }>`, missing sides 0); `initialViewState.padding` / `viewState.padding` deferred (use `padding`) |
 | Input handlers (8 flags), `interactiveLayerIds` | same / `data-ok-<handler>="false"`, `-interactive-layer-ids` | kept | `cooperativeGestures` too |
 | Callbacks: `onLoad` … `onSourceData` (every map, mouse, touch, move, zoom, rotate, pitch, drag, box zoom, data event) | same · `ok:map:*` | kept | HTML emits a subset (Events / API) |
 | Other: `mapLib`, `reuseMaps` | — | not applicable | MapLibre built in |
@@ -396,7 +410,7 @@ The "API mapping" paragraph above records the details; this table adds a status 
 | Other: `workerUrl` | `setMapWorkerUrl(url)` | renamed | |
 | Methods: `getMap()` (+ safe map methods on the ref) | `MapRef.getMap()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`, `getViewState()` | kept | |
 | Marker `longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`, `rotationAlignment`, `pitchAlignment`, `onClick`, `onDragStart` / `onDrag` / `onDragEnd` | same | kept | `color`: palette names |
-| Marker `scale`, `clickTolerance` | — | deferred | default pin size; click vs drag tolerance |
+| Marker `scale`, `clickTolerance` | same / `data-ok-scale`, `data-ok-click-tolerance` | kept | 4.18.79: `scale` sizes the default pin (custom content keeps its size, as upstream); `clickTolerance` default: the map's `mapOptions.clickTolerance` (3) |
 | Marker `popup` | compose a `Popup` | not applicable | HTML `data-ok-map-popup-open` |
 | Popup `longitude`, `latitude`, `anchor`, `offset`, `maxWidth`, `closeButton`, `closeOnClick`, `closeOnMove`, `focusAfterOpen`, `onOpen`, `onClose` | same | kept | `onClose(reason)` |
 | Popup / Marker `style`, `className` | `className` | kept | `style` not applicable (strict CSP in HTML) |

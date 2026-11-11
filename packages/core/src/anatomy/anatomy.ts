@@ -5821,6 +5821,11 @@ export const mapOptions = defineOptions("map", "data-ok-map", {
     true,
     "Repeats the world side by side when zoomed out.",
   ),
+  styleDiffing: behavior(
+    "data-ok-style-diffing",
+    true,
+    "A new style is compared with the current one and only the differences are applied (off: the style reloads).",
+  ),
   cooperativeGestures: flag(
     "data-ok-cooperative-gestures",
     "Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling.",
@@ -5845,12 +5850,13 @@ export type MapAnatomyOptions = {
   projection?: MapProjection | undefined;
   cooperativeGestures?: boolean | undefined;
   renderWorldCopies?: boolean | undefined;
+  styleDiffing?: boolean | undefined;
 } & { [K in MapHandler]?: boolean | undefined };
 
 /** `data-ok-*` attributes of a map root: numbers when given, `="false"` for handlers turned off. */
 export const mapAttributes = (options: MapAnatomyOptions = {}): DataAttributes => {
   const attributes = optionAttributes(mapOptions, { ...options });
-  for (const key of [...mapHandlers, "renderWorldCopies"] as const)
+  for (const key of [...mapHandlers, "renderWorldCopies", "styleDiffing"] as const)
     if (options[key] === false) attributes[mapOptions.options[key].attr] = "false";
   return attributes;
 };
@@ -5870,6 +5876,13 @@ export const mapMarkerOptions = defineOptions("map-marker", "data-ok-map-marker"
     "People can drag the marker, or move it with the arrow keys once it has focus.",
   ),
   rotation: number("data-ok-rotation", undefined, "Rotation in degrees clockwise."),
+  scale: number("data-ok-scale", 1, "Size of the default pin (1: 26px).", { min: 0 }),
+  clickTolerance: number(
+    "data-ok-click-tolerance",
+    undefined,
+    "Pixels a press may move and still count as a click, not a drag (default: the map's `clickTolerance`, 3).",
+    { min: 0 },
+  ),
   rotationAlignment: style(
     "data-ok-rotation-alignment",
     mapAlignments,
@@ -5893,6 +5906,8 @@ export type MapMarkerAnatomyOptions = {
   color?: MapMarkerColor | undefined;
   draggable?: boolean | undefined;
   rotation?: number | undefined;
+  scale?: number | undefined;
+  clickTolerance?: number | undefined;
   rotationAlignment?: MapAlignment | undefined;
   pitchAlignment?: MapAlignment | undefined;
 };

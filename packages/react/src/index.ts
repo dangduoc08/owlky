@@ -426,9 +426,12 @@ export {
 export {
   type MapEvent,
   type MapEventProps,
+  type MapLight,
+  type MapPadding,
   type MapProps,
   MapProvider,
   type MapRef,
+  type MapSky,
   type MapStyle,
   MapView,
   type MapViewState,

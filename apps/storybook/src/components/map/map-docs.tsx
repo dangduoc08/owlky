@@ -90,7 +90,7 @@ export function Europe() {
   {
     id: "styles",
     title: "Choose the map style",
-    body: '`mapStyle` sets the style: a URL of a MapLibre style JSON, or the style object itself. Add `mapStyleDark` to switch styles when the map sits in a dark theme, such as the **Theme** menu\'s dark mode or a `data-ok-theme="dark"` area. Without it, the map keeps one style in both themes.\n\nIn HTML, change `data-ok-map-style` to switch the style later. In React, pass a new `mapStyle`, and keep style objects in a constant or `useMemo`, because a new object reloads the style.\n\nLayer colors can use Owlky tokens: write `"var(--ok-palette-info-main)"` as a paint value. The map reads the token\'s value, and reads it again when the theme changes.',
+    body: '`mapStyle` sets the style: a URL of a MapLibre style JSON, or the style object itself. Add `mapStyleDark` to switch styles when the map sits in a dark theme, such as the **Theme** menu\'s dark mode or a `data-ok-theme="dark"` area. Without it, the map keeps one style in both themes.\n\nIn HTML, change `data-ok-map-style` to switch the style later. In React, pass a new `mapStyle`, and keep style objects in a constant or `useMemo`, because the map compares every new object with the current style. It applies only the differences, so the camera and your own sources and layers stay as they are. Set `styleDiffing` to `false` (HTML: `data-ok-style-diffing="false"`) to reload the whole style instead.\n\nLayer colors can use Owlky tokens: write `"var(--ok-palette-info-main)"` as a paint value. The map reads the token\'s value, and reads it again when the theme changes.',
     html: `<div data-ok-map data-ok-label="Map"
   data-ok-map-style="${MAP_STYLES.light}"
   data-ok-map-style-dark="${MAP_STYLES.dark}">
@@ -112,7 +112,7 @@ export function ThemedMap() {
   {
     id: "markers",
     title: "Add markers and popups",
-    body: "A marker sits on a point given by `longitude` and `latitude`. By default it is a pin in the `color` you choose. Set `anchor` to `bottom` for pins, so the tip touches the point. Give interactive markers a name with `aria-label`: a marker with a click handler or `draggable` is a button that people reach with Tab.\n\nA popup is a dialog that points at a place. It picks the side where it fits unless you set `anchor`, and `offset` moves it away from its marker. Escape, the close button and a click on the map close it. In React, a popup shows while you render it, and `onClose` asks you to remove it. In HTML, write popups with `hidden` and open them from a marker with `data-ok-map-popup-open`.\n\nWith `draggable`, people drag a marker or move it with the arrow keys. In HTML the marker stores its new position in its attributes. In React, update `longitude` and `latitude` in `onDragEnd`. Also let people place a marker with a click, because dragging is hard for some people.",
+    body: "A marker sits on a point given by `longitude` and `latitude`. By default it is a pin in the `color` you choose. Set `anchor` to `bottom` for pins, so the tip touches the point. Give interactive markers a name with `aria-label`: a marker with a click handler or `draggable` is a button that people reach with Tab.\n\nA popup is a dialog that points at a place. It picks the side where it fits unless you set `anchor`, and `offset` moves it away from its marker. Escape, the close button and a click on the map close it. In React, a popup shows while you render it, and `onClose` asks you to remove it. In HTML, write popups with `hidden` and open them from a marker with `data-ok-map-popup-open`.\n\nWith `draggable`, people drag a marker or move it with the arrow keys. In HTML the marker stores its new position in its attributes. In React, update `longitude` and `latitude` in `onDragEnd`. Also let people place a marker with a click, because dragging is hard for some people. A press that moves less than `clickTolerance` pixels stays a click (default 3, or the map's `clickTolerance`). `scale` sizes the default pin: `2` doubles it.",
     html: `<div data-ok-map-marker data-ok-longitude="2.35" data-ok-latitude="48.86"
   data-ok-anchor="bottom" data-ok-color="error"
   role="button" tabindex="0" aria-label="Paris" data-ok-map-popup-open="paris">
@@ -291,6 +291,61 @@ export function FlyToTokyo() {
         Tokyo
       </button>
     </>
+  );
+}`,
+  },
+  {
+    id: "padding",
+    title: "Keep the center clear of a panel",
+    body: "When a panel covers part of the map, set `padding` in pixels for that side. The camera then centers, flies and fits bounds in the rest of the map, so places don't end up under the panel. In HTML, write `data-ok-padding` like CSS `padding`: one to four numbers for the top, right, bottom and left sides. The map follows a new padding at once.",
+    html: `<div data-ok-map data-ok-label="Map beside a panel"
+  data-ok-map-style="${MAP_STYLES.light}"
+  data-ok-longitude="10" data-ok-latitude="50" data-ok-zoom="3"
+  data-ok-padding="0 0 0 320">
+${MAP_PARTS}
+</div>`,
+    react: `import { MapView } from "@owlky/react";
+
+// Any MapLibre style URL, such as OpenFreeMap's
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+
+export function MapBesidePanel() {
+  return (
+    <MapView
+      aria-label="Map beside a panel"
+      mapStyle={MAP_STYLE}
+      initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}
+      padding={{ left: 320 }}
+    />
+  );
+}`,
+  },
+  {
+    id: "light-sky",
+    title: "Set the light and the sky",
+    body: "`light` lights 3D extrusions, such as buildings: `anchor`, `color`, `intensity` and `position`, as in a MapLibre style. `sky` sets the sky above a tilted map and the atmosphere around the globe, such as `atmosphere-blend`. Both follow new values. They replace the style's own light and sky, and stay when the style changes. Set them to `null` to go back to the default light and to remove the sky. In HTML, write them as JSON in `data-ok-light` and `data-ok-sky`.",
+    html: `<div data-ok-map data-ok-label="Globe"
+  data-ok-map-style="${MAP_STYLES.light}"
+  data-ok-projection="globe" data-ok-zoom="1.5"
+  data-ok-light='{"anchor":"map","intensity":0.6}'
+  data-ok-sky='{"atmosphere-blend":0.8}'>
+${MAP_PARTS}
+</div>`,
+    react: `import { MapView } from "@owlky/react";
+
+// Any MapLibre style URL, such as OpenFreeMap's
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+
+export function Globe() {
+  return (
+    <MapView
+      aria-label="Globe"
+      mapStyle={MAP_STYLE}
+      projection="globe"
+      initialViewState={{ zoom: 1.5 }}
+      light={{ anchor: "map", intensity: 0.6 }}
+      sky={{ "atmosphere-blend": 0.8 }}
+    />
   );
 }`,
   },

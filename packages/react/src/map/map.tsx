@@ -16,11 +16,15 @@ import {
   type MapInitialViewState,
   type MapLabels,
   type MapLibreMap,
+  type MapLight,
+  type MapPadding,
   type MapSettings,
+  type MapSky,
   type MapStyle,
   type MapViewState,
   mapEventTypes,
   mapLabels,
+  mapPadding,
 } from "@owlky/core/map";
 import {
   createContext,
@@ -39,7 +43,14 @@ import {
 import { type GeolocateHandlers, MapContext, type MapContextValue } from "./map-context.js";
 import { AttributionControl } from "./map-controls.js";
 
-export type { MapEvent, MapStyle, MapViewState } from "@owlky/core/map";
+export type {
+  MapEvent,
+  MapLight,
+  MapPadding,
+  MapSky,
+  MapStyle,
+  MapViewState,
+} from "@owlky/core/map";
 
 /** Map event → callback prop (react-map-gl names): `movestart` → `onMoveStart`. */
 const EVENT_PROPS = {
@@ -147,6 +158,17 @@ export interface MapProps
   cursor?: string | undefined;
   /** 3D terrain from a `raster-dem` source. */
   terrain?: { source: string; exaggeration?: number } | null | undefined;
+  /** The light of 3D extrusions (MapLibre light: `anchor`, `color`, `intensity`, `position`). */
+  light?: MapLight | null | undefined;
+  /** The sky and the globe's atmosphere (MapLibre sky, such as `atmosphere-blend`). */
+  sky?: MapSky | null | undefined;
+  /** Camera padding in px, such as `{ left: 320 }` for a panel over the map's left side. */
+  padding?: Partial<MapPadding> | null | undefined;
+  /**
+   * Compares a new `mapStyle` with the current one and applies only the differences. `false`
+   * reloads the style. Default `true`.
+   */
+  styleDiffing?: boolean | undefined;
   /** Shows the attribution control (bottom right). Default `true`; required by most map data. */
   attributionControl?: boolean | undefined;
   /** Any other MapLibre option, read once (`transformRequest`, `fadeDuration`, `hash`…). */
@@ -195,6 +217,10 @@ const SETTING_KEYS = [
   "renderWorldCopies",
   "cooperativeGestures",
   "cursor",
+  "light",
+  "sky",
+  "padding",
+  "styleDiffing",
 ] as const;
 
 const bounds = (value: MapProps["maxBounds"]) =>
@@ -204,6 +230,13 @@ const bounds = (value: MapProps["maxBounds"]) =>
         [value[2], value[3]],
       ] as [[number, number], [number, number]])
     : null;
+
+/** `{ top, right, bottom, left }` → CSS-like `"t r b l"` (HTML `data-ok-padding`). */
+const paddingAttribute = (value: MapProps["padding"]) => {
+  if (!value) return undefined;
+  const { top, right, bottom, left } = mapPadding(value);
+  return `${top} ${right} ${bottom} ${left}`;
+};
 
 const csv = (value: unknown) =>
   Array.isArray(value) && value.length === 4 && value.every((each) => typeof each === "number")
@@ -277,6 +310,10 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
     interactiveLayerIds,
     cursor,
     terrain,
+    light,
+    sky,
+    padding,
+    styleDiffing,
     attributionControl = true,
     mapOptions,
     labels,
@@ -468,9 +505,13 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
             maxPitch,
             projection,
             renderWorldCopies,
+            styleDiffing,
             cooperativeGestures,
             ...handlers,
           })}
+          data-ok-light={light ? JSON.stringify(light) : undefined}
+          data-ok-sky={sky ? JSON.stringify(sky) : undefined}
+          data-ok-padding={paddingAttribute(padding)}
           data-ok-map-style={styleUrl(mapStyle)}
           data-ok-map-style-dark={styleUrl(mapStyleDark)}
           data-ok-bounds={csv(initialViewState?.bounds)}
