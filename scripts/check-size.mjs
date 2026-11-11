@@ -113,7 +113,10 @@ const budgets = [
   // 281 kB after Phase 4 batch F's Countdown (4.22: clock, live region cadence, runtime with
   // toggle and restart triggers) and color swatches (4.23: sanitized swatch colors, a radio
   // runtime, checkbox and avatar swatches): 275.75 kB.
-  ["packages/html/dist/owlky.js", 281_000, "HTML runtime + all components (IIFE)"],
+  // 293 kB after Phase 5.3 gestures (ADR-0062: drag with inertia and constraints, the keyboard
+  // alternative, spring hover / tap / focus / drag states, the swipe helper, the swipeable
+  // Drawer): 287.59 kB (from 280.54 kB). Optimization is deferred to 1.0 prep.
+  ["packages/html/dist/owlky.js", 293_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
