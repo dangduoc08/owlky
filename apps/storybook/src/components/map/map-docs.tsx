@@ -6,18 +6,24 @@ import {
   mapNavigationOptions,
   mapOptions,
   mapPopupOptions,
+  mapRegionsOptions,
   mapScaleOptions,
 } from "@owlky/core";
 import mapApi from "@owlky/docs-content/api/map.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MapView, Marker, NavigationControl, ScaleControl } from "@owlky/react";
+import bubbles from "../../../../../packages/html/src/components/map/examples/bubbles-group.html?raw";
 import changeTheme from "../../../../../packages/html/src/components/map/examples/change-theme-group.html?raw";
 import choropleth from "../../../../../packages/html/src/components/map/examples/choropleth-group.html?raw";
 import exportMapGroup from "../../../../../packages/html/src/components/map/examples/export-map-group.html?raw";
 import greatCircles from "../../../../../packages/html/src/components/map/examples/great-circles-group.html?raw";
+import hexbin from "../../../../../packages/html/src/components/map/examples/hexbin-group.html?raw";
 import interactionGroup from "../../../../../packages/html/src/components/map/examples/interaction-group.html?raw";
 import markersGroup from "../../../../../packages/html/src/components/map/examples/markers-popups-group.html?raw";
+import patternFills from "../../../../../packages/html/src/components/map/examples/pattern-fills-group.html?raw";
+import pixelMap from "../../../../../packages/html/src/components/map/examples/pixel-map-group.html?raw";
 import regionDrilldown from "../../../../../packages/html/src/components/map/examples/region-drilldown-group.html?raw";
+import regionSelection from "../../../../../packages/html/src/components/map/examples/region-selection-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
@@ -260,6 +266,400 @@ export function PopulationMap() {
         onRegionSelect={(event) => console.log("Selected", event.id)}
       />
       <MapLegend scale={scale} title="Population (millions)" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "bubbles",
+    title: "Size points by value",
+    body: 'Proportional symbols draw a circle on each point whose size shows a value, such as the population of a city. `mapSizeScale(values, options)` turns the values into radii: with `method: "sqrt"` (the default) the circle\'s area follows the value, so a city twice as large looks twice as large; `linear` sizes the radius instead. `range` sets the radii of the lowest and the highest value in pixels (4 to 32 by default), and `input` names the feature property to read, such as `["get", "population"]`.\n\n`mapBubbleLayer({ id, source, size, color })` returns a circle layer that draws them: the largest circles first, so small ones stay on top, with an outline in the paper color. Color the circles by a second field with a `mapScale()` result whose `input` reads that field, or pass one color.\n\nA `MapLegend` with `variant="size"` and `sizeScale` shows nested circles with their values. Pick round values with `legendValues`. Join the points to `MapRegions` (with `promoteId` on the source) to give keyboard users a list of the points and screen readers a table of their values.',
+    html: `<!-- The points, with the population and the growth of each -->
+${snippetElement(bubbles, "data-ok-map-source ")}
+
+<!-- Nested circles, in a corner -->
+<div data-ok-map-corner="bottom-left">
+${indent(snippetElement(bubbles, 'data-ok-variant="size"'), 2)}
+</div>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapLegend,
+  MapView,
+  mapBubbleLayer,
+  mapScale,
+  mapSizeScale,
+  Source,
+} from "@owlky/react";
+
+const CITIES = [
+  { name: "New York", position: [-74.01, 40.71], population: 20.14, growth: 6.6 },
+  { name: "Chicago", position: [-87.63, 41.88], population: 9.62, growth: 1.7 },
+  { name: "Houston", position: [-95.37, 29.76], population: 7.12, growth: 20.3 },
+];
+const points = {
+  type: "FeatureCollection" as const,
+  features: CITIES.map(({ name, position, population, growth }) => ({
+    type: "Feature" as const,
+    properties: { name, population, growth },
+    geometry: { type: "Point" as const, coordinates: position },
+  })),
+};
+const size = mapSizeScale(
+  CITIES.map((city) => city.population),
+  { range: [6, 30], legendValues: [20, 10], input: ["get", "population"] },
+);
+// The growth colors the circles.
+const color = mapScale(
+  CITIES.map((city) => city.growth),
+  { method: "threshold", thresholds: [10], palette: "warning", input: ["get", "growth"] },
+);
+const bubbles = mapBubbleLayer({
+  id: "cities-bubbles",
+  source: "cities",
+  size,
+  color,
+  input: ["get", "population"],
+}) as unknown as LayerProps;
+
+export function CityBubbles() {
+  return (
+    <MapView
+      aria-label="Map of three US cities by population"
+      description="New York is the largest of the three cities; Houston grew the most since 2010."
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -85, latitude: 37, zoom: 3 }}
+    >
+      <Source id="cities" type="geojson" data={points}>
+        <Layer {...bubbles} />
+      </Source>
+      <MapLegend variant="size" sizeScale={size} title="Population (millions)" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "hexbin",
+    title: "Count points in hexagons",
+    body: 'When there are too many points to read one by one, count them in hexagons. `mapHexbin(points, options)` returns one hexagon polygon for each cell that holds points, with its `count` and its `value`. Points are `[longitude, latitude]` pairs, `[longitude, latitude, value]` triples or GeoJSON `Point` features. `radius` sets the size of the hexagons in degrees of longitude (1 by default). The cells are regular on the map\'s Web Mercator projection.\n\nThe `value` is the count, or with `aggregate: "mean"` the mean of the points\' values (`valueProperty` names the property, `value` by default). Set `minCount` to leave cells with few points without a mean, so one point doesn\'t color a cell. Color the cells with `mapScale(values, { input: ["get", "value"] })`. Fixed `thresholds` keep the legend the same for any data, so maps stay comparable. In HTML, `hexbin` is also on the map\'s instance.',
+    html: `${snippetElement(hexbin, "data-ok-map-source ")}
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-hexbin");
+  const map = getRuntime().get(element, "map");
+  const response = await fetch("maps/earthquakes.geojson");
+  map.setSourceData("quake-bins", map.hexbin(await response.json(), { radius: 0.75 }));
+</script>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapLegend,
+  MapView,
+  mapHexbin,
+  mapScale,
+  Source,
+} from "@owlky/react";
+
+const QUAKES: [number, number][] = [
+  [-122.8, 38.8],
+  [-122.81, 38.82],
+  [-116.3, 38.4],
+  [-104, 31.5],
+  [-104.02, 31.6],
+  [-103.9, 31.55],
+];
+const bins = mapHexbin(QUAKES, { radius: 0.75 });
+const scale = mapScale(
+  bins.features.map((cell) => cell.properties.value),
+  { method: "threshold", thresholds: [2, 3], palette: "info", input: ["get", "value"] },
+);
+const fill = {
+  id: "quake-bins-fill",
+  type: "fill",
+  paint: { "fill-color": scale.expression },
+} as unknown as LayerProps;
+
+export function QuakeHexbins() {
+  return (
+    <MapView
+      aria-label="Earthquakes counted in hexagons"
+      description="Most of the earthquakes are in western Texas."
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -112, latitude: 36, zoom: 4 }}
+    >
+      <Source id="quake-bins" type="geojson" data={bins}>
+        <Layer {...fill} />
+      </Source>
+      <MapLegend scale={scale} interactive={false} title="Earthquakes per hexagon" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "pixel-map",
+    title: "Draw a pixel map",
+    body: "A pixel map is a choropleth drawn as a lattice of dots, squares or hexagons. `mapPixelGrid(geometry, options)` returns one small polygon for each lattice point inside each region, with the region's id in a property (`region` by default, `property` to rename it). `shape` is `circle` (the default), `square` or `hexagon`, `spacing` is the distance between the points in degrees of longitude (1 by default) and `size` is each cell's width as a share of the spacing (0.8 by default). `joinBy` names the feature property that holds each region's id.\n\nSet the source's `promoteId` to that property. Every cell of a region then shares the region's feature state, so `mapScale`, `mapRegionLayers`, `MapRegions` and `MapLegend` work as on a choropleth: the cells take the region's color, the list and the table give its value, and a legend class mutes its cells. In HTML, `pixelGrid` is also on the map's instance.",
+    html: `${snippetElement(pixelMap, "data-ok-map-source ")}
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-pixel");
+  const map = getRuntime().get(element, "map");
+  const response = await fetch("maps/us-states.geojson");
+  const states = await response.json();
+  map.setSourceData("pixels", map.pixelGrid(states, { spacing: 0.8, joinBy: "name" }));
+</script>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapRegions,
+  MapView,
+  mapPixelGrid,
+  mapRegionLayers,
+  mapScale,
+  Source,
+} from "@owlky/react";
+
+const states = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+const STATES = [
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Utah", name: "Utah", value: 3.27 },
+];
+const cells = mapPixelGrid(states, { shape: "square", spacing: 0.5, joinBy: "name" });
+const scale = mapScale(
+  STATES.map((state) => state.value),
+  { classes: 2 },
+);
+const [fill] = mapRegionLayers({ id: "pixels-fill", source: "pixels", scale }) as unknown as [
+  LayerProps,
+];
+
+export function SquareMap() {
+  return (
+    <MapView
+      aria-label="Nevada and Utah as squares, by population"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -114, latitude: 38.5, zoom: 4 }}
+    >
+      {/* Every cell of a state shares the state's feature state */}
+      <Source id="pixels" type="geojson" data={cells} promoteId="region">
+        <Layer {...fill} />
+      </Source>
+      <MapRegions
+        source="pixels"
+        layer="pixels-fill"
+        data={STATES}
+        caption="Population by state, millions"
+      />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "pattern-fills",
+    title: "Fill classes with patterns",
+    body: "Colors alone don't tell classes apart for everyone, or on a grayscale printout. Give each class a texture too. `mapPatternLayer({ id, source, scale, patterns })` returns a fill layer with one pattern per class of the scale: `circles` (dots), `horizontalLines`, `verticalLines`, `slantedLines` (diagonal lines) or `squares`, the same patterns as the Chart. `dots`, `lines` and `diagonal` work too. Without `patterns`, each class takes the next pattern, and `null` leaves a class plain. Regions without a value never get a pattern.\n\nDraw the pattern layer between the fill and the outline of `mapRegionLayers`. The map draws each pattern in a translucent black ink when the layer needs it, so the textures read on every class color and in both themes. Pass the same `patterns` to `MapLegend`: its swatches repeat the textures.",
+    html: `${snippetElement(patternFills, "data-ok-map-source ")}
+
+<!-- The legend's swatches carry the same patterns -->
+<div data-ok-map-corner="bottom-left">
+${indent(snippetElement(patternFills, "data-ok-map-legend "), 2)}
+</div>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapLegend,
+  MapView,
+  mapPatternLayer,
+  mapRegionLayers,
+  mapScale,
+  Source,
+} from "@owlky/react";
+
+const STATES = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Oregon", name: "Oregon", value: 4.24 },
+];
+const scale = mapScale(
+  STATES.map((state) => state.value),
+  { method: "jenks", classes: 2 },
+);
+const patterns = ["circles", "slantedLines"] as const;
+const [fill, outline] = mapRegionLayers({
+  id: "states-fill",
+  source: "states",
+  scale,
+}) as unknown as [LayerProps, LayerProps];
+const texture = mapPatternLayer({
+  id: "states-texture",
+  source: "states",
+  scale,
+  patterns,
+}) as unknown as LayerProps;
+
+export function PatternMap() {
+  return (
+    <MapView
+      aria-label="Map of three western states by population"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -118, latitude: 39, zoom: 4 }}
+    >
+      <Source id="states" type="geojson" data="us-states.geojson" promoteId="name">
+        <Layer {...fill} />
+        <Layer {...texture} />
+        <Layer {...outline} />
+      </Source>
+      <MapLegend scale={scale} patterns={patterns} title="Population (millions)" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "region-selection",
+    title: "Select several regions and link maps",
+    body: "Set `multiple` on `MapRegions` (HTML: `data-ok-multiple`) to let people select several regions: a click toggles the region under the pointer, and in the list of regions Enter or Space toggles one, Shift with an arrow key adds the next one, Ctrl + A (Cmd + A on macOS) selects every region and Escape clears the selection. `boxSelect` (HTML: `data-ok-box-select`) also turns on Shift + drag: the regions whose label anchor falls in the box are selected. Hold Alt as well to add them to the selection, and press Escape to cancel the box. The map's own Shift + drag zoom is off while box selection is on; the zoom buttons, the wheel and the keyboard still zoom. Everything a box does has a keyboard path in the list, so no one needs to drag.\n\n`onRegionSelect` (HTML: `ok:map:regionselect`) reports `id`, the region toggled, and `ids`, every selected region. In React, pass `selection` to set the selection from your state, for example `[]` to clear it. In HTML, call `selectRegions(regions, ids)` or `clearSelection()` on the map's instance.\n\nGive the regions of several maps the same `group` (HTML: `data-ok-group`) to link them: the selection of one becomes a filter that fades the other maps' regions outside it, in both directions. `linkFilter` sets the direction: `bidirectional` (the default), `emit` (the map filters the others but shows no filter) or `receive` (it shows the others' filters only). The maps must use the same region ids.",
+    html: `<!-- Shift + drag selects states; the group links this map to the dot map -->
+${snippetElement(regionSelection, "data-ok-box-select")}
+
+<!-- After the map -->
+<button type="button" id="clear" data-ok-button data-ok-variant="outlined" data-ok-size="sm"><span data-ok-button-label>Clear selection</span></button>
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-select");
+  const regions = element.querySelector("[data-ok-map-regions]");
+  regions.addEventListener("ok:map:regionselect", (event) => {
+    console.log("Selected", event.detail.ids);
+  });
+  // A button that clears the selection.
+  document.querySelector("#clear").addEventListener("click", () => {
+    getRuntime().get(element, "map").clearSelection();
+  });
+</script>`,
+    react: `import {
+  Button,
+  Layer,
+  type LayerProps,
+  MapRegions,
+  MapView,
+  mapRegionLayers,
+  mapScale,
+  Source,
+} from "@owlky/react";
+import { useState } from "react";
+
+const STATES = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Oregon", name: "Oregon", value: 4.24 },
+];
+const scale = mapScale(
+  STATES.map((state) => state.value),
+  { classes: 3 },
+);
+const layers = mapRegionLayers({ id: "states-fill", source: "states", scale }) as unknown as [
+  LayerProps,
+  LayerProps,
+];
+
+function StatesMap({ id, selection, onSelect }: {
+  id: string;
+  selection?: readonly (string | number)[];
+  onSelect?: (ids: readonly (string | number)[]) => void;
+}) {
+  return (
+    <MapView
+      aria-label={\`Map \${id} of western states\`}
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -118, latitude: 39, zoom: 4 }}
+    >
+      <Source id="states" type="geojson" data="us-states.geojson" promoteId="name">
+        <Layer {...layers[0]} />
+        <Layer {...layers[1]} />
+      </Source>
+      <MapRegions
+        source="states"
+        layer="states-fill"
+        data={STATES}
+        caption="Population by state, millions"
+        boxSelect
+        group="west"
+        selection={selection}
+        onRegionSelect={(event) => onSelect?.(event.ids)}
+      />
+    </MapView>
+  );
+}
+
+export function LinkedMaps() {
+  const [selection, setSelection] = useState<readonly (string | number)[]>([]);
+  return (
+    <>
+      <StatesMap id="1" selection={selection} onSelect={setSelection} />
+      <StatesMap id="2" />
+      <Button onClick={() => setSelection([])}>Clear selection</Button>
+    </>
+  );
+}`,
+  },
+  {
+    id: "auto-description",
+    title: "Describe the map automatically",
+    body: 'A map needs a text alternative that says what it shows, not only "a map of the United States". Set `description` to `auto` (HTML: an empty `p[data-ok-map-description]` with `data-ok-auto`) and the map writes it from its first `MapRegions` and legend: the type of map, the number of regions, the value range with its lowest and highest regions, the three highest values, the classes and the regions without data. Values read as in the table, for example "39.54 million". The text follows the data when it changes.\n\nTranslate it with `descriptionStrings` (HTML: `setDescriptionStrings()` on the map\'s instance). Each text is a template with placeholders, such as `summary: "{type} of {count} regions."`. `geoDescription()` returns the same text for your own use.',
+    html: `<!-- The map fills this paragraph -->
+<p data-ok-map-description id="map-patterns-description" data-ok-auto></p>
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-patterns");
+  getRuntime().get(element, "map").setDescriptionStrings({
+    summary: "{type} de {count} régions.",
+    choropleth: "Carte choroplèthe",
+  });
+</script>`,
+    react: `import { MapRegions, MapView } from "@owlky/react";
+
+const STATES = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+];
+
+export function DescribedMap() {
+  return (
+    <MapView
+      aria-label="Map of two western states by population"
+      description="auto"
+      descriptionStrings={{ summary: "{type} de {count} régions.", choropleth: "Carte choroplèthe" }}
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -118, latitude: 38, zoom: 4 }}
+    >
+      <MapRegions source="states" data={STATES} caption="Population by state, millions" />
     </MapView>
   );
 }`,
@@ -552,9 +952,9 @@ export function DownloadMap() {
     body: `- **\`ok:map:load\`**, **\`ok:map:move\`**, **\`ok:map:moveend\`**, **\`ok:map:click\`**, **\`ok:map:mousemove\`**, **\`ok:map:mouseenter\`**, **\`ok:map:mouseleave\`** and the other map events fire on the map with \`detail.viewState\`, and for pointer events \`lngLat\`, \`point\` and \`features\`.
 - **\`ok:map:popupopen\`** and **\`ok:map:popupclose\`** fire on a popup. \`popupclose\` has \`detail.reason\` and can be canceled to keep it open.
 - **\`ok:map:markerdragstart\`**, **\`ok:map:markerdrag\`** and **\`ok:map:markerdragend\`** fire on a marker with \`detail.lngLat\`.
-- **\`ok:map:regionselect\`** fires on a \`div[data-ok-map-regions]\` with \`detail.id\`, which is \`null\` when the selection is cleared. **\`ok:map:legendtoggle\`** fires on a legend with \`detail.classIndex\` and \`detail.active\`, the pressed classes.
+- **\`ok:map:regionselect\`** fires on a \`div[data-ok-map-regions]\` with \`detail.id\`, the region toggled (\`null\` when the selection is cleared), and \`detail.ids\`, every selected region. **\`ok:map:legendtoggle\`** fires on a legend with \`detail.classIndex\` and \`detail.active\`, the pressed classes.
 - **\`ok:map:fullscreen\`**, **\`ok:map:geolocate\`**, **\`ok:map:geolocateerror\`**, **\`ok:map:trackuserlocation\`** and **\`ok:map:fallback\`** report the controls and a map that can't draw.
-- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), exportMap(format, options), scale(values, options), greatCircle(from, to, options) }\`. \`scale\` is \`mapScale\` and \`greatCircle\` the same function as in JavaScript, for pages that load the map from the CDN.
+- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), exportMap(format, options), selectRegions(regions, ids), clearSelection(regions), scale(values, options), greatCircle(from, to, options), sizeScale(values, options), hexbin(points, options), pixelGrid(geometry, options) }\`. \`scale\`, \`greatCircle\`, \`sizeScale\`, \`hexbin\` and \`pixelGrid\` are \`mapScale\`, \`greatCircle\`, \`mapSizeScale\`, \`mapHexbin\` and \`mapPixelGrid\`, for pages that load the map from the CDN.
 - **React:** event props such as \`onLoad\`, \`onMove\`, \`onClick\`, \`onMouseMove\` and \`onMouseEnter\`; a ref with \`getMap()\`, \`flyTo\`, \`easeTo\`, \`jumpTo\` and \`fitBounds\`; and \`useMap()\` inside a map or a \`MapProvider\`.`,
   },
   {
@@ -566,7 +966,7 @@ export function DownloadMap() {
     id: "accessibility",
     title: "Accessibility",
     body: `- Name each map with \`aria-label\` (HTML: \`data-ok-label\`). Without a name, it is called "Map".
-- Describe what the map shows with \`description\` (HTML: a \`p[data-ok-map-description]\` with an \`id\`). Screen readers read it with the map, and it replaces the map when the browser can't draw it.
+- Describe what the map shows with \`description\` (HTML: a \`p[data-ok-map-description]\` with an \`id\`), or let the map write it with \`auto\`. Screen readers read it with the map, and it replaces the map when the browser can't draw it.
 - Give every interactive marker a name. People can open its popup with Enter or Space, and move a draggable marker with the arrow keys.
 - A popup takes focus when it opens and gives it back when it closes, unless you turn off \`focusAfterOpen\`.
 - On a choropleth, name the regions' list with \`listLabel\` and give the table a \`caption\`. Keyboard users reach every region through the list, screen readers also get the table, and the legend shows the ranges as text, so the data never depends on color alone.
@@ -603,6 +1003,7 @@ const PREVIEWS = {
       <OptionsTable schema={mapScaleOptions} />
       <OptionsTable schema={mapAttributionOptions} />
       <OptionsTable schema={mapLegendOptions} />
+      <OptionsTable schema={mapRegionsOptions} />
     </>
   ),
   props: () => (
@@ -690,14 +1091,38 @@ const PREVIEWS = {
         {
           react: "MapRegions onRegionSelect",
           html: "ok:map:regionselect",
-          type: "({ id }) => void",
-          description: "A region was selected, or the selection was cleared.",
+          type: "({ id, ids }) => void",
+          description: "The selection changed: the region toggled and every selected region.",
+        },
+        {
+          react: "MapRegions group",
+          html: "data-ok-group",
+          type: "string",
+          description: "Links the regions of several maps: a selection filters the others.",
+        },
+        {
+          react: "MapRegions selection",
+          html: "selectRegions(regions, ids) / clearSelection()",
+          type: "(string | number)[]",
+          description: "Sets the selected regions from your state, or clears them.",
         },
         {
           react: "MapLegend scale / title / position",
           html: "div[data-ok-map-legend] in a corner",
           type: "MapScaleResult / ReactNode / corner",
           description: "The classes to show, the legend's title and its corner.",
+        },
+        {
+          react: 'MapLegend variant="size" sizeScale',
+          html: "ul[data-ok-map-legend-sizes] › span[data-ok-map-legend-circle][data-ok-radius]",
+          type: "MapSizeScaleResult",
+          description: "Nested circles of a size scale, with their values.",
+        },
+        {
+          react: "MapLegend patterns",
+          html: "span[data-ok-map-legend-swatch][data-ok-pattern]",
+          type: "(MapPatternStyle | null)[]",
+          description: "The texture of each class, as in the map's pattern layer.",
         },
         {
           react: "MapLegend showNull / nullLabel / formatter / tickFormatter",
@@ -737,6 +1162,10 @@ const PREVIEWS = {
         ["A letter (regions list)", "Moves to the next region whose name starts with it."],
         ["Enter / Space (regions list)", "Selects the region, or clears the selection."],
         ["Escape (regions list)", "Clears the selection."],
+        ["Shift + Up arrow / Down arrow (multiple)", "Moves and adds the region to the selection."],
+        ["Ctrl + A / Cmd + A (multiple)", "Selects every region."],
+        ["Shift + drag (box selection)", "Selects the regions in the box; with Alt, adds them."],
+        ["Escape (while dragging a box)", "Cancels the box."],
         [
           "Enter / Space (legend class)",
           "Fades, or shows again, the regions outside the pressed classes.",

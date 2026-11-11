@@ -28,6 +28,7 @@ import {
   type ChartHexCell,
   type ChartHierarchyAction,
   type ChartHierarchyNode,
+  type ChartImageFit,
   type ChartIndicator,
   type ChartLayoutType,
   type ChartLeaf,
@@ -43,6 +44,7 @@ import {
   type ChartNode,
   type ChartOrientation,
   type ChartPattern,
+  type ChartPixelShape,
   type ChartProjection,
   type ChartPxPoint,
   type ChartRender,
@@ -112,6 +114,7 @@ import {
   createChartGestures,
   dragChartAnnotation,
   exportChart,
+  type GeoDescriptionStrings,
   hasChartDataPoint,
   linkChart,
   nextChartActive,
@@ -200,6 +203,14 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   sphere?: boolean | undefined;
   /** Geo charts: lines of longitude and latitude every 30 degrees. */
   graticule?: boolean | undefined;
+  /** Geo charts: how a region's `image` fills the region's box, `cover` (cropped), `contain` (whole, on the class color) or `fill` (stretched). Default `"cover"`. */
+  imageFit?: ChartImageFit | undefined;
+  /** Geo charts, `pixel` layout: the shape of each cell, `circle`, `square` or `hexagon`. Default `"circle"`. */
+  pixelShape?: ChartPixelShape | undefined;
+  /** Geo charts, `pixel` layout: px between the cells' centers (3 to 64). Default 8. */
+  pixelSpacing?: number | undefined;
+  /** Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). Default 80. */
+  pixelSize?: number | undefined;
   /** Tree charts: `tree` (a tidy tree) or `cluster` (a dendrogram). Default `"tree"`. */
   layoutType?: ChartLayoutType | undefined;
   /** Tree charts: links with right angles, curved or straight. Default `"orthogonal"`. */
@@ -546,6 +557,14 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   /** Localized texts: part labels ("Minimum", "Q1"…), tool names, the export error and `selected`. */
   localeText?: ChartLocaleText | undefined;
   /**
+   * A text that describes the chart for assistive technology (the plot's description). On geo
+   * charts, `"auto"` writes it: the layout, region count, value range and extremes, classes and
+   * the regions without data.
+   */
+  description?: string | undefined;
+  /** Texts of the generated description (`description="auto"`), to translate it. */
+  descriptionStrings?: Partial<GeoDescriptionStrings> | undefined;
+  /**
    * Controlled: the selected points (`{ seriesIndex, dataPointIndex }`). A click selects the
    * point, slice or cell under the pointer, Enter or Space the active one.
    */
@@ -745,6 +764,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     scaleThresholds,
     sphere,
     graticule,
+    imageFit,
+    pixelShape,
+    pixelSpacing,
+    pixelSize,
     hierarchy,
     direction,
     layoutType,
@@ -868,6 +891,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     toolbar,
     animations,
     localeText,
+    description,
+    descriptionStrings,
     selectedDataPoints,
     defaultSelectedDataPoints = NO_POINTS,
     onDataPointSelection,
@@ -940,6 +965,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     scaleClasses,
     sphere,
     graticule,
+    imageFit,
+    pixelShape,
+    pixelSpacing,
+    pixelSize,
     backgroundBars,
     backgroundBarOpacity,
     backgroundBarRadius,
@@ -1303,6 +1332,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         scaleThresholds,
         sphere,
         graticule,
+        imageFit,
+        pixelShape,
+        pixelSpacing,
+        pixelSize,
         hierarchy,
         direction: validDirection,
         layoutType: validLayoutType,
@@ -1435,6 +1468,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         width,
         height: svgHeight,
         idPrefix: chartIdPrefix(id),
+        description,
+        descriptionStrings,
         xMin: validXMin,
         xMax: validXMax,
         xRange: validXRange,
@@ -1477,6 +1512,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       scaleThresholds,
       sphere,
       graticule,
+      imageFit,
+      pixelShape,
+      pixelSpacing,
+      pixelSize,
       hierarchy,
       validDirection,
       validLayoutType,
@@ -1590,6 +1629,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       picked,
       annotationIndexes,
       localeText,
+      description,
+      descriptionStrings,
       zoomControlled,
       zoomRange,
       innerZoom,
@@ -2172,6 +2213,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       {...attributes}
       {...chartTextAttributes({
         type: chartType,
+        description,
         colors: chartType === "geo" ? colors : undefined,
         yTitle,
         totalLabel,
@@ -2305,6 +2347,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         role="group"
         aria-roledescription="chart"
         aria-label={render.noData ? `${label}: ${render.noData}` : label}
+        aria-describedby={render.description ? `${chartIdPrefix(id)}-description` : undefined}
         tabIndex={0}
         // Sparklines: the least height (CSSOM in HTML; parity ignores `style`).
         style={
@@ -2365,6 +2408,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
                 </>
               )}
         </div>
+        {render.description ? (
+          <p data-ok-chart-description="" id={`${chartIdPrefix(id)}-description`}>
+            {render.description}
+          </p>
+        ) : null}
       </div>
       {tools.length === 0 && render.annotationHits && (
         <span data-ok-chart-status="" role="status">

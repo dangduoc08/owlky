@@ -418,6 +418,12 @@
       "type": "(ids: readonly string[]) => void"
      },
      {
+      "description": "Geo charts: the texts of the generated description (`data-ok-description=\"auto\"`), to translate it.",
+      "kind": "method",
+      "name": "setDescriptionStrings",
+      "type": "(strings: Partial<GeoDescriptionStrings> | undefined) => void"
+     },
+     {
       "description": "Sunburst and icicle charts: zooms into a node (`null`: the whole chart; no event).",
       "kind": "method",
       "name": "setDrillNode",
@@ -1741,7 +1747,8 @@
       "optional": true,
       "values": [
        "geographic",
-       "hex"
+       "hex",
+       "pixel"
       ]
      },
      {
@@ -1919,6 +1926,48 @@
       "description": "Geo charts: lines of longitude and latitude every 30 degrees.",
       "kind": "flag",
       "name": "graticule"
+     },
+     {
+      "attr": "data-ok-image-fit",
+      "default": "cover",
+      "description": "Geo charts: how a region's picture (`data-ok-image` on its row header) fills the region's box: `cover` (the default, cropped), `contain` (the whole picture on the class color) or `fill` (stretched).",
+      "kind": "style",
+      "name": "imageFit",
+      "optional": true,
+      "values": [
+       "cover",
+       "contain",
+       "fill"
+      ]
+     },
+     {
+      "attr": "data-ok-pixel-shape",
+      "default": "circle",
+      "description": "Geo charts, `pixel` layout: the shape of each cell, `circle` (the default), `square` or `hexagon` (hexagons sit in rows half a step apart).",
+      "kind": "style",
+      "name": "pixelShape",
+      "optional": true,
+      "values": [
+       "circle",
+       "square",
+       "hexagon"
+      ]
+     },
+     {
+      "attr": "data-ok-pixel-spacing",
+      "default": 8,
+      "description": "Geo charts, `pixel` layout: the distance between the cells' centers in px (3 to 64).",
+      "kind": "number",
+      "min": 3,
+      "name": "pixelSpacing"
+     },
+     {
+      "attr": "data-ok-pixel-size",
+      "default": 80,
+      "description": "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100).",
+      "kind": "number",
+      "min": 10,
+      "name": "pixelSize"
      },
      {
       "attr": "data-ok-crossfilter",
@@ -2104,6 +2153,14 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-annotation-marker"
+     },
+     {
+      "description": "Geo charts: the outline of the region a point annotation marks.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-outline"
      },
      {
       "description": "The background of an annotation's label.",
@@ -2351,6 +2408,14 @@
       "name": "data-ok-chart-data-labels"
      },
      {
+      "description": "Set by the runtime: the plot's description, visually hidden (from `data-ok-description`).",
+      "elements": [
+       "p"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-description"
+     },
+     {
       "description": "Sunburst and icicle charts: the controls before the plot, a **Back** button and the drilled path (a status).",
       "elements": [
        "div"
@@ -2498,6 +2563,14 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-icicle-cell"
+     },
+     {
+      "description": "Geo charts: the definition of a region's picture fill (a `pattern` in the SVG's `defs`).",
+      "elements": [
+       "pattern"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-image"
      },
      {
       "description": "The legend. Absent with one series or `legend=\"none\"`.",
@@ -3176,6 +3249,14 @@
       "value": "string"
      },
      {
+      "description": "A text that describes the chart (the plot's description); `auto` on geo charts writes it from the data.",
+      "elements": [
+       "figure"
+      ],
+      "kind": "part",
+      "name": "data-ok-description"
+     },
+     {
       "description": "Markers on single points, such as \\`0 3 error star 8; 1 2\\`.",
       "kind": "value",
       "name": "data-ok-discrete-markers",
@@ -3261,6 +3342,14 @@
       "value": "string"
      },
      {
+      "description": "Geo charts: a decorative picture that fills the region (on the table's row header): an http(s), relative or `data:image/…` URL.",
+      "elements": [
+       "th"
+      ],
+      "kind": "part",
+      "name": "data-ok-image"
+     },
+     {
       "description": "On a data cell or a legend item: its position.",
       "kind": "value",
       "name": "data-ok-index",
@@ -3293,6 +3382,14 @@
       ],
       "kind": "part",
       "name": "data-ok-label"
+     },
+     {
+      "description": "Geo charts, `pixel` layout: on the regions' series group.",
+      "kind": "value",
+      "name": "data-ok-layout",
+      "value": [
+       "pixel"
+      ]
      },
      {
       "description": "The locale that formats numbers and dates, such as `en-US`.",
@@ -3360,7 +3457,7 @@
       ]
      },
      {
-      "description": "On a legend or tooltip marker: the series' pattern.",
+      "description": "On a legend or tooltip marker: the series' pattern. Geo charts: on a region, its class's pattern.",
       "kind": "value",
       "name": "data-ok-pattern",
       "value": [
@@ -3385,6 +3482,12 @@
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
       "kind": "state",
       "name": "data-ok-ready"
+     },
+     {
+      "description": "Geo charts: on an annotation list item, the id of the region it marks (instead of `data-ok-x` / `data-ok-y`, longitude and latitude).",
+      "kind": "value",
+      "name": "data-ok-region",
+      "value": "string"
      },
      {
       "description": "On a violin's data cell: its observations, separated by spaces.",
@@ -3754,6 +3857,16 @@
       "type": "ChartZoom | null"
      },
      {
+      "description": "A text that describes the chart for assistive technology (the plot's description). On geo charts, `\"auto\"` writes it: the layout, region count, value range and extremes, classes and the regions without data.",
+      "name": "description",
+      "type": "string"
+     },
+     {
+      "description": "Texts of the generated description (`description=\"auto\"`), to translate it.",
+      "name": "descriptionStrings",
+      "type": "Partial<GeoDescriptionStrings>"
+     },
+     {
       "default": "\"top\"",
       "description": "Tree and icicle charts: where the root sits, or `radial` (trees: the root in the center).",
       "name": "direction",
@@ -3886,7 +3999,7 @@
       "default": "\"geographic\"",
       "description": "Geo charts: real boundaries or equal tiles.",
       "name": "geoLayout",
-      "type": "\"geographic\" | \"hex\""
+      "type": "\"geographic\" | \"hex\" | \"pixel\""
      },
      {
       "description": "Geo charts: the regions' shapes, a GeoJSON `FeatureCollection`, feature or list of features.",
@@ -3972,6 +4085,12 @@
       "description": "Bars run left to right, categories down the side.",
       "name": "horizontal",
       "type": "boolean"
+     },
+     {
+      "default": "\"cover\"",
+      "description": "Geo charts: how a region's `image` fills the region's box, `cover` (cropped), `contain` (whole, on the class color) or `fill` (stretched).",
+      "name": "imageFit",
+      "type": "\"contain\" | \"cover\" | \"fill\""
      },
      {
       "description": "Stock charts: indicators of the first series (the price), such as `{ type: \"sma\", period: 20 }`. Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price; `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci` and `pvt` get a pane each.",
@@ -4173,6 +4292,22 @@
      {
       "description": "Stock charts: height of each indicator pane in px. Default 120.",
       "name": "paneHeight",
+      "type": "number"
+     },
+     {
+      "default": "\"circle\"",
+      "description": "Geo charts, `pixel` layout: the shape of each cell, `circle`, `square` or `hexagon`.",
+      "name": "pixelShape",
+      "type": "\"circle\" | \"hexagon\" | \"square\""
+     },
+     {
+      "description": "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). Default 80.",
+      "name": "pixelSize",
+      "type": "number"
+     },
+     {
+      "description": "Geo charts, `pixel` layout: px between the cells' centers (3 to 64). Default 8.",
+      "name": "pixelSpacing",
       "type": "number"
      },
      {
@@ -4853,6 +4988,16 @@
       "type": "ChartZoom | null"
      },
      {
+      "description": "A text that describes the chart for assistive technology (the plot's description). On geo charts, `\"auto\"` writes it: the layout, region count, value range and extremes, classes and the regions without data.",
+      "name": "description",
+      "type": "string"
+     },
+     {
+      "description": "Texts of the generated description (`description=\"auto\"`), to translate it.",
+      "name": "descriptionStrings",
+      "type": "Partial<GeoDescriptionStrings>"
+     },
+     {
       "default": "\"top\"",
       "description": "Tree and icicle charts: where the root sits, or `radial` (trees: the root in the center).",
       "name": "direction",
@@ -4985,7 +5130,7 @@
       "default": "\"geographic\"",
       "description": "Geo charts: real boundaries or equal tiles.",
       "name": "geoLayout",
-      "type": "\"geographic\" | \"hex\""
+      "type": "\"geographic\" | \"hex\" | \"pixel\""
      },
      {
       "description": "Geo charts: the regions' shapes, a GeoJSON `FeatureCollection`, feature or list of features.",
@@ -5071,6 +5216,12 @@
       "description": "Bars run left to right, categories down the side.",
       "name": "horizontal",
       "type": "boolean"
+     },
+     {
+      "default": "\"cover\"",
+      "description": "Geo charts: how a region's `image` fills the region's box, `cover` (cropped), `contain` (whole, on the class color) or `fill` (stretched).",
+      "name": "imageFit",
+      "type": "\"contain\" | \"cover\" | \"fill\""
      },
      {
       "description": "Stock charts: indicators of the first series (the price), such as `{ type: \"sma\", period: 20 }`. Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price; `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci` and `pvt` get a pane each.",
@@ -5277,6 +5428,22 @@
      {
       "description": "Stock charts: height of each indicator pane in px. Default 120.",
       "name": "paneHeight",
+      "type": "number"
+     },
+     {
+      "default": "\"circle\"",
+      "description": "Geo charts, `pixel` layout: the shape of each cell, `circle`, `square` or `hexagon`.",
+      "name": "pixelShape",
+      "type": "\"circle\" | \"hexagon\" | \"square\""
+     },
+     {
+      "description": "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). Default 80.",
+      "name": "pixelSize",
+      "type": "number"
+     },
+     {
+      "description": "Geo charts, `pixel` layout: px between the cells' centers (3 to 64). Default 8.",
+      "name": "pixelSpacing",
       "type": "number"
      },
      {
@@ -5687,6 +5854,10 @@
   {
    "name": "ChartZoomReason",
    "type": "\"brush\" | \"group\" | \"user\""
+  },
+  {
+   "name": "GeoDescriptionStrings",
+   "type": "{ summary: string; range: string; highest: string; classes: string; noData: string; more: string; and: string; choropleth: string; symbols: string; hex: string; pixel: string; map: string; }"
   }
  ]
 }

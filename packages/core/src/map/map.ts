@@ -20,6 +20,7 @@ import {
   mapScaleUnits,
 } from "../anatomy/anatomy.js";
 import { chartFileName, gesture, save } from "../chart/chart-export.js";
+import type { GeoDescriptionStrings } from "./describe.js";
 import {
   autoAnchor,
   distanceMeters,
@@ -30,6 +31,7 @@ import {
   supportsWebGL,
 } from "./helpers.js";
 import { type MapLabels, mapLabels } from "./icons.js";
+import { drawMapPattern, mapPatternOfImage } from "./patterns.js";
 import { createMapRegions } from "./regions.js";
 
 /** A MapLibre style: a style URL or a style object. */
@@ -192,10 +194,15 @@ export interface MapControllerOptions extends Partial<MapSettings> {
   readonly onGeolocate?: ((position: GeolocationPosition) => void) | undefined;
   readonly onGeolocateError?: ((error: GeolocationPositionError | Error) => void) | undefined;
   readonly onTrackUserLocationChange?: ((tracking: boolean) => void) | undefined;
-  /** A region of a `[data-ok-map-regions]` part was selected (`null`: the selection was cleared). */
+  /**
+   * The selection of a `[data-ok-map-regions]` part changed: `id` is the region toggled (`null`:
+   * the selection was cleared), `ids` every selected region in row order.
+   */
   readonly onRegionSelect?:
-    | ((regions: HTMLElement, id: string | number | null) => void)
+    | ((regions: HTMLElement, id: string | number | null, ids: (string | number)[]) => void)
     | undefined;
+  /** Texts of the generated description (`p[data-ok-map-description][data-ok-auto]`), to translate it. */
+  readonly descriptionStrings?: Partial<GeoDescriptionStrings> | undefined;
   /** A class of an interactive legend was pressed; `active` lists the pressed classes. */
   readonly onLegendToggle?:
     | ((legend: HTMLElement, classIndex: number, active: readonly number[]) => void)
@@ -226,6 +233,10 @@ export interface MapController {
   setSettings(settings: Partial<MapSettings>): void;
   setMapStyle(style: MapStyle | undefined, dark?: MapStyle | undefined): void;
   setLabels(labels: Partial<MapLabels>): void;
+  /** Sets the texts of the generated description and writes it again. */
+  setDescriptionStrings(strings: Partial<GeoDescriptionStrings> | undefined): void;
+  /** Sets the selection of a `[data-ok-map-regions]` part of this map (`[]` clears it). */
+  selectRegions(regions: HTMLElement, ids: readonly (string | number)[]): void;
   setSource(id: string, spec: MapSourceSpec): void;
   removeSource(id: string): void;
   setSourceData(id: string, data: unknown): void;
@@ -346,6 +357,15 @@ const OVERLAY_ATTRIBUTES = [
   "data-ok-max",
   "data-ok-source",
   "data-ok-layer",
+  // Selection and links (ADR-0065).
+  "data-ok-multiple",
+  "data-ok-box-select",
+  "data-ok-group",
+  "data-ok-link-filter",
+  // Size legends (proportional symbols).
+  "data-ok-radius",
+  // Generated descriptions, and legend texts they read.
+  "data-ok-auto",
 ];
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -737,6 +757,9 @@ export function createMapController(
 
   // --- Regions and legends (choropleth) ----------------------------------------------------------
 
+  let boxBlocked = false;
+  let descriptionStrings = options.descriptionStrings;
+
   const regions = createMapRegions({
     element,
     own,
@@ -745,6 +768,14 @@ export function createMapController(
     labels: () => labels,
     onRegionSelect: options.onRegionSelect,
     onLegendToggle: options.onLegendToggle,
+    descriptionStrings: () => descriptionStrings,
+    // Box selection (ADR-0065) owns Shift + drag: MapLibre's box zoom is off meanwhile.
+    blockBoxZoom(blocked) {
+      boxBlocked = blocked;
+      if (!map) return;
+      if (blocked || !settings.boxZoom) map.boxZoom.disable();
+      else map.boxZoom.enable();
+    },
   });
 
   // --- Controls ---------------------------------------------------------------------------------
@@ -1100,7 +1131,7 @@ export function createMapController(
     }
     for (const handler of mapHandlers) {
       if (next[handler] === undefined) continue;
-      if (next[handler]) map[handler].enable();
+      if (next[handler] && !(handler === "boxZoom" && boxBlocked)) map[handler].enable();
       else map[handler].disable();
     }
     if (next.cooperativeGestures !== undefined) {
@@ -1184,6 +1215,17 @@ export function createMapController(
         element.setAttribute("data-ok-ready", "");
         scan();
       } else paintAttribution();
+    });
+    // Pattern fills (4.18.97): `ok-pattern-<style>` images are drawn when a layer asks for them.
+    instance.on("styleimagemissing", (event: { id: string }) => {
+      const style = mapPatternOfImage(event.id);
+      if (style === undefined || instance.hasImage(event.id)) return;
+      const channel =
+        getComputedStyle(element).getPropertyValue("--ok-palette-common-black-channel").trim() ||
+        "0 0 0";
+      instance.addImage(event.id, drawMapPattern(style, `rgb(${channel} / 0.5)`, 2), {
+        pixelRatio: 2,
+      });
     });
     instance.on("load", () => {
       loaded = true;
@@ -1465,6 +1507,13 @@ export function createMapController(
       lightStyle = safeStyle(style);
       darkStyle = safeStyle(dark);
       applyStyle();
+    },
+    setDescriptionStrings(strings) {
+      descriptionStrings = strings;
+      regions.describe();
+    },
+    selectRegions(part, ids) {
+      regions.setSelection(part, ids);
     },
     setLabels(next) {
       labels = { ...labels, ...next };

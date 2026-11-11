@@ -4,6 +4,10 @@
  * `mapScale`, whose module is pure. Layout mode `cell`: keyboard moves between region centers.
  */
 import { type MapScaleClass, mapScale, mapScaleLabel } from "../map/choropleth.js";
+import { type GeoDescriptionStrings, geoDescription } from "../map/describe.js";
+import { latticePoints, latticeShape, type MapPixelShape, mapPixelShapes } from "../map/lattice.js";
+import { type ChartAnnotation, chartAnnotations, chartAnnotationTag } from "./chart-annotations.js";
+import { type ChartCueOptions, chartPatternAt, chartPatternDefs } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartLayout,
@@ -18,6 +22,7 @@ import {
 import {
   type ChartColor,
   type ChartPart,
+  type ChartPattern,
   type ChartTableCell,
   type ChartTableModel,
   chartColors,
@@ -27,8 +32,30 @@ import { fitChartText } from "./chart-sankey.js";
 
 export const chartProjections = ["equalEarth", "mercator", "equirectangular"] as const;
 export type ChartProjection = (typeof chartProjections)[number];
-export const chartGeoLayouts = ["geographic", "hex"] as const;
+export const chartGeoLayouts = ["geographic", "hex", "pixel"] as const;
 export type ChartGeoLayout = (typeof chartGeoLayouts)[number];
+/** How a region's picture fills the region's box (4.18.97, ApexMaps image fill `fit`). */
+export const chartImageFits = ["cover", "contain", "fill"] as const;
+export type ChartImageFit = (typeof chartImageFits)[number];
+const ASPECT: Record<ChartImageFit, string> = {
+  cover: "xMidYMid slice",
+  contain: "xMidYMid meet",
+  fill: "none",
+};
+/** A picture URL that can't run script: http(s), relative, or a raster / SVG `data:` image. */
+export const safeChartImage = (value: unknown): string | null => {
+  if (typeof value !== "string") return null;
+  const url = value.trim();
+  if (!url || url.length > 200_000) return null;
+  if (/^data:image\/(png|jpe?g|gif|webp|avif|svg\+xml)[;,]/i.test(url)) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  // Relative URLs: no scheme before the first slash, question mark or hash.
+  return /^[^:/?#]*(?:[/?#]|$)/.test(url) && !/^[a-z][a-z0-9+.-]*:/i.test(url) ? url : null;
+};
+
+/** Cells of a pixel map (4.18.96): the Map's lattice shapes. */
+export const chartPixelShapes = mapPixelShapes;
+export type ChartPixelShape = MapPixelShape;
 /** `mapScale` methods, under the names ApexMaps uses too (`naturalBreaks`, `quantize`). */
 export const chartScaleMethods = ["quantile", "equalInterval", "jenks", "threshold"] as const;
 export type ChartScaleMethod = (typeof chartScaleMethods)[number];
@@ -41,6 +68,8 @@ export interface ChartGeoRegion {
   readonly name?: string | undefined;
   /** Short text of the hex cell (`dataLabels`). Default: the name. */
   readonly label?: string | undefined;
+  /** A decorative picture that fills the region (http(s), a relative URL or a `data:image/…` URL). */
+  readonly image?: string | undefined;
   /** The value that colors the region; `null`: no data. */
   readonly value?: number | string | null | undefined;
 }
@@ -78,8 +107,16 @@ export interface ChartGeoOptions {
   readonly joinBy?: string | undefined;
   /** Geo charts: `equalEarth` (default), `mercator` or `equirectangular`. */
   readonly projection?: ChartProjection | undefined;
-  /** Geo charts: `geographic` shapes (default) or `hex` tiles. */
+  /** Geo charts: `geographic` shapes (default), `hex` tiles or a `pixel` lattice of dots. */
   readonly geoLayout?: ChartGeoLayout | undefined;
+  /** Geo charts: how region pictures fill their region's box: `cover` (default), `contain` or `fill`. */
+  readonly imageFit?: ChartImageFit | undefined;
+  /** Pixel layouts: `circle` (default), `square` or `hexagon` cells. */
+  readonly pixelShape?: ChartPixelShape | undefined;
+  /** Pixel layouts: px between lattice points (3 to 64). Default 8. */
+  readonly pixelSpacing?: number | undefined;
+  /** Pixel layouts: each cell's width in % of the spacing (10 to 100). Default 80. */
+  readonly pixelSize?: number | undefined;
   /** Hex layouts: a cell per region; without them, cells are placed from the geometry. */
   readonly hexCells?: readonly ChartHexCell[] | undefined;
   /** Geo charts: how values are split into classes. Default `quantile`. */
@@ -109,6 +146,7 @@ export interface ChartGeoMark {
 }
 
 const MAX_REGIONS = 2000;
+const MAX_PIXELS = 40_000;
 const MAX_COORDINATES = 400_000;
 const RADIANS = Math.PI / 180;
 const PADDING = 8;
@@ -208,6 +246,28 @@ const finiteValue = (value: ChartGeoRegion["value"]): number | null => {
 
 const pathOf = (rings: readonly Ring[]) =>
   rings.map((ring) => `M${ring.map(([x, y]) => `${fmt(x)} ${fmt(y)}`).join("L")}Z`).join("");
+
+/** The cells of a pixel map inside fitted rings, as one path (circles as two arcs). */
+function pixelPath(
+  rings: readonly Ring[],
+  spacing: number,
+  shape: ChartPixelShape,
+  width: number,
+  limit: number,
+): { d: string; count: number } {
+  const points = latticePoints(rings, spacing, shape, limit);
+  const r = width / 2;
+  const d = points
+    .map(([x, y]) =>
+      shape === "circle"
+        ? `M${fmt(x - r)} ${fmt(y)}a${fmt(r)} ${fmt(r)} 0 1 0 ${fmt(width)} 0a${fmt(r)} ${fmt(r)} 0 1 0 ${fmt(-width)} 0Z`
+        : `M${latticeShape(shape, x, y, width)
+            .map(([px, py]) => `${fmt(px)} ${fmt(py)}`)
+            .join("L")}Z`,
+    )
+    .join("");
+  return { d, count: points.length };
+}
 
 /** Area of a ring (absolute value), for the label's anchor. */
 const ringArea = (ring: readonly (readonly [number, number])[]) => {
@@ -390,11 +450,21 @@ export function layoutGeo(
     colors?: readonly ChartColor[] | undefined;
     hidden?: readonly number[] | undefined;
     dataLabels?: boolean | undefined;
-  },
+    idPrefix?: string | undefined;
+    annotations?: readonly ChartAnnotation[] | undefined;
+  } & Pick<ChartCueOptions, "fill" | "fillPattern" | "colorBlindMode">,
   format: ChartFormat,
 ): {
   layout: ChartLayout;
-  legend: { index: number; name: string; color: ChartColor; hidden: boolean }[] | null;
+  legend:
+    | {
+        index: number;
+        name: string;
+        color: ChartColor;
+        hidden: boolean;
+        pattern?: ChartPattern | undefined;
+      }[]
+    | null;
   table: ChartTableModel;
 } {
   const width = Math.max(40, Math.round(options.width));
@@ -403,6 +473,23 @@ export function layoutGeo(
   const project = PROJECTIONS[projection];
   const regions = (options.regions ?? []).slice(0, MAX_REGIONS);
   const hexLayout = options.geoLayout === "hex";
+  const pixelLayout = options.geoLayout === "pixel";
+  const pixelShape: ChartPixelShape = chartPixelShapes.includes(
+    options.pixelShape as ChartPixelShape,
+  )
+    ? (options.pixelShape as ChartPixelShape)
+    : "circle";
+  const pixelSpacing = Math.max(3, Math.min(64, Number(options.pixelSpacing) || 8));
+  const pixelWidth =
+    (pixelSpacing * Math.max(10, Math.min(100, Number(options.pixelSize) || 80))) / 100;
+  let pixelBudget = MAX_PIXELS;
+  /** The drawn path of a region: its outline, or its lattice cells in pixel layouts. */
+  const drawnPath = (rings: readonly Ring[]) => {
+    if (!pixelLayout) return pathOf(rings);
+    const { d, count } = pixelPath(rings, pixelSpacing, pixelShape, pixelWidth, pixelBudget);
+    pixelBudget = Math.max(0, pixelBudget - count);
+    return d;
+  };
 
   // --- Scale ---------------------------------------------------------------------------
   const given = options.colors?.filter((color) => chartColors.includes(color)) ?? [];
@@ -423,6 +510,16 @@ export function layoutGeo(
   const colorOf = (value: number | null) =>
     (value === null ? undefined : scale.colors[scale.classOf(value)]) as ChartColor | undefined;
   const hidden = new Set(options.hidden ?? []);
+  // Pattern fills per class (4.18.97, WCAG 1.4.1): the chart's `fill="pattern"`, `fillPattern`
+  // or `colorBlindMode`, one pattern per class in turn.
+  const prefix = options.idPrefix ?? "ok-chart";
+  const patternDefs = chartPatternDefs(prefix);
+  const classPattern = (classIndex: number) =>
+    classIndex < 0 ? undefined : chartPatternAt(options, classIndex);
+  const imageDefs: ChartNode[] = [];
+  const fit = chartImageFits.includes(options.imageFit as ChartImageFit)
+    ? (options.imageFit as ChartImageFit)
+    : "cover";
   const label = (item: MapScaleClass) => mapScaleLabel(item, (value) => format.value(value, 0));
 
   // --- Shapes --------------------------------------------------------------------------
@@ -443,27 +540,74 @@ export function layoutGeo(
   const sphere = options.sphere ? sphereRing(project, projection) : null;
 
   const shapes: ChartNode[] = [];
-  const labels: ChartNode[] = [];
+  /** Data labels with their boxes (annotations push the ones they cover out, 4.18.100). */
+  const labels: {
+    node: ChartNode;
+    box: { left: number; top: number; right: number; bottom: number };
+  }[] = [];
+  /** Plane coordinates of a longitude / latitude (geographic and pixel layouts). */
+  let place: ((longitude: number, latitude: number) => [number, number]) | null = null;
   const marks: ChartMark[] = [];
-  const addRegion = (index: number, rings: readonly Ring[], centerPoint: [number, number]) => {
+  const addRegion = (
+    index: number,
+    rings: readonly Ring[],
+    centerPoint: [number, number],
+    hexCell = false,
+  ) => {
     const region = regions[index] as ChartGeoRegion;
     const value = values[index] as number | null;
     const classIndex = value === null ? -1 : scale.classOf(value);
     const color = colorOf(value);
     const d = pathOf(rings);
     const muted = classIndex >= 0 && hidden.has(classIndex);
+    const { left, right, top, bottom } = box(rings as Ring[]);
+    const image = safeChartImage(region.image);
+    const pattern = color ? classPattern(classIndex) : undefined;
+    let fill: string | undefined;
+    if (image) {
+      // A picture in the region's box, over the class color (seen around a `contain` fit).
+      const id = `${prefix}-image-${index}`;
+      const frame = {
+        x: fmt(left),
+        y: fmt(top),
+        width: fmt(right - left),
+        height: fmt(bottom - top),
+      };
+      imageDefs.push(
+        node(
+          "pattern",
+          {
+            id,
+            patternUnits: "userSpaceOnUse",
+            ...frame,
+            "data-ok-chart-image": "",
+            ...(color ? { "data-ok-color": color } : {}),
+          },
+          [
+            node("rect", {
+              ...frame,
+              "data-ok-chart-pattern-tint": "",
+              "fill-opacity": color ? "1" : "0",
+            }),
+            node("image", { href: image, ...frame, preserveAspectRatio: ASPECT[fit] }),
+          ],
+        ),
+      );
+      fill = `url(#${id})`;
+    } else if (pattern && color) fill = patternDefs.fill(pattern, color);
     shapes.push(
       node("path", {
-        d,
+        d: hexCell ? d : drawnPath(rings),
         "data-ok-chart-region": region.id,
         ...(color ? { "data-ok-color": color } : { "data-ok-no-data": "" }),
+        ...(fill ? { fill } : {}),
+        ...(pattern && !image ? { "data-ok-pattern": pattern } : {}),
         ...(muted ? { "fill-opacity": "0.18" } : {}),
       }),
     );
     const name = region.name ?? region.id;
     const noData = format.part("noData" as ChartPart);
     const valueText = value === null ? noData : format.value(value, 0);
-    const { left, right, top, bottom } = box(rings as Ring[]);
     const [cx, cy] = centerPoint;
     marks.push({
       series: 0,
@@ -494,8 +638,10 @@ export function layoutGeo(
       const room = right - left - 4;
       if (room >= 12 && bottom - top >= FONT + 2 && chartTextWidth(text) <= room * 1.15) {
         const fitted = fitChartText(text, room);
-        labels.push(
-          node(
+        const half = chartTextWidth(fitted) / 2;
+        labels.push({
+          box: { left: cx - half, top: cy - FONT / 2, right: cx + half, bottom: cy + FONT / 2 },
+          node: node(
             "text",
             {
               x: fmt(cx),
@@ -508,7 +654,7 @@ export function layoutGeo(
             undefined,
             fitted,
           ),
-        );
+        });
       }
     }
   };
@@ -545,11 +691,12 @@ export function layoutGeo(
         const row = Number(cell.row);
         const cx = originX + (col + (row % 2 === 1 ? 0.5 : 0)) * hw;
         const cy = originY + row * r * 1.5;
-        addRegion(index, [hexRing(cx, cy, r * 0.96)], [cx, cy]);
+        addRegion(index, [hexRing(cx, cy, r * 0.96)], [cx, cy], true);
       }
     }
   } else if (projected.length || sphere) {
     const fit = fitter(sphere ? [sphere] : projected.flatMap(({ rings }) => rings), width, height);
+    place = (longitude, latitude) => fit(project(longitude, latitude));
     if (sphere)
       background.push(node("path", { d: pathOf([sphere.map(fit)]), "data-ok-chart-sphere": "" }));
     if (options.graticule) {
@@ -562,7 +709,7 @@ export function layoutGeo(
         // Geometry without data: drawn, not interactive.
         shapes.push(
           node("path", {
-            d: pathOf(fitted),
+            d: drawnPath(fitted),
             "data-ok-chart-region": key ?? "",
             "data-ok-no-data": "",
           }),
@@ -572,6 +719,92 @@ export function layoutGeo(
       addRegion(index, fitted, centroid(fitted));
     }
   }
+
+  // --- Annotations (4.18.100) --------------------------------------------------------------
+  // Points and texts at a longitude / latitude, or at a region's label anchor (points outline it).
+  // Annotations always win: data labels under an annotation's marker or tag are dropped.
+  const boxes: { left: number; top: number; right: number; bottom: number }[] = [];
+  const annotationGroups: ChartNode[] = [];
+  for (const entry of chartAnnotations(options.annotations)) {
+    if (entry.axis !== "point" && entry.axis !== "text") continue;
+    let at: [number, number] | null = null;
+    let outline: string | undefined;
+    if (entry.region !== undefined) {
+      const mark = marks.find((each) => regions[each.index]?.id === entry.region);
+      if (mark) {
+        at = [mark.px, mark.py];
+        outline = mark.geo?.d;
+      }
+    } else {
+      const longitude = Number(entry.x);
+      const latitude = Number(entry.y);
+      if (place && Number.isFinite(longitude) && Number.isFinite(latitude))
+        at = place(longitude, Math.max(-90, Math.min(90, latitude)));
+    }
+    if (!at) continue;
+    const [px, py] = at;
+    if (px < -0.5 || px > width + 0.5 || py < -0.5 || py > height + 0.5) continue;
+    const children: ChartNode[] = [];
+    if (entry.axis === "text") {
+      const label = entry.label as string;
+      const size = chartTextWidth(label);
+      const anchor = entry.textAnchor ?? "middle";
+      const left = anchor === "start" ? px : anchor === "end" ? px - size : px - size / 2;
+      boxes.push({ left, top: py - FONT / 2, right: left + size, bottom: py + FONT / 2 });
+      children.push(
+        node(
+          "text",
+          {
+            x: fmt(px),
+            y: fmt(py),
+            dy: "0.35em",
+            "text-anchor": anchor,
+            "data-ok-chart-annotation-text": "",
+          },
+          undefined,
+          label,
+        ),
+      );
+    } else {
+      if (outline && entry.axis === "point")
+        children.push(node("path", { d: outline, "data-ok-chart-annotation-outline": "" }));
+      children.push(
+        node("circle", {
+          cx: fmt(px),
+          cy: fmt(py),
+          r: "5",
+          "data-ok-chart-annotation-marker": "",
+        }),
+      );
+      boxes.push({ left: px - 5, top: py - 5, right: px + 5, bottom: py + 5 });
+      if (entry.label) {
+        const tag = chartAnnotationTag(px, py - 30, entry.label, "middle", width, height);
+        children.push(...tag);
+        const rect = tag[0]?.attrs ?? {};
+        const left = Number(rect["x"]);
+        const top = Number(rect["y"]);
+        boxes.push({ left, top, right: left + Number(rect["width"]), bottom: top + 18 });
+      }
+    }
+    annotationGroups.push(
+      node(
+        "g",
+        { "data-ok-chart-annotation": entry.axis, "data-ok-color": entry.color ?? "info" },
+        children,
+      ),
+    );
+  }
+  const keptLabels = boxes.length
+    ? labels.filter(({ box: label }) =>
+        boxes.every(
+          (other) =>
+            label.right <= other.left ||
+            label.left >= other.right ||
+            label.bottom <= other.top ||
+            label.top >= other.bottom,
+        ),
+      )
+    : labels;
 
   const layout: ChartLayout = {
     width,
@@ -585,16 +818,31 @@ export function layoutGeo(
     marks,
     activeRadius: 0,
     nodes: [
+      ...(imageDefs.length || patternDefs.nodes().length
+        ? [node("defs", {}, [...patternDefs.nodes(), ...imageDefs])]
+        : []),
       node("g", { "data-ok-chart-geo-background": "" }, background),
       node("g", { "data-ok-chart-crosshair": "" }, []),
       node("g", { "data-ok-chart-series-group": "" }, [
         node(
           "g",
-          { "data-ok-chart-series": "", "data-ok-type": "geo", "data-ok-index": "0" },
+          {
+            "data-ok-chart-series": "",
+            "data-ok-type": "geo",
+            "data-ok-index": "0",
+            ...(pixelLayout ? { "data-ok-layout": "pixel" } : {}),
+          },
           shapes,
         ),
       ]),
-      node("g", { "data-ok-chart-data-labels": "" }, labels),
+      ...(annotationGroups.length
+        ? [node("g", { "data-ok-chart-annotation-layer": "" }, annotationGroups)]
+        : []),
+      node(
+        "g",
+        { "data-ok-chart-data-labels": "" },
+        keptLabels.map((label) => label.node),
+      ),
       node("g", { "data-ok-chart-active": "" }, []),
     ],
   };
@@ -604,6 +852,7 @@ export function layoutGeo(
     name: label(item),
     color: item.color as ChartColor,
     hidden: hidden.has(item.index),
+    ...(classPattern(item.index) ? { pattern: classPattern(item.index) } : {}),
   }));
 
   // --- Table ---------------------------------------------------------------------------
@@ -627,6 +876,7 @@ export function layoutGeo(
           attrs: {
             ...(region.id !== name ? { "data-ok-value": region.id } : {}),
             ...(region.label !== undefined ? { "data-ok-label": region.label } : {}),
+            ...(safeChartImage(region.image) ? { "data-ok-image": region.image as string } : {}),
             ...(cell ? { "data-ok-cell": `${cell.col},${cell.row}` } : {}),
           },
         },
@@ -640,6 +890,34 @@ export function layoutGeo(
   };
 
   return { layout, legend: values.some((value) => value !== null) ? items : null, table };
+}
+
+/**
+ * The generated description of a geo chart (4.18.99, ApexMaps `a11y.description: 'auto'`): its
+ * layout, region count, value range and extremes, classes (the legend's ranges) and the regions
+ * without data, values formatted as in the tooltip.
+ */
+export function chartGeoDescription(
+  options: Pick<ChartGeoOptions, "regions" | "geoLayout">,
+  format: ChartFormat,
+  legend: readonly { name: string }[] | null,
+  strings?: Partial<GeoDescriptionStrings>,
+): string {
+  const regions = (options.regions ?? []).slice(0, MAX_REGIONS);
+  return geoDescription({
+    kind:
+      options.geoLayout === "hex" ? "hex" : options.geoLayout === "pixel" ? "pixel" : "choropleth",
+    items: regions.map((region) => {
+      const value = finiteValue(region.value);
+      return {
+        name: region.name ?? region.id,
+        value,
+        ...(value === null ? {} : { text: format.value(value, 0) }),
+      };
+    }),
+    classes: legend?.map((item) => item.name),
+    strings,
+  });
 }
 
 /** Reads a geo chart's table back: one row per region, `th` name, `td` value. */
@@ -665,7 +943,14 @@ export function readChartGeoTable(table: HTMLTableElement): {
     if (!id) continue;
     const raw = value?.getAttribute("data-ok-value") ?? value?.textContent?.trim();
     const label = header?.getAttribute("data-ok-label") ?? undefined;
-    regions.push({ id, name, ...(label !== undefined ? { label } : {}), value: raw || null });
+    const image = header?.getAttribute("data-ok-image") ?? undefined;
+    regions.push({
+      id,
+      name,
+      ...(label !== undefined ? { label } : {}),
+      ...(image !== undefined ? { image } : {}),
+      value: raw || null,
+    });
     const cell = header?.getAttribute("data-ok-cell")?.split(",").map(Number);
     if (cell && cell.length === 2 && cell.every((n) => Number.isFinite(n)))
       hexCells.push({ id, col: cell[0] as number, row: cell[1] as number });

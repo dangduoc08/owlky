@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type ChartRenderInput, renderChart } from "./chart.js";
 import { chartActiveAt, chartActiveNodes, chartTooltip, nextChartActive } from "./chart-active.js";
-import { chartGeoContains, chartProject, readChartGeoTable } from "./chart-geo.js";
+import { chartGeoContains, chartProject, readChartGeoTable, safeChartImage } from "./chart-geo.js";
 import type { ChartLayout, ChartNode } from "./chart-layout.js";
 import { chartSelectedNodes } from "./chart-select.js";
 
@@ -486,5 +486,278 @@ describe("renderChart geo: edges", () => {
     const { regions, hexCells } = readChartGeoTable(table);
     expect(regions).toEqual([{ id: "Solo", name: "Solo", value: null }]);
     expect(hexCells).toEqual([]);
+  });
+});
+
+describe("renderChart geo: pixel maps (4.18.96)", () => {
+  const cells = (d: string) => d.split("M").length - 1;
+
+  it("draws each region as lattice cells, keeping the region's outline for hits", () => {
+    const { layout } = draw({ geoLayout: "pixel" });
+    const series = collect(layout.nodes, "data-ok-chart-series")[0];
+    expect(series?.attrs["data-ok-layout"]).toBe("pixel");
+    const [west] = regionsOf(layout);
+    const d = String(west?.attrs["d"]);
+    // Circles: two arcs per cell.
+    expect(d).toContain("a");
+    expect(cells(d)).toBeGreaterThan(4);
+    const mark = layout.marks[0];
+    const geo = mark?.geo;
+    expect(geo?.d.startsWith("M")).toBe(true);
+    expect(cells(geo?.d ?? "")).toBe(1);
+    expect(geo && mark ? chartGeoContains(geo, mark.px, mark.py) : false).toBe(true);
+  });
+
+  it("draws squares and hexagons, sized and spaced by the options", () => {
+    const d = (input: Partial<ChartRenderInput>) =>
+      String(regionsOf(draw({ geoLayout: "pixel", ...input }).layout)[0]?.attrs["d"]);
+    const squares = d({ pixelShape: "square", pixelSpacing: 20 });
+    const fine = d({ pixelShape: "square", pixelSpacing: 5 });
+    expect(squares).not.toContain("a");
+    expect(cells(fine)).toBeGreaterThan(cells(squares));
+    const hex = d({ pixelShape: "hexagon", pixelSize: 100 });
+    expect(hex.split("M")[1]?.split("L")).toHaveLength(6);
+    // Invalid options fall back to circles; spacing and size are clamped.
+    expect(d({ pixelShape: "star" as never, pixelSpacing: 0.5, pixelSize: 500 })).toContain("a");
+  });
+
+  it("pixelates regions without data too", () => {
+    const { layout } = draw({ geoLayout: "pixel", regions: REGIONS.slice(0, 1) });
+    const empty = regionsOf(layout).filter((item) => item.attrs["data-ok-no-data"] !== undefined);
+    expect(empty).toHaveLength(2);
+    expect(cells(String(empty[0]?.attrs["d"]))).toBeGreaterThan(1);
+  });
+
+  it("leaves other layouts' trees unchanged", () => {
+    const series = collect(draw().layout.nodes, "data-ok-chart-series")[0];
+    expect(series?.attrs["data-ok-layout"]).toBeUndefined();
+  });
+});
+
+describe("renderChart geo: patterns and pictures (4.18.97)", () => {
+  const PIXEL =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+
+  it("fills each class with the next pattern, repeated in the legend", () => {
+    const { layout, legend } = draw({
+      fill: "pattern",
+      scaleMethod: "equalInterval",
+      scaleClasses: 3,
+    });
+    const regions = regionsOf(layout);
+    expect(regions.map((region) => region.attrs["data-ok-pattern"])).toEqual([
+      "slantedLines",
+      "squares",
+      "circles",
+    ]);
+    expect(regions[0]?.attrs["fill"]).toBe("url(#t-pattern-slantedLines-primary-lighter)");
+    const defs = layout.nodes.find((item) => item.tag === "defs");
+    expect(collect(defs ? [defs] : [], "data-ok-chart-pattern")).toHaveLength(3);
+    expect(legend?.map((item) => item.pattern)).toEqual(["slantedLines", "squares", "circles"]);
+    // One pattern for every class.
+    const one = draw({ fillPattern: "verticalLines" });
+    expect(new Set(regionsOf(one.layout).map((region) => region.attrs["data-ok-pattern"]))).toEqual(
+      new Set(["verticalLines"]),
+    );
+    // Without patterns, no defs and no fill attribute.
+    expect(draw().layout.nodes.some((item) => item.tag === "defs")).toBe(false);
+    expect(regionsOf(draw().layout)[0]?.attrs["fill"]).toBeUndefined();
+  });
+
+  it("leaves regions without data plain", () => {
+    const { layout } = draw({
+      colorBlindMode: true,
+      regions: [...REGIONS.slice(0, 2), { id: "east", name: "East", value: null }],
+    });
+    const east = regionsOf(layout).find(
+      (region) => region.attrs["data-ok-chart-region"] === "east",
+    );
+    expect(east?.attrs["fill"]).toBeUndefined();
+    expect(east?.attrs["data-ok-no-data"]).toBe("");
+  });
+
+  it("fills regions with pictures in their box, fitted as asked", () => {
+    const { layout, table } = draw({
+      regions: [
+        { ...REGIONS[0], image: PIXEL } as never,
+        { ...REGIONS[1], image: "javascript:alert(1)" } as never,
+        { ...REGIONS[2], image: "flags/east.png" } as never,
+      ],
+      imageFit: "contain",
+    });
+    const regions = regionsOf(layout);
+    expect(regions[0]?.attrs["fill"]).toBe("url(#t-image-0)");
+    expect(regions[1]?.attrs["fill"]).toBeUndefined();
+    expect(regions[2]?.attrs["fill"]).toBe("url(#t-image-2)");
+    const images = collect(layout.nodes, "preserveAspectRatio");
+    expect(images.map((item) => item.attrs["href"])).toEqual([PIXEL, "flags/east.png"]);
+    expect(images[0]?.attrs["preserveAspectRatio"]).toBe("xMidYMid meet");
+    const pattern = collect(layout.nodes, "data-ok-chart-image")[0];
+    expect(pattern?.attrs["width"]).toBe(images[0]?.attrs["width"]);
+    expect(pattern?.attrs["data-ok-color"]).toBe(regions[0]?.attrs["data-ok-color"]);
+    // The table keeps safe pictures and reads them back.
+    expect(table.rows.map((row) => row.header.attrs["data-ok-image"])).toEqual([
+      PIXEL,
+      undefined,
+      "flags/east.png",
+    ]);
+    expect(
+      collect(
+        draw({ regions: [{ ...REGIONS[0], image: PIXEL } as never], imageFit: "fill" }).layout
+          .nodes,
+        "preserveAspectRatio",
+      )[0]?.attrs["preserveAspectRatio"],
+    ).toBe("none");
+  });
+
+  it("accepts only pictures that can't run script", () => {
+    expect(safeChartImage("https://example.com/a.png")).toBe("https://example.com/a.png");
+    expect(safeChartImage("data:image/png;base64,AAAA")).toBe("data:image/png;base64,AAAA");
+    expect(safeChartImage("./a.png")).toBe("./a.png");
+    expect(safeChartImage("data:text/html,<b>")).toBeNull();
+    expect(safeChartImage(" javascript:void(0)")).toBeNull();
+    expect(safeChartImage("")).toBeNull();
+    expect(safeChartImage(3)).toBeNull();
+  });
+
+  it("reads pictures from the table", () => {
+    const table = document.createElement("table");
+    const row = table.insertRow();
+    const th = document.createElement("th");
+    th.setAttribute("data-ok-image", "a.png");
+    th.textContent = "West";
+    row.append(th);
+    row.insertCell().textContent = "1";
+    expect(readChartGeoTable(table).regions[0]).toMatchObject({ id: "West", image: "a.png" });
+  });
+});
+
+describe("renderChart: descriptions (4.18.99)", () => {
+  it("generates a geo chart's description from its regions and classes", () => {
+    const render = draw({
+      description: "auto",
+      scaleMethod: "equalInterval",
+      scaleClasses: 2,
+      valueSuffix: " t",
+    });
+    expect(render.description).toBe(
+      "Choropleth map of 3 regions. Values range from 1 t in West to 9 t in East. Highest: East (9 t), Middle (5 t) and West (1 t). 2 classes: 1 t – 5 t and 5 t – 9 t.",
+    );
+  });
+
+  it("names the layout, translates, and keeps given texts", () => {
+    expect(draw({ description: "auto", geoLayout: "hex" }).description).toMatch(/^Hex tile map/);
+    expect(draw({ description: "auto", geoLayout: "pixel" }).description).toMatch(/^Pixel map/);
+    expect(
+      draw({ description: "auto", descriptionStrings: { summary: "{count} zones." } }).description,
+    ).toMatch(/^3 zones\./);
+    expect(draw({ description: " A map of three squares. " }).description).toBe(
+      "A map of three squares.",
+    );
+    expect(draw().description).toBeUndefined();
+    // Other chart types: a given text only.
+    expect(
+      renderChart({
+        type: "line",
+        description: "auto",
+        series: [],
+        width: 200,
+        height: 100,
+        idPrefix: "l",
+      }).description,
+    ).toBeUndefined();
+    expect(
+      renderChart({
+        type: "line",
+        description: "Flat.",
+        series: [],
+        width: 200,
+        height: 100,
+        idPrefix: "l",
+      }).description,
+    ).toBe("Flat.");
+  });
+});
+
+describe("renderChart geo: annotations (4.18.100)", () => {
+  const groupsOf = (layout: ChartLayout) => collect(layout.nodes, "data-ok-chart-annotation");
+
+  it("places points and texts by longitude / latitude or by region", () => {
+    const { layout } = draw({
+      annotations: [
+        { axis: "point", region: "middle", label: "Capital", color: "error" },
+        { axis: "point", x: -35, y: 5 },
+        { axis: "text", x: 25, y: 5, label: "East side", textAnchor: "start" },
+        { axis: "point", region: "nowhere", label: "Lost" },
+        { axis: "x", x: 3 },
+        { axis: "point", x: 500, y: 5 },
+      ],
+    });
+    const groups = groupsOf(layout);
+    expect(groups.map((group) => group.attrs["data-ok-chart-annotation"])).toEqual([
+      "point",
+      "point",
+      "text",
+    ]);
+    const middle = layout.marks[1];
+    const [capital, plain, text] = groups;
+    const marker = collect(capital ? [capital] : [], "data-ok-chart-annotation-marker")[0];
+    expect([Number(marker?.attrs["cx"]), Number(marker?.attrs["cy"])]).toEqual([
+      middle?.px,
+      middle?.py,
+    ]);
+    expect(capital?.attrs["data-ok-color"]).toBe("error");
+    expect(
+      collect(capital ? [capital] : [], "data-ok-chart-annotation-outline")[0]?.attrs["d"],
+    ).toBe(middle?.geo?.d);
+    expect(collect(capital ? [capital] : [], "data-ok-chart-annotation-label")[0]?.text).toBe(
+      "Capital",
+    );
+    // A coordinate: inside West's square, west of Middle.
+    const point = collect(plain ? [plain] : [], "data-ok-chart-annotation-marker")[0];
+    expect(Number(point?.attrs["cx"])).toBeLessThan(middle?.px ?? 0);
+    expect(collect(plain ? [plain] : [], "data-ok-chart-annotation-outline")).toHaveLength(0);
+    expect(
+      collect(text ? [text] : [], "data-ok-chart-annotation-text")[0]?.attrs["text-anchor"],
+    ).toBe("start");
+    // The layer sits before the data labels.
+    const order = layout.nodes.map((item) => Object.keys(item.attrs)[0]);
+    expect(order.indexOf("data-ok-chart-annotation-layer")).toBe(
+      order.indexOf("data-ok-chart-data-labels") - 1,
+    );
+  });
+
+  it("drops the data labels an annotation covers, never the annotation", () => {
+    const labels = (input: Partial<ChartRenderInput>) =>
+      collect(
+        draw({ dataLabels: true, ...input }).layout.nodes,
+        "data-ok-chart-partition-label",
+      ).map((item) => item.text);
+    expect(labels({})).toEqual(["West", "Middle", "East"]);
+    expect(labels({ annotations: [{ axis: "point", region: "middle" }] })).toEqual([
+      "West",
+      "East",
+    ]);
+    expect(labels({ annotations: [{ axis: "text", region: "east", label: "Here" }] })).toEqual([
+      "West",
+      "Middle",
+    ]);
+  });
+
+  it("places region annotations on hex tiles, and coordinates only on maps", () => {
+    const { layout } = draw({
+      geoLayout: "hex",
+      geometry: null,
+      hexCells: [
+        { id: "west", col: 0, row: 0 },
+        { id: "middle", col: 1, row: 0 },
+        { id: "east", col: 2, row: 0 },
+      ],
+      annotations: [
+        { axis: "point", region: "east" },
+        { axis: "point", x: 0, y: 0 },
+      ],
+    });
+    expect(groupsOf(layout)).toHaveLength(1);
   });
 });

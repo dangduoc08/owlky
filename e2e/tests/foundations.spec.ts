@@ -196,6 +196,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
       "map-scale",
       "map-attribution",
       "map-legend",
+      "map-regions",
     ],
   ],
   ["components-button-button--docs", ["button"]],

@@ -246,6 +246,53 @@ describe("map regions", () => {
     ]);
   });
 
+  it("writes a generated description from the regions (4.18.99)", async () => {
+    const { root, c } = create(`<p data-ok-map-description data-ok-auto></p>${regions()}`);
+    const description = root.querySelector("[data-ok-map-description]") as HTMLElement;
+    // Before the style is in, the layer type is unknown: a plain "Map".
+    expect(description.textContent).toBe(
+      "Map of 3 regions. Values range from 1 units in A to 5 units in B. No data for C.",
+    );
+    await ready(c);
+    await flush();
+    expect(description.textContent).toMatch(/^Choropleth map of 3 regions\./);
+    c.setDescriptionStrings({ summary: "{count} régions." });
+    expect(description.textContent).toMatch(/^3 régions\./);
+    // A legend's class texts are listed.
+    root.insertAdjacentHTML(
+      "beforeend",
+      `<div data-ok-map-legend><ul data-ok-map-legend-classes><li><span data-ok-map-legend-class><span data-ok-map-legend-label>1 – 3</span></span></li><li><span data-ok-map-legend-class data-ok-null><span data-ok-map-legend-label>No data</span></span></li></ul></div>`,
+    );
+    await flush();
+    expect(description.textContent).toContain("1 classes: 1 – 3.");
+  });
+
+  it("sizes the circles of a size legend through CSSOM", async () => {
+    const { root, c } = create(`<div data-ok-map-corner="bottom-left">
+      <div data-ok-map-legend data-ok-variant="size" role="group" aria-label="Legend">
+        <ul data-ok-map-legend-sizes data-ok-radius="30">
+          <li><span data-ok-map-legend-circle data-ok-radius="30"></span><span data-ok-map-legend-label>20</span></li>
+          <li><span data-ok-map-legend-circle data-ok-radius="12.5"></span><span data-ok-map-legend-label>5</span></li>
+          <li><span data-ok-map-legend-circle data-ok-radius="-1"></span><span data-ok-map-legend-label>x</span></li>
+        </ul>
+      </div>
+    </div>`);
+    await ready(c);
+    const list = root.querySelector("[data-ok-map-legend-sizes]") as HTMLElement;
+    const circles = [...root.querySelectorAll<HTMLElement>("[data-ok-map-legend-circle]")];
+    expect(list.style.getPropertyValue("--_ok-map-size-max")).toBe("30px");
+    const items = circles.map((circle) => circle.parentElement as HTMLElement);
+    expect(items.map((item) => item.style.getPropertyValue("--_ok-map-radius"))).toEqual([
+      "30px",
+      "12.5px",
+      "",
+    ]);
+    // The radius is observed: a new value is written again.
+    circles[1]?.setAttribute("data-ok-radius", "8");
+    await flush();
+    expect(items[1]?.style.getPropertyValue("--_ok-map-radius")).toBe("8px");
+  });
+
   it("ignores static legends, keeps states across style reloads and re-created sources", async () => {
     const { root, c } = create(`${regions()}${legend(false)}`);
     await ready(c);

@@ -441,3 +441,42 @@ export const AIRPORTS: Airport[] = [
   { name: "Johannesburg", position: [28.24, -26.13] },
   { name: "Tokyo", position: [140.39, 35.77] },
 ];
+
+// --- Proportional symbols ----------------------------------------------------------------------
+
+/**
+ * "Bubbles": the 20 largest US metropolitan areas, 2020 Census (population in millions, rounded)
+ * and their growth since 2010 in percent (rounded): `[name, longitude, latitude, population, growth]`.
+ */
+export const METROS: [string, number, number, number, number][] = [
+  ["New York", -74.01, 40.71, 20.14, 6.6],
+  ["Los Angeles", -118.24, 34.05, 13.2, 2.9],
+  ["Chicago", -87.63, 41.88, 9.62, 1.7],
+  ["Dallas", -96.8, 32.78, 7.64, 19.9],
+  ["Houston", -95.37, 29.76, 7.12, 20.3],
+  ["Washington", -77.04, 38.91, 6.39, 13.3],
+  ["Philadelphia", -75.17, 39.95, 6.25, 4.7],
+  ["Miami", -80.19, 25.76, 6.14, 10.4],
+  ["Atlanta", -84.39, 33.75, 6.09, 15.1],
+  ["Boston", -71.06, 42.36, 4.94, 8.6],
+  ["Phoenix", -112.07, 33.45, 4.85, 15.8],
+  ["San Francisco", -122.42, 37.77, 4.75, 9.8],
+  ["Riverside", -117.4, 33.95, 4.6, 7.8],
+  ["Detroit", -83.05, 42.33, 4.39, 1.3],
+  ["Seattle", -122.33, 47.61, 4.02, 17.2],
+  ["Minneapolis", -93.27, 44.98, 3.69, 10.6],
+  ["San Diego", -117.16, 32.72, 3.3, 6.6],
+  ["Tampa", -82.46, 27.95, 3.18, 13.8],
+  ["Denver", -104.99, 39.74, 2.96, 17.3],
+  ["Baltimore", -76.61, 39.29, 2.84, 4.3],
+];
+
+/** The metros as GeoJSON points; `promoteId: "name"` joins them to `MapRegions`. */
+export const METRO_POINTS = {
+  type: "FeatureCollection" as const,
+  features: METROS.map(([name, longitude, latitude, population, growth]) => ({
+    type: "Feature" as const,
+    properties: { name, population, growth },
+    geometry: { type: "Point" as const, coordinates: [longitude, latitude] },
+  })),
+};

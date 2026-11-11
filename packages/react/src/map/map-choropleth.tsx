@@ -1,25 +1,62 @@
 "use client";
 
-import { type MapLegendVariant, type MapPosition, mapLegendAttributes } from "@owlky/core";
-import { type MapScaleClass, type MapScaleResult, mapScaleLabel } from "@owlky/core/map";
-import { type HTMLAttributes, type ReactNode, useCallback, useId, useRef } from "react";
+import {
+  type MapLegendVariant,
+  type MapPosition,
+  type MapRegionsLinkFilter,
+  mapLegendAttributes,
+  mapRegionsAttributes,
+} from "@owlky/core";
+import {
+  type MapPatternStyle,
+  type MapScaleClass,
+  type MapScaleResult,
+  type MapSizeScaleResult,
+  mapScaleLabel,
+} from "@owlky/core/map";
+import { type HTMLAttributes, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
 import { useMapContext } from "./map-context.js";
 import { InCorner } from "./map-controls.js";
 
 export {
+  type GeoDescriptionInput,
+  type GeoDescriptionItem,
+  type GeoDescriptionKind,
+  type GeoDescriptionStrings,
   type GreatCircleFeature,
   type GreatCircleOptions,
+  geoDescription,
+  geoDescriptionStrings,
   greatCircle,
+  type MapBubbleLayerOptions,
+  type MapHexbinAggregate,
+  type MapHexbinCollection,
+  type MapHexbinFeature,
+  type MapHexbinOptions,
+  type MapHexbinPoint,
   type MapLngLat,
+  type MapPatternLayerOptions,
+  type MapPatternStyle,
+  type MapPixelGridOptions,
+  type MapPixelShape,
   type MapRegionLayersOptions,
   type MapScaleClass,
   type MapScaleMethod,
   type MapScaleOptions,
   type MapScalePalette,
   type MapScaleResult,
+  type MapSizeLegendItem,
+  type MapSizeMethod,
+  type MapSizeScaleOptions,
+  type MapSizeScaleResult,
+  mapBubbleLayer,
+  mapHexbin,
+  mapPatternLayer,
+  mapPixelGrid,
   mapRegionLayers,
   mapScale,
   mapScaleLabel,
+  mapSizeScale,
 } from "@owlky/core/map";
 
 const NUMBER = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
@@ -50,8 +87,10 @@ export interface MapRegionDatum {
 }
 
 export interface MapRegionSelectEvent {
-  /** The selected region's id, or `null` when the selection was cleared. */
+  /** The region selected or toggled, or `null` when the selection was cleared. */
   readonly id: string | number | null;
+  /** Every selected region's id, in the order of `data`. */
+  readonly ids: readonly (string | number)[];
 }
 
 export interface MapRegionsProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
@@ -73,8 +112,18 @@ export interface MapRegionsProps extends Omit<HTMLAttributes<HTMLDivElement>, "c
   formatValue?: ((value: number) => string) | undefined;
   /** Accessible name of the regions list. Default from the map's `labels.regions` ("Regions"). */
   listLabel?: string | undefined;
-  /** Called when a region is selected (a click on the map, Enter or Space in the list) or cleared. */
+  /** Called when the selection changes (a click on the map, Enter or Space in the list, a box). */
   onRegionSelect?: ((event: MapRegionSelectEvent) => void) | undefined;
+  /** Several regions can be selected: a click, Enter or Space toggles one, Shift + arrows add the next, Ctrl + A selects all, Escape clears. */
+  multiple?: boolean | undefined;
+  /** Shift + drag on the map selects the regions whose label anchor is in the box (Alt adds, Escape cancels). Implies `multiple`; the map's Shift + drag zoom is off. */
+  boxSelect?: boolean | undefined;
+  /** Links the regions to those of other maps with the same `group`: a selection filters the others. */
+  group?: string | undefined;
+  /** In a `group`: `bidirectional` (send and show filters), `emit` (send only) or `receive` (show only). Default `"bidirectional"`. */
+  linkFilter?: MapRegionsLinkFilter | undefined;
+  /** The selected ids, to set the selection from your state (for example `[]` to clear it). Uncontrolled when omitted. */
+  selection?: readonly (string | number)[] | undefined;
 }
 
 /**
@@ -93,18 +142,42 @@ export function MapRegions({
   formatValue = formatNumber,
   listLabel,
   onRegionSelect,
+  multiple,
+  boxSelect,
+  group,
+  linkFilter,
+  selection,
   ...props
 }: MapRegionsProps) {
-  const { regions, labels } = useMapContext("MapRegions");
+  const { regions, labels, controller } = useMapContext("MapRegions");
   const latest = useRef(onRegionSelect);
   latest.current = onRegionSelect;
-  const handler = useCallback((id: string | number | null) => latest.current?.({ id }), []);
+  const handler = useCallback(
+    (id: string | number | null, ids: (string | number)[]) => latest.current?.({ id, ids }),
+    [],
+  );
   const ref = useRegistered(regions, handler);
+  const node = useRef<HTMLDivElement | null>(null);
+  const setRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      node.current = element;
+      ref(element);
+    },
+    [ref],
+  );
+  const selected = selection === undefined ? undefined : JSON.stringify(selection);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `selected` stands for `selection`.
+  useEffect(() => {
+    if (selection !== undefined && controller && node.current)
+      controller.selectRegions(node.current, selection);
+  }, [controller, selected]);
   return (
     <div
       {...props}
-      ref={ref}
+      ref={setRef}
       data-ok-map-regions=""
+      {...mapRegionsAttributes({ multiple, boxSelect, linkFilter })}
+      data-ok-group={group}
       data-ok-source={source}
       data-ok-source-layer={sourceLayer}
       data-ok-layer={layer}
@@ -155,11 +228,13 @@ export interface MapLegendToggleEvent {
 }
 
 export interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
-  /** The scale from `mapScale()`: its classes, colors and range. */
-  scale: MapScaleResult;
+  /** The scale from `mapScale()`: its classes, colors and range (`classes` and `gradient` legends). */
+  scale?: MapScaleResult | undefined;
+  /** The size scale from `mapSizeScale()`: the nested circles of a `size` legend. */
+  sizeScale?: MapSizeScaleResult | undefined;
   /** The corner of the map that holds the legend. Default `bottom-left`. */
   position?: MapPosition | undefined;
-  /** `classes` (default): a swatch and a range per class; `gradient`: one bar from min to max. */
+  /** `classes` (default): a swatch and a range per class; `gradient`: one bar from min to max; `size`: nested circles of `sizeScale`. */
   variant?: MapLegendVariant | undefined;
   /** The legend's title (it also names the legend). */
   title?: ReactNode;
@@ -171,15 +246,21 @@ export interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, "ti
   nullLabel?: string | undefined;
   /** Text of a class. Default: its range, such as "1.5 – 3". */
   formatter?: ((item: MapScaleClass, index: number) => string) | undefined;
+  /** A pattern per class (`null`: none), as in `mapPatternLayer`: the swatches repeat the map's textures. */
+  patterns?: readonly (MapPatternStyle | null)[] | undefined;
   /** Text of a number in the default class text and the gradient's ticks. */
   tickFormatter?: ((value: number) => string) | undefined;
   /** Called when a class is pressed or released (interactive legends). */
   onLegendToggle?: ((event: MapLegendToggleEvent) => void) | undefined;
 }
 
-/** MapLegend — the classes (or the gradient) of a choropleth's scale, in a corner of the map. */
+/**
+ * MapLegend — the classes (or the gradient) of a choropleth's scale, or the nested circles of a
+ * size scale, in a corner of the map.
+ */
 export function MapLegend({
   scale,
+  sizeScale,
   position = "bottom-left",
   variant = "classes",
   title,
@@ -187,6 +268,7 @@ export function MapLegend({
   showNull,
   nullLabel,
   formatter,
+  patterns,
   tickFormatter = formatNumber,
   onLegendToggle,
   id,
@@ -203,15 +285,16 @@ export function MapLegend({
   );
   const ref = useRegistered(legends, handler);
   const toggles = interactive && variant === "classes";
-  const items = scale.classes.map((item, index) => ({
+  const items = (scale?.classes ?? []).map((item, index) => ({
     key: `class-${index}`,
     color: item.color,
     text: formatter ? formatter(item, index) : mapScaleLabel(item, tickFormatter),
     min: String(item.min),
     max: String(item.max),
     none: false,
+    pattern: patterns?.[index] ?? undefined,
   }));
-  if (showNull)
+  if (showNull && scale)
     items.push({
       key: "null",
       color: scale.nullColor,
@@ -219,6 +302,7 @@ export function MapLegend({
       min: "",
       max: "",
       none: true,
+      pattern: undefined,
     });
   return (
     <InCorner position={position}>
@@ -237,17 +321,33 @@ export function MapLegend({
             {title}
           </p>
         )}
-        {variant === "gradient" ? (
+        {variant === "size" ? (
+          <ul
+            data-ok-map-legend-sizes=""
+            data-ok-radius={String(sizeScale?.legend[0]?.radius ?? 0)}
+          >
+            {(sizeScale?.legend ?? []).map((item) => (
+              <li key={item.value}>
+                <span
+                  data-ok-map-legend-circle=""
+                  data-ok-radius={String(item.radius)}
+                  aria-hidden="true"
+                />
+                <span data-ok-map-legend-label="">{tickFormatter(item.value)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : variant === "gradient" ? (
           <div data-ok-map-legend-gradient="">
             <span data-ok-map-legend-bar="" aria-hidden="true">
-              {scale.colors.map((color, index) => (
+              {(scale?.colors ?? []).map((color, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: stops are positional.
                 <span key={index} data-ok-map-legend-stop="" data-ok-swatch={color} />
               ))}
             </span>
             <div data-ok-map-legend-ticks="">
-              <span>{tickFormatter(scale.min)}</span>
-              <span>{tickFormatter(scale.max)}</span>
+              <span>{tickFormatter(scale?.min ?? 0)}</span>
+              <span>{tickFormatter(scale?.max ?? 0)}</span>
             </div>
           </div>
         ) : (
@@ -258,6 +358,7 @@ export function MapLegend({
                   <span
                     data-ok-map-legend-swatch=""
                     data-ok-swatch={item.color}
+                    data-ok-pattern={item.pattern}
                     aria-hidden="true"
                   />
                   <span data-ok-map-legend-label="">{item.text}</span>

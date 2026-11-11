@@ -1,3 +1,4 @@
+import type { GeoDescriptionStrings } from "../map/describe.js";
 import {
   type ChartAnnotation,
   chartAnnotationHits,
@@ -27,7 +28,7 @@ import {
   filterChartData,
 } from "./chart-filter.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
-import { type ChartGeoOptions, layoutGeo } from "./chart-geo.js";
+import { type ChartGeoOptions, chartGeoDescription, layoutGeo } from "./chart-geo.js";
 import {
   type ChartDirection,
   type ChartEdgeStyle,
@@ -123,6 +124,10 @@ import {
 
 /** Everything a chart is drawn from (React props or the HTML root's attributes and table). */
 export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
+  /** A text that describes the chart for assistive technology; `"auto"` on geo charts generates one (4.18.99). */
+  readonly description?: string | undefined;
+  /** Texts of generated descriptions, to translate them. */
+  readonly descriptionStrings?: Partial<GeoDescriptionStrings> | undefined;
   readonly type?: ChartType | undefined;
   readonly xType?: ChartXType | undefined;
   /** Every type but `sankey`. */
@@ -437,6 +442,8 @@ export interface ChartRender {
   readonly annotationHits?: readonly ChartAnnotationHit[] | undefined;
   /** Drilldown (4.18.68): the valid path, its names and the level tables (absent without levels). */
   readonly drilldown?: ChartDrilldownState | undefined;
+  /** The plot's description (4.18.99): the text given, or the generated one of a geo chart. */
+  readonly description?: string | undefined;
 }
 
 /** What owners draw for drilldown charts: the path and the level tables. */
@@ -461,6 +468,13 @@ export const chartIdPrefix = (raw: string): string =>
 
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
+  const render = renderChartLevels(input);
+  // A description (4.18.99): the text given, or `auto` (geo charts write their own).
+  const given = input.description === "auto" ? undefined : input.description?.trim();
+  return given ? { ...render, description: given } : render;
+}
+
+function renderChartLevels(input: ChartRenderInput): ChartRender {
   const levels = chartDrilldownLevels(input.drilldown);
   if (levels.length === 0) return renderMessage(input);
   // Drilldown (4.18.68): the last level of the path is drawn; the table stays the root's.
@@ -915,7 +929,19 @@ function renderGeo(input: ChartRenderInput): ChartRender {
   const marked = chartSelectedNodes(base, chartSelection(input.selectedDataPoints));
   if (marked.length) nodes.splice(nodes.length - 1, 0, ...marked);
   const layout: ChartLayout = { ...base, nodes };
-  return { data, format, layout, legend, table, extent: null, zoom: null, zoomable: false };
+  return {
+    data,
+    format,
+    layout,
+    legend,
+    table,
+    extent: null,
+    zoom: null,
+    zoomable: false,
+    ...(input.description === "auto"
+      ? { description: chartGeoDescription(input, format, legend, input.descriptionStrings) }
+      : {}),
+  };
 }
 
 /** Sankey charts (ADR-0047): links instead of series; no legend, no zoom. */

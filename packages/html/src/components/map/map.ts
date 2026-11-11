@@ -1,6 +1,7 @@
 import { mapHandlers, mapOptions, readBehavior, readNumber, readStyle } from "@owlky/core";
 import {
   createMapController,
+  type GeoDescriptionStrings,
   greatCircle,
   type MapController,
   type MapEvent,
@@ -12,7 +13,10 @@ import {
   type MapSky,
   type MapSourceSpec,
   type MapViewState,
+  mapHexbin,
+  mapPixelGrid,
   mapScale,
+  mapSizeScale,
   parseMapJson,
   parseMapPadding,
   readLayerDeclaration,
@@ -73,8 +77,8 @@ export interface MapEvents {
   trackuserlocation: EventSpec<{ tracking: boolean }>;
   /** After the map fell back to its static content (no WebGL, or MapLibre failed). */
   fallback: EventSpec<{ reason: string }>;
-  /** After a region was selected or the selection cleared (dispatched on `[data-ok-map-regions]`; `id` is `null` when cleared). */
-  regionselect: EventSpec<{ id: string | number | null }>;
+  /** After the selection of regions changed (dispatched on `[data-ok-map-regions]`): `id` is the region toggled (`null` when cleared), `ids` every selected region in row order. */
+  regionselect: EventSpec<{ id: string | number | null; ids: (string | number)[] }>;
   /** After a class of an interactive legend was pressed or released (dispatched on the legend; `active` lists the pressed classes). */
   legendtoggle: EventSpec<{ classIndex: number; active: number[] }>;
 }
@@ -108,10 +112,22 @@ export interface MapInstance extends ComponentInstance {
   readonly fullscreen: boolean;
   /** Enters or leaves full screen. */
   setFullscreen(fullscreen: boolean): void;
+  /** Selects these regions of a `[data-ok-map-regions]` part of the map (ids that aren't rows are ignored; one at most without `data-ok-multiple`). */
+  selectRegions(regions: Element, ids: readonly (string | number)[]): void;
+  /** Clears the selection of one `[data-ok-map-regions]` part, or of every part of the map. */
+  clearSelection(regions?: Element): void;
+  /** Sets the texts of the generated description (`p[data-ok-map-description][data-ok-auto]`), to translate it. */
+  setDescriptionStrings(strings: Partial<GeoDescriptionStrings> | undefined): void;
   /** Classifies values for a choropleth (core `mapScale`): class breaks, token colors and the MapLibre expressions. */
   scale: typeof mapScale;
   /** The great circle arc between two `[longitude, latitude]` positions, as a GeoJSON feature (core `greatCircle`), for CDN pages. */
   greatCircle: typeof greatCircle;
+  /** A size scale for proportional symbols (core `mapSizeScale`): radii, the `circle-radius` expression and the size legend's circles, for CDN pages. */
+  sizeScale: typeof mapSizeScale;
+  /** Bins points into hexagons with their count or mean (core `mapHexbin`), for CDN pages. */
+  hexbin: typeof mapHexbin;
+  /** The cells of a pixel map: a lattice of dots, squares or hexagons inside each region (core `mapPixelGrid`), for CDN pages. */
+  pixelGrid: typeof mapPixelGrid;
 }
 
 /** Map events re-dispatched as `ok:map:<type>` (detail: the core `MapEvent`). */
@@ -239,7 +255,7 @@ function readFlyTarget(trigger: Element) {
  *          markerdragend (on the marker, detail { lngLat }), ok:map:fullscreen ({ fullscreen }),
  *          ok:map:geolocate ({ coords }), ok:map:geolocateerror ({ code, message }),
  *          ok:map:trackuserlocation ({ tracking }), ok:map:fallback ({ reason }),
- *          ok:map:regionselect (on the regions, { id }), ok:map:legendtoggle (on the legend,
+ *          ok:map:regionselect (on the regions, { id, ids }), ok:map:legendtoggle (on the legend,
  *          { classIndex, active }). Choropleth: `[data-ok-map-regions]` (a listbox the runtime fills
  *          and the data table) joins its rows to a source through feature state; legends mute the
  *          regions outside their pressed classes.
@@ -321,7 +337,7 @@ export const map = defineComponent<MapInstance, MapEvents>({
           message: error.message,
         }),
       onTrackUserLocationChange: (tracking) => emit("trackuserlocation", { tracking }),
-      onRegionSelect: (regions, id) => dispatch(regions, "regionselect", { id }),
+      onRegionSelect: (regions, id, ids) => dispatch(regions, "regionselect", { id, ids }),
       onLegendToggle: (legend, classIndex, active) =>
         dispatch(legend, "legendtoggle", { classIndex, active: [...active] }),
     });
@@ -431,8 +447,21 @@ export const map = defineComponent<MapInstance, MapEvents>({
         return element.hasAttribute(mapOptions.options.fullscreen.attr);
       },
       setFullscreen: controller.setFullscreen,
+      setDescriptionStrings: controller.setDescriptionStrings,
+      selectRegions(regions, ids) {
+        controller.selectRegions(regions as HTMLElement, ids);
+      },
+      clearSelection(regions) {
+        const parts = regions
+          ? [regions as HTMLElement]
+          : [...element.querySelectorAll<HTMLElement>("[data-ok-map-regions]")];
+        for (const part of parts) controller.selectRegions(part, []);
+      },
       scale: mapScale,
       greatCircle,
+      sizeScale: mapSizeScale,
+      hexbin: mapHexbin,
+      pixelGrid: mapPixelGrid,
       destroy() {
         declarations.disconnect();
         attributes.disconnect();

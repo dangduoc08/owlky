@@ -1,5 +1,6 @@
 /** Chart engine (ADR-0024): data model, scales, layout, interaction and formatting. */
 
+export type { GeoDescriptionStrings } from "../map/describe.js";
 export {
   CHART_DEFAULT_WIDTH,
   type ChartDrilldownState,
@@ -110,9 +111,14 @@ export {
   type ChartGeometry,
   type ChartGeoRegion,
   type ChartHexCell,
+  type ChartImageFit,
+  type ChartPixelShape,
   type ChartProjection,
   type ChartScaleMethod,
+  chartGeoDescription,
   chartGeoLayouts,
+  chartImageFits,
+  chartPixelShapes,
   chartProject,
   chartProjections,
   chartScaleMethods,

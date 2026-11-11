@@ -168,7 +168,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-active] › path[data-ok-chart-active-node] (the arc's outline)
     Icicle (ADR-0058; root [data-ok-direction]?[data-ok-spacing]?[data-ok-leaf]?[data-ok-tint]?
       [data-ok-zoom-type]?[data-ok-disable-zoom-on-click]?[data-ok-drill-node]?):
-      g[data-ok-chart-series][data-ok-type=geo] › path[data-ok-chart-region="<id>"][data-ok-color|data-ok-no-data][fill-opacity]?×n
+      g[data-ok-chart-series][data-ok-type=geo][data-ok-layout=pixel]? › path[data-ok-chart-region="<id>"][data-ok-color|data-ok-no-data][fill-opacity]?×n
                                                    (before the series: g[data-ok-chart-geo-background] › path[data-ok-chart-sphere]? + path[data-ok-chart-graticule]?)
       g[data-ok-chart-series][data-ok-type=icicle] › rect[data-ok-chart-icicle-cell][rx=2][fill-opacity][stroke-width][data-ok-color]×n
       g[data-ok-chart-data-labels] › text[data-ok-chart-partition-label="inside|plain"] (centered, never rotated)
@@ -234,7 +234,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
       tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
         + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
-    Geo (ADR-0059): thead › tr › th[scope=col][data-ok-part="name|y"]; tbody › tr › th[scope=row][data-ok-value]?[data-ok-label]?[data-ok-cell="col,row"]? + td[data-ok-value]?
+    Geo (ADR-0059): thead › tr › th[scope=col][data-ok-part="name|y"]; tbody › tr › th[scope=row][data-ok-value]?[data-ok-label]?[data-ok-cell="col,row"]?[data-ok-image]? + td[data-ok-value]?
     Tree, sunburst, icicle: thead › tr › th[scope=col][data-ok-part="name|parent|y"] (y only when a node has a value);
       one row per node in preorder: tbody › tr › th[scope=row][data-ok-value]? (id when it differs
       from the name)[data-ok-color]? (where a color starts: own, or the palette on roots and a single root's children) + td[data-ok-value]? (the parent's name, its id
@@ -242,7 +242,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Violin: thead › tr › th[scope=col][rowspan=2] + th[scope=colgroup][colspan=6]; second row th[data-ok-part="count|min|q1|median|q3|max"];
       one row per category: tbody › tr › th[scope=row] + td[data-ok-samples] (the count; observations) | td[data-ok-density] (empty; value:weight pairs) + td×5 (the summary, never read back)
   ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
-    li[data-ok-annotation="x|y|point|text"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]?[data-ok-text-anchor]? › label text
+    li[data-ok-annotation="x|y|point|text"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]?[data-ok-text-anchor]?[data-ok-region]? (geo) › label text
 Root text attributes (phase 4): [data-ok-group]? [data-ok-brush-target]? [data-ok-color-ranges]?
   (4.18.65) [data-ok-xaxis-groups]? [data-ok-no-data-text]? (4.18.68) [data-ok-drilldown-path]?
 
@@ -497,8 +497,41 @@ Geo charts (core `chart-geo.ts`, ADR-0059): `type="geo"`, no tile style, no MapL
   a hex map needs no geometry) or, without them, placed from the centroids (fills outward from
   the middle). `dataLabels`: the `label` / name when it fits the shape's box (white from the upper
   half of the classes).
+- `geoLayout="pixel"` (4.18.96, ApexMaps pixel series with `grid: 'screen'`): each region's path is
+  its lattice cells (the Map's `latticePoints` / `latticeShape` in SVG px, anchored at (0, 0), so
+  neighbors share the grid; a cell belongs to the region containing its center): `pixelShape`
+  `circle` (two arcs) · `square` · `hexagon` (rows `spacing · √3 / 2` apart), `pixelSpacing` 3–64px
+  (default 8), `pixelSize` 10–100% of the spacing (default 80); at most 40 000 cells. Regions without
+  data are pixelated too. `mark.geo` keeps the region's outline (hits between the dots, the active
+  and selection outlines). The series group gets `data-ok-layout="pixel"` (CSS drops the paper
+  stroke); other layouts' trees are unchanged.
+- Patterns (4.18.97, WCAG 1.4.1): `fill="pattern"`, `fillPattern` or `colorBlindMode` give each class
+  `chartPatternAt(input, classIndex)` (the series patterns of 4.18.62, in turn): the region gets
+  `fill="url(#<prefix>-pattern-<style>-<color>)"` and `data-ok-pattern`, the legend items `pattern`;
+  no-data regions stay plain. CSS fills regions only `:not([fill])`.
+- Pictures: `regions[].image` (HTML `th[data-ok-image]`, kept in the table only when safe:
+  `safeChartImage` allows http(s), relative and `data:image/(png|jpeg|gif|webp|avif|svg+xml)`) fill the
+  region with `pattern#<prefix>-image-<row>[data-ok-chart-image][data-ok-color]` in `userSpaceOnUse`
+  at the region's box › `rect[data-ok-chart-pattern-tint]` (the class color, opacity 1; 0 without a
+  value) + `image[href][preserveAspectRatio]` (`imageFit`: `cover` = `xMidYMid slice` default,
+  `contain` = `meet`, `fill` = `none`). Defs come first in the tree, only when used.
+- Description (4.18.99): `description` (`data-ok-description`, a text attribute) is the plot's
+  `aria-describedby` → `plot › p[data-ok-chart-description][id=<prefix>-description]` (after the
+  tooltip, visually hidden), on every type; `"auto"` on geo charts is `chartGeoDescription` (the
+  Map's `geoDescription`: layout → choropleth / hex / pixel, values as `format.value`, classes =
+  legend item names); `descriptionStrings` (React prop, HTML `setDescriptionStrings()`) translate it.
+- Annotations (4.18.100, ApexMaps points by coordinate and features by key; ADR-0031's model):
+  `point` and `text` annotations take `x` = longitude, `y` = latitude (geographic and pixel layouts:
+  the projection's fit; outside the plot: skipped) or `region` (any layout: the region's label
+  anchor, `mark.px/py`; a point adds `path[data-ok-chart-annotation-outline]` of the region's
+  outline); HTML `li[data-ok-region]`. Drawn in `g[data-ok-chart-annotation-layer]` before the data
+  labels, as on other charts (marker r 5, tag 30px above, `text` with `textAnchor`). Data labels
+  whose box meets a marker, tag or text box are dropped; annotations never move. `x` / `y` lines and
+  bands, dragging and the keyboard pick-up are not on geo charts.
 - Not built: `orthographic` and rotation, pan and zoom, shape ↔ hex morph, bubbles / markers on
-  `geo`, a null legend item, label collision.
+  `geo`, a null legend item, label collision between regions (only annotations push labels out), a
+  `diamond` pixel shape, ApexMaps area annotations by bounds and connector lines, pattern `size` /
+  line weight options.
 
 Streamgraph geometry (core `chart-stream.ts`, drawn on `layoutChart`'s axes, 4.18.21):
 - Data: series as for a line chart, joined on x (a missing value counts as zero, negatives are floored
@@ -693,7 +726,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `disableZoomOnClick` | `data-ok-disable-zoom-on-click` | flag | boolean | off | Sunburst and icicle charts: a click, Enter or Space on a node doesn't zoom into it. |
 | `zoomType` | `data-ok-zoom-type="…"` | style | `value` `both` | — | Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`, the default) or becomes the top level (`both`). |
 | `projection` | `data-ok-projection="…"` | style | `equalEarth` `mercator` `equirectangular` | — | Geo charts: `equalEarth` (equal areas, the default), `mercator` (straight rhumb lines) or `equirectangular`. |
-| `geoLayout` | `data-ok-geo-layout="…"` | style | `geographic` `hex` | — | Geo charts: real boundaries (`geographic`, the default) or equal hex tiles (`hex`). |
+| `geoLayout` | `data-ok-geo-layout="…"` | style | `geographic` `hex` `pixel` | — | Geo charts: real boundaries (`geographic`, the default) or equal hex tiles (`hex`). |
 | `scaleMethod` | `data-ok-scale-method="…"` | style | `quantile` `equalInterval` `jenks` `threshold` | — | Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`). |
 | `xMin` | `data-ok-x-min="…"` | number | number | — | The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes). |
 | `xMax` | `data-ok-x-max="…"` | number | number | — | The last x position shown when nothing has zoomed the chart (see `xMin`). |
@@ -717,6 +750,10 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `scaleClasses` | `data-ok-scale-classes="…"` | number | number | `5` | Geo charts: how many value classes (at most the colors available). |
 | `sphere` | `data-ok-sphere` | flag | boolean | off | Geo charts: the outline of the globe behind the regions. |
 | `graticule` | `data-ok-graticule` | flag | boolean | off | Geo charts: lines of longitude and latitude every 30 degrees. |
+| `imageFit` | `data-ok-image-fit="…"` | style | `cover` `contain` `fill` | — | Geo charts: how a region's picture (`data-ok-image` on its row header) fills the region's box: `cover` (the default, cropped), `contain` (the whole picture on the class color) or `fill` (stretched). |
+| `pixelShape` | `data-ok-pixel-shape="…"` | style | `circle` `square` `hexagon` | — | Geo charts, `pixel` layout: the shape of each cell, `circle` (the default), `square` or `hexagon` (hexagons sit in rows half a step apart). |
+| `pixelSpacing` | `data-ok-pixel-spacing="…"` | number | number | `8` | Geo charts, `pixel` layout: the distance between the cells' centers in px (3 to 64). |
+| `pixelSize` | `data-ok-pixel-size="…"` | number | number | `80` | Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). |
 | `crossfilter` | `data-ok-crossfilter="…"` | style | `filter` `highlight` | — | Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |

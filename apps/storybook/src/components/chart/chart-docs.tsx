@@ -1009,6 +1009,256 @@ export function HexMap() {
 }`,
   },
   {
+    id: "pixel",
+    title: "Draw regions as a lattice of dots",
+    body: `A pixel map draws each region as dots, squares or hexagons on one grid, a style that reads well in reports and keeps small regions from looking empty. Set \`geoLayout\` to \`pixel\`. The grid is shared by every region, so neighbors line up, and a cell belongs to the region that contains its center.
+
+- **\`pixelShape\`:** \`circle\` (the default), \`square\` or \`hexagon\`. Hexagons sit in rows half a step apart, so at a \`pixelSize\` of 100 they tile.
+- **\`pixelSpacing\`:** the distance between the cells' centers in pixels, from 3 to 64 (8 by default).
+- **\`pixelSize\`:** each cell's width in percent of the spacing, from 10 to 100 (80 by default).
+
+The tooltip, keyboard, legend and table work as on the other geo charts: the pointer finds a region anywhere inside its outline, also between its dots.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="pixel" data-ok-pixel-shape="hexagon" data-ok-pixel-size="100" data-ok-join-by="name" data-ok-geometry="shapes" data-ok-height="300">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Nevada</th><td data-ok-value="3.1">3.1</td></tr>
+      <tr><th scope="row">Utah</th><td data-ok-value="3.27">3.27</td></tr>
+    </tbody>
+  </table>
+</figure>
+<script type="application/json" id="shapes">
+  {"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"name":"Nevada"},"geometry":{"type":"Polygon","coordinates":[[[-120,35],[-114,35],[-114,42],[-120,42],[-120,35]]]}},
+    {"type":"Feature","properties":{"name":"Utah"},"geometry":{"type":"Polygon","coordinates":[[[-114,37],[-109,37],[-109,42],[-114,42],[-114,37]]]}}
+  ]}
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+
+const shapes = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+
+export function HexagonMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      geoLayout="pixel"
+      pixelShape="hexagon"
+      pixelSize={100}
+      geometry={shapes}
+      joinBy="name"
+      height={300}
+      regions={[
+        { id: "Nevada", name: "Nevada", value: 3.1 },
+        { id: "Utah", name: "Utah", value: 3.27 },
+      ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "geo-patterns",
+    title: "Fill regions with patterns or pictures",
+    body: `Classes that differ only by color are hard to tell apart for many people. Set \`fill\` to \`pattern\` and each class of a geo chart gets the next pattern as well as its color, or set \`fillPattern\` to give every class the same one. \`colorBlindMode\` turns patterns on too. The legend's markers repeat the patterns, and regions without a value stay plain.
+
+A region can also show a picture, for example a flag or a photo of the place. Give it an \`image\`: an http(s) URL, a relative URL or a \`data:image\` URL (other URLs are ignored). In HTML, write it on the table's row header as \`data-ok-image\`. \`imageFit\` sets how the picture fills the region's box: \`cover\` (the default, cropped), \`contain\` (the whole picture on the class color) or \`fill\` (stretched). Pictures are decorative: the value stays in the tooltip, the legend and the table.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-fill="pattern" data-ok-image-fit="contain" data-ok-join-by="name" data-ok-geometry="shapes" data-ok-height="300">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row" data-ok-image="pictures/nevada.png">Nevada</th><td data-ok-value="3.1">3.1</td></tr>
+      <tr><th scope="row">Utah</th><td data-ok-value="3.27">3.27</td></tr>
+    </tbody>
+  </table>
+</figure>
+<script type="application/json" id="shapes">
+  {"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"name":"Nevada"},"geometry":{"type":"Polygon","coordinates":[[[-120,35],[-114,35],[-114,42],[-120,42],[-120,35]]]}},
+    {"type":"Feature","properties":{"name":"Utah"},"geometry":{"type":"Polygon","coordinates":[[[-114,37],[-109,37],[-109,42],[-114,42],[-114,37]]]}}
+  ]}
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+
+const shapes = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+
+export function PatternedMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      fill="pattern"
+      imageFit="contain"
+      geometry={shapes}
+      joinBy="name"
+      height={300}
+      regions={[
+        { id: "Nevada", name: "Nevada", value: 3.1, image: "pictures/nevada.png" },
+        { id: "Utah", name: "Utah", value: 3.27 },
+      ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "geo-description",
+    title: "Describe a geo chart automatically",
+    body: `Set \`description\` to \`auto\` (HTML: \`data-ok-description="auto"\`) and a geo chart writes the plot's description: the layout, the number of regions, the value range with its lowest and highest regions, the three highest values, the classes of the legend and the regions without data. Screen readers read it with the chart, values formatted as in the tooltip. Any other text is used as written, on every chart type. Translate the generated text with \`descriptionStrings\` (HTML: \`setDescriptionStrings()\` on the chart's instance): each text is a template with placeholders, such as \`summary: "{type} of {count} regions."\`.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="hex" data-ok-description="auto" data-ok-height="240">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row" data-ok-cell="0,0">Washington</th><td data-ok-value="7.71">7.71</td></tr>
+      <tr><th scope="row" data-ok-cell="1,0">Idaho</th><td data-ok-value="1.84">1.84</td></tr>
+      <tr><th scope="row" data-ok-cell="0,1">Oregon</th><td></td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function DescribedHexMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      geoLayout="hex"
+      description="auto"
+      height={240}
+      regions={[
+        { id: "Washington", name: "Washington", value: 7.71 },
+        { id: "Idaho", name: "Idaho", value: 1.84 },
+        { id: "Oregon", name: "Oregon", value: null },
+      ]}
+      hexCells={[
+        { id: "Washington", col: 0, row: 0 },
+        { id: "Idaho", col: 1, row: 0 },
+        { id: "Oregon", col: 0, row: 1 },
+      ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "geo-annotations",
+    title: "Annotate places on a geo chart",
+    body: `Geo charts take the chart's \`annotations\` too. A \`point\` draws a marker with an optional label, and a \`text\` draws its label alone. Place one at a longitude and latitude with \`x\` and \`y\` (geographic and pixel layouts), or on a region with \`region\`, its id: the annotation sits at the region's label anchor, and a point also outlines the region. Region annotations work on hex tiles as well. In HTML, write each one as a list item of \`ul[data-ok-chart-annotations]\` with \`data-ok-region\`, or \`data-ok-x\` and \`data-ok-y\`.
+
+Annotations always win over the regions' data labels: a label that an annotation's marker or tag covers is not drawn, and the annotation never moves. Annotations are listed after the data table for assistive technology, like on every chart.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-join-by="name" data-ok-geometry="shapes" data-ok-height="300">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Nevada</th><td data-ok-value="3.1">3.1</td></tr>
+      <tr><th scope="row">Utah</th><td data-ok-value="3.27">3.27</td></tr>
+    </tbody>
+  </table>
+  <ul data-ok-chart-annotations>
+    <li data-ok-annotation="point" data-ok-region="Utah" data-ok-color="error">Beehive State</li>
+    <li data-ok-annotation="point" data-ok-x="-115.14" data-ok-y="36.17">Las Vegas</li>
+  </ul>
+</figure>
+<script type="application/json" id="shapes">
+  {"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"name":"Nevada"},"geometry":{"type":"Polygon","coordinates":[[[-120,35],[-114,35],[-114,42],[-120,42],[-120,35]]]}},
+    {"type":"Feature","properties":{"name":"Utah"},"geometry":{"type":"Polygon","coordinates":[[[-114,37],[-109,37],[-109,42],[-114,42],[-114,37]]]}}
+  ]}
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+
+const shapes = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+
+export function AnnotatedMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      geometry={shapes}
+      joinBy="name"
+      height={300}
+      regions={[
+        { id: "Nevada", name: "Nevada", value: 3.1 },
+        { id: "Utah", name: "Utah", value: 3.27 },
+      ]}
+      annotations={[
+        { axis: "point", region: "Utah", label: "Beehive State", color: "error" },
+        { axis: "point", x: -115.14, y: 36.17, label: "Las Vegas" },
+      ]}
+    />
+  );
+}`,
+  },
+  {
     id: "icicle",
     title: "Show parts of a hierarchy as bands",
     body: `An icicle chart shows the same hierarchy as a sunburst, in bands: one band per level, and each node a cell as long as its share of its parent. Long names and deep trees read better in bands than in rings, and cells of one level are easy to compare by length. Set \`type\` to \`icicle\` and describe the nodes as for a tree chart. See "Show a hierarchy as a tree".

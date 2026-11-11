@@ -1,0 +1,35 @@
+<div id="map-hexbin" data-ok-map data-ok-longitude="-100" data-ok-latitude="40" data-ok-zoom="3" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-label="Map of earthquakes counted in hexagons">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <p data-ok-map-description id="map-hexbin-description">Earthquakes in the contiguous United States in October 2025, counted in hexagons of 0.75 degrees. The hexagons with the most earthquakes are in western Texas, California and Nevada.</p>
+  <div data-ok-map-status role="status"></div>
+  <div data-ok-map-source data-ok-id="quake-bins" data-ok-type="geojson" data-ok-data='{"type":"FeatureCollection","features":[]}' hidden>
+    <div data-ok-map-layer data-ok-id="quake-bins-fill" data-ok-type="fill" data-ok-paint='{"fill-color":["case",["==",["typeof",["get","value"]],"number"],["step",["get","value"],"var(--ok-palette-info-lighter)",3,"var(--ok-palette-info-light)",6,"var(--ok-palette-info-main)",12,"var(--ok-palette-info-dark)",24,"var(--ok-palette-info-darker)"],"var(--ok-text-disabled)"],"fill-opacity":0.8,"fill-outline-color":"var(--ok-bg-paper)"}' hidden></div>
+  </div>
+  <div data-ok-map-corner="top-left"></div>
+  <div data-ok-map-corner="top-right">
+    <div data-ok-map-control data-ok-map-navigation>
+      <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="compass" aria-label="Reset north"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-compass-icon><path d="M12 3 16 12H8Z" data-ok-map-compass-north></path><path d="M8 12h8l-4 9Z" data-ok-map-compass-south></path></svg></button>
+    </div>
+  </div>
+  <div data-ok-map-corner="bottom-left">
+    <div id="map-hexbin-legend" role="group" aria-labelledby="map-hexbin-legend-title" data-ok-map-legend data-ok-variant="classes" data-ok-interactive="false">
+      <p data-ok-map-legend-title id="map-hexbin-legend-title">Earthquakes per hexagon</p>
+      <ul data-ok-map-legend-classes>
+        <li><span data-ok-map-legend-class data-ok-min="0" data-ok-max="3"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-info-lighter)" aria-hidden="true"></span><span data-ok-map-legend-label>1 or 2</span></span></li>
+        <li><span data-ok-map-legend-class data-ok-min="3" data-ok-max="6"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-info-light)" aria-hidden="true"></span><span data-ok-map-legend-label>3 to 5</span></span></li>
+        <li><span data-ok-map-legend-class data-ok-min="6" data-ok-max="12"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-info-main)" aria-hidden="true"></span><span data-ok-map-legend-label>6 to 11</span></span></li>
+        <li><span data-ok-map-legend-class data-ok-min="12" data-ok-max="24"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-info-dark)" aria-hidden="true"></span><span data-ok-map-legend-label>12 to 23</span></span></li>
+        <li><span data-ok-map-legend-class data-ok-min="24" data-ok-max="24"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-info-darker)" aria-hidden="true"></span><span data-ok-map-legend-label>24 or more</span></span></li>
+      </ul>
+    </div>
+  </div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>
+      <summary aria-label="Map credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01"></path></svg></summary>
+      <div data-ok-map-attribution-text></div>
+    </details>
+  </div>
+</div>

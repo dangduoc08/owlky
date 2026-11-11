@@ -880,8 +880,49 @@
     width: calc(var(--ok-spacing) * 3);
     height: calc(var(--ok-spacing) * 3);
     border-radius: var(--ok-radius-xs);
-    background: var(--_ok-map-swatch, transparent);
+    background-color: var(--_ok-map-swatch, transparent);
     box-shadow: inset 0 0 0 1px var(--ok-divider);
+  }
+
+  /* Pattern fills (4.18.97): the class's texture over its color, in a translucent black ink. */
+  :where([data-ok-map-legend-swatch][data-ok-pattern="slantedLines"]) {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgb(var(--ok-palette-common-black-channel) / 0.5) 0 1.5px,
+      transparent 1.5px 4px
+    );
+  }
+
+  :where([data-ok-map-legend-swatch][data-ok-pattern="verticalLines"]) {
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgb(var(--ok-palette-common-black-channel) / 0.5) 0 1.5px,
+      transparent 1.5px 4px
+    );
+  }
+
+  :where([data-ok-map-legend-swatch][data-ok-pattern="horizontalLines"]) {
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgb(var(--ok-palette-common-black-channel) / 0.5) 0 1.5px,
+      transparent 1.5px 4px
+    );
+  }
+
+  :where([data-ok-map-legend-swatch][data-ok-pattern="squares"]) {
+    background-image: repeating-conic-gradient(
+      rgb(var(--ok-palette-common-black-channel) / 0.5) 0 25%,
+      transparent 0 50%
+    );
+    background-size: 4px 4px;
+  }
+
+  :where([data-ok-map-legend-swatch][data-ok-pattern="circles"]) {
+    background-image: radial-gradient(
+      rgb(var(--ok-palette-common-black-channel) / 0.5) 35%,
+      transparent 45%
+    );
+    background-size: 4px 4px;
   }
 
   :where([data-ok-map-legend-gradient]) {
@@ -908,6 +949,53 @@
     justify-content: space-between;
     gap: calc(var(--ok-spacing) * 2);
     color: var(--ok-text-secondary);
+  }
+
+  /* Size legend (proportional symbols, 4.18.94): nested circles sharing their bottom, each value
+     at its circle's top. Radii come from the runtime (`--_ok-map-radius`, `--_ok-map-size-max`). */
+  :where([data-ok-map-legend-sizes]) {
+    position: relative;
+    box-sizing: content-box;
+    width: calc(var(--_ok-map-size-max, 0px) * 2 + var(--ok-spacing) * 20);
+    height: calc(var(--_ok-map-size-max, 0px) * 2);
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 2) 0 0;
+    list-style: none;
+  }
+
+  :where([data-ok-map-legend-sizes] > li) {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(
+      var(--ok-spacing) *
+      2 +
+      var(--_ok-map-size-max, 0px) *
+      2 -
+      var(--_ok-map-radius, 0px) *
+      2
+    );
+    height: 0;
+  }
+
+  :where([data-ok-map-legend-circle]) {
+    position: absolute;
+    top: 0;
+    inset-inline-start: calc(var(--_ok-map-size-max, 0px) - var(--_ok-map-radius, 0px));
+    box-sizing: border-box;
+    width: calc(var(--_ok-map-radius, 0px) * 2);
+    height: calc(var(--_ok-map-radius, 0px) * 2);
+    border: 1px solid var(--ok-text-secondary);
+    border-radius: var(--ok-radius-full);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+  }
+
+  :where([data-ok-map-legend-sizes] [data-ok-map-legend-label]) {
+    position: absolute;
+    top: 0;
+    inset-inline-start: calc(var(--_ok-map-size-max, 0px) * 2 + var(--ok-spacing) * 2);
+    color: var(--ok-text-secondary);
+    white-space: nowrap;
+    transform: translateY(-50%);
   }
 
   /* --- Choropleth: regions (keyboard list and data table) -------------------------------------- */
@@ -1027,6 +1115,28 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+
+  /* --- Region selection (ADR-0065) ------------------------------------------------------------ */
+
+  /* The Shift + drag box: placed by the runtime (`--_ok-map-box-*`), never in the way of the pointer. */
+  :where([data-ok-map-selection-box]) {
+    position: absolute;
+    top: var(--_ok-map-box-y, 0);
+    left: var(--_ok-map-box-x, 0);
+    z-index: 3;
+    box-sizing: border-box;
+    width: var(--_ok-map-box-width, 0);
+    height: var(--_ok-map-box-height, 0);
+    border: 2px dashed var(--ok-text-primary);
+    border-radius: var(--ok-radius-xs);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+    pointer-events: none;
+  }
+
+  /* Regions a linked map filters out: dimmed in the readout too. */
+  :where([data-ok-map-region][data-ok-muted]) {
+    color: var(--ok-text-secondary);
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -54,7 +54,8 @@ export type ChartNodeTag =
   | "defs"
   | "linearGradient"
   | "stop"
-  | "pattern";
+  | "pattern"
+  | "image";
 
 export interface ChartNode {
   readonly tag: ChartNodeTag;

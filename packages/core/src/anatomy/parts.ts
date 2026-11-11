@@ -271,6 +271,20 @@ export interface ChartParts {
   "data-ok-cell": Part<"th">;
   /** Geo charts: the short text of a region's hex tile (on the table's row header). */
   "data-ok-label": Part<"th">;
+  /** Geo charts: a decorative picture that fills the region (on the table's row header): an http(s), relative or `data:image/…` URL. */
+  "data-ok-image": Part<"th">;
+  /** Geo charts: on an annotation list item, the id of the region it marks (instead of `data-ok-x` / `data-ok-y`, longitude and latitude). */
+  "data-ok-region": Value<string>;
+  /** Geo charts: the outline of the region a point annotation marks. */
+  "data-ok-chart-annotation-outline": Part<"path">;
+  /** A text that describes the chart (the plot's description); `auto` on geo charts writes it from the data. */
+  "data-ok-description": Part<"figure">;
+  /** Set by the runtime: the plot's description, visually hidden (from `data-ok-description`). */
+  "data-ok-chart-description": Part<"p">;
+  /** Geo charts: the definition of a region's picture fill (a `pattern` in the SVG's `defs`). */
+  "data-ok-chart-image": Part<"pattern">;
+  /** Geo charts, `pixel` layout: on the regions' series group. */
+  "data-ok-layout": Value<"pixel">;
   /** One cell of an icicle chart. */
   "data-ok-chart-icicle-cell": Part<"rect">;
   /** Sunburst and icicle charts: the controls before the plot, a **Back** button and the drilled path (a status). */
@@ -591,7 +605,7 @@ export interface ChartParts {
   "data-ok-dash-array": Value<string>;
   /** On a marker, a legend marker or a tooltip marker: the series' marker shape. */
   "data-ok-shape": Value<"square" | "triangle" | "diamond" | "cross" | "plus" | "star">;
-  /** On a legend or tooltip marker: the series' pattern. */
+  /** On a legend or tooltip marker: the series' pattern. Geo charts: on a region, its class's pattern. */
   "data-ok-pattern": Value<
     "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
   >;
@@ -1772,6 +1786,24 @@ export interface MapParts {
   "data-ok-null": State;
   /** On a legend swatch or gradient stop: its color, a CSS color or `var(--ok-…)` token. */
   "data-ok-swatch": Value<string>;
+  /** A size legend: its nested circles, largest first; `data-ok-radius` is the largest radius. */
+  "data-ok-map-legend-sizes": Part<"ul">;
+  /** One circle of a size legend, drawn at its radius. */
+  "data-ok-map-legend-circle": Part<"span">;
+  /** On a size legend circle: its radius in px (on the list: the largest one). */
+  "data-ok-radius": Value<string>;
+  /** On a legend swatch: the pattern of the class, drawn over its color (`mapPatternLayer`). */
+  "data-ok-pattern": Value<
+    "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
+  >;
+  /** Set by the runtime while a Shift + drag box selects regions: the box (hidden from assistive technology). */
+  "data-ok-map-selection-box": Part<"div">;
+  /** On regions: links them to the regions of other maps with the same group (a selection filters the others). */
+  "data-ok-group": Value<string>;
+  /** Set by the runtime on a region option that a linked map's filter leaves out. */
+  "data-ok-muted": State;
+  /** On the map's description: the map writes it from its regions and legend (type, count, range, extremes, classes, no data). */
+  "data-ok-auto": State;
   /** On a cell of the regions table: the region's value, a number. */
   "data-ok-value": Value<string>;
 }

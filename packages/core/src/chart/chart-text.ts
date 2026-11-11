@@ -23,6 +23,8 @@ import { chartXGroupsText } from "./chart-xaxis.js";
  */
 
 export interface ChartTextOptions {
+  /** A description of the chart (4.18.99); `auto` on geo charts. */
+  readonly description?: string | undefined;
   readonly yTitle?: string | undefined;
   readonly totalLabel?: string | undefined;
   readonly valuePrefix?: string | undefined;
@@ -105,6 +107,7 @@ export const CHART_TEXT_ATTRIBUTES = {
   drilldownPath: "data-ok-drilldown-path",
   externalLabel: "data-ok-external-label",
   externalLabelLevels: "data-ok-external-label-levels",
+  description: "data-ok-description",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);

@@ -983,8 +983,13 @@
     overflow-wrap: anywhere;
   }
 
-  /* Phase 4 (ADR-0031). Annotations are listed for assistive technologies, drawn in the SVG. */
-  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-annotations], [data-ok-chart-status]) {
+  /* Phase 4 (ADR-0031). Annotations are listed for assistive technologies, drawn in the SVG; the
+     plot's description (4.18.99) is read with the plot. */
+  :where(
+    [data-ok-chart][data-ok-ready] > [data-ok-chart-annotations],
+    [data-ok-chart-status],
+    [data-ok-chart-description]
+  ) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -1241,14 +1246,23 @@
   /* Geo charts (ADR-0059): regions in the class color, separated by the paper; the muted classes' opacity is an
      attribute (CSS never sets fill-opacity here). Regions without a value use the page's neutral. */
   :where([data-ok-chart-region]) {
-    fill: var(--_ok-chart-c);
     stroke: var(--ok-bg-paper);
     stroke-width: 0.75;
     stroke-linejoin: round;
   }
 
-  :where([data-ok-chart-region][data-ok-no-data]) {
+  /* Regions with a pattern or a picture (4.18.97) carry their own fill. */
+  :where([data-ok-chart-region]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-region][data-ok-no-data]:not([fill])) {
     fill: var(--ok-bg-neutral);
+  }
+
+  /* Pixel maps (4.18.96): the lattice cells stand apart without a paper outline. */
+  :where([data-ok-chart-series][data-ok-layout="pixel"] > [data-ok-chart-region]) {
+    stroke: none;
   }
 
   :where([data-ok-chart-sphere]) {
@@ -1391,6 +1405,15 @@
   :where([data-ok-chart-annotation-marker]) {
     stroke: var(--ok-bg-paper);
     stroke-width: 2px;
+  }
+
+  /* Geo charts (4.18.100): a point annotation on a region outlines the region. */
+  :where([data-ok-chart-annotation-outline]) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2px;
+    stroke-linejoin: round;
+    pointer-events: none;
   }
 
   /* Trellis (ADR-0060): small multiples in a grid; a promoted panel spans it. */

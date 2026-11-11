@@ -74,6 +74,9 @@ const STORIES = [
   "geo",
   "geo-projections",
   "geo-hex",
+  "geo-pixel",
+  "geo-patterns",
+  "geo-annotations",
   "unit",
   "waffle",
   "beeswarm",
@@ -802,6 +805,36 @@ for (const impl of implementations) {
       const first = page.locator("[data-ok-chart]").first();
       await expect(first.locator("[data-ok-chart-region]")).toHaveCount(51);
       await expect(first.locator("[data-ok-chart-partition-label]").first()).toBeAttached();
+    });
+
+    test("annotates places and drops the labels under them", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "geo-annotations"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("g[data-ok-chart-annotation]")).toHaveCount(3);
+      await expect(first.locator("[data-ok-chart-annotation-outline]")).toHaveCount(1);
+      await expect(first.locator("[data-ok-chart-annotation-label]").first()).toHaveText(
+        "Most populous",
+      );
+      await expect(first.locator("[data-ok-chart-annotations] li").first()).toHaveAttribute(
+        "data-ok-region",
+        "California",
+      );
+      // California's own label gives way to its annotation.
+      await expect(
+        first.locator("[data-ok-chart-partition-label]", { hasText: /^CA$/ }),
+      ).toHaveCount(0);
+      await expect(first.locator("[data-ok-chart-partition-label]").first()).toBeAttached();
+    });
+
+    test("draws a pixel map whose cells name their state", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "geo-pixel"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator('[data-ok-chart-series][data-ok-layout="pixel"]')).toBeAttached();
+      const texas = first.locator('[data-ok-chart-region="Texas"]');
+      // Many cells in one path: a subpath per dot.
+      expect(((await texas.getAttribute("d")) ?? "").split("M").length).toBeGreaterThan(10);
+      await texas.hover();
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("Texas");
     });
   });
 }

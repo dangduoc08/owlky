@@ -112,6 +112,61 @@ describe("chart runtime (geo)", () => {
     expect(title(host)).toBe("East");
   });
 
+  it("draws pixel maps, patterns and pictures from attributes (4.18.96, 4.18.97)", async () => {
+    const PIXEL =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+    const host = mount(
+      `${json("shapes", GEOMETRY)}${figure(
+        'data-ok-geometry="shapes" data-ok-geo-layout="pixel" data-ok-pixel-shape="hexagon" data-ok-fill="pattern"',
+      ).replace("<th>West</th>", `<th data-ok-image="${PIXEL}">West</th>`)}`,
+    );
+    start();
+    expect(host.querySelector('[data-ok-chart-series][data-ok-layout="pixel"]')).not.toBeNull();
+    const [west, east] = regions(host);
+    expect(west?.getAttribute("fill")).toMatch(/-image-0\)$/);
+    expect(east?.getAttribute("data-ok-pattern")).toBe("verticalLines");
+    expect(host.querySelector("image")?.getAttribute("href")).toBe(PIXEL);
+    expect(host.querySelector("pattern[data-ok-chart-pattern]")).not.toBeNull();
+    root(host).setAttribute("data-ok-image-fit", "fill");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(host.querySelector("image")?.getAttribute("preserveAspectRatio")).toBe("none");
+    await expectNoAxeViolations(host);
+  });
+
+  it("describes the plot from data-ok-description (4.18.99)", async () => {
+    const host = mount(
+      `${json("shapes", GEOMETRY)}${figure('data-ok-geometry="shapes" data-ok-description="auto"')}`,
+    );
+    start();
+    const id = plot(host).getAttribute("aria-describedby") as string;
+    const text = host.querySelector(`#${id}`);
+    expect(text?.textContent).toMatch(/^Choropleth map of 2 regions\./);
+    instance(host).setDescriptionStrings({ summary: "{count} zonas." });
+    expect(text?.textContent).toMatch(/^2 zonas\./);
+    root(host).setAttribute("data-ok-description", "Two squares.");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(host.querySelector(`#${id}`)?.textContent).toBe("Two squares.");
+    root(host).removeAttribute("data-ok-description");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(plot(host).hasAttribute("aria-describedby")).toBe(false);
+    await expectNoAxeViolations(host);
+  });
+
+  it("reads region annotations from the list (4.18.100)", () => {
+    const host = mount(
+      `${json("shapes", GEOMETRY)}${figure('data-ok-geometry="shapes"').replace(
+        "</table>",
+        '</table><ul data-ok-chart-annotations><li data-ok-annotation="point" data-ok-region="East" data-ok-color="error">Here</li><li data-ok-annotation="point" data-ok-x="-50" data-ok-y="10">There</li></ul>',
+      )}`,
+    );
+    start();
+    const groups = host.querySelectorAll("g[data-ok-chart-annotation]");
+    expect(groups).toHaveLength(2);
+    expect(groups[0]?.getAttribute("data-ok-color")).toBe("error");
+    expect(groups[0]?.querySelector("[data-ok-chart-annotation-outline]")).not.toBeNull();
+    expect(groups[1]?.querySelector("[data-ok-chart-annotation-label]")?.textContent).toBe("There");
+  });
+
   it("draws hex tiles from the table's cells, no geometry needed", () => {
     const host =
       mount(`<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="hex"><table data-ok-chart-data>

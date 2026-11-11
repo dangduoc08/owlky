@@ -39,9 +39,13 @@ import {
 import { type ChartBeeswarmSpread, chartBeeswarmSpreads } from "../chart/chart-beeswarm.js";
 import {
   type ChartGeoLayout,
+  type ChartImageFit,
+  type ChartPixelShape,
   type ChartProjection,
   type ChartScaleMethod,
   chartGeoLayouts,
+  chartImageFits,
+  chartPixelShapes,
   chartProjections,
   chartScaleMethods,
 } from "../chart/chart-geo.js";
@@ -5784,6 +5788,32 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-graticule",
     "Geo charts: lines of longitude and latitude every 30 degrees.",
   ),
+  imageFit: style(
+    "data-ok-image-fit",
+    chartImageFits,
+    "cover",
+    "Geo charts: how a region's picture (`data-ok-image` on its row header) fills the region's box: `cover` (the default, cropped), `contain` (the whole picture on the class color) or `fill` (stretched).",
+    { optional: true },
+  ),
+  pixelShape: style(
+    "data-ok-pixel-shape",
+    chartPixelShapes,
+    "circle",
+    "Geo charts, `pixel` layout: the shape of each cell, `circle` (the default), `square` or `hexagon` (hexagons sit in rows half a step apart).",
+    { optional: true },
+  ),
+  pixelSpacing: number(
+    "data-ok-pixel-spacing",
+    8,
+    "Geo charts, `pixel` layout: the distance between the cells' centers in px (3 to 64).",
+    { min: 3 },
+  ),
+  pixelSize: number(
+    "data-ok-pixel-size",
+    80,
+    "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100).",
+    { min: 10 },
+  ),
   crossfilter: style(
     "data-ok-crossfilter",
     chartCrossfilters,
@@ -5887,6 +5917,10 @@ export interface ChartAnatomyOptions {
   scaleClasses?: number | undefined;
   sphere?: boolean | undefined;
   graticule?: boolean | undefined;
+  pixelShape?: ChartPixelShape | undefined;
+  imageFit?: ChartImageFit | undefined;
+  pixelSpacing?: number | undefined;
+  pixelSize?: number | undefined;
   streamOffset?: ChartStreamOffset | undefined;
   streamOrder?: ChartStreamOrder | undefined;
   hideStreamLabels?: boolean | undefined;
@@ -6595,7 +6629,7 @@ export const mapAttributionOptions = defineOptions("map-attribution", "data-ok-m
   ),
 });
 
-export const mapLegendVariants = ["classes", "gradient"] as const;
+export const mapLegendVariants = ["classes", "gradient", "size"] as const;
 export type MapLegendVariant = (typeof mapLegendVariants)[number];
 
 export const mapLegendOptions = defineOptions("map-legend", "data-ok-map-legend", {
@@ -6603,7 +6637,7 @@ export const mapLegendOptions = defineOptions("map-legend", "data-ok-map-legend"
     "data-ok-variant",
     mapLegendVariants,
     "classes",
-    "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest.",
+    "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest; `size`: nested circles of a size scale (proportional symbols).",
   ),
   interactive: behavior(
     "data-ok-interactive",
@@ -6624,6 +6658,38 @@ export const mapLegendAttributes = (options: MapLegendAnatomyOptions = {}): Data
     attributes[mapLegendOptions.options.interactive.attr] = "false";
   return attributes;
 };
+
+export const mapRegionsLinkFilters = ["bidirectional", "emit", "receive"] as const;
+export type MapRegionsLinkFilter = (typeof mapRegionsLinkFilters)[number];
+
+/** Map regions (ADR-0065): multiple and box selection, linked maps. */
+export const mapRegionsOptions = defineOptions("map-regions", "data-ok-map-regions", {
+  multiple: flag(
+    "data-ok-multiple",
+    "Several regions can be selected: a click, Enter or Space toggles one, Shift + arrows add the next one, Ctrl + A selects all and Escape clears.",
+  ),
+  boxSelect: flag(
+    "data-ok-box-select",
+    "Shift + drag on the map selects the regions whose label anchor is in the box (Alt adds to the selection, Escape cancels). Implies `multiple` and turns off the map's Shift + drag zoom.",
+  ),
+  linkFilter: style(
+    "data-ok-link-filter",
+    mapRegionsLinkFilters,
+    "bidirectional",
+    "Regions of a `group`: `bidirectional` (the default: the selection filters the other maps of the group, and their selections filter this one), `emit` (filters the others only) or `receive` (shows the others' filters only).",
+    { optional: true },
+  ),
+});
+
+export type MapRegionsAnatomyOptions = {
+  multiple?: boolean | undefined;
+  boxSelect?: boolean | undefined;
+  linkFilter?: MapRegionsLinkFilter | undefined;
+};
+
+/** `data-ok-*` attributes of a map regions part. */
+export const mapRegionsAttributes = (options: MapRegionsAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(mapRegionsOptions, { ...options });
 
 export type MapControlAnatomyOptions = {
   visualizePitch?: boolean | undefined;
@@ -7691,6 +7757,7 @@ export const optionSchemas = {
   "map-scale": mapScaleOptions,
   "map-attribution": mapAttributionOptions,
   "map-legend": mapLegendOptions,
+  "map-regions": mapRegionsOptions,
   lightbox: lightboxOptions,
   upload: uploadOptions,
   illustration: illustrationOptions,

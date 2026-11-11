@@ -1,0 +1,73 @@
+<div id="map-bubbles" data-ok-map data-ok-longitude="-97" data-ok-latitude="38" data-ok-zoom="3" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-label="Map of the largest US metropolitan areas">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <p data-ok-map-description id="map-bubbles-description">The 20 largest US metropolitan areas in the 2020 census as circles sized by population and colored by growth since 2010. New York and Los Angeles are the largest; Dallas and Houston grew the most.</p>
+  <div data-ok-map-status role="status"></div>
+  <div data-ok-map-source data-ok-id="metros" data-ok-type="geojson" data-ok-data='{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"New York","population":20.14,"growth":6.6},"geometry":{"type":"Point","coordinates":[-74.01,40.71]}},{"type":"Feature","properties":{"name":"Los Angeles","population":13.2,"growth":2.9},"geometry":{"type":"Point","coordinates":[-118.24,34.05]}},{"type":"Feature","properties":{"name":"Chicago","population":9.62,"growth":1.7},"geometry":{"type":"Point","coordinates":[-87.63,41.88]}},{"type":"Feature","properties":{"name":"Dallas","population":7.64,"growth":19.9},"geometry":{"type":"Point","coordinates":[-96.8,32.78]}},{"type":"Feature","properties":{"name":"Houston","population":7.12,"growth":20.3},"geometry":{"type":"Point","coordinates":[-95.37,29.76]}},{"type":"Feature","properties":{"name":"Washington","population":6.39,"growth":13.3},"geometry":{"type":"Point","coordinates":[-77.04,38.91]}},{"type":"Feature","properties":{"name":"Philadelphia","population":6.25,"growth":4.7},"geometry":{"type":"Point","coordinates":[-75.17,39.95]}},{"type":"Feature","properties":{"name":"Miami","population":6.14,"growth":10.4},"geometry":{"type":"Point","coordinates":[-80.19,25.76]}},{"type":"Feature","properties":{"name":"Atlanta","population":6.09,"growth":15.1},"geometry":{"type":"Point","coordinates":[-84.39,33.75]}},{"type":"Feature","properties":{"name":"Boston","population":4.94,"growth":8.6},"geometry":{"type":"Point","coordinates":[-71.06,42.36]}},{"type":"Feature","properties":{"name":"Phoenix","population":4.85,"growth":15.8},"geometry":{"type":"Point","coordinates":[-112.07,33.45]}},{"type":"Feature","properties":{"name":"San Francisco","population":4.75,"growth":9.8},"geometry":{"type":"Point","coordinates":[-122.42,37.77]}},{"type":"Feature","properties":{"name":"Riverside","population":4.6,"growth":7.8},"geometry":{"type":"Point","coordinates":[-117.4,33.95]}},{"type":"Feature","properties":{"name":"Detroit","population":4.39,"growth":1.3},"geometry":{"type":"Point","coordinates":[-83.05,42.33]}},{"type":"Feature","properties":{"name":"Seattle","population":4.02,"growth":17.2},"geometry":{"type":"Point","coordinates":[-122.33,47.61]}},{"type":"Feature","properties":{"name":"Minneapolis","population":3.69,"growth":10.6},"geometry":{"type":"Point","coordinates":[-93.27,44.98]}},{"type":"Feature","properties":{"name":"San Diego","population":3.3,"growth":6.6},"geometry":{"type":"Point","coordinates":[-117.16,32.72]}},{"type":"Feature","properties":{"name":"Tampa","population":3.18,"growth":13.8},"geometry":{"type":"Point","coordinates":[-82.46,27.95]}},{"type":"Feature","properties":{"name":"Denver","population":2.96,"growth":17.3},"geometry":{"type":"Point","coordinates":[-104.99,39.74]}},{"type":"Feature","properties":{"name":"Baltimore","population":2.84,"growth":4.3},"geometry":{"type":"Point","coordinates":[-76.61,39.29]}}]}' data-ok-promote-id="name" hidden>
+    <div data-ok-map-layer data-ok-id="metros-bubbles" data-ok-type="circle" data-ok-layout='{"circle-sort-key":["-",0,["to-number",["get","population"],0]]}' data-ok-paint='{"circle-radius":["case",["==",["typeof",["get","population"]],"number"],["interpolate",["linear"],["sqrt",["max",0,["get","population"]]],1.68523,4,4.487761,34],0],"circle-color":["case",["==",["typeof",["get","growth"]],"number"],["step",["get","growth"],"var(--ok-palette-warning-lighter)",5,"var(--ok-palette-warning-main)",12,"var(--ok-palette-warning-darker)"],"var(--ok-text-disabled)"],"circle-opacity":0.62,"circle-stroke-color":["case",["any",["boolean",["feature-state","selected"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],"var(--ok-text-primary)","var(--ok-bg-paper)"],"circle-stroke-width":["case",["any",["boolean",["feature-state","selected"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],2,1]}' hidden></div>
+  </div>
+  <div id="map-bubbles-regions" data-ok-map-regions data-ok-source="metros" data-ok-layer="metros-bubbles">
+    <div data-ok-map-regions-list role="listbox" tabindex="0" aria-label="Metropolitan areas"></div>
+    <table>
+      <caption>Population of the largest metropolitan areas, 2020 census</caption>
+      <thead>
+        <tr><th scope="col">Metropolitan area</th><th scope="col">Population</th></tr>
+      </thead>
+      <tbody>
+        <tr data-ok-id="New York"><th scope="row">New York</th><td data-ok-value="20.14">20.14 million</td></tr>
+        <tr data-ok-id="Los Angeles"><th scope="row">Los Angeles</th><td data-ok-value="13.2">13.20 million</td></tr>
+        <tr data-ok-id="Chicago"><th scope="row">Chicago</th><td data-ok-value="9.62">9.62 million</td></tr>
+        <tr data-ok-id="Dallas"><th scope="row">Dallas</th><td data-ok-value="7.64">7.64 million</td></tr>
+        <tr data-ok-id="Houston"><th scope="row">Houston</th><td data-ok-value="7.12">7.12 million</td></tr>
+        <tr data-ok-id="Washington"><th scope="row">Washington</th><td data-ok-value="6.39">6.39 million</td></tr>
+        <tr data-ok-id="Philadelphia"><th scope="row">Philadelphia</th><td data-ok-value="6.25">6.25 million</td></tr>
+        <tr data-ok-id="Miami"><th scope="row">Miami</th><td data-ok-value="6.14">6.14 million</td></tr>
+        <tr data-ok-id="Atlanta"><th scope="row">Atlanta</th><td data-ok-value="6.09">6.09 million</td></tr>
+        <tr data-ok-id="Boston"><th scope="row">Boston</th><td data-ok-value="4.94">4.94 million</td></tr>
+        <tr data-ok-id="Phoenix"><th scope="row">Phoenix</th><td data-ok-value="4.85">4.85 million</td></tr>
+        <tr data-ok-id="San Francisco"><th scope="row">San Francisco</th><td data-ok-value="4.75">4.75 million</td></tr>
+        <tr data-ok-id="Riverside"><th scope="row">Riverside</th><td data-ok-value="4.6">4.60 million</td></tr>
+        <tr data-ok-id="Detroit"><th scope="row">Detroit</th><td data-ok-value="4.39">4.39 million</td></tr>
+        <tr data-ok-id="Seattle"><th scope="row">Seattle</th><td data-ok-value="4.02">4.02 million</td></tr>
+        <tr data-ok-id="Minneapolis"><th scope="row">Minneapolis</th><td data-ok-value="3.69">3.69 million</td></tr>
+        <tr data-ok-id="San Diego"><th scope="row">San Diego</th><td data-ok-value="3.3">3.30 million</td></tr>
+        <tr data-ok-id="Tampa"><th scope="row">Tampa</th><td data-ok-value="3.18">3.18 million</td></tr>
+        <tr data-ok-id="Denver"><th scope="row">Denver</th><td data-ok-value="2.96">2.96 million</td></tr>
+        <tr data-ok-id="Baltimore"><th scope="row">Baltimore</th><td data-ok-value="2.84">2.84 million</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div data-ok-map-corner="top-left">
+    <div id="map-bubbles-growth" role="group" aria-labelledby="map-bubbles-growth-title" data-ok-map-legend data-ok-variant="classes" data-ok-interactive="false">
+      <p data-ok-map-legend-title id="map-bubbles-growth-title">Growth since 2010</p>
+      <ul data-ok-map-legend-classes>
+        <li><span data-ok-map-legend-class data-ok-min="1.3" data-ok-max="5"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-warning-lighter)" aria-hidden="true"></span><span data-ok-map-legend-label>Under 5%</span></span></li>
+        <li><span data-ok-map-legend-class data-ok-min="5" data-ok-max="12"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-warning-main)" aria-hidden="true"></span><span data-ok-map-legend-label>5% to 12%</span></span></li>
+        <li><span data-ok-map-legend-class data-ok-min="12" data-ok-max="20.3"><span data-ok-map-legend-swatch data-ok-swatch="var(--ok-palette-warning-darker)" aria-hidden="true"></span><span data-ok-map-legend-label>12% or more</span></span></li>
+      </ul>
+    </div>
+  </div>
+  <div data-ok-map-corner="top-right">
+    <div data-ok-map-control data-ok-map-navigation>
+      <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="compass" aria-label="Reset north"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-compass-icon><path d="M12 3 16 12H8Z" data-ok-map-compass-north></path><path d="M8 12h8l-4 9Z" data-ok-map-compass-south></path></svg></button>
+    </div>
+  </div>
+  <div data-ok-map-corner="bottom-left">
+    <div id="map-bubbles-size" role="group" aria-labelledby="map-bubbles-size-title" data-ok-map-legend data-ok-variant="size">
+      <p data-ok-map-legend-title id="map-bubbles-size-title">Population (millions)</p>
+      <ul data-ok-map-legend-sizes data-ok-radius="33.83">
+        <li><span data-ok-map-legend-circle data-ok-radius="33.83" aria-hidden="true"></span><span data-ok-map-legend-label>20</span></li>
+        <li><span data-ok-map-legend-circle data-ok-radius="19.81" aria-hidden="true"></span><span data-ok-map-legend-label>10</span></li>
+        <li><span data-ok-map-legend-circle data-ok-radius="7.37" aria-hidden="true"></span><span data-ok-map-legend-label>4</span></li>
+      </ul>
+    </div>
+  </div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>
+      <summary aria-label="Map credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01"></path></svg></summary>
+      <div data-ok-map-attribution-text></div>
+    </details>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import { mapRegionLayers, mapScale, setMapWorkerUrl } from "@owlky/core/map";
+import { mapRegionLayers, mapScale, mapSizeScale, setMapWorkerUrl } from "@owlky/core/map";
 import workerUrl from "@owlky/core/map-worker.js?url";
 import { act, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -140,9 +140,9 @@ describe("MapRegions and MapLegend", () => {
     expect(screen.getByRole("button", { name: "5 – 8" }).getAttribute("aria-pressed")).toBe("true");
     act(() => list.focus());
     await userEvent.keyboard("{ArrowDown}{Enter}");
-    expect(onRegionSelect).toHaveBeenCalledWith({ id: "B" });
+    expect(onRegionSelect).toHaveBeenCalledWith({ id: "B", ids: ["B"] });
     await userEvent.keyboard("{Escape}");
-    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: null });
+    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: null, ids: [] });
   });
 
   it("formats, names and labels: custom texts, gradient, static and no-data classes", async () => {
@@ -194,6 +194,80 @@ describe("MapRegions and MapLegend", () => {
     expect(gradient?.querySelectorAll("[data-ok-map-legend-stop]")).toHaveLength(2);
     expect(gradient?.querySelector("[data-ok-map-legend-ticks]")?.textContent).toBe("2%8%");
     expect(gradient?.closest('[data-corner="bottom-left"]')).not.toBeNull();
+  });
+
+  it("renders a size legend of nested circles", async () => {
+    const sizeScale = mapSizeScale([1, 16], { range: [4, 20], legendValues: [16, 4] });
+    const markup = renderToStaticMarkup(
+      <InlineCorners.Provider
+        value={(position, children) => <div data-corner={position}>{children}</div>}
+      >
+        <MapView>
+          <MapLegend
+            variant="size"
+            sizeScale={sizeScale}
+            title="Size"
+            tickFormatter={(v) => `${v} t`}
+          />
+          <MapLegend variant="size" position="top-left" />
+        </MapView>
+      </InlineCorners.Provider>,
+    );
+    const host = document.createElement("div");
+    host.innerHTML = markup;
+    const [legend, empty] = host.querySelectorAll("[data-ok-map-legend]");
+    expect(legend?.getAttribute("data-ok-variant")).toBe("size");
+    const list = legend?.querySelector("[data-ok-map-legend-sizes]");
+    expect(list?.getAttribute("data-ok-radius")).toBe("20");
+    expect(
+      [...(legend?.querySelectorAll("[data-ok-map-legend-circle]") ?? [])].map((c) =>
+        c.getAttribute("data-ok-radius"),
+      ),
+    ).toEqual(["20", "9.33"]);
+    expect(legend?.querySelector("li")?.textContent).toBe("16 t");
+    expect(legend?.querySelector("button")).toBeNull();
+    expect(empty?.querySelectorAll("li")).toHaveLength(0);
+    // Mounted, the map sizes the circles and the legend passes axe.
+    let loaded: () => void = () => {};
+    const done = new Promise<void>((resolve) => {
+      loaded = resolve;
+    });
+    const { container } = render(
+      <MapView mapStyle={STYLE} style={{ width: 600, height: 400 }} onLoad={() => loaded()}>
+        <MapLegend variant="size" sizeScale={sizeScale} title="Size" />
+      </MapView>,
+    );
+    await done;
+    await act(async () => {});
+    const circle = container.querySelector<HTMLElement>("[data-ok-map-legend-circle]");
+    expect(circle?.parentElement?.style.getPropertyValue("--_ok-map-radius")).toBe("20px");
+    await expectNoAxeViolations(container);
+  });
+
+  it("selects several regions, controlled by selection, and links maps (ADR-0065)", async () => {
+    const onRegionSelect = vi.fn();
+    const { root, rerender } = await renderChoropleth({
+      regions: { onRegionSelect, boxSelect: true, group: "react-link", linkFilter: "emit" },
+    });
+    const part = root.querySelector("[data-ok-map-regions]") as HTMLElement;
+    expect(part.hasAttribute("data-ok-box-select")).toBe(true);
+    expect(part.getAttribute("data-ok-group")).toBe("react-link");
+    expect(part.getAttribute("data-ok-link-filter")).toBe("emit");
+    const list = screen.getByRole("listbox", { name: "Regions" });
+    expect(list.getAttribute("aria-multiselectable")).toBe("true");
+    act(() => list.focus());
+    await userEvent.keyboard("{Enter}{Shift>}{ArrowDown}{/Shift}");
+    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: "B", ids: ["A", "B"] });
+    // Controlled: the selection follows the prop.
+    rerender(<Choropleth regions={{ onRegionSelect, multiple: true, selection: ["C"] }} />);
+    await act(async () => {});
+    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: "C", ids: ["C"] });
+    expect(
+      [...root.querySelectorAll('[role="option"][aria-selected="true"]')].map((o) =>
+        o.getAttribute("data-ok-id"),
+      ),
+    ).toEqual(["C"]);
+    await expectNoAxeViolations(root);
   });
 
   it("unregisters parts that unmount", async () => {
