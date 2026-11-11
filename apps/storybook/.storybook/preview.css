@@ -2104,3 +2104,56 @@
 .sb-phone-row > dd {
   margin: 0;
 }
+
+/* Scroll progress stories: layout only (the progress, Scrollbar and Card draw themselves). */
+.sb-scroll-progress {
+  display: grid;
+  gap: calc(var(--ok-spacing) * 4);
+  width: min(100%, 560px);
+}
+
+.sb-scroll-progress-circle {
+  justify-self: end;
+}
+
+.sb-scroll-progress-area,
+.sb-scroll-progress-row {
+  box-sizing: border-box;
+  padding: calc(var(--ok-spacing) * 4);
+  gap: calc(var(--ok-spacing) * 4);
+}
+
+.sb-scroll-progress-area {
+  display: grid;
+  height: 320px;
+}
+
+.sb-scroll-progress-row {
+  display: flex;
+}
+
+.sb-scroll-progress-card {
+  display: grid;
+  place-items: center;
+  height: 120px;
+}
+
+.sb-scroll-progress-row > .sb-scroll-progress-card {
+  flex: 0 0 160px;
+  height: 200px;
+}
+
+.sb-scroll-progress-page {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--ok-z-mobile-stepper);
+}
+
+.sb-scroll-progress-document {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  min-height: 2000px;
+  padding: calc(var(--ok-spacing) * 6);
+}

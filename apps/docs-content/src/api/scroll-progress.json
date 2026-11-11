@@ -1,0 +1,79 @@
+{
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-scroll-progress",
+    "methods": [
+     {
+      "description": "How the progress is drawn: `css` (the stylesheet), `native` (a scroll timeline) or `fallback` (this script, on scroll).",
+      "kind": "property",
+      "name": "mode",
+      "type": "ScrollProgressMode"
+     },
+     {
+      "description": "How far the container (or the target) has been scrolled, from 0 to 1, measured now.",
+      "kind": "property",
+      "name": "progress",
+      "type": "number"
+     },
+     {
+      "description": "Measures and redraws now, for example after content changed size without a scroll.",
+      "kind": "method",
+      "name": "update",
+      "type": "() => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-scroll-axis",
+      "default": "y",
+      "description": "Scroll direction followed: `y` (vertical) or `x` (horizontal).",
+      "kind": "style",
+      "name": "axis",
+      "optional": true,
+      "values": [
+       "y",
+       "x"
+      ]
+     }
+    ],
+    "parts": [
+     {
+      "description": "Set by the script when the browser has no scroll-driven animations (Firefox, Safari before 26) or the offset needs measuring: the script draws the progress on scroll.",
+      "kind": "state",
+      "name": "data-ok-fallback"
+     },
+     {
+      "description": "The `id` of the scroll container whose progress is shown. Without it (or with an unknown id): the page.",
+      "kind": "value",
+      "name": "data-ok-scroll-container",
+      "value": "string"
+     },
+     {
+      "description": "Where the progress starts and ends: two intersections of the target and the container, separated by a comma, such as `start end, end start`.",
+      "kind": "value",
+      "name": "data-ok-scroll-offset",
+      "value": "string"
+     },
+     {
+      "description": "The `id` of an element: the progress follows its way through the container instead of the whole content.",
+      "kind": "value",
+      "name": "data-ok-scroll-target",
+      "value": "string"
+     }
+    ],
+    "runtime": "scroll-progress"
+   },
+   "name": "ScrollProgress"
+  }
+ ],
+ "format": 1,
+ "name": "scroll-progress",
+ "title": "Scroll progress",
+ "types": [
+  {
+   "name": "ScrollProgressMode",
+   "type": "\"css\" | \"fallback\" | \"native\""
+  }
+ ]
+}

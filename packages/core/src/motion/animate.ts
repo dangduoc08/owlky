@@ -77,6 +77,15 @@ export interface AnimateOptions extends SpringOptions {
    * `always`: always jump; `never`: always animate.
    */
   reducedMotion?: "user" | "always" | "never" | undefined;
+  /**
+   * A scroll-driven timeline (`ScrollTimeline` / `ViewTimeline`, 5.2): the animation follows
+   * it back and forth and is never committed. Default: the document's timeline.
+   */
+  timeline?: AnimationTimeline | undefined;
+  /** With a view timeline: where the animation starts, such as `"cover 0%"`. */
+  rangeStart?: string | undefined;
+  /** With a view timeline: where the animation ends, such as `"cover 100%"`. */
+  rangeEnd?: string | undefined;
 }
 
 export interface AnimationControls {
@@ -431,11 +440,13 @@ export function animate(
         ? [target]
         : Array.from(target as Iterable<Element>);
   const animations: Animation[] = [];
-  const loops = options.repeat === Infinity;
-  const skip = reduced(options);
+  // Scroll-driven animations end whenever the scroll does: like loops, never committed.
+  const loops = options.repeat === Infinity || options.timeline !== undefined;
+  // A scroll-driven animation shows a position, not motion of its own: reduced motion keeps it.
+  const skip = options.timeline === undefined && reduced(options);
   const done: Promise<boolean>[] = [];
   for (const element of elements) {
-    if (skip && loops) continue;
+    if (skip && options.repeat === Infinity) continue;
     const own = running.get(element) ?? new Map<string, Animation>();
     running.set(element, own);
     if (Array.isArray(keyframes)) {
@@ -529,6 +540,9 @@ function timing(
   const repeat = Math.max(finite(options.repeat, 0), 0);
   const iterations = options.repeat === Infinity ? Infinity : repeat + 1;
   return {
+    ...(options.timeline ? { timeline: options.timeline } : {}),
+    ...(options.rangeStart ? { rangeStart: options.rangeStart } : {}),
+    ...(options.rangeEnd ? { rangeEnd: options.rangeEnd } : {}),
     duration,
     delay: skip ? 0 : Math.max(finite(options.delay, 0), 0),
     iterations: skip ? 1 : iterations,

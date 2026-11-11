@@ -166,6 +166,7 @@ const GUIDES = [
   ["components-autocomplete--docs", "Accessibility"],
   ["components-date-pickers--docs", "Accessibility"],
   ["components-motion--docs", "Accessibility"],
+  ["components-scroll-progress--docs", "Accessibility"],
   ["components-datagrid--docs", "Accessibility"],
   ["components-editor--docs", "Accessibility"],
   ["components-markdown--docs", "Accessibility"],
@@ -274,6 +275,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
     "components-motion--docs",
     ["motion", "motion-group", "motion-text", "count-up", "countdown", "motion-border"],
   ],
+  ["components-scroll-progress--docs", ["scroll-progress"]],
   ["components-datagrid--docs", ["data-grid"]],
 ];
 

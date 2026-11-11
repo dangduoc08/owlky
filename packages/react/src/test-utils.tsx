@@ -50,6 +50,15 @@ export const CONTRAST_EXEMPT = [
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 /**
+ * Animations a test can wait for: finite, running, on the document's timeline. Spinners loop
+ * forever; paused and scroll-driven ones (scroll progress) end only when something scrolls.
+ */
+export const waitable = (animation: Animation): boolean =>
+  animation.playState === "running" &&
+  animation.timeline === document.timeline &&
+  animation.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY;
+
+/**
  * Ends the exit animations of a closing element (Dialog, Drawer, MotionPresence: ADR-0062) and
  * waits a task inside `act()`, so the owner has closed or unmounted it.
  */
@@ -70,9 +79,7 @@ export async function finishExit(element: Element): Promise<void> {
 export async function settled(element: Element): Promise<void> {
   // Reading a style flushes it, which starts the transitions of the new state.
   getComputedStyle(element).backgroundColor;
-  const running = element
-    .getAnimations({ subtree: true })
-    .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
+  const running = element.getAnimations({ subtree: true }).filter(waitable);
   await Promise.all(running.map((animation) => animation.finished.catch(() => {})));
 }
 
@@ -108,9 +115,7 @@ export async function expectNoAxeViolations(
     // Mid-animation opacity lowers measured contrast, so scan the settled UI, once the pointer
     // left (un-hover transitions start then). Infinite animations (spinners) never finish: only
     // finite ones are awaited.
-    const finite = document
-      .getAnimations()
-      .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
+    const finite = document.getAnimations().filter(waitable);
     await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
     const all = await axe.run(container, {
       runOnly: { type: "tag", values: TAGS },

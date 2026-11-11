@@ -1,3 +1,4 @@
+"use client";
 import {
   type LinearProgressVariant,
   linearProgressAttributes,
@@ -8,7 +9,13 @@ import {
   progressFraction,
   linearProgressOptions as schema,
 } from "@owlky/core";
-import { type ComponentPropsWithoutRef, type CSSProperties, forwardRef } from "react";
+import { type ComponentPropsWithoutRef, type CSSProperties, forwardRef, useRef } from "react";
+import {
+  scrollProgressProps,
+  type UseScrollOptions,
+  useScrollProgress,
+} from "../scroll-progress/scroll-progress.js";
+import { useMergedRefs } from "../utils/refs.js";
 
 export interface LinearProgressProps extends Omit<ComponentPropsWithoutRef<"span">, "color"> {
   /**
@@ -26,6 +33,12 @@ export interface LinearProgressProps extends Omit<ComponentPropsWithoutRef<"span
   min?: number | undefined;
   /** Default `100`. */
   max?: number | undefined;
+  /**
+   * Follows a scroll position instead of `value`: `true` for the page, or the container,
+   * target, axis and offset (Framer Motion's `useScroll` options). The bar is then decorative
+   * (`aria-hidden`) and the variant defaults to `determinate`.
+   */
+  scroll?: boolean | UseScrollOptions | undefined;
 }
 
 const number = (key: "value" | "min" | "max" | "valueBuffer", input: unknown) => {
@@ -39,10 +52,20 @@ const number = (key: "value" | "min" | "max" | "valueBuffer", input: unknown) =>
  * properties on the root.
  */
 export const LinearProgress = forwardRef<HTMLSpanElement, LinearProgressProps>(
-  function LinearProgress({ variant, color, value, valueBuffer, min, max, style, ...props }, ref) {
-    const attributes = linearProgressAttributes({ variant, color });
+  function LinearProgress(
+    { variant, color, value, valueBuffer, min, max, scroll, style, ...props },
+    ref,
+  ) {
+    const own = useRef<HTMLSpanElement>(null);
+    const mergedRef = useMergedRefs(own, ref);
+    useScrollProgress(own, scroll);
+    const attributes = linearProgressAttributes({
+      variant: variant ?? (scroll ? "determinate" : undefined),
+      color,
+    });
     const kind = attributes["data-ok-variant"] as LinearProgressVariant;
-    const known = kind === "determinate" || kind === "buffer";
+    // A scroll progress shows a position through CSS: no value, no ARIA value.
+    const known = !scroll && (kind === "determinate" || kind === "buffer");
     const range = [number("value", value), number("min", min), number("max", max)] as const;
     const bufferValue = kind === "buffer" ? number("valueBuffer", valueBuffer) : undefined;
     const custom = linearProgressStyle({
@@ -51,9 +74,10 @@ export const LinearProgress = forwardRef<HTMLSpanElement, LinearProgressProps>(
     });
     return (
       <span
-        ref={ref}
+        ref={mergedRef}
         role="progressbar"
         {...attributes}
+        {...scrollProgressProps(scroll)}
         data-ok-runtime="off"
         {...(known ? progressAria(...range) : {})}
         {...(bufferValue !== undefined ? { "data-ok-value-buffer": String(bufferValue) } : {})}

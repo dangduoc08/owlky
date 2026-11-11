@@ -78,6 +78,11 @@ bar's own `dir`), so every variant fills from the right.
 ## Events / API
 None. HTML: change the attributes above. React: props; `ref` = the root span.
 
+## Scroll progress
+`scroll` (React) / `data-ok-scroll-progress` and its `data-ok-scroll-*` options (HTML): the bar follows a scroll position instead of a value,
+decorative (`aria-hidden`), determinate by default. See `specs/components/scroll-progress.md`
+(Motion 5.2, ADR-0062).
+
 ## Upstream API mapping
 Audit 2026-11-09 against MUI API page LinearProgress.
 

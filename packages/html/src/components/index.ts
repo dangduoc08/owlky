@@ -50,6 +50,7 @@ import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
 import { radio } from "./radio/radio.js";
 import { rating } from "./rating/rating.js";
+import { scrollProgress } from "./scroll-progress/scroll-progress.js";
 import { select } from "./select/select.js";
 import { slider } from "./slider/slider.js";
 import { sortable } from "./sortable/sortable.js";
@@ -116,6 +117,7 @@ export const components: readonly ComponentDefinition[] = [
   countUp as ComponentDefinition,
   countdown as ComponentDefinition,
   motionBorder as ComponentDefinition,
+  scrollProgress as ComponentDefinition,
   dataGrid as ComponentDefinition,
   dateField as ComponentDefinition,
   dateCalendar as ComponentDefinition,

@@ -7,8 +7,9 @@ variants (`initial` / `animate` / `exit`, `whileInView`, `viewport.once` / `amou
 `staggerChildren`, `whileHover` / `whileTap`) — mapped to CSS animations, no dependency
 (ADR-0015). Created with `/component`; named Motion because `data-ok-animate` is the
 IconButton / Fab hover flag. Full version (roadmap Phase 5, ADR-0062): 5.1 engine (`animate()`,
-springs, interruption, custom keyframes, exits before removal) done; 5.2 scroll, 5.3 gestures,
-5.4 layout to come.
+springs, interruption, custom keyframes, exits before removal) and 5.2 scroll (scroll-linked
+Linear / Circular progress, `useScroll`: `specs/components/scroll-progress.md`) done; 5.3
+gestures, 5.4 layout to come.
 Reference URL: https://minimals.cc/components/extra/animate
 
 ## Purpose
@@ -191,7 +192,7 @@ free text, so not in the option schemas: React writes the margin attribute, a re
 `onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,
 `ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:
 CountUp `component` / viewport options / viewport events (not in the row), layout animations
-(5.4), scroll-linked progress (Scroll progress page, 5.2), gestures (5.3). Done in 5.1: spring
+(5.4), gestures (5.3). Done in 5.2: scroll-linked progress (`scroll-progress.md`). Done in 5.1: spring
 physics, custom keyframes, exit of a Dialog / Drawer, the reference's logo (story "Logo": a pulsing
 logo in two shape-morphing turning rings, a small logo over a turning gradient disc). Not
 applicable: `motion.*` element factories, `useAnimate` (a ref and `animate()`).
@@ -322,7 +323,7 @@ reference's own components (rows in the paragraph above).
 | `whileFocus` | — | deferred (5.3) | |
 | `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |
 | `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |
-| `useScroll` (scroll progress) | — | deferred (5.2) | |
+| `useScroll` (scroll progress) | `useScroll()` (React), the progresses' `scroll` prop · `data-ok-scroll-progress` and its `data-ok-scroll-*` options | kept (5.2) | `specs/components/scroll-progress.md` |
 | `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |
 | `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |
 | `useAnimate`, `animate()` | `animate(element, keyframes, options)` (core, re-exported) | kept (5.1) | ms instead of seconds; controls `finished`, `cancel`, `stop`, `complete`, `pause`, `play`; `useAnimate` not applicable (ref + `animate()`) |

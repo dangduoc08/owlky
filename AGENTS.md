@@ -379,6 +379,18 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   restarts. Entered in-variants use `animation-fill-mode: backwards` and out-variants start with
   `animation: none`: an interpolated `transform` at the end is a near-identity matrix, not `none`.
   Snippets never carry `data-ok-state` (no JavaScript → nothing hidden); React renders `initial`.
+- Scroll progress (5.2, ADR-0062 note): the root is `data-ok-scroll-progress`, never
+  `data-ok-scroll` (Dialog's and Tabs' `scroll` option: `option-names.test.ts` caught the clash, which
+  would have started the runtime on every scrolling dialog). The progress shows
+  `--_ok-scroll-progress` (registered, so it animates); `scroll-progress.css` feeds it to the Linear bar and the Circular arc. Three paths:
+  CSS `scroll(root)` for the page (inside `@supports`: without scroll timelines a CSS animation
+  with no timeline jumps to its end), the engine on a `ScrollTimeline` / `ViewTimeline`, or a
+  paused animation moved by the script (`data-ok-fallback`; Firefox). Those animations end only
+  when the scroll does: anything that awaits `animation.finished` must skip paused animations and
+  timelines other than `document.timeline` (`waitable` in the test utils, core
+  `runningAnimations`), or it hangs. Test the fallback by stubbing `CSS.supports` for
+  `animation-timeline` **only** (a blanket `false` also turns `linear` easing into the default
+  curve). Scroll events and timelines update on the next frames: wait two `requestAnimationFrame`s.
 - Waiting for an asynchronous DOM change (IntersectionObserver, rAF counters) in unit tests: resolve
   a promise from a `MutationObserver`, never `vi.waitFor`; and never inside React's `act()` (it
   holds state updates until the scope ends, so the awaited change never comes).
