@@ -153,3 +153,4 @@ export const Streamgraph: StoryObj = story("streamgraph");
 export const Violin: StoryObj = story("violin");
 export const Beeswarm: StoryObj = story("beeswarm");
 export const Waffle: StoryObj = story("waffle");
+export const Unit: StoryObj = story("unit");

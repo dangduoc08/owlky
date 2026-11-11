@@ -83,6 +83,7 @@ import { layoutStock } from "./chart-stock.js";
 import { type ChartStreamOffset, type ChartStreamOrder, layoutStream } from "./chart-stream.js";
 import { layoutTree } from "./chart-tree.js";
 import { type ChartFillFrom, layoutUnit } from "./chart-unit.js";
+import { type ChartUnitLayout, chartUnitPlacer } from "./chart-unit-layouts.js";
 import {
   type ChartViolinNormalize,
   type ChartViolinSide,
@@ -271,6 +272,14 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly unconstrainedViolinPoints?: boolean | undefined;
   /** Violins: dots per violin; extra ones are thinned. Default 3000. */
   readonly violinMaxPoints?: number | undefined;
+  /** Unit charts (4.18.21): where the marks go. Default `"grouped"`. */
+  readonly unitLayout?: ChartUnitLayout | undefined;
+  /** Unit charts: names drawn with each cluster or column. */
+  readonly clusterLabels?: boolean | undefined;
+  /** Packed unit charts: keep the given order instead of the smallest group in the middle. */
+  readonly disableSortByGroup?: boolean | undefined;
+  /** Arc unit charts: the concentric rows (default the fewest that seat everyone). */
+  readonly arcRows?: number | undefined;
   /** Waffle charts (4.18.21): cells per row. Default 10. */
   readonly columns?: number | undefined;
   /** Waffle charts: the row where filling starts. Default `"bottom"`. */
@@ -416,6 +425,12 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     splitMax: input.splitMax,
     trackColor: input.trackColor,
     colorBlindMode: input.colorBlindMode,
+    clusterLabels: input.clusterLabels,
+    disableSortByGroup: input.disableSortByGroup,
+    arcRows: input.arcRows,
+    innerSize: input.innerSize,
+    startAngle: input.startAngle,
+    endAngle: input.endAngle,
   };
   type Layout = (d: ChartData, o: Parameters<typeof layoutChart>[1]) => ChartLayout;
   const layouts: Partial<Record<ChartType, Layout>> = {
@@ -425,6 +440,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     funnel: (d, o) => layoutFunnel(d, o, format),
     slope: (d, o) => layoutSlope(d, o, format),
     waffle: (d, o) => layoutUnit(d, o, unitOptions, format),
+    unit: (d, o) => layoutUnit(d, o, unitOptions, format, chartUnitPlacer(input.unitLayout)),
     beeswarm: (d, o) =>
       layoutBeeswarm(
         d,

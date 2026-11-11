@@ -50,8 +50,6 @@ export interface ChartUnitPlacement {
 }
 
 export interface ChartUnitOptions {
-  /** Marks per category (waffle: the grid; unit: `grouped` by default). */
-  readonly layout?: string | undefined;
   readonly shape?: ChartMarkerShape | undefined;
   /** Mark radius in px (default auto). */
   readonly size?: number | undefined;

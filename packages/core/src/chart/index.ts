@@ -296,6 +296,11 @@ export {
   placeUnitGrid,
 } from "./chart-unit.js";
 export {
+  type ChartUnitLayout,
+  chartUnitLayouts,
+  isChartUnitLayout,
+} from "./chart-unit-layouts.js";
+export {
   type ChartViolinNormalize,
   type ChartViolinOptions,
   type ChartViolinSide,

@@ -13,7 +13,8 @@ texts. ADR-0047 adds the commercial add-ons' features (behavior and option names
 charts (ApexSankey, phase 2.1) and stock charts (ApexStock, phase 2.2: indicators, panes, a
 navigator). Roadmap 4.18.21 adds ApexCharts v8's waterfall and dumbbell charts; 4.18.19 a crossfilter
 between the charts of a group (ADR-0054). Roadmap 4.18.7 adds tree charts (ApexTree layouts in the
-SVG engine, ADR-0058) and 4.18.21 the sunburst and the icicle on the same hierarchy model. Upstream: ApexCharts (`react-apexcharts`, ADR-0015), ApexSankey, ApexStock
+SVG engine, ADR-0058) and 4.18.21 the sunburst and the icicle on the same hierarchy model, then
+streamgraphs, violins, beeswarms, waffles and unit charts (the rest of ApexCharts v8's types). Upstream: ApexCharts (`react-apexcharts`, ADR-0015), ApexSankey, ApexStock
 and ApexTree.
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
@@ -22,8 +23,8 @@ own, 2026-11-08; ADR-0024)
 
 ## Purpose
 Show values as lines, areas, columns, bars, points, pie / donut slices, radial bars (rings,
-gauges), a radar, box plots, heatmap or treemap cells, bubbles, range bands, funnels or slopes —
-full size or as sparklines — with a legend that hides series, a tooltip
+gauges), a radar, box plots, heatmap or treemap cells, bubbles, range bands, funnels, slopes,
+bands of a stream, density curves, swarms of dots or marks of a unit chart — full size or as sparklines — with a legend that hides series, a tooltip
 for the pointer, touch and keyboard, and the data as a table. The SVG is drawn by one layout engine
 in core (`renderChart`), so React and HTML render the same markup.
 
@@ -180,6 +181,10 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       rect[data-ok-chart-unit-cell][rx] | (circle | path)[data-ok-chart-unit-cell][data-ok-shape]? (colorBlindMode)
       split tiles: + rect[data-ok-chart-unit-track][data-ok-color]? (empty cells);
       labels › text[data-ok-chart-unit-title]; active › path[data-ok-chart-active-node] (one path around the category's marks)
+    Unit (4.18.21; root [data-ok-unit-layout]?[data-ok-cluster-labels]?[data-ok-disable-sort-by-group]?[data-ok-arc-rows]?
+      [data-ok-inner-size]?[data-ok-start-angle]?[data-ok-end-angle]?, and the waffle's options):
+      as Waffle, with g[data-ok-chart-series][data-ok-type=unit]; marks are circle | path[data-ok-chart-unit-cell][data-ok-shape]?
+      (`grid` layout squares: rect, `markerShape="square"`); labels › text[data-ok-chart-unit-title] (clusterLabels)
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
@@ -481,6 +486,16 @@ Waffle geometry (core `chart-unit.ts`, 4.18.21):
 - Mode `unit`: a category is one item (slots = visible categories; arrows, Home, End); the pointer finds
   the category of the mark under it; the highlight is one `path` around its marks; `Enter` / clicks select it.
 
+Unit geometry (core `chart-unit-layouts.ts` on `layoutUnit`, 4.18.21):
+- `grouped`: a hexagonal blob per category, in equal columns; the pitch fits the largest blob (at most 48px,
+  a mark radius of 42% of the pitch or `markerSize`), `spacing` opens the lattice; `packed`: one blob, marks in
+  distance order, the smallest group first (the center), unless `disableSortByGroup`; `columns`: rows of dots from
+  the bottom, the same number across every column so heights compare; `grid`: the waffle lattice; `arc`:
+  concentric rows between `innerSize` (40%) and the outer radius, over `startAngle` to `endAngle` (-90 to 90),
+  seats shared by the rows' capacity and filled in angle order by category; `arcRows` (default the fewest that fit).
+- `clusterLabels`: names under `grouped` clusters and `columns`.
+- Mode `unit` as for waffles: a category is one tooltip, keyboard and selection item.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -504,7 +519,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` `violin` `beeswarm` `waffle` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis) or `waffle` (a grid of cells, each category filling a share). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` `violin` `beeswarm` `waffle` `unit` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis), `waffle` (a grid of cells, each category filling a share) or `unit` (each value as a number of marks, in blobs, columns or an arc). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -569,6 +584,10 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `streamOrder` | `data-ok-stream-order="…"` | style | `inside-out` `inverse` `none` | — | Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order). |
 | `hideStreamLabels` | `data-ok-hide-stream-labels` | flag | boolean | off | Streamgraphs: no series names on the bands. |
 | `streamLabelMinWidth` | `data-ok-stream-label-min-width="…"` | number | number | — | Streamgraphs: bands thinner than this many pixels get no name (default 24). |
+| `unitLayout` | `data-ok-unit-layout="…"` | style | `grouped` `packed` `columns` `grid` `arc` | — | Unit charts: where the marks go: `grouped` (a blob per category, the default), `packed` (one blob), `columns` (stacked dots), `grid` (the waffle lattice) or `arc` (rows of seats). |
+| `clusterLabels` | `data-ok-cluster-labels` | flag | boolean | off | Unit charts: category names under each cluster or column (grouped and columns layouts). |
+| `disableSortByGroup` | `data-ok-disable-sort-by-group` | flag | boolean | off | Packed unit charts: keep the given order instead of the smallest group in the middle. |
+| `arcRows` | `data-ok-arc-rows="…"` | number | number | — | Arc unit charts: the concentric rows (default the fewest that seat everyone). Use `innerSize` for the inner radius (default 40) and `startAngle` / `endAngle` for the sweep (default -90 to 90). |
 | `columns` | `data-ok-columns="…"` | number | number | — | Waffle charts: cells per row (default 10). |
 | `fillFrom` | `data-ok-fill-from="…"` | style | `bottom` `top` | — | Waffle charts: the row where the cells start filling: `bottom` (the default) or `top`. |
 | `split` | `data-ok-split` | flag | boolean | off | Waffle charts: one mini waffle per category, filled to its value. |
@@ -596,7 +615,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `layoutType` | `data-ok-layout-type="…"` | style | `tree` `cluster` | — | Tree charts: `tree` (a tidy tree, the default) or `cluster` (a dendrogram: every leaf on the last level). |
 | `edgeStyle` | `data-ok-edge-style="…"` | style | `orthogonal` `curved` `straight` | — | Tree charts: links with right angles (`orthogonal`, the default), `curved` or `straight`. |
 | `enableExpandCollapse` | `data-ok-enable-expand-collapse` | flag | boolean | off | Tree charts: a click, Enter or Space on a node with children hides or shows them. |
-| `innerSize` | `data-ok-inner-size="…"` | number | number | — | Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15). |
+| `innerSize` | `data-ok-inner-size="…"` | number | number | — | Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15). Unit charts with the `arc` layout: the inner radius in % of the outer (default 40). |
 | `spacing` | `data-ok-spacing="…"` | number | number | — | Sunburst and icicle charts: the gap between arcs or cells in px (default 1). |
 | `leaf` | `data-ok-leaf="…"` | style | `extend` `stop` | — | Sunburst and icicle charts: branches that end before the deepest level `extend` to the edge or `stop` at their level (default `extend` on sunbursts, `stop` on icicles). |
 | `tint` | `data-ok-tint="…"` | number | number | — | Sunburst and icicle charts: how much paler each level is than the level its color starts at (0 to 1; default 0.14). |
@@ -1019,7 +1038,14 @@ Option areas not covered by the table above:
 | `plotOptions.unit.grid.columns`, `.total`, `.fillFrom` | `columns`, `total`, `fillFrom` | renamed (4.18.21) | `total` also keeps its donut meaning |
 | `plotOptions.unit.grid.split`, `.tileColumns`, `.max`, `.trackColor` | `split`, `tileColumns`, `splitMax`, `trackColor` | renamed (4.18.21) | |
 | `plotOptions.unit.shape` (`circle` · `square`, also `pictogram`, `image`), `size`, `spacing`, `borderRadius`, `unitValue`, `maxUnits` | `markerShape`, `markerSize`, `spacing` (px), `cellRadius`, `unitValue`, `maxUnits` | renamed (4.18.21) | no `pictogram` / `image` marks (not built) |
-| ApexCharts v8 types `streamgraph`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
+| `chart.type: "unit"` (`apexcharts/unit`, Premium; ours) | `type="unit"` | kept (4.18.21) | one series, one value per category |
+| `plotOptions.unit.layout` (`grouped` · `packed` · `columns` · `grid` · `arc`) | `unitLayout` (`data-ok-unit-layout`, optional) | renamed (4.18.21) | `scatter` lanes → `type="beeswarm"`; 2D `scatter` → `scatter` / `bubble` charts; `custom` / `positions` (a callback) not built: HTML has no function, and parity needs marks from data |
+| `plotOptions.unit.sortByGroup` (packed) | `disableSortByGroup` | renamed (4.18.21) | on by default |
+| `plotOptions.unit.clusterLabels.show` (`grouped`, `columns`) | `clusterLabels` | renamed (4.18.21) | under the cluster; `.curved`, `.external`, `.position`, `.formatter`, styles not built |
+| `plotOptions.unit.arc.startAngle` / `.endAngle`, `.innerRadiusRatio`, `.rows` | `startAngle` / `endAngle`, `innerSize` (%), `arcRows` | renamed (4.18.21) | |
+| `plotOptions.unit.columns.size`, `sizeByValue` | `markerSize` | renamed / not built (4.18.21) | no sizes by value |
+| `plotOptions.unit.gather.*`, `transition`, `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource` | — | not built | no marks moving between layouts: the chart redraws; a callback API has no HTML form |
+| `plotOptions.unit.shape: "pictogram"` / `"image"`, `pictogram.*`, `image.*`, `tooltip.formatter` | — | not built | shapes are `markerShape` (and `colorBlindMode`); glyph paths and images are deferred; tooltips are per category (a dot-level `#i of n` isn't a keyboard item) |
 | `chart.type: "tree"` (ApexTree layouts) | `type="tree"` | kept (4.18.7, ADR-0058) | see "API mapping" (ApexTree rows) |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
@@ -1031,7 +1057,7 @@ Option areas not covered by the table above:
 | `chart.events` `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.20) | |
 | drilldown: `drillDown` / `drillUp` / `drillToRoot` / `clearDrilldownCache`, events `drillDownStart` / `End` / `Error`, `drillUp` | — | deferred | category → child series, with a back control |
 | trellis / small multiples: `ApexCharts.trellis`, `rowSeries`, `getPanels`, `getPanel`, `promotePanel`, `restorePanels` | — | deferred | one chart per category on shared axes |
-| `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / deferred (4.18.21) | unit charts with 4.18.21; themes are tokens; `exec`: the element instance |
+| `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / not built (4.18.21) | `beatChange` and the register methods are callback APIs with no HTML form; themes are tokens; `exec`: the element instance |
 | `states.active.allowMultipleDataPointsSelection` | `allowMultipleDataPointsSelection` (`data-ok-allow-multiple-data-points-selection`) | kept (4.18.60) | |
 | `states.active` (the selected look), `.filter`, `states.hover.filter`, `plotOptions.pie.expandOnClick` | the outline `[data-ok-chart-selected-mark]` | renamed (4.18.60) | fixed by the design: a 2px primary-text outline (not color alone); filters not applicable |
 | `chart.brush.targets` (several targets), `chart.brush.autoScaleYaxis` | `brushTarget` (one id) | deferred | several targets; y autoscale not applicable (zoom is x only) |
@@ -1142,5 +1168,6 @@ Option areas not covered by the table above:
   of precomputed curves with one density scale and patterns).
 - Beeswarm story (4.18.21): Beeswarm (salaries by department, swarm; response times, vertical jitter with shapes).
 - Waffle story (4.18.21): Waffle (a percentage waffle; split tiles with shapes per category).
+- Unit story (4.18.21): Unit (grouped with cluster labels; seats on an arc; stacked columns; packed marks of 1,000 with shapes).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

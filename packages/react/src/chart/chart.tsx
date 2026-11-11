@@ -47,6 +47,7 @@ import {
   type ChartTooltipCorner,
   type ChartTooltipMode,
   type ChartType,
+  type ChartUnitLayout,
   type ChartViolinNormalize,
   type ChartViolinSide,
   type ChartViolinWhiskers,
@@ -369,6 +370,14 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
   hideConnectors?: boolean | undefined;
+  /** Unit charts: where the marks go: `grouped`, `packed`, `columns`, `grid` or `arc`. Default `"grouped"`. */
+  unitLayout?: ChartUnitLayout | undefined;
+  /** Unit charts: category names under each cluster or column. */
+  clusterLabels?: boolean | undefined;
+  /** Packed unit charts: keep the given order instead of the smallest group in the middle. */
+  disableSortByGroup?: boolean | undefined;
+  /** Arc unit charts: the concentric rows. Default the fewest that seat everyone. */
+  arcRows?: number | undefined;
   /** Waffle charts: cells per row. Default 10. */
   columns?: number | undefined;
   /** Waffle charts: the row where the cells start filling. Default `"bottom"`. */
@@ -604,6 +613,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     streamLabelMinWidth,
     streamHoverOpacity,
     beeswarmSpread,
+    unitLayout,
+    clusterLabels,
+    disableSortByGroup,
+    arcRows,
     columns,
     fillFrom,
     split,
@@ -735,6 +748,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     streamLabelMinWidth,
     streamHoverOpacity,
     beeswarmSpread,
+    unitLayout,
+    clusterLabels,
+    disableSortByGroup,
+    arcRows,
     columns,
     fillFrom,
     split,
@@ -824,6 +841,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validBeeswarmSpread = attributes["data-ok-beeswarm-spread"] as
     | ChartBeeswarmSpread
     | undefined;
+  const validUnitLayout = attributes["data-ok-unit-layout"] as ChartUnitLayout | undefined;
+  const clusterLabelsOn = attributes["data-ok-cluster-labels"] !== undefined;
+  const sortByGroupOff = attributes["data-ok-disable-sort-by-group"] !== undefined;
+  const validArcRows = number("data-ok-arc-rows");
   const validColumns = number("data-ok-columns");
   const validFillFrom = attributes["data-ok-fill-from"] as ChartFillFrom | undefined;
   const splitOn = attributes["data-ok-split"] !== undefined;
@@ -1004,6 +1025,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         streamLabelMinWidth: validStreamLabelMin,
         streamHoverOpacity: validStreamHover,
         beeswarmSpread: validBeeswarmSpread,
+        unitLayout: validUnitLayout,
+        clusterLabels: clusterLabelsOn,
+        disableSortByGroup: sortByGroupOff,
+        arcRows: validArcRows,
         columns: validColumns,
         fillFrom: validFillFrom,
         split: splitOn,
@@ -1137,6 +1162,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validStreamLabelMin,
       validStreamHover,
       validBeeswarmSpread,
+      validUnitLayout,
+      clusterLabelsOn,
+      sortByGroupOff,
+      validArcRows,
       validColumns,
       validFillFrom,
       splitOn,

@@ -44,6 +44,7 @@ export const chartTypes = [
   "violin",
   "beeswarm",
   "waffle",
+  "unit",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -112,7 +113,7 @@ export type ChartCircularType = (typeof chartCircularTypes)[number];
 export const isCircularChart = (type: ChartType): type is ChartCircularType =>
   chartCircularTypes.includes(type as ChartCircularType);
 /** Waffle and unit charts (4.18.21): one series, each category a number of marks. */
-export const chartUnitTypes = ["waffle"] as const;
+export const chartUnitTypes = ["waffle", "unit"] as const;
 export const isUnitChart = (type: unknown): boolean =>
   chartUnitTypes.includes(type as (typeof chartUnitTypes)[number]);
 /** Whether a chart type is drawn around a center (circular charts and radar). */
@@ -136,6 +137,7 @@ const wholeTypes: readonly ChartType[] = [
   "violin",
   "beeswarm",
   "waffle",
+  "unit",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);

@@ -89,6 +89,7 @@ import {
   chartStreamOrders,
 } from "../chart/chart-stream.js";
 import { type ChartFillFrom, chartFillFroms } from "../chart/chart-unit.js";
+import { type ChartUnitLayout, chartUnitLayouts } from "../chart/chart-unit-layouts.js";
 import {
   type ChartViolinNormalize,
   type ChartViolinSide,
@@ -4536,7 +4537,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis) or `waffle` (a grid of cells, each category filling a share). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis), `waffle` (a grid of cells, each category filling a share) or `unit` (each value as a number of marks, in blobs, columns or an arc). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4882,6 +4883,27 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Streamgraphs: bands thinner than this many pixels get no name (default 24).",
     { min: 0 },
   ),
+  unitLayout: style(
+    "data-ok-unit-layout",
+    chartUnitLayouts,
+    "grouped",
+    "Unit charts: where the marks go: `grouped` (a blob per category, the default), `packed` (one blob), `columns` (stacked dots), `grid` (the waffle lattice) or `arc` (rows of seats).",
+    { optional: true },
+  ),
+  clusterLabels: flag(
+    "data-ok-cluster-labels",
+    "Unit charts: category names under each cluster or column (grouped and columns layouts).",
+  ),
+  disableSortByGroup: flag(
+    "data-ok-disable-sort-by-group",
+    "Packed unit charts: keep the given order instead of the smallest group in the middle.",
+  ),
+  arcRows: number(
+    "data-ok-arc-rows",
+    undefined,
+    "Arc unit charts: the concentric rows (default the fewest that seat everyone). Use `innerSize` for the inner radius (default 40) and `startAngle` / `endAngle` for the sweep (default -90 to 90).",
+    { min: 1 },
+  ),
   columns: number("data-ok-columns", undefined, "Waffle charts: cells per row (default 10).", {
     min: 1,
   }),
@@ -5034,7 +5056,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
   innerSize: number(
     "data-ok-inner-size",
     undefined,
-    "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15).",
+    "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15). Unit charts with the `arc` layout: the inner radius in % of the outer (default 40).",
     { min: 0 },
   ),
   spacing: number(
@@ -5170,6 +5192,10 @@ export interface ChartAnatomyOptions {
   streamLabelMinWidth?: number | undefined;
   streamHoverOpacity?: number | undefined;
   beeswarmSpread?: ChartBeeswarmSpread | undefined;
+  unitLayout?: ChartUnitLayout | undefined;
+  clusterLabels?: boolean | undefined;
+  disableSortByGroup?: boolean | undefined;
+  arcRows?: number | undefined;
   columns?: number | undefined;
   fillFrom?: ChartFillFrom | undefined;
   split?: boolean | undefined;

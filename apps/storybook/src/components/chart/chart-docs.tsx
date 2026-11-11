@@ -31,6 +31,7 @@ import synchronizedGroup from "../../../../../packages/html/src/components/chart
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
+import unitGroup from "../../../../../packages/html/src/components/chart/examples/unit-group.html?raw";
 import violinGroup from "../../../../../packages/html/src/components/chart/examples/violin-group.html?raw";
 import waffleGroup from "../../../../../packages/html/src/components/chart/examples/waffle-group.html?raw";
 import waterfallGroup from "../../../../../packages/html/src/components/chart/examples/waterfall-group.html?raw";
@@ -123,6 +124,7 @@ export function MonthlySales() {
 - **\`violin\`:** the distribution of observations in each category as a mirrored density curve. See "Compare distributions".
 - **\`beeswarm\`:** each observation as a dot in its series' lane, along the value axis. See "Show every observation".
 - **\`waffle\`:** a grid of cells where each category fills a share. See "Show parts of a whole as cells".
+- **\`unit\`:** each value as a number of marks, in blobs, stacked columns or seats on an arc. See "Show quantities as marks".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -994,6 +996,36 @@ export function BudgetShares() {
       height={320}
       categories={["Engineering", "Marketing", "Support", "Operations"]}
       series={[{ name: "Budget", data: [38, 27, 21, 14] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "unit",
+    title: "Show quantities as marks",
+    body: `A unit chart draws a mark per unit of a value, so an amount reads as a crowd you can count. It suits small numbers that stand for people or things, such as seats, volunteers or tickets. Set \`type\` to \`unit\` and pass one series with one value per category, as for a pie chart.
+
+- **\`unitLayout\`:** \`grouped\` (the default, a blob per category), \`packed\` (one blob, with the smallest group in the middle unless \`disableSortByGroup\` is set), \`columns\` (stacked dots), \`grid\` (a lattice, as in a waffle chart) or \`arc\` (rows of seats).
+- **\`unitValue\`:** how many units one mark stands for, such as \`1000\`. **\`maxUnits\`:** the most marks drawn (5000 by default); counts scale down above it.
+- **\`clusterLabels\`:** names under each cluster (\`grouped\`) or column (\`columns\`).
+- **\`arcRows\`:** the rows of an \`arc\` (by default, the fewest that seat everyone). \`innerSize\` and \`startAngle\` / \`endAngle\` shape it (40%, and -90° to 90°, by default).
+- **\`markerShape\` and \`colorBlindMode\`:** a shape instead of circles, or a different shape per category, so categories differ by more than color.
+- **\`markerSize\` and \`spacing\`:** the mark radius and the gap in pixels. They fit the box by default.
+
+As in waffle charts, a category is one item: the arrow keys and pointer move between categories, its marks light up together, and a click, Enter or Space selects it. The tooltip shows the category and its value. The legend lists and hides categories.`,
+    html: `${snippetElement(unitGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+export function VolunteersByCity() {
+  return (
+    <Chart
+      label="Volunteers by city"
+      type="unit"
+      unitLayout="grouped"
+      clusterLabels
+      height={280}
+      categories={["Hanoi", "Da Nang", "Hue", "Can Tho"]}
+      series={[{ name: "Volunteers", data: [64, 28, 18, 42] }]}
     />
   );
 }`,
@@ -2001,6 +2033,18 @@ const PREVIEWS = {
         height={200}
         categories={["Stalls", "Circle", "Balcony"]}
         series={[{ name: "Seats", data: [52, 31, 17] }]}
+      />
+    </Preview>
+  ),
+  unit: () => (
+    <Preview>
+      <Chart
+        label="Seats by party"
+        type="unit"
+        unitLayout="arc"
+        height={220}
+        categories={["Blue party", "Green party", "Red party"]}
+        series={[{ name: "Seats", data: [42, 30, 18] }]}
       />
     </Preview>
   ),

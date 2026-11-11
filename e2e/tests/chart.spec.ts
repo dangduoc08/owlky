@@ -70,6 +70,7 @@ const STORIES = [
   "tree",
   "sunburst",
   "icicle",
+  "unit",
   "waffle",
   "beeswarm",
   "violin",
@@ -873,7 +874,7 @@ for (const impl of implementations) {
       const first = page.locator("[data-ok-chart]").first();
       await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(100);
       await first.locator("[data-ok-chart-plot]").focus();
-      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("Home");
       await page.keyboard.press("ArrowRight");
       await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Marketing");
       await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Budget27%");
@@ -891,6 +892,25 @@ for (const impl of implementations) {
       await first.locator("[data-ok-chart-legend-item]").nth(2).click();
       await expect(first.locator("[data-ok-chart-unit-group]")).toHaveCount(3);
       await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(100);
+    });
+  });
+}
+
+// Roadmap 4.18.21: unit charts.
+for (const impl of implementations) {
+  test.describe(`chart unit (${impl})`, () => {
+    test("arrow keys move between categories in every layout", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "unit"));
+      const charts = page.locator("[data-ok-chart]");
+      await expect(charts).toHaveCount(4);
+      const first = charts.first();
+      await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(152);
+      await expect(first.locator("[data-ok-chart-unit-title]")).toHaveCount(4);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("End");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Can Tho");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Volunteers42");
+      await expect(first.locator("[data-ok-chart-active-node]")).toHaveCount(1);
     });
   });
 }

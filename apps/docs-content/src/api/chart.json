@@ -417,7 +417,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis) or `waffle` (a grid of cells, each category filling a share). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis), `waffle` (a grid of cells, each category filling a share) or `unit` (each value as a number of marks, in blobs, columns or an arc). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -449,7 +449,8 @@
        "streamgraph",
        "violin",
        "beeswarm",
-       "waffle"
+       "waffle",
+       "unit"
       ]
      },
      {
@@ -1292,6 +1293,40 @@
       "name": "streamLabelMinWidth"
      },
      {
+      "attr": "data-ok-unit-layout",
+      "default": "grouped",
+      "description": "Unit charts: where the marks go: `grouped` (a blob per category, the default), `packed` (one blob), `columns` (stacked dots), `grid` (the waffle lattice) or `arc` (rows of seats).",
+      "kind": "style",
+      "name": "unitLayout",
+      "optional": true,
+      "values": [
+       "grouped",
+       "packed",
+       "columns",
+       "grid",
+       "arc"
+      ]
+     },
+     {
+      "attr": "data-ok-cluster-labels",
+      "description": "Unit charts: category names under each cluster or column (grouped and columns layouts).",
+      "kind": "flag",
+      "name": "clusterLabels"
+     },
+     {
+      "attr": "data-ok-disable-sort-by-group",
+      "description": "Packed unit charts: keep the given order instead of the smallest group in the middle.",
+      "kind": "flag",
+      "name": "disableSortByGroup"
+     },
+     {
+      "attr": "data-ok-arc-rows",
+      "description": "Arc unit charts: the concentric rows (default the fewest that seat everyone). Use `innerSize` for the inner radius (default 40) and `startAngle` / `endAngle` for the sweep (default -90 to 90).",
+      "kind": "number",
+      "min": 1,
+      "name": "arcRows"
+     },
+     {
       "attr": "data-ok-columns",
       "description": "Waffle charts: cells per row (default 10).",
       "kind": "number",
@@ -1563,7 +1598,7 @@
      },
      {
       "attr": "data-ok-inner-size",
-      "description": "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15).",
+      "description": "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15). Unit charts with the `arc` layout: the inner radius in % of the outer (default 40).",
       "kind": "number",
       "min": 0,
       "name": "innerSize"
@@ -2976,6 +3011,11 @@
       "type": "readonly ChartAnnotation[]"
      },
      {
+      "description": "Arc unit charts: the concentric rows. Default the fewest that seat everyone.",
+      "name": "arcRows",
+      "type": "number"
+     },
+     {
       "description": "Sankey charts: a title above each rank (beside each row when vertical).",
       "name": "axisTitles",
       "type": "readonly string[]"
@@ -3052,6 +3092,11 @@
       "description": "Waffle charts: the corner radius of square cells in pixels. Default 2.",
       "name": "cellRadius",
       "type": "number"
+     },
+     {
+      "description": "Unit charts: category names under each cluster or column.",
+      "name": "clusterLabels",
+      "type": "boolean"
      },
      {
       "description": "Tree charts, controlled: ids of the nodes whose children are hidden.",
@@ -3159,6 +3204,11 @@
      {
       "description": "Legend items are plain labels: clicks don't hide series.",
       "name": "disableLegendToggle",
+      "type": "boolean"
+     },
+     {
+      "description": "Packed unit charts: keep the given order instead of the smallest group in the middle.",
+      "name": "disableSortByGroup",
       "type": "boolean"
      },
      {
@@ -3589,6 +3639,12 @@
       "type": "boolean"
      },
      {
+      "default": "\"grouped\"",
+      "description": "Unit charts: where the marks go: `grouped`, `packed`, `columns`, `grid` or `arc`.",
+      "name": "unitLayout",
+      "type": "\"arc\" | \"columns\" | \"grid\" | \"grouped\" | \"packed\""
+     },
+     {
       "description": "Waffle and unit charts: how many units of value one mark stands for. Default 1.",
       "name": "unitValue",
       "type": "number"
@@ -3759,7 +3815,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"beeswarm\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"violin\" | \"waffle\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"beeswarm\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"unit\" | \"violin\" | \"waffle\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

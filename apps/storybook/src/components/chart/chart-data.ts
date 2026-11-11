@@ -2125,4 +2125,47 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21: unit charts (ApexCharts `unit`).
+  unit: {
+    title: "Unit",
+    props: {
+      label: "Volunteers by city",
+      type: "unit",
+      unitLayout: "grouped",
+      clusterLabels: true,
+      height: 280,
+      categories: ["Hanoi", "Da Nang", "Hue", "Can Tho"],
+      series: [{ name: "Volunteers", data: [64, 28, 18, 42] }],
+    },
+    more: [
+      {
+        label: "Seats in the council by party",
+        type: "unit",
+        unitLayout: "arc",
+        arcRows: 4,
+        height: 280,
+        categories: ["Blue party", "Green party", "Red party", "Independent"],
+        series: [{ name: "Seats", data: [38, 27, 21, 14] }],
+      },
+      {
+        label: "Tickets opened by team",
+        type: "unit",
+        unitLayout: "columns",
+        clusterLabels: true,
+        height: 260,
+        categories: ["Mobile", "Web", "API"],
+        series: [{ name: "Tickets", data: [34, 21, 55] }],
+      },
+      {
+        label: "Population by region, one mark for 1,000 people",
+        type: "unit",
+        unitLayout: "packed",
+        unitValue: 1000,
+        colorBlindMode: true,
+        height: 280,
+        categories: ["North", "South", "Islands"],
+        series: [{ name: "People", data: [42000, 31000, 9000] }],
+      },
+    ],
+  },
 };

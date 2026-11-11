@@ -42,6 +42,7 @@ import {
   type ChartTooltipCorner,
   type ChartTooltipMode,
   type ChartType,
+  type ChartUnitLayout,
   type ChartViolinNormalize,
   type ChartViolinSide,
   type ChartViolinWhiskers,
@@ -741,6 +742,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           ? (readStyle(element, o.streamOrder) as ChartStreamOrder)
           : undefined,
         hideStreamLabels: element.hasAttribute(o.hideStreamLabels.attr),
+        unitLayout: element.hasAttribute(o.unitLayout.attr)
+          ? (readStyle(element, o.unitLayout) as ChartUnitLayout)
+          : undefined,
+        clusterLabels: element.hasAttribute(o.clusterLabels.attr),
+        disableSortByGroup: element.hasAttribute(o.disableSortByGroup.attr),
+        arcRows: readNumber(element, o.arcRows) as number | undefined,
         columns: readNumber(element, o.columns) as number | undefined,
         fillFrom: element.hasAttribute(o.fillFrom.attr)
           ? (readStyle(element, o.fillFrom) as ChartFillFrom)
