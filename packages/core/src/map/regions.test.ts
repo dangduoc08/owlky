@@ -281,7 +281,8 @@ describe("map regions", () => {
     const list = root.querySelector("[data-ok-map-legend-sizes]") as HTMLElement;
     const circles = [...root.querySelectorAll<HTMLElement>("[data-ok-map-legend-circle]")];
     expect(list.style.getPropertyValue("--_ok-map-size-max")).toBe("30px");
-    expect(circles.map((circle) => circle.style.getPropertyValue("--_ok-map-radius"))).toEqual([
+    const items = circles.map((circle) => circle.parentElement as HTMLElement);
+    expect(items.map((item) => item.style.getPropertyValue("--_ok-map-radius"))).toEqual([
       "30px",
       "12.5px",
       "",
@@ -289,7 +290,7 @@ describe("map regions", () => {
     // The radius is observed: a new value is written again.
     circles[1]?.setAttribute("data-ok-radius", "8");
     await flush();
-    expect(circles[1]?.style.getPropertyValue("--_ok-map-radius")).toBe("8px");
+    expect(items[1]?.style.getPropertyValue("--_ok-map-radius")).toBe("8px");
   });
 
   it("ignores static legends, keeps states across style reloads and re-created sources", async () => {

@@ -240,7 +240,7 @@ describe("MapRegions and MapLegend", () => {
     await done;
     await act(async () => {});
     const circle = container.querySelector<HTMLElement>("[data-ok-map-legend-circle]");
-    expect(circle?.style.getPropertyValue("--_ok-map-radius")).toBe("20px");
+    expect(circle?.parentElement?.style.getPropertyValue("--_ok-map-radius")).toBe("20px");
     await expectNoAxeViolations(container);
   });
 

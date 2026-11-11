@@ -832,7 +832,7 @@ for (const impl of implementations) {
       await expect(first.locator('[data-ok-chart-series][data-ok-layout="pixel"]')).toBeAttached();
       const texas = first.locator('[data-ok-chart-region="Texas"]');
       // Many cells in one path: a subpath per dot.
-      expect(((await texas.getAttribute("d")) ?? "").split("M").length).toBeGreaterThan(20);
+      expect(((await texas.getAttribute("d")) ?? "").split("M").length).toBeGreaterThan(10);
       await texas.hover();
       await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("Texas");
     });

@@ -213,10 +213,12 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
       )) {
         const radius = Number(node.getAttribute("data-ok-radius"));
         const valid = Number.isFinite(radius) && radius >= 0 && radius <= 200;
-        const name = node.hasAttribute("data-ok-map-legend-sizes")
-          ? "--_ok-map-size-max"
-          : "--_ok-map-radius";
-        host.write(node, { [name]: valid ? `${radius}px` : "" });
+        const list = node.hasAttribute("data-ok-map-legend-sizes");
+        // A circle's radius goes on its item, which places the circle and its value.
+        const target = list ? node : (node.parentElement ?? node);
+        host.write(target, {
+          [list ? "--_ok-map-size-max" : "--_ok-map-radius"]: valid ? `${radius}px` : "",
+        });
       }
     }
   };
@@ -620,11 +622,14 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     pointer: number;
   } | null = null;
 
+  /** The click that ends a box (committed or canceled) never selects the region under it. */
+  let swallowClick = false;
   const endDrag = (commit: boolean) => {
     const map = host.ready();
     const current = drag;
     if (!current) return;
     drag = null;
+    swallowClick = true;
     current.frame?.remove();
     if (map && current.pan) map.dragPan.enable();
     if (!commit || !map) return;
@@ -643,6 +648,7 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
   element.addEventListener(
     "pointerdown",
     (event) => {
+      swallowClick = false;
       const map = host.ready();
       if (!map || !event.shiftKey || event.button !== 0 || drag) return;
       if (!groups.some((group) => group.boxSelect)) return;
@@ -856,6 +862,10 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     },
     click(point) {
       if (drag) return;
+      if (swallowClick) {
+        swallowClick = false;
+        return;
+      }
       const found = hit(point);
       if (found) select(found.group, found.key);
     },
