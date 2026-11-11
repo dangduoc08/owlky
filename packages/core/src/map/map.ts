@@ -20,6 +20,7 @@ import {
   mapScaleUnits,
 } from "../anatomy/anatomy.js";
 import { chartFileName, gesture, save } from "../chart/chart-export.js";
+import type { GeoDescriptionStrings } from "./describe.js";
 import {
   autoAnchor,
   distanceMeters,
@@ -200,6 +201,8 @@ export interface MapControllerOptions extends Partial<MapSettings> {
   readonly onRegionSelect?:
     | ((regions: HTMLElement, id: string | number | null, ids: (string | number)[]) => void)
     | undefined;
+  /** Texts of the generated description (`p[data-ok-map-description][data-ok-auto]`), to translate it. */
+  readonly descriptionStrings?: Partial<GeoDescriptionStrings> | undefined;
   /** A class of an interactive legend was pressed; `active` lists the pressed classes. */
   readonly onLegendToggle?:
     | ((legend: HTMLElement, classIndex: number, active: readonly number[]) => void)
@@ -230,6 +233,8 @@ export interface MapController {
   setSettings(settings: Partial<MapSettings>): void;
   setMapStyle(style: MapStyle | undefined, dark?: MapStyle | undefined): void;
   setLabels(labels: Partial<MapLabels>): void;
+  /** Sets the texts of the generated description and writes it again. */
+  setDescriptionStrings(strings: Partial<GeoDescriptionStrings> | undefined): void;
   /** Sets the selection of a `[data-ok-map-regions]` part of this map (`[]` clears it). */
   selectRegions(regions: HTMLElement, ids: readonly (string | number)[]): void;
   setSource(id: string, spec: MapSourceSpec): void;
@@ -359,6 +364,8 @@ const OVERLAY_ATTRIBUTES = [
   "data-ok-link-filter",
   // Size legends (proportional symbols).
   "data-ok-radius",
+  // Generated descriptions, and legend texts they read.
+  "data-ok-auto",
 ];
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -751,6 +758,7 @@ export function createMapController(
   // --- Regions and legends (choropleth) ----------------------------------------------------------
 
   let boxBlocked = false;
+  let descriptionStrings = options.descriptionStrings;
 
   const regions = createMapRegions({
     element,
@@ -760,6 +768,7 @@ export function createMapController(
     labels: () => labels,
     onRegionSelect: options.onRegionSelect,
     onLegendToggle: options.onLegendToggle,
+    descriptionStrings: () => descriptionStrings,
     // Box selection (ADR-0065) owns Shift + drag: MapLibre's box zoom is off meanwhile.
     blockBoxZoom(blocked) {
       boxBlocked = blocked;
@@ -1498,6 +1507,10 @@ export function createMapController(
       lightStyle = safeStyle(style);
       darkStyle = safeStyle(dark);
       applyStyle();
+    },
+    setDescriptionStrings(strings) {
+      descriptionStrings = strings;
+      regions.describe();
     },
     selectRegions(part, ids) {
       regions.setSelection(part, ids);

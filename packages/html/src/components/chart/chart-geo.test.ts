@@ -133,6 +133,25 @@ describe("chart runtime (geo)", () => {
     await expectNoAxeViolations(host);
   });
 
+  it("describes the plot from data-ok-description (4.18.99)", async () => {
+    const host = mount(
+      `${json("shapes", GEOMETRY)}${figure('data-ok-geometry="shapes" data-ok-description="auto"')}`,
+    );
+    start();
+    const id = plot(host).getAttribute("aria-describedby") as string;
+    const text = host.querySelector(`#${id}`);
+    expect(text?.textContent).toMatch(/^Choropleth map of 2 regions\./);
+    instance(host).setDescriptionStrings({ summary: "{count} zonas." });
+    expect(text?.textContent).toMatch(/^2 zonas\./);
+    root(host).setAttribute("data-ok-description", "Two squares.");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(host.querySelector(`#${id}`)?.textContent).toBe("Two squares.");
+    root(host).removeAttribute("data-ok-description");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(plot(host).hasAttribute("aria-describedby")).toBe(false);
+    await expectNoAxeViolations(host);
+  });
+
   it("draws hex tiles from the table's cells, no geometry needed", () => {
     const host =
       mount(`<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="hex"><table data-ok-chart-data>

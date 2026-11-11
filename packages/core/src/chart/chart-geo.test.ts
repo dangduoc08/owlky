@@ -631,3 +631,50 @@ describe("renderChart geo: patterns and pictures (4.18.97)", () => {
     expect(readChartGeoTable(table).regions[0]).toMatchObject({ id: "West", image: "a.png" });
   });
 });
+
+describe("renderChart: descriptions (4.18.99)", () => {
+  it("generates a geo chart's description from its regions and classes", () => {
+    const render = draw({
+      description: "auto",
+      scaleMethod: "equalInterval",
+      scaleClasses: 2,
+      valueSuffix: " t",
+    });
+    expect(render.description).toBe(
+      "Choropleth map of 3 regions. Values range from 1 t in West to 9 t in East. Highest: East (9 t), Middle (5 t) and West (1 t). 2 classes: 1 t – 5 t and 5 t – 9 t.",
+    );
+  });
+
+  it("names the layout, translates, and keeps given texts", () => {
+    expect(draw({ description: "auto", geoLayout: "hex" }).description).toMatch(/^Hex tile map/);
+    expect(draw({ description: "auto", geoLayout: "pixel" }).description).toMatch(/^Pixel map/);
+    expect(
+      draw({ description: "auto", descriptionStrings: { summary: "{count} zones." } }).description,
+    ).toMatch(/^3 zones\./);
+    expect(draw({ description: " A map of three squares. " }).description).toBe(
+      "A map of three squares.",
+    );
+    expect(draw().description).toBeUndefined();
+    // Other chart types: a given text only.
+    expect(
+      renderChart({
+        type: "line",
+        description: "auto",
+        series: [],
+        width: 200,
+        height: 100,
+        idPrefix: "l",
+      }).description,
+    ).toBeUndefined();
+    expect(
+      renderChart({
+        type: "line",
+        description: "Flat.",
+        series: [],
+        width: 200,
+        height: 100,
+        idPrefix: "l",
+      }).description,
+    ).toBe("Flat.");
+  });
+});

@@ -36,7 +36,8 @@ export function PatternFillsDemo() {
     <MapView
       id="map-patterns"
       aria-label="Map of US states by population, with a pattern per class"
-      description="The 50 US states and the District of Columbia in four population classes, each with its own color and pattern: dots, lines, diagonal lines and squares from the least to the most populous."
+      // Written from the regions and the legend: count, range, extremes, classes.
+      description="auto"
       mapStyle={MAP_STYLES.light}
       mapStyleDark={MAP_STYLES.dark}
       initialViewState={{ longitude: -98, latitude: 38.5, zoom: 3 }}

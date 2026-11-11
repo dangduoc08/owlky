@@ -2074,6 +2074,7 @@ export const chartExamples: Record<string, ChartExample> = {
     props: {
       id: "chart-geo-pixel",
       label: "Population by state as a dot map, millions",
+      description: "auto",
       type: "geo",
       geoLayout: "pixel",
       valueSuffix: "M",

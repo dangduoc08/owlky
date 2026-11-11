@@ -19,8 +19,14 @@ import { useMapContext } from "./map-context.js";
 import { InCorner } from "./map-controls.js";
 
 export {
+  type GeoDescriptionInput,
+  type GeoDescriptionItem,
+  type GeoDescriptionKind,
+  type GeoDescriptionStrings,
   type GreatCircleFeature,
   type GreatCircleOptions,
+  geoDescription,
+  geoDescriptionStrings,
   greatCircle,
   type MapBubbleLayerOptions,
   type MapHexbinAggregate,

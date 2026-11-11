@@ -26,6 +26,14 @@ export {
   readSourceDeclaration,
 } from "./declarations.js";
 export {
+  type GeoDescriptionInput,
+  type GeoDescriptionItem,
+  type GeoDescriptionKind,
+  type GeoDescriptionStrings,
+  geoDescription,
+  geoDescriptionStrings,
+} from "./describe.js";
+export {
   type GreatCircleFeature,
   type GreatCircleOptions,
   greatCircle,

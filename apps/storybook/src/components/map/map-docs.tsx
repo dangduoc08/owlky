@@ -628,6 +628,43 @@ export function LinkedMaps() {
 }`,
   },
   {
+    id: "auto-description",
+    title: "Describe the map automatically",
+    body: 'A map needs a text alternative that says what it shows, not only "a map of the United States". Set `description` to `auto` (HTML: an empty `p[data-ok-map-description]` with `data-ok-auto`) and the map writes it from its first `MapRegions` and legend: the type of map, the number of regions, the value range with its lowest and highest regions, the three highest values, the classes and the regions without data. Values read as in the table, for example "39.54 million". The text follows the data when it changes.\n\nTranslate it with `descriptionStrings` (HTML: `setDescriptionStrings()` on the map\'s instance). Each text is a template with placeholders, such as `summary: "{type} of {count} regions."`. `geoDescription()` returns the same text for your own use.',
+    html: `<!-- The map fills this paragraph -->
+<p data-ok-map-description id="map-patterns-description" data-ok-auto></p>
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-patterns");
+  getRuntime().get(element, "map").setDescriptionStrings({
+    summary: "{type} de {count} régions.",
+    choropleth: "Carte choroplèthe",
+  });
+</script>`,
+    react: `import { MapRegions, MapView } from "@owlky/react";
+
+const STATES = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+];
+
+export function DescribedMap() {
+  return (
+    <MapView
+      aria-label="Map of two western states by population"
+      description="auto"
+      descriptionStrings={{ summary: "{type} de {count} régions.", choropleth: "Carte choroplèthe" }}
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -118, latitude: 38, zoom: 4 }}
+    >
+      <MapRegions source="states" data={STATES} caption="Population by state, millions" />
+    </MapView>
+  );
+}`,
+  },
+  {
     id: "view",
     title: "Move the map",
     body: '`initialViewState` sets where the map starts: `longitude`, `latitude`, `zoom`, `pitch` and `bearing`, or `bounds` to fit. To control the view, pass `viewState` and update it from `onMove`. The map ref has `flyTo`, `easeTo`, `jumpTo` and `fitBounds`, and `getMap()` returns the MapLibre map for anything else.\n\nIn HTML, the root\'s `data-ok-longitude`, `data-ok-latitude` and `data-ok-zoom` set the view, and the map moves when you change them. Any element with `data-ok-map-fly-to="<map id>"` and `data-ok-view="longitude,latitude,zoom"` flies the map there when it is clicked, or when a radio button is selected. With reduced motion, the map jumps instead of flying.',
@@ -929,7 +966,7 @@ export function DownloadMap() {
     id: "accessibility",
     title: "Accessibility",
     body: `- Name each map with \`aria-label\` (HTML: \`data-ok-label\`). Without a name, it is called "Map".
-- Describe what the map shows with \`description\` (HTML: a \`p[data-ok-map-description]\` with an \`id\`). Screen readers read it with the map, and it replaces the map when the browser can't draw it.
+- Describe what the map shows with \`description\` (HTML: a \`p[data-ok-map-description]\` with an \`id\`), or let the map write it with \`auto\`. Screen readers read it with the map, and it replaces the map when the browser can't draw it.
 - Give every interactive marker a name. People can open its popup with Enter or Space, and move a draggable marker with the arrow keys.
 - A popup takes focus when it opens and gives it back when it closes, unless you turn off \`focusAfterOpen\`.
 - On a choropleth, name the regions' list with \`listLabel\` and give the table a \`caption\`. Keyboard users reach every region through the list, screen readers also get the table, and the legend shows the ranges as text, so the data never depends on color alone.

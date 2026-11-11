@@ -468,6 +468,12 @@
       "type": "(regions: Element, ids: readonly (string | number)[]) => void"
      },
      {
+      "description": "Sets the texts of the generated description (`p[data-ok-map-description][data-ok-auto]`), to translate it.",
+      "kind": "method",
+      "name": "setDescriptionStrings",
+      "type": "(strings: Partial<GeoDescriptionStrings> | undefined) => void"
+     },
+     {
       "description": "Enters or leaves full screen.",
       "kind": "method",
       "name": "setFullscreen",
@@ -666,6 +672,11 @@
       "kind": "value",
       "name": "data-ok-attribution",
       "value": "string"
+     },
+     {
+      "description": "On the map's description: the map writes it from its regions and legend (type, count, range, extremes, classes, no data).",
+      "kind": "state",
+      "name": "data-ok-auto"
      },
      {
       "description": "On a layer: the id of the layer it is drawn under.",
@@ -1986,9 +1997,14 @@
       "type": "string"
      },
      {
-      "description": "A text alternative for what the map shows (visually hidden; shown when it can't draw).",
+      "description": "A text alternative for what the map shows (visually hidden; shown when it can't draw). `\"auto\"` writes it from the first `MapRegions` and legend: type, region count, value range and extremes, classes and regions without data.",
       "name": "description",
       "type": "ReactNode"
+     },
+     {
+      "description": "Texts of the generated description (`description=\"auto\"`), to translate it.",
+      "name": "descriptionStrings",
+      "type": "Partial<GeoDescriptionStrings>"
      },
      {
       "description": "fallback`).",
@@ -2406,6 +2422,10 @@
  "name": "map",
  "title": "Map",
  "types": [
+  {
+   "name": "GeoDescriptionStrings",
+   "type": "{ summary: string; range: string; highest: string; classes: string; noData: string; more: string; and: string; choropleth: string; symbols: string; hex: string; pixel: string; map: string; }"
+  },
   {
    "name": "MapOffset",
    "type": "number | readonly [number, number]"

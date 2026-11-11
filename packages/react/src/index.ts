@@ -470,8 +470,14 @@ export {
   useMap,
 } from "./map/map.js";
 export {
+  type GeoDescriptionInput,
+  type GeoDescriptionItem,
+  type GeoDescriptionKind,
+  type GeoDescriptionStrings,
   type GreatCircleFeature,
   type GreatCircleOptions,
+  geoDescription,
+  geoDescriptionStrings,
   greatCircle,
   type MapBubbleLayerOptions,
   type MapHexbinAggregate,

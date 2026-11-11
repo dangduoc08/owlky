@@ -122,6 +122,39 @@ describe("Chart (geo)", () => {
     await expectNoAxeViolations(document.body);
   });
 
+  it("describes the plot, generated or given (4.18.99)", async () => {
+    const { rerender } = renderGeo({ description: "auto", scaleClasses: 2 });
+    const described = plot().getAttribute("aria-describedby") as string;
+    const text = document.getElementById(described);
+    expect(text?.closest("[data-ok-chart-plot]")).toBe(plot());
+    expect(text?.textContent).toMatch(
+      /^Choropleth map of 2 regions\. Values range from 2 in West to 8 in East\./,
+    );
+    expect(root().getAttribute("data-ok-description")).toBe("auto");
+    rerender(
+      <div style={{ width: 400 }}>
+        <Chart
+          label="Sales"
+          type="geo"
+          geometry={GEOMETRY}
+          regions={REGIONS}
+          joinBy="name"
+          description="auto"
+          descriptionStrings={{ summary: "{count} zonas." }}
+        />
+      </div>,
+    );
+    expect(document.getElementById(described)?.textContent).toMatch(/^2 zonas\./);
+    rerender(
+      <div style={{ width: 400 }}>
+        <Chart label="Sales" type="geo" geometry={GEOMETRY} regions={REGIONS} joinBy="name" />
+      </div>,
+    );
+    expect(plot().hasAttribute("aria-describedby")).toBe(false);
+    expect(root().querySelector("[data-ok-chart-description]")).toBeNull();
+    await expectNoAxeViolations(document.body);
+  });
+
   it("draws hex tiles without geometry", () => {
     render(
       <Chart

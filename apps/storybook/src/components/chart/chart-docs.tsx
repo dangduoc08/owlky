@@ -1146,6 +1146,47 @@ export function PatternedMap() {
 }`,
   },
   {
+    id: "geo-description",
+    title: "Describe a geo chart automatically",
+    body: `Set \`description\` to \`auto\` (HTML: \`data-ok-description="auto"\`) and a geo chart writes the plot's description: the layout, the number of regions, the value range with its lowest and highest regions, the three highest values, the classes of the legend and the regions without data. Screen readers read it with the chart, values formatted as in the tooltip. Any other text is used as written, on every chart type. Translate the generated text with \`descriptionStrings\` (HTML: \`setDescriptionStrings()\` on the chart's instance): each text is a template with placeholders, such as \`summary: "{type} of {count} regions."\`.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="hex" data-ok-description="auto" data-ok-height="240">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row" data-ok-cell="0,0">Washington</th><td data-ok-value="7.71">7.71</td></tr>
+      <tr><th scope="row" data-ok-cell="1,0">Idaho</th><td data-ok-value="1.84">1.84</td></tr>
+      <tr><th scope="row" data-ok-cell="0,1">Oregon</th><td></td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function DescribedHexMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      geoLayout="hex"
+      description="auto"
+      height={240}
+      regions={[
+        { id: "Washington", name: "Washington", value: 7.71 },
+        { id: "Idaho", name: "Idaho", value: 1.84 },
+        { id: "Oregon", name: "Oregon", value: null },
+      ]}
+      hexCells={[
+        { id: "Washington", col: 0, row: 0 },
+        { id: "Idaho", col: 1, row: 0 },
+        { id: "Oregon", col: 0, row: 1 },
+      ]}
+    />
+  );
+}`,
+  },
+  {
     id: "icicle",
     title: "Show parts of a hierarchy as bands",
     body: `An icicle chart shows the same hierarchy as a sunburst, in bands: one band per level, and each node a cell as long as its share of its parent. Long names and deep trees read better in bands than in rings, and cells of one level are easy to compare by length. Set \`type\` to \`icicle\` and describe the nodes as for a tree chart. See "Show a hierarchy as a tree".

@@ -8,6 +8,7 @@
  * linked maps whose selection filters the other members of a `group` (a module-scoped registry).
  */
 import type { MapLibreMap } from "maplibre-gl";
+import { type GeoDescriptionKind, type GeoDescriptionStrings, geoDescription } from "./describe.js";
 
 export interface MapRegionsHost {
   readonly element: HTMLElement;
@@ -22,6 +23,8 @@ export interface MapRegionsHost {
   onRegionSelect?:
     | ((regions: HTMLElement, id: string | number | null, ids: (string | number)[]) => void)
     | undefined;
+  /** Texts of generated descriptions (`p[data-ok-map-description][data-ok-auto]`). */
+  descriptionStrings?: (() => Partial<GeoDescriptionStrings> | undefined) | undefined;
   /** `true` while a regions group asks for box selection: Shift + drag must not zoom. */
   blockBoxZoom?: ((blocked: boolean) => void) | undefined;
   onLegendToggle?:
@@ -40,6 +43,8 @@ export interface MapRegions {
   pointer(point: { x: number; y: number } | null): boolean;
   /** A click on the map: selects the region under it. */
   click(point: { x: number; y: number }): void;
+  /** Writes the generated description again (its texts changed). */
+  describe(): void;
   /** Sets the selection of a `[data-ok-map-regions]` part (ids that aren't rows are ignored). */
   setSelection(regions: HTMLElement, ids: readonly (string | number)[]): void;
   destroy(): void;
@@ -437,6 +442,41 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     }
   };
 
+  // --- Generated description (4.18.99) --------------------------------------------------------
+
+  /** Fills `p[data-ok-map-description][data-ok-auto]` from the first regions part and legend. */
+  const describe = () => {
+    const targets = host.own("p[data-ok-map-description][data-ok-auto]");
+    const group = groups[0];
+    if (targets.length === 0 || !group) return;
+    const type = group.layer ? host.ready()?.getLayer(group.layer)?.type : undefined;
+    const kind: GeoDescriptionKind =
+      type === "fill" || type === "fill-extrusion"
+        ? "choropleth"
+        : type === "circle"
+          ? "symbols"
+          : "map";
+    const legend = host
+      .own("[data-ok-map-legend]")
+      .find((each) => each.querySelector("[data-ok-map-legend-classes]"));
+    const classes = legend
+      ? [
+          ...legend.querySelectorAll(
+            "[data-ok-map-legend-class]:not([data-ok-null]) [data-ok-map-legend-label]",
+          ),
+        ]
+          .map((label) => label.textContent?.trim() ?? "")
+          .filter(Boolean)
+      : [];
+    const text = geoDescription({
+      kind,
+      items: group.rows.map((row) => ({ name: row.name, value: row.value, text: row.text })),
+      classes,
+      strings: host.descriptionStrings?.(),
+    });
+    for (const target of targets) if (target.textContent !== text) target.textContent = text;
+  };
+
   // --- Scan -----------------------------------------------------------------------------------
 
   const scan = () => {
@@ -482,6 +522,7 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     host.blockBoxZoom?.(groups.some((group) => group.boxSelect));
     paintLegends();
     apply();
+    describe();
     for (const group of groups) {
       const ids = pending.get(group.root);
       if (ids) api.setSelection(group.root, ids);
@@ -802,7 +843,11 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
 
   const api: MapRegions = {
     scan,
-    apply,
+    apply() {
+      apply();
+      describe();
+    },
+    describe,
     sourceData: sourceChanged,
     pointer(point) {
       const next = point ? hit(point) : null;

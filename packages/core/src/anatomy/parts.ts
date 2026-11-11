@@ -273,6 +273,10 @@ export interface ChartParts {
   "data-ok-label": Part<"th">;
   /** Geo charts: a decorative picture that fills the region (on the table's row header): an http(s), relative or `data:image/…` URL. */
   "data-ok-image": Part<"th">;
+  /** A text that describes the chart (the plot's description); `auto` on geo charts writes it from the data. */
+  "data-ok-description": Part<"figure">;
+  /** Set by the runtime: the plot's description, visually hidden (from `data-ok-description`). */
+  "data-ok-chart-description": Part<"p">;
   /** Geo charts: the definition of a region's picture fill (a `pattern` in the SVG's `defs`). */
   "data-ok-chart-image": Part<"pattern">;
   /** Geo charts, `pixel` layout: on the regions' series group. */
@@ -1768,6 +1772,8 @@ export interface MapParts {
   "data-ok-group": Value<string>;
   /** Set by the runtime on a region option that a linked map's filter leaves out. */
   "data-ok-muted": State;
+  /** On the map's description: the map writes it from its regions and legend (type, count, range, extremes, classes, no data). */
+  "data-ok-auto": State;
   /** On a cell of the regions table: the region's value, a number. */
   "data-ok-value": Value<string>;
 }

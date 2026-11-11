@@ -452,6 +452,32 @@ describe("Map", () => {
     expect(first).toEqual([null, null]);
   });
 
+  it("writes a generated description for description=auto (4.18.99)", async () => {
+    const { container } = render(
+      <MapView
+        mapStyle={STYLE}
+        description="auto"
+        descriptionStrings={{ summary: "{count} zonas." }}
+      >
+        <div data-ok-map-regions="" data-ok-source="none">
+          <table>
+            <tbody>
+              <tr data-ok-id="a">
+                <th>Alpha</th>
+                <td data-ok-value="2">2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </MapView>,
+    );
+    const description = container.querySelector("[data-ok-map-description]") as HTMLElement;
+    expect(description.hasAttribute("data-ok-auto")).toBe(true);
+    await act(async () => {});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(description.textContent).toMatch(/^1 zonas\. Values range from 2 in Alpha/);
+  });
+
   it("can render controls in place (static rendering) and keeps bounds objects out of markup", () => {
     const { container } = render(
       <InlineCorners.Provider

@@ -515,6 +515,11 @@ Geo charts (core `chart-geo.ts`, ADR-0059): `type="geo"`, no tile style, no MapL
   at the region's box › `rect[data-ok-chart-pattern-tint]` (the class color, opacity 1; 0 without a
   value) + `image[href][preserveAspectRatio]` (`imageFit`: `cover` = `xMidYMid slice` default,
   `contain` = `meet`, `fill` = `none`). Defs come first in the tree, only when used.
+- Description (4.18.99): `description` (`data-ok-description`, a text attribute) is the plot's
+  `aria-describedby` → `plot › p[data-ok-chart-description][id=<prefix>-description]` (after the
+  tooltip, visually hidden), on every type; `"auto"` on geo charts is `chartGeoDescription` (the
+  Map's `geoDescription`: layout → choropleth / hex / pixel, values as `format.value`, classes =
+  legend item names); `descriptionStrings` (React prop, HTML `setDescriptionStrings()`) translate it.
 - Not built: `orthographic` and rotation, pan and zoom, shape ↔ hex morph, bubbles / markers on
   `geo`, a null legend item, label collision, a `diamond` pixel shape.
 

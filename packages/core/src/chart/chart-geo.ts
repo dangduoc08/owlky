@@ -4,6 +4,7 @@
  * `mapScale`, whose module is pure. Layout mode `cell`: keyboard moves between region centers.
  */
 import { type MapScaleClass, mapScale, mapScaleLabel } from "../map/choropleth.js";
+import { type GeoDescriptionStrings, geoDescription } from "../map/describe.js";
 import { latticePoints, latticeShape, type MapPixelShape, mapPixelShapes } from "../map/lattice.js";
 import { type ChartCueOptions, chartPatternAt, chartPatternDefs } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
@@ -785,6 +786,34 @@ export function layoutGeo(
   };
 
   return { layout, legend: values.some((value) => value !== null) ? items : null, table };
+}
+
+/**
+ * The generated description of a geo chart (4.18.99, ApexMaps `a11y.description: 'auto'`): its
+ * layout, region count, value range and extremes, classes (the legend's ranges) and the regions
+ * without data, values formatted as in the tooltip.
+ */
+export function chartGeoDescription(
+  options: Pick<ChartGeoOptions, "regions" | "geoLayout">,
+  format: ChartFormat,
+  legend: readonly { name: string }[] | null,
+  strings?: Partial<GeoDescriptionStrings>,
+): string {
+  const regions = (options.regions ?? []).slice(0, MAX_REGIONS);
+  return geoDescription({
+    kind:
+      options.geoLayout === "hex" ? "hex" : options.geoLayout === "pixel" ? "pixel" : "choropleth",
+    items: regions.map((region) => {
+      const value = finiteValue(region.value);
+      return {
+        name: region.name ?? region.id,
+        value,
+        ...(value === null ? {} : { text: format.value(value, 0) }),
+      };
+    }),
+    classes: legend?.map((item) => item.name),
+    strings,
+  });
 }
 
 /** Reads a geo chart's table back: one row per region, `th` name, `td` value. */

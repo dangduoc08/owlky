@@ -1,7 +1,7 @@
 <div id="map-patterns" data-ok-map data-ok-longitude="-98" data-ok-latitude="38.5" data-ok-zoom="3" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-label="Map of US states by population, with a pattern per class">
   <div data-ok-map-view></div>
   <div data-ok-map-fallback></div>
-  <p data-ok-map-description id="map-patterns-description">The 50 US states and the District of Columbia in four population classes, each with its own color and pattern: dots, lines, diagonal lines and squares from the least to the most populous.</p>
+  <p data-ok-map-description id="map-patterns-description" data-ok-auto></p>
   <div data-ok-map-status role="status"></div>
   <div data-ok-map-source data-ok-id="patterns" data-ok-type="geojson" data-ok-data='maps/us-states.geojson' data-ok-promote-id="name" hidden>
     <div data-ok-map-layer data-ok-id="patterns-fill" data-ok-type="fill" data-ok-paint='{"fill-color":["case",["==",["typeof",["feature-state","value"]],"number"],["step",["feature-state","value"],"var(--ok-palette-primary-lighter)",5.71,"var(--ok-palette-primary-light)",20.2,"var(--ok-palette-primary-dark)",39.54,"var(--ok-palette-primary-darker)"],"var(--ok-text-disabled)"],"fill-opacity":["case",["boolean",["feature-state","muted"],false],0.15,["any",["boolean",["feature-state","hover"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","selected"],false]],0.95,0.8]}' hidden></div>

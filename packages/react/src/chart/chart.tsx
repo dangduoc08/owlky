@@ -114,6 +114,7 @@ import {
   createChartGestures,
   dragChartAnnotation,
   exportChart,
+  type GeoDescriptionStrings,
   hasChartDataPoint,
   linkChart,
   nextChartActive,
@@ -556,6 +557,14 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   /** Localized texts: part labels ("Minimum", "Q1"…), tool names, the export error and `selected`. */
   localeText?: ChartLocaleText | undefined;
   /**
+   * A text that describes the chart for assistive technology (the plot's description). On geo
+   * charts, `"auto"` writes it: the layout, region count, value range and extremes, classes and
+   * the regions without data.
+   */
+  description?: string | undefined;
+  /** Texts of the generated description (`description="auto"`), to translate it. */
+  descriptionStrings?: Partial<GeoDescriptionStrings> | undefined;
+  /**
    * Controlled: the selected points (`{ seriesIndex, dataPointIndex }`). A click selects the
    * point, slice or cell under the pointer, Enter or Space the active one.
    */
@@ -882,6 +891,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     toolbar,
     animations,
     localeText,
+    description,
+    descriptionStrings,
     selectedDataPoints,
     defaultSelectedDataPoints = NO_POINTS,
     onDataPointSelection,
@@ -1457,6 +1468,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         width,
         height: svgHeight,
         idPrefix: chartIdPrefix(id),
+        description,
+        descriptionStrings,
         xMin: validXMin,
         xMax: validXMax,
         xRange: validXRange,
@@ -1616,6 +1629,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       picked,
       annotationIndexes,
       localeText,
+      description,
+      JSON.stringify(descriptionStrings ?? null),
       zoomControlled,
       zoomRange,
       innerZoom,
@@ -2198,6 +2213,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       {...attributes}
       {...chartTextAttributes({
         type: chartType,
+        description,
         colors: chartType === "geo" ? colors : undefined,
         yTitle,
         totalLabel,
@@ -2331,6 +2347,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         role="group"
         aria-roledescription="chart"
         aria-label={render.noData ? `${label}: ${render.noData}` : label}
+        aria-describedby={render.description ? `${chartIdPrefix(id)}-description` : undefined}
         tabIndex={0}
         // Sparklines: the least height (CSSOM in HTML; parity ignores `style`).
         style={
@@ -2391,6 +2408,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
                 </>
               )}
         </div>
+        {render.description ? (
+          <p data-ok-chart-description="" id={`${chartIdPrefix(id)}-description`}>
+            {render.description}
+          </p>
+        ) : null}
       </div>
       {tools.length === 0 && render.annotationHits && (
         <span data-ok-chart-status="" role="status">

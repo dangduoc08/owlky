@@ -100,6 +100,7 @@ import {
   createChartGestures,
   dragChartAnnotation,
   exportChart,
+  type GeoDescriptionStrings,
   hasChartDataPoint,
   isHierarchyChart,
   linkChart,
@@ -251,6 +252,8 @@ export interface ChartInstance extends ComponentInstance {
   readonly drillNode: string | null;
   /** Sunburst and icicle charts: zooms into a node (`null`: the whole chart; no event). */
   setDrillNode(id: string | null): void;
+  /** Geo charts: the texts of the generated description (`data-ok-description="auto"`), to translate it. */
+  setDescriptionStrings(strings: Partial<GeoDescriptionStrings> | undefined): void;
   /** Geo charts: the regions' shapes as GeoJSON, for pages that don't use `data-ok-geometry` (`null`: back to the attribute). */
   setGeometry(geometry: ChartGeometry | null): void;
   /** Drilldown: the ids of the levels opened (`data-ok-drilldown-path`), outermost first. */
@@ -712,6 +715,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       box.replaceChildren(content);
     };
 
+    /** Texts of the generated description (`setDescriptionStrings`). */
+    let descriptionStrings: Partial<GeoDescriptionStrings> | undefined;
     /** Geo charts: the shapes set through `setGeometry`, else the JSON element named by the root. */
     let geometryOverride: ChartGeometry | null = null;
     let parsedGeometry: { source: string; value: ChartGeometry | null } | null = null;
@@ -972,6 +977,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         width: measured(),
         height,
         idPrefix: id,
+        description: text(element, CHART_TEXT_ATTRIBUTES.description),
+        descriptionStrings,
         xMin: readNumber(element, o.xMin) as number | undefined,
         xMax: readNumber(element, o.xMax) as number | undefined,
         xRange: readNumber(element, o.xRange) as number | undefined,
@@ -1001,6 +1008,22 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       const name = render.noData && label ? `${label}: ${render.noData}` : label;
       if (name) plot.setAttribute("aria-label", name);
       else plot.removeAttribute("aria-label");
+      // The plot's description (4.18.99), after the tooltip; `auto` geo charts write it.
+      let described = plot.querySelector<HTMLElement>(":scope > [data-ok-chart-description]");
+      if (render.description) {
+        if (!described) {
+          described = document.createElement("p");
+          described.setAttribute("data-ok-chart-description", "");
+          described.id = `${id}-description`;
+          plot.append(described);
+        }
+        if (described.textContent !== render.description)
+          described.textContent = render.description;
+        plot.setAttribute("aria-describedby", described.id);
+      } else {
+        described?.remove();
+        plot.removeAttribute("aria-describedby");
+      }
       const { layout } = render;
       drawTools();
       // Draggable annotations without a toolbar announce their moves in a status of their own.
@@ -1844,6 +1867,10 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       },
       get collapsedNodes() {
         return collapsedNodes();
+      },
+      setDescriptionStrings(strings) {
+        descriptionStrings = strings;
+        draw();
       },
       setGeometry(geometry: ChartGeometry | null) {
         geometryOverride = geometry;

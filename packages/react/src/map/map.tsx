@@ -10,6 +10,7 @@ import {
 } from "@owlky/core";
 import {
   createMapController,
+  type GeoDescriptionStrings,
   type MapController,
   type MapEvent,
   type MapEventType,
@@ -177,8 +178,14 @@ export interface MapProps
   labels?: Partial<MapLabels> | undefined;
   /** Name of the map (its canvas). Default "Map". */
   "aria-label"?: string | undefined;
-  /** A text alternative for what the map shows (visually hidden; shown when it can't draw). */
+  /**
+   * A text alternative for what the map shows (visually hidden; shown when it can't draw).
+   * `"auto"` writes it from the first `MapRegions` and legend: type, region count, value range
+   * and extremes, classes and regions without data.
+   */
   description?: ReactNode;
+  /** Texts of the generated description (`description="auto"`), to translate it. */
+  descriptionStrings?: Partial<GeoDescriptionStrings> | undefined;
   /** Shown instead of the map without WebGL (default: a sentence from `labels.fallback`). */
   fallback?: ReactNode;
   /** Called when the map enters or leaves full screen. */
@@ -319,6 +326,7 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
     labels,
     "aria-label": ariaLabel,
     description,
+    descriptionStrings,
     fallback,
     onFullscreenChange,
     onFallback,
@@ -379,6 +387,7 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
       mapStyleDark: propsRef.current.mapStyleDark,
       initialViewState: { ...propsRef.current.initialViewState, ...controlled },
       labels: labelsRef.current,
+      descriptionStrings: propsRef.current.descriptionStrings,
       mapOptions: propsRef.current.mapOptions,
       ...settings,
       onFallback: (reason) => call("onFallback", reason),
@@ -420,6 +429,11 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
   useEffect(() => {
     controller?.setLabels(mergedLabels);
   }, [controller, mergedLabels]);
+  const stringsKey = JSON.stringify(descriptionStrings ?? null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stringsKey stands for the strings.
+  useEffect(() => {
+    controller?.setDescriptionStrings(descriptionStrings);
+  }, [controller, stringsKey]);
   const viewKey = JSON.stringify(controlled);
   // biome-ignore lint/correctness/useExhaustiveDependencies: viewKey stands for the controlled view.
   useEffect(() => {
@@ -523,8 +537,12 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
           <div data-ok-map-view="" />
           <div data-ok-map-fallback="">{fallback}</div>
           {description === undefined ? null : (
-            <p data-ok-map-description="" id={descriptionId}>
-              {description}
+            <p
+              data-ok-map-description=""
+              id={descriptionId}
+              data-ok-auto={description === "auto" ? "" : undefined}
+            >
+              {description === "auto" ? null : description}
             </p>
           )}
           <div data-ok-map-status="" role="status" />

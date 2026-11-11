@@ -27,7 +27,7 @@ div[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoo
                                                 [aria-label][aria-describedby][aria-roledescription=map]; div[data-ok-map-user-location]?
   div[data-ok-map-fallback]                   text (default from labels.fallback when empty)
   div[data-ok-map-selection-box][aria-hidden]  (controller, while a Shift + drag box lasts; after the canvas container)
-  p[data-ok-map-description][id]?             text alternative (visually hidden; shown with the fallback)
+  p[data-ok-map-description][id]?[data-ok-auto]?  text alternative (visually hidden; shown with the fallback); data-ok-auto: written by the controller (4.18.99)
   div[data-ok-map-status][role=status]        location announcements (visually hidden)
   div[data-ok-map-marker][data-ok-longitude][data-ok-latitude][data-ok-anchor][data-ok-color][data-ok-offset]?
      [data-ok-draggable]?[data-ok-rotation]?[data-ok-rotation-alignment]?[data-ok-pitch-alignment]?
@@ -375,6 +375,22 @@ rectangle, modifier: 'shift' }`, `link: { group, filter }`, `states.muted.opacit
 - Not built: lasso selection, another modifier key, a built-in Clear control and announcements of a
   received filter (pages add them; the story shows a status and a button), filters by value range.
 
+## Generated description
+Roadmap 4.18.99, after ApexMaps' `a11y.description: 'auto'`.
+- `geoDescription({ kind, items[{ name, value, text? }], classes?, strings?, highest = 3, noDataLimit = 5 })`
+  (pure, `describe.ts`, shared with the Chart): "<type> of <n> regions." + "Values range from <min>
+  in <name> to <max> in <name>." + "Highest: <top 3>." (more than 2 values) + "<n> classes: <list>." +
+  "No data for <first 5>, and <n> more."; `strings` (`geoDescriptionStrings`) are templates with
+  `{placeholders}` (`summary`, `range`, `highest`, `classes`, `noData`, `more`, `and`, type names
+  `choropleth`, `symbols`, `hex`, `pixel`, `map`).
+- Map: `p[data-ok-map-description][data-ok-auto]` (React `description="auto"`, rendered empty) gets
+  the text of the first `[data-ok-map-regions]` (row names and cell texts) and the first classes legend
+  (labels, no-data class excluded); type from the regions' `data-ok-layer` (`fill` → choropleth,
+  `circle` → proportional symbols, else map; "Map" until the style is in). Rewritten on every scan and
+  style load when it differs. `descriptionStrings` (controller option, React prop, HTML
+  `setDescriptionStrings()`).
+- Not built: ApexMaps `keyboardFeatureLimit` (the regions list always holds every region).
+
 ## Great circles, drilldown, export
 Roadmap 4.18.16 (ApexMaps checked 2026-11-11: arc series, drilldown, breadcrumb).
 - `greatCircle(from, to, { steps = 64 (1–1024; non-finite: 64), properties })` (pure, `@owlky/core/map`,
@@ -535,6 +551,7 @@ The "API mapping" paragraph above records the details; this table adds a status 
 | ApexMaps `fill.pattern` (`dots`, `squares`, `lines`, `diagonal`, …; per `classIndex`), legend pattern swatches | `mapPatternLayer({ scale, patterns })`, `MapLegend patterns` | renamed (4.18.97) | the Chart's pattern names, ApexMaps' as aliases; `checks`, `grid`, `crosshatch`, `custom` not built; image fills: Chart `type="geo"` only |
 | ApexMaps `interaction.selection` (`multiple`, `rectangle`, `modifier: 'shift'`), Alt adds, Escape cancels | `MapRegions multiple`, `boxSelect` (`data-ok-multiple`, `data-ok-box-select`) | renamed (4.18.98, ADR-0065) | `rectangle` → `boxSelect`; the modifier is always Shift; keyboard path in the list (WCAG 2.5.7) |
 | ApexMaps `link: { group, filter: 'bidirectional' · 'emit' · 'receive' }` | `MapRegions group`, `linkFilter` (`data-ok-group`, `data-ok-link-filter`) | renamed (4.18.98) | `filter` → `linkFilter`; matches by region id |
+| ApexMaps `a11y.description: 'auto'`, `dataTable` | `description="auto"` (`p[data-ok-map-description][data-ok-auto]`), `descriptionStrings`, `geoDescription()`; the `MapRegions` table | renamed (4.18.99) | `keyboardFeatureLimit` not built |
 | ApexMaps `geo.projection`, `geo.layout: 'hex'`, `geo.sphere`, `geo.graticule` | Chart `type="geo"` (ADR-0059) | renamed | SVG charts without tiles; `orthographic`, rotation, morphing not built |
 
 ## Parity notes

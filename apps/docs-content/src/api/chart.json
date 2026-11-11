@@ -418,6 +418,12 @@
       "type": "(ids: readonly string[]) => void"
      },
      {
+      "description": "Geo charts: the texts of the generated description (`data-ok-description=\"auto\"`), to translate it.",
+      "kind": "method",
+      "name": "setDescriptionStrings",
+      "type": "(strings: Partial<GeoDescriptionStrings> | undefined) => void"
+     },
+     {
       "description": "Sunburst and icicle charts: zooms into a node (`null`: the whole chart; no event).",
       "kind": "method",
       "name": "setDrillNode",
@@ -2394,6 +2400,14 @@
       "name": "data-ok-chart-data-labels"
      },
      {
+      "description": "Set by the runtime: the plot's description, visually hidden (from `data-ok-description`).",
+      "elements": [
+       "p"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-description"
+     },
+     {
       "description": "Sunburst and icicle charts: the controls before the plot, a **Back** button and the drilled path (a status).",
       "elements": [
        "div"
@@ -3227,6 +3241,14 @@
       "value": "string"
      },
      {
+      "description": "A text that describes the chart (the plot's description); `auto` on geo charts writes it from the data.",
+      "elements": [
+       "figure"
+      ],
+      "kind": "part",
+      "name": "data-ok-description"
+     },
+     {
       "description": "Markers on single points, such as \\`0 3 error star 8; 1 2\\`.",
       "kind": "value",
       "name": "data-ok-discrete-markers",
@@ -3819,6 +3841,16 @@
       "description": "Uncontrolled initial zoom.",
       "name": "defaultZoomRange",
       "type": "ChartZoom | null"
+     },
+     {
+      "description": "A text that describes the chart for assistive technology (the plot's description). On geo charts, `\"auto\"` writes it: the layout, region count, value range and extremes, classes and the regions without data.",
+      "name": "description",
+      "type": "string"
+     },
+     {
+      "description": "Texts of the generated description (`description=\"auto\"`), to translate it.",
+      "name": "descriptionStrings",
+      "type": "Partial<GeoDescriptionStrings>"
      },
      {
       "default": "\"top\"",
@@ -4942,6 +4974,16 @@
       "type": "ChartZoom | null"
      },
      {
+      "description": "A text that describes the chart for assistive technology (the plot's description). On geo charts, `\"auto\"` writes it: the layout, region count, value range and extremes, classes and the regions without data.",
+      "name": "description",
+      "type": "string"
+     },
+     {
+      "description": "Texts of the generated description (`description=\"auto\"`), to translate it.",
+      "name": "descriptionStrings",
+      "type": "Partial<GeoDescriptionStrings>"
+     },
+     {
       "default": "\"top\"",
       "description": "Tree and icicle charts: where the root sits, or `radial` (trees: the root in the center).",
       "name": "direction",
@@ -5798,6 +5840,10 @@
   {
    "name": "ChartZoomReason",
    "type": "\"brush\" | \"group\" | \"user\""
+  },
+  {
+   "name": "GeoDescriptionStrings",
+   "type": "{ summary: string; range: string; highest: string; classes: string; noData: string; more: string; and: string; choropleth: string; symbols: string; hex: string; pixel: string; map: string; }"
   }
  ]
 }

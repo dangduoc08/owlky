@@ -1,6 +1,7 @@
 import { mapHandlers, mapOptions, readBehavior, readNumber, readStyle } from "@owlky/core";
 import {
   createMapController,
+  type GeoDescriptionStrings,
   greatCircle,
   type MapController,
   type MapEvent,
@@ -115,6 +116,8 @@ export interface MapInstance extends ComponentInstance {
   selectRegions(regions: Element, ids: readonly (string | number)[]): void;
   /** Clears the selection of one `[data-ok-map-regions]` part, or of every part of the map. */
   clearSelection(regions?: Element): void;
+  /** Sets the texts of the generated description (`p[data-ok-map-description][data-ok-auto]`), to translate it. */
+  setDescriptionStrings(strings: Partial<GeoDescriptionStrings> | undefined): void;
   /** Classifies values for a choropleth (core `mapScale`): class breaks, token colors and the MapLibre expressions. */
   scale: typeof mapScale;
   /** The great circle arc between two `[longitude, latitude]` positions, as a GeoJSON feature (core `greatCircle`), for CDN pages. */
@@ -444,6 +447,7 @@ export const map = defineComponent<MapInstance, MapEvents>({
         return element.hasAttribute(mapOptions.options.fullscreen.attr);
       },
       setFullscreen: controller.setFullscreen,
+      setDescriptionStrings: controller.setDescriptionStrings,
       selectRegions(regions, ids) {
         controller.selectRegions(regions as HTMLElement, ids);
       },
