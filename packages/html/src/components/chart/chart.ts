@@ -109,6 +109,8 @@ import {
   parseChartIndicators,
   parseChartList,
   parseChartStripeColors,
+  parseChartTreeLabel,
+  parseChartTreeLabelLevels,
   parseChartXGroups,
   parseChartYAxes,
   placeChartTooltip,
@@ -785,6 +787,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         direction: readStyle(element, o.direction) as ChartDirection | undefined,
         layoutType: readStyle(element, o.layoutType) as ChartLayoutType | undefined,
         edgeStyle: readStyle(element, o.edgeStyle) as ChartEdgeStyle | undefined,
+        externalLabel: parseChartTreeLabel(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.externalLabel),
+        ),
+        externalLabelLevels: parseChartTreeLabelLevels(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.externalLabelLevels),
+        ),
         enableExpandCollapse: element.hasAttribute(o.enableExpandCollapse.attr),
         collapsedNodes: collapsedNodes(),
         drillNode: text(element, CHART_TEXT_ATTRIBUTES.drillNode),

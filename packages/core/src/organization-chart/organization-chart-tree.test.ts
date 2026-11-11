@@ -100,11 +100,9 @@ describe("organization chart tree: helpers", () => {
 
   it("organizationChartNodePath, organizationChartVisible and organizationChartSelected", () => {
     const { root, node } = mount({});
-    expect(organizationChartNodePath(root, "elias").map((item) => item.dataset.okNodeId)).toEqual([
-      "maya",
-      "priya",
-      "elias",
-    ]);
+    expect(
+      organizationChartNodePath(root, "elias").map((item) => item.getAttribute("data-ok-node-id")),
+    ).toEqual(["maya", "priya", "elias"]);
     expect(organizationChartNodePath(root, "maya")).toEqual([node("maya")]);
     expect(organizationChartNodePath(root, "missing")).toEqual([]);
     // Nested charts are their own.

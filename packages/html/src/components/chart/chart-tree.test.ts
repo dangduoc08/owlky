@@ -5,6 +5,7 @@ import { expectNoAxeViolations, mount, resetPage, settle } from "../../test-util
 import { components } from "../index.js";
 import type { ChartInstance } from "./chart.js";
 import tree from "./examples/tree-group.html?raw";
+import treeLabels from "./examples/tree-labels-group.html?raw";
 
 /* Tree charts in the HTML runtime (ADR-0058, roadmap 4.18.7). */
 
@@ -123,5 +124,33 @@ describe("chart runtime (tree)", () => {
     expect(title(root)).toBe("Plants › Rosaceae");
     key(plot, "Enter");
     expect(root.hasAttribute("data-ok-collapsed-nodes")).toBe(false);
+  });
+
+  it("places labels from the root's and the rows' external label attributes (4.18.86)", async () => {
+    const host = sized(treeLabels, 640);
+    start();
+    const [left, top] = [...host.querySelectorAll<HTMLElement>("[data-ok-chart]")];
+    const label = (root: Element | undefined, text: string) =>
+      [...(root?.querySelectorAll("[data-ok-chart-node-label]") ?? [])].find(
+        (node) => node.textContent === text,
+      );
+    // Every label after its node and above it; the pages, level 2, slant up.
+    expect(label(left, "Blog")?.getAttribute("text-anchor")).toBe("start");
+    expect(label(left, "Blog")?.getAttribute("dy")).toBe("0");
+    expect(label(left, "News")?.getAttribute("transform")).toMatch(/^rotate\(-20 /);
+    // The root's label above it; Americas has its own placement (a row header attribute).
+    expect(label(top, "Head office")?.getAttribute("text-anchor")).toBe("middle");
+    expect(label(top, "Americas")?.getAttribute("text-anchor")).toBe("end");
+    expect(label(top, "Europe")?.getAttribute("text-anchor")).toBe("start");
+    // Attribute changes redraw; invalid text is ignored.
+    top?.setAttribute("data-ok-external-label", "align=left nonsense");
+    await settle();
+    expect(label(top, "Europe")?.getAttribute("text-anchor")).toBe("end");
+    top?.removeAttribute("data-ok-external-label");
+    top?.removeAttribute("data-ok-external-label-levels");
+    await settle();
+    expect(label(top, "Europe")?.getAttribute("dy")).toBe("0.71em");
+    expect(label(top, "Americas")?.getAttribute("text-anchor")).toBe("end");
+    await expectNoAxeViolations(host);
   });
 });
