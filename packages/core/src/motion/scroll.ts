@@ -8,7 +8,8 @@
  *      scroll listener (Firefox, Safari before 26, offsets no timeline range expresses).
  * Module-scoped state only (ADR-0007).
  */
-import { animate } from "./animate.js";
+import { animate, type SpringOptions } from "./animate.js";
+import { springValue } from "./values.js";
 
 /** Scroll direction: `y` (vertical, default) or `x` (horizontal). */
 export type ScrollAxis = "x" | "y";
@@ -31,6 +32,43 @@ export interface ScrollOptions {
   axis?: ScrollAxis | undefined;
   /** Two intersections (an array, or a string with a comma between them). */
   offset?: ScrollOffset | string | undefined;
+  /**
+   * The progress shown follows the scroll with a spring (Framer's `useSpring` smoothing, 5.4):
+   * `true` (stiffness 100, damping 30) or spring options. Only `createScrollProgress` reads it.
+   */
+  smooth?: boolean | SpringOptions | undefined;
+}
+
+/** The spring of `smooth: true` (Framer's documented `useSpring(scrollYProgress)` smoothing). */
+export const SCROLL_SMOOTH: SpringOptions = { stiffness: 100, damping: 30, restDelta: 0.001 };
+
+const SPRING_KEYS = [
+  "stiffness",
+  "damping",
+  "mass",
+  "bounce",
+  "visualDuration",
+  "restDelta",
+  "restSpeed",
+] as const;
+
+/** `data-ok-scroll-smooth`: empty or `true` → on; a JSON object of spring options; else off. */
+export function parseScrollSmooth(text: string | null): boolean | SpringOptions | undefined {
+  if (text === null) return undefined;
+  const value = text.trim();
+  if (value === "" || value === "true") return true;
+  if (!value.startsWith("{")) return undefined;
+  try {
+    const data = JSON.parse(value) as Record<string, unknown>;
+    const options: SpringOptions = {};
+    for (const key of SPRING_KEYS) {
+      const item = data[key];
+      if (typeof item === "number" && Number.isFinite(item)) options[key] = item;
+    }
+    return Object.keys(options).length > 0 ? options : true;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Framer's `useScroll` values: positions in px and progress (0–1) per axis. */
@@ -276,6 +314,7 @@ export const SCROLL_ATTRIBUTES = {
   container: "data-ok-scroll-container",
   target: "data-ok-scroll-target",
   offset: "data-ok-scroll-offset",
+  smooth: "data-ok-scroll-smooth",
 } as const;
 
 /** HTML: the scroll options of an element (ids → elements; unknown ids → absent). */
@@ -289,6 +328,7 @@ export function readScrollProgress(element: Element): ScrollOptions {
     target: byId(SCROLL_ATTRIBUTES.target),
     axis: element.getAttribute(SCROLL_ATTRIBUTES.axis) === "x" ? "x" : "y",
     offset: element.getAttribute(SCROLL_ATTRIBUTES.offset) ?? undefined,
+    smooth: parseScrollSmooth(element.getAttribute(SCROLL_ATTRIBUTES.smooth)),
   };
 }
 
@@ -323,7 +363,13 @@ export function createScrollProgress(
   const parsed = parseScrollOffset(options.offset);
   const isPage = page(options.container);
   const scroller = isPage ? pageScroller() : (options.container as Element);
-  const native = supportsScrollTimeline();
+  // Smoothing runs a spring in script on every scroll: neither the stylesheet nor a timeline.
+  const smooth = options.smooth
+    ? options.smooth === true
+      ? SCROLL_SMOOTH
+      : options.smooth
+    : undefined;
+  const native = supportsScrollTimeline() && !smooth;
   const measure = () => measureScroll({ ...options, axis }, parsed).progress;
 
   const plain =
@@ -333,7 +379,8 @@ export function createScrollProgress(
     element.hasAttribute(SCROLL_ATTRIBUTES.root) &&
     !element.hasAttribute(SCROLL_ATTRIBUTES.container) &&
     !element.hasAttribute(SCROLL_ATTRIBUTES.target) &&
-    !element.hasAttribute(SCROLL_ATTRIBUTES.offset);
+    !element.hasAttribute(SCROLL_ATTRIBUTES.offset) &&
+    !element.hasAttribute(SCROLL_ATTRIBUTES.smooth);
   if (native && plain) {
     return {
       mode: "css",
@@ -384,10 +431,18 @@ export function createScrollProgress(
   controls.pause();
   element.setAttribute("data-ok-fallback", "");
   let progress = 0;
+  const show = (value: number) => {
+    for (const animation of controls.animations) animation.currentTime = value * LENGTH;
+  };
+  // Smooth: the bar follows a spring whose target is the measured progress (reduced motion: none).
+  const spring = smooth ? springValue(measure(), smooth) : undefined;
+  spring?.on("change", show);
   const draw = () => {
     progress = measure();
-    for (const animation of controls.animations) animation.currentTime = progress * LENGTH;
+    if (spring) spring.set(progress);
+    else show(progress);
   };
+  if (spring) show(spring.get());
   const stop = listen(options, draw);
   return {
     mode: "fallback",
@@ -397,6 +452,7 @@ export function createScrollProgress(
     update: draw,
     destroy() {
       stop();
+      spring?.destroy();
       controls.cancel();
       element.removeAttribute("data-ok-fallback");
     },

@@ -139,6 +139,24 @@ export function ArticleProgress() {
 }`,
   },
   {
+    id: "smooth",
+    title: "Smooth the progress",
+    body: "Set `smooth` to let the bar follow the scroll with a spring instead of jumping with each scroll step. `true` uses a soft spring (a stiffness of 100 and a damping of 30). Spring options, such as `stiffness`, `damping` and `mass`, change it. In HTML, write `data-ok-scroll-smooth` empty or with the options as JSON. A smoothed progress always runs in script, also where the browser could draw it without JavaScript. With reduced motion, the bar follows the scroll exactly.",
+    html: `<span role="progressbar" aria-hidden="true" data-ok-linear-progress data-ok-variant="determinate" data-ok-scroll-progress data-ok-scroll-smooth='{"stiffness": 200, "damping": 30}' style="position: fixed; inset: 0 0 auto">
+  <span data-ok-linear-progress-bar="1"></span>
+</span>`,
+    react: `import { LinearProgress } from "@owlky/react";
+
+export function SmoothReadingProgress() {
+  return (
+    <LinearProgress
+      scroll={{ smooth: { stiffness: 200, damping: 30 } }}
+      style={{ position: "fixed", inset: "0 0 auto" }}
+    />
+  );
+}`,
+  },
+  {
     id: "values",
     title: "Read the scroll position",
     body: "To draw something else from the scroll position, read it in code. In React, `useScroll()` returns the position in pixels and the progress from 0 to 1 on each axis, and renders again at most once a frame. In HTML, `observeScroll()` from `@owlky/html` calls you with the same values, and the instance of a progress has a `progress` property.",
@@ -243,6 +261,12 @@ const PREVIEWS = {
           html: "data-ok-scroll-offset",
           type: "[string, string]",
           description: "Where the progress starts and ends. Default `start start, end end`.",
+        },
+        {
+          react: "smooth",
+          html: "data-ok-scroll-smooth",
+          type: "boolean | object · JSON",
+          description: "Follows the scroll with a spring: `true`, or spring options.",
         },
       ]}
     />

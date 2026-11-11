@@ -124,6 +124,7 @@ import {
   lightboxTextAligns,
   lightboxThumbnailsPositions,
 } from "../lightbox/lightbox-model.js";
+import type { SpringOptions } from "../motion/animate.js";
 import { type CountdownUnit, countdownUnits } from "../motion/countdown.js";
 import type { ScrollOffset } from "../motion/scroll.js";
 import {
@@ -3577,6 +3578,11 @@ export const motionOptions = defineOptions("motion", "data-ok-motion", {
     "data-ok-paused",
     "Pauses the animation (looping variants need a pause control: WCAG 2.2.2).",
   ),
+  initial: behavior(
+    "data-ok-initial",
+    true,
+    "`false` skips the entrance: the content shows as it is; later exits and entrances play (a shared `layoutId` element).",
+  ),
 });
 
 export const motionGroupOptions = defineOptions("motion-group", "data-ok-motion-group", {
@@ -3609,6 +3615,7 @@ export interface MotionAnatomyOptions extends MotionTriggerAnatomyOptions {
   duration?: number | undefined;
   distance?: number | undefined;
   paused?: boolean | undefined;
+  initial?: boolean | undefined;
 }
 
 const onceAttribute = (once: boolean | undefined, attr: string): DataAttributes =>
@@ -3618,6 +3625,7 @@ const onceAttribute = (once: boolean | undefined, attr: string): DataAttributes 
 export const motionAttributes = (options: MotionAnatomyOptions = {}): DataAttributes => ({
   ...optionAttributes(motionOptions, { ...options }),
   ...onceAttribute(options.once, motionOptions.options.once.attr),
+  ...onceAttribute(options.initial, motionOptions.options.initial.attr),
 });
 
 /** `data-ok-*` attributes of a MotionGroup. */
@@ -3766,11 +3774,13 @@ export interface ScrollProgressAnatomyOptions {
   target?: string | undefined;
   /** Two intersections, such as `["start end", "end start"]` or `"start end, end start"`. */
   offset?: ScrollOffset | string | undefined;
+  /** Follows the scroll with a spring: `true` (empty attribute) or spring options (JSON). */
+  smooth?: boolean | SpringOptions | undefined;
 }
 
 /**
  * `data-ok-*` attributes of a progress that follows a scroll position (Linear or Circular
- * progress): the axis, and the container, target and offset as written.
+ * progress): the axis, and the container, target, offset and smoothing as written.
  */
 export const scrollProgressAttributes = (
   options: ScrollProgressAnatomyOptions = {},
@@ -3786,6 +3796,9 @@ export const scrollProgressAttributes = (
             .map((entry) => (typeof entry === "object" ? entry.join(" ") : String(entry)))
             .join(", ");
   }
+  if (options.smooth === true) attributes["data-ok-scroll-smooth"] = "";
+  else if (options.smooth && typeof options.smooth === "object")
+    attributes["data-ok-scroll-smooth"] = JSON.stringify(options.smooth);
   return attributes;
 };
 

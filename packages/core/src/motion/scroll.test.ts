@@ -6,6 +6,7 @@ import {
   measureScroll,
   observeScroll,
   parseScrollOffset,
+  parseScrollSmooth,
   readScrollProgress,
   supportsScrollTimeline,
 } from "./scroll.js";
@@ -341,6 +342,62 @@ describe("createScrollProgress", () => {
     withoutTimelines();
     mount(`${STYLE}<span id="plain"></span>`);
     const controller = createScrollProgress(document.getElementById("plain") as HTMLElement);
+    expect(controller.mode).toBe("fallback");
+    controller.destroy();
+  });
+});
+
+describe("smoothing (5.4)", () => {
+  it("parses data-ok-scroll-smooth", () => {
+    expect(parseScrollSmooth(null)).toBeUndefined();
+    expect(parseScrollSmooth("")).toBe(true);
+    expect(parseScrollSmooth("true")).toBe(true);
+    expect(parseScrollSmooth('{"stiffness": 300, "damping": "x"}')).toEqual({ stiffness: 300 });
+    expect(parseScrollSmooth('{"other": 1}')).toBe(true);
+    expect(parseScrollSmooth("{nope")).toBeUndefined();
+    expect(parseScrollSmooth("off")).toBeUndefined();
+    const { bar } = setup('data-ok-scroll-smooth=""');
+    expect(readScrollProgress(bar).smooth).toBe(true);
+  });
+
+  it("follows the scroll with a spring, in script even where timelines exist", async () => {
+    const { bar, box } = setup('data-ok-scroll-container="box" data-ok-scroll-smooth=""');
+    const controller = createScrollProgress(bar, {
+      container: box,
+      smooth: { stiffness: 300, damping: 30, restDelta: 0.001 },
+    });
+    expect(controller.mode).toBe("fallback");
+    box.scrollTop = 400;
+    await frames();
+    await frames();
+    // The target is reached, the bar is on its way.
+    expect(controller.progress).toBe(1);
+    const between = shown(bar);
+    expect(between).toBeGreaterThan(0);
+    expect(between).toBeLessThan(1);
+    for (let i = 0; i < 240 && shown(bar) !== 1; i++) await nextFrame();
+    expect(shown(bar)).toBe(1);
+    controller.destroy();
+    expect(bar.getAnimations()).toHaveLength(0);
+  });
+
+  it("follows the position exactly with reduced motion", async () => {
+    vi.spyOn(window, "matchMedia").mockImplementation(
+      (query) => ({ matches: query.includes("reduce"), media: query }) as MediaQueryList,
+    );
+    const { bar, box } = setup('data-ok-scroll-container="box" data-ok-scroll-smooth=""');
+    const controller = createScrollProgress(bar, { container: box, smooth: true });
+    box.scrollTop = 200;
+    await frames();
+    expect(shown(bar)).toBeCloseTo(0.5, 2);
+    controller.destroy();
+  });
+
+  it("leaves the stylesheet's page path for a smoothed progress", () => {
+    mount(`${STYLE}<span id="page" data-ok-scroll-progress data-ok-scroll-smooth></span>`);
+    const controller = createScrollProgress(document.getElementById("page") as HTMLElement, {
+      smooth: true,
+    });
     expect(controller.mode).toBe("fallback");
     controller.destroy();
   });

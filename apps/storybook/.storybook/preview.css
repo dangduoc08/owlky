@@ -1130,6 +1130,71 @@
   height: fit-content;
 }
 
+/* Motion layout (story-only layout): a list, a stack of cards, a segmented control. */
+.sb-layout-list,
+.sb-layout-stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 2);
+  width: min(100%, 420px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sb-layout-row,
+.sb-layout-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ok-spacing) * 3);
+}
+
+.sb-layout-row,
+.sb-layout-card-body {
+  padding: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 4);
+}
+
+.sb-layout-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 2);
+}
+
+.sb-layout-segments {
+  display: flex;
+  gap: var(--ok-spacing);
+}
+
+.sb-layout-segment {
+  isolation: isolate;
+}
+
+.sb-layout-highlight {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.sb-layout-highlight-paper {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Shared values preview (docs): a range above the bar it moves. */
+.sb-layout-amount {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 3);
+  width: min(100%, 240px);
+}
+
+.sb-layout-amount-bar {
+  width: calc(var(--ok-spacing) * 10);
+  height: calc(var(--ok-spacing) * 4);
+}
+
 /* Color picker demos (story-only): the swatches above the value; six swatches per row. */
 .sb-color-picker {
   display: flex;

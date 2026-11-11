@@ -53,6 +53,7 @@ const pairs: [component: string, story: string][] = [
   ["scroll-progress", "container-scroll-x"],
   ["scroll-progress", "scroll-document"],
   ["motion", "gestures"],
+  ["motion", "layout"],
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
   ...["grouped", "asynchronous", "single-value", "virtualization"].map(

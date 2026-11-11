@@ -164,6 +164,17 @@ describe("animate", () => {
     controls.cancel();
   });
 
+  it("drops the animation at its end with commit: false (5.4)", async () => {
+    const element = box();
+    const controls = animate(element, [{ opacity: 0.2 }, { opacity: 0.4 }], {
+      duration: 100,
+      commit: false,
+    });
+    await finish(controls);
+    expect(element.style.opacity).toBe("");
+    expect(element.getAnimations()).toHaveLength(0);
+  });
+
   it("jumps to the end with reduced motion and doesn't start loops", async () => {
     const element = box();
     const controls = animate(

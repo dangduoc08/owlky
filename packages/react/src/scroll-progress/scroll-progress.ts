@@ -12,6 +12,7 @@ import {
   type ScrollInfo,
   type ScrollOffset,
   type ScrollOptions,
+  type SpringOptions,
   scrollProgressAttributes,
 } from "@owlky/core";
 import { type RefObject, useEffect, useState } from "react";
@@ -31,6 +32,12 @@ export interface UseScrollOptions {
    * `["start end", "end start"]`. Default `["start start", "end end"]`.
    */
   offset?: ScrollOffset | string | undefined;
+  /**
+   * Progress bars only (`scroll` prop): the bar follows the scroll with a spring. `true`
+   * (stiffness 100, damping 30) or spring options such as `{ stiffness: 200 }`. Reduced motion
+   * turns it off.
+   */
+  smooth?: boolean | SpringOptions | undefined;
 }
 
 const element = (input: ScrollElement | undefined): Element | null =>
@@ -59,6 +66,7 @@ export function scrollProgressProps(
       container: typeof options.container === "string" ? options.container : undefined,
       target: typeof options.target === "string" ? options.target : undefined,
       offset: options.offset,
+      smooth: options.smooth,
     }),
     "aria-hidden": "true",
   };
@@ -73,6 +81,7 @@ const dependencies = (options: UseScrollOptions | boolean | undefined) => {
     value?.target,
     value?.axis,
     value?.offset === undefined ? undefined : JSON.stringify(value.offset),
+    value?.smooth === undefined ? undefined : JSON.stringify(value.smooth),
   ] as const;
 };
 
@@ -81,16 +90,16 @@ export function useScrollProgress(
   ref: RefObject<HTMLElement | null>,
   scroll: boolean | UseScrollOptions | undefined,
 ): void {
-  const [on, container, target, axis, offset] = dependencies(scroll);
+  const [on, container, target, axis, offset, smooth] = dependencies(scroll);
   useEffect(() => {
     const node = ref.current;
     if (!on || !node) return;
-    const controller = createScrollProgress(
-      node,
-      resolve({ container, target, axis, offset: offset && JSON.parse(offset) }),
-    );
+    const controller = createScrollProgress(node, {
+      ...resolve({ container, target, axis, offset: offset && JSON.parse(offset) }),
+      smooth: smooth && JSON.parse(smooth),
+    });
     return () => controller.destroy();
-  }, [ref, on, container, target, axis, offset]);
+  }, [ref, on, container, target, axis, offset, smooth]);
 }
 
 const START: ScrollInfo = { scrollX: 0, scrollY: 0, scrollXProgress: 0, scrollYProgress: 0 };

@@ -20,6 +20,7 @@ span[data-ok-linear-progress | data-ok-circular-progress][data-ok-variant="deter
     [data-ok-scroll-container=<id>]?                   default: the page (the root scroller)
     [data-ok-scroll-target=<id>]?                      default: the container's whole content
     [data-ok-scroll-offset="<edges>, <edges>"]?        default "start start, end end"
+    [data-ok-scroll-smooth=""|<JSON spring>]?          follows with a spring (5.4)
     [data-ok-fallback]?                                written by the script fallback (below)
   …the progress's own parts (unchanged)
 ```
@@ -43,6 +44,7 @@ Not in the schema (free text or element references, like Motion's `viewportMargi
 | `target` (ref, default the container's content) | `target`: a ref or an element id | `data-ok-scroll-target="<id>"` |
 | `axis` (`y`) | `axis` | `data-ok-scroll-axis` |
 | `offset` (two intersections) | `offset`: `[ScrollIntersection, ScrollIntersection]` or a string | `data-ok-scroll-offset`: the two, comma separated |
+| `useSpring(scrollYProgress)` smoothing | `smooth`: `true` or spring options | `data-ok-scroll-smooth`: empty (or `true`) or a JSON object of `stiffness`, `damping`, `mass`, `bounce`, `visualDuration`, `restDelta`, `restSpeed` |
 | returns `scrollX`, `scrollY`, `scrollXProgress`, `scrollYProgress` (motion values) | `useScroll()` returns them as numbers (state); the progress shows the `axis` one | instance `progress` |
 
 An offset is two intersections of the target and the container, each `"<target> <container>"`
@@ -60,7 +62,7 @@ they still render on the server.
 ## Layout and tokens
 The progress keeps its own look (size, thickness, color, track). Linear bar 1 and the Circular
 arc read `--_ok-scroll-progress` (a registered `<number>`, 0–1) instead of the value, with no
-value transition (the bar follows the scroll; smoothing springs are deferred to 5.4). Circular
+value transition (the bar follows the scroll; `smooth` adds a spring in script, 5.4). Circular
 arc: `stroke-dasharray` = π × (44 − thickness) px, offset `(1 − progress) ×` that. Stories
 (layout only, `.storybook/preview.css`): a 32px Circular with its track at the end of the row,
 the Linear under it, then the Scrollbar of numbered Cards (the reference's `info` color for
@@ -68,8 +70,9 @@ the Linear under it, then the Scrollbar of numbered Cards (the reference's `info
 at the top (`--ok-z-mobile-stepper`).
 
 Intentional differences from the reference: one-color bars (the reference fills its Linear bars
-with a gradient; the Linear progress has no gradient fill), the progress's own 4px height
-everywhere (the reference draws 3px in containers and 6px for the page), and no smoothing spring.
+with a gradient; the Linear progress has no gradient fill) and the progress's own 4px height
+everywhere (the reference draws 3px in containers and 6px for the page). The stories keep their
+5.2 markup (no `smooth`, snippets unchanged); the docs page shows `smooth`.
 
 ## Behavior
 Core `createScrollProgress(element, options)` (both owners) picks a path:
@@ -88,6 +91,12 @@ Core `createScrollProgress(element, options)` (both owners) picks a path:
    `data-ok-fallback` on the element; `animate()` plays the same keyframes paused and a passive,
    rAF-throttled scroll listener (container or window) plus a ResizeObserver (container, target)
    sets its `currentTime` from the measured progress.
+4. **Smooth** (`smooth`, 5.4, any browser): always the script path (the stylesheet's page path
+   is off for `[data-ok-scroll-smooth]`, no timeline): the measured progress is the target of a
+   core `springValue` (5.4 shared values; `true` → stiffness 100, damping 30, restDelta 0.001,
+   Framer's documented `useSpring(scrollYProgress)`), whose changes set the paused animation's
+   `currentTime`. It starts at the measured progress (no animation at mount). Reduced motion: the
+   spring jumps, so the bar follows the position exactly. `mode` is `fallback`.
 Teardown (`destroy`, React unmount, runtime stop) cancels the animation and removes listeners,
 observers and `data-ok-fallback`. Option changes rebuild the controller (React: the effect's
 dependencies; HTML: a MutationObserver on the `data-ok-scroll-progress*` attributes). Right to left: `x`
@@ -113,7 +122,7 @@ React: `scroll` prop on LinearProgress and CircularProgress; `useScroll(options)
 `{ scrollX, scrollY, scrollXProgress, scrollYProgress }` (re-renders on scroll, rAF-throttled).
 Core: `createScrollProgress`, `observeScroll(options, callback)`, `measureScroll`,
 `parseScrollOffset`, `readScrollProgress(element)`, `scrollProgressAttributes`,
-`supportsScrollTimeline` (`setScrollTimelineSupport` for tests).
+`supportsScrollTimeline` (`setScrollTimelineSupport` for tests), `parseScrollSmooth`, `SCROLL_SMOOTH`.
 
 ## Responsive
 Nothing changes per breakpoint; the Linear bar fills its row, the Circular keeps its size.
@@ -132,8 +141,8 @@ SVG `pathLength` arc).
 | `offset` | `offset` · `data-ok-scroll-offset` | kept | edges as upstream; no `vw` / `vh` on containers other than the page (as upstream: they measure the viewport) |
 | `layoutEffect` | — | not applicable | measured in an effect / rAF |
 | `trackContentSize` | always | kept | a ResizeObserver redraws (fallback) |
-| `scrollX`, `scrollY`, `scrollXProgress`, `scrollYProgress` | `useScroll()` numbers; the progress shows `axis` | renamed | motion values come with shared values (5.4) |
-| `useSpring(scrollYProgress)` smoothing | — | deferred (5.4) | the bars follow the position exactly |
+| `scrollX`, `scrollY`, `scrollXProgress`, `scrollYProgress` | `useScroll()` numbers; the progress shows `axis` | renamed | stays numbers (5.4): changing `useScroll`'s return to shared values would break it; feed `observeScroll` into a `motionValue` for no-render drawing |
+| `useSpring(scrollYProgress)` smoothing | `smooth` · `data-ok-scroll-smooth` | kept (5.4) | a spring in script; reduced motion follows exactly |
 | reference `ScrollProgress` `variant` linear / circular | LinearProgress / CircularProgress | renamed | |
 | reference `color`, `size`, `thickness` | the progress's `color`, `size`, `thickness` | kept | the reference's gradient fill is not offered (the Linear progress is one color) |
 

@@ -1790,7 +1790,7 @@ export interface MotionParts {
   "data-ok-motion-char": Part<"span">;
   /** Custom keyframes as JSON, such as `{"rotate": [0, 270]}`: played instead of the variant when the Motion enters, backwards when it exits. */
   "data-ok-keyframes": Value<string>;
-  /** How custom keyframes play, as JSON: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`"Infinity"` loops), `repeatType`, or a `"spring"` `type` with `stiffness`, `damping`, `mass` or `bounce`. */
+  /** How custom keyframes play, as JSON: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`"Infinity"` loops), `repeatType`, or a `"spring"` `type` with `stiffness`, `damping`, `mass` or `bounce`. A `layout` key tunes the layout animations only. */
   "data-ok-transition": Value<string>;
   /** The full text for assistive technology. */
   "data-ok-motion-text-label": Part<"span">;
@@ -1824,6 +1824,12 @@ export interface MotionParts {
   "data-ok-while-focus": Value<string>;
   /** Keyframes as JSON while it is dragged. */
   "data-ok-while-drag": Value<string>;
+  /** Animates changes of its position and size: empty for both, `position` or `size` for one. Any change inside its parent element starts it. */
+  "data-ok-layout": Value<"" | "position" | "size">;
+  /** Shared element: a Motion with this id that appears as another one leaves, or that the page moves, animates from that one's place and size. */
+  "data-ok-layout-id": Value<string>;
+  /** On a container: the Motions with layout inside it move together, and their `data-ok-layout-id`s belong to it (the value names the group). */
+  "data-ok-layout-group": Value<string>;
 }
 
 /** Organization chart: parts, states, values and triggers. */
@@ -1952,6 +1958,8 @@ export interface ScrollProgressParts {
   "data-ok-scroll-offset": Value<string>;
   /** The `id` of an element: the progress follows its way through the container instead of the whole content. */
   "data-ok-scroll-target": Value<string>;
+  /** The bar follows the scroll with a spring: empty for a soft spring, or spring options as JSON, such as `{"stiffness": 200, "damping": 30}`. Reduced motion turns it off. */
+  "data-ok-scroll-smooth": Value<string>;
 }
 
 /** Select: parts, states, values and triggers. */

@@ -20,8 +20,13 @@ export interface MotionPresenceProps {
   children?: ReactNode;
   /** `false` skips the first entrance of the children rendered with the presence. Default `true`. */
   initial?: boolean | undefined;
-  /** `sync` (default): new children enter while removed ones exit; `wait`: they enter after. */
-  mode?: "sync" | "wait" | undefined;
+  /**
+   * `sync` (default): new children enter while removed ones exit; `wait`: they enter after;
+   * `popLayout`: a removed child leaves the layout at once (absolutely positioned where it was)
+   * while it exits, so siblings with `layout` move into its place. Its Motion must be the child's
+   * root element, inside a positioned parent.
+   */
+  mode?: "sync" | "wait" | "popLayout" | undefined;
   /** Called when every removed child has finished its exit. */
   onExitComplete?: (() => void) | undefined;
 }
@@ -29,12 +34,47 @@ export interface MotionPresenceProps {
 interface PresenceChildProps {
   present: boolean;
   initial: boolean;
+  pop: boolean;
   onExited(): void;
   children: ReactNode;
 }
 
+const POPPED = ["position", "top", "left", "width", "height", "box-sizing"] as const;
+
+/**
+ * Takes `elements` out of the layout where they are (absolute, same box; reads before writes).
+ * Returns the function that puts back their own inline styles.
+ */
+function popOut(elements: HTMLElement[]): () => void {
+  const boxes = elements.map((element) => {
+    const style = getComputedStyle(element);
+    return {
+      element,
+      top: element.offsetTop - Number.parseFloat(style.marginTop),
+      left: element.offsetLeft - Number.parseFloat(style.marginLeft),
+      width: element.offsetWidth,
+      height: element.offsetHeight,
+      saved: POPPED.map((name) => [name, element.style.getPropertyValue(name)] as const),
+    };
+  });
+  for (const { element, top, left, width, height } of boxes) {
+    element.style.setProperty("position", "absolute");
+    element.style.setProperty("top", `${top}px`);
+    element.style.setProperty("left", `${left}px`);
+    element.style.setProperty("width", `${width}px`);
+    element.style.setProperty("height", `${height}px`);
+    element.style.setProperty("box-sizing", "border-box");
+  }
+  return () => {
+    for (const { element, saved } of boxes)
+      for (const [name, value] of saved)
+        if (value) element.style.setProperty(name, value);
+        else element.style.removeProperty(name);
+  };
+}
+
 /** One child: tells its Motions whether it is present and waits for their exit once it isn't. */
-function PresenceChild({ present, initial, onExited, children }: PresenceChildProps) {
+function PresenceChild({ present, initial, pop, onExited, children }: PresenceChildProps) {
   const elements = useRef(new Set<HTMLElement>());
   const exited = useRef(onExited);
   exited.current = onExited;
@@ -49,6 +89,15 @@ function PresenceChild({ present, initial, onExited, children }: PresenceChildPr
     }),
     [present, initial],
   );
+  // popLayout: out of the flow in the same commit, before siblings are measured after it.
+  useLayoutEffect(() => {
+    if (present || !pop) return;
+    const all = [...elements.current];
+    const roots = all.filter(
+      (element) => !all.some((other) => other !== element && other.contains(element)),
+    );
+    return popOut(roots);
+  }, [present, pop]);
   useEffect(() => {
     if (present) return;
     const targets = [...elements.current];
@@ -122,6 +171,7 @@ export function MotionPresence({
             key={key}
             present={!gone}
             initial={first.current ? initial : true}
+            pop={mode === "popLayout"}
             onExited={() => {
               // Called once per exit: the effect runs again only when the child returns.
               exiting.current.delete(key);

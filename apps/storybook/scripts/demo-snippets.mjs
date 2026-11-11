@@ -242,6 +242,12 @@ const DEMOS = [
     ["GestureSnapDemo", "gestures-snap"],
     ["GestureHoverTapDemo", "gestures-hover-tap"],
   ].map(([name, snippet]) => ["motion", "gestures-demo.tsx", name, snippet, motionGestureSnippet]),
+  // Motion "Layout" (roadmap 5.4): layout attributes; the page scripts move the DOM.
+  ...[
+    ["LayoutReorderDemo", "layout-reorder"],
+    ["LayoutExpandDemo", "layout-expand"],
+    ["LayoutHighlightDemo", "layout-highlight"],
+  ].map(([name, snippet]) => ["motion", "layout-demo.tsx", name, snippet, motionKeyframesSnippet]),
   // Swipeable drawers (roadmap 4.18.46): each trigger opens the dialog that follows it.
   ["drawer", "swipeable-demo.tsx", "SwipeableDrawerDemo", "swipeable-group", drawerTriggers],
   // Color pickers (roadmap 4.23): swatch colors are written by the runtimes (no `style`).

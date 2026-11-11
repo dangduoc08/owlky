@@ -1187,9 +1187,14 @@ export {
   motionTracks,
   parseTime,
   resolveEasing,
+  type SpringCurve,
   type SpringEasing,
   type SpringOptions,
+  type SpringParameters,
+  springCurve,
   springEasing,
+  springParameters,
+  standardDuration,
   supportsLinearEasing,
 } from "./motion/animate.js";
 export {
@@ -1245,6 +1250,8 @@ export {
   readTranslate,
   trackPan,
 } from "./motion/drag.js";
+// Layout animations and shared values (ADR-0062, roadmap 5.4).
+export { cubicBezier, type EasingFunction, easingFunction } from "./motion/easing.js";
 export {
   createMotionGestures,
   type GestureState,
@@ -1277,6 +1284,26 @@ export {
   TRANSITION_ATTR,
 } from "./motion/keyframes.js";
 export {
+  createLayoutGroup,
+  createLayoutNode,
+  type FlushLayoutOptions,
+  flushLayout,
+  hasMotionLayout,
+  LAYOUT_ATTRS,
+  type LayoutBox,
+  type LayoutGroup,
+  type LayoutMode,
+  type LayoutNode,
+  type LayoutNodeOptions,
+  type LayoutTransition,
+  layoutNodeOf,
+  layoutTransition,
+  type MotionLayoutValues,
+  measureLayoutBox,
+  motionLayoutAttributes,
+  readMotionLayout,
+} from "./motion/layout.js";
+export {
   createMotionTrigger,
   type MotionState,
   type MotionStyleOptions,
@@ -1302,8 +1329,10 @@ export {
   observeScroll,
   type ParsedScrollOffset,
   parseScrollOffset,
+  parseScrollSmooth,
   readScrollProgress,
   SCROLL_ATTRIBUTES,
+  SCROLL_SMOOTH,
   type ScrollAxis,
   type ScrollEdgeValue,
   type ScrollInfo,
@@ -1320,6 +1349,18 @@ export {
   type SwipeInfo,
   type SwipeOptions,
 } from "./motion/swipe.js";
+export {
+  bindStyle,
+  type InterpolateOptions,
+  interpolate,
+  isSharedValue,
+  motionValue,
+  type SharedValue,
+  type SpringValueOptions,
+  sharedStyle,
+  springValue,
+  transformValue,
+} from "./motion/values.js";
 export {
   clampNumber,
   createNumberFieldController,

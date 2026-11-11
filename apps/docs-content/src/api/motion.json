@@ -196,6 +196,18 @@
      },
      {
       "cancelable": false,
+      "description": "That layout animation ended (not when another one interrupted it).",
+      "detail": "undefined",
+      "name": "ok:motion:layoutanimationcomplete"
+     },
+     {
+      "cancelable": false,
+      "description": "A layout animation of the element's box started (`data-ok-layout`, `data-ok-layout-id`).",
+      "detail": "undefined",
+      "name": "ok:motion:layoutanimationstart"
+     },
+     {
+      "cancelable": false,
       "description": "In view trigger with `data-ok-once=\"false\"`: the element left the viewport (nothing visible).",
       "detail": "MotionViewportDetail",
       "name": "ok:motion:leave"
@@ -221,6 +233,12 @@
     ],
     "methods": [
      {
+      "description": "Layout: animates from the box `measure()` took (or the last one known) to where it is now.",
+      "kind": "method",
+      "name": "animateLayout",
+      "type": "() => void"
+     },
+     {
       "description": "Plays the exit. Resolves `true` when it ended, `false` when `replay()` interrupted it.",
       "kind": "method",
       "name": "exit",
@@ -231,6 +249,12 @@
       "kind": "method",
       "name": "hide",
       "type": "() => Promise<boolean>"
+     },
+     {
+      "description": "Layout: takes the element's box now, so the next change of its position or size animates from it, also a change the runtime can't see (a media query, a stylesheet).",
+      "kind": "method",
+      "name": "measure",
+      "type": "() => void"
      },
      {
       "description": "Plays the exit, then removes the element from the page. Resolves `false` when interrupted.",
@@ -382,6 +406,13 @@
       "description": "Pauses the animation (looping variants need a pause control: WCAG 2.2.2).",
       "kind": "flag",
       "name": "paused"
+     },
+     {
+      "attr": "data-ok-initial",
+      "default": true,
+      "description": "`false` skips the entrance: the content shows as it is; later exits and entrances play (a shared `layoutId` element).",
+      "kind": "behavior",
+      "name": "initial"
      }
     ],
     "parts": [
@@ -455,6 +486,28 @@
       "value": "string"
      },
      {
+      "description": "Animates changes of its position and size: empty for both, `position` or `size` for one. Any change inside its parent element starts it.",
+      "kind": "value",
+      "name": "data-ok-layout",
+      "value": [
+       "",
+       "position",
+       "size"
+      ]
+     },
+     {
+      "description": "On a container: the Motions with layout inside it move together, and their `data-ok-layout-id`s belong to it (the value names the group).",
+      "kind": "value",
+      "name": "data-ok-layout-group",
+      "value": "string"
+     },
+     {
+      "description": "Shared element: a Motion with this id that appears as another one leaves, or that the page moves, animates from that one's place and size.",
+      "kind": "value",
+      "name": "data-ok-layout-id",
+      "value": "string"
+     },
+     {
       "description": "One animated character.",
       "elements": [
        "span"
@@ -469,7 +522,7 @@
       "value": "string"
      },
      {
-      "description": "How custom keyframes play, as JSON: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`\"Infinity\"` loops), `repeatType`, or a `\"spring\"` `type` with `stiffness`, `damping`, `mass` or `bounce`.",
+      "description": "How custom keyframes play, as JSON: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`\"Infinity\"` loops), `repeatType`, or a `\"spring\"` `type` with `stiffness`, `damping`, `mass` or `bounce`. A `layout` key tunes the layout animations only.",
       "kind": "value",
       "name": "data-ok-transition",
       "value": "string"
@@ -515,7 +568,7 @@
    },
    "name": "Motion",
    "react": {
-    "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`. Gesture props (`drag`, `whileHover`, `whileTap`…) animate it while it is dragged, hovered, pressed or focused.",
+    "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`. Gesture props (`drag`, `whileHover`, `whileTap`…) animate it while it is dragged, hovered, pressed or focused; `layout` and `layoutId` animate changes of its box.",
     "native": "HTMLElement",
     "props": [
      {
@@ -592,9 +645,30 @@
       "type": "boolean"
      },
      {
+      "default": "true",
+      "description": "`false` skips the entrance: the content shows as it is (a shared `layoutId` element that moves instead). Later exits and entrances play.",
+      "name": "initial",
+      "type": "boolean"
+     },
+     {
       "description": "5 }` (`x` / `y` in px, `rotate` in degrees, `scale`, and any CSS property).",
       "name": "keyframes",
       "type": "MotionKeyframes"
+     },
+     {
+      "description": "Animates changes of its position and size when it re-renders: `true` (both), `\"position\"` (the size changes at once) or `\"size\"` (the position changes at once).",
+      "name": "layout",
+      "type": "LayoutMode"
+     },
+     {
+      "description": "Measures only when this value changes, not on every render.",
+      "name": "layoutDependency",
+      "type": "unknown"
+     },
+     {
+      "description": "Shared element: when a Motion with this id mounts as another one with the same id unmounts (or while it is still there), it animates from that Motion's box. Implies `layout`.",
+      "name": "layoutId",
+      "type": "string"
      },
      {
       "description": "With `dragDirectionLock`: the axis the drag locked to.",
@@ -632,6 +706,16 @@
       "type": "((event: PointerEvent) => void)"
      },
      {
+      "description": "That layout animation ended (not when another one interrupted it).",
+      "name": "onLayoutAnimationComplete",
+      "type": "(() => void)"
+     },
+     {
+      "description": "A layout animation of its own box started.",
+      "name": "onLayoutAnimationStart",
+      "type": "(() => void)"
+     },
+     {
       "description": "A press ended on it.",
       "name": "onTap",
       "type": "((event: KeyboardEvent | PointerEvent, info: TapInfo) => void)"
@@ -667,9 +751,14 @@
       "type": "boolean"
      },
      {
-      "description": "How the custom keyframes play: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`Infinity` loops), `repeatType`, or `type: \"spring\"` with `stiffness`, `damping`, `mass` or `bounce`.",
+      "description": "Inline styles. Shared values (`useMotionValue`, `useTransform`, `useSpring`) and the shorthands `x`, `y`, `scale`, `scaleX`, `scaleY` and `rotate` are written to the element as they change, without a re-render.",
+      "name": "style",
+      "type": "MotionStyle"
+     },
+     {
+      "description": "How the custom keyframes play: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`, `repeat` (`Infinity` loops), `repeatType`, or `type: \"spring\"` with `stiffness`, `damping`, `mass` or `bounce`. A `layout` key tunes the layout animations only.",
       "name": "transition",
-      "type": "AnimateOptions"
+      "type": "LayoutTransition"
      },
      {
       "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
@@ -1058,6 +1147,29 @@
    }
   },
   {
+   "name": "LayoutGroup",
+   "react": {
+    "description": "Motions with `layout` inside it animate together: when one of them re-renders, every other one (without a `layoutDependency`) is measured too, so siblings that move because of it animate as well. Renders no element.",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Prefixes the `layoutId`s inside it, so two groups can use the same ids.",
+      "name": "id",
+      "type": "string"
+     },
+     {
+      "description": "`true` (default): joins an enclosing group (its id and its snapshots); `\"id\"`: only its id; `false`: neither.",
+      "name": "inherit",
+      "type": "\"id\" | boolean"
+     }
+    ]
+   }
+  },
+  {
    "html": {
     "attribute": "data-ok-motion-border",
     "options": [
@@ -1343,9 +1455,9 @@
       "type": "boolean"
      },
      {
-      "description": "`sync` (default): new children enter while removed ones exit; `wait`: they enter after.",
+      "description": "`sync` (default): new children enter while removed ones exit; `wait`: they enter after; `popLayout`: a removed child leaves the layout at once (absolutely positioned where it was) while it exits, so siblings with `layout` move into its place. Its Motion must be the child's root element, inside a positioned parent.",
       "name": "mode",
-      "type": "\"sync\" | \"wait\""
+      "type": "\"popLayout\" | \"sync\" | \"wait\""
      },
      {
       "description": "Called when every removed child has finished its exit.",
@@ -1636,6 +1748,14 @@
   {
    "name": "DragElastic",
    "type": "number | boolean | DragConstraints"
+  },
+  {
+   "name": "LayoutMode",
+   "type": "\"position\" | \"size\" | boolean"
+  },
+  {
+   "name": "LayoutTransition",
+   "type": "AnimateOptions & { layout?: AnimateOptions | undefined; }"
   },
   {
    "name": "MotionKeyframes",
