@@ -38,7 +38,21 @@ export function initialMenuItem(menu: Element): HTMLElement | null {
   return selected ?? items[0] ?? null;
 }
 
-const label = (item: HTMLElement) => String(item.textContent).trim().toLowerCase();
+/** An item's text as people read it: decorative parts (`aria-hidden`, such as a flag emoji) left out. */
+function label(item: HTMLElement): string {
+  if (!item.querySelector('[aria-hidden="true"]'))
+    return String(item.textContent).trim().toLowerCase();
+  let text = "";
+  const walker = item.ownerDocument.createTreeWalker(item, NodeFilter.SHOW_ALL, {
+    acceptNode: (node) =>
+      node instanceof Element && node.getAttribute("aria-hidden") === "true"
+        ? NodeFilter.FILTER_REJECT
+        : NodeFilter.FILTER_ACCEPT,
+  });
+  for (let node = walker.nextNode(); node; node = walker.nextNode())
+    if (node.nodeType === Node.TEXT_NODE) text += node.nodeValue;
+  return text.trim().toLowerCase();
+}
 
 export interface Typeahead {
   /** Adds a typed character and returns the matching item after `from`, if any. */

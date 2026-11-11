@@ -132,7 +132,8 @@ input. A button `[data-ok-select-open="<trigger id>"]` opens it.
 | Enter / Space (open) | Pick (multiple: toggle) |
 | Escape | Close; focus to the trigger |
 | Tab | Close (prevented, MUI); focus to the trigger |
-Disabled options and subheaders are skipped.
+Disabled options and subheaders are skipped. Typeahead reads an option's text without its
+`aria-hidden` parts (icons, the phone input's flags).
 
 ## Accessibility
 Select-only combobox (WAI-ARIA APG) with MUI's roving focus: the trigger is

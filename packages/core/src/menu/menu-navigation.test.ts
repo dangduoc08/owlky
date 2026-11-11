@@ -84,6 +84,33 @@ describe("menu navigation", () => {
     expect(menuKeyTarget(menu, null, " ", typeahead)).toBeNull();
     expect(createTypeahead().match(items, null, "l")).toBe(logout);
   });
+
+  it("typeahead reads the text people hear: aria-hidden parts (a flag, an icon) are left out", () => {
+    const list = document.createElement("ul");
+    for (const [flag, name] of [
+      ["🇦🇹", "Austria"],
+      ["🇦🇺", "Australia"],
+    ]) {
+      const item = document.createElement("li");
+      const icon = document.createElement("span");
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = flag as string;
+      const text = document.createElement("span");
+      text.append(name as string, document.createComment("note"));
+      item.append(icon, text);
+      list.append(item);
+    }
+    const items = [...list.children] as HTMLElement[];
+    let now = 0;
+    const typeahead = createTypeahead(500, () => now);
+    expect(typeahead.match(items, null, "a")).toBe(items[0]);
+    for (const char of "ustral") {
+      now += 50;
+      typeahead.match(items, items[0] as HTMLElement, char);
+    }
+    now += 50;
+    expect(typeahead.match(items, items[0] as HTMLElement, "i")).toBe(items[1]);
+  });
 });
 
 const nested = `
