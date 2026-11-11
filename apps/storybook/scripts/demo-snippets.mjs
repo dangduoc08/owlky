@@ -212,6 +212,10 @@ const DEMOS = [
   ],
   // Motion "Logo" (ADR-0062): custom keyframes as JSON attributes; Motions carry no state.
   ["motion", "logo-demo.tsx", "MotionLogoDemo", "logo-group", motionKeyframesSnippet],
+  // Scroll progress (5.2): the React render is the HTML markup (the runtime reads the ids).
+  ["scroll-progress", "container-y-demo.tsx", "ContainerScrollYDemo", "container-scroll-y-group"],
+  ["scroll-progress", "container-x-demo.tsx", "ContainerScrollXDemo", "container-scroll-x-group"],
+  ["scroll-progress", "document-demo.tsx", "ScrollDocumentDemo", "scroll-document-group"],
   // Color pickers (roadmap 4.23): swatch colors are written by the runtimes (no `style`).
   ["radio", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],
   ["checkbox", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],

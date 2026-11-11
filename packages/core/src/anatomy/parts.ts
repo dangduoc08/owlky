@@ -1912,6 +1912,18 @@ export interface RatingParts {
   "data-ok-rating-label-text": Part<"span">;
 }
 
+/** Scroll progress: parts, states, values and triggers. */
+export interface ScrollProgressParts {
+  /** Set by the script when the browser has no scroll-driven animations (Firefox, Safari before 26) or the offset needs measuring: the script draws the progress on scroll. */
+  "data-ok-fallback": State;
+  /** The `id` of the scroll container whose progress is shown. Without it (or with an unknown id): the page. */
+  "data-ok-scroll-container": Value<string>;
+  /** Where the progress starts and ends: two intersections of the target and the container, separated by a comma, such as `start end, end start`. Default `start start, end end`. */
+  "data-ok-scroll-offset": Value<string>;
+  /** The `id` of an element: the progress follows its way through the container instead of the whole content. */
+  "data-ok-scroll-target": Value<string>;
+}
+
 /** Select: parts, states, values and triggers. */
 export interface SelectParts {
   /** HTML only: the template of the chip each value of a multiple select shows. */

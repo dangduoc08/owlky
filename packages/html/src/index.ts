@@ -16,8 +16,11 @@ export {
   type MotionEasing,
   type MotionKeyframes,
   normalizeThemeSettings,
+  observeScroll,
   readThemeSettings,
   resetThemeSettings,
+  type ScrollInfo,
+  type ScrollOptions,
   type SpringOptions,
   springEasing,
   THEME_SETTINGS_KEY,
@@ -70,6 +73,7 @@ export {
   type PhoneInputInstance,
   phoneInput,
 } from "./components/phone-input/phone-input.js";
+export type { ScrollProgressInstance } from "./components/scroll-progress/scroll-progress.js";
 export type { SortableInstance } from "./components/sortable/sortable.js";
 export type { TableInstance } from "./components/table/table.js";
 export type { TablePaginationInstance } from "./components/table-pagination/table-pagination.js";

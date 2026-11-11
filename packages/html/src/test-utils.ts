@@ -72,6 +72,15 @@ const CONTRAST_EXEMPT = [
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
+/**
+ * Animations a test can wait for: finite, running, on the document's timeline. Spinners loop
+ * forever; paused and scroll-driven ones (scroll progress) end only when something scrolls.
+ */
+export const waitable = (animation: Animation): boolean =>
+  animation.playState === "running" &&
+  animation.timeline === document.timeline &&
+  animation.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY;
+
 export interface AxeScanOptions {
   /**
    * `"park"` (default) first moves the real pointer onto a spot of its own: the page's mouse
@@ -104,9 +113,7 @@ export async function expectNoAxeViolations(
     // Mid-transition colors lower measured contrast (slow CI runners): scan the settled UI, once
     // the pointer left (un-hover transitions start then). Infinite animations (spinners) never
     // finish, so only finite ones are awaited.
-    const finite = document
-      .getAnimations()
-      .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
+    const finite = document.getAnimations().filter(waitable);
     await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
     const all = await axe.run(host, {
       runOnly: { type: "tag", values: TAGS },

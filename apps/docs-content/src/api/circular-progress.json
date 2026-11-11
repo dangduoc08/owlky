@@ -165,6 +165,11 @@
       "type": "number"
      },
      {
+      "description": "Follows a scroll position instead of `value`: `true` for the page, or the container, target, axis and offset (Framer Motion's `useScroll` options). The arc is then decorative (`aria-hidden`) and the variant defaults to `determinate`.",
+      "name": "scroll",
+      "type": "boolean | UseScrollOptions"
+     },
+     {
       "default": "40",
       "description": "Width and height: a number in px, or a CSS length such as `\"3rem\"`.",
       "name": "size",

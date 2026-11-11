@@ -1,3 +1,4 @@
+"use client";
 import {
   type CircularProgressVariant,
   circularProgressAttributes,
@@ -10,7 +11,13 @@ import {
   progressSize,
   circularProgressOptions as schema,
 } from "@owlky/core";
-import { type ComponentPropsWithoutRef, type CSSProperties, forwardRef } from "react";
+import { type ComponentPropsWithoutRef, type CSSProperties, forwardRef, useRef } from "react";
+import {
+  scrollProgressProps,
+  type UseScrollOptions,
+  useScrollProgress,
+} from "../scroll-progress/scroll-progress.js";
+import { useMergedRefs } from "../utils/refs.js";
 
 export interface CircularProgressProps extends Omit<ComponentPropsWithoutRef<"span">, "color"> {
   /** `indeterminate` spins while the duration is unknown. Default `"indeterminate"`. */
@@ -31,6 +38,12 @@ export interface CircularProgressProps extends Omit<ComponentPropsWithoutRef<"sp
   disableShrink?: boolean | undefined;
   /** Shows the faint full circle behind the arc. */
   enableTrackSlot?: boolean | undefined;
+  /**
+   * Follows a scroll position instead of `value`: `true` for the page, or the container,
+   * target, axis and offset (Framer Motion's `useScroll` options). The arc is then decorative
+   * (`aria-hidden`) and the variant defaults to `determinate`.
+   */
+  scroll?: boolean | UseScrollOptions | undefined;
 }
 
 /**
@@ -50,20 +63,25 @@ export const CircularProgress = forwardRef<HTMLSpanElement, CircularProgressProp
       thickness,
       disableShrink,
       enableTrackSlot,
+      scroll,
       style,
       ...props
     },
     ref,
   ) {
+    const own = useRef<HTMLSpanElement>(null);
+    const mergedRef = useMergedRefs(own, ref);
+    useScrollProgress(own, scroll);
     const attributes = circularProgressAttributes({
-      variant,
+      variant: variant ?? (scroll ? "determinate" : undefined),
       color,
       size,
       thickness,
       disableShrink,
       enableTrackSlot,
     });
-    const determinate = attributes["data-ok-variant"] === "determinate";
+    // A scroll progress shows a position through CSS: no value, no ARIA value.
+    const determinate = !scroll && attributes["data-ok-variant"] === "determinate";
     const valid = (key: "value" | "min" | "max" | "thickness", input: unknown) => {
       const parsed = parseNumber(schema.options[key], input);
       return typeof parsed === "number" ? parsed : undefined;
@@ -79,9 +97,10 @@ export const CircularProgress = forwardRef<HTMLSpanElement, CircularProgressProp
     });
     return (
       <span
-        ref={ref}
+        ref={mergedRef}
         role="progressbar"
         {...attributes}
+        {...scrollProgressProps(scroll)}
         data-ok-runtime="off"
         {...(determinate ? progressAria(...range) : {})}
         style={{ ...(custom as CSSProperties), ...style }}

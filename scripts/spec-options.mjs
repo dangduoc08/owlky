@@ -97,6 +97,7 @@ const SPECS = {
   "count-up": "motion.md",
   countdown: "motion.md",
   "motion-border": "motion.md",
+  "scroll-progress": "scroll-progress.md",
   "data-grid": "data-grid.md",
   "date-picker": "date-picker.md",
   "date-calendar": "date-picker.md",

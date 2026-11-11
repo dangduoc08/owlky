@@ -131,6 +131,11 @@
       "type": "number"
      },
      {
+      "description": "Follows a scroll position instead of `value`: `true` for the page, or the container, target, axis and offset (Framer Motion's `useScroll` options). The bar is then decorative (`aria-hidden`) and the variant defaults to `determinate`.",
+      "name": "scroll",
+      "type": "boolean | UseScrollOptions"
+     },
+     {
       "default": "min",
       "description": "Determinate and buffer: progress between `min` and `max`.",
       "name": "value",

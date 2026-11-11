@@ -125,6 +125,7 @@ import {
   lightboxThumbnailsPositions,
 } from "../lightbox/lightbox-model.js";
 import { type CountdownUnit, countdownUnits } from "../motion/countdown.js";
+import type { ScrollOffset } from "../motion/scroll.js";
 import {
   behavior,
   type DataAttributes,
@@ -3698,6 +3699,51 @@ export interface MotionBorderAnatomyOptions {
 /** `data-ok-*` attributes of a MotionBorder (width and duration also go to private properties). */
 export const motionBorderAttributes = (options: MotionBorderAnatomyOptions = {}): DataAttributes =>
   optionAttributes(motionBorderOptions, { ...options });
+
+// --- Scroll progress (ADR-0062, 5.2) ---------------------------------------------------------
+
+export const scrollAxes = ["y", "x"] as const;
+
+export const scrollProgressOptions = defineOptions("scroll-progress", "data-ok-scroll-progress", {
+  axis: style(
+    "data-ok-scroll-axis",
+    scrollAxes,
+    "y",
+    "Scroll direction followed: `y` (vertical) or `x` (horizontal).",
+    { optional: true },
+  ),
+});
+
+export interface ScrollProgressAnatomyOptions {
+  axis?: (typeof scrollAxes)[number] | undefined;
+  /** Id of the scroll container (absent: the page). */
+  container?: string | undefined;
+  /** Id of the element whose way through the container is measured. */
+  target?: string | undefined;
+  /** Two intersections, such as `["start end", "end start"]` or `"start end, end start"`. */
+  offset?: ScrollOffset | string | undefined;
+}
+
+/**
+ * `data-ok-*` attributes of a progress that follows a scroll position (Linear or Circular
+ * progress): the axis, and the container, target and offset as written.
+ */
+export const scrollProgressAttributes = (
+  options: ScrollProgressAnatomyOptions = {},
+): DataAttributes => {
+  const attributes = optionAttributes(scrollProgressOptions, { ...options });
+  if (options.container) attributes["data-ok-scroll-container"] = options.container;
+  if (options.target) attributes["data-ok-scroll-target"] = options.target;
+  if (options.offset !== undefined) {
+    attributes["data-ok-scroll-offset"] =
+      typeof options.offset === "string"
+        ? options.offset
+        : options.offset
+            .map((entry) => (typeof entry === "object" ? entry.join(" ") : String(entry)))
+            .join(", ");
+  }
+  return attributes;
+};
 
 // --- Data grid (ADR-0020) ---------------------------------------------------------------------
 
@@ -7539,6 +7585,7 @@ export const optionSchemas = {
   "count-up": countUpOptions,
   countdown: countdownOptions,
   "motion-border": motionBorderOptions,
+  "scroll-progress": scrollProgressOptions,
   "data-grid": dataGridOptions,
   "date-field": dateFieldOptions,
   "date-calendar": dateCalendarOptions,

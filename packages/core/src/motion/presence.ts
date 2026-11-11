@@ -21,10 +21,14 @@ export interface AnimationWait {
   cancel(): void;
 }
 
-/** Finite animations running on `element` and its subtree (loops never end: skipped). */
+/**
+ * Finite animations running on `element` and its subtree. Skipped: loops (they never end),
+ * paused animations and scroll-driven ones (5.2: they end when the scroll does).
+ */
 export function runningAnimations(element: Element): Animation[] {
   return element.getAnimations({ subtree: true }).filter((animation) => {
-    if (animation.playState === "finished" || animation.playState === "idle") return false;
+    if (animation.playState !== "running") return false;
+    if (animation.timeline !== document.timeline) return false;
     const end = animation.effect?.getComputedTiming().endTime;
     return typeof end === "number" && Number.isFinite(end);
   });

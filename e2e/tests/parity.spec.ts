@@ -49,6 +49,9 @@ const pairs: [component: string, story: string][] = [
   ["motion", "logo"],
   ["motion", "avatar-story"],
   ["motion", "border"],
+  ["scroll-progress", "container-scroll-y"],
+  ["scroll-progress", "container-scroll-x"],
+  ["scroll-progress", "scroll-document"],
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
   ...["grouped", "asynchronous", "single-value", "virtualization"].map(
@@ -644,9 +647,13 @@ async function loaded(page: Page, key: string) {
  * Map stories: the WebGL canvas can render tiles at different moments in two page loads, so it is
  * hidden for the pixel comparison; markers, popups, panels and controls are compared (spec: parity
  * notes). The anatomy test compares the DOM, MapLibre's canvas container included.
+ * Scroll progress: the page's bar follows the window, which a screenshot of a tall story scrolls
+ * (the script fallback redraws a frame later); `scroll-progress.spec.ts` checks its position.
  */
 const SCREENSHOT_CSS: Record<string, string> = {
   map: "[data-ok-map-view] canvas { visibility: hidden !important; }",
+  "scroll-progress":
+    "[data-ok-scroll-progress]:not([data-ok-scroll-container]) { visibility: hidden !important; }",
 };
 
 /**

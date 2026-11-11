@@ -121,3 +121,17 @@ Safari 17 (ADR-0006). `linear()` easing is in Chrome 113, Firefox 112 and Safari
 - Bundle: the engine adds a few kB to `owlky.js` (measured in the review); declarative keyframes
   are parsed only when `data-ok-keyframes` is present.
 - 5.2–5.4 reuse `animate()`; their details get their own sections or ADRs when they are built.
+
+## Note 2026-11-11 — 5.2 Scroll as built
+The sketch's native path is kept for the page only: the stylesheet animates
+`--_ok-scroll-progress` with `animation-timeline: scroll(root)` (no JavaScript). A container or a
+target doesn't use CSS named timelines (they need `scroll-timeline` / `view-timeline` and
+`timeline-scope` written on the author's container, target and a common ancestor): core
+`createScrollProgress` gives the engine's `animate()` a `ScrollTimeline` / `ViewTimeline` (the
+script form of the same native timelines; `rangeStart` / `rangeEnd` for named offsets). So
+`animate()` gained `timeline`, `rangeStart` and `rangeEnd`; an animation on a timeline is never
+committed (like a loop) and ignores reduced motion (it shows a position). The fallback is as
+sketched (a paused `animate()` whose `currentTime` a passive, rAF-throttled scroll listener sets),
+also used for offsets no timeline range expresses exactly. `runningAnimations` (exits) and the
+test helpers skip paused and scroll-driven animations, which end only when something scrolls.
+Spec: `specs/components/scroll-progress.md`.

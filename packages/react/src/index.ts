@@ -104,6 +104,10 @@ export type {
   PopoverVirtualAnchor,
   ProgressColor,
   RatingSize,
+  ScrollAxis,
+  ScrollInfo,
+  ScrollIntersection,
+  ScrollOffset,
   SelectionControlColor,
   SelectionControlSize,
   SliderColor,
@@ -644,6 +648,11 @@ export {
   type RadioProps,
 } from "./radio/radio.js";
 export { Rating, type RatingProps, StarIcon } from "./rating/rating.js";
+export {
+  type ScrollElement,
+  type UseScrollOptions,
+  useScroll,
+} from "./scroll-progress/scroll-progress.js";
 export { Scrollbar, type ScrollbarProps } from "./scrollbar/scrollbar.js";
 export {
   InputLabel,

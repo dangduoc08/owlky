@@ -1,0 +1,75 @@
+/*
+ * Scroll progress — spec: specs/components/scroll-progress.md (ADR-0062, 5.2)
+ *
+ * Anatomy:   [data-ok-linear-progress | data-ok-circular-progress][data-ok-variant="determinate"]
+ *              [data-ok-scroll-progress][data-ok-scroll-axis="x"]?[data-ok-scroll-container]?
+ *              [data-ok-scroll-target]?[data-ok-scroll-offset]?[data-ok-fallback]?
+ * Private:   --_ok-scroll-progress (0–1, registered so it animates): animated here on the page's
+ *            scroll timeline, or by core `createScrollProgress` (a ScrollTimeline / ViewTimeline,
+ *            or a paused animation the script moves on scroll: `data-ok-fallback`).
+ *
+ * Composition: the progress keeps its own CSS; this file only feeds the progress to the Linear
+ * bar and the Circular arc (loaded after both), without their value transitions (the bar follows
+ * the scroll). Reduced motion changes nothing: the bar shows a position, it doesn't move by itself.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@property --_ok-scroll-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@layer components {
+  :where([data-ok-scroll-progress] > [data-ok-linear-progress-bar="1"]) {
+    --_ok-progress-value: var(--_ok-scroll-progress);
+
+    transition: none;
+  }
+
+  /* The arc's length is the circle's circumference: π × (44 − thickness) in viewBox units. */
+  :where([data-ok-scroll-progress] [data-ok-circular-progress-circle]) {
+    --_ok-scroll-arc: calc(3.1416px * (44 - var(--_ok-progress-thickness, 3.6)));
+
+    stroke-dasharray: var(--_ok-scroll-arc);
+    stroke-dashoffset: calc((1 - var(--_ok-scroll-progress)) * var(--_ok-scroll-arc));
+    transition: none;
+  }
+
+  /* The page's progress needs no script where scroll-driven animations exist. */
+  @supports (animation-timeline: scroll()) {
+    :where(
+        [data-ok-scroll-progress]:not(
+          [data-ok-scroll-container],
+          [data-ok-scroll-target],
+          [data-ok-scroll-offset],
+          [data-ok-fallback]
+        )
+      ) {
+      animation: ok-scroll-progress linear both;
+      animation-timeline: scroll(root y);
+    }
+
+    :where(
+        [data-ok-scroll-progress][data-ok-scroll-axis="x"]:not(
+          [data-ok-scroll-container],
+          [data-ok-scroll-target],
+          [data-ok-scroll-offset],
+          [data-ok-fallback]
+        )
+      ) {
+      animation-timeline: scroll(root x);
+    }
+  }
+
+  @keyframes ok-scroll-progress {
+    from {
+      --_ok-scroll-progress: 0;
+    }
+
+    to {
+      --_ok-scroll-progress: 1;
+    }
+  }
+}
