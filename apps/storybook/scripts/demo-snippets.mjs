@@ -31,6 +31,18 @@ const popoverTriggers = (markup) => {
   });
 };
 
+/**
+ * Motion snippets carry no `data-ok-state` (the runtime writes it) and keep their JSON in single
+ * quotes, as an author writes it.
+ */
+const motionKeyframesSnippet = (markup) =>
+  markup
+    .replace(/ data-ok-state="[^"]*"/g, "")
+    .replace(
+      / (data-ok-keyframes|data-ok-transition)="([^"]*)"/g,
+      (_, name, value) => ` ${name}='${value.replaceAll("&quot;", '"')}'`,
+    );
+
 const editorContent = await import("../src/components/editor/editor-feature-content.ts");
 
 /**
@@ -198,6 +210,8 @@ const DEMOS = [
     "countdown-seconds",
     countdownTrigger("restart"),
   ],
+  // Motion "Logo" (ADR-0062): custom keyframes as JSON attributes; Motions carry no state.
+  ["motion", "logo-demo.tsx", "MotionLogoDemo", "logo-group", motionKeyframesSnippet],
   // Color pickers (roadmap 4.23): swatch colors are written by the runtimes (no `style`).
   ["radio", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],
   ["checkbox", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],

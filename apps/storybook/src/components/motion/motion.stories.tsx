@@ -13,6 +13,7 @@ import {
   MOTION_CONTROLS,
   MOTION_DRAW_CONTROLS,
   MOTION_FILES,
+  MOTION_LOGO_CONTROLS,
   MOTION_LOOP_CONTROLS,
   MOTION_TEXT_CONTROLS,
   motionStories,
@@ -128,7 +129,10 @@ export const CountdownStory: StoryObj = {
   name: "Countdown",
 };
 const BORDER = { ...MOTION_BORDER_CONTROLS, target: MotionBorder };
-export const Logo: StoryObj = other("logo", htmlSetup(["motion-border.css"], true), BORDER);
+export const Logo: StoryObj = other("logo", htmlSetup(["motion.css"], true), {
+  ...MOTION_LOGO_CONTROLS,
+  target: Motion,
+});
 export const AvatarStory: StoryObj = other(
   "avatar",
   htmlSetup(["avatar.css", "motion-border.css"], true),

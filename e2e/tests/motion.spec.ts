@@ -67,6 +67,34 @@ for (const impl of implementations) {
         await expect(loop).toHaveCSS("animation-play-state", "paused");
     });
 
+    test("logo: the keyframes loop without reduced motion and pause with paused", async ({
+      page,
+    }) => {
+      const loops = (paused: boolean) =>
+        page.locator("[data-ok-keyframes]").evaluateAll(
+          (elements, want) =>
+            elements.every((element) => {
+              const [animation] = element.getAnimations();
+              return animation?.playState === (want ? "paused" : "running");
+            }),
+          paused,
+        );
+      await openStory(page, storyId(impl, "motion", "logo"));
+      await expect(page.locator("[data-ok-keyframes]")).toHaveCount(4);
+      await expect(page.getByRole("img", { name: "Owlky logo", exact: true })).toBeVisible();
+      // Reduced motion (set by openStory): nothing turns.
+      expect(
+        await page
+          .locator("[data-ok-keyframes]")
+          .evaluateAll((elements) => elements.every((e) => e.getAnimations().length === 0)),
+      ).toBe(true);
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await expect.poll(() => loops(false)).toBe(true);
+      await openStory(page, storyId(impl, "motion", "logo"), "light", "paused:!true");
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await expect.poll(() => loops(true)).toBe(true);
+    });
+
     test("tap & hover: hover scales up, a press scales down", async ({ page, isMobile }) => {
       test.skip(isMobile, "Hover needs a mouse.");
       await openStory(page, storyId(impl, "motion", "tap-hover"));
