@@ -17,10 +17,15 @@ import {
   MotionBorder,
   MotionGroup,
   MotionText,
+  Paper,
   Typography,
+  useMotionValue,
+  useSpring,
+  useTransform,
 } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { LayoutExpandDemo, LayoutHighlightDemo, LayoutReorderDemo } from "./layout-demo.js";
 
 export const motionSections: GuideSection[] = [
   {
@@ -677,6 +682,204 @@ export function Subscribe() {
 }`,
   },
   {
+    id: "layout",
+    title: "Animate layout changes",
+    body: `Add \`layout\` to a Motion to animate it to its new place and size whenever the page around it changes: a list that is sorted, a card that grows, an item that is removed. Owlky measures the Motion before and after the change and plays the difference with a transform, so the page itself changes at once and stays correct.
+
+- **What moves:** \`layout\` animates the position and the size. \`"position"\` animates only the position (the size changes at once), and \`"size"\` only the size.
+- **Timing:** \`transition\` sets the timing, and a \`layout\` key inside it sets the timing of layout animations only, such as \`{ layout: { type: "spring", bounce: 0.2 } }\`.
+- **When it measures:** in React, each time the Motion renders. Set \`layoutDependency\` to a value to measure only when that value changes. In HTML, the script watches the page: any change inside the Motion's parent animates it. For changes that leave the page untouched, such as a new stylesheet, call \`measure()\` before and \`animateLayout()\` after.
+- **No entrance:** \`initial={false}\` (HTML: \`data-ok-initial="false"\`) shows the content as it is instead of playing an entrance.
+- **Events:** \`onLayoutAnimationStart\` and \`onLayoutAnimationComplete\` (HTML: \`ok:motion:layoutanimationstart\` and \`ok:motion:layoutanimationcomplete\`).
+
+A growing Motion stretches its content while it animates. A Motion with \`layout\` inside it keeps its own shape, so wrap text in one with \`layout="position"\`. Rounded corners in pixels keep their shape too. Owlky never moves the elements themselves, so a focused button keeps the focus when its item moves. With reduced motion, the content jumps to its new place.`,
+    html: `<ul id="tasks">
+  <li data-ok-motion data-ok-initial="false" data-ok-layout>Write the brief</li>
+  <li data-ok-motion data-ok-initial="false" data-ok-layout>Review the design</li>
+  <li data-ok-motion data-ok-initial="false" data-ok-layout>Ship the release</li>
+</ul>
+<button type="button" id="last-first" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md">
+  <span data-ok-button-label>Move the last task to the top</span>
+</button>
+
+<script>
+  document.getElementById("last-first").addEventListener("click", () => {
+    const tasks = document.getElementById("tasks");
+    // The script sees the move and animates every task to its new place
+    tasks.prepend(tasks.lastElementChild);
+  });
+</script>`,
+    react: `import { Button, Motion } from "@owlky/react";
+import { useState } from "react";
+
+export function Tasks() {
+  const [tasks, setTasks] = useState(["Write the brief", "Review the design", "Ship the release"]);
+  const lastFirst = () => setTasks((list) => [...list.slice(-1), ...list.slice(0, -1)]);
+  return (
+    <>
+      <ul>
+        {tasks.map((task) => (
+          <Motion key={task} component="li" layout initial={false}>
+            {task}
+          </Motion>
+        ))}
+      </ul>
+      <Button variant="outlined" color="inherit" onClick={lastFirst}>
+        Move the last task to the top
+      </Button>
+    </>
+  );
+}`,
+  },
+  {
+    id: "layout-id",
+    title: "Move one element between places",
+    body: `Give Motions in different places the same \`layoutId\` to make them one element on screen. When one with that id appears as another one leaves, such as the highlight of a selected button, the new one starts from the old one's place and size and moves to its own. In HTML, moving the element itself into its new place does the same.
+
+Use \`initial={false}\` on these Motions, so the new one moves instead of playing an entrance. Pair the move with a state that assistive technology reads, such as \`aria-pressed\` or \`aria-selected\`: the highlight itself is decorative.`,
+    html: `<div role="group" aria-label="Billing period" id="periods">
+  <button type="button" aria-pressed="true" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md">
+    <span data-ok-button-label><span data-ok-motion data-ok-initial="false" data-ok-layout-id="billing" aria-hidden="true" class="highlight"></span>Monthly</span>
+  </button>
+  <button type="button" aria-pressed="false" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md">
+    <span data-ok-button-label>Yearly</span>
+  </button>
+</div>
+
+<script>
+  const periods = document.getElementById("periods");
+  periods.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    for (const other of periods.querySelectorAll("button")) {
+      other.setAttribute("aria-pressed", String(other === button));
+    }
+    // The highlight moves into the pressed button, from where it was
+    button.querySelector("[data-ok-button-label]").prepend(periods.querySelector(".highlight"));
+  });
+</script>`,
+    react: `import { Button, Motion } from "@owlky/react";
+import { useState } from "react";
+
+const periods = ["Monthly", "Yearly"];
+
+// .highlight { position: absolute; inset: 0; z-index: -1; } comes from your CSS
+export function BillingPeriod() {
+  const [selected, setSelected] = useState("Monthly");
+  return (
+    <div role="group" aria-label="Billing period">
+      {periods.map((period) => (
+        <Button
+          key={period}
+          color="inherit"
+          aria-pressed={period === selected}
+          onClick={() => setSelected(period)}
+        >
+          {period === selected ? (
+            <Motion
+              component="span"
+              className="highlight"
+              layoutId="billing"
+              initial={false}
+              aria-hidden="true"
+            />
+          ) : null}
+          {period}
+        </Button>
+      ))}
+    </div>
+  );
+}`,
+  },
+  {
+    id: "layout-group",
+    title: "Animate siblings together",
+    body: `In React, a Motion measures itself when it renders. Siblings that move because of it, but don't render themselves, jump to their new place. Wrap them in \`LayoutGroup\`: when one Motion inside it renders, all of them are measured, and they move together. Its \`id\` keeps the \`layoutId\`s of two groups apart.
+
+In HTML, Motions with the same parent already move together. For Motions in different containers, such as the columns of a board, put \`data-ok-layout-group\` on a container around them.
+
+In \`MotionPresence\`, \`mode="popLayout"\` takes a leaving child out of the layout while it exits, so the Motions with \`layout\` around it move into its place at once. The child's Motion must be its root element, and its parent must be positioned, such as with \`position: relative\`.`,
+    html: `<div data-ok-layout-group="board" class="board">
+  <ul aria-label="To do">
+    <li data-ok-motion data-ok-initial="false" data-ok-layout>Write the brief</li>
+  </ul>
+  <ul aria-label="Done">
+    <li data-ok-motion data-ok-initial="false" data-ok-layout>Ship the release</li>
+  </ul>
+</div>`,
+    react: `import { LayoutGroup, Motion } from "@owlky/react";
+import { useState } from "react";
+
+function Question({ title, answer }: { title: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Motion layout initial={false}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}>
+        {title}
+      </button>
+      {open ? <p>{answer}</p> : null}
+    </Motion>
+  );
+}
+
+export function Questions() {
+  return (
+    <LayoutGroup>
+      <Question title="Can I cancel at any time?" answer="Yes, at the end of any month." />
+      <Question title="Where is my data stored?" answer="In the region you pick." />
+    </LayoutGroup>
+  );
+}`,
+  },
+  {
+    id: "shared-values",
+    title: "Share values without re-rendering",
+    body: `A shared value holds a number or a string that changes often, such as a position, and tells its listeners when it changes, without rendering a component again. Import them from \`@owlky/react\` or \`@owlky/html\`.
+
+- **Create:** \`useMotionValue(initial)\` in React, \`motionValue(initial)\` in HTML. Read it with \`get()\`, change it with \`set()\`, and listen with \`on("change", callback)\` (React: \`useMotionValueEvent\`).
+- **Derive:** \`useTransform\` (HTML: \`transformValue\`) computes a value from others, with a function or by mapping ranges, such as \`[0, 100]\` to \`[1, 0]\`.
+- **Smooth:** \`useSpring\` (HTML: \`springValue\`) follows another value, or the target you \`set()\`, with a spring.
+- **Draw:** pass shared values in a Motion's \`style\`, such as \`style={{ x, opacity }}\`. In HTML, \`bindStyle(element, "x", value)\` does the same. \`x\` and \`y\` are pixels and \`rotate\` is degrees.
+
+With reduced motion, springs jump to their target.`,
+    html: `<input type="range" id="amount" min="0" max="100" value="0" aria-label="Amount">
+<div id="bar" class="bar"></div>
+
+<script type="module">
+  import { bindStyle, motionValue, springValue, transformValue } from "@owlky/html";
+
+  const amount = motionValue(0);
+  const smooth = springValue(amount, { stiffness: 300, damping: 30 });
+  const opacity = transformValue(smooth, [0, 100], [0.4, 1]);
+  const bar = document.getElementById("bar");
+  bindStyle(bar, "x", smooth);
+  bindStyle(bar, "opacity", opacity);
+  document.getElementById("amount").addEventListener("input", (event) => {
+    amount.set(Number(event.target.value));
+  });
+</script>`,
+    react: `import { Motion, useMotionValue, useSpring, useTransform } from "@owlky/react";
+
+export function Amount() {
+  const amount = useMotionValue(0);
+  const smooth = useSpring(amount, { stiffness: 300, damping: 30 });
+  const opacity = useTransform(smooth, [0, 100], [0.4, 1]);
+  return (
+    <>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        defaultValue={0}
+        aria-label="Amount"
+        onChange={(event) => amount.set(Number(event.target.value))}
+      />
+      <Motion trigger="mount" className="bar" style={{ x: smooth, opacity }} />
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -691,9 +894,10 @@ export function Subscribe() {
     title: "Events and methods",
     body: `- **\`ok:motion:end\`** fires on a Motion when its animation ends, with the state in \`detail.state\`: \`enter\` or \`exit\`.
 - **\`ok:motion:enter\` and \`ok:motion:leave\`** fire on a Motion with the \`inView\` trigger when it enters or leaves the view, with the visible fraction in \`detail.ratio\`. MotionGroup and MotionText fire \`ok:motion-group:enter\`, \`ok:motion-text:enter\` and the matching \`leave\` events. A Motion inside a group fires none: the group reports for it.
-- **Instance:** \`runtime.get(element, "motion")\` returns \`{ state, replay(), exit(), hide(), remove() }\`. \`replay()\` plays the entrance again. \`exit()\` plays the exit, and \`hide()\` and \`remove()\` then hide or remove the element. Each of these three returns a promise that resolves to \`true\` when the exit ended, or \`false\` when \`replay()\` interrupted it. MotionGroup (\`"motion-group"\`) and MotionText (\`"motion-text"\`) have \`{ state, replay() }\`.
+- **Instance:** \`runtime.get(element, "motion")\` returns \`{ state, replay(), exit(), hide(), remove(), measure(), animateLayout() }\`. \`replay()\` plays the entrance again. \`exit()\` plays the exit, and \`hide()\` and \`remove()\` then hide or remove the element. Each of these three returns a promise that resolves to \`true\` when the exit ended, or \`false\` when \`replay()\` interrupted it. \`measure()\` and \`animateLayout()\` animate a layout change the script can't see. MotionGroup (\`"motion-group"\`) and MotionText (\`"motion-text"\`) have \`{ state, replay() }\`.
 - **\`ok:countdown:tick\`** fires on a Countdown each time its value changes, with the whole seconds left in \`detail.remaining\`. **\`ok:countdown:complete\`** fires once when it reaches 0. \`runtime.get(element, "countdown")\` returns \`{ remaining, paused, pause(), resume(), restart() }\`. In React, use \`onTick\` and \`onComplete\`, and change the \`key\` to start over.
 - **Gestures:** \`ok:motion:dragstart\`, \`ok:motion:drag\` and \`ok:motion:dragend\` carry \`point\`, \`delta\`, \`offset\` and \`velocity\` in \`detail\`. \`ok:motion:directionlock\` carries the locked \`axis\`, and \`ok:motion:dragtransitionend\` fires when the glide after a release stops. \`ok:motion:hoverstart\` and \`ok:motion:hoverend\` follow the pointer, and \`ok:motion:tapstart\`, \`ok:motion:tap\` and \`ok:motion:tapcancel\` follow a press, with its \`point\`.
+- **Layout:** \`ok:motion:layoutanimationstart\` and \`ok:motion:layoutanimationcomplete\` fire when a layout animation of the Motion starts and ends. An animation that another one interrupts doesn't fire \`layoutanimationcomplete\`.
 - **React:** use \`onAnimationEnd\`, \`onViewportEnter\` and \`onViewportLeave\` (they receive the \`IntersectionObserverEntry\`), and change the \`key\` to play the entrance again. Gesture callbacks receive the event first, then the information, such as \`onDrag(event, info)\`.`,
   },
   {
@@ -839,6 +1043,26 @@ const PREVIEWS = {
           <Typography variant="subtitle2">Drag me</Typography>
         </Card>
       </Motion>
+    </Preview>
+  ),
+  layout: () => (
+    <Preview>
+      <LayoutReorderDemo />
+    </Preview>
+  ),
+  "layout-id": () => (
+    <Preview>
+      <LayoutHighlightDemo />
+    </Preview>
+  ),
+  "layout-group": () => (
+    <Preview>
+      <LayoutExpandDemo />
+    </Preview>
+  ),
+  "shared-values": () => (
+    <Preview>
+      <AmountPreview />
     </Preview>
   ),
   options: () => (
@@ -994,6 +1218,43 @@ const PREVIEWS = {
           description: "A press started, ended on it, or ended elsewhere.",
         },
         {
+          react: "layout",
+          html: "data-ok-layout",
+          type: 'boolean · "position" · "size"',
+          description: "Animates changes of its position and size.",
+        },
+        {
+          react: "layoutId",
+          html: "data-ok-layout-id",
+          type: "string",
+          description: "One element on screen: a new Motion with the id moves from the old one.",
+        },
+        {
+          react: "layoutDependency",
+          html: "measure(), animateLayout()",
+          type: "any · methods",
+          description:
+            "React: measures only when the value changes. HTML: changes the script can't see.",
+        },
+        {
+          react: "LayoutGroup",
+          html: "data-ok-layout-group",
+          type: "component · id",
+          description: "Motions that animate together. Its `id` keeps `layoutId`s apart.",
+        },
+        {
+          react: "onLayoutAnimationStart, onLayoutAnimationComplete",
+          html: "ok:motion:layoutanimationstart, layoutanimationcomplete",
+          type: "event",
+          description: "A layout animation started or ended.",
+        },
+        {
+          react: "style",
+          html: "bindStyle()",
+          type: "object · function",
+          description: "Shared values and the shorthands `x`, `y`, `scale` and `rotate`.",
+        },
+        {
           react: "key",
           html: "replay()",
           type: "—",
@@ -1039,6 +1300,28 @@ const PREVIEWS = {
     />
   ),
 };
+
+/** Shared values: a range input drives a bar through a spring. */
+function AmountPreview() {
+  const amount = useMotionValue(0);
+  const smooth = useSpring(amount, { stiffness: 300, damping: 30 });
+  const opacity = useTransform(smooth, [0, 100], [0.4, 1]);
+  return (
+    <div className="sb-layout-amount">
+      <input
+        type="range"
+        min={0}
+        max={100}
+        defaultValue={0}
+        aria-label="Amount"
+        onChange={(event) => amount.set(Number(event.target.value))}
+      />
+      <Motion trigger="mount" initial={false} style={{ x: smooth, opacity }}>
+        <Paper className="sb-layout-amount-bar" elevation={2} />
+      </Motion>
+    </div>
+  );
+}
 
 /** Motion docs page (ADR-0019). */
 export function MotionDocs() {

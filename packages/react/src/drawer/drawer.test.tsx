@@ -1,5 +1,5 @@
 import { isScrollLocked } from "@owlky/core";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -335,7 +335,8 @@ describe("Drawer options", () => {
     const element = dialog();
     // Let the slide in end first: a close at its very start has nothing left to play.
     for (const animation of element.getAnimations({ subtree: true })) animation.finish();
-    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    // A synchronous click: a slow pointer click under load can outlast the 80 ms exit.
+    await act(async () => screen.getByRole("button", { name: "Close" }).click());
     expect(element.getAttribute("data-ok-state")).toBe("exiting");
     expect(element.open).toBe(true);
     const content = element.querySelector("[data-ok-drawer-content]") as HTMLElement;

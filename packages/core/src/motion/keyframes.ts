@@ -1,11 +1,11 @@
 import {
-  type AnimateOptions,
   type AnimationControls,
   animate,
   type MotionKeyframes,
   type MotionValue,
   motionTracks,
 } from "./animate.js";
+import type { LayoutTransition } from "./layout.js";
 
 /*
  * Declarative keyframes on a Motion — spec: specs/components/motion.md, ADR-0062 (7).
@@ -73,9 +73,10 @@ const NUMBERS = [
 
 /**
  * The transition of a JSON text or object (Framer's `transition`, ms). `repeat` takes a number,
- * `Infinity` or `"Infinity"` (JSON has no infinity); unknown keys and values are dropped.
+ * `Infinity` or `"Infinity"` (JSON has no infinity); a `layout` key holds the transition of
+ * layout animations (5.4); unknown keys and values are dropped.
  */
-export function parseMotionTransition(input: unknown): AnimateOptions {
+export function parseMotionTransition(input: unknown): LayoutTransition {
   let data = input;
   if (typeof input === "string") {
     try {
@@ -93,11 +94,12 @@ export function parseMotionTransition(input: unknown): AnimateOptions {
       | "repeatType"
       | "reducedMotion"
       | "ease"
-      | "times",
+      | "times"
+      | "layout",
       unknown
     >
   >;
-  const result: AnimateOptions = {};
+  const result: LayoutTransition = {};
   for (const key of NUMBERS) {
     const raw = source[key];
     if (typeof raw === "number" && Number.isFinite(raw)) result[key] = raw;
@@ -135,6 +137,11 @@ export function parseMotionTransition(input: unknown): AnimateOptions {
   }
   if (Array.isArray(source.times) && source.times.every((item) => typeof item === "number"))
     result.times = source.times as number[];
+  const layout = source.layout;
+  if (layout !== null && typeof layout === "object" && !Array.isArray(layout)) {
+    const { layout: _nested, ...own } = parseMotionTransition(layout);
+    if (Object.keys(own).length > 0) result.layout = own;
+  }
   return result;
 }
 
@@ -249,7 +256,7 @@ const kebab = (name: string) =>
  */
 export function motionKeyframesAttributes(
   keyframes: MotionKeyframes | undefined,
-  transition?: AnimateOptions | undefined,
+  transition?: LayoutTransition | undefined,
 ): Partial<Record<typeof KEYFRAMES_ATTR | typeof TRANSITION_ATTR, string>> {
   const parsed = keyframes === undefined ? undefined : parseMotionKeyframes(keyframes);
   if (!parsed) return {};

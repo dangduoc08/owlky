@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  type AnimateOptions,
   createMotionKeyframes,
   createMotionTrigger,
+  type LayoutTransition,
   type MotionKeyframes,
   type MotionState,
   type MotionTrigger,
@@ -18,6 +18,7 @@ import {
   motionTextOptions,
   nextMotionState,
   replayMotion,
+  type SharedValue,
   splitMotionText,
 } from "@owlky/core";
 import {
@@ -45,6 +46,8 @@ import {
   splitGestureProps,
   useMotionGestures,
 } from "./motion-gestures.js";
+import { type MotionLayoutProps, splitLayoutProps, useMotionLayout } from "./motion-layout.js";
+import { useSharedStyle } from "./motion-values.js";
 
 export interface MotionTriggerProps {
   /** `inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`. */
@@ -101,6 +104,16 @@ function usePresence(ref: RefObject<HTMLElement | null>, state: MotionState): Mo
   if (!presence) return state;
   if (!presence.present) return "exit";
   return skip ? null : state;
+}
+
+/**
+ * `initial={false}`: no state (the content as it is) until the first exit; from then on the
+ * states play as usual.
+ */
+function useSkippedEntrance(initial: boolean | undefined, state: MotionState | null) {
+  const skipping = useRef(initial === false);
+  if (state === "exit") skipping.current = false;
+  return skipping.current ? null : state;
 }
 
 /** Plays the element's `data-ok-keyframes` (core player) while it has keyframes. */
@@ -178,10 +191,24 @@ function useReplayOnChange(ref: RefObject<HTMLElement | null>, look: string): vo
   }, [ref, look]);
 }
 
+/** A shared value of a style (Framer's motion values in `style`). */
+type StyleValue = SharedValue<number> | SharedValue<string>;
+
+/**
+ * Motion's `style`: CSS properties, Framer's transform shorthands (`x`, `y` in px, `scale`,
+ * `scaleX`, `scaleY`, `rotate` in degrees), and shared values for any of them.
+ */
+export type MotionStyle = {
+  [K in keyof CSSProperties]?: CSSProperties[K] | StyleValue;
+} & Partial<
+  Record<"x" | "y" | "scale" | "scaleX" | "scaleY" | "rotate", number | string | StyleValue>
+>;
+
 export interface MotionProps
-  extends Omit<HTMLAttributes<HTMLElement>, "onDragStart" | "onDrag" | "onDragEnd">,
+  extends Omit<HTMLAttributes<HTMLElement>, "onDragStart" | "onDrag" | "onDragEnd" | "style">,
     MotionTriggerProps,
-    MotionGestureProps {
+    MotionGestureProps,
+    MotionLayoutProps {
   /** The element to render, such as `"section"` or `"li"`. Default `"div"`. */
   component?: ElementType | undefined;
   /** Animation. Default `fadeIn`. */
@@ -195,15 +222,26 @@ export interface MotionProps
   /**
    * How the custom keyframes play: `duration`, `delay` and `repeatDelay` in ms, `ease`, `times`,
    * `repeat` (`Infinity` loops), `repeatType`, or `type: "spring"` with `stiffness`, `damping`,
-   * `mass` or `bounce`.
+   * `mass` or `bounce`. A `layout` key tunes the layout animations only.
    */
-  transition?: AnimateOptions | undefined;
+  transition?: LayoutTransition | undefined;
+  /**
+   * Inline styles. Shared values (`useMotionValue`, `useTransform`, `useSpring`) and the
+   * shorthands `x`, `y`, `scale`, `scaleX`, `scaleY` and `rotate` are written to the element as
+   * they change, without a re-render.
+   */
+  style?: MotionStyle | undefined;
   /** Entrance length, ms (default 640; loops: about 5 s). */
   duration?: number | undefined;
   /** Travel of directional variants, px (default 160 for slides, 120 for fades). */
   distance?: number | undefined;
   /** Pauses the animation (give looping variants a pause control: WCAG 2.2.2). */
   paused?: boolean | undefined;
+  /**
+   * `false` skips the entrance: the content shows as it is (a shared `layoutId` element that
+   * moves instead). Later exits and entrances play. Default `true`.
+   */
+  initial?: boolean | undefined;
   children?: ReactNode;
 }
 
@@ -211,7 +249,8 @@ export interface MotionProps
  * Motion — spec: specs/components/motion.md. Animates its box in (or out) when it scrolls into
  * view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the
  * entrance, change its `key`. Gesture props (`drag`, `whileHover`, `whileTap`…) animate it
- * while it is dragged, hovered, pressed or focused.
+ * while it is dragged, hovered, pressed or focused; `layout` and `layoutId` animate changes of
+ * its box.
  */
 export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
   {
@@ -227,6 +266,7 @@ export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
     duration,
     distance,
     paused,
+    initial,
     viewportMargin,
     viewportRoot,
     onViewportEnter,
@@ -253,36 +293,54 @@ export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
     },
     useContext(GroupState),
   );
-  const shownState = usePresence(own, state);
+  const presenceState = usePresence(own, state);
+  const shownState = useSkippedEntrance(initial, presenceState);
   const custom = motionKeyframesAttributes(keyframes, transition);
-  const [gestureProps, props] = splitGestureProps(others);
+  const [gestureProps, withoutGestures] = splitGestureProps(others);
+  const [layoutProps, props] = splitLayoutProps(withoutGestures);
   const gestures = useMotionGestures(own, gestureProps, transition);
+  const { attributes: layout, measure } = useMotionLayout(own, layoutProps, transition);
+  const shownStyle = useSharedStyle(own, style);
   useKeyframes(own, custom["data-ok-keyframes"] !== undefined);
   useReplayOnChange(own, `${variant}|${duration}|${distance}`);
   return (
-    <Root
-      ref={mergedRef}
-      {...motionAttributes({ variant, trigger, once, amount, delay, duration, distance, paused })}
-      {...custom}
-      {...gestures}
-      {...viewportAttributes(viewportMargin)}
-      data-ok-state={shownState ?? undefined}
-      data-ok-runtime="off"
-      {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
-      style={
-        {
-          ...motionStyle({
-            duration: valid(duration),
-            delay: valid(delay),
-            distance: valid(distance),
-          }),
-          ...style,
-        } as CSSProperties
-      }
-      {...props}
-    >
-      {children}
-    </Root>
+    <>
+      {measure}
+      <Root
+        ref={mergedRef}
+        {...motionAttributes({
+          variant,
+          trigger,
+          once,
+          amount,
+          delay,
+          duration,
+          distance,
+          paused,
+          initial,
+        })}
+        {...custom}
+        {...gestures}
+        {...layout}
+        {...viewportAttributes(viewportMargin)}
+        data-ok-state={shownState ?? undefined}
+        data-ok-runtime="off"
+        {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
+        style={
+          {
+            ...motionStyle({
+              duration: valid(duration),
+              delay: valid(delay),
+              distance: valid(distance),
+            }),
+            ...shownStyle,
+          } as CSSProperties
+        }
+        {...props}
+      >
+        {children}
+      </Root>
+    </>
   );
 });
 

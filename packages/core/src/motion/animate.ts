@@ -86,6 +86,11 @@ export interface AnimateOptions extends SpringOptions {
   rangeStart?: string | undefined;
   /** With a view timeline: where the animation ends, such as `"cover 100%"`. */
   rangeEnd?: string | undefined;
+  /**
+   * `false`: at the end the animation is dropped and the element returns to its own style
+   * (layout animations, 5.4). Default `true`: the end values stay in the inline style.
+   */
+  commit?: boolean | undefined;
 }
 
 export interface AnimationControls {
@@ -177,6 +182,9 @@ export const parseTime = (value: string): number | undefined => {
   return Number.isFinite(amount) ? amount : undefined;
 };
 
+/** `--ok-duration-standard` in ms (the engine's default duration). */
+export const standardDuration = (): number => parseTime(token("--ok-duration-standard")) ?? 300;
+
 let linearOverride: boolean | undefined;
 
 /** Tests only: pretend `linear()` easing is (`true`) or isn't (`false`) supported; `undefined` resets. */
@@ -197,7 +205,8 @@ export function supportsLinearEasing(): boolean {
 const finite = (value: unknown, fallback: number): number =>
   typeof value === "number" && Number.isFinite(value) ? value : fallback;
 
-interface SpringParameters {
+/** A spring's physics, resolved from `SpringOptions`. */
+export interface SpringParameters {
   stiffness: number;
   damping: number;
   mass: number;
@@ -205,7 +214,7 @@ interface SpringParameters {
 }
 
 /** Stiffness and damping from the spring options (`visualDuration` / `bounce` win, as in Motion). */
-function springParameters(options: SpringOptions & { duration?: number | undefined }) {
+export function springParameters(options: SpringOptions & { duration?: number | undefined }) {
   const visual =
     options.visualDuration ?? (options.bounce !== undefined ? options.duration : undefined);
   const velocity = finite(options.velocity, 0);
@@ -258,6 +267,22 @@ export interface SpringEasing {
 const MAX_SPRING = 10_000;
 const round = (value: number) => Math.round(value * 10_000) / 10_000;
 
+/** Seconds until a spring rests (close to the target and slow, checked over a step), at most 10 s. */
+function springRest(params: SpringParameters, restDelta: number, restSpeed: number) {
+  const step = 1 / 120;
+  let t = 0;
+  let previous = 0;
+  let bounces = false;
+  for (; t < MAX_SPRING / 1000; t += step) {
+    const value = springPosition(params, t + step);
+    if (value > 1 + restDelta) bounces = true;
+    const speed = Math.abs(value - previous) / step;
+    previous = value;
+    if (t > 0 && Math.abs(1 - value) < restDelta && speed < restSpeed) break;
+  }
+  return { seconds: Math.min(t + step, MAX_SPRING / 1000), bounces };
+}
+
 /**
  * A spring from 0 to 1 sampled into a `linear()` easing and the time it takes to rest (at most
  * 10 s). Without `linear()` support (`linear: false`, or detected): an overshooting cubic-bezier
@@ -268,21 +293,11 @@ export function springEasing(
   { linear = supportsLinearEasing() }: { linear?: boolean } = {},
 ): SpringEasing {
   const params = springParameters(options);
-  const restDelta = finite(options.restDelta, 0.001);
-  const restSpeed = finite(options.restSpeed, 0.01);
-  const step = 1 / 120;
-  let t = 0;
-  let previous = 0;
-  let bounces = false;
-  // Rest: close to the target and slow, checked over a step.
-  for (; t < MAX_SPRING / 1000; t += step) {
-    const value = springPosition(params, t + step);
-    if (value > 1 + restDelta) bounces = true;
-    const speed = Math.abs(value - previous) / step;
-    previous = value;
-    if (t > 0 && Math.abs(1 - value) < restDelta && speed < restSpeed) break;
-  }
-  const seconds = Math.min(t + step, MAX_SPRING / 1000);
+  const { seconds, bounces } = springRest(
+    params,
+    finite(options.restDelta, 0.001),
+    finite(options.restSpeed, 0.01),
+  );
   const duration = Math.round(seconds * 1000);
   if (!linear) {
     return { easing: bounces ? OVERSHOOT : token("--ok-easing-decelerate"), duration, bounces };
@@ -294,6 +309,33 @@ export function springEasing(
     points.push(String(value));
   }
   return { easing: `linear(${points.join(", ")})`, duration, bounces };
+}
+
+export interface SpringCurve {
+  /** Time until the spring rests, ms (the same as `springEasing`). */
+  duration: number;
+  /** The spring's position (0 to 1, past 1 while it bounces) at `progress` (0–1) of `duration`. */
+  at(progress: number): number;
+}
+
+/**
+ * The spring of `springEasing` as a function, for paths computed in script (layout animations
+ * sample it into keyframes, 5.4).
+ */
+export function springCurve(
+  options: SpringOptions & { duration?: number | undefined } = {},
+): SpringCurve {
+  const params = springParameters(options);
+  const { seconds } = springRest(
+    params,
+    finite(options.restDelta, 0.001),
+    finite(options.restSpeed, 0.01),
+  );
+  return {
+    duration: Math.round(seconds * 1000),
+    at: (progress) =>
+      progress >= 1 ? 1 : progress <= 0 ? 0 : springPosition(params, seconds * progress),
+  };
 }
 
 /** A CSS easing from an option value (unknown strings fall back to the default). */
@@ -442,6 +484,7 @@ export function animate(
   const animations: Animation[] = [];
   // Scroll-driven animations end whenever the scroll does: like loops, never committed.
   const loops = options.repeat === Infinity || options.timeline !== undefined;
+  const drop = options.commit === false;
   // A scroll-driven animation shows a position, not motion of its own: reduced motion keeps it.
   const skip = options.timeline === undefined && reduced(options);
   const done: Promise<boolean>[] = [];
@@ -464,7 +507,7 @@ export function animate(
           ),
       });
       animations.push(animation);
-      done.push(track(element, own, "*", animation, loops));
+      done.push(track(element, own, "*", animation, loops, drop));
       continue;
     }
     for (const { property, values } of motionTracks(element, keyframes as MotionKeyframes)) {
@@ -480,7 +523,7 @@ export function animate(
       const frames = frameList(property, resolved, options, skip);
       const animation = element.animate(frames.keyframes, frames.timing);
       animations.push(animation);
-      done.push(track(element, own, property, animation, loops));
+      done.push(track(element, own, property, animation, loops, drop));
     }
   }
   let state: "running" | "stopped" | "cancelled" = "running";
@@ -513,18 +556,20 @@ export function animate(
   };
 }
 
-/** Registers an animation as the property's current one and commits its end when it finishes. */
+/** Registers an animation as the property's current one and commits (or drops) its end when it finishes. */
 function track(
   element: Element,
   own: Running,
   property: string,
   animation: Animation,
   loops: boolean,
+  drop: boolean,
 ): Promise<boolean> {
   if (property !== "*") own.set(property, animation);
   return settle(animation).then((ended) => {
     if (own.get(property) === animation) own.delete(property);
-    if (ended && !loops) commit(animation);
+    if (ended && drop) animation.cancel();
+    else if (ended && !loops) commit(animation);
     if (own.size === 0) running.delete(element);
     return ended;
   });

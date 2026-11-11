@@ -8,9 +8,10 @@ variants (`initial` / `animate` / `exit`, `whileInView`, `viewport.once` / `amou
 (ADR-0015). Created with `/component`; named Motion because `data-ok-animate` is the
 IconButton / Fab hover flag. Full version (roadmap Phase 5, ADR-0062): 5.1 engine (`animate()`,
 springs, interruption, custom keyframes, exits before removal), 5.2 scroll (scroll-linked
-Linear / Circular progress, `useScroll`: `specs/components/scroll-progress.md`) and 5.3
+Linear / Circular progress, `useScroll`: `specs/components/scroll-progress.md`), 5.3
 gestures (drag with inertia and constraints, spring hover / tap / focus / drag states, a shared
-swipe helper) done; 5.4 layout to come.
+swipe helper) and 5.4 layout (FLIP layout animations, `layoutId`, `LayoutGroup`, shared values)
+done; 5.5 shared-element transitions stays deferred (ADR-0062, note of 2026-11-11).
 Reference URL: https://minimals.cc/components/extra/animate
 
 ## Purpose
@@ -33,6 +34,7 @@ Animations API instead (ADR-0062).
   [data-ok-drag-momentum="false"]?[data-ok-drag-snap-to-origin]?[data-ok-drag-direction-lock]?
   [data-ok-drag-transition=<JSON>]?[data-ok-while-hover|-tap|-focus|-drag=<JSON>]?
   [data-ok-dragging] (state, while dragged)                  (gestures, 5.3)
+  [data-ok-layout=""|position|size]?[data-ok-layout-id=<id>]?[data-ok-initial="false"]?  (layout, 5.4)
   › content (draw: an svg whose shapes have pathLength="1")
   (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the
    viewport attributes also go on MotionGroup and MotionText roots)
@@ -53,6 +55,7 @@ Triggers: button[data-ok-countdown-toggle=<id>][aria-pressed] (pause / resume),
 div[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?
   [data-ok-paused]? › content
 Dialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)
+Layout group (HTML): any container [data-ok-layout-group=<id>]? › … [data-ok-motion][data-ok-layout]…
 ```
 Private properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |
 -stagger | -index`, `--_ok-motion-exit-duration` (set by a host: Dialog `transitionDuration`), `--_ok-motion-border-width | -duration | -fill`; CSS-only
@@ -74,6 +77,7 @@ Root: `data-ok-motion`. Unknown values fall back to the default.
 | `in` | `data-ok-in` | state | — | — | Manual trigger: shown (`in`; HTML: the `data-ok-in` attribute). Turning it off plays the exit. |
 | `delay` | `data-ok-delay="…"` | number | number | — | Wait before the entrance, in milliseconds. |
 | `paused` | `data-ok-paused` | flag | boolean | off | Pauses the animation (looping variants need a pause control: WCAG 2.2.2). |
+| `initial` | `data-ok-initial="false"` turns it off | behavior | boolean | on | `false` skips the entrance: the content shows as it is; later exits and entrances play (a shared `layoutId` element). |
 <!-- /options:motion -->
 
 MotionGroup:
@@ -185,9 +189,47 @@ states without their own. Callbacks (React, Framer's order `(event, info)`): `on
 
 MotionPresence (React; Framer `AnimatePresence`): `children` with keys, `initial` (default
 `true`; `false` skips the first entrance of the children rendered with it), `mode` (`sync` ·
-`wait`; `popLayout` deferred to 5.4), `onExitComplete`. Context to the Motions inside a child: a
+`wait` · `popLayout`, 5.4), `onExitComplete`. `popLayout`: in the commit that removes a child,
+its top Motions (registered ones not inside another) leave the flow: `position: absolute` with
+their offset box (`offsetTop` / `offsetLeft` minus the margins, `offsetWidth` / `offsetHeight`,
+`box-sizing: border-box`, CSSOM), so siblings with `layout` are measured after it (core flush,
+a microtask later) and move into its place while it exits; the inline styles are restored when
+the child comes back. Like Framer's `PopChild`: the Motion must be the child's root, inside a
+positioned parent. HTML has no presence component: `remove()` removes the element after its exit,
+and siblings with `data-ok-layout` move then. Context to the Motions inside a child: a
 removed child renders `data-ok-state="exit"` on its Motion, MotionGroup and MotionText roots and is
 unmounted when their animations end (core `waitForAnimations`, late look for keyframes).
+
+Layout (5.4; free values, so not in the schema, like the gestures): React props on `Motion`
+(Framer's names) and the same attributes in HTML (`motionLayoutAttributes` / `readMotionLayout`):
+`layout` (`true` → `data-ok-layout`, `"position"` / `"size"` → its value; any other value in HTML
+reads as `true`), `layoutId` (`data-ok-layout-id`; implies `layout`), `layoutDependency` (React
+only: measures when the value changes, `Object.is`; HTML has no re-render, see `measure()`),
+`onLayoutAnimationStart()` / `onLayoutAnimationComplete()` (HTML `ok:motion:layoutanimationstart`
+/ `layoutanimationcomplete`). `transition` (`data-ok-transition`) is written with layout too; its
+`layout` key (Framer's `transition.layout`, one level, parsed like the rest) wins for layout
+animations, else the transition minus `repeat`, `repeatDelay` and `times`. React `LayoutGroup`
+(`id`, `inherit`: `true` joins the enclosing group's members and prefixes its id, `"id"` only
+the id, `false` neither; no element); HTML `data-ok-layout-group="<id>"` on a container.
+`initial` is a schema option (above): `false` skips the entrance (no `data-ok-state` until the
+first exit or `replay()`), for elements that move instead of entering (`layoutId`).
+
+Shared values (5.4): core `motionValue(initial)` → `SharedValue<T>` (`get`, `set`, `jump`,
+`getVelocity`, `on("change")`, `stop`, `destroy`; renamed from Framer's `MotionValue`, which names
+a keyframe value in Owlky), `transformValue(value, fn)` / `([values], fn)` / `(value, input,
+output, { clamp, ease })` (Framer `useTransform`; `interpolate(input, output, options)` is
+Framer's `transform()`: numbers only), `springValue(source | number, spring options +
+reducedMotion)` (Framer `useSpring`: follows a value or the target `set()` gives; semi-implicit
+Euler in 1 ms steps on animation frames, keeps its velocity when the target moves, rests under
+`restDelta` / `restSpeed`: 0.005 / 0.01 within 5 units, else 0.5 / 2, as Framer; reduced motion
+jumps), `bindStyle(element, property, value)` (CSSOM; `x` / `y` → `translate` px, `scale` /
+`scaleX` / `scaleY` → `scale`, `rotate` → deg, lengths px), `sharedStyle(entries)`. React:
+`useMotionValue`, `useTransform`, `useSpring` (options read once; a number is the start value),
+`useMotionValueEvent(value, "change", callback)`, and Motion `style` taking shared values and the
+transform shorthands (rendered as they are now, then written through CSSOM without re-renders).
+HTML: the same core functions from `@owlky/html` in a page script; no attributes (a declarative
+form would need an expression language for the functions, and every use already needs a
+script to set the values).
 
 Content: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer
 Motion): variants → `variant` (the reference's 48 entrance / exit names, its background and its
@@ -211,8 +253,10 @@ rules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `vi
 free text, so not in the option schemas: React writes the margin attribute, a ref root has none),
 `onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,
 `ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:
-CountUp `component` / viewport options / viewport events (not in the row), layout animations
-(5.4). Done in 5.3: drag, gesture states,
+CountUp `component` / viewport options / viewport events (not in the row). Done in 5.4:
+layout animations, `layoutId`, `LayoutGroup`, `initial={false}`, shared values, MotionPresence
+`popLayout`, story "Layout" (the reference has no layout section: Reorder, Expand, Shared
+highlight). Done in 5.3: drag, gesture states,
 the swipe helper, story "Gestures" (the reference has no drag section: Drag, Axis and direction
 lock, Elastic and snap back, Hover, tap and focus). Done in 5.2: scroll-linked progress
 (`scroll-progress.md`). Done in 5.1: spring
@@ -338,8 +382,63 @@ reading anything else; the visible text stays readable at any time (the root's `
 not live). Triggers: `data-ok-countdown-toggle` flips `data-ok-paused` and mirrors it in its
 `aria-pressed`; `data-ok-countdown-restart` starts over and runs.
 
+Layout (core `createLayoutNode`, `flushLayout`, `layout.ts`, ADR-0062 5.4):
+- **Boxes** are layout boxes in page coordinates: the bounding box when neither the element nor
+  an ancestor has a computed `transform`, `translate`, `scale` or `rotate`; otherwise the offsets
+  (`offsetLeft` / `offsetTop` up the offset parents, minus the scroll of scrolling ancestors;
+  whole pixels). So CSS entrances, drags, ancestors' layout animations and its own running
+  animation never count as layout, and nothing is cancelled to measure.
+- **Snapshot → flush**: an owner snapshots before a change (`live`: measured now; `last`: the
+  last box measured); a flush (a microtask later, or `flushLayout()`) reads every box first
+  (layout boxes, `transform-origin`, corner radii), then starts the animations. A node that is
+  animating snapshots where its path shows it (the path's time is its animation's
+  `currentTime`), so an interruption starts there. Changed boxes (half a pixel) get a path
+  `from` (mode applied: `position` keeps the new size, `size` the new position) `to` the new box.
+- **Playback**: `animate()` on `transform` (never committed: `commit: false`), around the
+  element's computed `transform-origin`: two keyframes (the inverse transform → `none`) with the
+  transition's easing (springs as `linear()`), or sampled every 1/60 s with linear easing when the
+  node needs a correction. Default timing: the engine's (`--ok-duration-standard`,
+  `--ok-easing-standard`; Framer's 450 ms curve is not copied). A path whose target didn't change
+  keeps running untouched.
+- **Size correction (how far it goes)**: (1) a node inside a node that animates gets its own path
+  in page coordinates and its transform is that path in the parent's frame (the parent's current
+  scale and translate undone, frames sampled on each path's own clock), so a nested Motion with
+  `layout` keeps its size and moves on its own; a nested node that nobody snapshotted moved with
+  its parent (rigid) and needs no animation when the parent only moves; (2) corner radii in px
+  are drawn divided by the visible scale (elliptical `rx ry` per corner, sampled). Not done:
+  plain children (text, images) scale with their box, as in Framer (wrap them in a Motion with
+  `layout="position"`); percent radii (they follow the box anyway); `box-shadow` correction;
+  rotated or skewed elements (scale and translate only); an author `transform` on the element is
+  replaced while a layout animation plays (use `translate` / `scale` / `rotate`); `display:
+  inline` elements (transforms don't apply).
+- **layoutId**: a node created with a `layoutId` (scoped by its group's id) takes the box a node
+  with the same id left when it was destroyed in the same frame (React unmounts it on the page;
+  HTML after removal: its last box), or the box of one that is still there, and animates from it.
+  No crossfade between both (5.5 shared-element transitions).
+- **Groups**: a snapshot of a group member snapshots every other member without
+  `layoutDependency` (Framer's LayoutGroup re-renders them; here core measures them directly).
+- **Focus**: elements are never moved or re-inserted. A focused element inside a snapshotted node
+  (React: before the commit; HTML: the last `focusin` target, when a mutation removed it or an
+  ancestor) that the change blurred to the page gets the focus back (`preventScroll`); a focus
+  the user moved elsewhere is left alone.
+- **Events**: start when a node's own box changed and its animation started; complete when it
+  finished (not when interrupted or cancelled); a correction-only animation reports nothing.
+- **Reduced motion** (the transition's `reducedMotion`, default `user`): no animation, the boxes
+  jump; start and complete are still reported for changed nodes.
+- **React**: a class component in Motion takes the snapshot in `getSnapshotBeforeUpdate` (before
+  React changes the DOM, each render; with `layoutDependency` only when it changed); the node is
+  created and destroyed in layout effects.
+- **HTML runtime** (`components/motion/layout.ts`): one MutationObserver on the document (module
+  scope) while a layout Motion exists. The DOM already changed when it reports, so affected nodes
+  (a mutation inside their parent element, or inside their `[data-ok-layout-group]`) snapshot
+  their last box and flush at once; every other idle node only measures again, as after a resize
+  (ResizeObserver on the nodes and their parents) or a scroll (capture listener). Moves keep the
+  instance (the runtime checks connectedness), so moving an element animates it from its old
+  place. Instance `measure()` (a live snapshot) and `animateLayout()` (snapshot from the last box,
+  flush now) cover changes no mutation shows (a stylesheet's rules, a media query).
+
 ## Keyboard
-Not interactive, except gestures. A draggable Motion with the focus: arrow keys move it (10 px,
+Not interactive, except gestures. Layout animations keep the focus where it is (above). A draggable Motion with the focus: arrow keys move it (10 px,
 Shift: 50 px). With `whileTap`: Enter and Space press it (on the Motion or a button inside it).
 Content inside keeps its own keyboard behavior.
 
@@ -365,6 +464,15 @@ velocity }`), `directionlock` (`{ axis }`), `dragtransitionend`, `hoverstart`, `
 `parseDragElastic`, `parseDragTransition`; React and HTML re-export the gesture types
 (`PanInfo`, `TapInfo`, `GestureTarget`, `DragConstraints`, `DragElastic`, `DragTransition`,
 `PanAxis`).
+HTML layout (`ok:motion:<name>`): `layoutanimationstart`, `layoutanimationcomplete` (no detail);
+instance `measure()`, `animateLayout()`. Core layout: `createLayoutNode`, `flushLayout`,
+`createLayoutGroup`, `layoutNodeOf`, `layoutTransition`, `measureLayoutBox`,
+`motionLayoutAttributes`, `readMotionLayout`, `hasMotionLayout`, `LAYOUT_ATTRS`; easing
+`easingFunction`, `cubicBezier`; engine `springCurve`, `springParameters`, `standardDuration`,
+`animate()` option `commit: false`; shared values `motionValue`, `transformValue`, `springValue`,
+`interpolate`, `bindStyle`, `sharedStyle`, `isSharedValue`. React: `LayoutGroup`,
+`useMotionValue`, `useTransform`, `useSpring`, `useMotionValueEvent`; React and HTML re-export the
+shared-value functions and types.
 HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`
 (`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and
 `ok:motion-text:enter|leave`. Instances: motion `{ state, replay(), exit(), hide(), remove() }`
@@ -398,10 +506,14 @@ reference's own components (rows in the paragraph above).
 | `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |
 | `animate` (keyframes object), `transition` (springs, easing, `times`, `repeat*`) | `keyframes`, `transition` (ms) · `data-ok-keyframes`, `data-ok-transition` (JSON) | renamed (5.1) | ADR-0062; `animate` also takes variant labels upstream (`variant` here) |
 | `exit` (keyframes object) | the keyframes backwards | renamed (5.1) | |
-| `AnimatePresence` (`initial`, `mode` sync / wait, `onExitComplete`) | `MotionPresence` · HTML `exit()`, `hide()`, `remove()` | renamed (5.1) | `mode="popLayout"`, `custom`, `propagate`: deferred (5.4) |
-| `style` motion values, `transformTemplate` | — | deferred (5.4) | shared values |
+| `AnimatePresence` (`initial`, `mode` sync / wait / popLayout, `onExitComplete`) | `MotionPresence` · HTML `exit()`, `hide()`, `remove()` | renamed (5.1, `popLayout` 5.4) | `popLayout` React only (HTML removes after the exit); `custom`, `propagate`: deferred (dynamic variants, nested presence) |
+| `initial={false}` | `initial` · `data-ok-initial="false"` | kept (5.4) | skips the entrance until the first exit; `initial` as a variant label not applicable (named CSS variants) |
+| `style` motion values | `style` (React) · `bindStyle()` (HTML) | kept (5.4) | shorthands `x`, `y`, `scale*`, `rotate` |
+| `transformTemplate` | — | not applicable | the individual transform properties never fight over one `transform` |
+| `useMotionValue`, `motionValue`, `useTransform`, `transform()`, `useSpring`, `useMotionValueEvent`, `.on("change")` | same names (`SharedValue` type, `interpolate()`, `transformValue()`, `springValue()`) | kept (5.4) | numbers only for ranges (no color / complex string mixing); Framer's deprecated `onChange` → `on("change")` |
+| `useVelocity`, `useTime`, `useMotionTemplate`, `useAnimationFrame`, `animate(motionValue, …)` | `getVelocity()` | deferred | not in the roadmap row; `springValue` covers smoothing |
 | `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event not offered (the trigger's state change is the start) |
-| `onUpdate` | — | deferred (5.4) | per-frame values come with shared values |
+| `onUpdate` | — | deferred | the engine runs on the Web Animations API (no per-frame values in script); drive a shared value and `bindStyle` it instead |
 | `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |
 | `whileHover`, `whileTap`, `whileFocus`, `whileDrag` | same · `data-ok-while-hover` / `-tap` / `-focus` / `-drag` (JSON) | kept (5.3) | the named `variant="interactive"` stays (CSS); springs by default; tap answers Enter and Space; focus needs `:focus-visible` |
 | `onHoverStart`, `onHoverEnd`, `onTapStart`, `onTap`, `onTapCancel` | same · `ok:motion:hoverstart` / `hoverend` / `tapstart` / `tap` / `tapcancel` | kept (5.3) | hover callbacks get the event only; tap `info` is `{ point }` |
@@ -411,7 +523,11 @@ reference's own components (rows in the paragraph above).
 | `dragControls` / `useDragControls`, `dragListener`, `onMeasureDragConstraints` | — | deferred | starting a drag from another element (a handle) needs a trigger design for HTML |
 | `onPan*`, `pinch`, `whilePinch`, `propagate` | core `trackPan` / `createSwipe` | deferred | no React / HTML props yet; `propagate` not applicable (no `stopPropagation`) |
 | tap's automatic `tabindex="0"` | — | not applicable | Owlky doesn't make elements focusable: use a focusable element or a button inside |
-| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |
+| `layout` (`true`, `"position"`, `"size"`), `layoutId`, `layoutDependency`, `onLayoutAnimationStart`, `onLayoutAnimationComplete` | same · `data-ok-layout`, `data-ok-layout-id`, `ok:motion:layoutanimationstart` / `layoutanimationcomplete`; HTML `measure()`, `animateLayout()` | kept (5.4) | `layoutDependency` React only; `"preserve-aspect"` not offered (scale and translate per axis) |
+| `LayoutGroup` (`id`, `inherit`) | same · `data-ok-layout-group` | kept (5.4) | snapshots members directly (no forced re-render) |
+| `transition.layout` | `transition` `layout` key · `data-ok-transition` | kept (5.4) | |
+| `layoutScroll`, `layoutRoot`, `layoutAnchor` | — | not applicable | boxes are page coordinates from the layout (offsets under transforms), so scrolled and fixed ancestors need no marker |
+| shared layout crossfade (both `layoutId` elements visible) | — | deferred (5.5) | shared-element transitions, View Transitions first (ADR-0062 note) |
 | `useScroll` (scroll progress) | `useScroll()` (React), the progresses' `scroll` prop · `data-ok-scroll-progress` and its `data-ok-scroll-*` options | kept (5.2) | `specs/components/scroll-progress.md` |
 | `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |
 | `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |

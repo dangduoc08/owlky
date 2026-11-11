@@ -56,6 +56,12 @@
       "value": "string"
      },
      {
+      "description": "The bar follows the scroll with a spring: empty for a soft spring, or spring options as JSON, such as `{\"stiffness\": 200, \"damping\": 30}`. Reduced motion turns it off.",
+      "kind": "value",
+      "name": "data-ok-scroll-smooth",
+      "value": "string"
+     },
+     {
       "description": "The `id` of an element: the progress follows its way through the container instead of the whole content.",
       "kind": "value",
       "name": "data-ok-scroll-target",

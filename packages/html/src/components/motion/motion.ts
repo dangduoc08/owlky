@@ -15,6 +15,7 @@ import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import { driveMotion, type MotionViewportDetail, STATE } from "./drive.js";
 import { driveGestures, type GestureEmitter } from "./gestures.js";
+import { driveLayout, type LayoutEmitter } from "./layout.js";
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface MotionEvents {
@@ -51,6 +52,10 @@ export interface MotionEvents {
   tap: EventSpec<TapInfo>;
   /** The press ended outside the element, was cancelled or turned into a drag. */
   tapcancel: EventSpec<TapInfo>;
+  /** A layout animation of the element's box started (`data-ok-layout`, `data-ok-layout-id`). */
+  layoutanimationstart: EventSpec;
+  /** That layout animation ended (not when another one interrupted it). */
+  layoutanimationcomplete: EventSpec;
 }
 
 export interface MotionInstance extends ComponentInstance {
@@ -64,10 +69,17 @@ export interface MotionInstance extends ComponentInstance {
   hide(): Promise<boolean>;
   /** Plays the exit, then removes the element from the page. Resolves `false` when interrupted. */
   remove(): Promise<boolean>;
+  /**
+   * Layout: takes the element's box now, so the next change of its position or size animates
+   * from it, also a change the runtime can't see (a media query, a stylesheet).
+   */
+  measure(): void;
+  /** Layout: animates from the box `measure()` took (or the last one known) to where it is now. */
+  animateLayout(): void;
 }
 
 const { duration, delay, distance } = motionOptions.options;
-const { variant } = motionOptions.options;
+const { variant, initial } = motionOptions.options;
 const TUNING = [duration.attr, delay.attr, distance.attr];
 /** Attributes that change how it looks: an entered Motion replays. */
 const LOOK = [variant.attr, duration.attr, distance.attr];
@@ -77,7 +89,7 @@ const LOOK = [variant.attr, duration.attr, distance.attr];
  *
  * Markup:  <div data-ok-motion data-ok-variant="fadeInUp" [data-ok-trigger="inView|mount|manual"]
  *               [data-ok-once="false"] [data-ok-amount="0.3"] [data-ok-in] [data-ok-duration]
- *               [data-ok-delay] [data-ok-distance] [data-ok-paused]
+ *               [data-ok-delay] [data-ok-distance] [data-ok-paused] [data-ok-initial="false"]
  *               [data-ok-viewport-margin="0px 0px -100px"] [data-ok-viewport-root="<id>"]>…</div>
  *          (any element, not only a `div`)
  * Behavior: writes `data-ok-state` (initial → enter, exit) from its trigger (core
@@ -89,7 +101,9 @@ const LOOK = [variant.attr, duration.attr, distance.attr];
  *          (`{ ratio }`) when an in-view Motion enters or leaves the viewport. Gestures
  *          (`data-ok-drag*`, `data-ok-while-*`, core `createMotionGestures`): dragstart, drag,
  *          dragend, directionlock, dragtransitionend, hoverstart, hoverend, tapstart, tap,
- *          tapcancel.
+ *          tapcancel. Layout (`data-ok-layout`, `data-ok-layout-id`, core `createLayoutNode`):
+ *          layoutanimationstart, layoutanimationcomplete; `measure()` / `animateLayout()` for
+ *          changes no mutation shows.
  */
 export const motion = defineComponent<MotionInstance, MotionEvents>({
   name: "motion",
@@ -116,8 +130,11 @@ export const motion = defineComponent<MotionInstance, MotionEvents>({
       },
       { signal },
     );
+    // `data-ok-initial="false"`: no state (the content as it is) until the first exit.
+    let skipping = element.getAttribute(initial.attr) === "false";
     const write = (state: MotionState | null) => {
-      if (state === null) element.removeAttribute(STATE);
+      if (state === "exit") skipping = false;
+      if (state === null || skipping) element.removeAttribute(STATE);
       else element.setAttribute(STATE, state);
     };
     // The enclosing group writes the state.
@@ -132,6 +149,7 @@ export const motion = defineComponent<MotionInstance, MotionEvents>({
     tuning.observe(element, { attributes: true, attributeFilter: [...TUNING, variant.attr] });
     const keyframes = createMotionKeyframes(element);
     const gestures = driveGestures(element, emit as GestureEmitter);
+    const layout = driveLayout(element, emit as LayoutEmitter);
 
     let leaving: ReturnType<typeof playExit> | undefined;
     const leave = async (after?: () => void) => {
@@ -151,6 +169,7 @@ export const motion = defineComponent<MotionInstance, MotionEvents>({
       replay() {
         leaving?.cancel();
         leaving = undefined;
+        skipping = false;
         if (driver) driver.replay();
         else replayMotion(element, write);
       },
@@ -165,11 +184,18 @@ export const motion = defineComponent<MotionInstance, MotionEvents>({
       remove() {
         return leave(() => element.remove());
       },
+      measure() {
+        layout.measure();
+      },
+      animateLayout() {
+        layout.animateLayout();
+      },
       destroy() {
         driver?.destroy();
         tuning.disconnect();
         keyframes.destroy();
         gestures.destroy();
+        layout.destroy();
         syncCustomProperties(element, {}, written);
       },
     };

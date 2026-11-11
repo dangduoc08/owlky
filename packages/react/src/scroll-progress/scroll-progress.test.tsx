@@ -121,6 +121,24 @@ describe("LinearProgress scroll", () => {
     expect(root.getAnimations()).toHaveLength(0);
   });
 
+  it("smooths the bar with a spring (`smooth`)", async () => {
+    const { unmount } = render(
+      <>
+        <LinearProgress scroll={{ container: "box", smooth: { stiffness: 300, damping: 30 } }} />
+        <Area id="box" />
+      </>,
+    );
+    const root = document.querySelector("[data-ok-linear-progress]") as HTMLElement;
+    expect(root.getAttribute("data-ok-scroll-smooth")).toBe('{"stiffness":300,"damping":30}');
+    expect(root.hasAttribute("data-ok-fallback")).toBe(true);
+    const box = document.getElementById("box") as HTMLElement;
+    box.scrollTop = 200;
+    for (let i = 0; i < 240 && Math.abs(shown(root) - 0.5) > 0.01; i++) await frames();
+    expect(shown(root)).toBeCloseTo(0.5, 1);
+    unmount();
+    expect(scrollProgressProps({ smooth: true })["data-ok-scroll-smooth"]).toBe("");
+  });
+
   it("keeps an explicit variant and follows the page with `true`", () => {
     render(<LinearProgress variant="buffer" scroll />);
     const root = document.querySelector("[data-ok-linear-progress]") as HTMLElement;

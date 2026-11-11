@@ -3,7 +3,7 @@
  *
  * Anatomy:   [data-ok-linear-progress | data-ok-circular-progress][data-ok-variant="determinate"]
  *              [data-ok-scroll-progress][data-ok-scroll-axis="x"]?[data-ok-scroll-container]?
- *              [data-ok-scroll-target]?[data-ok-scroll-offset]?[data-ok-fallback]?
+ *              [data-ok-scroll-target]?[data-ok-scroll-offset]?[data-ok-scroll-smooth]?[data-ok-fallback]?
  * Private:   --_ok-scroll-progress (0–1, registered so it animates): animated here on the page's
  *            scroll timeline, or by core `createScrollProgress` (a ScrollTimeline / ViewTimeline,
  *            or a paused animation the script moves on scroll: `data-ok-fallback`).
@@ -44,6 +44,7 @@
           [data-ok-scroll-container],
           [data-ok-scroll-target],
           [data-ok-scroll-offset],
+          [data-ok-scroll-smooth],
           [data-ok-fallback]
         )
       ) {
@@ -56,6 +57,7 @@
           [data-ok-scroll-container],
           [data-ok-scroll-target],
           [data-ok-scroll-offset],
+          [data-ok-scroll-smooth],
           [data-ok-fallback]
         )
       ) {

@@ -161,18 +161,28 @@ export {
   type AnimationControls,
   animate,
   applyThemeSettings,
+  bindStyle,
   createFilterOptions,
   defaultThemeSettings,
+  type InterpolateOptions,
+  interpolate,
+  type LayoutMode,
+  type LayoutTransition,
   type MotionEasing,
   type MotionKeyframes,
+  motionValue,
   normalizeThemeSettings,
   readThemeSettings,
   resetThemeSettings,
+  type SharedValue,
   type SpringOptions,
+  type SpringValueOptions,
   springEasing,
+  springValue,
   THEME_SETTINGS_KEY,
   type ThemeSettings,
   type ThemeSettingsOptions,
+  transformValue,
 } from "@owlky/core";
 export {
   Accordion,
@@ -546,11 +556,23 @@ export {
   MotionGroup,
   type MotionGroupProps,
   type MotionProps,
+  type MotionStyle,
   MotionText,
   type MotionTextProps,
   type MotionTriggerProps,
 } from "./motion/motion.js";
+export {
+  LayoutGroup,
+  type LayoutGroupProps,
+  type MotionLayoutProps,
+} from "./motion/motion-layout.js";
 export { MotionPresence, type MotionPresenceProps } from "./motion/motion-presence.js";
+export {
+  useMotionValue,
+  useMotionValueEvent,
+  useSpring,
+  useTransform,
+} from "./motion/motion-values.js";
 export { MotionBorder, type MotionBorderProps } from "./motion-border/motion-border.js";
 export {
   OrganizationChart,

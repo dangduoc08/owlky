@@ -64,6 +64,17 @@ describe("parseMotionTransition", () => {
     expect(parseMotionTransition("nope")).toEqual({});
     expect(parseMotionTransition([1])).toEqual({});
   });
+
+  it("reads a layout key one level deep (5.4)", () => {
+    expect(
+      parseMotionTransition({
+        duration: 200,
+        layout: { type: "spring", bounce: 0.3, layout: { duration: 1 } },
+      }),
+    ).toEqual({ duration: 200, layout: { type: "spring", bounce: 0.3 } });
+    expect(parseMotionTransition({ layout: { nope: 1 } })).toEqual({});
+    expect(parseMotionTransition({ layout: [1] })).toEqual({});
+  });
 });
 
 describe("motionKeyframesAttributes", () => {

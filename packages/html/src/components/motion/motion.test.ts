@@ -61,7 +61,7 @@ function stateBecomes(element: Element, value: string): Promise<void> {
 
 describe("motion snippets", () => {
   // 16 + the four Gestures groups (roadmap 5.3).
-  it("covers every story group", () => expect(snippets).toHaveLength(20));
+  it("covers every story group", () => expect(snippets).toHaveLength(23));
 
   it.each(snippets)("%s: CSP-safe, no state before the runtime (nothing hidden)", (_, html) => {
     const host = mount(local(html));

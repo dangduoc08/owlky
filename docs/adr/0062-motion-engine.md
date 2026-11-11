@@ -142,3 +142,52 @@ sketched (a paused `animate()` whose `currentTime` a passive, rAF-throttled scro
 also used for offsets no timeline range expresses exactly. `runningAnimations` (exits) and the
 test helpers skip paused and scroll-driven animations, which end only when something scrolls.
 Spec: `specs/components/scroll-progress.md`.
+
+## Note 2026-11-11 — 5.4 Layout as built
+The sketch holds (measure before and after, play the inverse transform with `animate()`; shared
+values are a small store). Where it differs or is more precise:
+- **Layout boxes, not client rects.** A box is the bounding box only when neither the element
+  nor an ancestor has a computed transform; otherwise it comes from the offsets (whole pixels).
+  CSS entrances, drags and running layout animations (also an animating parent's) never count as
+  layout, and a flush never cancels an animation just to measure. A running animation's box comes
+  from its path, timed by the animation's own `currentTime`.
+- **Correction is sampled.** A nested node's transform is its own path in the parent's frame (the
+  parent's current scale and translate undone), which no single easing describes: as for the
+  5.3 glide, the frames are computed every 1/60 s and played with linear easing. Corner radii in
+  px are corrected the same way. Plain children, `box-shadow` and rotations are not corrected
+  (spec: how far it goes).
+- **`animate()` gained `commit: false`** (the inverse transform must not stay inline), and the
+  engine exports `springCurve` (the same spring as `springEasing`, as a function) for the sampled
+  paths and `easingFunction` for CSS easings in script.
+- **HTML snapshots after the fact.** A MutationObserver reports once the DOM changed, so the HTML
+  runtime animates from each node's last known box, refreshed on every mutation (for nodes the
+  change doesn't concern), resize and scroll. Instance `measure()` / `animateLayout()` cover
+  changes without a mutation.
+- **`initial` became a Motion option** (`data-ok-initial="false"`, Framer's `initial={false}`):
+  every Motion has an entrance by default, which a moving `layoutId` element must skip.
+- **Shared values in HTML are functions, not attributes**: `motionValue`, `transformValue`,
+  `springValue` and `bindStyle` from `@owlky/html` (the "callbacks" are `on("change")`). The
+  scroll progress `smooth` option is the one declarative use (`data-ok-scroll-smooth`).
+  `MotionPresence mode="popLayout"` fits (React only). Default layout timing is the engine's
+  tokens, not Framer's 450 ms curve.
+
+## Note 2026-11-11 — 5.5 evaluation: View Transitions first
+5.5 (shared-element transitions: a `layoutId` pair that crossfades between two different
+elements, page-level transitions) stays deferred. Evaluated against same-document View
+Transitions (`document.startViewTransition`, `view-transition-name`):
+- **Gains:** a real crossfade and morph between the old and the new element (different content,
+  shapes, images), across unrelated parts of the DOM, without keeping the old element alive.
+  5.4's handoff only moves the new element from the old box.
+- **Support:** Chrome / Edge 111, Safari 18, Firefox 144: outside the Baseline of ADR-0006
+  (Chrome 114 is in, Safari 17 and Firefox 128 are not), so 5.4's FLIP handoff is the fallback.
+- **Costs:** one transition per document at a time (a second one skips the first); the page
+  doesn't take pointer input while it runs; snapshots are rasters drawn in a top-layer overlay
+  (they escape `overflow` clips and scroll containers, and scaled text blurs); names must be
+  unique on the page (owners write them through CSSOM for the strict CSP); React must apply the
+  update synchronously inside the callback; reduced motion needs its own CSS.
+- **Recommendation:** keep FLIP (5.4) for in-page layout animation: interruptible, input keeps
+  working, clipping respected. Build 5.5 as an opt-in `crossfade` on `layoutId` that uses View
+  Transitions where `startViewTransition` exists (names set only for the duration), falling back
+  to the 5.4 handoff; revisit element-scoped view transitions (`element.startViewTransition`,
+  still experimental) once they reach the Baseline, since they remove the
+  one-per-document and input-blocking costs.

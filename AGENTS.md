@@ -408,6 +408,23 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   success; its swipe rules sit **before** the exit rules in `drawer.css` so an exit that starts
   while the panel is held slides on from there. React's owner acts a frame later: the helper
   waits up to 8 frames (`whenOwner`) before treating a swipe as refused.
+- Motion layout (ADR-0062 5.4, `core/src/motion/layout.ts`, `values.ts`, `easing.ts`): layout
+  animations play `transform` (never committed, `commit: false`) and measure **layout** boxes:
+  anything with a transform on it or an ancestor (a CSS entrance, a drag, an animating parent) is
+  measured from its offsets, so don't expect `getBoundingClientRect()` precision there. Core keeps
+  module-scoped node state: tests `destroy()` every node and `flushLayout()` in `afterEach`, and
+  read a mid-flight box after `pause()` + `currentTime` (a path's time is its animation's own
+  clock). A snapshot flushes a **microtask** later: React tests `await act(async () => await
+  Promise.resolve())`; HTML tests `settle()` (the watcher flushes inside its MutationObserver).
+  The HTML watcher observes the whole document while a layout Motion exists and animates from the
+  **last known** box (the DOM already changed): a change no mutation shows needs `measure()` /
+  `animateLayout()`. React snapshots in a class component's `getSnapshotBeforeUpdate`, so Motion
+  renders a Fragment (that class, then the root). In e2e, tasks move: locate a moved item by its
+  content, never `nth()` (it re-resolves to another item), and check that an animation started by
+  recording `Element.prototype.animate` calls (`motion-layout.spec.ts`), not by finding one still
+  running after a click. A moving `layoutId` element sets `initial={false}` (`data-ok-initial`),
+  or its default entrance plays at every move. `transition` JSON may carry a `layout` key (one
+  level).
 - Waiting for an asynchronous DOM change (IntersectionObserver, rAF counters) in unit tests: resolve
   a promise from a `MutationObserver`, never `vi.waitFor`; and never inside React's `act()` (it
   holds state updates until the scope ends, so the awaited change never comes).

@@ -13,6 +13,16 @@ import {
   GestureSnapDemo,
 } from "./gestures-demo.js";
 import gesturesSource from "./gestures-demo.tsx?raw";
+import { LayoutExpandDemo, LayoutHighlightDemo, LayoutReorderDemo } from "./layout-demo.js";
+import layoutSource from "./layout-demo.tsx?raw";
+import {
+  EXPAND_SCRIPT_SOURCE,
+  expandScript,
+  HIGHLIGHT_SCRIPT_SOURCE,
+  highlightScript,
+  REORDER_SCRIPT_SOURCE,
+  reorderScript,
+} from "./layout-scripts.js";
 import { MotionDocs } from "./motion-docs.js";
 import {
   COUNT_UP_CONTROLS,
@@ -56,6 +66,23 @@ const GESTURE_FILES: [string, string][] = [
   ["Elastic and snap back", "snap"],
   ["Hover, tap and focus", "hover-tap"],
 ];
+
+/** Layout (roadmap 5.4): the reference has no layout section; one generated snippet per group. */
+const LAYOUT_GROUPS = [
+  { title: "Reorder", content: <LayoutReorderDemo /> },
+  { title: "Expand", content: <LayoutExpandDemo /> },
+  { title: "Shared highlight", content: <LayoutHighlightDemo /> },
+];
+const LAYOUT_FILES: [string, string][] = [
+  ["Reorder", "reorder"],
+  ["Expand", "expand"],
+  ["Shared highlight", "highlight"],
+];
+const LAYOUT_SCRIPTS = {
+  reorder: { script: reorderScript, scriptSource: REORDER_SCRIPT_SOURCE },
+  expand: { script: expandScript, scriptSource: EXPAND_SCRIPT_SOURCE },
+  highlight: { script: highlightScript, scriptSource: HIGHLIGHT_SCRIPT_SOURCE },
+};
 
 type Controls = typeof MOTION_CONTROLS | typeof MOTION_LOOP_CONTROLS | typeof MOTION_TEXT_CONTROLS;
 
@@ -167,6 +194,12 @@ export const Gestures: StoryObj = {
   ...frameworkStory({
     html: snippetStory(snippets, "gestures", GESTURE_FILES, GESTURE_SETUP),
     react: reactGroupsStory(GESTURE_GROUPS, undefined, gesturesSource),
+  }),
+};
+export const Layout: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "layout", LAYOUT_FILES, GESTURE_SETUP, undefined, LAYOUT_SCRIPTS),
+    react: reactGroupsStory(LAYOUT_GROUPS, undefined, layoutSource),
   }),
 };
 export const Border: StoryObj = other(
