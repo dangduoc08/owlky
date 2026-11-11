@@ -149,6 +149,13 @@ const budgets = [
   // and property-information are nearly all of owlky-markdown.js (about 102 kB measured);
   // owlky.js stays free of them.
   ["packages/html/dist/owlky-markdown.js", 110_000, "Markdown + unified (IIFE, after owlky.js)"],
+  // The phone input is opt-in (ADR-0061): libphonenumber-js with its `min` metadata is about
+  // 35.5 kB of owlky-phone.js (44.8 kB measured); owlky.js stays free of it (checked below).
+  [
+    "packages/html/dist/owlky-phone.js",
+    47_500,
+    "Phone input + libphonenumber-js (IIFE, after owlky.js)",
+  ],
   // Illustrations are opt-in (ADR-0041): the 16 pictures' node trees are nearly all of
   // owlky-illustrations.js (10.3 kB measured; 5.5 kB minified ESM); owlky.js stays free
   // of them.
@@ -191,8 +198,10 @@ const budgets = [
   // editing and loading states.
   // 60 kB since Phase 4 batch E (organization chart directions and highlight, data grid layout,
   // footer, set filter and selection options, chart stacks and cues; about 2 kB): 56.2 kB.
-  // 63.5 kB after Phase 4 batch F's Countdown (4.22) and the Radio / Checkbox / Avatar color
-  // swatches (4.23; sizes, shapes, checked states, forced colors; about 0.6 kB): 60.49 kB.
+  // 63.5 kB after Phase 4 batch F: the Countdown (4.22), the Radio / Checkbox / Avatar color
+  // swatches (4.23; sizes, shapes, checked states, forced colors; about 0.6 kB) and the phone input
+  // (4.25, ADR-0061: the bare country select, flags, the visually hidden name; about 0.25 kB):
+  // 60.49 kB before the phone input. Optimization is deferred to 1.0 prep.
   ["packages/styles/dist/owlky.min.css", 63_500, "All CSS (tokens + components)"],
   // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
   // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
@@ -219,6 +228,17 @@ const budgets = [
 ];
 
 let failed = false;
+
+// Opt-in engines stay out of the main bundle: the phone metadata (ADR-0061) is in owlky-phone.js only.
+{
+  const marker = "country_calling_codes";
+  const main = await readFile("packages/html/dist/owlky.js", "utf8");
+  const phone = await readFile("packages/html/dist/owlky-phone.js", "utf8");
+  const ok = !main.includes(marker) && phone.includes(marker);
+  failed ||= !ok;
+  console.log(`${ok ? "ok  " : "FAIL"} Phone metadata only in owlky-phone.js, never in owlky.js`);
+}
+
 for (const [file, limit, label] of budgets) {
   // A list of files is downloaded together: each is gzipped on its own, as servers send them.
   const files = Array.isArray(file) ? file : [file];

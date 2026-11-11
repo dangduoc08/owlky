@@ -56,6 +56,13 @@ export {
   markdown,
 } from "./components/markdown/markdown.js";
 export type { PaginationInstance } from "./components/pagination/pagination.js";
+export {
+  type CreatePhoneInputOptions,
+  createPhoneInput,
+  type PhoneInputEvents,
+  type PhoneInputInstance,
+  phoneInput,
+} from "./components/phone-input/phone-input.js";
 export type { SortableInstance } from "./components/sortable/sortable.js";
 export type { TableInstance } from "./components/table/table.js";
 export type { TablePaginationInstance } from "./components/table-pagination/table-pagination.js";

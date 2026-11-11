@@ -552,6 +552,14 @@ export {
 } from "./pagination/pagination.js";
 export { Paper, type PaperProps } from "./paper/paper.js";
 export {
+  type PhoneCountry,
+  PhoneInput,
+  type PhoneInputChangeDetails,
+  type PhoneInputLabels,
+  type PhoneInputProps,
+  type PhoneMetadata,
+} from "./phone-input/phone-input.js";
+export {
   DateCalendar,
   type DateCalendarProps,
   DateField,

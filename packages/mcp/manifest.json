@@ -13,6 +13,7 @@
   "data-ok-active",
   "data-ok-active-chart-id",
   "data-ok-active-step",
+  "data-ok-add-international-option",
   "data-ok-aggregable",
   "data-ok-aggregation-model",
   "data-ok-aggregation-position",
@@ -396,6 +397,10 @@
   "data-ok-countdown-toggle",
   "data-ok-countdown-unit",
   "data-ok-countdown-value",
+  "data-ok-countries",
+  "data-ok-country",
+  "data-ok-country-calling-code-editable",
+  "data-ok-country-options-order",
   "data-ok-covered",
   "data-ok-critical",
   "data-ok-critical-path",
@@ -528,6 +533,7 @@
   "data-ok-day-calendar-header",
   "data-ok-day-filler",
   "data-ok-decimals",
+  "data-ok-default-country",
   "data-ok-default-grouping-expansion-depth",
   "data-ok-delay",
   "data-ok-dense",
@@ -743,6 +749,7 @@
   "data-ok-flex-item",
   "data-ok-focus",
   "data-ok-focus-after-open",
+  "data-ok-focus-input-on-country-selection",
   "data-ok-focused",
   "data-ok-follow-cursor",
   "data-ok-font",
@@ -845,6 +852,7 @@
   "data-ok-hide-footer-pagination",
   "data-ok-hide-footer-row-count",
   "data-ok-hide-footer-selected-row-count",
+  "data-ok-hide-select",
   "data-ok-hide-sort-icon",
   "data-ok-hide-stream-labels",
   "data-ok-hide-violin-points",
@@ -894,6 +902,8 @@
   "data-ok-inset",
   "data-ok-interactive",
   "data-ok-interactive-layer-ids",
+  "data-ok-international",
+  "data-ok-invalid-text",
   "data-ok-invert",
   "data-ok-invisible",
   "data-ok-is-fixed",
@@ -983,6 +993,7 @@
   "data-ok-lightbox-zoom",
   "data-ok-lightbox-zoom-in",
   "data-ok-lightbox-zoom-out",
+  "data-ok-limit-max-length",
   "data-ok-limit-tags",
   "data-ok-line",
   "data-ok-line-border-radius",
@@ -1205,6 +1216,9 @@
   "data-ok-pattern",
   "data-ok-paused",
   "data-ok-persistent",
+  "data-ok-phone-input",
+  "data-ok-phone-input-country",
+  "data-ok-phone-input-flag",
   "data-ok-picked",
   "data-ok-picker",
   "data-ok-picker-action",
@@ -1684,6 +1698,7 @@
   "data-ok-upload-zone",
   "data-ok-url",
   "data-ok-use-fs-access-api",
+  "data-ok-validate",
   "data-ok-value",
   "data-ok-value-buffer",
   "data-ok-value-label-display",
@@ -55573,7 +55588,7 @@
      "title": "Responsive behavior"
     },
     {
-     "body": "Opening focuses the selected (or first) enabled item. ArrowDown / ArrowUp (wrap), Home, End,\ntypeahead (500 ms buffer; a repeated letter cycles), Enter / Space choose, Escape closes (focus\nreturns to the trigger), Tab closes. Disabled items are skipped.\n\nSubmenus (core `submenuKeyAction`, `createSubmenuHover`): ArrowRight, Enter, Space or a click on\na trigger open its submenu and focus its focus item; ArrowLeft inside closes it and focuses the\ntrigger; Escape closes the top submenu only (focus back to its trigger). Right to left (computed\n`direction`), ArrowLeft opens and ArrowRight closes, and the submenu opens on the left. Moving\nto another item of a menu closes the submenus open there. Mouse: resting 100 ms on a trigger\nopens its submenu without moving focus; resting on another item of the same menu closes it;\ncrossing items on the way into a submenu cancels. Choosing an item anywhere, Tab and a press\noutside close the whole menu; closing the menu closes its submenus.",
+     "body": "Opening focuses the selected (or first) enabled item. ArrowDown / ArrowUp (wrap), Home, End,\ntypeahead (500 ms buffer; a repeated letter cycles; `aria-hidden` parts of an item are left out), Enter / Space choose, Escape closes (focus\nreturns to the trigger), Tab closes. Disabled items are skipped.\n\nSubmenus (core `submenuKeyAction`, `createSubmenuHover`): ArrowRight, Enter, Space or a click on\na trigger open its submenu and focus its focus item; ArrowLeft inside closes it and focuses the\ntrigger; Escape closes the top submenu only (focus back to its trigger). Right to left (computed\n`direction`), ArrowLeft opens and ArrowRight closes, and the submenu opens on the left. Moving\nto another item of a menu closes the submenus open there. Mouse: resting 100 ms on a trigger\nopens its submenu without moving focus; resting on another item of the same menu closes it;\ncrossing items on the way into a submenu cancels. Choosing an item anywhere, Tab and a press\noutside close the whole menu; closing the menu closes its submenus.",
      "id": "keyboard-accessibility",
      "title": "Keyboard / Accessibility"
     },
@@ -60168,6 +60183,620 @@
    "api": {
     "css": [
      {
+      "name": "--ok-divider",
+      "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+     },
+     {
+      "name": "--ok-font-size-xl",
+      "value": "1rem"
+     },
+     {
+      "name": "--ok-font-weight-regular",
+      "value": "400"
+     },
+     {
+      "name": "--ok-radius-sm",
+      "value": "6px"
+     },
+     {
+      "name": "--ok-spacing",
+      "value": "0.25rem"
+     },
+     {
+      "dark": "#FFFFFF",
+      "light": "#1C252E",
+      "name": "--ok-text-primary"
+     },
+     {
+      "dark": "#919EAB",
+      "light": "#637381",
+      "name": "--ok-text-secondary"
+     }
+    ],
+    "entries": [
+     {
+      "html": {
+       "attribute": "data-ok-phone-input",
+       "events": [
+        {
+         "cancelable": false,
+         "description": "After the number changed: `value` (international form such as `+61298765432`, `\"\"` when there is no number), `national`, `international`, `country`, `valid` and `possible`.",
+         "detail": "PhoneValueDetails",
+         "name": "ok:phone-input:change"
+        },
+        {
+         "cancelable": false,
+         "description": "After the selected country changed (`country` is `undefined` for International).",
+         "detail": "{ country: CountryCode | undefined; }",
+         "name": "ok:phone-input:countrychange"
+        }
+       ],
+       "methods": [
+        {
+         "description": "The selected country (`undefined`: International).",
+         "kind": "property",
+         "name": "country",
+         "type": "CountryCode"
+        },
+        {
+         "description": "The number's national and international forms and checks.",
+         "kind": "property",
+         "name": "details",
+         "type": "PhoneValueDetails"
+        },
+        {
+         "description": "Selects a country (`undefined`: International) without emitting events, as a pick would.",
+         "kind": "method",
+         "name": "setCountry",
+         "type": "(country: string | undefined) => void"
+        },
+        {
+         "description": "Sets the number (such as `+61298765432`) without emitting events; its country is selected.",
+         "kind": "method",
+         "name": "setValue",
+         "type": "(value: string) => void"
+        },
+        {
+         "description": "The number in international form without spaces, such as `+61298765432` (`\"\"` when there is none).",
+         "kind": "property",
+         "name": "value",
+         "type": "string"
+        }
+       ],
+       "options": [
+        {
+         "attr": "data-ok-country",
+         "description": "A fixed country, such as `AU`: the country select is turned off and numbers are read as this country's.",
+         "kind": "state",
+         "name": "country"
+        },
+        {
+         "attr": "data-ok-default-country",
+         "description": "The country selected at first, such as `DE` (none: the number is typed in international form).",
+         "kind": "state",
+         "name": "defaultCountry"
+        },
+        {
+         "attr": "data-ok-international",
+         "description": "Show numbers in international form (`+61 2 9876 5432`) instead of national (`(02) 9876 5432`).",
+         "kind": "flag",
+         "name": "international"
+        },
+        {
+         "attr": "data-ok-country-calling-code-editable",
+         "default": true,
+         "description": "International form with a selected country: the calling code can be changed (`false` keeps it).",
+         "kind": "behavior",
+         "name": "countryCallingCodeEditable"
+        },
+        {
+         "attr": "data-ok-hide-select",
+         "description": "No country select (the markup leaves it out).",
+         "kind": "flag",
+         "name": "hideSelect"
+        },
+        {
+         "attr": "data-ok-countries",
+         "description": "The countries offered, such as `AU,NZ` (all by default).",
+         "kind": "state",
+         "name": "countries"
+        },
+        {
+         "attr": "data-ok-country-options-order",
+         "description": "Countries listed first, such as `US,CA,...` (`...` places the others).",
+         "kind": "state",
+         "name": "countryOptionsOrder"
+        },
+        {
+         "attr": "data-ok-add-international-option",
+         "default": true,
+         "description": "An International option at the top of the country list (`false` leaves it out).",
+         "kind": "behavior",
+         "name": "addInternationalOption"
+        },
+        {
+         "attr": "data-ok-limit-max-length",
+         "description": "Digits past the longest number of the country are refused.",
+         "kind": "flag",
+         "name": "limitMaxLength"
+        },
+        {
+         "attr": "data-ok-focus-input-on-country-selection",
+         "default": true,
+         "description": "Picking a country moves the focus to the input (`false` keeps it on the select).",
+         "kind": "behavior",
+         "name": "focusInputOnCountrySelection"
+        },
+        {
+         "attr": "data-ok-locale",
+         "description": "Language of the country names, such as `fr` (default `en`).",
+         "kind": "state",
+         "name": "locale"
+        },
+        {
+         "attr": "data-ok-validate",
+         "description": "After the person leaves the field, an invalid number shows the error state and `invalidText`.",
+         "kind": "flag",
+         "name": "validate"
+        },
+        {
+         "attr": "data-ok-invalid-text",
+         "description": "The helper text shown while the number is invalid (with `validate`).",
+         "kind": "state",
+         "name": "invalidText"
+        },
+        {
+         "attr": "disabled",
+         "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+         "description": "Native `disabled` on the input; the country select is disabled too.",
+         "kind": "native",
+         "name": "disabled"
+        },
+        {
+         "attr": "value",
+         "description": "The number as E.164 (`value` / `defaultValue` + `onChange(value, details)`); HTML: the input's text.",
+         "event": "ok:phone-input:change",
+         "kind": "state",
+         "name": "value"
+        }
+       ],
+       "parts": [
+        {
+         "description": "The start adornment that holds the country select (a Select without a variant).",
+         "elements": [
+          "div"
+         ],
+         "kind": "part",
+         "name": "data-ok-phone-input-country"
+        },
+        {
+         "description": "The flag of a country option (an emoji, or a globe for International); hidden from screen readers.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-phone-input-flag"
+        }
+       ],
+       "runtime": "phone-input"
+      },
+      "name": "PhoneInput",
+      "react": {
+       "description": "A text field for phone numbers: a country select in the start adornment (a Select of MenuItems with flags), formatting as you type and the value in international form. Every TextField prop works; `ref` and the remaining props go to the input.",
+       "native": "HTMLInputElement",
+       "props": [
+        {
+         "default": "true",
+         "description": "An International option at the top of the country list.",
+         "name": "addInternationalOption",
+         "type": "boolean"
+        },
+        {
+         "description": "Class of the root (other props go to the input).",
+         "name": "className",
+         "type": "string"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+        },
+        {
+         "default": "\"div\"",
+         "description": "The root element.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
+         "description": "The countries offered, such as `[\"AU\", \"NZ\"]`. Default: every country.",
+         "name": "countries",
+         "type": "readonly string[]"
+        },
+        {
+         "description": "A fixed country, such as `\"AU\"`: the country select is turned off and numbers are read as this country's.",
+         "name": "country",
+         "type": "string"
+        },
+        {
+         "default": "true",
+         "description": "International form with a selected country: the calling code can be changed.",
+         "name": "countryCallingCodeEditable",
+         "type": "boolean"
+        },
+        {
+         "description": "\"` places the others).",
+         "name": "countryOptionsOrder",
+         "type": "readonly string[]"
+        },
+        {
+         "description": "The country selected at first, such as `\"DE\"`. Without it, the number is typed in international form.",
+         "name": "defaultCountry",
+         "type": "string"
+        },
+        {
+         "default": "\"\"",
+         "description": "Uncontrolled initial value, such as `\"+61298765432\"`.",
+         "name": "defaultValue",
+         "type": "string"
+        },
+        {
+         "description": "Standard: draw no underline (give the field another focus style).",
+         "name": "disableUnderline",
+         "type": "boolean"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"end\"`.",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Error colors and `aria-invalid`.",
+         "name": "error",
+         "type": "boolean"
+        },
+        {
+         "default": "true",
+         "description": "Picking a country moves the focus to the input.",
+         "name": "focusInputOnCountrySelection",
+         "type": "boolean"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
+         "description": "Stretch to the container width.",
+         "name": "fullWidth",
+         "type": "boolean"
+        },
+        {
+         "description": "Text under the field, such as a hint or an error message (linked with `aria-describedby`).",
+         "name": "helperText",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Hide the label visually: it still names the input, and the field is laid out as if it had none (a filled field gets less padding above the value).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
+         "description": "Leave the country select out.",
+         "name": "hideSelect",
+         "type": "boolean"
+        },
+        {
+         "description": "Show numbers in international form (`+61 2 9876 5432`) instead of national (`(02) 9876 5432`).",
+         "name": "international",
+         "type": "boolean"
+        },
+        {
+         "description": "The helper text shown while the number is invalid (with `validate`).",
+         "name": "invalidText",
+         "type": "string"
+        },
+        {
+         "description": "The floating label; it names the input.",
+         "name": "label",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Country names and other texts: `{ AU: \"Australie\", ZZ: \"International\", country: \"Country\" }`.",
+         "name": "labels",
+         "type": "PhoneInputLabels"
+        },
+        {
+         "description": "Refuse digits past the longest number of the country.",
+         "name": "limitMaxLength",
+         "type": "boolean"
+        },
+        {
+         "default": "\"en\"",
+         "description": "DisplayNames`), such as `\"fr\"`.",
+         "name": "locale",
+         "type": "string"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
+        },
+        {
+         "default": "min",
+         "description": "Phone metadata from libphonenumber-js (`min`, `mobile` or `max`).",
+         "name": "metadata",
+         "type": "MetadataJson"
+        },
+        {
+         "description": "Outlined: keep the outline's notch open even when the label rests in the box.",
+         "name": "notched",
+         "type": "boolean"
+        },
+        {
+         "description": "Called with the new value, such as `\"+61298765432\"` (`\"\"` when there is no number), and its details: `national`, `international`, `country`, `valid` and `possible`.",
+         "name": "onChange",
+         "type": "((value: string, details: PhoneValueDetails) => void)"
+        },
+        {
+         "description": "Called when the selected country changes (`undefined`: International).",
+         "name": "onCountryChange",
+         "type": "((country: CountryCode | undefined) => void)"
+        },
+        {
+         "description": "Keep the label above the value even when the field is empty.",
+         "name": "shrink",
+         "type": "boolean"
+        },
+        {
+         "default": "\"medium\"",
+         "description": "`medium` or `small` (dense).",
+         "name": "size",
+         "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "Style of the root.",
+         "name": "style",
+         "type": "CSSProperties"
+        },
+        {
+         "description": "After the person leaves the field, an invalid number shows the error state and `invalidText`.",
+         "name": "validate",
+         "type": "boolean"
+        },
+        {
+         "description": "Controlled value in international form without spaces, such as `\"+61298765432\"` (`\"\"` = empty).",
+         "name": "value",
+         "type": "string"
+        },
+        {
+         "default": "\"outlined\"",
+         "description": "Outline, tinted fill or underline.",
+         "name": "variant",
+         "type": "\"filled\" | \"outlined\" | \"standard\""
+        }
+       ]
+      }
+     }
+    ],
+    "types": [
+     {
+      "name": "PhoneInputLabels",
+      "type": "Readonly<Record<string, string>> & { readonly ZZ?: string; readonly country?: string; }"
+     }
+    ]
+   },
+   "guide": "phone-input",
+   "name": "phone-input",
+   "react": [
+    "PhoneInput"
+   ],
+   "referenceUrl": "https://minimals.cc/components/extra/utilities",
+   "related": [
+    "list",
+    "popover",
+    "select",
+    "text-field",
+    "typography"
+   ],
+   "requiredParts": {},
+   "root": "data-ok-phone-input",
+   "schemas": [
+    {
+     "name": "phone-input",
+     "options": [
+      {
+       "attr": "data-ok-country",
+       "description": "A fixed country, such as `AU`: the country select is turned off and numbers are read as this country's.",
+       "kind": "state",
+       "name": "country"
+      },
+      {
+       "attr": "data-ok-default-country",
+       "description": "The country selected at first, such as `DE` (none: the number is typed in international form).",
+       "kind": "state",
+       "name": "defaultCountry"
+      },
+      {
+       "attr": "data-ok-international",
+       "description": "Show numbers in international form (`+61 2 9876 5432`) instead of national (`(02) 9876 5432`).",
+       "kind": "flag",
+       "name": "international"
+      },
+      {
+       "attr": "data-ok-country-calling-code-editable",
+       "default": true,
+       "description": "International form with a selected country: the calling code can be changed (`false` keeps it).",
+       "kind": "behavior",
+       "name": "countryCallingCodeEditable"
+      },
+      {
+       "attr": "data-ok-hide-select",
+       "description": "No country select (the markup leaves it out).",
+       "kind": "flag",
+       "name": "hideSelect"
+      },
+      {
+       "attr": "data-ok-countries",
+       "description": "The countries offered, such as `AU,NZ` (all by default).",
+       "kind": "state",
+       "name": "countries"
+      },
+      {
+       "attr": "data-ok-country-options-order",
+       "description": "Countries listed first, such as `US,CA,...` (`...` places the others).",
+       "kind": "state",
+       "name": "countryOptionsOrder"
+      },
+      {
+       "attr": "data-ok-add-international-option",
+       "default": true,
+       "description": "An International option at the top of the country list (`false` leaves it out).",
+       "kind": "behavior",
+       "name": "addInternationalOption"
+      },
+      {
+       "attr": "data-ok-limit-max-length",
+       "description": "Digits past the longest number of the country are refused.",
+       "kind": "flag",
+       "name": "limitMaxLength"
+      },
+      {
+       "attr": "data-ok-focus-input-on-country-selection",
+       "default": true,
+       "description": "Picking a country moves the focus to the input (`false` keeps it on the select).",
+       "kind": "behavior",
+       "name": "focusInputOnCountrySelection"
+      },
+      {
+       "attr": "data-ok-locale",
+       "description": "Language of the country names, such as `fr` (default `en`).",
+       "kind": "state",
+       "name": "locale"
+      },
+      {
+       "attr": "data-ok-validate",
+       "description": "After the person leaves the field, an invalid number shows the error state and `invalidText`.",
+       "kind": "flag",
+       "name": "validate"
+      },
+      {
+       "attr": "data-ok-invalid-text",
+       "description": "The helper text shown while the number is invalid (with `validate`).",
+       "kind": "state",
+       "name": "invalidText"
+      },
+      {
+       "attr": "disabled",
+       "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+       "description": "Native `disabled` on the input; the country select is disabled too.",
+       "kind": "native",
+       "name": "disabled"
+      },
+      {
+       "attr": "value",
+       "description": "The number as E.164 (`value` / `defaultValue` + `onChange(value, details)`); HTML: the input's text.",
+       "event": "ok:phone-input:change",
+       "kind": "state",
+       "name": "value"
+      }
+     ],
+     "root": "data-ok-phone-input"
+    }
+   ],
+   "sections": [
+    {
+     "body": "Enter a phone number of any country: a country select with flags in the field, formatting as you\ntype, an E.164 value (`+61298765432`) with its national and international forms, and an optional\nvalidation state for the helper text. Opt-in: the phone metadata (libphonenumber-js `min`, about\n35 kB gzip) loads only with `@owlky/core/phone` (`@owlky/html/phone`, `owlky-phone.js`).",
+     "id": "purpose",
+     "title": "Purpose"
+    },
+    {
+     "body": "```\ndiv[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-color][data-ok-margin]   (a TextField root)\n   [data-ok-phone-input][data-ok-country]?[data-ok-default-country]?[data-ok-international]?\n   [data-ok-country-calling-code-editable=\"false\"]?[data-ok-hide-select]?[data-ok-countries]?\n   [data-ok-country-options-order]?[data-ok-add-international-option=\"false\"]?[data-ok-limit-max-length]?\n   [data-ok-focus-input-on-country-selection=\"false\"]?[data-ok-locale]?[data-ok-validate]?[data-ok-invalid-text]?\n  label[data-ok-text-field-label][for]\n  div[data-ok-text-field-control]\n    div[data-ok-text-field-adornment=\"start\"][data-ok-phone-input-country]   (omitted with hideSelect)\n      div[data-ok-select][data-ok-display-empty]                              (a bare listbox Select, ADR-0045)\n        div[data-ok-select-display][role=combobox][tabindex][id=<input id>-country][aria-label=\"Country\"]\n           [aria-haspopup=listbox][aria-expanded][aria-controls][aria-disabled]?   › the selected option's content\n        input[data-ok-select-input][aria-hidden][tabindex=-1][value=<country code | \"\">][disabled]?\n        svg[data-ok-select-icon][aria-hidden]\n        div[data-ok-popover][popover=manual][id=<input id>-country-menu] › span[data-ok-popover-arrow]\n          ul[data-ok-select-listbox][role=listbox]                       (empty in HTML snippets: the runtime fills it)\n            li[data-ok-menu-item][role=option][tabindex=-1][aria-selected][data-ok-selected]?[data-ok-value=\"\"|<code>]\n              span[data-ok-list-item-icon][data-ok-phone-input-flag][aria-hidden=true] › emoji flag | svg (globe)\n              span[data-ok-list-item-text] › span[data-ok-list-item-text-primary] (name)\n                                             + span[data-ok-list-item-text-secondary] (\"AU (+61)\")?\n    input[data-ok-text-field-input][type=tel][autocomplete=tel][id][placeholder][value=<formatted text>][aria-describedby]?\n    fieldset[data-ok-text-field-outline] › legend › span   (outlined)\n  div[data-ok-text-field-helper][id]?\n```\nReact renders `data-ok-runtime=\"off\"` on the root, the Select and its popover. The first option is\nInternational (value `\"\"`, a globe) unless `addInternationalOption` is off or the country is fixed.",
+     "id": "anatomy",
+     "title": "Anatomy"
+    },
+    {
+     "body": "(Options of `phone-input`: listed under \"options\".)\n\nTextField's options (`variant`, `size`, `color`, `margin`, `fullWidth`, `error`, `label`,\n`helperText`…) apply as for any text field.\n\nReact `PhoneInput` (+ every TextField prop except `value` / `defaultValue` / `onChange`,\n`multiline`, `select`, `type`, `inputComponent` and `startAdornment`): `value` / `defaultValue`\n(E.164, `\"\"` = empty), `onChange(value, details)` (details: `value`, `national`, `international`,\n`country`, `valid`, `possible`), `country`, `defaultCountry`, `onCountryChange(country)`\n(`undefined` = International), `international`, `countryCallingCodeEditable`, `hideSelect`,\n`countries`, `countryOptionsOrder`, `addInternationalOption`, `limitMaxLength`,\n`focusInputOnCountrySelection`, `labels` (`{ [code]: name, ZZ: \"International\", country:\n\"Country\" }`), `locale`, `metadata`, `validate`, `invalidText`. `ref` = the input.\nHTML `createPhoneInput({ metadata, labels })` for what attributes can't carry.",
+     "id": "options",
+     "title": "Options"
+    },
+    {
+     "body": "The TextField look. The country select sits in the start adornment: the flag (`--ok-font-size-xl`\nemoji, 24px box; the globe 20px), 4px padding, the arrow (16px, `--ok-text-secondary`) after it,\nthen 8px and a 1px `--ok-divider` line before the input. A fixed country or a disabled field shows\nthe flag alone (no arrow); a disabled field dims it to 0.48. The list is a Popover of MenuItems,\n320px wide (at most the viewport less 32px), at most 400px high, scrolling: each option is the\nflag, the name (subtitle2) and \"AU (+61)\" (body2, secondary). The field's trigger keeps the name\nand code visually hidden (the combobox's value for screen readers).",
+     "id": "layout-and-tokens",
+     "title": "Layout and tokens"
+    },
+    {
+     "body": "Intrinsic, as TextField (`fullWidth` stretches it). The list keeps 16px inside the viewport.",
+     "id": "responsive-behavior",
+     "title": "Responsive behavior"
+    },
+    {
+     "body": "Model in `@owlky/core/phone` (pure): `phoneInputSettings` / `readPhoneInputSettings`,\n`phoneInputChange(text, caret, country, settings)` (digits, country, formatted text, value,\ncaret), `phoneCountryDigits` (a pick), `phoneDigitsFromValue`, `phoneCountryOfValue`,\n`phoneValueDetails`, `phoneCountryOptions`, `phoneFlag`. Core\n`createPhoneInputController(input, { onInput }, { input? })` reports typed text with the caret;\nBackspace / Delete next to a formatting character remove the nearest digit (`beforeinput`).\n- **Auto** (no country): typing starts an international number (a `+` is added); the country of\n  the calling code is selected as soon as it is known (`+84` → Vietnam; a shared code such as `+1`\n  keeps the selected country when it shares it, otherwise International).\n- **Default country**: national digits are read as that country's (`(02) 9876 5432` for AU);\n  typing `+` switches to international digits and their country.\n- **Fixed country** (`country`): the select is disabled and shows the flag only; national form\n  (a pasted `+61…` number of that country is shown nationally) or, with `international`, the\n  calling code stays in front (`+61 2 9876 5432`; deleting it puts it back).\n- **International** with a selected country and `countryCallingCodeEditable` off: the same\n  locked calling code.\n- **A pick** rewrites the digits for the new country: international digits of the old country\n  get the new calling code (international form) or are cleared unless they belong to the new\n  country (national form); International turns national digits into the old country's\n  international number. The focus moves to the input (`focusInputOnCountrySelection`).\n- `limitMaxLength` drops digits typed past the country's longest number.\n- **Validation** (`validate`): after the input loses focus once, a non-empty number that isn't\n  valid (`isValidPhoneNumber`, `min` metadata) sets the error state (`data-ok-error`,\n  `aria-invalid`) and shows `invalidText` in the helper text (the original text comes back when\n  it is valid). The change details always carry `valid` / `possible` for your own checks.\n- HTML runtime `phone-input` (opt-in, `OPT_IN`): fills the empty listbox with DOM methods (the\n  markup React renders), reads the selected country from the Select's hidden input (else the\n  fixed or default country) and the digits from the input's text, writes the text, the caret and\n  the Select's value (`setValue`), listens to `ok:select:change`, re-reads the settings when a\n  root option attribute changes, and disables the select with the input (`disabled`, `readonly`).",
+     "id": "states-behavior",
+     "title": "States / Behavior"
+    },
+    {
+     "body": "| Key | Action |\n|---|---|\n| Typing, paste | Digits and a leading `+` are kept and formatted; other characters are dropped |\n| Backspace / Delete | Remove the digit before / after the caret (formatting characters are skipped) |\n| Tab | From the country select to the input |\n| Country select | The Select's keys (select.md): Arrow keys, Home / End, typeahead on names, Enter / Space, Escape |",
+     "id": "keyboard",
+     "title": "Keyboard"
+    },
+    {
+     "body": "Two tab stops: the country combobox (named \"Country\", `labels.country`; its value is the selected\noption's visually hidden name and code) and the `tel` input named by the label (`autocomplete=\"tel\"`\nfor autofill). Flags are `aria-hidden` (emoji names would repeat the country). The helper text\ndescribes the input; with `validate`, the error state is `aria-invalid` and the helper text says\nwhy. A fixed country's select is `aria-disabled` and out of the tab order.",
+     "id": "accessibility",
+     "title": "Accessibility"
+    },
+    {
+     "body": "HTML: `ok:phone-input:change` (`{ value, national, international, country, valid, possible }`)\nafter the number changed; `ok:phone-input:countrychange` (`{ country }`, `undefined` =\nInternational). Instance `{ value, setValue(value), country, setCountry(country), details }`\n(setters emit no events). React: `onChange(value, details)`, `onCountryChange(country)`.",
+     "id": "events-api",
+     "title": "Events / API"
+    },
+    {
+     "body": "Upstream: react-phone-number-input's `PhoneInput` (with country select), README and\n`react-phone-number-input/core` docs.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `onChange(value)` | `value`, `onChange(value, details)` | kept | `\"\"` instead of `undefined` for no number (a controlled field stays controlled); details: national, international, country, valid, possible |\n| — | `defaultValue` | added | uncontrolled initial value (Owlky's value-first pattern) |\n| `defaultCountry`, `onCountryChange`, `international`, `countryCallingCodeEditable`, `countries`, `countryOptionsOrder`, `addInternationalOption`, `limitMaxLength`, `focusInputOnCountrySelection`, `labels`, `metadata` | same | kept | `countryOptionsOrder`: `\"...\"` is kept, the `\"|\"` divider is ignored (a listbox may only hold options) |\n| `country` (input without country select) | `country` | kept | here a fixed country turns the select off (Minimals' \"Fixed country\") |\n| Minimals `hideSelect` | `hideSelect` | kept | the reference's own wrapper prop |\n| `locales` | `locale` | renamed | names from `Intl.DisplayNames`, no bundled label files |\n| `disabled`, `readOnly`, `autoComplete` (`\"tel\"`), `placeholder`, `name`, `onFocus`, `onBlur` | TextField / input props | kept | |\n| `flagUrl`, `flags`, `flagComponent`, `internationalIcon` | — | not applicable | emoji flags and an original globe, no images (ADR-0061) |\n| `inputComponent`, `numberInputProps`, `countrySelectComponent`, `countrySelectProps`, `containerComponent` | — | not applicable | the parts are the TextField, Select and MenuItems (ADR-0015) |\n| `smartCaret` | — | not applicable | always on (caret after the same digit) |\n| `initialValueFormat` | — | not applicable | a value of the selected country is always shown nationally unless `international` |\n| `withCountryCallingCode` (input without country select) | `international` + `countryCallingCodeEditable={false}` | renamed | |\n| Reference search box in the country list | Select typeahead | not applicable | ADR-0061: a second text input in the field; type the name instead |\n| Reference clear button (end adornment) | `endAdornment` | not applicable | Minimals' wrapper; pass your own InputAdornment |\n| — | `validate`, `invalidText` | added | the roadmap's validation state for the helper text |\n\n### Intentional differences from the reference\n- Flags are emoji (no CDN images); Windows shows the two letters.\n- The country list has no search box: the Select's typeahead finds a country by name.\n- Typing `+84…` in Auto keeps the international text (upstream behavior); the reference rewrites\n  it in national form. The national form is in the change details.\n- No clear button: pass an `endAdornment` if you want one.",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
+     "body": "HTML snippets carry an empty listbox (the runtime builds the options, React renders them); parity\ncompares the DOM after the runtime ran. Story snippets are generated from the React demos\n(`apps/storybook/scripts/phone-input-snippets.mjs`). Country names come from the engine's\n`Intl.DisplayNames`, the same in both implementations of one browser.",
+     "id": "parity-notes",
+     "title": "Parity notes"
+    }
+   ],
+   "snippets": {},
+   "stories": [
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-phone.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" and \"@owlky/html/auto\", then \"@owlky/html/phone\". -->\n\n<!-- Auto -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input>\n    <label data-ok-text-field-label for=\"phone-auto\">Phone number</label>\n    <div data-ok-text-field-control>\n      <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n        <div data-ok-select data-ok-display-empty>\n          <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-auto-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-auto-country-listbox\" aria-label=\"Country\">\n            <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></circle><path d=\"M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></path></svg></span>\n            <span data-ok-list-item-text>\n              <span data-ok-list-item-text-primary>International</span>\n            </span>\n          </div>\n          <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n          <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-auto-country-menu\" tabindex=\"-1\">\n            <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n            <ul data-ok-select-listbox role=\"listbox\" id=\"phone-auto-country-listbox\">\n            </ul>\n          </div>\n        </div>\n      </div>\n      <input autocomplete=\"tel\" id=\"phone-auto\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">-</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>\n\n<!-- Default value -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input>\n    <label data-ok-text-field-label for=\"phone-default-value\">Phone number</label>\n    <div data-ok-text-field-control>\n      <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n        <div data-ok-select data-ok-display-empty>\n          <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-default-value-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-default-value-country-listbox\" aria-label=\"Country\">\n            <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇦🇺</span>\n            <span data-ok-list-item-text>\n              <span data-ok-list-item-text-primary>Australia</span>\n              <span data-ok-list-item-text-secondary>AU (+61)</span>\n            </span>\n          </div>\n          <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"AU\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n          <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-default-value-country-menu\" tabindex=\"-1\">\n            <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n            <ul data-ok-select-listbox role=\"listbox\" id=\"phone-default-value-country-listbox\">\n            </ul>\n          </div>\n        </div>\n      </div>\n      <input autocomplete=\"tel\" id=\"phone-default-value\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"(02) 9876 5432\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">(02) 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">+61 2 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">+61298765432</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>\n\n<!-- Default country -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-default-country=\"DE\">\n    <label data-ok-text-field-label for=\"phone-default-country\">Phone number</label>\n    <div data-ok-text-field-control>\n      <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n        <div data-ok-select data-ok-display-empty>\n          <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-default-country-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-default-country-country-listbox\" aria-label=\"Country\">\n            <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇩🇪</span>\n            <span data-ok-list-item-text>\n              <span data-ok-list-item-text-primary>Germany</span>\n              <span data-ok-list-item-text-secondary>DE (+49)</span>\n            </span>\n          </div>\n          <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"DE\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n          <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-default-country-country-menu\" tabindex=\"-1\">\n            <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n            <ul data-ok-select-listbox role=\"listbox\" id=\"phone-default-country-country-listbox\">\n            </ul>\n          </div>\n        </div>\n      </div>\n      <input autocomplete=\"tel\" id=\"phone-default-country\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">-</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>\n\n<!-- Fixed country -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-country=\"AU\">\n    <label data-ok-text-field-label for=\"phone-fixed-country\">Phone number</label>\n    <div data-ok-text-field-control>\n      <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n        <div data-ok-select data-ok-display-empty>\n          <div data-ok-select-display role=\"combobox\" tabindex=\"-1\" id=\"phone-fixed-country-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-fixed-country-country-listbox\" aria-label=\"Country\" aria-disabled=\"true\">\n            <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇦🇺</span>\n            <span data-ok-list-item-text>\n              <span data-ok-list-item-text-primary>Australia</span>\n              <span data-ok-list-item-text-secondary>AU (+61)</span>\n            </span>\n          </div>\n          <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" disabled value=\"AU\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n          <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-fixed-country-country-menu\" tabindex=\"-1\">\n            <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n            <ul data-ok-select-listbox role=\"listbox\" id=\"phone-fixed-country-country-listbox\">\n            </ul>\n          </div>\n        </div>\n      </div>\n      <input autocomplete=\"tel\" id=\"phone-fixed-country\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"(02) 9876 5432\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">(02) 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">+61 2 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">+61298765432</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>\n\n<!-- Fixed country + international -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-international data-ok-country=\"AU\">\n    <label data-ok-text-field-label for=\"phone-fixed-international\">Phone number</label>\n    <div data-ok-text-field-control>\n      <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n        <div data-ok-select data-ok-display-empty>\n          <div data-ok-select-display role=\"combobox\" tabindex=\"-1\" id=\"phone-fixed-international-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-fixed-international-country-listbox\" aria-label=\"Country\" aria-disabled=\"true\">\n            <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇦🇺</span>\n            <span data-ok-list-item-text>\n              <span data-ok-list-item-text-primary>Australia</span>\n              <span data-ok-list-item-text-secondary>AU (+61)</span>\n            </span>\n          </div>\n          <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" disabled value=\"AU\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n          <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-fixed-international-country-menu\" tabindex=\"-1\">\n            <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n            <ul data-ok-select-listbox role=\"listbox\" id=\"phone-fixed-international-country-listbox\">\n            </ul>\n          </div>\n        </div>\n      </div>\n      <input autocomplete=\"tel\" id=\"phone-fixed-international\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"+61 2 9876 5432\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">(02) 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">+61 2 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">+61298765432</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>\n\n<!-- Fixed country + international + hideSelect -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-international data-ok-hide-select data-ok-country=\"AU\">\n    <label data-ok-text-field-label for=\"phone-hide-select\">Phone number</label>\n    <div data-ok-text-field-control>\n      <input autocomplete=\"tel\" id=\"phone-hide-select\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"+61 2 9876 5432\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">(02) 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">+61 2 9876 5432</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">+61298765432</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>",
+     "id": "components-phone-input--phone-input",
+     "name": "Phone input",
+     "react": "import { phoneValueDetails } from \"@owlky/core/phone\";\nimport {\n  PhoneInput,\n  type PhoneInputChangeDetails,\n  type PhoneInputProps,\n  Typography,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/** The national, international and raw (E.164) forms of the number, as the field reports them. */\nfunction PhoneValues({ details }: { details: PhoneInputChangeDetails }) {\n  const rows: [string, string][] = [\n    [\"National\", details.national],\n    [\"International\", details.international],\n    [\"Raw\", details.value],\n  ];\n  return (\n    <dl className=\"sb-phone-values\">\n      {rows.map(([label, value]) => (\n        <div key={label} className=\"sb-phone-row\">\n          <Typography component=\"dt\" variant=\"body2\" color=\"textSecondary\">\n            {`${label}:`}\n          </Typography>\n          <Typography\n            component=\"dd\"\n            variant=\"subtitle2\"\n            className={`sb-phone-${label.toLowerCase()}`}\n          >\n            {value || \"-\"}\n          </Typography>\n        </div>\n      ))}\n    </dl>\n  );\n}\n\n/** A phone input with its values under it. */\nfunction PhoneDemo(props: PhoneInputProps & { id: string }) {\n  const [details, setDetails] = useState(() => phoneValueDetails(props.defaultValue ?? \"\"));\n  return (\n    <div className=\"sb-phone-demo\">\n      <PhoneInput\n        label=\"Phone number\"\n        placeholder=\"Enter phone number\"\n        fullWidth\n        onChange={(_value, next) => setDetails(next)}\n        {...props}\n      />\n      <PhoneValues details={details} />\n    </div>\n  );\n}\n\n/** Auto: no country at first; typing a number selects its country. */\nexport function PhoneAutoDemo() {\n  return <PhoneDemo id=\"phone-auto\" />;\n}\n\n/** Default value: an E.164 value selects its country and shows in national form. */\nexport function PhoneDefaultValueDemo() {\n  return <PhoneDemo id=\"phone-default-value\" defaultValue=\"+61298765432\" />;\n}\n\n/** Default country: national numbers are read as Germany's until another country is picked. */\nexport function PhoneDefaultCountryDemo() {\n  return <PhoneDemo id=\"phone-default-country\" defaultCountry=\"DE\" />;\n}\n\n/** Fixed country: the select is turned off. */\nexport function PhoneFixedCountryDemo() {\n  return <PhoneDemo id=\"phone-fixed-country\" country=\"AU\" defaultValue=\"+61298765432\" />;\n}\n\n/** Fixed country + international: the calling code stays in front. */\nexport function PhoneFixedInternationalDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-fixed-international\"\n      country=\"AU\"\n      international\n      defaultValue=\"+61298765432\"\n    />\n  );\n}\n\n/** Fixed country + international + hideSelect: no country select at all. */\nexport function PhoneHideSelectDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-hide-select\"\n      country=\"AU\"\n      international\n      hideSelect\n      defaultValue=\"+61298765432\"\n    />\n  );\n}\n\n/** Validation: leave the field with an incomplete number to see the error. */\nexport function PhoneValidationDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-validation\"\n      defaultCountry=\"US\"\n      validate\n      invalidText=\"Enter a valid phone number\"\n      helperText=\"We only call about your order\"\n    />\n  );\n}\n\n/** Countries: a short list, in your order, and digits past the longest number refused. */\nexport function PhoneCountriesDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-countries\"\n      countries={[\"US\", \"CA\", \"GB\", \"AU\", \"VN\"]}\n      countryOptionsOrder={[\"VN\", \"...\"]}\n      defaultCountry=\"VN\"\n      limitMaxLength\n    />\n  );\n}\n",
+     "snippets": [
+      "phone-input-auto.html",
+      "phone-input-default-country.html",
+      "phone-input-default-value.html",
+      "phone-input-fixed-country.html",
+      "phone-input-fixed-international.html",
+      "phone-input-hide-select.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-phone.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" and \"@owlky/html/auto\", then \"@owlky/html/phone\". -->\n\n<!-- Validation -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-validate data-ok-default-country=\"US\" data-ok-invalid-text=\"Enter a valid phone number\">\n    <label data-ok-text-field-label for=\"phone-validation\">Phone number</label>\n    <div data-ok-text-field-control>\n      <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n        <div data-ok-select data-ok-display-empty>\n          <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-validation-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-validation-country-listbox\" aria-label=\"Country\">\n            <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇺🇸</span>\n            <span data-ok-list-item-text>\n              <span data-ok-list-item-text-primary>United States</span>\n              <span data-ok-list-item-text-secondary>US (+1)</span>\n            </span>\n          </div>\n          <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"US\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n          <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-validation-country-menu\" tabindex=\"-1\">\n            <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n            <ul data-ok-select-listbox role=\"listbox\" id=\"phone-validation-country-listbox\">\n            </ul>\n          </div>\n        </div>\n      </div>\n      <input autocomplete=\"tel\" id=\"phone-validation\" data-ok-text-field-input aria-describedby=\"phone-validation-helper-text\" type=\"tel\" placeholder=\"Enter phone number\" value=\"\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n    <div data-ok-text-field-helper id=\"phone-validation-helper-text\">We only call about your order</div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">-</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>\n\n<!-- Countries -->\n<div class=\"sb-phone-demo\">\n  <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-limit-max-length data-ok-default-country=\"VN\" data-ok-countries=\"US,CA,GB,AU,VN\" data-ok-country-options-order=\"VN,...\">\n    <label data-ok-text-field-label for=\"phone-countries\">Phone number</label>\n    <div data-ok-text-field-control>\n      <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n        <div data-ok-select data-ok-display-empty>\n          <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-countries-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-countries-country-listbox\" aria-label=\"Country\">\n            <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇻🇳</span>\n            <span data-ok-list-item-text>\n              <span data-ok-list-item-text-primary>Vietnam</span>\n              <span data-ok-list-item-text-secondary>VN (+84)</span>\n            </span>\n          </div>\n          <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"VN\">\n          <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n          <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-countries-country-menu\" tabindex=\"-1\">\n            <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n            <ul data-ok-select-listbox role=\"listbox\" id=\"phone-countries-country-listbox\">\n            </ul>\n          </div>\n        </div>\n      </div>\n      <input autocomplete=\"tel\" id=\"phone-countries\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"\">\n      <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n        <legend>\n          <span>Phone number</span>\n        </legend>\n      </fieldset>\n    </div>\n  </div>\n  <dl class=\"sb-phone-values\">\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">National:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-national\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">International:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-international\">-</dd>\n    </div>\n    <div class=\"sb-phone-row\">\n      <dt data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Raw:</dt>\n      <dd data-ok-typography data-ok-variant=\"subtitle2\" class=\"sb-phone-raw\">-</dd>\n    </div>\n  </dl>\n</div>\n\n<script type=\"module\">\nimport \"@owlky/html/phone\"; // or <script src=\"…/owlky-phone.js\"> after owlky.js\n\n// Show the number's forms under each field.\nfor (const demo of document.querySelectorAll(\".sb-phone-demo\")) {\n  demo.addEventListener(\"ok:phone-input:change\", (event) => {\n    const { national, international, value } = event.detail;\n    demo.querySelector(\".sb-phone-national\").textContent = national || \"-\";\n    demo.querySelector(\".sb-phone-international\").textContent = international || \"-\";\n    demo.querySelector(\".sb-phone-raw\").textContent = value || \"-\";\n  });\n}\n</script>",
+     "id": "components-phone-input--validation",
+     "name": "Validation",
+     "react": "import { phoneValueDetails } from \"@owlky/core/phone\";\nimport {\n  PhoneInput,\n  type PhoneInputChangeDetails,\n  type PhoneInputProps,\n  Typography,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/** The national, international and raw (E.164) forms of the number, as the field reports them. */\nfunction PhoneValues({ details }: { details: PhoneInputChangeDetails }) {\n  const rows: [string, string][] = [\n    [\"National\", details.national],\n    [\"International\", details.international],\n    [\"Raw\", details.value],\n  ];\n  return (\n    <dl className=\"sb-phone-values\">\n      {rows.map(([label, value]) => (\n        <div key={label} className=\"sb-phone-row\">\n          <Typography component=\"dt\" variant=\"body2\" color=\"textSecondary\">\n            {`${label}:`}\n          </Typography>\n          <Typography\n            component=\"dd\"\n            variant=\"subtitle2\"\n            className={`sb-phone-${label.toLowerCase()}`}\n          >\n            {value || \"-\"}\n          </Typography>\n        </div>\n      ))}\n    </dl>\n  );\n}\n\n/** A phone input with its values under it. */\nfunction PhoneDemo(props: PhoneInputProps & { id: string }) {\n  const [details, setDetails] = useState(() => phoneValueDetails(props.defaultValue ?? \"\"));\n  return (\n    <div className=\"sb-phone-demo\">\n      <PhoneInput\n        label=\"Phone number\"\n        placeholder=\"Enter phone number\"\n        fullWidth\n        onChange={(_value, next) => setDetails(next)}\n        {...props}\n      />\n      <PhoneValues details={details} />\n    </div>\n  );\n}\n\n/** Auto: no country at first; typing a number selects its country. */\nexport function PhoneAutoDemo() {\n  return <PhoneDemo id=\"phone-auto\" />;\n}\n\n/** Default value: an E.164 value selects its country and shows in national form. */\nexport function PhoneDefaultValueDemo() {\n  return <PhoneDemo id=\"phone-default-value\" defaultValue=\"+61298765432\" />;\n}\n\n/** Default country: national numbers are read as Germany's until another country is picked. */\nexport function PhoneDefaultCountryDemo() {\n  return <PhoneDemo id=\"phone-default-country\" defaultCountry=\"DE\" />;\n}\n\n/** Fixed country: the select is turned off. */\nexport function PhoneFixedCountryDemo() {\n  return <PhoneDemo id=\"phone-fixed-country\" country=\"AU\" defaultValue=\"+61298765432\" />;\n}\n\n/** Fixed country + international: the calling code stays in front. */\nexport function PhoneFixedInternationalDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-fixed-international\"\n      country=\"AU\"\n      international\n      defaultValue=\"+61298765432\"\n    />\n  );\n}\n\n/** Fixed country + international + hideSelect: no country select at all. */\nexport function PhoneHideSelectDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-hide-select\"\n      country=\"AU\"\n      international\n      hideSelect\n      defaultValue=\"+61298765432\"\n    />\n  );\n}\n\n/** Validation: leave the field with an incomplete number to see the error. */\nexport function PhoneValidationDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-validation\"\n      defaultCountry=\"US\"\n      validate\n      invalidText=\"Enter a valid phone number\"\n      helperText=\"We only call about your order\"\n    />\n  );\n}\n\n/** Countries: a short list, in your order, and digits past the longest number refused. */\nexport function PhoneCountriesDemo() {\n  return (\n    <PhoneDemo\n      id=\"phone-countries\"\n      countries={[\"US\", \"CA\", \"GB\", \"AU\", \"VN\"]}\n      countryOptionsOrder={[\"VN\", \"...\"]}\n      defaultCountry=\"VN\"\n      limitMaxLength\n    />\n  );\n}\n",
+     "snippets": [
+      "validation-countries.html",
+      "validation-invalid.html"
+     ]
+    }
+   ],
+   "storybookTitle": "Components/Phone input",
+   "summary": "Enter a phone number of any country: a country select with flags in the field, formatting as you type, an E.164 value (`+61298765432`) with its national and international forms, and an optional validation state for the helper text. Opt-in: the phone metadata (libphonenumber-js `min`, about 35 kB gzip) loads only with `@owlky/core/phone` (`@owlky/html/phone`, `owlky-phone.js`).",
+   "title": "Phone input"
+  },
+  {
+   "api": {
+    "css": [
+     {
       "dark": "28 37 46",
       "light": "255 255 255",
       "name": "--ok-bg-paper-channel"
@@ -62628,7 +63257,7 @@
      "title": "States / Behavior"
     },
     {
-     "body": "| Key | Action |\n|---|---|\n| ArrowDown / ArrowUp / Enter / Space / Alt+ArrowDown (closed) | Open on the selected option (else the first) |\n| Home / End (closed) | Open on the first / last option |\n| Printable character (closed) | Open on the first option after the selected one that starts with it |\n| ArrowDown / ArrowUp (open) | Next / previous option, wrapping (MUI MenuList) |\n| Home / End (open) | First / last option |\n| Printable characters (open) | Typeahead (500 ms buffer; a repeated letter cycles) |\n| Enter / Space (open) | Pick (multiple: toggle) |\n| Escape | Close; focus to the trigger |\n| Tab | Close (prevented, MUI); focus to the trigger |\nDisabled options and subheaders are skipped.",
+     "body": "| Key | Action |\n|---|---|\n| ArrowDown / ArrowUp / Enter / Space / Alt+ArrowDown (closed) | Open on the selected option (else the first) |\n| Home / End (closed) | Open on the first / last option |\n| Printable character (closed) | Open on the first option after the selected one that starts with it |\n| ArrowDown / ArrowUp (open) | Next / previous option, wrapping (MUI MenuList) |\n| Home / End (open) | First / last option |\n| Printable characters (open) | Typeahead (500 ms buffer; a repeated letter cycles) |\n| Enter / Space (open) | Pick (multiple: toggle) |\n| Escape | Close; focus to the trigger |\n| Tab | Close (prevented, MUI); focus to the trigger |\nDisabled options and subheaders are skipped. Typeahead reads an option's text without its\n`aria-hidden` parts (icons, the phone input's flags).",
      "id": "keyboard",
      "title": "Keyboard"
     },
@@ -69637,7 +70266,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |\n| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |\n| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |\n| InputBase `margin` (`dense`) | `size=\"small\"` | renamed | Owlky's `margin` is the outer margin of TextField |\n| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |\n| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n| `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |\n\nRelated reference features: copy to clipboard (4.20) and number input (4.24), sections below;\nphone input (4.25).",
+     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |\n| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |\n| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |\n| InputBase `margin` (`dense`) | `size=\"small\"` | renamed | Owlky's `margin` is the outer margin of TextField |\n| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |\n| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n| `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |\n\nRelated reference features: copy to clipboard (4.20) and number input (4.24), sections below;\nphone input (4.25): its own spec, `phone-input.md` (a TextField root with `data-ok-phone-input`,\nopt-in, ADR-0061).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -81199,6 +81828,72 @@
    "title": "Paper"
   },
   {
+   "component": "phone-input",
+   "id": "phone-input",
+   "kind": "component",
+   "sections": [
+    {
+     "body": "A phone input is a text field for phone numbers. A country select with flags sits at its start, the number is formatted as people type it, and the value is the number in international E.164 form, such as `+61298765432`. Typing a number that starts with `+` selects its country.\n\nThe phone input is a separate script so that pages without one don't download the phone numbering data (about 35 kB compressed). Load `owlky-phone.js` after `owlky.js`, or import `@owlky/html/phone` after `@owlky/html/auto`. In HTML, leave the country list empty: the script fills it. Without JavaScript, the field still works as a plain telephone input.",
+     "html": "<!-- Load once per page: the styles, the runtime, then the phone input -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-phone.js\" defer></script>\n\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input>\n  <label data-ok-text-field-label for=\"phone-auto\">Phone number</label>\n  <div data-ok-text-field-control>\n    <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n      <div data-ok-select data-ok-display-empty>\n        <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-auto-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-auto-country-listbox\" aria-label=\"Country\">\n          <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></circle><path d=\"M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"></path></svg></span>\n          <span data-ok-list-item-text>\n            <span data-ok-list-item-text-primary>International</span>\n          </span>\n        </div>\n        <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n        <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-auto-country-menu\" tabindex=\"-1\">\n          <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n          <ul data-ok-select-listbox role=\"listbox\" id=\"phone-auto-country-listbox\">\n          </ul>\n        </div>\n      </div>\n    </div>\n    <input autocomplete=\"tel\" id=\"phone-auto\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"\">\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Phone number</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>",
+     "id": "overview",
+     "react": "import { PhoneInput } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Contact() {\n  const [phone, setPhone] = useState(\"\");\n  return (\n    <PhoneInput\n      id=\"phone-auto\"\n      label=\"Phone number\"\n      placeholder=\"Enter phone number\"\n      fullWidth\n      value={phone}\n      onChange={setPhone}\n    />\n  );\n}",
+     "title": "Overview"
+    },
+    {
+     "body": "Set `defaultCountry` to the country most people use, such as `DE`: numbers typed without `+` are read as that country's, and people can still pick another country. Set `country` instead to accept one country only: the select is turned off and shows its flag.\n\nLimit the list with `countries`, and put the most common ones first with `countryOptionsOrder`, where `\"...\"` stands for the other countries. The list starts with an International option unless `addInternationalOption` is off. Country names come from the browser in the language of `locale`, English by default. `labels` replaces any of them, and `labels.country` names the select for screen readers.",
+     "html": "<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-default-country=\"DE\">\n  <label data-ok-text-field-label for=\"phone-default-country\">Phone number</label>\n  <div data-ok-text-field-control>\n    <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n      <div data-ok-select data-ok-display-empty>\n        <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-default-country-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-default-country-country-listbox\" aria-label=\"Country\">\n          <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇩🇪</span>\n          <span data-ok-list-item-text>\n            <span data-ok-list-item-text-primary>Germany</span>\n            <span data-ok-list-item-text-secondary>DE (+49)</span>\n          </span>\n        </div>\n        <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"DE\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n        <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-default-country-country-menu\" tabindex=\"-1\">\n          <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n          <ul data-ok-select-listbox role=\"listbox\" id=\"phone-default-country-country-listbox\">\n          </ul>\n        </div>\n      </div>\n    </div>\n    <input autocomplete=\"tel\" id=\"phone-default-country\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"\">\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Phone number</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>",
+     "id": "countries",
+     "react": "import { PhoneInput } from \"@owlky/react\";\n\nexport function Delivery() {\n  return (\n    <PhoneInput\n      id=\"phone-default-country\"\n      label=\"Phone number\"\n      placeholder=\"Enter phone number\"\n      fullWidth\n      defaultCountry=\"DE\"\n      countries={[\"DE\", \"AT\", \"CH\", \"FR\", \"GB\"]}\n      countryOptionsOrder={[\"DE\", \"AT\", \"CH\"]}\n    />\n  );\n}",
+     "title": "Choose the countries"
+    },
+    {
+     "body": "By default, a number of the selected country shows in national form, such as `(02) 9876 5432`. Turn on `international` to show `+61 2 9876 5432` instead. With a fixed `country`, the calling code then stays in front of the number: deleting it puts it back. Turn off `countryCallingCodeEditable` for the same behavior with a country people can change. Add `hideSelect` to leave the select out, for example when the country is fixed.\n\nTurn on `limitMaxLength` to refuse digits past the longest number of the country.",
+     "html": "<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-international data-ok-country=\"AU\">\n  <label data-ok-text-field-label for=\"phone-fixed-international\">Phone number</label>\n  <div data-ok-text-field-control>\n    <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n      <div data-ok-select data-ok-display-empty>\n        <div data-ok-select-display role=\"combobox\" tabindex=\"-1\" id=\"phone-fixed-international-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-fixed-international-country-listbox\" aria-label=\"Country\" aria-disabled=\"true\">\n          <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇦🇺</span>\n          <span data-ok-list-item-text>\n            <span data-ok-list-item-text-primary>Australia</span>\n            <span data-ok-list-item-text-secondary>AU (+61)</span>\n          </span>\n        </div>\n        <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" disabled value=\"AU\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n        <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-fixed-international-country-menu\" tabindex=\"-1\">\n          <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n          <ul data-ok-select-listbox role=\"listbox\" id=\"phone-fixed-international-country-listbox\">\n          </ul>\n        </div>\n      </div>\n    </div>\n    <input autocomplete=\"tel\" id=\"phone-fixed-international\" data-ok-text-field-input type=\"tel\" placeholder=\"Enter phone number\" value=\"+61 2 9876 5432\">\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Phone number</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>",
+     "id": "international",
+     "react": "import { PhoneInput } from \"@owlky/react\";\n\nexport function Office() {\n  return (\n    <PhoneInput\n      id=\"phone-fixed-international\"\n      label=\"Phone number\"\n      placeholder=\"Enter phone number\"\n      fullWidth\n      country=\"AU\"\n      international\n      defaultValue=\"+61298765432\"\n    />\n  );\n}",
+     "title": "Show the international form"
+    },
+    {
+     "body": "The value is always E.164, which servers and phone APIs accept: store it, and send it back as `value` or `defaultValue`. The field reports the other forms with each change: `national`, `international`, the number's `country`, and whether it is `valid` (a possible length and leading digits for its country) or only `possible` (a possible length). An empty field has the value `\"\"`.\n\nTurn on `validate` to mark an invalid number for people: once they leave the field, a number that isn't valid shows the error colors, sets `aria-invalid` and replaces the helper text with `invalidText`. Validation uses compact numbering data, so check numbers again on your server with full data when they must be exact.",
+     "html": "<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\" data-ok-phone-input data-ok-validate data-ok-default-country=\"US\" data-ok-invalid-text=\"Enter a valid phone number\">\n  <label data-ok-text-field-label for=\"phone-validation\">Phone number</label>\n  <div data-ok-text-field-control>\n    <div data-ok-text-field-adornment=\"start\" data-ok-phone-input-country>\n      <div data-ok-select data-ok-display-empty>\n        <div data-ok-select-display role=\"combobox\" tabindex=\"0\" id=\"phone-validation-country\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"phone-validation-country-listbox\" aria-label=\"Country\">\n          <span data-ok-list-item-icon data-ok-phone-input-flag aria-hidden=\"true\">🇺🇸</span>\n          <span data-ok-list-item-text>\n            <span data-ok-list-item-text-primary>United States</span>\n            <span data-ok-list-item-text-secondary>US (+1)</span>\n          </span>\n        </div>\n        <input data-ok-select-input aria-hidden=\"true\" tabindex=\"-1\" placeholder=\" \" value=\"US\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" data-ok-select-icon><path d=\"m7 10 5 5 5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>\n        <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"phone-validation-country-menu\" tabindex=\"-1\">\n          <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n          <ul data-ok-select-listbox role=\"listbox\" id=\"phone-validation-country-listbox\">\n          </ul>\n        </div>\n      </div>\n    </div>\n    <input autocomplete=\"tel\" id=\"phone-validation\" data-ok-text-field-input aria-describedby=\"phone-validation-helper-text\" type=\"tel\" placeholder=\"Enter phone number\" value=\"\">\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Phone number</span>\n      </legend>\n    </fieldset>\n  </div>\n  <div data-ok-text-field-helper id=\"phone-validation-helper-text\">We only call about your order</div>\n</div>\n\n<script type=\"module\">\n  // Read the value and its forms after each change.\n  document.getElementById(\"phone-validation\").closest(\"[data-ok-phone-input]\")\n    .addEventListener(\"ok:phone-input:change\", (event) => {\n      const { value, national, valid } = event.detail;\n      console.log(value, national, valid);\n    });\n</script>",
+     "id": "values",
+     "react": "import { PhoneInput } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Callback() {\n  const [phone, setPhone] = useState(\"\");\n  const [national, setNational] = useState(\"\");\n  return (\n    <>\n      <PhoneInput\n        id=\"phone-validation\"\n        label=\"Phone number\"\n        placeholder=\"Enter phone number\"\n        fullWidth\n        defaultCountry=\"US\"\n        validate\n        invalidText=\"Enter a valid phone number\"\n        helperText=\"We only call about your order\"\n        value={phone}\n        onChange={(value, details) => {\n          setPhone(value);\n          setNational(details.national);\n        }}\n      />\n      <p>{national}</p>\n    </>\n  );\n}",
+     "title": "Read the values and validate"
+    },
+    {
+     "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. The phone input also takes every text field option, such as `variant`, `size` and `helperText`.",
+     "id": "options",
+     "title": "Options"
+    },
+    {
+     "body": "These props set the value and the texts. Country names and other numbering data go to `createPhoneInput()` in HTML.",
+     "id": "props",
+     "title": "Content and behavior"
+    },
+    {
+     "body": "- **`ok:phone-input:change`** fires on the root after the number changed, with `detail.value` (E.164, `\"\"` when empty), `national`, `international`, `country`, `valid` and `possible`.\n- **`ok:phone-input:countrychange`** fires after the selected country changed, with `detail.country` (`undefined` for International).\n- **Instance:** `runtime.get(element, \"phone-input\")` returns `{ value, setValue(value), country, setCountry(country), details }`. The setters fire no events.\n- **React:** `onChange(value, details)` and `onCountryChange(country)`. Use `value` to control the field, or `defaultValue` to let it keep its own state. The `ref` and every other prop, such as `name` or `onBlur`, go to the input.\n- **HTML with other data:** `createPhoneInput({ metadata, labels })` returns a definition to register instead of loading `owlky-phone.js`, for example with the libphonenumber-js `max` data for strict validation.",
+     "id": "events",
+     "title": "Events and methods"
+    },
+    {
+     "body": "The country select and the input are two stops in the Tab order. The select works like any Select: type the start of a country's name to move to it.",
+     "id": "keyboard",
+     "title": "Keyboard"
+    },
+    {
+     "body": "- The input is a telephone input named by its label, with `autocomplete=\"tel\"` so browsers can fill in a saved number.\n- The country select is a combobox named \"Country\" (`labels.country`). Flags are hidden from screen readers: the selected country's name and calling code are read as its value.\n- Flags are emoji, so they need no images. Systems without flag emoji, such as Windows, show the two-letter country code instead.\n- With `validate`, the error state is `aria-invalid` and the helper text says what is wrong. Errors appear only after people leave the field, not while they type.",
+     "id": "accessibility",
+     "title": "Accessibility"
+    },
+    {
+     "body": "The complete API of Phone input, generated from its source code. Each React component and HTML part has its own tables:\n\n- **React props:** the props of the React component, with their types and defaults. Props that aren't listed go to the native element.\n- **HTML attributes:** the options, written as `data-ok-*` attributes, with their values and defaults.\n- **Parts:** the elements inside the part, the states and values the runtime writes, and the triggers that act on the component.\n- **Events:** the `ok:*` events the HTML runtime dispatches, with their `detail`.\n- **Methods:** the instance that `runtime.get(element, name)` returns.\n\n**Types** defines the type names that the tables use. **CSS variables** lists the tokens that the styles read.",
+     "id": "api",
+     "title": "API reference"
+    }
+   ],
+   "title": "Phone input"
+  },
+  {
    "component": "popover",
    "id": "popover",
    "kind": "component",
@@ -83244,7 +83939,6 @@
   "data-ok-linear-progress-dashed": "data-ok-linear-progress",
   "data-ok-list-item-avatar": "data-ok-list-item",
   "data-ok-list-item-expand-icon": "data-ok-list-item",
-  "data-ok-list-item-icon": "data-ok-list-item",
   "data-ok-list-item-secondary-action": "data-ok-list-item",
   "data-ok-list-item-text-primary": "data-ok-list-item-text",
   "data-ok-list-item-text-secondary": "data-ok-list-item-text",
@@ -83293,6 +83987,8 @@
   "data-ok-organization-chart-spinner": "data-ok-organization-chart",
   "data-ok-pagination-ellipsis": "data-ok-pagination",
   "data-ok-pagination-item": "data-ok-pagination",
+  "data-ok-phone-input-country": "data-ok-phone-input",
+  "data-ok-phone-input-flag": "data-ok-phone-input",
   "data-ok-popover-arrow": "data-ok-popover",
   "data-ok-radio-icon": "data-ok-radio",
   "data-ok-radio-input": "data-ok-radio",

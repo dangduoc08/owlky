@@ -122,6 +122,13 @@ const countdownTrigger = (trigger) => (markup) =>
     tag.replace(/>$/, ` data-ok-countdown-${trigger}="${id}">`),
   );
 
+/**
+ * Phone input (ADR-0061): the runtime builds the country options from its metadata, so the
+ * snippet keeps the listbox empty (React renders every country).
+ */
+const phoneSnippet = (markup) =>
+  markup.replace(/(<ul data-ok-select-listbox=""[^>]*>)[\s\S]*?(<\/ul>)/g, "$1$2");
+
 /** [component, demo file, export, snippet name, HTML transform?, markup appended as written?] */
 const DEMOS = [
   [
@@ -195,6 +202,17 @@ const DEMOS = [
   ["radio", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],
   ["checkbox", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],
   ["avatar", "color-preview-demo.tsx", "ColorPreviewDemo", "color-preview-group"],
+  // Phone input (roadmap 4.25): the React render with an empty country list.
+  ...[
+    ["PhoneAutoDemo", "phone-input-auto"],
+    ["PhoneDefaultValueDemo", "phone-input-default-value"],
+    ["PhoneDefaultCountryDemo", "phone-input-default-country"],
+    ["PhoneFixedCountryDemo", "phone-input-fixed-country"],
+    ["PhoneFixedInternationalDemo", "phone-input-fixed-international"],
+    ["PhoneHideSelectDemo", "phone-input-hide-select"],
+    ["PhoneValidationDemo", "validation-invalid"],
+    ["PhoneCountriesDemo", "validation-countries"],
+  ].map(([name, snippet]) => ["phone-input", "phone-input-demos.tsx", name, snippet, phoneSnippet]),
 ];
 
 const only = process.argv.slice(2);

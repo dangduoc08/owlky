@@ -81,7 +81,7 @@ The paper stays 16px inside the viewport; long menus scroll inside it.
 
 ## Keyboard / Accessibility
 Opening focuses the selected (or first) enabled item. ArrowDown / ArrowUp (wrap), Home, End,
-typeahead (500 ms buffer; a repeated letter cycles), Enter / Space choose, Escape closes (focus
+typeahead (500 ms buffer; a repeated letter cycles; `aria-hidden` parts of an item are left out), Enter / Space choose, Escape closes (focus
 returns to the trigger), Tab closes. Disabled items are skipped.
 
 Submenus (core `submenuKeyAction`, `createSubmenuHover`): ArrowRight, Enter, Space or a click on

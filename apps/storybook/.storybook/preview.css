@@ -2039,3 +2039,27 @@
 .sb-card-choices [data-ok-card-action-area][aria-pressed="true"] {
   background-color: var(--ok-action-selected);
 }
+
+/* Phone input demos: a field with its values under it (layout only). */
+.sb-phone-demo {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  width: min(100%, 340px);
+}
+
+.sb-phone-values {
+  display: grid;
+  gap: calc(var(--ok-spacing) * 2);
+  margin: 0;
+}
+
+.sb-phone-row {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  align-items: baseline;
+}
+
+.sb-phone-row > dd {
+  margin: 0;
+}

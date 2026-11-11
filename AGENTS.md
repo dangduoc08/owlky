@@ -807,6 +807,21 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   controller keeps a pending focus whose row is in `rowList` but not rendered yet (React renders
   after the key), and drops it only for rows that went away. Downloads render the layout again
   without a window (`exportGantt(root, layout, format)`), colors from computed styles.
+- Phone input (ADR-0061): libphonenumber-js is reached only through `@owlky/core/phone` (Storybook
+  aliases it) and the opt-in HTML entries (`@owlky/html/phone`, `owlky-phone.js`, `phone-input` in
+  `OPT_IN`); `check-size.mjs` fails if `owlky.js` holds the metadata (`country_calling_codes`). The
+  option schema stays in `@owlky/core` (no metadata). The root is a TextField with
+  `data-ok-phone-input`; the country select is a bare Select (`SelectRoot host="select"`) in a
+  `div` start adornment, styled by `phone-input.css` only. HTML snippets keep the listbox empty
+  (`demo-snippets.mjs` strips the options): the runtime builds MenuItem / ListItemIcon /
+  ListItemText options with DOM methods in React's attribute order, and reads the country from the
+  Select's hidden input. Country names come from `Intl.DisplayNames` (`locale`, default `en`):
+  never hard-code an engine's name in a cross-engine test. `getCountryCallingCode`'s shared codes
+  (+1, +44) detect no country while typing: tests use unique codes (+84, +61). The API reference's
+  sentence splitter cuts at "E.164" (a dot inside a word): JSDoc says "international form" instead.
+  Validation tests leave the field with Shift+Tab (Firefox keeps the focus on a last control).
+  Menu / Select typeahead (`createTypeahead`) skips `aria-hidden` descendants, so a flag emoji
+  before the name doesn't stop "aus" from reaching Australia.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

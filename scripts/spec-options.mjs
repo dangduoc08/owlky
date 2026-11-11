@@ -32,6 +32,7 @@ const SPECS = {
   "form-helper-text": "form-control.md",
   "text-field": "text-field.md",
   "number-field": "text-field.md",
+  "phone-input": "phone-input.md",
   select: "select.md",
   "input-label": "select.md",
   avatar: "avatar.md",

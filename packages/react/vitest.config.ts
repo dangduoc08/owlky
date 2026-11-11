@@ -17,6 +17,9 @@ export default defineProject({
       "dayjs/plugin/utc.js",
       "monaco-editor",
       "@owlky/core > maplibre-gl",
+      // The phone input (ADR-0061).
+      "@owlky/core > libphonenumber-js/core",
+      "@owlky/core > libphonenumber-js/min/metadata",
     ],
   },
 });

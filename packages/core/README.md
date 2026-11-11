@@ -11,6 +11,8 @@ Owlky Monaco themes and `loader`, the only path to Monaco; it imports `monaco-ed
 ADR-0034).
 `@owlky/core/markdown` (`markdownTree`, `markdownTreeAsync`, `defaultUrlTransform`, the only path
 to unified / remark / rehype, ADR-0035),
+`@owlky/core/phone` (`phoneInputChange`, `phoneValueDetails`, `phoneCountryOptions`,
+`createPhoneInputController`, the only path to libphonenumber-js and its `min` metadata, ADR-0061),
 `@owlky/core/map` (`createMapController`, `setMapWorkerUrl`, the only path to MapLibre GL JS,
 ADR-0025) and `@owlky/core/map-worker.js` (MapLibre's worker, for `setMapWorkerUrl`) are opt-in the
 same way. `@owlky/core/illustrations` holds the illustration set as data, one export per picture

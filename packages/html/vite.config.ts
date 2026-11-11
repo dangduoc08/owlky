@@ -5,6 +5,7 @@ import { defineConfig, type UserConfig } from "vite";
 // `vite build` → owlky.js (runtime + components); `vite build --mode editor` → owlky-editor.js
 // (the Editor and Tiptap, ADR-0023; loaded after owlky.js, it shares its runtime).
 // `--mode markdown` → owlky-markdown.js (Markdown and unified, ADR-0035; loaded after owlky.js).
+// `--mode phone` → owlky-phone.js (the phone input and libphonenumber-js, ADR-0061; after owlky.js).
 // `--mode illustrations` → owlky-illustrations.js (the illustration set and its runtime, ADR-0041).
 // `--mode map` → owlky-map.js (the Map and MapLibre, ADR-0025; loaded after owlky.js too).
 // The Code editor (ADR-0034): `--mode code-editor` → owlky-code-editor.js (the runtime definitions
@@ -35,6 +36,7 @@ export default defineConfig(({ mode }): UserConfig => {
     });
   if (mode === "markdown")
     return iife("src/cdn-markdown.ts", "OwlkyMarkdownBundle", "owlky-markdown.js");
+  if (mode === "phone") return iife("src/cdn-phone.ts", "OwlkyPhoneBundle", "owlky-phone.js");
   if (mode === "illustrations")
     return iife("src/cdn-illustrations.ts", "OwlkyIllustrationsBundle", "owlky-illustrations.js");
   if (mode === "map")

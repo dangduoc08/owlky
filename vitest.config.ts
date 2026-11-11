@@ -21,6 +21,7 @@ export default defineConfig({
         "packages/html/src/monaco-stub.ts",
         "packages/html/src/cdn-map.ts",
         "packages/html/src/cdn-markdown.ts",
+        "packages/html/src/cdn-phone.ts",
         // The stdio entry: covered by the packed smoke test (pnpm smoke:mcp).
         "packages/mcp/src/cli.ts",
       ],
@@ -100,6 +101,9 @@ export default defineConfig({
         "packages/core/src/markdown/**": COMPONENT_THRESHOLDS,
         "packages/react/src/markdown/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/markdown/**": COMPONENT_THRESHOLDS,
+        "packages/core/src/phone/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/phone-input/**": COMPONENT_THRESHOLDS,
+        "packages/html/src/components/phone-input/**": COMPONENT_THRESHOLDS,
         "packages/core/src/pickers/**": COMPONENT_THRESHOLDS,
         "packages/core/src/adapters/**": COMPONENT_THRESHOLDS,
         "packages/react/src/accordion/**": COMPONENT_THRESHOLDS,

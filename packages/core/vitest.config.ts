@@ -17,6 +17,10 @@ export default defineProject({
       "monaco-editor",
       // The Map (ADR-0025).
       "maplibre-gl",
+      // The phone input (ADR-0061).
+      "libphonenumber-js/core",
+      "libphonenumber-js/min/metadata",
+      "libphonenumber-js/max/metadata",
     ],
   },
 });
