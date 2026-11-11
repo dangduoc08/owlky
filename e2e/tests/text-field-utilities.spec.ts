@@ -2,7 +2,8 @@ import { expect, type Page, test } from "@playwright/test";
 import { implementations, openStory, storyId } from "./helpers.js";
 
 /**
- * Text field utilities (roadmap batch F): copy to clipboard (4.20) in both implementations.
+ * Text field utilities (roadmap batch F): copy to clipboard (4.20) and number input (4.24) in
+ * both implementations.
  * The clipboard is stubbed before the page loads: a real write could open a browser prompt.
  */
 async function stubClipboard(page: Page, refuse = false) {
@@ -79,3 +80,86 @@ for (const impl of implementations) {
     });
   });
 }
+
+for (const impl of implementations) {
+  test.describe(`text field: number input (${impl})`, () => {
+    test("the buttons step the value and stop at min", async ({ page }) => {
+      await openStory(page, storyId(impl, "text-field", "number-input"));
+      const field = page.getByRole("spinbutton", { name: "Quantity" });
+      const root = page.locator("[data-ok-number-field]").first();
+      const decrease = root.getByRole("button", { name: "Decrease" });
+      const increase = root.getByRole("button", { name: "Increase" });
+      await expect(field).toHaveValue("0");
+      await expect(decrease).toBeDisabled();
+      await increase.click();
+      await increase.click();
+      await expect(field).toHaveValue("2");
+      await expect(field).toHaveAttribute("aria-valuenow", "2");
+      await decrease.click();
+      await expect(field).toHaveValue("1");
+      await expect(decrease).toBeEnabled();
+      // The buttons stay out of the tab order: Tab from the field leaves the group.
+      await field.focus();
+      await page.keyboard.press("Tab");
+      await expect(increase).not.toBeFocused();
+    });
+
+    test("the keys step, jump to the bounds and typed text commits", async ({ page }) => {
+      await openStory(page, storyId(impl, "text-field", "number-input"));
+      const field = page.getByRole("spinbutton", { name: "Bedrooms" }).first();
+      await field.focus();
+      await page.keyboard.press("ArrowUp");
+      await expect(field).toHaveValue("1");
+      await page.keyboard.press("End");
+      await expect(field).toHaveValue("10");
+      await expect(page.getByRole("button", { name: "Increase" }).nth(1)).toBeDisabled();
+      await page.keyboard.press("PageDown");
+      await expect(field).toHaveValue("0");
+      await page.keyboard.press("Shift+ArrowUp");
+      await expect(field).toHaveValue("10");
+      await page.keyboard.press("Home");
+      await expect(field).toHaveValue("0");
+      await field.fill("25");
+      await page.keyboard.press("Enter");
+      await expect(field).toHaveValue("10");
+      await field.fill("x");
+      // Shift+Tab: Firefox keeps the focus when Tab leaves the page's last control.
+      await page.keyboard.press("Shift+Tab");
+      await expect(field).toHaveValue("10");
+      await expect(field).toHaveAccessibleDescription("Helper text");
+    });
+
+    test("a disabled field ignores its buttons", async ({ page }) => {
+      await openStory(page, storyId(impl, "text-field", "number-input"));
+      const field = page.getByRole("spinbutton", { name: "Bedrooms" }).nth(1);
+      await expect(field).toBeDisabled();
+      const root = page.locator("[data-ok-number-field]").nth(2);
+      await expect(root.getByRole("button", { name: "Increase" })).toBeDisabled();
+      await expect(root.getByRole("button", { name: "Decrease" })).toBeDisabled();
+    });
+  });
+}
+
+test("touch: tapping the number buttons steps the value", async ({ browser, browserName }) => {
+  test.skip(browserName !== "chromium", "Touch emulation (isMobile) is Chromium-only.");
+  const context = await browser.newContext({
+    viewport: { width: 375, height: 812 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  for (const impl of implementations) {
+    const page = await context.newPage();
+    await openStory(page, storyId(impl, "text-field", "number-input"));
+    const root = page.locator("[data-ok-number-field]").first();
+    await root.getByRole("button", { name: "Increase" }).tap();
+    await expect(root.getByRole("spinbutton")).toHaveValue("1");
+    const box = await root.getByRole("button", { name: "Increase" }).boundingBox();
+    // Touch targets of at least 24 × 24 px (WCAG 2.5.8).
+    expect(box?.width).toBeGreaterThanOrEqual(24);
+    expect(box?.height).toBeGreaterThanOrEqual(24);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await context.close();
+});

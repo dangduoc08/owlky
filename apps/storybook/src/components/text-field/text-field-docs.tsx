@@ -1,4 +1,4 @@
-import { textFieldOptions } from "@owlky/core";
+import { numberFieldOptions, textFieldOptions } from "@owlky/core";
 import textFieldApi from "@owlky/docs-content/api/text-field.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
@@ -7,13 +7,15 @@ import {
   Input,
   InputAdornment,
   InputBase,
+  NumberField,
   OutlinedInput,
   TextField,
 } from "@owlky/react";
 import { useState } from "react";
 import copyButtonGroup from "../../../../../packages/html/src/components/text-field/examples/copy-to-clipboard-button.html?raw";
+import numberHelperGroup from "../../../../../packages/html/src/components/text-field/examples/number-input-helper.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
-import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { CopyButtonDemo, CopyDoubleClickDemo } from "./copy-demo.js";
 import { EyeIcon, PersonIcon } from "./text-field-examples.js";
 
@@ -288,9 +290,40 @@ export function CopyLink() {
 }`,
   },
   {
+    id: "number",
+    title: "Enter a number",
+    body: `Use \`NumberField\` for a number that people adjust as often as they type it, such as a quantity or a number of guests. The value sits between a decrement and an increment button, and the input is a spin button: Arrow Up and Arrow Down change the value by \`step\`, Page Up and Page Down by \`largeStep\`, and Home and End go to \`min\` and \`max\`. Hold Shift for \`largeStep\`, or Alt for \`smallStep\`.
+
+The value is a number, or \`null\` when the field is empty. People can type freely: \`onValueChange(value, details)\` reports each text that is a number, and the field shows the value again when they press Enter or leave it. A value outside \`min\` and \`max\` is clamped then, unless you set \`allowOutOfRange\`. A button turns off when the value reaches its bound, and both turn off when the field is disabled or read-only.
+
+In HTML, add \`data-ok-number-field\` and the bounds to a text field root, \`role="spinbutton"\` and the \`aria-value*\` attributes to its input, and the two buttons in its adornments. The script keeps the value, the text, the \`aria-value*\` attributes and the buttons in step, and fires \`ok:number-field:change\` and \`ok:number-field:commit\`.`,
+    html: `<!-- Load once per page: the script handles the buttons and the keys -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+${numberHelperGroup.trimEnd()}`,
+    react: `import { NumberField } from "@owlky/react";
+import { useState } from "react";
+
+export function Bedrooms() {
+  const [bedrooms, setBedrooms] = useState<number | null>(0);
+  return (
+    <NumberField
+      id="number-helper"
+      label="Bedrooms"
+      value={bedrooms}
+      onValueChange={setBedrooms}
+      min={0}
+      max={10}
+      helperText="Helper text"
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
-    body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
+    body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The second table lists the options a number field adds to its text field root.",
   },
   {
     id: "props",
@@ -300,13 +333,13 @@ export function CopyLink() {
   {
     id: "events",
     title: "Events and methods",
-    body: `- **HTML:** the input fires the native \`input\` and \`change\` events. After each copy, a copy trigger fires \`ok:clipboard:copy\` with \`detail.text\`, \`detail.ok\` and, when the copy failed, \`detail.reason\`. Its instance method \`copy()\` copies as a press does.
-- **React:** \`onChange(value)\` is called with the new value. \`useCopyToClipboard()\` returns \`copy(text)\` and \`copiedText\`, the text of the last successful copy. Use \`value\` to control the field, or \`defaultValue\` to let it keep its own state. The \`ref\` and every other prop, such as \`name\`, \`type\` or \`autoComplete\`, go to the input.`,
+    body: `- **HTML:** the input fires the native \`input\` and \`change\` events. A number field fires \`ok:number-field:change\` with \`detail.value\` and \`detail.reason\` (\`preventDefault()\` refuses the value) and \`ok:number-field:commit\`. Its instance has \`getValue()\`, \`setValue(value)\`, \`stepUp(amount)\` and \`stepDown(amount)\`. After each copy, a copy trigger fires \`ok:clipboard:copy\` with \`detail.text\`, \`detail.ok\` and, when the copy failed, \`detail.reason\`. Its instance method \`copy()\` copies as a press does.
+- **React:** \`onChange(value)\` is called with the new value. \`useCopyToClipboard()\` returns \`copy(text)\` and \`copiedText\`, the text of the last successful copy. \`NumberField\` calls \`onValueChange(value, details)\` and \`onValueCommitted(value, details)\`. Use \`value\` to control the field, or \`defaultValue\` to let it keep its own state. The \`ref\` and every other prop, such as \`name\`, \`type\` or \`autoComplete\`, go to the input.`,
   },
   {
     id: "keyboard",
     title: "Keyboard",
-    body: "The field is a native input, textarea or select, so the browser provides the keyboard behavior: Tab moves focus, and a select opens with Space, Enter or the arrow keys.",
+    body: "The field is a native input, textarea or select, so the browser provides the keyboard behavior: Tab moves focus, and a select opens with Space, Enter or the arrow keys. A number field's input is a spin button with these keys. Its buttons aren't in the tab order, because the keys do the same.",
   },
   {
     id: "accessibility",
@@ -317,6 +350,7 @@ export function CopyLink() {
 - The resting label and the helper text use the secondary text color, and error text uses the error text tone: each has a contrast ratio of at least 4.5:1. The error border uses the brand error color.
 - Focus shows as a 2px border, line or ring in the text color.
 - Set \`autoComplete\` (such as \`email\` or \`current-password\`) so browsers and password managers can fill the field.
+- A number field's input has the \`spinbutton\` role, so screen readers announce its value, minimum and maximum. Its buttons are named "Decrease" and "Increase" (\`decrementLabel\` and \`incrementLabel\` translate them) and point at the input with \`aria-controls\`.
 - A copy changes nothing on the screen: announce its result, for example with a toast, whose live region screen readers read. Give icon-only copy buttons a name such as "Copy", and offer a button wherever a double click copies.`,
   },
   apiReferenceSection(textFieldApi),
@@ -451,7 +485,32 @@ const PREVIEWS = {
       <CopyDoubleClickDemo />
     </Preview>
   ),
-  options: () => <OptionsTable schema={textFieldOptions} />,
+  number: () => (
+    <Preview>
+      <NumberField size="small" aria-label="Quantity" defaultValue={0} min={0} />
+      <NumberField label="Bedrooms" defaultValue={0} min={0} max={10} helperText="Up to 10" />
+      <NumberField label="Bedrooms" defaultValue={0} min={0} disabled />
+    </Preview>
+  ),
+  options: () => (
+    <>
+      <OptionsTable schema={textFieldOptions} />
+      <OptionsTable schema={numberFieldOptions} />
+    </>
+  ),
+  keyboard: () => (
+    <KeyboardTable
+      rows={[
+        [
+          "Arrow Up / Arrow Down",
+          "Number field: steps up or down by step. With Shift: largeStep. With Alt: smallStep.",
+        ],
+        ["Page Up / Page Down", "Number field: steps up or down by largeStep."],
+        ["Home / End", "Number field: goes to min or max. Without that bound, moves the caret."],
+        ["Enter", "Number field: shows the typed number as the field's value."],
+      ]}
+    />
+  ),
   props: () => (
     <PropsTable
       label="Text field content props"
@@ -533,6 +592,30 @@ const PREVIEWS = {
           html: "any element with data-ok-text-field-input",
           type: "ElementType",
           description: "Rendered instead of the `<input>`, with the input's props and `ref`.",
+        },
+        {
+          react: "NumberField value / defaultValue",
+          html: "the input's value",
+          type: "number | null",
+          description: "The number; `null` when the field is empty.",
+        },
+        {
+          react: "onValueChange / onValueCommitted",
+          html: "ok:number-field:change / ok:number-field:commit",
+          type: "(value, details) => void",
+          description:
+            "Each new value with `details.reason`, and the end of a change (a step, Enter, leaving the input).",
+        },
+        {
+          react: "decrementLabel / incrementLabel",
+          html: "aria-label on the buttons",
+          type: "string",
+          description: "The buttons' names. Default `Decrease` and `Increase`.",
+        },
+        {
+          html: "data-ok-number-field-decrement / data-ok-number-field-increment",
+          type: "attribute",
+          description: "The buttons in the adornments that step the value.",
         },
         {
           react: "useCopyToClipboard()",

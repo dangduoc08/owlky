@@ -164,6 +164,10 @@ const DEMOS = [
     "copy-to-clipboard-double-click",
     copyDoubleClickSnippet,
   ],
+  // Number input (roadmap 4.24): the React render is the HTML markup (the runtime reads it).
+  ["text-field", "number-demo.tsx", "NumberBasicDemo", "number-input-basic"],
+  ["text-field", "number-demo.tsx", "NumberHelperDemo", "number-input-helper"],
+  ["text-field", "number-demo.tsx", "NumberDisabledDemo", "number-input-disabled"],
 ];
 
 const only = process.argv.slice(2);
@@ -242,6 +246,8 @@ demos.forEach(([component, , , name, transform, appended], i) => {
   snippet = snippet
     .replace(/ (data-ok-[a-z-]+)=""/g, " $1")
     .replace(/ (disabled|hidden|checked|inert)=""/g, " $1")
+    // React's static markup keeps these two camelCase; HTML writes them in lower case.
+    .replace(/ (autoComplete|inputMode)=/g, (_, name) => ` ${name.toLowerCase()}=`)
     .replace(/(<(?:img|input)\b[^>]*?)\/>/g, "$1>");
   const out = resolve(root, `packages/html/src/components/${component}/examples`);
   mkdirSync(out, { recursive: true });

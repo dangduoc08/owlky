@@ -4,6 +4,8 @@ import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
 import { type GroupFiles, htmlSetup, snippetStory } from "../shared/snippets.js";
 import { CopyButtonDemo, CopyDoubleClickDemo } from "./copy-demo.js";
 import copySource from "./copy-demo.tsx?raw";
+import { NumberBasicDemo, NumberDisabledDemo, NumberHelperDemo } from "./number-demo.js";
+import numberSource from "./number-demo.tsx?raw";
 import { TextFieldDocs } from "./text-field-docs.js";
 import { GROUP_FILES, TEXT_FIELD_CONTROLS, variantGroups } from "./text-field-examples.js";
 
@@ -77,4 +79,32 @@ export const CopyToClipboard: StoryObj = {
     ),
   }),
   name: "Copy to clipboard",
+};
+
+const NUMBER_FILES: GroupFiles = [
+  ["Basic", "basic"],
+  ["With helper text", "helper"],
+  ["Disabled", "disabled"],
+];
+
+/** Number input (roadmap 4.24): a spin button with decrement / increment buttons. */
+export const NumberInput: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "number-input",
+      NUMBER_FILES,
+      htmlSetup(["text-field.css", "icon-button.css"], true),
+    ),
+    react: reactGroupsStory(
+      [
+        { title: "Basic", content: <NumberBasicDemo /> },
+        { title: "With helper text", content: <NumberHelperDemo /> },
+        { title: "Disabled", content: <NumberDisabledDemo /> },
+      ],
+      undefined,
+      numberSource,
+    ),
+  }),
+  name: "Number input",
 };

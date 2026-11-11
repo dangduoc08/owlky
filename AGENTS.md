@@ -871,3 +871,17 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   (`apps/storybook/src/helpers/snippet-markup.ts`, snippets imported with `?raw` by relative path),
   with page helpers on top (`gridOf()` keeps a grid's first rows, `htmlLightbox()`, `htmlEditor()`).
   An icon an example needs goes in the checker's lucide list after checking lucide.dev.
+- Copy to clipboard (4.20): core `copyToClipboard` checks `navigator.userActivation` before any
+  await and never throws. Tests stub every path (`Object.defineProperty(navigator, "clipboard",
+  …)`, `document.execCommand`, `userActivation` getter): a real write can open a prompt that
+  Firefox waits on forever. The HTML `clipboard` runtime and its `data-ok-clipboard-*` triggers
+  are HTML-only hooks (parity `IGNORED`); React demos copy from click handlers. React tests show
+  their toaster at `bottom-left`: a toast at the top right covers the field's end buttons.
+- Number field (4.24): React reports typing from its own `onChange`, never from a native `input`
+  listener that sets state. During the native event that update re-renders the controlled input
+  first, React's value tracker then matches the DOM and `onChange` never fires: the keystroke is
+  undone. Hence `createNumberFieldController(root, callbacks, { input: false })` and the shared
+  `typedNumberChange`. Step options avoid `data-ok-step` (the Stepper's step root, which
+  `stepper.css` styles): `data-ok-step-size`, `data-ok-small-step`, `data-ok-large-step`.
+  React's static markup keeps `autoComplete` / `inputMode` camelCase: `demo-snippets.mjs`
+  lowercases them.

@@ -43,6 +43,7 @@ import { motionGroup } from "./motion-group/motion-group.js";
 import { motionText } from "./motion-text/motion-text.js";
 import { multiInputRangeField } from "./multi-input-range-field/multi-input-range-field.js";
 import { multiSectionDigitalClock } from "./multi-section-digital-clock/multi-section-digital-clock.js";
+import { numberField } from "./number-field/number-field.js";
 import { organizationChart } from "./organization-chart/organization-chart.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
@@ -93,6 +94,7 @@ export const components: readonly ComponentDefinition[] = [
   tablePagination as ComponentDefinition,
   textField as ComponentDefinition,
   clipboard as ComponentDefinition,
+  numberField as ComponentDefinition,
   select as ComponentDefinition,
   toggleButton as ComponentDefinition,
   toggleGroup as ComponentDefinition,

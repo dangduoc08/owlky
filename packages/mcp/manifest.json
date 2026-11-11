@@ -27,6 +27,7 @@
   "data-ok-align-items",
   "data-ok-all-selected",
   "data-ok-allow-multiple-data-points-selection",
+  "data-ok-allow-out-of-range",
   "data-ok-allow-scroll-buttons-mobile",
   "data-ok-allow-spaces",
   "data-ok-allowed-elements",
@@ -923,6 +924,7 @@
   "data-ok-label-value",
   "data-ok-labels",
   "data-ok-language",
+  "data-ok-large-step",
   "data-ok-last",
   "data-ok-latitude",
   "data-ok-layer",
@@ -1141,6 +1143,9 @@
   "data-ok-non-linear",
   "data-ok-notched",
   "data-ok-null",
+  "data-ok-number-field",
+  "data-ok-number-field-decrement",
+  "data-ok-number-field-increment",
   "data-ok-offset",
   "data-ok-once",
   "data-ok-open",
@@ -1384,6 +1389,8 @@
   "data-ok-slides-to-show-xl",
   "data-ok-slideshow-autoplay",
   "data-ok-slideshow-delay",
+  "data-ok-small-step",
+  "data-ok-snap-on-step",
   "data-ok-snapped",
   "data-ok-sort-value",
   "data-ok-sortable",
@@ -1438,6 +1445,7 @@
   "data-ok-step-label-optional",
   "data-ok-step-label-text",
   "data-ok-step-label-title",
+  "data-ok-step-size",
   "data-ok-stepper",
   "data-ok-stepper-back",
   "data-ok-stepper-next",
@@ -68348,6 +68356,304 @@
       }
      },
      {
+      "html": {
+       "attribute": "data-ok-number-field",
+       "events": [
+        {
+         "cancelable": true,
+         "description": "reason`: `input-change`, `input-clear`, `input-blur`, `keyboard`, `increment-press` or `decrement-press`). Typing reports values as they become numbers. `preventDefault()` refuses the value.",
+         "detail": "{ value: number | null; reason: NumberFieldChangeReason; }",
+         "name": "ok:number-field:change"
+        },
+        {
+         "cancelable": false,
+         "description": "value` is the field's value, shown again as its text.",
+         "detail": "{ value: number | null; reason: NumberFieldChangeReason; }",
+         "name": "ok:number-field:commit"
+        }
+       ],
+       "methods": [
+        {
+         "description": "The value: a number, or `null` when the field is empty.",
+         "kind": "method",
+         "name": "getValue",
+         "type": "() => number | null"
+        },
+        {
+         "description": "Sets the value (kept within `min` / `max` unless out-of-range values are allowed). Fires no event.",
+         "kind": "method",
+         "name": "setValue",
+         "type": "(value: number | null) => void"
+        },
+        {
+         "description": "One step down, as a press of the decrement button (`amount` defaults to the step).",
+         "kind": "method",
+         "name": "stepDown",
+         "type": "(amount?: number | undefined) => void"
+        },
+        {
+         "description": "One step up, as a press of the increment button (`amount` defaults to the step).",
+         "kind": "method",
+         "name": "stepUp",
+         "type": "(amount?: number | undefined) => void"
+        }
+       ],
+       "options": [
+        {
+         "attr": "data-ok-min",
+         "description": "Lowest value (none by default).",
+         "kind": "number",
+         "name": "min"
+        },
+        {
+         "attr": "data-ok-max",
+         "description": "Highest value (none by default).",
+         "kind": "number",
+         "name": "max"
+        },
+        {
+         "attr": "data-ok-step-size",
+         "default": 1,
+         "description": "How much the buttons and Arrow Up / Arrow Down change the value.",
+         "kind": "number",
+         "min": 0,
+         "name": "step"
+        },
+        {
+         "attr": "data-ok-small-step",
+         "default": 0.1,
+         "description": "Step with Alt + Arrow Up / Arrow Down.",
+         "kind": "number",
+         "min": 0,
+         "name": "smallStep"
+        },
+        {
+         "attr": "data-ok-large-step",
+         "default": 10,
+         "description": "Step of Page Up / Page Down and Shift + Arrow Up / Arrow Down.",
+         "kind": "number",
+         "min": 0,
+         "name": "largeStep"
+        },
+        {
+         "attr": "data-ok-snap-on-step",
+         "description": "A step lands on a multiple of the step (counted from `min`), such as 1.5 → 2.",
+         "kind": "flag",
+         "name": "snapOnStep"
+        },
+        {
+         "attr": "data-ok-allow-out-of-range",
+         "description": "Typed values outside `min` / `max` stay as typed (steps still stop at the bounds).",
+         "kind": "flag",
+         "name": "allowOutOfRange"
+        },
+        {
+         "attr": "disabled",
+         "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+         "description": "Native `disabled` on the input; the buttons are disabled too.",
+         "kind": "native",
+         "name": "disabled"
+        },
+        {
+         "attr": "readonly",
+         "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+         "description": "Native `readonly` on the input: it can be focused and copied, not changed.",
+         "kind": "native",
+         "name": "readOnly"
+        },
+        {
+         "attr": "value",
+         "description": "The number (`value` / `defaultValue` + `onValueChange(value, details)`).",
+         "event": "ok:number-field:change",
+         "kind": "state",
+         "name": "value"
+        }
+       ],
+       "parts": [
+        {
+         "description": "A number field's button that steps the value down (an Icon button in the start adornment).",
+         "elements": [
+          "button"
+         ],
+         "kind": "part",
+         "name": "data-ok-number-field-decrement"
+        },
+        {
+         "description": "A number field's button that steps the value up (an Icon button in the end adornment).",
+         "elements": [
+          "button"
+         ],
+         "kind": "part",
+         "name": "data-ok-number-field-increment"
+        }
+       ],
+       "runtime": "number-field"
+      },
+      "name": "NumberField",
+      "react": {
+       "description": "A text field whose input is a spin button, with decrement and increment buttons in its adornments. `ref` and the remaining props go to the input.",
+       "native": "HTMLInputElement",
+       "props": [
+        {
+         "description": "Typed values outside `min` / `max` stay as typed; steps still stop at the bounds.",
+         "name": "allowOutOfRange",
+         "type": "boolean"
+        },
+        {
+         "description": "Class of the root (other props go to the input).",
+         "name": "className",
+         "type": "string"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+        },
+        {
+         "default": "\"div\"",
+         "description": "The root element.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
+         "default": "\"Decrease\"",
+         "description": "The decrement button's accessible name.",
+         "name": "decrementLabel",
+         "type": "string"
+        },
+        {
+         "default": "null",
+         "description": "Uncontrolled initial value. (empty).",
+         "name": "defaultValue",
+         "type": "number | null"
+        },
+        {
+         "description": "Standard: draw no underline (give the field another focus style).",
+         "name": "disableUnderline",
+         "type": "boolean"
+        },
+        {
+         "description": "Error colors and `aria-invalid`.",
+         "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
+         "description": "Stretch to the container width.",
+         "name": "fullWidth",
+         "type": "boolean"
+        },
+        {
+         "description": "Text under the field, such as a hint or an error message (linked with `aria-describedby`).",
+         "name": "helperText",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Hide the label visually: it still names the input, and the field is laid out as if it had none (a filled field gets less padding above the value).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
+         "default": "\"Increase\"",
+         "description": "The increment button's accessible name.",
+         "name": "incrementLabel",
+         "type": "string"
+        },
+        {
+         "description": "The floating label; it names the input.",
+         "name": "label",
+         "type": "ReactNode"
+        },
+        {
+         "default": "10",
+         "description": "Step of Page Up / Page Down and Shift + Arrow Up / Arrow Down.",
+         "name": "largeStep",
+         "type": "number"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
+        },
+        {
+         "description": "Highest value.",
+         "name": "max",
+         "type": "number"
+        },
+        {
+         "description": "Lowest value.",
+         "name": "min",
+         "type": "number"
+        },
+        {
+         "description": "Outlined: keep the outline's notch open even when the label rests in the box.",
+         "name": "notched",
+         "type": "boolean"
+        },
+        {
+         "description": "reason`: `input-change`, `input-clear`, `input-blur`, `keyboard`, `increment-press` or `decrement-press`).",
+         "name": "onValueChange",
+         "type": "((value: number | null, details: NumberFieldChangeDetails) => void)"
+        },
+        {
+         "description": "Called when the person finishes a change: a step, a press, Enter or leaving the input.",
+         "name": "onValueCommitted",
+         "type": "((value: number | null, details: NumberFieldChangeDetails) => void)"
+        },
+        {
+         "description": "Keep the label above the value even when the field is empty.",
+         "name": "shrink",
+         "type": "boolean"
+        },
+        {
+         "default": "\"medium\"",
+         "description": "`medium` or `small` (dense).",
+         "name": "size",
+         "type": "\"medium\" | \"small\""
+        },
+        {
+         "default": "0.1",
+         "description": "Step with Alt + Arrow Up / Arrow Down.",
+         "name": "smallStep",
+         "type": "number"
+        },
+        {
+         "description": "5 → 2).",
+         "name": "snapOnStep",
+         "type": "boolean"
+        },
+        {
+         "default": "1",
+         "description": "How much the buttons and Arrow Up / Arrow Down change the value.",
+         "name": "step",
+         "type": "number"
+        },
+        {
+         "description": "Style of the root.",
+         "name": "style",
+         "type": "CSSProperties"
+        },
+        {
+         "description": "Controlled value (`null` = empty).",
+         "name": "value",
+         "type": "number | null"
+        },
+        {
+         "default": "\"outlined\"",
+         "description": "Outline, tinted fill or underline.",
+         "name": "variant",
+         "type": "\"filled\" | \"outlined\" | \"standard\""
+        }
+       ]
+      }
+     },
+     {
       "name": "OutlinedInput",
       "react": {
        "description": "The outlined field box without a label or a helper text.",
@@ -68457,6 +68763,10 @@
      {
       "name": "CopyResult",
       "type": "{ readonly ok: true; } | { readonly ok: false; readonly reason: CopyFailure; }"
+     },
+     {
+      "name": "NumberFieldChangeReason",
+      "type": "\"decrement-press\" | \"increment-press\" | \"input-blur\" | \"input-change\" | \"input-clear\" | \"keyboard\""
      }
     ]
    },
@@ -68467,6 +68777,7 @@
     "Input",
     "InputAdornment",
     "InputBase",
+    "NumberField",
     "OutlinedInput",
     "TextField",
     "useCopyToClipboard"
@@ -68623,6 +68934,81 @@
       }
      ],
      "root": "data-ok-text-field"
+    },
+    {
+     "name": "number-field",
+     "options": [
+      {
+       "attr": "data-ok-min",
+       "description": "Lowest value (none by default).",
+       "kind": "number",
+       "name": "min"
+      },
+      {
+       "attr": "data-ok-max",
+       "description": "Highest value (none by default).",
+       "kind": "number",
+       "name": "max"
+      },
+      {
+       "attr": "data-ok-step-size",
+       "default": 1,
+       "description": "How much the buttons and Arrow Up / Arrow Down change the value.",
+       "kind": "number",
+       "min": 0,
+       "name": "step"
+      },
+      {
+       "attr": "data-ok-small-step",
+       "default": 0.1,
+       "description": "Step with Alt + Arrow Up / Arrow Down.",
+       "kind": "number",
+       "min": 0,
+       "name": "smallStep"
+      },
+      {
+       "attr": "data-ok-large-step",
+       "default": 10,
+       "description": "Step of Page Up / Page Down and Shift + Arrow Up / Arrow Down.",
+       "kind": "number",
+       "min": 0,
+       "name": "largeStep"
+      },
+      {
+       "attr": "data-ok-snap-on-step",
+       "description": "A step lands on a multiple of the step (counted from `min`), such as 1.5 → 2.",
+       "kind": "flag",
+       "name": "snapOnStep"
+      },
+      {
+       "attr": "data-ok-allow-out-of-range",
+       "description": "Typed values outside `min` / `max` stay as typed (steps still stop at the bounds).",
+       "kind": "flag",
+       "name": "allowOutOfRange"
+      },
+      {
+       "attr": "disabled",
+       "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+       "description": "Native `disabled` on the input; the buttons are disabled too.",
+       "kind": "native",
+       "name": "disabled"
+      },
+      {
+       "attr": "readonly",
+       "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+       "description": "Native `readonly` on the input: it can be focused and copied, not changed.",
+       "kind": "native",
+       "name": "readOnly"
+      },
+      {
+       "attr": "value",
+       "description": "The number (`value` / `defaultValue` + `onValueChange(value, details)`).",
+       "event": "ok:number-field:change",
+       "kind": "state",
+       "name": "value"
+      }
+     ],
+     "root": "data-ok-number-field"
     }
    ],
    "sections": [
@@ -68677,7 +69063,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |\n| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |\n| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |\n| InputBase `margin` (`dense`) | `size=\"small\"` | renamed | Owlky's `margin` is the outer margin of TextField |\n| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |\n| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n| `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |\n\nRelated reference features: copy to clipboard (4.20, section below), number input (4.24), phone\ninput (4.25).",
+     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |\n| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |\n| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |\n| InputBase `margin` (`dense`) | `size=\"small\"` | renamed | Owlky's `margin` is the outer margin of TextField |\n| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |\n| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n| `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |\n\nRelated reference features: copy to clipboard (4.20) and number input (4.24), sections below;\nphone input (4.25).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -68685,6 +69071,11 @@
      "body": "Reference: Minimals \"Utilities\" page (https://minimals.cc/components/extra/utilities), section\n\"Copy to clipboard\": a field with a copy button in its end adornment (\"onChange\"), a paragraph\ncopied on double click (\"onDoubleClick\"), each copy followed by a \"Copied!\" toast. Upstream: the\nreference's `useCopyToClipboard` hook (`{ copy, copiedText }`, usehooks-ts).\n\n- **Core** `copyToClipboard(text, { document? }): Promise<CopyResult>` (`core/src/clipboard`):\n  never throws. Outside a user gesture (`navigator.userActivation.isActive === false`, checked\n  before any await) → `{ ok: false, reason: \"gesture\" }` without calling the browser. Clipboard API\n  `writeText`; no API → the copy command (`execCommand(\"copy\")` with a one-off `copy` listener\n  that writes the text: no text area, focus and selection untouched) or `\"unsupported\"`; the API\n  rejects (permission, policy) → the copy command, else `\"denied\"`. `clipboardText(element)`:\n  form control value, else text with white space collapsed.\n- **React** `useCopyToClipboard()` → `{ copy(text): Promise<CopyResult>, copiedText }`\n  (`copiedText` = last successful copy, `null` after a failure). Apps compose an `IconButton` in an\n  `InputAdornment` and call `toast.success` / `toast.error` with the result.\n- **HTML** runtime `clipboard` (behavior-only folder, markup in `text-field/examples`): triggers\n  `[data-ok-clipboard-copy]` (value = source id; empty = the text field's input around a button,\n  else the trigger itself), `data-ok-clipboard-text` (literal text), `data-ok-clipboard-trigger=\n  \"dblclick\"`, `data-ok-clipboard-toast` / `data-ok-clipboard-error-toast` (`<template>` toasts shown\n  in the page's toaster, or `data-ok-toast-toaster`). Event `ok:clipboard:copy` (`detail.text`,\n  `ok`, `reason?`), instance `copy()`. React markup (`data-ok-runtime=\"off\"`) is never handled.\n- **Announcement:** the toast. The toaster list is a polite live region, so \"Copied!\" (or the\n  error) is announced; the docs tell apps without a toaster to announce the result themselves.\n- **Double click** is a pointer-only shortcut: the story adds a \"Copy text\" button that copies the\n  same paragraph (WCAG 2.1.1), an intentional addition to the reference.\n- Not built: copying rich text / images (`ClipboardItem`), reading the clipboard (paste).",
      "id": "copy-to-clipboard-roadmap-4-20",
      "title": "Copy to clipboard (roadmap 4.20)"
+    },
+    {
+     "body": "Reference: Minimals \"Utilities\" page, section \"Number input\": Basic, With helper text, Disabled\n(a value between a minus and a plus button). Upstream: MUI's Number Field page (a demo composed on\nBase UI `NumberField`, mui.com/material-ui/react-number-field/) and Base UI's `NumberField` API\n(base-ui.com/react/components/number-field), mapped prop by prop below. Created with `/implement`.\n\n**Decision: a WAI-ARIA spin button on `input type=\"text\"`, not `input type=\"number\"`.** A native\nnumber input brings its own spinner (unstyleable, too small for touch, absent on mobile Safari),\nchanges the value on mouse wheel, reports `\"\"` for text it can't parse (so a half-typed `-` or a\nlocale's decimal comma is lost), has no Page Up / Page Down in Safari, and the reference uses a\ntext input. The spin button pattern gives one keyboard map in every engine: `role=\"spinbutton\"`\nwith `aria-valuenow` / `-min` / `-max` on a text input (`inputmode=\"decimal\"` for the numeric\nkeyboard, `autocomplete=\"off\"`), and the buttons out of the tab order (`tabindex=\"-1\"`, APG).\n\n### Anatomy\n```\ndiv[data-ok-text-field]…[data-ok-number-field][data-ok-min]?[data-ok-max]?[data-ok-step-size]?[data-ok-small-step]?[data-ok-large-step]?[data-ok-snap-on-step]?[data-ok-allow-out-of-range]?\n  label[data-ok-text-field-label][for]?\n  div[data-ok-text-field-control]\n    span[data-ok-text-field-adornment=\"start\"] › button[data-ok-icon-button][data-ok-edge=\"start\"][tabindex=-1][aria-label=\"Decrease\"][aria-controls=<input id>][data-ok-number-field-decrement][disabled]? › svg\n    input[data-ok-text-field-input][role=spinbutton][inputmode=decimal][autocomplete=off][aria-valuenow]?[aria-valuemin]?[aria-valuemax]?[placeholder=\" \"][value]\n    span[data-ok-text-field-adornment=\"end\"] › button[…][data-ok-number-field-increment] › svg\n    fieldset[data-ok-text-field-outline]   (outlined)\n  div[data-ok-text-field-helper][id]?\n```\nThe step attributes avoid `data-ok-step`, the Stepper's step root (`stepper.css` loads after\n`text-field.css` and would style the field). Icon buttons: `sm` in a small field, `md` otherwise.\n\n### Options\n(Options of `number-field`: listed under \"options\".)\n\nReact `NumberField` (+ every TextField prop except `value` / `defaultValue` / `onChange`,\n`multiline`, `select`, `type`, `inputComponent` and the adornments): `value` / `defaultValue`\n(`number | null`), `onValueChange(value, { reason })`, `onValueCommitted(value, { reason })`,\n`decrementLabel` / `incrementLabel` (\"Decrease\" / \"Increase\": the buttons' names, for\ntranslations). `ref` = the input.\n\n### Behavior\nCore `createNumberFieldController(root, { getValue, onChange, onCommit }, { input? })` reports\nintent; the model is pure (`parseNumberInput`, `stepNumberValue`, `clampNumber`,\n`numberFieldState`, `typedNumberChange`, `readNumberFieldSettings` / `numberFieldSettings`).\n- Steps clamp to `min` / `max` and round to the precision of their terms (0.1 + 0.2 = 0.3); from an\n  empty field a step gives 0 (or the nearest bound); `snapOnStep` lands on `min + k × step`.\n- Typing reports each text that is a number (`input-change`) or empty (`input-clear`) without\n  rewriting it; Enter or leaving the input commits: empty → `null`, not a number → the current\n  value, otherwise clamped (unless `allowOutOfRange`). Each commit shows the owner's value again.\n- Button presses keep the focus where it is (`mousedown` default prevented); a disabled field\n  disables both buttons, a read-only one too (its input can still be focused and copied); a\n  button is disabled at its bound.\n- React reports typing from its own `onChange` (`{ input: false }`): a state update from a native\n  `input` listener re-renders the controlled input before React sees the keystroke and undoes it.\n- HTML runtime `number-field` (behavior-only folder; markup in `text-field/examples`): the value\n  is the input's text at setup; it rewrites the text on each commit and keeps `aria-valuenow` /\n  `-min` / `-max` and the buttons' `disabled` in step (also when `data-ok-min` / `-max`, the input's\n  `disabled` or `readonly` change). Events `ok:number-field:change` (`{ value, reason }`,\n  cancelable: refuses the value) and `ok:number-field:commit`; instance `getValue()`,\n  `setValue(value)` (clamped, no event), `stepUp(amount?)`, `stepDown(amount?)`.\n\n### Keyboard\n| Key | Action |\n|---|---|\n| Arrow Up / Arrow Down | Step up / down by `step` (Shift: `largeStep`, Alt: `smallStep`) |\n| Page Up / Page Down | Step up / down by `largeStep` |\n| Home / End | Go to `min` / `max` (without that bound: move the caret, as in any text input) |\n| Enter | Commit the typed text (the form still submits) |\n| Ctrl / Cmd + arrows | Left to the browser (caret and selection) |\n\n### Accessibility\nThe input is the only tab stop and is named by the label (or `aria-label`); helper text describes\nit. The buttons are named (\"Decrease\" / \"Increase\"), point at the input with `aria-controls`, are\n≥ 28 × 28 px (WCAG 2.5.8) and stay out of the tab order (the keys do the same, APG spin button).\nDisabled buttons use the Icon button's disabled color (inactive, exempt from contrast).\n\n### Upstream API mapping (Base UI `NumberField`)\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Root `value`, `defaultValue`, `onValueChange(value, eventDetails)`, `onValueCommitted` | same | kept | details carry `reason` only (`input-change`, `input-clear`, `input-blur`, `keyboard`, `increment-press`, `decrement-press`) |\n| Root `min`, `max`, `step`, `smallStep`, `largeStep`, `snapOnStep`, `allowOutOfRange` | same | kept | HTML `data-ok-min` / `-max` / `-step-size` / `-small-step` / `-large-step` / `-snap-on-step` / `-allow-out-of-range`; `step=\"any\"`: not applicable (no native step validation on a text input) |\n| Root `disabled`, `readOnly`, `required`, `name`, `id`, `form`, `inputRef` | native input props, `ref` | kept / renamed | `inputRef` → `ref` (as TextField) |\n| Root `format`, `locale` (`Intl.NumberFormat` display and parsing) | — | deferred | needs a locale-aware parser (group and decimal separators, percent, currency) for typed text; plain numbers today |\n| Root `allowWheelScrub`, `ScrubArea` (`direction`, `pixelSensitivity`, `teleportDistance`) | — | deferred | pointer-only gestures beyond the reference; the buttons and keys cover them |\n| Increment / Decrement press-and-hold auto repeat | — | deferred | one step per press (the keys repeat) |\n| `Group`, `Input`, `Increment`, `Decrement` parts | the TextField control, input and two Icon buttons in the adornments | renamed | `incrementLabel` / `decrementLabel` name the buttons (Base UI: your own children) |\n| Input `aria-roledescription` (\"Number field\") | `role=\"spinbutton\"` | renamed | the role says it is a number control |\n| `className`, `style`, `render`, `nativeButton` | — | not applicable | ADR-0015 |\n| MUI demo `label`, `size`, `error`, `helperText` | TextField props | kept | MUI's NumberSpinner layout (buttons beside the field) = the reference's buttons on both sides |\n\n### Intentional differences from the reference\n- The reference group (minus · tinted value with a caption · plus, one border) becomes the TextField\n  look with the buttons in the adornments (the roadmap row: \"buttons in the adornment\"); its\n  caption under the value (\"Bedrooms\") is the field's floating label.\n- The reference has no keyboard steps (its arrows do nothing) and lets the minus button act at 0:\n  Owlky follows the APG spin button and disables a button at its bound.",
+     "id": "number-input-roadmap-4-24",
+     "title": "Number input (roadmap 4.24)"
     },
     {
      "body": "React stories render the password button without state (apps own `type`, see the docs page);\n`data-ok-text-field-reveal` is an HTML hook (ignored by parity), and so are the\n`data-ok-clipboard-*` triggers (React copies from click handlers).",
@@ -68747,6 +69138,17 @@
      "snippets": [
       "copy-to-clipboard-button.html",
       "copy-to-clipboard-double-click.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/text-field.css + components/icon-button.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Basic -->\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-number-field data-ok-min=\"0\">\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-edge=\"start\" tabindex=\"-1\" aria-label=\"Decrease\" aria-controls=\"number-basic\" data-ok-number-field-decrement disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <input autocomplete=\"off\" aria-label=\"Quantity\" role=\"spinbutton\" inputmode=\"decimal\" aria-valuenow=\"0\" aria-valuemin=\"0\" id=\"number-basic\" data-ok-text-field-input placeholder=\" \" value=\"0\">\n    <span data-ok-text-field-adornment=\"end\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-edge=\"end\" tabindex=\"-1\" aria-label=\"Increase\" aria-controls=\"number-basic\" data-ok-number-field-increment><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14M12 5v14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n    </fieldset>\n  </div>\n</div>\n\n<!-- With helper text -->\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-number-field data-ok-min=\"0\" data-ok-max=\"10\">\n  <label data-ok-text-field-label for=\"number-helper\">Bedrooms</label>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"start\" tabindex=\"-1\" aria-label=\"Decrease\" aria-controls=\"number-helper\" data-ok-number-field-decrement disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <input autocomplete=\"off\" role=\"spinbutton\" inputmode=\"decimal\" aria-valuenow=\"0\" aria-valuemin=\"0\" aria-valuemax=\"10\" id=\"number-helper\" data-ok-text-field-input aria-describedby=\"number-helper-helper-text\" placeholder=\" \" value=\"0\">\n    <span data-ok-text-field-adornment=\"end\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"end\" tabindex=\"-1\" aria-label=\"Increase\" aria-controls=\"number-helper\" data-ok-number-field-increment><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14M12 5v14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Bedrooms</span>\n      </legend>\n    </fieldset>\n  </div>\n  <div data-ok-text-field-helper id=\"number-helper-helper-text\">Helper text</div>\n</div>\n\n<!-- Disabled -->\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-number-field data-ok-min=\"0\">\n  <label data-ok-text-field-label for=\"number-disabled\">Bedrooms</label>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"start\" tabindex=\"-1\" aria-label=\"Decrease\" aria-controls=\"number-disabled\" data-ok-number-field-decrement disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <input autocomplete=\"off\" disabled role=\"spinbutton\" inputmode=\"decimal\" aria-valuenow=\"0\" aria-valuemin=\"0\" id=\"number-disabled\" data-ok-text-field-input placeholder=\" \" value=\"0\">\n    <span data-ok-text-field-adornment=\"end\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"end\" tabindex=\"-1\" aria-label=\"Increase\" aria-controls=\"number-disabled\" data-ok-number-field-increment disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14M12 5v14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Bedrooms</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>",
+     "id": "components-text-field--number-input",
+     "name": "Number input",
+     "react": "import { NumberField } from \"@owlky/react\";\n\n/** Basic: a value with buttons on either side; it never goes below 0. */\nexport function NumberBasicDemo() {\n  return (\n    <NumberField id=\"number-basic\" size=\"small\" aria-label=\"Quantity\" defaultValue={0} min={0} />\n  );\n}\n\n/** With helper text: a label above the value and a hint under the field. */\nexport function NumberHelperDemo() {\n  return (\n    <NumberField\n      id=\"number-helper\"\n      label=\"Bedrooms\"\n      defaultValue={0}\n      min={0}\n      max={10}\n      helperText=\"Helper text\"\n    />\n  );\n}\n\n/** Disabled: neither the input nor the buttons respond. */\nexport function NumberDisabledDemo() {\n  return <NumberField id=\"number-disabled\" label=\"Bedrooms\" defaultValue={0} min={0} disabled />;\n}\n",
+     "snippets": [
+      "number-input-basic.html",
+      "number-input-disabled.html",
+      "number-input-helper.html"
      ]
     }
    ],
@@ -81183,7 +81585,14 @@
      "title": "Copy text to the clipboard"
     },
     {
-     "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
+     "body": "Use `NumberField` for a number that people adjust as often as they type it, such as a quantity or a number of guests. The value sits between a decrement and an increment button, and the input is a spin button: Arrow Up and Arrow Down change the value by `step`, Page Up and Page Down by `largeStep`, and Home and End go to `min` and `max`. Hold Shift for `largeStep`, or Alt for `smallStep`.\n\nThe value is a number, or `null` when the field is empty. People can type freely: `onValueChange(value, details)` reports each text that is a number, and the field shows the value again when they press Enter or leave it. A value outside `min` and `max` is clamped then, unless you set `allowOutOfRange`. A button turns off when the value reaches its bound, and both turn off when the field is disabled or read-only.\n\nIn HTML, add `data-ok-number-field` and the bounds to a text field root, `role=\"spinbutton\"` and the `aria-value*` attributes to its input, and the two buttons in its adornments. The script keeps the value, the text, the `aria-value*` attributes and the buttons in step, and fires `ok:number-field:change` and `ok:number-field:commit`.",
+     "html": "<!-- Load once per page: the script handles the buttons and the keys -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-number-field data-ok-min=\"0\" data-ok-max=\"10\">\n  <label data-ok-text-field-label for=\"number-helper\">Bedrooms</label>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"start\" tabindex=\"-1\" aria-label=\"Decrease\" aria-controls=\"number-helper\" data-ok-number-field-decrement disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <input autocomplete=\"off\" role=\"spinbutton\" inputmode=\"decimal\" aria-valuenow=\"0\" aria-valuemin=\"0\" aria-valuemax=\"10\" id=\"number-helper\" data-ok-text-field-input aria-describedby=\"number-helper-helper-text\" placeholder=\" \" value=\"0\">\n    <span data-ok-text-field-adornment=\"end\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"end\" tabindex=\"-1\" aria-label=\"Increase\" aria-controls=\"number-helper\" data-ok-number-field-increment><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M5 12h14M12 5v14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></span>\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Bedrooms</span>\n      </legend>\n    </fieldset>\n  </div>\n  <div data-ok-text-field-helper id=\"number-helper-helper-text\">Helper text</div>\n</div>",
+     "id": "number",
+     "react": "import { NumberField } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Bedrooms() {\n  const [bedrooms, setBedrooms] = useState<number | null>(0);\n  return (\n    <NumberField\n      id=\"number-helper\"\n      label=\"Bedrooms\"\n      value={bedrooms}\n      onValueChange={setBedrooms}\n      min={0}\n      max={10}\n      helperText=\"Helper text\"\n    />\n  );\n}",
+     "title": "Enter a number"
+    },
+    {
+     "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The second table lists the options a number field adds to its text field root.",
      "id": "options",
      "title": "Options"
     },
@@ -81193,17 +81602,17 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **HTML:** the input fires the native `input` and `change` events. After each copy, a copy trigger fires `ok:clipboard:copy` with `detail.text`, `detail.ok` and, when the copy failed, `detail.reason`. Its instance method `copy()` copies as a press does.\n- **React:** `onChange(value)` is called with the new value. `useCopyToClipboard()` returns `copy(text)` and `copiedText`, the text of the last successful copy. Use `value` to control the field, or `defaultValue` to let it keep its own state. The `ref` and every other prop, such as `name`, `type` or `autoComplete`, go to the input.",
+     "body": "- **HTML:** the input fires the native `input` and `change` events. A number field fires `ok:number-field:change` with `detail.value` and `detail.reason` (`preventDefault()` refuses the value) and `ok:number-field:commit`. Its instance has `getValue()`, `setValue(value)`, `stepUp(amount)` and `stepDown(amount)`. After each copy, a copy trigger fires `ok:clipboard:copy` with `detail.text`, `detail.ok` and, when the copy failed, `detail.reason`. Its instance method `copy()` copies as a press does.\n- **React:** `onChange(value)` is called with the new value. `useCopyToClipboard()` returns `copy(text)` and `copiedText`, the text of the last successful copy. `NumberField` calls `onValueChange(value, details)` and `onValueCommitted(value, details)`. Use `value` to control the field, or `defaultValue` to let it keep its own state. The `ref` and every other prop, such as `name`, `type` or `autoComplete`, go to the input.",
      "id": "events",
      "title": "Events and methods"
     },
     {
-     "body": "The field is a native input, textarea or select, so the browser provides the keyboard behavior: Tab moves focus, and a select opens with Space, Enter or the arrow keys.",
+     "body": "The field is a native input, textarea or select, so the browser provides the keyboard behavior: Tab moves focus, and a select opens with Space, Enter or the arrow keys. A number field's input is a spin button with these keys. Its buttons aren't in the tab order, because the keys do the same.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "- The label is a `<label for>`, so it names the input. A field without a label needs `aria-label`. Don't use the placeholder as the only label: it disappears when people type.\n- Helper text is linked with `aria-describedby`; an error also sets `aria-invalid`.\n- Required fields show an asterisk. The asterisk is hidden from screen readers, which announce the input's `required` state instead.\n- The resting label and the helper text use the secondary text color, and error text uses the error text tone: each has a contrast ratio of at least 4.5:1. The error border uses the brand error color.\n- Focus shows as a 2px border, line or ring in the text color.\n- Set `autoComplete` (such as `email` or `current-password`) so browsers and password managers can fill the field.\n- A copy changes nothing on the screen: announce its result, for example with a toast, whose live region screen readers read. Give icon-only copy buttons a name such as \"Copy\", and offer a button wherever a double click copies.",
+     "body": "- The label is a `<label for>`, so it names the input. A field without a label needs `aria-label`. Don't use the placeholder as the only label: it disappears when people type.\n- Helper text is linked with `aria-describedby`; an error also sets `aria-invalid`.\n- Required fields show an asterisk. The asterisk is hidden from screen readers, which announce the input's `required` state instead.\n- The resting label and the helper text use the secondary text color, and error text uses the error text tone: each has a contrast ratio of at least 4.5:1. The error border uses the brand error color.\n- Focus shows as a 2px border, line or ring in the text color.\n- Set `autoComplete` (such as `email` or `current-password`) so browsers and password managers can fill the field.\n- A number field's input has the `spinbutton` role, so screen readers announce its value, minimum and maximum. Its buttons are named \"Decrease\" and \"Increase\" (`decrementLabel` and `incrementLabel` translate them) and point at the input with `aria-controls`.\n- A copy changes nothing on the screen: announce its result, for example with a toast, whose live region screen readers read. Give icon-only copy buttons a name such as \"Copy\", and offer a button wherever a double click copies.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -82145,6 +82554,8 @@
   "data-ok-mobile-stepper-text": "data-ok-mobile-stepper",
   "data-ok-motion-text-label": "data-ok-motion-text",
   "data-ok-motion-text-word": "data-ok-motion-text",
+  "data-ok-number-field-decrement": "data-ok-number-field",
+  "data-ok-number-field-increment": "data-ok-number-field",
   "data-ok-organization-chart-spinner": "data-ok-organization-chart",
   "data-ok-pagination-ellipsis": "data-ok-pagination",
   "data-ok-pagination-item": "data-ok-pagination",

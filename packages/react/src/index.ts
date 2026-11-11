@@ -707,6 +707,7 @@ export {
   Tabs,
   type TabsProps,
 } from "./tabs/tabs.js";
+export { NumberField, type NumberFieldProps } from "./text-field/number-field.js";
 export {
   FilledInput,
   type FilledInputProps,

@@ -232,7 +232,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-sortable--docs", ["sortable"]],
   ["components-switch--docs", ["switch", "form-control-label"]],
   ["components-table--docs", ["table", "table-sort-label"]],
-  ["components-text-field--docs", ["text-field"]],
+  ["components-text-field--docs", ["text-field", "number-field"]],
   ["components-select--docs", ["select", "input-label"]],
   ["components-tabs--docs", ["tabs", "tab"]],
   ["components-breadcrumbs--docs", ["breadcrumbs"]],

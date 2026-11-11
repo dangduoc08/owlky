@@ -2129,6 +2129,10 @@ export interface TextFieldParts {
   "data-ok-clipboard-toast": Value<string>;
   /** On a copy trigger: `dblclick` copies on a double click instead of a click. */
   "data-ok-clipboard-trigger": Value<"click" | "dblclick">;
+  /** A number field's button that steps the value down (an Icon button in the start adornment). */
+  "data-ok-number-field-decrement": Part<"button">;
+  /** A number field's button that steps the value up (an Icon button in the end adornment). */
+  "data-ok-number-field-increment": Part<"button">;
   /** An adornment before or after the input, such as an icon or a unit. */
   "data-ok-text-field-adornment": Value<"start" | "end">;
   /** On an adornment: presses go through it to the input (React `disablePointerEvents`). */
