@@ -582,6 +582,13 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   anchored at the root's bottom (`inset-block-end: 0`): anchored at the top, a long hidden table
   added its whole height to the page's scroll height. Weekly time ticks start on Mondays, so panning
   a date axis by one category can keep every label: e2e compares the drawn line instead.
+- Geo chart regions with a pattern or a picture (4.18.97) carry their own `fill` attribute: CSS paints
+  regions only `:where([data-ok-chart-region]:not([fill]))`, like bars. Pictures are `pattern`s in
+  `userSpaceOnUse` at the region's box (an `image` node: `ChartNodeTag` includes `image`), URLs only
+  through `safeChartImage`. The plot's description (4.18.99) is a `p[data-ok-chart-description]`
+  inside the plot after the tooltip (a fixed position both owners keep; after the plot would race
+  with the status and filter parts). Geo annotations (4.18.100) are laid out in `layoutGeo`, which
+  has the projection's fit, not in `chartAnnotationNodes` (no axis maps on geo charts).
 - Sankey charts (ADR-0047): `type="sankey"` takes links, not series (React `nodes` / `edges`; HTML
   one table row per link, read by `readChartSankeyTable`), and `renderChart` branches to
   `renderSankey` before any series logic (`series` is optional in React and core). The layout
@@ -705,6 +712,20 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   are `hidden` elements read through an allowlist. Controls are portals into the corners (absent from
   server markup); the snippet generator renders them in place through the internal `InlineCorners`
   context.
+- Map snippets from 4.18.94 on are generated (`pnpm build && node apps/storybook/scripts/map-snippets.mjs
+  [story …]`; older map snippets stay hand-written): it bundles the demos against `packages/react/src`
+  (so the internal `InlineCorners` is the same context), swaps `Source` / `Layer` for components that
+  render the HTML declarations, and moves each map's corner contents into its own four corners (a
+  map's parts render before its corners). Data a demo fetches (hexbins, pixel grids) is empty in
+  the snippet; the page script fills it with the instance's `hexbin()` / `pixelGrid()` and
+  `setSourceData`. Pixel maps share feature state through `promoteId` on the cells' region
+  property, so `MapRegions` / `mapRegionLayers` work unchanged. Box selection (ADR-0065) listens for
+  pointer events in the capture phase on the canvas container and suspends `dragPan`; unit tests
+  dispatch `PointerEvent`s with `shiftKey` and wait for `queryRenderedFeatures` to find every
+  region first (label anchors come from `querySourceFeatures`, which needs loaded tiles). The link
+  registry is module-scoped: tests destroy every controller they create. A snippet with two maps
+  laid out by story CSS measures zero width in unit tests: give the roots a width before axe
+  (`target-size` on the folded attribution otherwise).
 - Markdown (ADR-0035): unified is reached only through `@owlky/core/markdown` and the opt-in HTML
   entries (`@owlky/html/markdown`, `owlky-markdown.js`; `markdown` is in `OPT_IN`). Both renderers
   write attributes from `markdownElementAttributes` and styles from `markdownElementStyle` (CSSOM),
