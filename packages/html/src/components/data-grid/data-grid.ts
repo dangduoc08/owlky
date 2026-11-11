@@ -7,6 +7,7 @@ import {
   chartTextAttributes,
   clampGridWidth,
   createGridCellSelection,
+  createGridChartRangeHandle,
   createGridClipboard,
   createGridColumnControls,
   createGridContextMenu,
@@ -100,6 +101,7 @@ import {
   gridChartFields,
   gridChartGroups,
   gridChartOptions,
+  gridChartRangeMarks,
   gridChartsState,
   gridColumnTemplate,
   gridColumnTypes,
@@ -156,6 +158,7 @@ import {
   gridQuickFilterValues,
   gridRangeChartId,
   gridRangeChartModel,
+  gridResizeChartRange,
   gridRowArrowSelection,
   gridRowGroups,
   gridRowOffsets,
@@ -3802,8 +3805,44 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }),
       );
     };
+    /** 4.18.89: the active range chart's cells on the page, and the handle that resizes it. */
+    const markChartRange = () => {
+      for (const cell of body.querySelectorAll<HTMLElement>("[data-ok-chart-range]")) {
+        cell.removeAttribute("data-ok-chart-range");
+        cell.removeAttribute("data-ok-chart-range-edge");
+      }
+      for (const handle of body.querySelectorAll("[data-ok-data-grid-chart-handle]"))
+        handle.remove();
+      const model = panelModel();
+      if (pivot || !isGridRangeChart(model)) return;
+      if (!element.querySelector(":scope > [data-ok-data-grid-chart]")) return;
+      const marks = gridChartRangeMarks(model, pageIds(), shownFields());
+      const rowOf = (rowId: string) => {
+        const row = rowEls.find((r) => idOf(r) === rowId);
+        return row?.isConnected ? row : null;
+      };
+      for (const [rowId, cells] of Object.entries(marks.cells)) {
+        const row = rowOf(rowId);
+        if (!row) continue;
+        for (const [field, mark] of Object.entries(cells)) {
+          const cell = cellOf(row, field);
+          if (!cell) continue;
+          cell.setAttribute("data-ok-chart-range", mark.kind);
+          cell.setAttribute("data-ok-chart-range-edge", mark.edges);
+        }
+      }
+      const corner = marks.handle ? rowOf(marks.handle.id) : null;
+      const cell = corner && marks.handle ? cellOf(corner, marks.handle.field) : null;
+      if (cell && !cell.hasAttribute("data-ok-editing")) {
+        const handle = document.createElement("span");
+        handle.setAttribute("data-ok-data-grid-chart-handle", "");
+        handle.setAttribute("aria-hidden", "true");
+        cell.append(handle);
+      }
+    };
     const markCells = () => {
       syncStatus();
+      markChartRange();
       for (const cell of body.querySelectorAll<HTMLElement>(
         ':is([role="gridcell"], [role="rowheader"])[aria-selected]',
       )) {
@@ -3899,6 +3938,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const cellSelection = createGridCellSelection(main, {
       enabled: cellsOn,
       onRangeChart: () => rangeChart({}, true),
+      onRangeChartUpdate: () => updateRangeChart(),
       onSelect: (anchor, focus, mode) => {
         const range = gridCellRange(pageIds(), shownFields(), anchor, focus);
         if (mode === "replace") setCells(range);
@@ -4198,6 +4238,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (crossSwitch) crossSwitch.checked = !!chartModel.crossFilter;
     };
     const syncChart = () => {
+      markChartRange();
       for (const region of chartRegions()) {
         const chartId = region.getAttribute("data-ok-chart-id");
         drawChart(
@@ -4536,6 +4577,47 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       }
       if (user) announce(labels.chartsRangeCreated.replace("{label}", label));
       return { id: chartId, model };
+    };
+    // The range's handle (4.18.89): dragging it resizes the active range chart; Escape restores it.
+    let rangeStart: GridChartModel | null = null;
+    const rangeHandle = createGridChartRangeHandle(main, {
+      onStart: () => {
+        rangeStart = panelModel();
+      },
+      onMove: (target) => {
+        if (!rangeStart) return;
+        setChart(
+          gridResizeChartRange(
+            rangeStart,
+            chartDataRows(filterModel).map(idOf),
+            shownNow.filter((c) => c.type !== "actions"),
+            target,
+          ),
+        );
+      },
+      onEnd: (cancelled) => {
+        const start = rangeStart;
+        rangeStart = null;
+        if (cancelled && start) setChart(start);
+      },
+    });
+    signal.addEventListener("abort", () => rangeHandle.destroy());
+    /** Alt + Shift + F1: the active range chart draws the selected cells (keyboard resize). */
+    const updateRangeChart = () => {
+      const current = panelModel();
+      if (!chartRegion || !isGridRangeChart(current)) return;
+      const next = gridRangeChartModel(
+        cellModel,
+        chartDataRows(filterModel).map(idOf),
+        shownNow,
+        (rowId, field) => cellValue(rowEls.find((r) => idOf(r) === rowId) as HTMLElement, field),
+      );
+      if (!next) {
+        announce(labels.chartsRangeRefused);
+        return;
+      }
+      setChart({ ...current, rows: next.rows, dimension: next.dimension, values: next.values });
+      announce(labels.chartsRangeUpdated.replace("{label}", current.label ?? labels.chartLabel));
     };
     element.addEventListener(
       "click",

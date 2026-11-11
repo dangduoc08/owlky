@@ -1531,7 +1531,7 @@ export function DataGridComboChart() {
   {
     id: "charts-range",
     title: "Chart a range of cells",
-    body: "With `cellSelection` and `chartsIntegration`, people can chart the cells they select, as in a spreadsheet. Select the cells, then press Alt + F1 on a cell, or select **Chart from selection** in the chart panel. The first column of the range names the categories, unless it holds numbers: then the categories are the rows' positions. Each number column of the range becomes a series, named by its header. Rows with the same category merge into one, with the column's aggregation function or a sum. With several charts, the new chart is added after the others and the panel edits it, so you can pick its type right away. With one chart, the range replaces what the chart shows. The grid announces the new chart to screen readers. A range without numbers creates no chart, and the grid says so. From code, call `createRangeChart()`, with an optional `cellRange`, `chartType`, `label` and `id`. It returns the new chart's `id` and model, or `null` when the range holds no number. A range chart keeps its rows in the model's `rows`: it shows the ones that pass the filters, in the grid's sort order. In HTML, the grid builds the new chart's region itself and fires the cancelable `ok:data-grid:chart` first.",
+    body: "With `cellSelection` and `chartsIntegration`, people can chart the cells they select, as in a spreadsheet. Select the cells, then press Alt + F1 on a cell, or select **Chart from selection** in the chart panel. The first column of the range names the categories, unless it holds numbers: then the categories are the rows' positions. Each number column of the range becomes a series, named by its header. Rows with the same category merge into one, with the column's aggregation function or a sum. With several charts, the new chart is added after the others and the panel edits it, so you can pick its type right away. With one chart, the range replaces what the chart shows. The grid announces the new chart to screen readers. A range without numbers creates no chart, and the grid says so. From code, call `createRangeChart()`, with an optional `cellRange`, `chartType`, `label` and `id`. It returns the new chart's `id` and model, or `null` when the range holds no number. A range chart keeps its rows in the model's `rows`: it shows the ones that pass the filters, in the grid's sort order. In HTML, the grid builds the new chart's region itself and fires the cancelable `ok:data-grid:chart` first. While a range chart is the active chart, its cells on the page are outlined: the categories in blue and the series in green. Drag the square at the outline's bottom end corner to resize the range, over more rows or more number columns, and press Escape while dragging to put it back. On the keyboard, select the cells with Shift + arrows and press Alt + Shift + F1: the active range chart draws them instead.",
     html: `${gridOf(chartsRange, { rows: 4 })}
 <script type="module">
   const element = document.getElementById("grid-charts-range");
@@ -2815,6 +2815,10 @@ const PREVIEWS = {
         ["Alt + Up / Alt + Down on a row handle", "Moves the row up / down"],
         ["Shift + arrow keys (cell selection)", "Extends the selected range"],
         ["Alt + F1 on a cell (cell selection)", "Charts the selected cells"],
+        [
+          "Alt + Shift + F1 on a cell (cell selection)",
+          "The active range chart draws the selected cells",
+        ],
         ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
         [
           "Ctrl + D / Ctrl + R on a cell (cellSelectionFillHandle)",

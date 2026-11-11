@@ -3,7 +3,9 @@ import { cleanupDom, mount } from "../test-utils.js";
 import type { GridColumn, GridFilterModel } from "./data-grid.js";
 import { createGridCellSelection } from "./grid-cells.js";
 import {
+  createGridChartRangeHandle,
   gridChartGroups,
+  gridChartRangeMarks,
   gridChartsState,
   gridCrossFilter,
   gridCrossFilterBase,
@@ -13,6 +15,7 @@ import {
   gridCrossFilterValues,
   gridRangeChartId,
   gridRangeChartModel,
+  gridResizeChartRange,
   isGridRangeChart,
   sanitizeGridChartsState,
 } from "./grid-charts.js";
@@ -258,5 +261,109 @@ describe("Alt + F1", () => {
     expect(key(cell, { key: "F1", altKey: true })).toBe(false);
     expect(onRangeChart).toHaveBeenCalledTimes(1);
     handle.destroy();
+  });
+});
+
+describe("the range on the grid (4.18.89)", () => {
+  const columns: GridColumn[] = [
+    { field: "name", type: "string" },
+    { field: "a", type: "number" },
+    { field: "note", type: "string" },
+    { field: "b", type: "number" },
+  ];
+  const model = { type: "column" as const, dimension: "name", values: ["a"], rows: ["1", "2"] };
+
+  it("marks the charted cells, their outline edges and the handle", () => {
+    const marks = gridChartRangeMarks(model, ["1", "2", "3"], ["name", "a", "b"]);
+    expect(marks.cells["1"]).toEqual({
+      name: { kind: "category", edges: "top left" },
+      a: { kind: "series", edges: "top right" },
+    });
+    expect(marks.cells["2"]?.a).toEqual({ kind: "series", edges: "right bottom" });
+    expect(marks.cells["3"]).toBeUndefined();
+    expect(marks.handle).toEqual({ id: "2", field: "a" });
+    // A row between them (sorted elsewhere) splits the outline.
+    const split = gridChartRangeMarks(model, ["1", "9", "2"], ["a"]);
+    expect(split.cells["1"]?.a?.edges).toBe("top right bottom left");
+    expect(gridChartRangeMarks({ values: ["a"] }, ["1"], ["a"])).toEqual({
+      cells: {},
+      handle: null,
+    });
+    expect(gridChartRangeMarks({ ...model, values: [] }, ["1"], ["name"]).handle).toBeNull();
+  });
+
+  it("resizes to a cell: rows from the first one, number columns from the first value", () => {
+    const ids = ["1", "2", "3", "4"];
+    expect(gridResizeChartRange(model, ids, columns, { id: "4", field: "b" })).toMatchObject({
+      rows: ["1", "2", "3", "4"],
+      values: ["a", "b"],
+      dimension: "name",
+    });
+    // Above the first row and before the first value: the first row and value stay.
+    const back = gridResizeChartRange({ ...model, rows: ["2", "3"] }, ids, columns, {
+      id: "1",
+      field: "name",
+    });
+    expect(back.rows).toEqual(["1", "2"]);
+    expect(back.values).toEqual(["a"]);
+    // Unknown target row or value column: those parts stay.
+    const kept = gridResizeChartRange({ ...model, values: ["zz"] }, ids, columns, {
+      id: "x",
+      field: "b",
+    });
+    expect(kept.rows).toEqual(["1", "2"]);
+    expect(kept.values).toEqual(["zz"]);
+    const plain = { values: ["a"] };
+    expect(gridResizeChartRange(plain, ids, columns, { id: "1", field: "a" })).toBe(plain);
+  });
+
+  it("the handle reports drags, the end and Escape; Alt + Shift + F1 asks for an update", () => {
+    const host = mount(`<div role="grid"><div data-ok-data-grid-body>
+      <div role="row" data-ok-row-id="1"><div role="gridcell" data-ok-field="a" tabindex="-1">1<span data-ok-data-grid-chart-handle></span></div></div>
+      <div role="row" data-ok-row-id="2"><div role="gridcell" data-ok-field="a" tabindex="-1">2</div></div>
+    </div></div>`);
+    const grid = host.firstElementChild as HTMLElement;
+    const onStart = vi.fn();
+    const onMove = vi.fn();
+    const onEnd = vi.fn();
+    const controller = createGridChartRangeHandle(grid, { onStart, onMove, onEnd });
+    const cells = grid.querySelectorAll<HTMLElement>('[role="gridcell"]');
+    const second = cells[1] as HTMLElement;
+    const handle = grid.querySelector("[data-ok-data-grid-chart-handle]") as HTMLElement;
+    handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+    expect(onStart).toHaveBeenCalled();
+    const box = second.getBoundingClientRect();
+    const at = { clientX: box.left + 2, clientY: box.top + box.height / 2 };
+    document.dispatchEvent(new PointerEvent("pointermove", at));
+    document.dispatchEvent(new PointerEvent("pointermove", at));
+    expect(onMove).toHaveBeenCalledTimes(1);
+    expect(onMove).toHaveBeenCalledWith({ id: "2", field: "a" });
+    document.dispatchEvent(new PointerEvent("pointermove", { clientX: -50, clientY: -50 }));
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    expect(onEnd).toHaveBeenLastCalledWith(false);
+    handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(onEnd).toHaveBeenLastCalledWith(true);
+    // Other presses and buttons don't start a drag.
+    second.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+    handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 2 }));
+    expect(onStart).toHaveBeenCalledTimes(2);
+    controller.destroy();
+    const onRangeChartUpdate = vi.fn();
+    const onRangeChart = vi.fn();
+    const selection = createGridCellSelection(grid, {
+      enabled: () => true,
+      onSelect: vi.fn(),
+      onRangeChart,
+      onRangeChartUpdate,
+    });
+    const press = (init: KeyboardEventInit) =>
+      second.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "F1", ...init }));
+    press({ altKey: true, shiftKey: true });
+    expect(onRangeChartUpdate).toHaveBeenCalledTimes(1);
+    press({ altKey: true });
+    expect(onRangeChart).toHaveBeenCalledTimes(1);
+    selection.destroy();
   });
 });

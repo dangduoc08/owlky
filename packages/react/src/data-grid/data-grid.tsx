@@ -5,6 +5,7 @@ import {
   type ChartSelectionDetail,
   clampGridWidth,
   createGridCellSelection,
+  createGridChartRangeHandle,
   createGridClipboard,
   createGridColumnControls,
   createGridContextMenu,
@@ -35,6 +36,7 @@ import {
   type GridCellSelectionModel,
   type GridChartModel,
   type GridChartModels,
+  type GridChartRangeHandleOptions,
   type GridChartsState,
   type GridChartType,
   type GridClipboard,
@@ -102,6 +104,7 @@ import {
   gridChartFields,
   gridChartGroups,
   gridChartOptions,
+  gridChartRangeMarks,
   gridChartsState,
   gridChartTypes,
   gridColSpans,
@@ -163,6 +166,7 @@ import {
   gridQuickFilterValues,
   gridRangeChartId,
   gridRangeChartModel,
+  gridResizeChartRange,
   gridRowArrowSelection,
   gridRowGroups,
   gridRowOffsets,
@@ -3793,6 +3797,12 @@ function DataGridInner<R>(
       enabled: () => cellOn.current,
       onSelect: (anchor, focus, mode) => cellSelect.current(anchor, focus, mode),
       onRangeChart: () => rangeChart.current({}, true),
+      onRangeChartUpdate: () => updateRangeChart.current(),
+    });
+    const rangeHandles = createGridChartRangeHandle(grid, {
+      onStart: () => rangeHandle.current.onStart(),
+      onMove: (target) => rangeHandle.current.onMove(target),
+      onEnd: (cancelled) => rangeHandle.current.onEnd(cancelled),
     });
     const handle = createGridClipboard(grid, {
       copyText: () => clipboard.current.copyText(),
@@ -3807,6 +3817,7 @@ function DataGridInner<R>(
     });
     return () => {
       cells.destroy();
+      rangeHandles.destroy();
       handle.destroy();
       menu.destroy();
       clipboardApi.current = null;
@@ -4065,6 +4076,62 @@ function DataGridInner<R>(
   };
   const rangeChart = useRef(createRangeChart);
   rangeChart.current = createRangeChart;
+  // 4.18.89: the active range chart's cells on the page, and a handle that resizes the range.
+  const rangeMarks =
+    chartsIntegration && !pivot && isGridRangeChart(panelModel)
+      ? gridChartRangeMarks(panelModel, cellRowIds, cellFields)
+      : null;
+  const rangeRowIds = () =>
+    localSort(server.filter ? orderedRows : localFilter(orderedRows))
+      .filter(isData)
+      .map(idOf);
+  const rangeDrag = useRef<GridChartModel | null>(null);
+  const rangeHandle = useRef<GridChartRangeHandleOptions>(undefined as never);
+  rangeHandle.current = {
+    onStart: () => {
+      rangeDrag.current = panelModel;
+    },
+    onMove: (target) => {
+      const start = rangeDrag.current;
+      if (start)
+        setPanelModel(
+          gridResizeChartRange(
+            start,
+            rangeRowIds(),
+            shown.filter((c) => c.type !== "actions"),
+            target,
+          ),
+        );
+    },
+    onEnd: (cancelled) => {
+      const start = rangeDrag.current;
+      rangeDrag.current = null;
+      if (cancelled && start) setPanelModel(start);
+    },
+  };
+  /** Alt + Shift + F1: the active range chart draws the selected cells (keyboard resize). */
+  const updateRangeChart = useRef<() => void>(undefined as never);
+  updateRangeChart.current = () => {
+    if (!chartsIntegration || !isGridRangeChart(panelModel)) return;
+    const ids = rangeRowIds();
+    const byId = new Map(view.map((row) => [idOf(row), row]));
+    const next = gridRangeChartModel(cellModel, ids, shown, (rowId, field) =>
+      rawValue(columnOf(field), byId.get(rowId) as R),
+    );
+    if (!next) {
+      setAnnouncement(labels.chartsRangeRefused);
+      return;
+    }
+    setPanelModel({
+      ...panelModel,
+      rows: next.rows,
+      dimension: next.dimension,
+      values: next.values,
+    });
+    setAnnouncement(
+      labels.chartsRangeUpdated.replace("{label}", panelModel.label ?? labels.chartLabel),
+    );
+  };
   /** Cross-filtering: a chart's category selection becomes its field's `isAnyOf` filter. */
   const crossSelect = (
     cross: { field: string; categories: readonly string[] },
@@ -5613,6 +5680,7 @@ function DataGridInner<R>(
         {shown.map((column, c) => {
           if (!renders(column)) return null;
           const value = rawValue(column, row);
+          const chartMark = rangeMarks?.cells[rowId]?.[column.field];
           // Server-side aggregation: a server parent shows its aggregated values.
           const text =
             serverAggregation &&
@@ -5800,6 +5868,12 @@ function DataGridInner<R>(
                     ),
                   }
                 : {})}
+              {...(chartMark
+                ? {
+                    "data-ok-chart-range": chartMark.kind,
+                    "data-ok-chart-range-edge": chartMark.edges,
+                  }
+                : {})}
               tabIndex={-1}
               onClick={(event) => onCellClick?.(params, event)}
               onDoubleClick={(event) => {
@@ -5818,6 +5892,9 @@ function DataGridInner<R>(
               {fillCorner?.id === rowId && fillCorner.field === column.field && !inEdit && (
                 <span data-ok-data-grid-fill-handle="" aria-hidden="true" />
               )}
+              {rangeMarks?.handle?.id === rowId &&
+                rangeMarks.handle.field === column.field &&
+                !inEdit && <span data-ok-data-grid-chart-handle="" aria-hidden="true" />}
             </div>
           );
         })}

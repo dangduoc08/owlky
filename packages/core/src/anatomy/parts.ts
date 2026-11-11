@@ -917,6 +917,12 @@ export interface DataGridParts {
   "data-ok-data-grid-fill-handle": Value<"">;
   /** While the fill handle is dragged: on the cells it would fill. */
   "data-ok-fill-target": Value<"">;
+  /** On the cells the active range chart draws: `category` (its dimension) or `series` (a value). */
+  "data-ok-chart-range": Value<"category" | "series">;
+  /** On a range chart's cells: the outline edges, `top`, `right`, `bottom` and `left`. */
+  "data-ok-chart-range-edge": Value<string>;
+  /** In the range chart's bottom end cell: the handle that resizes the range when dragged. */
+  "data-ok-data-grid-chart-handle": Value<"">;
   /** On a row: `false` when it can't be moved (`isRowReorderable`). */
   "data-ok-reorderable": Value<"false">;
   /** With an unknown row count: `false` when no page follows the current one. */

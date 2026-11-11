@@ -1153,6 +1153,8 @@ export const gridDefaultLabels = {
   /** `{label}` is replaced (the new chart's name). */
   chartsRangeCreated: "Chart created: {label}",
   chartsRangeRefused: "Select cells with numbers to create a chart",
+  /** `{label}` is replaced (the chart's label). */
+  chartsRangeUpdated: "Chart range updated: {label}",
   chartsCrossFilter: "Filter the grid",
   /** `{field}` and `{values}` are replaced (the column's name, the categories). */
   chartsCrossFilterApplied: "Filtered by {field}: {values}",

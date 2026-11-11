@@ -357,3 +357,69 @@ describe("HTML data grid server-side pivoting (4.18.93)", () => {
     expect(asked.at(-1)?.pivotModel).toBeUndefined();
   });
 });
+
+describe("HTML data grid range chart outline and handle (4.18.89)", () => {
+  it("outlines the charted cells; the handle resizes; Escape restores; Alt + Shift + F1", async () => {
+    const { root, instance } = setup(snippet("charts-range"));
+    const cell = (rowId: string, field: string) =>
+      root.querySelector(
+        `[data-ok-row-id="${rowId}"] [role="gridcell"][data-ok-field="${field}"]`,
+      ) as HTMLElement;
+    expect(root.querySelector("[data-ok-chart-range]")).toBeNull();
+    instance.createRangeChart({
+      cellRange: { "s-01": { units: true, revenue: true }, "s-02": { units: true, revenue: true } },
+    });
+    const model = () => instance.chartModels[instance.activeChartId as string];
+    expect(model()).toMatchObject({ rows: ["s-01", "s-02"], values: ["units", "revenue"] });
+    expect(cell("s-01", "units").getAttribute("data-ok-chart-range")).toBe("series");
+    expect(cell("s-01", "units").getAttribute("data-ok-chart-range-edge")).toBe("top left");
+    const handle = cell("s-02", "revenue").querySelector(
+      "[data-ok-data-grid-chart-handle]",
+    ) as HTMLElement;
+    expect(handle).not.toBeNull();
+    cell("s-04", "revenue").scrollIntoView({ block: "nearest", inline: "nearest" });
+    const to = cell("s-04", "revenue").getBoundingClientRect();
+    handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+    document.dispatchEvent(
+      new PointerEvent("pointermove", { clientX: to.left + 4, clientY: to.top + 4 }),
+    );
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    expect(model()?.rows).toEqual(["s-01", "s-02", "s-03", "s-04"]);
+    expect(
+      cell("s-04", "revenue").querySelector("[data-ok-data-grid-chart-handle]"),
+    ).not.toBeNull();
+    // Escape puts the range back.
+    const next = cell("s-04", "revenue").querySelector(
+      "[data-ok-data-grid-chart-handle]",
+    ) as HTMLElement;
+    next.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+    cell("s-01", "units").scrollIntoView({ block: "nearest", inline: "nearest" });
+    const up = cell("s-01", "units").getBoundingClientRect();
+    document.dispatchEvent(
+      new PointerEvent("pointermove", { clientX: up.left + 4, clientY: up.top + 4 }),
+    );
+    expect(model()).toMatchObject({ rows: ["s-01"], values: ["units"] });
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(model()?.rows).toHaveLength(4);
+    // Keyboard: the selection becomes the range.
+    instance.setCellSelectionModel({ "s-03": { region: true, revenue: true } });
+    cell("s-03", "region").dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, key: "F1", altKey: true, shiftKey: true }),
+    );
+    expect(model()).toMatchObject({ rows: ["s-03"], dimension: "region", values: ["revenue"] });
+    expect(root.querySelector("[data-ok-data-grid-live]")?.textContent).toContain(
+      "Chart range updated",
+    );
+    instance.setCellSelectionModel({ "s-03": { region: true } });
+    cell("s-03", "region").dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, key: "F1", altKey: true, shiftKey: true }),
+    );
+    expect(root.querySelector("[data-ok-data-grid-live]")?.textContent).toBe(
+      "Select cells with numbers to create a chart",
+    );
+    // A chart that isn't a range chart: no outline.
+    instance.setActiveChartId("regions");
+    expect(root.querySelector("[data-ok-chart-range]")).toBeNull();
+    await expectNoAxeViolations(root);
+  });
+});

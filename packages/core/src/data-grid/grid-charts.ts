@@ -102,6 +102,158 @@ export function gridRangeChartId(
 /** Whether a chart model draws a range's rows (`rows`) instead of the grid's rows or groups. */
 export const isGridRangeChart = (model: GridChartModel): boolean => Array.isArray(model.rows);
 
+/* ------------------------------------------------------------------ the range on the grid */
+
+/** A charted cell's part: the categories, or a series. */
+export type GridChartRangeKind = "category" | "series";
+
+/** The outline of a range chart's cells on the page (4.18.89, AG Grid's chart range). */
+export interface GridChartRangeMarks {
+  /** By row id, then field: the cell's kind and its outline edges (`top right bottom left`). */
+  cells: Record<string, Record<string, { kind: GridChartRangeKind; edges: string }>>;
+  /** The cell that holds the resize handle: the last row's last series cell. */
+  handle: { id: string; field: string } | null;
+}
+
+/**
+ * The cells a range chart draws, among the page's shown rows and fields (in order): its rows ×
+ * its dimension (categories) and values (series). Edges follow the neighbours in the page, so a
+ * range split by sorting or filtering draws one outline per block.
+ */
+export function gridChartRangeMarks(
+  model: GridChartModel,
+  rowIds: readonly string[],
+  fields: readonly string[],
+): GridChartRangeMarks {
+  const cells: GridChartRangeMarks["cells"] = {};
+  if (!isGridRangeChart(model)) return { cells, handle: null };
+  const rows = new Set(model.rows);
+  const charted = new Set([...(model.dimension ? [model.dimension] : []), ...(model.values ?? [])]);
+  const at = (row: number, col: number) =>
+    rows.has(rowIds[row] as string) && charted.has(fields[col] as string);
+  let handle: GridChartRangeMarks["handle"] = null;
+  rowIds.forEach((id, r) => {
+    fields.forEach((field, c) => {
+      if (!at(r, c)) return;
+      const edges = [
+        !at(r - 1, c) && "top",
+        !at(r, c + 1) && "right",
+        !at(r + 1, c) && "bottom",
+        !at(r, c - 1) && "left",
+      ].filter(Boolean);
+      const kind: GridChartRangeKind = field === model.dimension ? "category" : "series";
+      const own = cells[id] ?? {};
+      own[field] = { kind, edges: edges.join(" ") };
+      cells[id] = own;
+      if (kind === "series") handle = { id, field };
+    });
+  });
+  return { cells, handle };
+}
+
+/**
+ * A range chart resized to a cell (its handle dragged there, AG Grid): the rows from the range's
+ * first row to the target's (`rowIds`: every row that passes the filters, in order), and the number
+ * columns from its first value to the target's column (`columns`: the shown ones, in order). The
+ * first row and the first value always stay; other keys of the model are kept.
+ */
+export function gridResizeChartRange(
+  model: GridChartModel,
+  rowIds: readonly string[],
+  columns: readonly GridColumn[],
+  target: { id: string; field: string },
+): GridChartModel {
+  if (!isGridRangeChart(model)) return model;
+  const rows = new Set(model.rows);
+  const first = rowIds.findIndex((id) => rows.has(id));
+  const to = rowIds.indexOf(target.id);
+  const nextRows =
+    first < 0 || to < 0
+      ? [...(model.rows ?? [])]
+      : rowIds.slice(Math.min(first, to), Math.max(first, to) + 1);
+  const fields = columns.map((c) => c.field);
+  const start = fields.indexOf(model.values?.[0] ?? "");
+  const end = fields.indexOf(target.field);
+  const values =
+    start < 0
+      ? [...(model.values ?? [])]
+      : columns
+          .slice(start, Math.max(start, end) + 1)
+          .filter((c) => c.type === "number" && c.field !== model.dimension)
+          .map((c) => c.field);
+  return { ...model, rows: nextRows, values };
+}
+
+export interface GridChartRangeHandleOptions {
+  /** A drag of the handle starts (keep the model to restore on Escape). */
+  onStart(): void;
+  /** The pointer is over another body cell. */
+  onMove(target: { id: string; field: string }): void;
+  /** The drag ended (`cancelled`: Escape, the owner restores the model). */
+  onEnd(cancelled: boolean): void;
+}
+
+/**
+ * Drags of a range chart's handle (`[data-ok-data-grid-chart-handle]`): reports the body cell
+ * under the pointer while dragging, the end, and Escape. Keyboard path: Alt + Shift + F1 (the cell
+ * selection controller's `onRangeChartUpdate`).
+ */
+export function createGridChartRangeHandle(
+  grid: HTMLElement,
+  options: GridChartRangeHandleOptions,
+): { destroy(): void } {
+  const abort = new AbortController();
+  const { signal } = abort;
+  const doc = grid.ownerDocument;
+  const cellSelector = '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])';
+  grid.addEventListener(
+    "pointerdown",
+    (event) => {
+      const handle = (event.target as Element).closest("[data-ok-data-grid-chart-handle]");
+      if (!handle || event.button !== 0) return;
+      event.preventDefault();
+      options.onStart();
+      let last = "";
+      const drag = new AbortController();
+      const end = (cancelled: boolean) => {
+        drag.abort();
+        options.onEnd(cancelled);
+      };
+      doc.addEventListener(
+        "pointermove",
+        (move) => {
+          const cell = doc.elementFromPoint(move.clientX, move.clientY)?.closest(cellSelector);
+          const row = cell?.closest('[role="row"][data-ok-row-id]');
+          const field = cell?.getAttribute("data-ok-field");
+          if (!cell || !row || !field || !grid.contains(cell)) return;
+          const id = row.getAttribute("data-ok-row-id") as string;
+          if (`${id}\u0000${field}` === last) return;
+          last = `${id}\u0000${field}`;
+          options.onMove({ id, field });
+        },
+        { signal: drag.signal },
+      );
+      doc.addEventListener("pointerup", () => end(false), { signal: drag.signal });
+      doc.addEventListener(
+        "keydown",
+        (key) => {
+          if (key.key !== "Escape") return;
+          key.preventDefault();
+          end(true);
+        },
+        { signal: drag.signal },
+      );
+      signal.addEventListener("abort", () => drag.abort());
+    },
+    { signal },
+  );
+  return {
+    destroy() {
+      abort.abort();
+    },
+  };
+}
+
 /* ------------------------------------------------------------------ cross-filtering */
 
 /**

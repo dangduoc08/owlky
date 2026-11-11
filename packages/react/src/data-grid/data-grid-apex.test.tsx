@@ -421,7 +421,7 @@ describe("DataGrid chart aggregation, combo and a second axis (4.18.88)", () => 
 });
 
 describe("DataGrid server-side pivoting (4.18.93)", () => {
-  type Sale = { id: string; region: string; year?: number; revenue?: number; count?: number };
+  type Sale = { id: string; region: string; count?: number; [field: string]: unknown };
   const pivotModel = {
     rows: [{ field: "region" }],
     columns: [{ field: "year" }],
@@ -493,6 +493,104 @@ describe("DataGrid server-side pivoting (4.18.93)", () => {
     await userEvent.click(toggle);
     expect(await screen.findByText("Ana")).toBeTruthy();
     expect(asked.at(-1)).toMatchObject({ pivotModel, groupKeys: ["North"] });
+    await expectNoAxeViolations(document.body);
+  });
+});
+
+describe("DataGrid range chart outline and handle (4.18.89)", () => {
+  const cell = (rowId: string, field: string) =>
+    document.querySelector(
+      `[data-ok-row-id="${rowId}"] [role="gridcell"][data-ok-field="${field}"]`,
+    ) as HTMLElement;
+  const marked = () =>
+    [...document.querySelectorAll("[data-ok-chart-range]")].map(
+      (c) =>
+        `${c.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id")}:${c.getAttribute("data-ok-field")}:${c.getAttribute("data-ok-chart-range")}`,
+    );
+  const columns: GridColDef<Row & { bonus: number }>[] = [
+    ...COLUMNS,
+    { field: "bonus", headerName: "Bonus", type: "number" },
+  ];
+  const rows = ROWS.map((row, i) => ({ ...row, bonus: i * 10 }));
+
+  it("outlines the charted cells; the handle resizes; Escape restores; Alt + Shift + F1", async () => {
+    const onChartModelChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={rows}
+        columns={columns}
+        chartsIntegration
+        cellSelection
+        onChartModelChange={onChartModelChange}
+        initialState={{
+          chartsIntegration: {
+            model: { type: "column", dimension: "name", values: ["score"], rows: ["1", "2"] },
+          },
+        }}
+      />,
+    );
+    expect(marked()).toEqual([
+      "1:name:category",
+      "1:score:series",
+      "2:name:category",
+      "2:score:series",
+    ]);
+    expect(cell("1", "name").getAttribute("data-ok-chart-range-edge")).toBe("top right left");
+    expect(cell("2", "score").getAttribute("data-ok-chart-range-edge")).toBe("right bottom left");
+    const handle = cell("2", "score").querySelector(
+      "[data-ok-data-grid-chart-handle]",
+    ) as HTMLElement;
+    expect(handle.getAttribute("aria-hidden")).toBe("true");
+    // Drag the handle to Diego's bonus: two more rows, one more series.
+    const target = cell("4", "bonus").getBoundingClientRect();
+    act(() => {
+      handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+      document.dispatchEvent(
+        new PointerEvent("pointermove", { clientX: target.left + 4, clientY: target.top + 4 }),
+      );
+      document.dispatchEvent(new PointerEvent("pointerup"));
+    });
+    expect(onChartModelChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ rows: ["1", "2", "3", "4"], values: ["score", "bonus"] }),
+    );
+    expect(cell("4", "bonus").querySelector("[data-ok-data-grid-chart-handle]")).not.toBeNull();
+    // Escape during a drag puts the range back.
+    const next = cell("4", "bonus").querySelector(
+      "[data-ok-data-grid-chart-handle]",
+    ) as HTMLElement;
+    const back = cell("1", "score").getBoundingClientRect();
+    act(() => {
+      next.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+      document.dispatchEvent(
+        new PointerEvent("pointermove", { clientX: back.left + 4, clientY: back.top + 4 }),
+      );
+    });
+    expect(onChartModelChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ rows: ["1"], values: ["score"] }),
+    );
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    });
+    expect(onChartModelChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ rows: ["1", "2", "3", "4"], values: ["score", "bonus"] }),
+    );
+    // Keyboard: select cells, then Alt + Shift + F1 draws them.
+    await userEvent.click(cell("3", "name"));
+    await userEvent.keyboard("{Shift>}{ArrowDown}{ArrowRight}{ArrowRight}{/Shift}");
+    await userEvent.keyboard("{Alt>}{Shift>}{F1}{/Shift}{/Alt}");
+    expect(onChartModelChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ rows: ["3", "4"], dimension: "name", values: ["score"] }),
+    );
+    expect(document.querySelector("[data-ok-data-grid-live]")?.textContent).toBe(
+      "Chart range updated: Chart of the data",
+    );
+    // A selection without numbers is refused.
+    await userEvent.click(cell("1", "team"));
+    await userEvent.keyboard("{Alt>}{Shift>}{F1}{/Shift}{/Alt}");
+    expect(document.querySelector("[data-ok-data-grid-live]")?.textContent).toBe(
+      "Select cells with numbers to create a chart",
+    );
     await expectNoAxeViolations(document.body);
   });
 });

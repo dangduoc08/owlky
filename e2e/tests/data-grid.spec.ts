@@ -515,6 +515,28 @@ for (const impl of implementations) {
       const range = grid.locator('[data-ok-chart-id="range-1"]');
       await expect(range.locator("[data-ok-chart-data] tbody tr")).toHaveCount(2);
       await expect(range.locator("[data-ok-chart-svg]")).toBeVisible();
+      // 4.18.89: the range's cells are outlined; Alt + Shift + F1 resizes it from the keyboard.
+      await expect(grid.locator('[data-ok-chart-range="category"]')).toHaveCount(2);
+      await grid.locator('[data-ok-row-id="s-01"] [data-ok-field="region"]').click();
+      for (let i = 0; i < 4; i++) await page.keyboard.press("Shift+ArrowRight");
+      for (let i = 0; i < 3; i++) await page.keyboard.press("Shift+ArrowDown");
+      await page.keyboard.press("Alt+Shift+F1");
+      await expect(live).toHaveText("Chart range updated: Range chart 1");
+      await expect(range.locator("[data-ok-chart-data] tbody tr")).toHaveCount(4);
+      // The pointer path: drag the handle up one row.
+      const handle = grid.locator("[data-ok-data-grid-chart-handle]");
+      await expect(handle).toHaveCount(1);
+      await handle.scrollIntoViewIfNeeded();
+      const from = await handle.boundingBox();
+      const to = await grid
+        .locator('[data-ok-row-id="s-03"] [data-ok-field="revenue"]')
+        .boundingBox();
+      if (!from || !to) throw new Error("no handle");
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 4 });
+      await page.mouse.up();
+      await expect(range.locator("[data-ok-chart-data] tbody tr")).toHaveCount(3);
       // A range without numbers is refused.
       await grid.locator('[data-ok-row-id="s-03"] [data-ok-field="product"]').click();
       await page.keyboard.press("Alt+F1");

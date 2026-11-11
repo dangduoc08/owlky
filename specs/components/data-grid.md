@@ -126,6 +126,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         › FormControlLabel[hidden]?(Checkbox[data-ok-data-grid-set-value="<value>"]) × values
       (filter panel: in the value field's place, id <id>-filter-value[-n])
     cells with cellSelection: [aria-selected=true][data-ok-range-edge="top right bottom left"]?
+    cells of the active range chart (4.18.89): [data-ok-chart-range=category|series][data-ok-chart-range-edge]
+      › span[data-ok-data-grid-chart-handle][aria-hidden] (bottom end cell)
     Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=group|aggregate-none|aggregate-<fn>][hidden]?[data-ok-selected]?
     Menu#<id>-export › MenuItem[data-ok-data-grid-export=excel]
     toolbar › Button (Pivot: pivot model given; Chart: chartsIntegration) › Popover#<id>-pivot | #<id>-charts
@@ -702,6 +704,22 @@ Shift + arrows extend the cell range only. A Shift + press clears the page's tex
 `preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
 checkbox's click, which comes before its `change`.
 
+Range chart outline (4.18.89, AG Grid's chart range; core `gridChartRangeMarks`,
+`gridResizeChartRange`, `createGridChartRangeHandle`): while the panel's chart (the active one) is a
+range chart, its cells among the page's shown rows and fields get `data-ok-chart-range="category"`
+(its dimension) or `"series"` (its values) and `data-ok-chart-range-edge` (an outline around each
+block: info color for categories, success for series, a tint; selected cells draw over it), and the
+last row's last series cell holds `span[data-ok-data-grid-chart-handle][aria-hidden]`. Dragging it
+resizes the range live (the model goes through `onChartModelChange` / the cancelable
+`ok:data-grid:chart` at each new cell): rows from the range's first row to the cell's (rows that pass
+the filters, in order), number columns from its first value to the cell's column; the first row and
+value stay; Escape puts the model back. Keyboard (WCAG 2.5.7): Alt + Shift + F1 on a cell (core
+`createGridCellSelection` `onRangeChartUpdate`) makes the active range chart draw the selected cells
+(its type, label and the rest kept), announced "Chart range updated: <label>" (locale key
+`chartsRangeUpdated`), refused without numbers as Alt + F1. Not with pivoting. Not provided: a live
+preview outline separate from the chart (the chart itself follows), moving the range without
+resizing it.
+
 Server-side pivoting (4.18.93, ADR-0063, MUI X server-side pivoting; core `gridServerPivot`,
 `gridServerPivotField`, `gridPivotLayout`): a pivoted grid with a data source (not lazy, not tree
 data) sends `pivotModel` in every request (top level and children) and `groupKeys` / `groupFields` =
@@ -801,6 +819,7 @@ runs before anything is written, and the target (selection corner or focused cel
 | Right to left | Left / Right and Alt + Left / Right follow the reading order |
 | Shift + arrows (cellSelection) | Extend the cell range from the anchor |
 | Alt + F1 (cell, cellSelection + chartsIntegration) | Chart the selected cells (announced; refused without numbers) |
+| Alt + Shift + F1 (cell, cellSelection + chartsIntegration) | The active range chart draws the selected cells (announced) |
 | Enter / Space (a cross-filtering chart's plot) | Filter the grid to the active category / clear it (the Chart's selection keys) |
 | Ctrl / Cmd + C, Ctrl / Cmd + V (cell) | Copy (cells, rows or the focused cell) / paste into editable cells |
 | Ctrl / Cmd + Z (cell, header) | Undo the last edit or paste |
