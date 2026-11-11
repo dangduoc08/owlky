@@ -648,7 +648,7 @@ function tooltipOf(
     }
     const rows = [
       {
-        name: series.name,
+        name: mark.forecast ? `${series.name} (${format.part("forecast")})` : series.name,
         value: range
           ? `${value(range[0] as number)} – ${value(range[1] as number)}`
           : value(mark.value),

@@ -35,6 +35,8 @@ import {
   type ChartLink,
   type ChartLocaleText,
   type ChartMarkerShape,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartNode,
   type ChartOrientation,
   type ChartPattern,
@@ -57,6 +59,7 @@ import {
   type ChartViolinNormalize,
   type ChartViolinSide,
   type ChartViolinWhiskers,
+  type ChartXGroup,
   type ChartXType,
   type ChartYAxis,
   type ChartZoom,
@@ -487,7 +490,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   /** Synchronized charts: charts of one group share the active category and the zoom. */
   group?: string | undefined;
   /** A brush chart: its selection zooms the chart with this `id`. */
-  brushTarget?: string | undefined;
+  brushTarget?: string | readonly string[] | undefined;
   /**
    * Charts of a `group`: a selection in this chart (click, Enter or Space), or its brush, filters
    * the other charts of the group, and this chart shows the group's filter: `"filter"` draws only
@@ -520,6 +523,35 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   onDataPointSelection?: ((detail: ChartSelectionDetail) => void) | undefined;
   /** Clicks and Enter or Space add points to the selection instead of replacing it. */
   allowMultipleDataPointsSelection?: boolean | undefined;
+  /**
+   * The first x position shown when nothing has zoomed the chart: a category index, a timestamp in
+   * milliseconds (date axes) or an x value (numeric axes, which may lie beyond the data).
+   */
+  xMin?: number | undefined;
+  /** The last x position shown when nothing has zoomed the chart (see `xMin`). */
+  xMax?: number | undefined;
+  /** Shows the last so many x units, ending at `xMax` or the last x value. */
+  xRange?: number | undefined;
+  /** X labels turn by this many degrees (-90 to 90) when they don't fit flat. */
+  xLabelRotate?: number | undefined;
+  /** X labels turn by `xLabelRotate` even when they fit flat. */
+  xLabelRotateAlways?: boolean | undefined;
+  /** A second row of x labels: each `{ title, cols }` spans `cols` categories. */
+  xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** How many points at the end of each line, area or bar series are a forecast. */
+  forecastCount?: number | undefined;
+  /** Forecast line dashes in px. Default 4. */
+  forecastDashArray?: number | undefined;
+  /** Forecast line width in px. Default the series' width. */
+  forecastStrokeWidth?: number | undefined;
+  /** Opacity of forecast areas and bars (0 to 1). Default 0.5. */
+  forecastFillOpacity?: number | undefined;
+  /** The message drawn when there is nothing to draw (none by default). */
+  noDataText?: string | undefined;
+  /** Where the message sits across the plot. Default `center`. */
+  noDataAlign?: ChartNoDataAlign | undefined;
+  /** Where the message sits down the plot. Default `middle`. */
+  noDataVerticalAlign?: ChartNoDataVerticalAlign | undefined;
 }
 
 const NO_HIDDEN: readonly number[] = [];
@@ -715,6 +747,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     gridColumnColors,
     gridRowOpacity,
     gridColumnOpacity,
+    xMin,
+    xMax,
+    xRange,
+    xLabelRotate,
+    xLabelRotateAlways,
+    xaxisGroups,
+    forecastCount,
+    forecastDashArray,
+    forecastStrokeWidth,
+    forecastFillOpacity,
+    noDataText,
+    noDataAlign,
+    noDataVerticalAlign,
     ...rest
   },
   ref,
@@ -829,6 +874,17 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     leaf,
     tint,
     zoomType,
+    xMin,
+    xMax,
+    xRange,
+    xLabelRotate,
+    xLabelRotateAlways,
+    forecastCount,
+    forecastDashArray,
+    forecastStrokeWidth,
+    forecastFillOpacity,
+    noDataAlign,
+    noDataVerticalAlign,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -961,6 +1017,23 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validLeaf = attributes["data-ok-leaf"] as ChartLeaf | undefined;
   const validTint = number("data-ok-tint");
   const validZoomType = attributes["data-ok-zoom-type"] as ChartZoomType | undefined;
+  const validXMin = number("data-ok-x-min");
+  const validXMax = number("data-ok-x-max");
+  const validXRange = number("data-ok-x-range");
+  const validXRotate = number("data-ok-x-label-rotate");
+  const xRotateAlways = attributes["data-ok-x-label-rotate-always"] !== undefined;
+  const validForecastCount = number("data-ok-forecast-count");
+  const validForecastDash = number("data-ok-forecast-dash-array");
+  const validForecastWidth = number("data-ok-forecast-stroke-width");
+  const validForecastOpacity = number("data-ok-forecast-fill-opacity");
+  const validNoDataAlign = attributes["data-ok-no-data-align"] as ChartNoDataAlign | undefined;
+  const validNoDataVertical = attributes["data-ok-no-data-vertical-align"] as
+    | ChartNoDataVerticalAlign
+    | undefined;
+  // Several brush targets are one attribute text, so linking depends on a stable value.
+  const brushTargets = Array.isArray(brushTarget)
+    ? brushTarget.filter(Boolean).join(" ") || undefined
+    : (brushTarget as string | undefined);
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -1115,8 +1188,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         partLabels: localeText,
         zoom: zoomControlled ? zoomRange : innerZoom.range,
         zoomFrom: zoomControlled ? undefined : innerZoom.from,
-        selection: brushTarget ? selection : preview,
-        brush: Boolean(brushTarget),
+        selection: brushTargets ? selection : preview,
+        brush: Boolean(brushTargets),
         selectedDataPoints: validSelected,
         crossfilter: validCrossfilter,
         filter: shownFilter,
@@ -1133,6 +1206,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         width,
         height: svgHeight,
         idPrefix: chartIdPrefix(id),
+        xMin: validXMin,
+        xMax: validXMax,
+        xRange: validXRange,
+        xLabelRotate: validXRotate,
+        xLabelRotateAlways: xRotateAlways,
+        xaxisGroups,
+        forecastCount: validForecastCount,
+        forecastDashArray: validForecastDash,
+        forecastStrokeWidth: validForecastWidth,
+        forecastFillOpacity: validForecastOpacity,
+        noDataText,
+        noDataAlign: validNoDataAlign,
+        noDataVerticalAlign: validNoDataVertical,
       }),
     [
       chartType,
@@ -1264,7 +1350,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       zoomControlled,
       zoomRange,
       innerZoom,
-      brushTarget,
+      brushTargets,
       selection,
       preview,
       validSelected,
@@ -1283,6 +1369,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       width,
       svgHeight,
       id,
+      validXMin,
+      validXMax,
+      validXRange,
+      validXRotate,
+      xRotateAlways,
+      xaxisGroups,
+      validForecastCount,
+      validForecastDash,
+      validForecastWidth,
+      validForecastOpacity,
+      noDataText,
+      validNoDataAlign,
+      validNoDataVertical,
     ],
   );
   const { layout } = render;
@@ -1290,7 +1389,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   renderRef.current = render;
   const kind = render.data.xType === "numeric" ? "value" : "index";
   /** Gestures and keys: zoomable charts zoom, brush charts move their selection. */
-  const gestureMode: ChartGestureMode = brushTarget
+  const gestureMode: ChartGestureMode = brushTargets
     ? "brush"
     : zoomOn && render.zoomable
       ? pan
@@ -1322,9 +1421,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const setBrushRef = useRef(setBrush);
   setBrushRef.current = setBrush;
   /** The range gestures and keys change: the zoom, or a brush chart's selection. */
-  const currentRange = () => (brushTarget ? selection : render.zoom);
+  const currentRange = () => (brushTargets ? selection : render.zoom);
   const commitRange = (range: ChartZoom | null) =>
-    brushTarget ? setBrush(range) : setZoom(range, "user");
+    brushTargets ? setBrush(range) : setZoom(range, "user");
 
   const onActiveRef = useRef(onActiveChange);
   onActiveRef.current = onActiveChange;
@@ -1364,11 +1463,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
 
   // Synchronized groups and brush charts (phase 4): linked by `group`, `id` and `brushTarget`.
   useEffect(() => {
-    if (!group && !brushTarget && !elementId) return;
+    if (!group && !brushTargets && !elementId) return;
     const link = linkChart({
       id: elementId,
       group,
-      brushTarget,
+      brushTarget: brushTargets,
       zoom: () => renderRef.current.zoom,
       showIndex: (index) => {
         // The keyboard drives a focused plot: another chart of the group (a pointer leaving it
@@ -1402,7 +1501,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       linkRef.current = null;
       setGroupFilter(null);
     };
-  }, [elementId, group, brushTarget, validCrossfilter]);
+  }, [elementId, group, brushTargets, validCrossfilter]);
 
   // A zoom that follows live data moves by itself: brushes of this chart redraw.
   const drawnMin = render.zoom?.min;
@@ -1540,7 +1639,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   });
   // A click selects the point, slice or cell under the pointer (not after a drag or on brushes).
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (brushTarget || gesturesRef.current?.moved) return;
+    if (brushTargets || gesturesRef.current?.moved) return;
     const box = event.currentTarget.getBoundingClientRect();
     const scale = layout.width / (box.width || layout.width);
     if (layout.mode === "tree") {
@@ -1576,7 +1675,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       event.preventDefault();
       return;
     }
-    if ((event.key === "Enter" || event.key === " ") && !event.repeat && !brushTarget) {
+    if ((event.key === "Enter" || event.key === " ") && !event.repeat && !brushTargets) {
       // Enter or Space selects the active item's points (a category: every series' point).
       const marks = chartActiveMarks(layout, activeRef.current);
       if (marks.length === 0) return;
@@ -1667,7 +1766,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         valueSuffix,
         locale,
         group,
-        brushTarget,
+        brushTarget: brushTargets,
+        xaxisGroups,
+        noDataText,
         colorRanges,
         joinBy,
         scaleThresholds,
@@ -1770,7 +1871,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         data-ok-chart-plot=""
         role="group"
         aria-roledescription="chart"
-        aria-label={label}
+        aria-label={render.noData ? `${label}: ${render.noData}` : label}
         tabIndex={0}
         // Sparklines: the least height (CSSOM in HTML; parity ignores `style`).
         style={

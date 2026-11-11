@@ -1699,6 +1699,92 @@
       ]
      },
      {
+      "attr": "data-ok-x-min",
+      "description": "The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes).",
+      "kind": "number",
+      "name": "xMin"
+     },
+     {
+      "attr": "data-ok-x-max",
+      "description": "The last x position shown when nothing has zoomed the chart (see `xMin`).",
+      "kind": "number",
+      "name": "xMax"
+     },
+     {
+      "attr": "data-ok-x-range",
+      "description": "Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data).",
+      "kind": "number",
+      "min": 0,
+      "name": "xRange"
+     },
+     {
+      "attr": "data-ok-x-label-rotate",
+      "description": "X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out.",
+      "kind": "number",
+      "min": -90,
+      "name": "xLabelRotate"
+     },
+     {
+      "attr": "data-ok-x-label-rotate-always",
+      "description": "X labels turn by `xLabelRotate` even when they fit flat.",
+      "kind": "flag",
+      "name": "xLabelRotateAlways"
+     },
+     {
+      "attr": "data-ok-forecast-count",
+      "description": "How many points at the end of each line, area or bar series are a forecast: lines are dashed, areas and bars faint.",
+      "kind": "number",
+      "min": 1,
+      "name": "forecastCount"
+     },
+     {
+      "attr": "data-ok-forecast-dash-array",
+      "description": "Forecast line dashes in px (default 4).",
+      "kind": "number",
+      "min": 1,
+      "name": "forecastDashArray"
+     },
+     {
+      "attr": "data-ok-forecast-stroke-width",
+      "description": "Forecast line width in px (default the series' width).",
+      "kind": "number",
+      "min": 0,
+      "name": "forecastStrokeWidth"
+     },
+     {
+      "attr": "data-ok-forecast-fill-opacity",
+      "description": "Opacity of forecast areas and bars (0 to 1; default 0.5).",
+      "kind": "number",
+      "min": 0,
+      "name": "forecastFillOpacity"
+     },
+     {
+      "attr": "data-ok-no-data-align",
+      "default": "center",
+      "description": "Where the `noDataText` message sits across the plot: `left`, `center` (the default) or `right`.",
+      "kind": "style",
+      "name": "noDataAlign",
+      "optional": true,
+      "values": [
+       "left",
+       "center",
+       "right"
+      ]
+     },
+     {
+      "attr": "data-ok-no-data-vertical-align",
+      "default": "middle",
+      "description": "Where the `noDataText` message sits down the plot: `top`, `middle` (the default) or `bottom`.",
+      "kind": "style",
+      "name": "noDataVerticalAlign",
+      "optional": true,
+      "values": [
+       "top",
+       "middle",
+       "bottom"
+      ]
+     },
+     {
       "attr": "data-ok-scale-classes",
       "default": 5,
       "description": "Geo charts: how many value classes (at most the colors available).",
@@ -1754,11 +1840,12 @@
     ],
     "parts": [
      {
-      "description": "On an annotation list item: a vertical line (`x`), a horizontal line (`y`) or a point.",
+      "description": "On an annotation list item: a vertical line (`x`), a horizontal line (`y`), a point or free text (`text`).",
       "kind": "value",
       "name": "data-ok-annotation",
       "value": [
        "point",
+       "text",
        "x",
        "y"
       ]
@@ -1911,6 +1998,14 @@
       "name": "data-ok-chart-annotation-tag"
      },
      {
+      "description": "A free text annotation.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-text"
+     },
+     {
       "description": "The authored list of annotations, after the data table. Visually hidden once drawn.",
       "elements": [
        "ul"
@@ -1942,6 +2037,22 @@
        "x",
        "y"
       ]
+     },
+     {
+      "description": "A group title in the second row of x labels.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-axis-group"
+     },
+     {
+      "description": "A tick between two groups of the second row of x labels.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-axis-group-tick"
      },
      {
       "description": "The title of an axis: the value axes' are rotated; `x` marks the x axis title.",
@@ -2206,6 +2317,11 @@
       "name": "data-ok-chart-filter-status"
      },
      {
+      "description": "A dashed line, faint area or bar of the forecast tail (`forecastCount`).",
+      "kind": "state",
+      "name": "data-ok-chart-forecast"
+     },
+     {
       "description": "Geo charts: the group behind the regions that holds the sphere and the graticule.",
       "elements": [
        "g"
@@ -2340,6 +2456,14 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-navigator-frame"
+     },
+     {
+      "description": "The message drawn when there is nothing to draw (`noDataText`).",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-no-data"
      },
      {
       "description": "One Sankey node.",
@@ -2996,6 +3120,12 @@
       "name": "data-ok-no-data"
      },
      {
+      "description": "On a chart root: the message drawn when there is nothing to draw.",
+      "kind": "value",
+      "name": "data-ok-no-data-text",
+      "value": "string"
+     },
+     {
       "description": "On a value axis group: the axis is on the right of the plot.",
       "kind": "state",
       "name": "data-ok-opposite"
@@ -3081,6 +3211,16 @@
       ]
      },
      {
+      "description": "On a text annotation list item: how the text lines up with its position.",
+      "kind": "value",
+      "name": "data-ok-text-anchor",
+      "value": [
+       "end",
+       "middle",
+       "start"
+      ]
+     },
+     {
       "description": "The label of the total in a donut's or a radial bar's center.",
       "kind": "value",
       "name": "data-ok-total-label",
@@ -3114,6 +3254,12 @@
       "description": "On an annotation: the end of an x range.",
       "kind": "value",
       "name": "data-ok-x2",
+      "value": "string"
+     },
+     {
+      "description": "On a chart root: the x axis' second row of labels: `\"4 2024; 4 2025\"` (columns, then the title).",
+      "kind": "value",
+      "name": "data-ok-xaxis-groups",
       "value": "string"
      },
      {
@@ -3228,7 +3374,7 @@
      {
       "description": "A brush chart: its selection zooms the chart with this `id`.",
       "name": "brushTarget",
-      "type": "string"
+      "type": "string | readonly string[]"
      },
      {
       "default": "\"error\"",
@@ -3439,6 +3585,26 @@
       "type": "\"circles\" | \"horizontalLines\" | \"slantedLines\" | \"squares\" | \"verticalLines\""
      },
      {
+      "description": "How many points at the end of each line, area or bar series are a forecast.",
+      "name": "forecastCount",
+      "type": "number"
+     },
+     {
+      "description": "Forecast line dashes in px. Default 4.",
+      "name": "forecastDashArray",
+      "type": "number"
+     },
+     {
+      "description": "Opacity of forecast areas and bars (0 to 1). 5.",
+      "name": "forecastFillOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Forecast line width in px. Default the series' width.",
+      "name": "forecastStrokeWidth",
+      "type": "number"
+     },
+     {
       "default": "\"geographic\"",
       "description": "Geo charts: real boundaries or equal tiles.",
       "name": "geoLayout",
@@ -3618,6 +3784,23 @@
       "description": "Stock charts: a navigator under the chart (the whole price line, the zoom as a brush).",
       "name": "navigator",
       "type": "boolean"
+     },
+     {
+      "default": "center",
+      "description": "Where the message sits across the plot.",
+      "name": "noDataAlign",
+      "type": "\"center\" | \"left\" | \"right\""
+     },
+     {
+      "description": "The message drawn when there is nothing to draw (none by default).",
+      "name": "noDataText",
+      "type": "string"
+     },
+     {
+      "default": "middle",
+      "description": "Where the message sits down the plot.",
+      "name": "noDataVerticalAlign",
+      "type": "\"bottom\" | \"middle\" | \"top\""
      },
      {
       "description": "Sankey charts: node thickness along the flow in px. Default 20.",
@@ -3952,6 +4135,31 @@
       "type": "string"
      },
      {
+      "description": "X labels turn by this many degrees (-90 to 90) when they don't fit flat.",
+      "name": "xLabelRotate",
+      "type": "number"
+     },
+     {
+      "description": "X labels turn by `xLabelRotate` even when they fit flat.",
+      "name": "xLabelRotateAlways",
+      "type": "boolean"
+     },
+     {
+      "description": "The last x position shown when nothing has zoomed the chart (see `xMin`).",
+      "name": "xMax",
+      "type": "number"
+     },
+     {
+      "description": "The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes, which may lie beyond the data).",
+      "name": "xMin",
+      "type": "number"
+     },
+     {
+      "description": "Shows the last so many x units, ending at `xMax` or the last x value.",
+      "name": "xRange",
+      "type": "number"
+     },
+     {
       "description": "Title of the x axis, drawn under its labels (also the data table's first header by default).",
       "name": "xTitle",
       "type": "string"
@@ -3961,6 +4169,11 @@
       "description": "(`\"numeric\"` for scatter).",
       "name": "xType",
       "type": "\"category\" | \"datetime\" | \"numeric\""
+     },
+     {
+      "description": "A second row of x labels: each `{ title, cols }` spans `cols` categories.",
+      "name": "xaxisGroups",
+      "type": "readonly ChartXGroup[]"
      },
      {
       "description": "Highest value on the value axis; radial bars: the value of a full ring (default 100).",
@@ -4024,7 +4237,7 @@
   },
   {
    "name": "ChartPart",
-   "type": "\"children\" | \"close\" | \"collapsed\" | \"count\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"noData\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
+   "type": "\"children\" | \"close\" | \"collapsed\" | \"count\" | \"end\" | \"forecast\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"noData\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
   },
   {
    "name": "ChartStripeColor",

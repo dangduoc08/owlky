@@ -13,7 +13,7 @@ export interface ChartLinkMember {
   readonly id?: string | undefined;
   /** Synchronized group name. */
   readonly group?: string | undefined;
-  /** The id of the chart this brush chart zooms. */
+  /** The ids of the charts this brush chart zooms, separated by spaces. */
   readonly brushTarget?: string | undefined;
   /** The chart's current zoom (brush charts read their target's). */
   zoom(): ChartZoom | null;
@@ -71,9 +71,13 @@ function tellFilter(group: string) {
 const groupOf = (member: ChartLinkMember) =>
   member.group ? [...members].filter((m) => m !== member && m.group === member.group) : [];
 
+/** The ids a brush chart zooms (`brushTarget` may name several). */
+const targetIds = (member: ChartLinkMember) =>
+  member.brushTarget?.split(/\s+/).filter(Boolean) ?? [];
+
 /** Brush charts of `member` (and of its group: they share one zoom). */
 const brushesOf = (targets: readonly ChartLinkMember[]) =>
-  [...members].filter((m) => m.brushTarget && targets.some((t) => t.id === m.brushTarget));
+  [...members].filter((m) => targets.some((t) => t.id && targetIds(m).includes(t.id)));
 
 function spread(source: ChartLinkMember, range: ChartZoom | null) {
   const group = groupOf(source);
@@ -86,7 +90,8 @@ export function linkChart(member: ChartLinkMember): ChartLink {
   members.add(member);
   // A brush shows its target's zoom at once; a target joining late updates its brushes.
   if (member.brushTarget) {
-    const target = [...members].find((m) => m.id === member.brushTarget);
+    const ids = targetIds(member);
+    const target = [...members].find((m) => m.id && ids.includes(m.id));
     member.select(target ? target.zoom() : null);
   }
   if (member.id) for (const brush of brushesOf([member])) brush.select(member.zoom());
@@ -101,11 +106,12 @@ export function linkChart(member: ChartLinkMember): ChartLink {
       spread(member, range);
     },
     brush(range) {
-      const target = [...members].find((m) => m.id && m.id === member.brushTarget);
-      if (!target) return;
-      target.applyZoom(range, "brush");
-      // The target's group follows; its brushes (this one included) draw the new selection.
-      spread(target, range);
+      const ids = targetIds(member);
+      for (const target of [...members].filter((m) => m.id && ids.includes(m.id))) {
+        target.applyZoom(range, "brush");
+        // The target's group follows; its brushes (this one included) draw the new selection.
+        spread(target, range);
+      }
     },
     drawn(range) {
       if (member.id) for (const brush of brushesOf([member])) brush.select(range);

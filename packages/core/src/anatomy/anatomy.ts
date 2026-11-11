@@ -67,6 +67,8 @@ import {
   type ChartLegend,
   type ChartLegendAlign,
   type ChartMarkerShape,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartPattern,
   type ChartStackType,
   type ChartTooltipCorner,
@@ -82,6 +84,8 @@ import {
   chartLegendAligns,
   chartLegends,
   chartMarkerShapes,
+  chartNoDataAligns,
+  chartNoDataVerticalAligns,
   chartPatterns,
   chartStackTypes,
   chartTooltipCorners,
@@ -5118,6 +5122,70 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`).",
     { optional: true },
   ),
+  xMin: number(
+    "data-ok-x-min",
+    undefined,
+    "The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes).",
+  ),
+  xMax: number(
+    "data-ok-x-max",
+    undefined,
+    "The last x position shown when nothing has zoomed the chart (see `xMin`).",
+  ),
+  xRange: number(
+    "data-ok-x-range",
+    undefined,
+    "Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data).",
+    { min: 0 },
+  ),
+  xLabelRotate: number(
+    "data-ok-x-label-rotate",
+    undefined,
+    "X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out.",
+    { min: -90 },
+  ),
+  xLabelRotateAlways: flag(
+    "data-ok-x-label-rotate-always",
+    "X labels turn by `xLabelRotate` even when they fit flat.",
+  ),
+  forecastCount: number(
+    "data-ok-forecast-count",
+    undefined,
+    "How many points at the end of each line, area or bar series are a forecast: lines are dashed, areas and bars faint.",
+    { min: 1 },
+  ),
+  forecastDashArray: number(
+    "data-ok-forecast-dash-array",
+    undefined,
+    "Forecast line dashes in px (default 4).",
+    { min: 1 },
+  ),
+  forecastStrokeWidth: number(
+    "data-ok-forecast-stroke-width",
+    undefined,
+    "Forecast line width in px (default the series' width).",
+    { min: 0 },
+  ),
+  forecastFillOpacity: number(
+    "data-ok-forecast-fill-opacity",
+    undefined,
+    "Opacity of forecast areas and bars (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
+  noDataAlign: style(
+    "data-ok-no-data-align",
+    chartNoDataAligns,
+    "center",
+    "Where the `noDataText` message sits across the plot: `left`, `center` (the default) or `right`.",
+    { optional: true },
+  ),
+  noDataVerticalAlign: style(
+    "data-ok-no-data-vertical-align",
+    chartNoDataVerticalAligns,
+    "middle",
+    "Where the `noDataText` message sits down the plot: `top`, `middle` (the default) or `bottom`.",
+    { optional: true },
+  ),
   scaleClasses: number(
     "data-ok-scale-classes",
     5,
@@ -5263,6 +5331,17 @@ export interface ChartAnatomyOptions {
   violinJitter?: number | undefined;
   unconstrainedViolinPoints?: boolean | undefined;
   violinMaxPoints?: number | undefined;
+  xMin?: number | undefined;
+  xMax?: number | undefined;
+  xRange?: number | undefined;
+  xLabelRotate?: number | undefined;
+  xLabelRotateAlways?: boolean | undefined;
+  forecastCount?: number | undefined;
+  forecastDashArray?: number | undefined;
+  forecastStrokeWidth?: number | undefined;
+  forecastFillOpacity?: number | undefined;
+  noDataAlign?: ChartNoDataAlign | undefined;
+  noDataVerticalAlign?: ChartNoDataVerticalAlign | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

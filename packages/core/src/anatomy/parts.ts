@@ -213,8 +213,10 @@ export interface CarouselParts {
 
 /** Chart: parts, states, values and triggers. */
 export interface ChartParts {
-  /** On an annotation list item: a vertical line (`x`), a horizontal line (`y`) or a point. */
-  "data-ok-annotation": Value<"x" | "y" | "point">;
+  /** On an annotation list item: a vertical line (`x`), a horizontal line (`y`), a point or free text (`text`). */
+  "data-ok-annotation": Value<"x" | "y" | "point" | "text">;
+  /** On a text annotation list item: how the text lines up with its position. */
+  "data-ok-text-anchor": Value<"start" | "middle" | "end">;
   /** Shows the axis titles of a radar chart. */
   "data-ok-axis-titles": State;
   /** Marks a Sankey link that loops back to an earlier node. */
@@ -459,6 +461,16 @@ export interface ChartParts {
   "data-ok-chart-tags": Part<"g">;
   /** One axis label. */
   "data-ok-chart-tick": Part<"text">;
+  /** A group title in the second row of x labels. */
+  "data-ok-chart-axis-group": Part<"text">;
+  /** A tick between two groups of the second row of x labels. */
+  "data-ok-chart-axis-group-tick": Part<"line">;
+  /** A free text annotation. */
+  "data-ok-chart-annotation-text": Part<"text">;
+  /** The message drawn when there is nothing to draw (`noDataText`). */
+  "data-ok-chart-no-data": Part<"text">;
+  /** A dashed line, faint area or bar of the forecast tail (`forecastCount`). */
+  "data-ok-chart-forecast": State;
   /** A toolbar button and what it does: zoom, pan, or download the chart as SVG, PNG or CSV. */
   "data-ok-chart-tool": Value<"zoomIn" | "zoomOut" | "reset" | "pan" | "svg" | "png" | "csv">;
   /** The icon of a toolbar button. */
@@ -584,6 +596,10 @@ export interface ChartParts {
   "data-ok-yaxis": Value<string>;
   /** The title of the x axis, drawn under its labels. */
   "data-ok-x-title": Value<string>;
+  /** On a chart root: the x axis' second row of labels: `"4 2024; 4 2025"` (columns, then the title). */
+  "data-ok-xaxis-groups": Value<string>;
+  /** On a chart root: the message drawn when there is nothing to draw. */
+  "data-ok-no-data-text": Value<string>;
   /** On an annotation: the end of a y range. */
   "data-ok-y2": Value<string>;
 }

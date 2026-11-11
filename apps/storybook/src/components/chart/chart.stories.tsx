@@ -180,3 +180,11 @@ export const Violin: StoryObj = story("violin");
 export const Beeswarm: StoryObj = story("beeswarm");
 export const Waffle: StoryObj = story("waffle");
 export const Unit: StoryObj = story("unit");
+// Roadmap 4.18.65: x axis groups, rotation and fixed windows; forecasts, no data, text annotations.
+export const XAxisGroups: StoryObj = story("x-axis-groups");
+export const XAxisRotation: StoryObj = story("x-axis-rotation");
+export const XAxisWindow: StoryObj = story("x-axis-window");
+export const Forecast: StoryObj = story("forecast");
+export const NoData: StoryObj = story("no-data");
+export const AnnotationsText: StoryObj = story("annotations-text");
+export const BrushTargets: StoryObj = story("brush-targets");

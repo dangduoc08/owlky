@@ -1,13 +1,14 @@
 import { type ChartYAxis, chartYAxesText } from "./chart-axes.js";
 import { type ChartDiscreteMarker, chartDiscreteMarkersText } from "./chart-cues.js";
 import { type ChartIndicator, chartIndicatorsText } from "./chart-indicators.js";
-import type { ChartColorRange } from "./chart-layout.js";
+import type { ChartColorRange, ChartXGroup } from "./chart-layout.js";
 import {
   type ChartColor,
   type ChartStripeColor,
   chartColors,
   parseChartNumber,
 } from "./chart-model.js";
+import { chartXGroupsText } from "./chart-xaxis.js";
 
 /*
  * Text attributes of a chart root (written by React and read by the HTML runtime): texts that
@@ -23,8 +24,12 @@ export interface ChartTextOptions {
   readonly locale?: string | undefined;
   /** Synchronized charts: the group's name. */
   readonly group?: string | undefined;
-  /** Brush charts: the id of the chart they zoom. */
-  readonly brushTarget?: string | undefined;
+  /** Brush charts: the id of the chart they zoom, or several (`"a b"`, 4.18.65). */
+  readonly brushTarget?: string | readonly string[] | undefined;
+  /** The x axis' second row (`"6 H1; 6 H2"`: columns, then the title; 4.18.65). */
+  readonly xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** The message shown when there is nothing to draw (4.18.65). */
+  readonly noDataText?: string | undefined;
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Sankey charts: a title per rank (`"Income; Budget; Spending"`). */
   readonly axisTitles?: readonly string[] | undefined;
@@ -83,6 +88,8 @@ export const CHART_TEXT_ATTRIBUTES = {
   dumbbellColors: "data-ok-dumbbell-colors",
   collapsedNodes: "data-ok-collapsed-nodes",
   drillNode: "data-ok-drill-node",
+  xaxisGroups: "data-ok-xaxis-groups",
+  noDataText: "data-ok-no-data-text",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -188,6 +195,16 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
         options.type === "geo"
           ? ((value as readonly ChartColor[] | undefined) ?? []).join(" ")
           : "";
+      if (text) out[attr] = text;
+      continue;
+    }
+    if (key === "xaxisGroups") {
+      const text = chartXGroupsText(value as readonly ChartXGroup[] | undefined);
+      if (text) out[attr] = text;
+      continue;
+    }
+    if (key === "brushTarget" && Array.isArray(value)) {
+      const text = (value as readonly string[]).filter(Boolean).join(" ");
       if (text) out[attr] = text;
       continue;
     }

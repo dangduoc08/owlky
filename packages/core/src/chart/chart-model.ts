@@ -105,6 +105,11 @@ export type ChartGrid = (typeof chartGrids)[number];
 /** Legend alignment (4.18.64, ApexCharts `legend.horizontalAlign`). */
 export const chartLegendAligns = ["left", "center", "right"] as const;
 export type ChartLegendAlign = (typeof chartLegendAligns)[number];
+/** Where the no-data message sits (4.18.65, ApexCharts `noData.align` / `.verticalAlign`). */
+export const chartNoDataAligns = ["left", "center", "right"] as const;
+export type ChartNoDataAlign = (typeof chartNoDataAligns)[number];
+export const chartNoDataVerticalAligns = ["top", "middle", "bottom"] as const;
+export type ChartNoDataVerticalAlign = (typeof chartNoDataVerticalAligns)[number];
 /** A grid stripe color: a palette color, the neutral `grey`, or `transparent` (no stripe). */
 export type ChartStripeColor = ChartColor | "grey" | "transparent";
 type Palette = (typeof paletteColorNames)[number];
@@ -175,7 +180,8 @@ export type ChartPart =
   | "collapsed"
   | "level"
   | "noData"
-  | "count";
+  | "count"
+  | "forecast";
 const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   boxPlot: ["min", "q1", "median", "q3", "max"],
   rangeArea: ["low", "high"],
@@ -218,6 +224,7 @@ export const chartPartNames: readonly ChartPart[] = [
   "level",
   "noData",
   "count",
+  "forecast",
 ];
 /** Default text of each part (table headers and tooltip rows). */
 export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
@@ -253,7 +260,19 @@ export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   noData: "No data",
   // Violins (4.18.21): the number of observations (table headers and tooltip rows).
   count: "Count",
+  // Forecast tails (4.18.65): tooltip rows and the data table's cells.
+  forecast: "Forecast",
 };
+
+/** Forecast tails (4.18.65): the first forecast x of a series (its last `count` points). */
+export function chartForecastStart(
+  series: ChartDataSeries,
+  count: number | undefined,
+): number | undefined {
+  if (!count || !["line", "area", "bar"].includes(series.type)) return undefined;
+  const xs = series.points.map((point) => point.x).sort((a, b) => a - b);
+  return xs.length ? xs[Math.max(0, xs.length - count)] : undefined;
+}
 
 /** One value of a point that has several: a number, or a date (timelines: ISO 8601, ms or Date). */
 export type ChartRangeValue = number | string | Date;
@@ -642,6 +661,10 @@ export function chartTable(
     seriesTypes?: boolean;
     /** Header text of each part (default `chartPartLabels`). */
     partLabels?: Readonly<Partial<Record<ChartPart, string>>> | undefined;
+    /** The x axis group of a category (4.18.65): named in its row header's accessible name. */
+    groupAt?: ((index: number) => string | undefined) | undefined;
+    /** Forecast tails (4.18.65): the last points of each series (their cells say so). */
+    forecastCount?: number | undefined;
   },
 ): ChartTableModel {
   // Generated series that carry no table column (stock volume bars) are left out.
@@ -716,6 +739,8 @@ export function chartTable(
         : data.xType === "numeric" && text !== String(raw)
           ? { "data-ok-value": String(raw) }
           : {};
+    const group = data.xType === "numeric" ? undefined : options.groupAt?.(x);
+    if (group) attrs["aria-label"] = `${group}, ${text}`;
     const at = data.series.map((series) => series.points.filter((p) => p.x === x));
     const count = Math.max(1, ...at.map((points) => points.length));
     for (let k = 0; k < count; k++) {
@@ -758,7 +783,21 @@ export function chartTable(
             ),
             ...tail,
           ];
-        const main = cell(point.y, options.formatValue(point.y, index), point.color);
+        const plain = cell(point.y, options.formatValue(point.y, index), point.color);
+        const start = chartForecastStart(
+          data.series[index] as ChartDataSeries,
+          options.forecastCount,
+        );
+        const main: ChartTableCell =
+          start !== undefined && x >= start
+            ? {
+                ...plain,
+                attrs: {
+                  ...plain.attrs,
+                  "aria-label": `${plain.text}, ${options.partLabels?.forecast ?? chartPartLabels.forecast}`,
+                },
+              }
+            : plain;
         if (volume) return [main, ...tail];
         if (list.length === 0) return [main];
         // Bubbles: the value, then the size.

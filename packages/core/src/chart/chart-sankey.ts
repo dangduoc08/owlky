@@ -7,6 +7,7 @@ import {
   type ChartRect,
   chartTextWidth,
   FONT,
+  fitChartText,
   fmt,
   node,
   r2,
@@ -315,13 +316,7 @@ function settle(column: Placed[], gap: number, extent: number) {
 const ease = (t: number) => 3 * t * t - 2 * t * t * t;
 const along = (t: number) => 1.5 * t * (1 - t) + t * t * t;
 
-/** `text` cut to `room` px (estimated widths) with an ellipsis; whole when it fits. */
-export function fitChartText(text: string, room: number): string {
-  if (chartTextWidth(text) <= room) return text;
-  const chars = [...text];
-  while (chars.length > 1 && chartTextWidth(`${chars.join("").trimEnd()}…`) > room) chars.pop();
-  return `${chars.join("").trimEnd()}…`;
-}
+export { fitChartText };
 
 /** Whether `(d, b)` lies on a link band (abstract coordinates: d along the flow, b across). */
 export function onSankeyLink(link: NonNullable<ChartFlow["link"]>, d: number, b: number): boolean {

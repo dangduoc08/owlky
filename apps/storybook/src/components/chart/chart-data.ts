@@ -17,6 +17,18 @@ export interface ChartExample {
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+const YEAR = [...MONTHS, "Oct", "Nov", "Dec"];
+const QUARTERS = ["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"];
+const LONG_LABELS = [
+  "Billing and invoices",
+  "Account settings",
+  "Mobile application",
+  "Data export tools",
+  "Single sign-on",
+  "Notification center",
+  "Team permissions",
+  "Reporting dashboards",
+];
 
 /** Days from 1 January 2011 (stacked columns). */
 const DAYS = ["2011-01-01", "2011-01-02", "2011-01-03", "2011-01-04", "2011-01-05", "2011-01-06"];
@@ -2292,6 +2304,178 @@ export const chartExamples: Record<string, ChartExample> = {
         height: 280,
         categories: ["North", "South", "Islands"],
         series: [{ name: "People", data: [42000, 31000, 9000] }],
+      },
+    ],
+  },
+  "x-axis-groups": {
+    title: "X axis groups",
+    props: {
+      label: "Revenue per quarter and year",
+      type: "bar",
+      categories: QUARTERS,
+      xaxisGroups: [
+        { title: "2024", cols: 4 },
+        { title: "2025", cols: 4 },
+      ],
+      series: [{ name: "Revenue", data: [18, 24, 31, 27, 29, 34, 40, 38] }],
+    },
+    more: [
+      {
+        label: "Sign-ups per quarter and half",
+        categories: QUARTERS.slice(0, 4),
+        xaxisGroups: [
+          { title: "First half", cols: 2 },
+          { title: "Second half", cols: 2 },
+        ],
+        xTitle: "Quarter",
+        series: [{ name: "Sign-ups", data: [120, 180, 150, 210] }],
+      },
+    ],
+  },
+  "x-axis-rotation": {
+    title: "X axis label rotation",
+    props: {
+      label: "Support tickets by product area",
+      type: "bar",
+      categories: LONG_LABELS,
+      xLabelRotate: -45,
+      series: [{ name: "Tickets", data: [31, 22, 17, 40, 12, 26, 19, 33] }],
+    },
+    more: [
+      {
+        label: "Support tickets by product area, turned at every width",
+        type: "bar",
+        categories: LONG_LABELS.slice(0, 5),
+        xLabelRotate: -30,
+        xLabelRotateAlways: true,
+        series: [{ name: "Tickets", data: [31, 22, 17, 40, 12] }],
+      },
+    ],
+  },
+  "x-axis-window": {
+    title: "Fixed x axis window",
+    props: {
+      label: "Daily visits, months three to seven",
+      categories: MONTHS,
+      xMin: 2,
+      xMax: 6,
+      markerSize: 4,
+      series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+    },
+    more: [
+      {
+        label: "Daily visits, the last four months",
+        categories: MONTHS,
+        xRange: 3,
+        markerSize: 4,
+        series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+      },
+      {
+        label: "Height and weight, an axis wider than the data",
+        type: "scatter",
+        xMin: 0,
+        xMax: 100,
+        series: [
+          {
+            name: "Samples",
+            data: [
+              [20, 31],
+              [35, 42],
+              [50, 47],
+              [62, 58],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  forecast: {
+    title: "Forecast",
+    props: {
+      label: "Monthly sales with a forecast for the last three months",
+      categories: MONTHS,
+      forecastCount: 3,
+      markerSize: 4,
+      series: [{ name: "Sales", data: [30, 41, 35, 51, 49, 62, 69, 91, 108] }],
+    },
+    more: [
+      {
+        label: "Quarterly revenue with a forecast",
+        type: "area",
+        categories: MONTHS,
+        forecastCount: 2,
+        forecastDashArray: 6,
+        forecastFillOpacity: 0.3,
+        series: [{ name: "Revenue", data: [12, 19, 15, 25, 22, 30, 34, 40, 44] }],
+      },
+      {
+        label: "Orders with a forecast",
+        type: "bar",
+        categories: MONTHS.slice(0, 6),
+        forecastCount: 2,
+        series: [{ name: "Orders", data: [44, 55, 41, 67, 22, 43] }],
+      },
+    ],
+  },
+  "no-data": {
+    title: "No data",
+    props: {
+      label: "Orders this week",
+      noDataText: "No orders yet",
+      height: 200,
+      categories: [],
+      series: [{ name: "Orders", data: [] }],
+    },
+    more: [
+      {
+        label: "Sales by region",
+        type: "donut",
+        noDataText: "Add a region to see the chart",
+        noDataVerticalAlign: "top",
+        noDataAlign: "left",
+        height: 200,
+        categories: [],
+        series: [{ name: "Sales", data: [] }],
+      },
+    ],
+  },
+  "annotations-text": {
+    title: "Text annotations",
+    props: {
+      label: "Weekly visits with notes",
+      categories: MONTHS,
+      markerSize: 4,
+      series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+      annotations: [
+        { axis: "text", x: "Mar", y: 15, label: "Campaign paused" },
+        { axis: "text", x: "Aug", y: 95, label: "New pricing", textAnchor: "end", color: "error" },
+      ],
+    },
+  },
+  "brush-targets": {
+    title: "Brush several charts",
+    props: {
+      id: "brush-targets-a",
+      label: "Visits of the whole year, the first detail chart",
+      categories: YEAR,
+      height: 180,
+      series: [{ name: "Visits", data: [12, 19, 15, 25, 22, 30, 34, 40, 44, 38, 42, 50] }],
+    },
+    more: [
+      {
+        id: "brush-targets-b",
+        label: "Orders of the whole year, the second detail chart",
+        type: "bar",
+        categories: YEAR,
+        height: 180,
+        series: [{ name: "Orders", data: [4, 9, 6, 11, 8, 13, 15, 12, 17, 14, 19, 21] }],
+      },
+      {
+        label: "Brush over both charts",
+        brushTarget: ["brush-targets-a", "brush-targets-b"],
+        categories: YEAR,
+        height: 96,
+        series: [{ name: "Visits", data: [12, 19, 15, 25, 22, 30, 34, 40, 44, 38, 42, 50] }],
       },
     ],
   },

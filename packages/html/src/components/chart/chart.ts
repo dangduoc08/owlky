@@ -25,6 +25,8 @@ import {
   type ChartLink,
   type ChartLocaleText,
   type ChartMarkerShape,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartNode,
   type ChartOrientation,
   type ChartPart,
@@ -92,6 +94,7 @@ import {
   parseChartIndicators,
   parseChartList,
   parseChartStripeColors,
+  parseChartXGroups,
   parseChartYAxes,
   placeChartTooltip,
   readChartAnnotations,
@@ -654,8 +657,6 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       else if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
       const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
       const label = table?.caption?.textContent?.trim() ?? "";
-      if (label) plot.setAttribute("aria-label", label);
-      else plot.removeAttribute("aria-label");
       const sparkline = element.hasAttribute(o.sparkline.attr);
       const given = readNumber(element, o.height) as number;
       // Sparklines: the container's height, at least `data-ok-height` (CSSOM, strict CSP).
@@ -861,7 +862,27 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         width: measured(),
         height,
         idPrefix: id,
+        xMin: readNumber(element, o.xMin) as number | undefined,
+        xMax: readNumber(element, o.xMax) as number | undefined,
+        xRange: readNumber(element, o.xRange) as number | undefined,
+        xLabelRotate: readNumber(element, o.xLabelRotate) as number | undefined,
+        xLabelRotateAlways: element.hasAttribute(o.xLabelRotateAlways.attr),
+        xaxisGroups: parseChartXGroups(element.getAttribute(CHART_TEXT_ATTRIBUTES.xaxisGroups)),
+        forecastCount: readNumber(element, o.forecastCount) as number | undefined,
+        forecastDashArray: readNumber(element, o.forecastDashArray) as number | undefined,
+        forecastStrokeWidth: readNumber(element, o.forecastStrokeWidth) as number | undefined,
+        forecastFillOpacity: readNumber(element, o.forecastFillOpacity) as number | undefined,
+        noDataText: text(element, CHART_TEXT_ATTRIBUTES.noDataText),
+        noDataAlign: element.hasAttribute(o.noDataAlign.attr)
+          ? (readStyle(element, o.noDataAlign) as ChartNoDataAlign)
+          : undefined,
+        noDataVerticalAlign: element.hasAttribute(o.noDataVerticalAlign.attr)
+          ? (readStyle(element, o.noDataVerticalAlign) as ChartNoDataVerticalAlign)
+          : undefined,
       });
+      const name = render.noData && label ? `${label}: ${render.noData}` : label;
+      if (name) plot.setAttribute("aria-label", name);
+      else plot.removeAttribute("aria-label");
       const { layout } = render;
       drawTools();
       drawLegend(render.legend);

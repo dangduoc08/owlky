@@ -163,6 +163,7 @@ export {
   type ChartAxisMap,
   type ChartColorRange,
   type ChartFlow,
+  type ChartForecast,
   type ChartLayout,
   type ChartLayoutOptions,
   type ChartMark,
@@ -170,6 +171,7 @@ export {
   type ChartNodeTag,
   type ChartRect,
   type ChartSlot,
+  type ChartXGroup,
   chartSigned,
   chartTextWidth,
   layoutChart,
@@ -188,6 +190,8 @@ export {
   type ChartLegend,
   type ChartLegendAlign,
   type ChartMarkerShape,
+  type ChartNoDataAlign,
+  type ChartNoDataVerticalAlign,
   type ChartPart,
   type ChartPattern,
   type ChartPoint,
@@ -215,6 +219,8 @@ export {
   chartLegendAligns,
   chartLegends,
   chartMarkerShapes,
+  chartNoDataAligns,
+  chartNoDataVerticalAligns,
   chartPartLabels,
   chartPartNames,
   chartParts,
@@ -325,6 +331,14 @@ export {
   chartViolinSides,
   chartViolinWhiskers,
 } from "./chart-violin.js";
+export {
+  type ChartFixedWindowOptions,
+  chartFixedWindow,
+  chartXGroupAt,
+  chartXGroups,
+  chartXGroupsText,
+  parseChartXGroups,
+} from "./chart-xaxis.js";
 export {
   type ChartZoom,
   type ChartZoomReason,

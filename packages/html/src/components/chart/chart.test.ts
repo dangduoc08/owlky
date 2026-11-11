@@ -94,7 +94,7 @@ const DEEP: MutationObserverInit = {
 };
 
 describe("chart snippets", () => {
-  it("covers every story", () => expect(snippets).toHaveLength(77));
+  it("covers every story", () => expect(snippets).toHaveLength(84));
 
   it.each(snippets)(
     "%s: a figure with a data table, CSP-safe; readable without JavaScript",
@@ -119,7 +119,10 @@ describe("chart snippets", () => {
     start();
     const { root, plot, svg } = parts(host);
     expect(root.hasAttribute("data-ok-ready")).toBe(true);
-    expect(plot.getAttribute("aria-label")).toBe(root.querySelector("caption")?.textContent);
+    // A no-data message joins the plot's name (4.18.65).
+    expect(plot.getAttribute("aria-label")).toContain(
+      root.querySelector("caption")?.textContent as string,
+    );
     expect(svg.querySelectorAll("[data-ok-chart-series]").length).toBeGreaterThan(0);
     expectNamedButtons(host);
     await expectNoAxeViolations(host);

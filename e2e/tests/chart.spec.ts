@@ -79,6 +79,13 @@ const STORIES = [
   "violin",
   "streamgraph",
   "crossfilter",
+  "x-axis-groups",
+  "x-axis-rotation",
+  "x-axis-window",
+  "forecast",
+  "no-data",
+  "annotations-text",
+  "brush-targets",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

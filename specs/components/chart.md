@@ -115,6 +115,12 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
                      g[data-ok-chart-annotation="x|y|point"][data-ok-color] ›
                        line[data-ok-chart-annotation-line] | rect[data-ok-chart-annotation-band] | circle[data-ok-chart-annotation-marker]
                        + rect[data-ok-chart-annotation-tag] + text[data-ok-chart-annotation-label]
+                     g[data-ok-chart-annotation=text][data-ok-color] › text[data-ok-chart-annotation-text][text-anchor] (4.18.65)
+      x axis (4.18.65): text[data-ok-chart-tick][transform=rotate(…)] (xLabelRotate), text[data-ok-chart-axis-group] + line[data-ok-chart-axis-group-tick]
+                        inside g[data-ok-chart-axis=x] (xaxisGroups)
+      forecast (4.18.65): path[data-ok-chart-line][data-ok-chart-forecast][stroke-dasharray], path[data-ok-chart-area][data-ok-chart-forecast][fill-opacity],
+                          path[data-ok-chart-bar][data-ok-chart-forecast][fill-opacity]
+      no data (4.18.65): text[data-ok-chart-no-data] (last child of the SVG, only when `noDataText` is set and nothing is drawn)
       selection:   g[data-ok-chart-brush] (before the active group) › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2 (brush charts)
       badges:      g[data-ok-chart-data-labels] › (rect[data-ok-chart-data-label-badge] + text[data-ok-chart-data-label=outside])×n
     Sankey (ADR-0047; root [data-ok-orientation]?[data-ok-node-width]?[data-ok-whitespace]?
@@ -229,7 +235,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Violin: thead › tr › th[scope=col][rowspan=2] + th[scope=colgroup][colspan=6]; second row th[data-ok-part="count|min|q1|median|q3|max"];
       one row per category: tbody › tr › th[scope=row] + td[data-ok-samples] (the count; observations) | td[data-ok-density] (empty; value:weight pairs) + td×5 (the summary, never read back)
   ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
-    li[data-ok-annotation="x|y|point"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]? › label text
+    li[data-ok-annotation="x|y|point|text"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]?[data-ok-text-anchor]? › label text
 Root text attributes (phase 4): [data-ok-group]? [data-ok-brush-target]? [data-ok-color-ranges]?
 ```
 Colors: `data-ok-color` = `<palette>` or `<palette>-<lighter|light|main|dark|darker>` (allowlist).
@@ -652,6 +658,17 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `projection` | `data-ok-projection="…"` | style | `equalEarth` `mercator` `equirectangular` | — | Geo charts: `equalEarth` (equal areas, the default), `mercator` (straight rhumb lines) or `equirectangular`. |
 | `geoLayout` | `data-ok-geo-layout="…"` | style | `geographic` `hex` | — | Geo charts: real boundaries (`geographic`, the default) or equal hex tiles (`hex`). |
 | `scaleMethod` | `data-ok-scale-method="…"` | style | `quantile` `equalInterval` `jenks` `threshold` | — | Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`). |
+| `xMin` | `data-ok-x-min="…"` | number | number | — | The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes). |
+| `xMax` | `data-ok-x-max="…"` | number | number | — | The last x position shown when nothing has zoomed the chart (see `xMin`). |
+| `xRange` | `data-ok-x-range="…"` | number | number | — | Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data). |
+| `xLabelRotate` | `data-ok-x-label-rotate="…"` | number | number | — | X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out. |
+| `xLabelRotateAlways` | `data-ok-x-label-rotate-always` | flag | boolean | off | X labels turn by `xLabelRotate` even when they fit flat. |
+| `forecastCount` | `data-ok-forecast-count="…"` | number | number | — | How many points at the end of each line, area or bar series are a forecast: lines are dashed, areas and bars faint. |
+| `forecastDashArray` | `data-ok-forecast-dash-array="…"` | number | number | — | Forecast line dashes in px (default 4). |
+| `forecastStrokeWidth` | `data-ok-forecast-stroke-width="…"` | number | number | — | Forecast line width in px (default the series' width). |
+| `forecastFillOpacity` | `data-ok-forecast-fill-opacity="…"` | number | number | — | Opacity of forecast areas and bars (0 to 1; default 0.5). |
+| `noDataAlign` | `data-ok-no-data-align="…"` | style | `left` `center` `right` | — | Where the `noDataText` message sits across the plot: `left`, `center` (the default) or `right`. |
+| `noDataVerticalAlign` | `data-ok-no-data-vertical-align="…"` | style | `top` `middle` `bottom` | — | Where the `noDataText` message sits down the plot: `top`, `middle` (the default) or `bottom`. |
 | `scaleClasses` | `data-ok-scale-classes="…"` | number | number | `5` | Geo charts: how many value classes (at most the colors available). |
 | `sphere` | `data-ok-sphere` | flag | boolean | off | Geo charts: the outline of the globe behind the regions. |
 | `graticule` | `data-ok-graticule` | flag | boolean | off | Geo charts: lines of longitude and latitude every 30 degrees. |
@@ -1094,7 +1111,8 @@ Option areas not covered by the table above:
 | `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / not built (4.18.21) | `beatChange` and the register methods are callback APIs with no HTML form; themes are tokens; `exec`: the element instance |
 | `states.active.allowMultipleDataPointsSelection` | `allowMultipleDataPointsSelection` (`data-ok-allow-multiple-data-points-selection`) | kept (4.18.60) | |
 | `states.active` (the selected look), `.filter`, `states.hover.filter`, `plotOptions.pie.expandOnClick` | the outline `[data-ok-chart-selected-mark]` | renamed (4.18.60) | fixed by the design: a 2px primary-text outline (not color alone); filters not applicable |
-| `chart.brush.targets` (several targets), `chart.brush.autoScaleYaxis` | `brushTarget` (one id) | deferred | several targets; y autoscale not applicable (zoom is x only) |
+| `chart.brush.targets` (several targets) | `brushTarget` (one id or a list; HTML ids separated by spaces in `data-ok-brush-target`) | kept (4.18.65) | the selection zooms every target and their groups; the first target found gives the initial selection |
+| `chart.brush.autoScaleYaxis` | — | not applicable | zoom is x only |
 | `chart.selection` (preselected range, fill, stroke) | the target's zoom | renamed | style fixed by the design |
 | crossfilter (Premium Linked Views / Highlight Filter): a click or brush in one chart filters the others | `crossfilter: "filter" \| "highlight"` (`data-ok-crossfilter`, optional) on charts of a `group` | renamed (4.18.19, ADR-0054) | Linked Views → `filter`, Highlight Filter → `highlight`; sources: the selection (click, Enter, Space) and brushes; categories by position; a **Clear filter** button and a polite status |
 | crossfilter on value ranges (Highlight Filter bins), numeric x ranges, filter persistence, filters across React and HTML charts | — | deferred / not applicable | ranges of values and numeric axes: a later row; groups are per library copy (ADR-0031) |
@@ -1107,8 +1125,11 @@ Option areas not covered by the table above:
 | `yaxis.title.text` | `yaxis[].title` (axis 0 falls back to `yTitle`) | renamed (4.18.59) | |
 | `yaxis.alignZero`, `.stepSize`, `.forceNiceScale`, `.decimalsInFloat`, `.floating`, `.labels.formatter` (per axis), `.axisBorder` / `.axisTicks` / `.crosshairs` per axis | — | deferred | ticks are always nice (`tickAmount` keeps nice steps when it can); per-axis formatters with the tooltip / custom content row |
 | `xaxis.title.text` | `xTitle` (drawn under the x labels; also the table's first header unless `xLabel`) | renamed (4.18.59) | |
-| `xaxis.min` / `.max` / `.range`, `.tickAmount`, `.stepSize`, `.tickPlacement`, `.decimalsInFloat` | zoom window | deferred | fixed x window (`range`: sliding window, see `appendData` `limit`), tick count |
-| `xaxis.group.groups` (grouped categories), `xaxis.labels.rotate` / `.rotateAlways` / `.hideOverlappingLabels` / `.trim` | — | deferred | two-level category labels; label rotation (labels skip today) |
+| `xaxis.min` / `.max` / `.range` | `xMin`, `xMax`, `xRange` (`data-ok-x-min`, `-max`, `-range`) | renamed (4.18.65) | the window shown when nothing has zoomed the chart; on vertical charts with an x axis (as zoom); category axes: 0-based indexes (ApexCharts: 1-based positions), date axes: timestamps in ms, numeric axes: x values, may lie beyond the data; zoom and reset work on top |
+| `xaxis.tickAmount`, `.stepSize`, `.tickPlacement`, `.decimalsInFloat` | — | deferred | a tick count on the x axis |
+| `xaxis.group.groups` (`title`, `cols`) | `xaxisGroups` (`{ title, cols }`; HTML `data-ok-xaxis-groups="4 2024; 4 2025"`) | renamed (4.18.65) | a second row; the group is part of each row header's accessible name; category and date axes on vertical charts; `xaxis.group.style`: not applicable (tokens) |
+| `xaxis.labels.rotate`, `.rotateAlways` | `xLabelRotate`, `xLabelRotateAlways` (`data-ok-x-label-rotate`, `data-ok-x-label-rotate-always`) | renamed (4.18.65) | opt-in (ApexCharts: `-45` by default), so existing charts keep their labels; the need to rotate uses an estimated plot width; rotated labels are cut to a third of the chart's height |
+| `xaxis.labels.hideOverlappingLabels`, `.trim` | always on | kept | labels that don't fit are left out; rotated ones are cut with an ellipsis |
 | `xaxis.labels.datetimeFormatter`, `.format`, `.datetimeUTC` | `labelFormatter`, `locale` | renamed | |
 | `xaxis.crosshairs`, `yaxis.crosshairs`, `xaxis.tooltip` | the hover crosshair | kept | style fixed by the design |
 | axis `style` / `cssClass` / `offsetX` / `offsetY`, `axisBorder`, `axisTicks` | — | not applicable | tokens / CSS |
@@ -1144,14 +1165,15 @@ Option areas not covered by the table above:
 | `plotOptions.bar.dataLabels.position` (`top`, `center`, `bottom`) | `dataLabelPosition` (`data-ok-data-label-position`, optional) | renamed (4.18.61) | inside the bar; `top` = by the value end |
 | `plotOptions.bar.dataLabels.orientation`, `.maxItems`, `.hideOverflowingLabels` | — | not applicable | labels are always horizontal and only drawn where they fit |
 | `plotOptions.bar.rangeBarGroupRows`, `.rangeBarOverlap`, `.hideZeroBarsWhenGrouped`, `.isFunnel3d` | — | deferred | timeline rows shared by series; 3D funnel not applicable |
-| `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | — | deferred | dashed forecast tail |
+| `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | `forecastCount`, `forecastFillOpacity`, `forecastStrokeWidth`, `forecastDashArray` (`data-ok-forecast-*`) | renamed (4.18.65) | lines, areas and bars; tooltip rows `Series (Forecast)` and `aria-label` on the table cells, so the dash isn't the only cue (part label `forecast`) |
 | `title.text` (`align`, `floating`, `style`…) | `label` → `caption` | renamed | style not applicable (tokens); a subtitle: compose a Card header |
-| `noData.text` (`align`, `verticalAlign`; `style` not applicable) | — | deferred | empty state text in the plot |
+| `noData.text`, `.align`, `.verticalAlign` | `noDataText` (`data-ok-no-data-text`), `noDataAlign`, `noDataVerticalAlign` | renamed (4.18.65) | `text[data-ok-chart-no-data]` over the plot when no series has a value; the message joins the plot's `aria-label`; `style`: not applicable (tokens) |
 | `responsive` (`breakpoint`, `options` overrides) | — | not applicable | container width drives the layout; options per breakpoint are app code |
 | `theme.palette`, `.mode`, `.tokens`, `.follow`, `.name`, `.designSystem` | `colors` (palette names), `data-ok-theme` | renamed | |
 | `theme.monochrome` | — | not applicable | shades of one palette color: `colors` |
 | `theme.accessibility.colorBlindMode` (`deuteranopia`, `protanopia`, `tritanopia`, `highContrast`) | `colorBlindMode` flag (`data-ok-color-blind-mode`) | renamed (4.18.62) | no palette swap (colors are tokens): each series gets a distinct marker shape (lines get 4px markers), pattern and dash instead, so color is never the only cue (WCAG 1.4.1) |
-| `annotations.texts`, points `click` / `mouseEnter` / `mouseLeave` / `tooltip`, `yAxisIndex` | `annotations` | deferred | free text annotations; interactive point annotations |
+| `annotations.texts` (`x`, `y`, `text`, `textAnchor`) | `annotations` with `axis: "text"` (`label`, `textAnchor`; HTML `li[data-ok-annotation=text][data-ok-text-anchor]`) | renamed (4.18.65) | `x`, `y` are data coordinates (ApexCharts: px), since the chart redraws at its container's width; font and box styles: not applicable (tokens) |
+| annotation points `click` / `mouseEnter` / `mouseLeave` / `tooltip`, `yAxisIndex` | — | deferred | interactive point annotations |
 | `annotations.images`, points `image` / `customSVG`, label `style` / `offset*`, `fillColor` / `borderColor` | — | not applicable | design / tokens |
 | methods `render`, `updateOptions`, `appendSeries`, `add*Annotation` / `removeAnnotation` / `clearAnnotations`, `destroy`, `highlightSeries`, `showSeries` / `hideSeries`, `dataURI`, `setLocale`, `getRadialScales` | instance API above | renamed | see the table above; `setLocale` → `setLocaleText`; `destroy` = runtime `stop()` / unmount; `getRadialScales` not applicable |
 

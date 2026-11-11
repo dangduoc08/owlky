@@ -33,6 +33,7 @@ export type {
   ChartPointInput,
   ChartSeries,
   ChartType,
+  ChartXGroup,
   ChartXType,
   ChipColor,
   ChipVariant,
