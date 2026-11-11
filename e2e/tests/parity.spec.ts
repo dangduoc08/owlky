@@ -498,6 +498,8 @@ const pairs: [component: string, story: string][] = [
   ["map", "heatmap"],
   ["map", "side-by-side"],
   ["map", "choropleth"],
+  ["map", "bubbles"],
+  ["map", "hexbin"],
   ["map", "great-circles"],
   ["map", "region-drilldown"],
   ["map", "export-map"],

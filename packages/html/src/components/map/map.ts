@@ -12,7 +12,10 @@ import {
   type MapSky,
   type MapSourceSpec,
   type MapViewState,
+  mapHexbin,
+  mapPixelGrid,
   mapScale,
+  mapSizeScale,
   parseMapJson,
   parseMapPadding,
   readLayerDeclaration,
@@ -112,6 +115,12 @@ export interface MapInstance extends ComponentInstance {
   scale: typeof mapScale;
   /** The great circle arc between two `[longitude, latitude]` positions, as a GeoJSON feature (core `greatCircle`), for CDN pages. */
   greatCircle: typeof greatCircle;
+  /** A size scale for proportional symbols (core `mapSizeScale`): radii, the `circle-radius` expression and the size legend's circles, for CDN pages. */
+  sizeScale: typeof mapSizeScale;
+  /** Bins points into hexagons with their count or mean (core `mapHexbin`), for CDN pages. */
+  hexbin: typeof mapHexbin;
+  /** The cells of a pixel map: a lattice of dots, squares or hexagons inside each region (core `mapPixelGrid`), for CDN pages. */
+  pixelGrid: typeof mapPixelGrid;
 }
 
 /** Map events re-dispatched as `ok:map:<type>` (detail: the core `MapEvent`). */
@@ -433,6 +442,9 @@ export const map = defineComponent<MapInstance, MapEvents>({
       setFullscreen: controller.setFullscreen,
       scale: mapScale,
       greatCircle,
+      sizeScale: mapSizeScale,
+      hexbin: mapHexbin,
+      pixelGrid: mapPixelGrid,
       destroy() {
         declarations.disconnect();
         attributes.disconnect();

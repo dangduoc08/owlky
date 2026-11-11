@@ -166,6 +166,17 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
               : (colors[0] ?? ""),
         });
       }
+      // Size legends (4.18.94): each circle's radius, and the largest for the list's box.
+      for (const node of legend.querySelectorAll<HTMLElement>(
+        "[data-ok-map-legend-sizes], [data-ok-map-legend-circle]",
+      )) {
+        const radius = Number(node.getAttribute("data-ok-radius"));
+        const valid = Number.isFinite(radius) && radius >= 0 && radius <= 200;
+        const name = node.hasAttribute("data-ok-map-legend-sizes")
+          ? "--_ok-map-size-max"
+          : "--_ok-map-radius";
+        host.write(node, { [name]: valid ? `${radius}px` : "" });
+      }
     }
   };
 

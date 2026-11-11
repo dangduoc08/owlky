@@ -1,7 +1,12 @@
 "use client";
 
 import { type MapLegendVariant, type MapPosition, mapLegendAttributes } from "@owlky/core";
-import { type MapScaleClass, type MapScaleResult, mapScaleLabel } from "@owlky/core/map";
+import {
+  type MapScaleClass,
+  type MapScaleResult,
+  type MapSizeScaleResult,
+  mapScaleLabel,
+} from "@owlky/core/map";
 import { type HTMLAttributes, type ReactNode, useCallback, useId, useRef } from "react";
 import { useMapContext } from "./map-context.js";
 import { InCorner } from "./map-controls.js";
@@ -10,16 +15,32 @@ export {
   type GreatCircleFeature,
   type GreatCircleOptions,
   greatCircle,
+  type MapBubbleLayerOptions,
+  type MapHexbinAggregate,
+  type MapHexbinCollection,
+  type MapHexbinFeature,
+  type MapHexbinOptions,
+  type MapHexbinPoint,
   type MapLngLat,
+  type MapPixelGridOptions,
+  type MapPixelShape,
   type MapRegionLayersOptions,
   type MapScaleClass,
   type MapScaleMethod,
   type MapScaleOptions,
   type MapScalePalette,
   type MapScaleResult,
+  type MapSizeLegendItem,
+  type MapSizeMethod,
+  type MapSizeScaleOptions,
+  type MapSizeScaleResult,
+  mapBubbleLayer,
+  mapHexbin,
+  mapPixelGrid,
   mapRegionLayers,
   mapScale,
   mapScaleLabel,
+  mapSizeScale,
 } from "@owlky/core/map";
 
 const NUMBER = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
@@ -155,11 +176,13 @@ export interface MapLegendToggleEvent {
 }
 
 export interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
-  /** The scale from `mapScale()`: its classes, colors and range. */
-  scale: MapScaleResult;
+  /** The scale from `mapScale()`: its classes, colors and range (`classes` and `gradient` legends). */
+  scale?: MapScaleResult | undefined;
+  /** The size scale from `mapSizeScale()`: the nested circles of a `size` legend. */
+  sizeScale?: MapSizeScaleResult | undefined;
   /** The corner of the map that holds the legend. Default `bottom-left`. */
   position?: MapPosition | undefined;
-  /** `classes` (default): a swatch and a range per class; `gradient`: one bar from min to max. */
+  /** `classes` (default): a swatch and a range per class; `gradient`: one bar from min to max; `size`: nested circles of `sizeScale`. */
   variant?: MapLegendVariant | undefined;
   /** The legend's title (it also names the legend). */
   title?: ReactNode;
@@ -177,9 +200,13 @@ export interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, "ti
   onLegendToggle?: ((event: MapLegendToggleEvent) => void) | undefined;
 }
 
-/** MapLegend — the classes (or the gradient) of a choropleth's scale, in a corner of the map. */
+/**
+ * MapLegend — the classes (or the gradient) of a choropleth's scale, or the nested circles of a
+ * size scale, in a corner of the map.
+ */
 export function MapLegend({
   scale,
+  sizeScale,
   position = "bottom-left",
   variant = "classes",
   title,
@@ -203,7 +230,7 @@ export function MapLegend({
   );
   const ref = useRegistered(legends, handler);
   const toggles = interactive && variant === "classes";
-  const items = scale.classes.map((item, index) => ({
+  const items = (scale?.classes ?? []).map((item, index) => ({
     key: `class-${index}`,
     color: item.color,
     text: formatter ? formatter(item, index) : mapScaleLabel(item, tickFormatter),
@@ -211,7 +238,7 @@ export function MapLegend({
     max: String(item.max),
     none: false,
   }));
-  if (showNull)
+  if (showNull && scale)
     items.push({
       key: "null",
       color: scale.nullColor,
@@ -237,17 +264,33 @@ export function MapLegend({
             {title}
           </p>
         )}
-        {variant === "gradient" ? (
+        {variant === "size" ? (
+          <ul
+            data-ok-map-legend-sizes=""
+            data-ok-radius={String(sizeScale?.legend[0]?.radius ?? 0)}
+          >
+            {(sizeScale?.legend ?? []).map((item) => (
+              <li key={item.value}>
+                <span
+                  data-ok-map-legend-circle=""
+                  data-ok-radius={String(item.radius)}
+                  aria-hidden="true"
+                />
+                <span data-ok-map-legend-label="">{tickFormatter(item.value)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : variant === "gradient" ? (
           <div data-ok-map-legend-gradient="">
             <span data-ok-map-legend-bar="" aria-hidden="true">
-              {scale.colors.map((color, index) => (
+              {(scale?.colors ?? []).map((color, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: stops are positional.
                 <span key={index} data-ok-map-legend-stop="" data-ok-swatch={color} />
               ))}
             </span>
             <div data-ok-map-legend-ticks="">
-              <span>{tickFormatter(scale.min)}</span>
-              <span>{tickFormatter(scale.max)}</span>
+              <span>{tickFormatter(scale?.min ?? 0)}</span>
+              <span>{tickFormatter(scale?.max ?? 0)}</span>
             </div>
           </div>
         ) : (

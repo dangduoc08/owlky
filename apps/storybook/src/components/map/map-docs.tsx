@@ -11,10 +11,12 @@ import {
 import mapApi from "@owlky/docs-content/api/map.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MapView, Marker, NavigationControl, ScaleControl } from "@owlky/react";
+import bubbles from "../../../../../packages/html/src/components/map/examples/bubbles-group.html?raw";
 import changeTheme from "../../../../../packages/html/src/components/map/examples/change-theme-group.html?raw";
 import choropleth from "../../../../../packages/html/src/components/map/examples/choropleth-group.html?raw";
 import exportMapGroup from "../../../../../packages/html/src/components/map/examples/export-map-group.html?raw";
 import greatCircles from "../../../../../packages/html/src/components/map/examples/great-circles-group.html?raw";
+import hexbin from "../../../../../packages/html/src/components/map/examples/hexbin-group.html?raw";
 import interactionGroup from "../../../../../packages/html/src/components/map/examples/interaction-group.html?raw";
 import markersGroup from "../../../../../packages/html/src/components/map/examples/markers-popups-group.html?raw";
 import regionDrilldown from "../../../../../packages/html/src/components/map/examples/region-drilldown-group.html?raw";
@@ -260,6 +262,133 @@ export function PopulationMap() {
         onRegionSelect={(event) => console.log("Selected", event.id)}
       />
       <MapLegend scale={scale} title="Population (millions)" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "bubbles",
+    title: "Size points by value",
+    body: 'Proportional symbols draw a circle on each point whose size shows a value, such as the population of a city. `mapSizeScale(values, options)` turns the values into radii: with `method: "sqrt"` (the default) the circle\'s area follows the value, so a city twice as large looks twice as large; `linear` sizes the radius instead. `range` sets the radii of the lowest and the highest value in pixels (4 to 32 by default), and `input` names the feature property to read, such as `["get", "population"]`.\n\n`mapBubbleLayer({ id, source, size, color })` returns a circle layer that draws them: the largest circles first, so small ones stay on top, with an outline in the paper color. Color the circles by a second field with a `mapScale()` result whose `input` reads that field, or pass one color.\n\nA `MapLegend` with `variant="size"` and `sizeScale` shows nested circles with their values. Pick round values with `legendValues`. Join the points to `MapRegions` (with `promoteId` on the source) to give keyboard users a list of the points and screen readers a table of their values.',
+    html: `<!-- The points, with the population and the growth of each -->
+${snippetElement(bubbles, "data-ok-map-source ")}
+
+<!-- Nested circles, in a corner -->
+<div data-ok-map-corner="bottom-left">
+${indent(snippetElement(bubbles, 'data-ok-variant="size"'), 2)}
+</div>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapLegend,
+  MapView,
+  mapBubbleLayer,
+  mapScale,
+  mapSizeScale,
+  Source,
+} from "@owlky/react";
+
+const CITIES = [
+  { name: "New York", position: [-74.01, 40.71], population: 20.14, growth: 6.6 },
+  { name: "Chicago", position: [-87.63, 41.88], population: 9.62, growth: 1.7 },
+  { name: "Houston", position: [-95.37, 29.76], population: 7.12, growth: 20.3 },
+];
+const points = {
+  type: "FeatureCollection" as const,
+  features: CITIES.map(({ name, position, population, growth }) => ({
+    type: "Feature" as const,
+    properties: { name, population, growth },
+    geometry: { type: "Point" as const, coordinates: position },
+  })),
+};
+const size = mapSizeScale(
+  CITIES.map((city) => city.population),
+  { range: [6, 30], legendValues: [20, 10], input: ["get", "population"] },
+);
+// The growth colors the circles.
+const color = mapScale(
+  CITIES.map((city) => city.growth),
+  { method: "threshold", thresholds: [10], palette: "warning", input: ["get", "growth"] },
+);
+const bubbles = mapBubbleLayer({
+  id: "cities-bubbles",
+  source: "cities",
+  size,
+  color,
+  input: ["get", "population"],
+}) as unknown as LayerProps;
+
+export function CityBubbles() {
+  return (
+    <MapView
+      aria-label="Map of three US cities by population"
+      description="New York is the largest of the three cities; Houston grew the most since 2010."
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -85, latitude: 37, zoom: 3 }}
+    >
+      <Source id="cities" type="geojson" data={points}>
+        <Layer {...bubbles} />
+      </Source>
+      <MapLegend variant="size" sizeScale={size} title="Population (millions)" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "hexbin",
+    title: "Count points in hexagons",
+    body: 'When there are too many points to read one by one, count them in hexagons. `mapHexbin(points, options)` returns one hexagon polygon for each cell that holds points, with its `count` and its `value`. Points are `[longitude, latitude]` pairs, `[longitude, latitude, value]` triples or GeoJSON `Point` features. `radius` sets the size of the hexagons in degrees of longitude (1 by default). The cells are regular on the map\'s Web Mercator projection.\n\nThe `value` is the count, or with `aggregate: "mean"` the mean of the points\' values (`valueProperty` names the property, `value` by default). Set `minCount` to leave cells with few points without a mean, so one point doesn\'t color a cell. Color the cells with `mapScale(values, { input: ["get", "value"] })`. Fixed `thresholds` keep the legend the same for any data, so maps stay comparable. In HTML, `hexbin` is also on the map\'s instance.',
+    html: `${snippetElement(hexbin, "data-ok-map-source ")}
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-hexbin");
+  const map = getRuntime().get(element, "map");
+  const response = await fetch("maps/earthquakes.geojson");
+  map.setSourceData("quake-bins", map.hexbin(await response.json(), { radius: 0.75 }));
+</script>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapLegend,
+  MapView,
+  mapHexbin,
+  mapScale,
+  Source,
+} from "@owlky/react";
+
+const QUAKES: [number, number][] = [
+  [-122.8, 38.8],
+  [-122.81, 38.82],
+  [-116.3, 38.4],
+  [-104, 31.5],
+  [-104.02, 31.6],
+  [-103.9, 31.55],
+];
+const bins = mapHexbin(QUAKES, { radius: 0.75 });
+const scale = mapScale(
+  bins.features.map((cell) => cell.properties.value),
+  { method: "threshold", thresholds: [2, 3], palette: "info", input: ["get", "value"] },
+);
+const fill = {
+  id: "quake-bins-fill",
+  type: "fill",
+  paint: { "fill-color": scale.expression },
+} as unknown as LayerProps;
+
+export function QuakeHexbins() {
+  return (
+    <MapView
+      aria-label="Earthquakes counted in hexagons"
+      description="Most of the earthquakes are in western Texas."
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -112, latitude: 36, zoom: 4 }}
+    >
+      <Source id="quake-bins" type="geojson" data={bins}>
+        <Layer {...fill} />
+      </Source>
+      <MapLegend scale={scale} interactive={false} title="Earthquakes per hexagon" />
     </MapView>
   );
 }`,
@@ -554,7 +683,7 @@ export function DownloadMap() {
 - **\`ok:map:markerdragstart\`**, **\`ok:map:markerdrag\`** and **\`ok:map:markerdragend\`** fire on a marker with \`detail.lngLat\`.
 - **\`ok:map:regionselect\`** fires on a \`div[data-ok-map-regions]\` with \`detail.id\`, which is \`null\` when the selection is cleared. **\`ok:map:legendtoggle\`** fires on a legend with \`detail.classIndex\` and \`detail.active\`, the pressed classes.
 - **\`ok:map:fullscreen\`**, **\`ok:map:geolocate\`**, **\`ok:map:geolocateerror\`**, **\`ok:map:trackuserlocation\`** and **\`ok:map:fallback\`** report the controls and a map that can't draw.
-- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), exportMap(format, options), scale(values, options), greatCircle(from, to, options) }\`. \`scale\` is \`mapScale\` and \`greatCircle\` the same function as in JavaScript, for pages that load the map from the CDN.
+- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), exportMap(format, options), scale(values, options), greatCircle(from, to, options), sizeScale(values, options), hexbin(points, options), pixelGrid(geometry, options) }\`. \`scale\`, \`greatCircle\`, \`sizeScale\`, \`hexbin\` and \`pixelGrid\` are \`mapScale\`, \`greatCircle\`, \`mapSizeScale\`, \`mapHexbin\` and \`mapPixelGrid\`, for pages that load the map from the CDN.
 - **React:** event props such as \`onLoad\`, \`onMove\`, \`onClick\`, \`onMouseMove\` and \`onMouseEnter\`; a ref with \`getMap()\`, \`flyTo\`, \`easeTo\`, \`jumpTo\` and \`fitBounds\`; and \`useMap()\` inside a map or a \`MapProvider\`.`,
   },
   {
@@ -698,6 +827,12 @@ const PREVIEWS = {
           html: "div[data-ok-map-legend] in a corner",
           type: "MapScaleResult / ReactNode / corner",
           description: "The classes to show, the legend's title and its corner.",
+        },
+        {
+          react: 'MapLegend variant="size" sizeScale',
+          html: "ul[data-ok-map-legend-sizes] › span[data-ok-map-legend-circle][data-ok-radius]",
+          type: "MapSizeScaleResult",
+          description: "Nested circles of a size scale, with their values.",
         },
         {
           react: "MapLegend showNull / nullLabel / formatter / tickFormatter",

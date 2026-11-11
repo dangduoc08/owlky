@@ -66,6 +66,10 @@
    "value": "#F4F6F8"
   },
   {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
    "name": "--ok-palette-grey-800",
    "value": "#1C252E"
   },
@@ -412,6 +416,12 @@
       "type": "(from: MapLngLat, to: MapLngLat, options?: GreatCircleOptions | undefined) => GreatCircleFeature"
      },
      {
+      "description": "Bins points into hexagons with their count or mean (core `mapHexbin`), for CDN pages.",
+      "kind": "property",
+      "name": "hexbin",
+      "type": "(points: readonly MapHexbinPoint[] | { readonly type: \"FeatureCollection\"; readonly features: readonly MapHexbinPoint[]; }, options?: MapHexbinOptions | undefined) => MapHexbinCollection"
+     },
+     {
       "description": "Moves the camera to a place at once.",
       "kind": "property",
       "name": "jumpTo",
@@ -430,6 +440,12 @@
       "type": "(popup: string | Element) => void"
      },
      {
+      "description": "The cells of a pixel map: a lattice of dots, squares or hexagons inside each region (core `mapPixelGrid`), for CDN pages.",
+      "kind": "property",
+      "name": "pixelGrid",
+      "type": "(geometry: readonly MapPixelSourceFeature[] | { readonly type?: string; readonly features: readonly MapPixelSourceFeature[]; }, options?: MapPixelGridOptions | undefined) => { ...; }"
+     },
+     {
       "description": "Classifies values for a choropleth (core `mapScale`): class breaks, token colors and the MapLibre expressions.",
       "kind": "property",
       "name": "scale",
@@ -446,6 +462,12 @@
       "kind": "method",
       "name": "setSourceData",
       "type": "(id: string, data: unknown) => void"
+     },
+     {
+      "description": "A size scale for proportional symbols (core `mapSizeScale`): radii, the `circle-radius` expression and the size legend's circles, for CDN pages.",
+      "kind": "property",
+      "name": "sizeScale",
+      "type": "(values: readonly (number | null | undefined)[], options?: MapSizeScaleOptions | undefined) => MapSizeScaleResult"
      },
      {
       "description": "The camera: longitude, latitude, zoom, pitch and bearing.",
@@ -958,6 +980,12 @@
       "value": "string"
      },
      {
+      "description": "On a size legend circle: its radius in px (on the list: the largest one).",
+      "kind": "value",
+      "name": "data-ok-radius",
+      "value": "string"
+     },
+     {
       "description": "Set by the runtime once the first style is in.",
       "kind": "state",
       "name": "data-ok-ready"
@@ -1245,12 +1273,13 @@
      {
       "attr": "data-ok-variant",
       "default": "classes",
-      "description": "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest.",
+      "description": "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest; `size`: nested circles of a size scale (proportional symbols).",
       "kind": "style",
       "name": "variant",
       "values": [
        "classes",
-       "gradient"
+       "gradient",
+       "size"
       ]
      },
      {
@@ -1269,6 +1298,14 @@
       ],
       "kind": "part",
       "name": "data-ok-map-legend-bar"
+     },
+     {
+      "description": "One circle of a size legend, drawn at its radius.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-circle"
      },
      {
       "description": "One class of a legend: a toggle button (interactive) or a list item.",
@@ -1298,6 +1335,14 @@
       ],
       "kind": "part",
       "name": "data-ok-map-legend-label"
+     },
+     {
+      "description": "A size legend: its nested circles, largest first; `data-ok-radius` is the largest radius.",
+      "elements": [
+       "ul"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-legend-sizes"
      },
      {
       "description": "One color of a gradient bar.",
@@ -1335,7 +1380,7 @@
    },
    "name": "MapLegend",
    "react": {
-    "description": "The classes (or the gradient) of a choropleth's scale, in a corner of the map.",
+    "description": "The classes (or the gradient) of a choropleth's scale, or the nested circles of a size scale, in a corner of the map.",
     "native": "HTMLElement",
     "props": [
      {
@@ -1366,15 +1411,19 @@
       "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
      },
      {
-      "description": "The scale from `mapScale()`: its classes, colors and range.",
+      "description": "The scale from `mapScale()`: its classes, colors and range (`classes` and `gradient` legends).",
       "name": "scale",
-      "required": true,
       "type": "MapScaleResult"
      },
      {
       "description": "Adds a class for regions without a value.",
       "name": "showNull",
       "type": "boolean"
+     },
+     {
+      "description": "The size scale from `mapSizeScale()`: the nested circles of a `size` legend.",
+      "name": "sizeScale",
+      "type": "MapSizeScaleResult"
      },
      {
       "description": "Text of a number in the default class text and the gradient's ticks.",
@@ -1387,9 +1436,9 @@
       "type": "ReactNode"
      },
      {
-      "description": "`classes` (default): a swatch and a range per class; `gradient`: one bar from min to max.",
+      "description": "`classes` (default): a swatch and a range per class; `gradient`: one bar from min to max; `size`: nested circles of `sizeScale`.",
       "name": "variant",
-      "type": "\"classes\" | \"gradient\""
+      "type": "\"classes\" | \"gradient\" | \"size\""
      }
     ]
    }

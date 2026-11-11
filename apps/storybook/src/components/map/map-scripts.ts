@@ -11,6 +11,7 @@ import {
   type CensusRegion,
   DAYS,
   dayLabel,
+  EARTHQUAKES,
   MAP_STYLES,
   pointOnCircle,
   regionFilter,
@@ -323,6 +324,21 @@ const greatCircles: Script = (row) => {
     })),
   });
   return () => {};
+};
+
+const hexbin: Script = (row) => {
+  const { map: instance } = first(row);
+  let live = true;
+  fetch(EARTHQUAKES)
+    .then((response) => response.json())
+    .then((quakes) => {
+      if (live && instance)
+        instance.setSourceData("quake-bins", instance.hexbin(quakes, { radius: 0.75 }));
+    })
+    .catch(() => {});
+  return () => {
+    live = false;
+  };
 };
 
 /** Writes the first breadcrumb, and a second one for the region (DOM methods: no `innerHTML`). */
@@ -724,5 +740,20 @@ element.querySelector("[data-ok-map-panel] button").addEventListener("click", ()
       status.textContent = \`Could not save the map: \${error.message}\`;
     });
 });`,
+  },
+  bubbles: {
+    scriptSource: `${REGISTER}
+// The circles' sizes and colors are MapLibre expressions in the layer: no other script.`,
+  },
+  hexbin: {
+    script: hexbin,
+    scriptSource: `import { getRuntime } from "@owlky/html";
+${REGISTER}
+
+const element = document.querySelector("#map-hexbin");
+const map = getRuntime().get(element, "map");
+// Count the earthquakes in hexagons of 0.75 degrees, then give the cells to the source.
+const response = await fetch("maps/earthquakes.geojson");
+map.setSourceData("quake-bins", map.hexbin(await response.json(), { radius: 0.75 }));`,
   },
 };

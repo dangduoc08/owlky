@@ -346,6 +346,8 @@ const OVERLAY_ATTRIBUTES = [
   "data-ok-max",
   "data-ok-source",
   "data-ok-layer",
+  // Size legends (proportional symbols).
+  "data-ok-radius",
 ];
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

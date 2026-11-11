@@ -1746,6 +1746,12 @@ export interface MapParts {
   "data-ok-null": State;
   /** On a legend swatch or gradient stop: its color, a CSS color or `var(--ok-…)` token. */
   "data-ok-swatch": Value<string>;
+  /** A size legend: its nested circles, largest first; `data-ok-radius` is the largest radius. */
+  "data-ok-map-legend-sizes": Part<"ul">;
+  /** One circle of a size legend, drawn at its radius. */
+  "data-ok-map-legend-circle": Part<"span">;
+  /** On a size legend circle: its radius in px (on the list: the largest one). */
+  "data-ok-radius": Value<string>;
   /** On a cell of the regions table: the region's value, a number. */
   "data-ok-value": Value<string>;
 }

@@ -6590,7 +6590,7 @@ export const mapAttributionOptions = defineOptions("map-attribution", "data-ok-m
   ),
 });
 
-export const mapLegendVariants = ["classes", "gradient"] as const;
+export const mapLegendVariants = ["classes", "gradient", "size"] as const;
 export type MapLegendVariant = (typeof mapLegendVariants)[number];
 
 export const mapLegendOptions = defineOptions("map-legend", "data-ok-map-legend", {
@@ -6598,7 +6598,7 @@ export const mapLegendOptions = defineOptions("map-legend", "data-ok-map-legend"
     "data-ok-variant",
     mapLegendVariants,
     "classes",
-    "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest.",
+    "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest; `size`: nested circles of a size scale (proportional symbols).",
   ),
   interactive: behavior(
     "data-ok-interactive",

@@ -41,7 +41,22 @@ export {
   safeMapUrl,
   supportsWebGL,
 } from "./helpers.js";
+export {
+  type MapHexbinAggregate,
+  type MapHexbinCollection,
+  type MapHexbinFeature,
+  type MapHexbinOptions,
+  type MapHexbinPoint,
+  mapHexbin,
+  mapHexbinAggregates,
+} from "./hexbin.js";
 export { type MapIconName, type MapLabels, mapIcons, mapLabels } from "./icons.js";
+export {
+  type MapPixelGridOptions,
+  type MapPixelShape,
+  mapPixelGrid,
+  mapPixelShapes,
+} from "./lattice.js";
 export {
   createMapController,
   type MapController,
@@ -68,3 +83,13 @@ export {
   parseMapJson,
   parseMapPadding,
 } from "./map.js";
+export {
+  type MapBubbleLayerOptions,
+  type MapSizeLegendItem,
+  type MapSizeMethod,
+  type MapSizeScaleOptions,
+  type MapSizeScaleResult,
+  mapBubbleLayer,
+  mapSizeMethods,
+  mapSizeScale,
+} from "./symbols.js";

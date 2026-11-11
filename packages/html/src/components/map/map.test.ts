@@ -492,6 +492,37 @@ describe("map choropleth", () => {
     await expectNoAxeViolations(host);
   });
 
+  it("draws proportional symbols with a size legend (bubbles snippet)", async () => {
+    const { host, instance } = await setup(snippet("bubbles"));
+    const layer = instance.map?.getLayer("metros-bubbles");
+    expect(layer?.type).toBe("circle");
+    const sizes = host.querySelector("[data-ok-map-legend-sizes]") as HTMLElement;
+    expect(sizes.style.getPropertyValue("--_ok-map-size-max")).toMatch(/px$/);
+    const circles = host.querySelectorAll<HTMLElement>("[data-ok-map-legend-circle]");
+    expect(circles).toHaveLength(3);
+    expect(circles[2]?.offsetWidth).toBeLessThan(circles[0]?.offsetWidth ?? 0);
+    expect(host.querySelectorAll("[data-ok-map-region]")).toHaveLength(20);
+    // CDN pages build the scales and the cells with the instance's helpers.
+    expect(instance.sizeScale([1, 4], { range: [1, 2] }).radiusOf(4)).toBe(2);
+    expect(instance.hexbin([[0, 0]]).features).toHaveLength(1);
+    expect(instance.pixelGrid([]).features).toEqual([]);
+    await expectNoAxeViolations(host);
+  });
+
+  it("bins points into hexagons from a page script (hexbin snippet)", async () => {
+    const { instance } = await setup(snippet("hexbin"));
+    const bins = instance.hexbin(
+      [
+        [-100, 40],
+        [-100.01, 40.01],
+      ],
+      { radius: 0.75 },
+    );
+    instance.setSourceData("quake-bins", bins);
+    expect(bins.features[0]?.properties.count).toBe(2);
+    expect(instance.map?.getLayer("quake-bins-fill")?.type).toBe("fill");
+  });
+
   it("passes axe with the choropleth snippet loaded", async () => {
     const { host } = await setup(snippet("choropleth"));
     expect(host.querySelectorAll("[data-ok-map-region]")).toHaveLength(51);

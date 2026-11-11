@@ -910,6 +910,53 @@
     color: var(--ok-text-secondary);
   }
 
+  /* Size legend (proportional symbols, 4.18.94): nested circles sharing their bottom, each value
+     at its circle's top. Radii come from the runtime (`--_ok-map-radius`, `--_ok-map-size-max`). */
+  :where([data-ok-map-legend-sizes]) {
+    position: relative;
+    box-sizing: content-box;
+    width: calc(var(--_ok-map-size-max, 0px) * 2 + var(--ok-spacing) * 20);
+    height: calc(var(--_ok-map-size-max, 0px) * 2);
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 2) 0 0;
+    list-style: none;
+  }
+
+  :where([data-ok-map-legend-sizes] > li) {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(
+      var(--ok-spacing) *
+      2 +
+      var(--_ok-map-size-max, 0px) *
+      2 -
+      var(--_ok-map-radius, 0px) *
+      2
+    );
+    height: 0;
+  }
+
+  :where([data-ok-map-legend-circle]) {
+    position: absolute;
+    top: 0;
+    inset-inline-start: calc(var(--_ok-map-size-max, 0px) - var(--_ok-map-radius, 0px));
+    box-sizing: border-box;
+    width: calc(var(--_ok-map-radius, 0px) * 2);
+    height: calc(var(--_ok-map-radius, 0px) * 2);
+    border: 1px solid var(--ok-text-secondary);
+    border-radius: var(--ok-radius-full);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+  }
+
+  :where([data-ok-map-legend-sizes] [data-ok-map-legend-label]) {
+    position: absolute;
+    top: 0;
+    inset-inline-start: calc(var(--_ok-map-size-max, 0px) * 2 + var(--ok-spacing) * 2);
+    color: var(--ok-text-secondary);
+    white-space: nowrap;
+    transform: translateY(-50%);
+  }
+
   /* --- Choropleth: regions (keyboard list and data table) -------------------------------------- */
 
   :where([data-ok-map-regions]) {

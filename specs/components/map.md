@@ -59,6 +59,7 @@ div[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoo
                                            (static: span[data-ok-map-legend-class]) › span[data-ok-map-legend-swatch][data-ok-swatch][aria-hidden] + span[data-ok-map-legend-label]
       | div[data-ok-map-legend-gradient] › span[data-ok-map-legend-bar][aria-hidden] › span[data-ok-map-legend-stop][data-ok-swatch]×n
                                          + div[data-ok-map-legend-ticks] › span (min) + span (max)
+      | ul[data-ok-map-legend-sizes][data-ok-radius] (variant=size, 4.18.94) › li › span[data-ok-map-legend-circle][data-ok-radius][aria-hidden] + span[data-ok-map-legend-label]
   div[data-ok-map-control] (MapControl: author content)
 ```
 Sources and layers: `data-ok-data` (URL or inline JSON), `data-ok-url`, `data-ok-tiles` (URLs
@@ -272,6 +273,35 @@ Roadmap 4.18.15, after ApexMaps (apexcharts.com/apexmaps, docs checked 2026-11-1
   used as given), multi-selection, legend `align` / `width` / `marker`, ApexMaps' own geometry
   registry and `joinBy` (MapLibre sources and feature ids instead).
 
+## Proportional symbols and hexbins
+Roadmap 4.18.94 / 4.18.95, after ApexMaps' bubble and hexbin samples (checked 2026-11-11).
+- `mapSizeScale(values, { method = "sqrt" | "linear", range = [4, 32], domain?, legendValues?, input = ["get", "value"] })`
+  (pure, `symbols.ts`): `domain` defaults to the finite values' min / max (sqrt: min ≥ 0); a value
+  maps to `r0 + (r1 − r0) · (t(v) − t(d0)) / (t(d1) − t(d0))` clamped, `t` = √ or identity; radii
+  rounded to 0.01. Returns `{ method, min, max, range, nullCount, legend[{ value, radius }],
+  expression, radiusOf(value) }`; `expression` = `["case", is-number, ["interpolate", ["linear"],
+  ["sqrt", ["max", 0, input]] | input, t0, r0, t1, r1], 0]` (one radius when the domain is flat).
+  Legend values: `legendValues`, else the max, 35% and 8% of the domain rounded to 2 significant
+  digits; deduplicated, largest first, strictly shrinking radii.
+- `mapBubbleLayer({ id, source, sourceLayer?, size, color?, opacity = 0.62, input })`: a `circle`
+  layer; `circle-color` from a `mapScale` result (its own `input`: the second color field) or one
+  color (default `--ok-palette-primary-main`); paper stroke 1px, `--ok-text-primary` 2px while
+  hovered / focused / selected (feature state from `MapRegions`); `circle-sort-key` = −value
+  (largest drawn first, ApexMaps `sortBySize`).
+- `MapLegend variant="size" sizeScale`: nested circles bottom-aligned (`--_ok-map-radius`, list
+  `--_ok-map-size-max`, CSSOM from `data-ok-radius`, 0–200), the value at each circle's top
+  (`tickFormatter`); never toggles.
+- `mapHexbin(points, { radius = 1, aggregate = "count" | "mean", valueProperty = "value", minCount = 1 })`
+  (pure, `hexbin.ts`): pointy-top hexagons (radius in degrees of longitude) in the Web Mercator
+  plane (cube rounding), one closed `Polygon` per non-empty cell, ids 0…n in order north → south,
+  west → east, properties `{ count, value, longitude, latitude }` (6 decimals); `mean` gives
+  `null` below `minCount`. Points: `[lng, lat]`, `[lng, lat, value]`, `Point` features or a
+  `FeatureCollection`; at most 500 000, |lat| ≤ 85.05113. Color with `mapScale(values, { input:
+  ["get", "value"] })` (fixed `thresholds` keep legends comparable, ApexMaps `scale.domain`).
+- Instance helpers for CDN pages: `sizeScale`, `hexbin` (and `pixelGrid`, below).
+- Not built (ApexMaps): hexbin `radius` in screen pixels (rebinned on zoom), the `nearest`
+  interaction radius (hit testing is MapLibre's), bubble clustering, a size legend `align`.
+
 ## Great circles, drilldown, export
 Roadmap 4.18.16 (ApexMaps checked 2026-11-11: arc series, drilldown, breadcrumb).
 - `greatCircle(from, to, { steps = 64 (1–1024; non-finite: 64), properties })` (pure, `@owlky/core/map`,
@@ -376,7 +406,7 @@ pitchend|click|dblclick|contextmenu|mousemove|mouseenter|mouseleave` (detail: th
 `ok:map:fallback` (`{ reason }`), `ok:map:regionselect` (on `[data-ok-map-regions]`, `{ id }`),
 `ok:map:legendtoggle` (on the legend, `{ classIndex, active }`). Instance: `{ controller, map, viewState, flyTo, easeTo, jumpTo,
 fitBounds, exportMap(format?, options?), setSourceData(id, data), getClusterExpansionZoom(source, clusterId), openPopup(popup),
-closePopup(popup), fullscreen, setFullscreen(on), scale, greatCircle }` (`scale` = core `mapScale`, `greatCircle` = core `greatCircle`, for CDN pages). Worker: `setMapWorkerUrl(url)` from
+closePopup(popup), fullscreen, setFullscreen(on), scale, greatCircle, sizeScale, hexbin, pixelGrid }` (core `mapScale`, `greatCircle`, `mapSizeScale`, `mapHexbin`, `mapPixelGrid`, for CDN pages). Worker: `setMapWorkerUrl(url)` from
 `@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; `owlky-map.js` finds
 `owlky-map-worker.js` next to itself).
 
@@ -426,6 +456,8 @@ The "API mapping" paragraph above records the details; this table adds a status 
 | ApexMaps `tooltip`, `dataLabels`, `setSelection()`, `frameFeature()` | compose `Popup` / symbol layers; `fitBounds` | deferred | |
 | ApexMaps arc series (`from`, `to`, `geodesic`) | `greatCircle(from, to)` + a `line` layer | renamed | `curvature`, `width.range`, `endpoints`, `flow` not built (compose layers) |
 | ApexMaps `drilldown`, `breadcrumb`, `drilldown` / `drillup` events, `drillTo`, `drillUp` | `MapRegions` + `fitBounds` + `Breadcrumbs` (composition) | not applicable | app code owns the levels |
+| ApexMaps bubble layer (`size.scale` `sqrt` · `linear`, `size.range`, `color`, `opacity`, `stroke`, `sortBySize`) | `mapSizeScale({ method, range })` + `mapBubbleLayer({ size, color, opacity })` | renamed (4.18.94) | `scale` → `method`; a second color field is a `mapScale` with its own `input`; legend `MapLegend variant="size"` |
+| ApexMaps hexbin layer (`aggregate` `count` · `mean`, `minCount`, `scale.domain`) | `mapHexbin(points, { radius, aggregate, valueProperty, minCount })` + `mapScale` thresholds | renamed (4.18.95) | `radius` in degrees (cells fixed in the Mercator plane), not screen px |
 | ApexMaps `geo.projection`, `geo.layout: 'hex'`, `geo.sphere`, `geo.graticule` | Chart `type="geo"` (ADR-0059) | renamed | SVG charts without tiles; `orthographic`, rotation, morphing not built |
 
 ## Parity notes

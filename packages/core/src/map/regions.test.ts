@@ -246,6 +246,31 @@ describe("map regions", () => {
     ]);
   });
 
+  it("sizes the circles of a size legend through CSSOM", async () => {
+    const { root, c } = create(`<div data-ok-map-corner="bottom-left">
+      <div data-ok-map-legend data-ok-variant="size" role="group" aria-label="Legend">
+        <ul data-ok-map-legend-sizes data-ok-radius="30">
+          <li><span data-ok-map-legend-circle data-ok-radius="30"></span><span data-ok-map-legend-label>20</span></li>
+          <li><span data-ok-map-legend-circle data-ok-radius="12.5"></span><span data-ok-map-legend-label>5</span></li>
+          <li><span data-ok-map-legend-circle data-ok-radius="-1"></span><span data-ok-map-legend-label>x</span></li>
+        </ul>
+      </div>
+    </div>`);
+    await ready(c);
+    const list = root.querySelector("[data-ok-map-legend-sizes]") as HTMLElement;
+    const circles = [...root.querySelectorAll<HTMLElement>("[data-ok-map-legend-circle]")];
+    expect(list.style.getPropertyValue("--_ok-map-size-max")).toBe("30px");
+    expect(circles.map((circle) => circle.style.getPropertyValue("--_ok-map-radius"))).toEqual([
+      "30px",
+      "12.5px",
+      "",
+    ]);
+    // The radius is observed: a new value is written again.
+    circles[1]?.setAttribute("data-ok-radius", "8");
+    await flush();
+    expect(circles[1]?.style.getPropertyValue("--_ok-map-radius")).toBe("8px");
+  });
+
   it("ignores static legends, keeps states across style reloads and re-created sources", async () => {
     const { root, c } = create(`${regions()}${legend(false)}`);
     await ready(c);

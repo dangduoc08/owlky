@@ -5,6 +5,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentType } from "react";
 import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
 import { snippetStory } from "../shared/snippets.js";
+import { BubblesDemo } from "./demos/bubbles.js";
+import bubblesSource from "./demos/bubbles.tsx?raw";
 import { ChangeThemeDemo } from "./demos/change-theme.js";
 import changeThemeSource from "./demos/change-theme.tsx?raw";
 import { ChoroplethDemo } from "./demos/choropleth.js";
@@ -21,6 +23,8 @@ import { GreatCirclesDemo } from "./demos/great-circles.js";
 import greatCirclesSource from "./demos/great-circles.tsx?raw";
 import { HeatmapDemo } from "./demos/heatmap.js";
 import heatmapSource from "./demos/heatmap.tsx?raw";
+import { HexbinDemo } from "./demos/hexbin.js";
+import hexbinSource from "./demos/hexbin.tsx?raw";
 import { HighlightByFilterDemo } from "./demos/highlight-by-filter.js";
 import highlightSource from "./demos/highlight-by-filter.tsx?raw";
 import { InteractionDemo } from "./demos/interaction.js";
@@ -168,3 +172,6 @@ export const Choropleth = story(
   ChoroplethDemo,
   choroplethSource,
 );
+// Roadmap 4.18.94–4.18.98 (ApexMaps): proportional symbols, hexbins, pixel maps, patterns, selection.
+export const Bubbles = story("Bubbles", "bubbles", "Bubbles", BubblesDemo, bubblesSource);
+export const Hexbin = story("Hexbin", "hexbin", "Hexbin", HexbinDemo, hexbinSource);
