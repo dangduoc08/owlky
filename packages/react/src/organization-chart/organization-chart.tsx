@@ -585,8 +585,9 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
             setSelection: write,
             selectionMode: mode,
           } = selectionLatest.current;
-          const id = organizationChartNodeId(node);
-          if (mode && id !== null) write(organizationChartSelect(current, id, mode));
+          // The controller reports nodes with an id, and only while selection is on.
+          const id = organizationChartNodeId(node) as string;
+          write(organizationChartSelect(current, id, mode as OrganizationChartSelectionMode));
         },
       });
     });

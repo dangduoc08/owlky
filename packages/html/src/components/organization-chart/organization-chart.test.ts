@@ -1250,6 +1250,13 @@ describe("organization chart tree, selection and breadcrumb (ADR-0063)", () => {
     expect(events.at(-1)).toBe("collapse:sofia");
     // The toggles left the Tab order.
     expect(toggle(host, "maya").getAttribute("tabindex")).toBe("-1");
+    // A canceled expand keeps the branch as it is.
+    const stop = (event: Event) => event.preventDefault();
+    root.addEventListener("ok:organization-chart:expand", stop);
+    press(nodeOf(host, "sofia"), "ArrowRight");
+    await finish();
+    expect(list(host, "sofia").hidden).toBe(true);
+    root.removeEventListener("ok:organization-chart:expand", stop);
   });
 
   it("the breadcrumb follows the selection through getNodePath (story script pattern)", async () => {

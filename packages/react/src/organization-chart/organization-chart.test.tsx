@@ -1426,6 +1426,17 @@ describe("OrganizationChart tree, selection and keyboard", () => {
     expect(onSelectionChange).not.toHaveBeenCalled();
     act(() => apiRef.current?.clearSelection());
     expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+    onSelectionChange.mockClear();
+    rerender(
+      <Collapsible
+        apiRef={apiRef}
+        enableSelection="multi"
+        selectedNodes={[]}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+    act(() => apiRef.current?.clearSelection());
+    expect(onSelectionChange).not.toHaveBeenCalled();
     expect(apiRef.current?.getNodePath("d")).toEqual(["lead", "b", "c", "d"]);
     expect(apiRef.current?.getNodePath("nobody")).toEqual([]);
   });

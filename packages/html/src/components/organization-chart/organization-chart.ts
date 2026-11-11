@@ -334,10 +334,13 @@ export const organizationChart = defineComponent<
             void change(node, expand);
           },
           onSelect(node) {
-            const current = mode();
-            const nodeId = organizationChartNodeId(node);
-            if (!current || nodeId === null) return;
-            const next = organizationChartSelect(selection(), nodeId, current);
+            // The controller reports nodes with an id, and only while selection is on.
+            const nodeId = organizationChartNodeId(node) as string;
+            const next = organizationChartSelect(
+              selection(),
+              nodeId,
+              mode() as OrganizationChartSelectionMode,
+            );
             const detail = { selectedNodes: next, nodeId, node, selected: next.includes(nodeId) };
             if (!emit("select", detail, { cancelable: true })) return;
             select(next);
