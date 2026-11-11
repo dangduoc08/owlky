@@ -205,7 +205,15 @@ describe("DataGrid context menu", () => {
   });
 
   it("prints, unpins and skips unknown item names", () => {
-    const print = vi.spyOn(window, "print").mockImplementation(() => undefined);
+    // The grid prints from a hidden iframe: stub that frame's print, or Firefox opens a real dialog
+    // and the page hangs.
+    const print = vi.fn();
+    const append = document.body.append.bind(document.body);
+    vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+      append(...nodes);
+      for (const node of nodes)
+        if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = print;
+    });
     const onPinned = vi.fn();
     render(
       grid({
@@ -225,7 +233,8 @@ describe("DataGrid context menu", () => {
     fireEvent.contextMenu(cell("1", "title"));
     fireEvent.click(action("print"));
     expect(menu().hasAttribute("data-ok-open")).toBe(false);
-    print.mockRestore();
+    expect(print).toHaveBeenCalledTimes(1);
+    document.querySelector("iframe")?.remove();
   });
 
   it("leaves the browser's menu off the grid's options and in fields", () => {
