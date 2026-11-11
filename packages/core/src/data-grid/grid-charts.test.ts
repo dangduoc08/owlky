@@ -290,6 +290,13 @@ describe("the range on the grid (4.18.89)", () => {
       handle: null,
     });
     expect(gridChartRangeMarks({ ...model, values: [] }, ["1"], ["name"]).handle).toBeNull();
+    // Without values or a dimension: no cells.
+    expect(gridChartRangeMarks({ rows: ["1"] }, ["1"], ["a"]).cells).toEqual({});
+    const bare = gridResizeChartRange({ rows: ["1"] }, ["1", "2"], columns, {
+      id: "2",
+      field: "a",
+    });
+    expect(bare).toEqual({ rows: ["1", "2"], values: [] });
   });
 
   it("resizes to a cell: rows from the first one, number columns from the first value", () => {
@@ -365,5 +372,14 @@ describe("the range on the grid (4.18.89)", () => {
     press({ altKey: true });
     expect(onRangeChart).toHaveBeenCalledTimes(1);
     selection.destroy();
+    // Without an update handler, Alt + Shift + F1 does nothing.
+    const only = createGridCellSelection(grid, {
+      enabled: () => true,
+      onSelect: vi.fn(),
+      onRangeChart,
+    });
+    press({ altKey: true, shiftKey: true });
+    expect(onRangeChart).toHaveBeenCalledTimes(1);
+    only.destroy();
   });
 });

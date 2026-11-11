@@ -3892,7 +3892,8 @@ function DataGridInner<R>(
       options.source,
       options.getRowsToExport,
     );
-    return ids.flatMap((rowId) => byId.get(rowId) ?? []);
+    // Known ids only (core drops the others).
+    return ids.map((rowId) => byId.get(rowId) as R);
   };
   const exportBase = pivot ? columnsProp : columns;
   const exportShown = pivot ? visibleGridColumns(columnsProp, visibility) : shown;
@@ -4100,21 +4101,21 @@ function DataGridInner<R>(
       rangeDrag.current = panelModel;
     },
     onMove: (target) => {
-      const start = rangeDrag.current;
-      if (start)
-        setPanelModel(
-          gridResizeChartRange(
-            start,
-            rangeRowIds(),
-            shown.filter((c) => c.type !== "actions"),
-            target,
-          ),
-        );
+      // A move always follows the drag's start.
+      const start = rangeDrag.current as GridChartModel;
+      setPanelModel(
+        gridResizeChartRange(
+          start,
+          rangeRowIds(),
+          shown.filter((c) => c.type !== "actions"),
+          target,
+        ),
+      );
     },
     onEnd: (cancelled) => {
-      const start = rangeDrag.current;
+      const start = rangeDrag.current as GridChartModel;
       rangeDrag.current = null;
-      if (cancelled && start) setPanelModel(start);
+      if (cancelled) setPanelModel(start);
     },
   };
   /** Alt + Shift + F1: the active range chart draws the selected cells (keyboard resize). */
@@ -4593,12 +4594,7 @@ function DataGridInner<R>(
     );
     (pressed && !pressed.disabled ? pressed : other)?.focus();
   });
-  const toolColumns = pivot
-    ? []
-    : fields.flatMap((field) => {
-        const column = columnsProp.find((c) => c.field === field);
-        return column ? [column] : [];
-      });
+  const toolColumns = pivot ? [] : orderGridColumns(columnsProp, order);
   const toolLocked = gridLockedFields(columnsProp);
   const toolQuery = gridFoldText(columnSearch.trim(), true);
   const toolMatches = (column: GridColDef<R>) =>

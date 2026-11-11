@@ -696,4 +696,133 @@ describe("DataGrid columns tool panel (4.18.90)", () => {
     expect(document.querySelector("[data-ok-data-grid-columns-section]")).toBeNull();
     expect(items()).toHaveLength(0);
   });
+
+  it("toggles, unpins, moves up, ungroups and clears values; columns without names", async () => {
+    render(
+      <DataGrid
+        id="e"
+        aria-label="People"
+        rows={ROWS}
+        columns={[{ field: "name" }, ...COLUMNS.slice(1)]}
+        showToolbar
+        columnsToolPanel
+        initialState={{
+          pinnedColumns: { left: ["team"] },
+          rowGrouping: { model: ["team"] },
+          aggregation: { model: { score: "sum" } },
+        }}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Columns" }));
+    const panel = document.getElementById("e-columns") as HTMLElement;
+    await userEvent.type(within(panel).getByRole("searchbox"), "nam");
+    expect(
+      items()
+        .filter((i) => !i.hidden)
+        .map((i) => i.getAttribute("data-ok-field")),
+    ).toEqual(["name"]);
+    await userEvent.clear(within(panel).getByRole("searchbox"));
+    await userEvent.click(within(panel).getByRole("switch", { name: "Score" }));
+    expect(headerFields()).not.toContain("score");
+    await userEvent.selectOptions(within(panel).getByLabelText("Pin Team"), "none");
+    expect(document.querySelector("[data-ok-pinned]")).toBeNull();
+    // Moving the last column up to the end: the other button keeps the focus.
+    await userEvent.click(within(panel).getByRole("button", { name: "Move up: Team" }));
+    expect(items().map((i) => i.getAttribute("data-ok-field"))).toEqual(["team", "name", "score"]);
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Move down: Team");
+    await userEvent.click(within(panel).getByRole("checkbox", { name: "Team" }));
+    expect(document.querySelector("[data-ok-generated]")).toBeNull();
+    await userEvent.selectOptions(within(panel).getByRole("combobox", { name: "Score" }), "");
+    expect(document.querySelector("[data-ok-data-grid-aggregation-label]")).toBeNull();
+  });
+});
+
+describe("DataGrid batch E edges", () => {
+  it("restored pins from one side; unknown ids; exports of a pivot; Alt + Shift + F1 off range charts", async () => {
+    const apiRef = { current: null as GridApi<Row> | null };
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        chartsIntegration
+        cellSelection
+        initialState={{
+          pinnedRows: { bottom: ["5", "nope"] },
+          chartsIntegration: { model: { dimension: "team", values: ["score"] } },
+        }}
+      />,
+    );
+    const api = () => apiRef.current as GridApi<Row>;
+    expect(api().exportState().pinnedRows).toEqual({ top: [], bottom: ["5"] });
+    act(() => api().restoreState({ pinnedRows: { top: ["1"] } }));
+    expect(api().exportState().pinnedRows).toEqual({ top: ["1"], bottom: [] });
+    // Alt + Shift + F1 does nothing when the chart isn't a range chart.
+    const cell = document.querySelector(
+      '[data-ok-row-id="2"] [role="gridcell"][data-ok-field="score"]',
+    ) as HTMLElement;
+    await userEvent.click(cell);
+    await userEvent.keyboard("{Alt>}{Shift>}{F1}{/Shift}{/Alt}");
+    expect(document.querySelector("[data-ok-data-grid-live]")?.textContent ?? "").toBe("");
+    act(() =>
+      api().restoreState({
+        pivoting: {
+          active: true,
+          model: {
+            rows: [{ field: "team" }],
+            columns: [],
+            values: [{ field: "score", aggFunc: "sum" }],
+          },
+        },
+      }),
+    );
+    const csv = api().getDataAsCsv({ source: "all", fields: ["name"] });
+    expect(csv.split("\r\n")).toHaveLength(5);
+  });
+
+  it("server pivot values through getAggregatedValue; other fields read the row", async () => {
+    type Sale = { id: string; region: string; [field: string]: unknown };
+    const source: GridDataSource<Sale> = {
+      getRows: async () => ({
+        rows: [{ id: "n", region: "North", "revenue-total": 9 }],
+        pivotColumns: [],
+      }),
+      getAggregatedValue: (row, field) =>
+        (row as Record<string, unknown>)[field === "revenue" ? "revenue-total" : field],
+    };
+    render(
+      <DataGrid
+        aria-label="Revenue"
+        rows={[]}
+        columns={[
+          { field: "region", headerName: "Region" },
+          { field: "revenue", headerName: "Revenue", type: "number" },
+        ]}
+        dataSource={source}
+        dataSourceCache={null}
+        pivotActive
+        pivotModel={{ rows: [], columns: [], values: [{ field: "revenue", aggFunc: "sum" }] }}
+      />,
+    );
+    // The row's value (and the pivot's total row).
+    expect((await screen.findAllByText("9")).length).toBeGreaterThan(0);
+  });
+
+  it("an aggregated chart with server-side filtering charts the given rows", () => {
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        chartsIntegration
+        filterMode="server"
+        chartModel={{ dimension: "team", values: ["score"], aggregation: "max" }}
+      />,
+    );
+    const rows = [
+      ...document.querySelectorAll("[data-ok-data-grid-chart] [data-ok-chart-data] tbody tr"),
+    ].map((tr) => (tr.textContent ?? "").replace(/\s+/g, ""));
+    expect(rows).toEqual(["Red30", "Blue41"]);
+  });
 });

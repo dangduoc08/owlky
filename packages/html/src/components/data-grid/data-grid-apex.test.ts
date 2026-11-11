@@ -511,4 +511,121 @@ describe("HTML data grid columns tool panel (4.18.90)", () => {
       ),
     ).toBe(true);
   });
+
+  it("code moves, the last place, unpinning, ungrouping; a column without a pin menu", async () => {
+    const { host, instance } = setup(snippet("columns-tool"), (root) => {
+      root.setAttribute("data-ok-row-grouping-model", '["team"]');
+      root
+        .querySelector("#grid-columns-tool-columns-due-pin")
+        ?.closest("[data-ok-text-field]")
+        ?.remove();
+    });
+    const panel = host.querySelector("#grid-columns-tool-columns") as HTMLElement;
+    (host.querySelector('[aria-controls="grid-columns-tool-columns"]') as HTMLElement).click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
+    const items = () =>
+      [...panel.querySelectorAll("[data-ok-data-grid-columns-item]")].map((i) =>
+        i.getAttribute("data-ok-field"),
+      );
+    instance.setColumnOrder(["due", "task", "team", "owner", "points"]);
+    expect(items()).toEqual(["due", "task", "team", "owner", "points"]);
+    const down = panel.querySelector(
+      '[data-ok-data-grid-columns-item][data-ok-field="owner"] [data-ok-data-grid-columns-move="down"]',
+    ) as HTMLButtonElement;
+    down.focus();
+    down.click();
+    expect(items().at(-1)).toBe("owner");
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Move up: Owner");
+    instance.setPinnedColumns({ left: ["task"] });
+    const pin = panel.querySelector("#grid-columns-tool-columns-task-pin") as HTMLSelectElement;
+    expect(pin.value).toBe("left");
+    pin.value = "none";
+    pin.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.pinnedColumns.left ?? []).toEqual([]);
+    const group = panel.querySelector(
+      '[data-ok-data-grid-columns-group="team"]',
+    ) as HTMLInputElement;
+    expect(group.checked).toBe(true);
+    group.checked = false;
+    group.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.rowGroupingModel).toEqual([]);
+  });
+});
+
+describe("HTML data grid batch E edges", () => {
+  it("pins body rows of a selection grid and back; ignores unknown ids", () => {
+    const { root, instance } = setup(snippet("basic-group"));
+    instance.restoreState({ pinnedRows: { top: ["p-002", "nope"], bottom: [] } });
+    const top = root.querySelector('[data-ok-data-grid-pinned-rows="top"]') as HTMLElement;
+    expect(top.querySelector('[data-ok-row-id="p-002"]')?.hasAttribute("aria-selected")).toBe(
+      false,
+    );
+    expect(instance.exportState().pinnedRows).toEqual({ top: ["p-002"], bottom: [] });
+    const moved = top.querySelector('[data-ok-row-id="p-002"]') as HTMLElement;
+    instance.restoreState({ pinnedRows: {} });
+    expect(root.querySelector("[data-ok-data-grid-pinned-rows]")).toBeNull();
+    // Back in the body (at its end, on the last page), selectable again.
+    expect(moved.getAttribute("aria-selected")).toBe("false");
+    // An unselectable row ignores Shift + click.
+    const row = root.querySelector('[data-ok-row-id="p-004"]') as HTMLElement;
+    row.setAttribute("data-ok-selectable", "false");
+    row
+      .querySelector('[data-ok-field="age"]')
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }));
+    expect(instance.selection).toEqual([]);
+  });
+
+  it("server pivot rows without group keys; values through getAggregatedValue", async () => {
+    const { root, instance } = setup(snippet("pivot-group"));
+    instance.setPivotModel({
+      rows: [],
+      columns: [],
+      values: [{ field: "revenue", aggFunc: "sum" }],
+    });
+    instance.setDataSource(
+      {
+        getRows: async () => ({ rows: [{ id: "all", total: 42 }], pivotColumns: [] }),
+        getAggregatedValue: (row, field) =>
+          field === "revenue" ? (row as Record<string, unknown>)["total"] : null,
+      },
+      { cache: null },
+    );
+    await new Promise<void>((resolve) => {
+      const done = () => root.querySelector('[data-ok-row-id="all"]');
+      const observer = new MutationObserver(() => {
+        if (done()) {
+          observer.disconnect();
+          resolve();
+        }
+      });
+      observer.observe(root, { childList: true, subtree: true });
+    });
+    expect(
+      root.querySelector('[data-ok-row-id="all"] [role="gridcell"][data-ok-field^="pivot:"]')
+        ?.textContent,
+    ).toBe("42");
+  });
+
+  it("Alt + Shift + F1 off a range chart does nothing; a range chart without a label", () => {
+    const { root, instance } = setup(snippet("charts-range"));
+    const cell = root.querySelector(
+      '[data-ok-row-id="s-01"] [role="gridcell"][data-ok-field="units"]',
+    ) as HTMLElement;
+    instance.setCellSelectionModel({ "s-01": { units: true } });
+    const press = () =>
+      cell.dispatchEvent(
+        new KeyboardEvent("keydown", { bubbles: true, key: "F1", altKey: true, shiftKey: true }),
+      );
+    press();
+    expect(root.querySelector("[data-ok-data-grid-live]")?.textContent ?? "").toBe("");
+    instance.setChartModels({
+      ...instance.chartModels,
+      plain: { type: "column", dimension: null, values: ["units"], rows: ["s-02"] },
+    });
+    instance.setActiveChartId("plain");
+    press();
+    expect(root.querySelector("[data-ok-data-grid-live]")?.textContent).toBe(
+      "Chart range updated: Chart of the data",
+    );
+  });
 });

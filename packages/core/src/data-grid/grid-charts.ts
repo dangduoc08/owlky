@@ -169,7 +169,7 @@ export function gridResizeChartRange(
   const to = rowIds.indexOf(target.id);
   const nextRows =
     first < 0 || to < 0
-      ? [...(model.rows ?? [])]
+      ? [...(model.rows as readonly string[])]
       : rowIds.slice(Math.min(first, to), Math.max(first, to) + 1);
   const fields = columns.map((c) => c.field);
   const start = fields.indexOf(model.values?.[0] ?? "");

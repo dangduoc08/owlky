@@ -1010,13 +1010,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ...list.querySelectorAll<HTMLElement>(":scope > [data-ok-data-grid-columns-item]"),
       ];
       const byField = new Map(items.map((item) => [item.getAttribute("data-ok-field"), item]));
-      const sorted = orderGridColumns(baseColumns, order).flatMap(
-        (c) => byField.get(c.field) ?? [],
-      );
+      const sorted = orderGridColumns(baseColumns, order)
+        .map((c) => byField.get(c.field))
+        .filter((item): item is HTMLElement => !!item);
       // Moving the focused button blurs it: put the focus back (on the other one at an end).
       const focused = document.activeElement;
       if (sorted.some((item, i) => items[i] !== item)) {
-        const empty = list.querySelector("[data-ok-data-grid-columns-empty]");
+        const empty = list.querySelector("[data-ok-data-grid-columns-empty]") as HTMLElement;
         // The item holding the focus stays put: the others move around it.
         const still = sorted.find((item) => item.contains(focused));
         const at = still ? sorted.indexOf(still) : -1;
@@ -1027,24 +1027,24 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             previous.after(item);
             previous = item;
           }
-          if (empty) list.append(empty);
+          list.append(empty);
         } else for (const item of sorted) list.insertBefore(item, empty);
       }
       const locked = gridLockedFields(baseColumns);
       const fixed = element.hasAttribute(disableColumnReorder.attr);
       sorted.forEach((item, index) => {
         const field = item.getAttribute("data-ok-field") as string;
-        const toggle = item.querySelector<HTMLInputElement>("input[data-ok-field]");
-        if (toggle) toggle.checked = visibility[field] !== false;
+        (item.querySelector("input[data-ok-field]") as HTMLInputElement).checked =
+          visibility[field] !== false;
         const pin = item.querySelector<HTMLSelectElement>("select");
         if (pin) pin.value = gridPinSide(pinned, field) ?? "none";
-        const up = item.querySelector<HTMLButtonElement>('[data-ok-data-grid-columns-move="up"]');
-        const down = item.querySelector<HTMLButtonElement>(
+        const up = item.querySelector('[data-ok-data-grid-columns-move="up"]') as HTMLButtonElement;
+        const down = item.querySelector(
           '[data-ok-data-grid-columns-move="down"]',
-        );
+        ) as HTMLButtonElement;
         const still = fixed || locked.includes(field);
-        if (up) up.disabled = still || index === 0;
-        if (down) down.disabled = still || index === sorted.length - 1;
+        up.disabled = still || index === 0;
+        down.disabled = still || index === sorted.length - 1;
       });
       if (focused instanceof HTMLButtonElement && list.contains(focused)) {
         const other = focused
@@ -1214,7 +1214,6 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const rangeIds = () => sortedList.filter(selectable).map(idOf);
     /** Shift + click on a row or its checkbox: the rows from the anchor (MUI X). */
     const rangeTo = (row: HTMLElement) => {
-      if (!checkbox) return;
       if (!multiple() || row.hasAttribute("data-ok-generated")) {
         toggle(row, true);
         return;
@@ -2982,10 +2981,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           null,
           (source?.getChildrenCount?.(item) ?? 0) > 0 ? false : null,
         );
-      for (const column of columns) {
-        const cell = cellOf(row, column.field);
-        if (cell) cell.textContent = aggregateText(column.field, value(row, column.field));
-      }
+      for (const column of columns)
+        (cellOf(row, column.field) as HTMLElement).textContent = aggregateText(
+          column.field,
+          value(row, column.field),
+        );
       return row;
     };
     // `setDataSource(source, { cache })` replaces it (`null`: no cache).
@@ -3379,7 +3379,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }
         if (!group.children.length) group.remove();
       }
-      const first = groupRowEls().length + (filterRowEl() ? 1 : 0) + 2;
+      const first = firstRowIndex() - pinnedTop();
       pinnedDataRows("top").forEach((row, index) => {
         row.setAttribute("aria-rowindex", String(first + index));
       });
@@ -3890,25 +3890,22 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       for (const handle of body.querySelectorAll("[data-ok-data-grid-chart-handle]"))
         handle.remove();
       const model = panelModel();
-      if (pivot || !isGridRangeChart(model)) return;
-      if (!element.querySelector(":scope > [data-ok-data-grid-chart]")) return;
-      const marks = gridChartRangeMarks(model, pageIds(), shownFields());
-      const rowOf = (rowId: string) => {
-        const row = rowEls.find((r) => idOf(r) === rowId);
-        return row?.isConnected ? row : null;
-      };
-      for (const [rowId, cells] of Object.entries(marks.cells)) {
-        const row = rowOf(rowId);
-        if (!row) continue;
+      if (pivot || !isGridRangeChart(model) || !element.hasAttribute("data-ok-charts-integration"))
+        return;
+      // The rows drawn now (the window) and their shown cells.
+      const drawn = pageList.filter(
+        (row) => row.isConnected && !row.hasAttribute("data-ok-generated"),
+      );
+      const marks = gridChartRangeMarks(model, drawn.map(idOf), shownFields());
+      const cellAt = (rowId: string, field: string) =>
+        cellOf(drawn.find((r) => idOf(r) === rowId) as HTMLElement, field) as HTMLElement;
+      for (const [rowId, cells] of Object.entries(marks.cells))
         for (const [field, mark] of Object.entries(cells)) {
-          const cell = cellOf(row, field);
-          if (!cell) continue;
+          const cell = cellAt(rowId, field);
           cell.setAttribute("data-ok-chart-range", mark.kind);
           cell.setAttribute("data-ok-chart-range-edge", mark.edges);
         }
-      }
-      const corner = marks.handle ? rowOf(marks.handle.id) : null;
-      const cell = corner && marks.handle ? cellOf(corner, marks.handle.field) : null;
+      const cell = marks.handle ? cellAt(marks.handle.id, marks.handle.field) : null;
       if (cell && !cell.hasAttribute("data-ok-editing")) {
         const handle = document.createElement("span");
         handle.setAttribute("data-ok-data-grid-chart-handle", "");
@@ -4661,10 +4658,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         rangeStart = panelModel();
       },
       onMove: (target) => {
-        if (!rangeStart) return;
+        // A move always follows the drag's start.
         setChart(
           gridResizeChartRange(
-            rangeStart,
+            rangeStart as GridChartModel,
             chartDataRows(filterModel).map(idOf),
             shownNow.filter((c) => c.type !== "actions"),
             target,
@@ -4672,9 +4669,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         );
       },
       onEnd: (cancelled) => {
-        const start = rangeStart;
+        const start = rangeStart as GridChartModel;
         rangeStart = null;
-        if (cancelled && start) setChart(start);
+        if (cancelled) setChart(start);
       },
     });
     signal.addEventListener("abort", () => rangeHandle.destroy());
@@ -5220,15 +5217,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const searchTool = () => {
       const panel = toolPanel();
       if (!panel) return;
-      const query = gridFoldText((toolSearch?.value ?? "").trim(), true);
+      const query = gridFoldText((toolSearch as HTMLInputElement).value.trim(), true);
       let any = false;
       for (const item of panel.querySelectorAll<HTMLElement>("[data-ok-data-grid-columns-item]")) {
         const label = item.querySelector("[data-ok-form-control-label-text]")?.textContent ?? "";
         item.hidden = !!query && !gridFoldText(label, true).includes(query);
         any ||= !item.hidden;
       }
-      const empty = panel.querySelector<HTMLElement>("[data-ok-data-grid-columns-empty]");
-      if (empty) empty.hidden = any;
+      (panel.querySelector("[data-ok-data-grid-columns-empty]") as HTMLElement).hidden = any;
     };
     toolSearch?.addEventListener("input", searchTool, { signal });
     const fieldOfTool = (control: Element, suffix: string) =>
@@ -5282,7 +5278,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           setPinned({ ...toolStart.pinned });
           setRowGrouping([...toolStart.grouping]);
           setAggregation({ ...toolStart.aggregation });
-          if (toolSearch) toolSearch.value = "";
+          (toolSearch as HTMLInputElement).value = "";
           searchTool();
         }
         const button = target.closest<HTMLButtonElement>("[data-ok-data-grid-columns-move]");
@@ -5351,7 +5347,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         },
         options.source,
         options.getRowsToExport,
-      ).flatMap((rowId) => byRowId.get(rowId) ?? []);
+      ).map((rowId) => byRowId.get(rowId) as HTMLElement);
     };
     const exportShown = () =>
       visibleGridColumns(

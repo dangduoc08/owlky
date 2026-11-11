@@ -22,6 +22,7 @@ import {
   gridGroupRowId,
   gridPivot,
   gridPivotField,
+  gridPivotLayout,
   gridPivotRole,
   gridRowGroups,
   gridSelectionStats,
@@ -884,6 +885,16 @@ describe("chart aggregation, combo and a second axis (4.18.88)", () => {
     );
     expect(gridChartTwoAxes({ secondaryValues: ["deals"] }, columns.slice(1))).toBe(true);
     expect(gridChartOptions({ type: "column", seriesAxisLabel: "USD" }, own).yTitle).toBe("USD");
+    // Two axes without a title on the first; a smooth combo keeps the default curve.
+    const plain = gridChartOptions({ type: "combo", curve: "smooth" }, combo);
+    expect(plain.yaxis?.[0]).toEqual({});
+    expect(plain.curve).toBeUndefined();
+    expect(plain.markerSize).toBeUndefined();
+    // The layout's labels default to the function names.
+    expect(
+      gridPivotLayout([["a"]], 1, [{ field: "revenue", aggFunc: "sum" }], columns).columns[0]
+        ?.headerName,
+    ).toBe("Revenue (sum)");
   });
   it("sanitizes the new keys", () => {
     expect(

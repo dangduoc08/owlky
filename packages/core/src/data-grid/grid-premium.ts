@@ -1084,7 +1084,7 @@ export function gridChartOptions(
     ];
   } else if (model.seriesAxisLabel && !sliced && type !== "radar")
     options.yTitle = model.seriesAxisLabel;
-  if (type === "combo" && ((model.curve && model.curve !== "smooth") || model.showMark)) {
+  if (type === "combo") {
     if (model.curve && model.curve !== "smooth") options.curve = model.curve;
     if (model.showMark) options.markerSize = 4;
   }
