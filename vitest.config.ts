@@ -194,6 +194,7 @@ export default defineConfig({
         "packages/html/src/components/mobile-stepper/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/rating/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/chart/**": COMPONENT_THRESHOLDS,
+        "packages/html/src/components/chart-trellis/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/slider/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/transfer-list/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/tree-view/**": COMPONENT_THRESHOLDS,

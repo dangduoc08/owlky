@@ -44,6 +44,9 @@ export type ChartLocaleText = Readonly<
       | "filterCleared"
       // Drill controls of sunburst and icicle charts (ADR-0058).
       | "drillUp"
+      // Drilldown and trellis controls (4.18.68).
+      | "drilldownRoot"
+      | "allPanels"
       // Measure rulers and draggable annotations (4.18.20).
       | "measureFrom"
       | "annotation"

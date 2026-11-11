@@ -929,23 +929,24 @@
     font-weight: var(--ok-font-weight-semibold);
   }
 
-  /* Data table: readable without JavaScript, visually hidden once the chart is drawn. */
-  :where([data-ok-chart-data]) {
+  /* Data table (and drilldown levels' tables, 4.18.68): readable without JavaScript, visually
+     hidden once the chart is drawn. */
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown])) {
     border-collapse: collapse;
     font-size: var(--ok-font-size-sm);
   }
 
-  :where([data-ok-chart-data] :is(th, td)) {
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(th, td)) {
     padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
     border-bottom: 1px solid var(--ok-divider);
     text-align: end;
   }
 
-  :where([data-ok-chart-data] :is(thead th, tbody th)) {
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(thead th, tbody th)) {
     text-align: start;
   }
 
-  :where([data-ok-chart-data] caption) {
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) caption) {
     padding-block-end: var(--ok-spacing);
     font-weight: var(--ok-font-weight-semibold);
     text-align: start;
@@ -953,7 +954,9 @@
 
   /* Tables grow to their content: a fixed layout keeps the hidden table 1px wide, and anchored
      at the bottom it grows upward, so a long table never makes the page scroll. */
-  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-data]) {
+  :where(
+    [data-ok-chart][data-ok-ready] > :is([data-ok-chart-data], table[data-ok-chart-drilldown])
+  ) {
     position: absolute;
     inset-block-end: 0;
     inset-inline-start: 0;
@@ -969,7 +972,11 @@
   }
 
   /* Captions and cells are at least one word wide: let hidden text break anywhere. */
-  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-data] :is(caption, th, td)) {
+  :where(
+    [data-ok-chart][data-ok-ready]
+      > :is([data-ok-chart-data], table[data-ok-chart-drilldown])
+      :is(caption, th, td)
+  ) {
     padding: 0;
     border: 0;
     white-space: normal;
@@ -1384,6 +1391,103 @@
   :where([data-ok-chart-annotation-marker]) {
     stroke: var(--ok-bg-paper);
     stroke-width: 2px;
+  }
+
+  /* Trellis (ADR-0060): small multiples in a grid; a promoted panel spans it. */
+  :where([data-ok-chart-trellis]) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: calc(var(--ok-spacing) * 3);
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-chart-trellis][data-ok-columns="1"]) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="2"]) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="3"]) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="4"]) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="5"]) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    :where([data-ok-chart-trellis][data-ok-columns="6"]) {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  :where([data-ok-chart-trellis-panel]) {
+    display: grid;
+    gap: var(--ok-spacing);
+    min-width: 0;
+  }
+
+  :where([data-ok-chart-trellis-panel][data-ok-promoted]) {
+    grid-column: 1 / -1;
+  }
+
+  :where([data-ok-chart-trellis-panel][hidden], [data-ok-chart-trellis-back][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-chart-trellis-header]) {
+    justify-self: start;
+    min-height: calc(var(--ok-spacing) * 8);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-sm);
+    font-weight: var(--ok-font-weight-semibold);
+    text-align: start;
+  }
+
+  :where(button[data-ok-chart-trellis-header]) {
+    padding: 0 var(--ok-spacing);
+    border-radius: var(--ok-radius-sm);
+    cursor: pointer;
+  }
+
+  :where([data-ok-chart-trellis-back]) {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-height: calc(var(--ok-spacing) * 8);
+    margin: 0;
+    padding: 0 calc(var(--ok-spacing) * 2);
+    border: 1px solid var(--ok-divider);
+    border-radius: var(--ok-radius-sm);
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    :where(button[data-ok-chart-trellis-header]:hover, [data-ok-chart-trellis-back]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where(
+    button[data-ok-chart-trellis-header]:focus-visible,
+    [data-ok-chart-trellis-back]:focus-visible
+  ) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
   }
 
   /* Measure rulers (4.18.20): a band or a line, two ends and a tag with the change. */

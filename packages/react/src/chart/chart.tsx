@@ -13,6 +13,7 @@ import {
   type ChartDataPoint,
   type ChartDirection,
   type ChartDiscreteMarker,
+  type ChartDrilldownLevel,
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
@@ -44,6 +45,7 @@ import {
   type ChartPattern,
   type ChartProjection,
   type ChartPxPoint,
+  type ChartRender,
   type ChartSankeyEdge,
   type ChartSankeyNode,
   type ChartScaleMethod,
@@ -79,6 +81,7 @@ import {
   chartAnnotationText,
   chartAttributes,
   chartBrushCategories,
+  chartDrilldownActive,
   chartDrillLabels,
   chartDrillUp,
   chartFilterCategories,
@@ -578,6 +581,18 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   onAnnotationChange?:
     | ((detail: { index: number; annotation: ChartAnnotation }) => void)
     | undefined;
+  /**
+   * Drilldown levels: `{ id, name, type, categories, series }`. A point names the level it opens in
+   * `drilldown` (`{ y: 12, drilldown: "q1" }`); a click, Enter or Space opens it, Escape and
+   * **Back** go up.
+   */
+  drilldown?: readonly ChartDrilldownLevel[] | undefined;
+  /** Controlled: the ids of the levels opened, outermost first (`[]`: the root). */
+  drilldownPath?: readonly string[] | undefined;
+  /** Uncontrolled initial path. */
+  defaultDrilldownPath?: readonly string[] | undefined;
+  /** Called with the new path when a level opens or closes. */
+  onDrilldownChange?: ((path: string[]) => void) | undefined;
   /** Range bars and timelines: the series share one lane per category. */
   rangeBarGroupRows?: boolean | undefined;
   /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
@@ -631,6 +646,56 @@ function toElements(nodes: readonly ChartNode[]): ReactNode[] {
       node.text ?? (node.children ? toElements(node.children) : undefined),
     );
   });
+}
+
+/** The head and body of a chart data table (the chart's own, and each drilldown level's). */
+function ChartTableRows({ table }: { table: ChartRender["table"] }) {
+  return (
+    <>
+      <thead>
+        <tr>
+          {table.head.map((cell, index) => (
+            <th
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+              key={index}
+              scope={cell.colSpan ? "colgroup" : "col"}
+              colSpan={cell.colSpan}
+              rowSpan={cell.rowSpan}
+              {...cell.attrs}
+            >
+              {cell.text}
+            </th>
+          ))}
+        </tr>
+        {table.parts.length > 0 && (
+          <tr>
+            {table.parts.map((cell, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+              <th key={index} scope="col" {...cell.attrs}>
+                {cell.text}
+              </th>
+            ))}
+          </tr>
+        )}
+      </thead>
+      <tbody>
+        {table.rows.map((row, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: rows are positional
+          <tr key={index}>
+            <th scope="row" {...row.header.attrs}>
+              {row.header.text}
+            </th>
+            {row.cells.map((cell, column) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+              <td key={column} {...cell.attrs}>
+                {cell.text}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </>
+  );
 }
 
 /**
@@ -809,6 +874,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     xLabelRotate,
     xLabelRotateAlways,
     xaxisGroups,
+    drilldown,
+    drilldownPath,
+    defaultDrilldownPath = NO_IDS,
+    onDrilldownChange,
     measure,
     measurePinOnRelease,
     measures: measuresProp,
@@ -1099,6 +1168,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validXRange = number("data-ok-x-range");
   const validXRotate = number("data-ok-x-label-rotate");
   const xRotateAlways = attributes["data-ok-x-label-rotate-always"] !== undefined;
+  // Drilldown (4.18.68): the path of levels opened, controlled or kept here.
+  const [levelPath, setLevelPath] = useControllableState<readonly string[]>({
+    value: drilldownPath,
+    defaultValue: defaultDrilldownPath,
+    onChange: onDrilldownChange as ((value: readonly string[]) => void) | undefined,
+  });
   // Measure rulers and draggable annotations (4.18.20).
   const validMeasure = attributes["data-ok-measure"] as ChartMeasureMode | undefined;
   const pinOn = attributes["data-ok-measure-pin-on-release"] !== undefined;
@@ -1306,6 +1381,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         legendValues,
         colorRanges,
         annotations: shownAnnotations,
+        drilldown,
+        drilldownPath: levelPath,
         measures: drawnRulers,
         measureMode: validMeasure,
         pickedAnnotation: picked === null ? undefined : annotationIndexes.indexOf(picked),
@@ -1476,6 +1553,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       legendValues,
       colorRanges,
       shownAnnotations,
+      drilldown,
+      levelPath,
       drawnRulers,
       validMeasure,
       picked,
@@ -1813,7 +1892,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     return true;
   };
   /** The **Back** button: one level up; at the top the button hides and the plot takes focus. */
+  /** Drilldown: opens a level (or goes back to `path`); the active item is cleared. */
+  const drillTo = (path: readonly string[]) => {
+    setLevelPath(path);
+    setActive(null);
+  };
+  const levels = render.drilldown;
   const drillUp = () => {
+    if (levels) {
+      if (levels.path.length === 0) return;
+      drillTo(levels.path.slice(0, -1));
+      if (levels.path.length === 1) plotRef.current?.focus();
+      return;
+    }
     const action = chartDrillUp(layout);
     act(action);
     if (action?.id === null) plotRef.current?.focus();
@@ -1846,6 +1937,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       (event.clientX - box.left) * scale,
       (event.clientY - box.top) * scale,
     );
+    // Drilldown: a point with a level opens it instead of being selected.
+    const level = mark === null ? undefined : layout.marks[mark]?.drilldown;
+    if (levels && level) {
+      drillTo([...levels.path, level]);
+      return;
+    }
     if (mark !== null)
       select([chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number])]);
   };
@@ -1870,6 +1967,17 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       )
     ) {
       event.preventDefault();
+      return;
+    }
+    const level = levels ? chartDrilldownActive(layout, activeRef.current) : undefined;
+    if ((event.key === "Enter" || event.key === " ") && !event.repeat && levels && level) {
+      event.preventDefault();
+      drillTo([...levels.path, level]);
+      return;
+    }
+    if (event.key === "Escape" && levels && levels.path.length > 0) {
+      event.preventDefault();
+      drillTo(levels.path.slice(0, -1));
       return;
     }
     if ((event.key === "Enter" || event.key === " ") && !event.repeat && !brushTargets) {
@@ -2059,6 +2167,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         dumbbellColors,
         collapsedNodes: collapsed,
         drillNode: drill,
+        drilldownPath: levels?.path,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
@@ -2125,20 +2234,37 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           })}
         </div>
       )}
-      {layout.hierarchy?.drillable && layout.hierarchy.type !== "tree" && (
+      {levels ? (
         <div data-ok-chart-drill="">
           <button
             type="button"
             data-ok-chart-drill-up=""
-            hidden={layout.hierarchy.drill === null}
+            hidden={levels.path.length === 0}
             onClick={drillUp}
           >
             {localeText?.drillUp ?? chartDrillLabels.drillUp}
           </button>
           <span data-ok-chart-drill-path="" role="status">
-            {layout.hierarchy.path.join(" › ")}
+            {levels.text}
           </span>
         </div>
+      ) : (
+        layout.hierarchy?.drillable &&
+        layout.hierarchy.type !== "tree" && (
+          <div data-ok-chart-drill="">
+            <button
+              type="button"
+              data-ok-chart-drill-up=""
+              hidden={layout.hierarchy.drill === null}
+              onClick={drillUp}
+            >
+              {localeText?.drillUp ?? chartDrillLabels.drillUp}
+            </button>
+            <span data-ok-chart-drill-path="" role="status">
+              {layout.hierarchy.path.join(" › ")}
+            </span>
+          </div>
+        )
       )}
       {/* A focusable group (biome.json override): arrow keys move through the chart's values. */}
       <div
@@ -2276,6 +2402,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           ))}
         </tbody>
       </table>
+      {levels?.tables.map((level) => (
+        <table key={level.id} data-ok-chart-drilldown={level.id} data-ok-type={level.type}>
+          <caption>{level.name}</caption>
+          <ChartTableRows table={level.table} />
+        </table>
+      ))}
       {annotationItems.length > 0 && (
         <ul data-ok-chart-annotations="">
           {annotationItems.map((item, index) => (

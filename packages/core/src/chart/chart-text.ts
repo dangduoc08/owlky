@@ -30,6 +30,8 @@ export interface ChartTextOptions {
   readonly xaxisGroups?: readonly ChartXGroup[] | undefined;
   /** The message shown when there is nothing to draw (4.18.65). */
   readonly noDataText?: string | undefined;
+  /** Drilldown (4.18.68): the ids of the levels opened, outermost first (`"q1; jan"`). */
+  readonly drilldownPath?: readonly string[] | undefined;
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Sankey charts: a title per rank (`"Income; Budget; Spending"`). */
   readonly axisTitles?: readonly string[] | undefined;
@@ -90,6 +92,7 @@ export const CHART_TEXT_ATTRIBUTES = {
   drillNode: "data-ok-drill-node",
   xaxisGroups: "data-ok-xaxis-groups",
   noDataText: "data-ok-no-data-text",
+  drilldownPath: "data-ok-drilldown-path",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -232,7 +235,7 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
         (value as readonly (readonly ChartColor[])[] | undefined) ?? [],
       );
       if (text) out[attr] = text;
-    } else if (key === "customLegendItems" || key === "collapsedNodes") {
+    } else if (key === "customLegendItems" || key === "collapsedNodes" || key === "drilldownPath") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);
       if (text) out[attr] = text;
     } else if (key === "discreteMarkers") {

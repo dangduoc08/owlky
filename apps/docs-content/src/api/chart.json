@@ -267,6 +267,12 @@
      },
      {
       "cancelable": true,
+      "description": "Before a click, Enter or Space opens a drilldown level (`id`), or Escape, **Back** or a method goes up (`id` is the level shown next, `null` for the root); `path` is the new path. Call `preventDefault()` to refuse.",
+      "detail": "{ id: string | null; path: string[]; }",
+      "name": "ok:chart:drilldown"
+     },
+     {
+      "cancelable": true,
       "description": "Tree charts with `data-ok-enable-expand-collapse`: before a click, Enter or Space hides or shows a node's children. Call `preventDefault()` to refuse.",
       "detail": "{ id: string; expanded: boolean; collapsedNodes: string[]; }",
       "name": "ok:chart:expand"
@@ -334,10 +340,34 @@
       "type": "readonly string[]"
      },
      {
+      "description": "Drilldown: opens a level from the one shown (no event).",
+      "kind": "method",
+      "name": "drillDown",
+      "type": "(id: string) => void"
+     },
+     {
       "description": "Sunburst and icicle charts: the id of the node zoomed into (`data-ok-drill-node`), or `null`.",
       "kind": "property",
       "name": "drillNode",
       "type": "string | null"
+     },
+     {
+      "description": "Drilldown: goes back to the root (no event).",
+      "kind": "method",
+      "name": "drillToRoot",
+      "type": "() => void"
+     },
+     {
+      "description": "Drilldown: goes up one level (no event).",
+      "kind": "method",
+      "name": "drillUp",
+      "type": "() => void"
+     },
+     {
+      "description": "Drilldown: the ids of the levels opened (`data-ok-drilldown-path`), outermost first.",
+      "kind": "property",
+      "name": "drilldownPath",
+      "type": "readonly string[]"
      },
      {
       "description": "Downloads the chart as SVG, PNG or CSV (only during a user gesture: rejects otherwise).",
@@ -415,7 +445,7 @@
       "description": "Localized texts: tool names, the export error and part labels (tables carry their own).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(text: Readonly<Partial<Record<\"annotation\" | \"annotationDropped\" | \"clearFilter\" | \"drillUp\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"measureFrom\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+      "type": "(text: Readonly<Partial<Record<\"allPanels\" | \"annotation\" | \"annotationDropped\" | \"clearFilter\" | \"drillUp\" | \"drilldownRoot\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"measureFrom\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
      },
      {
       "description": "Shows exactly these rulers (invalid ones are dropped; no event).",
@@ -2345,6 +2375,12 @@
       "name": "data-ok-chart-drill-up"
      },
      {
+      "description": "On a drilldown level's table (after the chart's own): the level's id.",
+      "kind": "value",
+      "name": "data-ok-chart-drilldown",
+      "value": "string"
+     },
+     {
       "description": "One end of a dumbbell: the `start` (a ring) or the `end` (a disc).",
       "kind": "value",
       "name": "data-ok-chart-dumbbell",
@@ -3157,6 +3193,18 @@
       "value": "string"
      },
      {
+      "description": "On a data table cell: the id of the drilldown level the point opens.",
+      "kind": "value",
+      "name": "data-ok-drilldown",
+      "value": "string"
+     },
+     {
+      "description": "On a chart root: the ids of the drilldown levels opened, outermost first (`\"q1; jan\"`).",
+      "kind": "value",
+      "name": "data-ok-drilldown-path",
+      "value": "string"
+     },
+     {
       "description": "Dumbbell marker colors: a start and an end color per series, pairs separated by \\`;\\`, such as \\`info success\\`.",
       "kind": "value",
       "name": "data-ok-dumbbell-colors",
@@ -3315,6 +3363,11 @@
       "description": "On a drawn annotation: the keyboard holds it (arrows move it, Enter or Escape drops it).",
       "kind": "state",
       "name": "data-ok-picked"
+     },
+     {
+      "description": "On a panel: it is shown alone across the grid.",
+      "kind": "state",
+      "name": "data-ok-promoted"
      },
      {
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
@@ -3664,6 +3717,11 @@
       "type": "string | null"
      },
      {
+      "description": "Uncontrolled initial path.",
+      "name": "defaultDrilldownPath",
+      "type": "readonly string[]"
+     },
+     {
       "description": "Uncontrolled initial hidden series.",
       "name": "defaultHiddenSeries",
       "type": "readonly number[]"
@@ -3723,6 +3781,16 @@
       "description": "Sunburst and icicle charts, controlled: the id of the node zoomed into (`null`: none). A click, Enter or Space on a node with children zooms into it; on the zoomed node, Escape or **Back** zooms out.",
       "name": "drillNode",
       "type": "string | null"
+     },
+     {
+      "description": "Drilldown levels: `{ id, name, type, categories, series }`. A point names the level it opens in `drilldown` (`{ y: 12, drilldown: \"q1\" }`); a click, Enter or Space opens it, Escape and **Back** go up.",
+      "name": "drilldown",
+      "type": "readonly ChartDrilldownLevel[]"
+     },
+     {
+      "description": "Controlled: the ids of the levels opened, outermost first (`[]`: the root).",
+      "name": "drilldownPath",
+      "type": "readonly string[]"
      },
      {
       "description": "Dumbbell charts: the start and end marker colors of each series, such as `[[\"info\", \"success\"]]` (pair n for series n; later series take the first pair). Default the series color: a ring at the start, a disc at the end.",
@@ -4044,6 +4112,11 @@
       "description": "Sunburst and icicle charts: called with the new node (`null` at the top) when the chart zooms.",
       "name": "onDrillNodeChange",
       "type": "((drillNode: string | null) => void)"
+     },
+     {
+      "description": "Called with the new path when a level opens or closes.",
+      "name": "onDrilldownChange",
+      "type": "((path: string[]) => void)"
      },
      {
       "description": "Called when the group's filter changes: the filtered category indexes (`null`: none) and whether this chart set it.",
@@ -4412,6 +4485,1106 @@
       "description": "Lowest value on the value axis (default from the data).",
       "name": "yMin",
       "type": "number"
+     },
+     {
+      "description": "Title of the value axis.",
+      "name": "yTitle",
+      "type": "string"
+     },
+     {
+      "description": "Value axes, as ApexCharts' `yaxis`: one object for the value axis, or a list for several (vertical charts with an x axis). Each takes `seriesName`, `opposite`, `logarithmic`, `logBase`, `reversed`, `tickAmount`, `min`, `max`, `title` and `show`. Series without a `seriesName` match go to the axis at their position.",
+      "name": "yaxis",
+      "type": "ChartYAxis | readonly ChartYAxis[]"
+     },
+     {
+      "description": "Zoom and pan the x axis (mouse, touch, Ctrl + wheel and keys).",
+      "name": "zoom",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled zoom: the visible window of the x axis (category indexes or x values), or `null`.",
+      "name": "zoomRange",
+      "type": "ChartZoom | null"
+     },
+     {
+      "default": "\"value\"",
+      "description": "Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`) or becomes the top level (`both`).",
+      "name": "zoomType",
+      "type": "\"both\" | \"value\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-chart-trellis",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before a header shows its panel alone (`index`), or a header or **All panels** shows every panel again (`index` is `null`). Call `preventDefault()` to refuse.",
+      "detail": "{ index: number | null; }",
+      "name": "ok:chart-trellis:promote"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Shows one panel alone across the grid (no event).",
+      "kind": "method",
+      "name": "promotePanel",
+      "type": "(index: number) => void"
+     },
+     {
+      "description": "The index of the panel shown alone, or `null`.",
+      "kind": "property",
+      "name": "promoted",
+      "type": "number | null"
+     },
+     {
+      "description": "Shows every panel again (no event).",
+      "kind": "method",
+      "name": "restorePanels",
+      "type": "() => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-columns",
+      "description": "Panels per row from 600px up (1 to 6; default as many as fit, at least 220px wide). Narrower screens show one per row.",
+      "kind": "number",
+      "min": 1,
+      "name": "columns"
+     },
+     {
+      "attr": "data-ok-promote",
+      "description": "Panel headers are buttons: pressing one shows that panel alone across the grid, with an **All panels** button to go back.",
+      "kind": "flag",
+      "name": "promote"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The **All panels** button (with `data-ok-promote`; hidden until a panel is promoted).",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-trellis-back"
+     },
+     {
+      "description": "A panel's title (the series or category); a button with `data-ok-promote`.",
+      "elements": [
+       "button",
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-trellis-header"
+     },
+     {
+      "description": "One panel: its header and its chart.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-trellis-panel"
+     }
+    ],
+    "runtime": "chart-trellis"
+   },
+   "name": "ChartTrellis",
+   "react": {
+    "description": "Small multiples: one chart per series or category, in a grid, on a shared value scale.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Clicks and Enter or Space add points to the selection instead of replacing it.",
+      "name": "allowMultipleDataPointsSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Series grow in when first drawn and move to new values (never with reduced motion).",
+      "name": "animations",
+      "type": "boolean"
+     },
+     {
+      "description": "Lines, bands and points with a label (vertical charts with an x axis).",
+      "name": "annotations",
+      "type": "readonly ChartAnnotation[]"
+     },
+     {
+      "description": "Arc unit charts: the concentric rows. Default the fewest that seat everyone.",
+      "name": "arcRows",
+      "type": "number"
+     },
+     {
+      "description": "Sankey charts: a title above each rank (beside each row when vertical).",
+      "name": "axisTitles",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Bars: track colors (palette names), one per category in turn. Turns the tracks on.",
+      "name": "backgroundBarColors",
+      "type": "readonly ChartColor[]"
+     },
+     {
+      "description": "Bars: opacity of the tracks (0 to 1). Default 1.",
+      "name": "backgroundBarOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Bars: corner radius of the tracks in px. Default 4.",
+      "name": "backgroundBarRadius",
+      "type": "number"
+     },
+     {
+      "description": "Bars: a grey track the height of the plot behind each bar.",
+      "name": "backgroundBars",
+      "type": "boolean"
+     },
+     {
+      "description": "Violins: multiplies the drawn half-width. Default 1.",
+      "name": "bandwidthScale",
+      "type": "number"
+     },
+     {
+      "description": "Horizontal bar thickness in % of a category. Default 40 (funnels 80).",
+      "name": "barHeight",
+      "type": "number"
+     },
+     {
+      "default": "\"swarm\"",
+      "description": "Beeswarm charts: dots push apart just enough not to overlap (`swarm`) or spread across the lane by a fixed sequence (`jitter`).",
+      "name": "beeswarmSpread",
+      "type": "\"jitter\" | \"swarm\""
+     },
+     {
+      "description": "Box plots: color of the box below the median (default a lighter tone of the series color).",
+      "name": "boxLowerColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Box plots: color of the box above the median (default the series color).",
+      "name": "boxUpperColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "A brush chart: its selection zooms the chart with this `id`.",
+      "name": "brushTarget",
+      "type": "string | readonly string[]"
+     },
+     {
+      "description": "One panel per series (`series`, the default) or per category (`category`).",
+      "name": "by",
+      "type": "\"category\" | \"series\""
+     },
+     {
+      "default": "\"error\"",
+      "description": "Candlesticks: color of falling candles.",
+      "name": "candleDownColor",
+      "type": "ChartColor"
+     },
+     {
+      "default": "\"success\"",
+      "description": "Candlesticks: color of rising candles.",
+      "name": "candleUpColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Category labels (or dates), as for a chart.",
+      "name": "categories",
+      "type": "readonly (string | number | Date)[]"
+     },
+     {
+      "description": "Waffle charts: the corner radius of square cells in pixels. Default 2.",
+      "name": "cellRadius",
+      "type": "number"
+     },
+     {
+      "description": "Unit charts: category names under each cluster or column.",
+      "name": "clusterLabels",
+      "type": "boolean"
+     },
+     {
+      "description": "Tree charts, controlled: ids of the nodes whose children are hidden.",
+      "name": "collapsedNodes",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Series differ by more than color: each gets its own marker shape (lines get markers), pattern and dash.",
+      "name": "colorBlindMode",
+      "type": "boolean"
+     },
+     {
+      "description": "Heatmaps, treemaps and bars: values in a range take its color (a point's own color wins on bars).",
+      "name": "colorRanges",
+      "type": "readonly ChartColorRange[]"
+     },
+     {
+      "description": "Series colors in order (palette names or shades such as `\"primary-dark\"`).",
+      "name": "colors",
+      "type": "readonly ChartColor[]"
+     },
+     {
+      "description": "Column width in % of a category. Default 40.",
+      "name": "columnWidth",
+      "type": "number"
+     },
+     {
+      "description": "Panels per row from 600px up (1 to 6). Default as many as fit, at least 220px wide.",
+      "name": "columns",
+      "type": "number"
+     },
+     {
+      "description": "Charts of a `group`: a selection in this chart (click, Enter or Space), or its brush, filters the other charts of the group, and this chart shows the group's filter: `\"filter\"` draws only the filtered categories' values, `\"highlight\"` tints them. Charts of a group share their categories by position. A **Clear filter** button under the plot clears it.",
+      "name": "crossfilter",
+      "type": "\"filter\" | \"highlight\""
+     },
+     {
+      "default": "\"smooth\"",
+      "description": "Line shape: `smooth`, `straight` or `stepline`.",
+      "name": "curve",
+      "type": "\"smooth\" | \"stepline\" | \"straight\""
+     },
+     {
+      "description": "Legend names instead of the series' names: item n stands for series n (its color and toggle).",
+      "name": "customLegendItems",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Dash length of lines and radial bars in px (default solid).",
+      "name": "dashArray",
+      "type": "number"
+     },
+     {
+      "description": "Data labels above points sit on a badge.",
+      "name": "dataLabelBackground",
+      "type": "boolean"
+     },
+     {
+      "description": "Replaces the values printed on the chart (pie and donut labels get the percentage).",
+      "name": "dataLabelFormatter",
+      "type": "((value: number, series: number, index: number) => string)"
+     },
+     {
+      "default": "\"center\"",
+      "description": "Bars: where data labels sit inside the bar. `\"top\"` by the value end, `\"bottom\"` by the base.",
+      "name": "dataLabelPosition",
+      "type": "\"bottom\" | \"center\" | \"top\""
+     },
+     {
+      "description": "Prints the values on the chart (percentages on pie and donut slices).",
+      "name": "dataLabels",
+      "type": "boolean"
+     },
+     {
+      "description": "Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets). The table, the tooltip and the keyboard keep every point.",
+      "name": "dataReducer",
+      "type": "boolean"
+     },
+     {
+      "description": "Points kept per series when reducing. Default 250.",
+      "name": "dataReducerTargetPoints",
+      "type": "number"
+     },
+     {
+      "description": "A series with more visible points than this is reduced. Default 500.",
+      "name": "dataReducerThreshold",
+      "type": "number"
+     },
+     {
+      "description": "Tree charts: the nodes collapsed at first (uncontrolled).",
+      "name": "defaultCollapsedNodes",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Sunburst and icicle charts: the node zoomed into at first (uncontrolled).",
+      "name": "defaultDrillNode",
+      "type": "string | null"
+     },
+     {
+      "description": "Uncontrolled initial path.",
+      "name": "defaultDrilldownPath",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Uncontrolled initial hidden series.",
+      "name": "defaultHiddenSeries",
+      "type": "readonly number[]"
+     },
+     {
+      "description": "Uncontrolled initial rulers.",
+      "name": "defaultMeasures",
+      "type": "readonly ChartMeasure[]"
+     },
+     {
+      "description": "Uncontrolled initial promoted panel.",
+      "name": "defaultPromoted",
+      "type": "number | null"
+     },
+     {
+      "description": "Uncontrolled initial selection.",
+      "name": "defaultSelectedDataPoints",
+      "type": "readonly ChartDataPoint[]"
+     },
+     {
+      "description": "Uncontrolled initial zoom.",
+      "name": "defaultZoomRange",
+      "type": "ChartZoom | null"
+     },
+     {
+      "default": "\"top\"",
+      "description": "Tree and icicle charts: where the root sits, or `radial` (trees: the root in the center).",
+      "name": "direction",
+      "type": "\"bottom\" | \"left\" | \"radial\" | \"right\" | \"top\""
+     },
+     {
+      "description": "Legend items are plain labels: clicks don't hide series.",
+      "name": "disableLegendToggle",
+      "type": "boolean"
+     },
+     {
+      "description": "Range bars and timelines: bars that overlap in time go to lanes of their own.",
+      "name": "disableRangeBarOverlap",
+      "type": "boolean"
+     },
+     {
+      "description": "Packed unit charts: keep the given order instead of the smallest group in the middle.",
+      "name": "disableSortByGroup",
+      "type": "boolean"
+     },
+     {
+      "description": "Sunburst and icicle charts: clicks, Enter and Space don't zoom into nodes.",
+      "name": "disableZoomOnClick",
+      "type": "boolean"
+     },
+     {
+      "description": "Markers on single points (`{ seriesIndex, dataPointIndex, color, size, shape }`), also on series without markers.",
+      "name": "discreteMarkers",
+      "type": "readonly ChartDiscreteMarker[]"
+     },
+     {
+      "description": "Donut hole in % of the radius (10 to 95). Default 72.",
+      "name": "donutSize",
+      "type": "number"
+     },
+     {
+      "description": "Sunburst and icicle charts, controlled: the id of the node zoomed into (`null`: none). A click, Enter or Space on a node with children zooms into it; on the zoomed node, Escape or **Back** zooms out.",
+      "name": "drillNode",
+      "type": "string | null"
+     },
+     {
+      "description": "Drilldown levels: `{ id, name, type, categories, series }`. A point names the level it opens in `drilldown` (`{ y: 12, drilldown: \"q1\" }`); a click, Enter or Space opens it, Escape and **Back** go up.",
+      "name": "drilldown",
+      "type": "readonly ChartDrilldownLevel[]"
+     },
+     {
+      "description": "Controlled: the ids of the levels opened, outermost first (`[]`: the root).",
+      "name": "drilldownPath",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Dumbbell charts: the start and end marker colors of each series, such as `[[\"info\", \"success\"]]` (pair n for series n; later series take the first pair). Default the series color: a ring at the start, a disc at the end.",
+      "name": "dumbbellColors",
+      "type": "readonly (readonly ChartColor[])[]"
+     },
+     {
+      "description": "Sankey charts: link opacity (0 to 1). 4.",
+      "name": "edgeOpacity",
+      "type": "number"
+     },
+     {
+      "default": "\"orthogonal\"",
+      "description": "Tree charts: links with right angles, curved or straight.",
+      "name": "edgeStyle",
+      "type": "\"curved\" | \"orthogonal\" | \"straight\""
+     },
+     {
+      "description": "Sankey charts: the links (`{ source, target, value, color }`, node ids).",
+      "name": "edges",
+      "type": "readonly ChartSankeyEdge[]"
+     },
+     {
+      "description": "Tree charts: a click, Enter or Space on a node with children hides or shows them.",
+      "name": "enableExpandCollapse",
+      "type": "boolean"
+     },
+     {
+      "description": "Pie, donut and radial bar: end angle in degrees. Default 360.",
+      "name": "endAngle",
+      "type": "number"
+     },
+     {
+      "default": "\"gradient\"",
+      "description": "Area fill. `\"solid\"`, or `\"pattern\"`: bars, areas and slices get a different pattern per series (or `fillPattern`).",
+      "name": "fill",
+      "type": "\"gradient\" | \"pattern\" | \"solid\""
+     },
+     {
+      "default": "\"bottom\"",
+      "description": "Waffle charts: the row where the cells start filling.",
+      "name": "fillFrom",
+      "type": "\"bottom\" | \"top\""
+     },
+     {
+      "description": "Pattern of every bar, area and slice (turns patterns on): `\"slantedLines\"`, `\"squares\"`, `\"circles\"`, `\"horizontalLines\"` or `\"verticalLines\"`. Series may set `fillPattern`.",
+      "name": "fillPattern",
+      "type": "\"circles\" | \"horizontalLines\" | \"slantedLines\" | \"squares\" | \"verticalLines\""
+     },
+     {
+      "description": "How many points at the end of each line, area or bar series are a forecast.",
+      "name": "forecastCount",
+      "type": "number"
+     },
+     {
+      "description": "Forecast line dashes in px. Default 4.",
+      "name": "forecastDashArray",
+      "type": "number"
+     },
+     {
+      "description": "Opacity of forecast areas and bars (0 to 1). 5.",
+      "name": "forecastFillOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Forecast line width in px. Default the series' width.",
+      "name": "forecastStrokeWidth",
+      "type": "number"
+     },
+     {
+      "default": "\"geographic\"",
+      "description": "Geo charts: real boundaries or equal tiles.",
+      "name": "geoLayout",
+      "type": "\"geographic\" | \"hex\""
+     },
+     {
+      "description": "Geo charts: the regions' shapes, a GeoJSON `FeatureCollection`, feature or list of features.",
+      "name": "geometry",
+      "type": "ChartGeometry | null"
+     },
+     {
+      "description": "Geo charts: lines of longitude and latitude every 30 degrees.",
+      "name": "graticule",
+      "type": "boolean"
+     },
+     {
+      "description": "Grid lines: `\"y\"` (default) horizontal, along the value ticks (between the bars of horizontal bar charts); `\"x\"` vertical; `\"both\"` or `\"none\"`.",
+      "name": "grid",
+      "type": "\"both\" | \"none\" | \"x\" | \"y\""
+     },
+     {
+      "description": "Stripes between the vertical grid positions: colors in turn.",
+      "name": "gridColumnColors",
+      "type": "readonly ChartStripeColor[]"
+     },
+     {
+      "description": "Opacity of the column stripes (0 to 1). 5.",
+      "name": "gridColumnOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Stripes between the horizontal grid lines: colors in turn (palette names, `\"grey\"` or `\"transparent\"`).",
+      "name": "gridRowColors",
+      "type": "readonly ChartStripeColor[]"
+     },
+     {
+      "description": "Opacity of the row stripes (0 to 1). 5.",
+      "name": "gridRowOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Synchronized charts: charts of one group share the active category and the zoom.",
+      "name": "group",
+      "type": "string"
+     },
+     {
+      "description": "Plot height in px. Default 320.",
+      "name": "height",
+      "type": "number"
+     },
+     {
+      "description": "Geo charts, `hex` layout: each region's cell in an odd-r offset grid. Without them, cells follow the geometry.",
+      "name": "hexCells",
+      "type": "readonly ChartHexCell[]"
+     },
+     {
+      "description": "Controlled: indexes of the series (pie, donut, radial bar: categories) hidden through the legend.",
+      "name": "hiddenSeries",
+      "type": "readonly number[]"
+     },
+     {
+      "description": "Waterfall charts: no dashed lines from the end of each bar to the next one.",
+      "name": "hideConnectors",
+      "type": "boolean"
+     },
+     {
+      "description": "Streamgraphs: no series names on the bands.",
+      "name": "hideStreamLabels",
+      "type": "boolean"
+     },
+     {
+      "description": "Violins: no dots for the observations.",
+      "name": "hideViolinPoints",
+      "type": "boolean"
+     },
+     {
+      "description": "Grouped columns: zero and empty bars take no slot, so the others close up.",
+      "name": "hideZeroBarsWhenGrouped",
+      "type": "boolean"
+     },
+     {
+      "description": "Tree charts: the nodes, nested (`{ id, name, value, color, children }`; one root or several). `id` defaults to the name; parents' values are the sum of their children.",
+      "name": "hierarchy",
+      "type": "ChartHierarchyNode | readonly ChartHierarchyNode[]"
+     },
+     {
+      "description": "Bars run left to right, categories down the side.",
+      "name": "horizontal",
+      "type": "boolean"
+     },
+     {
+      "description": "Stock charts: indicators of the first series (the price), such as `{ type: \"sma\", period: 20 }`. Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price; `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci` and `pvt` get a pane each.",
+      "name": "indicators",
+      "type": "readonly ChartIndicator[]"
+     },
+     {
+      "description": "Sunburst charts: the hole in the center in % of the radius (0 to 90). Default 15.",
+      "name": "innerSize",
+      "type": "number"
+     },
+     {
+      "description": "Geo charts: the feature property that holds the region id. Default: the feature's `id`, then its `id`, `iso_a2` or `name` property.",
+      "name": "joinBy",
+      "type": "string"
+     },
+     {
+      "description": "Violins: the kernel width of the density estimate, in value units. Default Silverman's rule.",
+      "name": "kdeBandwidth",
+      "type": "number"
+     },
+     {
+      "description": "Violins: density samples per violin (4 to 256). Default 64.",
+      "name": "kdeResolution",
+      "type": "number"
+     },
+     {
+      "description": "Accessible name of the group of panels; each chart is named \"label: panel\".",
+      "name": "label",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "Replaces the x text in axis labels, the tooltip title and the table.",
+      "name": "labelFormatter",
+      "type": "((x: string | number) => string)"
+     },
+     {
+      "default": "\"tree\"",
+      "description": "Tree charts: `tree` (a tidy tree) or `cluster` (a dendrogram).",
+      "name": "layoutType",
+      "type": "\"cluster\" | \"tree\""
+     },
+     {
+      "default": "\"extend\"",
+      "description": "Sunburst and icicle charts: branches that end early `extend` to the edge or `stop`. on sunbursts, `\"stop\"` on icicles.",
+      "name": "leaf",
+      "type": "\"extend\" | \"stop\""
+     },
+     {
+      "default": "\"top\"",
+      "description": "Never shown for a single series.",
+      "name": "legend",
+      "type": "\"bottom\" | \"none\" | \"right\" | \"top\""
+     },
+     {
+      "description": "Legend items line up `\"left\"`, `\"center\"` or `\"right\"` (default right above the plot, centered below it).",
+      "name": "legendAlign",
+      "type": "\"center\" | \"left\" | \"right\""
+     },
+     {
+      "description": "Legend items show a value: the slice's or ring's, or the series' last one.",
+      "name": "legendValues",
+      "type": "boolean"
+     },
+     {
+      "default": "\"en-US\"",
+      "description": "Locale of numbers and month names.",
+      "name": "locale",
+      "type": "string"
+     },
+     {
+      "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names, the export error and `selected`.",
+      "name": "localeText",
+      "type": "Readonly<Partial<Record<\"allPanels\" | \"annotation\" | \"annotationDropped\" | \"clearFilter\" | \"drillUp\" | \"drilldownRoot\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"measureFrom\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
+     },
+     {
+      "description": "Marker shape of every series: `\"circle\"` (default), `\"square\"`, `\"triangle\"`, `\"diamond\"`, `\"cross\"`, `\"plus\"` or `\"star\"`. Series may set `markerShape` themselves.",
+      "name": "markerShape",
+      "type": "\"circle\" | \"cross\" | \"diamond\" | \"plus\" | \"square\" | \"star\" | \"triangle\""
+     },
+     {
+      "description": "Marker radius of line and area points in px (default none; scatter 5).",
+      "name": "markerSize",
+      "type": "number"
+     },
+     {
+      "description": "Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000.",
+      "name": "maxUnits",
+      "type": "number"
+     },
+     {
+      "description": "Measure rulers: a **Measure** button in the toolbar. In measure mode a drag, or Enter or Space at two points, measures the change between two x positions (`span`: the series' values) or two points (`free`).",
+      "name": "measure",
+      "type": "\"free\" | \"span\""
+     },
+     {
+      "description": "Rulers stay on the chart when the drag ends (up to 20); without it a new one replaces the last.",
+      "name": "measurePinOnRelease",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled: the rulers, in data coordinates (`{ x1, y1, x2, y2 }`).",
+      "name": "measures",
+      "type": "readonly ChartMeasure[]"
+     },
+     {
+      "description": "Stock charts: a navigator under the chart (the whole price line, the zoom as a brush).",
+      "name": "navigator",
+      "type": "boolean"
+     },
+     {
+      "default": "center",
+      "description": "Where the message sits across the plot.",
+      "name": "noDataAlign",
+      "type": "\"center\" | \"left\" | \"right\""
+     },
+     {
+      "description": "The message drawn when there is nothing to draw (none by default).",
+      "name": "noDataText",
+      "type": "string"
+     },
+     {
+      "default": "middle",
+      "description": "Where the message sits down the plot.",
+      "name": "noDataVerticalAlign",
+      "type": "\"bottom\" | \"middle\" | \"top\""
+     },
+     {
+      "description": "Sankey charts: node thickness along the flow in px. Default 20.",
+      "name": "nodeWidth",
+      "type": "number"
+     },
+     {
+      "description": "Sankey charts: node titles and colors (`{ id, title, color }`); nodes without links aren't drawn.",
+      "name": "nodes",
+      "type": "readonly ChartSankeyNode[]"
+     },
+     {
+      "description": "Called when the active category or point changes (pointer, touch or keyboard).",
+      "name": "onActiveChange",
+      "type": "((active: ChartActive | null) => void)"
+     },
+     {
+      "description": "Called after a draggable annotation was moved (a drag, or the keyboard: A picks it up, arrows move it, Enter drops it), with its index in `annotations` and its new coordinates. Update `annotations` to keep it there (ApexCharts' `annotationDragged`).",
+      "name": "onAnnotationChange",
+      "type": "((detail: { index: number; annotation: ChartAnnotation; }) => void)"
+     },
+     {
+      "description": "Tree charts: called with the collapsed ids after a node is expanded or collapsed.",
+      "name": "onCollapsedNodesChange",
+      "type": "((collapsedNodes: string[]) => void)"
+     },
+     {
+      "description": "Called for each point a click, Enter or Space selects or clears, with the point, whether it is selected now and every selected point (ApexCharts' `dataPointSelection`).",
+      "name": "onDataPointSelection",
+      "type": "((detail: ChartSelectionDetail) => void)"
+     },
+     {
+      "description": "Sunburst and icicle charts: called with the new node (`null` at the top) when the chart zooms.",
+      "name": "onDrillNodeChange",
+      "type": "((drillNode: string | null) => void)"
+     },
+     {
+      "description": "Called with the new path when a level opens or closes.",
+      "name": "onDrilldownChange",
+      "type": "((path: string[]) => void)"
+     },
+     {
+      "description": "Called when the group's filter changes: the filtered category indexes (`null`: none) and whether this chart set it.",
+      "name": "onFilterChange",
+      "type": "((categories: number[] | null, own: boolean) => void)"
+     },
+     {
+      "description": "Called with the new hidden series when a legend item is toggled.",
+      "name": "onHiddenSeriesChange",
+      "type": "((hidden: number[]) => void)"
+     },
+     {
+      "description": "Called after a ruler is drawn, with it, every ruler and its text (ApexCharts' `measured`).",
+      "name": "onMeasured",
+      "type": "((detail: { measure: ChartMeasure; measures: ChartMeasure[]; text: string; }) => void)"
+     },
+     {
+      "description": "Called with the rulers after one is added or they are cleared.",
+      "name": "onMeasuresChange",
+      "type": "((measures: ChartMeasure[]) => void)"
+     },
+     {
+      "description": "Called with the panel shown alone (`null` when every panel shows again).",
+      "name": "onPromotedChange",
+      "type": "((index: number | null) => void)"
+     },
+     {
+      "description": "Called with the new zoom: the chart's own gestures (`\"user\"`), its group or a brush.",
+      "name": "onZoomRangeChange",
+      "type": "((range: ChartZoom | null, reason: ChartZoomReason) => void)"
+     },
+     {
+      "description": "Sankey charts: the flow runs left to right (default) or top to bottom.",
+      "name": "orientation",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "description": "Stock charts: height of each indicator pane in px. Default 120.",
+      "name": "paneHeight",
+      "type": "number"
+     },
+     {
+      "default": "\"equalEarth\"",
+      "description": "Geo charts: `equalEarth` (equal areas), `mercator` or `equirectangular`.",
+      "name": "projection",
+      "type": "\"equalEarth\" | \"equirectangular\" | \"mercator\""
+     },
+     {
+      "description": "Panel headers are buttons that show their panel alone, with an **All panels** button back.",
+      "name": "promote",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled: the index of the panel shown alone (`null`: every panel).",
+      "name": "promoted",
+      "type": "number | null"
+     },
+     {
+      "description": "Range bars and timelines: the series share one lane per category.",
+      "name": "rangeBarGroupRows",
+      "type": "boolean"
+     },
+     {
+      "description": "Geo charts: one region's id, name, short tile label and value, joined to the geometry by id.",
+      "name": "regions",
+      "type": "readonly ChartGeoRegion[]"
+     },
+     {
+      "description": "Geo charts: how many value classes (at most the colors available). Default 5.",
+      "name": "scaleClasses",
+      "type": "number"
+     },
+     {
+      "default": "\"quantile\"",
+      "description": "Geo charts: how values are split into classes.",
+      "name": "scaleMethod",
+      "type": "\"equalInterval\" | \"jenks\" | \"quantile\" | \"threshold\""
+     },
+     {
+      "description": "Geo charts, `threshold` method: the class breaks.",
+      "name": "scaleThresholds",
+      "type": "readonly number[]"
+     },
+     {
+      "description": "Value scales: one domain for every panel (`shared`, the default) or each its own (`independent`).",
+      "name": "scaleY",
+      "type": "\"independent\" | \"shared\""
+     },
+     {
+      "description": "Controlled: the selected points (`{ seriesIndex, dataPointIndex }`). A click selects the point, slice or cell under the pointer, Enter or Space the active one.",
+      "name": "selectedDataPoints",
+      "type": "readonly ChartDataPoint[]"
+     },
+     {
+      "description": "The data to split into panels.",
+      "name": "series",
+      "required": true,
+      "type": "readonly ChartSeries[]"
+     },
+     {
+      "description": "Shows the legend for a single series too.",
+      "name": "showForSingleSeries",
+      "type": "boolean"
+     },
+     {
+      "description": "Sunburst and icicle charts: the gap between arcs or cells in px. Default 1.",
+      "name": "spacing",
+      "type": "number"
+     },
+     {
+      "description": "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
+      "name": "sparkline",
+      "type": "boolean"
+     },
+     {
+      "description": "Geo charts: the outline of the globe behind the regions.",
+      "name": "sphere",
+      "type": "boolean"
+     },
+     {
+      "description": "Waffle charts: one mini waffle per category, filled to its value.",
+      "name": "split",
+      "type": "boolean"
+     },
+     {
+      "description": "Split waffles: the value a full tile stands for. Default the largest value.",
+      "name": "splitMax",
+      "type": "number"
+     },
+     {
+      "description": "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
+      "name": "stackOnlyBar",
+      "type": "boolean"
+     },
+     {
+      "description": "Stacked bars: prints the total of each stack past its end.",
+      "name": "stackTotals",
+      "type": "boolean"
+     },
+     {
+      "description": "Stacked charts: `\"normal\"` (default) stacks the values; `\"100%\"` stacks each category's values as shares of their total, on a value axis from 0 to 100%. Tooltips keep the values.",
+      "name": "stackType",
+      "type": "\"100%\" | \"normal\""
+     },
+     {
+      "description": "Stacks the series on each other (bars, lines, areas).",
+      "name": "stacked",
+      "type": "boolean"
+     },
+     {
+      "description": "Pie, donut and radial bar: start angle in degrees, clockwise from 12 o'clock. Default 0.",
+      "name": "startAngle",
+      "type": "number"
+     },
+     {
+      "description": "Streamgraphs with `tooltip=\"point\"`: the opacity of the other bands (0 to 1). 35.",
+      "name": "streamHoverOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Streamgraphs: bands thinner than this many pixels get no name. Default 24.",
+      "name": "streamLabelMinWidth",
+      "type": "number"
+     },
+     {
+      "default": "\"wiggle\"",
+      "description": "Streamgraphs: the baseline: `wiggle`, `silhouette`, `zero` or `expand`.",
+      "name": "streamOffset",
+      "type": "\"expand\" | \"silhouette\" | \"wiggle\" | \"zero\""
+     },
+     {
+      "default": "\"inside-out\"",
+      "description": "Streamgraphs: the stacking order: `inside-out`, `inverse` or `none`.",
+      "name": "streamOrder",
+      "type": "\"inside-out\" | \"inverse\" | \"none\""
+     },
+     {
+      "description": "Line width of every series in px. 5. Series may set `strokeWidth`.",
+      "name": "strokeWidth",
+      "type": "number"
+     },
+     {
+      "description": "Split waffles: tiles per row. Default about a square of tiles.",
+      "name": "tileColumns",
+      "type": "number"
+     },
+     {
+      "description": "Sunburst and icicle charts: how much paler each level is (0 to 1). 14.",
+      "name": "tint",
+      "type": "number"
+     },
+     {
+      "description": "A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV).",
+      "name": "toolbar",
+      "type": "boolean"
+     },
+     {
+      "default": "\"shared\"",
+      "description": "Tooltip. every series of the category. `\"point\"`: only the value under the pointer or the keyboard. `\"none\"`: no tooltip is shown, but the values the keyboard moves to are still announced.",
+      "name": "tooltip",
+      "type": "\"none\" | \"point\" | \"shared\""
+     },
+     {
+      "description": "Custom tooltip content: called with the title, the rows (name, value, color), whether the item is selected and its data points; returns what the tooltip shows.",
+      "name": "tooltipContent",
+      "type": "((context: ChartTooltipContext) => ReactNode)"
+     },
+     {
+      "description": "The tooltip stays in this corner of the plot instead of following the value.",
+      "name": "tooltipFixed",
+      "type": "\"bottomLeft\" | \"bottomRight\" | \"topLeft\" | \"topRight\""
+     },
+     {
+      "description": "Donut and radial bar center: the total (default the sum; radial bars the average).",
+      "name": "total",
+      "type": "number"
+     },
+     {
+      "description": "Donut and radial bar center: the label of the total (\"Total\"); no total without it.",
+      "name": "totalLabel",
+      "type": "string"
+     },
+     {
+      "description": "Split waffles: the color of the empty cells. Default a neutral grey.",
+      "name": "trackColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Radial bar track thickness in % of the bar. Default 50.",
+      "name": "trackWidth",
+      "type": "number"
+     },
+     {
+      "default": "\"line\"",
+      "description": "`area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar` or `radar`. Pie, donut and radial bar draw the first series, one slice or ring per category.",
+      "name": "type",
+      "type": "\"area\" | \"bar\" | \"beeswarm\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"geo\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"unit\" | \"violin\" | \"waffle\" | \"waterfall\""
+     },
+     {
+      "description": "Violins: the dots may leave the density outline.",
+      "name": "unconstrainedViolinPoints",
+      "type": "boolean"
+     },
+     {
+      "default": "\"grouped\"",
+      "description": "Unit charts: where the marks go: `grouped`, `packed`, `columns`, `grid` or `arc`.",
+      "name": "unitLayout",
+      "type": "\"arc\" | \"columns\" | \"grid\" | \"grouped\" | \"packed\""
+     },
+     {
+      "description": "Waffle and unit charts: how many units of value one mark stands for. Default 1.",
+      "name": "unitValue",
+      "type": "number"
+     },
+     {
+      "description": "Replaces the value text in the tooltip, the table and the value axis (`series` -1).",
+      "name": "valueFormatter",
+      "type": "((value: number, series: number) => string)"
+     },
+     {
+      "description": "Text before every value (\"$\").",
+      "name": "valuePrefix",
+      "type": "string"
+     },
+     {
+      "description": "Text after every value (\"%\").",
+      "name": "valueSuffix",
+      "type": "string"
+     },
+     {
+      "description": "Violins: a five-number box beside the density.",
+      "name": "violinBox",
+      "type": "boolean"
+     },
+     {
+      "description": "Violins: how far the dots spread, as a share of the half-width (0 to 1). 5.",
+      "name": "violinJitter",
+      "type": "number"
+     },
+     {
+      "description": "Violins: the most dots per violin; extra observations are thinned evenly. Default 3000.",
+      "name": "violinMaxPoints",
+      "type": "number"
+     },
+     {
+      "default": "\"individual\"",
+      "description": "Violins: each violin fills its slot (`individual`) or all share one density scale (`group`).",
+      "name": "violinNormalize",
+      "type": "\"group\" | \"individual\""
+     },
+     {
+      "description": "Violins: the radius of the observation dots in pixels. 5.",
+      "name": "violinPointSize",
+      "type": "number"
+     },
+     {
+      "default": "\"both\"",
+      "description": "Violins: symmetric (`both`) or half a violin: `left`, `right`, `top` or `bottom`.",
+      "name": "violinSide",
+      "type": "\"both\" | \"bottom\" | \"left\" | \"right\" | \"top\""
+     },
+     {
+      "default": "\"minmax\"",
+      "description": "Violin boxes: whiskers at the extremes (`minmax`) or Tukey's fences (`tukey`).",
+      "name": "violinWhiskers",
+      "type": "\"minmax\" | \"tukey\""
+     },
+     {
+      "default": "\"error\"",
+      "description": "Waterfall charts: color of the steps that lower the total.",
+      "name": "waterfallNegativeColor",
+      "type": "ChartColor"
+     },
+     {
+      "default": "\"success\"",
+      "description": "Waterfall charts: color of the steps that raise the total.",
+      "name": "waterfallPositiveColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Waterfall charts: color of the subtotal bars (`isSubtotal` points). Default the total color.",
+      "name": "waterfallSubtotalColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Waterfall charts: color of the total bars (`isTotal` points). Default the series color.",
+      "name": "waterfallTotalColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "9). 18.",
+      "name": "whitespace",
+      "type": "number"
+     },
+     {
+      "description": "Header of the data table's first column.",
+      "name": "xLabel",
+      "type": "string"
+     },
+     {
+      "description": "X labels turn by this many degrees (-90 to 90) when they don't fit flat.",
+      "name": "xLabelRotate",
+      "type": "number"
+     },
+     {
+      "description": "X labels turn by `xLabelRotate` even when they fit flat.",
+      "name": "xLabelRotateAlways",
+      "type": "boolean"
+     },
+     {
+      "description": "The last x position shown when nothing has zoomed the chart (see `xMin`).",
+      "name": "xMax",
+      "type": "number"
+     },
+     {
+      "description": "The first x position shown when nothing has zoomed the chart: a category index, a timestamp in milliseconds (date axes) or an x value (numeric axes, which may lie beyond the data).",
+      "name": "xMin",
+      "type": "number"
+     },
+     {
+      "description": "Shows the last so many x units, ending at `xMax` or the last x value.",
+      "name": "xRange",
+      "type": "number"
+     },
+     {
+      "description": "Title of the x axis, drawn under its labels (also the data table's first header by default).",
+      "name": "xTitle",
+      "type": "string"
+     },
+     {
+      "default": "\"category\"",
+      "description": "(`\"numeric\"` for scatter).",
+      "name": "xType",
+      "type": "\"category\" | \"datetime\" | \"numeric\""
+     },
+     {
+      "description": "A second row of x labels: each `{ title, cols }` spans `cols` categories.",
+      "name": "xaxisGroups",
+      "type": "readonly ChartXGroup[]"
      },
      {
       "description": "Title of the value axis.",

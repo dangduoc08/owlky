@@ -196,3 +196,6 @@ export const ColumnZeroBars: StoryObj = story("column-zero-bars");
 // Roadmap 4.18.20: measure rulers and draggable annotations.
 export const Measure: StoryObj = story("measure");
 export const AnnotationsDrag: StoryObj = story("annotations-drag");
+// Roadmap 4.18.68 (ADR-0060): drilldown levels and trellis small multiples.
+export const Drilldown: StoryObj = story("drilldown");
+export const Trellis: StoryObj = story("trellis");

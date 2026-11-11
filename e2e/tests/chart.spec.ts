@@ -91,6 +91,8 @@ const STORIES = [
   "column-zero-bars",
   "measure",
   "annotations-drag",
+  "drilldown",
+  "trellis",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

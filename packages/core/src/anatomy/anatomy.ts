@@ -5396,6 +5396,29 @@ export interface ChartAnatomyOptions {
 export const chartAttributes = (options: ChartAnatomyOptions = {}): DataAttributes =>
   optionAttributes(chartOptions, { ...options });
 
+/** Chart trellis (ADR-0060): small multiples of one data set, one chart per panel. */
+export const chartTrellisOptions = defineOptions("chart-trellis", "data-ok-chart-trellis", {
+  columns: number(
+    "data-ok-columns",
+    undefined,
+    "Panels per row from 600px up (1 to 6; default as many as fit, at least 220px wide). Narrower screens show one per row.",
+    { min: 1 },
+  ),
+  promote: flag(
+    "data-ok-promote",
+    "Panel headers are buttons: pressing one shows that panel alone across the grid, with an **All panels** button to go back.",
+  ),
+});
+
+export interface ChartTrellisAnatomyOptions {
+  columns?: number | undefined;
+  promote?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a chart trellis root. */
+export const chartTrellisAttributes = (options: ChartTrellisAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(chartTrellisOptions, { ...options });
+
 // --- Carousel (ADR-0033) ------------------------------------------------------------------------
 
 export const carouselColors = [
@@ -7054,6 +7077,7 @@ export const optionSchemas = {
   editor: editorOptions,
   markdown: markdownOptions,
   chart: chartOptions,
+  "chart-trellis": chartTrellisOptions,
   gantt: ganttOptions,
   carousel: carouselOptions,
   "carousel-arrows": carouselArrowsOptions,

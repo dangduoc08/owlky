@@ -323,6 +323,8 @@ export type ChartPointInput =
       readonly isTotal?: boolean | undefined;
       /** Waterfall charts: a subtotal bar, the running total in the subtotal color. */
       readonly isSubtotal?: boolean | undefined;
+      /** Drilldown (4.18.68): the id of the level a click, Enter or Space opens. */
+      readonly drilldown?: string | undefined;
     }
   | {
       readonly x?: number | string | Date;
@@ -373,6 +375,8 @@ export interface ChartPoint {
   readonly sum?: ChartSum | undefined;
   /** Violins (4.18.21): the statistics (`y` is the median, `range` the five numbers). */
   readonly violin?: ChartViolinStats | undefined;
+  /** Drilldown (4.18.68): the level the point opens. */
+  readonly drilldown?: string | undefined;
 }
 
 /** Waterfall bars that show the running total (ApexCharts `isTotal` / `isSubtotal`). */
@@ -502,6 +506,7 @@ export function chartData(input: {
       let rawPoints: unknown;
       let color: ChartColor | undefined;
       let sum: ChartSum | undefined;
+      let drilldown: string | undefined;
       if (Array.isArray(raw)) {
         const [rx, ry, rz] = raw as readonly [unknown, unknown, unknown];
         x = xType === "numeric" ? numericX(rx) : categoryOf(rx, position);
@@ -517,7 +522,10 @@ export function chartData(input: {
           isTotal?: unknown;
           isSubtotal?: unknown;
           points?: unknown;
+          drilldown?: unknown;
         };
+        if (typeof point.drilldown === "string" && point.drilldown)
+          drilldown = point.drilldown.slice(0, 200);
         x = xType === "numeric" ? numericX(point.x) : categoryOf(point.x, position);
         rawY = point.y;
         rawZ = point.z;
@@ -564,6 +572,7 @@ export function chartData(input: {
         ...(volume !== null && volume >= 0 ? { volume } : {}),
         ...(sum ? { sum } : {}),
         ...(violin ? { violin } : {}),
+        ...(drilldown ? { drilldown } : {}),
       });
     });
     if (seriesType === "waterfall") runningTotals(points);
@@ -783,7 +792,10 @@ export function chartTable(
             ),
             ...tail,
           ];
-        const plain = cell(point.y, options.formatValue(point.y, index), point.color);
+        const written = cell(point.y, options.formatValue(point.y, index), point.color);
+        const plain: ChartTableCell = point.drilldown
+          ? { ...written, attrs: { ...written.attrs, "data-ok-drilldown": point.drilldown } }
+          : written;
         const start = chartForecastStart(
           data.series[index] as ChartDataSeries,
           options.forecastCount,
@@ -876,6 +888,7 @@ export function readChartTable(
       const color = cell?.getAttribute("data-ok-color");
       // Waterfall charts: a cell of the running total (its text is the computed total).
       const sum = cell?.getAttribute("data-ok-sum");
+      const drilldown = cell?.getAttribute("data-ok-drilldown") || undefined;
       const v = volumeAt >= 0 ? value(first + volumeAt) : null;
       // Violins: the data is the observations or the curve, never the summary cells' text.
       if (violin)
@@ -897,10 +910,18 @@ export function readChartTable(
       } else y = value(first);
       if (xType === "numeric")
         return z === null ? [xs[index] as string, y] : [xs[index] as string, y, z];
-      if (!Array.isArray(y) && z === null && v === null && !isColor(color) && !isChartSum(sum))
+      if (
+        !Array.isArray(y) &&
+        z === null &&
+        v === null &&
+        !isColor(color) &&
+        !isChartSum(sum) &&
+        !drilldown
+      )
         return y;
       return {
         y,
+        ...(drilldown ? { drilldown } : {}),
         ...(sum === "total" ? { isTotal: true } : sum === "subtotal" ? { isSubtotal: true } : {}),
         ...(z !== null ? { z } : {}),
         ...(v !== null ? { v } : {}),

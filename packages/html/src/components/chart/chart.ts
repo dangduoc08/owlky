@@ -69,6 +69,7 @@ import {
   chartAnnotationText,
   chartBrushCategories,
   chartColors,
+  chartDrilldownActive,
   chartDrillLabels,
   chartDrillUp,
   chartFilterCategories,
@@ -112,6 +113,7 @@ import {
   parseChartYAxes,
   placeChartTooltip,
   readChartAnnotation,
+  readChartDrilldownTables,
   readChartGeoTable,
   readChartHierarchyTable,
   readChartSankeyTable,
@@ -175,6 +177,12 @@ export interface ChartEvents {
    * `preventDefault()` to refuse.
    */
   drill: EventSpec<{ id: string | null; path: string[] }, true>;
+  /**
+   * Before a click, Enter or Space opens a drilldown level (`id`), or Escape, **Back** or a method
+   * goes up (`id` is the level shown next, `null` for the root); `path` is the new path. Call
+   * `preventDefault()` to refuse.
+   */
+  drilldown: EventSpec<{ id: string | null; path: string[] }, true>;
   /**
    * After a drag, or Enter or Space at a second point in measure mode, drew a ruler: the ruler,
    * every ruler and its text.
@@ -241,6 +249,14 @@ export interface ChartInstance extends ComponentInstance {
   setDrillNode(id: string | null): void;
   /** Geo charts: the regions' shapes as GeoJSON, for pages that don't use `data-ok-geometry` (`null`: back to the attribute). */
   setGeometry(geometry: ChartGeometry | null): void;
+  /** Drilldown: the ids of the levels opened (`data-ok-drilldown-path`), outermost first. */
+  readonly drilldownPath: readonly string[];
+  /** Drilldown: opens a level from the one shown (no event). */
+  drillDown(id: string): void;
+  /** Drilldown: goes up one level (no event). */
+  drillUp(): void;
+  /** Drilldown: goes back to the root (no event). */
+  drillToRoot(): void;
   /** Measure rulers (`data-ok-measure`), in data coordinates. */
   readonly measures: readonly ChartMeasure[];
   /** Shows exactly these rulers (invalid ones are dropped; no event). */
@@ -911,6 +927,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         dataLabelFormatter: formatters.dataLabel,
         colorRanges: parseChartColorRanges(element.getAttribute(CHART_TEXT_ATTRIBUTES.colorRanges)),
         annotations: shownAnnotations(),
+        drilldown: levelTables().length
+          ? readChartDrilldownTables(element, xType, type)
+          : undefined,
+        drilldownPath: parseChartList(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.drilldownPath),
+        ).filter(Boolean),
         measures: rulerPreview ? [...(pinning() ? rulers : []), rulerPreview] : rulers,
         measureMode: measureMode(),
         pickedAnnotation: picked ?? undefined,
@@ -1039,11 +1061,28 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       changes.takeRecords();
       draw();
     };
+    /** Drilldown (4.18.68): the level tables after the chart's own. */
+    const levelTables = () =>
+      element.querySelectorAll<HTMLTableElement>(":scope > table[data-ok-chart-drilldown]");
+    /** Drilldown: shows another path of levels (the root attribute is the state). */
+    const writeLevels = (path: readonly string[], notify: boolean) => {
+      const current = (render as ChartRender).drilldown;
+      if (!current) return;
+      const id = path.at(-1) ?? null;
+      if (notify && !emit("drilldown", { id, path: [...path] }, { cancelable: true })) return;
+      const textValue = chartListText(path);
+      if (textValue) element.setAttribute(CHART_TEXT_ATTRIBUTES.drilldownPath, textValue);
+      else element.removeAttribute(CHART_TEXT_ATTRIBUTES.drilldownPath);
+      changes.takeRecords();
+      setActive(null, notify);
+      draw();
+    };
     /** Sunburst and icicle charts: a **Back** button and the drilled path (a status) before the plot. */
     const drawDrill = () => {
       let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-drill]");
       const state = (render as ChartRender).layout.hierarchy;
-      if (!state?.drillable || state.type === "tree") {
+      const levels = (render as ChartRender).drilldown;
+      if (!levels && (!state?.drillable || state.type === "tree")) {
         box?.remove();
         return;
       }
@@ -1063,8 +1102,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       const [up, path] = [...box.children] as [HTMLButtonElement, HTMLElement];
       const label = localeText.drillUp ?? chartDrillLabels.drillUp;
       if (up.textContent !== label) up.textContent = label;
-      up.hidden = state.drill === null;
-      const shown = state.path.join(" › ");
+      up.hidden = levels ? levels.path.length === 0 : state?.drill === null;
+      const shown = levels ? levels.text : (state?.path ?? []).join(" › ");
       if (path.textContent !== shown) path.textContent = shown;
     };
 
@@ -1482,6 +1521,13 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           (event.clientX - box.left) * scale,
           (event.clientY - box.top) * scale,
         );
+        // Drilldown: a point with a level opens it instead of being selected.
+        const levels = (render as ChartRender).drilldown;
+        const level = mark === null ? undefined : layout.marks[mark]?.drilldown;
+        if (levels && level) {
+          writeLevels([...levels.path, level], true);
+          return;
+        }
         if (mark !== null)
           select([chartMarkPoint(layout.marks[mark] as ChartRender["layout"]["marks"][number])]);
       },
@@ -1502,6 +1548,21 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         if (annotationKey(event) || measureKey(event)) {
           event.preventDefault();
           return;
+        }
+        // Drilldown: Enter or Space opens the active item's level, Escape goes up.
+        const levels = (render as ChartRender).drilldown;
+        if (levels) {
+          const level = chartDrilldownActive((render as ChartRender).layout, active);
+          if ((event.key === "Enter" || event.key === " ") && !event.repeat && level) {
+            event.preventDefault();
+            writeLevels([...levels.path, level], true);
+            return;
+          }
+          if (event.key === "Escape" && levels.path.length > 0) {
+            event.preventDefault();
+            writeLevels(levels.path.slice(0, -1), true);
+            return;
+          }
         }
         if (event.key === "Escape") {
           // Sunburst and icicle charts: one level up before anything else.
@@ -1582,6 +1643,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       (event) => {
         const back = (event.target as Element).closest?.("[data-ok-chart-drill-up]");
         if (back && back.parentElement?.parentElement === element) {
+          const levels = (render as ChartRender).drilldown;
+          if (levels) {
+            writeLevels(levels.path.slice(0, -1), true);
+            if ((back as HTMLElement).hidden) plot.focus();
+            return;
+          }
           act(chartDrillUp((render as ChartRender).layout));
           // At the top the button hides: the focus goes to the plot.
           if ((back as HTMLElement).hidden) plot.focus();
@@ -1638,6 +1705,14 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     changes.observe(element, { attributes: true, attributeFilter: OPTION_ATTRIBUTES });
     if (table)
       changes.observe(table, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+      });
+    // Drilldown levels' tables redraw too.
+    for (const level of levelTables())
+      changes.observe(level, {
         childList: true,
         subtree: true,
         characterData: true,
@@ -1762,6 +1837,20 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       },
       setCollapsedNodes(ids) {
         writeCollapsed([...new Set(ids.map(String))]);
+      },
+      get drilldownPath() {
+        return render?.drilldown ? [...render.drilldown.path] : [];
+      },
+      drillDown(id) {
+        const levels = render?.drilldown;
+        if (levels) writeLevels([...levels.path, String(id)], false);
+      },
+      drillUp() {
+        const levels = render?.drilldown;
+        if (levels?.path.length) writeLevels(levels.path.slice(0, -1), false);
+      },
+      drillToRoot() {
+        if (render?.drilldown) writeLevels([], false);
       },
       get measures() {
         return [...rulers];

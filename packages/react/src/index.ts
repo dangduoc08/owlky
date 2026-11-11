@@ -240,6 +240,7 @@ export {
   type CarouselViewportProps,
 } from "./carousel/carousel.js";
 export { Chart, type ChartProps } from "./chart/chart.js";
+export { ChartTrellis, type ChartTrellisProps } from "./chart/chart-trellis.js";
 export { Checkbox, type CheckboxProps } from "./checkbox/checkbox.js";
 export { Chip, type ChipProps } from "./chip/chip.js";
 export {

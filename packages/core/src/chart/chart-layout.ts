@@ -339,6 +339,8 @@ export interface ChartMark {
   readonly count?: number | undefined;
   /** Waffle and unit charts: the outline of a category's marks (one path). */
   readonly unit?: { readonly outline: string } | undefined;
+  /** Drilldown (4.18.68): the level a click, Enter or Space on the mark opens. */
+  readonly drilldown?: string | undefined;
   /** Forecast tail (4.18.65): the point is a forecast (a tooltip row says so). */
   readonly forecast?: boolean | undefined;
   /** Streamgraphs: the column's total (a tooltip row). */

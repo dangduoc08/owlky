@@ -186,6 +186,8 @@ const pairs: [component: string, story: string][] = [
   ["chart", "column-zero-bars"],
   ["chart", "measure"],
   ["chart", "annotations-drag"],
+  ["chart", "drilldown"],
+  ["chart", "trellis"],
   ["chart", "unit"],
   ["chart", "waffle"],
   ["chart", "beeswarm"],

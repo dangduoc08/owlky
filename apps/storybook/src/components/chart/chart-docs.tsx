@@ -1,7 +1,7 @@
 import { chartOptions } from "@owlky/core";
 import chartApi from "@owlky/docs-content/api/chart.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { Chart } from "@owlky/react";
+import { Chart, ChartTrellis } from "@owlky/react";
 import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
 import annotationsDragGroup from "../../../../../packages/html/src/components/chart/examples/annotations-drag-group.html?raw";
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
@@ -17,6 +17,7 @@ import columnZeroBarsGroup from "../../../../../packages/html/src/components/cha
 import crossfilterGroup from "../../../../../packages/html/src/components/chart/examples/crossfilter-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import dataReducerGroup from "../../../../../packages/html/src/components/chart/examples/data-reducer-group.html?raw";
+import drilldownGroup from "../../../../../packages/html/src/components/chart/examples/drilldown-group.html?raw";
 import dumbbellGroup from "../../../../../packages/html/src/components/chart/examples/dumbbell-group.html?raw";
 import forecastGroup from "../../../../../packages/html/src/components/chart/examples/forecast-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
@@ -39,6 +40,7 @@ import timelineGroup from "../../../../../packages/html/src/components/chart/exa
 import timelineRowsGroup from "../../../../../packages/html/src/components/chart/examples/timeline-rows-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
+import trellisGroup from "../../../../../packages/html/src/components/chart/examples/trellis-group.html?raw";
 import unitGroup from "../../../../../packages/html/src/components/chart/examples/unit-group.html?raw";
 import violinGroup from "../../../../../packages/html/src/components/chart/examples/violin-group.html?raw";
 import waffleGroup from "../../../../../packages/html/src/components/chart/examples/waffle-group.html?raw";
@@ -1799,6 +1801,63 @@ export function ChartDataReducer() {
 }`,
   },
   {
+    id: "drilldown",
+    title: "Drill down into details",
+    body: `List the levels a chart can open in \`drilldown\`: each has an \`id\`, a \`name\`, \`categories\` and \`series\`, and may have its own \`type\`. A point opens a level when it names it, such as \`{ y: 120, drilldown: "q1" }\`. Levels can name deeper levels.
+
+- **Open a level:** select the point, or move to it with the arrow keys and press Enter or Space.
+- **Go back:** select **Back**, or press Escape. The status next to it shows the path, such as "All › Q1 › January". Set \`localeText.drilldownRoot\` to rename "All".
+- **HTML:** write each level as another table after the chart's own, \`<table data-ok-chart-drilldown="q1">\` with the level's name as its caption, and mark the cells that open a level with \`data-ok-drilldown\`. Every level stays in the page as a table, so screen readers reach all of the data.
+
+The path is \`data-ok-drilldown-path\` on the chart. React keeps it in \`drilldownPath\` (controlled) or \`defaultDrilldownPath\` and calls \`onDrilldownChange(path)\`. In HTML, \`ok:chart:drilldown\` fires before the change (call \`preventDefault()\` to refuse it), and the instance has \`drilldownPath\`, \`drillDown(id)\`, \`drillUp()\` and \`drillToRoot()\`.`,
+    html: snippetElement(drilldownGroup, "data-ok-chart "),
+    react: `import { Chart } from "@owlky/react";
+
+const quarters = [
+  { name: "Sales", data: [{ y: 120, drilldown: "q1" }, { y: 150, drilldown: "q2" }] },
+];
+const levels = [
+  { id: "q1", name: "Q1", categories: ["Jan", "Feb", "Mar"], series: [{ name: "Sales", data: [35, 40, 45] }] },
+  { id: "q2", name: "Q2", type: "line" as const, categories: ["Apr", "May", "Jun"], series: [{ name: "Sales", data: [52, 48, 50] }] },
+];
+
+export function ChartDrilldown() {
+  return <Chart label="Sales per quarter" type="bar" categories={["Q1", "Q2"]} series={quarters} drilldown={levels} />;
+}`,
+  },
+  {
+    id: "trellis",
+    title: "Compare small multiples",
+    body: `\`ChartTrellis\` splits one data set into small charts, one per series (\`by="series"\`, the default) or one per category (\`by="category"\`), in a grid. It takes the same options as a chart and passes them to every panel.
+
+- **Scales:** by default every panel shares one value scale, so a taller shape is a bigger number. Set \`scaleY="independent"\` to let each panel fit its own values.
+- **Columns:** \`columns\` (\`data-ok-columns\`, 1 to 6) sets the panels per row from 600px up. Without it, as many panels fit as are at least 220px wide. Narrower screens show one per row.
+- **Promote:** \`promote\` (\`data-ok-promote\`) turns the headers into buttons that show their panel alone across the grid. **All panels** shows every panel again. React keeps the panel in \`promoted\` or \`defaultPromoted\` and calls \`onPromotedChange(index)\`. In HTML, \`ok:chart-trellis:promote\` fires before the change, and the instance has \`promoted\`, \`promotePanel(index)\` and \`restorePanels()\`.
+
+In HTML, write the panels yourself: each \`data-ok-chart-trellis-panel\` holds a header and an ordinary chart, with the shared scale as \`data-ok-y-min\` and \`data-ok-y-max\`.`,
+    html: snippetElement(trellisGroup, "data-ok-chart-trellis "),
+    react: `import { ChartTrellis } from "@owlky/react";
+
+const regions = [
+  { name: "North", data: [30, 41, 35, 51, 49, 62] },
+  { name: "South", data: [12, 18, 22, 19, 25, 28] },
+  { name: "East", data: [44, 39, 47, 52, 58, 61] },
+];
+
+export function ChartSmallMultiples() {
+  return (
+    <ChartTrellis
+      label="Monthly visits per region"
+      type="area"
+      columns={3}
+      promote
+      categories={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
+      series={regions}
+    />
+  );
+}`,
+  },
+  {
     id: "measure",
     title: "Measure changes",
     body: `Set \`measure\` (\`data-ok-measure\`) to add a **Measure** button to the chart's toolbar. Select it, then drag across the plot to draw a ruler. Its tag shows the two positions and the change, such as "Mar → Jul: +19 (+126.7%)", and the chart announces it.
@@ -1972,6 +2031,54 @@ export function ChartNoData() {
 ];
 
 const PREVIEWS = {
+  drilldown: () => (
+    <Preview>
+      <Chart
+        label="Sales per quarter"
+        type="bar"
+        height={220}
+        categories={["Q1", "Q2"]}
+        series={[
+          {
+            name: "Sales",
+            data: [
+              { y: 120, drilldown: "q1" },
+              { y: 150, drilldown: "q2" },
+            ],
+          },
+        ]}
+        drilldown={[
+          {
+            id: "q1",
+            name: "Q1",
+            categories: ["Jan", "Feb", "Mar"],
+            series: [{ name: "Sales", data: [35, 40, 45] }],
+          },
+          {
+            id: "q2",
+            name: "Q2",
+            categories: ["Apr", "May", "Jun"],
+            series: [{ name: "Sales", data: [52, 48, 50] }],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  trellis: () => (
+    <Preview>
+      <ChartTrellis
+        label="Monthly visits per region"
+        type="area"
+        height={140}
+        promote
+        categories={MONTHS}
+        series={[
+          { name: "North", data: [30, 41, 35, 51, 49, 62] },
+          { name: "South", data: [12, 18, 22, 19, 25, 28] },
+        ]}
+      />
+    </Preview>
+  ),
   measure: () => (
     <Preview>
       <Chart

@@ -14,6 +14,13 @@ export interface ChartExample {
   readonly more?: readonly ChartProps[];
   /** HTML only: markup inside the first figure, after its table (a custom tooltip template). */
   readonly html?: readonly string[];
+  /** Trellis stories (ADR-0060): `props` are split into panels, one chart each. */
+  readonly trellis?: {
+    readonly by?: "series" | "category";
+    readonly scaleY?: "shared" | "independent";
+    readonly columns?: number;
+    readonly promote?: boolean;
+  };
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
@@ -2471,6 +2478,65 @@ export const chartExamples: Record<string, ChartExample> = {
       annotations: [
         { axis: "text", x: "Mar", y: 15, label: "Campaign paused" },
         { axis: "text", x: "Aug", y: 95, label: "New pricing", textAnchor: "end", color: "error" },
+      ],
+    },
+  },
+  drilldown: {
+    title: "Drilldown",
+    props: {
+      label: "Sales per quarter, select a quarter for its months",
+      type: "bar",
+      categories: ["Q1", "Q2", "Q3"],
+      series: [
+        {
+          name: "Sales",
+          data: [
+            { y: 120, drilldown: "q1" },
+            { y: 150, drilldown: "q2" },
+            { y: 90, drilldown: "q3" },
+          ],
+        },
+      ],
+      drilldown: [
+        {
+          id: "q1",
+          name: "Q1",
+          categories: ["Jan", "Feb", "Mar"],
+          series: [{ name: "Sales", data: [{ y: 35, drilldown: "jan" }, 40, 45] }],
+        },
+        {
+          id: "q2",
+          name: "Q2",
+          categories: ["Apr", "May", "Jun"],
+          series: [{ name: "Sales", data: [52, 48, 50] }],
+        },
+        {
+          id: "q3",
+          name: "Q3",
+          type: "line",
+          categories: ["Jul", "Aug", "Sep"],
+          series: [{ name: "Sales", data: [28, 30, 32] }],
+        },
+        {
+          id: "jan",
+          name: "January",
+          categories: ["Week 1", "Week 2", "Week 3", "Week 4"],
+          series: [{ name: "Sales", data: [8, 9, 10, 8] }],
+        },
+      ],
+    },
+  },
+  trellis: {
+    title: "Trellis",
+    trellis: { columns: 3, promote: true },
+    props: {
+      label: "Monthly visits per region",
+      type: "area",
+      categories: MONTHS.slice(0, 6),
+      series: [
+        { name: "North", data: [30, 41, 35, 51, 49, 62] },
+        { name: "South", data: [12, 18, 22, 19, 25, 28] },
+        { name: "East", data: [44, 39, 47, 52, 58, 61] },
       ],
     },
   },

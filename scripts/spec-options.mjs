@@ -73,6 +73,7 @@ const SPECS = {
   image: "image.md",
   rating: "rating.md",
   chart: "chart.md",
+  "chart-trellis": "chart.md",
   gantt: "gantt.md",
   carousel: "carousel.md",
   lightbox: "lightbox.md",

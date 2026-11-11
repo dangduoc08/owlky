@@ -14,6 +14,12 @@ import {
   withChartCues,
 } from "./chart-cues.js";
 import {
+  type ChartDrilldownLevel,
+  chartDrilldownLabels,
+  chartDrilldownLevels,
+  chartDrilldownPath,
+} from "./chart-drilldown.js";
+import {
   type ChartCrossfilter,
   chartFilter,
   chartFilterHidden,
@@ -346,6 +352,10 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly xLabelRotateAlways?: boolean | undefined;
   /** A second row of x labels: `{ title, cols }`, each spanning `cols` categories. */
   readonly xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** Drilldown levels (4.18.68): points name them in `drilldown`. */
+  readonly drilldown?: readonly ChartDrilldownLevel[] | undefined;
+  /** The ids of the levels opened, outermost first; the last one is drawn. */
+  readonly drilldownPath?: readonly string[] | undefined;
   /** Measure rulers (4.18.20), in data coordinates (validated by `chartMeasures`). */
   readonly measures?: readonly ChartMeasure[] | undefined;
   /** How rulers measure: `span` (default) or `free`. */
@@ -418,6 +428,21 @@ export interface ChartRender {
   readonly noData?: string | undefined;
   /** Where the draggable annotations are drawn (4.18.20; pointer hits). */
   readonly annotationHits?: readonly ChartAnnotationHit[] | undefined;
+  /** Drilldown (4.18.68): the valid path, its names and the level tables (absent without levels). */
+  readonly drilldown?: ChartDrilldownState | undefined;
+}
+
+/** What owners draw for drilldown charts: the path and the level tables. */
+export interface ChartDrilldownState {
+  readonly path: readonly string[];
+  /** The status text: the root label, then the levels' names (empty at the root). */
+  readonly text: string;
+  readonly tables: readonly {
+    id: string;
+    name: string;
+    type?: ChartType;
+    table: ChartTableModel;
+  }[];
 }
 
 /** Default SVG width before the chart is measured (server render, first paint). */
@@ -429,6 +454,56 @@ export const chartIdPrefix = (raw: string): string =>
 
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
+  const levels = chartDrilldownLevels(input.drilldown);
+  if (levels.length === 0) return renderMessage(input);
+  // Drilldown (4.18.68): the last level of the path is drawn; the table stays the root's.
+  const path = chartDrilldownPath(levels, input.drilldownPath);
+  const root = renderMessage({ ...input, drilldown: undefined });
+  const level = levels.find((entry) => entry.id === path.at(-1));
+  const drawn = level
+    ? renderMessage({
+        ...input,
+        drilldown: undefined,
+        type: level.type ?? input.type,
+        series: level.series,
+        categories: level.categories,
+        zoom: null,
+        selectedDataPoints: undefined,
+        filter: null,
+        annotations: undefined,
+        measures: undefined,
+      })
+    : root;
+  const names = path.map((id) => levels.find((entry) => entry.id === id)?.name ?? id);
+  // `localeText` reaches the render as `partLabels` (React and HTML pass every text).
+  const rootLabel =
+    (input.partLabels as Readonly<Record<string, string>> | undefined)?.["drilldownRoot"] ??
+    chartDrilldownLabels.drilldownRoot;
+  const tables = levels.map((entry) => {
+    const own = renderMessage({
+      ...input,
+      drilldown: undefined,
+      type: entry.type ?? input.type,
+      series: entry.series,
+      categories: entry.categories,
+      width: 640,
+      height: 320,
+    });
+    return {
+      id: entry.id,
+      name: entry.name ?? entry.id,
+      ...(entry.type && entry.type !== input.type ? { type: entry.type } : {}),
+      table: own.table,
+    };
+  });
+  return {
+    ...drawn,
+    table: root.table,
+    drilldown: { path, text: path.length ? [rootLabel, ...names].join(" › ") : "", tables },
+  };
+}
+
+function renderMessage(input: ChartRenderInput): ChartRender {
   const render = renderChartData(input);
   const text = input.noDataText ? String(input.noDataText).slice(0, 200) : "";
   const empty =
@@ -797,10 +872,23 @@ function renderChartData(input: ChartRenderInput): ChartRender {
     forecastCount,
   });
   const hits = chartAnnotationHits(data, base, validAnnotations);
+  // Drilldown (4.18.68): marks know the level their point opens.
+  const drillable = data.series.some((series) => series.points.some((point) => point.drilldown));
+  const layoutOut: ChartLayout = drillable
+    ? {
+        ...layout,
+        marks: layout.marks.map((mark) => {
+          const id = data.series[mark.series]?.points.find(
+            (point) => point.x === mark.x,
+          )?.drilldown;
+          return id ? { ...mark, drilldown: id } : mark;
+        }),
+      }
+    : layout;
   return {
     data,
     format,
-    layout,
+    layout: layoutOut,
     legend,
     table,
     extent,

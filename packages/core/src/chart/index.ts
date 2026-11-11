@@ -2,6 +2,7 @@
 
 export {
   CHART_DEFAULT_WIDTH,
+  type ChartDrilldownState,
   type ChartLegendItem,
   type ChartRender,
   type ChartRenderInput,
@@ -68,6 +69,21 @@ export {
   parseChartDiscreteMarkers,
   withChartCues,
 } from "./chart-cues.js";
+export {
+  type ChartDrilldownLevel,
+  type ChartTrellisBy,
+  type ChartTrellisPanel,
+  type ChartTrellisScale,
+  chartDrilldownActive,
+  chartDrilldownLabels,
+  chartDrilldownLevels,
+  chartDrilldownPath,
+  chartDrilldownTarget,
+  chartTrellisBys,
+  chartTrellisPanels,
+  chartTrellisScales,
+  readChartDrilldownTables,
+} from "./chart-drilldown.js";
 export {
   type ChartExportFormat,
   chartCsv,

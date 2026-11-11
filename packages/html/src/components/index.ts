@@ -13,6 +13,7 @@ import { backdrop } from "./backdrop/backdrop.js";
 import { breadcrumbs } from "./breadcrumbs/breadcrumbs.js";
 import { carousel } from "./carousel/carousel.js";
 import { chart } from "./chart/chart.js";
+import { chartTrellis } from "./chart-trellis/chart-trellis.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
@@ -77,6 +78,7 @@ export const components: readonly ComponentDefinition[] = [
   avatar as ComponentDefinition,
   avatarGroup as ComponentDefinition,
   chart as ComponentDefinition,
+  chartTrellis as ComponentDefinition,
   gantt as ComponentDefinition,
   checkbox as ComponentDefinition,
   chip as ComponentDefinition,

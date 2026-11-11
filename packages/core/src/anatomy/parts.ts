@@ -213,6 +213,14 @@ export interface CarouselParts {
 
 /** Chart: parts, states, values and triggers. */
 export interface ChartParts {
+  /** One panel: its header and its chart. */
+  "data-ok-chart-trellis-panel": Part<"div">;
+  /** A panel's title (the series or category); a button with `data-ok-promote`. */
+  "data-ok-chart-trellis-header": Part<"div" | "button">;
+  /** The **All panels** button (with `data-ok-promote`; hidden until a panel is promoted). */
+  "data-ok-chart-trellis-back": Part<"button">;
+  /** On a panel: it is shown alone across the grid. */
+  "data-ok-promoted": State;
   /** On an annotation list item: a vertical line (`x`), a horizontal line (`y`), a point or free text (`text`). */
   "data-ok-annotation": Value<"x" | "y" | "point" | "text">;
   /** On a text annotation list item: how the text lines up with its position. */
@@ -481,6 +489,12 @@ export interface ChartParts {
   "data-ok-chart-measure-tag": Part<"rect">;
   /** A ruler's text: the two positions and the change. */
   "data-ok-chart-measure-label": Part<"text">;
+  /** On a drilldown level's table (after the chart's own): the level's id. */
+  "data-ok-chart-drilldown": Value<string>;
+  /** On a data table cell: the id of the drilldown level the point opens. */
+  "data-ok-drilldown": Value<string>;
+  /** On a chart root: the ids of the drilldown levels opened, outermost first (`"q1; jan"`). */
+  "data-ok-drilldown-path": Value<string>;
   /** On a ruler's text: whether the value went `up`, `down` or stayed `flat`. */
   "data-ok-trend": Value<"up" | "down" | "flat">;
   /** On an annotation list item and its drawing: the annotation can be moved by a drag or the keyboard. */

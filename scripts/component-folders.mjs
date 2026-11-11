@@ -14,6 +14,7 @@ export const FOLDER_SPEC = {
   toaster: "snackbar",
   "toggle-group": "toggle-button",
   "avatar-group": "avatar",
+  "chart-trellis": "chart",
   utils: "date-picker",
   pickers: "date-picker",
   "localization-provider": "date-picker",
