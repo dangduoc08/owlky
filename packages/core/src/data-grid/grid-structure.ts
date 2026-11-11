@@ -453,6 +453,64 @@ export function moveGridRow(ids: readonly string[], id: string, index: number): 
   return [...rest.slice(0, at), id, ...rest.slice(at)];
 }
 
+/* ------------------------------------------------------------------ rows to export */
+
+/**
+ * Shortcuts for the rows an export holds (ApexGrid `source`): `filtered` (default: the rows that
+ * pass the filters, sorted), `selected` (the selected ones among them), `page` (the current
+ * page's), `all` (every data row in its original order, filters aside).
+ */
+export const gridExportSources = ["filtered", "selected", "page", "all"] as const;
+export type GridExportSource = (typeof gridExportSources)[number];
+
+/** The row id lists `getRowsToExport` gets (MUI X selectors' results, as values). */
+export interface GridRowsToExportIds {
+  /** Rows that pass the filters, in the shown order (MUI X `gridFilteredSortedRowIdsSelector`). */
+  filteredSortedRowIds: readonly string[];
+  /** Every data row in its original order (MUI X `gridRowIdsSelector`). */
+  rowIds: readonly string[];
+  /** The current page's rows (MUI X `gridPaginatedVisibleSortedGridRowIdsSelector`). */
+  paginatedRowIds: readonly string[];
+  /** The selected rows. */
+  selectedRowIds: readonly string[];
+}
+
+/** What `getRowsToExport` gets (MUI X `GridGetRowsToExportParams`): the grid's API and id lists. */
+export interface GridGetRowsToExportParams extends GridRowsToExportIds {
+  /** React: the `apiRef`; HTML: `{ current: instance }`. */
+  apiRef: { readonly current: unknown };
+}
+
+/** The ids an export holds: `getRowsToExport`'s answer, else the `source` shortcut's. */
+export function gridRowsToExport(
+  ids: GridGetRowsToExportParams,
+  source: GridExportSource | undefined,
+  getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined,
+): string[] {
+  if (getRowsToExport) {
+    const known = new Set(ids.rowIds);
+    return [...new Set(getRowsToExport(ids).map(String))].filter((id) => known.has(id));
+  }
+  switch (source) {
+    case "selected": {
+      const chosen = new Set(ids.selectedRowIds);
+      return ids.filteredSortedRowIds.filter((id) => chosen.has(id));
+    }
+    case "page":
+      return [...ids.paginatedRowIds];
+    case "all":
+      return [...ids.rowIds];
+    default:
+      return [...ids.filteredSortedRowIds];
+  }
+}
+
+/** A `source` from untrusted input (`undefined`: not a known shortcut). */
+export const parseGridExportSource = (input: unknown): GridExportSource | undefined =>
+  (gridExportSources as readonly unknown[]).includes(input)
+    ? (input as GridExportSource)
+    : undefined;
+
 /* ------------------------------------------------------------------ export options from markup */
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -484,6 +542,8 @@ export function parseGridExportOptions(json: string | null): Record<string, unkn
     if (typeof parsed[key] === "boolean") out[key] = parsed[key];
   if (Array.isArray(parsed["fields"]))
     out["fields"] = parsed["fields"].filter((f): f is string => typeof f === "string");
+  const source = parseGridExportSource(parsed["source"]);
+  if (source) out["source"] = source;
   // One character only: a delimiter can't smuggle formulas or new lines into the file.
   if (typeof out["delimiter"] === "string" && !/^[^\r\n"=+\-@]$/.test(out["delimiter"]))
     delete out["delimiter"];

@@ -702,6 +702,23 @@ Shift + arrows extend the cell range only. A Shift + press clears the page's tex
 `preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
 checkbox's click, which comes before its `change`.
 
+Rows to export (4.18.92, core `gridRowsToExport`): `csvOptions`, `excelOptions` and `printOptions`
+(and the options of `getDataAsCsv`, `getDataAsExcel`, `exportDataAsPrint`; HTML `toCsv`, `exportCsv`,
+`toExcel`, `exportExcel`, `print`) take MUI X's `getRowsToExport(params)` → row ids in order (unknown
+ids dropped, each once) and the shortcut `source` (ApexGrid `exportToCSV({ source })`): `filtered`
+(the default and the export's rows before: filtered, sorted, every page), `selected` (the selected
+ones among them), `page` (the current page's data rows), `all` (every data row in its original order,
+filters aside; HTML: the rows' order in memory, manual moves included). `getRowsToExport` wins over
+`source`. Params (MUI X `GridGetRowsToExportParams`): `apiRef` (React: the apiRef, else `{ current:
+api }`; HTML: `{ current: instance }`) plus the id lists MUI X's selectors give
+(`filteredSortedRowIds`, `rowIds`, `paginatedRowIds`, `selectedRowIds`), since Owlky has no selectors.
+`source` is JSON, so it travels in `data-ok-csv-options` / `data-ok-excel-options` /
+`data-ok-print-options` (the function doesn't). Print copies the rows the grid shows for printing (the
+filtered ones), so it prints the rows to export among them (`all` can't print rows the filters hide).
+Not changed: MUI X's default exports the selected rows when there are some; Owlky keeps exporting the
+filtered rows (`source: "selected"` or a `getRowsToExport` gives MUI X's behavior), so existing exports
+don't change. Grouped grids export their data rows; pivoted grids the pivot's source rows.
+
 Columns, rows and pivot (4.18.57): tree reordering keeps a moved row's subtree together and refuses
 drops into it; drop marks show only where `isValidRowReorder` agrees.
 
@@ -876,6 +893,7 @@ the detailed record of what is kept.
 | Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef` | same | kept (4.18.57) | object or `(originalColumnField, columnGroupPath)` (the column's keys); React overrides `headerName`, `description`, `width`, `minWidth`, `maxWidth`, `flex`, `align`, `headerAlign`, `headerClassName`, `cellClassName`, `resizable`; HTML `setPivotingColDef(def | null)` with `headerName`, `width`, `minWidth`, `maxWidth`, `align`, `headerAlign` (the headers the runtime builds) |
 | Pivot: `pivotPanelOpen` / `onPivotPanelOpenChange` | same | kept (4.18.57) | deprecated upstream (sidebar), kept as asked: the toolbar's Pivot popover; given, the prop decides and clicks only call `onPivotPanelOpenChange`; React writes `data-ok-pivot-panel-open`; HTML: the attribute opens and closes the panel, and follows it (the panel's own events stay `ok:data-grid:sidebaropen` / `sidebarclose`) |
+| Export: `csvOptions.getRowsToExport`, `excelOptions.getRowsToExport`, `printOptions.getRowsToExport` (`GridGetRowsToExportParams`) | same (+ `source`) | kept (4.18.92) | params carry `apiRef` and id lists instead of selectors; `source` (`filtered` · `selected` · `page` · `all`, ApexGrid) added; default stays the filtered rows (MUI X: the selected rows when any) |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |
 | (not in MUI X) set filter (ApexGrid, spreadsheets): a checklist of a column's values | column `filterVariant: "set"` | added (4.18.10) | on the `isAnyOf` model (string, number, singleSelect columns); filter panel and header filter; HTML `data-ok-filter-variant="set"` on the header |

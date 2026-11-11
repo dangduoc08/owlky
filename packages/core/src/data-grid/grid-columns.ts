@@ -166,6 +166,8 @@ export interface GridPrintLayout {
   hideFooter?: boolean | undefined;
   /** Include the selection checkboxes. Default false. */
   includeCheckboxes?: boolean | undefined;
+  /** Print these data rows only (rows to export); other body rows are removed. */
+  rowIds?: readonly string[] | undefined;
 }
 
 /**
@@ -192,6 +194,13 @@ export function prepareGridPrint(
     const kept = field === "__check__" ? !!layout.includeCheckboxes : keep.has(field);
     if (!kept) cell.remove();
     else if (!cell.hasAttribute("data-ok-covered")) cell.hidden = false;
+  }
+  if (layout.rowIds) {
+    const rows = new Set(layout.rowIds);
+    for (const row of copy.querySelectorAll<HTMLElement>(
+      '[data-ok-data-grid-body] > [role="row"][data-ok-row-id]',
+    ))
+      if (!rows.has(row.getAttribute("data-ok-row-id") as string)) row.remove();
   }
   copy.style.setProperty("height", "auto");
   const main = copy.querySelector<HTMLElement>('[role="grid"]');

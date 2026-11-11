@@ -49,11 +49,13 @@ import {
   type GridDensity,
   type GridEditStartReason,
   type GridExcelOptions,
+  type GridExportSource,
   type GridFillCell,
   type GridFilterGroup,
   type GridFilterItem,
   type GridFilterModel,
   type GridFilterOperator,
+  type GridGetRowsToExportParams,
   type GridGroupNode,
   type GridHistoryApi,
   type GridHistoryChange,
@@ -162,6 +164,7 @@ import {
   gridRowOffsets,
   gridRowRangeSelection,
   gridRowSpans,
+  gridRowsToExport,
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
@@ -427,6 +430,10 @@ export interface GridPrintOptions {
   includeCheckboxes?: boolean | undefined;
   /** The document title (default: the grid's label). */
   fileName?: string | undefined;
+  /** Which rows: `filtered` (default), `selected`, `page` or `all` (ApexGrid `source`). */
+  source?: GridExportSource | undefined;
+  /** The ids of the rows to print, in order (MUI X); wins over `source`. */
+  getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined;
 }
 
 /** The grid's methods (MUI X `apiRef`), the same as the HTML runtime's instance. */
@@ -3770,19 +3777,41 @@ function DataGridInner<R>(
       : grouping.length > 0
         ? localSort(server.filter ? orderedRows : localFilter(orderedRows))
         : sorted.filter(isData);
+  /** The rows an export holds: `getRowsToExport` (MUI X), else the `source` shortcut (4.18.92). */
+  const rowsToExport = (options: {
+    source?: GridExportSource | undefined;
+    getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined;
+  }) => {
+    const filteredRows = exportRows();
+    if (!options.source && !options.getRowsToExport) return filteredRows;
+    const every = (pivot ? pivotRows : orderedRows).filter(isData);
+    const byId = new Map(every.map((row) => [idOf(row), row]));
+    const ids = gridRowsToExport(
+      {
+        filteredSortedRowIds: filteredRows.map(idOf),
+        rowIds: every.map(idOf),
+        paginatedRowIds: pageRows.filter(isData).map(idOf),
+        selectedRowIds: selection,
+        apiRef: apiRef ?? { current: api },
+      },
+      options.source,
+      options.getRowsToExport,
+    );
+    return ids.flatMap((rowId) => byId.get(rowId) ?? []);
+  };
   const exportBase = pivot ? columnsProp : columns;
   const exportShown = pivot ? visibleGridColumns(columnsProp, visibility) : shown;
   const getCsv = (options: GridCsvOptions = csvOptions ?? {}) =>
     gridToCsv(
       gridExportColumns(exportBase, exportShown, options),
-      exportRows(),
+      rowsToExport(options),
       (row, field) => textOf(sourceOf(field), row),
       options,
     );
   const getExcel = (options: GridExcelOptions = excelOptions ?? {}) =>
     gridToXlsx(
       gridExportColumns(exportBase, exportShown, options),
-      exportRows(),
+      rowsToExport(options),
       (row, field) => rawValue(sourceOf(field), row),
       (row, field) => textOf(sourceOf(field), row),
       options,
@@ -3813,7 +3842,12 @@ function DataGridInner<R>(
       (copy) =>
         prepareGridPrint(
           copy,
-          options,
+          {
+            ...options,
+            ...(options.source || options.getRowsToExport
+              ? { rowIds: rowsToExport(options).map(idOf) }
+              : {}),
+          },
           printed.map((c) => c.field),
           gridColumnTemplate(printed, boxes, widths),
         ),

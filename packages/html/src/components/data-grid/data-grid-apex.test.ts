@@ -98,3 +98,60 @@ describe("HTML data grid row range selection (4.18.87)", () => {
     expect(instance.selection).toEqual([ids[5]]);
   });
 });
+
+describe("HTML data grid rows to export (4.18.92)", () => {
+  /** The first column's values of a CSV (the id column). */
+  const firsts = (csv: string) =>
+    csv
+      .replace("﻿", "")
+      .split("\r\n")
+      .slice(1)
+      .map((line) => line.split(",")[0]);
+
+  it("source shortcuts, getRowsToExport, the markup's options and print", () => {
+    const { root, instance } = setup(snippet("basic-group"));
+    const all = instance.toCsv({ fields: ["id"] });
+    const every = firsts(all);
+    instance.setFilterModel({ items: [], quickFilterValues: ["an"] });
+    const filtered = firsts(instance.toCsv({ fields: ["id"] }));
+    expect(filtered.length).toBeLessThan(every.length);
+    expect(firsts(instance.toCsv({ fields: ["id"], source: "all" }))).toEqual(every);
+    expect(firsts(instance.toCsv({ fields: ["id"], source: "filtered" }))).toEqual(filtered);
+    const shown = rowsOf(root).map((row) => row.getAttribute("data-ok-row-id"));
+    instance.setSelection([shown[1] as string, "p-002"]);
+    const chosen = filtered.filter((rowId) => rowId === shown[1] || rowId === "p-002");
+    expect(firsts(instance.toCsv({ fields: ["id"], source: "selected" }))).toEqual(chosen);
+    expect(firsts(instance.toCsv({ fields: ["id"], source: "page" }))).toHaveLength(shown.length);
+    let seen: unknown = null;
+    const picked = instance.toCsv({
+      fields: ["id"],
+      getRowsToExport: (params) => {
+        seen = params.apiRef.current;
+        return [params.rowIds[2] as string, "nope"];
+      },
+    });
+    expect(seen).toBe(instance);
+    expect(firsts(picked)).toEqual([every[2]]);
+    root.setAttribute("data-ok-excel-options", '{"source":"selected"}');
+    const sheet = new TextDecoder().decode(instance.toExcel());
+    expect(sheet).toContain(shown[1] as string);
+    root.setAttribute("data-ok-csv-options", '{"source":"all"}');
+    expect(firsts(instance.toCsv({ fields: ["id"] }))).toEqual(every);
+    // Print: the rows to export among the printed ones.
+    const print = vi.fn();
+    const append = document.body.append.bind(document.body);
+    vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+      append(...nodes);
+      for (const node of nodes)
+        if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = print;
+    });
+    instance.print({ source: "selected" });
+    expect(print).toHaveBeenCalled();
+    const frame = document.querySelector("iframe") as HTMLIFrameElement;
+    const printed = frame.contentDocument?.querySelectorAll(
+      '[data-ok-data-grid-body] > [role="row"]',
+    );
+    expect([...(printed ?? [])].map((row) => row.getAttribute("data-ok-row-id"))).toEqual(chosen);
+    frame.remove();
+  });
+});

@@ -5,6 +5,8 @@
  * field)` (the raw value, for sorting and filtering) and `text(row, field)` (what the cell shows).
  */
 
+import type { GridExportSource, GridGetRowsToExportParams } from "./grid-structure.js";
+
 export const gridColumnTypes = [
   "string",
   "number",
@@ -995,6 +997,10 @@ export interface GridCsvOptions {
   fields?: readonly string[] | undefined;
   /** Hidden columns too. Default false. */
   allColumns?: boolean | undefined;
+  /** Which rows: `filtered` (default), `selected`, `page` or `all` (ApexGrid `source`). */
+  source?: GridExportSource | undefined;
+  /** The ids of the rows to export, in order (MUI X); wins over `source`. */
+  getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined;
 }
 
 /** The columns an export (CSV, print) includes: `fields` in order, else shown or all columns. */

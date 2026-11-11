@@ -48,6 +48,7 @@ import {
   type GridEditStartReason,
   type GridEditTarget,
   type GridExcelOptions,
+  type GridExportSource,
   type GridFillCell,
   type GridFilterGroup,
   type GridFilterItem,
@@ -55,6 +56,7 @@ import {
   type GridFilterOperator,
   type GridFormat,
   type GridGetRowsResponse,
+  type GridGetRowsToExportParams,
   type GridGroupNode,
   type GridHistoryApi,
   type GridHistoryChange,
@@ -155,6 +157,7 @@ import {
   gridRowOffsets,
   gridRowRangeSelection,
   gridRowSpans,
+  gridRowsToExport,
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
@@ -666,6 +669,10 @@ export interface GridPrintOptions extends GridPrintLayout {
   allColumns?: boolean | undefined;
   /** The document title (default: the grid's label). */
   fileName?: string | undefined;
+  /** Which rows: `filtered` (default), `selected`, `page` or `all` (ApexGrid `source`). */
+  source?: GridExportSource | undefined;
+  /** The ids of the rows to print, in order (MUI X); wins over `source`. */
+  getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined;
 }
 const ROW = '[role="row"][data-ok-row-id]';
 const REORDER_FIELD = "__reorder__";
@@ -950,6 +957,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
   selector: "[data-ok-data-grid]",
 
   setup(element, { emit, signal, runtime }) {
+    /** The instance (the rows to export callback's `apiRef.current`), once setup returns it. */
+    let instanceRef: DataGridInstance | null = null;
     // grid, or treegrid with tree data.
     const main = element.querySelector<HTMLElement>("[data-ok-data-grid-main]") as HTMLElement;
     const body = main.querySelector<HTMLElement>("[data-ok-data-grid-body]") as HTMLElement;
@@ -4929,6 +4938,28 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cellValue,
         comparatorOf,
       ).filter((row) => !row.hasAttribute("data-ok-generated"));
+    /** The rows an export holds: `getRowsToExport` (MUI X), else `source` (4.18.92). */
+    const rowsToExport = (options: {
+      source?: GridExportSource | undefined;
+      getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined;
+    }) => {
+      const filteredRows = exportRows();
+      if (!options.source && !options.getRowsToExport) return filteredRows;
+      const data = (row: HTMLElement) => !row.hasAttribute("data-ok-generated");
+      const every = rows().filter(data);
+      const byRowId = new Map(every.map((row) => [idOf(row), row]));
+      return gridRowsToExport(
+        {
+          filteredSortedRowIds: filteredRows.map(idOf),
+          rowIds: every.map(idOf),
+          paginatedRowIds: pageList.filter(data).map(idOf),
+          selectedRowIds: selection,
+          apiRef: { current: instanceRef },
+        },
+        options.source,
+        options.getRowsToExport,
+      ).flatMap((rowId) => byRowId.get(rowId) ?? []);
+    };
     const exportShown = () =>
       visibleGridColumns(
         arrangeGridColumns(orderGridColumns(baseColumns, order), pinned),
@@ -4939,7 +4970,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const toCsv = (given: GridCsvOptions = {}, options = { ...csvDefaults(), ...given }) =>
       gridToCsv(
         gridExportColumns(baseColumns, exportShown(), options),
-        exportRows(),
+        rowsToExport(options),
         cellText,
         options,
       );
@@ -4950,7 +4981,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const toExcel = (given: GridExcelOptions = {}, options = { ...excelDefaults(), ...given }) =>
       gridToXlsx(
         gridExportColumns(baseColumns, exportShown(), options),
-        exportRows(),
+        rowsToExport(options),
         cellValue,
         cellText,
         options,
@@ -4996,7 +5027,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           );
           prepareGridPrint(
             copy,
-            options,
+            {
+              ...options,
+              ...(options.source || options.getRowsToExport
+                ? { rowIds: rowsToExport(options).map(idOf) }
+                : {}),
+            },
             printed.map((c) => c.field),
             gridColumnTemplate(printed, boxes, widths),
           );
@@ -6018,7 +6054,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       });
     }
 
-    return {
+    const instanceObject: DataGridInstance = {
       get sortModel() {
         return sortModel;
       },
@@ -6344,5 +6380,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         syncCustomProperties(element, {}, rootVars);
       },
     };
+    instanceRef = instanceObject;
+    return instanceObject;
   },
 });

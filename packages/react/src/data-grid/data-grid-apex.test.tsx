@@ -1,8 +1,9 @@
+import type { GridGetRowsToExportParams } from "@owlky/core";
 import { act, render, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
-import { DataGrid, type GridColDef } from "./data-grid.js";
+import { DataGrid, type GridApi, type GridColDef } from "./data-grid.js";
 
 // Roadmap batch E (4.18.87–4.18.93, the ApexGrid audit).
 
@@ -140,5 +141,89 @@ describe("DataGrid row range selection (4.18.87)", () => {
     act(() => nameCell(0).focus());
     await userEvent.keyboard("{Shift>}{ArrowDown}{/Shift}");
     expect(selected()).toEqual(["1", "2", "4"]);
+  });
+});
+
+describe("DataGrid rows to export (4.18.92)", () => {
+  const filtered = { items: [{ field: "team", operator: "equals", value: "Red" }] };
+  const names = (csv: string) =>
+    csv
+      .replace("﻿", "")
+      .split("\r\n")
+      .slice(1)
+      .map((line) => line.split(",")[0]);
+
+  it("source shortcuts and getRowsToExport for CSV and Excel", () => {
+    const apiRef = { current: null as GridApi<Row> | null };
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        checkboxSelection
+        apiRef={apiRef}
+        initialState={{
+          filter: { filterModel: filtered },
+          sorting: { sortModel: [{ field: "score", sort: "desc" }] },
+          pagination: { paginationModel: { page: 0, pageSize: 2 } },
+        }}
+        rowSelectionModel={["5", "2", "3"]}
+      />,
+    );
+    const api = apiRef.current as GridApi<Row>;
+    expect(names(api.getDataAsCsv())).toEqual(["Ana", "Chloe", "Emma"]);
+    expect(names(api.getDataAsCsv({ source: "selected" }))).toEqual(["Chloe", "Emma"]);
+    expect(names(api.getDataAsCsv({ source: "page" }))).toEqual(["Ana", "Chloe"]);
+    expect(names(api.getDataAsCsv({ source: "all" }))).toEqual([
+      "Ana",
+      "Bao",
+      "Chloe",
+      "Diego",
+      "Emma",
+    ]);
+    const getRowsToExport = vi.fn(({ rowIds, apiRef: ref }: GridGetRowsToExportParams) =>
+      ref.current ? [...rowIds].reverse() : [],
+    );
+    expect(names(api.getDataAsCsv({ getRowsToExport, source: "page" }))[0]).toBe("Emma");
+    expect(getRowsToExport.mock.calls[0]?.[0]).toMatchObject({
+      filteredSortedRowIds: ["1", "3", "5"],
+      paginatedRowIds: ["1", "3"],
+      selectedRowIds: ["5", "2", "3"],
+    });
+    const sheet = new TextDecoder().decode(api.getDataAsExcel({ source: "selected" }));
+    expect(sheet).toContain("Chloe");
+    expect(sheet).not.toContain("Ana");
+  });
+
+  it("csvOptions.source reaches the markup; print keeps the rows to export", () => {
+    const print = vi.fn();
+    const append = document.body.append.bind(document.body);
+    vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+      append(...nodes);
+      for (const node of nodes)
+        if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = print;
+    });
+    const apiRef = { current: null as GridApi<Row> | null };
+    const { container } = render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        csvOptions={{ source: "selected", getRowsToExport: () => [] }}
+        printOptions={{ source: "all" }}
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.getAttribute("data-ok-csv-options")).toBe('{"source":"selected"}');
+    expect(root.getAttribute("data-ok-print-options")).toBe('{"source":"all"}');
+    act(() => (apiRef.current as GridApi<Row>).exportDataAsPrint({ getRowsToExport: () => ["2"] }));
+    expect(print).toHaveBeenCalled();
+    const frame = document.querySelector("iframe") as HTMLIFrameElement;
+    const printed = frame.contentDocument?.querySelectorAll(
+      '[data-ok-data-grid-body] > [role="row"]',
+    );
+    expect([...(printed ?? [])].map((row) => row.getAttribute("data-ok-row-id"))).toEqual(["2"]);
+    frame.remove();
   });
 });

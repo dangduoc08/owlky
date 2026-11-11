@@ -654,6 +654,56 @@ export function DataGridExportOptions() {
 }`,
   },
   {
+    id: "rows-to-export",
+    title: "Choose the rows to export",
+    body: 'By default, CSV, Excel and print exports hold the rows that pass the filters, in the shown order. Set `source` in `csvOptions`, `excelOptions` or `printOptions` to export other rows: `"selected"` exports the selected rows among them, `"page"` the rows of the current page, and `"all"` every row in its original order, whatever the filters. For any other choice, give `getRowsToExport` a function that returns the ids of the rows to export, in order. It gets the grid\'s API in `apiRef` and the id lists `filteredSortedRowIds`, `rowIds`, `paginatedRowIds` and `selectedRowIds`, and it wins over `source`. Print only prints rows that pass the filters, because it copies the rows the grid shows. In HTML, write `source` in the JSON of `data-ok-csv-options`, `data-ok-excel-options` or `data-ok-print-options`, or pass the options to `toCsv`, `exportCsv`, `toExcel`, `exportExcel` and `print`. There, `apiRef.current` is the grid\'s instance.',
+    html: `<script type="module">
+  const grid = window.Owlky.get(document.getElementById("products"), "data-grid");
+  // The selected rows, else every row that passes the filters.
+  grid.exportCsv({
+    fileName: "products",
+    getRowsToExport: ({ selectedRowIds, filteredSortedRowIds }) =>
+      selectedRowIds.length
+        ? filteredSortedRowIds.filter((id) => selectedRowIds.includes(id))
+        : filteredSortedRowIds,
+  });
+  grid.exportExcel({ fileName: "all-products", source: "all" });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, product: "Desk", stock: 12 },
+  { id: 2, product: "Chair", stock: 0 },
+  { id: 3, product: "Lamp", stock: 31 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "product", headerName: "Product", flex: 1 },
+  { field: "stock", headerName: "Stock", type: "number", width: 110 },
+];
+
+export function DataGridRowsToExport() {
+  return (
+    <DataGrid
+      aria-label="Products"
+      rows={rows}
+      columns={columns}
+      checkboxSelection
+      showToolbar
+      csvOptions={{ source: "selected", fileName: "selected-products" }}
+      excelOptions={{
+        fileName: "products-in-stock",
+        getRowsToExport: ({ filteredSortedRowIds, apiRef }) =>
+          filteredSortedRowIds.filter((id) => {
+            const api = apiRef.current as { getRow(id: string): { stock: number } | undefined };
+            return (api.getRow(id)?.stock ?? 0) > 0;
+          }),
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "languages",
     title: "Translate the grid and lay it out right to left",
     body: 'Locale packs translate every label: `enUS`, `viVN`, `frFR`, `deDE`, `esES`, `jaJP` and `zhCN`. Import the one you need. Pass it as `localeText` in React. In HTML, write the toolbar and menus in your language, and call `setLocaleText(pack)` for the text the grid writes itself, such as filter operators, empty states and the page range. With `dir="rtl"` on the page or a parent, the grid lays out right to left: columns pinned to the left stay at the start, which is the right side. The arrow keys follow the reading order. Set `toolbarVariant="icon"` to show the toolbar as icon buttons with tooltips.',
