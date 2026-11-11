@@ -578,6 +578,7 @@
   "data-ok-disable-thumbnails",
   "data-ok-disable-tooltip",
   "data-ok-disable-total",
+  "data-ok-disable-underline",
   "data-ok-disable-virtualization",
   "data-ok-disable-zoom",
   "data-ok-disable-zoom-on-click",
@@ -841,6 +842,7 @@
   "data-ok-inline",
   "data-ok-inner",
   "data-ok-inner-size",
+  "data-ok-input-base",
   "data-ok-input-label",
   "data-ok-inset",
   "data-ok-interactive",
@@ -1095,6 +1097,7 @@
   "data-ok-node-padding",
   "data-ok-node-width",
   "data-ok-non-linear",
+  "data-ok-notched",
   "data-ok-null",
   "data-ok-offset",
   "data-ok-once",
@@ -59679,7 +59682,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Select` (+ OutlinedInput / InputBase props), `InputLabel`, `NativeSelect`,\nmui.com/material-ui/api/select/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `autoWidth`, `children`, `defaultOpen`, `defaultValue`, `displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`, `renderValue`, `value`, `variant` | same | kept | `id` → the trigger; `inputProps` / `inputRef` → hidden input or native select |\n| InputBase `size`, `color`, `error`, `disabled`, `required`, `fullWidth`, `name`, `readOnly` | same | kept | default: the FormControl's |\n| `onChange(event, child)` | `onChange(value)` | renamed | the options' own values (numbers stay numbers) |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | reasons `escape` · `backdrop` · `select` · `tab` · `toggle` |\n| `MenuProps` | `menuProps` (`placement`, `paperProps`, `listProps`) | renamed | |\n| `SelectDisplayProps` | `displayProps` | renamed | |\n| `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant=\"standard\"` for its look |\n| InputBase `startAdornment` / `endAdornment` | same | kept | 4.18.27: an `InputAdornment` (`[data-ok-text-field-adornment]`) inside the field box: the start one before the trigger (it floats the InputLabel and opens the notch, as in TextField), the end one after the arrow icon in the DOM and drawn before it (the box keeps the arrow's space); native selects too |\n| `IconComponent` | — | not applicable | the arrow is part of the anatomy |\n| `input` | — | not applicable | the field box is the Select |\n| InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |\n| InputLabel `color`, `disabled`, `error`, `focused`, `required` | same | kept | from FormLabel |\n| InputLabel `variant`, `size`, `margin` | — | not applicable | CSS reads the Select's |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Select` (+ OutlinedInput / InputBase props), `InputLabel`, `NativeSelect`,\nmui.com/material-ui/api/select/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `autoWidth`, `children`, `defaultOpen`, `defaultValue`, `displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`, `renderValue`, `value`, `variant` | same | kept | `id` → the trigger; `inputProps` / `inputRef` → hidden input or native select |\n| InputBase `size`, `color`, `error`, `disabled`, `required`, `fullWidth`, `name`, `readOnly` | same | kept | default: the FormControl's |\n| `onChange(event, child)` | `onChange(value)` | renamed | the options' own values (numbers stay numbers) |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | reasons `escape` · `backdrop` · `select` · `tab` · `toggle` |\n| `MenuProps` | `menuProps` (`placement`, `paperProps`, `listProps`) | renamed | |\n| `SelectDisplayProps` | `displayProps` | renamed | |\n| `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant=\"standard\"` for its look |\n| InputBase `startAdornment` / `endAdornment` | same | kept | 4.18.27: an `InputAdornment` (`[data-ok-text-field-adornment]`) inside the field box: the start one before the trigger (it floats the InputLabel and opens the notch, as in TextField), the end one after the arrow icon in the DOM and drawn before it (the box keeps the arrow's space); native selects too |\n| `IconComponent` | — | not applicable | the arrow is part of the anatomy |\n| `input` | — | not applicable | the field box is the Select (`variant`, `label` for the notch); the standalone `OutlinedInput` / `FilledInput` / `Input` (4.18.26, text-field.md) are text inputs |\n| InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |\n| InputLabel `color`, `disabled`, `error`, `focused`, `required` | same | kept | from FormLabel |\n| InputLabel `variant`, `size`, `margin` | — | not applicable | CSS reads the Select's |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -65305,6 +65308,18 @@
          "name": "focused"
         },
         {
+         "attr": "data-ok-notched",
+         "description": "Outlined: keep the notch in the outline open (OutlinedInput: room for its `label`).",
+         "kind": "flag",
+         "name": "notched"
+        },
+        {
+         "attr": "data-ok-disable-underline",
+         "description": "Standard: no underline (give the field another focus style).",
+         "kind": "flag",
+         "name": "disableUnderline"
+        },
+        {
          "attr": "data-ok-min-rows",
          "description": "Multiline: rows shown at least.",
          "kind": "number",
@@ -65345,6 +65360,11 @@
          "description": "On an adornment: presses go through it to the input (React `disablePointerEvents`).",
          "kind": "state",
          "name": "data-ok-disable-pointer-events"
+        },
+        {
+         "description": "On the root: a standalone input without a label or a helper text (`InputBase`, `OutlinedInput`, `FilledInput`, `Input`). Without `data-ok-variant` it draws no box.",
+         "kind": "state",
+         "name": "data-ok-input-base"
         },
         {
          "description": "An adornment before or after the input, such as an icon or a unit.",
@@ -65449,6 +65469,11 @@
          "type": "string | number"
         },
         {
+         "description": "Standard: draw no underline (give the field another focus style).",
+         "name": "disableUnderline",
+         "type": "boolean"
+        },
+        {
          "description": "An `InputAdornment` with `position=\"end\"`.",
          "name": "endAdornment",
          "type": "ReactNode"
@@ -65479,6 +65504,11 @@
          "type": "boolean"
         },
         {
+         "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+         "name": "inputComponent",
+         "type": "ElementType"
+        },
+        {
          "description": "The floating label; it names the input.",
          "name": "label",
          "type": "ReactNode"
@@ -65502,6 +65532,11 @@
         {
          "description": "A `<textarea>` instead of an `<input>`.",
          "name": "multiline",
+         "type": "boolean"
+        },
+        {
+         "description": "Outlined: keep the outline's notch open even when the label rests in the box.",
+         "name": "notched",
          "type": "boolean"
         },
         {
@@ -65560,6 +65595,203 @@
       }
      },
      {
+      "name": "FilledInput",
+      "react": {
+       "description": "The filled field box without a label or a helper text.",
+       "native": "HTMLElement",
+       "props": [
+        {
+         "description": "Class of the root (other props go to the input).",
+         "name": "className",
+         "type": "string"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+        },
+        {
+         "description": "Uncontrolled initial value.",
+         "name": "defaultValue",
+         "type": "string | number"
+        },
+        {
+         "description": "The filled look has no underline: kept for compatibility (the focus ring stays).",
+         "name": "disableUnderline",
+         "type": "boolean"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"end\"`.",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Error colors and `aria-invalid`.",
+         "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "Stretch to the container width.",
+         "name": "fullWidth",
+         "type": "boolean"
+        },
+        {
+         "description": "The padding of a field without a label (always the case here).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
+         "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+         "name": "inputComponent",
+         "type": "ElementType"
+        },
+        {
+         "description": "Multiline: rows before it scrolls.",
+         "name": "maxRows",
+         "type": "number"
+        },
+        {
+         "description": "Multiline: rows shown at least (grows with the content where supported).",
+         "name": "minRows",
+         "type": "number"
+        },
+        {
+         "description": "A `<textarea>` instead of an `<input>`.",
+         "name": "multiline",
+         "type": "boolean"
+        },
+        {
+         "description": "Called with the new value.",
+         "name": "onChange",
+         "type": "((value: string) => void)"
+        },
+        {
+         "description": "Multiline: fixed number of rows.",
+         "name": "rows",
+         "type": "number"
+        },
+        {
+         "default": "\"medium\"",
+         "description": "`medium` or `small` (dense).",
+         "name": "size",
+         "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`.",
+         "name": "startAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Style of the root.",
+         "name": "style",
+         "type": "CSSProperties"
+        },
+        {
+         "description": "Controlled value.",
+         "name": "value",
+         "type": "string | number"
+        }
+       ]
+      }
+     },
+     {
+      "name": "Input",
+      "react": {
+       "description": "The standard (underlined) field without a label or a helper text.",
+       "native": "HTMLElement",
+       "props": [
+        {
+         "description": "Class of the root (other props go to the input).",
+         "name": "className",
+         "type": "string"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+        },
+        {
+         "description": "Uncontrolled initial value.",
+         "name": "defaultValue",
+         "type": "string | number"
+        },
+        {
+         "description": "Draw no underline (give the field another focus style).",
+         "name": "disableUnderline",
+         "type": "boolean"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"end\"`.",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Error colors and `aria-invalid`.",
+         "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "Stretch to the container width.",
+         "name": "fullWidth",
+         "type": "boolean"
+        },
+        {
+         "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+         "name": "inputComponent",
+         "type": "ElementType"
+        },
+        {
+         "description": "Multiline: rows before it scrolls.",
+         "name": "maxRows",
+         "type": "number"
+        },
+        {
+         "description": "Multiline: rows shown at least (grows with the content where supported).",
+         "name": "minRows",
+         "type": "number"
+        },
+        {
+         "description": "A `<textarea>` instead of an `<input>`.",
+         "name": "multiline",
+         "type": "boolean"
+        },
+        {
+         "description": "Called with the new value.",
+         "name": "onChange",
+         "type": "((value: string) => void)"
+        },
+        {
+         "description": "Multiline: fixed number of rows.",
+         "name": "rows",
+         "type": "number"
+        },
+        {
+         "default": "\"medium\"",
+         "description": "`medium` or `small` (dense).",
+         "name": "size",
+         "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`.",
+         "name": "startAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Style of the root.",
+         "name": "style",
+         "type": "CSSProperties"
+        },
+        {
+         "description": "Controlled value.",
+         "name": "value",
+         "type": "string | number"
+        }
+       ]
+      }
+     },
+     {
       "name": "InputAdornment",
       "react": {
        "description": "An icon, text or button before or after a text field's input.",
@@ -65584,13 +65816,209 @@
         }
        ]
       }
+     },
+     {
+      "name": "InputBase",
+      "react": {
+       "description": "A bare input with no box, no label and no helper text, for fields you style yourself (such as a search bar). Name it with `aria-label`. `ref` and the remaining props go to the input.",
+       "native": "HTMLElement",
+       "props": [
+        {
+         "description": "Class of the root (other props go to the input).",
+         "name": "className",
+         "type": "string"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+        },
+        {
+         "description": "Uncontrolled initial value.",
+         "name": "defaultValue",
+         "type": "string | number"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"end\"`.",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Error colors and `aria-invalid`.",
+         "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "Stretch to the container width.",
+         "name": "fullWidth",
+         "type": "boolean"
+        },
+        {
+         "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+         "name": "inputComponent",
+         "type": "ElementType"
+        },
+        {
+         "description": "Multiline: rows before it scrolls.",
+         "name": "maxRows",
+         "type": "number"
+        },
+        {
+         "description": "Multiline: rows shown at least (grows with the content where supported).",
+         "name": "minRows",
+         "type": "number"
+        },
+        {
+         "description": "A `<textarea>` instead of an `<input>`.",
+         "name": "multiline",
+         "type": "boolean"
+        },
+        {
+         "description": "Called with the new value.",
+         "name": "onChange",
+         "type": "((value: string) => void)"
+        },
+        {
+         "description": "Multiline: fixed number of rows.",
+         "name": "rows",
+         "type": "number"
+        },
+        {
+         "default": "\"medium\"",
+         "description": "`medium` or `small` (dense).",
+         "name": "size",
+         "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`.",
+         "name": "startAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Style of the root.",
+         "name": "style",
+         "type": "CSSProperties"
+        },
+        {
+         "description": "Controlled value.",
+         "name": "value",
+         "type": "string | number"
+        }
+       ]
+      }
+     },
+     {
+      "name": "OutlinedInput",
+      "react": {
+       "description": "The outlined field box without a label or a helper text.",
+       "native": "HTMLElement",
+       "props": [
+        {
+         "description": "Class of the root (other props go to the input).",
+         "name": "className",
+         "type": "string"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+        },
+        {
+         "description": "Uncontrolled initial value.",
+         "name": "defaultValue",
+         "type": "string | number"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"end\"`.",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Error colors and `aria-invalid`.",
+         "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "Stretch to the container width.",
+         "name": "fullWidth",
+         "type": "boolean"
+        },
+        {
+         "description": "The element rendered instead of the `<input>`, such as a masked input. It receives the input's props and `ref`. Multiline fields and selects keep their own element.",
+         "name": "inputComponent",
+         "type": "ElementType"
+        },
+        {
+         "description": "The text the outline's notch makes room for (the label you show elsewhere, such as an `InputLabel`).",
+         "name": "label",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Multiline: rows before it scrolls.",
+         "name": "maxRows",
+         "type": "number"
+        },
+        {
+         "description": "Multiline: rows shown at least (grows with the content where supported).",
+         "name": "minRows",
+         "type": "number"
+        },
+        {
+         "description": "A `<textarea>` instead of an `<input>`.",
+         "name": "multiline",
+         "type": "boolean"
+        },
+        {
+         "description": "Keep the notch open (it needs a `label`).",
+         "name": "notched",
+         "type": "boolean"
+        },
+        {
+         "description": "Called with the new value.",
+         "name": "onChange",
+         "type": "((value: string) => void)"
+        },
+        {
+         "description": "Multiline: fixed number of rows.",
+         "name": "rows",
+         "type": "number"
+        },
+        {
+         "default": "\"medium\"",
+         "description": "`medium` or `small` (dense).",
+         "name": "size",
+         "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`.",
+         "name": "startAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Style of the root.",
+         "name": "style",
+         "type": "CSSProperties"
+        },
+        {
+         "description": "Controlled value.",
+         "name": "value",
+         "type": "string | number"
+        }
+       ]
+      }
      }
     ]
    },
    "guide": "text-field",
    "name": "text-field",
    "react": [
+    "FilledInput",
+    "Input",
     "InputAdornment",
+    "InputBase",
+    "OutlinedInput",
     "TextField"
    ],
    "referenceUrl": "https://minimals.cc/components/mui/text-field",
@@ -65695,6 +66123,18 @@
        "name": "focused"
       },
       {
+       "attr": "data-ok-notched",
+       "description": "Outlined: keep the notch in the outline open (OutlinedInput: room for its `label`).",
+       "kind": "flag",
+       "name": "notched"
+      },
+      {
+       "attr": "data-ok-disable-underline",
+       "description": "Standard: no underline (give the field another focus style).",
+       "kind": "flag",
+       "name": "disableUnderline"
+      },
+      {
        "attr": "data-ok-min-rows",
        "description": "Multiline: rows shown at least.",
        "kind": "number",
@@ -65740,12 +66180,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-hidden-label]?[data-ok-focused]?[data-ok-min-rows]?[data-ok-max-rows]?\n  label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] \" *\")\n  div[data-ok-text-field-control]\n    span[data-ok-text-field-adornment=\"start\"][data-ok-disable-pointer-events]?   (optional; any element)\n    input[data-ok-text-field-input][id][placeholder]   | textarea[…][rows][placeholder] | select[…] › option\n    svg[data-ok-text-field-select-icon][aria-hidden]?  (select)\n    span[data-ok-text-field-adornment=\"end\"]?\n    fieldset[data-ok-text-field-outline][aria-hidden] › legend? › span (label + \" *\")   (outlined only)\n  div[data-ok-text-field-helper][id]?                  (linked by aria-describedby)\n```\nInputs and textareas always carry a `placeholder` (\" \" when none): `:not(:placeholder-shown)` is\nhow CSS knows there is a value. React renders `data-ok-runtime=\"off\"` on the root; `ref` and the\nremaining props go to the input; `className` / `style` to the root.",
+     "body": "```\ndiv[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-error]?[data-ok-full-width]?[data-ok-shrink]?[data-ok-hidden-label]?[data-ok-focused]?[data-ok-notched]?[data-ok-disable-underline]?[data-ok-min-rows]?[data-ok-max-rows]?[data-ok-input-base]?\n  label[data-ok-text-field-label][for=<input id>]? (› span[data-ok-text-field-asterisk][aria-hidden] \" *\")\n  div[data-ok-text-field-control]\n    span[data-ok-text-field-adornment=\"start\"][data-ok-disable-pointer-events]?   (optional; any element)\n    input[data-ok-text-field-input][id][placeholder]   | textarea[…][rows][placeholder] | select[…] › option\n    svg[data-ok-text-field-select-icon][aria-hidden]?  (select)\n    span[data-ok-text-field-adornment=\"end\"]?\n    fieldset[data-ok-text-field-outline][aria-hidden] › legend? › span (label + \" *\")   (outlined only)\n  div[data-ok-text-field-helper][id]?                  (linked by aria-describedby)\n```\nStandalone inputs (4.18.26: `InputBase`, `OutlinedInput`, `FilledInput`, `Input`) are this markup\nwithout the label and the helper, with `data-ok-input-base` on the root; `InputBase` has no\n`data-ok-variant` (no outline, fill or underline; input padding 4px 0, small 1px 0). Their notch\nstays closed unless `data-ok-notched` (OutlinedInput `label` fills the legend only).\nInputs and textareas always carry a `placeholder` (\" \" when none): `:not(:placeholder-shown)` is\nhow CSS knows there is a value. React renders `data-ok-runtime=\"off\"` on the root; `ref` and the\nremaining props go to the input; `className` / `style` to the root.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `text-field`: listed under \"options\".)\n\nReact: `label`, `helperText`, `startAdornment` / `endAdornment` (`InputAdornment position`),\n`multiline` + `rows`, `select` + `<option>` children, `value` / `defaultValue` /\n`onChange(value)`, `id` (default `useId()`), native input props. Renamed: `slotProps.input.*Adornment`\n→ `startAdornment` / `endAdornment`, `slotProps.inputLabel.shrink` → `shrink` (no slotProps).\n`color` keeps MUI's name and values plus `default` (the text color, as on the reference), which is\nthe default (MUI: `primary`): lines use the palette's `main`, the focused label its AA `-text` tone.\nListbox `select`: `selectProps={{ native: false, … }}` (MUI `SelectProps` / `slotProps.select`)\nwith `MenuItem` children composes the Select (select.md) in the control: the control gets\n`data-ok-select` (+ `data-ok-auto-width` / `data-ok-display-empty`), the trigger\n`div[data-ok-text-field-input][data-ok-select-display][role=combobox]` replaces the `<select>`,\nfollowed by the hidden `input[data-ok-select-input]`, the icon (`data-ok-text-field-select-icon\ndata-ok-select-icon`), the outline and the Select's popover; the label gets `id` (`<id>-label`).\n`select` alone stays native (MUI's default is the listbox; additive, no DOM change). Single\nvalues only (`value` stays a string): use FormControl + Select for `multiple`. Not applicable:\n`sx`, `classes`, `slots`, `slotProps`.",
+     "body": "(Options of `text-field`: listed under \"options\".)\n\nReact: `label`, `helperText`, `startAdornment` / `endAdornment` (`InputAdornment position`),\n`multiline` + `rows`, `select` + `<option>` children, `value` / `defaultValue` /\n`onChange(value)`, `id` (default `useId()`), native input props. Renamed: `slotProps.input.*Adornment`\n→ `startAdornment` / `endAdornment`, `slotProps.inputLabel.shrink` → `shrink` (no slotProps).\n`color` keeps MUI's name and values plus `default` (the text color, as on the reference), which is\nthe default (MUI: `primary`): lines use the palette's `main`, the focused label its AA `-text` tone.\nListbox `select`: `selectProps={{ native: false, … }}` (MUI `SelectProps` / `slotProps.select`)\nwith `MenuItem` children composes the Select (select.md) in the control: the control gets\n`data-ok-select` (+ `data-ok-auto-width` / `data-ok-display-empty`), the trigger\n`div[data-ok-text-field-input][data-ok-select-display][role=combobox]` replaces the `<select>`,\nfollowed by the hidden `input[data-ok-select-input]`, the icon (`data-ok-text-field-select-icon\ndata-ok-select-icon`), the outline and the Select's popover; the label gets `id` (`<id>-label`).\n`select` alone stays native (MUI's default is the listbox; additive, no DOM change).\n`notched`, `disableUnderline` and `inputComponent` (4.18.26) work on TextField too (MUI\n`slotProps.input.*`). Single\nvalues only (`value` stays a string): use FormControl + Select for `multiple`. Not applicable:\n`sx`, `classes`, `slots`, `slotProps`.",
      "id": "options",
      "title": "Options"
     },
@@ -65785,7 +66225,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
+     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |\n| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |\n| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |\n| InputBase `margin` (`dense`) | `size=\"small\"` | renamed | Owlky's `margin` is the outer margin of TextField |\n| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |\n| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -78162,6 +78602,13 @@
      "id": "hidden-label",
      "react": "import { InputAdornment, TextField } from \"@owlky/react\";\nimport { SearchIcon } from \"lucide-react\";\n\nexport function SearchField() {\n  return (\n    <TextField\n      id=\"search\"\n      variant=\"filled\"\n      size=\"small\"\n      label=\"Search\"\n      hiddenLabel\n      type=\"search\"\n      placeholder=\"Search orders\"\n      startAdornment={\n        <InputAdornment position=\"start\" disablePointerEvents>\n          <SearchIcon />\n        </InputAdornment>\n      }\n    />\n  );\n}",
      "title": "Hide the label"
+    },
+    {
+     "body": "For fields you build yourself, such as a search bar or a value inside another control, use a standalone input: the field without its label and helper text. `OutlinedInput`, `FilledInput` and `Input` draw the outlined, filled and standard looks. `InputBase` draws no box at all, so you style it yourself, and it shows no focus ring: give its container one, for example with `:focus-within`. In HTML, write the TextField markup without the label and add `data-ok-input-base` to the root. Leave out `data-ok-variant` for an InputBase.\n\nName every standalone input with `aria-label`, or with `aria-labelledby` that points at visible text. `OutlinedInput`'s `label` doesn't name the input: it only makes room in the outline for a label that you place yourself, and `notched` keeps that room open. `disableUnderline` removes the standard field's line. `inputComponent` renders your own element instead of the `<input>`, such as a masked input; it receives the input's props and `ref`. These props also work on `TextField`.",
+     "html": "<div data-ok-text-field data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-input-base>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\" data-ok-disable-pointer-events><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\" /><path d=\"m20 20-3.5-3.5\" /></svg></span>\n    <input data-ok-text-field-input type=\"search\" aria-label=\"Search orders\" placeholder=\"Search orders\">\n  </div>\n</div>\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-input-base>\n  <div data-ok-text-field-control>\n    <input data-ok-text-field-input aria-label=\"Quantity\" inputmode=\"numeric\" placeholder=\"0\">\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\"></fieldset>\n  </div>\n</div>",
+     "id": "standalone",
+     "react": "import { InputAdornment, InputBase, OutlinedInput } from \"@owlky/react\";\nimport { SearchIcon } from \"lucide-react\";\n\nexport function StandaloneInputs() {\n  return (\n    <>\n      <InputBase\n        size=\"small\"\n        type=\"search\"\n        aria-label=\"Search orders\"\n        placeholder=\"Search orders\"\n        startAdornment={\n          <InputAdornment position=\"start\" disablePointerEvents>\n            <SearchIcon />\n          </InputAdornment>\n        }\n      />\n      <OutlinedInput size=\"small\" aria-label=\"Quantity\" inputMode=\"numeric\" placeholder=\"0\" />\n    </>\n  );\n}",
+     "title": "Use an input without a label"
     },
     {
      "body": "Set `select` and pass `<option>` elements to get a native `<select>` in the field's frame. The label always stays above it. A native select uses the system's list on every device, which works well on touch screens and with assistive technology. For a list in the page's own style, set `selectProps` to `{ native: false }` and pass **MenuItem**s: the field then holds a **Select** (see its page).",

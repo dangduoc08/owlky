@@ -1187,6 +1187,14 @@ export const textFieldOptions = defineOptions("text-field", "data-ok-text-field"
     "Hide the label visually (it still names the input); the field gets the padding of a field without a label.",
   ),
   focused: flag("data-ok-focused", "Show the focus colors even when the field doesn't have focus."),
+  notched: flag(
+    "data-ok-notched",
+    "Outlined: keep the notch in the outline open (OutlinedInput: room for its `label`).",
+  ),
+  disableUnderline: flag(
+    "data-ok-disable-underline",
+    "Standard: no underline (give the field another focus style).",
+  ),
   minRows: number("data-ok-min-rows", undefined, "Multiline: rows shown at least.", { min: 1 }),
   maxRows: number("data-ok-max-rows", undefined, "Multiline: rows before it scrolls.", { min: 1 }),
   disabled: native("disabled", "Native `disabled` on the input.", { children: FIELD_INPUT }),
@@ -1210,6 +1218,8 @@ export interface TextFieldAnatomyOptions {
   shrink?: boolean | undefined;
   hiddenLabel?: boolean | undefined;
   focused?: boolean | undefined;
+  notched?: boolean | undefined;
+  disableUnderline?: boolean | undefined;
   minRows?: number | undefined;
   maxRows?: number | undefined;
 }

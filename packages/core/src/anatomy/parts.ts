@@ -2068,6 +2068,11 @@ export interface TextFieldParts {
   "data-ok-text-field-adornment": Value<"start" | "end">;
   /** On an adornment: presses go through it to the input (React `disablePointerEvents`). */
   "data-ok-disable-pointer-events": State;
+  /**
+   * On the root: a standalone input without a label or a helper text (`InputBase`, `OutlinedInput`,
+   * `FilledInput`, `Input`). Without `data-ok-variant` it draws no box.
+   */
+  "data-ok-input-base": State;
   /** The asterisk of a required field's label. */
   "data-ok-text-field-asterisk": Part<"span">;
   /** The box around the input. */

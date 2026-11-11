@@ -706,8 +706,16 @@ export {
   type TabsProps,
 } from "./tabs/tabs.js";
 export {
+  FilledInput,
+  type FilledInputProps,
+  Input,
   InputAdornment,
   type InputAdornmentProps,
+  InputBase,
+  type InputBaseProps,
+  type InputProps,
+  OutlinedInput,
+  type OutlinedInputProps,
   TextField,
   type TextFieldElement,
   type TextFieldProps,

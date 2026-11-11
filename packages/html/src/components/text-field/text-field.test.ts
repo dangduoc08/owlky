@@ -203,6 +203,45 @@ describe("text field runtime", () => {
     await expectNoAxeViolations(host);
   });
 
+  it("standalone inputs: InputBase without a box, a notch only when notched, no underline", async () => {
+    const base = (variant: string, attrs: string, inner = "") =>
+      `<div data-ok-text-field ${variant} data-ok-size="medium" data-ok-color="default" data-ok-margin="none" ${attrs} data-ok-input-base><div data-ok-text-field-control><input aria-label="${attrs || variant || "Base"}" data-ok-text-field-input placeholder=" ">${inner}</div></div>`;
+    const legend = (text: string) =>
+      `<fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>${text}</span></legend></fieldset>`;
+    const host = mount(
+      base("", "data-ok-error") +
+        base('data-ok-variant="outlined"', "", legend("Age")) +
+        base('data-ok-variant="outlined"', "data-ok-notched", legend("Age")) +
+        base('data-ok-variant="standard"', "data-ok-disable-underline"),
+    );
+    start();
+    await settle();
+    const [plain, closed, open, bare] = [
+      ...host.querySelectorAll<HTMLElement>("[data-ok-input-base]"),
+    ];
+    const input = (root: HTMLElement | undefined) =>
+      (root as HTMLElement).querySelector("input") as HTMLInputElement;
+    const control = (root: HTMLElement | undefined) =>
+      (root as HTMLElement).querySelector("[data-ok-text-field-control]") as HTMLElement;
+    // The runtime still marks an invalid field.
+    expect(input(plain).getAttribute("aria-invalid")).toBe("true");
+    expect(getComputedStyle(input(plain)).paddingLeft).toBe("0px");
+    input(closed).focus();
+    const width = (root: HTMLElement | undefined) =>
+      ((root as HTMLElement).querySelector("legend") as HTMLElement).getBoundingClientRect().width;
+    await Promise.all(
+      [closed, open].flatMap((root) =>
+        ((root as HTMLElement).querySelector("legend") as HTMLElement)
+          .getAnimations()
+          .map((animation) => animation.finished),
+      ),
+    );
+    expect(width(closed)).toBeLessThan(1);
+    expect(width(open)).toBeGreaterThan(10);
+    expect(getComputedStyle(control(bare), "::before").content).toBe("none");
+    await expectNoAxeViolations(host);
+  });
+
   it.each(['"><img src=x onerror=alert(1)>', "-3", "1e9999", "9".repeat(4000)])(
     "ignores hostile row values: %s",
     async (value) => {
