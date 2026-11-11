@@ -77,6 +77,7 @@ import {
 import { type ChartDataPoint, chartSelectedNodes, chartSelection } from "./chart-select.js";
 import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 import { layoutStock } from "./chart-stock.js";
+import { type ChartStreamOffset, type ChartStreamOrder, layoutStream } from "./chart-stream.js";
 import { layoutTree } from "./chart-tree.js";
 import {
   type ChartZoom,
@@ -224,6 +225,16 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly hideConnectors?: boolean | undefined;
   /** Dumbbell charts: start and end marker colors per series (`[[start, end], …]`). */
   readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
+  /** Streamgraphs (4.18.21): the baseline. Default `"wiggle"`. */
+  readonly streamOffset?: ChartStreamOffset | undefined;
+  /** Streamgraphs: the stacking order, bottom first. Default `"inside-out"`. */
+  readonly streamOrder?: ChartStreamOrder | undefined;
+  /** Streamgraphs: no series names on the bands. */
+  readonly hideStreamLabels?: boolean | undefined;
+  /** Streamgraphs: bands thinner than this many px get no name. Default 24. */
+  readonly streamLabelMinWidth?: number | undefined;
+  /** Streamgraphs with per-point tooltips: the other bands' opacity. Default 0.35. */
+  readonly streamHoverOpacity?: number | undefined;
   /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
@@ -338,6 +349,19 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     treemap: (d, o) => layoutTreemap(d, o, format),
     funnel: (d, o) => layoutFunnel(d, o, format),
     slope: (d, o) => layoutSlope(d, o, format),
+    streamgraph: (d, o) =>
+      layoutStream(
+        d,
+        o,
+        {
+          offset: input.streamOffset,
+          order: input.streamOrder,
+          hideLabels: input.hideStreamLabels,
+          labelMinWidth: input.streamLabelMinWidth,
+          hoverOpacity: input.streamHoverOpacity,
+        },
+        format,
+      ),
   };
   const layoutOf: Layout = stock
     ? (d, o) =>

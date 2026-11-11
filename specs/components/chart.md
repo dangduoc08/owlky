@@ -158,6 +158,12 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-series][data-ok-type=icicle] › rect[data-ok-chart-icicle-cell][rx=2][fill-opacity][stroke-width][data-ok-color]×n
       g[data-ok-chart-data-labels] › text[data-ok-chart-partition-label="inside|plain"] (centered, never rotated)
       g[data-ok-chart-active] › rect[data-ok-chart-active-node] (1px inside the cell)
+    Streamgraph (4.18.21; root [data-ok-stream-offset]?[data-ok-stream-order]?[data-ok-hide-stream-labels]?
+      [data-ok-stream-label-min-width]?[data-ok-stream-hover-opacity]?):
+      g[data-ok-chart-grid] + g[data-ok-chart-axis] as for line charts (grid and y axis off unless asked);
+      g[data-ok-chart-series][data-ok-type=streamgraph][data-ok-color][data-ok-index] › path[data-ok-chart-stream-band][fill=url(#…)]?
+      (bottom to top in the stacking order); labels › text[data-ok-chart-data-label="inside|plain"] (series names)
+      active, tooltip="point": rect[data-ok-chart-stream-veil][fill-opacity] + path[data-ok-chart-stream-band][data-ok-color]
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
@@ -400,6 +406,23 @@ Icicle geometry (core `chart-icicle.ts` on `chart-partition.ts`, ADR-0058):
 - Labels (12px, estimated): centered in cells at least 30px long and a line + 6px tall, cut with an
   ellipsis; tones as for arcs. `dataLabels`: the value after the name.
 
+Streamgraph geometry (core `chart-stream.ts`, drawn on `layoutChart`'s axes, 4.18.21):
+- Data: series as for a line chart, joined on x (a missing value counts as zero, negatives are floored
+  at zero); numeric x values become category labels in order of first use. A whole type.
+- Order bottom to top: `inside-out` sorts by the index of each series' peak and alternates onto the
+  lighter side (the earliest peaks in the middle), `inverse`, `none`.
+- Baseline per column: `wiggle` (Byron and Wattenberg's weighted slope, re-centered on the stream's own
+  extent), `silhouette` (`-total / 2`), `zero`, `expand` (each column 0 to 100).
+- The bands are ranges in `layoutChart`, so slots, zoom and annotations work; the value scale fits the
+  edges (no zero). Grid and value axis are off unless asked (`grid`, `yaxis.show`).
+- Labels: the series name at the thickest column whose neighbors still hold a line of text and at
+  least `streamLabelMinWidth` px (default 24), `plain` on `-lighter` / `-light` colors, else `inside`.
+- Keyboard and pointer: `index` mode by x value (crosshair, a marker per band); the tooltip lists each
+  band's supplied value top down, then `Total` (not with `expand`). `tooltip="point"`: one band per
+  mark, a `fill-opacity` veil over the plot fades the others (`streamHoverOpacity`, default 0.35; at 1
+  the veil is off).
+- Cues: `fill="pattern"` / `colorBlindMode` fill bands with patterns; names on the bands.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -423,7 +446,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) or `icicle` (the same hierarchy as bands, each node a cell sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `streamgraph` (stacked bands around a moving baseline, with a total per x value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -484,6 +507,11 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `waterfallTotalColor` | `data-ok-waterfall-total-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the total bars (default the series color). |
 | `waterfallSubtotalColor` | `data-ok-waterfall-subtotal-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the subtotal bars (default the total color). |
 | `hideConnectors` | `data-ok-hide-connectors` | flag | boolean | off | Waterfall charts: no dashed lines from the end of each bar to the next one. |
+| `streamOffset` | `data-ok-stream-offset="…"` | style | `wiggle` `silhouette` `zero` `expand` | — | Streamgraphs: the baseline: `wiggle` (bands as flat as the data allows, the default), `silhouette` (centered on one line), `zero` (a stacked area) or `expand` (each x value fills the chart). |
+| `streamOrder` | `data-ok-stream-order="…"` | style | `inside-out` `inverse` `none` | — | Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order). |
+| `hideStreamLabels` | `data-ok-hide-stream-labels` | flag | boolean | off | Streamgraphs: no series names on the bands. |
+| `streamLabelMinWidth` | `data-ok-stream-label-min-width="…"` | number | number | — | Streamgraphs: bands thinner than this many pixels get no name (default 24). |
+| `streamHoverOpacity` | `data-ok-stream-hover-opacity="…"` | number | number | — | Streamgraphs with `tooltip="point"`: the opacity of the bands that are not active (0 to 1; default 0.35). |
 | `direction` | `data-ok-direction="…"` | style | `top` `bottom` `left` `right` `radial` | — | Tree and icicle charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (trees: the root in the center, levels as rings). |
 | `layoutType` | `data-ok-layout-type="…"` | style | `tree` `cluster` | — | Tree charts: `tree` (a tidy tree, the default) or `cluster` (a dendrogram: every leaf on the last level). |
 | `edgeStyle` | `data-ok-edge-style="…"` | style | `orthogonal` `curved` `straight` | — | Tree charts: links with right angles (`orthogonal`, the default), `curved` or `straight`. |
@@ -883,6 +911,15 @@ Option areas not covered by the table above:
 | `plotOptions.icicle.direction` (`down` · `up` · `right` · `left`, the growth) | `direction` (`top` · `bottom` · `left` · `right`, the root's side, as trees) | renamed (ADR-0058) | `down` → `top`, `up` → `bottom`, `right` → `left`, `left` → `right` |
 | `plotOptions.icicle.zoomType` (`value` · `both`), `zoomOnClick`, `leaf` (default `stop`), `spacing` | `zoomType`, `disableZoomOnClick`, `leaf`, `spacing` | kept / renamed | |
 | `plotOptions.icicle.sort` (`name`), `maxDepth`, `levelSize`, `dataLabels.rotate` / `.align` / `.minSizeToShow` | — | not built (ADR-0058 §10) | data order is kept; every level is drawn, bands share the depth; labels are flat and centered, from 30px |
+| `chart.type: "streamgraph"` (ApexCharts 7.1+, 8: `apexcharts/features/streamgraph`) | `type="streamgraph"` | kept (4.18.21) | a whole type; a numeric x axis is labels |
+| `plotOptions.streamgraph.offset` (`wiggle` · `silhouette` · `zero` · `expand`) | `streamOffset` (`data-ok-stream-offset`, optional) | renamed (4.18.21) | default `wiggle` |
+| `plotOptions.streamgraph.order` (`inside-out` · `inverse` · `none`) | `streamOrder` (`data-ok-stream-order`, optional) | renamed (4.18.21) | default `inside-out` |
+| `plotOptions.streamgraph.labels.show` | `hideStreamLabels` (`data-ok-hide-stream-labels`) | renamed (4.18.21) | on by default as upstream |
+| `plotOptions.streamgraph.labels.minWidth` | `streamLabelMinWidth` (`data-ok-stream-label-min-width`) | renamed (4.18.21) | default 24 |
+| `plotOptions.streamgraph.labels.minFontSize`, `.maxFontSize`, `.style.*` (auto font size) | — | not applicable | fixed by the design (the type scale); names are drawn where the estimated width fits |
+| `plotOptions.streamgraph.hover.show`, `.opacity` | `streamHoverOpacity` (`data-ok-stream-hover-opacity`) | renamed (4.18.21) | 0.35; with `tooltip="point"` only (a veil over the plot); `1` is `hover.show: false`. The default tooltip stays per x value (crosshair, shared rows, keyboard) |
+| streamgraph `yaxis.show` false by default | `yaxis={{ show: true }}` · `data-ok-yaxis` | kept (4.18.21) | the grid is off with it (`grid` turns it on) |
+| streamgraph `stroke.curve: "monotoneCubic"` | `curve` (`smooth` by default: horizontal tangents, no overshoot) | renamed (4.18.21) | |
 | ApexCharts v8 types `streamgraph`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | `type="tree"` | kept (4.18.7, ADR-0058) | see "API mapping" (ApexTree rows) |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
@@ -1000,5 +1037,7 @@ Option areas not covered by the table above:
   filter controls with the button hidden and an empty status, in both frameworks.
 - Waterfall story (4.18.21): Waterfall (a vertical cash flow with a subtotal, a total, data labels
   and a prefix; a horizontal headcount change with own colors).
+- Streamgraph story (4.18.21): Streamgraph (listening time by genre with the wiggle baseline; a 100%
+  per-quarter stream with a straight curve, one tooltip per band and patterns).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

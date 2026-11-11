@@ -242,6 +242,14 @@ export {
 } from "./chart-select.js";
 export { type ChartStockOptions, layoutStock } from "./chart-stock.js";
 export {
+  type ChartStreamOffset,
+  type ChartStreamOptions,
+  type ChartStreamOrder,
+  chartStreamBands,
+  chartStreamOffsets,
+  chartStreamOrders,
+} from "./chart-stream.js";
+export {
   CHART_TEXT_ATTRIBUTES,
   type ChartTextOptions,
   chartColorRangesText,

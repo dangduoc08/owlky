@@ -37,6 +37,8 @@ import {
   type ChartSelectionDetail,
   type ChartSeries,
   type ChartStackType,
+  type ChartStreamOffset,
+  type ChartStreamOrder,
   type ChartStripeColor,
   type ChartTool,
   type ChartTooltipContext,
@@ -362,6 +364,16 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
   hideConnectors?: boolean | undefined;
+  /** Streamgraphs: the baseline: `wiggle`, `silhouette`, `zero` or `expand`. Default `"wiggle"`. */
+  streamOffset?: ChartStreamOffset | undefined;
+  /** Streamgraphs: the stacking order: `inside-out`, `inverse` or `none`. Default `"inside-out"`. */
+  streamOrder?: ChartStreamOrder | undefined;
+  /** Streamgraphs: no series names on the bands. */
+  hideStreamLabels?: boolean | undefined;
+  /** Streamgraphs: bands thinner than this many pixels get no name. Default 24. */
+  streamLabelMinWidth?: number | undefined;
+  /** Streamgraphs with `tooltip="point"`: the opacity of the other bands (0 to 1). Default 0.35. */
+  streamHoverOpacity?: number | undefined;
   /**
    * Dumbbell charts: the start and end marker colors of each series, such as
    * `[["info", "success"]]` (pair n for series n; later series take the first pair). Default the
@@ -537,6 +549,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     waterfallTotalColor,
     waterfallSubtotalColor,
     hideConnectors,
+    streamOffset,
+    streamOrder,
+    hideStreamLabels,
+    streamLabelMinWidth,
+    streamHoverOpacity,
     dumbbellColors,
     dataLabelBackground,
     dataLabelFormatter,
@@ -641,6 +658,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     waterfallTotalColor,
     waterfallSubtotalColor,
     hideConnectors,
+    streamOffset,
+    streamOrder,
+    hideStreamLabels,
+    streamLabelMinWidth,
+    streamHoverOpacity,
     crossfilter,
     direction,
     layoutType,
@@ -701,6 +723,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validTotalColor = color("data-ok-waterfall-total-color");
   const validSubtotal = color("data-ok-waterfall-subtotal-color");
   const connectorsOff = attributes["data-ok-hide-connectors"] !== undefined;
+  const validStreamOffset = attributes["data-ok-stream-offset"] as ChartStreamOffset | undefined;
+  const validStreamOrder = attributes["data-ok-stream-order"] as ChartStreamOrder | undefined;
+  const streamLabelsOff = attributes["data-ok-hide-stream-labels"] !== undefined;
+  const validStreamLabelMin = number("data-ok-stream-label-min-width");
+  const validStreamHover = number("data-ok-stream-hover-opacity");
   const validCrossfilter = attributes["data-ok-crossfilter"] as ChartCrossfilter | undefined;
   const navigatorOn = attributes["data-ok-navigator"] !== undefined;
   // A navigator zooms the chart: its gestures and keys are on.
@@ -852,6 +879,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         waterfallTotalColor: validTotalColor,
         waterfallSubtotalColor: validSubtotal,
         hideConnectors: connectorsOff,
+        streamOffset: validStreamOffset,
+        streamOrder: validStreamOrder,
+        hideStreamLabels: streamLabelsOff,
+        streamLabelMinWidth: validStreamLabelMin,
+        streamHoverOpacity: validStreamHover,
         dumbbellColors,
         dataLabelBackground,
         dataLabelFormatter,
@@ -958,6 +990,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validTotalColor,
       validSubtotal,
       connectorsOff,
+      validStreamOffset,
+      validStreamOrder,
+      streamLabelsOff,
+      validStreamLabelMin,
+      validStreamHover,
       dumbbellColors,
       dataLabelBackground,
       dataLabelFormatter,

@@ -389,6 +389,10 @@ export interface ChartParts {
   "data-ok-chart-selection": Part<"rect">;
   /** On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`. */
   "data-ok-chart-step": Value<"up" | "down" | "total" | "subtotal">;
+  /** A streamgraph band. */
+  "data-ok-chart-stream-band": Part<"path">;
+  /** The veil over a streamgraph while one band is active (with `tooltip="point"`). */
+  "data-ok-chart-stream-veil": Part<"rect">;
   /** The group of one series. */
   "data-ok-chart-series": Part<"g">;
   /** The group of the series of one kind: areas, bars, lines, then points. */

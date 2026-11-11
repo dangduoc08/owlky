@@ -24,6 +24,7 @@ import multipleYAxesGroup from "../../../../../packages/html/src/components/char
 import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
 import stackTotalsGroup from "../../../../../packages/html/src/components/chart/examples/stack-totals-group.html?raw";
+import streamgraphGroup from "../../../../../packages/html/src/components/chart/examples/streamgraph-group.html?raw";
 import sunburstGroup from "../../../../../packages/html/src/components/chart/examples/sunburst-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
@@ -115,6 +116,7 @@ export function MonthlySales() {
 - **\`tree\`:** a hierarchy of nodes joined by links, such as teams or a site map. See "Show a hierarchy as a tree".
 - **\`sunburst\`:** a hierarchy as rings, each node an arc sized by its value. See "Show parts of a hierarchy as rings".
 - **\`icicle\`:** a hierarchy as bands, each node a cell sized by its value, such as a flame graph. See "Show parts of a hierarchy as bands".
+- **\`streamgraph\`:** stacked bands around a moving baseline, for how a mix changes over time. See "Show a changing mix over time".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -856,6 +858,43 @@ export function PageLoadSteps() {
       valueSuffix=" ms"
       height={320}
       hierarchy={steps}
+    />
+  );
+}`,
+  },
+  {
+    id: "streamgraph",
+    title: "Show a changing mix over time",
+    body: `A streamgraph stacks its series as bands around a baseline that moves, so the outer edges stay as flat as the data allows. It suits many series whose mix shifts over time, where you read the overall shape more than exact values. Set \`type\` to \`streamgraph\` and pass series as for a line or area chart. Series are joined on x: a missing value counts as zero, and so does a negative one.
+
+- **\`streamOffset\`:** the baseline: \`wiggle\` (the default), \`silhouette\` (centered on one line), \`zero\` (a stacked area) or \`expand\` (each x value fills the chart, as shares).
+- **\`streamOrder\`:** the stacking order: \`inside-out\` (series that peak first sit in the middle, the default), \`inverse\` or \`none\` (the series order).
+- **\`hideStreamLabels\`:** removes the series names drawn on the bands. A name is drawn on a band where it fits. \`streamLabelMinWidth\` sets the thinnest band that gets a name, in pixels (24 by default).
+- **\`curve\`:** as for lines: \`smooth\` (the default), \`straight\` or \`stepline\`.
+- **\`tooltip="point"\`:** the tooltip follows one band, and the other bands fade to \`streamHoverOpacity\` (0.35 by default).
+- **\`colorBlindMode\` and \`fillPattern\`:** fill the bands with patterns, so they differ by more than their color.
+
+The value axis and the grid are hidden, because a moving baseline makes their values misleading. Set \`yaxis={{ show: true }}\` and \`grid="y"\` to show them. The tooltip lists each band's value from the top down, then the total of the column, except with \`expand\`. The left and right arrow keys move between x values. The data table keeps the values you supplied, never the stacked positions.`,
+    html: `${snippetElement(streamgraphGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export function ListeningByGenre() {
+  return (
+    <Chart
+      label="Listening time by genre, thousands of hours per month"
+      type="streamgraph"
+      valueSuffix="k"
+      height={320}
+      categories={months}
+      series={[
+        { name: "Pop", data: [42, 48, 55, 60, 52, 44, 40, 38, 45, 50, 58, 62] },
+        { name: "Rock", data: [30, 28, 26, 32, 40, 46, 50, 44, 36, 30, 26, 24] },
+        { name: "Jazz", data: [12, 14, 18, 20, 22, 26, 24, 20, 18, 16, 14, 12] },
+        { name: "Hip hop", data: [20, 24, 30, 36, 44, 52, 58, 62, 56, 48, 40, 30] },
+        { name: "Classical", data: [18, 16, 14, 12, 12, 14, 16, 18, 22, 26, 30, 34] },
+      ]}
     />
   );
 }`,
@@ -1798,6 +1837,22 @@ const PREVIEWS = {
         colors={["warning"]}
         categories={["North", "South", "East", "West", "Central"]}
         series={[{ name: "Revenue", data: [96, 71, 64, 88, 35] }]}
+      />
+    </Preview>
+  ),
+  streamgraph: () => (
+    <Preview>
+      <Chart
+        label="Device share of visits by quarter"
+        type="streamgraph"
+        streamOffset="silhouette"
+        height={240}
+        categories={["Q1", "Q2", "Q3", "Q4", "Q5"]}
+        series={[
+          { name: "Phone", data: [40, 44, 52, 58, 66] },
+          { name: "Desktop", data: [46, 42, 38, 34, 30] },
+          { name: "Tablet", data: [14, 14, 10, 8, 4] },
+        ]}
       />
     </Preview>
   ),

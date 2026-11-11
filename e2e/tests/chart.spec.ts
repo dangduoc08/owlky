@@ -70,6 +70,7 @@ const STORIES = [
   "tree",
   "sunburst",
   "icicle",
+  "streamgraph",
   "crossfilter",
 ];
 
@@ -788,3 +789,32 @@ test("chart sunburst: after drilling, React and HTML draw the same SVG", async (
   const html = await after("html");
   expect(html).toEqual(react);
 });
+
+// Roadmap 4.18.21: streamgraphs.
+for (const impl of implementations) {
+  test.describe(`chart streamgraph (${impl})`, () => {
+    test("the keyboard reads every band and the total", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "streamgraph"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-stream-band]")).toHaveCount(5);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Jan");
+      const rows = first.locator("[data-ok-chart-tooltip-row]");
+      await expect(rows).toHaveCount(6);
+      await expect(rows.last()).toHaveText("Total122k");
+    });
+
+    test("a legend item removes its band and the baseline follows", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "streamgraph"));
+      const first = page.locator("[data-ok-chart]").first();
+      const band = first.locator("[data-ok-chart-stream-band]").first();
+      const before = await band.getAttribute("d");
+      await first.locator("[data-ok-chart-legend-item]").first().click();
+      await expect(first.locator("[data-ok-chart-stream-band]")).toHaveCount(4);
+      expect(await first.locator("[data-ok-chart-stream-band]").first().getAttribute("d")).not.toBe(
+        before,
+      );
+    });
+  });
+}

@@ -1235,6 +1235,19 @@
     fill: var(--ok-palette-common-white);
   }
 
+  /* Streamgraph bands (4.18.21): meet without a seam; a pattern fills them through `fill`. */
+  :where([data-ok-chart-stream-band]) {
+    stroke: none;
+  }
+
+  :where([data-ok-chart-stream-band]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-stream-veil]) {
+    fill: var(--ok-bg-paper);
+  }
+
   /* Waterfall connectors (4.18.21): a dashed line from each bar's end to the next bar. */
   :where([data-ok-chart-connector]) {
     stroke: var(--ok-text-secondary);

@@ -81,6 +81,12 @@ import {
   chartXTypes,
 } from "../chart/chart-model.js";
 import { type ChartOrientation, chartOrientations } from "../chart/chart-sankey.js";
+import {
+  type ChartStreamOffset,
+  type ChartStreamOrder,
+  chartStreamOffsets,
+  chartStreamOrders,
+} from "../chart/chart-stream.js";
 import { type GridDensity, gridDensities } from "../data-grid/data-grid.js";
 import { type GanttBarLabel, ganttBarLabels } from "../gantt/gantt-render.js";
 import { type GanttView, ganttViews } from "../gantt/gantt-scale.js";
@@ -4520,7 +4526,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) or `icicle` (the same hierarchy as bands, each node a cell sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `streamgraph` (stacked bands around a moving baseline, with a total per x value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4842,6 +4848,36 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-hide-connectors",
     "Waterfall charts: no dashed lines from the end of each bar to the next one.",
   ),
+  streamOffset: style(
+    "data-ok-stream-offset",
+    chartStreamOffsets,
+    "wiggle",
+    "Streamgraphs: the baseline: `wiggle` (bands as flat as the data allows, the default), `silhouette` (centered on one line), `zero` (a stacked area) or `expand` (each x value fills the chart).",
+    { optional: true },
+  ),
+  streamOrder: style(
+    "data-ok-stream-order",
+    chartStreamOrders,
+    "inside-out",
+    "Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order).",
+    { optional: true },
+  ),
+  hideStreamLabels: flag(
+    "data-ok-hide-stream-labels",
+    "Streamgraphs: no series names on the bands.",
+  ),
+  streamLabelMinWidth: number(
+    "data-ok-stream-label-min-width",
+    undefined,
+    "Streamgraphs: bands thinner than this many pixels get no name (default 24).",
+    { min: 0 },
+  ),
+  streamHoverOpacity: number(
+    "data-ok-stream-hover-opacity",
+    undefined,
+    'Streamgraphs with `tooltip="point"`: the opacity of the bands that are not active (0 to 1; default 0.35).',
+    { min: 0 },
+  ),
   direction: style(
     "data-ok-direction",
     chartDirections,
@@ -5000,6 +5036,11 @@ export interface ChartAnatomyOptions {
   disableZoomOnClick?: boolean | undefined;
   zoomType?: ChartZoomType | undefined;
   crossfilter?: ChartCrossfilter | undefined;
+  streamOffset?: ChartStreamOffset | undefined;
+  streamOrder?: ChartStreamOrder | undefined;
+  hideStreamLabels?: boolean | undefined;
+  streamLabelMinWidth?: number | undefined;
+  streamHoverOpacity?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

@@ -149,3 +149,4 @@ export const Sunburst: StoryObj = story("sunburst");
 export const Icicle: StoryObj = story("icicle");
 // Roadmap 4.18.19: crossfilter between the charts of a group.
 export const Crossfilter: StoryObj = story("crossfilter");
+export const Streamgraph: StoryObj = story("streamgraph");

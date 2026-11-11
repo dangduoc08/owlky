@@ -30,6 +30,8 @@ import {
   type ChartSelectionDetail,
   type ChartSeries,
   type ChartStackType,
+  type ChartStreamOffset,
+  type ChartStreamOrder,
   type ChartTableCell,
   type ChartTableModel,
   type ChartTool,
@@ -727,6 +729,15 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         waterfallTotalColor: colorAttribute(element, o.waterfallTotalColor.attr),
         waterfallSubtotalColor: colorAttribute(element, o.waterfallSubtotalColor.attr),
         hideConnectors: element.hasAttribute(o.hideConnectors.attr),
+        streamOffset: element.hasAttribute(o.streamOffset.attr)
+          ? (readStyle(element, o.streamOffset) as ChartStreamOffset)
+          : undefined,
+        streamOrder: element.hasAttribute(o.streamOrder.attr)
+          ? (readStyle(element, o.streamOrder) as ChartStreamOrder)
+          : undefined,
+        hideStreamLabels: element.hasAttribute(o.hideStreamLabels.attr),
+        streamLabelMinWidth: readNumber(element, o.streamLabelMinWidth) as number | undefined,
+        streamHoverOpacity: readNumber(element, o.streamHoverOpacity) as number | undefined,
         dumbbellColors: parseChartDumbbellColors(
           element.getAttribute(CHART_TEXT_ATTRIBUTES.dumbbellColors),
         ),

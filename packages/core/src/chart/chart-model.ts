@@ -33,6 +33,7 @@ export const chartTypes = [
   "tree",
   "sunburst",
   "icicle",
+  "streamgraph",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -117,6 +118,7 @@ const wholeTypes: readonly ChartType[] = [
   "tree",
   "sunburst",
   "icicle",
+  "streamgraph",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -400,11 +402,13 @@ export function chartData(input: {
   colors?: readonly ChartColor[] | undefined;
 }): ChartData {
   const type = pick(chartTypes, input.type, "line");
-  const xType = pick(
+  const givenX = pick(
     chartXTypes,
     input.xType,
     type === "scatter" || type === "bubble" ? "numeric" : "category",
   );
+  // Streamgraphs join series on x: numeric x values are labels, in order of first use.
+  const xType = type === "streamgraph" && givenX === "numeric" ? "category" : givenX;
   const palette = (input.colors ?? []).filter(isColor);
   const categories: (string | number)[] = [];
   if (xType === "category")

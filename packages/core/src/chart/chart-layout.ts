@@ -16,6 +16,7 @@ import {
   type ChartFill,
   type ChartGrid,
   type ChartMarkerShape,
+  type ChartPoint,
   type ChartStackType,
   type ChartStripeColor,
   type ChartSum,
@@ -179,6 +180,39 @@ export interface ChartLayoutOptions {
    * n; later series take the first pair). Default the series color for both.
    */
   readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
+  /**
+   * Chart types with a file of their own (streamgraph, violin, beeswarm): draws one series on this
+   * layout's axes. Whole-chart types only, so no other series goes through it.
+   */
+  readonly drawSeries?: ((context: ChartSeriesContext) => ChartSeriesPaint) | undefined;
+}
+
+/** What `drawSeries` gets: the series, the axes in px and where to add marks and labels. */
+export interface ChartSeriesContext {
+  readonly series: ChartDataSeries;
+  /** The series' position in the data given to `layoutChart`. */
+  readonly index: number;
+  /** Its points in the zoom window. */
+  readonly points: readonly ChartPoint[];
+  /** The series group's attributes. */
+  readonly attrs: Readonly<Record<string, string>>;
+  readonly horizontal: boolean;
+  /** A category's band in px (banded charts), or the distance between categories. */
+  readonly band: number;
+  readonly plot: ChartLayout["plot"];
+  /** Value → px along the value axis. */
+  readonly toValue: (value: number) => number;
+  /** Category index or x value → px along the category axis. */
+  readonly toPos: (x: number) => number;
+  readonly marks: ChartMark[];
+  readonly labels: ChartNode[];
+  readonly patterns: ReturnType<typeof chartPatternDefs>;
+}
+
+/** A drawn series and the layer it goes in (areas, bars, then points). */
+export interface ChartSeriesPaint {
+  readonly layer: "areas" | "bars" | "points";
+  readonly node: ChartNode;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -262,6 +296,16 @@ export interface ChartMark {
   readonly sum?: ChartSum | undefined;
   /** Dumbbells: the colors of the start and end markers (tooltip rows). */
   readonly ends?: readonly [ChartColor, ChartColor] | undefined;
+  /** Streamgraphs: the column's total (a tooltip row). */
+  readonly total?: number | undefined;
+  /** Streamgraphs: the nodes that show one band over the others (per-point tooltips). */
+  readonly stream?:
+    | {
+        readonly veil: ChartNode;
+        readonly band: ChartNode;
+        readonly label?: ChartNode | undefined;
+      }
+    | undefined;
 }
 
 /**
@@ -538,6 +582,7 @@ const FITTED: readonly ChartType[] = [
   "rangeBar",
   "timeline",
   "dumbbell",
+  "streamgraph",
 ];
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -1229,6 +1274,26 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       continue;
     }
     const posOf = (x: number) => (numeric ? toX(x) : toCat(x));
+    if (options.drawSeries) {
+      const painted = options.drawSeries({
+        series,
+        index,
+        points,
+        attrs: seriesAttrs,
+        horizontal,
+        band,
+        plot,
+        toValue,
+        toPos: posOf,
+        marks,
+        labels,
+        patterns,
+      });
+      (painted.layer === "areas" ? areas : painted.layer === "bars" ? bars : scatters).push(
+        painted.node,
+      );
+      continue;
+    }
     if (series.type === "boxPlot") {
       // Whiskers from the minimum to Q1 and Q3 to the maximum, two boxes split at the median.
       const slot = boxSeries.indexOf(index);

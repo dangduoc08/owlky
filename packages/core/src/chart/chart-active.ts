@@ -311,6 +311,19 @@ export function chartActiveNodes(
     const mark = layout.marks[active.mark];
     if (!mark) return { under: [], over: [] };
     if (mark.flow) return { under: [], over: flowNodes(layout, mark) };
+    // Streamgraphs (4.18.21): a per-point tooltip's band over a veil that fades the others.
+    if (mark.stream) {
+      const { veil, band, label } = mark.stream;
+      return {
+        under: [],
+        over: [
+          veil,
+          band,
+          circle(mark.px, mark.py, layout.activeRadius, mark.color, mark.shape),
+          ...(label ? [label] : []),
+        ],
+      };
+    }
     if (mark.tree) return { under: [], over: [...treeNodes(layout, mark), mark.tree.outline] };
     if (mark.cell) {
       // An outline around the cell (heatmap, treemap).
@@ -651,6 +664,14 @@ function tooltipOf(
         : (data.series[mark.series] as (typeof data.series)[number]).color,
     ),
   );
+  // Streamgraphs (4.18.21): the column's total after its bands (not with `expand`).
+  const columnTotal = marks[0]?.total;
+  if (columnTotal !== undefined && marks[0])
+    rows.push({
+      name: format.part("total"),
+      value: format.value(columnTotal, 0),
+      color: marks[0].color,
+    });
   if (layout.polar) {
     // Radar: beside the outermost value of the category.
     const { cx, cy } = layout.polar;

@@ -209,7 +209,9 @@ export function withChartCues(data: ChartData, options: ChartCueOptions): ChartD
     const width = entry.strokeWidth ?? options.strokeWidth;
     const cues = {
       ...(drawsMarkers && shape && shape !== "circle" ? { shape } : {}),
-      ...((entry.type === "bar" || entry.type === "area") && pattern ? { pattern } : {}),
+      ...((entry.type === "bar" || entry.type === "area" || entry.type === "streamgraph") && pattern
+        ? { pattern }
+        : {}),
       ...(dash ? { dash } : {}),
       ...(width !== undefined ? { width } : {}),
     };
