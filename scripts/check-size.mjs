@@ -195,7 +195,9 @@ const budgets = [
   // editing and loading states.
   // 60 kB since Phase 4 batch E (organization chart directions and highlight, data grid layout,
   // footer, set filter and selection options, chart stacks and cues; about 2 kB): 56.2 kB.
-  ["packages/styles/dist/owlky.min.css", 60_000, "All CSS (tokens + components)"],
+  // 63 kB since the phone input (roadmap 4.25, ADR-0061: the bare country select, flags, the
+  // visually hidden name, the list size; about 0.25 kB): 60.04 kB. Optimization is deferred to 1.0 prep.
+  ["packages/styles/dist/owlky.min.css", 63_000, "All CSS (tokens + components)"],
   // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
   // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
   // reference (ADR-0049: every prop, attribute, part, event, method, type and CSS variable per
