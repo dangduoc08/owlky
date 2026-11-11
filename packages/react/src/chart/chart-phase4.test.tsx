@@ -97,6 +97,19 @@ describe("Chart phase 4", () => {
     expect(await saved).toBe("visits.png");
   });
 
+  it("announces a refused download with the default text", async () => {
+    renderChart({ toolbar: true });
+    vi.spyOn(navigator, "userActivation", "get").mockReturnValue({
+      isActive: false,
+    } as UserActivation);
+    const status = document.querySelector("[data-ok-chart-status]") as HTMLElement;
+    const changed = textChanged(status);
+    act(() => tool("svg").click());
+    await changed;
+    expect(status.textContent).toBe("The download failed.");
+    vi.restoreAllMocks();
+  });
+
   it("keys zoom and pan; Escape hides the tooltip, then resets", () => {
     renderChart({ zoom: true });
     const [root] = figures() as [HTMLElement];

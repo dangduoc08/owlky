@@ -383,6 +383,22 @@ describe("Sankey table and attributes", () => {
     expect(again.table.head[0]?.text).toBe("Source");
   });
 
+  it("reads a table without a head; rows missing a node are skipped", () => {
+    const table = document.createElement("table");
+    table.innerHTML = `<tbody>
+      <tr><th>A</th><th>B</th><td data-ok-value="5" data-ok-color="success">5</td></tr>
+      <tr><th>B</th><th>C</th><td>2</td></tr>
+      <tr><th>C</th></tr>
+    </tbody>`;
+    const read = readChartSankeyTable(table);
+    expect(read.partLabels).toEqual({});
+    expect(read.edges).toEqual([
+      { source: "A", target: "B", value: "5", color: "success" },
+      { source: "B", target: "C", value: "2" },
+    ]);
+    expect(read.nodes.map((node) => node.id)).toEqual(["A", "B", "C"]);
+  });
+
   it("keeps own link colors in the table and localizes headers", () => {
     const graph = chartSankeyGraph({
       edges: [{ source: "a", target: "b", value: 2, color: "error" }],

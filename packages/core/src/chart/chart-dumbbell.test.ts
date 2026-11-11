@@ -87,6 +87,7 @@ describe("dumbbell data", () => {
       ["error-dark", "error-dark"],
     ]);
     expect(parseChartDumbbellColors("")).toEqual([]);
+    expect(parseChartDumbbellColors("nope; ; warning")).toEqual([["warning", "warning"]]);
     expect(parseChartDumbbellColors("x".repeat(2001))).toEqual([]);
     expect(chartDumbbellColorsText([["info", "success"], ["warning"]])).toBe(
       "info success; warning",

@@ -62,6 +62,56 @@ describe("chart measure", () => {
     expect(instance.measures).toEqual([]);
     await expectNoAxeViolations(host);
   });
+
+  it("Escape forgets a start; Enter without an active point does nothing", () => {
+    const host = mount(measure);
+    start();
+    const chart = host.querySelector("[data-ok-chart]") as HTMLElement;
+    (chart.querySelector('[data-ok-chart-tool="measure"]') as HTMLButtonElement).click();
+    const plot = chart.querySelector("[data-ok-chart-plot]") as HTMLElement;
+    const status = chart.querySelector("[data-ok-chart-status]") as HTMLElement;
+    key(plot, "Enter");
+    expect(status.textContent).toBe("");
+    key(plot, "Home");
+    key(plot, "Enter");
+    expect(status.textContent).toBe("Measure from Jan");
+    key(plot, "Escape");
+    key(plot, "ArrowRight");
+    // The start was forgotten: Enter starts again at Feb instead of adding a ruler.
+    key(plot, "Enter");
+    expect(status.textContent).toBe("Measure from Feb");
+    expect(chart.querySelector("[data-ok-chart-measures]")).toBeNull();
+  });
+
+  it("a drag previews the ruler, keeping earlier ones with pin on release", () => {
+    const host = mount(measure);
+    const chart = host.querySelector("[data-ok-chart]") as HTMLElement;
+    chart.setAttribute("data-ok-measure-pin-on-release", "");
+    const run = start();
+    const instance = run.get(chart, "chart") as ChartInstance;
+    instance.setMeasures([{ x1: 0, y1: 12, x2: 1, y2: 19 }]);
+    (chart.querySelector('[data-ok-chart-tool="measure"]') as HTMLButtonElement).click();
+    const plot = chart.querySelector("[data-ok-chart-plot]") as HTMLElement;
+    const box = plot.getBoundingClientRect();
+    const fire = (type: string, x: number) =>
+      plot.dispatchEvent(
+        new PointerEvent(type, {
+          clientX: box.left + box.width * x,
+          clientY: box.top + box.height * 0.5,
+          pointerId: 1,
+          pointerType: "mouse",
+          button: 0,
+          bubbles: true,
+        }),
+      );
+    fire("pointerdown", 0.3);
+    fire("pointermove", 0.6);
+    fire("pointermove", 0.8);
+    expect(chart.querySelectorAll("[data-ok-chart-measure-band]")).toHaveLength(2);
+    expect(instance.measures).toHaveLength(1);
+    fire("pointerup", 0.8);
+    expect(instance.measures).toHaveLength(2);
+  });
 });
 
 describe("chart draggable annotations", () => {
@@ -91,5 +141,38 @@ describe("chart draggable annotations", () => {
       "Jul",
     );
     await expectNoAxeViolations(host);
+  });
+
+  it("keys a picked annotation can't use pass through; one removed while picked drops quietly", async () => {
+    const host = mount(drag);
+    start();
+    const chart = host.querySelector("[data-ok-chart]") as HTMLElement;
+    const details: unknown[] = [];
+    chart.addEventListener("ok:chart:annotation", (event) =>
+      details.push((event as CustomEvent).detail),
+    );
+    const plot = chart.querySelector("[data-ok-chart-plot]") as HTMLElement;
+    key(plot, "a");
+    // Home doesn't move an annotation: the key goes to the chart (the first category).
+    key(plot, "Home");
+    expect(chart.querySelector("[data-ok-picked]")).not.toBeNull();
+    // The owner empties the list while it is picked.
+    const list = chart.querySelector("[data-ok-chart-annotations]") as HTMLElement;
+    const redrawn = new Promise<void>((resolve) =>
+      new MutationObserver((_, observer) => {
+        observer.disconnect();
+        resolve();
+      }).observe(chart.querySelector("[data-ok-chart-svg]") as Element, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      }),
+    );
+    list.replaceChildren();
+    await redrawn;
+    key(plot, "ArrowUp");
+    key(plot, "Enter");
+    expect(details).toEqual([]);
+    expect(chart.querySelector("[data-ok-picked]")).toBeNull();
   });
 });

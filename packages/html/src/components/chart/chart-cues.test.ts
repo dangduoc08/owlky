@@ -7,6 +7,7 @@ import colorBlind from "./examples/color-blind-group.html?raw";
 import dashed from "./examples/dashed-lines-group.html?raw";
 import shapes from "./examples/marker-shapes-group.html?raw";
 import patterns from "./examples/patterns-group.html?raw";
+import tooltipCustom from "./examples/tooltip-custom-group.html?raw";
 
 /* Non-color series cues (4.18.62) in the HTML runtime. */
 
@@ -88,5 +89,54 @@ describe("series cues", () => {
     line.removeAttribute("data-ok-color-blind-mode");
     await settle();
     expect(line.querySelectorAll("[data-ok-chart-marker]")).toHaveLength(0);
+  });
+
+  it("tooltip markers carry the series' shapes and patterns, in built-in and custom tooltips", () => {
+    const key = (target: Element, name: string) =>
+      target.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true }));
+    // A copy of the color-blind line chart with the custom tooltip's template.
+    const template = tooltipCustom.slice(
+      tooltipCustom.indexOf("<template"),
+      tooltipCustom.indexOf("</template>") + "</template>".length,
+    );
+    const cued = colorBlind.replace("</figure>", `${template}</figure>`);
+    const host = mount(colorBlind + patterns + cued + tooltipCustom);
+    // Two color-blind charts (a line and bars), two pattern charts, the copies, the custom one.
+    const [line, , bars, , cuedLine, , custom] = [
+      ...host.querySelectorAll("[data-ok-chart]"),
+    ] as HTMLElement[];
+    // An empty state slot gets the default text.
+    const state = custom
+      ?.querySelector("template")
+      ?.content.querySelector('[data-ok-chart-tooltip-slot="state"]');
+    if (state) state.textContent = "";
+    start();
+    const markers = (chart: HTMLElement | undefined) => [
+      ...(chart?.querySelectorAll("[data-ok-chart-tooltip] [data-ok-chart-tooltip-marker]") ?? []),
+    ];
+    const plotOf = (chart: HTMLElement | undefined) =>
+      chart?.querySelector("[data-ok-chart-plot]") as Element;
+    key(plotOf(line), "Home");
+    // The first series keeps the default circle (no attribute).
+    expect(markers(line).map((m) => m.getAttribute("data-ok-shape"))).toEqual([
+      null,
+      "square",
+      "triangle",
+    ]);
+    key(plotOf(bars), "Home");
+    expect(markers(bars).length).toBeGreaterThan(0);
+    expect(markers(bars).every((m) => m.hasAttribute("data-ok-pattern"))).toBe(true);
+    key(plotOf(cuedLine), "Home");
+    expect(markers(cuedLine).map((m) => m.getAttribute("data-ok-shape"))).toEqual([
+      null,
+      "square",
+      "triangle",
+    ]);
+    key(plotOf(custom), "Home");
+    key(plotOf(custom), "Enter");
+    expect(
+      custom?.querySelector('[data-ok-chart-tooltip] [data-ok-chart-tooltip-slot="state"]')
+        ?.textContent,
+    ).toBe("Selected");
   });
 });

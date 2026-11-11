@@ -382,6 +382,30 @@ describe("text annotations", () => {
   });
 });
 
+describe("text attributes of groups, geo colors and thresholds", () => {
+  it("writes each only when there is something to write", () => {
+    expect(
+      chartTextAttributes({
+        xaxisGroups: [
+          { cols: 2, title: "Q1; first" },
+          { cols: 1, title: "Q2" },
+        ],
+      }),
+    ).toEqual({ "data-ok-xaxis-groups": "2 Q1 first; 1 Q2" });
+    expect(chartTextAttributes({ xaxisGroups: [] })).toEqual({});
+    // Root colors are text only for geo charts (others write them as data colors).
+    expect(chartTextAttributes({ type: "geo", colors: ["info", "warning"] })).toEqual({
+      "data-ok-colors": "info warning",
+    });
+    expect(chartTextAttributes({ type: "geo" })).toEqual({});
+    expect(chartTextAttributes({ type: "bar", colors: ["info"] })).toEqual({});
+    expect(chartTextAttributes({ scaleThresholds: [10, Number.NaN, 20] })).toEqual({
+      "data-ok-scale-thresholds": "10; 20",
+    });
+    expect(chartTextAttributes({ scaleThresholds: [Number.NaN] })).toEqual({});
+  });
+});
+
 describe("several brush targets", () => {
   it("writes a list as one attribute and zooms every target", () => {
     expect(chartTextAttributes({ brushTarget: ["a", "", "b"] })).toEqual({

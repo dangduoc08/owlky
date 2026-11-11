@@ -117,6 +117,34 @@ describe("waffle layout", () => {
     expect(find(auto.layout.nodes, "data-ok-chart-unit-track").length).toBeGreaterThan(0);
   });
 
+  it("split tiles default to 100 cells and fill from the top on request; gaps count as zero", () => {
+    const { layout } = draw({
+      split: true,
+      total: undefined,
+      fillFrom: "top",
+      categories: ["A", "B"],
+      series: [{ name: "x", data: [50, null] }],
+    });
+    const cells = cellsOf(layout);
+    // The largest value fills its tile; the gap's tile is all track.
+    expect(cells).toHaveLength(100);
+    expect(find(layout.nodes, "data-ok-chart-unit-track")).toHaveLength(100);
+    // From the top: the first filled cell sits above the last one.
+    const ys = cells.map((cell) => Number(cell.attrs["y"] ?? cell.attrs["cy"]));
+    expect(ys[0]).toBeLessThan(ys.at(-1) as number);
+    const bottom = cellsOf(
+      draw({
+        split: true,
+        total: undefined,
+        categories: ["A", "B"],
+        series: [{ name: "x", data: [50, null] }],
+      }).layout,
+    ).map((cell) => Number(cell.attrs["y"] ?? cell.attrs["cy"]));
+    expect(bottom[0]).toBeGreaterThan(bottom.at(-1) as number);
+    // No series: no cells.
+    expect(cellsOf(draw({ series: [] }).layout)).toHaveLength(0);
+  });
+
   it("hides categories and reshares the cells; shapes tell them apart", () => {
     const { layout, legend } = draw({ hidden: [1] });
     expect(cellsOf(layout)).toHaveLength(100);

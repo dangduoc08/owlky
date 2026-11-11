@@ -66,6 +66,28 @@ describe("chart drilldown", () => {
     expect(instance.drilldownPath).toEqual([]);
     await expectNoAxeViolations(host);
   });
+
+  it("Escape goes up one level; a chart without levels has an empty path", () => {
+    const plain = `<figure data-ok-chart data-ok-type="bar" id="plain"><table data-ok-chart-data><caption>Plain</caption><thead><tr><th scope="col">x</th><th scope="col">S</th></tr></thead><tbody><tr><th scope="row">A</th><td>1</td></tr></tbody></table></figure>`;
+    const host = mount(drilldown + plain);
+    const run = start();
+    const chart = host.querySelector("[data-ok-chart]") as HTMLElement;
+    const plot = chart.querySelector("[data-ok-chart-plot]") as HTMLElement;
+    key(plot, "Home");
+    key(plot, "Enter");
+    key(plot, "Home");
+    key(plot, "Enter");
+    expect(chart.getAttribute("data-ok-drilldown-path")).toBe("q1; jan");
+    key(plot, "Escape");
+    expect(chart.getAttribute("data-ok-drilldown-path")).toBe("q1");
+    key(plot, "Escape");
+    expect(chart.hasAttribute("data-ok-drilldown-path")).toBe(false);
+    // At the top, Escape is the chart's own (it hides the active point).
+    key(plot, "Escape");
+    expect(chart.hasAttribute("data-ok-drilldown-path")).toBe(false);
+    const other = host.querySelector("#plain") as HTMLElement;
+    expect((run.get(other, "chart") as ChartInstance).drilldownPath).toEqual([]);
+  });
 });
 
 describe("chart trellis", () => {
@@ -97,5 +119,28 @@ describe("chart trellis", () => {
     headers[1]?.click();
     expect(instance.promoted).toBeNull();
     await expectNoAxeViolations(host);
+  });
+
+  it("starts with a promoted panel from the markup; refused or turned off, a header does nothing", () => {
+    const host = mount(trellis);
+    const root = host.querySelector("[data-ok-chart-trellis]") as HTMLElement;
+    const panels = [...root.querySelectorAll<HTMLElement>("[data-ok-chart-trellis-panel]")];
+    panels[1]?.setAttribute("data-ok-promoted", "");
+    const run = start();
+    const instance = run.get(root, "chart-trellis") as ChartTrellisInstance;
+    expect(instance.promoted).toBe(1);
+    expect(panels.map((panel) => panel.hidden)).toEqual([true, false, true]);
+    const headers = [...root.querySelectorAll<HTMLButtonElement>("[data-ok-chart-trellis-header]")];
+    // A refused promote keeps the layout.
+    const refuse = (event: Event) => event.preventDefault();
+    root.addEventListener("ok:chart-trellis:promote", refuse);
+    headers[1]?.click();
+    expect(instance.promoted).toBe(1);
+    root.removeEventListener("ok:chart-trellis:promote", refuse);
+    // Without `data-ok-promote`, headers and All panels do nothing.
+    root.removeAttribute("data-ok-promote");
+    headers[0]?.click();
+    (root.querySelector("[data-ok-chart-trellis-back]") as HTMLButtonElement).click();
+    expect(instance.promoted).toBe(1);
   });
 });

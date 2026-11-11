@@ -297,6 +297,23 @@ describe("tree layout", () => {
     expect(markOf(right, "A").tree?.axis).toBe("left");
   });
 
+  it("centers a lone node in every direction, and curves vertical links", () => {
+    const lone: ChartHierarchyNode = { name: "Only" };
+    const top = markOf(draw({ hierarchy: lone }).layout, "Only");
+    expect(top.px).toBe(300);
+    const left = markOf(draw({ hierarchy: lone, direction: "left" }).layout, "Only");
+    expect(left.py).toBe(160);
+    const radial = markOf(draw({ hierarchy: lone, direction: "radial" }).layout, "Only");
+    expect([radial.px, radial.py]).toEqual([300, 160]);
+    const turn = markOf(
+      draw({ hierarchy: lone, direction: "radial", startAngle: 0, endAngle: 90 }).layout,
+      "Only",
+    );
+    expect([turn.px, turn.py]).toEqual([300, 160]);
+    const curved = draw({ hierarchy: TREE, edgeStyle: "curved" }).layout;
+    expect(find(curved.nodes, "data-ok-chart-tree-link")[0]?.attrs["d"]).toMatch(/^M[\d.,]+C/);
+  });
+
   it("lays out a radial tree around the center, leaves labeled outward", () => {
     const { layout } = draw({ hierarchy: TREE, direction: "radial", height: 400 });
     const root = markOf(layout, "Root");
