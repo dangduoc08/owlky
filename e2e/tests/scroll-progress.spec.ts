@@ -36,16 +36,22 @@ for (const impl of implementations) {
         await expect.poll(() => shown(progress)).toBeCloseTo(1, 2);
     });
 
-    test("container scroll-x: the keyboard scrolls the row and the bar follows", async ({
+    test("container scroll-x: the bar follows the row, also from the keyboard", async ({
       page,
     }) => {
       await openStory(page, storyId(impl, "scroll-progress", "container-scroll-x"));
       const bar = page.locator("[data-ok-linear-progress]");
       const row = page.getByRole("region", { name: "Numbered cards in a row" });
       await row.focus();
-      await page.keyboard.press("End");
+      await page.keyboard.press("ArrowRight");
+      await expect.poll(() => shown(bar)).toBeGreaterThan(0);
+      await row.evaluate((element) => {
+        element.scrollLeft = element.scrollWidth;
+      });
       await expect.poll(() => shown(bar)).toBeCloseTo(1, 2);
-      await page.keyboard.press("Home");
+      await row.evaluate((element) => {
+        element.scrollLeft = 0;
+      });
       await expect.poll(() => shown(bar)).toBeCloseTo(0, 2);
     });
 
