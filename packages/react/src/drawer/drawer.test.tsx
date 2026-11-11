@@ -5,7 +5,7 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { Button } from "../button/button.js";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, finishExit } from "../test-utils.js";
 import { Drawer, DrawerClose, DrawerContent, type DrawerProps, DrawerTrigger } from "./drawer.js";
 
 function Example({
@@ -174,6 +174,7 @@ describe("Drawer behavior", () => {
     trigger.focus();
     await userEvent.click(trigger);
     await userEvent.keyboard("{Escape}");
+    await finishExit(dialog());
     expect(dialog().open).toBe(false);
     expect(document.activeElement).toBe(trigger);
     expect(isScrollLocked()).toBe(false);
@@ -186,9 +187,11 @@ describe("Drawer behavior", () => {
     await userEvent.click(screen.getByRole("button", { name: "Inside" }));
     expect(dialog().open).toBe(true);
     await backdropClick();
+    await finishExit(dialog());
     expect(dialog().open).toBe(false);
     await userEvent.click(screen.getByRole("button", { name: "Open" }));
     await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    await finishExit(dialog());
     expect(dialog().open).toBe(false);
   });
 
@@ -199,6 +202,7 @@ describe("Drawer behavior", () => {
     expect(dialog().open).toBe(true);
     expect(getComputedStyle(dialog(), "::backdrop").backgroundColor).toBe("rgba(0, 0, 0, 0)");
     await backdropClick();
+    await finishExit(dialog());
     expect(dialog().open).toBe(false);
   });
 
@@ -208,6 +212,7 @@ describe("Drawer behavior", () => {
     await backdropClick();
     expect(dialog().open).toBe(true);
     await userEvent.keyboard("{Escape}");
+    await finishExit(dialog());
     expect(dialog().open).toBe(false);
     expect(onOpenChange.mock.calls).toEqual([
       [false, "backdrop"],
@@ -312,8 +317,32 @@ describe("Drawer options", () => {
     expect(getComputedStyle(content).boxShadow).toBe("none");
     expect(getComputedStyle(content).transitionDuration).toBe("0.05s");
     await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    await finishExit(element);
     expect(element.open).toBe(false);
     expect(document.activeElement).not.toBe(trigger);
+    expect(screen.queryByRole("button", { name: "Close", hidden: true })).toBeNull();
+  });
+
+  it("slides out before closing; keepMounted={false} children stay until then", async () => {
+    render(
+      <Drawer defaultOpen>
+        <DrawerTrigger>Open</DrawerTrigger>
+        <DrawerContent aria-label="Menu" keepMounted={false} transitionDuration={80}>
+          <DrawerClose>Close</DrawerClose>
+        </DrawerContent>
+      </Drawer>,
+    );
+    const element = dialog();
+    // Let the slide in end first: a close at its very start has nothing left to play.
+    for (const animation of element.getAnimations({ subtree: true })) animation.finish();
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(element.getAttribute("data-ok-state")).toBe("exiting");
+    expect(element.open).toBe(true);
+    const content = element.querySelector("[data-ok-drawer-content]") as HTMLElement;
+    expect(getComputedStyle(content).transitionDuration).toBe("0.08s");
+    expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();
+    await finishExit(element);
+    expect(element.open).toBe(false);
     expect(screen.queryByRole("button", { name: "Close", hidden: true })).toBeNull();
   });
 });

@@ -7,6 +7,7 @@ import {
   expectCspSafe,
   expectNamedButtons,
   expectNoAxeViolations,
+  finishExit,
   mount,
   resetPage,
   settle,
@@ -123,6 +124,7 @@ describe("drawer runtime", () => {
     await userEvent.click($("#trigger"));
     expect(isScrollLocked()).toBe(false);
     await userEvent.keyboard("{Escape}");
+    await finishExit(element);
     expect(element.open).toBe(false);
     expect(document.activeElement?.id).not.toBe("trigger");
   });
@@ -134,6 +136,7 @@ describe("drawer runtime", () => {
     $("#trigger").focus();
     await userEvent.click($("#trigger"));
     await userEvent.keyboard("{Escape}");
+    await finishExit($("#d"));
     expect($<HTMLDialogElement>("#d").open).toBe(false);
     expect(document.activeElement?.id).toBe("trigger");
     expect(isScrollLocked()).toBe(false);
@@ -148,6 +151,7 @@ describe("drawer runtime", () => {
     await userEvent.click($("#inside"));
     expect($<HTMLDialogElement>("#d").open).toBe(true);
     await userEvent.click($("#d"), { position: { x: window.innerWidth - 10, y: 10 } });
+    await finishExit($("#d"));
     expect($<HTMLDialogElement>("#d").open).toBe(false);
     expect(events).toContain("close:backdrop");
   });
@@ -172,6 +176,7 @@ describe("drawer runtime", () => {
     expect($<HTMLDialogElement>("#d").open).toBe(true);
     expect(getComputedStyle($("#d"), "::backdrop").backgroundColor).toBe("rgba(0, 0, 0, 0)");
     await userEvent.click($("#d"), { position: { x: window.innerWidth - 10, y: 10 } });
+    await finishExit($("#d"));
     expect($<HTMLDialogElement>("#d").open).toBe(false);
   });
 
@@ -288,4 +293,39 @@ describe("drawer runtime", () => {
     expect(runtime.get<DrawerInstance>($("#d"), "drawer")?.isOpen).toBe(false);
     expect(events.at(-1)).toBe("close:native");
   });
+});
+
+describe("drawer exit (ADR-0062)", () => {
+  it.each([
+    ["left", "e", -1],
+    ["right", "e", 1],
+    ["top", "f", -1],
+    ["bottom", "f", 1],
+  ] as const)(
+    "%s: slides back to its edge, then closes and fires close",
+    async (anchor, axis, sign) => {
+      mount(SIMPLE().replace('data-ok-anchor="left"', `data-ok-anchor="${anchor}"`));
+      await settle();
+      const events = record($("#d"));
+      await userEvent.click($("#trigger"));
+      // Let the slide in end first: a close at its very start has nothing left to play.
+      for (const animation of $("#d").getAnimations({ subtree: true })) animation.finish();
+      await userEvent.click($("#close"));
+      expect($("#d").getAttribute("data-ok-state")).toBe("exiting");
+      expect($<HTMLDialogElement>("#d").open).toBe(true);
+      expect(events.at(-1)).toBe("beforeclose:trigger");
+      const content = $("#d").querySelector("[data-ok-drawer-content]") as HTMLElement;
+      const transition = content.getAnimations()[0] as CSSTransition | undefined;
+      expect(transition?.transitionProperty).toBe("transform");
+      transition?.finish();
+      // Its end: off screen past the anchored edge.
+      const end = new DOMMatrix(getComputedStyle(content).transform);
+      expect(Math.sign(end[axis])).toBe(sign);
+      await finishExit($("#d"));
+      expect($<HTMLDialogElement>("#d").open).toBe(false);
+      expect($("#d").hasAttribute("data-ok-state")).toBe(false);
+      expect(events.at(-1)).toBe("close:trigger");
+      expect(document.activeElement).toBe($("#trigger"));
+    },
+  );
 });

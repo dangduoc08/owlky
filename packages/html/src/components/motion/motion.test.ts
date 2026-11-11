@@ -403,3 +403,81 @@ describe("dialog transition", () => {
     expect(css(paper).animationName).toBe("ok-motion");
   });
 });
+
+describe("motion keyframes and exits (ADR-0062)", () => {
+  it("plays data-ok-keyframes on entrance instead of the variant", async () => {
+    const host = mount(
+      `<div id="k" data-ok-motion data-ok-trigger="mount" data-ok-keyframes='{"rotate":[0,90],"opacity":[0.5,1]}' data-ok-transition='{"duration":2000,"ease":"linear"}'>Logo</div>`,
+    );
+    start();
+    const element = host.querySelector("#k") as HTMLElement;
+    expect(state(element)).toBe("enter");
+    expect(css(element).animationName).toBe("none");
+    await settle();
+    const animations = element.getAnimations();
+    expect(animations).toHaveLength(2);
+    expect(animations.every((a) => a.effect?.getTiming().duration === 2000)).toBe(true);
+    finish(element);
+    await settle();
+    expect(element.style.rotate).toBe("90deg");
+    await expectNoAxeViolations(host);
+  });
+
+  it("loops with repeat Infinity and pauses with data-ok-paused", async () => {
+    const host = mount(
+      `<div id="k" data-ok-motion data-ok-trigger="mount" data-ok-paused data-ok-keyframes='{"rotate":360}' data-ok-transition='{"repeat":"Infinity","duration":1000}'></div>`,
+    );
+    start();
+    const element = host.querySelector("#k") as HTMLElement;
+    await settle();
+    const [loop] = element.getAnimations();
+    expect(loop?.effect?.getTiming().iterations).toBe(Infinity);
+    expect(loop?.playState).toBe("paused");
+    element.removeAttribute("data-ok-paused");
+    await settle();
+    expect(loop?.playState).toBe("running");
+  });
+
+  it("exit(), hide() and remove() play the exit first", async () => {
+    const host = mount(`
+      <div id="a" data-ok-motion data-ok-variant="fadeIn" data-ok-trigger="mount">A</div>
+      <div id="b" data-ok-motion data-ok-variant="fadeIn" data-ok-trigger="mount">B</div>
+      <div id="c" data-ok-motion data-ok-variant="fadeIn" data-ok-trigger="mount">C</div>`);
+    start();
+    const [a, b, c] = ["#a", "#b", "#c"].map((id) => host.querySelector(id) as HTMLElement) as [
+      HTMLElement,
+      HTMLElement,
+      HTMLElement,
+    ];
+    const instance = (element: HTMLElement) =>
+      runtime?.get<MotionInstance>(element, "motion") as MotionInstance;
+    const exited = instance(a).exit();
+    expect(state(a)).toBe("exit");
+    finish(a);
+    expect(await exited).toBe(true);
+
+    const hidden = instance(b).hide();
+    expect(b.hidden).toBe(false);
+    finish(b);
+    expect(await hidden).toBe(true);
+    expect(b.hidden).toBe(true);
+
+    const removed = instance(c).remove();
+    expect(c.isConnected).toBe(true);
+    finish(c);
+    expect(await removed).toBe(true);
+    expect(c.isConnected).toBe(false);
+  });
+
+  it("replay() interrupts an exit", async () => {
+    const host = mount(`<div id="a" data-ok-motion data-ok-trigger="mount">A</div>`);
+    start();
+    const element = host.querySelector("#a") as HTMLElement;
+    const motion = runtime?.get<MotionInstance>(element, "motion") as MotionInstance;
+    const removed = motion.remove();
+    motion.replay();
+    expect(await removed).toBe(false);
+    expect(element.isConnected).toBe(true);
+    expect(state(element)).toBe("enter");
+  });
+});

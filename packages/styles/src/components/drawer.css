@@ -10,7 +10,8 @@
  *
  * A click whose target is the <dialog> itself is a click outside the paper (backdrop click).
  * Single :where() selectors in @layer components (zero specificity); `::backdrop` is the only
- * pseudo-element after one. Opening animates with @starting-style where supported.
+ * pseudo-element after one. Opening animates with @starting-style where supported; closing plays
+ * while data-ok-state="exiting" (the modal controller closes the dialog after it).
  */
 @reference "../theme.css";
 
@@ -219,6 +220,37 @@
   :where([data-ok-drawer])::backdrop {
     transition: opacity var(--_ok-drawer-duration, var(--ok-duration-short))
       var(--ok-easing-standard);
+  }
+
+  /* Exit (data-ok-state="exiting", core modal controller, ADR-0062): back to the edge, the
+     backdrop fades out; the dialog closes when the slide ends. */
+  :where([data-ok-drawer][data-ok-state="exiting"] > [data-ok-drawer-content]) {
+    transform: translateX(-100%);
+    transition-duration: var(--_ok-drawer-duration, var(--ok-duration-shorter));
+    transition-timing-function: var(--ok-easing-accelerate);
+  }
+
+  :where(
+    [data-ok-drawer][data-ok-anchor="right"][data-ok-state="exiting"] > [data-ok-drawer-content]
+  ) {
+    transform: translateX(100%);
+  }
+
+  :where(
+    [data-ok-drawer][data-ok-anchor="top"][data-ok-state="exiting"] > [data-ok-drawer-content]
+  ) {
+    transform: translateY(-100%);
+  }
+
+  :where(
+    [data-ok-drawer][data-ok-anchor="bottom"][data-ok-state="exiting"] > [data-ok-drawer-content]
+  ) {
+    transform: translateY(100%);
+  }
+
+  :where([data-ok-drawer][data-ok-state="exiting"])::backdrop {
+    opacity: 0;
+    transition-duration: var(--_ok-drawer-duration, var(--ok-duration-shorter));
   }
 
   /* An explicit elevation (data-ok-elevation, --_ok-drawer-shadow through CSSOM) wins. */

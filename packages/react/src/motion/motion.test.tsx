@@ -1,10 +1,11 @@
 import { act, render, screen } from "@testing-library/react";
-import { createRef, type ReactNode, type RefObject, StrictMode } from "react";
+import { createRef, type ReactNode, type RefObject, StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { Dialog } from "../dialog/dialog.js";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, finishExit } from "../test-utils.js";
 import { Motion, MotionGroup, MotionText } from "./motion.js";
+import { MotionPresence } from "./motion-presence.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
 const css = (element: Element) => getComputedStyle(element);
@@ -554,5 +555,168 @@ describe("Dialog transition", () => {
     );
     expect(paper.hasAttribute("data-ok-motion")).toBe(false);
     expect(css(paper).animationName).toBe("ok-dialog-in");
+  });
+});
+
+describe("Motion keyframes (ADR-0062)", () => {
+  it("writes the keyframes as JSON and plays them on entrance", async () => {
+    render(
+      <Motion
+        data-testid="k"
+        trigger="mount"
+        keyframes={{ rotate: [0, 270], borderRadius: ["25%", "50%"] }}
+        transition={{ duration: 3200, ease: "linear", repeat: Infinity }}
+      />,
+    );
+    const element = byTestId("k");
+    expect(element.getAttribute("data-ok-keyframes")).toBe(
+      '{"rotate":[0,270],"borderRadius":["25%","50%"]}',
+    );
+    expect(element.getAttribute("data-ok-transition")).toBe(
+      '{"duration":3200,"repeat":"Infinity","ease":"linear"}',
+    );
+    await stateBecomes(element, "enter");
+    await act(async () => {
+      await new Promise<void>((resolve) => setTimeout(resolve));
+    });
+    expect(css(element).animationName).toBe("none");
+    const animations = element.getAnimations();
+    expect(animations).toHaveLength(2);
+    expect(animations[0]?.effect?.getTiming().iterations).toBe(Infinity);
+  });
+
+  it("server markup carries the attributes and no player", () => {
+    const html = renderToString(<Motion keyframes={{ opacity: [0, 1] }} />);
+    expect(html).toContain("data-ok-keyframes");
+    expect(renderToString(<Motion keyframes={{ "bad key": 1 } as never} />)).not.toContain(
+      "data-ok-keyframes",
+    );
+  });
+});
+
+function List({ initial }: { initial?: boolean }) {
+  const [items, setItems] = useState(["a", "b"]);
+  return (
+    <>
+      <button type="button" onClick={() => setItems((list) => list.slice(1))}>
+        Remove
+      </button>
+      <button type="button" onClick={() => setItems((list) => ["a", ...list])}>
+        Add
+      </button>
+      <MotionPresence initial={initial}>
+        {items.map((item) => (
+          <Motion key={item} data-testid={item} trigger="mount" variant="fadeIn">
+            {item}
+          </Motion>
+        ))}
+      </MotionPresence>
+    </>
+  );
+}
+
+function Swap({ done }: { done: () => void }) {
+  const [key, setKey] = useState("one");
+  return (
+    <>
+      <button type="button" onClick={() => setKey("two")}>
+        Swap
+      </button>
+      <MotionPresence mode="wait" onExitComplete={done}>
+        <Motion key={key} data-testid={key} trigger="mount">
+          {key}
+        </Motion>
+      </MotionPresence>
+    </>
+  );
+}
+
+function Plain() {
+  const [shown, setShown] = useState(true);
+  return (
+    <>
+      <button type="button" onClick={() => setShown(false)}>
+        Hide
+      </button>
+      <MotionPresence>{shown ? <p key="p">Plain</p> : null}</MotionPresence>
+    </>
+  );
+}
+
+function Group() {
+  const [shown, setShown] = useState(true);
+  return (
+    <>
+      <button type="button" onClick={() => setShown(false)}>
+        Hide
+      </button>
+      <MotionPresence>
+        {shown ? (
+          <MotionGroup key="g" data-testid="g" trigger="mount">
+            <Motion data-testid="g1">One</Motion>
+            <MotionText data-testid="t" trigger="mount">
+              Hi
+            </MotionText>
+          </MotionGroup>
+        ) : null}
+      </MotionPresence>
+    </>
+  );
+}
+
+describe("MotionPresence", () => {
+  it("keeps a removed child until its exit has played", async () => {
+    render(<List />);
+    const a = byTestId("a");
+    await act(async () => screen.getByRole("button", { name: "Remove" }).click());
+    expect(a.isConnected).toBe(true);
+    expect(a.getAttribute("data-ok-state")).toBe("exit");
+    expect(css(a).animationName).toBe("ok-motion-exit");
+    await finishExit(a);
+    expect(a.isConnected).toBe(false);
+    expect(byTestId("b").getAttribute("data-ok-state")).toBe("enter");
+  });
+
+  it("brings a child back when it returns during its exit", async () => {
+    render(<List />);
+    const a = byTestId("a");
+    await act(async () => screen.getByRole("button", { name: "Remove" }).click());
+    await act(async () => screen.getByRole("button", { name: "Add" }).click());
+    await finishExit(a);
+    expect(a.isConnected).toBe(true);
+    expect(a.getAttribute("data-ok-state")).toBe("enter");
+  });
+
+  it("initial={false} skips the first entrance", () => {
+    render(<List initial={false} />);
+    expect(byTestId("a").hasAttribute("data-ok-state")).toBe(false);
+  });
+
+  it("mode wait renders the new child after the old one left; onExitComplete", async () => {
+    const done = vi.fn();
+    render(<Swap done={done} />);
+    const one = byTestId("one");
+    await act(async () => screen.getByRole("button", { name: "Swap" }).click());
+    expect(screen.queryByTestId("two")).toBeNull();
+    await finishExit(one);
+    expect(one.isConnected).toBe(false);
+    expect(byTestId("two")).toBeTruthy();
+    expect(done).toHaveBeenCalledOnce();
+  });
+
+  it("removes children without Motions at once", async () => {
+    render(<Plain />);
+    await act(async () => screen.getByRole("button", { name: "Hide" }).click());
+    expect(screen.queryByText("Plain")).toBeNull();
+  });
+
+  it("a MotionGroup and a MotionText exit too", async () => {
+    render(<Group />);
+    const group = byTestId("g");
+    await act(async () => screen.getByRole("button", { name: "Hide" }).click());
+    expect(byTestId("g1").getAttribute("data-ok-state")).toBe("exit");
+    expect(byTestId("t").getAttribute("data-ok-state")).toBe("exit");
+    await finishExit(group);
+    expect(group.isConnected).toBe(false);
   });
 });

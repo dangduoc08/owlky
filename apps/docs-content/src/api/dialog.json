@@ -27,12 +27,28 @@
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
   {
+   "name": "--ok-duration-exit",
+   "value": "480ms"
+  },
+  {
    "name": "--ok-duration-short",
    "value": "250ms"
   },
   {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-accelerate",
+   "value": "cubic-bezier(0.4, 0, 1, 1)"
+  },
+  {
    "name": "--ok-easing-decelerate",
    "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
    "name": "--ok-font-family",
@@ -104,7 +120,7 @@
      },
      {
       "cancelable": false,
-      "description": "After the dialog closed, with what closed it (`native`: a form with `method=\"dialog\"`).",
+      "description": "After the dialog closed (once its exit animation ended and the focus is back), with what closed it (`native`: a form with `method=\"dialog\"`).",
       "detail": "{ reason: DialogCloseReason; }",
       "name": "ok:dialog:close"
      },
@@ -117,7 +133,7 @@
     ],
     "methods": [
      {
-      "description": "Closes it. Returns `false` if `ok:dialog:beforeclose` was prevented.",
+      "description": "Closes it after its exit animation (`ok:dialog:close` fires then). Returns `false` if `ok:dialog:beforeclose` was prevented.",
       "kind": "method",
       "name": "close",
       "type": "(reason?: DialogCloseReason | undefined) => boolean"
@@ -234,6 +250,13 @@
       ]
      },
      {
+      "attr": "data-ok-transition-duration",
+      "description": "Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations.",
+      "kind": "number",
+      "min": 0,
+      "name": "transitionDuration"
+     },
+     {
       "attr": "open",
       "description": "Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`).",
       "event": "ok:dialog:close",
@@ -271,6 +294,12 @@
       "description": "Draws lines above and below the content.",
       "kind": "state",
       "name": "data-ok-dividers"
+     },
+     {
+      "description": "The length of the exit in milliseconds, when it differs from `data-ok-transition-duration`.",
+      "kind": "value",
+      "name": "data-ok-transition-duration-exit",
+      "value": "string"
      }
     ],
     "runtime": "dialog"
@@ -347,6 +376,11 @@
       "description": "Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…). Without it, the paper fades and scales in briefly.",
       "name": "transition",
       "type": "DialogTransition"
+     },
+     {
+      "description": "Length of the entrance and the exit in ms, or each on its own (`{ enter, exit }`). Default: 250 ms in, 200 ms out (a `transition` uses Motion's lengths). The dialog closes when its exit ends.",
+      "name": "transitionDuration",
+      "type": "DialogTransitionDuration"
      }
     ]
    }
@@ -441,6 +475,10 @@
   {
    "name": "DialogTransition",
    "type": "\"bounceIn\" | \"bounceInDown\" | \"bounceInLeft\" | \"bounceInRight\" | \"bounceInUp\" | \"fadeIn\" | \"fadeInDown\" | \"fadeInLeft\" | \"fadeInRight\" | \"fadeInUp\" | \"flipInX\" | \"flipInY\" | \"rotateIn\" | \"scaleInX\" | \"scaleInY\" | \"slideInDown\" | \"slideInLeft\" | \"slideInRight\" | \"slideInUp\" | \"zoomIn\" | \"zoomInDown\" | \"zoomInLeft\" | \"zoomInRight\" | \"zoomInUp\""
+  },
+  {
+   "name": "DialogTransitionDuration",
+   "type": "number | { enter?: number | undefined; exit?: number | undefined; }"
   }
  ]
 }

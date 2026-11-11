@@ -76,6 +76,9 @@ Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).
 None: both render the same `div`; React adds `data-ok-runtime="off"`.
 
 ## Relation to Dialog and Drawer
+Their exits (ADR-0062) run in the core modal controller, which Backdrop doesn't use: its own fade
+out is already a CSS transition in both directions, so Backdrop is unchanged by 5.1.
+
 Their modal paths keep the native `::backdrop` (top layer: a DOM element can't sit between a
 top-layer `<dialog>` and its `::backdrop`), painted with the same `--ok-backdrop`; their
 `hideBackdrop` matches `invisible`.

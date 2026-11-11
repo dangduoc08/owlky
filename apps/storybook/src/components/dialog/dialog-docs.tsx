@@ -144,10 +144,16 @@ export function TermsDialog() {
   },
   {
     id: "transition",
-    title: "Animate the entrance",
-    body: "By default, the paper fades and scales in briefly. Set `transition` to a Motion entrance, such as `slideInUp` or `zoomIn`, to play that animation instead. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles. With reduced motion, the dialog appears at once.",
+    title: "Animate the entrance and the exit",
+    body: `By default, the paper fades and scales in briefly, and the backdrop fades in. When the dialog closes, both play backwards, and the dialog closes when they end. Focus returns to the trigger after that, and \`ok:dialog:close\` fires last.
+
+- **Animation:** set \`transition\` to a Motion entrance, such as \`slideInUp\` or \`zoomIn\`, to play that animation instead. Its exit is the same animation backwards. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles.
+- **Length:** set \`transitionDuration\` in milliseconds, for both directions or as \`{ enter, exit }\`. In HTML, write \`data-ok-transition-duration\` and, for a different exit, \`data-ok-transition-duration-exit\`.
+
+With reduced motion, the dialog appears and closes at once.`,
     html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="welcome" aria-haspopup="dialog"><span data-ok-button-label>Open</span></button>
-<dialog id="welcome" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="welcome-title">
+<dialog id="welcome" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" data-ok-transition-duration="400"
+  data-ok-transition-duration-exit="250" aria-labelledby="welcome-title">
   <div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
     <h2 data-ok-dialog-title id="welcome-title">Welcome</h2>
     <div data-ok-dialog-content>
@@ -168,7 +174,13 @@ export function WelcomeDialog() {
       <Button variant="outlined" onClick={() => setOpen(true)}>
         Open
       </Button>
-      <Dialog open={open} onOpenChange={setOpen} transition="slideInUp" aria-labelledby="welcomedialog-title">
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+        transition="slideInUp"
+        transitionDuration={{ enter: 400, exit: 250 }}
+        aria-labelledby="welcomedialog-title"
+      >
         <DialogTitle id="welcomedialog-title">Welcome</DialogTitle>
         <DialogContent>
           <DialogContentText>The dialog slides up as it opens.</DialogContentText>
@@ -186,7 +198,7 @@ export function WelcomeDialog() {
     title: "Control focus, scrolling and mounting",
     body: `- **Focus:** when a dialog closes, focus returns to the element that was focused before it opened. \`disableRestoreFocus\` turns this off, for example when the dialog's action moves focus somewhere else.
 - **Scrolling:** while a dialog is open, the page behind it doesn't scroll. \`disableScrollLock\` lets it scroll.
-- **Mounting:** in React, the dialog's children stay rendered while it is closed, like the HTML markup. Set \`keepMounted\` to \`false\` to render them only while it is open, which resets their state each time it opens.`,
+- **Mounting:** in React, the dialog's children stay rendered while it is closed, like the HTML markup. Set \`keepMounted\` to \`false\` to render them only while it is open (and while it plays its exit), which resets their state each time it opens.`,
     html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="notes" aria-haspopup="dialog"><span data-ok-button-label>Notes</span></button>
 <dialog id="notes" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" data-ok-disable-restore-focus
   data-ok-disable-scroll-lock aria-labelledby="notes-title">
@@ -237,8 +249,8 @@ export function NotesDialog() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:dialog:beforeopen\`** (cancelable) and **\`ok:dialog:open\`** fire on the dialog.
-- **\`ok:dialog:beforeclose\`** (cancelable) and **\`ok:dialog:close\`** carry \`detail.reason\`: \`escape\`, \`backdrop\`, \`trigger\`, \`api\` or \`native\` (a \`form[method=dialog]\`).
-- **Instance:** \`runtime.get(element, "dialog")\` returns \`{ isOpen, open(trigger?), close(reason?) }\`.
+- **\`ok:dialog:beforeclose\`** (cancelable) and **\`ok:dialog:close\`** carry \`detail.reason\`: \`escape\`, \`backdrop\`, \`trigger\`, \`api\` or \`native\` (a \`form[method=dialog]\`). \`ok:dialog:close\` fires after the exit animation, once focus is back on the trigger. If the dialog opens again during its exit, it stays open and \`ok:dialog:close\` doesn't fire.
+- **Instance:** \`runtime.get(element, "dialog")\` returns \`{ isOpen, open(trigger?), close(reason?) }\`. \`isOpen\` turns \`false\` as soon as the exit starts.
 - **React:** \`onOpenChange(false, reason)\` with \`escape\`, \`backdrop\` or \`close\`. Set \`open\` to close it.`,
   },
   {

@@ -9,7 +9,9 @@
  *                  › div[data-ok-dialog-actions][data-ok-disable-spacing]?
  * Modifiers: data-ok-max-width = sm (default) | xs | md | lg | xl | none, data-ok-full-width,
  *            data-ok-full-screen, data-ok-scroll = paper (default) | body, data-ok-hide-backdrop
- * States:    [open]; [data-ok-fallback] without showModal() (ADR-0006).
+ * States:    [open]; [data-ok-fallback] without showModal() (ADR-0006); data-ok-state="exiting"
+ *            while the exit plays (core modal controller, ADR-0062).
+ * Private:   --_ok-dialog-enter | -exit (transitionDuration, React style / HTML CSSOM)
  *
  * A click whose target is the <dialog> itself is a click outside the paper (backdrop click).
  * Single :where() selectors in @layer components; `::backdrop` is the only pseudo-element.
@@ -20,6 +22,8 @@
   :where([data-ok-dialog]) {
     --_ok-dialog-margin: calc(var(--ok-spacing) * 4);
     --_ok-dialog-max: calc(var(--ok-spacing) * 150);
+    --_ok-dialog-in: var(--_ok-dialog-enter, var(--ok-duration-short));
+    --_ok-dialog-out: var(--_ok-dialog-exit, var(--ok-duration-shorter));
 
     box-sizing: border-box;
     position: fixed;
@@ -45,6 +49,19 @@
 
   :where([data-ok-dialog])::backdrop {
     background-color: var(--ok-backdrop);
+  }
+
+  :where([data-ok-dialog][open])::backdrop {
+    animation: ok-dialog-fade var(--_ok-dialog-in) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-dialog][data-ok-state="exiting"])::backdrop {
+    animation: ok-dialog-fade var(--_ok-dialog-out) var(--ok-easing-standard) both reverse;
+  }
+
+  /* A Motion paper exits with Motion's length: the backdrop follows it. */
+  :where([data-ok-dialog]:has(> [data-ok-dialog-paper][data-ok-motion])) {
+    --_ok-dialog-out: var(--_ok-dialog-exit, var(--ok-duration-exit));
   }
 
   :where([data-ok-dialog][data-ok-fallback]) {
@@ -77,7 +94,18 @@
 
   /* A paper that is a Motion (the `transition` option) plays that entrance instead. */
   :where([data-ok-dialog-paper]:not([data-ok-motion])) {
-    animation: ok-dialog-in var(--ok-duration-short) var(--ok-easing-decelerate);
+    animation: ok-dialog-in var(--_ok-dialog-in) var(--ok-easing-decelerate);
+  }
+
+  /* Exit (before the dialog closes): the entrance backwards, under its own name. */
+  :where([data-ok-dialog][data-ok-state="exiting"] > [data-ok-dialog-paper]:not([data-ok-motion])) {
+    animation: ok-dialog-out var(--_ok-dialog-out) var(--ok-easing-accelerate) both reverse;
+  }
+
+  /* `transitionDuration` reaches a Motion paper (unset: Motion's own lengths). */
+  :where([data-ok-dialog] > [data-ok-dialog-paper][data-ok-motion]) {
+    --_ok-motion-duration: var(--_ok-dialog-enter);
+    --_ok-motion-exit-duration: var(--_ok-dialog-exit);
   }
 
   :where([data-ok-dialog][data-ok-max-width="xs"]) {
@@ -200,6 +228,19 @@
     }
   }
 
+  @keyframes ok-dialog-out {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  @keyframes ok-dialog-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
   /* From the sm breakpoint (600px): 32px around the paper (16px on phones). */
   @media (min-width: 600px) {
     :where([data-ok-dialog]) {
@@ -209,6 +250,16 @@
 
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-dialog-paper]:not([data-ok-motion])) {
+      animation: none;
+    }
+
+    :where(
+        [data-ok-dialog][data-ok-state="exiting"] > [data-ok-dialog-paper]:not([data-ok-motion])
+      ) {
+      animation: none;
+    }
+
+    :where([data-ok-dialog][open], [data-ok-dialog][data-ok-state="exiting"])::backdrop {
       animation: none;
     }
   }

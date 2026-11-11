@@ -206,7 +206,7 @@ export function Process() {
   {
     id: "dialog",
     title: "Animate a dialog",
-    body: "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. Without it, the paper fades and scales in briefly.",
+    body: "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. When the dialog closes, the entrance plays backwards before the dialog goes away. Without `transition`, the paper fades and scales in briefly, and out when it closes.",
     html: `<dialog id="share" data-ok-dialog data-ok-max-width="sm" aria-labelledby="share-title">
   <div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
     <h2 id="share-title" data-ok-dialog-title>Share your location?</h2>
@@ -409,6 +409,144 @@ export function ActiveUser() {
 }`,
   },
   {
+    id: "keyframes",
+    title: "Play your own keyframes",
+    body: `Set \`keyframes\` to animate any CSS property along your own values, such as a ring that turns and rounds its corners. Give each property a target or a list of values. \`x\` and \`y\` move the content in pixels, \`rotate\` turns it in degrees and \`scale\` resizes it. Set \`transition\` to choose how the keyframes play:
+
+- **Timing:** \`duration\`, \`delay\` and \`repeatDelay\` in milliseconds, \`ease\` (a CSS easing, a theme easing such as \`decelerate\`, or one easing per segment) and \`times\` (the position of each keyframe, from 0 to 1).
+- **Repeats:** \`repeat\` plays the keyframes again (\`Infinity\` loops), and \`repeatType\` set to \`reverse\` plays every other repeat backwards.
+
+The keyframes play when the Motion enters, from its trigger, and backwards when it exits. They replace the variant. In HTML, write both as JSON in \`data-ok-keyframes\` and \`data-ok-transition\`, and write \`"Infinity"\` as a string, because JSON has no infinity. Loops need a pause control (\`paused\`), and they don't run when users ask for reduced motion.`,
+    html: `<div class="loader">
+  <div data-ok-motion data-ok-trigger="mount"
+    data-ok-keyframes='{"rotate": [0, 270, 270, 0], "borderRadius": ["25%", "50%", "50%", "25%"]}'
+    data-ok-transition='{"duration": 3200, "ease": "linear", "repeat": "Infinity"}'
+    class="ring"></div>
+</div>`,
+    react: `import { Motion } from "@owlky/react";
+
+// The ring's size and border come from your CSS:
+// .ring { width: 96px; height: 96px; border: 8px solid var(--ok-palette-primary-light); }
+export function Loader() {
+  return (
+    <Motion
+      trigger="mount"
+      className="ring"
+      keyframes={{ rotate: [0, 270, 270, 0], borderRadius: ["25%", "50%", "50%", "25%"] }}
+      transition={{ duration: 3200, ease: "linear", repeat: Infinity }}
+    />
+  );
+}`,
+  },
+  {
+    id: "spring",
+    title: "Move with a spring",
+    body: `Set \`type\` to \`spring\` in \`transition\` to move between two keyframes with a physical spring instead of a fixed curve. Describe it in one of two ways:
+
+- **How it feels:** \`duration\` (the time to reach the target, in milliseconds) and \`bounce\`, from \`0\` (no overshoot) to \`1\` (very bouncy).
+- **Physics:** \`stiffness\`, \`damping\` and \`mass\`. A low damping bounces more.
+
+The spring decides how long the animation lasts: it ends when the content rests. Browsers without \`linear()\` easing, such as Safari before version 17.2, play the same length with a smooth curve and no bounce.`,
+    html: `<div data-ok-motion data-ok-trigger="mount"
+  data-ok-keyframes='{"y": [40, 0], "opacity": [0, 1]}'
+  data-ok-transition='{"type": "spring", "duration": 500, "bounce": 0.4}'>
+  <p>Your order is on its way.</p>
+</div>`,
+    react: `import { Motion } from "@owlky/react";
+
+export function OrderStatus() {
+  return (
+    <Motion
+      trigger="mount"
+      keyframes={{ y: [40, 0], opacity: [0, 1] }}
+      transition={{ type: "spring", duration: 500, bounce: 0.4 }}
+    >
+      <p>Your order is on its way.</p>
+    </Motion>
+  );
+}`,
+  },
+  {
+    id: "animate",
+    title: "Animate from JavaScript",
+    body: `\`animate(element, keyframes, options)\` plays keyframes on any element, with the same keyframes and options as \`keyframes\` and \`transition\`. Import it from \`@owlky/html\` or \`@owlky/react\`.
+
+- **Interruption:** a new animation of a property starts where the running one is, so quick changes never jump.
+- **End state:** the final values stay on the element as inline styles.
+- **Controls:** it returns \`finished\` (a promise), \`stop()\` (keep the current values), \`complete()\` (jump to the end), \`cancel()\` (go back to the element's own style), \`pause()\` and \`play()\`.
+
+With reduced motion, the element jumps to the end and loops don't start.`,
+    html: `<button type="button" id="like" data-ok-button data-ok-variant="outlined" data-ok-color="primary" data-ok-size="md">
+  <span data-ok-button-label>Like</span>
+</button>
+
+<script type="module">
+  // With a bundler: animate comes from the package
+  import { animate } from "@owlky/html";
+
+  const like = document.getElementById("like");
+  like.addEventListener("click", () => {
+    animate(like, { scale: [1, 1.2, 1] }, { duration: 400, ease: "easeOut" });
+  });
+</script>`,
+    react: `import { animate, Button } from "@owlky/react";
+import { useRef } from "react";
+
+export function LikeButton() {
+  const ref = useRef<HTMLButtonElement>(null);
+  return (
+    <Button
+      ref={ref}
+      variant="outlined"
+      color="primary"
+      onClick={() => animate(ref.current, { scale: [1, 1.2, 1] }, { duration: 400, ease: "easeOut" })}
+    >
+      Like
+    </Button>
+  );
+}`,
+  },
+  {
+    id: "presence",
+    title: "Play the exit before removing content",
+    body: `Content that leaves the page usually disappears at once, so its exit never shows. Let it play first:
+
+- **React:** wrap the content in \`MotionPresence\` and give each child a \`key\`. A removed child stays until the Motions inside it have played their exit. \`mode="wait"\` shows a new child only after the old one left, \`initial={false}\` skips the entrance of the children shown at first, and \`onExitComplete\` runs when every exit ended.
+- **HTML:** call \`remove()\` or \`hide()\` on the Motion's instance. They play the exit, then remove the element or set \`hidden\`. \`exit()\` plays it alone. Each returns a promise.`,
+    html: `<div id="notice" data-ok-motion data-ok-variant="fadeInUp" data-ok-trigger="mount">
+  <p>Your changes are saved.</p>
+  <button type="button" id="dismiss" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md">
+    <span data-ok-button-label>Dismiss</span>
+  </button>
+</div>
+
+<script>
+  document.getElementById("dismiss").addEventListener("click", () => {
+    const notice = document.getElementById("notice");
+    // Plays the exit, then removes the notice
+    window.Owlky.get(notice, "motion").remove();
+  });
+</script>`,
+    react: `import { Button, Motion, MotionPresence } from "@owlky/react";
+import { useState } from "react";
+
+export function SavedNotice() {
+  const [shown, setShown] = useState(true);
+  return (
+    <MotionPresence>
+      {shown ? (
+        <Motion key="notice" variant="fadeInUp" trigger="mount">
+          <p>Your changes are saved.</p>
+          <Button color="inherit" onClick={() => setShown(false)}>
+            Dismiss
+          </Button>
+        </Motion>
+      ) : null}
+    </MotionPresence>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -423,7 +561,7 @@ export function ActiveUser() {
     title: "Events and methods",
     body: `- **\`ok:motion:end\`** fires on a Motion when its animation ends, with the state in \`detail.state\`: \`enter\` or \`exit\`.
 - **\`ok:motion:enter\` and \`ok:motion:leave\`** fire on a Motion with the \`inView\` trigger when it enters or leaves the view, with the visible fraction in \`detail.ratio\`. MotionGroup and MotionText fire \`ok:motion-group:enter\`, \`ok:motion-text:enter\` and the matching \`leave\` events. A Motion inside a group fires none: the group reports for it.
-- **Instance:** \`runtime.get(element, "motion")\` returns \`{ state, replay() }\`. MotionGroup (\`"motion-group"\`) and MotionText (\`"motion-text"\`) have the same instance. \`replay()\` plays the entrance again.
+- **Instance:** \`runtime.get(element, "motion")\` returns \`{ state, replay(), exit(), hide(), remove() }\`. \`replay()\` plays the entrance again. \`exit()\` plays the exit, and \`hide()\` and \`remove()\` then hide or remove the element. Each of these three returns a promise that resolves to \`true\` when the exit ended, or \`false\` when \`replay()\` interrupted it. MotionGroup (\`"motion-group"\`) and MotionText (\`"motion-text"\`) have \`{ state, replay() }\`.
 - **\`ok:countdown:tick\`** fires on a Countdown each time its value changes, with the whole seconds left in \`detail.remaining\`. **\`ok:countdown:complete\`** fires once when it reaches 0. \`runtime.get(element, "countdown")\` returns \`{ remaining, paused, pause(), resume(), restart() }\`. In React, use \`onTick\` and \`onComplete\`, and change the \`key\` to start over.
 - **React:** use \`onAnimationEnd\`, \`onViewportEnter\` and \`onViewportLeave\` (they receive the \`IntersectionObserverEntry\`), and change the \`key\` to play the entrance again.`,
   },
@@ -436,7 +574,7 @@ export function ActiveUser() {
     id: "accessibility",
     title: "Accessibility",
     body: `- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.
-- Looping animations and turning borders stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2).
+- Looping animations, turning borders and looping keyframes stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2). Other keyframes and \`animate()\` jump to their end.
 - CountUp exposes its end value to assistive technologies, and hides the changing digits.
 - Countdown has the \`timer\` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with \`aria-label\`, and give people a pause control when it runs next to other content (WCAG 2.2.2).
 - MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.
@@ -500,6 +638,27 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  keyframes: () => (
+    <Preview>
+      <Motion
+        trigger="mount"
+        className="sb-motion-logo-ring sb-motion-logo-ring-preview"
+        keyframes={{ rotate: [0, 270, 270, 0], borderRadius: ["25%", "50%", "50%", "25%"] }}
+        transition={{ duration: 3200, ease: "linear", repeat: Infinity }}
+      />
+    </Preview>
+  ),
+  spring: () => (
+    <Preview>
+      <Motion
+        trigger="mount"
+        keyframes={{ y: [40, 0], opacity: [0, 1] }}
+        transition={{ type: "spring", duration: 500, bounce: 0.4 }}
+      >
+        <p>Your order is on its way.</p>
+      </Motion>
+    </Preview>
+  ),
   border: () => (
     <Preview>
       <div className="sb-row">
@@ -537,6 +696,18 @@ const PREVIEWS = {
           html: "the element",
           type: "ElementType",
           description: "The element to render. Default: a `div` (MotionText: a `span`).",
+        },
+        {
+          react: "keyframes",
+          html: "data-ok-keyframes",
+          type: "object · JSON",
+          description: "Your own keyframes, played instead of the variant.",
+        },
+        {
+          react: "transition",
+          html: "data-ok-transition",
+          type: "object · JSON",
+          description: "How the keyframes play: timing, repeats or a spring.",
         },
         {
           react: "viewportMargin",

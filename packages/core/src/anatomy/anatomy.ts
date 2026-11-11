@@ -2209,6 +2209,12 @@ export const dialogOptions = defineOptions("dialog", "data-ok-dialog", {
     "Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…); without it, a short fade and scale.",
     { optional: true, children: "[data-ok-dialog-paper]" },
   ),
+  transitionDuration: number(
+    "data-ok-transition-duration",
+    undefined,
+    "Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations.",
+    { min: 0 },
+  ),
   open: state(
     "open",
     "Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`).",
@@ -2225,11 +2231,68 @@ export interface DialogAnatomyOptions {
   disableEscapeKeyDown?: boolean | undefined;
   disableRestoreFocus?: boolean | undefined;
   disableScrollLock?: boolean | undefined;
+  /** Entrance and exit length in ms, or each on its own (MUI `transitionDuration`). */
+  transitionDuration?: DialogTransitionDuration | undefined;
 }
 
-/** `data-ok-*` attributes of a dialog (`<dialog>`). */
-export const dialogAttributes = (options: DialogAnatomyOptions = {}): DataAttributes =>
-  optionAttributes(dialogOptions, { ...options });
+/** A length in ms for both directions, or separate `enter` / `exit` lengths. */
+export type DialogTransitionDuration =
+  | number
+  | { enter?: number | undefined; exit?: number | undefined };
+
+const dialogMs = (value: unknown): number | undefined => {
+  const parsed = parseNumber(dialogOptions.options.transitionDuration, value);
+  return typeof parsed === "number" ? parsed : undefined;
+};
+
+/** The enter and exit lengths (ms) of a `transitionDuration`; invalid parts → `undefined`. */
+export function dialogDurations(value: DialogTransitionDuration | undefined): {
+  enter: number | undefined;
+  exit: number | undefined;
+} {
+  if (value !== null && typeof value === "object")
+    return { enter: dialogMs(value.enter), exit: dialogMs(value.exit) };
+  const both = dialogMs(value);
+  return { enter: both, exit: both };
+}
+
+/**
+ * `data-ok-*` attributes of a dialog (`<dialog>`). A `transitionDuration` writes its entrance to
+ * `data-ok-transition-duration` and an exit that differs to `data-ok-transition-duration-exit`.
+ */
+export function dialogAttributes(options: DialogAnatomyOptions = {}): DataAttributes {
+  const { transitionDuration, ...rest } = options;
+  const attributes = optionAttributes(dialogOptions, rest);
+  const { enter, exit } = dialogDurations(transitionDuration);
+  if (enter !== undefined) attributes["data-ok-transition-duration"] = String(enter);
+  if (exit !== undefined && exit !== enter)
+    attributes["data-ok-transition-duration-exit"] = String(exit);
+  return attributes;
+}
+
+/** HTML: the `transitionDuration` a dialog carries (`data-ok-transition-duration` [+ `-exit`]). */
+export function readDialogTransitionDuration(element: Element): {
+  enter: number | undefined;
+  exit: number | undefined;
+} {
+  const enter = dialogMs(element.getAttribute("data-ok-transition-duration") ?? undefined);
+  const exit = dialogMs(element.getAttribute("data-ok-transition-duration-exit") ?? undefined);
+  return { enter, exit: exit ?? enter };
+}
+
+/** Private properties of a dialog (React `style`, HTML CSSOM): its entrance and exit lengths. */
+export function dialogStyle(
+  value:
+    | DialogTransitionDuration
+    | { enter: number | undefined; exit: number | undefined }
+    | undefined,
+): Record<`--_ok-${string}`, string> {
+  const { enter, exit } = dialogDurations(value as DialogTransitionDuration | undefined);
+  const style: Record<`--_ok-${string}`, string> = {};
+  if (enter !== undefined) style["--_ok-dialog-enter"] = `${enter}ms`;
+  if (exit !== undefined) style["--_ok-dialog-exit"] = `${exit}ms`;
+  return style;
+}
 
 // --- Backdrop ---------------------------------------------------------------------------------
 

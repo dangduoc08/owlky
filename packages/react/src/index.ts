@@ -145,12 +145,19 @@ export type {
   TypographyVariantName,
 } from "@owlky/core";
 export {
+  type AnimateOptions,
+  type AnimationControls,
+  animate,
   applyThemeSettings,
   createFilterOptions,
   defaultThemeSettings,
+  type MotionEasing,
+  type MotionKeyframes,
   normalizeThemeSettings,
   readThemeSettings,
   resetThemeSettings,
+  type SpringOptions,
+  springEasing,
   THEME_SETTINGS_KEY,
   type ThemeSettings,
   type ThemeSettingsOptions,
@@ -531,6 +538,7 @@ export {
   type MotionTextProps,
   type MotionTriggerProps,
 } from "./motion/motion.js";
+export { MotionPresence, type MotionPresenceProps } from "./motion/motion-presence.js";
 export { MotionBorder, type MotionBorderProps } from "./motion-border/motion-border.js";
 export {
   OrganizationChart,

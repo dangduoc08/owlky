@@ -266,3 +266,122 @@ describe("createModalController options and edge cases", () => {
     expect(onDismiss).not.toHaveBeenCalled();
   });
 });
+
+const EXIT_STYLE = `<style>
+  @keyframes test-exit { to { opacity: 0 } }
+  [data-ok-state="exiting"] > [data-ok-dialog-content],
+  [data-ok-dialog-content][data-ok-motion][data-ok-state="exit"] {
+    animation: test-exit 1000ms both;
+  }
+</style>`;
+
+/** Ends the exit animations, then lets the controller's promise callbacks run. */
+const endExit = async (dialog: HTMLElement) => {
+  for (const animation of dialog.getAnimations({ subtree: true })) animation.finish();
+  await new Promise<void>((resolve) => setTimeout(resolve));
+};
+
+describe.each([
+  ["native", false],
+  ["fallback", true],
+])("createModalController exit (%s)", (_, forceFallback) => {
+  const exitSetup = (options: ModalControllerOptions = {}) => {
+    mount(EXIT_STYLE);
+    return setup({ forceFallback, ...options });
+  };
+
+  it("plays the exit before closing, then restores focus", async () => {
+    const { dialog, trigger, controller } = exitSetup();
+    trigger.focus();
+    controller.open();
+    const closed = controller.close();
+    expect(controller.isOpen).toBe(false);
+    expect(controller.isClosing).toBe(true);
+    expect(dialog.getAttribute("data-ok-state")).toBe("exiting");
+    expect(dialog.hasAttribute("open")).toBe(true);
+    expect(controller.close()).toBe(closed);
+    await endExit(dialog);
+    expect(await closed).toBe(true);
+    expect(dialog.hasAttribute("open")).toBe(false);
+    expect(dialog.hasAttribute("data-ok-state")).toBe(false);
+    expect(controller.isClosing).toBe(false);
+    expect(document.activeElement).toBe(trigger);
+    expect(layerStack.size).toBe(0);
+  });
+
+  it("stays modal during the exit: Escape and backdrop clicks are ignored", async () => {
+    const { dialog, controller, onDismiss } = exitSetup();
+    controller.open();
+    void controller.close();
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(dialog, { position: { x: 2, y: 2 } });
+    expect(onDismiss).not.toHaveBeenCalled();
+    expect(dialog.hasAttribute("open")).toBe(true);
+    await endExit(dialog);
+  });
+
+  it("open() during the exit keeps it open without moving the focus", async () => {
+    const { dialog, controller } = exitSetup();
+    controller.open();
+    const last = document.getElementById("last") as HTMLInputElement;
+    last.focus();
+    const closed = controller.close();
+    controller.open();
+    expect(await closed).toBe(false);
+    expect(controller.isOpen).toBe(true);
+    expect(dialog.hasAttribute("data-ok-state")).toBe(false);
+    expect(document.activeElement).toBe(last);
+    await endExit(dialog);
+    expect(dialog.hasAttribute("open")).toBe(true);
+  });
+
+  it("destroy() during the exit closes at once", async () => {
+    const { dialog, controller } = exitSetup();
+    controller.open();
+    const closed = controller.close();
+    controller.destroy();
+    expect(await closed).toBe(false);
+    expect(dialog.hasAttribute("open")).toBe(false);
+    expect(dialog.hasAttribute("data-ok-state")).toBe(false);
+    expect(isScrollLocked()).toBe(false);
+  });
+
+  it("exit: false closes synchronously", async () => {
+    const { dialog, controller } = exitSetup({ exit: false });
+    controller.open();
+    const closed = controller.close();
+    expect(dialog.hasAttribute("open")).toBe(false);
+    expect(await closed).toBe(true);
+  });
+
+  it("plays a Motion content's exit", async () => {
+    const { dialog, controller } = exitSetup();
+    const content = dialog.querySelector("[data-ok-dialog-content]") as HTMLElement;
+    content.setAttribute("data-ok-motion", "");
+    content.setAttribute("data-ok-state", "enter");
+    controller.open();
+    const closed = controller.close();
+    expect(content.getAttribute("data-ok-state")).toBe("exit");
+    await endExit(dialog);
+    expect(await closed).toBe(true);
+    expect(content.getAttribute("data-ok-state")).toBe("enter");
+  });
+});
+
+describe("createModalController exit (native only)", () => {
+  it("finishes when the browser closes the dialog during the exit", async () => {
+    mount(EXIT_STYLE);
+    const { dialog, controller } = setup();
+    controller.open();
+    const closed = controller.close();
+    (dialog as HTMLDialogElement).close();
+    expect(await closed).toBe(true);
+    expect(controller.isClosing).toBe(false);
+    expect(isScrollLocked()).toBe(false);
+  });
+
+  it("closing a closed controller resolves true", async () => {
+    const { controller } = setup();
+    expect(await controller.close()).toBe(true);
+  });
+});

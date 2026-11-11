@@ -22,7 +22,10 @@ export interface DrawerInstance extends ComponentInstance {
   readonly isOpen: boolean;
   /** Opens the drawer. Returns `false` if `ok:drawer:beforeopen` was prevented. */
   open(trigger?: HTMLElement | null): boolean;
-  /** Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent. */
+  /**
+   * Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is
+   * permanent. A temporary drawer slides out first: `ok:drawer:close` fires once it is closed.
+   */
   close(reason?: DrawerCloseReason): boolean;
   /** Opens the drawer when it is closed, and closes it otherwise. */
   toggle(trigger?: HTMLElement | null): boolean;
@@ -47,7 +50,8 @@ const STYLED = ["data-ok-elevation", "data-ok-transition-duration"];
  * Options:  data-ok-variant (read at mount), data-ok-disable-escape-key-down, data-ok-hide-backdrop
  *           (CSS), data-ok-open (open on load)
  * Events:   ok:drawer:beforeopen (cancelable), ok:drawer:open,
- *           ok:drawer:beforeclose (cancelable, detail.reason), ok:drawer:close (detail.reason)
+ *           ok:drawer:beforeclose (cancelable, detail.reason), ok:drawer:close (detail.reason,
+ *           after the exit slide)
  */
 export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
   name: "drawer",
@@ -114,11 +118,18 @@ export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
         if (!instance.isOpen) return true;
         if (kind === "permanent") return false;
         if (!emit("beforeclose", { reason }, { cancelable: true })) return false;
-        if (controller) controller.close();
-        else {
-          element.hidden = true;
-          syncTriggers();
+        if (controller) {
+          // After the exit (the slide back to the edge); an `open()` during it keeps it open.
+          const closing = controller.close();
+          if (!controller.isClosing) emit("close", { reason });
+          else
+            closing.then((closed) => {
+              if (closed) emit("close", { reason });
+            });
+          return true;
         }
+        element.hidden = true;
+        syncTriggers();
         emit("close", { reason });
         return true;
       },

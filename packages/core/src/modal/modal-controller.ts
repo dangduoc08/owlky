@@ -1,5 +1,6 @@
 import { focusInitial, isFocusable, trapTab } from "../dom/focus.js";
 import { supports } from "../dom/support.js";
+import { type ExitHandle, playExit } from "../motion/presence.js";
 import { inertOutside } from "../overlay/inert-outside.js";
 import { layerStack } from "../overlay/layer-stack.js";
 import { lockScroll } from "../overlay/scroll-lock.js";
@@ -32,17 +33,30 @@ export interface ModalControllerOptions {
   restoreFocus?: boolean | undefined;
   /** Stop the page from scrolling while open (MUI `disableScrollLock` = false). Default `true`. */
   lockScroll?: boolean | undefined;
+  /**
+   * Play the exit before closing (ADR-0062): the element gets `data-ok-state="exiting"` (and a
+   * Motion content its exit) and the dialog closes when those animations end. Default `true`;
+   * `false` closes at once.
+   */
+  exit?: boolean | undefined;
   /** Force the non-native fallback. For tests and diagnostics; normally auto-detected. */
   forceFallback?: boolean | undefined;
 }
 
 export interface ModalController {
+  /** Open, and not closing. */
   readonly isOpen: boolean;
+  /** Playing its exit: still modal on screen, but `isOpen` is already `false`. */
+  readonly isClosing: boolean;
   /** `true` when running without `showModal()` (ADR-0006). */
   readonly isFallback: boolean;
   /** Opens modally. Focus returns to `returnFocusTo` (default: the focused element) on close. */
   open(returnFocusTo?: HTMLElement | null): void;
-  close(): void;
+  /**
+   * Closes after the exit animation. Resolves `true` once closed (focus restored), `false` when
+   * `open()` or `destroy()` interrupted the exit. Calls during an exit share its promise.
+   */
+  close(): Promise<boolean>;
   setOptions(options: ModalControllerOptions): void;
   /** Closes without restoring focus and removes every listener. Idempotent. */
   destroy(): void;
@@ -71,6 +85,12 @@ export function createModalController(
   let releaseScroll: (() => void) | null = null;
   let releaseInert: (() => void) | null = null;
   let pointerDownOnBackdrop = false;
+  /** The running exit: its handles and how to settle the promise `close()` returned. */
+  let closing: {
+    exits: ExitHandle[];
+    promise: Promise<boolean>;
+    settle(closed: boolean): void;
+  } | null = null;
 
   const doc = element.ownerDocument;
 
@@ -114,7 +134,13 @@ export function createModalController(
   element.addEventListener(
     "close",
     (event) => {
-      if (event.target !== element || !isOpen) return;
+      if (event.target !== element) return;
+      if (closing) {
+        // Closed by the browser during the exit: finish now.
+        finish(closing);
+        return;
+      }
+      if (!isOpen) return;
       cleanup(true);
       options.onExternalClose?.();
     },
@@ -144,9 +170,10 @@ export function createModalController(
     doc.addEventListener(
       "keydown",
       (event) => {
-        if (!isOpen || !layerStack.isTop(element)) return;
+        if ((!isOpen && !closing) || !layerStack.isTop(element)) return;
         if (event.key === "Escape") {
           event.preventDefault();
+          if (closing) return;
           dismiss("escape");
         } else {
           trapTab(element, event);
@@ -156,14 +183,58 @@ export function createModalController(
     );
   }
 
+  /** Removes the exit states written by `playExit`. */
+  const restore = (exits: ExitHandle[]) => {
+    for (const exit of exits) exit.restore();
+  };
+
+  /** Closes the dialog for good (after the exit, or at once). */
+  function shut() {
+    const keep = options.restoreFocus === false;
+    const active = doc.activeElement;
+    nativeDialog?.close();
+    // The browser moves focus back itself when a modal dialog closes: undo it.
+    const moved = doc.activeElement;
+    if (keep && moved !== active && moved instanceof HTMLElement && moved !== doc.body)
+      moved.blur();
+    cleanup(true);
+  }
+
+  function finish(current: NonNullable<typeof closing>) {
+    if (closing !== current) return;
+    closing = null;
+    shut();
+    restore(current.exits);
+    current.settle(true);
+  }
+
+  /** Ends a running exit without closing (`open()`) or closes at once (`destroy()`). */
+  function interrupt(): void {
+    const current = closing;
+    if (!current) return;
+    closing = null;
+    for (const exit of current.exits) exit.cancel();
+    current.settle(false);
+  }
+
   return {
     get isOpen() {
       return isOpen;
     },
+    get isClosing() {
+      return closing !== null;
+    },
     isFallback: fallback,
 
     open(returnFocusTo) {
-      if (isOpen || signal.aborted) return;
+      if (signal.aborted) return;
+      if (closing) {
+        // Interrupted exit: stay open, keep the focus and the return target.
+        interrupt();
+        isOpen = true;
+        return;
+      }
+      if (isOpen) return;
       if (!element.isConnected) throw new Error("[owlky] Cannot open a detached modal.");
       const active = doc.activeElement;
       returnFocus = returnFocusTo ?? (active instanceof HTMLElement ? active : null);
@@ -188,17 +259,34 @@ export function createModalController(
     },
 
     close() {
-      if (!isOpen) return;
+      if (closing) return closing.promise;
+      if (!isOpen) return Promise.resolve(true);
       // Mark closed before calling dialog.close(): its `close` event is then ignored.
       isOpen = false;
-      const keep = options.restoreFocus === false;
-      const active = doc.activeElement;
-      nativeDialog?.close();
-      // The browser moves focus back itself when a modal dialog closes: undo it.
-      const moved = doc.activeElement;
-      if (keep && moved !== active && moved instanceof HTMLElement && moved !== doc.body)
-        moved.blur();
-      cleanup(true);
+      const selector = options.contentSelector;
+      const content = selector ? element.querySelector<HTMLElement>(selector) : null;
+      const exits =
+        options.exit === false
+          ? []
+          : [
+              playExit(element),
+              ...(content?.matches("[data-ok-motion]") ? [playExit(content)] : []),
+            ];
+      if (!exits.some((exit) => exit.running)) {
+        shut();
+        restore(exits);
+        return Promise.resolve(true);
+      }
+      let settle!: (closed: boolean) => void;
+      const promise = new Promise<boolean>((resolve) => {
+        settle = resolve;
+      });
+      const current = { exits, promise, settle };
+      closing = current;
+      Promise.all(exits.map((exit) => exit.finished)).then((ended) => {
+        if (ended.every(Boolean)) finish(current);
+      });
+      return promise;
     },
 
     setOptions(next) {
@@ -207,6 +295,12 @@ export function createModalController(
 
     destroy() {
       if (signal.aborted) return;
+      if (closing) {
+        const current = closing;
+        interrupt();
+        restore(current.exits);
+        isOpen = true;
+      }
       if (isOpen) {
         isOpen = false;
         nativeDialog?.close();

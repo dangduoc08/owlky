@@ -238,7 +238,7 @@ export function DrawerDocked() {
     id: "elevation",
     title: "Change the shadow and the speed",
     body: `- **Shadow:** \`elevation\` sets the panel's shadow from \`0\` (none) to \`24\`, from the same scale as Paper. Without it, each edge has its own shadow and docked drawers have none.
-- **Speed:** \`transitionDuration\` sets how long the panel takes to slide in and out, in milliseconds.
+- **Speed:** \`transitionDuration\` sets how long the panel takes to slide in and out, in milliseconds. A temporary drawer slides back to its edge before it closes, and focus returns to the trigger after that.
 - **Temporary drawers:** \`disableRestoreFocus\` keeps focus where it is when the drawer closes, and \`disableScrollLock\` lets the page behind scroll. In React, \`keepMounted={false}\` renders the content only while the drawer is open.`,
     html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md"
   data-ok-drawer-open="filters" aria-haspopup="dialog">
@@ -277,7 +277,7 @@ export function FilterDrawer() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:drawer:beforeopen\`** (cancelable) fires before the drawer opens, and **\`ok:drawer:open\`** after.
-- **\`ok:drawer:beforeclose\`** (cancelable) fires before it closes, with \`detail.reason\`. **\`ok:drawer:close\`** fires after, with the reason: \`escape\`, \`backdrop\`, \`trigger\`, \`api\` or \`native\`.
+- **\`ok:drawer:beforeclose\`** (cancelable) fires before it closes, with \`detail.reason\`. **\`ok:drawer:close\`** fires once it has closed (a temporary drawer slides out first), with the reason: \`escape\`, \`backdrop\`, \`trigger\`, \`api\` or \`native\`.
 - **Instance:** \`runtime.get(element, "drawer")\` returns \`{ isOpen, open(trigger?), close(reason?), toggle() }\`.
 - **React:** \`onOpenChange(open, reason)\` on \`Drawer\`.`,
   },

@@ -55,15 +55,21 @@ drawer and the page area in a flex row (left / right) or column (top / bottom).
   `--ok-shadow-z16`. Taller content scrolls inside the Scrollbar placed in the paper (without one,
   the paper itself scrolls).
 - Opening slides the paper in from its edge and fades the backdrop (`--ok-duration-short`,
-  `--ok-easing-decelerate`) where `@starting-style` is supported; closing is immediate.
-  `prefers-reduced-motion` disables both.
+  `--ok-easing-decelerate`) where `@starting-style` is supported. Closing (temporary,
+  `data-ok-state="exiting"`, ADR-0062) slides it back and fades the backdrop out
+  (`--ok-duration-shorter`, `--ok-easing-accelerate`; `transitionDuration` sets both directions);
+  the dialog closes when the slide ends. `prefers-reduced-motion` disables both (closing is then
+  immediate). Docked drawers open and close at once.
 
 ## Behavior (`core` `createModalController`)
 - **Open:** `showModal()` (fallback: `open` + `data-ok-fallback`, siblings inert, ADR-0006); push onto
   the layer stack; lock page scroll; focus `[autofocus]` → first tabbable → content.
 - **Dismiss requests** (Escape, backdrop) are reported, not acted on: React updates state (controlled
   drawers may refuse); HTML emits cancelable `beforeclose`. Only the topmost layer reacts.
-- **Close:** release lock and stack; focus returns to the trigger if focus was lost.
+- **Close:** temporary drawers play their exit first (still modal, Escape and backdrop ignored;
+  `open()` during it keeps the drawer open), then release lock and stack; focus returns to the
+  trigger if focus was lost. HTML `ok:drawer:close` fires after that; React `keepMounted={false}`
+  content stays until then.
 - **External close** (`<form method="dialog">`): state syncs. **Removal / unmount while open:**
   cleanup without focus restoration.
 

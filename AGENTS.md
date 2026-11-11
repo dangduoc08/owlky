@@ -710,6 +710,24 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   own rules. Elevation is a `style` option with values `"0"`–`"24"` (`--ok-elevation-<n>`): React
   takes a number, `paperAttributes` stringifies it, the attribute is always written (outlined too)
   so Controls stay in parity.
+- Motion engine (ADR-0062): core `animate()` is the only code that starts script animations; it
+  commits end values to the inline style (`commitStyles()`), so a later class change of the same
+  property needs the inline value cleared. Declarative keyframes are JSON attributes
+  (`data-ok-keyframes`, `data-ok-transition`) that both owners write and core
+  `createMotionKeyframes` plays from `data-ok-state`; `[data-ok-keyframes]` turns the variant's CSS
+  animation off. JSON has no `Infinity`: write `"Infinity"` (React's `motionKeyframesAttributes`
+  does), `jsxSource` prints `Infinity`, and `demo-snippets.mjs` writes the JSON in single quotes.
+  Loops don't start under reduced motion: e2e calls `emulateMedia({ reducedMotion:
+  "no-preference" })` after `openStory` (the player restarts on the media change).
+- Exits before close (ADR-0062): the modal controller plays `data-ok-state="exiting"` (and a Motion
+  paper's `exit`) before `dialog.close()`, so Dialog / Drawer close, focus return and HTML
+  `ok:*:close` are asynchronous whenever something animates. Tests close, then `await
+  finishExit(element)` (react / html `test-utils`: `finish()` + a task, React inside `act()`)
+  before asserting `open`, focus or events; core tests inject their own exit CSS. Chromium's
+  `getAnimations({ subtree: true })` includes `::backdrop` animations: a test of the synchronous
+  path disables the paper's and `dialog::backdrop`'s animations. React `keepMounted={false}`
+  children stay rendered until the exit ends (`shown` state); MotionPresence waits for the Motions
+  that register through its context (children without Motions leave at once).
 - Collapse (ADR-0044): `hidden` is the state; core `createCollapseController` watches it (a
   MutationObserver, before paint) and animates with the Web Animations API, so tests `finish()` the
   element's animations and then wait a task (the controller settles on `animation.finished`; a
