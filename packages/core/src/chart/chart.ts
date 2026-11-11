@@ -34,9 +34,12 @@ import {
   type ChartHierarchyNode,
   type ChartLayoutType,
   type ChartLeaf,
+  type ChartTreeLabel,
+  type ChartTreeLabelLevels,
   type ChartZoomType,
   chartHierarchy,
   chartHierarchyTable,
+  chartTreeLabel,
   isHierarchyChart,
 } from "./chart-hierarchy.js";
 import { layoutIcicle } from "./chart-icicle.js";
@@ -147,6 +150,10 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly layoutType?: ChartLayoutType | undefined;
   /** Tree charts: links `orthogonal` (default), `curved` or `straight`. */
   readonly edgeStyle?: ChartEdgeStyle | undefined;
+  /** Tree charts: where labels sit (ApexTree `externalLabel`, 4.18.86). */
+  readonly externalLabel?: ChartTreeLabel | undefined;
+  /** Tree charts: label placement per level (0: the roots). */
+  readonly externalLabelLevels?: ChartTreeLabelLevels | undefined;
   /** Tree charts: Enter and clicks expand and collapse nodes. */
   readonly enableExpandCollapse?: boolean | undefined;
   /** Tree charts: ids of the nodes whose children are hidden. */
@@ -991,6 +998,8 @@ function renderHierarchy(input: ChartRenderInput): ChartRender {
               dataLabels: input.dataLabels,
               startAngle: input.startAngle,
               endAngle: input.endAngle,
+              externalLabel: chartTreeLabel(input.externalLabel),
+              externalLabelLevels: input.externalLabelLevels,
             },
             format,
           );

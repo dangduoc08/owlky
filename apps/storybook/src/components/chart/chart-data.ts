@@ -1873,6 +1873,49 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.86: tree label placement (ApexTree `externalLabel`), for the chart, a level and a node.
+  "tree-labels": {
+    title: "Tree labels",
+    props: {
+      label: "Website sections and their pages, labels above the links",
+      type: "tree",
+      direction: "left",
+      height: 320,
+      // Every label above and after its node, on the link; the pages slant up.
+      externalLabel: { align: "right", verticalAlign: "top" },
+      externalLabelLevels: { 2: { verticalAlign: "middle", rotation: -20 } },
+      hierarchy: {
+        name: "Home",
+        children: [
+          { name: "Products", children: [{ name: "Laptops" }, { name: "Phones" }] },
+          { name: "Blog", children: [{ name: "News" }, { name: "Guides" }, { name: "Events" }] },
+          { name: "Support", children: [{ name: "Contact" }, { name: "Returns" }] },
+        ],
+      },
+    },
+    more: [
+      {
+        label: "Regional offices, labels beside the nodes",
+        type: "tree",
+        height: 280,
+        // Labels to the right of the nodes, the root's above it, one office's on the left.
+        externalLabel: { align: "right", verticalAlign: "middle" },
+        externalLabelLevels: { 0: { align: "center", verticalAlign: "top" } },
+        hierarchy: {
+          name: "Head office",
+          children: [
+            { name: "Europe", children: [{ name: "Berlin" }, { name: "Lisbon" }] },
+            {
+              name: "Americas",
+              externalLabel: { align: "left" },
+              children: [{ name: "Toronto" }, { name: "Lima" }],
+            },
+            { name: "Asia", children: [{ name: "Osaka" }, { name: "Hanoi" }] },
+          ],
+        },
+      },
+    ],
+  },
   // Roadmap 4.18.21 (ADR-0058): sunburst charts (ApexCharts v8 `sunburst`, `zoomOnClick`).
   sunburst: {
     title: "Sunburst",

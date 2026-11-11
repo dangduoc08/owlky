@@ -765,7 +765,8 @@
             [data-ok-organization-chart-label]:hover,
             [data-ok-organization-chart-label]:focus-within,
             [data-ok-organization-chart-toggle]:hover,
-            [data-ok-organization-chart-toggle]:focus-visible
+            [data-ok-organization-chart-toggle]:focus-visible,
+            [data-ok-organization-chart-node]:focus-visible
           )
       )
       :is([data-ok-organization-chart-label], [data-ok-organization-chart-toggle])
@@ -781,9 +782,13 @@
             [data-ok-organization-chart-label]:hover,
             [data-ok-organization-chart-label]:focus-within,
             [data-ok-organization-chart-toggle]:hover,
-            [data-ok-organization-chart-toggle]:focus-visible
+            [data-ok-organization-chart-toggle]:focus-visible,
+            [data-ok-organization-chart-node]:focus-visible
           )
       )
+      > :is([data-ok-organization-chart-label], [data-ok-organization-chart-toggle]),
+    [data-ok-organization-chart][data-ok-highlight-on-hover]
+      [data-ok-organization-chart-node]:focus-visible
       > :is([data-ok-organization-chart-label], [data-ok-organization-chart-toggle])
   ) {
     opacity: 1;
@@ -796,7 +801,8 @@
             [data-ok-organization-chart-label]:hover,
             [data-ok-organization-chart-label]:focus-within,
             [data-ok-organization-chart-toggle]:hover,
-            [data-ok-organization-chart-toggle]:focus-visible
+            [data-ok-organization-chart-toggle]:focus-visible,
+            [data-ok-organization-chart-node]:focus-visible
           )
       ),
     [data-ok-organization-chart]:not(
@@ -805,7 +811,8 @@
               [data-ok-organization-chart-label]:hover,
               [data-ok-organization-chart-label]:focus-within,
               [data-ok-organization-chart-toggle]:hover,
-              [data-ok-organization-chart-toggle]:focus-visible
+              [data-ok-organization-chart-toggle]:focus-visible,
+              [data-ok-organization-chart-node]:focus-visible
             )
         )
       )
@@ -824,9 +831,14 @@
             [data-ok-organization-chart-label]:hover,
             [data-ok-organization-chart-label]:focus-within,
             [data-ok-organization-chart-toggle]:hover,
-            [data-ok-organization-chart-toggle]:focus-visible
+            [data-ok-organization-chart-toggle]:focus-visible,
+            [data-ok-organization-chart-node]:focus-visible
           )
       )
+      > [data-ok-organization-chart-label],
+    [data-ok-organization-chart][data-ok-highlight-on-hover]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:focus-visible
       > [data-ok-organization-chart-label],
     [data-ok-organization-chart]:not(
         [data-ok-highlight-on-hover]:has(
@@ -834,7 +846,8 @@
               [data-ok-organization-chart-label]:hover,
               [data-ok-organization-chart-label]:focus-within,
               [data-ok-organization-chart-toggle]:hover,
-              [data-ok-organization-chart-toggle]:focus-visible
+              [data-ok-organization-chart-toggle]:focus-visible,
+              [data-ok-organization-chart-node]:focus-visible
             )
         )
       )
@@ -939,6 +952,37 @@
     border-radius: var(--ok-radius-lg);
     outline: 2px solid var(--_ok-org-highlight-color);
     outline-offset: var(--ok-spacing);
+  }
+
+  /* Tree mode (ADR-0063, written by core): the focused tree item draws its ring on its label (the
+     item holds its whole branch), and a selected node's label a primary ring (a box shadow, so
+     the focus ring keeps the outline). */
+  :where([data-ok-organization-chart-node][role="treeitem"]) {
+    outline: none;
+  }
+
+  :where(
+    [data-ok-organization-chart-node][role="treeitem"]:focus-visible
+      > [data-ok-organization-chart-label]
+  ) {
+    border-radius: var(--ok-radius-lg);
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where([data-ok-organization-chart-node][data-ok-selected] > [data-ok-organization-chart-label]) {
+    border-radius: var(--ok-radius-lg);
+    box-shadow: 0 0 0 2px var(--ok-palette-primary-main);
+  }
+
+  @media (hover: hover) {
+    :where(
+        [data-ok-organization-chart][data-ok-enable-selection]
+          [data-ok-organization-chart-node][data-ok-node-id]
+          > [data-ok-organization-chart-label]
+      ) {
+      cursor: pointer;
+    }
   }
 
   /* Grouped leaves (data-ok-group-leaf-nodes, 4.18.3). A node with two or more children, none of

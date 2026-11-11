@@ -40,6 +40,7 @@ import timelineGroup from "../../../../../packages/html/src/components/chart/exa
 import timelineRowsGroup from "../../../../../packages/html/src/components/chart/examples/timeline-rows-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
+import treeLabelsGroup from "../../../../../packages/html/src/components/chart/examples/tree-labels-group.html?raw";
 import trellisGroup from "../../../../../packages/html/src/components/chart/examples/trellis-group.html?raw";
 import unitGroup from "../../../../../packages/html/src/components/chart/examples/unit-group.html?raw";
 import violinGroup from "../../../../../packages/html/src/components/chart/examples/violin-group.html?raw";
@@ -783,6 +784,50 @@ export function ProductTeams() {
       dataLabels
       height={360}
       hierarchy={teams}
+    />
+  );
+}`,
+  },
+  {
+    id: "tree-labels",
+    title: "Place the labels of a tree",
+    body: `By default, a tree chart puts each name below its node in a \`top\` tree, above it in a \`bottom\` tree, and beside it in \`left\` and \`right\` trees. To place the names yourself, set \`externalLabel\` in React, or \`data-ok-external-label\` on the chart in HTML:
+
+- **\`align\`:** \`left\`, \`center\` or \`right\` of the node.
+- **\`verticalAlign\`:** \`top\`, \`middle\` or \`bottom\` of the node.
+- **\`offsetX\` and \`offsetY\`:** a move in pixels after the alignment.
+- **\`rotation\`:** a turn in degrees, clockwise, around the point where the name starts.
+
+An option that you leave out keeps its default side, so \`{ rotation: -20 }\` turns the names where they already are. In HTML, write the options as \`key=value\` pairs separated by spaces, such as \`align=right verticalAlign=top\`.
+
+The options can also change per level or per node. \`externalLabelLevels\` takes options per level, such as \`{ 0: { verticalAlign: "top" } }\` for the root. In HTML, \`data-ok-external-label-levels\` takes the level, a colon and its pairs, with levels separated by semicolons. A node's own \`externalLabel\` in \`hierarchy\` wins over both. In HTML, put it in \`data-ok-external-label\` on the node's row header. The chart leaves room for the names at its edges. A name that doesn't fit is shortened with an ellipsis or left out, and the tooltip and the data table keep it whole. In \`radial\` trees, the leaves' names stay on their ray: \`offsetX\` moves them outward and \`rotation\` adds to their angle.`,
+    html: `${snippetElement(treeLabelsGroup, "data-ok-chart ", 1)}`,
+    react: `import { Chart } from "@owlky/react";
+
+const offices = {
+  name: "Head office",
+  children: [
+    { name: "Europe", children: [{ name: "Berlin" }, { name: "Lisbon" }] },
+    {
+      name: "Americas",
+      // This node's own placement wins over the chart's and its level's
+      externalLabel: { align: "left" as const },
+      children: [{ name: "Toronto" }, { name: "Lima" }],
+    },
+    { name: "Asia", children: [{ name: "Osaka" }, { name: "Hanoi" }] },
+  ],
+};
+
+export function RegionalOffices() {
+  return (
+    <Chart
+      label="Regional offices, labels beside the nodes"
+      type="tree"
+      height={280}
+      externalLabel={{ align: "right", verticalAlign: "middle" }}
+      // Level 0 is the root: its name goes above it
+      externalLabelLevels={{ 0: { align: "center", verticalAlign: "top" } }}
+      hierarchy={offices}
     />
   );
 }`,
@@ -2746,6 +2791,29 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  "tree-labels": () => (
+    <Preview>
+      <Chart
+        label="Regional offices, labels beside the nodes"
+        type="tree"
+        height={280}
+        externalLabel={{ align: "right", verticalAlign: "middle" }}
+        externalLabelLevels={{ 0: { align: "center", verticalAlign: "top" } }}
+        hierarchy={{
+          name: "Head office",
+          children: [
+            { name: "Europe", children: [{ name: "Berlin" }, { name: "Lisbon" }] },
+            {
+              name: "Americas",
+              externalLabel: { align: "left" },
+              children: [{ name: "Toronto" }, { name: "Lima" }],
+            },
+            { name: "Asia", children: [{ name: "Osaka" }, { name: "Hanoi" }] },
+          ],
+        }}
+      />
+    </Preview>
+  ),
   tree: () => (
     <Preview>
       <Chart
@@ -2882,6 +2950,20 @@ const PREVIEWS = {
           type: "string[]",
           description:
             "Tree charts with `enableExpandCollapse`: the ids of the nodes whose children are hidden.",
+        },
+        {
+          react: "externalLabel",
+          html: "data-ok-external-label (on the chart, or on a node's row header)",
+          type: "{ align?, verticalAlign?, offsetX?, offsetY?, rotation? }",
+          description:
+            'Tree charts: where the names sit beside their nodes. HTML writes `key=value` pairs, such as `"align=right rotation=-20"`. A node\'s own `externalLabel` in `hierarchy` wins.',
+        },
+        {
+          react: "externalLabelLevels",
+          html: "data-ok-external-label-levels",
+          type: "Record<number, { align?, verticalAlign?, offsetX?, offsetY?, rotation? }>",
+          description:
+            'Tree charts: label placement per level, the root being level 0. HTML writes `"level: pairs"` groups separated by semicolons, such as `"0: verticalAlign=top; 2: rotation=-20"`.',
         },
         {
           react: "drillNode / defaultDrillNode / onDrillNodeChange",

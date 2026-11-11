@@ -3211,6 +3211,18 @@
       "value": "string"
      },
      {
+      "description": "Tree charts, on the chart or on a node's row header: where labels sit beside their nodes, as `key=value` pairs (`align` `left` · `center` · `right`, `verticalAlign` `top` · `middle` · `bottom`, `offsetX`, `offsetY`, `rotation`), such as `\"align=right rotation=-20\"`. A row header's wins over the chart's.",
+      "kind": "value",
+      "name": "data-ok-external-label",
+      "value": "string"
+     },
+     {
+      "description": "Tree charts: label placement per level (0: the roots), as `level: pairs` groups separated by `;`, such as `\"0: verticalAlign=top; 2: rotation=-20\"`.",
+      "kind": "value",
+      "name": "data-ok-external-label-levels",
+      "value": "string"
+     },
+     {
       "description": "On a data table column header: the series' pattern.",
       "kind": "value",
       "name": "data-ok-fill-pattern",
@@ -3822,6 +3834,16 @@
       "description": "Pie, donut and radial bar: end angle in degrees. Default 360.",
       "name": "endAngle",
       "type": "number"
+     },
+     {
+      "description": "Tree charts: where every node's label sits beside its node: `align` (`left`, `center`, `right`), `verticalAlign` (`top`, `middle`, `bottom`), `offsetX` / `offsetY` in px and `rotation` in degrees. Options left out keep the default side. Radial leaves stay on their ray: `offsetX` moves them outward and `rotation` adds to their angle. Default: labels below the node in top trees, above in bottom trees, beside it in left and right trees.",
+      "name": "externalLabel",
+      "type": "ChartTreeLabel"
+     },
+     {
+      "description": "Tree charts: label placement per level (`{ 2: { rotation: -45 } }`; the roots are level 0), over `externalLabel`. A node's own `externalLabel` in `hierarchy` wins over both.",
+      "name": "externalLabelLevels",
+      "type": "Readonly<Record<number, ChartTreeLabel>>"
      },
      {
       "default": "\"gradient\"",
@@ -4911,6 +4933,16 @@
       "description": "Pie, donut and radial bar: end angle in degrees. Default 360.",
       "name": "endAngle",
       "type": "number"
+     },
+     {
+      "description": "Tree charts: where every node's label sits beside its node: `align` (`left`, `center`, `right`), `verticalAlign` (`top`, `middle`, `bottom`), `offsetX` / `offsetY` in px and `rotation` in degrees. Options left out keep the default side. Radial leaves stay on their ray: `offsetX` moves them outward and `rotation` adds to their angle. Default: labels below the node in top trees, above in bottom trees, beside it in left and right trees.",
+      "name": "externalLabel",
+      "type": "ChartTreeLabel"
+     },
+     {
+      "description": "Tree charts: label placement per level (`{ 2: { rotation: -45 } }`; the roots are level 0), over `externalLabel`. A node's own `externalLabel` in `hierarchy` wins over both.",
+      "name": "externalLabelLevels",
+      "type": "Readonly<Record<number, ChartTreeLabel>>"
      },
      {
       "default": "\"gradient\"",

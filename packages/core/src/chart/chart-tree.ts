@@ -5,9 +5,14 @@ import {
   type ChartHierarchy,
   type ChartLayoutType,
   type ChartTreeAxis,
+  type ChartTreeLabel,
+  type ChartTreeLabelAlign,
+  type ChartTreeLabelLevels,
+  type ChartTreeLabelVerticalAlign,
   type ChartTreeMark,
   chartHierarchyRows,
   chartHierarchyTitle,
+  chartTreeLabel,
 } from "./chart-hierarchy.js";
 import {
   type ChartLayout,
@@ -46,6 +51,20 @@ export interface ChartTreeOptions {
   /** Radial trees: where the breadth starts and ends, in degrees clockwise from 12 o'clock. */
   readonly startAngle?: number | undefined;
   readonly endAngle?: number | undefined;
+  /** Where every label sits (ApexTree `externalLabel`, 4.18.86); none: the default sides. */
+  readonly externalLabel?: ChartTreeLabel | undefined;
+  /** Label placement per level (0: the roots), between the chart's and each node's own. */
+  readonly externalLabelLevels?: ChartTreeLabelLevels | undefined;
+}
+
+/** The room from `(x, y)` to the edge of a `width` × `height` box along `angle` (degrees, 0 = right, clockwise). */
+function rayRoom(x: number, y: number, angle: number, width: number, height: number): number {
+  const rad = (angle * Math.PI) / 180;
+  const dx = Math.cos(rad);
+  const dy = Math.sin(rad);
+  const tx = dx > 1e-9 ? (width - x) / dx : dx < -1e-9 ? -x / dx : Number.POSITIVE_INFINITY;
+  const ty = dy > 1e-9 ? (height - y) / dy : dy < -1e-9 ? -y / dy : Number.POSITIVE_INFINITY;
+  return Math.max(0, Math.min(tx, ty));
 }
 
 /** A node of the Buchheim walk (`z` prelim, `m` mod, `c` change, `s` shift, `t` thread). */
@@ -259,6 +278,71 @@ export function layoutTree(
   const widest = (list: readonly Walk[]) =>
     Math.max(0, ...list.map((walk) => chartTextWidth(labelText(walk.item))));
 
+  /** A node's label options: the chart's, then its level's, then its own (4.18.86). */
+  const placementOf = (walk: Walk, entry: (typeof items)[number]): ChartTreeLabel | null => {
+    const merged = {
+      ...options.externalLabel,
+      ...chartTreeLabel(options.externalLabelLevels?.[walk.depth]),
+      ...entry.label,
+    };
+    return Object.values(merged).some((value) => value !== undefined) ? merged : null;
+  };
+
+  const vertical = direction === "top" || direction === "bottom";
+  /** The sides a label takes: its options, else the default ones (so options compose). */
+  const sides = (leaf: boolean, label: ChartTreeLabel) => {
+    const after = (direction === "left") === leaf;
+    const align: ChartTreeLabelAlign =
+      label.align ?? (vertical || radial ? "center" : after ? "right" : "left");
+    const verticalAlign: ChartTreeLabelVerticalAlign =
+      label.verticalAlign ??
+      (direction === "top" ? "bottom" : direction === "bottom" || radial ? "top" : "middle");
+    return { align, verticalAlign };
+  };
+  /** How far a node's label reaches from its node's center (px, estimated): for the margins. */
+  const reach = (walk: Walk) => {
+    const entry = items[walk.item] as (typeof items)[number];
+    const label = placementOf(walk, entry) ?? {};
+    const { align, verticalAlign } = sides(walk.children.length === 0, label);
+    const w = Math.min(chartTextWidth(labelText(walk.item)), width * 0.4);
+    const ax =
+      (align === "left" ? -(r + GAP) : align === "right" ? r + GAP : 0) + (label.offsetX ?? 0);
+    const ay =
+      (verticalAlign === "top" ? -(r + GAP) : verticalAlign === "bottom" ? r + GAP : 0) +
+      (label.offsetY ?? 0);
+    const [x0, x1] = align === "left" ? [-w, 0] : align === "right" ? [0, w] : [-w / 2, w / 2];
+    const [y0, y1] =
+      verticalAlign === "bottom"
+        ? [0, FONT]
+        : verticalAlign === "middle"
+          ? [-FONT / 2, FONT / 2]
+          : [-FONT, 0];
+    const rad = ((label.rotation ?? 0) * Math.PI) / 180;
+    const xs: number[] = [];
+    const ys: number[] = [];
+    for (const [x, y] of [
+      [x0, y0],
+      [x1, y0],
+      [x0, y1],
+      [x1, y1],
+    ] as const) {
+      xs.push(ax + x * Math.cos(rad) - y * Math.sin(rad));
+      ys.push(ay + x * Math.sin(rad) + y * Math.cos(rad));
+    }
+    return {
+      left: Math.max(r, -Math.min(...xs)),
+      right: Math.max(r, ...xs),
+      top: Math.max(r, -Math.min(...ys)),
+      bottom: Math.max(r, ...ys),
+    };
+  };
+  /** Label placements change the margins; charts without them keep the default ones. */
+  const placements = walks.some((walk) =>
+    placementOf(walk, items[walk.item] as (typeof items)[number]),
+  );
+  const most = (list: readonly Walk[], side: "left" | "right" | "top" | "bottom", cap: number) =>
+    Math.min(Math.max(r, ...list.map((walk) => reach(walk)[side])), cap) + 2;
+
   // Positions: `b` across the depth (0 to 1), `d` the level.
   const across = (walk: Walk) => (span > 0 ? (walk.x - minX) / span : 0.5);
   const at = new Map<Walk, { x: number; y: number; angle: number; radius: number }>();
@@ -283,7 +367,6 @@ export function layoutTree(
       at.set(walk, { x, y, angle, radius });
     }
   } else {
-    const vertical = direction === "top" || direction === "bottom";
     axis =
       direction === "top"
         ? "down"
@@ -293,9 +376,16 @@ export function layoutTree(
             ? "right"
             : "left";
     if (vertical) {
-      const margin = Math.max(r + 2, Math.min(widest(walks) / 2, width * 0.15));
-      const near = r + 2;
-      const far = r + GAP + FONT + 4;
+      const top = direction === "top";
+      const margin = placements
+        ? Math.max(most(walks, "left", width * 0.25), most(walks, "right", width * 0.25))
+        : Math.max(r + 2, Math.min(widest(walks) / 2, width * 0.15));
+      // `near` is the root's side, `far` the leaves'.
+      const roots = walks.filter((walk) => walk.depth === 0);
+      const near = placements ? most(roots, top ? "top" : "bottom", height * 0.3) : r + 2;
+      const far = placements
+        ? most(leaves, top ? "bottom" : "top", height * 0.4)
+        : r + GAP + FONT + 4;
       for (const walk of walks) {
         const b = margin + across(walk) * (width - margin * 2);
         const level = maxDepth > 0 ? levelOf(walk) / maxDepth : 0.5;
@@ -308,9 +398,16 @@ export function layoutTree(
     } else {
       const roots = walks.filter((walk) => walk.depth === 0);
       // Internal labels sit before their node, leaves' after it.
-      const inner = r + 2 + Math.min(widest(roots) + GAP + 2, width * 0.2);
-      const outer = r + 2 + Math.min(widest(leaves) + GAP + 2, width * 0.3);
-      const pad = Math.max(r + 2, FONT / 2 + 2);
+      const toRight = direction === "left";
+      const inner = placements
+        ? most(roots, toRight ? "left" : "right", width * 0.25)
+        : r + 2 + Math.min(widest(roots) + GAP + 2, width * 0.2);
+      const outer = placements
+        ? most(leaves, toRight ? "right" : "left", width * 0.35)
+        : r + 2 + Math.min(widest(leaves) + GAP + 2, width * 0.3);
+      const pad = placements
+        ? Math.max(most(walks, "top", height * 0.25), most(walks, "bottom", height * 0.25))
+        : Math.max(r + 2, FONT / 2 + 2);
       for (const walk of walks) {
         const level = maxDepth > 0 ? levelOf(walk) / maxDepth : 0.5;
         const d = inner + level * (width - inner - outer);
@@ -397,6 +494,83 @@ export function layoutTree(
         : (direction === "top" || direction === "bottom" ? height : width) / (maxDepth + 1)
       : width;
 
+  /** A label placed by `externalLabel` options: beside the node, moved, turned. */
+  const placed = (
+    walk: Walk,
+    p: { x: number; y: number; angle: number; radius: number },
+    full: string,
+    near: number,
+    leaf: boolean,
+    label: ChartTreeLabel,
+  ): ChartNode | null => {
+    const offsetX = label.offsetX ?? 0;
+    const offsetY = label.offsetY ?? 0;
+    const rotation = label.rotation ?? 0;
+    if (radial && leaf && p.radius > 0) {
+      // Radial leaves stay on their ray: offsetX moves them outward, rotation adds to the angle.
+      const half = Math.min(width, height) / 2;
+      const room = half - p.radius - r - GAP - 2 - offsetX;
+      if (!fits(room, full) || near < FONT - 2) return null;
+      const [lx, ly] = polarPoint(cx, cy, p.radius + r + GAP + offsetX, p.angle);
+      const right = ((p.angle % 360) + 360) % 360 < 180;
+      const turn = (right ? p.angle - 90 : p.angle + 90) + rotation;
+      return node(
+        "text",
+        {
+          x: fmt(lx),
+          y: fmt(ly),
+          dy: "0.35em",
+          "text-anchor": right ? "start" : "end",
+          transform: `rotate(${fmt(turn)} ${fmt(lx)} ${fmt(ly)})`,
+          "data-ok-chart-node-label": "",
+        },
+        undefined,
+        fitChartText(full, room),
+      );
+    }
+    // The default sides, so a label that only sets some options keeps the others.
+    const { align, verticalAlign } = sides(leaf, label);
+    const x = p.x + (align === "left" ? -(r + GAP) : align === "right" ? r + GAP : 0) + offsetX;
+    const y =
+      p.y +
+      (verticalAlign === "top" ? -(r + GAP) : verticalAlign === "bottom" ? r + GAP : 0) +
+      offsetY;
+    const anchor = align === "left" ? "end" : align === "right" ? "start" : "middle";
+    // Text runs along the rotation: the room is the way to the plot's edge (both ways when
+    // centered), and level neighbors bound unrotated labels on the breadth axis.
+    const forward = rayRoom(x, y, rotation, width, height);
+    const backward = rayRoom(x, y, rotation + 180, width, height);
+    let room =
+      (anchor === "start"
+        ? forward
+        : anchor === "end"
+          ? backward
+          : 2 * Math.min(forward, backward)) - 2;
+    const turned = Math.abs(((((rotation + 90) % 180) + 180) % 180) - 90) > 1;
+    if (!turned) {
+      // Level neighbors share the breadth axis (top and bottom trees); in sideways and radial
+      // trees a parent's label shares the gap to the next level.
+      if (vertical) room = Math.min(room, near - GAP * 2 - (anchor === "middle" ? 0 : r + GAP));
+      else if (!leaf) room = Math.min(room, step - r * 2 - GAP * 2);
+      if (!vertical && !radial && verticalAlign === "middle" && near < FONT) return null;
+    }
+    if (!fits(room, full)) return null;
+    const dy = verticalAlign === "bottom" ? "0.71em" : verticalAlign === "middle" ? "0.35em" : "0";
+    return node(
+      "text",
+      {
+        x: fmt(x),
+        y: fmt(y),
+        dy,
+        "text-anchor": anchor,
+        ...(rotation ? { transform: `rotate(${fmt(rotation)} ${fmt(x)} ${fmt(y)})` } : {}),
+        "data-ok-chart-node-label": "",
+      },
+      undefined,
+      fitChartText(full, room),
+    );
+  };
+
   for (const walk of walks) {
     const entry = items[walk.item] as (typeof items)[number];
     const p = pos(walk);
@@ -423,7 +597,9 @@ export function layoutTree(
     const leaf = walk.children.length === 0;
     const near = spacing(walk);
     let label: ChartNode | null = null;
-    if (radial) {
+    const placement = placementOf(walk, entry);
+    if (placement) label = placed(walk, p, full, near, leaf, placement);
+    else if (radial) {
       if (leaf && p.radius > 0) {
         const half = Math.min(width, height) / 2;
         const room = half - p.radius - r - GAP - 2;

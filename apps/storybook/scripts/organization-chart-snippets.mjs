@@ -27,6 +27,8 @@ import { CollapsibleChartDemo } from "${folder}/collapsible-demo.tsx";
 import { LazyChartDemo, reportsOf } from "${folder}/lazy-demo.tsx";
 import { SearchChartDemo } from "${folder}/search-demo.tsx";
 import { ZoomChartDemo } from "${folder}/zoom-demo.tsx";
+import { SelectionChartDemo } from "${folder}/selection-demo.tsx";
+import { BreadcrumbChartDemo } from "${folder}/breadcrumb-demo.tsx";
 import { OrganizationChart } from "@owlky/react";
 import { PEOPLE } from "${folder}/organization-chart-data.ts";
 const html = {};
@@ -39,6 +41,8 @@ html["group-group"] = renderToStaticMarkup(createElement(GroupChartDemo));
 html["collapsible-group"] = renderToStaticMarkup(createElement(CollapsibleChartDemo));
 html["search-group"] = renderToStaticMarkup(createElement(SearchChartDemo));
 html["zoom-group"] = renderToStaticMarkup(createElement(ZoomChartDemo));
+html["selection-group"] = renderToStaticMarkup(createElement(SelectionChartDemo));
+html["breadcrumb-group"] = renderToStaticMarkup(createElement(BreadcrumbChartDemo));
 // Lazy children: the chart as first rendered, then one template per lead with the nodes its
 // load answers (rendered inside a collapsible chart, so they carry their own toggles). Each
 // render numbers its ids from 1: the template's get the lead's id as a prefix.

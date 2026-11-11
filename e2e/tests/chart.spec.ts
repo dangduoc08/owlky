@@ -68,6 +68,7 @@ const STORIES = [
   "waterfall",
   "dumbbell",
   "tree",
+  "tree-labels",
   "sunburst",
   "icicle",
   "geo",

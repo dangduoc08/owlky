@@ -105,6 +105,8 @@ const pairs: [component: string, story: string][] = [
   ["organization-chart", "search"],
   ["organization-chart", "lazy-children"],
   ["organization-chart", "zoom-pan"],
+  ["organization-chart", "selection"],
+  ["organization-chart", "keyboard-breadcrumb"],
   ["image", "list"],
   ["image", "aspect-ratio"],
   ["image", "overlay"],

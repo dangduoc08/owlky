@@ -31,7 +31,110 @@ export interface ChartHierarchyNode {
   readonly y?: number | string | undefined;
   /** A palette color for the node and its subtree. */
   readonly color?: ChartColor | undefined;
+  /** Tree charts: where this node's label sits (4.18.86); wins over the level's and the chart's. */
+  readonly externalLabel?: ChartTreeLabel | undefined;
   readonly children?: readonly ChartHierarchyNode[] | undefined;
+}
+
+/** Tree label alignment around its node (ApexTree `externalLabel.align`). */
+export const chartTreeLabelAligns = ["left", "center", "right"] as const;
+export type ChartTreeLabelAlign = (typeof chartTreeLabelAligns)[number];
+/** Tree label vertical alignment around its node (ApexTree `externalLabel.verticalAlign`). */
+export const chartTreeLabelVerticalAligns = ["top", "middle", "bottom"] as const;
+export type ChartTreeLabelVerticalAlign = (typeof chartTreeLabelVerticalAligns)[number];
+
+/**
+ * Where a tree node's label sits (ApexTree `externalLabel`, 4.18.86): beside its node (`align`
+ * `left` · `center` · `right`, `verticalAlign` `top` · `middle` · `bottom`; a missing one keeps the
+ * default side), moved by `offsetX` / `offsetY` px and turned by `rotation` degrees (clockwise)
+ * around its anchor. Radial leaves stay on their ray: `offsetX` moves them outward and `rotation`
+ * adds to their angle.
+ */
+export interface ChartTreeLabel {
+  readonly align?: ChartTreeLabelAlign | undefined;
+  readonly verticalAlign?: ChartTreeLabelVerticalAlign | undefined;
+  readonly offsetX?: number | undefined;
+  readonly offsetY?: number | undefined;
+  readonly rotation?: number | undefined;
+}
+
+/** Tree label options per level (the root level is 0). */
+export type ChartTreeLabelLevels = Readonly<Record<number, ChartTreeLabel>>;
+
+const LABEL_KEYS = ["align", "verticalAlign", "offsetX", "offsetY", "rotation"] as const;
+/** Offsets and angles beyond these are clamped (untrusted input). */
+const LABEL_LIMIT = { offset: 1000, rotation: 360 } as const;
+
+/** A label's valid fields only (`undefined` when none is valid). Numbers are clamped. */
+export function chartTreeLabel(input: unknown): ChartTreeLabel | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const given = input as Partial<Record<(typeof LABEL_KEYS)[number], unknown>>;
+  const out: {
+    align?: ChartTreeLabelAlign;
+    verticalAlign?: ChartTreeLabelVerticalAlign;
+    offsetX?: number;
+    offsetY?: number;
+    rotation?: number;
+  } = {};
+  if (chartTreeLabelAligns.includes(given.align as ChartTreeLabelAlign))
+    out.align = given.align as ChartTreeLabelAlign;
+  if (chartTreeLabelVerticalAligns.includes(given.verticalAlign as ChartTreeLabelVerticalAlign))
+    out.verticalAlign = given.verticalAlign as ChartTreeLabelVerticalAlign;
+  for (const key of ["offsetX", "offsetY", "rotation"] as const) {
+    const value = parseChartNumber(given[key] as number | string | undefined);
+    if (value === null) continue;
+    const limit = key === "rotation" ? LABEL_LIMIT.rotation : LABEL_LIMIT.offset;
+    out[key] = Math.max(-limit, Math.min(limit, value));
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+/** A label as attribute text: `key=value` pairs separated by spaces (`"align=right rotation=-45"`). */
+export function chartTreeLabelText(label: ChartTreeLabel | undefined): string {
+  const valid = chartTreeLabel(label);
+  if (!valid) return "";
+  return LABEL_KEYS.filter((key) => valid[key] !== undefined)
+    .map((key) => `${key}=${valid[key]}`)
+    .join(" ");
+}
+
+/** A label from attribute text (`chartTreeLabelText`); unknown keys and values are dropped. */
+export function parseChartTreeLabel(text: string | null | undefined): ChartTreeLabel | undefined {
+  if (!text || text.length > 500) return undefined;
+  const given: Record<string, string> = {};
+  for (const pair of text.trim().split(/\s+/)) {
+    const [key, value] = pair.split("=");
+    if (key && value !== undefined && (LABEL_KEYS as readonly string[]).includes(key))
+      given[key] = value;
+  }
+  return chartTreeLabel(given);
+}
+
+/** Levels as attribute text: `level: pairs` groups separated by `;` (`"1: rotation=-45; 2: align=left"`). */
+export function chartTreeLabelLevelsText(levels: ChartTreeLabelLevels | undefined): string {
+  if (!levels || typeof levels !== "object") return "";
+  return Object.keys(levels)
+    .map(Number)
+    .filter((level) => Number.isInteger(level) && level >= 0 && level < MAX_DEPTH)
+    .sort((a, b) => a - b)
+    .flatMap((level) => {
+      const text = chartTreeLabelText(levels[level]);
+      return text ? [`${level}: ${text}`] : [];
+    })
+    .join("; ");
+}
+
+/** Levels from attribute text (`chartTreeLabelLevelsText`). */
+export function parseChartTreeLabelLevels(text: string | null | undefined): ChartTreeLabelLevels {
+  const out: Record<number, ChartTreeLabel> = {};
+  if (!text || text.length > 4000) return out;
+  for (const group of text.split(";").slice(0, MAX_DEPTH)) {
+    const match = /^\s*(\d+)\s*:(.*)$/.exec(group);
+    const level = match ? Number(match[1]) : Number.NaN;
+    const label = match ? parseChartTreeLabel(match[2]) : undefined;
+    if (label && level < MAX_DEPTH) out[level] = label;
+  }
+  return out;
 }
 
 /** Hierarchy chart types (ADR-0058). */
@@ -71,6 +174,8 @@ export interface ChartHierarchyItem {
   /** Index of the parent item, `-1` for roots. */
   readonly parent: number;
   readonly children: readonly number[];
+  /** Tree charts: the node's own label placement (4.18.86). */
+  readonly label?: ChartTreeLabel | undefined;
 }
 
 export interface ChartHierarchy {
@@ -110,6 +215,7 @@ export function chartHierarchy(input: {
     depth: number;
     parent: number;
     children: number[];
+    label?: ChartTreeLabel;
   }[] = [];
   const ids = new Set<string>();
   const single = top.filter((entry) => entry && typeof entry === "object").length === 1;
@@ -131,6 +237,7 @@ export function chartHierarchy(input: {
         ? colorAt(palettePosition)
         : up.color;
     const index = items.length;
+    const label = chartTreeLabel(entry.externalLabel);
     items.push({
       id,
       name,
@@ -141,6 +248,7 @@ export function chartHierarchy(input: {
       depth,
       parent,
       children: [],
+      ...(label ? { label } : {}),
     });
     up?.children.push(index);
     if (depth + 1 >= MAX_DEPTH) return;
@@ -220,6 +328,7 @@ export function chartHierarchyTable(
             ...(item.id !== item.name ? { "data-ok-value": item.id } : {}),
             // Colors where they start (own or from the palette), so HTML draws the same ones.
             ...(item.tone === 0 ? { "data-ok-color": item.color } : {}),
+            ...(item.label ? { "data-ok-external-label": chartTreeLabelText(item.label) } : {}),
           },
         },
         cells,
@@ -253,6 +362,7 @@ export function readChartHierarchyTable(table: HTMLTableElement): {
     name: string;
     value?: string;
     color?: ChartColor;
+    externalLabel?: ChartTreeLabel;
     children: Mutable[];
   };
   const byId = new Map<string, Mutable>();
@@ -270,11 +380,13 @@ export function readChartHierarchyTable(table: HTMLTableElement): {
     const valueCell = valueColumn >= 0 ? cells[valueColumn] : undefined;
     const value = valueCell?.getAttribute("data-ok-value") ?? valueCell?.textContent?.trim();
     const color = head?.getAttribute("data-ok-color");
+    const label = parseChartTreeLabel(head?.getAttribute("data-ok-external-label"));
     const entry: Mutable = {
       id,
       name,
       ...(value ? { value } : {}),
       ...(isColor(color) ? { color } : {}),
+      ...(label ? { externalLabel: label } : {}),
       children: [],
     };
     const parent = parentId ? byId.get(parentId) : undefined;

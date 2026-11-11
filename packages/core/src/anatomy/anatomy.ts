@@ -2830,6 +2830,7 @@ export const organizationChartLineColors = ["divider", "inherit", ...paletteColo
 export const organizationChartLineStyles = ["solid", "dashed", "dotted"] as const;
 export const organizationChartDirections = ["top", "bottom", "left", "right"] as const;
 export const organizationChartEdgeColorModes = ["default", "node"] as const;
+export const organizationChartSelectionModes = ["single", "multi"] as const;
 
 export type OrganizationChartLineColor = (typeof organizationChartLineColors)[number];
 export type OrganizationChartLineStyle = (typeof organizationChartLineStyles)[number];
@@ -2938,6 +2939,17 @@ export const organizationChartOptions = defineOptions(
     ),
     minZoom: number("data-ok-min-zoom", 0.25, "The smallest zoom level.", { min: 0.01 }),
     maxZoom: number("data-ok-max-zoom", 2, "The largest zoom level.", { min: 0.01 }),
+    enableKeyboardNavigation: flag(
+      "data-ok-enable-keyboard-navigation",
+      "The chart becomes a tree with one tab stop: the arrow keys move between visible nodes, expand and collapse them, Home and End go to the first and last node, letters jump to a node.",
+    ),
+    enableSelection: style(
+      "data-ok-enable-selection",
+      organizationChartSelectionModes,
+      "single",
+      "Nodes with an id can be selected with a click or Space: `single` (one node) or `multi` (several). Turns on keyboard navigation.",
+      { optional: true },
+    ),
   },
 );
 
@@ -2961,6 +2973,8 @@ export interface OrganizationChartAnatomyOptions {
   zoom?: number | undefined;
   minZoom?: number | undefined;
   maxZoom?: number | undefined;
+  enableKeyboardNavigation?: boolean | undefined;
+  enableSelection?: (typeof organizationChartSelectionModes)[number] | false | undefined;
 }
 
 /** `data-ok-*` attributes of an organization chart (the outer `ul`). */

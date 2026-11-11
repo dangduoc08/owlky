@@ -1,5 +1,11 @@
 import { type ChartYAxis, chartYAxesText } from "./chart-axes.js";
 import { type ChartDiscreteMarker, chartDiscreteMarkersText } from "./chart-cues.js";
+import {
+  type ChartTreeLabel,
+  type ChartTreeLabelLevels,
+  chartTreeLabelLevelsText,
+  chartTreeLabelText,
+} from "./chart-hierarchy.js";
 import { type ChartIndicator, chartIndicatorsText } from "./chart-indicators.js";
 import type { ChartColorRange, ChartXGroup } from "./chart-layout.js";
 import {
@@ -64,6 +70,10 @@ export interface ChartTextOptions {
   readonly scaleThresholds?: readonly number[] | undefined;
   /** Sunburst and icicle charts: the id of the node zoomed into (ADR-0058). */
   readonly drillNode?: string | null | undefined;
+  /** Tree charts: where labels sit (`"align=right rotation=-45"`, 4.18.86). */
+  readonly externalLabel?: ChartTreeLabel | undefined;
+  /** Tree charts: label placement per level (`"0: verticalAlign=top; 2: rotation=-45"`). */
+  readonly externalLabelLevels?: ChartTreeLabelLevels | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -93,6 +103,8 @@ export const CHART_TEXT_ATTRIBUTES = {
   xaxisGroups: "data-ok-xaxis-groups",
   noDataText: "data-ok-no-data-text",
   drilldownPath: "data-ok-drilldown-path",
+  externalLabel: "data-ok-external-label",
+  externalLabelLevels: "data-ok-external-label-levels",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -243,6 +255,12 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
       if (text) out[attr] = text;
     } else if (key === "backgroundBarColors") {
       const text = ((value as readonly ChartColor[] | undefined) ?? []).filter(isColor).join(" ");
+      if (text) out[attr] = text;
+    } else if (key === "externalLabel") {
+      const text = chartTreeLabelText(value as ChartTreeLabel | undefined);
+      if (text) out[attr] = text;
+    } else if (key === "externalLabelLevels") {
+      const text = chartTreeLabelLevelsText(value as ChartTreeLabelLevels | undefined);
       if (text) out[attr] = text;
     } else if (key === "colorRanges") {
       const text = chartColorRangesText((value as readonly ChartColorRange[] | undefined) ?? []);

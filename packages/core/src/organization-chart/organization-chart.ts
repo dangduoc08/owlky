@@ -386,8 +386,10 @@ export function createOrganizationChartHighlight(root: HTMLElement): Organizatio
   let written = new Set<HTMLElement>();
 
   /** The node whose label or toggle holds an event target. */
-  const nodeOf = (target: EventTarget | null): HTMLElement | null => {
+  const nodeOf = (target: EventTarget | null, item = false): HTMLElement | null => {
     if (!(target instanceof Element)) return null;
+    // A focused tree item (ADR-0063) is its own node.
+    if (item && target.matches(NODE) && owns(root, target)) return target as HTMLElement;
     const part = target.closest(`${LABEL}, ${TOGGLE}`);
     const node = part?.parentElement;
     return part && owns(root, part) && node?.matches(NODE) ? (node as HTMLElement) : null;
@@ -437,7 +439,7 @@ export function createOrganizationChartHighlight(root: HTMLElement): Organizatio
   root.addEventListener(
     "focusin",
     (event) => {
-      focused = nodeOf(event.target);
+      focused = nodeOf(event.target, true);
       if (focused) sync();
     },
     options,

@@ -165,6 +165,8 @@ export const Waterfall: StoryObj = story("waterfall");
 export const Dumbbell: StoryObj = story("dumbbell");
 // Roadmap 4.18.7 (ADR-0058): tree charts.
 export const Tree: StoryObj = story("tree");
+// Roadmap 4.18.86: tree label placement (ApexTree `externalLabel`).
+export const TreeLabels: StoryObj = story("tree-labels");
 // Roadmap 4.18.21 (ADR-0058): sunburst charts.
 export const Sunburst: StoryObj = story("sunburst");
 // Roadmap 4.18.21 (ADR-0058): icicle charts.

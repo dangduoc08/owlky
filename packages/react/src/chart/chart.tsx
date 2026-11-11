@@ -59,6 +59,8 @@ import {
   type ChartTooltipContext,
   type ChartTooltipCorner,
   type ChartTooltipMode,
+  type ChartTreeLabel,
+  type ChartTreeLabelLevels,
   type ChartType,
   type ChartUnitLayout,
   type ChartViolinNormalize,
@@ -103,6 +105,8 @@ import {
   chartTooltip,
   chartTooltipContext,
   chartTooltipFixed,
+  chartTreeLabelLevelsText,
+  chartTreeLabelText,
   chartTreeMarkOf,
   chartZoomKey,
   createChartGestures,
@@ -111,6 +115,8 @@ import {
   hasChartDataPoint,
   linkChart,
   nextChartActive,
+  parseChartTreeLabel,
+  parseChartTreeLabelLevels,
   placeChartTooltip,
   renderChart,
   sameChartActive,
@@ -198,6 +204,19 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   layoutType?: ChartLayoutType | undefined;
   /** Tree charts: links with right angles, curved or straight. Default `"orthogonal"`. */
   edgeStyle?: ChartEdgeStyle | undefined;
+  /**
+   * Tree charts: where every node's label sits beside its node: `align` (`left`, `center`,
+   * `right`), `verticalAlign` (`top`, `middle`, `bottom`), `offsetX` / `offsetY` in px and
+   * `rotation` in degrees. Options left out keep the default side. Radial leaves stay on their
+   * ray: `offsetX` moves them outward and `rotation` adds to their angle. Default: labels below
+   * the node in top trees, above in bottom trees, beside it in left and right trees.
+   */
+  externalLabel?: ChartTreeLabel | undefined;
+  /**
+   * Tree charts: label placement per level (`{ 2: { rotation: -45 } }`; the roots are level 0),
+   * over `externalLabel`. A node's own `externalLabel` in `hierarchy` wins over both.
+   */
+  externalLabelLevels?: ChartTreeLabelLevels | undefined;
   /** Tree charts: a click, Enter or Space on a node with children hides or shows them. */
   enableExpandCollapse?: boolean | undefined;
   /** Tree charts, controlled: ids of the nodes whose children are hidden. */
@@ -730,6 +749,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     direction,
     layoutType,
     edgeStyle,
+    externalLabel,
+    externalLabelLevels,
     enableExpandCollapse,
     collapsedNodes,
     defaultCollapsedNodes = NO_IDS,
@@ -1144,6 +1165,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validDirection = attributes["data-ok-direction"] as ChartDirection | undefined;
   const validLayoutType = attributes["data-ok-layout-type"] as ChartLayoutType | undefined;
   const validEdgeStyle = attributes["data-ok-edge-style"] as ChartEdgeStyle | undefined;
+  // Tree labels (4.18.86) as their attribute text: a stable key, parsed back for the layout.
+  const labelText = chartTreeLabelText(externalLabel);
+  const levelsText = chartTreeLabelLevelsText(externalLabelLevels);
+  const treeLabel = useMemo(() => parseChartTreeLabel(labelText), [labelText]);
+  const treeLabelLevels = useMemo(() => parseChartTreeLabelLevels(levelsText), [levelsText]);
   const expandCollapse = attributes["data-ok-enable-expand-collapse"] !== undefined;
   // Tree charts (ADR-0058): collapsed nodes, controlled or kept here.
   const [collapsed, setCollapsed] = useControllableState<readonly string[]>({
@@ -1281,6 +1307,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         direction: validDirection,
         layoutType: validLayoutType,
         edgeStyle: validEdgeStyle,
+        externalLabel: treeLabel,
+        externalLabelLevels: treeLabelLevels,
         enableExpandCollapse: expandCollapse,
         collapsedNodes: collapsed,
         drillNode: drill,
@@ -1453,6 +1481,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validDirection,
       validLayoutType,
       validEdgeStyle,
+      treeLabel,
+      treeLabelLevels,
       expandCollapse,
       collapsed,
       drill,
@@ -2168,6 +2198,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         collapsedNodes: collapsed,
         drillNode: drill,
         drilldownPath: levels?.path,
+        externalLabel: treeLabel,
+        externalLabelLevels: treeLabelLevels,
       })}
       data-ok-ready=""
       data-ok-runtime="off"

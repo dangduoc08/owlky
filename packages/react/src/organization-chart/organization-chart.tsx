@@ -5,6 +5,7 @@ import {
   clampOrganizationChartZoom,
   createOrganizationChartController,
   createOrganizationChartHighlight,
+  createOrganizationChartTree,
   createOrganizationChartZoom,
   ORGANIZATION_CHART_ZOOM_STEP,
   type OrganizationChartAction,
@@ -13,13 +14,19 @@ import {
   type OrganizationChartEdgeColorMode,
   type OrganizationChartLineColor,
   type OrganizationChartLineStyle,
+  type OrganizationChartSelectionMode,
+  type OrganizationChartTree,
   type OrganizationChartZoomController,
   organizationChartAncestors,
   organizationChartAttributes,
   organizationChartLoaded,
   organizationChartNode,
   organizationChartNodeAttributes,
+  organizationChartNodeId,
+  organizationChartNodePath,
   organizationChartPlan,
+  organizationChartSelect,
+  organizationChartSelection,
   organizationChartStyle,
   organizationChartToggle,
   revealOrganizationChartNode,
@@ -60,6 +67,8 @@ interface ChartState {
 const ChartContext = createContext<ChartState | null>(null);
 /** The highlighted node's `nodeId`, or `null`. */
 const HighlightContext = createContext<string | null>(null);
+/** The selected nodes' `nodeId`s (ADR-0063). */
+const SelectionContext = createContext<ReadonlySet<string>>(new Set());
 
 const hasNodes = (children: ReactNode) => Children.toArray(children).length > 0;
 const NONE: readonly string[] = [];
@@ -122,6 +131,7 @@ const NodeItem = forwardRef<
 ) {
   const chart = useContext(ChartContext);
   const highlighted = useContext(HighlightContext);
+  const selected = useContext(SelectionContext);
   const internal = useId();
   const listId = useId();
   const key = nodeId ?? internal;
@@ -173,6 +183,7 @@ const NodeItem = forwardRef<
       {...organizationChartNodeAttributes({ lineColor, lineStyle })}
       data-ok-node-id={nodeId}
       data-ok-highlighted={nodeId !== undefined && nodeId === highlighted ? "" : undefined}
+      data-ok-selected={nodeId !== undefined && selected.has(nodeId) ? "" : undefined}
       {...props}
     >
       <div data-ok-organization-chart-label="">{label}</div>
@@ -227,6 +238,14 @@ export interface OrganizationChartApi {
    * collapsed ancestors. Resolves once the scroll starts.
    */
   centerOnNode(nodeId: string): Promise<void>;
+  /** Selects these nodes (`nodeId`s), replacing the selection; `single` keeps the first. Calls `onSelectionChange`. */
+  setSelection(nodeIds: readonly string[]): void;
+  /** Deselects every node. Calls `onSelectionChange` with `[]`. */
+  clearSelection(): void;
+  /** The selected `nodeId`s, in the order they were selected. */
+  getSelection(): string[];
+  /** The `nodeId`s from the root node to this node (empty when it isn't found), for a breadcrumb. */
+  getNodePath(nodeId: string): string[];
 }
 
 /** A ref for `apiRef`. */
@@ -320,6 +339,23 @@ export interface OrganizationChartProps
   minZoom?: number | undefined;
   /** The largest zoom level. Default `2`. */
   maxZoom?: number | undefined;
+  /**
+   * The chart becomes a tree with one tab stop: the arrow keys move between visible nodes, expand
+   * and collapse them, Home and End go to the first and last node, letters jump to a node.
+   * Default `false`.
+   */
+  enableKeyboardNavigation?: boolean | undefined;
+  /**
+   * Nodes with a `nodeId` can be selected with a click on their label or Space: `single` (one
+   * node) or `multi` (several). Turns on keyboard navigation. Default `false`.
+   */
+  enableSelection?: OrganizationChartSelectionMode | false | undefined;
+  /** Controlled `nodeId`s of the selected nodes. */
+  selectedNodes?: readonly string[] | undefined;
+  /** The `nodeId`s selected at first (uncontrolled). Default none. */
+  defaultSelectedNodes?: readonly string[] | undefined;
+  /** Called with the selected `nodeId`s after a click, Space or a method call. */
+  onSelectionChange?: ((nodeIds: string[]) => void) | undefined;
   /** Receives the chart's methods (`useOrganizationChartApiRef()`). */
   apiRef?: MutableRefObject<OrganizationChartApi | undefined> | undefined;
 }
@@ -366,6 +402,11 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       onZoomChange,
       minZoom,
       maxZoom,
+      enableKeyboardNavigation = false,
+      enableSelection = false,
+      selectedNodes,
+      defaultSelectedNodes,
+      onSelectionChange,
       apiRef,
       nodeId,
       hasChildren,
@@ -392,6 +433,14 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       defaultValue: defaultZoom ?? 1,
       onChange: (next) => onZoomChange?.(next),
     });
+    const [selection, setSelection] = useControllableState<readonly string[]>({
+      value: selectedNodes,
+      defaultValue: defaultSelectedNodes ?? NONE,
+      onChange: (next) => onSelectionChange?.([...next]),
+    });
+    const selectionMode = enableSelection || undefined;
+    const selectionLatest = useRef({ selection, setSelection, selectionMode });
+    selectionLatest.current = { selection, setSelection, selectionMode };
     const level = clampOrganizationChartZoom(zoomState, minZoom, maxZoom);
     const zoomLatest = useRef({ level, setZoomState });
     zoomLatest.current = { level, setZoomState };
@@ -510,6 +559,39 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       });
     });
 
+    // Tree semantics, roving focus and keys (ADR-0063): core writes them, React keeps the state.
+    const treeEnabled = enableKeyboardNavigation || !!selectionMode;
+    const tree = useRef<OrganizationChartTree | null>(null);
+    useLayoutEffect(() => {
+      if (!treeEnabled) return;
+      const created = createOrganizationChartTree(root.current as HTMLUListElement);
+      tree.current = created;
+      return () => {
+        created.destroy();
+        tree.current = null;
+      };
+    }, [treeEnabled]);
+    useLayoutEffect(() => {
+      tree.current?.update({
+        enabled: true,
+        selection: selectionMode,
+        onToggle: (node, expand) => {
+          const key = keys.current.get(node);
+          if (key !== undefined) void toggle(key, expand, true);
+        },
+        onSelect: (node) => {
+          const {
+            selection: current,
+            setSelection: write,
+            selectionMode: mode,
+          } = selectionLatest.current;
+          // The controller reports nodes with an id, and only while selection is on.
+          const id = organizationChartNodeId(node) as string;
+          write(organizationChartSelect(current, id, mode as OrganizationChartSelectionMode));
+        },
+      });
+    });
+
     // Zoom and pan (ADR-0056): core reports intent and keeps the view steady after each level.
     const zoomer = useRef<OrganizationChartZoomController | null>(null);
     useLayoutEffect(() => {
@@ -605,6 +687,27 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
           if (changes.size > 0) apply(changes);
           return centerOrganizationChartNode(node);
         },
+        setSelection: (ids) => {
+          const {
+            selection: current,
+            setSelection: write,
+            selectionMode: mode,
+          } = selectionLatest.current;
+          if (!mode) return;
+          const next = organizationChartSelection(ids, mode);
+          const same =
+            next.length === current.length && next.every((id, index) => id === current[index]);
+          if (!same) write(next);
+        },
+        clearSelection: () => {
+          const { selection: current, setSelection: write } = selectionLatest.current;
+          if (current.length > 0) write([]);
+        },
+        getSelection: () => [...selectionLatest.current.selection],
+        getNodePath: (id) =>
+          organizationChartNodePath(root.current as HTMLUListElement, id)
+            .map(organizationChartNodeId)
+            .filter((item): item is string => item !== null),
       };
       return () => {
         apiRef.current = undefined;
@@ -612,6 +715,10 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
     }, [apiRef, apply, toggle]);
 
     const collapsedSet = useMemo(() => new Set(collapsed), [collapsed]);
+    const selectedSet = useMemo(
+      () => (selectionMode ? new Set(selection) : new Set<string>()),
+      [selectionMode, selection],
+    );
     const state = useMemo<ChartState | null>(
       () =>
         enableExpandCollapse
@@ -644,6 +751,8 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
           zoom: zoomed,
           minZoom,
           maxZoom,
+          enableKeyboardNavigation,
+          enableSelection: selectionMode,
         })}
         data-ok-runtime="off"
         style={{ ...(organizationChartStyle(look) as CSSProperties), ...style }}
@@ -651,14 +760,16 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       >
         <ChartContext.Provider value={state}>
           <HighlightContext.Provider value={highlighted}>
-            <NodeItem
-              label={label}
-              nodeId={nodeId}
-              hasChildren={hasChildren}
-              toggleLabel={toggleLabel}
-            >
-              {children}
-            </NodeItem>
+            <SelectionContext.Provider value={selectedSet}>
+              <NodeItem
+                label={label}
+                nodeId={nodeId}
+                hasChildren={hasChildren}
+                toggleLabel={toggleLabel}
+              >
+                {children}
+              </NodeItem>
+            </SelectionContext.Provider>
           </HighlightContext.Provider>
         </ChartContext.Provider>
       </ul>

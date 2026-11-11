@@ -154,7 +154,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
         circle[data-ok-chart-dumbbell=start][data-ok-color]? + circle[data-ok-chart-dumbbell=end][data-ok-color]?)×n
       (drawn with the points group, after bars and lines)
     Tree (ADR-0058; root [data-ok-direction]?[data-ok-layout-type]?[data-ok-edge-style]?
-      [data-ok-enable-expand-collapse]?[data-ok-collapsed-nodes]?):
+      [data-ok-enable-expand-collapse]?[data-ok-collapsed-nodes]?[data-ok-external-label]?
+      [data-ok-external-label-levels]?; row headers [data-ok-external-label]?, 4.18.86):
       g[data-ok-chart-series][data-ok-type=tree] › path[data-ok-chart-tree-link][data-ok-color]×(n − roots)
         + circle[data-ok-chart-tree-node][data-ok-color][data-ok-collapsed]?×n (preorder)
       g[data-ok-chart-active] › path[data-ok-chart-active-path][data-ok-color]* (root → node) + circle[data-ok-chart-active-node]
@@ -420,6 +421,28 @@ Tree geometry (core `chart-hierarchy.ts`, `chart-tree.ts`, ADR-0058):
   left out when the level's nodes are under 12px apart; `radial` — breadth over `startAngle` →
   `endAngle` (default a full turn, a gap of one leaf spacing between the last and the first leaf),
   levels as radii, leaf labels outward (rotated, cut to the margin), parent labels above the node.
+- Label placement (4.18.86, ApexTree `externalLabel`): `externalLabel` (chart), then
+  `externalLabelLevels[depth]` (0: the roots), then the node's own `externalLabel` merge field by
+  field; fields: `align` (`left` · `center` · `right`), `verticalAlign` (`top` · `middle` ·
+  `bottom`), `offsetX` / `offsetY` (px, ±1000), `rotation` (degrees clockwise, ±360). A field left
+  out keeps the default side (top: center / bottom; bottom: center / top; left: leaves right,
+  parents left, middle; right: mirrored; radial parents: center / top). The anchor is the node's
+  center moved by marker radius + 4px toward the alignment, then by the offsets; `text-anchor`
+  `end` · `middle` · `start` for left · center · right, `dy` `0` · `0.35em` · `0.71em` for top ·
+  middle · bottom, `rotate(θ x y)` around the anchor when turned. Radial leaves stay on their ray:
+  `offsetX` adds to the distance, `rotation` to the angle, the others don't apply. Room (estimated
+  text widths): along the rotation to the plot's edge (both ways when centered), and unturned
+  labels in top / bottom trees within the nearest node of the level (minus the marker for left /
+  right alignment), sideways parents within the gap to the next level; a row-centered label in a
+  crowded sideways level (under 12px) is left out. With any placement, the margins come from each
+  label's estimated reach (rotated box): top / bottom trees the widest reach across (≤ 25%), the
+  roots' toward the root side (≤ 30%), the leaves' toward the far side (≤ 40%); sideways trees the
+  roots' (≤ 25%) and the leaves' (≤ 35%) along the depth, every label's across (≤ 25%). Without
+  placements the layout and labels are byte-identical to before. HTML: `data-ok-external-label`
+  (`"align=right rotation=-20"`: `key=value` pairs) on the root and on a node's row header,
+  `data-ok-external-label-levels` (`"0: verticalAlign=top; 2: rotation=-20"`); unknown keys and
+  values are dropped (core `chartTreeLabel`, `parseChartTreeLabel`, `chartTreeLabelText`,
+  `parseChartTreeLabelLevels`, `chartTreeLabelLevelsText`).
 - `edgeStyle`: `orthogonal` (default; radial: out along the parent's angle, around the middle
   circle, out to the child; from the center, straight to the middle circle), `curved` (cubics
   through the middle depth), `straight`. Nodes are circles of `markerSize` (default 5, 2–20).
@@ -1063,6 +1086,9 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | ApexTree `highlightOnHover` | always on: the active node's path from the root |
 | ApexTree `nodeWidth` / `nodeHeight` / `nodeTemplate` / `nodeStyle` / `borderWidth` / `borderColor` / `borderRadius`, `fontSize` / `fontFamily` / `fontColor`, `edgeColor` / `edgeColorHover` / `edgeWidth`, `siblingSpacing` / `childrenSpacing`, `paddingX` / `paddingY`, `width` / `height` | not applicable: circles of `markerSize` with text labels (cards are the Organization chart's, ADR-0036); spacing fits the SVG; colors and widths from tokens; `height` kept |
 | ApexTree `externalLabel` (`collisionStrategy`) | always: labels beside the nodes, cut or left out when there is no room (the tooltip and the table keep them) |
+| ApexTree `externalLabel.align`, `verticalAlign`, `offsetX`, `offsetY`, `rotation` | kept (4.18.86): `externalLabel` (React object; HTML `data-ok-external-label` pairs), per level `externalLabelLevels` (added), per node `hierarchy[].externalLabel` (ApexTree `node.options.externalLabel`; HTML on the row header) |
+| ApexTree `externalLabel.enabled` | not applicable: tree labels are always outside the nodes (circles) |
+| ApexTree `externalLabel.fontColor` / `fontFamily` / `fontSize` / `fontWeight` | not applicable: tokens (the chart's text style) |
 | ApexTree `enableToolbar`, `fitScreen`, `zoom`, `changeLayout`, `groupLeafNodes`, `autoNodeHeight`, `edgeColorMode`, `enableAnimation`, search, `locale.direction` | not built (ADR-0058): the chart fits its SVG (no zoom); `direction` changes the layout; leaf groups, node line colors and search are Organization chart features (4.18.3–4.18.6) |
 
 ## Upstream API mapping
@@ -1260,6 +1286,9 @@ Option areas not covered by the table above:
 - Tree story (4.18.7, ADR-0058): Tree (a tidy top tree with values, data labels and
   expand / collapse; a radial dendrogram with curved links; a left tree with curved links and a
   node collapsed by default — `data-ok-collapsed-nodes` on the HTML root).
+- Tree labels story (4.18.86): Tree labels (a left tree with every label above and after its node
+  and the level-2 pages turned −20°; a top tree with labels to the right, the root's above it
+  (level 0) and one node's own on the left).
 - Sunburst story (4.18.21, ADR-0058): Sunburst (cloud spend with drill; a half circle with data
   labels, a 40% hole, `leaf="stop"` and own colors, without zoom on click). React renders the drill
   row; the runtime builds the same markup.

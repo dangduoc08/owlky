@@ -222,6 +222,23 @@ describe("createOrganizationChartZoom", () => {
     expect(asked).toHaveLength(count);
   });
 
+  it("keys still zoom from a node of the chart's own tree (ADR-0063), not inside another tree", () => {
+    const { root } = mountZoom();
+    const { asked } = own(root);
+    root.setAttribute("role", "tree");
+    const node = root.querySelector("[data-ok-organization-chart-node]") as HTMLElement;
+    node.setAttribute("role", "treeitem");
+    node.dispatchEvent(new KeyboardEvent("keydown", { key: "+", bubbles: true, cancelable: true }));
+    expect(asked).toEqual([1.25]);
+    const other = document.createElement("div");
+    other.setAttribute("role", "tree");
+    const item = document.createElement("span");
+    other.append(item);
+    root.querySelector("[data-ok-organization-chart-label]")?.append(other);
+    item.dispatchEvent(new KeyboardEvent("keydown", { key: "+", bubbles: true, cancelable: true }));
+    expect(asked).toEqual([1.25]);
+  });
+
   it("a mouse drag pans the area and swallows the click that ends it", () => {
     const { root, area } = mountZoom();
     own(root);

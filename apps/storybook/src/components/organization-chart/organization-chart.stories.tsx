@@ -3,6 +3,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { JSX } from "react";
 import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { BreadcrumbChartDemo } from "./breadcrumb-demo.js";
+import breadcrumbSource from "./breadcrumb-demo.tsx?raw";
 import { CollapsibleChartDemo } from "./collapsible-demo.js";
 import collapsibleSource from "./collapsible-demo.tsx?raw";
 import { GroupChartDemo } from "./group-demo.js";
@@ -16,17 +18,23 @@ import {
   organizationChartStories,
 } from "./organization-chart-examples.js";
 import {
+  BREADCRUMB_SCRIPT_SOURCE,
+  breadcrumbScript,
   COLLAPSIBLE_SCRIPT_SOURCE,
   collapsibleScript,
   LAZY_SCRIPT_SOURCE,
   lazyScript,
   SEARCH_SCRIPT_SOURCE,
+  SELECTION_SCRIPT_SOURCE,
   searchScript,
+  selectionScript,
   ZOOM_SCRIPT_SOURCE,
   zoomScript,
 } from "./organization-chart-scripts.js";
 import { SearchChartDemo } from "./search-demo.js";
 import searchSource from "./search-demo.tsx?raw";
+import { SelectionChartDemo } from "./selection-demo.js";
+import selectionSource from "./selection-demo.tsx?raw";
 import { StandardChartDemo } from "./standard-demo.js";
 import standardSource from "./standard-demo.tsx?raw";
 import { ZoomChartDemo } from "./zoom-demo.js";
@@ -196,6 +204,46 @@ export const LazyChildren: StoryObj = {
     ),
   }),
   name: "Lazy children",
+};
+
+/** Selection (ADR-0063, multi): stateful in React, a page script in HTML. */
+export const Selection: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "selection",
+      [["Selection", "group"]],
+      htmlSetup(COLLAPSIBLE, true),
+      undefined,
+      { group: { script: selectionScript, scriptSource: SELECTION_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Selection", content: <SelectionChartDemo /> }],
+      undefined,
+      selectionSource,
+    ),
+  }),
+  name: "Selection",
+};
+
+/** Keyboard navigation and a lineage breadcrumb (ADR-0063, 4.18.85): composes Breadcrumbs. */
+export const KeyboardBreadcrumb: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "breadcrumb",
+      [["Keyboard and breadcrumb", "group"]],
+      htmlSetup([...COLLAPSIBLE, "link.css", "breadcrumbs.css"], true),
+      undefined,
+      { group: { script: breadcrumbScript, scriptSource: BREADCRUMB_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Keyboard and breadcrumb", content: <BreadcrumbChartDemo /> }],
+      undefined,
+      breadcrumbSource,
+    ),
+  }),
+  name: "Keyboard and breadcrumb",
 };
 
 /** Zoom and pan (ADR-0056): the toolbar, wheel and keys; stateful in React, a page script in HTML. */

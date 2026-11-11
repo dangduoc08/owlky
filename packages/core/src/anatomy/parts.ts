@@ -293,6 +293,10 @@ export interface ChartParts {
   "data-ok-collapsed": State;
   /** Tree charts: the ids of the collapsed nodes, separated by `;`. Written by the chart. */
   "data-ok-collapsed-nodes": Value<string>;
+  /** Tree charts, on the chart or on a node's row header: where labels sit beside their nodes, as `key=value` pairs (`align` `left` · `center` · `right`, `verticalAlign` `top` · `middle` · `bottom`, `offsetX`, `offsetY`, `rotation`), such as `"align=right rotation=-20"`. A row header's wins over the chart's. */
+  "data-ok-external-label": Value<string>;
+  /** Tree charts: label placement per level (0: the roots), as `level: pairs` groups separated by `;`, such as `"0: verticalAlign=top; 2: rotation=-20"`. */
+  "data-ok-external-label-levels": Value<string>;
   /** One drawn annotation: a line, a band or a point. */
   "data-ok-chart-annotation": Value<"x" | "y" | "point">;
   /** The band of a range annotation. */
@@ -1868,6 +1872,8 @@ export interface OrganizationChartParts {
   "data-ok-organization-chart-zoom-value": Part<"output">;
   /** On the chart: set while a mouse drag pans its scroll area. */
   "data-ok-panning": State;
+  /** On a node with an id: it is selected (`data-ok-enable-selection`). Written by the script after `ok:organization-chart:select`, or by `setSelection(ids)`. */
+  "data-ok-selected": State;
 }
 
 /** Pagination: parts, states, values and triggers. */

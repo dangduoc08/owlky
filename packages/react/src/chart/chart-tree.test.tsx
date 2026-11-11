@@ -138,4 +138,48 @@ describe("Chart (tree)", () => {
     fireEvent.keyDown(plot(), { key: " " });
     expect(nodes()).toHaveLength(5);
   });
+
+  it("places labels from externalLabel, externalLabelLevels and the nodes' own (4.18.86)", async () => {
+    const { rerender } = renderTree({
+      externalLabel: { align: "right", verticalAlign: "middle" },
+      externalLabelLevels: { 2: { rotation: 30 } },
+      hierarchy: {
+        name: "Root",
+        children: [
+          {
+            name: "A",
+            children: [{ name: "A1" }, { name: "A2", externalLabel: { align: "left" } }],
+          },
+          { name: "B" },
+        ],
+      },
+    });
+    const label = (text: string) =>
+      [...document.querySelectorAll("[data-ok-chart-node-label]")].find(
+        (node) => node.textContent === text,
+      );
+    expect(root().getAttribute("data-ok-external-label")).toBe("align=right verticalAlign=middle");
+    expect(root().getAttribute("data-ok-external-label-levels")).toBe("2: rotation=30");
+    expect(label("A")?.getAttribute("text-anchor")).toBe("start");
+    expect(label("A1")?.getAttribute("transform")).toMatch(/^rotate\(30 /);
+    expect(label("A2")?.getAttribute("text-anchor")).toBe("end");
+    // The node's own placement goes to its row header, so the HTML table carries it.
+    const header = [...document.querySelectorAll("th[scope=row]")].find(
+      (cell) => cell.textContent === "A2",
+    );
+    expect(header?.getAttribute("data-ok-external-label")).toBe("align=left");
+    await expectNoAxeViolations(document.body);
+    // Without the options: the default labels and no attributes.
+    rerender(
+      <div style={{ width: 600 }}>
+        <Chart label="Teams" type="tree" hierarchy={HIERARCHY} />
+      </div>,
+    );
+    expect(root().hasAttribute("data-ok-external-label")).toBe(false);
+    expect(label("A1")?.getAttribute("dy")).toBe("0.71em");
+    const html = renderToString(
+      <Chart label="Teams" type="tree" hierarchy={HIERARCHY} externalLabel={{ rotation: 10 }} />,
+    );
+    expect(html).toContain('data-ok-external-label="rotation=10"');
+  });
 });

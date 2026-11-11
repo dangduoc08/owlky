@@ -13,7 +13,9 @@ import searchGroup from "../../../../../packages/html/src/components/organizatio
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
+import { BreadcrumbChartDemo } from "./breadcrumb-demo.js";
 import { SearchChartDemo } from "./search-demo.js";
+import { SelectionChartDemo } from "./selection-demo.js";
 
 export const organizationChartSections: GuideSection[] = [
   {
@@ -603,6 +605,283 @@ export function ZoomableCompany() {
 }`,
   },
   {
+    id: "keyboard-navigation",
+    title: "Navigate with the keyboard",
+    body: `Set \`enableKeyboardNavigation\` to turn the chart into a tree that people can walk with the arrow keys. The chart then takes one stop in the **Tab** order, and the arrow keys move the focus from node to node:
+
+- **↓ and ↑:** the next or previous visible node, in reading order.
+- **→:** expands a collapsed node, or moves to its first child.
+- **←:** collapses an expanded node, or moves to its parent.
+- **Home and End:** the first or last visible node.
+- **Enter:** expands or collapses the node.
+- **Letters:** the next node whose text starts with the typed letters.
+
+The keys follow the reading order of the tree, the same in every \`direction\`. In right-to-left pages, **→** and **←** swap. The script adds the tree roles itself: without it, the chart stays a set of nested lists. Keep buttons and links out of the cards of a chart meant for keyboard navigation: they stay in the **Tab** order after their node, which adds stops.`,
+    html: `<!-- Keyboard navigation needs the script (once per page) -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-enable-keyboard-navigation aria-label="Company">
+  <li data-ok-organization-chart-node>
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+      </li>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Priya Raman, development</div>
+        <ul data-ok-organization-chart-children>
+          <li data-ok-organization-chart-node>
+            <div data-ok-organization-chart-label>Elias Novak</div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function KeyboardCompany() {
+  return (
+    <OrganizationChart aria-label="Company" enableKeyboardNavigation label="Maya Lindqvist, CEO">
+      <OrganizationChartNode label="Jonah Pereira, design" />
+      <OrganizationChartNode label="Priya Raman, development">
+        <OrganizationChartNode label="Elias Novak" />
+      </OrganizationChartNode>
+    </OrganizationChart>
+  );
+}`,
+  },
+  {
+    id: "selection",
+    title: "Select nodes",
+    body: `Set \`enableSelection\` to let people select nodes: \`single\` for one node at a time, or \`multi\` for several. A click on a node's card, or **Space** on the focused node, selects it. The same action on a selected node deselects it. Selection turns on keyboard navigation too, and only nodes with an id (\`nodeId\`, or \`data-ok-node-id\` in HTML) can be selected.
+
+A selected node has a ring around its card, and screen readers announce it as selected. In React, control the selection with \`selectedNodes\` and \`onSelectionChange\`, or start from \`defaultSelectedNodes\`. In HTML, a selected node has the \`data-ok-selected\` attribute, and the chart fires the cancelable \`ok:organization-chart:select\` event before it changes: \`detail.selectedNodes\` is the new selection. \`setSelection(ids)\`, \`clearSelection()\` and \`getSelection()\` change and read the selection from code, without an event.`,
+    html: `<!-- Selection needs the script (once per page) -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" id="select-leads"><span data-ok-button-label>Select the leads</span></button>
+<p data-ok-typography data-ok-variant="body2" id="selection-status" role="status">Selected: priya</p>
+
+<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-enable-selection="multi" id="company" aria-label="Company">
+  <li data-ok-organization-chart-node data-ok-node-id="maya">
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node data-ok-node-id="jonah">
+        <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+      </li>
+      <li data-ok-organization-chart-node data-ok-node-id="priya" data-ok-selected>
+        <div data-ok-organization-chart-label>Priya Raman, development</div>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<script type="module">
+  const element = document.getElementById("company");
+  const chart = Owlky.runtime.get(element, "organization-chart");
+  const status = document.getElementById("selection-status");
+  const show = (ids) => {
+    status.textContent = ids.length ? \`Selected: \${ids.join(", ")}\` : "No one is selected.";
+  };
+
+  // A click or Space asks for a new selection; preventDefault() keeps the old one
+  element.addEventListener("ok:organization-chart:select", (event) => show(event.detail.selectedNodes));
+
+  // The methods change the selection without an event
+  document.getElementById("select-leads").addEventListener("click", () => {
+    chart.setSelection(["jonah", "priya"]);
+    show(chart.getSelection());
+  });
+</script>`,
+    react: `import { Button, OrganizationChart, OrganizationChartNode, Typography } from "@owlky/react";
+import { useState } from "react";
+
+export function SelectableCompany() {
+  const [selected, setSelected] = useState<string[]>(["priya"]);
+  return (
+    <>
+      <Button variant="outlined" onClick={() => setSelected(["jonah", "priya"])}>
+        Select the leads
+      </Button>
+      <Typography role="status" variant="body2">
+        {selected.length ? \`Selected: \${selected.join(", ")}\` : "No one is selected."}
+      </Typography>
+      <OrganizationChart
+        aria-label="Company"
+        enableSelection="multi"
+        selectedNodes={selected}
+        onSelectionChange={setSelected}
+        nodeId="maya"
+        label="Maya Lindqvist, CEO"
+      >
+        <OrganizationChartNode nodeId="jonah" label="Jonah Pereira, design" />
+        <OrganizationChartNode nodeId="priya" label="Priya Raman, development" />
+      </OrganizationChart>
+    </>
+  );
+}`,
+  },
+  {
+    id: "breadcrumb",
+    title: "Show the path to a node",
+    body: `A breadcrumb above the chart can show the path from the top node to the selected node. \`getNodePath(id)\` returns the ids of that path, from the top node down. Put a \`Breadcrumbs\` next to the chart and render one item per id: each manager as a link-styled button that selects that manager, and the selected node last, with \`aria-current="location"\`. In React, rebuild the trail in \`onSelectionChange\`. In HTML, rebuild it when the chart fires \`ok:organization-chart:select\`, and after your own calls to \`setSelection(ids)\`, which fire no event. \`centerOnNode(id)\` then brings the new node into view.`,
+    html: `<!-- The breadcrumb follows the selection: needs the script (once per page) -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+<nav data-ok-breadcrumbs aria-label="Path to the selected person">
+  <ol data-ok-breadcrumbs-list id="trail">
+    <li data-ok-breadcrumbs-item>
+      <button data-ok-typography data-ok-variant="inherit" data-ok-link data-ok-color="inherit" data-ok-underline="hover" type="button" value="maya">Maya Lindqvist</button>
+    </li>
+    <li data-ok-breadcrumbs-separator aria-hidden="true">/</li>
+    <li data-ok-breadcrumbs-item><span aria-current="location">Priya Raman</span></li>
+  </ol>
+</nav>
+
+<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-enable-selection="single" id="company" aria-label="Company">
+  <li data-ok-organization-chart-node data-ok-node-id="maya">
+    <div data-ok-organization-chart-label>Maya Lindqvist</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node data-ok-node-id="priya" data-ok-selected>
+        <div data-ok-organization-chart-label>Priya Raman</div>
+        <ul data-ok-organization-chart-children>
+          <li data-ok-organization-chart-node data-ok-node-id="elias">
+            <div data-ok-organization-chart-label>Elias Novak</div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<script type="module">
+  const element = document.getElementById("company");
+  const chart = Owlky.runtime.get(element, "organization-chart");
+  const trail = document.getElementById("trail");
+  const nameOf = (id) =>
+    element.querySelector(\`[data-ok-node-id="\${id}"] > [data-ok-organization-chart-label]\`).textContent;
+  const item = (content) => {
+    const li = document.createElement("li");
+    li.setAttribute("data-ok-breadcrumbs-item", "");
+    li.append(content);
+    return li;
+  };
+
+  // One button per manager, then the selected person
+  function render(path) {
+    const items = [];
+    path.forEach((id, index) => {
+      if (index < path.length - 1) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.value = id;
+        button.setAttribute("data-ok-typography", "");
+        button.setAttribute("data-ok-variant", "inherit");
+        button.setAttribute("data-ok-link", "");
+        button.setAttribute("data-ok-color", "inherit");
+        button.setAttribute("data-ok-underline", "hover");
+        button.textContent = nameOf(id);
+        const separator = document.createElement("li");
+        separator.setAttribute("data-ok-breadcrumbs-separator", "");
+        separator.setAttribute("aria-hidden", "true");
+        separator.textContent = "/";
+        items.push(item(button), separator);
+      } else {
+        const span = document.createElement("span");
+        span.setAttribute("aria-current", "location");
+        span.textContent = nameOf(id);
+        items.push(item(span));
+      }
+    });
+    trail.replaceChildren(...items);
+  }
+
+  element.addEventListener("ok:organization-chart:select", (event) => {
+    const [id] = event.detail.selectedNodes;
+    render(id ? chart.getNodePath(id) : []);
+  });
+
+  // A manager's button selects them: methods fire no event, so render here too
+  trail.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    chart.setSelection([button.value]);
+    render(chart.getNodePath(button.value));
+    chart.centerOnNode(button.value);
+  });
+</script>`,
+    react: `import {
+  Breadcrumbs,
+  Link,
+  OrganizationChart,
+  OrganizationChartNode,
+  useOrganizationChartApiRef,
+} from "@owlky/react";
+import { useState } from "react";
+
+const names: Record<string, string> = {
+  maya: "Maya Lindqvist",
+  priya: "Priya Raman",
+  elias: "Elias Novak",
+};
+
+export function CompanyWithBreadcrumb() {
+  const apiRef = useOrganizationChartApiRef();
+  const [selected, setSelected] = useState<string[]>(["priya"]);
+  const [path, setPath] = useState<string[]>(["maya", "priya"]);
+  const select = (ids: string[]) => {
+    setSelected(ids);
+    // The ids from the top node down to the selected node
+    setPath(ids[0] ? (apiRef.current?.getNodePath(ids[0]) ?? []) : []);
+  };
+  return (
+    <>
+      <Breadcrumbs aria-label="Path to the selected person">
+        {path.map((id, index) =>
+          index < path.length - 1 ? (
+            <Link
+              key={id}
+              color="inherit"
+              underline="hover"
+              onClick={() => {
+                select([id]);
+                void apiRef.current?.centerOnNode(id);
+              }}
+            >
+              {names[id]}
+            </Link>
+          ) : (
+            <span key={id} aria-current="location">
+              {names[id]}
+            </span>
+          ),
+        )}
+      </Breadcrumbs>
+      <OrganizationChart
+        aria-label="Company"
+        apiRef={apiRef}
+        enableSelection="single"
+        selectedNodes={selected}
+        onSelectionChange={select}
+        nodeId="maya"
+        label="Maya Lindqvist"
+      >
+        <OrganizationChartNode nodeId="priya" label="Priya Raman">
+          <OrganizationChartNode nodeId="elias" label="Elias Novak" />
+        </OrganizationChartNode>
+      </OrganizationChart>
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed, and lengths that aren't valid, fall back to the default.",
@@ -618,9 +897,10 @@ export function ZoomableCompany() {
     body: `- **\`ok:organization-chart:expand\`** (cancelable) fires on the chart before someone expands a node, with \`detail.nodeId\` and \`detail.node\`. Call \`preventDefault()\` to keep the node collapsed.
 - **\`ok:organization-chart:collapse\`** (cancelable) fires before someone collapses a node, with the same details.
 - **\`ok:organization-chart:zoom\`** (cancelable) fires when someone zooms with the wheel, a pinch, the keys or the toolbar, with \`detail.zoom\` (the new level) and \`detail.previous\`. Call \`preventDefault()\` to keep the level.
+- **\`ok:organization-chart:select\`** (cancelable) fires when someone selects or deselects a node, with \`detail.selectedNodes\` (the new selection), \`detail.nodeId\`, \`detail.node\` and \`detail.selected\`. Call \`preventDefault()\` to keep the selection.
 - **\`ok:organization-chart:loadchildren\`** fires the first time a node with an empty children list expands, with \`detail.nodeId\`, \`detail.node\` and \`detail.respondWith(nodes)\`.
-- **Instance:** \`runtime.get(element, "organization-chart")\` returns \`{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id), highlightNode(id), clearHighlight(), getHighlightedNode(), zoom(factor), zoomIn(), zoomOut(), setZoom(level), getZoom(), resetZoom(), fitScreen(), centerOnNode(id) }\`. \`zoom(factor)\` multiplies the level by 1 + factor, and \`zoomIn()\` and \`zoomOut()\` multiply or divide it by 1.25. \`expand(id)\` returns a promise that resolves once the children are loaded and shown, \`highlightNode(id)\` one that resolves once the node is in view, and \`centerOnNode(id)\` one that resolves once the scroll starts. The methods don't fire events.
-- **React:** \`onExpand(nodeId)\`, \`onCollapse(nodeId)\`, \`onCollapsedNodesChange(nodeIds)\`, \`onHighlightedNodeChange(nodeId)\`, \`onZoomChange(level)\` and the same methods on \`apiRef\`.`,
+- **Instance:** \`runtime.get(element, "organization-chart")\` returns \`{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id), highlightNode(id), clearHighlight(), getHighlightedNode(), zoom(factor), zoomIn(), zoomOut(), setZoom(level), getZoom(), resetZoom(), fitScreen(), centerOnNode(id), setSelection(ids), clearSelection(), getSelection(), getNodePath(id) }\`. \`zoom(factor)\` multiplies the level by 1 + factor, and \`zoomIn()\` and \`zoomOut()\` multiply or divide it by 1.25. \`expand(id)\` returns a promise that resolves once the children are loaded and shown, \`highlightNode(id)\` one that resolves once the node is in view, and \`centerOnNode(id)\` one that resolves once the scroll starts. The methods don't fire events.
+- **React:** \`onExpand(nodeId)\`, \`onCollapse(nodeId)\`, \`onCollapsedNodesChange(nodeIds)\`, \`onHighlightedNodeChange(nodeId)\`, \`onZoomChange(level)\`, \`onSelectionChange(nodeIds)\` and the same methods on \`apiRef\`.`,
   },
   {
     id: "keyboard",
@@ -631,7 +911,19 @@ export function ZoomableCompany() {
 - **−:** zooms out.
 - **0:** returns to 100%.
 
-They don't apply in text fields, menus and other widgets with keys of their own, or with **Ctrl**, **Command** or **Alt**, which stay the browser's zoom.`,
+They don't apply in text fields, menus and other widgets with keys of their own, or with **Ctrl**, **Command** or **Alt**, which stay the browser's zoom.
+
+With \`enableKeyboardNavigation\` or \`enableSelection\`, the chart is one **Tab** stop and these keys work on the focused node:
+
+- **↓ and ↑:** the next or previous visible node.
+- **→:** expands a collapsed node, or moves to its first child.
+- **←:** collapses an expanded node, or moves to its parent.
+- **Home and End:** the first or last visible node.
+- **Enter:** expands or collapses the node.
+- **Space:** selects or deselects the node.
+- **Letters and digits:** the next node whose text starts with them.
+
+In right-to-left pages, **→** and **←** swap. The zoom keys keep zooming from a focused node.`,
   },
   {
     id: "accessibility",
@@ -650,6 +942,7 @@ They don't apply in text fields, menus and other widgets with keys of their own,
 - Zooming has keyboard and toolbar alternatives to the wheel, pinch and drag. The toolbar's level is an \`output\` element, so screen readers announce each new level politely. At a limit, the zoom in or zoom out button has \`aria-disabled="true"\` and keeps the focus.
 - At every level, the browser scrolls the focused control into view inside the scroll area.
 - Below 100%, buttons in the chart are smaller than the 24 by 24 pixel minimum target size. People choose that view themselves, as with the browser's zoom, and **0** or **Reset zoom** returns to full size. Start charts at 100%.
+- With \`enableKeyboardNavigation\` or \`enableSelection\`, the script makes the chart a tree: \`role="tree"\` on the chart, \`treeitem\` on each node and \`group\` on each list of children. Screen readers announce each node's level, position, expanded state and, with selection, whether it is selected (\`aria-selected\`, and \`aria-multiselectable\` for \`multi\`). The focused node has a ring around its card, and a selected one a primary-colored ring, so selection never relies on color alone.
 - Zoom steps are instant. \`centerOnNode\` and \`highlightNode\` scroll smoothly, unless the user prefers reduced motion.`,
   },
   apiReferenceSection(organizationChartApi),
@@ -782,6 +1075,26 @@ const PREVIEWS = {
       <ZoomPreview />
     </Preview>
   ),
+  "keyboard-navigation": () => (
+    <Preview>
+      <OrganizationChart aria-label="Company" enableKeyboardNavigation label="Maya Lindqvist, CEO">
+        <OrganizationChartNode label="Jonah Pereira, design" />
+        <OrganizationChartNode label="Priya Raman, development">
+          <OrganizationChartNode label="Elias Novak" />
+        </OrganizationChartNode>
+      </OrganizationChart>
+    </Preview>
+  ),
+  selection: () => (
+    <Preview>
+      <SelectionChartDemo />
+    </Preview>
+  ),
+  breadcrumb: () => (
+    <Preview>
+      <BreadcrumbChartDemo />
+    </Preview>
+  ),
   options: () => (
     <>
       <OptionsTable schema={organizationChartOptions} />
@@ -835,6 +1148,13 @@ const PREVIEWS = {
           type: "boolean",
           description:
             "Shows the number of hidden nodes on collapsed toggles. Default true. In HTML, leave the span out for no badge.",
+        },
+        {
+          react: "selectedNodes",
+          html: "data-ok-selected",
+          type: "string[]",
+          description:
+            "The selected nodes: their nodeIds on the chart in React, the attribute on each selected node in HTML. Set by a click, Space or setSelection().",
         },
         {
           react: "highlightedNode",

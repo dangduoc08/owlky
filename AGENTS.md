@@ -901,6 +901,21 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   from the React stories: `pnpm build && node apps/storybook/scripts/organization-chart-snippets.mjs`
   (it adds `data-ok-popover-open` to the card menu buttons; esbuild must keep `monaco-editor`,
   `maplibre-gl` and `@tiptap/*` external because the React dist reaches them).
+- Organization chart tree mode (ADR-0063, `enableKeyboardNavigation` / `enableSelection`): core
+  `createOrganizationChartTree` writes `role` (tree / treeitem / group), `aria-expanded`,
+  `aria-selected`, `aria-multiselectable` and the roving `tabindex` in both implementations; React
+  renders only `data-ok-selected`, so snippets stay plain lists. Items are named from their
+  content like Tree view's: an `aria-labelledby` pointing at the label fails axe
+  `label-content-name-mismatch` (the item's text includes its children). The focused item is the
+  `li`, so lineage-highlight CSS lists `[data-ok-organization-chart-node]:focus-visible` next to
+  `label:focus-within` (and the node itself, which `:has()` can't match), and the highlight
+  controller treats a focused item as its own node. The zoom controller's "widgets with their own
+  keys" check skips the chart's own `role=tree`; typeahead leaves + / = / − / 0 to zoom.
+- Chart tree labels (4.18.86, `externalLabel`): any placement (chart, level or node) switches the
+  tree layout to margins computed from each label's estimated, rotated box; without one the layout
+  is the old code path, byte for byte. Placement text lives in `data-ok-external-label` (root and
+  row headers) and `-levels`: chart-text keys appended at the end of `CHART_TEXT_ATTRIBUTES` so no
+  existing snippet's attribute order changes.
 - Walktour (ADR-0039): owners keep the state and run core `walktourTransition` / `walktourEvents`;
   `createWalktourController(root).render(state)` draws it in both implementations (step Popovers,
   the Backdrop overlay, the SVG cut-out through `setAttribute("d")`, `hidden` on buttons the
