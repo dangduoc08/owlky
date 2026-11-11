@@ -1,6 +1,6 @@
 # ADR-0036: Organization chart — nested lists with CSS connectors, lengths through private properties
 
-**Status:** Accepted (2026-11-09); decision 1 ("nothing is expandable") and the out-of-scope note on collapsible nodes superseded by [ADR-0051](0051-organization-chart-collapsible-nodes.md); the out-of-scope note on horizontal trees superseded by [ADR-0052](0052-organization-chart-direction.md)
+**Status:** Accepted (2026-11-09); decision 1 ("nothing is expandable") and the out-of-scope note on collapsible nodes superseded by [ADR-0051](0051-organization-chart-collapsible-nodes.md); the out-of-scope note on horizontal trees superseded by [ADR-0052](0052-organization-chart-direction.md); the "no `tree` role" part of decision 1 superseded by [ADR-0063](0063-organization-chart-tree-selection-keyboard.md) (an opt-in tree)
 
 ## Context
 The reference's "Organization chart" page (sections Simple, Standard, Group) is built on
