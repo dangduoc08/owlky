@@ -428,7 +428,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value), `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `geo` (regions of GeoJSON geometry or hex tiles, colored by value classes, no map tiles: `geometry` and `regions` in React, a table of regions and `data-ok-geometry` or `setGeometry()` in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value), `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis), `waffle` (a grid of cells, each category filling a share), `unit` (each value as a number of marks, in blobs, columns or an arc) or `geo` (regions of GeoJSON geometry or hex tiles, colored by value classes, no map tiles: `geometry` and `regions` in React, a table of regions and `data-ok-geometry` or `setGeometry()` in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -457,7 +457,12 @@
        "tree",
        "sunburst",
        "icicle",
-       "geo"
+       "geo",
+       "streamgraph",
+       "violin",
+       "beeswarm",
+       "waffle",
+       "unit"
       ]
      },
      {
@@ -600,7 +605,7 @@
      },
      {
       "attr": "data-ok-total",
-      "description": "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average).",
+      "description": "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average). Waffle charts: the cells shared out between the categories (`100` for a percentage waffle; default one cell per unit); split waffles: the cells of each tile (default 100).",
       "kind": "number",
       "name": "total"
      },
@@ -834,7 +839,7 @@
      {
       "attr": "data-ok-orientation",
       "default": "horizontal",
-      "description": "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`).",
+      "description": "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`). Beeswarm charts: the value axis runs left to right (`horizontal`, the default) or upward (`vertical`).",
       "kind": "style",
       "name": "orientation",
       "optional": true,
@@ -1260,6 +1265,304 @@
       "name": "hideConnectors"
      },
      {
+      "attr": "data-ok-stream-offset",
+      "default": "wiggle",
+      "description": "Streamgraphs: the baseline: `wiggle` (bands as flat as the data allows, the default), `silhouette` (centered on one line), `zero` (a stacked area) or `expand` (each x value fills the chart).",
+      "kind": "style",
+      "name": "streamOffset",
+      "optional": true,
+      "values": [
+       "wiggle",
+       "silhouette",
+       "zero",
+       "expand"
+      ]
+     },
+     {
+      "attr": "data-ok-stream-order",
+      "default": "inside-out",
+      "description": "Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order).",
+      "kind": "style",
+      "name": "streamOrder",
+      "optional": true,
+      "values": [
+       "inside-out",
+       "inverse",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-stream-labels",
+      "description": "Streamgraphs: no series names on the bands.",
+      "kind": "flag",
+      "name": "hideStreamLabels"
+     },
+     {
+      "attr": "data-ok-stream-label-min-width",
+      "description": "Streamgraphs: bands thinner than this many pixels get no name (default 24).",
+      "kind": "number",
+      "min": 0,
+      "name": "streamLabelMinWidth"
+     },
+     {
+      "attr": "data-ok-unit-layout",
+      "default": "grouped",
+      "description": "Unit charts: where the marks go: `grouped` (a blob per category, the default), `packed` (one blob), `columns` (stacked dots), `grid` (the waffle lattice) or `arc` (rows of seats).",
+      "kind": "style",
+      "name": "unitLayout",
+      "optional": true,
+      "values": [
+       "grouped",
+       "packed",
+       "columns",
+       "grid",
+       "arc"
+      ]
+     },
+     {
+      "attr": "data-ok-cluster-labels",
+      "description": "Unit charts: category names under each cluster or column (grouped and columns layouts).",
+      "kind": "flag",
+      "name": "clusterLabels"
+     },
+     {
+      "attr": "data-ok-disable-sort-by-group",
+      "description": "Packed unit charts: keep the given order instead of the smallest group in the middle.",
+      "kind": "flag",
+      "name": "disableSortByGroup"
+     },
+     {
+      "attr": "data-ok-arc-rows",
+      "description": "Arc unit charts: the concentric rows (default the fewest that seat everyone). Use `innerSize` for the inner radius (default 40) and `startAngle` / `endAngle` for the sweep (default -90 to 90).",
+      "kind": "number",
+      "min": 1,
+      "name": "arcRows"
+     },
+     {
+      "attr": "data-ok-columns",
+      "description": "Waffle charts: cells per row (default 10).",
+      "kind": "number",
+      "min": 1,
+      "name": "columns"
+     },
+     {
+      "attr": "data-ok-fill-from",
+      "default": "bottom",
+      "description": "Waffle charts: the row where the cells start filling: `bottom` (the default) or `top`.",
+      "kind": "style",
+      "name": "fillFrom",
+      "optional": true,
+      "values": [
+       "bottom",
+       "top"
+      ]
+     },
+     {
+      "attr": "data-ok-split",
+      "description": "Waffle charts: one mini waffle per category, filled to its value.",
+      "kind": "flag",
+      "name": "split"
+     },
+     {
+      "attr": "data-ok-tile-columns",
+      "description": "Split waffles: tiles per row (default about a square of tiles).",
+      "kind": "number",
+      "min": 1,
+      "name": "tileColumns"
+     },
+     {
+      "attr": "data-ok-split-max",
+      "description": "Split waffles: the value a full tile stands for (default the largest value).",
+      "kind": "number",
+      "min": 0,
+      "name": "splitMax"
+     },
+     {
+      "attr": "data-ok-track-color",
+      "default": "primary",
+      "description": "Split waffles: the color of the empty cells (default a neutral grey).",
+      "kind": "style",
+      "name": "trackColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-unit-value",
+      "description": "Waffle and unit charts: how many units of value one mark stands for (default 1).",
+      "kind": "number",
+      "min": 0,
+      "name": "unitValue"
+     },
+     {
+      "attr": "data-ok-max-units",
+      "description": "Waffle and unit charts: the most marks drawn; counts scale down above it (default 5000).",
+      "kind": "number",
+      "min": 1,
+      "name": "maxUnits"
+     },
+     {
+      "attr": "data-ok-cell-radius",
+      "description": "Waffle charts: the corner radius of square cells in pixels (default 2).",
+      "kind": "number",
+      "min": 0,
+      "name": "cellRadius"
+     },
+     {
+      "attr": "data-ok-beeswarm-spread",
+      "default": "swarm",
+      "description": "Beeswarm charts: dots push apart just enough not to overlap (`swarm`, the default) or spread across the lane by a fixed sequence (`jitter`).",
+      "kind": "style",
+      "name": "beeswarmSpread",
+      "optional": true,
+      "values": [
+       "swarm",
+       "jitter"
+      ]
+     },
+     {
+      "attr": "data-ok-violin-normalize",
+      "default": "individual",
+      "description": "Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`).",
+      "kind": "style",
+      "name": "violinNormalize",
+      "optional": true,
+      "values": [
+       "individual",
+       "group"
+      ]
+     },
+     {
+      "attr": "data-ok-violin-side",
+      "default": "both",
+      "description": "Violins: symmetric (`both`, the default) or half a violin: `left`, `right`, `top` or `bottom`.",
+      "kind": "style",
+      "name": "violinSide",
+      "optional": true,
+      "values": [
+       "both",
+       "left",
+       "right",
+       "top",
+       "bottom"
+      ]
+     },
+     {
+      "attr": "data-ok-bandwidth-scale",
+      "description": "Violins: multiplies the drawn half-width (default 1). This is not the statistical bandwidth (`kdeBandwidth`).",
+      "kind": "number",
+      "min": 0,
+      "name": "bandwidthScale"
+     },
+     {
+      "attr": "data-ok-kde-bandwidth",
+      "description": "Violins: the kernel width of the density estimate, in value units (default Silverman's rule of thumb).",
+      "kind": "number",
+      "min": 0,
+      "name": "kdeBandwidth"
+     },
+     {
+      "attr": "data-ok-kde-resolution",
+      "description": "Violins: how many density samples each violin uses (4 to 256; default 64).",
+      "kind": "number",
+      "min": 4,
+      "name": "kdeResolution"
+     },
+     {
+      "attr": "data-ok-violin-box",
+      "description": "Violins: a five-number box beside the density.",
+      "kind": "flag",
+      "name": "violinBox"
+     },
+     {
+      "attr": "data-ok-violin-whiskers",
+      "default": "minmax",
+      "description": "Violins with a box: the whiskers end at the data's extremes (`minmax`, the default) or at Tukey's 1.5 × IQR fences (`tukey`).",
+      "kind": "style",
+      "name": "violinWhiskers",
+      "optional": true,
+      "values": [
+       "minmax",
+       "tukey"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-violin-points",
+      "description": "Violins: no dots for the observations.",
+      "kind": "flag",
+      "name": "hideViolinPoints"
+     },
+     {
+      "attr": "data-ok-violin-point-size",
+      "description": "Violins: the radius of the observation dots in pixels (default 2.5).",
+      "kind": "number",
+      "min": 0.5,
+      "name": "violinPointSize"
+     },
+     {
+      "attr": "data-ok-violin-jitter",
+      "description": "Violins: how far the dots spread, as a share of the half-width (0 to 1; default 0.5).",
+      "kind": "number",
+      "min": 0,
+      "name": "violinJitter"
+     },
+     {
+      "attr": "data-ok-unconstrained-violin-points",
+      "description": "Violins: the dots may leave the density outline.",
+      "kind": "flag",
+      "name": "unconstrainedViolinPoints"
+     },
+     {
+      "attr": "data-ok-violin-max-points",
+      "description": "Violins: the most dots drawn per violin; extra observations are thinned evenly (default 3000).",
+      "kind": "number",
+      "min": 1,
+      "name": "violinMaxPoints"
+     },
+     {
+      "attr": "data-ok-stream-hover-opacity",
+      "description": "Streamgraphs with `tooltip=\"point\"`: the opacity of the bands that are not active (0 to 1; default 0.35).",
+      "kind": "number",
+      "min": 0,
+      "name": "streamHoverOpacity"
+     },
+     {
       "attr": "data-ok-direction",
       "default": "top",
       "description": "Tree and icicle charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (trees: the root in the center, levels as rings).",
@@ -1307,7 +1610,7 @@
      },
      {
       "attr": "data-ok-inner-size",
-      "description": "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15).",
+      "description": "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15). Unit charts with the `arc` layout: the inner radius in % of the outer (default 40).",
       "kind": "number",
       "min": 0,
       "name": "innerSize"
@@ -1680,6 +1983,15 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-bar"
+     },
+     {
+      "description": "A dot of one observation in a beeswarm chart.",
+      "elements": [
+       "circle",
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-bee"
      },
      {
       "description": "One half of a box plot's box.",
@@ -2223,6 +2535,22 @@
       "name": "data-ok-chart-stop"
      },
      {
+      "description": "A streamgraph band.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-stream-band"
+     },
+     {
+      "description": "The veil over a streamgraph while one band is active (with `tooltip=\"point\"`).",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-stream-veil"
+     },
+     {
       "description": "A grid stripe between two horizontal (\\`row\\`) or vertical (\\`column\\`) grid positions.",
       "kind": "value",
       "name": "data-ok-chart-stripe",
@@ -2396,6 +2724,83 @@
       "name": "data-ok-chart-tree-node"
      },
      {
+      "description": "A mark of a waffle or unit chart.",
+      "elements": [
+       "circle",
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-cell"
+     },
+     {
+      "description": "All the marks of one category of a waffle or unit chart.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-group"
+     },
+     {
+      "description": "A waffle tile's name, or a cluster's label.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-title"
+     },
+     {
+      "description": "An empty cell of a split waffle tile.",
+      "elements": [
+       "circle",
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-unit-track"
+     },
+     {
+      "description": "A violin's density outline.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin"
+     },
+     {
+      "description": "A violin's five-number box.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-box"
+     },
+     {
+      "description": "A violin's median line.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-median"
+     },
+     {
+      "description": "A dot for one observation of a violin.",
+      "elements": [
+       "circle",
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-point"
+     },
+     {
+      "description": "A violin's whisker.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-whisker"
+     },
+     {
       "description": "The web of a radar chart.",
       "elements": [
        "path"
@@ -2460,6 +2865,12 @@
       "description": "Marks a dashed series.",
       "kind": "state",
       "name": "data-ok-dashed"
+     },
+     {
+      "description": "On a violin's data cell without observations: its curve as `value:weight` pairs.",
+      "kind": "value",
+      "name": "data-ok-density",
+      "value": "string"
      },
      {
       "description": "Markers on single points, such as \\`0 3 error star 8; 1 2\\`.",
@@ -2594,6 +3005,7 @@
       "kind": "value",
       "name": "data-ok-part",
       "value": [
+       "count",
        "high",
        "low",
        "max",
@@ -2625,6 +3037,12 @@
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
       "kind": "state",
       "name": "data-ok-ready"
+     },
+     {
+      "description": "On a violin's data cell: its observations, separated by spaces.",
+      "kind": "value",
+      "name": "data-ok-samples",
+      "value": "string"
      },
      {
       "description": "Geo charts, `threshold` method: the class breaks, separated by semicolons.",
@@ -2752,6 +3170,11 @@
       "type": "readonly ChartAnnotation[]"
      },
      {
+      "description": "Arc unit charts: the concentric rows. Default the fewest that seat everyone.",
+      "name": "arcRows",
+      "type": "number"
+     },
+     {
       "description": "Sankey charts: a title above each rank (beside each row when vertical).",
       "name": "axisTitles",
       "type": "readonly string[]"
@@ -2777,9 +3200,20 @@
       "type": "boolean"
      },
      {
+      "description": "Violins: multiplies the drawn half-width. Default 1.",
+      "name": "bandwidthScale",
+      "type": "number"
+     },
+     {
       "description": "Horizontal bar thickness in % of a category. Default 40 (funnels 80).",
       "name": "barHeight",
       "type": "number"
+     },
+     {
+      "default": "\"swarm\"",
+      "description": "Beeswarm charts: dots push apart just enough not to overlap (`swarm`) or spread across the lane by a fixed sequence (`jitter`).",
+      "name": "beeswarmSpread",
+      "type": "\"jitter\" | \"swarm\""
      },
      {
       "description": "Box plots: color of the box below the median (default a lighter tone of the series color).",
@@ -2814,6 +3248,16 @@
       "type": "readonly (string | number | Date)[]"
      },
      {
+      "description": "Waffle charts: the corner radius of square cells in pixels. Default 2.",
+      "name": "cellRadius",
+      "type": "number"
+     },
+     {
+      "description": "Unit charts: category names under each cluster or column.",
+      "name": "clusterLabels",
+      "type": "boolean"
+     },
+     {
       "description": "Tree charts, controlled: ids of the nodes whose children are hidden.",
       "name": "collapsedNodes",
       "type": "readonly string[]"
@@ -2836,6 +3280,11 @@
      {
       "description": "Column width in % of a category. Default 40.",
       "name": "columnWidth",
+      "type": "number"
+     },
+     {
+      "description": "Waffle charts: cells per row. Default 10.",
+      "name": "columns",
       "type": "number"
      },
      {
@@ -2917,6 +3366,11 @@
       "type": "boolean"
      },
      {
+      "description": "Packed unit charts: keep the given order instead of the smallest group in the middle.",
+      "name": "disableSortByGroup",
+      "type": "boolean"
+     },
+     {
       "description": "Sunburst and icicle charts: clicks, Enter and Space don't zoom into nodes.",
       "name": "disableZoomOnClick",
       "type": "boolean"
@@ -2972,6 +3426,12 @@
       "description": "Area fill. `\"solid\"`, or `\"pattern\"`: bars, areas and slices get a different pattern per series (or `fillPattern`).",
       "name": "fill",
       "type": "\"gradient\" | \"pattern\" | \"solid\""
+     },
+     {
+      "default": "\"bottom\"",
+      "description": "Waffle charts: the row where the cells start filling.",
+      "name": "fillFrom",
+      "type": "\"bottom\" | \"top\""
      },
      {
       "description": "Pattern of every bar, area and slice (turns patterns on): `\"slantedLines\"`, `\"squares\"`, `\"circles\"`, `\"horizontalLines\"` or `\"verticalLines\"`. Series may set `fillPattern`.",
@@ -3045,6 +3505,16 @@
       "type": "boolean"
      },
      {
+      "description": "Streamgraphs: no series names on the bands.",
+      "name": "hideStreamLabels",
+      "type": "boolean"
+     },
+     {
+      "description": "Violins: no dots for the observations.",
+      "name": "hideViolinPoints",
+      "type": "boolean"
+     },
+     {
       "description": "Tree charts: the nodes, nested (`{ id, name, value, color, children }`; one root or several). `id` defaults to the name; parents' values are the sum of their children.",
       "name": "hierarchy",
       "type": "ChartHierarchyNode | readonly ChartHierarchyNode[]"
@@ -3068,6 +3538,16 @@
       "description": "Geo charts: the feature property that holds the region id. Default: the feature's `id`, then its `id`, `iso_a2` or `name` property.",
       "name": "joinBy",
       "type": "string"
+     },
+     {
+      "description": "Violins: the kernel width of the density estimate, in value units. Default Silverman's rule.",
+      "name": "kdeBandwidth",
+      "type": "number"
+     },
+     {
+      "description": "Violins: density samples per violin (4 to 256). Default 64.",
+      "name": "kdeResolution",
+      "type": "number"
      },
      {
       "description": "Accessible name of the chart and the caption of its data table.",
@@ -3127,6 +3607,11 @@
      {
       "description": "Marker radius of line and area points in px (default none; scatter 5).",
       "name": "markerSize",
+      "type": "number"
+     },
+     {
+      "description": "Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000.",
+      "name": "maxUnits",
       "type": "number"
      },
      {
@@ -3247,6 +3732,16 @@
       "type": "boolean"
      },
      {
+      "description": "Waffle charts: one mini waffle per category, filled to its value.",
+      "name": "split",
+      "type": "boolean"
+     },
+     {
+      "description": "Split waffles: the value a full tile stands for. Default the largest value.",
+      "name": "splitMax",
+      "type": "number"
+     },
+     {
       "description": "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
       "name": "stackOnlyBar",
       "type": "boolean"
@@ -3272,8 +3767,35 @@
       "type": "number"
      },
      {
+      "description": "Streamgraphs with `tooltip=\"point\"`: the opacity of the other bands (0 to 1). 35.",
+      "name": "streamHoverOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Streamgraphs: bands thinner than this many pixels get no name. Default 24.",
+      "name": "streamLabelMinWidth",
+      "type": "number"
+     },
+     {
+      "default": "\"wiggle\"",
+      "description": "Streamgraphs: the baseline: `wiggle`, `silhouette`, `zero` or `expand`.",
+      "name": "streamOffset",
+      "type": "\"expand\" | \"silhouette\" | \"wiggle\" | \"zero\""
+     },
+     {
+      "default": "\"inside-out\"",
+      "description": "Streamgraphs: the stacking order: `inside-out`, `inverse` or `none`.",
+      "name": "streamOrder",
+      "type": "\"inside-out\" | \"inverse\" | \"none\""
+     },
+     {
       "description": "Line width of every series in px. 5. Series may set `strokeWidth`.",
       "name": "strokeWidth",
+      "type": "number"
+     },
+     {
+      "description": "Split waffles: tiles per row. Default about a square of tiles.",
+      "name": "tileColumns",
       "type": "number"
      },
      {
@@ -3313,6 +3835,11 @@
       "type": "string"
      },
      {
+      "description": "Split waffles: the color of the empty cells. Default a neutral grey.",
+      "name": "trackColor",
+      "type": "ChartColor"
+     },
+     {
       "description": "Radial bar track thickness in % of the bar. Default 50.",
       "name": "trackWidth",
       "type": "number"
@@ -3322,6 +3849,22 @@
       "description": "`area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar` or `radar`. Pie, donut and radial bar draw the first series, one slice or ring per category.",
       "name": "type",
       "type": "ChartType"
+     },
+     {
+      "description": "Violins: the dots may leave the density outline.",
+      "name": "unconstrainedViolinPoints",
+      "type": "boolean"
+     },
+     {
+      "default": "\"grouped\"",
+      "description": "Unit charts: where the marks go: `grouped`, `packed`, `columns`, `grid` or `arc`.",
+      "name": "unitLayout",
+      "type": "\"arc\" | \"columns\" | \"grid\" | \"grouped\" | \"packed\""
+     },
+     {
+      "description": "Waffle and unit charts: how many units of value one mark stands for. Default 1.",
+      "name": "unitValue",
+      "type": "number"
      },
      {
       "description": "Replaces the value text in the tooltip, the table and the value axis (`series` -1).",
@@ -3337,6 +3880,44 @@
       "description": "Text after every value (\"%\").",
       "name": "valueSuffix",
       "type": "string"
+     },
+     {
+      "description": "Violins: a five-number box beside the density.",
+      "name": "violinBox",
+      "type": "boolean"
+     },
+     {
+      "description": "Violins: how far the dots spread, as a share of the half-width (0 to 1). 5.",
+      "name": "violinJitter",
+      "type": "number"
+     },
+     {
+      "description": "Violins: the most dots per violin; extra observations are thinned evenly. Default 3000.",
+      "name": "violinMaxPoints",
+      "type": "number"
+     },
+     {
+      "default": "\"individual\"",
+      "description": "Violins: each violin fills its slot (`individual`) or all share one density scale (`group`).",
+      "name": "violinNormalize",
+      "type": "\"group\" | \"individual\""
+     },
+     {
+      "description": "Violins: the radius of the observation dots in pixels. 5.",
+      "name": "violinPointSize",
+      "type": "number"
+     },
+     {
+      "default": "\"both\"",
+      "description": "Violins: symmetric (`both`) or half a violin: `left`, `right`, `top` or `bottom`.",
+      "name": "violinSide",
+      "type": "\"both\" | \"bottom\" | \"left\" | \"right\" | \"top\""
+     },
+     {
+      "default": "\"minmax\"",
+      "description": "Violin boxes: whiskers at the extremes (`minmax`) or Tukey's fences (`tukey`).",
+      "name": "violinWhiskers",
+      "type": "\"minmax\" | \"tukey\""
      },
      {
       "default": "\"error\"",
@@ -3443,7 +4024,7 @@
   },
   {
    "name": "ChartPart",
-   "type": "\"children\" | \"close\" | \"collapsed\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"noData\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
+   "type": "\"children\" | \"close\" | \"collapsed\" | \"count\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"noData\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
   },
   {
    "name": "ChartStripeColor",
@@ -3455,7 +4036,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"geo\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"beeswarm\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"geo\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"unit\" | \"violin\" | \"waffle\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

@@ -5,6 +5,7 @@ import { Chart } from "@owlky/react";
 import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
 import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
+import beeswarmGroup from "../../../../../packages/html/src/components/chart/examples/beeswarm-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
 import colorBlindGroup from "../../../../../packages/html/src/components/chart/examples/color-blind-group.html?raw";
 import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
@@ -24,11 +25,15 @@ import multipleYAxesGroup from "../../../../../packages/html/src/components/char
 import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
 import stackTotalsGroup from "../../../../../packages/html/src/components/chart/examples/stack-totals-group.html?raw";
+import streamgraphGroup from "../../../../../packages/html/src/components/chart/examples/streamgraph-group.html?raw";
 import sunburstGroup from "../../../../../packages/html/src/components/chart/examples/sunburst-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
+import unitGroup from "../../../../../packages/html/src/components/chart/examples/unit-group.html?raw";
+import violinGroup from "../../../../../packages/html/src/components/chart/examples/violin-group.html?raw";
+import waffleGroup from "../../../../../packages/html/src/components/chart/examples/waffle-group.html?raw";
 import waterfallGroup from "../../../../../packages/html/src/components/chart/examples/waterfall-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -135,6 +140,11 @@ export function MonthlySales() {
 - **\`sunburst\`:** a hierarchy as rings, each node an arc sized by its value. See "Show parts of a hierarchy as rings".
 - **\`geo\`:** regions from GeoJSON or hex tiles, colored by value classes, with no map tiles. See "Draw a map without tiles".
 - **\`icicle\`:** a hierarchy as bands, each node a cell sized by its value, such as a flame graph. See "Show parts of a hierarchy as bands".
+- **\`streamgraph\`:** stacked bands around a moving baseline, for how a mix changes over time. See "Show a changing mix over time".
+- **\`violin\`:** the distribution of observations in each category as a mirrored density curve. See "Compare distributions".
+- **\`beeswarm\`:** each observation as a dot in its series' lane, along the value axis. See "Show every observation".
+- **\`waffle\`:** a grid of cells where each category fills a share. See "Show parts of a whole as cells".
+- **\`unit\`:** each value as a number of marks, in blobs, stacked columns or seats on an arc. See "Show quantities as marks".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -988,6 +998,166 @@ export function PageLoadSteps() {
       valueSuffix=" ms"
       height={320}
       hierarchy={steps}
+    />
+  );
+}`,
+  },
+  {
+    id: "streamgraph",
+    title: "Show a changing mix over time",
+    body: `A streamgraph stacks its series as bands around a baseline that moves, so the outer edges stay as flat as the data allows. It suits many series whose mix shifts over time, where you read the overall shape more than exact values. Set \`type\` to \`streamgraph\` and pass series as for a line or area chart. Series are joined on x: a missing value counts as zero, and so does a negative one.
+
+- **\`streamOffset\`:** the baseline: \`wiggle\` (the default), \`silhouette\` (centered on one line), \`zero\` (a stacked area) or \`expand\` (each x value fills the chart, as shares).
+- **\`streamOrder\`:** the stacking order: \`inside-out\` (series that peak first sit in the middle, the default), \`inverse\` or \`none\` (the series order).
+- **\`hideStreamLabels\`:** removes the series names drawn on the bands. A name is drawn on a band where it fits. \`streamLabelMinWidth\` sets the thinnest band that gets a name, in pixels (24 by default).
+- **\`curve\`:** as for lines: \`smooth\` (the default), \`straight\` or \`stepline\`.
+- **\`tooltip="point"\`:** the tooltip follows one band, and the other bands fade to \`streamHoverOpacity\` (0.35 by default).
+- **\`colorBlindMode\` and \`fillPattern\`:** fill the bands with patterns, so they differ by more than their color.
+
+The value axis and the grid are hidden, because a moving baseline makes their values misleading. Set \`yaxis={{ show: true }}\` and \`grid="y"\` to show them. The tooltip lists each band's value from the top down, then the total of the column, except with \`expand\`. The left and right arrow keys move between x values. The data table keeps the values you supplied, never the stacked positions.`,
+    html: `${snippetElement(streamgraphGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export function ListeningByGenre() {
+  return (
+    <Chart
+      label="Listening time by genre, thousands of hours per month"
+      type="streamgraph"
+      valueSuffix="k"
+      height={320}
+      categories={months}
+      series={[
+        { name: "Pop", data: [42, 48, 55, 60, 52, 44, 40, 38, 45, 50, 58, 62] },
+        { name: "Rock", data: [30, 28, 26, 32, 40, 46, 50, 44, 36, 30, 26, 24] },
+        { name: "Jazz", data: [12, 14, 18, 20, 22, 26, 24, 20, 18, 16, 14, 12] },
+        { name: "Hip hop", data: [20, 24, 30, 36, 44, 52, 58, 62, 56, 48, 40, 30] },
+        { name: "Classical", data: [18, 16, 14, 12, 12, 14, 16, 18, 22, 26, 30, 34] },
+      ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "violin",
+    title: "Compare distributions",
+    body: `A violin chart shows how the observations of each category spread, as a density curve mirrored around a line. It shows what a box plot hides, such as two clusters in one category. Set \`type\` to \`violin\`, and give each category its observations in \`y\` as a list of numbers. To draw a precomputed curve, set \`y\` to \`{ density: [[value, weight]], points: [value] }\`: the curve is drawn as given and \`points\` are optional. In HTML, the table cell of a category holds the summary as text, and the observations in \`data-ok-samples\`, separated by spaces, or the curve in \`data-ok-density\` as \`value:weight\` pairs.
+
+- **\`violinNormalize\`:** \`individual\` (the default) scales each violin to its own peak, and \`group\` shares one density scale, so widths compare across categories.
+- **\`violinSide\`:** \`both\` (the default) or half a violin: \`left\` and \`right\` for vertical charts, \`top\` and \`bottom\` for \`horizontal\` ones.
+- **\`kdeBandwidth\` and \`kdeResolution\`:** the kernel width in value units (Silverman's rule of thumb by default) and the samples per curve (64 by default). \`bandwidthScale\` scales the drawn width instead.
+- **\`violinBox\`:** adds a box of the quartiles and a median line. \`violinWhiskers\` ends the whiskers at the extremes (\`minmax\`, the default) or at Tukey's fences (\`tukey\`).
+- **\`hideViolinPoints\`, \`violinPointSize\`, \`violinJitter\`, \`violinMaxPoints\`, \`unconstrainedViolinPoints\`:** the dots of the observations. The spread is a fixed sequence, so the dots stay in place between renders.
+
+The tooltip lists the five numbers and the count. The arrow keys move between categories, and the data table shows the same summary. Use \`colorBlindMode\` to give each series its own pattern and marker shape.`,
+    html: `${snippetElement(violinGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const hours = [12, 14, 16, 18, 19, 20, 21, 22, 24, 25, 27, 30, 34, 38, 41, 48];
+
+export function DeliveryTimes() {
+  return (
+    <Chart
+      label="Delivery time, in hours"
+      type="violin"
+      violinBox
+      valueSuffix=" h"
+      height={320}
+      categories={["Basic"]}
+      series={[{ name: "Delivery time", data: [{ y: hours }] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "beeswarm",
+    title: "Show every observation",
+    body: `A beeswarm chart draws one dot per observation, in a lane per series, along the value axis. Dots with close values move apart across the lane, so you see the shape of the data and every value in it. Set \`type\` to \`beeswarm\` and pass one series per lane. Each value is an observation. Name observations with \`categories\`, or \`{ x, y }\` points. Without names, they are numbered.
+
+- **\`beeswarmSpread\`:** \`swarm\` (the default) pushes dots apart just enough not to overlap, and \`jitter\` spreads them across the lane by a fixed sequence.
+- **\`orientation\`:** the value axis runs \`horizontal\`, the default, or \`vertical\`.
+- **\`markerSize\`:** the dot radius in pixels. Without it, the dots shrink to fit a crowded lane.
+- **\`colorBlindMode\` and \`markerShape\`:** give each lane its own shape, so lanes differ by more than color and position.
+
+The tooltip shows one observation with its name and value. Arrow keys move through the observations in reading order, Home and End go to the first and last, and Enter or Space selects one. The data table lists one row per observation.`,
+    html: `${snippetElement(beeswarmGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const people = ["Ann", "Ben", "Caro", "Dan", "Eve", "Finn", "Gia", "Hugo", "Ivy", "Jon", "Kim", "Leo"];
+
+export function SalariesByDepartment() {
+  return (
+    <Chart
+      label="Salaries by department, thousands of dollars"
+      type="beeswarm"
+      valueSuffix="k"
+      height={300}
+      categories={people}
+      series={[
+        { name: "Sales", data: [55, 62, 58, 71, 66, 60, 64, 58, 73, 69, 61, 57] },
+        { name: "Design", data: [72, 80, 75, 78, 83, 90, 68, 74, null, null, null, null] },
+        { name: "Support", data: [41, 44, 39, 47, 45, 42, 40, 43, 46, null, null, null] },
+      ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "waffle",
+    title: "Show parts of a whole as cells",
+    body: `A waffle chart fills a grid of cells, where each category colors its share of the cells. Counting cells is easier than comparing slice angles, so it suits rounded percentages. Set \`type\` to \`waffle\` and pass one series with one value per category, as for a pie chart.
+
+- **\`total\`:** the cells shared out between the categories, such as \`100\` for a percentage waffle. The cells always add up exactly (the largest remainders get the extra ones). Without it, one cell stands for one unit, or \`unitValue\` units.
+- **\`columns\`:** cells per row (10 by default). **\`fillFrom\`:** the row where the fill starts, \`bottom\` (the default) or \`top\`.
+- **\`split\`:** one mini waffle per category, filled to its value out of \`splitMax\`, or the largest value. \`tileColumns\` sets the tiles per row and \`trackColor\` the color of the empty cells.
+- **\`cellRadius\`:** the corner radius of the cells in pixels (2 by default). \`spacing\` sets the gap between them.
+- **\`colorBlindMode\` and \`markerShape\`:** draw a different shape per category, so categories differ by more than color.
+
+A category is one item for the tooltip and the keyboard: the arrow keys move between categories and its cells light up together. Selecting a category with a click, Enter or Space works as for pie slices. The legend hides categories.`,
+    html: `${snippetElement(waffleGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+export function BudgetShares() {
+  return (
+    <Chart
+      label="Budget by department, in percent"
+      type="waffle"
+      total={100}
+      valueSuffix="%"
+      height={320}
+      categories={["Engineering", "Marketing", "Support", "Operations"]}
+      series={[{ name: "Budget", data: [38, 27, 21, 14] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "unit",
+    title: "Show quantities as marks",
+    body: `A unit chart draws a mark per unit of a value, so an amount reads as a crowd you can count. It suits small numbers that stand for people or things, such as seats, volunteers or tickets. Set \`type\` to \`unit\` and pass one series with one value per category, as for a pie chart.
+
+- **\`unitLayout\`:** \`grouped\` (the default, a blob per category), \`packed\` (one blob, with the smallest group in the middle unless \`disableSortByGroup\` is set), \`columns\` (stacked dots), \`grid\` (a lattice, as in a waffle chart) or \`arc\` (rows of seats).
+- **\`unitValue\`:** how many units one mark stands for, such as \`1000\`. **\`maxUnits\`:** the most marks drawn (5000 by default); counts scale down above it.
+- **\`clusterLabels\`:** names under each cluster (\`grouped\`) or column (\`columns\`).
+- **\`arcRows\`:** the rows of an \`arc\` (by default, the fewest that seat everyone). \`innerSize\` and \`startAngle\` / \`endAngle\` shape it (40%, and -90° to 90°, by default).
+- **\`markerShape\` and \`colorBlindMode\`:** a shape instead of circles, or a different shape per category, so categories differ by more than color.
+- **\`markerSize\` and \`spacing\`:** the mark radius and the gap in pixels. They fit the box by default.
+
+As in waffle charts, a category is one item: the arrow keys and pointer move between categories, its marks light up together, and a click, Enter or Space selects it. The tooltip shows the category and its value. The legend lists and hides categories.`,
+    html: `${snippetElement(unitGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+export function VolunteersByCity() {
+  return (
+    <Chart
+      label="Volunteers by city"
+      type="unit"
+      unitLayout="grouped"
+      clusterLabels
+      height={280}
+      categories={["Hanoi", "Da Nang", "Hue", "Can Tho"]}
+      series={[{ name: "Volunteers", data: [64, 28, 18, 42] }]}
     />
   );
 }`,
@@ -1958,6 +2128,83 @@ const PREVIEWS = {
         height={280}
         regions={GEO_PREVIEW_REGIONS}
         hexCells={GEO_PREVIEW_CELLS}
+      />
+    </Preview>
+  ),
+  streamgraph: () => (
+    <Preview>
+      <Chart
+        label="Device share of visits by quarter"
+        type="streamgraph"
+        streamOffset="silhouette"
+        height={240}
+        categories={["Q1", "Q2", "Q3", "Q4", "Q5"]}
+        series={[
+          { name: "Phone", data: [40, 44, 52, 58, 66] },
+          { name: "Desktop", data: [46, 42, 38, 34, 30] },
+          { name: "Tablet", data: [14, 14, 10, 8, 4] },
+        ]}
+      />
+    </Preview>
+  ),
+  violin: () => (
+    <Preview>
+      <Chart
+        label="Test scores by class"
+        type="violin"
+        violinBox
+        violinWhiskers="tukey"
+        height={240}
+        categories={["Class A", "Class B"]}
+        series={[
+          {
+            name: "Score",
+            data: [
+              { y: [42, 55, 58, 61, 66, 68, 71, 73, 74, 78, 81, 86, 92] },
+              { y: [31, 38, 44, 48, 52, 55, 60, 62, 64, 71, 75] },
+            ],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  beeswarm: () => (
+    <Preview>
+      <Chart
+        label="Build times by branch, in minutes"
+        type="beeswarm"
+        beeswarmSpread="jitter"
+        height={220}
+        series={[
+          { name: "Main", data: [4, 5, 6, 6, 7, 8, 8, 9, 11] },
+          { name: "Release", data: [9, 10, 12, 13, 15, 16, 18] },
+        ]}
+      />
+    </Preview>
+  ),
+  waffle: () => (
+    <Preview>
+      <Chart
+        label="Seats sold by section"
+        type="waffle"
+        total={100}
+        columns={20}
+        fillFrom="top"
+        height={200}
+        categories={["Stalls", "Circle", "Balcony"]}
+        series={[{ name: "Seats", data: [52, 31, 17] }]}
+      />
+    </Preview>
+  ),
+  unit: () => (
+    <Preview>
+      <Chart
+        label="Seats by party"
+        type="unit"
+        unitLayout="arc"
+        height={220}
+        categories={["Blue party", "Green party", "Red party"]}
+        series={[{ name: "Seats", data: [42, 30, 18] }]}
       />
     </Preview>
   ),

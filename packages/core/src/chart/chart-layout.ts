@@ -17,6 +17,7 @@ import {
   type ChartFill,
   type ChartGrid,
   type ChartMarkerShape,
+  type ChartPoint,
   type ChartStackType,
   type ChartStripeColor,
   type ChartSum,
@@ -32,6 +33,7 @@ import {
   unitIndex,
 } from "./chart-scale.js";
 import { timeTicks } from "./chart-time.js";
+import type { ChartUnitCell } from "./chart-unit.js";
 
 /*
  * Chart layout (ADR-0024): data + size → a tree of SVG nodes and the positions of every drawn
@@ -180,6 +182,39 @@ export interface ChartLayoutOptions {
    * n; later series take the first pair). Default the series color for both.
    */
   readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
+  /**
+   * Chart types with a file of their own (streamgraph, violin, beeswarm): draws one series on this
+   * layout's axes. Whole-chart types only, so no other series goes through it.
+   */
+  readonly drawSeries?: ((context: ChartSeriesContext) => ChartSeriesPaint) | undefined;
+}
+
+/** What `drawSeries` gets: the series, the axes in px and where to add marks and labels. */
+export interface ChartSeriesContext {
+  readonly series: ChartDataSeries;
+  /** The series' position in the data given to `layoutChart`. */
+  readonly index: number;
+  /** Its points in the zoom window. */
+  readonly points: readonly ChartPoint[];
+  /** The series group's attributes. */
+  readonly attrs: Readonly<Record<string, string>>;
+  readonly horizontal: boolean;
+  /** A category's band in px (banded charts), or the distance between categories. */
+  readonly band: number;
+  readonly plot: ChartLayout["plot"];
+  /** Value → px along the value axis. */
+  readonly toValue: (value: number) => number;
+  /** Category index or x value → px along the category axis. */
+  readonly toPos: (x: number) => number;
+  readonly marks: ChartMark[];
+  readonly labels: ChartNode[];
+  readonly patterns: ReturnType<typeof chartPatternDefs>;
+}
+
+/** A drawn series and the layer it goes in (areas, bars, then points). */
+export interface ChartSeriesPaint {
+  readonly layer: "areas" | "bars" | "points";
+  readonly node: ChartNode;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -265,6 +300,20 @@ export interface ChartMark {
   readonly sum?: ChartSum | undefined;
   /** Dumbbells: the colors of the start and end markers (tooltip rows). */
   readonly ends?: readonly [ChartColor, ChartColor] | undefined;
+  /** Violins: the number of observations (a tooltip row). */
+  readonly count?: number | undefined;
+  /** Waffle and unit charts: the outline of a category's marks (one path). */
+  readonly unit?: { readonly outline: string } | undefined;
+  /** Streamgraphs: the column's total (a tooltip row). */
+  readonly total?: number | undefined;
+  /** Streamgraphs: the nodes that show one band over the others (per-point tooltips). */
+  readonly stream?:
+    | {
+        readonly veil: ChartNode;
+        readonly band: ChartNode;
+        readonly label?: ChartNode | undefined;
+      }
+    | undefined;
 }
 
 /**
@@ -322,9 +371,12 @@ export interface ChartLayout {
    * `index`: one tooltip per category; `point`: one per point (scatter, bubble); `slice`: one per
    * slice or ring (pie, donut, radial bar); `cell`: one per cell (heatmap, treemap; arrow keys
    * move in their direction); `flow`: one per Sankey node or link; `tree`: one per node of a
-   * hierarchy chart (arrow keys walk parents, children and the nodes of a level).
+   * hierarchy chart (arrow keys walk parents, children and the nodes of a level); `unit`: one per
+   * category of a waffle or unit chart (its marks light up together).
    */
-  readonly mode: "index" | "point" | "slice" | "cell" | "flow" | "tree";
+  readonly mode: "index" | "point" | "slice" | "cell" | "flow" | "tree" | "unit";
+  /** Waffle and unit charts: every mark and its category (pointer hit-testing). */
+  readonly units?: readonly ChartUnitCell[] | undefined;
   /** Hierarchy charts (ADR-0058): the drilled node and the drill path. */
   readonly hierarchy?: ChartHierarchyState | undefined;
   /** Radar: center and radius; slots are categories and `pos` their angle in degrees. */
@@ -521,7 +573,15 @@ const flatScale = (min: number, max: number) => {
 // --- Layout -----------------------------------------------------------------------------------
 
 /** Series types that `horizontal` turns (left to right). */
-const TURNABLE: readonly ChartType[] = ["bar", "boxPlot", "rangeBar", "waterfall", "dumbbell"];
+const TURNABLE: readonly ChartType[] = [
+  "bar",
+  "boxPlot",
+  "rangeBar",
+  "waterfall",
+  "dumbbell",
+  "violin",
+  "beeswarm",
+];
 /** Series types drawn in category bands. */
 const BANDED: readonly ChartType[] = [
   "bar",
@@ -531,6 +591,8 @@ const BANDED: readonly ChartType[] = [
   "timeline",
   "waterfall",
   "dumbbell",
+  "violin",
+  "beeswarm",
 ];
 /** Series types that fit the value scale to their data (no zero baseline). */
 const FITTED: readonly ChartType[] = [
@@ -541,6 +603,9 @@ const FITTED: readonly ChartType[] = [
   "rangeBar",
   "timeline",
   "dumbbell",
+  "streamgraph",
+  "violin",
+  "beeswarm",
 ];
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -563,7 +628,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       visible.every(({ series }) => TURNABLE.includes(typeOf(series))));
   const numeric = data.xType === "numeric";
   const mode =
-    data.series.length > 0 && data.series.every((s) => s.type === "scatter" || s.type === "bubble")
+    data.series.length > 0 &&
+    data.series.every((s) => s.type === "scatter" || s.type === "bubble" || s.type === "beeswarm")
       ? "point"
       : "index";
   const banded =
@@ -1232,6 +1298,26 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       continue;
     }
     const posOf = (x: number) => (numeric ? toX(x) : toCat(x));
+    if (options.drawSeries) {
+      const painted = options.drawSeries({
+        series,
+        index,
+        points,
+        attrs: seriesAttrs,
+        horizontal,
+        band,
+        plot,
+        toValue,
+        toPos: posOf,
+        marks,
+        labels,
+        patterns,
+      });
+      (painted.layer === "areas" ? areas : painted.layer === "bars" ? bars : scatters).push(
+        painted.node,
+      );
+      continue;
+    }
     if (series.type === "boxPlot") {
       // Whiskers from the minimum to Q1 and Q3 to the maximum, two boxes split at the median.
       const slot = boxSeries.indexOf(index);

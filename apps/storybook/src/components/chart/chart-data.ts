@@ -2039,4 +2039,260 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21: streamgraphs (ApexCharts `streamgraph`).
+  streamgraph: {
+    title: "Streamgraph",
+    props: {
+      label: "Listening time by genre, thousands of hours per month",
+      type: "streamgraph",
+      valueSuffix: "k",
+      height: 320,
+      categories: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+      series: [
+        { name: "Pop", data: [42, 48, 55, 60, 52, 44, 40, 38, 45, 50, 58, 62] },
+        { name: "Rock", data: [30, 28, 26, 32, 40, 46, 50, 44, 36, 30, 26, 24] },
+        { name: "Jazz", data: [12, 14, 18, 20, 22, 26, 24, 20, 18, 16, 14, 12] },
+        { name: "Hip hop", data: [20, 24, 30, 36, 44, 52, 58, 62, 56, 48, 40, 30] },
+        { name: "Classical", data: [18, 16, 14, 12, 12, 14, 16, 18, 22, 26, 30, 34] },
+      ],
+    },
+    more: [
+      {
+        label: "Share of support tickets by channel, percent per quarter",
+        type: "streamgraph",
+        streamOffset: "expand",
+        streamOrder: "none",
+        curve: "straight",
+        colorBlindMode: true,
+        height: 240,
+        valueSuffix: "%",
+        categories: ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"],
+        series: [
+          { name: "Email", data: [40, 38, 34, 30, 26, 24] },
+          { name: "Chat", data: [25, 28, 32, 36, 40, 44] },
+          { name: "Phone", data: [35, 34, 34, 34, 34, 32] },
+        ],
+      },
+    ],
+  },
+  // Roadmap 4.18.21: violin charts (ApexCharts `violin`).
+  violin: {
+    title: "Violin",
+    props: {
+      label: "Delivery time by plan, in hours",
+      type: "violin",
+      violinBox: true,
+      valueSuffix: " h",
+      height: 320,
+      categories: ["Basic", "Plus", "Premium"],
+      series: [
+        {
+          name: "Delivery time",
+          data: [
+            { y: [12, 14, 16, 18, 19, 20, 21, 22, 24, 25, 27, 30, 34, 38, 41, 48] },
+            { y: [10, 11, 12, 12, 13, 14, 14, 15, 16, 17, 18, 19, 20, 22, 24] },
+            { y: [4, 5, 5, 6, 6, 7, 7, 8, 8, 8, 9, 10, 11, 12, 13, 15] },
+          ],
+        },
+      ],
+    },
+    more: [
+      {
+        label: "Response time by region, this year and last year, in milliseconds",
+        type: "violin",
+        horizontal: true,
+        violinSide: "top",
+        violinNormalize: "group",
+        hideViolinPoints: true,
+        colorBlindMode: true,
+        valueSuffix: " ms",
+        height: 280,
+        categories: ["North", "South"],
+        series: [
+          {
+            name: "This year",
+            data: [
+              {
+                y: {
+                  density: [
+                    [20, 1],
+                    [40, 6],
+                    [60, 9],
+                    [80, 5],
+                    [100, 2],
+                    [120, 1],
+                  ],
+                },
+              },
+              {
+                y: {
+                  density: [
+                    [40, 1],
+                    [70, 4],
+                    [90, 8],
+                    [110, 6],
+                    [140, 2],
+                  ],
+                },
+              },
+            ],
+          },
+          {
+            name: "Last year",
+            data: [
+              {
+                y: {
+                  density: [
+                    [40, 2],
+                    [70, 7],
+                    [100, 8],
+                    [130, 4],
+                    [160, 1],
+                  ],
+                },
+              },
+              {
+                y: {
+                  density: [
+                    [60, 2],
+                    [90, 5],
+                    [120, 7],
+                    [150, 5],
+                    [180, 2],
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  // Roadmap 4.18.21: beeswarm charts (ApexCharts unit `layout: "scatter"`).
+  beeswarm: {
+    title: "Beeswarm",
+    props: {
+      label: "Salaries by department, thousands of dollars",
+      type: "beeswarm",
+      valueSuffix: "k",
+      height: 300,
+      categories: [
+        "Ann",
+        "Ben",
+        "Caro",
+        "Dan",
+        "Eve",
+        "Finn",
+        "Gia",
+        "Hugo",
+        "Ivy",
+        "Jon",
+        "Kim",
+        "Leo",
+      ],
+      series: [
+        { name: "Sales", data: [55, 62, 58, 71, 66, 60, 64, 58, 73, 69, 61, 57] },
+        { name: "Design", data: [72, 80, 75, 78, 83, 90, 68, 74, null, null, null, null] },
+        { name: "Support", data: [41, 44, 39, 47, 45, 42, 40, 43, 46, null, null, null] },
+      ],
+    },
+    more: [
+      {
+        label: "Response time per request, milliseconds",
+        type: "beeswarm",
+        orientation: "vertical",
+        beeswarmSpread: "jitter",
+        markerSize: 3,
+        colorBlindMode: true,
+        height: 300,
+        series: [
+          { name: "API", data: [120, 132, 140, 151, 158, 160, 171, 180, 195, 210, 240, 310] },
+          { name: "Web", data: [80, 92, 95, 101, 110, 118, 124, 131, 140, 155, 172, 190] },
+        ],
+      },
+    ],
+  },
+  // Roadmap 4.18.21: waffle charts (ApexCharts `waffle`).
+  waffle: {
+    title: "Waffle",
+    props: {
+      label: "Budget by department, in percent",
+      type: "waffle",
+      total: 100,
+      valueSuffix: "%",
+      height: 320,
+      categories: ["Engineering", "Marketing", "Support", "Operations"],
+      series: [{ name: "Budget", data: [38, 27, 21, 14] }],
+    },
+    more: [
+      {
+        label: "Survey answers per question",
+        type: "waffle",
+        split: true,
+        total: 100,
+        splitMax: 100,
+        tileColumns: 3,
+        colorBlindMode: true,
+        height: 280,
+        categories: ["Agree", "Neutral", "Disagree"],
+        series: [{ name: "Answers", data: [64, 22, 14] }],
+      },
+    ],
+  },
+  // Roadmap 4.18.21: unit charts (ApexCharts `unit`).
+  unit: {
+    title: "Unit",
+    props: {
+      label: "Volunteers by city",
+      type: "unit",
+      unitLayout: "grouped",
+      clusterLabels: true,
+      height: 280,
+      categories: ["Hanoi", "Da Nang", "Hue", "Can Tho"],
+      series: [{ name: "Volunteers", data: [64, 28, 18, 42] }],
+    },
+    more: [
+      {
+        label: "Seats in the council by party",
+        type: "unit",
+        unitLayout: "arc",
+        arcRows: 4,
+        height: 280,
+        categories: ["Blue party", "Green party", "Red party", "Independent"],
+        series: [{ name: "Seats", data: [38, 27, 21, 14] }],
+      },
+      {
+        label: "Tickets opened by team",
+        type: "unit",
+        unitLayout: "columns",
+        clusterLabels: true,
+        height: 260,
+        categories: ["Mobile", "Web", "API"],
+        series: [{ name: "Tickets", data: [34, 21, 55] }],
+      },
+      {
+        label: "Population by region, one mark for 1,000 people",
+        type: "unit",
+        unitLayout: "packed",
+        unitValue: 1000,
+        colorBlindMode: true,
+        height: 280,
+        categories: ["North", "South", "Islands"],
+        series: [{ name: "People", data: [42000, 31000, 9000] }],
+      },
+    ],
+  },
 };

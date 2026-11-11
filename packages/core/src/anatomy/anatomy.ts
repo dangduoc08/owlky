@@ -36,6 +36,7 @@ import {
   responsiveValues,
   slidesToShowAttr,
 } from "../carousel/carousel-model.js";
+import { type ChartBeeswarmSpread, chartBeeswarmSpreads } from "../chart/chart-beeswarm.js";
 import {
   type ChartGeoLayout,
   type ChartProjection,
@@ -89,6 +90,22 @@ import {
   chartXTypes,
 } from "../chart/chart-model.js";
 import { type ChartOrientation, chartOrientations } from "../chart/chart-sankey.js";
+import {
+  type ChartStreamOffset,
+  type ChartStreamOrder,
+  chartStreamOffsets,
+  chartStreamOrders,
+} from "../chart/chart-stream.js";
+import { type ChartFillFrom, chartFillFroms } from "../chart/chart-unit.js";
+import { type ChartUnitLayout, chartUnitLayouts } from "../chart/chart-unit-layouts.js";
+import {
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
+  chartViolinNormalize,
+  chartViolinSides,
+  chartViolinWhiskers,
+} from "../chart/chart-violin.js";
 import { type GridDensity, gridDensities } from "../data-grid/data-grid.js";
 import { type GanttBarLabel, ganttBarLabels } from "../gantt/gantt-render.js";
 import { type GanttView, ganttViews } from "../gantt/gantt-scale.js";
@@ -4528,7 +4545,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value), `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `geo` (regions of GeoJSON geometry or hex tiles, colored by value classes, no map tiles: `geometry` and `regions` in React, a table of regions and `data-ok-geometry` or `setGeometry()` in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value), `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve), `beeswarm` (each observation a dot in its series' lane, along the value axis), `waffle` (a grid of cells, each category filling a share), `unit` (each value as a number of marks, in blobs, columns or an arc) or `geo` (regions of GeoJSON geometry or hex tiles, colored by value classes, no map tiles: `geometry` and `regions` in React, a table of regions and `data-ok-geometry` or `setGeometry()` in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4608,7 +4625,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
   total: number(
     "data-ok-total",
     undefined,
-    "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average).",
+    "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average). Waffle charts: the cells shared out between the categories (`100` for a percentage waffle; default one cell per unit); split waffles: the cells of each tile (default 100).",
   ),
   sparkline: flag(
     "data-ok-sparkline",
@@ -4674,7 +4691,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-orientation",
     chartOrientations,
     "horizontal",
-    "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`).",
+    "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`). Beeswarm charts: the value axis runs left to right (`horizontal`, the default) or upward (`vertical`).",
     { optional: true },
   ),
   nodeWidth: number(
@@ -4850,6 +4867,175 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-hide-connectors",
     "Waterfall charts: no dashed lines from the end of each bar to the next one.",
   ),
+  streamOffset: style(
+    "data-ok-stream-offset",
+    chartStreamOffsets,
+    "wiggle",
+    "Streamgraphs: the baseline: `wiggle` (bands as flat as the data allows, the default), `silhouette` (centered on one line), `zero` (a stacked area) or `expand` (each x value fills the chart).",
+    { optional: true },
+  ),
+  streamOrder: style(
+    "data-ok-stream-order",
+    chartStreamOrders,
+    "inside-out",
+    "Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order).",
+    { optional: true },
+  ),
+  hideStreamLabels: flag(
+    "data-ok-hide-stream-labels",
+    "Streamgraphs: no series names on the bands.",
+  ),
+  streamLabelMinWidth: number(
+    "data-ok-stream-label-min-width",
+    undefined,
+    "Streamgraphs: bands thinner than this many pixels get no name (default 24).",
+    { min: 0 },
+  ),
+  unitLayout: style(
+    "data-ok-unit-layout",
+    chartUnitLayouts,
+    "grouped",
+    "Unit charts: where the marks go: `grouped` (a blob per category, the default), `packed` (one blob), `columns` (stacked dots), `grid` (the waffle lattice) or `arc` (rows of seats).",
+    { optional: true },
+  ),
+  clusterLabels: flag(
+    "data-ok-cluster-labels",
+    "Unit charts: category names under each cluster or column (grouped and columns layouts).",
+  ),
+  disableSortByGroup: flag(
+    "data-ok-disable-sort-by-group",
+    "Packed unit charts: keep the given order instead of the smallest group in the middle.",
+  ),
+  arcRows: number(
+    "data-ok-arc-rows",
+    undefined,
+    "Arc unit charts: the concentric rows (default the fewest that seat everyone). Use `innerSize` for the inner radius (default 40) and `startAngle` / `endAngle` for the sweep (default -90 to 90).",
+    { min: 1 },
+  ),
+  columns: number("data-ok-columns", undefined, "Waffle charts: cells per row (default 10).", {
+    min: 1,
+  }),
+  fillFrom: style(
+    "data-ok-fill-from",
+    chartFillFroms,
+    "bottom",
+    "Waffle charts: the row where the cells start filling: `bottom` (the default) or `top`.",
+    { optional: true },
+  ),
+  split: flag("data-ok-split", "Waffle charts: one mini waffle per category, filled to its value."),
+  tileColumns: number(
+    "data-ok-tile-columns",
+    undefined,
+    "Split waffles: tiles per row (default about a square of tiles).",
+    { min: 1 },
+  ),
+  splitMax: number(
+    "data-ok-split-max",
+    undefined,
+    "Split waffles: the value a full tile stands for (default the largest value).",
+    { min: 0 },
+  ),
+  trackColor: style(
+    "data-ok-track-color",
+    chartColors,
+    "primary",
+    "Split waffles: the color of the empty cells (default a neutral grey).",
+    { optional: true },
+  ),
+  unitValue: number(
+    "data-ok-unit-value",
+    undefined,
+    "Waffle and unit charts: how many units of value one mark stands for (default 1).",
+    { min: 0 },
+  ),
+  maxUnits: number(
+    "data-ok-max-units",
+    undefined,
+    "Waffle and unit charts: the most marks drawn; counts scale down above it (default 5000).",
+    { min: 1 },
+  ),
+  cellRadius: number(
+    "data-ok-cell-radius",
+    undefined,
+    "Waffle charts: the corner radius of square cells in pixels (default 2).",
+    { min: 0 },
+  ),
+  beeswarmSpread: style(
+    "data-ok-beeswarm-spread",
+    chartBeeswarmSpreads,
+    "swarm",
+    "Beeswarm charts: dots push apart just enough not to overlap (`swarm`, the default) or spread across the lane by a fixed sequence (`jitter`).",
+    { optional: true },
+  ),
+  violinNormalize: style(
+    "data-ok-violin-normalize",
+    chartViolinNormalize,
+    "individual",
+    "Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`).",
+    { optional: true },
+  ),
+  violinSide: style(
+    "data-ok-violin-side",
+    chartViolinSides,
+    "both",
+    "Violins: symmetric (`both`, the default) or half a violin: `left`, `right`, `top` or `bottom`.",
+    { optional: true },
+  ),
+  bandwidthScale: number(
+    "data-ok-bandwidth-scale",
+    undefined,
+    "Violins: multiplies the drawn half-width (default 1). This is not the statistical bandwidth (`kdeBandwidth`).",
+    { min: 0 },
+  ),
+  kdeBandwidth: number(
+    "data-ok-kde-bandwidth",
+    undefined,
+    "Violins: the kernel width of the density estimate, in value units (default Silverman's rule of thumb).",
+    { min: 0 },
+  ),
+  kdeResolution: number(
+    "data-ok-kde-resolution",
+    undefined,
+    "Violins: how many density samples each violin uses (4 to 256; default 64).",
+    { min: 4 },
+  ),
+  violinBox: flag("data-ok-violin-box", "Violins: a five-number box beside the density."),
+  violinWhiskers: style(
+    "data-ok-violin-whiskers",
+    chartViolinWhiskers,
+    "minmax",
+    "Violins with a box: the whiskers end at the data's extremes (`minmax`, the default) or at Tukey's 1.5 × IQR fences (`tukey`).",
+    { optional: true },
+  ),
+  hideViolinPoints: flag("data-ok-hide-violin-points", "Violins: no dots for the observations."),
+  violinPointSize: number(
+    "data-ok-violin-point-size",
+    undefined,
+    "Violins: the radius of the observation dots in pixels (default 2.5).",
+    { min: 0.5 },
+  ),
+  violinJitter: number(
+    "data-ok-violin-jitter",
+    undefined,
+    "Violins: how far the dots spread, as a share of the half-width (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
+  unconstrainedViolinPoints: flag(
+    "data-ok-unconstrained-violin-points",
+    "Violins: the dots may leave the density outline.",
+  ),
+  violinMaxPoints: number(
+    "data-ok-violin-max-points",
+    undefined,
+    "Violins: the most dots drawn per violin; extra observations are thinned evenly (default 3000).",
+    { min: 1 },
+  ),
+  streamHoverOpacity: number(
+    "data-ok-stream-hover-opacity",
+    undefined,
+    'Streamgraphs with `tooltip="point"`: the opacity of the bands that are not active (0 to 1; default 0.35).',
+    { min: 0 },
+  ),
   direction: style(
     "data-ok-direction",
     chartDirections,
@@ -4878,7 +5064,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
   innerSize: number(
     "data-ok-inner-size",
     undefined,
-    "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15).",
+    "Sunburst charts: the hole in the center, in % of the radius (0 to 90; default 15). Unit charts with the `arc` layout: the inner radius in % of the outer (default 40).",
     { min: 0 },
   ),
   spacing: number(
@@ -5046,6 +5232,37 @@ export interface ChartAnatomyOptions {
   scaleClasses?: number | undefined;
   sphere?: boolean | undefined;
   graticule?: boolean | undefined;
+  streamOffset?: ChartStreamOffset | undefined;
+  streamOrder?: ChartStreamOrder | undefined;
+  hideStreamLabels?: boolean | undefined;
+  streamLabelMinWidth?: number | undefined;
+  streamHoverOpacity?: number | undefined;
+  beeswarmSpread?: ChartBeeswarmSpread | undefined;
+  unitLayout?: ChartUnitLayout | undefined;
+  clusterLabels?: boolean | undefined;
+  disableSortByGroup?: boolean | undefined;
+  arcRows?: number | undefined;
+  columns?: number | undefined;
+  fillFrom?: ChartFillFrom | undefined;
+  split?: boolean | undefined;
+  tileColumns?: number | undefined;
+  splitMax?: number | undefined;
+  trackColor?: ChartColor | undefined;
+  unitValue?: number | undefined;
+  maxUnits?: number | undefined;
+  cellRadius?: number | undefined;
+  violinNormalize?: ChartViolinNormalize | undefined;
+  violinSide?: ChartViolinSide | undefined;
+  bandwidthScale?: number | undefined;
+  kdeBandwidth?: number | undefined;
+  kdeResolution?: number | undefined;
+  violinBox?: boolean | undefined;
+  violinWhiskers?: ChartViolinWhiskers | undefined;
+  hideViolinPoints?: boolean | undefined;
+  violinPointSize?: number | undefined;
+  violinJitter?: number | undefined;
+  unconstrainedViolinPoints?: boolean | undefined;
+  violinMaxPoints?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

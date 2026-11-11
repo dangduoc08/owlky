@@ -21,6 +21,7 @@ import type {
 import { polarPoint, slicePath } from "./chart-polar.js";
 import { onSankeyLink } from "./chart-sankey.js";
 import { type ChartDataPoint, chartMarkPoint, hasChartDataPoint } from "./chart-select.js";
+import { chartUnitAt } from "./chart-unit.js";
 
 const BOX: readonly ChartPart[] = ["min", "q1", "median", "q3", "max"];
 const CANDLE: readonly ChartPart[] = ["open", "high", "low", "close"];
@@ -70,6 +71,13 @@ export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartA
       if (tree && onChartTreeMark(tree, x, y)) return { kind: "mark", mark };
     }
     return null;
+  }
+  if (layout.mode === "unit") {
+    // Waffle and unit charts: the category of the mark under the pointer.
+    const index = chartUnitAt(layout.units, x, y);
+    return index === null
+      ? null
+      : { kind: "index", index: (layout.slots[index] as (typeof layout.slots)[number]).index };
   }
   if (layout.mode === "flow") {
     // Sankey: the node under the pointer (3px of slack), else the topmost link.
@@ -265,6 +273,7 @@ const BLOCKS: readonly string[] = [
   "rangeBar",
   "timeline",
   "waterfall",
+  "violin",
 ];
 /** Series types whose points have their own colors in the tooltip (not the series color). */
 const OWN_COLORS: readonly string[] = [
@@ -318,6 +327,19 @@ export function chartActiveNodes(
         under: [],
         over: [{ tag: "path", attrs: { d: mark.geo.d, "data-ok-chart-active-cell": "" } }],
       };
+    // Streamgraphs (4.18.21): a per-point tooltip's band over a veil that fades the others.
+    if (mark.stream) {
+      const { veil, band, label } = mark.stream;
+      return {
+        under: [],
+        over: [
+          veil,
+          band,
+          circle(mark.px, mark.py, layout.activeRadius, mark.color, mark.shape),
+          ...(label ? [label] : []),
+        ],
+      };
+    }
     if (mark.tree) return { under: [], over: [...treeNodes(layout, mark), mark.tree.outline] };
     if (mark.cell) {
       // An outline around the cell (heatmap, treemap).
@@ -353,6 +375,16 @@ export function chartActiveNodes(
   const slot = layout.slots.find((entry) => entry.index === active.index);
   if (!slot) return { under: [], over: [] };
   const under: ChartNode[] = [];
+  if (layout.mode === "unit") {
+    // Waffle and unit charts: an outline around every mark of the category.
+    const mark = layout.marks.find((entry) => entry.index === active.index);
+    return mark?.unit
+      ? {
+          under,
+          over: [{ tag: "path", attrs: { d: mark.unit.outline, "data-ok-chart-active-node": "" } }],
+        }
+      : { under, over: [] };
+  }
   if (layout.mode === "slice") {
     // A wider copy of the slice behind it (a halo); rings show only the tooltip.
     const mark = layout.marks.find((entry) => entry.index === active.index);
@@ -580,6 +612,23 @@ function tooltipOf(
         },
       ];
     }
+    if (mark.type === "violin" && range) {
+      // Violins (4.18.21): the five numbers and how many observations they summarize.
+      return [
+        ...BOX.map((part, i) => ({
+          name: several("violin") ? `${series.name} (${format.part(part)})` : format.part(part),
+          value: value(range[i] as number),
+          color,
+        })),
+        {
+          name: several("violin")
+            ? `${series.name} (${format.part("count")})`
+            : format.part("count"),
+          value: format.number(mark.count as number),
+          color,
+        },
+      ];
+    }
     if (mark.type === "dumbbell" && range) {
       // Dumbbells (4.18.21): the start and the end, each with its marker's color.
       return (["start", "end"] as const).map((part, i) => ({
@@ -630,8 +679,8 @@ function tooltipOf(
     data.xType === "datetime"
       ? (data.categories[active.index] as number)
       : (data.categories[active.index] ?? String(active.index + 1));
-  if (layout.mode === "slice") {
-    // One slice or ring: its own color, pointing at its middle (bars: their end).
+  if (layout.mode === "slice" || layout.mode === "unit") {
+    // One slice or ring (or a unit chart's category): its own color, pointing at its middle (bars: their end).
     const mark = marks[0];
     if (!mark) return null;
     return {
@@ -659,6 +708,14 @@ function tooltipOf(
         : (data.series[mark.series] as (typeof data.series)[number]).color,
     ),
   );
+  // Streamgraphs (4.18.21): the column's total after its bands (not with `expand`).
+  const columnTotal = marks[0]?.total;
+  if (columnTotal !== undefined && marks[0])
+    rows.push({
+      name: format.part("total"),
+      value: format.value(columnTotal, 0),
+      color: marks[0].color,
+    });
   if (layout.polar) {
     // Radar: beside the outermost value of the category.
     const { cx, cy } = layout.polar;

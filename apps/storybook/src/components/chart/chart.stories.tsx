@@ -175,3 +175,8 @@ export const GeoProjections: StoryObj = geoStory("geo-projections");
 export const GeoHex: StoryObj = story("geo-hex");
 // Roadmap 4.18.19: crossfilter between the charts of a group.
 export const Crossfilter: StoryObj = story("crossfilter");
+export const Streamgraph: StoryObj = story("streamgraph");
+export const Violin: StoryObj = story("violin");
+export const Beeswarm: StoryObj = story("beeswarm");
+export const Waffle: StoryObj = story("waffle");
+export const Unit: StoryObj = story("unit");

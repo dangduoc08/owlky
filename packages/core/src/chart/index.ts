@@ -43,6 +43,12 @@ export {
   withChartAxes,
 } from "./chart-axes.js";
 export {
+  type ChartBeeswarmOptions,
+  type ChartBeeswarmSpread,
+  chartBeeswarmSpreads,
+  chartSwarmOffsets,
+} from "./chart-beeswarm.js";
+export {
   type ChartCueOptions,
   type ChartDiscreteMarker,
   chartCueDashes,
@@ -255,7 +261,25 @@ export {
   hasChartDataPoint,
   toggleChartSelection,
 } from "./chart-select.js";
+export {
+  type ChartViolinInput,
+  type ChartViolinStats,
+  chartBandwidth,
+  chartKernelDensity,
+  chartQuantile,
+  chartTukeyEnds,
+  chartViolinStats,
+  parseChartViolinCell,
+} from "./chart-stats.js";
 export { type ChartStockOptions, layoutStock } from "./chart-stock.js";
+export {
+  type ChartStreamOffset,
+  type ChartStreamOptions,
+  type ChartStreamOrder,
+  chartStreamBands,
+  chartStreamOffsets,
+  chartStreamOrders,
+} from "./chart-stream.js";
 export {
   CHART_TEXT_ATTRIBUTES,
   type ChartTextOptions,
@@ -278,6 +302,29 @@ export {
   chartTools,
 } from "./chart-toolbar.js";
 export { type ChartTreeOptions, layoutTree } from "./chart-tree.js";
+export {
+  type ChartFillFrom,
+  type ChartUnitCell,
+  type ChartUnitOptions,
+  chartFillFroms,
+  chartUnitCounts,
+  placeUnitGrid,
+} from "./chart-unit.js";
+export {
+  type ChartUnitLayout,
+  chartUnitLayouts,
+  isChartUnitLayout,
+} from "./chart-unit-layouts.js";
+export {
+  type ChartViolinNormalize,
+  type ChartViolinOptions,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
+  chartViolinCurve,
+  chartViolinNormalize,
+  chartViolinSides,
+  chartViolinWhiskers,
+} from "./chart-violin.js";
 export {
   type ChartZoom,
   type ChartZoomReason,

@@ -73,6 +73,11 @@ const STORIES = [
   "geo",
   "geo-projections",
   "geo-hex",
+  "unit",
+  "waffle",
+  "beeswarm",
+  "violin",
+  "streamgraph",
   "crossfilter",
 ];
 
@@ -834,3 +839,124 @@ test("chart sunburst: after drilling, React and HTML draw the same SVG", async (
   const html = await after("html");
   expect(html).toEqual(react);
 });
+
+// Roadmap 4.18.21: streamgraphs.
+for (const impl of implementations) {
+  test.describe(`chart streamgraph (${impl})`, () => {
+    test("the keyboard reads every band and the total", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "streamgraph"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-stream-band]")).toHaveCount(5);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Jan");
+      const rows = first.locator("[data-ok-chart-tooltip-row]");
+      await expect(rows).toHaveCount(6);
+      await expect(rows.last()).toHaveText("Total122k");
+    });
+
+    test("a legend item removes its band and the baseline follows", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "streamgraph"));
+      const first = page.locator("[data-ok-chart]").first();
+      const band = first.locator("[data-ok-chart-stream-band]").first();
+      const before = await band.getAttribute("d");
+      await first.locator("[data-ok-chart-legend-item]").first().click();
+      await expect(first.locator("[data-ok-chart-stream-band]")).toHaveCount(4);
+      expect(await first.locator("[data-ok-chart-stream-band]").first().getAttribute("d")).not.toBe(
+        before,
+      );
+    });
+  });
+}
+
+// Roadmap 4.18.21: violin charts.
+for (const impl of implementations) {
+  test.describe(`chart violin (${impl})`, () => {
+    test("the keyboard reads the five numbers and the count", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "violin"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-violin]")).toHaveCount(3);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Basic");
+      const rows = first.locator("[data-ok-chart-tooltip-row]");
+      await expect(rows).toHaveCount(6);
+      await expect(rows.last()).toHaveText("Count16");
+    });
+  });
+}
+
+// Roadmap 4.18.21: beeswarm charts.
+for (const impl of implementations) {
+  test.describe(`chart beeswarm (${impl})`, () => {
+    test("the keyboard reaches every observation with its name and value", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "beeswarm"));
+      const first = page.locator("[data-ok-chart]").first();
+      const dots = first.locator("[data-ok-chart-bee]");
+      await expect(dots).toHaveCount(29);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText(/^[A-Z][a-z]+$/);
+      await page.keyboard.press("End");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Design90k");
+    });
+
+    test("a click selects a dot, and a legend item removes a lane", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "beeswarm"));
+      const first = page.locator("[data-ok-chart]").first();
+      await first.locator("[data-ok-chart-bee]").nth(4).click({ force: true });
+      await expect(first.locator("[data-ok-chart-selected-mark]")).toHaveCount(1);
+      await first.locator("[data-ok-chart-legend-item]").first().click();
+      await expect(first.locator("[data-ok-chart-bee]")).toHaveCount(17);
+    });
+  });
+}
+
+// Roadmap 4.18.21: waffle charts.
+for (const impl of implementations) {
+  test.describe(`chart waffle (${impl})`, () => {
+    test("arrow keys move by category and its cells light up", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "waffle"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(100);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("ArrowRight");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Marketing");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Budget27%");
+      await expect(first.locator("[data-ok-chart-active-node]")).toHaveCount(1);
+    });
+
+    test("a click selects the category; a legend item hides it", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "waffle"));
+      const first = page.locator("[data-ok-chart]").first();
+      await first
+        .locator('[data-ok-chart-unit-group][data-ok-index="1"] [data-ok-chart-unit-cell]')
+        .first()
+        .click();
+      await expect(first.locator("[data-ok-chart-selected-mark]")).toHaveCount(1);
+      await first.locator("[data-ok-chart-legend-item]").nth(2).click();
+      await expect(first.locator("[data-ok-chart-unit-group]")).toHaveCount(3);
+      await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(100);
+    });
+  });
+}
+
+// Roadmap 4.18.21: unit charts.
+for (const impl of implementations) {
+  test.describe(`chart unit (${impl})`, () => {
+    test("arrow keys move between categories in every layout", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "unit"));
+      const charts = page.locator("[data-ok-chart]");
+      await expect(charts).toHaveCount(4);
+      const first = charts.first();
+      await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(152);
+      await expect(first.locator("[data-ok-chart-unit-title]")).toHaveCount(4);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("End");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Can Tho");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Volunteers42");
+      await expect(first.locator("[data-ok-chart-active-node]")).toHaveCount(1);
+    });
+  });
+}

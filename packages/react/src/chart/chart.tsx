@@ -4,6 +4,7 @@ import {
   CHART_DEFAULT_WIDTH,
   type ChartActive,
   type ChartAnnotation,
+  type ChartBeeswarmSpread,
   type ChartColor,
   type ChartColorRange,
   type ChartCrossfilter,
@@ -15,6 +16,7 @@ import {
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
+  type ChartFillFrom,
   type ChartGeoLayout,
   type ChartGeometry,
   type ChartGeoRegion,
@@ -43,12 +45,18 @@ import {
   type ChartSelectionDetail,
   type ChartSeries,
   type ChartStackType,
+  type ChartStreamOffset,
+  type ChartStreamOrder,
   type ChartStripeColor,
   type ChartTool,
   type ChartTooltipContext,
   type ChartTooltipCorner,
   type ChartTooltipMode,
   type ChartType,
+  type ChartUnitLayout,
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
   type ChartXType,
   type ChartYAxis,
   type ChartZoom,
@@ -390,6 +398,68 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
   hideConnectors?: boolean | undefined;
+  /** Unit charts: where the marks go: `grouped`, `packed`, `columns`, `grid` or `arc`. Default `"grouped"`. */
+  unitLayout?: ChartUnitLayout | undefined;
+  /** Unit charts: category names under each cluster or column. */
+  clusterLabels?: boolean | undefined;
+  /** Packed unit charts: keep the given order instead of the smallest group in the middle. */
+  disableSortByGroup?: boolean | undefined;
+  /** Arc unit charts: the concentric rows. Default the fewest that seat everyone. */
+  arcRows?: number | undefined;
+  /** Waffle charts: cells per row. Default 10. */
+  columns?: number | undefined;
+  /** Waffle charts: the row where the cells start filling. Default `"bottom"`. */
+  fillFrom?: ChartFillFrom | undefined;
+  /** Waffle charts: one mini waffle per category, filled to its value. */
+  split?: boolean | undefined;
+  /** Split waffles: tiles per row. Default about a square of tiles. */
+  tileColumns?: number | undefined;
+  /** Split waffles: the value a full tile stands for. Default the largest value. */
+  splitMax?: number | undefined;
+  /** Split waffles: the color of the empty cells. Default a neutral grey. */
+  trackColor?: ChartColor | undefined;
+  /** Waffle and unit charts: how many units of value one mark stands for. Default 1. */
+  unitValue?: number | undefined;
+  /** Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000. */
+  maxUnits?: number | undefined;
+  /** Waffle charts: the corner radius of square cells in pixels. Default 2. */
+  cellRadius?: number | undefined;
+  /** Beeswarm charts: dots push apart just enough not to overlap (`swarm`) or spread across the lane by a fixed sequence (`jitter`). Default `"swarm"`. */
+  beeswarmSpread?: ChartBeeswarmSpread | undefined;
+  /** Violins: each violin fills its slot (`individual`) or all share one density scale (`group`). Default `"individual"`. */
+  violinNormalize?: ChartViolinNormalize | undefined;
+  /** Violins: symmetric (`both`) or half a violin: `left`, `right`, `top` or `bottom`. Default `"both"`. */
+  violinSide?: ChartViolinSide | undefined;
+  /** Violins: multiplies the drawn half-width. Default 1. */
+  bandwidthScale?: number | undefined;
+  /** Violins: the kernel width of the density estimate, in value units. Default Silverman's rule. */
+  kdeBandwidth?: number | undefined;
+  /** Violins: density samples per violin (4 to 256). Default 64. */
+  kdeResolution?: number | undefined;
+  /** Violins: a five-number box beside the density. */
+  violinBox?: boolean | undefined;
+  /** Violin boxes: whiskers at the extremes (`minmax`) or Tukey's fences (`tukey`). Default `"minmax"`. */
+  violinWhiskers?: ChartViolinWhiskers | undefined;
+  /** Violins: no dots for the observations. */
+  hideViolinPoints?: boolean | undefined;
+  /** Violins: the radius of the observation dots in pixels. Default 2.5. */
+  violinPointSize?: number | undefined;
+  /** Violins: how far the dots spread, as a share of the half-width (0 to 1). Default 0.5. */
+  violinJitter?: number | undefined;
+  /** Violins: the dots may leave the density outline. */
+  unconstrainedViolinPoints?: boolean | undefined;
+  /** Violins: the most dots per violin; extra observations are thinned evenly. Default 3000. */
+  violinMaxPoints?: number | undefined;
+  /** Streamgraphs: the baseline: `wiggle`, `silhouette`, `zero` or `expand`. Default `"wiggle"`. */
+  streamOffset?: ChartStreamOffset | undefined;
+  /** Streamgraphs: the stacking order: `inside-out`, `inverse` or `none`. Default `"inside-out"`. */
+  streamOrder?: ChartStreamOrder | undefined;
+  /** Streamgraphs: no series names on the bands. */
+  hideStreamLabels?: boolean | undefined;
+  /** Streamgraphs: bands thinner than this many pixels get no name. Default 24. */
+  streamLabelMinWidth?: number | undefined;
+  /** Streamgraphs with `tooltip="point"`: the opacity of the other bands (0 to 1). Default 0.35. */
+  streamHoverOpacity?: number | undefined;
   /**
    * Dumbbell charts: the start and end marker colors of each series, such as
    * `[["info", "success"]]` (pair n for series n; later series take the first pair). Default the
@@ -576,6 +646,37 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     waterfallTotalColor,
     waterfallSubtotalColor,
     hideConnectors,
+    streamOffset,
+    streamOrder,
+    hideStreamLabels,
+    streamLabelMinWidth,
+    streamHoverOpacity,
+    beeswarmSpread,
+    unitLayout,
+    clusterLabels,
+    disableSortByGroup,
+    arcRows,
+    columns,
+    fillFrom,
+    split,
+    tileColumns,
+    splitMax,
+    trackColor,
+    unitValue,
+    maxUnits,
+    cellRadius,
+    violinNormalize,
+    violinSide,
+    bandwidthScale,
+    kdeBandwidth,
+    kdeResolution,
+    violinBox,
+    violinWhiskers,
+    hideViolinPoints,
+    violinPointSize,
+    violinJitter,
+    unconstrainedViolinPoints,
+    violinMaxPoints,
     dumbbellColors,
     dataLabelBackground,
     dataLabelFormatter,
@@ -686,6 +787,37 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     waterfallTotalColor,
     waterfallSubtotalColor,
     hideConnectors,
+    streamOffset,
+    streamOrder,
+    hideStreamLabels,
+    streamLabelMinWidth,
+    streamHoverOpacity,
+    beeswarmSpread,
+    unitLayout,
+    clusterLabels,
+    disableSortByGroup,
+    arcRows,
+    columns,
+    fillFrom,
+    split,
+    tileColumns,
+    splitMax,
+    trackColor,
+    unitValue,
+    maxUnits,
+    cellRadius,
+    violinNormalize,
+    violinSide,
+    bandwidthScale,
+    kdeBandwidth,
+    kdeResolution,
+    violinBox,
+    violinWhiskers,
+    hideViolinPoints,
+    violinPointSize,
+    violinJitter,
+    unconstrainedViolinPoints,
+    violinMaxPoints,
     crossfilter,
     direction,
     layoutType,
@@ -746,6 +878,41 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validTotalColor = color("data-ok-waterfall-total-color");
   const validSubtotal = color("data-ok-waterfall-subtotal-color");
   const connectorsOff = attributes["data-ok-hide-connectors"] !== undefined;
+  const validStreamOffset = attributes["data-ok-stream-offset"] as ChartStreamOffset | undefined;
+  const validStreamOrder = attributes["data-ok-stream-order"] as ChartStreamOrder | undefined;
+  const streamLabelsOff = attributes["data-ok-hide-stream-labels"] !== undefined;
+  const validStreamLabelMin = number("data-ok-stream-label-min-width");
+  const validStreamHover = number("data-ok-stream-hover-opacity");
+  const validBeeswarmSpread = attributes["data-ok-beeswarm-spread"] as
+    | ChartBeeswarmSpread
+    | undefined;
+  const validUnitLayout = attributes["data-ok-unit-layout"] as ChartUnitLayout | undefined;
+  const clusterLabelsOn = attributes["data-ok-cluster-labels"] !== undefined;
+  const sortByGroupOff = attributes["data-ok-disable-sort-by-group"] !== undefined;
+  const validArcRows = number("data-ok-arc-rows");
+  const validColumns = number("data-ok-columns");
+  const validFillFrom = attributes["data-ok-fill-from"] as ChartFillFrom | undefined;
+  const splitOn = attributes["data-ok-split"] !== undefined;
+  const validTileColumns = number("data-ok-tile-columns");
+  const validSplitMax = number("data-ok-split-max");
+  const validTrackColor = attributes["data-ok-track-color"] as ChartColor | undefined;
+  const validUnitValue = number("data-ok-unit-value");
+  const validMaxUnits = number("data-ok-max-units");
+  const validCellRadius = number("data-ok-cell-radius");
+  const validViolinNormalize = attributes["data-ok-violin-normalize"] as
+    | ChartViolinNormalize
+    | undefined;
+  const validViolinSide = attributes["data-ok-violin-side"] as ChartViolinSide | undefined;
+  const validBandwidthScale = number("data-ok-bandwidth-scale");
+  const validKdeBandwidth = number("data-ok-kde-bandwidth");
+  const validKdeResolution = number("data-ok-kde-resolution");
+  const violinBoxOn = attributes["data-ok-violin-box"] !== undefined;
+  const validWhiskers = attributes["data-ok-violin-whiskers"] as ChartViolinWhiskers | undefined;
+  const violinPointsOff = attributes["data-ok-hide-violin-points"] !== undefined;
+  const validViolinPointSize = number("data-ok-violin-point-size");
+  const validViolinJitter = number("data-ok-violin-jitter");
+  const violinUnconstrained = attributes["data-ok-unconstrained-violin-points"] !== undefined;
+  const validViolinMax = number("data-ok-violin-max-points");
   const validCrossfilter = attributes["data-ok-crossfilter"] as ChartCrossfilter | undefined;
   const navigatorOn = attributes["data-ok-navigator"] !== undefined;
   // A navigator zooms the chart: its gestures and keys are on.
@@ -908,6 +1075,37 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         waterfallTotalColor: validTotalColor,
         waterfallSubtotalColor: validSubtotal,
         hideConnectors: connectorsOff,
+        streamOffset: validStreamOffset,
+        streamOrder: validStreamOrder,
+        hideStreamLabels: streamLabelsOff,
+        streamLabelMinWidth: validStreamLabelMin,
+        streamHoverOpacity: validStreamHover,
+        beeswarmSpread: validBeeswarmSpread,
+        unitLayout: validUnitLayout,
+        clusterLabels: clusterLabelsOn,
+        disableSortByGroup: sortByGroupOff,
+        arcRows: validArcRows,
+        columns: validColumns,
+        fillFrom: validFillFrom,
+        split: splitOn,
+        tileColumns: validTileColumns,
+        splitMax: validSplitMax,
+        trackColor: validTrackColor,
+        unitValue: validUnitValue,
+        maxUnits: validMaxUnits,
+        cellRadius: validCellRadius,
+        violinNormalize: validViolinNormalize,
+        violinSide: validViolinSide,
+        bandwidthScale: validBandwidthScale,
+        kdeBandwidth: validKdeBandwidth,
+        kdeResolution: validKdeResolution,
+        violinBox: violinBoxOn,
+        violinWhiskers: validWhiskers,
+        hideViolinPoints: violinPointsOff,
+        violinPointSize: validViolinPointSize,
+        violinJitter: validViolinJitter,
+        unconstrainedViolinPoints: violinUnconstrained,
+        violinMaxPoints: validViolinMax,
         dumbbellColors,
         dataLabelBackground,
         dataLabelFormatter,
@@ -1025,6 +1223,37 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validTotalColor,
       validSubtotal,
       connectorsOff,
+      validStreamOffset,
+      validStreamOrder,
+      streamLabelsOff,
+      validStreamLabelMin,
+      validStreamHover,
+      validBeeswarmSpread,
+      validUnitLayout,
+      clusterLabelsOn,
+      sortByGroupOff,
+      validArcRows,
+      validColumns,
+      validFillFrom,
+      splitOn,
+      validTileColumns,
+      validSplitMax,
+      validTrackColor,
+      validUnitValue,
+      validMaxUnits,
+      validCellRadius,
+      validViolinNormalize,
+      validViolinSide,
+      validBandwidthScale,
+      validKdeBandwidth,
+      validKdeResolution,
+      violinBoxOn,
+      validWhiskers,
+      violinPointsOff,
+      validViolinPointSize,
+      validViolinJitter,
+      violinUnconstrained,
+      validViolinMax,
       dumbbellColors,
       dataLabelBackground,
       dataLabelFormatter,

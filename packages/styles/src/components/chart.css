@@ -1260,6 +1260,86 @@
     fill: var(--ok-palette-common-white);
   }
 
+  /* Waffle and unit charts (4.18.21): marks take their category's color. */
+  :where([data-ok-chart-unit-cell]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where(
+    [data-ok-chart-unit-cell][data-ok-shape="cross"],
+    [data-ok-chart-unit-cell][data-ok-shape="plus"]
+  ) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2px;
+  }
+
+  :where([data-ok-chart-unit-track]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+  }
+
+  :where([data-ok-chart-unit-track][data-ok-color]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.32;
+  }
+
+  :where([data-ok-chart-unit-title]) {
+    fill: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    pointer-events: none;
+  }
+
+  /* Beeswarm dots (4.18.21): a paper ring keeps touching dots apart. */
+  :where([data-ok-chart-bee]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.9;
+    stroke: var(--ok-bg-paper);
+    stroke-width: 1px;
+  }
+
+  /* Violins (4.18.21): the density outline, the box beside it and the observations. */
+  :where([data-ok-chart-violin]) {
+    fill-opacity: 0.32;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 1.5px;
+  }
+
+  :where([data-ok-chart-violin]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-violin-box]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-text-primary);
+    stroke-width: 1px;
+  }
+
+  :where([data-ok-chart-violin-whisker], [data-ok-chart-violin-median]) {
+    stroke: var(--ok-text-primary);
+    stroke-width: 1px;
+  }
+
+  :where([data-ok-chart-violin-point]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.9;
+    stroke: var(--ok-bg-paper);
+    stroke-width: 1px;
+  }
+
+  /* Streamgraph bands (4.18.21): meet without a seam; a pattern fills them through `fill`. */
+  :where([data-ok-chart-stream-band]) {
+    stroke: none;
+  }
+
+  :where([data-ok-chart-stream-band]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-stream-veil]) {
+    fill: var(--ok-bg-paper);
+  }
+
   /* Waterfall connectors (4.18.21): a dashed line from each bar's end to the next bar. */
   :where([data-ok-chart-connector]) {
     stroke: var(--ok-text-secondary);

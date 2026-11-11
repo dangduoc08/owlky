@@ -1,6 +1,7 @@
 import {
   CHART_TEXT_ATTRIBUTES,
   type ChartActive,
+  type ChartBeeswarmSpread,
   type ChartColor,
   type ChartCrossfilter,
   type ChartCurve,
@@ -10,6 +11,7 @@ import {
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
+  type ChartFillFrom,
   type ChartGeoLayout,
   type ChartGeometry,
   type ChartGestureMode,
@@ -34,6 +36,8 @@ import {
   type ChartSelectionDetail,
   type ChartSeries,
   type ChartStackType,
+  type ChartStreamOffset,
+  type ChartStreamOrder,
   type ChartTableCell,
   type ChartTableModel,
   type ChartTool,
@@ -42,6 +46,10 @@ import {
   type ChartTooltipCorner,
   type ChartTooltipMode,
   type ChartType,
+  type ChartUnitLayout,
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
   type ChartXType,
   type ChartZoom,
   type ChartZoomReason,
@@ -754,8 +762,13 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         yMin: readNumber(element, o.yMin) as number | undefined,
         yMax: readNumber(element, o.yMax) as number | undefined,
         dataLabels: element.hasAttribute(o.dataLabels.attr),
-        startAngle: readNumber(element, o.startAngle) as number | undefined,
-        endAngle: readNumber(element, o.endAngle) as number | undefined,
+        // Only when given: arcs of unit charts have their own defaults (-90 to 90).
+        startAngle: element.hasAttribute(o.startAngle.attr)
+          ? (readNumber(element, o.startAngle) as number)
+          : undefined,
+        endAngle: element.hasAttribute(o.endAngle.attr)
+          ? (readNumber(element, o.endAngle) as number)
+          : undefined,
         dashArray: readNumber(element, o.dashArray) as number | undefined,
         trackWidth: readNumber(element, o.trackWidth) as number | undefined,
         total: readNumber(element, o.total) as number | undefined,
@@ -771,6 +784,53 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         waterfallTotalColor: colorAttribute(element, o.waterfallTotalColor.attr),
         waterfallSubtotalColor: colorAttribute(element, o.waterfallSubtotalColor.attr),
         hideConnectors: element.hasAttribute(o.hideConnectors.attr),
+        streamOffset: element.hasAttribute(o.streamOffset.attr)
+          ? (readStyle(element, o.streamOffset) as ChartStreamOffset)
+          : undefined,
+        streamOrder: element.hasAttribute(o.streamOrder.attr)
+          ? (readStyle(element, o.streamOrder) as ChartStreamOrder)
+          : undefined,
+        hideStreamLabels: element.hasAttribute(o.hideStreamLabels.attr),
+        unitLayout: element.hasAttribute(o.unitLayout.attr)
+          ? (readStyle(element, o.unitLayout) as ChartUnitLayout)
+          : undefined,
+        clusterLabels: element.hasAttribute(o.clusterLabels.attr),
+        disableSortByGroup: element.hasAttribute(o.disableSortByGroup.attr),
+        arcRows: readNumber(element, o.arcRows) as number | undefined,
+        columns: readNumber(element, o.columns) as number | undefined,
+        fillFrom: element.hasAttribute(o.fillFrom.attr)
+          ? (readStyle(element, o.fillFrom) as ChartFillFrom)
+          : undefined,
+        split: element.hasAttribute(o.split.attr),
+        tileColumns: readNumber(element, o.tileColumns) as number | undefined,
+        splitMax: readNumber(element, o.splitMax) as number | undefined,
+        trackColor: colorAttribute(element, o.trackColor.attr),
+        unitValue: readNumber(element, o.unitValue) as number | undefined,
+        maxUnits: readNumber(element, o.maxUnits) as number | undefined,
+        cellRadius: readNumber(element, o.cellRadius) as number | undefined,
+        beeswarmSpread: element.hasAttribute(o.beeswarmSpread.attr)
+          ? (readStyle(element, o.beeswarmSpread) as ChartBeeswarmSpread)
+          : undefined,
+        violinNormalize: element.hasAttribute(o.violinNormalize.attr)
+          ? (readStyle(element, o.violinNormalize) as ChartViolinNormalize)
+          : undefined,
+        violinSide: element.hasAttribute(o.violinSide.attr)
+          ? (readStyle(element, o.violinSide) as ChartViolinSide)
+          : undefined,
+        bandwidthScale: readNumber(element, o.bandwidthScale) as number | undefined,
+        kdeBandwidth: readNumber(element, o.kdeBandwidth) as number | undefined,
+        kdeResolution: readNumber(element, o.kdeResolution) as number | undefined,
+        violinBox: element.hasAttribute(o.violinBox.attr),
+        violinWhiskers: element.hasAttribute(o.violinWhiskers.attr)
+          ? (readStyle(element, o.violinWhiskers) as ChartViolinWhiskers)
+          : undefined,
+        hideViolinPoints: element.hasAttribute(o.hideViolinPoints.attr),
+        violinPointSize: readNumber(element, o.violinPointSize) as number | undefined,
+        violinJitter: readNumber(element, o.violinJitter) as number | undefined,
+        unconstrainedViolinPoints: element.hasAttribute(o.unconstrainedViolinPoints.attr),
+        violinMaxPoints: readNumber(element, o.violinMaxPoints) as number | undefined,
+        streamLabelMinWidth: readNumber(element, o.streamLabelMinWidth) as number | undefined,
+        streamHoverOpacity: readNumber(element, o.streamHoverOpacity) as number | undefined,
         dumbbellColors: parseChartDumbbellColors(
           element.getAttribute(CHART_TEXT_ATTRIBUTES.dumbbellColors),
         ),

@@ -16,6 +16,8 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 255 kB since the rest of ApexCharts v8 types (roadmap 4.18.21: streamgraph, violin with its KDE,
+  // beeswarm, waffle, unit layouts and their options): 251.6 kB. Optimization is deferred to 1.0 prep.
   // 245 kB once the chart hierarchy types (tree, sunburst, icicle, ADR-0058) merged with the data
   // grid's cell menu, filter groups and generated columns: 241.9 kB. Optimization is deferred to 1.0 prep.
   // 239 kB since the tree chart type (4.18.7, ADR-0058: the hierarchy model and table, tidy /
@@ -99,7 +101,9 @@ const budgets = [
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
   // 250 kB since the geo charts (ADR-0059: projections, hex tiles, `mapScale`): 246.84 kB.
-  ["packages/html/dist/owlky.js", 250_000, "HTML runtime + all components (IIFE)"],
+  // 260 kB once the geo charts merged with the ApexCharts v8 types (streamgraph, violin, beeswarm,
+  // waffle, unit, roadmap 4.18.21): 256.7 kB. Optimization is deferred to 1.0 prep.
+  ["packages/html/dist/owlky.js", 260_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -193,7 +197,8 @@ const budgets = [
   // 1.25 MB since Phase 4 batch E shoulds (chart stacks, cues, tooltips, legends; button, text field,
   // select and picker field options: their stories, docs sections and API entries): 1202.0 kB.
   // 1.2 MB since Phase 4 batch E (new chart and data grid stories, sections and API entries): 1154.6 kB.
-  ["packages/mcp/manifest.json", 1_350_000, "MCP manifest (npm tarball, not a browser download)"],
+  // 1.4 MB since the geo charts and the ApexCharts v8 types (stories, docs sections, API entries): 1364.4 kB.
+  ["packages/mcp/manifest.json", 1_400_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;

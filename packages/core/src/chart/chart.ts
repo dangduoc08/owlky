@@ -4,6 +4,7 @@ import {
   chartAnnotations,
 } from "./chart-annotations.js";
 import { type ChartYAxis, chartYAxes, withChartAxes } from "./chart-axes.js";
+import { type ChartBeeswarmSpread, layoutBeeswarm } from "./chart-beeswarm.js";
 import { layoutHeatmap, layoutTreemap } from "./chart-cells.js";
 import {
   type ChartDiscreteMarker,
@@ -61,8 +62,10 @@ import {
   type ChartXType,
   chartData,
   chartDefaultColors,
+  chartMarkerShapes,
   chartTable,
   isCircularChart,
+  isUnitChart,
   isWholeChart,
 } from "./chart-model.js";
 import { layoutSunburst } from "./chart-partition.js";
@@ -78,7 +81,16 @@ import {
 import { type ChartDataPoint, chartSelectedNodes, chartSelection } from "./chart-select.js";
 import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 import { layoutStock } from "./chart-stock.js";
+import { type ChartStreamOffset, type ChartStreamOrder, layoutStream } from "./chart-stream.js";
 import { layoutTree } from "./chart-tree.js";
+import { type ChartFillFrom, layoutUnit } from "./chart-unit.js";
+import { type ChartUnitLayout, chartUnitPlacer } from "./chart-unit-layouts.js";
+import {
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
+  layoutViolin,
+} from "./chart-violin.js";
 import {
   type ChartZoom,
   chartSelectionNodes,
@@ -96,7 +108,9 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   /** Sankey charts (ADR-0047): nodes (optional: titles and colors) and the links between them. */
   readonly nodes?: readonly ChartSankeyNode[] | undefined;
   readonly edges?: readonly ChartSankeyEdge[] | undefined;
-  /** Sankey charts: flow direction. Default `"horizontal"`. */
+  /** Beeswarm charts: how equal values separate in a lane. Default `"swarm"`. */
+  readonly beeswarmSpread?: ChartBeeswarmSpread | undefined;
+  /** Sankey charts: flow direction; beeswarm charts: the value axis. Default `"horizontal"`. */
   readonly orientation?: ChartOrientation | undefined;
   /** Sankey charts: node thickness along the flow in px. Default 20. */
   readonly nodeWidth?: number | undefined;
@@ -225,6 +239,66 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly hideConnectors?: boolean | undefined;
   /** Dumbbell charts: start and end marker colors per series (`[[start, end], …]`). */
   readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
+  /** Streamgraphs (4.18.21): the baseline. Default `"wiggle"`. */
+  readonly streamOffset?: ChartStreamOffset | undefined;
+  /** Streamgraphs: the stacking order, bottom first. Default `"inside-out"`. */
+  readonly streamOrder?: ChartStreamOrder | undefined;
+  /** Streamgraphs: no series names on the bands. */
+  readonly hideStreamLabels?: boolean | undefined;
+  /** Streamgraphs: bands thinner than this many px get no name. Default 24. */
+  readonly streamLabelMinWidth?: number | undefined;
+  /** Streamgraphs with per-point tooltips: the other bands' opacity. Default 0.35. */
+  readonly streamHoverOpacity?: number | undefined;
+  /** Violins (4.18.21): each violin's own width scale (`individual`) or one scale (`group`). */
+  readonly violinNormalize?: ChartViolinNormalize | undefined;
+  /** Violins: symmetric, or half a violin on one side. Default `"both"`. */
+  readonly violinSide?: ChartViolinSide | undefined;
+  /** Violins: multiplies the drawn half-width. Default 1. */
+  readonly bandwidthScale?: number | undefined;
+  /** Violins: the kernel width in value units (default Silverman's rule). */
+  readonly kdeBandwidth?: number | undefined;
+  /** Violins: density samples per violin. Default 64. */
+  readonly kdeResolution?: number | undefined;
+  /** Violins: a five-number box beside the density. */
+  readonly violinBox?: boolean | undefined;
+  /** Violin boxes: whisker ends (`minmax` or `tukey`). */
+  readonly violinWhiskers?: ChartViolinWhiskers | undefined;
+  /** Violins: no observation dots. */
+  readonly hideViolinPoints?: boolean | undefined;
+  /** Violins: dot radius in px. Default 2.5. */
+  readonly violinPointSize?: number | undefined;
+  /** Violins: dot spread as a share of the half-width (0 to 1). Default 0.5. */
+  readonly violinJitter?: number | undefined;
+  /** Violins: dots may leave the outline. */
+  readonly unconstrainedViolinPoints?: boolean | undefined;
+  /** Violins: dots per violin; extra ones are thinned. Default 3000. */
+  readonly violinMaxPoints?: number | undefined;
+  /** Unit charts (4.18.21): where the marks go. Default `"grouped"`. */
+  readonly unitLayout?: ChartUnitLayout | undefined;
+  /** Unit charts: names drawn with each cluster or column. */
+  readonly clusterLabels?: boolean | undefined;
+  /** Packed unit charts: keep the given order instead of the smallest group in the middle. */
+  readonly disableSortByGroup?: boolean | undefined;
+  /** Arc unit charts: the concentric rows (default the fewest that seat everyone). */
+  readonly arcRows?: number | undefined;
+  /** Waffle charts (4.18.21): cells per row. Default 10. */
+  readonly columns?: number | undefined;
+  /** Waffle charts: the row where filling starts. Default `"bottom"`. */
+  readonly fillFrom?: ChartFillFrom | undefined;
+  /** Waffle charts: one mini waffle per category. */
+  readonly split?: boolean | undefined;
+  /** Split waffles: tiles per row (default auto). */
+  readonly tileColumns?: number | undefined;
+  /** Split waffles: the value each tile represents in full (default the largest). */
+  readonly splitMax?: number | undefined;
+  /** Split waffles: the color of the empty cells. */
+  readonly trackColor?: ChartColor | undefined;
+  /** Waffle and unit charts: units of value per mark. Default 1. */
+  readonly unitValue?: number | undefined;
+  /** Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000. */
+  readonly maxUnits?: number | undefined;
+  /** Waffle cells: corner radius in px. Default 2. */
+  readonly cellRadius?: number | undefined;
   /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
@@ -329,10 +403,37 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     valueSuffix: input.valueSuffix ?? (data.type === "radialBar" ? "%" : undefined),
   });
   const hidden = new Set(input.hidden ?? []);
-  const circular = isCircularChart(data.type);
+  // Unit charts list and hide categories like slices do, but have no slice patterns.
+  const unitChart = isUnitChart(data.type);
+  const circular = isCircularChart(data.type) || unitChart;
   /** Pie, donut and polar area slices: their pattern (4.18.62; rings have none). */
   const slicePattern = (x: number) =>
-    circular && data.type !== "radialBar" ? chartPatternAt(input, x) : undefined;
+    circular && data.type !== "radialBar" && !unitChart ? chartPatternAt(input, x) : undefined;
+  /** Waffle and unit charts: a category's shape (`colorBlindMode`, non-color cues). */
+  const unitShape = (x: number) =>
+    unitChart && input.colorBlindMode ? chartMarkerShapes[x % chartMarkerShapes.length] : undefined;
+  const unitOptions = {
+    shape: input.markerShape,
+    size: input.markerSize,
+    spacing: input.spacing,
+    unitValue: input.unitValue,
+    maxUnits: input.maxUnits,
+    total: input.total,
+    cellRadius: input.cellRadius,
+    columns: input.columns,
+    fillFrom: input.fillFrom,
+    split: input.split,
+    tileColumns: input.tileColumns,
+    splitMax: input.splitMax,
+    trackColor: input.trackColor,
+    colorBlindMode: input.colorBlindMode,
+    clusterLabels: input.clusterLabels,
+    disableSortByGroup: input.disableSortByGroup,
+    arcRows: input.arcRows,
+    innerSize: input.innerSize,
+    startAngle: input.startAngle,
+    endAngle: input.endAngle,
+  };
   type Layout = (d: ChartData, o: Parameters<typeof layoutChart>[1]) => ChartLayout;
   const layouts: Partial<Record<ChartType, Layout>> = {
     radar: (d, o) => layoutRadar(d, o, format),
@@ -340,6 +441,48 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     treemap: (d, o) => layoutTreemap(d, o, format),
     funnel: (d, o) => layoutFunnel(d, o, format),
     slope: (d, o) => layoutSlope(d, o, format),
+    waffle: (d, o) => layoutUnit(d, o, unitOptions, format),
+    unit: (d, o) => layoutUnit(d, o, unitOptions, format, chartUnitPlacer(input.unitLayout)),
+    beeswarm: (d, o) =>
+      layoutBeeswarm(
+        d,
+        o,
+        { spread: input.beeswarmSpread, orientation: input.orientation },
+        format,
+      ),
+    violin: (d, o) =>
+      layoutViolin(
+        d,
+        o,
+        {
+          normalize: input.violinNormalize,
+          side: input.violinSide,
+          bandwidthScale: input.bandwidthScale,
+          kdeBandwidth: input.kdeBandwidth,
+          kdeResolution: input.kdeResolution,
+          box: input.violinBox,
+          whiskers: input.violinWhiskers,
+          hidePoints: input.hideViolinPoints,
+          pointSize: input.violinPointSize,
+          jitter: input.violinJitter,
+          unconstrained: input.unconstrainedViolinPoints,
+          maxPoints: input.violinMaxPoints,
+        },
+        format,
+      ),
+    streamgraph: (d, o) =>
+      layoutStream(
+        d,
+        o,
+        {
+          offset: input.streamOffset,
+          order: input.streamOrder,
+          hideLabels: input.hideStreamLabels,
+          labelMinWidth: input.streamLabelMinWidth,
+          hoverOpacity: input.streamHoverOpacity,
+        },
+        format,
+      ),
   };
   const layoutOf: Layout = stock
     ? (d, o) =>
@@ -463,6 +606,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
         hidden: hidden.has(point.x),
         ...(input.legendValues && point.y !== null ? { value: format.value(point.y, 0) } : {}),
         ...(slicePattern(point.x) ? { pattern: slicePattern(point.x) } : {}),
+        ...(unitShape(point.x) ? { shape: unitShape(point.x) } : {}),
       }))
     : data.series.map((series, index) => {
         const last = [...series.points].reverse().find((point) => point.y !== null)?.y;

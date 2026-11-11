@@ -168,6 +168,7 @@ export function chartSelectedNodes(
     if (!hasChartDataPoint(selected, chartMarkPoint(mark))) return [];
     const attrs = { "data-ok-chart-selected-mark": "" };
     if (mark.geo) return [node("path", { d: mark.geo.d, ...attrs })];
+    if (mark.unit) return [node("path", { d: mark.unit.outline, ...attrs })];
     const frame = mark.cell ?? mark.box;
     if (frame)
       return [

@@ -167,6 +167,9 @@ export interface ChartCueOptions {
   readonly strokeWidth?: number | undefined;
 }
 
+/** Series types whose fills take a pattern. */
+const PATTERNED: readonly string[] = ["bar", "area", "streamgraph", "violin"];
+
 /** Whether a chart draws pattern fills: `fill="pattern"`, a `fillPattern` or `colorBlindMode`. */
 export const chartPatternsOn = (options: ChartCueOptions) =>
   options.fill === "pattern" ||
@@ -198,7 +201,10 @@ export function withChartCues(data: ChartData, options: ChartCueOptions): ChartD
       options.markerShape ??
       (blind ? chartMarkerShapes[index % chartMarkerShapes.length] : undefined);
     const drawsMarkers =
-      entry.type === "scatter" || (lineMarkers && (entry.type === "line" || entry.type === "area"));
+      entry.type === "scatter" ||
+      entry.type === "violin" ||
+      entry.type === "beeswarm" ||
+      (lineMarkers && (entry.type === "line" || entry.type === "area"));
     const pattern = entry.fillPattern ?? (patterns ? chartPatternAt(options, index) : undefined);
     const dash =
       entry.dashArray !== undefined
@@ -209,7 +215,7 @@ export function withChartCues(data: ChartData, options: ChartCueOptions): ChartD
     const width = entry.strokeWidth ?? options.strokeWidth;
     const cues = {
       ...(drawsMarkers && shape && shape !== "circle" ? { shape } : {}),
-      ...((entry.type === "bar" || entry.type === "area") && pattern ? { pattern } : {}),
+      ...(PATTERNED.includes(entry.type) && pattern ? { pattern } : {}),
       ...(dash ? { dash } : {}),
       ...(width !== undefined ? { width } : {}),
     };
