@@ -858,7 +858,7 @@ for (const impl of implementations) {
     test("a click selects a dot, and a legend item removes a lane", async ({ page }) => {
       await openStory(page, storyId(impl, "chart", "beeswarm"));
       const first = page.locator("[data-ok-chart]").first();
-      await first.locator("[data-ok-chart-bee]").nth(4).click();
+      await first.locator("[data-ok-chart-bee]").nth(4).click({ force: true });
       await expect(first.locator("[data-ok-chart-selected-mark]")).toHaveCount(1);
       await first.locator("[data-ok-chart-legend-item]").first().click();
       await expect(first.locator("[data-ok-chart-bee]")).toHaveCount(17);

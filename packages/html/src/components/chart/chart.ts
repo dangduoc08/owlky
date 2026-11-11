@@ -718,8 +718,13 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         yMin: readNumber(element, o.yMin) as number | undefined,
         yMax: readNumber(element, o.yMax) as number | undefined,
         dataLabels: element.hasAttribute(o.dataLabels.attr),
-        startAngle: readNumber(element, o.startAngle) as number | undefined,
-        endAngle: readNumber(element, o.endAngle) as number | undefined,
+        // Only when given: arcs of unit charts have their own defaults (-90 to 90).
+        startAngle: element.hasAttribute(o.startAngle.attr)
+          ? (readNumber(element, o.startAngle) as number)
+          : undefined,
+        endAngle: element.hasAttribute(o.endAngle.attr)
+          ? (readNumber(element, o.endAngle) as number)
+          : undefined,
         dashArray: readNumber(element, o.dashArray) as number | undefined,
         trackWidth: readNumber(element, o.trackWidth) as number | undefined,
         total: readNumber(element, o.total) as number | undefined,
