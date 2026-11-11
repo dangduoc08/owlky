@@ -23,7 +23,6 @@ export interface AnimationWait {
 
 /** Finite animations running on `element` and its subtree (loops never end: skipped). */
 export function runningAnimations(element: Element): Animation[] {
-  if (typeof element.getAnimations !== "function") return [];
   return element.getAnimations({ subtree: true }).filter((animation) => {
     if (animation.playState === "finished" || animation.playState === "idle") return false;
     const end = animation.effect?.getComputedTiming().endTime;
@@ -31,12 +30,14 @@ export function runningAnimations(element: Element): Animation[] {
   });
 }
 
-/** Remaining time of an animation, ms (its end minus its current time). */
+/**
+ * Remaining time of an animation found by `runningAnimations`, ms (its end minus its current
+ * time): such an animation always has an effect with a finite end and a current time.
+ */
 const remaining = (animation: Animation) => {
-  const end = Number(animation.effect?.getComputedTiming().endTime ?? 0);
-  const now = Number(animation.currentTime ?? 0);
+  const end = Number((animation.effect as AnimationEffect).getComputedTiming().endTime);
   const rate = Math.abs(animation.playbackRate) || 1;
-  return Math.max(end - now, 0) / rate;
+  return Math.max(end - Number(animation.currentTime), 0) / rate;
 };
 
 /**

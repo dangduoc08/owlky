@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanupDom, mount } from "../test-utils.js";
 import {
   createMotionKeyframes,
@@ -150,5 +150,90 @@ describe("createMotionKeyframes", () => {
     await tick();
     expect(element.getAnimations()).toHaveLength(0);
     player.destroy();
+  });
+
+  it("exits camelCase and custom properties back to their start", async () => {
+    const { element, player } = setup('{"borderRadius":"20px","--ok-test":"2px"}');
+    element.style.borderRadius = "4px";
+    element.setAttribute("data-ok-state", "enter");
+    await tick();
+    await finishAll(element);
+    expect(element.style.borderRadius).toBe("20px");
+    element.setAttribute("data-ok-state", "exit");
+    await tick();
+    await finishAll(element);
+    expect(element.style.borderRadius).toBe("4px");
+    player.destroy();
+  });
+
+  it("a property added after the entrance exits to its target", async () => {
+    const { element, player } = setup('{"opacity":0.5}');
+    element.setAttribute("data-ok-state", "enter");
+    await tick();
+    await finishAll(element);
+    element.setAttribute("data-ok-keyframes", '{"rotate":90}');
+    await tick();
+    await finishAll(element);
+    element.setAttribute("data-ok-state", "exit");
+    await tick();
+    const [exit] = element.getAnimations();
+    expect(((exit as Animation).effect as KeyframeEffect).getKeyframes().at(-1)?.["rotate"]).toBe(
+      "90deg",
+    );
+    player.destroy();
+  });
+});
+
+describe("createMotionKeyframes and reduced motion", () => {
+  /** A matchMedia stand-in whose reduced-motion answer the test flips. */
+  const fakeMedia = (reduce: { value: boolean }) => {
+    const target = new EventTarget();
+    // A getter (Object.assign would copy its value once).
+    const list = Object.defineProperty(target, "matches", { get: () => reduce.value });
+    vi.stubGlobal("matchMedia", () => list);
+    return () => target.dispatchEvent(new Event("change"));
+  };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("stops a loop when reduced motion turns on and starts it again when it turns off", async () => {
+    const reduce = { value: false };
+    const change = fakeMedia(reduce);
+    mount(
+      `<div id="m" data-ok-motion data-ok-keyframes='{"rotate":[0,360]}' data-ok-transition='{"repeat":"Infinity","duration":1000}' data-ok-state="enter"></div>`,
+    );
+    const element = document.getElementById("m") as HTMLElement;
+    const player = createMotionKeyframes(element);
+    expect(element.getAnimations()).toHaveLength(1);
+    reduce.value = true;
+    change();
+    expect(element.getAnimations()).toHaveLength(0);
+    reduce.value = false;
+    change();
+    expect(element.getAnimations()).toHaveLength(1);
+    player.destroy();
+    // Destroyed: a later change does nothing.
+    change();
+    expect(element.getAnimations()).toHaveLength(0);
+  });
+
+  it("works without matchMedia", () => {
+    vi.stubGlobal("matchMedia", undefined);
+    mount(
+      `<div id="m" data-ok-motion data-ok-keyframes='{"opacity":[0,1]}' data-ok-state="enter"></div>`,
+    );
+    const element = document.getElementById("m") as HTMLElement;
+    const player = createMotionKeyframes(element);
+    expect(element.getAnimations()).toHaveLength(1);
+    player.destroy();
+  });
+
+  it("drops numbers JSON can't hold and writes no transition when there is none", () => {
+    expect(parseMotionKeyframes({ x: Infinity })).toBeUndefined();
+    expect(motionKeyframesAttributes({ opacity: 1 })).toEqual({
+      "data-ok-keyframes": '{"opacity":1}',
+    });
   });
 });

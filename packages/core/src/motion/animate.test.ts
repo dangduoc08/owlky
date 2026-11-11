@@ -228,6 +228,107 @@ describe("animate", () => {
   });
 });
 
+describe("animate edge cases", () => {
+  it("writes camelCase and custom properties as CSS names", async () => {
+    const element = box();
+    const controls = animate(
+      element,
+      { borderRadius: 8, "--ok-test": ["1px", "2px"] },
+      { duration: 10 },
+    );
+    expect(frames(controls.animations[0])[1]?.["borderRadius"]).toBe("8px");
+    await finish(controls);
+    expect(element.style.getPropertyValue("border-radius")).toBe("8px");
+  });
+
+  it("reads one-value translate and scale for the other axis", () => {
+    const element = box();
+    element.style.translate = "10px";
+    element.style.scale = "2";
+    expect(motionTracks(element, { y: 5, scaleY: 3 })).toEqual([
+      // The given axis starts from the current value, the other keeps it.
+      { property: "translate", values: ["10px 0px", "10px 5px"] },
+      { property: "scale", values: ["2 2", "2 3"] },
+    ]);
+    expect(motionTracks(element, { scale: [null, 2] })).toEqual([
+      { property: "scale", values: [null, "2"] },
+    ]);
+  });
+
+  it("a single keyframe sits at the end", () => {
+    const element = box();
+    const controls = animate(element, { opacity: [0.5] }, { duration: 10 });
+    expect(frames(controls.animations[0]).map((k) => k.offset)).toEqual([1]);
+    controls.cancel();
+  });
+
+  it("an easing list shorter than the segments repeats its last easing", () => {
+    const element = box();
+    const controls = animate(element, { opacity: [0, 1, 0] }, { duration: 10, ease: ["easeIn"] });
+    const easings = frames(controls.animations[0]).map((k) => k.easing);
+    expect(easings[1]).toBe(easings[0]);
+    controls.cancel();
+  });
+
+  it("Web Animations arrays take one easing; an easing list doesn't apply to them", () => {
+    const element = box();
+    const named = animate(element, [{ opacity: 0 }, { opacity: 1 }], {
+      duration: 10,
+      ease: "linear",
+    });
+    expect(timingOf(named.animations[0]).easing).toBe("linear");
+    named.cancel();
+    const points = animate(element, [{ opacity: 0 }, { opacity: 1 }], {
+      duration: 10,
+      ease: [0, 0, 1, 1],
+    });
+    expect(timingOf(points.animations[0]).easing).toMatch(/^(cubic-bezier\(0, 0, 1, 1\)|linear)$/);
+    points.cancel();
+    const listed = animate(element, [{ opacity: 0 }, { opacity: 1 }], {
+      duration: 10,
+      ease: ["easeIn", "easeOut"],
+    });
+    expect(String(timingOf(listed.animations[0]).easing)).toMatch(
+      /^(cubic-bezier\(0.4, 0, 0.2, 1\)|ease-in-out)$/,
+    );
+    listed.cancel();
+  });
+
+  it("a spring with reduced motion jumps to the end", async () => {
+    const element = box();
+    const controls = animate(
+      element,
+      { opacity: [1, 0.3] },
+      {
+        type: "spring",
+        bounce: 0.5,
+        duration: 400,
+        reducedMotion: "always",
+      },
+    );
+    expect(timingOf(controls.animations[0]).duration).toBe(0);
+    await controls.finished;
+    expect(element.style.opacity).toBe("0.3");
+  });
+
+  it("falls back to 300 ms when the duration token isn't a time; complete and pause skip idle animations", () => {
+    const element = box();
+    document.documentElement.style.setProperty("--ok-duration-standard", "fast");
+    const controls = animate(element, { opacity: 0 });
+    expect(timingOf(controls.animations[0]).duration).toBe(300);
+    controls.pause();
+    controls.pause();
+    expect(controls.animations[0]?.playState).toBe("paused");
+    controls.cancel();
+    controls.complete();
+    expect(controls.animations[0]?.playState).toBe("idle");
+  });
+
+  it("parseTime refuses lengths too large for a number", () => {
+    expect(parseTime(`${"9".repeat(400)}s`)).toBeUndefined();
+  });
+});
+
 describe("springEasing", () => {
   it("samples an underdamped spring into linear() and reports the bounce", () => {
     const spring = springEasing({ stiffness: 200, damping: 8 }, { linear: true });

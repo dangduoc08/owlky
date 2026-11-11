@@ -68,7 +68,8 @@ function PresenceChild({ present, initial, onExited, children }: PresenceChildPr
   return <MotionPresenceContext.Provider value={value}>{children}</MotionPresenceContext.Provider>;
 }
 
-const keyOf = (element: ReactElement): Key => element.key ?? "";
+/** `Children.toArray` gives every element a key. */
+const keyOf = (element: ReactElement): Key => element.key as Key;
 
 /**
  * MotionPresence — spec: specs/components/motion.md (Framer Motion's `AnimatePresence`). Keeps a
@@ -122,7 +123,8 @@ export function MotionPresence({
             present={!gone}
             initial={first.current ? initial : true}
             onExited={() => {
-              if (!exiting.current.delete(key)) return;
+              // Called once per exit: the effect runs again only when the child returns.
+              exiting.current.delete(key);
               last.current = last.current.filter((item) => keyOf(item) !== key);
               rerender();
               if (exiting.current.size === 0) complete.current?.();

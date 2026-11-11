@@ -594,17 +594,20 @@ describe("Motion keyframes (ADR-0062)", () => {
   });
 });
 
-function List({ initial }: { initial?: boolean }) {
+function List({ initial, onExitComplete }: { initial?: boolean; onExitComplete?: () => void }) {
   const [items, setItems] = useState(["a", "b"]);
   return (
     <>
       <button type="button" onClick={() => setItems((list) => list.slice(1))}>
         Remove
       </button>
+      <button type="button" onClick={() => setItems([])}>
+        Clear
+      </button>
       <button type="button" onClick={() => setItems((list) => ["a", ...list])}>
         Add
       </button>
-      <MotionPresence initial={initial}>
+      <MotionPresence initial={initial} onExitComplete={onExitComplete}>
         {items.map((item) => (
           <Motion key={item} data-testid={item} trigger="mount" variant="fadeIn">
             {item}
@@ -643,14 +646,14 @@ function Plain() {
   );
 }
 
-function Group() {
+function Group({ initial }: { initial?: boolean }) {
   const [shown, setShown] = useState(true);
   return (
     <>
       <button type="button" onClick={() => setShown(false)}>
         Hide
       </button>
-      <MotionPresence>
+      <MotionPresence initial={initial}>
         {shown ? (
           <MotionGroup key="g" data-testid="g" trigger="mount">
             <Motion data-testid="g1">One</Motion>
@@ -718,5 +721,37 @@ describe("MotionPresence", () => {
     expect(byTestId("t").getAttribute("data-ok-state")).toBe("exit");
     await finishExit(group);
     expect(group.isConnected).toBe(false);
+  });
+
+  it("initial={false} also skips a group's and a text's first entrance", () => {
+    render(<Group initial={false} />);
+    expect(byTestId("g").hasAttribute("data-ok-state")).toBe(false);
+    expect(byTestId("t").hasAttribute("data-ok-state")).toBe(false);
+  });
+
+  it("onExitComplete waits for every removed child", async () => {
+    const done = vi.fn();
+    render(<List onExitComplete={done} />);
+    const [a, b] = [byTestId("a"), byTestId("b")];
+    await act(async () => screen.getByRole("button", { name: "Clear" }).click());
+    await finishExit(a);
+    expect(a.isConnected).toBe(false);
+    expect(b.isConnected).toBe(true);
+    expect(done).not.toHaveBeenCalled();
+    await finishExit(b);
+    expect(done).toHaveBeenCalledOnce();
+  });
+});
+
+describe("manual trigger without in", () => {
+  it("Motion and MotionGroup count as shown", () => {
+    render(
+      <>
+        <Motion data-testid="m" trigger="manual" />
+        <MotionGroup data-testid="g" trigger="manual" />
+      </>,
+    );
+    expect(byTestId("m").hasAttribute("data-ok-in")).toBe(true);
+    expect(byTestId("g").hasAttribute("data-ok-in")).toBe(true);
   });
 });

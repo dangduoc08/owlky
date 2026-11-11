@@ -156,4 +156,36 @@ describe("playExit", () => {
     (animation as Animation).pause();
     expect(await exit.finished).toBe(true);
   });
+
+  it("skips finished animations that hold their end, and stopped ones time out", async () => {
+    mount(`<div id="host"></div>`);
+    const host = document.getElementById("host") as HTMLElement;
+    const held = host.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 10, fill: "forwards" });
+    held.finish();
+    expect(runningAnimations(host)).toHaveLength(0);
+    // Playback rate 0 never advances: the safety timer (100 ms after its length) ends the wait.
+    const frozen = host.animate([{ opacity: 1 }, { opacity: 0 }], 50);
+    frozen.playbackRate = 0;
+    expect(await waitForAnimations(host).finished).toBe(true);
+  });
+
+  it("waits on a detached element without a style flush, and a cancelled late wait stays cancelled", async () => {
+    const detached = document.createElement("div");
+    expect(await waitForAnimations(detached).finished).toBe(true);
+    mount(`<div id="plain"></div>`);
+    const wait = waitForAnimations(document.getElementById("plain") as Element, { late: true });
+    wait.cancel();
+    expect(await wait.finished).toBe(false);
+    await tick();
+  });
+
+  it("an interrupted exit restores the state and resolves false", async () => {
+    mount(`${STYLE}<div id="host"><div class="paper"></div></div>`);
+    const host = document.getElementById("host") as HTMLElement;
+    const exit = playExit(host);
+    exit.cancel();
+    expect(await exit.finished).toBe(false);
+    expect(host.hasAttribute("data-ok-state")).toBe(false);
+    expect(runningAnimations(host)).toHaveLength(0);
+  });
 });

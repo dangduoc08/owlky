@@ -141,23 +141,23 @@ const NAMED: Record<string, string> = {
 };
 
 /** Token fallbacks when the stylesheet isn't loaded (values of the default theme). */
-const TOKENS: Record<string, string> = {
+const TOKENS = {
   "--ok-easing-standard": "cubic-bezier(0.4, 0, 0.2, 1)",
   "--ok-easing-decelerate": "cubic-bezier(0, 0, 0.2, 1)",
   "--ok-easing-accelerate": "cubic-bezier(0.4, 0, 1, 1)",
   "--ok-easing-expressive": "cubic-bezier(0.43, 0.13, 0.23, 0.96)",
   "--ok-duration-standard": "300ms",
-};
+} as const;
 
 /** Overshoot used for bouncy springs where `linear()` isn't supported. */
 const OVERSHOOT = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
-const token = (name: string): string => {
+const token = (name: keyof typeof TOKENS): string => {
   if (typeof document !== "undefined") {
     const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     if (value) return value;
   }
-  return TOKENS[name] ?? "";
+  return TOKENS[name];
 };
 
 /** A CSS time (`300ms`, `0.3s`) in ms, or `undefined`. */
@@ -325,11 +325,9 @@ function pair(element: Element, property: "translate" | "scale"): [string, strin
   const value = getComputedStyle(element).getPropertyValue(property).trim();
   const identity = property === "translate" ? "0px" : "1";
   if (!value || value === "none") return [identity, identity];
-  const parts = value.split(/\s+/);
-  return [
-    parts[0] ?? identity,
-    parts[1] ?? (property === "scale" ? (parts[0] ?? identity) : identity),
-  ];
+  // `split` always returns the first part; a lone scale applies to both axes.
+  const [first, second] = value.split(/\s+/) as [string, string | undefined];
+  return [first, second ?? (property === "scale" ? first : identity)];
 }
 
 export interface MotionTrack {
@@ -437,7 +435,6 @@ export function animate(
   const skip = reduced(options);
   const done: Promise<boolean>[] = [];
   for (const element of elements) {
-    if (typeof element.animate !== "function") continue;
     if (skip && loops) continue;
     const own = running.get(element) ?? new Map<string, Animation>();
     running.set(element, own);
@@ -583,7 +580,7 @@ function frameList(
   const keyframes: Keyframe[] = values.map((value, i) => ({
     [property]: value,
     offset: offset(i) * scale,
-    easing: easings[Math.min(i, easings.length - 1)] ?? "linear",
+    easing: easings[Math.min(i, easings.length - 1)] as string,
   }));
   if (hold > 0) keyframes.push({ [property]: values.at(-1) as string, offset: 1 });
   return { keyframes, timing: { ...base, duration: total } };
