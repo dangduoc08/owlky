@@ -1055,6 +1055,7 @@
   "data-ok-max-date-time",
   "data-ok-max-files",
   "data-ok-max-items",
+  "data-ok-max-lines",
   "data-ok-max-pitch",
   "data-ok-max-rows",
   "data-ok-max-size",
@@ -49946,6 +49947,32 @@
          "name": "noWrap"
         },
         {
+         "attr": "data-ok-max-lines",
+         "default": "1",
+         "description": "At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line.",
+         "kind": "style",
+         "name": "maxLines",
+         "optional": true,
+         "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+         ]
+        },
+        {
+         "attr": "data-ok-persistent",
+         "description": "With `maxLines`: the text always takes the height of that many lines, even when it is shorter.",
+         "kind": "flag",
+         "name": "persistent"
+        },
+        {
          "attr": "data-ok-underline",
          "default": "always",
          "description": "When the link is underlined: `always`, on `hover` (pointer devices), or `none`.",
@@ -49986,8 +50013,18 @@
          "type": "boolean"
         },
         {
+         "description": "At most this many lines, from 1 to 10: longer text ends with an ellipsis on the last line. Default: every line.",
+         "name": "maxLines",
+         "type": "number | \"1\" | \"10\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\""
+        },
+        {
          "description": "One line; overflowing text ends with an ellipsis.",
          "name": "noWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "With `maxLines`, the text always takes the height of that many lines, even when it is shorter.",
+         "name": "persistent",
          "type": "boolean"
         },
         {
@@ -50092,6 +50129,32 @@
        "name": "noWrap"
       },
       {
+       "attr": "data-ok-max-lines",
+       "default": "1",
+       "description": "At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line.",
+       "kind": "style",
+       "name": "maxLines",
+       "optional": true,
+       "values": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+       ]
+      },
+      {
+       "attr": "data-ok-persistent",
+       "description": "With `maxLines`: the text always takes the height of that many lines, even when it is shorter.",
+       "kind": "flag",
+       "name": "persistent"
+      },
+      {
        "attr": "data-ok-underline",
        "default": "always",
        "description": "When the link is underlined: `always`, on `hover` (pointer devices), or `none`.",
@@ -50114,7 +50177,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\na[href][data-ok-typography][data-ok-link][data-ok-variant][data-ok-color][data-ok-underline]\n  [data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?[target][rel]?\nbutton[type=\"button\"][data-ok-typography][data-ok-link]…        (an action: no destination)\n```\nReact: `a` with `href`; `<button type=\"button\">` without `href` and `component` (MUI renders an\n`a` without `href`, which can't take focus); `component` renders anything else (a router link,\n`button`, `span`). HTML authors write the element.",
+     "body": "```\na[href][data-ok-typography][data-ok-link][data-ok-variant][data-ok-color][data-ok-underline]\n  [data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?[data-ok-max-lines]?[data-ok-persistent]?\n  [target][rel]?\nbutton[type=\"button\"][data-ok-typography][data-ok-link]…        (an action: no destination)\n```\nReact: `a` with `href`; `<button type=\"button\">` without `href` and `component` (MUI renders an\n`a` without `href`, which can't take focus); `component` renders anything else (a router link,\n`button`, `span`). HTML authors write the element.",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -50129,7 +50192,7 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "Inline text; wraps with the text around it (except `noWrap`). Same at every breakpoint.",
+     "body": "Inline text; wraps with the text around it (except `noWrap`). With `maxLines` (Typography's,\nthe Minimals \"Text max line › As link\" demo) the link becomes a block box clamped to that many\nlines. Same at every breakpoint.",
      "id": "responsive-behavior",
      "title": "Responsive behavior"
     },
@@ -50154,7 +50217,7 @@
      "title": "Integrations"
     },
     {
-     "body": "Upstream: MUI `Link` (mui.com/material-ui/api/link, checked 2026-11-09; inherits Typography).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children` | `children` | kept | |\n| `color` (palette, `textPrimary` / `textSecondary` / `textDisabled`) | `color` / `data-ok-color` | kept | `inherit` added; arbitrary strings not applicable (consumer CSS) |\n| `underline` | `underline` / `data-ok-underline` | kept | |\n| `variant` | `variant` / `data-ok-variant` | kept | default `inherit` as MUI |\n| `component` | `component` | kept | without `href` / `component` renders a `button` (MUI: `a` without `href`) |\n| Typography `align`, `gutterBottom`, `noWrap` | same / `data-ok-align`, `-gutter-bottom`, `-no-wrap` | kept | |\n| Typography `variantMapping` | — | not applicable | element is `a` / `button` / `component` |\n| `TypographyClasses`, `classes`, `sx` | — | not applicable | by decision |",
+     "body": "Upstream: MUI `Link` (mui.com/material-ui/api/link, checked 2026-11-09; inherits Typography).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children` | `children` | kept | |\n| `color` (palette, `textPrimary` / `textSecondary` / `textDisabled`) | `color` / `data-ok-color` | kept | `inherit` added; arbitrary strings not applicable (consumer CSS) |\n| `underline` | `underline` / `data-ok-underline` | kept | |\n| `variant` | `variant` / `data-ok-variant` | kept | default `inherit` as MUI |\n| `component` | `component` | kept | without `href` / `component` renders a `button` (MUI: `a` without `href`) |\n| Typography `align`, `gutterBottom`, `noWrap` | same / `data-ok-align`, `-gutter-bottom`, `-no-wrap` | kept | |\n| Typography `maxLines`, `persistent` (Minimals `TextMaxLine asLink`) | same / `data-ok-max-lines`, `-persistent` | kept (4.19) | |\n| Typography `variantMapping` | — | not applicable | element is `a` / `button` / `component` |\n| `TypographyClasses`, `classes`, `sx` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -59581,7 +59644,7 @@
      "title": "Options"
     },
     {
-     "body": "`--ok-bg-paper` background, `--ok-text-primary` text, `--ok-radius-md` corners (`square`: 0).\n`elevation` 0–24 → `box-shadow: var(--ok-elevation-<n>)` (0: none), changes animate over\n`--ok-duration-standard` / `--ok-easing-standard` (none with reduced motion). `outlined`: no\nshadow, `1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16)` (Minimals' theme), elevation\nignored. No size, padding or display of its own: the content and the author's layout decide.\nDark mode: the same `--ok-bg-paper` at every elevation (Minimals' theme drops MUI's lightening\ngradient; the dark paper already differs from the dark page background).",
+     "body": "`--ok-bg-paper` background, `--ok-text-primary` text, `--ok-radius-md` corners (`square`: 0).\n`elevation` 0–24 → `box-shadow: var(--ok-elevation-<n>)` (0: none), changes animate over\n`--ok-duration-standard` / `--ok-easing-standard` (none with reduced motion). `outlined`: no\nshadow, `1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16)` (Minimals' theme), elevation\nignored. No size, padding or display of its own: the content and the author's layout decide.\nDark mode: the same `--ok-bg-paper` at every elevation (Minimals' theme drops MUI's lightening\ngradient; the dark paper already differs from the dark page background).\nGlass paper (Minimals \"Utilities › Gradient › Paper\", row 4.21): no option; the\n`--ok-gradient-paper` token as `background` plus a `backdrop-filter` on any Paper (Foundations ›\nColors › Gradient), so the schema stays MUI's.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -72083,6 +72146,32 @@
          "description": "One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width).",
          "kind": "flag",
          "name": "noWrap"
+        },
+        {
+         "attr": "data-ok-max-lines",
+         "default": "1",
+         "description": "At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line.",
+         "kind": "style",
+         "name": "maxLines",
+         "optional": true,
+         "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+         ]
+        },
+        {
+         "attr": "data-ok-persistent",
+         "description": "With `maxLines`: the text always takes the height of that many lines, even when it is shorter.",
+         "kind": "flag",
+         "name": "persistent"
         }
        ]
       },
@@ -72112,8 +72201,18 @@
          "type": "boolean"
         },
         {
+         "description": "At most this many lines, from 1 to 10: longer text ends with an ellipsis on the last line. Default: every line.",
+         "name": "maxLines",
+         "type": "number | \"1\" | \"10\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\" | \"7\" | \"8\" | \"9\""
+        },
+        {
          "description": "One line; overflowing text ends with an ellipsis.",
          "name": "noWrap",
+         "type": "boolean"
+        },
+        {
+         "description": "With `maxLines`, the text always takes the height of that many lines, even when it is shorter.",
+         "name": "persistent",
          "type": "boolean"
         },
         {
@@ -72144,7 +72243,9 @@
     "Typography"
    ],
    "referenceUrl": "https://mui.com/material-ui/react-typography/",
-   "related": [],
+   "related": [
+    "link"
+   ],
    "requiredParts": {},
    "root": "data-ok-typography",
    "schemas": [
@@ -72219,6 +72320,32 @@
        "description": "One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width).",
        "kind": "flag",
        "name": "noWrap"
+      },
+      {
+       "attr": "data-ok-max-lines",
+       "default": "1",
+       "description": "At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line.",
+       "kind": "style",
+       "name": "maxLines",
+       "optional": true,
+       "values": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+       ]
+      },
+      {
+       "attr": "data-ok-persistent",
+       "description": "With `maxLines`: the text always takes the height of that many lines, even when it is shorter.",
+       "kind": "flag",
+       "name": "persistent"
       }
      ],
      "root": "data-ok-typography"
@@ -72231,7 +72358,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\n<element>[data-ok-typography][data-ok-variant][data-ok-color]?[data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?\n```\nReact picks the element from `variantMapping` (default below) unless `component` is given;\nHTML authors write it.\n\n| Variant | `h1`–`h6` | `subtitle1`, `subtitle2` | `body1`, `body2`, `inherit` | `caption`, `overline`, `button` |\n|---|---|---|---|---|\n| Element | `h1`–`h6` | `h6` | `p` | `span` |",
+     "body": "```\n<element>[data-ok-typography][data-ok-variant][data-ok-color]?[data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?[data-ok-max-lines]?[data-ok-persistent]?\n```\nReact picks the element from `variantMapping` (default below) unless `component` is given;\nHTML authors write it.\n\n| Variant | `h1`–`h6` | `subtitle1`, `subtitle2` | `body1`, `body2`, `inherit` | `caption`, `overline`, `button` |\n|---|---|---|---|---|\n| Element | `h1`–`h6` | `h6` | `p` | `span` |",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -72241,17 +72368,17 @@
      "title": "Options"
     },
     {
-     "body": "`margin: 0`. Each variant: `font-family`, `font-size`, `font-weight`, `line-height`,\n`text-transform` from `--ok-typography-<variant>-*` (h1–h3 use the secondary font family through\nthe tokens; font presets apply). `inherit`: `font: inherit; text-transform: inherit`. Colors:\npalette `--ok-c-main` (the `[data-ok-color]` binding), `--ok-text-primary|secondary|disabled`.\n`gutterBottom`: `margin-block-end: 0.35em`. `noWrap`: `overflow: hidden; text-overflow: ellipsis;\nwhite-space: nowrap`. `typography.css` loads first in `owlky.css` so components that compose\nTypography restyle it through their own CSS (same zero specificity, later wins).\n\nUnknown values (HTML) get no rule: the text keeps the parent's font, color and alignment.",
+     "body": "`margin: 0`. Each variant: `font-family`, `font-size`, `font-weight`, `line-height`,\n`text-transform` from `--ok-typography-<variant>-*` (h1–h3 use the secondary font family through\nthe tokens; font presets apply). `inherit`: `font: inherit; text-transform: inherit`. Colors:\npalette `--ok-c-main` (the `[data-ok-color]` binding), `--ok-text-primary|secondary|disabled`.\n`gutterBottom`: `margin-block-end: 0.35em`. `noWrap`: `overflow: hidden; text-overflow: ellipsis;\nwhite-space: nowrap`. `maxLines` (1–10, a closed list because CSS reads the count from the\nattribute into `--_ok-max-lines`): `display: -webkit-box; -webkit-box-orient: vertical;\n-webkit-line-clamp` + `line-clamp` (the prefixed box is the Baseline path in every engine,\nADR-0006; no fallback needed), `overflow: hidden`. `persistent` (only with `maxLines`):\n`min-block-size: calc(var(--_ok-max-lines) * 1lh)` (`lh` is Baseline). `maxLines` makes the\nelement a block box (also a Link). Don't combine it with `noWrap` (one line wins). `typography.css` loads first in `owlky.css` so components that compose\nTypography restyle it through their own CSS (same zero specificity, later wins).\n\nUnknown values (HTML) get no rule: the text keeps the parent's font, color and alignment.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "Fluid. Heading sizes (h1–h6) step up at 600 / 900 / 1200px through the tokens; text wraps\nexcept with `noWrap` (one line, ellipsis).",
+     "body": "Fluid. Heading sizes (h1–h6) step up at 600 / 900 / 1200px through the tokens; text wraps\nexcept with `noWrap` (one line, ellipsis) and up to `maxLines` lines (ellipsis on the last one).",
      "id": "responsive-behavior",
      "title": "Responsive behavior"
     },
     {
-     "body": "Not focusable. Variant and element are independent: keep the heading outline (`component`).\nSizes in `rem`. Palette colors use `main` (ADR-0014, exempt from `color-contrast` like other\nbrand text); `textPrimary` / `textSecondary` meet AA; `textDisabled` is for inactive content.",
+     "body": "Not focusable. Variant and element are independent: keep the heading outline (`component`).\nClamped text (`noWrap`, `maxLines`) stays whole in the DOM: screen readers and find-in-page read\nall of it; offer the full text elsewhere (a details page, a tooltip on a focusable element) when\nsighted users need it.\nSizes in `rem`. Palette colors use `main` (ADR-0014, exempt from `color-contrast` like other\nbrand text); `textPrimary` / `textSecondary` meet AA; `textDisabled` is for inactive content.",
      "id": "keyboard-accessibility",
      "title": "Keyboard / Accessibility"
     },
@@ -72261,7 +72388,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Typography.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `align`, `gutterBottom`, `noWrap`, `component`, `variantMapping`, `children` | same | kept | |\n| `color` | palette names + `textPrimary` / `textSecondary` / `textDisabled` | kept | no arbitrary strings (`\"text.secondary\"`) |\n| `paragraph` | `component=\"p\"` + `gutterBottom` | not applicable | deprecated upstream |\n| theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |\n| Minimals \"Text max line\" | — | deferred (4.19) | `maxLines` |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "body": "Audit 2026-11-09 against MUI API page Typography.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `align`, `gutterBottom`, `noWrap`, `component`, `variantMapping`, `children` | same | kept | |\n| `color` | palette names + `textPrimary` / `textSecondary` / `textDisabled` | kept | no arbitrary strings (`\"text.secondary\"`) |\n| `paragraph` | `component=\"p\"` + `gutterBottom` | not applicable | deprecated upstream |\n| theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |\n| Minimals \"Text max line\" (`TextMaxLine` `line`, `persistent`, `asLink`) | `maxLines` (1–10), `persistent`; As link = `Link` with `maxLines` | kept (4.19) | `line` renamed `maxLines` (roadmap); counts above 10 need consumer CSS (`-webkit-line-clamp`) |\n| Minimals \"Gradient › Text\" (`textGradient`) | `--ok-gradient-<color>-text` + `background-clip: text` (consumer CSS) | kept as tokens (4.21) | no option: Foundations › Colors › Gradient |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -72312,6 +72439,20 @@
      "snippets": [
       "alignment-align.html",
       "alignment-no-wrap.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/typography.css + components/link.css from @owlky/styles); no JavaScript needed. -->\n\n<!-- 1 line -->\n<div class=\"sb-typography-narrow\">\n  <p data-ok-typography data-ok-variant=\"body1\" data-ok-max-lines=\"1\">Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</p>\n</div>\n\n<!-- 2 lines -->\n<div class=\"sb-typography-narrow\">\n  <p data-ok-typography data-ok-variant=\"body1\" data-ok-max-lines=\"2\">Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</p>\n</div>\n\n<!-- 3 lines -->\n<div class=\"sb-typography-narrow\">\n  <p data-ok-typography data-ok-variant=\"body1\" data-ok-max-lines=\"3\">Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</p>\n</div>\n\n<!-- 4 lines -->\n<div class=\"sb-typography-narrow\">\n  <p data-ok-typography data-ok-variant=\"body1\" data-ok-max-lines=\"4\">Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</p>\n</div>\n\n<!-- As link -->\n<div class=\"sb-typography-narrow\">\n  <a href=\"#text-max-line-link\" data-ok-typography data-ok-link data-ok-variant=\"body1\" data-ok-color=\"primary\" data-ok-underline=\"hover\" data-ok-max-lines=\"3\">Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</a>\n</div>\n\n<!-- Persistent -->\n<div class=\"sb-typography-narrow\">\n  <p data-ok-typography data-ok-variant=\"h6\" data-ok-max-lines=\"3\" data-ok-persistent>Short text keeps the height of three lines.</p>\n</div>",
+     "id": "components-typography--text-max-line",
+     "name": "Text max line",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Link, Typography } from \"@owlky/react\";\n\n{/* 1 line */}\n<div className=\"sb-typography-narrow\">\n  <Typography maxLines={1}>Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</Typography>\n</div>\n\n{/* 2 lines */}\n<div className=\"sb-typography-narrow\">\n  <Typography maxLines={2}>Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</Typography>\n</div>\n\n{/* 3 lines */}\n<div className=\"sb-typography-narrow\">\n  <Typography maxLines={3}>Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</Typography>\n</div>\n\n{/* 4 lines */}\n<div className=\"sb-typography-narrow\">\n  <Typography maxLines={4}>Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</Typography>\n</div>\n\n{/* As link */}\n<div className=\"sb-typography-narrow\">\n  <Link href=\"#text-max-line-link\" variant=\"body1\" underline=\"hover\" maxLines={3}>Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height. The last visible line ends with an ellipsis, and the full text stays in the page for screen readers and search.</Link>\n</div>\n\n{/* Persistent */}\n<div className=\"sb-typography-narrow\">\n  <Typography variant=\"h6\" component=\"p\" maxLines={3} persistent>Short text keeps the height of three lines.</Typography>\n</div>\n",
+     "snippets": [
+      "text-max-line-1-line.html",
+      "text-max-line-2-lines.html",
+      "text-max-line-3-lines.html",
+      "text-max-line-4-lines.html",
+      "text-max-line-as-link.html",
+      "text-max-line-persistent.html"
      ]
     }
    ],
@@ -78215,7 +78356,7 @@
      "title": "Palette"
     },
     {
-     "body": "All colors are CSS custom properties that start with `--ok-`.\n\n- **Palette shades:** `--ok-palette-<color>-<shade>`. For example, `--ok-palette-primary-main` or `--ok-palette-grey-200`.\n- **Colored text:** `--ok-palette-<color>-text`.\n- **Neutral text:** `--ok-text-primary`, `--ok-text-secondary` and `--ok-text-disabled`.\n- **Backgrounds:** `--ok-bg-default` for the page, `--ok-bg-paper` for cards and menus, and `--ok-bg-neutral` for subtle fills.\n- **Lines:** `--ok-divider`.\n- **Interaction states:** `--ok-action-hover`, `--ok-action-selected`, `--ok-action-focus`, `--ok-action-disabled` and `--ok-action-disabled-bg`.\n- **Transparency:** each palette shade has a matching `-channel` variable that holds its RGB values, such as `0 167 111`.\n\nText, background, line and state colors change with the theme. Palette shades stay the same in every theme.",
+     "body": "All colors are CSS custom properties that start with `--ok-`.\n\n- **Palette shades:** `--ok-palette-<color>-<shade>`. For example, `--ok-palette-primary-main` or `--ok-palette-grey-200`.\n- **Colored text:** `--ok-palette-<color>-text`.\n- **Neutral text:** `--ok-text-primary`, `--ok-text-secondary` and `--ok-text-disabled`.\n- **Backgrounds:** `--ok-bg-default` for the page, `--ok-bg-paper` for cards and menus, and `--ok-bg-neutral` for subtle fills.\n- **Lines:** `--ok-divider`.\n- **Interaction states:** `--ok-action-hover`, `--ok-action-selected`, `--ok-action-focus`, `--ok-action-disabled` and `--ok-action-disabled-bg`.\n- **Transparency:** each palette shade has a matching `-channel` variable that holds its RGB values, such as `0 167 111`.\n- **Gradients:** `--ok-gradient-<color>` for fills, `--ok-gradient-<color>-text` for text and `--ok-gradient-paper` for translucent paper.\n\nText, background, line and state colors change with the theme. Palette shades stay the same in every theme.",
      "id": "tokens",
      "title": "Token reference"
     },
@@ -78241,7 +78382,21 @@
      "title": "Build surfaces that follow the theme"
     },
     {
-     "body": "If your project uses Tailwind CSS v4, import the Owlky theme after Tailwind. Every palette shade and theme color then becomes a utility class, such as `bg-primary`, `text-primary-dark`, `bg-grey-200`, `text-text-secondary`, `bg-paper` and `border-divider`.",
+     "body": "Each palette color has two gradients. They are `background-image` values, so you can use them anywhere CSS takes an image.\n\n- **Text:** `--ok-gradient-<color>-text` runs from the color's `text` tone to a deeper shade: `darker` in the light theme and `lighter` in the dark theme. Every point of it reaches a contrast ratio of at least 4.5:1 on the theme's backgrounds. Clip it to the text with `background-clip: text` and make the text color transparent.\n- **Fill:** `--ok-gradient-<color>` runs from the `light` shade to the `main` shade. For a gradient border, paint the paper color on the padding box and the gradient on the border box, under a transparent border.\n\nThe `primary` gradients follow the preset, and the text gradients follow the theme, like the palette colors they come from.",
+     "html": "<style>\n  .gradient-title {\n    color: transparent;\n    background-image: var(--ok-gradient-primary-text);\n    -webkit-background-clip: text;\n    background-clip: text;\n  }\n  .gradient-border {\n    padding: 24px;\n    border: 2px solid transparent;\n    border-radius: 16px;\n    background:\n      linear-gradient(var(--ok-bg-paper), var(--ok-bg-paper)) padding-box,\n      var(--ok-gradient-secondary) border-box;\n  }\n</style>\n\n<h2 data-ok-typography data-ok-variant=\"h3\" class=\"gradient-title\">Owlky UI</h2>\n<div class=\"gradient-border\">\n  <p data-ok-typography data-ok-variant=\"body2\">A card with a gradient border.</p>\n</div>",
+     "id": "gradient-text",
+     "react": "import { Typography } from \"@owlky/react\";\n\nconst title = {\n  color: \"transparent\",\n  backgroundImage: \"var(--ok-gradient-primary-text)\",\n  WebkitBackgroundClip: \"text\",\n  backgroundClip: \"text\",\n};\n\nconst border = {\n  padding: 24,\n  border: \"2px solid transparent\",\n  borderRadius: 16,\n  background:\n    \"linear-gradient(var(--ok-bg-paper), var(--ok-bg-paper)) padding-box, var(--ok-gradient-secondary) border-box\",\n};\n\nexport function GradientTitle() {\n  return (\n    <>\n      <Typography variant=\"h3\" component=\"h2\" style={title}>\n        Owlky UI\n      </Typography>\n      <div style={border}>\n        <Typography variant=\"body2\">A card with a gradient border.</Typography>\n      </div>\n    </>\n  );\n}",
+     "title": "Add gradient text and borders"
+    },
+    {
+     "body": "Use `--ok-gradient-<color>` as the background of decorative surfaces, such as a banner or a cover. Its `light` shade is pale, so don't put text on it: put the text on the paper next to it.\n\n`--ok-gradient-paper` is the theme's paper color at 90% opacity, with soft `info` and `error` glows in two corners. Add a `backdrop-filter` to blur what is behind it, like the menus and popovers of Owlky. It follows the theme, so the same paper works in light and dark mode.",
+     "html": "<style>\n  .glass {\n    overflow: hidden;\n    background: var(--ok-gradient-paper);\n    -webkit-backdrop-filter: blur(20px);\n    backdrop-filter: blur(20px);\n  }\n  .cover {\n    height: 96px;\n    background-image: var(--ok-gradient-info);\n  }\n  .glass-content {\n    padding: 24px;\n  }\n</style>\n\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"0\" class=\"glass\">\n  <div class=\"cover\"></div>\n  <div class=\"glass-content\">\n    <h3 data-ok-typography data-ok-variant=\"h6\">Weekly report</h3>\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Glass paper over the page.</p>\n  </div>\n</div>",
+     "id": "gradient-background",
+     "react": "import { Paper, Typography } from \"@owlky/react\";\n\nconst glass = {\n  overflow: \"hidden\",\n  background: \"var(--ok-gradient-paper)\",\n  WebkitBackdropFilter: \"blur(20px)\",\n  backdropFilter: \"blur(20px)\",\n};\n\nconst cover = {\n  height: 96,\n  backgroundImage: \"var(--ok-gradient-info)\",\n};\n\nexport function WeeklyReport() {\n  return (\n    <Paper elevation={0} style={glass}>\n      <div style={cover} />\n      <div style={{ padding: 24 }}>\n        <Typography variant=\"h6\" component=\"h3\">\n          Weekly report\n        </Typography>\n        <Typography variant=\"body2\" color=\"textSecondary\">\n          Glass paper over the page.\n        </Typography>\n      </div>\n    </Paper>\n  );\n}",
+     "title": "Fill backgrounds and paper with gradients"
+    },
+    {
+     "body": "If your project uses Tailwind CSS v4, import the Owlky theme after Tailwind. Every palette shade and theme color then becomes a utility class, such as `bg-primary`, `text-primary-dark`, `bg-grey-200`, `text-text-secondary`, `bg-paper` and `border-divider`. Gradients have no utility of their own: use an arbitrary value, such as `bg-(image:--ok-gradient-primary)`.",
      "html": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n<!-- In your HTML -->\n<p class=\"rounded-md bg-primary-lighter px-2 text-primary-darker\">Tailwind + Owlky colors</p>",
      "id": "tailwind",
      "react": "// Set up Tailwind once, in your main CSS file:\n//   @import \"tailwindcss\";\n//   @import \"@owlky/styles/owlky.css\";\n//   @import \"@owlky/styles/theme.css\";\n\nexport function ColorTag() {\n  return (\n    <p className=\"rounded-md bg-primary-lighter px-2 text-primary-darker\">Tailwind + Owlky colors</p>\n  );\n}",
@@ -78262,7 +78417,7 @@
      "title": "Switch themes and presets"
     },
     {
-     "body": "- Neutral text colors and the `text` tone of each palette color meet WCAG 2.2 level AA (a contrast ratio of at least 4.5:1) on the theme backgrounds, in light and dark mode.\n- Filled components use `contrast-text` on the `main` shade. Some of these brand combinations are below 4.5:1, so avoid them for long text.\n- To check your own color pairs, use `contrastRatio(foreground, background)` from `@owlky/tokens`.\n- To place text on any color, let `getContrastText(color, [\"#FFFFFF\", \"#000000\"])` choose between white and black. The result always has a contrast ratio of at least 4.58:1.\n- Don't rely on color alone to convey meaning. Add text or an icon, as Alert does.",
+     "body": "- Neutral text colors and the `text` tone of each palette color meet WCAG 2.2 level AA (a contrast ratio of at least 4.5:1) on the theme backgrounds, in light and dark mode.\n- Filled components use `contrast-text` on the `main` shade. Some of these brand combinations are below 4.5:1, so avoid them for long text.\n- To check your own color pairs, use `contrastRatio(foreground, background)` from `@owlky/tokens`.\n- Gradient text uses `--ok-gradient-<color>-text`: every point of it meets AA on the theme's backgrounds. The fills of `--ok-gradient-<color>` start on a pale shade, so keep text off them.\n- To place text on any color, let `getContrastText(color, [\"#FFFFFF\", \"#000000\"])` choose between white and black. The result always has a contrast ratio of at least 4.58:1.\n- Don't rely on color alone to convey meaning. Add text or an icon, as Alert does.",
      "id": "accessibility",
      "title": "Accessibility"
     }
@@ -78463,7 +78618,35 @@
      "title": "Apply settings to part of a page"
     },
     {
-     "body": "- Offer the `system` mode, so people who set a dark theme in their operating system get it automatically.\n- Larger text sizes help people with low vision. Because everything is in `rem`, the browser's own font size setting works too.\n- Every preset keeps neutral text at WCAG 2.2 AA contrast. Colored text uses each preset's accessible `text` tone.\n- Save the user's choice, so they don't have to set it again on every visit.",
+     "body": "Owlky's component styles live in a cascade layer, `@layer components`, and their selectors have zero specificity. Any rule that you write outside a layer wins over them, whatever its selector, so you never need `!important`. Add a class to one component, or select a root attribute, such as `[data-ok-button]`, to restyle every instance.\n\nRead the tokens (the `--ok-*` variables) in your rules instead of fixed values. Your styles then follow the theme, the preset and dark mode, like the components do. In React, pass the same declarations through the `style` prop, or a class through `className`.",
+     "html": "<style>\n  .upgrade-button {\n    padding-inline: calc(var(--ok-spacing) * 6);\n    border-radius: var(--ok-radius-full);\n    box-shadow: var(--ok-shadow-primary);\n  }\n</style>\n\n<button type=\"button\" class=\"upgrade-button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\"><span data-ok-button-label>Upgrade</span></button>",
+     "id": "style",
+     "react": "import { Button } from \"@owlky/react\";\n\nconst upgrade = {\n  paddingInline: \"calc(var(--ok-spacing) * 6)\",\n  borderRadius: \"var(--ok-radius-full)\",\n  boxShadow: \"var(--ok-shadow-primary)\",\n};\n\nexport function UpgradeButton() {\n  return (\n    <Button variant=\"contained\" color=\"primary\" style={upgrade}>\n      Upgrade\n    </Button>\n  );\n}",
+     "title": "Style components"
+    },
+    {
+     "body": "Components show their state in attributes and native states, so your selectors can follow it:\n\n- **Open:** overlays, such as Popover, Menu and Tooltip, carry `data-ok-open` while they show. Their triggers carry `aria-expanded=\"true\"`.\n- **Focus:** `:focus-visible` matches focus from the keyboard, not from a pointer press.\n- **Disabled:** native controls match `:disabled`. Other parts carry `aria-disabled=\"true\"`.\n- **Options:** every option is an attribute, such as `[data-ok-variant=\"outlined\"]` or `[data-ok-size=\"sm\"]`.\n\nThe API reference at the end of each component's page lists its states. React needs no extra code: the component renders the same attributes, so the same CSS applies.",
+     "html": "<style>\n  .summary-button:focus-visible {\n    outline: 2px solid var(--ok-palette-secondary-main);\n    outline-offset: 2px;\n  }\n  .summary-button[aria-expanded=\"true\"] {\n    background-color: var(--ok-palette-primary-dark);\n  }\n  .summary-button:disabled {\n    outline: 1px dashed var(--ok-divider);\n  }\n  .summary[data-ok-open] {\n    border: 1px solid var(--ok-divider);\n    box-shadow: var(--ok-shadow-dialog);\n  }\n</style>\n\n<button type=\"button\" class=\"summary-button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\"\n  aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"summary\" data-ok-popover-open=\"summary\">\n  <span data-ok-button-label>Show summary</span>\n</button>\n<button type=\"button\" class=\"summary-button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\" disabled>\n  <span data-ok-button-label>Archive</span>\n</button>\n<div id=\"summary\" class=\"summary\" popover=\"manual\" data-ok-popover data-ok-placement=\"bottom\" role=\"dialog\" aria-label=\"Summary\">\n  <p data-ok-typography data-ok-variant=\"body2\">3 orders are waiting for shipping.</p>\n</div>",
+     "id": "states",
+     "react": "import { Button, Popover, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst css = `\n  .summary-button:focus-visible {\n    outline: 2px solid var(--ok-palette-secondary-main);\n    outline-offset: 2px;\n  }\n  .summary-button[aria-expanded=\"true\"] {\n    background-color: var(--ok-palette-primary-dark);\n  }\n  .summary-button:disabled {\n    outline: 1px dashed var(--ok-divider);\n  }\n  .summary[data-ok-open] {\n    border: 1px solid var(--ok-divider);\n    box-shadow: var(--ok-shadow-dialog);\n  }\n`;\n\nexport function Summary() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <style>{css}</style>\n      <Button\n        className=\"summary-button\"\n        variant=\"contained\"\n        color=\"primary\"\n        aria-haspopup=\"dialog\"\n        aria-expanded={anchor !== null}\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Show summary\n      </Button>\n      <Button className=\"summary-button\" variant=\"contained\" color=\"primary\" disabled>\n        Archive\n      </Button>\n      <Popover\n        className=\"summary\"\n        role=\"dialog\"\n        aria-label=\"Summary\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        <Typography variant=\"body2\">3 orders are waiting for shipping.</Typography>\n      </Popover>\n    </>\n  );\n}",
+     "title": "Style states"
+    },
+    {
+     "body": "Write `@keyframes` in your CSS and time them with the motion tokens: `--ok-duration-*` for lengths, such as `--ok-duration-enter`, and `--ok-easing-*` for curves, such as `--ok-easing-decelerate`. Colors in keyframes can read tokens too, so the animation follows the theme and the preset.\n\nTurn the animation off when the user asks for reduced motion, and don't loop it forever: an animation that runs longer than 5 seconds needs a way to pause it. For entrances, exits and scroll effects, use the Motion component instead.",
+     "html": "<style>\n  @keyframes new-pulse {\n    from {\n      box-shadow: 0 0 0 0 rgb(var(--ok-palette-primary-main-channel) / 0.48);\n    }\n    to {\n      box-shadow: 0 0 0 12px rgb(var(--ok-palette-primary-main-channel) / 0);\n    }\n  }\n  .new-label {\n    animation: new-pulse var(--ok-duration-enter) var(--ok-easing-decelerate) 3;\n  }\n  @media (prefers-reduced-motion: reduce) {\n    .new-label {\n      animation: none;\n    }\n  }\n</style>\n\n<span class=\"new-label\" data-ok-label data-ok-variant=\"soft\" data-ok-color=\"primary\">New</span>",
+     "id": "keyframes",
+     "react": "import { Label } from \"@owlky/react\";\n\nconst css = `\n  @keyframes new-pulse {\n    from {\n      box-shadow: 0 0 0 0 rgb(var(--ok-palette-primary-main-channel) / 0.48);\n    }\n    to {\n      box-shadow: 0 0 0 12px rgb(var(--ok-palette-primary-main-channel) / 0);\n    }\n  }\n  .new-label {\n    animation: new-pulse var(--ok-duration-enter) var(--ok-easing-decelerate) 3;\n  }\n  @media (prefers-reduced-motion: reduce) {\n    .new-label {\n      animation: none;\n    }\n  }\n`;\n\nexport function NewLabel() {\n  return (\n    <>\n      <style>{css}</style>\n      <Label className=\"new-label\" variant=\"soft\" color=\"primary\">\n        New\n      </Label>\n    </>\n  );\n}",
+     "title": "Animate with keyframes"
+    },
+    {
+     "body": "With Tailwind CSS v4 and the Owlky theme, utility classes read the same tokens, such as `shadow-z8` or `bg-primary-dark`. Tailwind's utilities layer comes after the components layer, so a utility always wins over a component style.\n\nTailwind's variants follow the same states: `focus-visible:`, `disabled:`, `aria-expanded:` and `data-ok-open:` for the `data-ok-open` attribute.",
+     "html": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n<!-- In your HTML -->\n<button type=\"button\" class=\"rounded-full px-6 shadow-z8 hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\"><span data-ok-button-label>Upgrade</span></button>",
+     "id": "style-tailwind",
+     "react": "// Set up Tailwind once, in your main CSS file:\n//   @import \"tailwindcss\";\n//   @import \"@owlky/styles/owlky.css\";\n//   @import \"@owlky/styles/theme.css\";\nimport { Button } from \"@owlky/react\";\n\nexport function UpgradeButton() {\n  return (\n    <Button\n      className=\"rounded-full px-6 shadow-z8 hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2\"\n      variant=\"contained\"\n      color=\"primary\"\n    >\n      Upgrade\n    </Button>\n  );\n}",
+     "title": "Style components with Tailwind CSS"
+    },
+    {
+     "body": "- Offer the `system` mode, so people who set a dark theme in their operating system get it automatically.\n- Larger text sizes help people with low vision. Because everything is in `rem`, the browser's own font size setting works too.\n- Every preset keeps neutral text at WCAG 2.2 AA contrast. Colored text uses each preset's accessible `text` tone.\n- Save the user's choice, so they don't have to set it again on every visit.\n- When you restyle a component, keep a visible focus indicator and a contrast ratio of at least 4.5:1 for text. Read the text tones, such as `--ok-text-primary` and `--ok-palette-<color>-text`, which meet it in every theme and preset.\n- Keep your animations short, and turn them off with `prefers-reduced-motion: reduce`.",
      "id": "accessibility",
      "title": "Accessibility"
     }
@@ -81516,6 +81699,13 @@
      "title": "Keep text on one line"
     },
     {
+     "body": "Set `maxLines` to a number from 1 to 10 to show at most that many lines: longer text ends with an ellipsis on the last line. Cards and lists keep the same height whatever the length of their text. A link takes the same option, so a long title can link to its page.\n\nAdd `persistent` to keep the height of every line even when the text is shorter, so cards in a row line up. The full text stays in the DOM, so screen readers and find in page read all of it. When sighted users need the full text, show it on another page or in a dialog.",
+     "html": "<p data-ok-typography data-ok-variant=\"body2\" data-ok-max-lines=\"2\">Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height on every screen.</p>\n<a href=\"#article\" data-ok-typography data-ok-link data-ok-variant=\"subtitle2\" data-ok-color=\"primary\" data-ok-underline=\"hover\" data-ok-max-lines=\"2\" data-ok-persistent>Read the full article</a>",
+     "id": "max-lines",
+     "react": "import { Link, Typography } from \"@owlky/react\";\n\nexport function Summary() {\n  return (\n    <>\n      <Typography variant=\"body2\" maxLines={2}>\n        Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height on every screen.\n      </Typography>\n      <Link href=\"#article\" variant=\"subtitle2\" underline=\"hover\" maxLines={2} persistent>\n        Read the full article\n      </Link>\n    </>\n  );\n}",
+     "title": "Limit the number of lines"
+    },
+    {
      "body": "When you can't add the attributes, such as for text that another library renders, read the same tokens in CSS: `--ok-typography-<variant>-font-family`, `-font-size`, `-font-weight`, `-line-height` and `-text-transform`. With Tailwind CSS, the `text-<variant>` utilities set the size, weight and line height.",
      "html": "<style>\n  .chart-title {\n    font-family: var(--ok-typography-h6-font-family);\n    font-size: var(--ok-typography-h6-font-size);\n    font-weight: var(--ok-typography-h6-font-weight);\n    line-height: var(--ok-typography-h6-line-height);\n  }\n</style>\n<div class=\"chart-title\">Visitors</div>",
      "id": "tokens",
@@ -83902,6 +84092,78 @@
     "group": "font",
     "name": "--ok-font-weight-semibold",
     "value": "600"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-error",
+    "value": "linear-gradient(135deg, var(--ok-palette-error-light), var(--ok-palette-error-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-error-text), var(--ok-palette-error-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-error-text), var(--ok-palette-error-darker))",
+    "name": "--ok-gradient-error-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-info",
+    "value": "linear-gradient(135deg, var(--ok-palette-info-light), var(--ok-palette-info-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-info-text), var(--ok-palette-info-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-info-text), var(--ok-palette-info-darker))",
+    "name": "--ok-gradient-info-text"
+   },
+   {
+    "dark": "radial-gradient(circle at 100% 0%, rgb(var(--ok-palette-info-main-channel) / 0.12), transparent 40%), radial-gradient(circle at 0% 100%, rgb(var(--ok-palette-error-main-channel) / 0.12), transparent 40%), linear-gradient(rgb(var(--ok-bg-paper-channel) / 0.9), rgb(var(--ok-bg-paper-channel) / 0.9))",
+    "group": "gradient",
+    "light": "radial-gradient(circle at 100% 0%, rgb(var(--ok-palette-info-main-channel) / 0.12), transparent 40%), radial-gradient(circle at 0% 100%, rgb(var(--ok-palette-error-main-channel) / 0.12), transparent 40%), linear-gradient(rgb(var(--ok-bg-paper-channel) / 0.9), rgb(var(--ok-bg-paper-channel) / 0.9))",
+    "name": "--ok-gradient-paper"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-primary",
+    "value": "linear-gradient(135deg, var(--ok-palette-primary-light), var(--ok-palette-primary-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-primary-text), var(--ok-palette-primary-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-primary-text), var(--ok-palette-primary-darker))",
+    "name": "--ok-gradient-primary-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-secondary",
+    "value": "linear-gradient(135deg, var(--ok-palette-secondary-light), var(--ok-palette-secondary-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-secondary-text), var(--ok-palette-secondary-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-secondary-text), var(--ok-palette-secondary-darker))",
+    "name": "--ok-gradient-secondary-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-success",
+    "value": "linear-gradient(135deg, var(--ok-palette-success-light), var(--ok-palette-success-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-success-text), var(--ok-palette-success-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-success-text), var(--ok-palette-success-darker))",
+    "name": "--ok-gradient-success-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-warning",
+    "value": "linear-gradient(135deg, var(--ok-palette-warning-light), var(--ok-palette-warning-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-warning-text), var(--ok-palette-warning-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-warning-text), var(--ok-palette-warning-darker))",
+    "name": "--ok-gradient-warning-text"
    },
    {
     "group": "illustration",

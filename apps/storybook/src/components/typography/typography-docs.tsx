@@ -1,7 +1,7 @@
 import { typographyOptions } from "@owlky/core";
 import typographyApi from "@owlky/docs-content/api/typography.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { Typography } from "@owlky/react";
+import { Link, Typography } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
@@ -103,6 +103,29 @@ export function FileName() {
 }`,
   },
   {
+    id: "max-lines",
+    title: "Limit the number of lines",
+    body: `Set \`maxLines\` to a number from 1 to 10 to show at most that many lines: longer text ends with an ellipsis on the last line. Cards and lists keep the same height whatever the length of their text. A link takes the same option, so a long title can link to its page.
+
+Add \`persistent\` to keep the height of every line even when the text is shorter, so cards in a row line up. The full text stays in the DOM, so screen readers and find in page read all of it. When sighted users need the full text, show it on another page or in a dialog.`,
+    html: `<p data-ok-typography data-ok-variant="body2" data-ok-max-lines="2">Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height on every screen.</p>
+<a href="#article" data-ok-typography data-ok-link data-ok-variant="subtitle2" data-ok-color="primary" data-ok-underline="hover" data-ok-max-lines="2" data-ok-persistent>Read the full article</a>`,
+    react: `import { Link, Typography } from "@owlky/react";
+
+export function Summary() {
+  return (
+    <>
+      <Typography variant="body2" maxLines={2}>
+        Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height on every screen.
+      </Typography>
+      <Link href="#article" variant="subtitle2" underline="hover" maxLines={2} persistent>
+        Read the full article
+      </Link>
+    </>
+  );
+}`,
+  },
+  {
     id: "tokens",
     title: "Use the type scale without the component",
     body: "When you can't add the attributes, such as for text that another library renders, read the same tokens in CSS: `--ok-typography-<variant>-font-family`, `-font-size`, `-font-weight`, `-line-height` and `-text-transform`. With Tailwind CSS, the `text-<variant>` utilities set the size, weight and line height.",
@@ -188,6 +211,17 @@ const PREVIEWS = {
       <Typography variant="body2" noWrap>
         A file name that is far too long to fit.pdf
       </Typography>
+    </Preview>
+  ),
+  "max-lines": () => (
+    <Preview className="block! max-w-60">
+      <Typography variant="body2" maxLines={2}>
+        Owlky clamps long text to a fixed number of lines, so cards and lists keep the same height
+        on every screen.
+      </Typography>
+      <Link href="#article" variant="subtitle2" underline="hover" maxLines={2} persistent>
+        Read the full article
+      </Link>
     </Preview>
   ),
   tokens: () => (

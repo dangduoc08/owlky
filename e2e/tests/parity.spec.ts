@@ -355,6 +355,7 @@ const pairs: [component: string, story: string][] = [
   ["typography", "semantic-element"],
   ["typography", "colors"],
   ["typography", "alignment"],
+  ["typography", "text-max-line"],
   ["link", "basic-links"],
   ["link", "underline"],
   ["link", "colors"],

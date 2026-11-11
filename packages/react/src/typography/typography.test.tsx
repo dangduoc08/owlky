@@ -126,6 +126,42 @@ describe("Typography", () => {
     expect(line.getBoundingClientRect().height).toBe(24);
   });
 
+  it.each([1, 2, 3, 4, 10])("maxLines %i clamps the text to that many lines", (lines) => {
+    const text = "A sentence far too long for eighty pixels, ".repeat(8);
+    render(
+      <div style={{ width: 80 }}>
+        <Typography maxLines={lines}>{text}</Typography>
+      </div>,
+    );
+    const root = screen.getByText(text.trim());
+    expect(root.dataset["okMaxLines"]).toBe(String(lines));
+    expect(css(root)).toMatchObject({ overflow: "hidden", webkitLineClamp: String(lines) });
+    // body1: a 24px line height.
+    expect(root.getBoundingClientRect().height).toBe(24 * lines);
+    expect(root.scrollHeight).toBeGreaterThan(root.clientHeight);
+  });
+
+  it("persistent keeps the height of maxLines lines for short text; without maxLines it does nothing", () => {
+    render(
+      <div style={{ width: 200 }}>
+        <Typography variant="h6" maxLines={3} persistent>
+          Short
+        </Typography>
+        <Typography maxLines="2">Short too</Typography>
+        <Typography persistent>No clamp</Typography>
+      </div>,
+    );
+    const persistent = screen.getByText("Short");
+    expect(persistent.getBoundingClientRect().height).toBeCloseTo(
+      Number.parseFloat(css(persistent).lineHeight) * 3,
+      0,
+    );
+    expect(screen.getByText("Short too").getBoundingClientRect().height).toBe(24);
+    const plain = screen.getByText("No clamp");
+    expect(css(plain).webkitLineClamp).toBe("none");
+    expect(plain.getBoundingClientRect().height).toBe(24);
+  });
+
   it("component and variantMapping pick the element; props and ref reach it", () => {
     const ref = createRef<HTMLElement>();
     render(
@@ -156,7 +192,14 @@ describe("Typography", () => {
 
   it("refuses invalid values", () => {
     render(
-      <Typography variant={HOSTILE} color={HOSTILE} align={HOSTILE} noWrap={HOSTILE}>
+      <Typography
+        variant={HOSTILE}
+        color={HOSTILE}
+        align={HOSTILE}
+        noWrap={HOSTILE}
+        maxLines={HOSTILE}
+        persistent={HOSTILE}
+      >
         Text
       </Typography>,
     );
@@ -200,6 +243,9 @@ describe("Typography", () => {
             {color}
           </Typography>
         ))}
+        <Typography maxLines={2} persistent>
+          Two lines at most
+        </Typography>
       </>,
     );
     await expectNoAxeViolations(container);

@@ -39,6 +39,9 @@ shadow, `1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16)` (Minimals' th
 ignored. No size, padding or display of its own: the content and the author's layout decide.
 Dark mode: the same `--ok-bg-paper` at every elevation (Minimals' theme drops MUI's lightening
 gradient; the dark paper already differs from the dark page background).
+Glass paper (Minimals "Utilities › Gradient › Paper", row 4.21): no option; the
+`--ok-gradient-paper` token as `background` plus a `backdrop-filter` on any Paper (Foundations ›
+Colors › Gradient), so the schema stays MUI's.
 
 ## Composition contract (Card and other surfaces)
 - **Card** (`specs/components/card.md`, next) is a Paper root: its element carries

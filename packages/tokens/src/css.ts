@@ -69,6 +69,31 @@ const dropShadow = (layers: readonly ShadowLayer[], color: string) =>
 /** Custom shadows that also get a `--ok-drop-shadow-*` filter (their layers have no spread). */
 export const dropShadowNames = ["z1", "z4", "z8"] as const;
 
+/**
+ * Gradient fill of a palette color (`--ok-gradient-<color>`): its `light` shade to its `main`
+ * shade, diagonally. For backgrounds, borders and shapes, not for text.
+ */
+const gradientFill = (name: string) =>
+  `linear-gradient(135deg, var(--ok-palette-${name}-light), var(--ok-palette-${name}-main))`;
+
+/**
+ * Gradient text of a palette color (`--ok-gradient-<color>-text`): from the scheme's AA text tone
+ * to the next shade away from the background (`darker` in light schemes, `lighter` in dark ones),
+ * so every stop meets AA. `end` is that shade's variable (or a mix of both in preset scopes).
+ */
+const gradientText = (name: string, end: string) =>
+  `linear-gradient(90deg, var(--ok-palette-${name}-text), ${end})`;
+
+/**
+ * Translucent paper with two soft glows (info top-right, error bottom-left), like popovers: the
+ * scheme's paper at 90 %, so a `backdrop-filter` behind it shows through.
+ */
+const GRADIENT_PAPER = [
+  "radial-gradient(circle at 100% 0%, rgb(var(--ok-palette-info-main-channel) / 0.12), transparent 40%)",
+  "radial-gradient(circle at 0% 100%, rgb(var(--ok-palette-error-main-channel) / 0.12), transparent 40%)",
+  "linear-gradient(rgb(var(--ok-bg-paper-channel) / 0.9), rgb(var(--ok-bg-paper-channel) / 0.9))",
+].join(", ");
+
 function rootVariables(theme: Theme): CssVariables {
   const vars: CssVariables = {};
   for (const name of paletteColorNames) {
@@ -78,6 +103,7 @@ function rootVariables(theme: Theme): CssVariables {
       vars[`--ok-palette-${name}-${kebab(shade)}-channel`] = channel(value);
     }
     vars[`--ok-shadow-${name}`] = shadow([theme.colorShadow], `var(--ok-palette-${name}-main)`);
+    vars[`--ok-gradient-${name}`] = gradientFill(name);
   }
   vars["--_ok-primary-text-light"] = theme.schemes.light.paletteText.primary;
   vars["--_ok-primary-text-dark"] = theme.schemes.dark.paletteText.primary;
@@ -157,6 +183,13 @@ function schemeVariables(scheme: ColorScheme, theme: Theme, dark: boolean): CssV
   vars["--ok-action-disabled"] = scheme.action.disabled;
   vars["--ok-action-disabled-bg"] = scheme.action.disabledBackground;
   vars["--ok-backdrop"] = scheme.backdrop;
+  // Gradients that read scheme colors: declared in every scheme scope, so each resolves its own.
+  for (const name of paletteColorNames)
+    vars[`--ok-gradient-${name}-text`] = gradientText(
+      name,
+      `var(--ok-palette-${name}-${dark ? "lighter" : "darker"})`,
+    );
+  vars["--ok-gradient-paper"] = GRADIENT_PAPER;
   // Shadows are re-declared per scheme: a custom property referencing another one is resolved
   // where it is declared, so nested `data-ok-theme` scopes need their own copy.
   vars["--ok-shadow-color"] = scheme.shadowColor;
@@ -264,6 +297,7 @@ export function primaryPresetVariables(color: PaletteColor, theme: Theme): CssVa
     vars[`--ok-palette-primary-${kebab(shade)}-channel`] = channel(value);
   }
   vars["--ok-shadow-primary"] = shadow([theme.colorShadow], "var(--ok-palette-primary-main)");
+  vars["--ok-gradient-primary"] = gradientFill("primary");
   const light = paletteTextFor(color, theme.schemes.light, false);
   const dark = paletteTextFor(color, theme.schemes.dark, true);
   vars["--_ok-primary-text-light"] = light;
@@ -271,6 +305,11 @@ export function primaryPresetVariables(color: PaletteColor, theme: Theme): CssVa
   // 0 % / 100 % of the dark tone: exactly one of the two, per the nearest scheme scope.
   vars["--ok-palette-primary-text"] =
     "color-mix(in srgb, var(--_ok-primary-text-dark) calc(var(--_ok-dark) * 100%), var(--_ok-primary-text-light))";
+  // The text gradient ends on `lighter` in dark schemes and `darker` in light ones, like above.
+  vars["--ok-gradient-primary-text"] = gradientText(
+    "primary",
+    "color-mix(in srgb, var(--ok-palette-primary-lighter) calc(var(--_ok-dark) * 100%), var(--ok-palette-primary-darker))",
+  );
   return vars;
 }
 

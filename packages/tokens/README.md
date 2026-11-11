@@ -24,6 +24,7 @@ const css = themeToCss(
 | Font sizes | `--ok-font-size-xs\|sm\|md\|lg\|xl` | 12 / 13 / 14 / 15 / 16px |
 | Component color | `[data-ok-color="primary…error\|black\|white"]` → `--ok-c-main\|channel\|hover\|contrast\|text\|shadow` | non-inheriting bindings |
 | Shadows | `--ok-elevation-1…24`, `--ok-shadow-z1\|z4\|…\|z24\|card\|dropdown\|dialog\|dialog-start`, `--ok-shadow-<color>`, `--ok-drop-shadow-z1\|z4\|z8` (`filter` values) | Tinted with `--ok-shadow-color` per theme |
+| Gradients | `--ok-gradient-<color>` (fill: `light` → `main`), `--ok-gradient-<color>-text` (text tone → `darker` / `lighter` per theme, AA at every stop), `--ok-gradient-paper` (translucent paper with info / error glows) | `background-image` values; follow presets and themes |
 | Shape & layout | `--ok-radius-*`, `--ok-spacing` (4px), `--ok-breakpoint-*`, `--ok-z-*` | |
 | Motion | `--ok-duration-*`, `--ok-easing-*` | |
 

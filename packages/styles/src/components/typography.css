@@ -8,6 +8,8 @@
  *                              | textPrimary | textSecondary | textDisabled   (absent: inherited)
  *            data-ok-align   = inherit | left | center | right | justify       (absent: inherited)
  *            data-ok-gutter-bottom, data-ok-no-wrap
+ *            data-ok-max-lines = 1…10 (absent: every line), data-ok-persistent (with max lines)
+ * Private:   --_ok-max-lines (the line count, from the attribute)
  *
  * Every value comes from the type scale tokens (`--ok-typography-<variant>-*`, responsive through
  * the token breakpoints). Single :where() selectors in @layer components.
@@ -176,5 +178,59 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Max lines: a line clamp (the legacy -webkit- box is the Baseline path in every engine); the
+     last visible line ends with an ellipsis. Persistent text keeps the height of every line. */
+  :where([data-ok-typography][data-ok-max-lines]) {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--_ok-max-lines);
+    line-clamp: var(--_ok-max-lines);
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="1"]) {
+    --_ok-max-lines: 1;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="2"]) {
+    --_ok-max-lines: 2;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="3"]) {
+    --_ok-max-lines: 3;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="4"]) {
+    --_ok-max-lines: 4;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="5"]) {
+    --_ok-max-lines: 5;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="6"]) {
+    --_ok-max-lines: 6;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="7"]) {
+    --_ok-max-lines: 7;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="8"]) {
+    --_ok-max-lines: 8;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="9"]) {
+    --_ok-max-lines: 9;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines="10"]) {
+    --_ok-max-lines: 10;
+  }
+
+  :where([data-ok-typography][data-ok-max-lines][data-ok-persistent]) {
+    min-block-size: calc(var(--_ok-max-lines) * 1lh);
   }
 }

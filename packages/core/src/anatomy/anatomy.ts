@@ -7000,6 +7000,9 @@ export const typographyColors = [
 export type TypographyColor = (typeof typographyColors)[number];
 export const typographyAligns = ["inherit", "left", "center", "right", "justify"] as const;
 export type TypographyAlign = (typeof typographyAligns)[number];
+/** Line counts of `maxLines` (CSS reads them from the attribute, so the list is closed). */
+export const typographyMaxLines = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as const;
+export type TypographyMaxLines = (typeof typographyMaxLines)[number];
 
 /**
  * The element each variant renders by default (MUI's `variantMapping`): headings for `h1`–`h6`,
@@ -7048,6 +7051,17 @@ export const typographyOptions = defineOptions("typography", "data-ok-typography
     "data-ok-no-wrap",
     "One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width).",
   ),
+  maxLines: style(
+    "data-ok-max-lines",
+    typographyMaxLines,
+    "1",
+    "At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line.",
+    { optional: true },
+  ),
+  persistent: flag(
+    "data-ok-persistent",
+    "With `maxLines`: the text always takes the height of that many lines, even when it is shorter.",
+  ),
 });
 
 export interface TypographyAnatomyOptions {
@@ -7056,11 +7070,20 @@ export interface TypographyAnatomyOptions {
   align?: TypographyAlign | undefined;
   gutterBottom?: boolean | undefined;
   noWrap?: boolean | undefined;
+  /** 1–10 (a number or its string). */
+  maxLines?: number | string | undefined;
+  persistent?: boolean | undefined;
 }
 
-/** `data-ok-*` attributes of a typography element (`color` and `align` only when given). */
-export const typographyAttributes = (options: TypographyAnatomyOptions = {}): DataAttributes =>
-  optionAttributes(typographyOptions, { ...options });
+/** `data-ok-*` attributes of a typography element (`color`, `align` and `maxLines` only when given). */
+export const typographyAttributes = ({
+  maxLines,
+  ...options
+}: TypographyAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(typographyOptions, {
+    ...options,
+    maxLines: maxLines === undefined ? undefined : String(maxLines),
+  });
 
 /** The element a variant renders: `mapping` first, then the default mapping (unknown → `p`). */
 export const typographyElement = <E = string>(
@@ -7100,6 +7123,8 @@ export const linkOptions = defineOptions("link", "data-ok-link", {
   align: typographyOptions.options.align,
   gutterBottom: typographyOptions.options.gutterBottom,
   noWrap: typographyOptions.options.noWrap,
+  maxLines: typographyOptions.options.maxLines,
+  persistent: typographyOptions.options.persistent,
   underline: style(
     "data-ok-underline",
     linkUnderlines,
@@ -7114,9 +7139,15 @@ export interface LinkAnatomyOptions extends Omit<TypographyAnatomyOptions, "colo
 }
 
 /** `data-ok-*` attributes of a link: Typography's marker first, then the link's options. */
-export const linkAttributes = (options: LinkAnatomyOptions = {}): DataAttributes => ({
+export const linkAttributes = ({
+  maxLines,
+  ...options
+}: LinkAnatomyOptions = {}): DataAttributes => ({
   "data-ok-typography": "",
-  ...optionAttributes(linkOptions, { ...options }),
+  ...optionAttributes(linkOptions, {
+    ...options,
+    maxLines: maxLines === undefined ? undefined : String(maxLines),
+  }),
 });
 
 const SAFE_REL = ["noopener", "noreferrer"] as const;

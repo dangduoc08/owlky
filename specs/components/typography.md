@@ -2,6 +2,8 @@
 
 Reference: MUI "Typography" demo page, sections Usage, Theme keys, Changing the semantic element
 (content only; Minimals has no Typography page — Foundations › Typography holds its type scale).
+Minimals "Utilities" page (https://minimals.cc/components/extra/utilities), section Text max line
+(row 4.19: story "Text max line" with 1–4 lines, As link, Persistent).
 Upstream: MUI `Typography` (ADR-0015). Created with `/component`.
 Reference URL: https://mui.com/material-ui/react-typography/
 HTML source: written by us (MUI is React only).
@@ -12,7 +14,7 @@ responsive at the token breakpoints). CSS only; the element is the author's choi
 
 ## Anatomy
 ```
-<element>[data-ok-typography][data-ok-variant][data-ok-color]?[data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?
+<element>[data-ok-typography][data-ok-variant][data-ok-color]?[data-ok-align]?[data-ok-gutter-bottom]?[data-ok-no-wrap]?[data-ok-max-lines]?[data-ok-persistent]?
 ```
 React picks the element from `variantMapping` (default below) unless `component` is given;
 HTML authors write it.
@@ -32,6 +34,8 @@ Root: `data-ok-typography`. Unknown values fall back to the default.
 | `align` | `data-ok-align="…"` | style | `inherit` `left` `center` `right` `justify` | — | Text alignment. Without it, the text keeps the parent's alignment. |
 | `gutterBottom` | `data-ok-gutter-bottom` | flag | boolean | off | A bottom margin of 0.35em. |
 | `noWrap` | `data-ok-no-wrap` | flag | boolean | off | One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width). |
+| `maxLines` | `data-ok-max-lines="…"` | style | `1` `2` `3` `4` `5` `6` `7` `8` `9` `10` | — | At most this many lines (1 to 10): longer text ends with an ellipsis on the last line. Without it, the text shows every line. |
+| `persistent` | `data-ok-persistent` | flag | boolean | off | With `maxLines`: the text always takes the height of that many lines, even when it is shorter. |
 <!-- /options:typography -->
 
 React: `children`, `component` (any element type), `variantMapping` (partial, merged over the
@@ -47,17 +51,25 @@ Not applicable: `sx`, `classes`, `paragraph` (deprecated upstream: `component="p
 the tokens; font presets apply). `inherit`: `font: inherit; text-transform: inherit`. Colors:
 palette `--ok-c-main` (the `[data-ok-color]` binding), `--ok-text-primary|secondary|disabled`.
 `gutterBottom`: `margin-block-end: 0.35em`. `noWrap`: `overflow: hidden; text-overflow: ellipsis;
-white-space: nowrap`. `typography.css` loads first in `owlky.css` so components that compose
+white-space: nowrap`. `maxLines` (1–10, a closed list because CSS reads the count from the
+attribute into `--_ok-max-lines`): `display: -webkit-box; -webkit-box-orient: vertical;
+-webkit-line-clamp` + `line-clamp` (the prefixed box is the Baseline path in every engine,
+ADR-0006; no fallback needed), `overflow: hidden`. `persistent` (only with `maxLines`):
+`min-block-size: calc(var(--_ok-max-lines) * 1lh)` (`lh` is Baseline). `maxLines` makes the
+element a block box (also a Link). Don't combine it with `noWrap` (one line wins). `typography.css` loads first in `owlky.css` so components that compose
 Typography restyle it through their own CSS (same zero specificity, later wins).
 
 Unknown values (HTML) get no rule: the text keeps the parent's font, color and alignment.
 
 ## Responsive behavior
 Fluid. Heading sizes (h1–h6) step up at 600 / 900 / 1200px through the tokens; text wraps
-except with `noWrap` (one line, ellipsis).
+except with `noWrap` (one line, ellipsis) and up to `maxLines` lines (ellipsis on the last one).
 
 ## Keyboard / Accessibility
 Not focusable. Variant and element are independent: keep the heading outline (`component`).
+Clamped text (`noWrap`, `maxLines`) stays whole in the DOM: screen readers and find-in-page read
+all of it; offer the full text elsewhere (a details page, a tooltip on a focusable element) when
+sighted users need it.
 Sizes in `rem`. Palette colors use `main` (ADR-0014, exempt from `color-contrast` like other
 brand text); `textPrimary` / `textSecondary` meet AA; `textDisabled` is for inactive content.
 
@@ -73,5 +85,6 @@ Audit 2026-11-09 against MUI API page Typography.
 | `color` | palette names + `textPrimary` / `textSecondary` / `textDisabled` | kept | no arbitrary strings (`"text.secondary"`) |
 | `paragraph` | `component="p"` + `gutterBottom` | not applicable | deprecated upstream |
 | theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |
-| Minimals "Text max line" | — | deferred (4.19) | `maxLines` |
+| Minimals "Text max line" (`TextMaxLine` `line`, `persistent`, `asLink`) | `maxLines` (1–10), `persistent`; As link = `Link` with `maxLines` | kept (4.19) | `line` renamed `maxLines` (roadmap); counts above 10 need consumer CSS (`-webkit-line-clamp`) |
+| Minimals "Gradient › Text" (`textGradient`) | `--ok-gradient-<color>-text` + `background-clip: text` (consumer CSS) | kept as tokens (4.21) | no option: Foundations › Colors › Gradient |
 | `sx`, `classes` | — | not applicable | ADR-0015 |
