@@ -5,6 +5,7 @@
 /** Folder → spec, for folders that the date-picker pattern below doesn't cover. */
 export const FOLDER_SPEC = {
   "count-up": "motion",
+  countdown: "motion",
   "motion-border": "motion",
   "motion-group": "motion",
   "motion-text": "motion",

@@ -184,6 +184,9 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-mobile-stepper-panel",
       "data-ok-label-step",
       "data-ok-expand-text",
+      // Countdown triggers (React: `paused` and `key`).
+      "data-ok-countdown-toggle",
+      "data-ok-countdown-restart",
       // Code editor: Monaco loads asynchronously (parity waits for `ready` where it matters).
       "data-ok-status",
       // Map (ADR-0025): HTML triggers; React opens popups and flies the map from handlers.

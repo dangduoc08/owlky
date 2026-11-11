@@ -2,6 +2,8 @@ import { CountUp, Motion, MotionBorder, MotionText } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { CountdownDateDemo, CountdownSecondsDemo } from "./countdown-demo.js";
+import countdownSource from "./countdown-demo.tsx?raw";
 import { MotionDialogDemo } from "./dialog-demo.js";
 import source from "./dialog-demo.tsx?raw";
 import { MotionDocs } from "./motion-docs.js";
@@ -103,6 +105,28 @@ export const CountUpStory: StoryObj = other(
   { ...COUNT_UP_CONTROLS, target: CountUp },
   "Count up",
 );
+export const CountdownStory: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "countdown",
+      [
+        ["Date", "date"],
+        ["Seconds", "seconds"],
+      ],
+      htmlSetup(["button.css", "toggle-button.css", "countdown.css"], true),
+    ),
+    react: reactGroupsStory(
+      [
+        { title: "Date", content: <CountdownDateDemo /> },
+        { title: "Seconds", content: <CountdownSecondsDemo /> },
+      ],
+      undefined,
+      countdownSource,
+    ),
+  }),
+  name: "Countdown",
+};
 const BORDER = { ...MOTION_BORDER_CONTROLS, target: MotionBorder };
 export const Logo: StoryObj = other("logo", htmlSetup(["motion-border.css"], true), BORDER);
 export const AvatarStory: StoryObj = other(

@@ -124,6 +124,7 @@ import {
   lightboxTextAligns,
   lightboxThumbnailsPositions,
 } from "../lightbox/lightbox-model.js";
+import { type CountdownUnit, countdownUnits } from "../motion/countdown.js";
 import {
   behavior,
   type DataAttributes,
@@ -3413,6 +3414,35 @@ export const countUpAttributes = (options: CountUpAnatomyOptions = {}): DataAttr
   ...optionAttributes(countUpOptions, { ...options }),
   ...onceAttribute(options.once, countUpOptions.options.once.attr),
 });
+
+export const countdownOptions = defineOptions("countdown", "data-ok-countdown", {
+  seconds: number(
+    "data-ok-seconds",
+    undefined,
+    "Counts down from this many seconds (when there is no `date`).",
+    { min: 0 },
+  ),
+  largestUnit: style(
+    "data-ok-largest-unit",
+    countdownUnits,
+    "days",
+    "The largest unit shown: larger ones fold into it (`minutes`: 90 minutes, not 1 hour 30).",
+  ),
+  paused: flag(
+    "data-ok-paused",
+    "Stops the countdown (WCAG 2.2.2). Seconds keep their time left; a date shows the real time left when it resumes.",
+  ),
+});
+
+export interface CountdownAnatomyOptions {
+  seconds?: number | undefined;
+  largestUnit?: CountdownUnit | undefined;
+  paused?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a Countdown (`date`, `now` and the labels are written by the owner). */
+export const countdownAttributes = (options: CountdownAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(countdownOptions, { ...options });
 
 export const motionBorderShapes = ["rounded", "circle"] as const;
 export type MotionBorderShape = (typeof motionBorderShapes)[number];
@@ -7301,6 +7331,7 @@ export const optionSchemas = {
   "motion-group": motionGroupOptions,
   "motion-text": motionTextOptions,
   "count-up": countUpOptions,
+  countdown: countdownOptions,
   "motion-border": motionBorderOptions,
   "data-grid": dataGridOptions,
   "date-field": dateFieldOptions,

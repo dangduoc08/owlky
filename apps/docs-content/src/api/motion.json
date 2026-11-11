@@ -96,6 +96,43 @@
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-h5-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h5-font-size",
+   "value": "1.125rem"
+  },
+  {
+   "name": "--ok-typography-h5-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h5-line-height",
+   "value": "1.5"
   }
  ],
  "entries": [
@@ -271,12 +308,30 @@
     ],
     "parts": [
      {
+      "description": "The text announced when a countdown ends. Default \"Time's up\".",
+      "kind": "value",
+      "name": "data-ok-complete-label",
+      "value": "string"
+     },
+     {
+      "description": "The time a countdown counts down to: an ISO date and time (with its offset, such as `Z`) or ms since the epoch.",
+      "kind": "value",
+      "name": "data-ok-date",
+      "value": "string"
+     },
+     {
       "description": "One animated character.",
       "elements": [
        "span"
       ],
       "kind": "part",
       "name": "data-ok-motion-char"
+     },
+     {
+      "description": "The time of the first render (same formats as `data-ok-date`): the countdown's clock runs from it. Default: the current time.",
+      "kind": "value",
+      "name": "data-ok-now",
+      "value": "string"
      },
      {
       "description": "In view: grows (or, with negative values, shrinks) the viewport's box, written like CSS margins in `px` or `%`, such as `0px 0px -100px`.",
@@ -531,6 +586,192 @@
       "description": "`inView` (default): counts when scrolled into view; `mount`: right away; `manual`: on `in`.",
       "name": "trigger",
       "type": "\"inView\" | \"manual\" | \"mount\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-countdown",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "The countdown reached 0 (once per run; a date in the past completes at setup).",
+      "detail": "undefined",
+      "name": "ok:countdown:complete"
+     },
+     {
+      "cancelable": false,
+      "description": "The shown value changed: `remaining` is the whole seconds left (also fired at setup).",
+      "detail": "{ remaining: number; }",
+      "name": "ok:countdown:tick"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Stops the countdown (sets `data-ok-paused`).",
+      "kind": "method",
+      "name": "pause",
+      "type": "() => void"
+     },
+     {
+      "description": "`true` while `data-ok-paused` is set.",
+      "kind": "property",
+      "name": "paused",
+      "type": "boolean"
+     },
+     {
+      "description": "Whole seconds left.",
+      "kind": "property",
+      "name": "remaining",
+      "type": "number"
+     },
+     {
+      "description": "Starts over from the full time (seconds) or the date, running.",
+      "kind": "method",
+      "name": "restart",
+      "type": "() => void"
+     },
+     {
+      "description": "Runs it again (removes `data-ok-paused`).",
+      "kind": "method",
+      "name": "resume",
+      "type": "() => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-seconds",
+      "description": "Counts down from this many seconds (when there is no `date`).",
+      "kind": "number",
+      "min": 0,
+      "name": "seconds"
+     },
+     {
+      "attr": "data-ok-largest-unit",
+      "default": "days",
+      "description": "The largest unit shown: larger ones fold into it (`minutes`: 90 minutes, not 1 hour 30).",
+      "kind": "style",
+      "name": "largestUnit",
+      "values": [
+       "days",
+       "hours",
+       "minutes",
+       "seconds"
+      ]
+     },
+     {
+      "attr": "data-ok-paused",
+      "description": "Stops the countdown (WCAG 2.2.2). Seconds keep their time left; a date shows the real time left when it resumes.",
+      "kind": "flag",
+      "name": "paused"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The name of a countdown unit, such as \"days\". Write it in your language.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-countdown-label"
+     },
+     {
+      "description": "Starts the countdown whose `id` it names over from the full time, running.",
+      "kind": "trigger",
+      "name": "data-ok-countdown-restart",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "A visually hidden polite live region: the countdown announces the time left about once a minute, at 30 and 10 seconds, and at the end.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-countdown-status"
+     },
+     {
+      "description": "Pauses or resumes the countdown whose `id` it names; its `aria-pressed` follows the paused state.",
+      "kind": "trigger",
+      "name": "data-ok-countdown-toggle",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "One unit of a countdown: its value and its label.",
+      "kind": "value",
+      "name": "data-ok-countdown-unit",
+      "value": [
+       "days",
+       "hours",
+       "minutes",
+       "seconds"
+      ]
+     },
+     {
+      "description": "The number of one countdown unit, written by the script.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-countdown-value"
+     }
+    ],
+    "runtime": "countdown"
+   },
+   "name": "Countdown",
+   "react": {
+    "description": "Days, hours, minutes and seconds left to a `date`, or of a number of `seconds`. A polite live region announces the time left about once a minute (not every second); change the `key` to start over.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "Announced to screen readers when the countdown ends. Default \"Time's up\".",
+      "name": "completeLabel",
+      "type": "string"
+     },
+     {
+      "description": "The time to count down to: a `Date`, an ISO string (with its offset, such as `Z`) or ms since the epoch. Wins over `seconds`.",
+      "name": "date",
+      "type": "string | number | Date"
+     },
+     {
+      "description": "The unit names. Default English plurals (`days`, `hours`, `minutes`, `seconds`).",
+      "name": "labels",
+      "type": "Partial<Record<\"days\" | \"hours\" | \"minutes\" | \"seconds\", string>>"
+     },
+     {
+      "default": "\"days\"",
+      "description": "The largest unit shown: larger ones fold into it.",
+      "name": "largestUnit",
+      "type": "\"days\" | \"hours\" | \"minutes\" | \"seconds\""
+     },
+     {
+      "description": "The time of the first render, so server and client markup agree; the clock then runs from it. Default: the current time once mounted.",
+      "name": "now",
+      "type": "string | number | Date"
+     },
+     {
+      "description": "Called once when the countdown reaches 0.",
+      "name": "onComplete",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Called with the whole seconds left each time the shown value changes.",
+      "name": "onTick",
+      "type": "((remaining: number) => void)"
+     },
+     {
+      "description": "2). Seconds keep their time left; a date shows the real time left when it resumes.",
+      "name": "paused",
+      "type": "boolean"
+     },
+     {
+      "description": "Counts down from this many seconds (when there is no `date`).",
+      "name": "seconds",
+      "type": "number"
      }
     ]
    }

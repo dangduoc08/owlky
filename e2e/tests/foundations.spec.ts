@@ -270,7 +270,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ],
   [
     "components-motion--docs",
-    ["motion", "motion-group", "motion-text", "count-up", "motion-border"],
+    ["motion", "motion-group", "motion-text", "count-up", "countdown", "motion-border"],
   ],
   ["components-datagrid--docs", ["data-grid"]],
 ];

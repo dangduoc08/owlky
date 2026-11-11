@@ -96,6 +96,48 @@ for (const impl of implementations) {
       await expect(page.locator("[data-ok-count-up-label]").last()).toHaveText("500.14k");
     });
 
+    test("countdown: counts, pauses with the toggle and restarts with Start", async ({ page }) => {
+      const start = Date.parse("2026-11-09T09:30:15Z");
+      await page.clock.install({ time: start });
+      await openStory(page, storyId(impl, "motion", "countdown-story"));
+      const launch = page.getByRole("timer", { name: "Time until the launch" });
+      const values = launch.locator("[data-ok-countdown-value]");
+      await expect(values.first()).toHaveText("52");
+      // Stop the flow of time: from here only runFor moves the clock.
+      await page.clock.pauseAt(start + 60_000);
+      const seconds = async () => Number(await values.last().textContent());
+      const before = await seconds();
+      await page.clock.runFor(2000);
+      expect(await seconds()).toBe((before + 58) % 60);
+      // Keyboard: the pause toggle (WCAG 2.2.2).
+      const toggle = page.getByRole("button", { name: "Pause the countdown" });
+      await toggle.focus();
+      await page.keyboard.press("Space");
+      await expect(toggle).toHaveAttribute("aria-pressed", "true");
+      await expect(launch).toHaveAttribute("data-ok-paused", "");
+      const paused = await seconds();
+      await page.clock.runFor(3000);
+      expect(await seconds()).toBe(paused);
+      await page.keyboard.press("Enter");
+      await expect(launch).not.toHaveAttribute("data-ok-paused");
+      await expect(toggle).toHaveAttribute("aria-pressed", "false");
+      // A date countdown shows the real time left when it resumes.
+      await expect(values.last()).toHaveText(String((paused + 57) % 60).padStart(2, "0"));
+
+      // Pointer: Start runs the seconds countdown, which announces the end.
+      const code = page.getByRole("timer", { name: "Time left to enter the code" });
+      const value = code.locator("[data-ok-countdown-value]");
+      await expect(value).toHaveText("10");
+      await page.getByRole("button", { name: "Start" }).click();
+      await page.clock.runFor(1000);
+      await expect(value).toHaveText("9");
+      await page.clock.runFor(9000);
+      await expect(value).toHaveText("0");
+      await expect(code.getByRole("status")).toHaveText("Time's up");
+      await page.getByRole("button", { name: "Start" }).click();
+      await expect(value).toHaveText("10");
+    });
+
     test("border: turns, pauses with paused, stops with reduced motion", async ({ page }) => {
       await openStory(page, storyId(impl, "motion", "border"));
       const border = page.locator("[data-ok-motion-border]").first();

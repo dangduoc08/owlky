@@ -1061,6 +1061,14 @@
   gap: calc(var(--ok-spacing) * 10);
 }
 
+/* Countdown demos (story-only): the countdown above its control. */
+.sb-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 4);
+}
+
 /* Data grid demos (story-only): the grid height and custom cell content. */
 .sb-grid {
   width: 100%;

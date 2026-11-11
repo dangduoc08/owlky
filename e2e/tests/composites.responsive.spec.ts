@@ -41,6 +41,7 @@ export const STORIES: [component: string, story: string][] = [
     "tap-hover",
     "path",
     "count-up-story",
+    "countdown-story",
     "logo",
     "avatar-story",
     "border",
@@ -67,7 +68,7 @@ interface Box {
 }
 
 const PARTS =
-  "[data-ok-timeline-item], [data-ok-timeline-content], [data-ok-rating], [data-ok-slider], [data-ok-transfer-list-panel], [data-ok-tree-item-content], [data-ok-autocomplete], [data-ok-motion], [data-ok-motion-text], [data-ok-count-up], [data-ok-motion-border], [data-ok-data-grid], [data-ok-data-grid-toolbar]";
+  "[data-ok-timeline-item], [data-ok-timeline-content], [data-ok-rating], [data-ok-slider], [data-ok-transfer-list-panel], [data-ok-tree-item-content], [data-ok-autocomplete], [data-ok-motion], [data-ok-motion-text], [data-ok-count-up], [data-ok-countdown], [data-ok-motion-border], [data-ok-data-grid], [data-ok-data-grid-toolbar]";
 const TARGETS = "[data-ok-slider-thumb]";
 
 function measure(page: Page) {

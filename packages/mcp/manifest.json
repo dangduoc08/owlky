@@ -377,6 +377,7 @@
   "data-ok-column-width",
   "data-ok-columns",
   "data-ok-compact",
+  "data-ok-complete-label",
   "data-ok-completed",
   "data-ok-contain-scroll",
   "data-ok-context-menu",
@@ -387,6 +388,13 @@
   "data-ok-count-up",
   "data-ok-count-up-label",
   "data-ok-count-up-value",
+  "data-ok-countdown",
+  "data-ok-countdown-label",
+  "data-ok-countdown-restart",
+  "data-ok-countdown-status",
+  "data-ok-countdown-toggle",
+  "data-ok-countdown-unit",
+  "data-ok-countdown-value",
   "data-ok-covered",
   "data-ok-critical",
   "data-ok-critical-path",
@@ -925,6 +933,7 @@
   "data-ok-labels",
   "data-ok-language",
   "data-ok-large-step",
+  "data-ok-largest-unit",
   "data-ok-last",
   "data-ok-latitude",
   "data-ok-layer",
@@ -1143,6 +1152,7 @@
   "data-ok-node-width",
   "data-ok-non-linear",
   "data-ok-notched",
+  "data-ok-now",
   "data-ok-null",
   "data-ok-number-field",
   "data-ok-number-field-decrement",
@@ -1327,6 +1337,7 @@
   "data-ok-scrolling",
   "data-ok-searchable",
   "data-ok-secondary-color",
+  "data-ok-seconds",
   "data-ok-section",
   "data-ok-segmented",
   "data-ok-select",
@@ -55601,6 +55612,43 @@
      {
       "name": "--ok-spacing",
       "value": "0.25rem"
+     },
+     {
+      "dark": "#919EAB",
+      "light": "#637381",
+      "name": "--ok-text-secondary"
+     },
+     {
+      "name": "--ok-typography-body2-font-family",
+      "value": "var(--ok-font-family)"
+     },
+     {
+      "name": "--ok-typography-body2-font-size",
+      "value": "0.875rem"
+     },
+     {
+      "name": "--ok-typography-body2-font-weight",
+      "value": "400"
+     },
+     {
+      "name": "--ok-typography-body2-line-height",
+      "value": "1.5714"
+     },
+     {
+      "name": "--ok-typography-h5-font-family",
+      "value": "var(--ok-font-family)"
+     },
+     {
+      "name": "--ok-typography-h5-font-size",
+      "value": "1.125rem"
+     },
+     {
+      "name": "--ok-typography-h5-font-weight",
+      "value": "700"
+     },
+     {
+      "name": "--ok-typography-h5-line-height",
+      "value": "1.5"
      }
     ],
     "entries": [
@@ -55776,12 +55824,30 @@
        ],
        "parts": [
         {
+         "description": "The text announced when a countdown ends. Default \"Time's up\".",
+         "kind": "value",
+         "name": "data-ok-complete-label",
+         "value": "string"
+        },
+        {
+         "description": "The time a countdown counts down to: an ISO date and time (with its offset, such as `Z`) or ms since the epoch.",
+         "kind": "value",
+         "name": "data-ok-date",
+         "value": "string"
+        },
+        {
          "description": "One animated character.",
          "elements": [
           "span"
          ],
          "kind": "part",
          "name": "data-ok-motion-char"
+        },
+        {
+         "description": "The time of the first render (same formats as `data-ok-date`): the countdown's clock runs from it. Default: the current time.",
+         "kind": "value",
+         "name": "data-ok-now",
+         "value": "string"
         },
         {
          "description": "In view: grows (or, with negative values, shrinks) the viewport's box, written like CSS margins in `px` or `%`, such as `0px 0px -100px`.",
@@ -56036,6 +56102,192 @@
          "description": "`inView` (default): counts when scrolled into view; `mount`: right away; `manual`: on `in`.",
          "name": "trigger",
          "type": "\"inView\" | \"manual\" | \"mount\""
+        }
+       ]
+      }
+     },
+     {
+      "html": {
+       "attribute": "data-ok-countdown",
+       "events": [
+        {
+         "cancelable": false,
+         "description": "The countdown reached 0 (once per run; a date in the past completes at setup).",
+         "detail": "undefined",
+         "name": "ok:countdown:complete"
+        },
+        {
+         "cancelable": false,
+         "description": "The shown value changed: `remaining` is the whole seconds left (also fired at setup).",
+         "detail": "{ remaining: number; }",
+         "name": "ok:countdown:tick"
+        }
+       ],
+       "methods": [
+        {
+         "description": "Stops the countdown (sets `data-ok-paused`).",
+         "kind": "method",
+         "name": "pause",
+         "type": "() => void"
+        },
+        {
+         "description": "`true` while `data-ok-paused` is set.",
+         "kind": "property",
+         "name": "paused",
+         "type": "boolean"
+        },
+        {
+         "description": "Whole seconds left.",
+         "kind": "property",
+         "name": "remaining",
+         "type": "number"
+        },
+        {
+         "description": "Starts over from the full time (seconds) or the date, running.",
+         "kind": "method",
+         "name": "restart",
+         "type": "() => void"
+        },
+        {
+         "description": "Runs it again (removes `data-ok-paused`).",
+         "kind": "method",
+         "name": "resume",
+         "type": "() => void"
+        }
+       ],
+       "options": [
+        {
+         "attr": "data-ok-seconds",
+         "description": "Counts down from this many seconds (when there is no `date`).",
+         "kind": "number",
+         "min": 0,
+         "name": "seconds"
+        },
+        {
+         "attr": "data-ok-largest-unit",
+         "default": "days",
+         "description": "The largest unit shown: larger ones fold into it (`minutes`: 90 minutes, not 1 hour 30).",
+         "kind": "style",
+         "name": "largestUnit",
+         "values": [
+          "days",
+          "hours",
+          "minutes",
+          "seconds"
+         ]
+        },
+        {
+         "attr": "data-ok-paused",
+         "description": "Stops the countdown (WCAG 2.2.2). Seconds keep their time left; a date shows the real time left when it resumes.",
+         "kind": "flag",
+         "name": "paused"
+        }
+       ],
+       "parts": [
+        {
+         "description": "The name of a countdown unit, such as \"days\". Write it in your language.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-countdown-label"
+        },
+        {
+         "description": "Starts the countdown whose `id` it names over from the full time, running.",
+         "kind": "trigger",
+         "name": "data-ok-countdown-restart",
+         "value": [
+          "id"
+         ]
+        },
+        {
+         "description": "A visually hidden polite live region: the countdown announces the time left about once a minute, at 30 and 10 seconds, and at the end.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-countdown-status"
+        },
+        {
+         "description": "Pauses or resumes the countdown whose `id` it names; its `aria-pressed` follows the paused state.",
+         "kind": "trigger",
+         "name": "data-ok-countdown-toggle",
+         "value": [
+          "id"
+         ]
+        },
+        {
+         "description": "One unit of a countdown: its value and its label.",
+         "kind": "value",
+         "name": "data-ok-countdown-unit",
+         "value": [
+          "days",
+          "hours",
+          "minutes",
+          "seconds"
+         ]
+        },
+        {
+         "description": "The number of one countdown unit, written by the script.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-countdown-value"
+        }
+       ],
+       "runtime": "countdown"
+      },
+      "name": "Countdown",
+      "react": {
+       "description": "Days, hours, minutes and seconds left to a `date`, or of a number of `seconds`. A polite live region announces the time left about once a minute (not every second); change the `key` to start over.",
+       "native": "HTMLSpanElement",
+       "props": [
+        {
+         "description": "Announced to screen readers when the countdown ends. Default \"Time's up\".",
+         "name": "completeLabel",
+         "type": "string"
+        },
+        {
+         "description": "The time to count down to: a `Date`, an ISO string (with its offset, such as `Z`) or ms since the epoch. Wins over `seconds`.",
+         "name": "date",
+         "type": "string | number | Date"
+        },
+        {
+         "description": "The unit names. Default English plurals (`days`, `hours`, `minutes`, `seconds`).",
+         "name": "labels",
+         "type": "Partial<Record<\"days\" | \"hours\" | \"minutes\" | \"seconds\", string>>"
+        },
+        {
+         "default": "\"days\"",
+         "description": "The largest unit shown: larger ones fold into it.",
+         "name": "largestUnit",
+         "type": "\"days\" | \"hours\" | \"minutes\" | \"seconds\""
+        },
+        {
+         "description": "The time of the first render, so server and client markup agree; the clock then runs from it. Default: the current time once mounted.",
+         "name": "now",
+         "type": "string | number | Date"
+        },
+        {
+         "description": "Called once when the countdown reaches 0.",
+         "name": "onComplete",
+         "type": "(() => void)"
+        },
+        {
+         "description": "Called with the whole seconds left each time the shown value changes.",
+         "name": "onTick",
+         "type": "((remaining: number) => void)"
+        },
+        {
+         "description": "2). Seconds keep their time left; a date shows the real time left when it resumes.",
+         "name": "paused",
+         "type": "boolean"
+        },
+        {
+         "description": "Counts down from this many seconds (when there is no `date`).",
+         "name": "seconds",
+         "type": "number"
         }
        ]
       }
@@ -56594,6 +56846,7 @@
    "name": "motion",
    "react": [
     "CountUp",
+    "Countdown",
     "Motion",
     "MotionBorder",
     "MotionGroup",
@@ -56609,12 +56862,18 @@
     "icon-button",
     "paper",
     "scrollbar",
+    "toggle-button",
     "typography"
    ],
    "requiredParts": {
     "data-ok-count-up": [
      "data-ok-count-up-label",
      "data-ok-count-up-value"
+    ],
+    "data-ok-countdown": [
+     "data-ok-countdown-status",
+     "data-ok-countdown-unit",
+     "data-ok-countdown-value"
     ],
     "data-ok-motion-text": [
      "data-ok-motion-text-label"
@@ -57022,6 +57281,38 @@
      "root": "data-ok-count-up"
     },
     {
+     "name": "countdown",
+     "options": [
+      {
+       "attr": "data-ok-seconds",
+       "description": "Counts down from this many seconds (when there is no `date`).",
+       "kind": "number",
+       "min": 0,
+       "name": "seconds"
+      },
+      {
+       "attr": "data-ok-largest-unit",
+       "default": "days",
+       "description": "The largest unit shown: larger ones fold into it (`minutes`: 90 minutes, not 1 hour 30).",
+       "kind": "style",
+       "name": "largestUnit",
+       "values": [
+        "days",
+        "hours",
+        "minutes",
+        "seconds"
+       ]
+      },
+      {
+       "attr": "data-ok-paused",
+       "description": "Stops the countdown (WCAG 2.2.2). Seconds keep their time left; a date shows the real time left when it resumes.",
+       "kind": "flag",
+       "name": "paused"
+      }
+     ],
+     "root": "data-ok-countdown"
+    },
+    {
      "name": "motion-border",
      "options": [
       {
@@ -57096,27 +57387,27 @@
    ],
    "sections": [
     {
-     "body": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by\nletter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing,\nhover / press scaling, counters (CountUp) and turning gradient borders (MotionBorder). The CSS plays\nthe animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts\n(`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.",
+     "body": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by\nletter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing,\nhover / press scaling, counters (CountUp), countdowns to a date or for a number of seconds\n(Countdown) and turning gradient borders (MotionBorder). The CSS plays\nthe animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts\n(`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.",
      "id": "purpose",
      "title": "Purpose"
     },
     {
-     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
+     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\nspan[data-ok-countdown][role=timer][data-ok-largest-unit][data-ok-date=<date>]?[data-ok-seconds]?[data-ok-now=<date>]?\n  [data-ok-paused]?[data-ok-complete-label]?\n  › span[data-ok-countdown-unit=days|hours|minutes|seconds]… (from the largest unit down)\n      › span[data-ok-countdown-value] + \" \" + span[data-ok-countdown-label]\n  + span[data-ok-countdown-status][role=status] (visually hidden, polite: the announcements)\nTriggers: button[data-ok-countdown-toggle=<id>][aria-pressed] (pause / resume),\n  button[data-ok-countdown-restart=<id>] (from the start, running)\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\nMotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll\nprogress page), exit of a Dialog, the reference's logo rings (shape-morphing,\ncustom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.",
+     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nCountdown:\n(Options of `countdown`: listed under \"options\".)\n\nCountdown content and behavior (not options: free text or functions): `date` (React `Date`, ISO\nstring or epoch ms; HTML `data-ok-date`, anything `Date.parse` reads; wins over `seconds`), `now`\n(the time of the first render, so server and client markup agree; HTML `data-ok-now`; the clock\nthen runs from it), `labels` (React `{ days, hours, minutes, seconds }`, default English plurals;\nHTML: the text of each `[data-ok-countdown-label]`), `completeLabel` (announced at the end,\ndefault \"Time's up\"; HTML `data-ok-complete-label`), `onTick(remaining)` (whole seconds left, each\ntime the shown value changes), `onComplete()`.\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\nCountdown (the reference's\n`useCountdownDate(date)` / `useCountdownSeconds(seconds)` hooks): `date` → `date`, the hook's\nseconds → `seconds`, `startCountdown` → HTML `data-ok-countdown-restart` / `restart()` (React:\nchange the `key`), `counting` → not `paused` and not complete. The reference's negative values\nafter the date are clamped at 0 (the countdown completes). Beyond the reference: `paused`\n(WCAG 2.2.2), a polite live region, `largestUnit`, `labels`, `now`. MotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll\nprogress page), exit of a Dialog, the reference's logo rings (shape-morphing,\ncustom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "Entrances: `--ok-duration-enter` (640ms), exits `--ok-duration-exit` (480ms),\n`--ok-easing-expressive`. Distances: 160px (`--ok-spacing` × 40) slides, 120px fades, 360px\ndirectional zoom / bounce. Loops: `--ok-duration-enter` × 8 (≈ 5 s). Draw: × 3. Interactive:\nscale 1.09 on hover, 0.97 pressed, `--ok-duration-shorter`. Color change: a gradient of primary,\nwarning, secondary and error `main`, 2–5 times the text width (the element shrinks to its content).\nMotionBorder: 2px, `--ok-radius-lg` (circle: 50%), three layers: the fill on the padding box\n(`--ok-bg-paper`, `--_ok-motion-border-fill`), a conic gradient on the border box (multi: the same\nfour colors all around; `inherit` / a palette color: a light about 90° long, symmetric; with\n`secondaryColor`: a second light 180° away) and a faint track under it (135°, first light's channel\nat 8% → second light's at 24%; `inherit` and `multi` use `--ok-palette-grey-500-channel`). CountUp: tabular figures, ease-out cubic, 2000ms.",
+     "body": "Entrances: `--ok-duration-enter` (640ms), exits `--ok-duration-exit` (480ms),\n`--ok-easing-expressive`. Distances: 160px (`--ok-spacing` × 40) slides, 120px fades, 360px\ndirectional zoom / bounce. Loops: `--ok-duration-enter` × 8 (≈ 5 s). Draw: × 3. Interactive:\nscale 1.09 on hover, 0.97 pressed, `--ok-duration-shorter`. Color change: a gradient of primary,\nwarning, secondary and error `main`, 2–5 times the text width (the element shrinks to its content).\nCountdown: inline-flex row, gap 24px (`--ok-spacing` × 6); each unit a centered column, value\n`--ok-typography-h5-*` with tabular figures, label `--ok-typography-body2-*` in\n`--ok-text-secondary`. Values below the largest unit have two digits (`05`).\nMotionBorder: 2px, `--ok-radius-lg` (circle: 50%), three layers: the fill on the padding box\n(`--ok-bg-paper`, `--_ok-motion-border-fill`), a conic gradient on the border box (multi: the same\nfour colors all around; `inherit` / a palette color: a light about 90° long, symmetric; with\n`secondaryColor`: a second light 180° away) and a faint track under it (135°, first light's channel\nat 8% → second light's at 24%; `inherit` and `multi` use `--ok-palette-grey-500-channel`). CountUp: tabular figures, ease-out cubic, 2000ms.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.",
+     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.\n\nCountdown (core `createCountdown`, both owners): the time left is `date − clock` (date mode) or\n`seconds` minus the running time (seconds mode), shown in whole seconds rounded up (10 → 0) and\nsplit from `largestUnit` down (a larger unit folds into it: 90 seconds with `minutes` = `1` minute\n`30` seconds). The clock is `now + (Date.now() − mount time)` when `now` is given, otherwise\n`Date.now()`. Without `now` a date countdown renders `--` for every value until it mounts (no\nserver / client mismatch); a seconds countdown renders its full time. A timer fires when the shown\nvalue changes (aligned to the next whole second, not every frame). At 0 it stops, reports\n`complete` once and announces `completeLabel`; a date in the past completes at mount. `paused`:\na seconds countdown keeps its time left; a date countdown freezes its text and shows the real time\nleft when it resumes (the date doesn't move). Changing `date` / `seconds` starts over.\nLive region cadence (`[data-ok-countdown-status]`, polite): nothing at mount, then the time left\n(non-zero units, such as \"2 hours, 15 minutes\") each time it crosses a whole hour while at least\nan hour is left, each whole minute while at least a minute is left, at 30 and 10 seconds, and\n`completeLabel` at the end. Announcing every second would flood screen readers and stop them from\nreading anything else; the visible text stays readable at any time (the root's `timer` role is\nnot live). Triggers: `data-ok-countdown-toggle` flips `data-ok-paused` and mirrors it in its\n`aria-pressed`; `data-ok-countdown-restart` starts over and runs.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -57126,12 +57417,12 @@
      "title": "Keyboard"
     },
     {
-     "body": "Content never depends on the animation (no JavaScript → shown; reduced motion → shown at once).\nMotionText and CountUp hide the moving copy (`aria-hidden`) and expose a visually hidden label with\nthe whole text / end value. Loops need a pause control (WCAG 2.2.2): `paused`. Directional\nentrances start outside the box: clip containers that could widen the page.",
+     "body": "Content never depends on the animation (no JavaScript → shown; reduced motion → shown at once).\nMotionText and CountUp hide the moving copy (`aria-hidden`) and expose a visually hidden label with\nthe whole text / end value. Countdown: `role=\"timer\"` (not live; name it with `aria-label`), a\npolite status region on the cadence above, a pause control for anything that runs more than 5\nseconds next to other content (WCAG 2.2.2: `data-ok-countdown-toggle` or React `paused`). Loops need a pause control (WCAG 2.2.2): `paused`. Directional\nentrances start outside the box: clip containers that could widen the page.",
      "id": "accessibility",
      "title": "Accessibility"
     },
     {
-     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion / motion-group / motion-text\n`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only).\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`.",
+     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion / motion-group / motion-text\n`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only),\ncountdown `{ remaining, paused, pause(), resume(), restart() }` with `ok:countdown:tick`\n(`{ remaining }`) and `ok:countdown:complete`. React Countdown: `onTick(remaining)`,\n`onComplete()`.\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -57141,12 +57432,12 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |\n| `onUpdate` | — | deferred (5.1) | |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |\n| — | `paused`, MotionBorder, CountUp, background and path variants | kept | Owlky / reference additions |",
+     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |\n| `onUpdate` | — | deferred (5.1) | |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |\n| — | `paused`, MotionBorder, CountUp, Countdown, background and path variants | kept | Owlky / reference additions |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
     {
-     "body": "React renders `data-ok-runtime=\"off\"` and writes `data-ok-state` itself (SSR: `initial`); snippets\ncarry no state (the runtime writes it). React 19's `<link rel=\"preload\">` hints next to images are\nskipped by parity. Private properties go through `style` (ignored by parity).",
+     "body": "React renders `data-ok-runtime=\"off\"` and writes `data-ok-state` itself (SSR: `initial`); snippets\ncarry no state (the runtime writes it). React 19's `<link rel=\"preload\">` hints next to images are\nskipped by parity. Private properties go through `style` (ignored by parity). The Countdown story\npasses `now`; parity and the e2e tests fix `Date.now()` (`page.clock.setFixedTime`) so both\nrenderings show the same time.",
      "id": "parity-notes",
      "title": "Parity notes"
     }
@@ -57229,6 +57520,16 @@
      ]
     },
     {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/toggle-button.css + components/countdown.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Date -->\n<div class=\"sb-countdown\">\n  <span role=\"timer\" data-ok-countdown data-ok-largest-unit=\"days\" data-ok-date=\"2027-01-01T00:00:00Z\" data-ok-now=\"2026-11-09T09:30:15Z\" id=\"launch-countdown\" aria-label=\"Time until the launch\">\n    <span data-ok-countdown-unit=\"days\">\n      <span data-ok-countdown-value>52</span>\n      <span data-ok-countdown-label>days</span>\n    </span>\n    <span data-ok-countdown-unit=\"hours\">\n      <span data-ok-countdown-value>14</span>\n      <span data-ok-countdown-label>hours</span>\n    </span>\n    <span data-ok-countdown-unit=\"minutes\">\n      <span data-ok-countdown-value>29</span>\n      <span data-ok-countdown-label>minutes</span>\n    </span>\n    <span data-ok-countdown-unit=\"seconds\">\n      <span data-ok-countdown-value>45</span>\n      <span data-ok-countdown-label>seconds</span>\n    </span>\n    <span data-ok-countdown-status role=\"status\"></span>\n  </span>\n  <button type=\"button\" data-ok-toggle-button data-ok-color=\"standard\" data-ok-size=\"sm\" aria-label=\"Pause the countdown\" aria-controls=\"launch-countdown\" aria-pressed=\"false\" data-ok-countdown-toggle=\"launch-countdown\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M8 5v14M16 5v14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg></button>\n</div>\n\n<!-- Seconds -->\n<div class=\"sb-countdown\">\n  <span role=\"timer\" data-ok-countdown data-ok-seconds=\"10\" data-ok-largest-unit=\"seconds\" data-ok-paused id=\"code-countdown\" aria-label=\"Time left to enter the code\">\n    <span data-ok-countdown-unit=\"seconds\">\n      <span data-ok-countdown-value>10</span>\n      <span data-ok-countdown-label>seconds</span>\n    </span>\n    <span data-ok-countdown-status role=\"status\"></span>\n  </span>\n  <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" aria-controls=\"code-countdown\" data-ok-countdown-restart=\"code-countdown\"><span data-ok-button-label>Start</span></button>\n</div>",
+     "id": "components-motion--countdown-story",
+     "name": "Countdown",
+     "react": "import { Button, Countdown, ToggleButton } from \"@owlky/react\";\nimport { useState } from \"react\";\n\n/** A countdown to a date, with a pause control (WCAG 2.2.2). `now` keeps the first render fixed. */\nexport function CountdownDateDemo() {\n  const [paused, setPaused] = useState(false);\n  return (\n    <div className=\"sb-countdown\">\n      <Countdown\n        id=\"launch-countdown\"\n        aria-label=\"Time until the launch\"\n        date=\"2027-01-01T00:00:00Z\"\n        now=\"2026-11-09T09:30:15Z\"\n        paused={paused}\n      />\n      <ToggleButton\n        size=\"sm\"\n        aria-label=\"Pause the countdown\"\n        aria-controls=\"launch-countdown\"\n        selected={paused}\n        onChange={setPaused}\n      >\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">\n          <path\n            d=\"M8 5v14M16 5v14\"\n            fill=\"none\"\n            stroke=\"currentColor\"\n            strokeWidth=\"2.5\"\n            strokeLinecap=\"round\"\n          />\n        </svg>\n      </ToggleButton>\n    </div>\n  );\n}\n\n/** A countdown of 10 seconds that the Start button runs (again). */\nexport function CountdownSecondsDemo() {\n  const [run, setRun] = useState(0);\n  return (\n    <div className=\"sb-countdown\">\n      <Countdown\n        key={run}\n        id=\"code-countdown\"\n        aria-label=\"Time left to enter the code\"\n        seconds={10}\n        largestUnit=\"seconds\"\n        paused={run === 0}\n      />\n      <Button variant=\"contained\" aria-controls=\"code-countdown\" onClick={() => setRun(run + 1)}>\n        Start\n      </Button>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "countdown-date.html",
+      "countdown-seconds.html"
+     ]
+    },
+    {
      "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/motion-border.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Logo -->\n<div class=\"sb-row\">\n  <div data-ok-motion-border data-ok-shape=\"circle\" data-ok-color=\"primary\" data-ok-width=\"3\" class=\"sb-motion-ring\"><svg class=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width=\"64\" height=\"64\" role=\"img\" aria-label=\"Owlky logo\"><path pathLength=\"1\" d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"24\" cy=\"30\" r=\"7\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"40\" cy=\"30\" r=\"7\" /><path class=\"sb-motion-logo-beak\" pathLength=\"1\" d=\"M28 39 L32 46 L36 39 Z\" /></svg></div>\n  <div data-ok-motion-border data-ok-shape=\"circle\" data-ok-color=\"multi\" class=\"sb-motion-ring\"><svg class=\"sb-motion-logo\" viewBox=\"0 0 64 64\" width=\"40\" height=\"40\" role=\"img\" aria-label=\"Owlky logo, small\"><path pathLength=\"1\" d=\"M14 22 L9 7 L22 13 C25 11 29 10 32 10 C35 10 39 11 42 13 L55 7 L50 22 C53 27 54 32 54 38 C54 51 44 58 32 58 C20 58 10 51 10 38 C10 32 11 27 14 22 Z\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"24\" cy=\"30\" r=\"7\" /><circle class=\"sb-motion-logo-eye\" pathLength=\"1\" cx=\"40\" cy=\"30\" r=\"7\" /><path class=\"sb-motion-logo-beak\" pathLength=\"1\" d=\"M28 39 L32 46 L36 39 Z\" /></svg></div>\n</div>",
      "id": "components-motion--logo",
      "name": "Logo",
@@ -57257,7 +57558,7 @@
     }
    ],
    "storybookTitle": "Components/Motion",
-   "summary": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by letter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing, hover / press scaling, counters (CountUp) and turning gradient borders (MotionBorder). The CSS plays the animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts (`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.",
+   "summary": "Entrance and exit animations for any content (Motion), staggered groups (MotionGroup), letter by letter text (MotionText), looping backgrounds (Ken Burns, pan, color change), SVG stroke drawing, hover / press scaling, counters (CountUp), countdowns to a date or for a number of seconds (Countdown) and turning gradient borders (MotionBorder). The CSS plays the animations; core decides when (`createMotionTrigger`: mount, in view, manual) and counts (`createCountUp`). Without JavaScript nothing is hidden: the start state needs `data-ok-state`.",
    "title": "Motion"
   },
   {
@@ -80359,6 +80660,13 @@
      "title": "Count up to a number"
     },
     {
+     "body": "Countdown shows the days, hours, minutes and seconds left until `date`, or of a number of `seconds` when there is no date. It updates once per second and stops at 0.\n\n- **Units:** `largestUnit` sets the largest unit shown. With `seconds`, a 90-second countdown shows 90 seconds instead of 1 minute and 30 seconds. Write the unit names in your language with `labels` in React, or as the text of each label in HTML.\n- **Server rendering:** pass `now`, the time of the first render, so the server and the browser show the same time. Without it, a date countdown shows `--` until the page runs its script.\n- **Pause:** `paused` stops the countdown. A seconds countdown keeps its time left. A date countdown shows the real time left when it resumes, because the date doesn't move. In HTML, a button with `data-ok-countdown-toggle` pauses and resumes the countdown it names, and `data-ok-countdown-restart` starts it over.\n- **End:** `onComplete` (HTML: the `ok:countdown:complete` event) runs once at 0, and screen readers hear `completeLabel` (\"Time's up\" by default).",
+     "html": "<span id=\"launch\" data-ok-countdown role=\"timer\" aria-label=\"Time until the launch\" data-ok-largest-unit=\"days\" data-ok-date=\"2027-01-01T00:00:00Z\">\n  <span data-ok-countdown-unit=\"days\"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>days</span></span>\n  <span data-ok-countdown-unit=\"hours\"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>hours</span></span>\n  <span data-ok-countdown-unit=\"minutes\"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>minutes</span></span>\n  <span data-ok-countdown-unit=\"seconds\"><span data-ok-countdown-value>--</span> <span data-ok-countdown-label>seconds</span></span>\n  <span data-ok-countdown-status role=\"status\"></span>\n</span>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-countdown-toggle=\"launch\" aria-pressed=\"false\">\n  <span data-ok-button-label>Pause</span>\n</button>\n\n<script>\n  document.getElementById(\"launch\").addEventListener(\"ok:countdown:complete\", () => {\n    document.getElementById(\"launch-done\").hidden = false;\n  });\n</script>\n<p id=\"launch-done\" hidden>We are live.</p>",
+     "id": "countdown",
+     "react": "import { Button, Countdown } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Launch() {\n  const [paused, setPaused] = useState(false);\n  const [live, setLive] = useState(false);\n  return (\n    <>\n      <Countdown\n        aria-label=\"Time until the launch\"\n        date=\"2027-01-01T00:00:00Z\"\n        paused={paused}\n        onComplete={() => setLive(true)}\n      />\n      <Button variant=\"outlined\" aria-pressed={paused} onClick={() => setPaused(!paused)}>\n        Pause\n      </Button>\n      {live && <p>We are live.</p>}\n    </>\n  );\n}",
+     "title": "Count down to a date"
+    },
+    {
      "body": "MotionBorder draws a moving border around its content, such as a logo, an avatar or a button.\n\n- **Color:** `multi` (the default) turns several brand colors all around. `inherit` (the text color) or a palette color runs one light along a faint track of the same color.\n- **Second light:** `secondaryColor` adds a light in another color that starts on the opposite side. It has no effect with `multi`.\n- **Shape and size:** set `shape` to `circle` for round content, `width` for the border width in pixels and `duration` for one turn.\n- **Edges and corners:** the border follows the element's CSS. Set `border-width` to `0` on a side to leave it out, and set `border-radius` per corner. Your rules win over the library's, because its selectors have zero specificity.\n\nThe inside is painted with the paper color, so put the border on a paper or a page background.",
      "html": "<div data-ok-motion-border data-ok-shape=\"circle\" data-ok-color=\"primary\" data-ok-secondary-color=\"warning\">\n  <img src=\"avatar.jpg\" alt=\"Ana Silva\" width=\"72\" height=\"72\">\n</div>\n\n<!-- Top and left edges only, with a rounded top-left corner. In your stylesheet:\n  .corner { width: 96px; height: 96px; border-right-width: 0; border-bottom-width: 0; border-radius: 32px 0 0 0; } -->\n<div class=\"corner\" data-ok-motion-border data-ok-color=\"secondary\" data-ok-width=\"4\"></div>",
      "id": "border",
@@ -80376,7 +80684,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay() }`. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have the same instance. `replay()` plays the entrance again.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again.",
+     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay() }`. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have the same instance. `replay()` plays the entrance again.\n- **`ok:countdown:tick`** fires on a Countdown each time its value changes, with the whole seconds left in `detail.remaining`. **`ok:countdown:complete`** fires once when it reaches 0. `runtime.get(element, \"countdown\")` returns `{ remaining, paused, pause(), resume(), restart() }`. In React, use `onTick` and `onComplete`, and change the `key` to start over.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -80386,7 +80694,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.\n- Looping animations and turning borders stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2).\n- CountUp exposes its end value to assistive technologies, and hides the changing digits.\n- MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.\n- Avoid animations on content that people need to read right away, such as errors.\n- Directional animations start outside the content's box. Clip the container (`overflow: clip`) if they would widen the page on small screens.",
+     "body": "- Content never depends on the animation: without the script, it shows, and with reduced motion it appears at once.\n- Looping animations and turning borders stop with reduced motion. Provide a pause control for them anyway (WCAG 2.2.2).\n- CountUp exposes its end value to assistive technologies, and hides the changing digits.\n- Countdown has the `timer` role, which isn't announced as it changes. A visually hidden status region announces the time left at each whole hour while an hour or more is left, at each whole minute while a minute or more is left, at 30 and 10 seconds, and at the end. Announcing every second would keep screen readers from reading anything else. Name the countdown with `aria-label`, and give people a pause control when it runs next to other content (WCAG 2.2.2).\n- MotionText keeps the text readable: assistive technologies read a visually hidden copy, and the letters are hidden from them.\n- Avoid animations on content that people need to read right away, such as errors.\n- Directional animations start outside the content's box. Clip the container (`overflow: clip`) if they would widen the page on small screens.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -82550,6 +82858,10 @@
   "data-ok-code-editor-value": "data-ok-code-editor",
   "data-ok-count-up-label": "data-ok-count-up",
   "data-ok-count-up-value": "data-ok-count-up",
+  "data-ok-countdown-label": "data-ok-countdown",
+  "data-ok-countdown-status": "data-ok-countdown",
+  "data-ok-countdown-unit": "data-ok-countdown",
+  "data-ok-countdown-value": "data-ok-countdown",
   "data-ok-data-grid-action": "data-ok-data-grid",
   "data-ok-data-grid-aggregation-label": "data-ok-data-grid",
   "data-ok-data-grid-aggregation-row": "data-ok-data-grid",

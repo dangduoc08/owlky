@@ -20,6 +20,7 @@ import { circularProgress } from "./circular-progress/circular-progress.js";
 import { clipboard } from "./clipboard/clipboard.js";
 import { collapse } from "./collapse/collapse.js";
 import { countUp } from "./count-up/count-up.js";
+import { countdown } from "./countdown/countdown.js";
 import { dataGrid } from "./data-grid/data-grid.js";
 import { dateCalendar } from "./date-calendar/date-calendar.js";
 import { dateField } from "./date-field/date-field.js";
@@ -111,6 +112,7 @@ export const components: readonly ComponentDefinition[] = [
   motionGroup as ComponentDefinition,
   motionText as ComponentDefinition,
   countUp as ComponentDefinition,
+  countdown as ComponentDefinition,
   motionBorder as ComponentDefinition,
   dataGrid as ComponentDefinition,
   dateField as ComponentDefinition,

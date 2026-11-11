@@ -113,6 +113,15 @@ const copyDoubleClickSnippet = (markup) =>
       `$1 data-ok-clipboard-copy="copy-text"${COPY_TOAST_ATTRS}`,
     );
 
+/**
+ * Countdown (roadmap 4.22): the React demos' handlers become the countdown triggers of the button
+ * that names it in `aria-controls`.
+ */
+const countdownTrigger = (trigger) => (markup) =>
+  markup.replace(/<button\b[^>]*\baria-controls="([^"]+)"[^>]*>/, (tag, id) =>
+    tag.replace(/>$/, ` data-ok-countdown-${trigger}="${id}">`),
+  );
+
 /** [component, demo file, export, snippet name, HTML transform?, markup appended as written?] */
 const DEMOS = [
   [
@@ -168,6 +177,20 @@ const DEMOS = [
   ["text-field", "number-demo.tsx", "NumberBasicDemo", "number-input-basic"],
   ["text-field", "number-demo.tsx", "NumberHelperDemo", "number-input-helper"],
   ["text-field", "number-demo.tsx", "NumberDisabledDemo", "number-input-disabled"],
+  [
+    "motion",
+    "countdown-demo.tsx",
+    "CountdownDateDemo",
+    "countdown-date",
+    countdownTrigger("toggle"),
+  ],
+  [
+    "motion",
+    "countdown-demo.tsx",
+    "CountdownSecondsDemo",
+    "countdown-seconds",
+    countdownTrigger("restart"),
+  ],
 ];
 
 const only = process.argv.slice(2);

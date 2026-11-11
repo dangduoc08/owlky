@@ -1754,6 +1754,24 @@ export interface MotionParts {
   "data-ok-count-up-label": Part<"span">;
   /** The counting number (hidden from assistive technology). */
   "data-ok-count-up-value": Part<"span">;
+  /** The text announced when a countdown ends. Default "Time's up". */
+  "data-ok-complete-label": Value<string>;
+  /** The name of a countdown unit, such as "days". Write it in your language. */
+  "data-ok-countdown-label": Part<"span">;
+  /** Starts the countdown whose `id` it names over from the full time, running. */
+  "data-ok-countdown-restart": Trigger<"id">;
+  /** A visually hidden polite live region: the countdown announces the time left about once a minute, at 30 and 10 seconds, and at the end. */
+  "data-ok-countdown-status": Part<"span">;
+  /** Pauses or resumes the countdown whose `id` it names; its `aria-pressed` follows the paused state. */
+  "data-ok-countdown-toggle": Trigger<"id">;
+  /** One unit of a countdown: its value and its label. */
+  "data-ok-countdown-unit": Value<"days" | "hours" | "minutes" | "seconds">;
+  /** The number of one countdown unit, written by the script. */
+  "data-ok-countdown-value": Part<"span">;
+  /** The time a countdown counts down to: an ISO date and time (with its offset, such as `Z`) or ms since the epoch. */
+  "data-ok-date": Value<string>;
+  /** The time of the first render (same formats as `data-ok-date`): the countdown's clock runs from it. Default: the current time. */
+  "data-ok-now": Value<string>;
   /** One animated character. */
   "data-ok-motion-char": Part<"span">;
   /** The full text for assistive technology. */

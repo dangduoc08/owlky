@@ -262,6 +262,7 @@ export {
 } from "./code-editor/code-editor.js";
 export { Collapse, type CollapseProps } from "./collapse/collapse.js";
 export { CountUp, type CountUpProps } from "./count-up/count-up.js";
+export { Countdown, type CountdownProps } from "./countdown/countdown.js";
 export {
   DataGrid,
   type DataGridProps,
