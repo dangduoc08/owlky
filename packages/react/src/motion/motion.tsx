@@ -40,6 +40,11 @@ import {
   useState,
 } from "react";
 import { useMergedRefs } from "../utils/refs.js";
+import {
+  type MotionGestureProps,
+  splitGestureProps,
+  useMotionGestures,
+} from "./motion-gestures.js";
 
 export interface MotionTriggerProps {
   /** `inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`. */
@@ -173,7 +178,10 @@ function useReplayOnChange(ref: RefObject<HTMLElement | null>, look: string): vo
   }, [ref, look]);
 }
 
-export interface MotionProps extends HTMLAttributes<HTMLElement>, MotionTriggerProps {
+export interface MotionProps
+  extends Omit<HTMLAttributes<HTMLElement>, "onDragStart" | "onDrag" | "onDragEnd">,
+    MotionTriggerProps,
+    MotionGestureProps {
   /** The element to render, such as `"section"` or `"li"`. Default `"div"`. */
   component?: ElementType | undefined;
   /** Animation. Default `fadeIn`. */
@@ -202,7 +210,8 @@ export interface MotionProps extends HTMLAttributes<HTMLElement>, MotionTriggerP
 /**
  * Motion — spec: specs/components/motion.md. Animates its box in (or out) when it scrolls into
  * view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the
- * entrance, change its `key`.
+ * entrance, change its `key`. Gesture props (`drag`, `whileHover`, `whileTap`…) animate it
+ * while it is dragged, hovered, pressed or focused.
  */
 export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
   {
@@ -224,7 +233,7 @@ export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
     onViewportLeave,
     style,
     children,
-    ...props
+    ...others
   },
   ref,
 ) {
@@ -246,6 +255,8 @@ export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
   );
   const shownState = usePresence(own, state);
   const custom = motionKeyframesAttributes(keyframes, transition);
+  const [gestureProps, props] = splitGestureProps(others);
+  const gestures = useMotionGestures(own, gestureProps, transition);
   useKeyframes(own, custom["data-ok-keyframes"] !== undefined);
   useReplayOnChange(own, `${variant}|${duration}|${distance}`);
   return (
@@ -253,6 +264,7 @@ export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
       ref={mergedRef}
       {...motionAttributes({ variant, trigger, once, amount, delay, duration, distance, paused })}
       {...custom}
+      {...gestures}
       {...viewportAttributes(viewportMargin)}
       data-ok-state={shownState ?? undefined}
       data-ok-runtime="off"

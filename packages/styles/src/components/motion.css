@@ -527,6 +527,29 @@
     }
   }
 
+  /* Drag (core `createDrag`, ADR-0062 5.3): the element follows the pointer through `translate`.
+     `touch-action` keeps page scrolling on the axis it doesn't move on; no text selection or
+     native image drag gets in the way. */
+  :where([data-ok-motion][data-ok-drag]) {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  :where([data-ok-motion][data-ok-drag="x"]) {
+    touch-action: pan-y;
+  }
+
+  :where([data-ok-motion][data-ok-drag="y"]) {
+    touch-action: pan-x;
+  }
+
+  :where([data-ok-motion][data-ok-dragging]) {
+    cursor: grabbing;
+  }
+
   @keyframes ok-motion-draw-exit {
     from {
       stroke-dashoffset: 1;

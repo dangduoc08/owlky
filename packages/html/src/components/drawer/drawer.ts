@@ -1,13 +1,25 @@
-import { createModalController, drawerOptions, drawerStyle, readStyle } from "@owlky/core";
+import {
+  createDrawerSwipe,
+  createModalController,
+  type DrawerSwipe,
+  type DrawerSwipeOptions,
+  drawerOptions,
+  drawerStyle,
+  readNumber,
+  readStyle,
+} from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
-export type DrawerCloseReason = "escape" | "backdrop" | "trigger" | "api" | "native";
+export type DrawerCloseReason = "escape" | "backdrop" | "trigger" | "api" | "native" | "swipe";
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface DrawerEvents {
-  /** Before the drawer opens. Call `preventDefault()` to keep it closed. */
+  /**
+   * Before the drawer opens. Call `preventDefault()` to keep it closed. A swipe from the edge
+   * (`data-ok-swipeable`) fires it with `trigger: null` once the finger lifts.
+   */
   beforeopen: EventSpec<{ trigger: HTMLElement | null }, true>;
   /** After the drawer opened. */
   open: EventSpec<{ trigger: HTMLElement | null }>;
@@ -35,9 +47,32 @@ export interface DrawerInstance extends ComponentInstance {
 const byId = (from: Element, id: string): Element | null =>
   (from.getRootNode() as Document | ShadowRoot).getElementById(id);
 
-const { variant, disableEscapeKeyDown, disableRestoreFocus, disableScrollLock } =
-  drawerOptions.options;
+const {
+  anchor,
+  variant,
+  disableEscapeKeyDown,
+  disableRestoreFocus,
+  disableScrollLock,
+  swipeable,
+  swipeAreaWidth,
+  hysteresis,
+  minFlingVelocity,
+  disableSwipeToOpen,
+  disableDiscovery,
+  disableBackdropTransition,
+} = drawerOptions.options;
 const STYLED = ["data-ok-elevation", "data-ok-transition-duration"];
+/** Attributes the swipe reads (swipeable drawers, 4.18.46). */
+const SWIPE = [
+  anchor.attr,
+  swipeable.attr,
+  swipeAreaWidth.attr,
+  hysteresis.attr,
+  minFlingVelocity.attr,
+  disableSwipeToOpen.attr,
+  disableDiscovery.attr,
+  disableBackdropTransition.attr,
+];
 
 /**
  * Drawer — spec: specs/components/drawer.md
@@ -48,7 +83,11 @@ const STYLED = ["data-ok-elevation", "data-ok-transition-duration"];
  * Triggers: [data-ok-drawer-open="x"] (opens; toggles a persistent drawer, kept in aria-expanded),
  *           [data-ok-drawer-close] (inside) or [data-ok-drawer-close="x"]
  * Options:  data-ok-variant (read at mount), data-ok-disable-escape-key-down, data-ok-hide-backdrop
- *           (CSS), data-ok-open (open on load)
+ *           (CSS), data-ok-open (open on load); data-ok-swipeable (+ data-ok-swipe-area-width,
+ *           -hysteresis, -min-fling-velocity, -disable-swipe-to-open, -disable-discovery,
+ *           -disable-backdrop-transition): touch swipes close it and, from the edge strip
+ *           `<div data-ok-drawer-swipe-area>` right after the dialog, open it (core
+ *           createDrawerSwipe)
  * Events:   ok:drawer:beforeopen (cancelable), ok:drawer:open,
  *           ok:drawer:beforeclose (cancelable, detail.reason), ok:drawer:close (detail.reason,
  *           after the exit slide)
@@ -82,8 +121,44 @@ export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
       );
     };
     timing();
-    const observer = new MutationObserver(timing);
-    observer.observe(element, { attributes: true, attributeFilter: STYLED });
+
+    // Swipeable: core createDrawerSwipe on the dialog and the edge strip after it.
+    let swipe: DrawerSwipe | undefined;
+    let swipeRefused = false;
+    const swipeOptions = (): DrawerSwipeOptions => ({
+      anchor: readStyle(element, anchor),
+      swipeAreaWidth: readNumber(element, swipeAreaWidth) as number,
+      hysteresis: readNumber(element, hysteresis) as number,
+      minFlingVelocity: readNumber(element, minFlingVelocity) as number,
+      disableSwipeToOpen: element.hasAttribute(disableSwipeToOpen.attr),
+      disableDiscovery: element.hasAttribute(disableDiscovery.attr),
+      disableBackdropTransition: element.hasAttribute(disableBackdropTransition.attr),
+      // The swipe already opened the dialog: report it like an open (refusable).
+      isOpen: () => !swipeRefused,
+      onOpen: () => {
+        swipeRefused = !emit("beforeopen", { trigger: null }, { cancelable: true });
+        if (!swipeRefused) emit("open", { trigger: null });
+      },
+      onClose: () => instance.close("swipe"),
+    });
+    const syncSwipe = () => {
+      const on = controller !== null && element.hasAttribute(swipeable.attr);
+      if (on && !swipe) {
+        const next = element.nextElementSibling;
+        const area = next?.matches("[data-ok-drawer-swipe-area]") ? (next as HTMLElement) : null;
+        swipe = createDrawerSwipe(element, controller, area, swipeOptions());
+      } else if (!on && swipe) {
+        swipe.destroy();
+        swipe = undefined;
+      } else swipe?.setOptions(swipeOptions());
+    };
+    syncSwipe();
+
+    const observer = new MutationObserver((records) => {
+      if (records.some((record) => STYLED.includes(record.attributeName as string))) timing();
+      if (records.some((record) => SWIPE.includes(record.attributeName as string))) syncSwipe();
+    });
+    observer.observe(element, { attributes: true, attributeFilter: [...STYLED, ...SWIPE] });
 
     /** Docked drawers: triggers report the state (`aria-expanded`). */
     const syncTriggers = () => {
@@ -104,6 +179,7 @@ export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
       open(trigger = null) {
         if (instance.isOpen) return true;
         if (!emit("beforeopen", { trigger }, { cancelable: true })) return false;
+        swipeRefused = false;
         if (controller) {
           controller.setOptions(options());
           controller.open(trigger);
@@ -137,6 +213,7 @@ export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
         return instance.isOpen ? instance.close("trigger") : instance.open(trigger);
       },
       destroy() {
+        swipe?.destroy();
         controller?.destroy();
         observer.disconnect();
       },

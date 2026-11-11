@@ -87,7 +87,9 @@ describe("dialog runtime", () => {
     expect(dialog.matches(":modal")).toBe(true);
     expect(document.activeElement?.id).toBe("field");
     await userEvent.click(host.querySelector("#cancel") as HTMLElement);
-    expect(events).toEqual(["beforeopen:", "open:", "beforeclose:trigger"]);
+    // The exit may already be over on a slow runner (the click itself can take most of a
+    // second), so only the order up to `beforeclose` is fixed here; `close` follows the exit.
+    expect(events.slice(0, 3)).toEqual(["beforeopen:", "open:", "beforeclose:trigger"]);
     await finishExit(dialog);
     expect(dialog.open).toBe(false);
     expect(events).toEqual(["beforeopen:", "open:", "beforeclose:trigger", "close:trigger"]);

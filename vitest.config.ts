@@ -56,6 +56,7 @@ export default defineConfig({
         "packages/core/src/tree-view/**": COMPONENT_THRESHOLDS,
         "packages/core/src/autocomplete/**": COMPONENT_THRESHOLDS,
         "packages/core/src/motion/**": COMPONENT_THRESHOLDS,
+        "packages/core/src/drawer/**": COMPONENT_THRESHOLDS,
         "packages/core/src/data-grid/**": COMPONENT_THRESHOLDS,
         "packages/core/src/editor/**": COMPONENT_THRESHOLDS,
         "packages/core/src/carousel/**": COMPONENT_THRESHOLDS,

@@ -115,7 +115,10 @@ const budgets = [
   // runtime, checkbox and avatar swatches): 275.75 kB.
   // 287 kB since Motion 5.2, scroll progress (ADR-0062: offsets, scroll and view timelines, the
   // script fallback and its runtime): 282.23 kB. Optimization is deferred to 1.0 prep.
-  ["packages/html/dist/owlky.js", 287_000, "HTML runtime + all components (IIFE)"],
+  // 293 kB after Phase 5.3 gestures (ADR-0062: drag with inertia and constraints, the keyboard
+  // alternative, spring hover / tap / focus / drag states, the swipe helper, the swipeable
+  // Drawer): 287.59 kB (from 280.54 kB). Optimization is deferred to 1.0 prep.
+  ["packages/html/dist/owlky.js", 293_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -226,7 +229,9 @@ const budgets = [
   // API entries): 1399.5 kB.
   // 1.5 MB after batch F (Text max line, gradients, Style components guide, copy to clipboard,
   // number input: stories, guides, docs sections and API entries): 1450.8 kB.
-  ["packages/mcp/manifest.json", 1_500_000, "MCP manifest (npm tarball, not a browser download)"],
+  // 1.55 MB after Phase 5.2 and 5.3 (scroll progress: a new spec, guide and three stories;
+  // gestures and the swipeable Drawer: stories, docs sections and API entries): 1505.3 kB.
+  ["packages/mcp/manifest.json", 1_550_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;

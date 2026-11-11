@@ -142,6 +142,36 @@
     "events": [
      {
       "cancelable": false,
+      "description": "With `data-ok-drag-direction-lock`: the axis the drag locked to (`x` or `y`).",
+      "detail": "{ axis: PanAxis; }",
+      "name": "ok:motion:directionlock"
+     },
+     {
+      "cancelable": false,
+      "description": "The dragged element moved. Same detail as `dragstart`.",
+      "detail": "PanInfo",
+      "name": "ok:motion:drag"
+     },
+     {
+      "cancelable": false,
+      "description": "The pointer was released (or an arrow key's move ended). `velocity` is the release speed.",
+      "detail": "PanInfo",
+      "name": "ok:motion:dragend"
+     },
+     {
+      "cancelable": false,
+      "description": "A drag started (`data-ok-drag`): the pointer moved 3 px, or an arrow key moved the focused element. `point` is the pointer on the page, `delta` the movement since the last event, `offset` since the press, `velocity` in px per second.",
+      "detail": "PanInfo",
+      "name": "ok:motion:dragstart"
+     },
+     {
+      "cancelable": false,
+      "description": "The glide or spring after a release came to rest.",
+      "detail": "undefined",
+      "name": "ok:motion:dragtransitionend"
+     },
+     {
+      "cancelable": false,
       "description": "After the root's own animation ended. `state` is its `data-ok-state`.",
       "detail": "{ state: string | null; }",
       "name": "ok:motion:end"
@@ -154,9 +184,39 @@
      },
      {
       "cancelable": false,
+      "description": "The pointer left the element.",
+      "detail": "undefined",
+      "name": "ok:motion:hoverend"
+     },
+     {
+      "cancelable": false,
+      "description": "A mouse or pen pointer entered the element.",
+      "detail": "undefined",
+      "name": "ok:motion:hoverstart"
+     },
+     {
+      "cancelable": false,
       "description": "In view trigger with `data-ok-once=\"false\"`: the element left the viewport (nothing visible).",
       "detail": "MotionViewportDetail",
       "name": "ok:motion:leave"
+     },
+     {
+      "cancelable": false,
+      "description": "The press ended on the element (a tap).",
+      "detail": "TapInfo",
+      "name": "ok:motion:tap"
+     },
+     {
+      "cancelable": false,
+      "description": "The press ended outside the element, was cancelled or turned into a drag.",
+      "detail": "TapInfo",
+      "name": "ok:motion:tapcancel"
+     },
+     {
+      "cancelable": false,
+      "description": "A press started: a primary pointer, or Enter or Space on the focused element. `point` is on the page.",
+      "detail": "TapInfo",
+      "name": "ok:motion:tapstart"
      }
     ],
     "methods": [
@@ -338,6 +398,57 @@
       "value": "string"
      },
      {
+      "description": "Makes the Motion draggable: on both axes without a value, or `x` / `y` for one axis (the page still scrolls along the other). Arrow keys move it while it has the focus.",
+      "kind": "value",
+      "name": "data-ok-drag",
+      "value": [
+       "",
+       "x",
+       "y"
+      ]
+     },
+     {
+      "description": "Where it may be dragged: a JSON box in px from where it sits, such as `{\"left\": -100, \"right\": 100}`, or the `id` of an element to stay inside.",
+      "kind": "value",
+      "name": "data-ok-drag-constraints",
+      "value": "string"
+     },
+     {
+      "description": "Moves only along the first axis the pointer moves on.",
+      "kind": "state",
+      "name": "data-ok-drag-direction-lock"
+     },
+     {
+      "description": "How far it may be pulled past its constraints: a number from 0 (not at all) to 1 (freely), `true` / `false`, or a JSON box per side. 5.",
+      "kind": "value",
+      "name": "data-ok-drag-elastic",
+      "value": "string"
+     },
+     {
+      "description": "`false`: no glide after a release (it stops where the pointer let go).",
+      "kind": "value",
+      "name": "data-ok-drag-momentum",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "Springs back to where it started when released.",
+      "kind": "state",
+      "name": "data-ok-drag-snap-to-origin"
+     },
+     {
+      "description": "The glide after a release, as JSON (times in ms): `power`, `timeConstant`, `bounceStiffness`, `bounceDamping`, `restDelta`, `restSpeed`.",
+      "kind": "value",
+      "name": "data-ok-drag-transition",
+      "value": "string"
+     },
+     {
+      "description": "While dragged. Written by the script.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
       "description": "Custom keyframes as JSON, such as `{\"rotate\": [0, 270]}`: played instead of the variant when the Motion enters, backwards when it exits.",
       "kind": "value",
       "name": "data-ok-keyframes",
@@ -374,13 +485,37 @@
       "kind": "value",
       "name": "data-ok-viewport-root",
       "value": "string"
+     },
+     {
+      "description": "Keyframes as JSON while it is dragged.",
+      "kind": "value",
+      "name": "data-ok-while-drag",
+      "value": "string"
+     },
+     {
+      "description": "Keyframes as JSON while it, or something inside it, shows a keyboard focus ring.",
+      "kind": "value",
+      "name": "data-ok-while-focus",
+      "value": "string"
+     },
+     {
+      "description": "05}`; a `transition` key tunes them.",
+      "kind": "value",
+      "name": "data-ok-while-hover",
+      "value": "string"
+     },
+     {
+      "description": "Keyframes as JSON while it is pressed (a pointer, or Enter or Space on it or on a button inside it).",
+      "kind": "value",
+      "name": "data-ok-while-tap",
+      "value": "string"
      }
     ],
     "runtime": "motion"
    },
    "name": "Motion",
    "react": {
-    "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`.",
+    "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`. Gesture props (`drag`, `whileHover`, `whileTap`…) animate it while it is dragged, hovered, pressed or focused.",
     "native": "HTMLElement",
     "props": [
      {
@@ -410,6 +545,42 @@
       "type": "number"
      },
      {
+      "description": "Makes it draggable: `true` on both axes, `\"x\"` or `\"y\"` on one (the page still scrolls on the other).",
+      "name": "drag",
+      "type": "\"x\" | \"y\" | boolean"
+     },
+     {
+      "description": "Where it may be dragged: a box in px from where it sits, such as `{ left: -100, right: 100 }`, a ref to an element to stay inside, or that element's `id`.",
+      "name": "dragConstraints",
+      "type": "string | DragConstraints | RefObject<Element | null>"
+     },
+     {
+      "description": "Moves only along the first axis the pointer moves on.",
+      "name": "dragDirectionLock",
+      "type": "boolean"
+     },
+     {
+      "description": "How far it may be pulled past its constraints: 0 (not at all) to 1 (freely), or per side. 5.",
+      "name": "dragElastic",
+      "type": "DragElastic"
+     },
+     {
+      "default": "true",
+      "description": "Glides on after a release, from the release velocity.",
+      "name": "dragMomentum",
+      "type": "boolean"
+     },
+     {
+      "description": "Springs back to where it started when released.",
+      "name": "dragSnapToOrigin",
+      "type": "boolean"
+     },
+     {
+      "description": "Tunes the glide after a release (times in ms): `power`, `timeConstant`, `bounceStiffness`, `bounceDamping`, `restDelta`, `restSpeed`, `modifyTarget(target, axis)`.",
+      "name": "dragTransition",
+      "type": "DragTransition"
+     },
+     {
       "description": "Entrance length, ms (default 640; loops: about 5 s).",
       "name": "duration",
       "type": "number"
@@ -424,6 +595,56 @@
       "description": "5 }` (`x` / `y` in px, `rotate` in degrees, `scale`, and any CSS property).",
       "name": "keyframes",
       "type": "MotionKeyframes"
+     },
+     {
+      "description": "With `dragDirectionLock`: the axis the drag locked to.",
+      "name": "onDirectionLock",
+      "type": "((axis: PanAxis) => void)"
+     },
+     {
+      "description": "It moved while dragged. `info` has `point`, `delta`, `offset` and `velocity` (px per second).",
+      "name": "onDrag",
+      "type": "((event: KeyboardEvent | PointerEvent, info: PanInfo) => void)"
+     },
+     {
+      "description": "The drag ended (`event` is `null` when the browser cancelled the pointer).",
+      "name": "onDragEnd",
+      "type": "((event: KeyboardEvent | PointerEvent | null, info: PanInfo) => void)"
+     },
+     {
+      "description": "A drag started: the pointer moved 3 px, or an arrow key moved it.",
+      "name": "onDragStart",
+      "type": "((event: KeyboardEvent | PointerEvent, info: PanInfo) => void)"
+     },
+     {
+      "description": "The glide or spring after a release came to rest.",
+      "name": "onDragTransitionEnd",
+      "type": "(() => void)"
+     },
+     {
+      "description": "The pointer left it.",
+      "name": "onHoverEnd",
+      "type": "((event: PointerEvent) => void)"
+     },
+     {
+      "description": "A mouse or pen pointer entered it.",
+      "name": "onHoverStart",
+      "type": "((event: PointerEvent) => void)"
+     },
+     {
+      "description": "A press ended on it.",
+      "name": "onTap",
+      "type": "((event: KeyboardEvent | PointerEvent, info: TapInfo) => void)"
+     },
+     {
+      "description": "A press ended outside it, was cancelled or became a drag.",
+      "name": "onTapCancel",
+      "type": "((event: Event, info: TapInfo) => void)"
+     },
+     {
+      "description": "A press started. point` is on the page.",
+      "name": "onTapStart",
+      "type": "((event: KeyboardEvent | PointerEvent, info: TapInfo) => void)"
      },
      {
       "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
@@ -470,6 +691,26 @@
       "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
       "name": "viewportRoot",
       "type": "RefObject<Element | null>"
+     },
+     {
+      "description": "Keyframes while it is dragged.",
+      "name": "whileDrag",
+      "type": "GestureTarget"
+     },
+     {
+      "description": "Keyframes while it, or something inside it, shows a keyboard focus ring.",
+      "name": "whileFocus",
+      "type": "GestureTarget"
+     },
+     {
+      "description": "05 }` (a `transition` key tunes them).",
+      "name": "whileHover",
+      "type": "GestureTarget"
+     },
+     {
+      "description": "Keyframes while it is pressed (a pointer, or Enter or Space on it or on a button inside it).",
+      "name": "whileTap",
+      "type": "GestureTarget"
      }
     ]
    }
@@ -1393,6 +1634,10 @@
  "title": "Motion",
  "types": [
   {
+   "name": "DragElastic",
+   "type": "number | boolean | DragConstraints"
+  },
+  {
    "name": "MotionKeyframes",
    "type": "{ [x: string]: readonly (MotionValue | null)[] | MotionValue; }"
   },
@@ -1403,6 +1648,10 @@
   {
    "name": "MotionValue",
    "type": "string | number"
+  },
+  {
+   "name": "PanAxis",
+   "type": "\"x\" | \"y\""
   }
  ]
 }

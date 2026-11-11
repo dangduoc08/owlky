@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  createDrawerSwipe,
   createModalController,
   type DrawerAnchor,
   type DrawerCloseReason,
+  type DrawerSwipe,
   type DrawerVariant,
   drawerAttributes,
   drawerStyle,
@@ -51,8 +53,9 @@ export interface DrawerProps {
   /** Initial open state when uncontrolled. Default `false`. */
   defaultOpen?: boolean | undefined;
   /**
-   * Called whenever the drawer asks to open or close, with the reason for closing: `"escape"`,
-   * `"backdrop"` or `"close"` (a trigger or DrawerClose). Controlled drawers may refuse.
+   * Called whenever the drawer asks to open or close, with the reason: `"escape"`, `"backdrop"`,
+   * `"close"` (a trigger or DrawerClose) or `"swipe"` (a swipeable drawer, opening or closing).
+   * Controlled drawers may refuse.
    */
   onOpenChange?: ((open: boolean, reason?: DrawerCloseReason) => void) | undefined;
   /**
@@ -79,8 +82,10 @@ export function Drawer({
   const setOpen = useCallback(
     (next: boolean, reason?: DrawerCloseReason) => {
       if (!controlled) setInternal(next);
-      if (next) onChangeRef.current?.(true);
-      else onChangeRef.current?.(false, reason);
+      if (next) {
+        if (reason === undefined) onChangeRef.current?.(true);
+        else onChangeRef.current?.(true, reason);
+      } else onChangeRef.current?.(false, reason);
     },
     [controlled],
   );
@@ -135,6 +140,24 @@ export interface DrawerContentProps extends ComponentPropsWithoutRef<"dialog"> {
   elevation?: number | undefined;
   /** Length of the slide in and out, in ms. Default: the theme's short duration. */
   transitionDuration?: number | undefined;
+  /**
+   * Temporary only: a touch or pen swipe towards the edge closes the drawer, and one from a strip
+   * along the edge of the screen opens it (`onOpenChange(open, "swipe")`). Keep a button that opens
+   * and closes it too: a swipe is a pointer gesture.
+   */
+  swipeable?: boolean | undefined;
+  /** Swipeable: width of the strip along the edge of the screen where a swipe opens it, px. Default 20. */
+  swipeAreaWidth?: number | undefined;
+  /** Swipeable: how far the panel must be pulled to open or close, as a share of its size (0 to 1). Default 0.52. */
+  hysteresis?: number | undefined;
+  /** Swipeable: speed from which a shorter swipe still opens or closes it, px per second. Default 450. */
+  minFlingVelocity?: number | undefined;
+  /** Swipeable: no strip along the edge, so a swipe only closes the drawer. */
+  disableSwipeToOpen?: boolean | undefined;
+  /** Swipeable: touching the edge strip doesn't slide a sliver of the panel in. */
+  disableDiscovery?: boolean | undefined;
+  /** Swipeable: the backdrop doesn't fade with the panel while it is swiped (less work on slow devices). */
+  disableBackdropTransition?: boolean | undefined;
 }
 
 /**
@@ -153,6 +176,13 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
       keepMounted = true,
       elevation,
       transitionDuration,
+      swipeable,
+      swipeAreaWidth,
+      hysteresis,
+      minFlingVelocity,
+      disableSwipeToOpen,
+      disableDiscovery,
+      disableBackdropTransition,
       children,
       style,
       ...props
@@ -173,6 +203,13 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
       disableScrollLock,
       elevation,
       transitionDuration,
+      swipeable: temporary && swipeable === true,
+      swipeAreaWidth,
+      hysteresis,
+      minFlingVelocity,
+      disableSwipeToOpen,
+      disableDiscovery,
+      disableBackdropTransition,
     });
     const custom = drawerStyle({ elevation, transitionDuration });
     const merged =
@@ -207,6 +244,42 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
         onDismiss: (reason) => setOpen(false, reason),
         onExternalClose: () => setOpen(false, "close"),
       });
+    });
+
+    // Swipeable (core createDrawerSwipe): after the controller, before the open / close sync.
+    const swiping = temporary && swipeable === true;
+    const swipeRef = useRef<DrawerSwipe | null>(null);
+    const openRef = useRef(open);
+    openRef.current = open;
+    const swipeOptions = {
+      anchor: attributes["data-ok-anchor"] as DrawerAnchor,
+      swipeAreaWidth,
+      hysteresis,
+      minFlingVelocity,
+      disableSwipeToOpen,
+      disableDiscovery,
+      disableBackdropTransition,
+      isOpen: () => openRef.current,
+      onOpen: () => setOpen(true, "swipe"),
+      onClose: () => setOpen(false, "swipe"),
+    };
+    const latestSwipe = useRef(swipeOptions);
+    latestSwipe.current = swipeOptions;
+    useEffect(() => {
+      const element = elementRef.current;
+      const controller = controllerRef.current;
+      if (!swiping || !element || !controller) return;
+      const next = element.nextElementSibling;
+      const area = next?.matches("[data-ok-drawer-swipe-area]") ? (next as HTMLElement) : null;
+      const swipe = createDrawerSwipe(element, controller, area, latestSwipe.current);
+      swipeRef.current = swipe;
+      return () => {
+        swipe.destroy();
+        swipeRef.current = null;
+      };
+    }, [swiping]);
+    useEffect(() => {
+      swipeRef.current?.setOptions(latestSwipe.current);
     });
 
     useEffect(() => {
@@ -244,10 +317,17 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
         </aside>
       );
     }
-    return (
+    const dialog = (
       <dialog ref={ref} {...attributes} data-ok-runtime="off" style={merged} {...props}>
         {content}
       </dialog>
+    );
+    if (!swiping) return dialog;
+    return (
+      <>
+        {dialog}
+        <div data-ok-drawer-swipe-area="" aria-hidden="true" />
+      </>
     );
   },
 );

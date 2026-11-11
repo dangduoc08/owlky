@@ -7,6 +7,16 @@
  * Or import "@owlky/html/auto" to register every component and start.
  */
 
+// Motion gestures (ADR-0062, 5.3).
+export type {
+  DragConstraints,
+  DragElastic,
+  DragTransition,
+  GestureTarget,
+  PanAxis,
+  PanInfo,
+  TapInfo,
+} from "@owlky/core";
 export {
   type AnimateOptions,
   type AnimationControls,

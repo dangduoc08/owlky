@@ -391,6 +391,23 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `runningAnimations`), or it hangs. Test the fallback by stubbing `CSS.supports` for
   `animation-timeline` **only** (a blanket `false` also turns `linear` easing into the default
   curve). Scroll events and timelines update on the next frames: wait two `requestAnimationFrame`s.
+- Motion gestures (ADR-0062 5.3, `core/src/motion/drag.ts`, `gesture.ts`, `swipe.ts`): the pan
+  layer (`trackPan`) hears moves and releases on the **window** after a press on the element, and
+  measures velocity with `performance.now()` (not `event.timeStamp`): tests fake the clock with
+  `vi.spyOn(performance, "now")` (core `fakeClock()` in `test-utils.ts`) and dispatch synthetic
+  `PointerEvent`s (`press` on the element, `move` / `release` on the window). Drag writes
+  `translate` inline; a glide is an `animate()` keyframe list (finish the element's animations,
+  then wait a task, to read its end). A drag's element is in a module `WeakSet` so a nested
+  draggable drags alone (no `stopPropagation`). The `while…` states animate a property back to
+  its own value and then restore its inline value: never style a gesture-animated property
+  inline yourself. In HTML gesture tests the Motion's CSS entrance is also an animation: filter
+  `CSSAnimation`s out before reading the script's timing. Drag props are free attributes (JSON,
+  ids), not schema options, like the keyframes. The swipeable Drawer (`core/src/drawer/
+  drawer-swipe.ts`) shows the dialog **non-modally** (`open` attribute) while a finger opens it
+  (a modal one would make the strip inert under the pointer) and calls `controller.open()` on
+  success; its swipe rules sit **before** the exit rules in `drawer.css` so an exit that starts
+  while the panel is held slides on from there. React's owner acts a frame later: the helper
+  waits up to 8 frames (`whenOwner`) before treating a swipe as refused.
 - Waiting for an asynchronous DOM change (IntersectionObserver, rAF counters) in unit tests: resolve
   a promise from a `MutationObserver`, never `vi.waitFor`; and never inside React's `act()` (it
   holds state updates until the scope ends, so the awaited change never comes).

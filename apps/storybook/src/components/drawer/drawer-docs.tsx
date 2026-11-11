@@ -264,6 +264,45 @@ export function FilterDrawer() {
 }`,
   },
   {
+    id: "swipeable",
+    title: "Open and close with a swipe",
+    body: `Add \`swipeable\` to a temporary drawer so people on touch screens can swipe it. A swipe towards the drawer's edge closes it, and a swipe from a strip along the edge of the screen opens it. The panel follows the finger, and the backdrop fades with it.
+
+- **Distance and speed:** \`hysteresis\` is how far the panel must be pulled to open or close, as a share of its size (default \`0.52\`). \`minFlingVelocity\` is the speed, in pixels per second, from which a shorter swipe still counts (default \`450\`).
+- **Edge strip:** \`swipeAreaWidth\` sets its width in pixels (default \`20\`). The strip only shows on touch screens, and it covers the page under it. \`disableSwipeToOpen\` removes it, so a swipe only closes the drawer. Consider it on iOS, where a swipe from the left edge goes back. In HTML, place an empty \`data-ok-drawer-swipe-area\` element right after the dialog.
+- **Discovery:** touching the strip slides a sliver of the panel in. \`disableDiscovery\` turns this off.
+- **Backdrop:** \`disableBackdropTransition\` keeps the backdrop fully shown during a swipe, which is less work on slow devices.
+
+In React, \`onOpenChange\` receives \`"swipe"\` as the reason. In HTML, \`ok:drawer:beforeopen\` fires with \`trigger: null\`, and \`ok:drawer:beforeclose\` with the reason \`swipe\`. A swipe is a pointer gesture: keep a button that opens the drawer and one that closes it (WCAG 2.5.7).`,
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md"
+  data-ok-drawer-open="menu" aria-haspopup="dialog">
+  <span data-ok-button-label>Menu</span>
+</button>
+<dialog id="menu" data-ok-drawer data-ok-anchor="left" data-ok-variant="temporary" data-ok-swipeable aria-label="Menu">
+  <div data-ok-drawer-content>
+    <p data-ok-typography data-ok-variant="body2">Swipe left to close.</p>
+    <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-drawer-close>
+      <span data-ok-button-label>Close</span>
+    </button>
+  </div>
+</dialog>
+<!-- The strip along the left edge where a swipe opens the drawer -->
+<div data-ok-drawer-swipe-area aria-hidden="true"></div>`,
+    react: `import { Drawer, DrawerClose, DrawerContent, DrawerTrigger, Typography } from "@owlky/react";
+
+export function SwipeableMenu() {
+  return (
+    <Drawer onOpenChange={(open, reason) => console.log(open, reason)}>
+      <DrawerTrigger variant="outlined">Menu</DrawerTrigger>
+      <DrawerContent anchor="left" aria-label="Menu" swipeable>
+        <Typography variant="body2">Swipe left to close.</Typography>
+        <DrawerClose color="inherit">Close</DrawerClose>
+      </DrawerContent>
+    </Drawer>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -277,9 +316,9 @@ export function FilterDrawer() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:drawer:beforeopen\`** (cancelable) fires before the drawer opens, and **\`ok:drawer:open\`** after.
-- **\`ok:drawer:beforeclose\`** (cancelable) fires before it closes, with \`detail.reason\`. **\`ok:drawer:close\`** fires once it has closed (a temporary drawer slides out first), with the reason: \`escape\`, \`backdrop\`, \`trigger\`, \`api\` or \`native\`.
+- **\`ok:drawer:beforeclose\`** (cancelable) fires before it closes, with \`detail.reason\`. **\`ok:drawer:close\`** fires once it has closed (a temporary drawer slides out first), with the reason: \`escape\`, \`backdrop\`, \`trigger\`, \`api\`, \`native\` or \`swipe\`.
 - **Instance:** \`runtime.get(element, "drawer")\` returns \`{ isOpen, open(trigger?), close(reason?), toggle() }\`.
-- **React:** \`onOpenChange(open, reason)\` on \`Drawer\`.`,
+- **React:** \`onOpenChange(open, reason)\` on \`Drawer\`. A swipeable drawer reports \`swipe\` when a swipe opens or closes it.`,
   },
   {
     id: "keyboard",
@@ -292,7 +331,8 @@ export function FilterDrawer() {
     body: `- A drawer needs a name: set \`aria-label\`, or \`aria-labelledby\` pointing to its title.
 - When a temporary drawer opens, focus moves into it and the rest of the page becomes inert. When it closes, focus returns to the button that opened it.
 - Triggers carry \`aria-haspopup="dialog"\`. Docked drawers' triggers carry \`aria-expanded\` and \`aria-controls\` instead.
-- If the content can scroll, put it in a **Scrollbar**: it becomes a named region that keyboard users can scroll, and it's the first thing focused when the drawer opens.`,
+- If the content can scroll, put it in a **Scrollbar**: it becomes a named region that keyboard users can scroll, and it's the first thing focused when the drawer opens.
+- A swipeable drawer still needs its buttons: swipes only work with touch and a pen, and some people can't make them (WCAG 2.5.7).`,
   },
   apiReferenceSection(drawerApi),
 ];

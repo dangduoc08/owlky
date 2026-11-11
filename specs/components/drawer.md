@@ -12,6 +12,10 @@ A modal panel that slides in from an edge of the screen (navigation, filters, de
 dialog[data-ok-drawer][data-ok-anchor][aria-label | aria-labelledby]   React: + data-ok-runtime="off"
   div[data-ok-drawer-content]                                the paper; any content
     … HTML close: [data-ok-drawer-close] (inside) or [data-ok-drawer-close="<id>"]
+div[data-ok-drawer-swipe-area][aria-hidden=true]             swipeable only: right after the dialog
+States (swipeable, written by core): [data-ok-swiping], [data-ok-swipe-settling] on the dialog;
+private --_ok-drawer-swipe-x|y (paper), --_ok-drawer-swipe-progress (dialog),
+--_ok-drawer-swipe-area (strip; set when swipeAreaWidth isn't 20).
 ```
 Scrolling content: put it in a Scrollbar inside the content — `[data-ok-drawer-content] ›
 section[data-ok-scrollbar]`; the Scrollbar fills the panel and scrolls (the panel stops scrolling).
@@ -33,6 +37,13 @@ Root: `data-ok-drawer`. Unknown values fall back to the default.
 | `disableScrollLock` | `data-ok-disable-scroll-lock` | flag | boolean | off | Temporary only: the page behind can still scroll while it is open. |
 | `elevation` | `data-ok-elevation="…"` | style | `0` `1` `2` `3` `4` `5` `6` `7` `8` `9` `10` `11` `12` `13` `14` `15` `16` `17` `18` `19` `20` `21` `22` `23` `24` | — | Shadow depth of the panel, `0`–`24` (`--ok-elevation-<n>`). Without it, each edge has its own shadow and docked drawers none. |
 | `transitionDuration` | `data-ok-transition-duration="…"` | number | number | — | Length of the slide in and out (ms). Default: the theme's short duration. |
+| `swipeable` | `data-ok-swipeable` | flag | boolean | off | Temporary only: a touch or pen swipe towards the edge closes the drawer, and one from the edge of the screen opens it. Keep a button that opens and closes it too. |
+| `swipeAreaWidth` | `data-ok-swipe-area-width="…"` | number | number | `20` | Swipeable: width of the strip along the edge of the screen where a swipe opens the drawer (px). |
+| `hysteresis` | `data-ok-hysteresis="…"` | number | number | `0.52` | Swipeable: how far the panel must be pulled to open or close, as a share of its size (0 to 1). |
+| `minFlingVelocity` | `data-ok-min-fling-velocity="…"` | number | number | `450` | Swipeable: speed from which a shorter swipe still opens or closes the drawer (px per second). |
+| `disableSwipeToOpen` | `data-ok-disable-swipe-to-open` | flag | boolean | off | Swipeable: no strip at the edge of the screen, so a swipe only closes the drawer. |
+| `disableDiscovery` | `data-ok-disable-discovery` | flag | boolean | off | Swipeable: touching the edge strip doesn't slide a sliver of the panel in. |
+| `disableBackdropTransition` | `data-ok-disable-backdrop-transition` | flag | boolean | off | Swipeable: the backdrop doesn't fade with the panel while it is swiped (less work on slow devices). |
 | `open` | `open | hidden` · event `ok:drawer:close` | state | — | — | Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`). |
 <!-- /options:drawer -->
 
@@ -44,6 +55,13 @@ or no `hidden` attribute (persistent); refuse a close with `ok:drawer:beforeclos
 Docked variants (`persistent`, `permanent`) render `<aside>` in the page flow — no backdrop, no focus
 trap, no scroll lock; their trigger toggles and carries `aria-expanded` + `aria-controls`. Put the
 drawer and the page area in a flex row (left / right) or column (top / bottom).
+
+Swipeable (MUI `SwipeableDrawer`, roadmap 4.18.46): React `DrawerContent swipeable` (plus the
+swipe props) renders the strip after the dialog and reports `onOpenChange(true, "swipe")` /
+`onOpenChange(false, "swipe")`; HTML `data-ok-swipeable` on a temporary dialog and
+`<div data-ok-drawer-swipe-area aria-hidden="true"></div>` right after it (optional: without it,
+only swipes to close). Keep the trigger and a close control: a swipe is a pointer gesture
+(WCAG 2.5.7).
 
 ## Layout and tokens
 - Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop: native `::backdrop` with `--ok-backdrop` (shared with the Backdrop component, which can't
@@ -61,6 +79,19 @@ drawer and the page area in a flex row (left / right) or column (top / bottom).
   the dialog closes when the slide ends. `prefers-reduced-motion` disables both (closing is then
   immediate). Docked drawers open and close at once.
 
+- Swipeable: while a finger moves the panel, `data-ok-swiping` turns its transition off and
+  translates it by `--_ok-drawer-swipe-x|y`; the native `::backdrop` is clear and the dialog's
+  `::before` draws `--ok-backdrop` at `--_ok-drawer-swipe-progress` (the open share; 1 with
+  `disableBackdropTransition`, and transparent with `hideBackdrop`). `data-ok-swipe-settling` keeps
+  that `::before` while the panel slides to rest (`--_ok-drawer-duration` /
+  `--ok-duration-short`, `--ok-easing-standard`; the exit's durations while closing). The strip is
+  `position: fixed` along the anchor's edge, `--ok-spacing` × 5 (20px) wide by default
+  (`--_ok-drawer-swipe-area`), `z-index: calc(var(--ok-z-modal) - 1)`, `touch-action: pan-y`
+  (left / right) or `pan-x` (top / bottom), shown only under `@media (any-pointer: coarse)` and
+  not with `data-ok-disable-swipe-to-open`. The paper of a swipeable drawer has
+  `touch-action: pan-y` (left / right; a Scrollbar inside it too) or `pan-x` (top / bottom: a
+  swipe starts outside their scrolling area).
+
 ## Behavior (`core` `createModalController`)
 - **Open:** `showModal()` (fallback: `open` + `data-ok-fallback`, siblings inert, ADR-0006); push onto
   the layer stack; lock page scroll; focus `[autofocus]` → first tabbable → content.
@@ -72,6 +103,22 @@ drawer and the page area in a flex row (left / right) or column (top / bottom).
   content stays until then.
 - **External close** (`<form method="dialog">`): state syncs. **Removal / unmount while open:**
   cleanup without focus restoration.
+
+- **Swipe** (core `createDrawerSwipe` on `createSwipe`, both owners; touch and pen only, like
+  MUI): on an open drawer, a swipe towards its edge moves the panel with the finger (not from a
+  text field, a slider or a press another handler prevented); released past `hysteresis` of the
+  panel's size, or faster than `minFlingVelocity` px/s towards the edge, it asks to close
+  (React `onOpenChange(false, "swipe")`, HTML `instance.close("swipe")` → cancelable
+  `beforeclose` with reason `swipe`); the panel stays where the finger left it until the exit
+  slides it on, or goes back open when the owner refuses (within 8 frames). From the strip, on a
+  closed drawer: a touch slides `swipeAreaWidth` of the panel in (discovery; not with
+  `disableDiscovery`) by showing the dialog non-modally (the page keeps the pointer), the panel
+  follows the finger, and a release past `hysteresis` (or a fling) opens it modally (focus moves
+  in, page inert) and asks to open (React `onOpenChange(true, "swipe")`, HTML cancelable
+  `beforeopen` with `trigger: null`, then `open`); refused (React: the state stays closed for 8
+  frames, HTML: `beforeopen` prevented) → it closes again with its exit. A shorter release slides
+  it back out and hides it. Reduced motion: no slides (the CSS transitions are off), the state
+  changes at once.
 
 ## Keyboard
 `Tab` / `Shift+Tab` stay inside the drawer (native modals may hand focus to browser UI); `Escape`
@@ -106,7 +153,12 @@ Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props thro
 | `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |
 | `ModalProps.keepMounted`, `disableRestoreFocus`, `disableScrollLock` | `DrawerContent` props `keepMounted` (React only, default `true`), `disableRestoreFocus`, `disableScrollLock` (`data-ok-*`, temporary only) | renamed (4.18.45) | props on DrawerContent instead of `ModalProps` |
 | `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |
-| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred (4.18.46) | "could"; left after batch B (budget, shares a swipe helper with 4.14) |
+| `SwipeableDrawer` | `DrawerContent swipeable`; HTML `data-ok-swipeable` + `[data-ok-drawer-swipe-area]` after the dialog | renamed (4.18.46) | the compound API: a prop on the panel, not a component; temporary drawers only |
+| `onOpen`, `onClose` | `onOpenChange(true, "swipe")` / `onOpenChange(false, "swipe")`; HTML `ok:drawer:beforeopen` (`trigger: null`) / `beforeclose` (`reason: "swipe"`) | renamed (4.18.46) | |
+| `swipeAreaWidth` (20), `hysteresis` (0.52), `minFlingVelocity` (450) | same; `data-ok-swipe-area-width`, `data-ok-hysteresis`, `data-ok-min-fling-velocity` | kept (4.18.46) | |
+| `disableSwipeToOpen`, `disableDiscovery`, `disableBackdropTransition` | same; `data-ok-disable-swipe-to-open`, `-disable-discovery`, `-disable-backdrop-transition` | kept (4.18.46) | `disableSwipeToOpen` defaults to `false` everywhere (MUI: `true` on iOS, whose edge swipe goes back): set it there yourself |
+| `allowSwipeInChildren` | — | not applicable | it lets a swipe on a partly visible closed drawer's children open it; a closed Owlky drawer isn't rendered (native `<dialog>`), so the strip opens it |
+| `SwipeAreaProps` | the `[data-ok-drawer-swipe-area]` element (React renders it; style it with CSS) | renamed (4.18.46) | |
 | `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |
 
 ## Parity notes
