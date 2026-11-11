@@ -1,6 +1,7 @@
 import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartHierarchy,
+  type ChartHierarchyItem,
   type ChartHierarchyState,
   type ChartLeaf,
   type ChartTreeMark,
@@ -236,7 +237,9 @@ export function layoutSunburst(
   const spans: Span[] = [];
   if (drill >= 0) {
     spans.push({ item: drill, a0: start, a1: start + sweep, level: 0 });
-    split(hierarchy, hierarchy.items[drill]?.children ?? [], start, start + sweep, 1, spans);
+    // `drillState` only drills into a node that exists and has children.
+    const { children } = hierarchy.items[drill] as ChartHierarchyItem;
+    split(hierarchy, children, start, start + sweep, 1, spans);
   } else split(hierarchy, hierarchy.roots, start, start + sweep, 1, spans);
   const levels = Math.max(1, ...spans.map((span) => span.level));
   const first = drill >= 0 ? center : hole;

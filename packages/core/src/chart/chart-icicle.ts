@@ -2,6 +2,7 @@ import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartDirection,
   type ChartHierarchy,
+  type ChartHierarchyItem,
   type ChartTreeAxis,
   type ChartZoomType,
   chartHierarchyPath,
@@ -66,7 +67,9 @@ export function layoutIcicle(
     path.forEach((item, level) => {
       spans.push({ item, a0: 0, a1: breadth, level });
     });
-    split(hierarchy, hierarchy.items[drill]?.children ?? [], 0, breadth, path.length, spans);
+    // `drillState` only drills into a node that exists and has children.
+    const { children } = hierarchy.items[drill] as ChartHierarchyItem;
+    split(hierarchy, children, 0, breadth, path.length, spans);
   }
   const levels = Math.max(0, ...spans.map((span) => span.level)) + 1;
   const band = depthExtent / levels;
