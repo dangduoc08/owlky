@@ -338,6 +338,12 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly xLabelRotateAlways?: boolean | undefined;
   /** A second row of x labels: `{ title, cols }`, each spanning `cols` categories. */
   readonly xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** Lines and areas draw fewer points when they have many (ApexCharts `chart.dataReducer`). */
+  readonly dataReducer?: boolean | undefined;
+  /** Points kept per series when reducing. Default 250. */
+  readonly dataReducerTargetPoints?: number | undefined;
+  /** Series longer than this many visible points are reduced. Default 500. */
+  readonly dataReducerThreshold?: number | undefined;
   /** How many points at the end of each series are a forecast (dashed, faint). */
   readonly forecastCount?: number | undefined;
   /** Forecast line dashes in px. Default 4. */
@@ -646,6 +652,12 @@ function renderChartData(input: ChartRenderInput): ChartRender {
     xLabelRotate: input.xLabelRotate,
     xLabelRotateAlways: input.xLabelRotateAlways,
     xGroups,
+    reducer: input.dataReducer
+      ? {
+          target: input.dataReducerTargetPoints ?? 250,
+          threshold: input.dataReducerThreshold ?? 500,
+        }
+      : undefined,
     forecast: forecastCount
       ? {
           count: forecastCount,

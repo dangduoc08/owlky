@@ -243,6 +243,7 @@ export {
   readChartTable,
 } from "./chart-model.js";
 export { type ChartPartitionOptions, layoutSunburst } from "./chart-partition.js";
+export { type ChartReducer, chartLttb, chartReduceRuns } from "./chart-reducer.js";
 export {
   type ChartOrientation,
   type ChartSankeyEdge,

@@ -188,3 +188,5 @@ export const Forecast: StoryObj = story("forecast");
 export const NoData: StoryObj = story("no-data");
 export const AnnotationsText: StoryObj = story("annotations-text");
 export const BrushTargets: StoryObj = story("brush-targets");
+// Roadmap 4.18.66: data reduction of long lines.
+export const DataReducer: StoryObj = story("data-reducer");

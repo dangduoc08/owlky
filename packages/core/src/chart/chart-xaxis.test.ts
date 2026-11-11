@@ -318,9 +318,9 @@ describe("no data", () => {
       withAttr({ ...empty, noDataAlign, noDataVerticalAlign }, "data-ok-chart-no-data")[0]?.attrs;
     const { plot } = renderChart(empty).layout;
     expect(place("left", "top")?.["text-anchor"]).toBe("start");
-    expect(place("left", "top")?.y).toBe(String(plot.y + 12));
+    expect(place("left", "top")?.["y"]).toBe(String(plot.y + 12));
     expect(place("right", "bottom")?.["text-anchor"]).toBe("end");
-    expect(place("right", "bottom")?.y).toBe(String(plot.y + plot.height - 12));
+    expect(place("right", "bottom")?.["y"]).toBe(String(plot.y + plot.height - 12));
     expect(place("center", "middle")?.["text-anchor"]).toBe("middle");
   });
 

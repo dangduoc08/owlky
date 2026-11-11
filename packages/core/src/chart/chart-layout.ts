@@ -25,6 +25,7 @@ import {
   chartForecastStart,
   lighterTone,
 } from "./chart-model.js";
+import { type ChartReducer, chartReduceRuns } from "./chart-reducer.js";
 import {
   type DateLabel,
   type DateUnit,
@@ -196,6 +197,8 @@ export interface ChartLayoutOptions {
   readonly xGroups?: readonly ChartXGroup[] | undefined;
   /** The last points of each series drawn as a forecast (dashed, faint; validated in `renderChart`). */
   readonly forecast?: ChartForecast | undefined;
+  /** Lines and areas draw fewer points when they have many (4.18.66; the marks keep them all). */
+  readonly reducer?: ChartReducer | undefined;
 }
 
 /** A group of the x axis' second row (ApexCharts `xaxis.group.groups`). */
@@ -1894,6 +1897,17 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     const firstForecast = forecastFrom(series);
     const inForecast = (point: { x: number }) =>
       firstForecast !== undefined && point.x >= firstForecast;
+    // Data reduction (4.18.66): lines and areas draw these points only; marks keep them all.
+    const byX = [...points].sort((a, b) => a.x - b.x);
+    const kept =
+      options.reducer && (series.type === "line" || series.type === "area")
+        ? chartReduceRuns(
+            byX.map((point) => (point.y === null ? null : at(point as { x: number; y: number }))),
+            options.reducer,
+          )
+        : undefined;
+    const drawn = kept ? byX.filter((_, position) => kept.has(position)) : byX;
+    const dropped = kept ? new Set(byX.filter((_, position) => !kept.has(position))) : undefined;
     for (const point of pts) {
       const [px, py] = at(point);
       marks.push({
@@ -1909,7 +1923,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         ...(series.shape ? { shape: series.shape } : {}),
         ...(inForecast(point) ? { forecast: true } : {}),
       });
-      if (options.dataLabels && series.type !== "scatter") {
+      if (options.dataLabels && series.type !== "scatter" && !dropped?.has(point)) {
         const entry = percent && stacks ? stack.get(`${index}:${point.x}`) : undefined;
         labels.push(
           dataLabel(
@@ -1964,7 +1978,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     const forecasts: Pt[][] = [];
     let current: Pt[] = [];
     let tail: Pt[] = [];
-    const sorted = [...points].sort((a, b) => a.x - b.x);
+    const sorted = drawn;
     for (const point of sorted) {
       if (point.y === null) {
         if (current.length) segments.push(current);

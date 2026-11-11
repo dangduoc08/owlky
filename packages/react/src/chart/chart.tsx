@@ -538,6 +538,15 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   xLabelRotateAlways?: boolean | undefined;
   /** A second row of x labels: each `{ title, cols }` spans `cols` categories. */
   xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /**
+   * Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets).
+   * The table, the tooltip and the keyboard keep every point.
+   */
+  dataReducer?: boolean | undefined;
+  /** Points kept per series when reducing. Default 250. */
+  dataReducerTargetPoints?: number | undefined;
+  /** A series with more visible points than this is reduced. Default 500. */
+  dataReducerThreshold?: number | undefined;
   /** How many points at the end of each line, area or bar series are a forecast. */
   forecastCount?: number | undefined;
   /** Forecast line dashes in px. Default 4. */
@@ -753,6 +762,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     xLabelRotate,
     xLabelRotateAlways,
     xaxisGroups,
+    dataReducer,
+    dataReducerTargetPoints,
+    dataReducerThreshold,
     forecastCount,
     forecastDashArray,
     forecastStrokeWidth,
@@ -879,6 +891,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     xRange,
     xLabelRotate,
     xLabelRotateAlways,
+    dataReducer,
+    dataReducerTargetPoints,
+    dataReducerThreshold,
     forecastCount,
     forecastDashArray,
     forecastStrokeWidth,
@@ -1022,6 +1037,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validXRange = number("data-ok-x-range");
   const validXRotate = number("data-ok-x-label-rotate");
   const xRotateAlways = attributes["data-ok-x-label-rotate-always"] !== undefined;
+  const reducerOn = attributes["data-ok-data-reducer"] !== undefined;
+  const validReducerTarget = number("data-ok-data-reducer-target-points");
+  const validReducerThreshold = number("data-ok-data-reducer-threshold");
   const validForecastCount = number("data-ok-forecast-count");
   const validForecastDash = number("data-ok-forecast-dash-array");
   const validForecastWidth = number("data-ok-forecast-stroke-width");
@@ -1212,6 +1230,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         xLabelRotate: validXRotate,
         xLabelRotateAlways: xRotateAlways,
         xaxisGroups,
+        dataReducer: reducerOn,
+        dataReducerTargetPoints: validReducerTarget,
+        dataReducerThreshold: validReducerThreshold,
         forecastCount: validForecastCount,
         forecastDashArray: validForecastDash,
         forecastStrokeWidth: validForecastWidth,
@@ -1375,6 +1396,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validXRotate,
       xRotateAlways,
       xaxisGroups,
+      reducerOn,
+      validReducerTarget,
+      validReducerThreshold,
       validForecastCount,
       validForecastDash,
       validForecastWidth,

@@ -5148,6 +5148,22 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-x-label-rotate-always",
     "X labels turn by `xLabelRotate` even when they fit flat.",
   ),
+  dataReducer: flag(
+    "data-ok-data-reducer",
+    "Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point.",
+  ),
+  dataReducerTargetPoints: number(
+    "data-ok-data-reducer-target-points",
+    undefined,
+    "Points kept per series when reducing (default 250).",
+    { min: 3 },
+  ),
+  dataReducerThreshold: number(
+    "data-ok-data-reducer-threshold",
+    undefined,
+    "A series with more visible points than this is reduced (default 500).",
+    { min: 3 },
+  ),
   forecastCount: number(
     "data-ok-forecast-count",
     undefined,
@@ -5336,6 +5352,9 @@ export interface ChartAnatomyOptions {
   xRange?: number | undefined;
   xLabelRotate?: number | undefined;
   xLabelRotateAlways?: boolean | undefined;
+  dataReducer?: boolean | undefined;
+  dataReducerTargetPoints?: number | undefined;
+  dataReducerThreshold?: number | undefined;
   forecastCount?: number | undefined;
   forecastDashArray?: number | undefined;
   forecastStrokeWidth?: number | undefined;

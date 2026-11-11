@@ -663,6 +663,9 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `xRange` | `data-ok-x-range="…"` | number | number | — | Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data). |
 | `xLabelRotate` | `data-ok-x-label-rotate="…"` | number | number | — | X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out. |
 | `xLabelRotateAlways` | `data-ok-x-label-rotate-always` | flag | boolean | off | X labels turn by `xLabelRotate` even when they fit flat. |
+| `dataReducer` | `data-ok-data-reducer` | flag | boolean | off | Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point. |
+| `dataReducerTargetPoints` | `data-ok-data-reducer-target-points="…"` | number | number | — | Points kept per series when reducing (default 250). |
+| `dataReducerThreshold` | `data-ok-data-reducer-threshold="…"` | number | number | — | A series with more visible points than this is reduced (default 500). |
 | `forecastCount` | `data-ok-forecast-count="…"` | number | number | — | How many points at the end of each line, area or bar series are a forecast: lines are dashed, areas and bars faint. |
 | `forecastDashArray` | `data-ok-forecast-dash-array="…"` | number | number | — | Forecast line dashes in px (default 4). |
 | `forecastStrokeWidth` | `data-ok-forecast-stroke-width="…"` | number | number | — | Forecast line width in px (default the series' width). |
@@ -1119,7 +1122,9 @@ Option areas not covered by the table above:
 | measure tool (`toolbar.tools.measure`), draggable annotations | — | deferred (4.18.20) | |
 | `chart.accessibility` (`description`, keyboard navigation, announcements) | always on: `caption` (`label`), the data table, keyboard slots, live text | kept | |
 | `chart.locales`, `chart.defaultLocale` | `locale` (Intl) + `localeText` | renamed | |
-| `chart.dataReducer` (`enabled`, `algorithm`, `targetPoints`, `threshold`) | — | deferred | downsampling large series (LTTB) for drawing; the table keeps every point |
+| `chart.dataReducer` (`enabled`, `targetPoints`, `threshold`) | `dataReducer`, `dataReducerTargetPoints` (250), `dataReducerThreshold` (500) (`data-ok-data-reducer*`) | renamed (4.18.66) | lines and areas (core `chart-reducer.ts`, LTTB per run between gaps on the zoomed window, so zooming shows detail); only the drawing: the table, the marks (tooltip, keyboard, selection) and the value scale keep every point; the markers and data labels of dropped points are not drawn |
+| `chart.dataReducer.algorithm` | always LTTB | not applicable | the only algorithm upstream |
+| bucket aggregation of range and candlestick series | — | not built | those series keep their points |
 | `chart.print`, `chart.perspectives`, `chart.license`, `chart.nonce`, `chart.injectStyleSheet`, `chart.redrawOn*Resize`, `chart.parentHeightOffset`, `chart.offsetX` / `Y`, `chart.width`, `chart.foreColor`, `chart.background`, `chart.dropShadow`, `theme` | — | not applicable | CSS / tokens / ResizeObserver; perspectives: app code (roadmap 2.4 notes) |
 | `yaxis` (one object or an array), `.seriesName` (string or list), `.opposite`, `.logarithmic`, `.logBase`, `.reversed`, `.tickAmount`, `.min`, `.max`, `.show` | `yaxis` (same names; HTML `data-ok-yaxis` text, series' axes on `th[data-ok-y-axis]`) | kept (4.18.59) | several axes on vertical charts with an x axis; one axis: its options apply to the value axis (horizontal bars too); sparklines and timelines ignore them |
 | `yaxis.title.text` | `yaxis[].title` (axis 0 falls back to `yTitle`) | renamed (4.18.59) | |

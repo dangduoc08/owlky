@@ -868,6 +868,11 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         xLabelRotate: readNumber(element, o.xLabelRotate) as number | undefined,
         xLabelRotateAlways: element.hasAttribute(o.xLabelRotateAlways.attr),
         xaxisGroups: parseChartXGroups(element.getAttribute(CHART_TEXT_ATTRIBUTES.xaxisGroups)),
+        dataReducer: element.hasAttribute(o.dataReducer.attr),
+        dataReducerTargetPoints: readNumber(element, o.dataReducerTargetPoints) as
+          | number
+          | undefined,
+        dataReducerThreshold: readNumber(element, o.dataReducerThreshold) as number | undefined,
         forecastCount: readNumber(element, o.forecastCount) as number | undefined,
         forecastDashArray: readNumber(element, o.forecastDashArray) as number | undefined,
         forecastStrokeWidth: readNumber(element, o.forecastStrokeWidth) as number | undefined,

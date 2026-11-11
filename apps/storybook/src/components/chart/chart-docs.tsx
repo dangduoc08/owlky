@@ -14,6 +14,7 @@ import columnRangesGroup from "../../../../../packages/html/src/components/chart
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import crossfilterGroup from "../../../../../packages/html/src/components/chart/examples/crossfilter-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
+import dataReducerGroup from "../../../../../packages/html/src/components/chart/examples/data-reducer-group.html?raw";
 import dumbbellGroup from "../../../../../packages/html/src/components/chart/examples/dumbbell-group.html?raw";
 import forecastGroup from "../../../../../packages/html/src/components/chart/examples/forecast-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
@@ -47,6 +48,14 @@ import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tab
 import { snippetElement } from "../../helpers/snippet-markup.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+/** A chart's markup with only the first rows of its table, for long data. */
+const firstRows = (markup: string, count: number) => {
+  let rows = 0;
+  return markup
+    .split("\n")
+    .filter((line) => !line.includes('<tr><th scope="row"') || rows++ < count)
+    .join("\n");
+};
 const SALES = [
   { name: "Online", data: [31, 40, 28, 51, 42, 69] },
   { name: "In store", data: [11, 32, 45, 32, 34, 52] },
@@ -1763,6 +1772,29 @@ export function ChartTextAnnotations() {
 }`,
   },
   {
+    id: "data-reducer",
+    title: "Draw long series faster",
+    body: "Set `dataReducer` (`data-ok-data-reducer`) on line and area charts with many points. A series with more visible points than `dataReducerThreshold` (500 by default) draws only about `dataReducerTargetPoints` of them (250 by default), chosen so that the line keeps its shape. Only the drawing changes: the data table, the tooltip and the keyboard still reach every point, and zooming in draws more detail.",
+    html: firstRows(snippetElement(dataReducerGroup, "data-ok-chart "), 12),
+    react: `import { Chart } from "@owlky/react";
+
+// A long series of readings, for example from a sensor.
+const readings = Array.from({ length: 5000 }, (_, i) => Math.sin(i / 18) * 40 + 100);
+const categories = readings.map((_, index) => String(index + 1));
+
+export function ChartDataReducer() {
+  return (
+    <Chart
+      label="Sensor readings"
+      dataReducer
+      dataReducerTargetPoints={400}
+      categories={categories}
+      series={[{ name: "Reading", data: readings }]}
+    />
+  );
+}`,
+  },
+  {
     id: "no-data",
     title: "Show a message without data",
     body: "Set `noDataText` (`data-ok-no-data-text`) to draw a message when a chart has nothing to draw. Without it the plot stays empty. `noDataAlign` (`left`, `center`, `right`) and `noDataVerticalAlign` (`top`, `middle`, `bottom`) place it. The message is added to the plot's accessible name.",
@@ -1824,6 +1856,24 @@ export function ChartNoData() {
 ];
 
 const PREVIEWS = {
+  "data-reducer": () => (
+    <Preview>
+      <Chart
+        label="Sensor readings"
+        height={220}
+        dataReducer
+        dataReducerTargetPoints={80}
+        dataReducerThreshold={100}
+        categories={Array.from({ length: 400 }, (_, index) => String(index + 1))}
+        series={[
+          {
+            name: "Reading",
+            data: Array.from({ length: 400 }, (_, i) => Math.round(Math.sin(i / 12) * 40) + 100),
+          },
+        ]}
+      />
+    </Preview>
+  ),
   overview: () => (
     <Preview>
       <Chart label="Monthly sales" categories={MONTHS} series={SALES} />

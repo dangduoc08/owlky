@@ -18,6 +18,11 @@ export interface ChartExample {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
 const YEAR = [...MONTHS, "Oct", "Nov", "Dec"];
+/** A long, smooth series for the data reducer: the same on every run. */
+const READINGS = Array.from(
+  { length: 600 },
+  (_, i) => Math.round((Math.sin(i / 18) * 40 + Math.sin(i / 3) * 6 + 100) * 10) / 10,
+);
 const QUARTERS = ["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"];
 const LONG_LABELS = [
   "Billing and invoices",
@@ -2450,6 +2455,18 @@ export const chartExamples: Record<string, ChartExample> = {
         { axis: "text", x: "Mar", y: 15, label: "Campaign paused" },
         { axis: "text", x: "Aug", y: 95, label: "New pricing", textAnchor: "end", color: "error" },
       ],
+    },
+  },
+  "data-reducer": {
+    title: "Large series",
+    props: {
+      label: "Sensor readings, 600 points drawn as about 100",
+      type: "line",
+      dataReducer: true,
+      dataReducerTargetPoints: 100,
+      dataReducerThreshold: 200,
+      categories: READINGS.map((_, index) => String(index + 1)),
+      series: [{ name: "Reading", data: READINGS }],
     },
   },
   "brush-targets": {

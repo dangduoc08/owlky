@@ -86,6 +86,7 @@ const STORIES = [
   "no-data",
   "annotations-text",
   "brush-targets",
+  "data-reducer",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

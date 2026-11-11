@@ -1731,6 +1731,26 @@
       "name": "xLabelRotateAlways"
      },
      {
+      "attr": "data-ok-data-reducer",
+      "description": "Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets); the table, the tooltip and the keyboard keep every point.",
+      "kind": "flag",
+      "name": "dataReducer"
+     },
+     {
+      "attr": "data-ok-data-reducer-target-points",
+      "description": "Points kept per series when reducing (default 250).",
+      "kind": "number",
+      "min": 3,
+      "name": "dataReducerTargetPoints"
+     },
+     {
+      "attr": "data-ok-data-reducer-threshold",
+      "description": "A series with more visible points than this is reduced (default 500).",
+      "kind": "number",
+      "min": 3,
+      "name": "dataReducerThreshold"
+     },
+     {
       "attr": "data-ok-forecast-count",
       "description": "How many points at the end of each line, area or bar series are a forecast: lines are dashed, areas and bars faint.",
       "kind": "number",
@@ -3474,6 +3494,21 @@
       "description": "Prints the values on the chart (percentages on pie and donut slices).",
       "name": "dataLabels",
       "type": "boolean"
+     },
+     {
+      "description": "Long lines and areas draw only the points that shape them (Largest Triangle Three Buckets). The table, the tooltip and the keyboard keep every point.",
+      "name": "dataReducer",
+      "type": "boolean"
+     },
+     {
+      "description": "Points kept per series when reducing. Default 250.",
+      "name": "dataReducerTargetPoints",
+      "type": "number"
+     },
+     {
+      "description": "A series with more visible points than this is reduced. Default 500.",
+      "name": "dataReducerThreshold",
+      "type": "number"
      },
      {
       "description": "Tree charts: the nodes collapsed at first (uncontrolled).",
