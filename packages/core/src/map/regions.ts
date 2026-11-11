@@ -4,6 +4,8 @@
  * `hover`, `focus`, `selected`, `muted`), fills the regions' listbox (keyboard access, name and
  * value), handles the legends' class toggles and paints their swatches through CSSOM. Shared by
  * React and the HTML runtime: both render the same markup, this module writes the derived state.
+ * ADR-0065 (roadmap 4.18.98): multiple selection, Shift + drag box selection by label anchor, and
+ * linked maps whose selection filters the other members of a `group` (a module-scoped registry).
  */
 import type { MapLibreMap } from "maplibre-gl";
 
@@ -16,7 +18,12 @@ export interface MapRegionsHost {
   /** Writes private custom properties (CSSOM), skipping unchanged values. */
   write(node: HTMLElement, values: Record<string, string>): void;
   labels(): { noData: string; regions: string };
-  onRegionSelect?: ((regions: HTMLElement, id: string | number | null) => void) | undefined;
+  /** The selection changed: `id` is the region toggled (`null`: cleared), `ids` every selected one. */
+  onRegionSelect?:
+    | ((regions: HTMLElement, id: string | number | null, ids: (string | number)[]) => void)
+    | undefined;
+  /** `true` while a regions group asks for box selection: Shift + drag must not zoom. */
+  blockBoxZoom?: ((blocked: boolean) => void) | undefined;
   onLegendToggle?:
     | ((legend: HTMLElement, classIndex: number, active: readonly number[]) => void)
     | undefined;
@@ -33,6 +40,8 @@ export interface MapRegions {
   pointer(point: { x: number; y: number } | null): boolean;
   /** A click on the map: selects the region under it. */
   click(point: { x: number; y: number }): void;
+  /** Sets the selection of a `[data-ok-map-regions]` part (ids that aren't rows are ignored). */
+  setSelection(regions: HTMLElement, ids: readonly (string | number)[]): void;
   destroy(): void;
 }
 
@@ -51,7 +60,34 @@ interface Group {
   readonly layer: string | undefined;
   readonly rows: Row[];
   readonly list: HTMLElement | null;
+  /** Several regions can be selected (`data-ok-multiple`, implied by `boxSelect`). */
+  readonly multiple: boolean;
+  /** Shift + drag selects the regions whose label anchor is in the box (`data-ok-box-select`). */
+  readonly boxSelect: boolean;
+  /** The link group (`data-ok-group`). */
+  readonly link: string | undefined;
+  /** `bidirectional` (default), `emit` or `receive` (`data-ok-link-filter`). */
+  readonly linkFilter: "bidirectional" | "emit" | "receive";
 }
+
+/** A regions group of any map of the page in the link registry. */
+interface LinkMember {
+  readonly root: HTMLElement;
+  readonly link: string;
+  receive(filter: { source: HTMLElement; keys: ReadonlySet<string> } | null): void;
+}
+
+/** Linked maps (ADR-0065): members and the current filter of each group (module scope, ADR-0007). */
+const linkMembers = new Map<string, Set<LinkMember>>();
+const linkFilters = new Map<string, { source: HTMLElement; keys: ReadonlySet<string> }>();
+const broadcast = (link: string) => {
+  const filter = linkFilters.get(link) ?? null;
+  for (const member of linkMembers.get(link) ?? []) member.receive(filter);
+};
+
+/** A boolean attribute: present and not `"false"`. */
+const flag = (element: Element, name: string) =>
+  element.hasAttribute(name) && element.getAttribute(name) !== "false";
 
 const SWATCH = /^var\(--ok-[a-z0-9-]+\)$/;
 let generated = 0;
@@ -97,7 +133,7 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
   const built = new WeakMap<HTMLElement, string>();
   /** Feature states written per source, to clear the ones whose rows went away. */
   const applied = new Map<string, { source: unknown; ids: Set<string | number> }>();
-  const selected = new WeakMap<HTMLElement, string>();
+  const selected = new WeakMap<HTMLElement, Set<string>>();
   const active = new WeakMap<HTMLElement, string>();
   let hovered: { group: Group; key: string } | null = null;
   let focused: Group | null = null;
@@ -186,25 +222,41 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     group.list ? [...group.list.querySelectorAll<HTMLElement>("[data-ok-map-region]")] : [];
   const optionOf = (group: Group, key: string) =>
     options(group).find((option) => option.getAttribute("data-ok-id") === key) ?? null;
+  const selectionOf = (group: Group) => selected.get(group.root) ?? new Set<string>();
+
+  /** Options outside the group filter a linked map received: dimmed (`data-ok-muted`). */
+  const markFiltered = (group: Group) => {
+    const filter = received.get(group.root) ?? null;
+    for (const option of options(group)) {
+      const key = option.getAttribute("data-ok-id") as string;
+      option.toggleAttribute("data-ok-muted", filter !== null && !filter.has(key));
+    }
+  };
 
   const buildList = (group: Group) => {
     const list = group.list;
     if (!list) return;
+    if (group.multiple) list.setAttribute("aria-multiselectable", "true");
+    else list.removeAttribute("aria-multiselectable");
     if (!list.id) {
       generated++;
       list.id = group.root.id ? `${group.root.id}-list` : `ok-map-regions-${generated}`;
     }
     const { noData } = host.labels();
     const signature = JSON.stringify([list.id, noData, group.rows]);
-    if (built.get(list) === signature) return;
+    if (built.get(list) === signature) {
+      markFiltered(group);
+      return;
+    }
     built.set(list, signature);
+    const picked = selectionOf(group);
     const nodes = group.rows.map((row, index) => {
       const option = document.createElement("div");
       option.setAttribute("role", "option");
       option.id = `${list.id}-${index}`;
       option.setAttribute("data-ok-map-region", "");
       option.setAttribute("data-ok-id", row.key);
-      option.setAttribute("aria-selected", String(selected.get(group.root) === row.key));
+      option.setAttribute("aria-selected", String(picked.has(row.key)));
       option.textContent = `${row.name}: ${row.value === null ? noData : row.text || String(row.value)}`;
       return option;
     });
@@ -218,6 +270,7 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
       active.delete(group.root);
       list.removeAttribute("aria-activedescendant");
     }
+    markFiltered(group);
   };
 
   const markActive = (group: Group, key: string, focus: boolean) => {
@@ -233,22 +286,103 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     if (focus) setState(group, key, { focus: true });
   };
 
+  /**
+   * Replaces the group's selection with `keys` (row order kept), writes the options and feature
+   * states that changed and reports once: `last` is the region toggled (`null`: cleared).
+   */
+  const setSelection = (group: Group, keys: Iterable<string>, last: string | null) => {
+    const previous = selectionOf(group);
+    const wanted = new Set(keys);
+    const next = new Set(group.rows.map((row) => row.key).filter((key) => wanted.has(key)));
+    const same = next.size === previous.size && [...next].every((key) => previous.has(key));
+    if (same) return;
+    for (const key of previous)
+      if (!next.has(key)) {
+        optionOf(group, key)?.setAttribute("aria-selected", "false");
+        setState(group, key, { selected: false });
+      }
+    for (const key of next)
+      if (!previous.has(key)) {
+        optionOf(group, key)?.setAttribute("aria-selected", "true");
+        setState(group, key, { selected: true });
+      }
+    if (next.size) selected.set(group.root, next);
+    else selected.delete(group.root);
+    const rowOf = (key: string | null) => group.rows.find((each) => each.key === key);
+    const ids = group.rows.filter((row) => next.has(row.key)).map((row) => row.id);
+    const row = rowOf(last !== null && next.has(last) ? last : null);
+    host.onRegionSelect?.(group.root, row ? row.id : null, ids);
+    publish(group, next);
+  };
+
+  /** A press or Enter: single groups replace (a second press clears), multiple ones toggle. */
   const select = (group: Group, key: string | null) => {
-    const previous = selected.get(group.root) ?? null;
-    const next = previous === key ? null : key;
-    if (previous !== null) {
-      optionOf(group, previous)?.setAttribute("aria-selected", "false");
-      setState(group, previous, { selected: false });
+    const current = selectionOf(group);
+    if (key === null) return setSelection(group, [], null);
+    if (!group.multiple) return setSelection(group, current.has(key) ? [] : [key], key);
+    const next = new Set(current);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setSelection(group, next, key);
+  };
+
+  // --- Linked maps (ADR-0065) -----------------------------------------------------------------
+
+  /** This instance's members of the page's link registry, by regions root. */
+  const members = new Map<HTMLElement, LinkMember>();
+  /** Selections set before their part was scanned. */
+  const pending = new WeakMap<HTMLElement, readonly (string | number)[]>();
+  const received = new WeakMap<HTMLElement, ReadonlySet<string> | null>();
+
+  /** A group's selection became (or stopped being) its link group's filter. */
+  const publish = (group: Group, keys: ReadonlySet<string>) => {
+    if (!group.link || group.linkFilter === "receive") return;
+    const current = linkFilters.get(group.link);
+    if (keys.size) linkFilters.set(group.link, { source: group.root, keys: new Set(keys) });
+    else if (current?.source === group.root) linkFilters.delete(group.link);
+    else return;
+    broadcast(group.link);
+  };
+
+  const join = (group: Group) => {
+    const link = group.link as string;
+    const member: LinkMember = {
+      root: group.root,
+      link,
+      receive(filter) {
+        const current = groups.find((each) => each.root === group.root);
+        if (!current || current.linkFilter === "emit") return;
+        received.set(group.root, filter && filter.source !== group.root ? filter.keys : null);
+        apply();
+        markFiltered(current);
+      },
+    };
+    members.set(group.root, member);
+    const set = linkMembers.get(link) ?? new Set<LinkMember>();
+    set.add(member);
+    linkMembers.set(link, set);
+    member.receive(linkFilters.get(link) ?? null);
+  };
+
+  const leave = (root: HTMLElement) => {
+    const member = members.get(root);
+    if (!member) return;
+    members.delete(root);
+    received.delete(root);
+    linkMembers.get(member.link)?.delete(member);
+    if (linkFilters.get(member.link)?.source === root) {
+      linkFilters.delete(member.link);
+      broadcast(member.link);
     }
-    if (next === null) selected.delete(group.root);
-    else {
-      selected.set(group.root, next);
-      optionOf(group, next)?.setAttribute("aria-selected", "true");
-      setState(group, next, { selected: true });
-    }
-    // `next` always differs from `previous` (a second press clears).
-    const row = group.rows.find((each) => each.key === next);
-    host.onRegionSelect?.(group.root, row ? row.id : null);
+  };
+
+  /** Joins, leaves or moves the scanned groups in the registry. */
+  const syncLinks = () => {
+    const wanted = new Map(
+      groups.filter((group) => group.link).map((group) => [group.root, group]),
+    );
+    for (const [root, member] of members) if (wanted.get(root)?.link !== member.link) leave(root);
+    for (const group of wanted.values()) if (!members.has(group.root)) join(group);
   };
 
   // --- Feature states -------------------------------------------------------------------------
@@ -264,14 +398,15 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
       const scope = `${group.source}\u0000${group.sourceLayer ?? ""}`;
       const ids = seen.get(scope) ?? new Set();
       seen.set(scope, ids);
-      const pick = selected.get(group.root);
+      const picked = selectionOf(group);
       const current = active.get(group.root);
+      const filter = received.get(group.root) ?? null;
       for (const row of group.rows) {
         ids.add(row.id);
         map.setFeatureState(target(group, row.id), {
           value: row.value,
-          muted: isMuted(row.value, ranges),
-          selected: row.key === pick,
+          muted: isMuted(row.value, ranges) || (filter !== null && !filter.has(row.key)),
+          selected: picked.has(row.key),
           hover: hovered?.group.root === group.root && hovered.key === row.key,
           focus: focused === group && row.key === current,
         });
@@ -306,25 +441,51 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
 
   const scan = () => {
     const previous = new Map(groups.map((group) => [group.root, group]));
-    groups = host.own("[data-ok-map-regions]").map((root) => ({
-      root,
-      source: root.getAttribute("data-ok-source") ?? "",
-      sourceLayer: root.getAttribute("data-ok-source-layer") ?? undefined,
-      layer: root.getAttribute("data-ok-layer") ?? undefined,
-      rows: readRows(root.querySelector<HTMLTableElement>("table")),
-      list: root.querySelector<HTMLElement>("[data-ok-map-regions-list]"),
-    }));
+    groups = host.own("[data-ok-map-regions]").map((root) => {
+      const linkFilter = root.getAttribute("data-ok-link-filter");
+      const boxSelect = flag(root, "data-ok-box-select");
+      return {
+        root,
+        source: root.getAttribute("data-ok-source") ?? "",
+        sourceLayer: root.getAttribute("data-ok-source-layer") ?? undefined,
+        layer: root.getAttribute("data-ok-layer") ?? undefined,
+        rows: readRows(root.querySelector<HTMLTableElement>("table")),
+        list: root.querySelector<HTMLElement>("[data-ok-map-regions-list]"),
+        boxSelect,
+        multiple: boxSelect || flag(root, "data-ok-multiple"),
+        link: root.getAttribute("data-ok-group")?.trim() || undefined,
+        linkFilter:
+          linkFilter === "emit" || linkFilter === "receive" ? linkFilter : "bidirectional",
+      };
+    });
     for (const group of groups) {
       const before = previous.get(group.root);
       if (before && focused === before) focused = group;
       if (hovered && hovered.group.root === group.root) hovered = { group, key: hovered.key };
-      const pick = selected.get(group.root);
-      if (pick !== undefined && !group.rows.some((row) => row.key === pick))
-        selected.delete(group.root);
+      const picked = selected.get(group.root);
+      let trimmed: string[] | null = null;
+      if (picked) {
+        const keys = new Set(group.rows.map((row) => row.key));
+        const kept = [...picked].filter((key) => keys.has(key));
+        // Rows that went away leave the selection quietly.
+        if (kept.length) selected.set(group.root, new Set(kept));
+        else selected.delete(group.root);
+        // A single group keeps one region at most (the option may have changed): reported.
+        if (!group.multiple && kept.length > 1) trimmed = kept.slice(-1);
+      }
       buildList(group);
+      if (trimmed) setSelection(group, trimmed, trimmed[0] as string);
     }
+    for (const root of previous.keys())
+      if (!groups.some((group) => group.root === root)) leave(root);
+    syncLinks();
+    host.blockBoxZoom?.(groups.some((group) => group.boxSelect));
     paintLegends();
     apply();
+    for (const group of groups) {
+      const ids = pending.get(group.root);
+      if (ids) api.setSelection(group.root, ids);
+    }
   };
 
   // --- Pointer --------------------------------------------------------------------------------
@@ -359,6 +520,140 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     }
   };
 
+  // --- Box selection (ADR-0065) ----------------------------------------------------------------
+
+  /** Label anchors (lng / lat) of a group's regions: the centroid of each region's largest piece. */
+  const anchors = (map: MapLibreMap, group: Group) => {
+    const best = new Map<string, { area: number; point: [number, number] }>();
+    const features = map.querySourceFeatures(group.source, {
+      ...(group.sourceLayer ? { sourceLayer: group.sourceLayer } : {}),
+    });
+    for (const feature of features) {
+      if (feature.id === undefined) continue;
+      const key = String(feature.id);
+      const geometry = feature.geometry as { type: string; coordinates: unknown };
+      const polygons =
+        geometry.type === "Polygon"
+          ? [geometry.coordinates as number[][][]]
+          : geometry.type === "MultiPolygon"
+            ? (geometry.coordinates as number[][][][])
+            : geometry.type === "Point"
+              ? [[[geometry.coordinates as number[]]]]
+              : [];
+      for (const polygon of polygons) {
+        const ring = polygon[0];
+        if (!ring?.length) continue;
+        const piece = ringCentroid(ring);
+        const previous = best.get(key);
+        if (!previous || piece.area > previous.area) best.set(key, piece);
+      }
+    }
+    return best;
+  };
+
+  const box = (map: MapLibreMap, a: Point, b: Point, add: boolean) => {
+    const left = Math.min(a.x, b.x);
+    const right = Math.max(a.x, b.x);
+    const top = Math.min(a.y, b.y);
+    const bottom = Math.max(a.y, b.y);
+    for (const group of groups) {
+      if (!group.boxSelect) continue;
+      const inside: string[] = [];
+      for (const [key, { point }] of anchors(map, group)) {
+        if (!group.rows.some((row) => row.key === key)) continue;
+        const { x, y } = map.project(point);
+        if (x >= left && x <= right && y >= top && y <= bottom) inside.push(key);
+      }
+      const next = add ? [...selectionOf(group), ...inside] : inside;
+      const keys = group.rows.map((row) => row.key).filter((key) => next.includes(key));
+      setSelection(group, keys, inside.length ? (inside.at(-1) as string) : null);
+    }
+  };
+
+  let drag: {
+    start: Point;
+    current: Point;
+    add: boolean;
+    pan: boolean;
+    frame: HTMLElement | null;
+    pointer: number;
+  } | null = null;
+
+  const endDrag = (commit: boolean) => {
+    const map = host.ready();
+    const current = drag;
+    if (!current) return;
+    drag = null;
+    current.frame?.remove();
+    if (map && current.pan) map.dragPan.enable();
+    if (!commit || !map) return;
+    const moved = Math.hypot(
+      current.current.x - current.start.x,
+      current.current.y - current.start.y,
+    );
+    if (moved >= 4) box(map, current.start, current.current, current.add);
+  };
+
+  const local = (map: MapLibreMap, event: PointerEvent): Point => {
+    const rect = map.getCanvasContainer().getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  };
+
+  element.addEventListener(
+    "pointerdown",
+    (event) => {
+      const map = host.ready();
+      if (!map || !event.shiftKey || event.button !== 0 || drag) return;
+      if (!groups.some((group) => group.boxSelect)) return;
+      if (!(event.target instanceof Node) || !map.getCanvasContainer().contains(event.target))
+        return;
+      const pan = map.dragPan.isEnabled();
+      if (pan) map.dragPan.disable();
+      const frame = document.createElement("div");
+      frame.setAttribute("data-ok-map-selection-box", "");
+      frame.setAttribute("aria-hidden", "true");
+      const start = local(map, event);
+      drag = { start, current: start, add: event.altKey, pan, frame, pointer: event.pointerId };
+      map.getCanvasContainer().after(frame);
+      host.write(frame, box2css(start, start));
+      event.preventDefault();
+    },
+    { signal, capture: true },
+  );
+  document.addEventListener(
+    "pointermove",
+    (event) => {
+      const map = host.ready();
+      if (!drag || !map || event.pointerId !== drag.pointer) return;
+      drag.current = local(map, event);
+      drag.add ||= event.altKey;
+      if (drag.frame) host.write(drag.frame, box2css(drag.start, drag.current));
+    },
+    { signal },
+  );
+  document.addEventListener(
+    "pointerup",
+    (event) => {
+      if (!drag || event.pointerId !== drag.pointer) return;
+      const map = host.ready();
+      if (map) drag.current = local(map, event);
+      drag.add ||= event.altKey;
+      endDrag(true);
+    },
+    { signal },
+  );
+  document.addEventListener("pointercancel", () => endDrag(false), { signal });
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (drag && event.key === "Escape") {
+        event.preventDefault();
+        endDrag(false);
+      }
+    },
+    { signal, capture: true },
+  );
+
   // --- Keyboard (the listbox) -----------------------------------------------------------------
 
   const groupOf = (node: EventTarget | null) => {
@@ -372,7 +667,8 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
       const group = groupOf(event.target);
       if (!group || group.rows.length === 0) return;
       focused = group;
-      const key = active.get(group.root) ?? selected.get(group.root) ?? (group.rows[0] as Row).key;
+      const key =
+        active.get(group.root) ?? [...selectionOf(group)][0] ?? (group.rows[0] as Row).key;
       markActive(group, key, true);
     },
     { signal },
@@ -392,9 +688,20 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     "keydown",
     (event) => {
       const group = groupOf(event.target);
-      if (!group || group.rows.length === 0 || event.altKey || event.ctrlKey || event.metaKey)
-        return;
+      if (!group || group.rows.length === 0 || event.altKey) return;
       const keys = group.rows.map((row) => row.key);
+      // Multiple selection: Ctrl / Cmd + A selects every region (the box's keyboard path).
+      if (
+        group.multiple &&
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "a" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        setSelection(group, keys, keys.at(-1) as string);
+        return;
+      }
+      if (event.ctrlKey || event.metaKey) return;
       const index = Math.max(0, keys.indexOf(active.get(group.root) ?? ""));
       let next: number | null = null;
       switch (event.key) {
@@ -448,7 +755,11 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
       }
       if (next === null) return;
       event.preventDefault();
-      markActive(group, keys[next] as string, true);
+      const key = keys[next] as string;
+      markActive(group, key, true);
+      // Multiple selection: Shift + arrows add the region they move to.
+      if (group.multiple && event.shiftKey && next !== index)
+        setSelection(group, [...selectionOf(group), key], key);
     },
     { signal },
   );
@@ -489,7 +800,7 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
     { signal },
   );
 
-  return {
+  const api: MapRegions = {
     scan,
     apply,
     sourceData: sourceChanged,
@@ -499,11 +810,55 @@ export function createMapRegions(host: MapRegionsHost): MapRegions {
       return next !== null;
     },
     click(point) {
+      if (drag) return;
       const found = hit(point);
       if (found) select(found.group, found.key);
     },
+    setSelection(root, ids) {
+      const group = groups.find((each) => each.root === root);
+      // Not read yet (the DOM scan runs a microtask later): applied by the next scan.
+      if (!group) {
+        pending.set(root, ids);
+        return;
+      }
+      pending.delete(root);
+      const wanted = new Set(ids.map(String));
+      const keys = group.rows.map((row) => row.key).filter((key) => wanted.has(key));
+      setSelection(group, group.multiple ? keys : keys.slice(-1), keys.at(-1) ?? null);
+    },
     destroy() {
+      endDrag(false);
+      for (const root of [...members.keys()]) leave(root);
       abort.abort();
     },
   };
+  return api;
+}
+
+type Point = { x: number; y: number };
+
+/** The selection box's position and size (CSSOM, private properties). */
+const box2css = (a: Point, b: Point) => ({
+  "--_ok-map-box-x": `${Math.min(a.x, b.x)}px`,
+  "--_ok-map-box-y": `${Math.min(a.y, b.y)}px`,
+  "--_ok-map-box-width": `${Math.abs(a.x - b.x)}px`,
+  "--_ok-map-box-height": `${Math.abs(a.y - b.y)}px`,
+});
+
+/** Area-weighted centroid and area of a ring (lng / lat); its first point when degenerate. */
+function ringCentroid(ring: readonly number[][]): { area: number; point: [number, number] } {
+  let area = 0;
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0; i < ring.length; i++) {
+    const [ax = 0, ay = 0] = ring[i] as number[];
+    const [bx = 0, by = 0] = ring[(i + 1) % ring.length] as number[];
+    const cross = ax * by - bx * ay;
+    area += cross;
+    cx += (ax + bx) * cross;
+    cy += (ay + by) * cross;
+  }
+  const [x0 = 0, y0 = 0] = ring[0] as number[];
+  if (Math.abs(area) < 1e-12) return { area: 0, point: [x0, y0] };
+  return { area: Math.abs(area) / 2, point: [cx / (3 * area), cy / (3 * area)] };
 }

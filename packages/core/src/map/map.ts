@@ -193,9 +193,12 @@ export interface MapControllerOptions extends Partial<MapSettings> {
   readonly onGeolocate?: ((position: GeolocationPosition) => void) | undefined;
   readonly onGeolocateError?: ((error: GeolocationPositionError | Error) => void) | undefined;
   readonly onTrackUserLocationChange?: ((tracking: boolean) => void) | undefined;
-  /** A region of a `[data-ok-map-regions]` part was selected (`null`: the selection was cleared). */
+  /**
+   * The selection of a `[data-ok-map-regions]` part changed: `id` is the region toggled (`null`:
+   * the selection was cleared), `ids` every selected region in row order.
+   */
   readonly onRegionSelect?:
-    | ((regions: HTMLElement, id: string | number | null) => void)
+    | ((regions: HTMLElement, id: string | number | null, ids: (string | number)[]) => void)
     | undefined;
   /** A class of an interactive legend was pressed; `active` lists the pressed classes. */
   readonly onLegendToggle?:
@@ -227,6 +230,8 @@ export interface MapController {
   setSettings(settings: Partial<MapSettings>): void;
   setMapStyle(style: MapStyle | undefined, dark?: MapStyle | undefined): void;
   setLabels(labels: Partial<MapLabels>): void;
+  /** Sets the selection of a `[data-ok-map-regions]` part of this map (`[]` clears it). */
+  selectRegions(regions: HTMLElement, ids: readonly (string | number)[]): void;
   setSource(id: string, spec: MapSourceSpec): void;
   removeSource(id: string): void;
   setSourceData(id: string, data: unknown): void;
@@ -347,6 +352,11 @@ const OVERLAY_ATTRIBUTES = [
   "data-ok-max",
   "data-ok-source",
   "data-ok-layer",
+  // Selection and links (ADR-0065).
+  "data-ok-multiple",
+  "data-ok-box-select",
+  "data-ok-group",
+  "data-ok-link-filter",
   // Size legends (proportional symbols).
   "data-ok-radius",
 ];
@@ -740,6 +750,8 @@ export function createMapController(
 
   // --- Regions and legends (choropleth) ----------------------------------------------------------
 
+  let boxBlocked = false;
+
   const regions = createMapRegions({
     element,
     own,
@@ -748,6 +760,13 @@ export function createMapController(
     labels: () => labels,
     onRegionSelect: options.onRegionSelect,
     onLegendToggle: options.onLegendToggle,
+    // Box selection (ADR-0065) owns Shift + drag: MapLibre's box zoom is off meanwhile.
+    blockBoxZoom(blocked) {
+      boxBlocked = blocked;
+      if (!map) return;
+      if (blocked || !settings.boxZoom) map.boxZoom.disable();
+      else map.boxZoom.enable();
+    },
   });
 
   // --- Controls ---------------------------------------------------------------------------------
@@ -1103,7 +1122,7 @@ export function createMapController(
     }
     for (const handler of mapHandlers) {
       if (next[handler] === undefined) continue;
-      if (next[handler]) map[handler].enable();
+      if (next[handler] && !(handler === "boxZoom" && boxBlocked)) map[handler].enable();
       else map[handler].disable();
     }
     if (next.cooperativeGestures !== undefined) {
@@ -1479,6 +1498,9 @@ export function createMapController(
       lightStyle = safeStyle(style);
       darkStyle = safeStyle(dark);
       applyStyle();
+    },
+    selectRegions(part, ids) {
+      regions.setSelection(part, ids);
     },
     setLabels(next) {
       labels = { ...labels, ...next };

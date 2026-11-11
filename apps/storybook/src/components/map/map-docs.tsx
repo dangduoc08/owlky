@@ -6,6 +6,7 @@ import {
   mapNavigationOptions,
   mapOptions,
   mapPopupOptions,
+  mapRegionsOptions,
   mapScaleOptions,
 } from "@owlky/core";
 import mapApi from "@owlky/docs-content/api/map.json" with { type: "json" };
@@ -22,6 +23,7 @@ import markersGroup from "../../../../../packages/html/src/components/map/exampl
 import patternFills from "../../../../../packages/html/src/components/map/examples/pattern-fills-group.html?raw";
 import pixelMap from "../../../../../packages/html/src/components/map/examples/pixel-map-group.html?raw";
 import regionDrilldown from "../../../../../packages/html/src/components/map/examples/region-drilldown-group.html?raw";
+import regionSelection from "../../../../../packages/html/src/components/map/examples/region-selection-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
@@ -537,6 +539,95 @@ export function PatternMap() {
 }`,
   },
   {
+    id: "region-selection",
+    title: "Select several regions and link maps",
+    body: "Set `multiple` on `MapRegions` (HTML: `data-ok-multiple`) to let people select several regions: a click toggles the region under the pointer, and in the list of regions Enter or Space toggles one, Shift with an arrow key adds the next one, Ctrl + A (Cmd + A on macOS) selects every region and Escape clears the selection. `boxSelect` (HTML: `data-ok-box-select`) also turns on Shift + drag: the regions whose label anchor falls in the box are selected. Hold Alt as well to add them to the selection, and press Escape to cancel the box. The map's own Shift + drag zoom is off while box selection is on; the zoom buttons, the wheel and the keyboard still zoom. Everything a box does has a keyboard path in the list, so no one needs to drag.\n\n`onRegionSelect` (HTML: `ok:map:regionselect`) reports `id`, the region toggled, and `ids`, every selected region. In React, pass `selection` to set the selection from your state, for example `[]` to clear it. In HTML, call `selectRegions(regions, ids)` or `clearSelection()` on the map's instance.\n\nGive the regions of several maps the same `group` (HTML: `data-ok-group`) to link them: the selection of one becomes a filter that fades the other maps' regions outside it, in both directions. `linkFilter` sets the direction: `bidirectional` (the default), `emit` (the map filters the others but shows no filter) or `receive` (it shows the others' filters only). The maps must use the same region ids.",
+    html: `<!-- Shift + drag selects states; the group links this map to the dot map -->
+${snippetElement(regionSelection, "data-ok-box-select")}
+
+<!-- After the map -->
+<button type="button" id="clear" data-ok-button data-ok-variant="outlined" data-ok-size="sm"><span data-ok-button-label>Clear selection</span></button>
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-select");
+  const regions = element.querySelector("[data-ok-map-regions]");
+  regions.addEventListener("ok:map:regionselect", (event) => {
+    console.log("Selected", event.detail.ids);
+  });
+  // A button that clears the selection.
+  document.querySelector("#clear").addEventListener("click", () => {
+    getRuntime().get(element, "map").clearSelection();
+  });
+</script>`,
+    react: `import {
+  Button,
+  Layer,
+  type LayerProps,
+  MapRegions,
+  MapView,
+  mapRegionLayers,
+  mapScale,
+  Source,
+} from "@owlky/react";
+import { useState } from "react";
+
+const STATES = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Oregon", name: "Oregon", value: 4.24 },
+];
+const scale = mapScale(
+  STATES.map((state) => state.value),
+  { classes: 3 },
+);
+const layers = mapRegionLayers({ id: "states-fill", source: "states", scale }) as unknown as [
+  LayerProps,
+  LayerProps,
+];
+
+function StatesMap({ id, selection, onSelect }: {
+  id: string;
+  selection?: readonly (string | number)[];
+  onSelect?: (ids: readonly (string | number)[]) => void;
+}) {
+  return (
+    <MapView
+      aria-label={\`Map \${id} of western states\`}
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -118, latitude: 39, zoom: 4 }}
+    >
+      <Source id="states" type="geojson" data="us-states.geojson" promoteId="name">
+        <Layer {...layers[0]} />
+        <Layer {...layers[1]} />
+      </Source>
+      <MapRegions
+        source="states"
+        layer="states-fill"
+        data={STATES}
+        caption="Population by state, millions"
+        boxSelect
+        group="west"
+        selection={selection}
+        onRegionSelect={(event) => onSelect?.(event.ids)}
+      />
+    </MapView>
+  );
+}
+
+export function LinkedMaps() {
+  const [selection, setSelection] = useState<readonly (string | number)[]>([]);
+  return (
+    <>
+      <StatesMap id="1" selection={selection} onSelect={setSelection} />
+      <StatesMap id="2" />
+      <Button onClick={() => setSelection([])}>Clear selection</Button>
+    </>
+  );
+}`,
+  },
+  {
     id: "view",
     title: "Move the map",
     body: '`initialViewState` sets where the map starts: `longitude`, `latitude`, `zoom`, `pitch` and `bearing`, or `bounds` to fit. To control the view, pass `viewState` and update it from `onMove`. The map ref has `flyTo`, `easeTo`, `jumpTo` and `fitBounds`, and `getMap()` returns the MapLibre map for anything else.\n\nIn HTML, the root\'s `data-ok-longitude`, `data-ok-latitude` and `data-ok-zoom` set the view, and the map moves when you change them. Any element with `data-ok-map-fly-to="<map id>"` and `data-ok-view="longitude,latitude,zoom"` flies the map there when it is clicked, or when a radio button is selected. With reduced motion, the map jumps instead of flying.',
@@ -824,9 +915,9 @@ export function DownloadMap() {
     body: `- **\`ok:map:load\`**, **\`ok:map:move\`**, **\`ok:map:moveend\`**, **\`ok:map:click\`**, **\`ok:map:mousemove\`**, **\`ok:map:mouseenter\`**, **\`ok:map:mouseleave\`** and the other map events fire on the map with \`detail.viewState\`, and for pointer events \`lngLat\`, \`point\` and \`features\`.
 - **\`ok:map:popupopen\`** and **\`ok:map:popupclose\`** fire on a popup. \`popupclose\` has \`detail.reason\` and can be canceled to keep it open.
 - **\`ok:map:markerdragstart\`**, **\`ok:map:markerdrag\`** and **\`ok:map:markerdragend\`** fire on a marker with \`detail.lngLat\`.
-- **\`ok:map:regionselect\`** fires on a \`div[data-ok-map-regions]\` with \`detail.id\`, which is \`null\` when the selection is cleared. **\`ok:map:legendtoggle\`** fires on a legend with \`detail.classIndex\` and \`detail.active\`, the pressed classes.
+- **\`ok:map:regionselect\`** fires on a \`div[data-ok-map-regions]\` with \`detail.id\`, the region toggled (\`null\` when the selection is cleared), and \`detail.ids\`, every selected region. **\`ok:map:legendtoggle\`** fires on a legend with \`detail.classIndex\` and \`detail.active\`, the pressed classes.
 - **\`ok:map:fullscreen\`**, **\`ok:map:geolocate\`**, **\`ok:map:geolocateerror\`**, **\`ok:map:trackuserlocation\`** and **\`ok:map:fallback\`** report the controls and a map that can't draw.
-- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), exportMap(format, options), scale(values, options), greatCircle(from, to, options), sizeScale(values, options), hexbin(points, options), pixelGrid(geometry, options) }\`. \`scale\`, \`greatCircle\`, \`sizeScale\`, \`hexbin\` and \`pixelGrid\` are \`mapScale\`, \`greatCircle\`, \`mapSizeScale\`, \`mapHexbin\` and \`mapPixelGrid\`, for pages that load the map from the CDN.
+- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), exportMap(format, options), selectRegions(regions, ids), clearSelection(regions), scale(values, options), greatCircle(from, to, options), sizeScale(values, options), hexbin(points, options), pixelGrid(geometry, options) }\`. \`scale\`, \`greatCircle\`, \`sizeScale\`, \`hexbin\` and \`pixelGrid\` are \`mapScale\`, \`greatCircle\`, \`mapSizeScale\`, \`mapHexbin\` and \`mapPixelGrid\`, for pages that load the map from the CDN.
 - **React:** event props such as \`onLoad\`, \`onMove\`, \`onClick\`, \`onMouseMove\` and \`onMouseEnter\`; a ref with \`getMap()\`, \`flyTo\`, \`easeTo\`, \`jumpTo\` and \`fitBounds\`; and \`useMap()\` inside a map or a \`MapProvider\`.`,
   },
   {
@@ -875,6 +966,7 @@ const PREVIEWS = {
       <OptionsTable schema={mapScaleOptions} />
       <OptionsTable schema={mapAttributionOptions} />
       <OptionsTable schema={mapLegendOptions} />
+      <OptionsTable schema={mapRegionsOptions} />
     </>
   ),
   props: () => (
@@ -962,8 +1054,20 @@ const PREVIEWS = {
         {
           react: "MapRegions onRegionSelect",
           html: "ok:map:regionselect",
-          type: "({ id }) => void",
-          description: "A region was selected, or the selection was cleared.",
+          type: "({ id, ids }) => void",
+          description: "The selection changed: the region toggled and every selected region.",
+        },
+        {
+          react: "MapRegions group",
+          html: "data-ok-group",
+          type: "string",
+          description: "Links the regions of several maps: a selection filters the others.",
+        },
+        {
+          react: "MapRegions selection",
+          html: "selectRegions(regions, ids) / clearSelection()",
+          type: "(string | number)[]",
+          description: "Sets the selected regions from your state, or clears them.",
         },
         {
           react: "MapLegend scale / title / position",
@@ -1021,6 +1125,10 @@ const PREVIEWS = {
         ["A letter (regions list)", "Moves to the next region whose name starts with it."],
         ["Enter / Space (regions list)", "Selects the region, or clears the selection."],
         ["Escape (regions list)", "Clears the selection."],
+        ["Shift + Up arrow / Down arrow (multiple)", "Moves and adds the region to the selection."],
+        ["Ctrl + A / Cmd + A (multiple)", "Selects every region."],
+        ["Shift + drag (box selection)", "Selects the regions in the box; with Alt, adds them."],
+        ["Escape (while dragging a box)", "Cancels the box."],
         [
           "Enter / Space (legend class)",
           "Fades, or shows again, the regions outside the pressed classes.",

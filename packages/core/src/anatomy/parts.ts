@@ -1762,6 +1762,12 @@ export interface MapParts {
   "data-ok-pattern": Value<
     "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
   >;
+  /** Set by the runtime while a Shift + drag box selects regions: the box (hidden from assistive technology). */
+  "data-ok-map-selection-box": Part<"div">;
+  /** On regions: links them to the regions of other maps with the same group (a selection filters the others). */
+  "data-ok-group": Value<string>;
+  /** Set by the runtime on a region option that a linked map's filter leaves out. */
+  "data-ok-muted": State;
   /** On a cell of the regions table: the region's value, a number. */
   "data-ok-value": Value<string>;
 }

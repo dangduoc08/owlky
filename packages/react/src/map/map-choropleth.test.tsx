@@ -140,9 +140,9 @@ describe("MapRegions and MapLegend", () => {
     expect(screen.getByRole("button", { name: "5 – 8" }).getAttribute("aria-pressed")).toBe("true");
     act(() => list.focus());
     await userEvent.keyboard("{ArrowDown}{Enter}");
-    expect(onRegionSelect).toHaveBeenCalledWith({ id: "B" });
+    expect(onRegionSelect).toHaveBeenCalledWith({ id: "B", ids: ["B"] });
     await userEvent.keyboard("{Escape}");
-    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: null });
+    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: null, ids: [] });
   });
 
   it("formats, names and labels: custom texts, gradient, static and no-data classes", async () => {
@@ -242,6 +242,32 @@ describe("MapRegions and MapLegend", () => {
     const circle = container.querySelector<HTMLElement>("[data-ok-map-legend-circle]");
     expect(circle?.style.getPropertyValue("--_ok-map-radius")).toBe("20px");
     await expectNoAxeViolations(container);
+  });
+
+  it("selects several regions, controlled by selection, and links maps (ADR-0065)", async () => {
+    const onRegionSelect = vi.fn();
+    const { root, rerender } = await renderChoropleth({
+      regions: { onRegionSelect, boxSelect: true, group: "react-link", linkFilter: "emit" },
+    });
+    const part = root.querySelector("[data-ok-map-regions]") as HTMLElement;
+    expect(part.hasAttribute("data-ok-box-select")).toBe(true);
+    expect(part.getAttribute("data-ok-group")).toBe("react-link");
+    expect(part.getAttribute("data-ok-link-filter")).toBe("emit");
+    const list = screen.getByRole("listbox", { name: "Regions" });
+    expect(list.getAttribute("aria-multiselectable")).toBe("true");
+    act(() => list.focus());
+    await userEvent.keyboard("{Enter}{Shift>}{ArrowDown}{/Shift}");
+    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: "B", ids: ["A", "B"] });
+    // Controlled: the selection follows the prop.
+    rerender(<Choropleth regions={{ onRegionSelect, multiple: true, selection: ["C"] }} />);
+    await act(async () => {});
+    expect(onRegionSelect).toHaveBeenLastCalledWith({ id: "C", ids: ["C"] });
+    expect(
+      [...root.querySelectorAll('[role="option"][aria-selected="true"]')].map((o) =>
+        o.getAttribute("data-ok-id"),
+      ),
+    ).toEqual(["C"]);
+    await expectNoAxeViolations(root);
   });
 
   it("unregisters parts that unmount", async () => {

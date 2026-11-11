@@ -26,7 +26,10 @@ export interface MapContextValue {
   readonly popups: WeakMap<Element, (reason: MapPopupCloseReason) => void>;
   readonly geolocate: Set<GeolocateHandlers>;
   /** `MapRegions` roots → their `onRegionSelect`. */
-  readonly regions: WeakMap<Element, (id: string | number | null) => void>;
+  readonly regions: WeakMap<
+    Element,
+    (id: string | number | null, ids: (string | number)[]) => void
+  >;
   /** `MapLegend` roots → their `onLegendToggle`. */
   readonly legends: WeakMap<Element, (classIndex: number, active: readonly number[]) => void>;
 }

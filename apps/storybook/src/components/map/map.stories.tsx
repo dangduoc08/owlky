@@ -37,6 +37,8 @@ import { PixelMapDemo } from "./demos/pixel-map.js";
 import pixelMapSource from "./demos/pixel-map.tsx?raw";
 import { RegionDrilldownDemo } from "./demos/region-drilldown.js";
 import regionDrilldownSource from "./demos/region-drilldown.tsx?raw";
+import { RegionSelectionDemo } from "./demos/region-selection.js";
+import regionSelectionSource from "./demos/region-selection.tsx?raw";
 import { SideBySideDemo } from "./demos/side-by-side.js";
 import sideBySideSource from "./demos/side-by-side.tsx?raw";
 import { ViewportAnimationDemo } from "./demos/viewport-animation.js";
@@ -186,4 +188,11 @@ export const PatternFills = story(
   "Pattern fills",
   PatternFillsDemo,
   patternFillsSource,
+);
+export const RegionSelection = story(
+  "Region selection",
+  "region-selection",
+  "Region selection",
+  RegionSelectionDemo,
+  regionSelectionSource,
 );

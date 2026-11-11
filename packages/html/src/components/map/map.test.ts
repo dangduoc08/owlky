@@ -477,7 +477,7 @@ describe("map choropleth", () => {
     list.focus();
     list.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
     list.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    expect((await selected).detail).toEqual({ id: "B" });
+    expect((await selected).detail).toEqual({ id: "B", ids: ["B"] });
     const legend = host.querySelector("#l") as HTMLElement;
     const toggled = next(legend, "legendtoggle");
     (legend.querySelector("button") as HTMLButtonElement).click();
@@ -536,6 +536,58 @@ describe("map choropleth", () => {
       "squares",
     ]);
     expect(getComputedStyle(swatches[0] as Element).backgroundImage).toContain("gradient");
+    await expectNoAxeViolations(host);
+  });
+
+  it("selects several regions from the instance and reports every id (ADR-0065)", async () => {
+    const { host, instance } = await setup(
+      CHOROPLETH.replace(
+        'id="r" data-ok-map-regions',
+        'id="r" data-ok-map-regions data-ok-multiple',
+      ),
+    );
+    const regions = host.querySelector("#r") as HTMLElement;
+    const list = host.querySelector("[data-ok-map-regions-list]") as HTMLElement;
+    expect(list.getAttribute("aria-multiselectable")).toBe("true");
+    let selected = next(regions, "regionselect");
+    instance.selectRegions(regions, ["A", "B"]);
+    expect((await selected).detail).toEqual({ id: "B", ids: ["A", "B"] });
+    selected = next(regions, "regionselect");
+    instance.clearSelection();
+    expect((await selected).detail).toEqual({ id: null, ids: [] });
+    selected = next(regions, "regionselect");
+    instance.selectRegions(regions, ["B"]);
+    await selected;
+    selected = next(regions, "regionselect");
+    instance.clearSelection(regions);
+    expect((await selected).detail.ids).toEqual([]);
+    // Box selection turns MapLibre's box zoom off.
+    regions.setAttribute("data-ok-box-select", "");
+    await settle();
+    expect(instance.map?.boxZoom.isEnabled()).toBe(false);
+  });
+
+  it("links the two maps of the region-selection snippet", async () => {
+    const host = mount(snippet("region-selection"));
+    // Without the story's layout CSS: give the maps the page's width.
+    for (const root of host.querySelectorAll<HTMLElement>("[data-ok-map]"))
+      root.style.width = "720px";
+    const [first, second] = host.querySelectorAll<HTMLElement>("[data-ok-map]");
+    const loads = [next(first as HTMLElement, "load"), next(second as HTMLElement, "load")];
+    start();
+    await Promise.all(loads);
+    const one = instanceOf(first as HTMLElement);
+    const two = instanceOf(second as HTMLElement);
+    one.selectRegions(host.querySelector("#map-select-regions") as HTMLElement, ["Texas"]);
+    expect(two.map?.getFeatureState({ source: "linked-pixels", id: "Ohio" })).toMatchObject({
+      muted: true,
+    });
+    expect(
+      host
+        .querySelector('#map-select-linked-regions [data-ok-id="Ohio"][role="option"]')
+        ?.hasAttribute("data-ok-muted"),
+    ).toBe(true);
+    expect(one.map?.boxZoom.isEnabled()).toBe(false);
     await expectNoAxeViolations(host);
   });
 

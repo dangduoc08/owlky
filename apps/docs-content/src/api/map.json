@@ -341,8 +341,8 @@
      },
      {
       "cancelable": false,
-      "description": "After a region was selected or the selection cleared (dispatched on `[data-ok-map-regions]`; `id` is `null` when cleared).",
-      "detail": "{ id: string | number | null; }",
+      "description": "After the selection of regions changed (dispatched on `[data-ok-map-regions]`): `id` is the region toggled (`null` when cleared), `ids` every selected region in row order.",
+      "detail": "{ id: string | number | null; ids: (string | number)[]; }",
       "name": "ok:map:regionselect"
      },
      {
@@ -365,6 +365,12 @@
      }
     ],
     "methods": [
+     {
+      "description": "Clears the selection of one `[data-ok-map-regions]` part, or of every part of the map.",
+      "kind": "method",
+      "name": "clearSelection",
+      "type": "(regions?: Element | undefined) => void"
+     },
      {
       "description": "Hides a popup of this map; no event.",
       "kind": "method",
@@ -454,6 +460,12 @@
       "kind": "property",
       "name": "scale",
       "type": "(values: readonly (number | null | undefined)[], options?: MapScaleOptions | undefined) => MapScaleResult"
+     },
+     {
+      "description": "Selects these regions of a `[data-ok-map-regions]` part of the map (ids that aren't rows are ignored; one at most without `data-ok-multiple`).",
+      "kind": "method",
+      "name": "selectRegions",
+      "type": "(regions: Element, ids: readonly (string | number)[]) => void"
      },
      {
       "description": "Enters or leaves full screen.",
@@ -757,6 +769,12 @@
       "name": "data-ok-generate-id"
      },
      {
+      "description": "On regions: links them to the regions of other maps with the same group (a selection filters the others).",
+      "kind": "value",
+      "name": "data-ok-group",
+      "value": "string"
+     },
+     {
       "description": "Set by the runtime on the region option under the pointer.",
       "kind": "state",
       "name": "data-ok-hovered"
@@ -896,6 +914,14 @@
       "name": "data-ok-map-region"
      },
      {
+      "description": "Set by the runtime while a Shift + drag box selects regions: the box (hidden from assistive technology).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-selection-box"
+     },
+     {
       "description": "HTML only: a data source (hidden).",
       "elements": [
        "div"
@@ -948,6 +974,11 @@
       "kind": "value",
       "name": "data-ok-min",
       "value": "string"
+     },
+     {
+      "description": "Set by the runtime on a region option that a linked map's filter leaves out.",
+      "kind": "state",
+      "name": "data-ok-muted"
      },
      {
       "description": "Set by the runtime on the attribution control on narrow maps.",
@@ -1754,6 +1785,33 @@
     "elements": [
      "div"
     ],
+    "options": [
+     {
+      "attr": "data-ok-multiple",
+      "description": "Several regions can be selected: a click, Enter or Space toggles one, Shift + arrows add the next one, Ctrl + A selects all and Escape clears.",
+      "kind": "flag",
+      "name": "multiple"
+     },
+     {
+      "attr": "data-ok-box-select",
+      "description": "Shift + drag on the map selects the regions whose label anchor is in the box (Alt adds to the selection, Escape cancels). Implies `multiple` and turns off the map's Shift + drag zoom.",
+      "kind": "flag",
+      "name": "boxSelect"
+     },
+     {
+      "attr": "data-ok-link-filter",
+      "default": "bidirectional",
+      "description": "Regions of a `group`: `bidirectional` (the default: the selection filters the other maps of the group, and their selections filter this one), `emit` (filters the others only) or `receive` (shows the others' filters only).",
+      "kind": "style",
+      "name": "linkFilter",
+      "optional": true,
+      "values": [
+       "bidirectional",
+       "emit",
+       "receive"
+      ]
+     }
+    ],
     "parts": [
      {
       "description": "The regions' listbox; the runtime fills it from the table.",
@@ -1770,6 +1828,11 @@
     "description": "The regions of a choropleth: joins `data` to the source's features through feature state (`value`, `hover`, `focus`, `selected`, `muted`), gives keyboard users a list of the regions (name and value, Enter selects) and holds the data as a table for assistive technology.",
     "native": "HTMLElement",
     "props": [
+     {
+      "description": "Shift + drag on the map selects the regions whose label anchor is in the box (Alt adds, Escape cancels). Implies `multiple`; the map's Shift + drag zoom is off.",
+      "name": "boxSelect",
+      "type": "boolean"
+     },
      {
       "description": "The data table's caption, such as \"Population by state, 2020\".",
       "name": "caption",
@@ -1788,14 +1851,30 @@
       "type": "((value: number) => string)"
      },
      {
+      "description": "Links the regions to those of other maps with the same `group`: a selection filters the others.",
+      "name": "group",
+      "type": "string"
+     },
+     {
       "description": "The fill layer that pointer hovers and clicks hit (the first layer of `mapRegionLayers`).",
       "name": "layer",
       "type": "string"
      },
      {
+      "default": "\"bidirectional\"",
+      "description": "In a `group`: `bidirectional` (send and show filters), `emit` (send only) or `receive` (show only).",
+      "name": "linkFilter",
+      "type": "\"bidirectional\" | \"emit\" | \"receive\""
+     },
+     {
       "description": "Accessible name of the regions list. regions` (\"Regions\").",
       "name": "listLabel",
       "type": "string"
+     },
+     {
+      "description": "Several regions can be selected: a click, Enter or Space toggles one, Shift + arrows add the next, Ctrl + A selects all, Escape clears.",
+      "name": "multiple",
+      "type": "boolean"
      },
      {
       "default": "Region",
@@ -1804,9 +1883,14 @@
       "type": "string"
      },
      {
-      "description": "Called when a region is selected (a click on the map, Enter or Space in the list) or cleared.",
+      "description": "Called when the selection changes (a click on the map, Enter or Space in the list, a box).",
       "name": "onRegionSelect",
       "type": "((event: MapRegionSelectEvent) => void)"
+     },
+     {
+      "description": "The selected ids, to set the selection from your state (for example `[]` to clear it). Uncontrolled when omitted.",
+      "name": "selection",
+      "type": "readonly (string | number)[]"
      },
      {
       "description": "The source whose features are the regions (it needs feature ids: `promoteId`).",

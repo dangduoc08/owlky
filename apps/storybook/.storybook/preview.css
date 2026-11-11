@@ -1777,6 +1777,28 @@
 }
 
 /* Side by side: two maps, or one split down the middle. */
+/* Map "Region selection": two linked maps side by side (stacked on narrow screens), then the status. */
+.sb-map-linked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ok-spacing) * 2);
+  width: 100%;
+}
+
+.sb-map-linked > [data-ok-map] {
+  flex: 1 1 calc(var(--ok-spacing) * 70);
+  min-width: 0;
+  height: calc(var(--ok-spacing) * 90);
+}
+
+.sb-map-linked-bar {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ok-spacing) * 2);
+}
+
 .sb-map-compare {
   position: relative;
   display: flex;

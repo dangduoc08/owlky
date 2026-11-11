@@ -119,6 +119,7 @@ const SPECS = {
   "map-scale": "map.md",
   "map-attribution": "map.md",
   "map-legend": "map.md",
+  "map-regions": "map.md",
 };
 
 const code = (value) => `\`${value}\``;

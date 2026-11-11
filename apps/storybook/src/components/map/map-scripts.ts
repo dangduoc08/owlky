@@ -360,6 +360,41 @@ const pixelMap: Script = (row) => {
   };
 };
 
+const regionSelection: Script = (row) => {
+  const [selecting, linked] = mount(row);
+  const regions = row.querySelector<HTMLElement>("#map-select-regions");
+  const status = row.querySelector<HTMLElement>("#map-select-status");
+  const clear = row.querySelector<HTMLButtonElement>(".sb-map-linked-bar button");
+  let live = true;
+  fetch(US_STATES)
+    .then((response) => response.json())
+    .then((states) => {
+      if (live && linked?.map)
+        linked.map.setSourceData(
+          "linked-pixels",
+          linked.map.pixelGrid(states, { spacing: 0.8, joinBy: "name" }),
+        );
+    })
+    .catch(() => {});
+  const stop = listen([
+    [
+      regions,
+      "ok:map:regionselect",
+      (event) => {
+        const { ids } = (event as CustomEvent<{ ids: unknown[] }>).detail;
+        if (status)
+          status.textContent =
+            ids.length === 1 ? "1 state selected" : `${ids.length} states selected`;
+      },
+    ],
+    [clear, "click", () => selecting?.map?.clearSelection()],
+  ]);
+  return () => {
+    live = false;
+    stop();
+  };
+};
+
 /** Writes the first breadcrumb, and a second one for the region (DOM methods: no `innerHTML`). */
 function renderCrumbs(list: HTMLElement, region: CensusRegion | null) {
   const root = list.querySelector("button") as HTMLElement;
@@ -767,6 +802,27 @@ element.querySelector("[data-ok-map-panel] button").addEventListener("click", ()
   "pattern-fills": {
     scriptSource: `${REGISTER}
 // The map draws the ok-pattern-<style> images its pattern layer asks for: no other script.`,
+  },
+  "region-selection": {
+    script: regionSelection,
+    scriptSource: `import { getRuntime } from "@owlky/html";
+${REGISTER}
+
+const [first, second] = document.querySelectorAll("#map-select, #map-select-linked");
+const runtime = getRuntime();
+// The dot map's cells, tagged with each state's name.
+const response = await fetch("maps/us-states.geojson");
+const states = await response.json();
+runtime.get(second, "map").setSourceData("linked-pixels", runtime.get(second, "map").pixelGrid(states, { spacing: 0.8, joinBy: "name" }));
+// Both maps' regions share data-ok-group="us-dashboard": a selection in one filters the other.
+const status = document.querySelector("#map-select-status");
+first.querySelector("[data-ok-map-regions]").addEventListener("ok:map:regionselect", (event) => {
+  const count = event.detail.ids.length;
+  status.textContent = count === 1 ? "1 state selected" : \`\${count} states selected\`;
+});
+document.querySelector(".sb-map-linked-bar button").addEventListener("click", () => {
+  runtime.get(first, "map").clearSelection();
+});`,
   },
   hexbin: {
     script: hexbin,

@@ -1117,6 +1117,28 @@
     white-space: nowrap;
   }
 
+  /* --- Region selection (ADR-0065) ------------------------------------------------------------ */
+
+  /* The Shift + drag box: placed by the runtime (`--_ok-map-box-*`), never in the way of the pointer. */
+  :where([data-ok-map-selection-box]) {
+    position: absolute;
+    top: var(--_ok-map-box-y, 0);
+    left: var(--_ok-map-box-x, 0);
+    z-index: 3;
+    box-sizing: border-box;
+    width: var(--_ok-map-box-width, 0);
+    height: var(--_ok-map-box-height, 0);
+    border: 2px dashed var(--ok-text-primary);
+    border-radius: var(--ok-radius-xs);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+    pointer-events: none;
+  }
+
+  /* Regions a linked map filters out: dimmed in the readout too. */
+  :where([data-ok-map-region][data-ok-muted]) {
+    color: var(--ok-text-secondary);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-map-pin], [data-ok-map-action], button[data-ok-map-legend-class]) {
       transition: none;

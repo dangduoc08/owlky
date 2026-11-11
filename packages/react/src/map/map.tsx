@@ -385,7 +385,7 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
       onFullscreenChange: (on) => call("onFullscreenChange", on),
       onMarkerDrag: (marker, phase, lngLat) => drags.get(marker)?.(phase, lngLat),
       onPopupClose: (popup, reason) => popups.get(popup)?.(reason),
-      onRegionSelect: (part, id) => regions.get(part)?.(id),
+      onRegionSelect: (part, id, ids) => regions.get(part)?.(id, ids),
       onLegendToggle: (legend, index, active) => legends.get(legend)?.(index, active),
       onGeolocate: (position) => {
         for (const each of geolocate) each.onGeolocate?.(position);

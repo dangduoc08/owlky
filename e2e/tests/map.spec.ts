@@ -328,3 +328,106 @@ test("map under a strict CSP: no violations", async ({ page }) => {
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);
 });
+
+// Roadmap 4.18.94–4.18.98 (ApexMaps): new map stories.
+for (const impl of implementations) {
+  test.describe(`map data layers and selection (${impl})`, () => {
+    test("selects states from the keyboard and filters the linked map", async ({ page }) => {
+      await openMap(page, impl, "region-selection");
+      const list = page.getByRole("listbox", { name: "States to select" });
+      await expect(list).toHaveAttribute("aria-multiselectable", "true");
+      await expect(list.getByRole("option")).toHaveCount(51);
+      await list.focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("Shift+ArrowDown");
+      const status = page.locator("#map-select-status");
+      await expect(status).toHaveText("2 states selected");
+      await expect(list.getByRole("option", { selected: true })).toHaveCount(2);
+      // The dot map fades the states outside the selection.
+      const linked = page.getByRole("listbox", { name: "States of the dot map" });
+      await expect(linked.locator('[data-ok-id="Texas"]')).toHaveAttribute("data-ok-muted", "");
+      await expect(linked.locator('[data-ok-id="Alaska"]')).not.toHaveAttribute(
+        "data-ok-muted",
+        "",
+      );
+      await page.keyboard.press("Control+a");
+      await expect(status).toHaveText("51 states selected");
+      await page.getByRole("button", { name: "Clear selection" }).click();
+      await expect(status).toHaveText("0 states selected");
+      await expect(linked.locator("[data-ok-muted]")).toHaveCount(0);
+    });
+
+    test("selects the states in a Shift + drag box", async ({ page }, info) => {
+      test.skip(info.project.name === "mobile", "Box selection needs a mouse.");
+      await openMap(page, impl, "region-selection");
+      const view = page.locator("#map-select [data-ok-map-view]");
+      const box = (await view.boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      const status = page.locator("#map-select-status");
+      // Escape cancels a box.
+      await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.3);
+      await page.keyboard.down("Shift");
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.7, { steps: 5 });
+      await expect(page.locator("[data-ok-map-selection-box]")).toBeVisible();
+      await page.keyboard.press("Escape");
+      await page.mouse.up();
+      await expect(page.locator("[data-ok-map-selection-box]")).toHaveCount(0);
+      await expect(status).toHaveText("0 states selected");
+      await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.3);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.7, { steps: 5 });
+      await page.mouse.up();
+      await page.keyboard.up("Shift");
+      await expect(status).not.toHaveText("0 states selected");
+      await expect(
+        page
+          .getByRole("listbox", { name: "States to select" })
+          .getByRole("option", { selected: true })
+          .first(),
+      ).toBeAttached();
+    });
+
+    test("draws proportional symbols with a nested size legend", async ({ page }) => {
+      await openMap(page, impl, "bubbles");
+      const legend = page.getByRole("group", { name: "Population (millions)" });
+      const circles = legend.locator("[data-ok-map-legend-circle]");
+      await expect(circles).toHaveCount(3);
+      const [large, small] = await Promise.all([
+        circles.nth(0).boundingBox(),
+        circles.nth(2).boundingBox(),
+      ]);
+      expect((large?.width ?? 0) > (small?.width ?? 0)).toBe(true);
+      // Nested: the circles share their bottom.
+      expect(
+        Math.abs((large?.y ?? 0) + (large?.height ?? 0) - (small?.y ?? 0) - (small?.height ?? 0)),
+      ).toBeLessThan(1.5);
+      await expect(
+        page.getByRole("listbox", { name: "Metropolitan areas" }).getByRole("option"),
+      ).toHaveCount(20);
+    });
+
+    test("fills the pixel map and the hexbins from their data", async ({ page }) => {
+      await openMap(page, impl, "pixel-map");
+      await expect(page.getByRole("listbox", { name: "States" }).getByRole("option")).toHaveCount(
+        51,
+      );
+      await openMap(page, impl, "hexbin");
+      await expect(
+        page.getByRole("group", { name: "Earthquakes per hexagon" }).locator("li"),
+      ).toHaveCount(5);
+    });
+
+    test("repeats the class patterns on the legend swatches", async ({ page }) => {
+      await openMap(page, impl, "pattern-fills");
+      const swatches = page.locator("[data-ok-map-legend-swatch][data-ok-pattern]");
+      await expect(swatches).toHaveCount(4);
+      await expect(swatches.first()).toHaveCSS("background-image", /gradient/);
+    });
+  });
+}

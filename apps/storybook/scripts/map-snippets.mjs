@@ -125,19 +125,25 @@ const decode = (text) =>
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&");
 
-/** Moves the corner contents into the root's corner elements, in render order. */
+/**
+ * Moves the corner contents into their map's corner elements, in render order: a map's parts
+ * render before its four corners, so contents seen since the last corners belong to the next ones.
+ */
 function placeCorners(markup) {
-  const found = {};
-  const rest = markup.replace(
-    /<ok-corner data-position="([a-z-]+)">([\s\S]*?)<\/ok-corner>/g,
-    (_, position, content) => {
-      found[position] = `${found[position] ?? ""}${content}`;
-      return "";
+  let found = {};
+  let placed = 0;
+  return markup.replace(
+    /<ok-corner data-position="([a-z-]+)">([\s\S]*?)<\/ok-corner>|<div data-ok-map-corner="([a-z-]+)"><\/div>/g,
+    (_, position, content, corner) => {
+      if (position) {
+        found[position] = `${found[position] ?? ""}${content}`;
+        return "";
+      }
+      const out = `<div data-ok-map-corner="${corner}">${found[corner] ?? ""}</div>`;
+      placed++;
+      if (placed % 4 === 0) found = {};
+      return out;
     },
-  );
-  return rest.replace(
-    /<div data-ok-map-corner="([a-z-]+)"><\/div>/g,
-    (_, position) => `<div data-ok-map-corner="${position}">${found[position] ?? ""}</div>`,
   );
 }
 

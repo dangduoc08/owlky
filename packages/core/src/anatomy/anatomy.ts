@@ -6654,6 +6654,38 @@ export const mapLegendAttributes = (options: MapLegendAnatomyOptions = {}): Data
   return attributes;
 };
 
+export const mapRegionsLinkFilters = ["bidirectional", "emit", "receive"] as const;
+export type MapRegionsLinkFilter = (typeof mapRegionsLinkFilters)[number];
+
+/** Map regions (ADR-0065): multiple and box selection, linked maps. */
+export const mapRegionsOptions = defineOptions("map-regions", "data-ok-map-regions", {
+  multiple: flag(
+    "data-ok-multiple",
+    "Several regions can be selected: a click, Enter or Space toggles one, Shift + arrows add the next one, Ctrl + A selects all and Escape clears.",
+  ),
+  boxSelect: flag(
+    "data-ok-box-select",
+    "Shift + drag on the map selects the regions whose label anchor is in the box (Alt adds to the selection, Escape cancels). Implies `multiple` and turns off the map's Shift + drag zoom.",
+  ),
+  linkFilter: style(
+    "data-ok-link-filter",
+    mapRegionsLinkFilters,
+    "bidirectional",
+    "Regions of a `group`: `bidirectional` (the default: the selection filters the other maps of the group, and their selections filter this one), `emit` (filters the others only) or `receive` (shows the others' filters only).",
+    { optional: true },
+  ),
+});
+
+export type MapRegionsAnatomyOptions = {
+  multiple?: boolean | undefined;
+  boxSelect?: boolean | undefined;
+  linkFilter?: MapRegionsLinkFilter | undefined;
+};
+
+/** `data-ok-*` attributes of a map regions part. */
+export const mapRegionsAttributes = (options: MapRegionsAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(mapRegionsOptions, { ...options });
+
 export type MapControlAnatomyOptions = {
   visualizePitch?: boolean | undefined;
   trackUserLocation?: boolean | undefined;
@@ -7720,6 +7752,7 @@ export const optionSchemas = {
   "map-scale": mapScaleOptions,
   "map-attribution": mapAttributionOptions,
   "map-legend": mapLegendOptions,
+  "map-regions": mapRegionsOptions,
   lightbox: lightboxOptions,
   upload: uploadOptions,
   illustration: illustrationOptions,

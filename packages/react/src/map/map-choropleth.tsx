@@ -1,6 +1,12 @@
 "use client";
 
-import { type MapLegendVariant, type MapPosition, mapLegendAttributes } from "@owlky/core";
+import {
+  type MapLegendVariant,
+  type MapPosition,
+  type MapRegionsLinkFilter,
+  mapLegendAttributes,
+  mapRegionsAttributes,
+} from "@owlky/core";
 import {
   type MapPatternStyle,
   type MapScaleClass,
@@ -8,7 +14,7 @@ import {
   type MapSizeScaleResult,
   mapScaleLabel,
 } from "@owlky/core/map";
-import { type HTMLAttributes, type ReactNode, useCallback, useId, useRef } from "react";
+import { type HTMLAttributes, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
 import { useMapContext } from "./map-context.js";
 import { InCorner } from "./map-controls.js";
 
@@ -75,8 +81,10 @@ export interface MapRegionDatum {
 }
 
 export interface MapRegionSelectEvent {
-  /** The selected region's id, or `null` when the selection was cleared. */
+  /** The region selected or toggled, or `null` when the selection was cleared. */
   readonly id: string | number | null;
+  /** Every selected region's id, in the order of `data`. */
+  readonly ids: readonly (string | number)[];
 }
 
 export interface MapRegionsProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
@@ -98,8 +106,18 @@ export interface MapRegionsProps extends Omit<HTMLAttributes<HTMLDivElement>, "c
   formatValue?: ((value: number) => string) | undefined;
   /** Accessible name of the regions list. Default from the map's `labels.regions` ("Regions"). */
   listLabel?: string | undefined;
-  /** Called when a region is selected (a click on the map, Enter or Space in the list) or cleared. */
+  /** Called when the selection changes (a click on the map, Enter or Space in the list, a box). */
   onRegionSelect?: ((event: MapRegionSelectEvent) => void) | undefined;
+  /** Several regions can be selected: a click, Enter or Space toggles one, Shift + arrows add the next, Ctrl + A selects all, Escape clears. */
+  multiple?: boolean | undefined;
+  /** Shift + drag on the map selects the regions whose label anchor is in the box (Alt adds, Escape cancels). Implies `multiple`; the map's Shift + drag zoom is off. */
+  boxSelect?: boolean | undefined;
+  /** Links the regions to those of other maps with the same `group`: a selection filters the others. */
+  group?: string | undefined;
+  /** In a `group`: `bidirectional` (send and show filters), `emit` (send only) or `receive` (show only). Default `"bidirectional"`. */
+  linkFilter?: MapRegionsLinkFilter | undefined;
+  /** The selected ids, to set the selection from your state (for example `[]` to clear it). Uncontrolled when omitted. */
+  selection?: readonly (string | number)[] | undefined;
 }
 
 /**
@@ -118,18 +136,42 @@ export function MapRegions({
   formatValue = formatNumber,
   listLabel,
   onRegionSelect,
+  multiple,
+  boxSelect,
+  group,
+  linkFilter,
+  selection,
   ...props
 }: MapRegionsProps) {
-  const { regions, labels } = useMapContext("MapRegions");
+  const { regions, labels, controller } = useMapContext("MapRegions");
   const latest = useRef(onRegionSelect);
   latest.current = onRegionSelect;
-  const handler = useCallback((id: string | number | null) => latest.current?.({ id }), []);
+  const handler = useCallback(
+    (id: string | number | null, ids: (string | number)[]) => latest.current?.({ id, ids }),
+    [],
+  );
   const ref = useRegistered(regions, handler);
+  const node = useRef<HTMLDivElement | null>(null);
+  const setRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      node.current = element;
+      ref(element);
+    },
+    [ref],
+  );
+  const selected = selection === undefined ? undefined : JSON.stringify(selection);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `selected` stands for `selection`.
+  useEffect(() => {
+    if (selection !== undefined && controller && node.current)
+      controller.selectRegions(node.current, selection);
+  }, [controller, selected]);
   return (
     <div
       {...props}
-      ref={ref}
+      ref={setRef}
       data-ok-map-regions=""
+      {...mapRegionsAttributes({ multiple, boxSelect, linkFilter })}
+      data-ok-group={group}
       data-ok-source={source}
       data-ok-source-layer={sourceLayer}
       data-ok-layer={layer}
