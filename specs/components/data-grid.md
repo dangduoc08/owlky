@@ -24,6 +24,12 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          [aria-haspopup][aria-controls="<id>-columns|filters|density|export"] (HTML: data-ok-popover-open)
          (toolbarVariant="icon": IconButton[aria-labelledby] + Tooltip#<id>-<panel>-tooltip)
     Popover#<id>-columns › div[data-ok-data-grid-panel][role=group] › FormControlLabel(Switch[data-ok-field])…
+      (columnsToolPanel, 4.18.90: div[data-ok-data-grid-columns-tool] › TextField#<id>-columns-search,
+       div[data-ok-data-grid-columns-list] › div[data-ok-data-grid-columns-item][data-ok-field][hidden]?
+       › FormControlLabel(Switch), TextField select #<id>-columns-<field>-pin?, IconButton[data-ok-data-grid-columns-move=up|down] × 2;
+       span[data-ok-data-grid-columns-empty][hidden]?; div[data-ok-data-grid-columns-section=row-groups|values][role=group]
+       › span[data-ok-data-grid-columns-section-title], Checkbox[data-ok-data-grid-columns-group] | TextField select #<id>-columns-<field>-aggregation;
+       div[data-ok-data-grid-columns-actions] › Button[data-ok-data-grid-columns-action=show-all|hide-all|reset])
     Popover#<id>-filters › div[data-ok-data-grid-panel][role=group]
          › div[data-ok-data-grid-filter]… › IconButton[data-ok-data-grid-filter-remove],
            (rows 2+) TextField select #<id>-filter-logic-<n> (and / or; disabled after row 2),
@@ -126,6 +132,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         › FormControlLabel[hidden]?(Checkbox[data-ok-data-grid-set-value="<value>"]) × values
       (filter panel: in the value field's place, id <id>-filter-value[-n])
     cells with cellSelection: [aria-selected=true][data-ok-range-edge="top right bottom left"]?
+    cells of the active range chart (4.18.89): [data-ok-chart-range=category|series][data-ok-chart-range-edge]
+      › span[data-ok-data-grid-chart-handle][aria-hidden] (bottom end cell)
     Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=group|aggregate-none|aggregate-<fn>][hidden]?[data-ok-selected]?
     Menu#<id>-export › MenuItem[data-ok-data-grid-export=excel]
     toolbar › Button (Pivot: pivot model given; Chart: chartsIntegration) › Popover#<id>-pivot | #<id>-charts
@@ -257,6 +265,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `contextMenu` | `data-ok-context-menu` | flag | boolean | off | A right click, Shift + F10 or the Menu key on a cell opens a menu: copy, paste, export, chart, pin. |
 | `filterGroups` | `data-ok-filter-groups` | flag | boolean | off | The filter panel nests groups of filters, each with its own And / Or (Add group). |
 | `autoGenerate` | `data-ok-auto-generate` | flag | boolean | off | Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`). |
+| `columnsToolPanel` | `data-ok-columns-tool-panel` | flag | boolean | off | The Columns panel becomes a tool panel: search, Show all / Hide all, Reset, pin and move each column, row groups and values. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -689,6 +698,126 @@ header. Not generated in HTML: other special columns (reorder, detail panels, tr
 groups, header filter cells; JSON data and late data (generation runs once, at setup: `setRows` then
 fills the generated columns).
 
+Row ranges (4.18.87, MUI X `expandMouseRowRangeSelection` and its keyboard rules; core
+`gridRowRangeSelection`, `gridRowArrowSelection`): with checkbox selection, Shift + click on a row
+or on its checkbox sets every row from the anchor (the row toggled last, else the clicked one) to
+the clicked row to the clicked row's new state; on a selected row the rows from the anchor up to
+the one before it are cleared. Ranges cover the selectable data rows that pass the filters, on every
+page, in the shown order (collapsed tree children aside); unselectable rows are skipped and ignore
+the press. Shift + Space toggles the focused row like Space. Shift + Up / Down (core
+`createGridNavigation` `onRowRange`) moves the focus and gives the rows passed the next row's new
+state (`disableMultipleRowSelection`: the next row replaces the selection). With `cellSelection`,
+Shift + arrows extend the cell range only. A Shift + press clears the page's text selection (MUI X
+`preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
+checkbox's click, which comes before its `change`.
+
+Columns tool panel (4.18.90, ApexGrid "Columns tool panel", AG Grid's columns tool panel, MUI X
+`columnsManagement` labels): with `columnsToolPanel` (HTML `data-ok-columns-tool-panel` + the panel's
+markup) the Columns popover holds `div[data-ok-data-grid-panel][data-ok-data-grid-columns-tool]`: a
+search TextField (`#<id>-columns-search`, type search, "Search columns"; matches header names with
+accents folded; non-matching items `hidden`, "No columns" `span[data-ok-data-grid-columns-empty]`
+when none match), `div[data-ok-data-grid-columns-list]` with one
+`div[data-ok-data-grid-columns-item][data-ok-field]` per data column in the grid's order (the
+switch, disabled for `hideable: false`; a Pin TextField select `#<id>-columns-<field>-pin` "Pin
+<header>" with Not pinned / Pin to left / Pin to right, left out with `disableColumnPinning`,
+disabled for `pinnable: false`; IconButtons `[data-ok-data-grid-columns-move=up|down]` "Move up:
+<header>", disabled at the ends, for `disableReorder` columns and with `disableColumnReorder`; the
+pressed one keeps the focus, or the other at an end), then outside pivot mode the sections
+`div[data-ok-data-grid-columns-section=row-groups|values][role=group][aria-labelledby]` (Row groups:
+a Checkbox `[data-ok-data-grid-columns-group=<field>]` per groupable column, checked ones appended to
+the grouping model, not with `disableRowGrouping` or tree data; Values: a TextField select
+`#<id>-columns-<field>-aggregation` per column with aggregation functions, "none" first, not with
+`disableAggregation`; HTML hides the sections while pivoting), and `div[data-ok-data-grid-columns-actions]`
+with Buttons `[data-ok-data-grid-columns-action=show-all|hide-all|reset]`: every hideable column on
+/ off; back to the visibility, order, pins, grouping and aggregation at mount (HTML: at setup) and an
+empty search. Every change goes through the existing models and events. Locale keys
+`columnsManagementSearchTitle`, `columnsManagementShowAll`, `columnsManagementHideAll`,
+`columnsManagementReset`, `columnsManagementNoColumns`, `columnsManagementPin`,
+`columnsManagementNotPinned`, `columnsManagementRowGroups`, `columnsManagementValues`. Opt-in (the
+default panel keeps its switches, so existing markup is unchanged); MUI X's single "Show/Hide All"
+checkbox is two buttons; not provided: drag and drop between the list and the sections, a side bar.
+
+Range chart outline (4.18.89, AG Grid's chart range; core `gridChartRangeMarks`,
+`gridResizeChartRange`, `createGridChartRangeHandle`): while the panel's chart (the active one) is a
+range chart, its cells among the page's shown rows and fields get `data-ok-chart-range="category"`
+(its dimension) or `"series"` (its values) and `data-ok-chart-range-edge` (an outline around each
+block: info color for categories, success for series, a tint; selected cells draw over it), and the
+last row's last series cell holds `span[data-ok-data-grid-chart-handle][aria-hidden]`. Dragging it
+resizes the range live (the model goes through `onChartModelChange` / the cancelable
+`ok:data-grid:chart` at each new cell): rows from the range's first row to the cell's (rows that pass
+the filters, in order), number columns from its first value to the cell's column; the first row and
+value stay; Escape puts the model back. Keyboard (WCAG 2.5.7): Alt + Shift + F1 on a cell (core
+`createGridCellSelection` `onRangeChartUpdate`) makes the active range chart draw the selected cells
+(its type, label and the rest kept), announced "Chart range updated: <label>" (locale key
+`chartsRangeUpdated`), refused without numbers as Alt + F1. Not with pivoting. Not provided: a live
+preview outline separate from the chart (the chart itself follows), moving the range without
+resizing it.
+
+Server-side pivoting (4.18.93, ADR-0064, MUI X server-side pivoting; core `gridServerPivot`,
+`gridServerPivotField`, `gridPivotLayout`): a pivoted grid with a data source (not lazy, not tree
+data) sends `pivotModel` in every request (top level and children) and `groupKeys` / `groupFields` =
+the pivot's visible row fields, no `aggregationModel`. The response's `pivotColumns` (a tree of `{
+key?, group: string | row, children? }`) gives the columns in its order: a path of keys as deep as
+the model's column fields (`key`, else the text `group`, else the group row's value of the level's
+field) × each visible value, with the client pivot's fields, headers and column groups. Values come
+from the rows' `<key>>-><key>>-><value field>` fields (no column fields: the value field), through
+`getAggregatedValue(row, field)` when given; rows are the server's (groups by `getGroupKey`, toggles by
+`getChildrenCount`), not filtered, sorted or aggregated by the grid. A new pivot model or turning the
+pivot on or off asks again. HTML keeps the server rows' data in memory and builds pivot rows with DOM
+methods (no row template needed). Behavior change: a data source grid used to pivot its loaded rows.
+Not provided: the pivot's totals row from `aggregateRow`, formatting group headers with the column's
+formatter, pivoting with lazy loading.
+
+Chart aggregation, combo and a second axis (4.18.88, ApexGrid chart `definition`: `aggregation`,
+`type: "combo"`, `secondaryMeasures`; core `gridChartAggregate`, `gridChartTwoAxes`): model
+`aggregation` (`sum` · `avg` · `count` · `min` · `max` · `median`; `count` counts rows, the others
+combine the numbers, `median` the middle one or the mean of the two middle ones) merges the rows of
+one `dimension` text into one category, without row grouping, over every row that passes the filters
+(every page, sorted; categories in first-appearance order); with groups, range and cross-filtering
+charts it replaces the aggregation model's function. Not for pivoted grids or numeric scatter
+charts. Type `combo` (panel **Combo**, locale key `chartTypeCombo`) is a Chart `line` chart whose
+series carry their type: model `seriesTypes` (`{ [field]: "column" | "line" | "area" }`), default the
+first value as columns, the others as lines; curve and markers apply to its lines. Model
+`secondaryValues` (value fields; column, line, area and combo charts, with values on both sides) puts
+those series on a second value axis: the Chart's `yaxis` `[{ title: seriesAxisLabel? }, { opposite:
+true, title: <the secondary series' names> }]` (HTML `data-ok-yaxis`, removed again when one axis is
+left) and each series' `yAxis` (0 or 1; the data table's `data-ok-y-axis`, `data-ok-type`). The Chart
+component is unchanged (mixed series and several value axes exist since 4.18.59). Not provided: panel
+controls for `aggregation`, `seriesTypes` and `secondaryValues` (model and `setChartModel` only; the
+panel keeps them while editing other settings), stacking combo charts.
+
+State with rows (4.18.91, ApexGrid `getState()` / `setState()` / `stateChanged`): `exportState()`
+adds `rowSelection: { model }` (checkbox selection on), `detailPanel: { expandedRowIds }` (MUI X's key;
+an array, MUI X v8 a `Set`; grids with detail panels), `pinnedRows: { top, bottom }` (row ids; grids
+with pinned rows) and `rowOrder: { orderedIds }` (after a manual move or a restored order);
+`restoreState()` and React `initialState` apply them (core `sanitizeGridState`: strings, each id once,
+a bottom id also on top dropped). Restored pins take rows from `pinnedRows` and from the body (a body
+row pinned leaves the body; an unpinned one goes back at its end); React keeps them until `pinnedRows`
+changes, HTML moves the row elements (building or removing the pinned rowgroups, `aria-selected`
+dropped on pinned rows). Restored orders put the listed ids first, the others after. `onStateChange`
+(React) / `ok:data-grid:statechange` (`{ state }`, HTML) report `exportState()` once it settles (core
+`createGridStateWatcher`): a microtask after an update compares the JSON with the last report (the
+state at mount or setup first, never reported), and nothing is reported while a pointer is pressed
+in the grid (drags, fills), only after its release. MUI X's `onStateChange(state, event, details)` gets
+its internal state; Owlky gives the exported state (the JSON people store).
+
+Rows to export (4.18.92, core `gridRowsToExport`): `csvOptions`, `excelOptions` and `printOptions`
+(and the options of `getDataAsCsv`, `getDataAsExcel`, `exportDataAsPrint`; HTML `toCsv`, `exportCsv`,
+`toExcel`, `exportExcel`, `print`) take MUI X's `getRowsToExport(params)` → row ids in order (unknown
+ids dropped, each once) and the shortcut `source` (ApexGrid `exportToCSV({ source })`): `filtered`
+(the default and the export's rows before: filtered, sorted, every page), `selected` (the selected
+ones among them), `page` (the current page's data rows), `all` (every data row in its original order,
+filters aside; HTML: the rows' order in memory, manual moves included). `getRowsToExport` wins over
+`source`. Params (MUI X `GridGetRowsToExportParams`): `apiRef` (React: the apiRef, else `{ current:
+api }`; HTML: `{ current: instance }`) plus the id lists MUI X's selectors give
+(`filteredSortedRowIds`, `rowIds`, `paginatedRowIds`, `selectedRowIds`), since Owlky has no selectors.
+`source` is JSON, so it travels in `data-ok-csv-options` / `data-ok-excel-options` /
+`data-ok-print-options` (the function doesn't). Print copies the rows the grid shows for printing (the
+filtered ones), so it prints the rows to export among them (`all` can't print rows the filters hide).
+Not changed: MUI X's default exports the selected rows when there are some; Owlky keeps exporting the
+filtered rows (`source: "selected"` or a `getRowsToExport` gives MUI X's behavior), so existing exports
+don't change. Grouped grids export their data rows; pivoted grids the pivot's source rows.
+
 Columns, rows and pivot (4.18.57): tree reordering keeps a moved row's subtree together and refuses
 drops into it; drop marks show only where `isValidRowReorder` agrees.
 
@@ -714,7 +843,8 @@ runs before anything is written, and the target (selection corner or focused cel
 | Page Up / Page Down | One screen of rows |
 | Enter / Space (header) | Sort (Shift: add) |
 | Ctrl / Cmd + Enter (header) | Column menu |
-| Space (cell) | Toggle the row's selection |
+| Space, Shift + Space (cell) | Toggle the row's selection (sets the range anchor) |
+| Shift + Up / Down (cell, row selection, not `cellSelection`) | Move and extend the row selection (MUI X: the rows passed take the next row's new state, so going back shrinks it) |
 | Ctrl / Cmd + A | Select / clear every row |
 | Alt + ← / → (header) | Narrower / wider by 10px |
 | Enter / F2 (editable cell) | Edit; in the field: Enter commits, Escape cancels |
@@ -722,6 +852,7 @@ runs before anything is written, and the target (selection corner or focused cel
 | Right to left | Left / Right and Alt + Left / Right follow the reading order |
 | Shift + arrows (cellSelection) | Extend the cell range from the anchor |
 | Alt + F1 (cell, cellSelection + chartsIntegration) | Chart the selected cells (announced; refused without numbers) |
+| Alt + Shift + F1 (cell, cellSelection + chartsIntegration) | The active range chart draws the selected cells (announced) |
 | Enter / Space (a cross-filtering chart's plot) | Filter the grid to the active category / clear it (the Chart's selection keys) |
 | Ctrl / Cmd + C, Ctrl / Cmd + V (cell) | Copy (cells, rows or the focused cell) / paste into editable cells |
 | Ctrl / Cmd + Z (cell, header) | Undo the last edit or paste |
@@ -779,6 +910,7 @@ the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
 (`{ menu, target }`), `preferencepanelopen` / `preferencepanelclose` (`{ openedPanelValue }`), `sidebaropen` /
 `sidebarclose` (`{ value }`), `containerresize` (`{ width, height }`), `columnresize` (`{ field, width }`),
 `fetchrows`, `excelexportstate` (`{ state }`), `beforeclipboardpaste` (cancelable, `{ data, waitUntil }`).
+(4.18.91) `ok:data-grid:statechange` (`{ state }`: `exportState()` once settled).
 (4.18.58) `ok:data-grid:fill` (cancelable, `{ cells }`: each cell with the cell it repeats).
 (4.18.57) `ok:data-grid:roworder` adds `oldParentId` / `parentId` for tree rows; instance
 `setPivotingColDef(def | null)`.
@@ -862,6 +994,11 @@ the detailed record of what is kept.
 | Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef` | same | kept (4.18.57) | object or `(originalColumnField, columnGroupPath)` (the column's keys); React overrides `headerName`, `description`, `width`, `minWidth`, `maxWidth`, `flex`, `align`, `headerAlign`, `headerClassName`, `cellClassName`, `resizable`; HTML `setPivotingColDef(def | null)` with `headerName`, `width`, `minWidth`, `maxWidth`, `align`, `headerAlign` (the headers the runtime builds) |
 | Pivot: `pivotPanelOpen` / `onPivotPanelOpenChange` | same | kept (4.18.57) | deprecated upstream (sidebar), kept as asked: the toolbar's Pivot popover; given, the prop decides and clicks only call `onPivotPanelOpenChange`; React writes `data-ok-pivot-panel-open`; HTML: the attribute opens and closes the panel, and follows it (the panel's own events stay `ok:data-grid:sidebaropen` / `sidebarclose`) |
+| (MUI X `GridColumnsManagement`: search, Show/Hide All, Reset; ApexGrid / AG Grid columns tool panel) | `columnsToolPanel` | added (4.18.90) | opt-in; adds pin and move per column, Row groups and Values sections; MUI X `slotProps.columnsManagement` options (`searchPredicate`, `getTogglableColumns`, `toggleAllMode`…) not applicable (no slots) |
+| Server-side pivoting: params `pivotModel`, response `pivotColumns` (`GridGetRowsResponsePivotColumn`), value fields `<keys>>-><field>` | same | kept (4.18.93, ADR-0064) | default `pivotingColDef` naming as MUI X; root totals from `aggregateRow` not shown while pivoting |
+| (not in MUI X; ApexGrid chart `definition.aggregation`, `type: "combo"`, `secondaryMeasures`) | chart model `aggregation`, type `combo` + `seriesTypes`, `secondaryValues` | added (4.18.88) | renamed `secondaryMeasures` → `secondaryValues` (the model's `values`); combo series types per value field |
+| `onStateChange`; `initialState.detailPanel.expandedRowIds` | same | kept (4.18.91) | `onStateChange(state)` gets `exportState()` once settled (MUI X: the internal state on every change, with `event` and `details`); state keys added beyond MUI X: `rowSelection`, `pinnedRows` (ids), `rowOrder`; HTML `ok:data-grid:statechange` |
+| Export: `csvOptions.getRowsToExport`, `excelOptions.getRowsToExport`, `printOptions.getRowsToExport` (`GridGetRowsToExportParams`) | same (+ `source`) | kept (4.18.92) | params carry `apiRef` and id lists instead of selectors; `source` (`filtered` · `selected` · `page` · `all`, ApexGrid) added; default stays the filtered rows (MUI X: the selected rows when any) |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |
 | (not in MUI X) set filter (ApexGrid, spreadsheets): a checklist of a column's values | column `filterVariant: "set"` | added (4.18.10) | on the `isAnyOf` model (string, number, singleSelect columns); filter panel and header filter; HTML `data-ok-filter-variant="set"` on the header |

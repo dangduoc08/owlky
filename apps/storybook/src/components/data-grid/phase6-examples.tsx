@@ -440,6 +440,34 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
         />
       ),
     },
+    {
+      title: "Aggregated combo chart",
+      content: (
+        <DataGrid
+          id="grid-charts-combo"
+          aria-label="Revenue and units by region"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          showToolbar
+          chartsIntegration
+          initialState={{
+            chartsIntegration: {
+              model: {
+                type: "combo",
+                dimension: "region",
+                values: ["revenue", "units"],
+                aggregation: "sum",
+                secondaryValues: ["units"],
+                seriesAxisLabel: "Revenue",
+                legend: "bottom",
+              },
+            },
+          }}
+          hideFooter
+        />
+      ),
+    },
   ],
 };
 
@@ -465,5 +493,6 @@ export const PHASE6_FILES = {
     ["Multiple charts", "multiple"],
     ["Donut chart", "donut"],
     ["Range charts and cross-filtering", "range"],
+    ["Aggregated combo chart", "combo"],
   ],
 } as const;

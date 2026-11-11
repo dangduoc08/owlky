@@ -4,6 +4,7 @@
  * (infinite loading), and a cache for server data sources.
  */
 import type { GridFilterModel, GridSortModel } from "./data-grid.js";
+import type { GridGetRowsResponsePivotColumn, GridPivotModel } from "./grid-premium.js";
 
 /** Rows to render: `start` (inclusive) to `end` (exclusive), and the px spacers around them. */
 export interface GridRowWindow {
@@ -127,6 +128,11 @@ export interface GridGetRowsParams {
   groupFields?: string[] | undefined;
   /** Server-side aggregation: field to function (only when the grid aggregates). */
   aggregationModel?: Record<string, string> | undefined;
+  /**
+   * Server-side pivoting (MUI X, ADR-0064): the pivot model while the grid is pivoted. The
+   * server groups the rows by its `rows` fields (as `groupFields`) and answers `pivotColumns`.
+   */
+  pivotModel?: GridPivotModel | undefined;
 }
 
 export interface GridGetRowsResponse<R> {
@@ -137,6 +143,11 @@ export interface GridGetRowsResponse<R> {
   aggregateRow?: Record<string, unknown> | undefined;
   /** An unknown row count: whether a page follows (MUI X `pageInfo`). */
   pageInfo?: { hasNextPage?: boolean | undefined } | undefined;
+  /**
+   * Server-side pivoting (MUI X): the keys of the pivot's column fields, as a tree; each row
+   * holds its values in `gridServerPivotField(keys, valueField)` fields (`2025>->revenue`).
+   */
+  pivotColumns?: GridGetRowsResponsePivotColumn[] | undefined;
 }
 
 /** A server data source (MUI X Pro `dataSource`). */

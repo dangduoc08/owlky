@@ -63,6 +63,40 @@ for (const impl of implementations) {
       ).toHaveAttribute("aria-selected", "true");
     });
 
+    test("row ranges: Shift + click, Shift + checkbox, Shift + Down / Up", async ({
+      page,
+      isMobile,
+    }) => {
+      test.skip(isMobile, "Keyboard and Shift + click.");
+      await openStory(page, storyId(impl, "datagrid", "basic"));
+      const rows = page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])');
+      const selected = () =>
+        page
+          .locator('[data-ok-data-grid-body] > [role="row"][aria-selected="true"]')
+          .evaluateAll((list) => list.map((row) => row.getAttribute("data-ok-row-id")));
+      const ids = await rows.evaluateAll((list) =>
+        list.map((row) => row.getAttribute("data-ok-row-id")),
+      );
+      await rows.nth(1).locator('[data-ok-field="age"]').click();
+      await rows
+        .nth(3)
+        .locator('[data-ok-field="age"]')
+        .click({ modifiers: ["Shift"] });
+      expect(await selected()).toEqual(ids.slice(1, 4));
+      await rows
+        .nth(5)
+        .locator("[data-ok-data-grid-checkbox] input")
+        .click({ modifiers: ["Shift"] });
+      expect(await selected()).toEqual(ids.slice(1, 6));
+      // No text selected between the rows.
+      expect(await page.evaluate(() => window.getSelection()?.toString() ?? "")).toBe("");
+      await rows.nth(5).locator('[data-ok-field="age"]').focus();
+      await page.keyboard.press("Shift+ArrowDown");
+      expect(await selected()).toEqual(ids.slice(1, 7));
+      await page.keyboard.press("Shift+ArrowUp");
+      expect(await selected()).toEqual(ids.slice(1, 6));
+    });
+
     test("touch: tap a checkbox, open the columns panel and hide a column", async ({
       page,
       isMobile,
@@ -481,6 +515,28 @@ for (const impl of implementations) {
       const range = grid.locator('[data-ok-chart-id="range-1"]');
       await expect(range.locator("[data-ok-chart-data] tbody tr")).toHaveCount(2);
       await expect(range.locator("[data-ok-chart-svg]")).toBeVisible();
+      // 4.18.89: the range's cells are outlined; Alt + Shift + F1 resizes it from the keyboard.
+      await expect(grid.locator('[data-ok-chart-range="category"]')).toHaveCount(2);
+      await grid.locator('[data-ok-row-id="s-01"] [data-ok-field="region"]').click();
+      for (let i = 0; i < 4; i++) await page.keyboard.press("Shift+ArrowRight");
+      for (let i = 0; i < 3; i++) await page.keyboard.press("Shift+ArrowDown");
+      await page.keyboard.press("Alt+Shift+F1");
+      await expect(live).toHaveText("Chart range updated: Range chart 1");
+      await expect(range.locator("[data-ok-chart-data] tbody tr")).toHaveCount(4);
+      // The pointer path: drag the handle up one row.
+      const handle = grid.locator("[data-ok-data-grid-chart-handle]");
+      await expect(handle).toHaveCount(1);
+      await handle.scrollIntoViewIfNeeded();
+      const from = await handle.boundingBox();
+      const to = await grid
+        .locator('[data-ok-row-id="s-03"] [data-ok-field="revenue"]')
+        .boundingBox();
+      if (!from || !to) throw new Error("no handle");
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 4 });
+      await page.mouse.up();
+      await expect(range.locator("[data-ok-chart-data] tbody tr")).toHaveCount(3);
       // A range without numbers is refused.
       await grid.locator('[data-ok-row-id="s-03"] [data-ok-field="product"]').click();
       await page.keyboard.press("Alt+F1");
@@ -750,9 +806,39 @@ for (const impl of implementations) {
       await expect(box(groups, "tt-1")).not.toBeChecked();
     });
 
+    test("columns tool panel: search, move, pin and group by keyboard", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "column-options"));
+      const grid = page.locator("#grid-columns-tool");
+      await grid.getByRole("button", { name: "Columns" }).click();
+      const panel = page.locator("#grid-columns-tool-columns");
+      await panel.getByRole("searchbox", { name: "Search columns" }).fill("own");
+      await expect(panel.locator("[data-ok-data-grid-columns-item]:not([hidden])")).toHaveCount(1);
+      await panel.getByRole("searchbox", { name: "Search columns" }).fill("");
+      const down = panel.getByRole("button", { name: "Move down: Task" });
+      await down.focus();
+      await page.keyboard.press("Enter");
+      await expect(down).toBeFocused();
+      await expect(
+        grid.locator('[data-ok-data-grid-header] [role="columnheader"][data-ok-field]').first(),
+      ).toHaveAttribute("data-ok-field", "team");
+      await panel.getByLabel("Pin Points").selectOption("left");
+      await expect(grid.locator('[role="columnheader"][data-ok-field="points"]')).toHaveAttribute(
+        "data-ok-pinned",
+        "left",
+      );
+      await panel.getByRole("checkbox", { name: "Team" }).check();
+      await expect(
+        grid.locator('[data-ok-row-id^="auto-generated-row-team"]').first(),
+      ).toBeVisible();
+      await panel.getByRole("button", { name: "Reset" }).click();
+      await expect(grid.locator("[data-ok-generated]")).toHaveCount(0);
+      await expect(grid.locator("[data-ok-pinned]")).toHaveCount(0);
+    });
+
     test("column options: row headers, merged owners, a fixed first column", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "column-options"));
-      const grid = page.getByRole("grid", { name: "Team tasks" });
+      // The first grid of the story (the second one shows the columns tool panel).
+      const grid = page.locator("#grid-columns").getByRole("grid", { name: "Team tasks" });
       await expect(grid.getByRole("rowheader")).toHaveCount(5);
       await expect(grid.locator('[data-ok-row-id="tt-1"] [data-ok-field="owner"]')).toHaveAttribute(
         "aria-rowspan",

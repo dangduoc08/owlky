@@ -185,6 +185,11 @@ export interface GridCellSelectionOptions {
   onSelect(anchor: GridCellPosition, focus: GridCellPosition, mode: "replace" | "add"): void;
   /** Alt + F1 on a cell: chart the selected cells (spreadsheets' quick chart; ADR-0055). */
   onRangeChart?(): void;
+  /**
+   * Alt + Shift + F1 on a cell: the active range chart draws the selected cells instead (the
+   * keyboard path to resizing its range, WCAG 2.5.7; 4.18.89).
+   */
+  onRangeChartUpdate?(): void;
 }
 
 export interface GridCellSelectionController {
@@ -250,16 +255,12 @@ export function createGridCellSelection(
       if (!options.enabled()) return;
       const arrow = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key);
       const cell = (event.target as Element).closest(BODY_CELL);
-      if (
-        cell &&
-        options.onRangeChart &&
-        event.key === "F1" &&
-        event.altKey &&
-        !event.ctrlKey &&
-        !event.metaKey
-      ) {
-        event.preventDefault();
-        options.onRangeChart();
+      if (cell && event.key === "F1" && event.altKey && !event.ctrlKey && !event.metaKey) {
+        const run = event.shiftKey ? options.onRangeChartUpdate : options.onRangeChart;
+        if (run) {
+          event.preventDefault();
+          run();
+        }
         return;
       }
       if (!arrow || !cell) return;

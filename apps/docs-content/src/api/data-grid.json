@@ -55,12 +55,28 @@
    "value": "#FF5630"
   },
   {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
    "name": "--ok-palette-primary-main",
    "value": "#00A76F"
   },
   {
    "name": "--ok-palette-primary-main-channel",
    "value": "0 167 111"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
   },
   {
    "name": "--ok-radius-md",
@@ -460,6 +476,12 @@
      },
      {
       "cancelable": false,
+      "description": "After the grid's state settles: `exportState()` changed (once per change, not while a pointer drags, not at setup). MUI X `onStateChange`.",
+      "detail": "{ state: GridState; }",
+      "name": "ok:data-grid:statechange"
+     },
+     {
+      "cancelable": false,
       "description": "undo()`) restored rows, with their ids.",
       "detail": "{ ids: string[]; }",
       "name": "ok:data-grid:undo"
@@ -722,7 +744,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 128 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; columnsManagementSearchTitle: string; columnsManagementShowAll: string; columnsManagementHideAll: string; columnsManagementReset: string; columnsManagementNoColumns: string; ... 140 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's values, returns the value to write. `null`: back to parsing by the column type.",
@@ -1416,6 +1438,12 @@
       "description": "Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`).",
       "kind": "flag",
       "name": "autoGenerate"
+     },
+     {
+      "attr": "data-ok-columns-tool-panel",
+      "description": "The Columns panel becomes a tool panel: search, Show all / Hide all, Reset, pin and move each column, row groups and values.",
+      "kind": "flag",
+      "name": "columnsToolPanel"
      }
     ],
     "parts": [
@@ -1455,6 +1483,21 @@
       "description": "Several charts: every chart's model, by chart id, as JSON.",
       "kind": "value",
       "name": "data-ok-chart-models",
+      "value": "string"
+     },
+     {
+      "description": "On the cells the active range chart draws: `category` (its dimension) or `series` (a value).",
+      "kind": "value",
+      "name": "data-ok-chart-range",
+      "value": [
+       "category",
+       "series"
+      ]
+     },
+     {
+      "description": "On a range chart's cells: the outline edges, `top`, `right`, `bottom` and `left`.",
+      "kind": "value",
+      "name": "data-ok-chart-range-edge",
       "value": "string"
      },
      {
@@ -1534,6 +1577,14 @@
       "name": "data-ok-data-grid-chart-cross-filter"
      },
      {
+      "description": "In the range chart's bottom end cell: the handle that resizes the range when dragged.",
+      "kind": "value",
+      "name": "data-ok-data-grid-chart-handle",
+      "value": [
+       ""
+      ]
+     },
+     {
       "description": "The chart panel's switch for item labels.",
       "kind": "part",
       "name": "data-ok-data-grid-chart-item-label"
@@ -1563,6 +1614,88 @@
       ],
       "kind": "part",
       "name": "data-ok-data-grid-checkbox"
+     },
+     {
+      "description": "On a tool panel button: `show-all`, `hide-all` or `reset`.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-action",
+      "value": [
+       "hide-all",
+       "reset",
+       "show-all"
+      ]
+     },
+     {
+      "description": "In the tool panel: the Show all, Hide all and Reset buttons.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-actions",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "In the tool panel: \"No columns\", shown when the search matches none.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-empty",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "On a Row groups checkbox: the field it groups by.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-group",
+      "value": "string"
+     },
+     {
+      "description": "In the tool panel's list: one column (its switch, pin menu and move buttons); `hidden` by the search.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-item",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "In the tool panel: the list of columns, in the grid's order.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-list",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "On a column's Move up / Move down buttons in the tool panel: `up` or `down`.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-move",
+      "value": [
+       "down",
+       "up"
+      ]
+     },
+     {
+      "description": "In the tool panel: the `row-groups` or `values` section (outside pivot mode).",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-section",
+      "value": [
+       "row-groups",
+       "values"
+      ]
+     },
+     {
+      "description": "A tool panel section's title.",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-section-title",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "The Columns panel's content as a tool panel (`columnsToolPanel`).",
+      "kind": "value",
+      "name": "data-ok-data-grid-columns-tool",
+      "value": [
+       ""
+      ]
      },
      {
       "description": "On a cell menu item: what it does (`copy`, `paste`, `export`, `export-csv`, `export-excel`, `print`, `chart-range`, `pin`, `pin-left`, `pin-right`, `unpin`, or your own item's name).",
@@ -2563,6 +2696,11 @@
       "type": "readonly GridColDef<R>[]"
      },
      {
+      "description": "The Columns panel becomes a tool panel (ApexGrid / AG Grid): a search, **Show all**, **Hide all** and **Reset**, a pin menu and Move up / Move down for each column, and the **Row groups** and **Values** sections (outside pivot mode).",
+      "name": "columnsToolPanel",
+      "type": "boolean"
+     },
+     {
       "description": "A menu on the cells: a right click, Shift + F10 or the Menu key opens it at the cell, with Copy, Paste, Export, Chart from selection and Pin column (the ones the grid's options allow).",
       "name": "contextMenu",
       "type": "boolean"
@@ -3241,6 +3379,11 @@
       "description": "Called when the sort model changes.",
       "name": "onSortModelChange",
       "type": "((model: GridSortModel) => void)"
+     },
+     {
+      "description": "Called with `exportState()` once the grid's state settles after a change (MUI X `onStateChange`): once per change, not while a pointer drags, not at mount.",
+      "name": "onStateChange",
+      "type": "((state: GridState) => void)"
      },
      {
       "description": "Called after an undo, with the ids of the rows it restored.",

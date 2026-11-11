@@ -1,0 +1,528 @@
+<div data-ok-data-grid data-ok-density="standard" data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="labeled" data-ok-quick-filter-logic-operator="and" data-ok-row-grouping-column-mode="single" data-ok-aggregation-rows-scope="filtered" data-ok-charts-integration data-ok-chart-model="{&quot;type&quot;:&quot;combo&quot;,&quot;dimension&quot;:&quot;region&quot;,&quot;values&quot;:[&quot;revenue&quot;,&quot;units&quot;],&quot;aggregation&quot;:&quot;sum&quot;,&quot;secondaryValues&quot;:[&quot;units&quot;],&quot;seriesAxisLabel&quot;:&quot;Revenue&quot;,&quot;legend&quot;:&quot;bottom&quot;}" id="grid-charts-combo" class="sb-grid-wide">
+  <div data-ok-data-grid-toolbar>
+    <div data-ok-data-grid-quick-filter>
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+        <div data-ok-text-field-control>
+          <span data-ok-text-field-adornment="start"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M10 3a7 7 0 015.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1110 3zm0 2a5 5 0 100 10 5 5 0 000-10z" /></svg></span>
+          <input aria-label="Search" id="grid-charts-combo-search" data-ok-text-field-input placeholder="Search…" value="">
+          <fieldset data-ok-text-field-outline aria-hidden="true"></fieldset>
+        </div>
+      </div>
+    </div>
+    <div data-ok-data-grid-toolbar-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-charts-combo-columns" data-ok-popover-open="grid-charts-combo-columns"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M4 5h4v14H4zm6 0h4v14h-4zm6 0h4v14h-4z" /></svg></span><span data-ok-button-label>Columns</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-charts-combo-filters" data-ok-popover-open="grid-charts-combo-filters"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5h18l-7 8v6l-4 2v-8z" /></svg></span><span data-ok-button-label>Filters</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-charts-combo-density" data-ok-popover-open="grid-charts-combo-density"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z" /></svg></span><span data-ok-button-label>Density</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-charts-combo-charts" data-ok-popover-open="grid-charts-combo-charts"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M4 20V10h3v10zm6.5 0V4h3v16zM17 20v-7h3v7z" /></svg></span><span data-ok-button-label>Chart</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-charts-combo-export" data-ok-popover-open="grid-charts-combo-export"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 3h2v9l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3zM5 18h14v2H5z" /></svg></span><span data-ok-button-label>Export</span></button>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-charts-combo-charts">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel data-ok-data-grid-form-panel role="group" aria-label="Chart">
+        <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+          <label data-ok-text-field-label for="grid-charts-combo-chart-type">Chart type</label>
+          <div data-ok-text-field-control>
+            <select id="grid-charts-combo-chart-type" data-ok-text-field-input>
+              <option value="column">Column</option>
+              <option value="bar">Bar</option>
+              <option value="line">Line</option>
+              <option value="area">Area</option>
+              <option value="pie">Pie</option>
+              <option value="donut">Donut</option>
+              <option value="radar">Radar</option>
+              <option value="scatter">Scatter</option>
+              <option value="combo" selected>Combo</option>
+            </select>
+            <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <fieldset data-ok-text-field-outline aria-hidden="true">
+              <legend><span>Chart type</span></legend>
+            </fieldset>
+          </div>
+        </div>
+        <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+          <label data-ok-text-field-label for="grid-charts-combo-chart-dimension">Category</label>
+          <div data-ok-text-field-control>
+            <select id="grid-charts-combo-chart-dimension" data-ok-text-field-input>
+              <option value="">None</option>
+              <option value="region" selected>Region</option>
+              <option value="product">Product</option>
+              <option value="year">Year</option>
+              <option value="units">Units</option>
+              <option value="revenue">Revenue</option>
+            </select>
+            <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <fieldset data-ok-text-field-outline aria-hidden="true">
+              <legend><span>Category</span></legend>
+            </fieldset>
+          </div>
+        </div>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-value="year">
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Series: Year</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-value="units" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Series: Units</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-value="revenue" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Series: Revenue</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-stacked disabled>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Stacked</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-item-label>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Show values</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-cross-filter>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Filter the grid</span>
+        </label>
+        <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+          <label data-ok-text-field-label for="grid-charts-combo-chart-legend">Legend</label>
+          <div data-ok-text-field-control>
+            <select id="grid-charts-combo-chart-legend" data-ok-text-field-input>
+              <option value="top">Top</option>
+              <option value="right">Right</option>
+              <option value="bottom" selected>Bottom</option>
+              <option value="none">None</option>
+            </select>
+            <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <fieldset data-ok-text-field-outline aria-hidden="true">
+              <legend><span>Legend</span></legend>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-charts-combo-columns">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel role="group" aria-label="Columns">
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="region" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Region</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="product" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Product</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="year" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Year</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="units" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Units</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="revenue" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Revenue</span>
+        </label>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-charts-combo-filters">
+      <template data-ok-data-grid-any-of="grid-charts-combo-filter-value">
+        <div data-ok-autocomplete data-ok-multiple data-ok-free-solo>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-charts-combo-filter-value">Value</label>
+            <div data-ok-text-field-control>
+              <input role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="grid-charts-combo-filter-value-listbox" autocomplete="off" id="grid-charts-combo-filter-value" data-ok-text-field-input placeholder=" " value="">
+              <span data-ok-text-field-adornment="end">
+                <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-clear tabindex="-1" aria-label="Clear" hidden><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+              </span>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Value</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>
+            <span data-ok-popover-arrow aria-hidden="true"></span>
+            <ul role="listbox" id="grid-charts-combo-filter-value-listbox" aria-label="Value"></ul>
+            <div data-ok-autocomplete-no-options>No options</div>
+          </div>
+        </div>
+      </template>
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel role="group" aria-label="Filters">
+        <div data-ok-data-grid-filter>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-filter-remove aria-label="Remove filter"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z" /></svg></button>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-charts-combo-filter-field">Columns</label>
+            <div data-ok-text-field-control>
+              <select id="grid-charts-combo-filter-field" data-ok-text-field-input>
+                <option value="region" selected>Region</option>
+                <option value="product">Product</option>
+                <option value="year">Year</option>
+                <option value="units">Units</option>
+                <option value="revenue">Revenue</option>
+              </select>
+              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Columns</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-charts-combo-filter-operator">Operator</label>
+            <div data-ok-text-field-control>
+              <select id="grid-charts-combo-filter-operator" data-ok-text-field-input>
+                <option value="contains" selected>contains</option>
+                <option value="doesNotContain">does not contain</option>
+                <option value="equals">equals</option>
+                <option value="startsWith">starts with</option>
+                <option value="endsWith">ends with</option>
+                <option value="isEmpty">is empty</option>
+                <option value="isNotEmpty">is not empty</option>
+                <option value="isAnyOf">is any of</option>
+              </select>
+              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Operator</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-charts-combo-filter-value">Value</label>
+            <div data-ok-text-field-control>
+              <input id="grid-charts-combo-filter-value" data-ok-text-field-input placeholder="Filter value" value="">
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Value</span></legend>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" data-ok-data-grid-filter-add><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg></span><span data-ok-button-label>Add filter</span></button>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-charts-combo-density">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul role="menu" data-ok-menu>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="compact">Compact</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-selected data-ok-density="standard">Standard</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="comfortable">Comfortable</li>
+      </ul>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-charts-combo-export">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul role="menu" data-ok-menu>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="csv">Download as CSV</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="print">Print</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="excel">Download as Excel</li>
+      </ul>
+    </div>
+  </div>
+  <div role="grid" data-ok-data-grid-main aria-label="Revenue and units by region" aria-rowcount="25" aria-colcount="5">
+    <div role="rowgroup" data-ok-data-grid-header>
+      <div role="row" aria-rowindex="1">
+        <div role="columnheader" aria-colindex="1" data-ok-field="region" data-ok-type="string" data-ok-align="left" data-ok-width="130" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Region</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Region column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-charts-combo-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="2" data-ok-field="product" data-ok-type="string" data-ok-align="left" data-ok-width="130" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Product</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Product column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-charts-combo-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="3" data-ok-field="year" data-ok-type="number" data-ok-align="right" data-ok-width="100" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Year</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Year column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-charts-combo-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="4" data-ok-field="units" data-ok-type="number" data-ok-align="right" data-ok-width="110" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Units</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Units column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-charts-combo-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="5" data-ok-field="revenue" data-ok-type="number" data-ok-align="right" data-ok-width="130" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Revenue</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Revenue column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-charts-combo-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+    <div role="rowgroup" data-ok-data-grid-body>
+      <div role="row" aria-rowindex="2" data-ok-row-id="s-01">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="10" tabindex="-1">10</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="40" tabindex="-1">40</div>
+      </div>
+      <div role="row" aria-rowindex="3" data-ok-row-id="s-02">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="47" tabindex="-1">47</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="329" tabindex="-1">329</div>
+      </div>
+      <div role="row" aria-rowindex="4" data-ok-row-id="s-03">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="84" tabindex="-1">84</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="420" tabindex="-1">420</div>
+      </div>
+      <div role="row" aria-rowindex="5" data-ok-row-id="s-04">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="31" tabindex="-1">31</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="248" tabindex="-1">248</div>
+      </div>
+      <div role="row" aria-rowindex="6" data-ok-row-id="s-05">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="68" tabindex="-1">68</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="408" tabindex="-1">408</div>
+      </div>
+      <div role="row" aria-rowindex="7" data-ok-row-id="s-06">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="15" tabindex="-1">15</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="60" tabindex="-1">60</div>
+      </div>
+      <div role="row" aria-rowindex="8" data-ok-row-id="s-07">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="52" tabindex="-1">52</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="364" tabindex="-1">364</div>
+      </div>
+      <div role="row" aria-rowindex="9" data-ok-row-id="s-08">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="89" tabindex="-1">89</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="445" tabindex="-1">445</div>
+      </div>
+      <div role="row" aria-rowindex="10" data-ok-row-id="s-09">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="36" tabindex="-1">36</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="288" tabindex="-1">288</div>
+      </div>
+      <div role="row" aria-rowindex="11" data-ok-row-id="s-10">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="73" tabindex="-1">73</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="438" tabindex="-1">438</div>
+      </div>
+      <div role="row" aria-rowindex="12" data-ok-row-id="s-11">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="20" tabindex="-1">20</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="80" tabindex="-1">80</div>
+      </div>
+      <div role="row" aria-rowindex="13" data-ok-row-id="s-12">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="57" tabindex="-1">57</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="399" tabindex="-1">399</div>
+      </div>
+      <div role="row" aria-rowindex="14" data-ok-row-id="s-13">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="94" tabindex="-1">94</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="470" tabindex="-1">470</div>
+      </div>
+      <div role="row" aria-rowindex="15" data-ok-row-id="s-14">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="41" tabindex="-1">41</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="328" tabindex="-1">328</div>
+      </div>
+      <div role="row" aria-rowindex="16" data-ok-row-id="s-15">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="78" tabindex="-1">78</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="468" tabindex="-1">468</div>
+      </div>
+      <div role="row" aria-rowindex="17" data-ok-row-id="s-16">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="25" tabindex="-1">25</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="100" tabindex="-1">100</div>
+      </div>
+      <div role="row" aria-rowindex="18" data-ok-row-id="s-17">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="62" tabindex="-1">62</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="434" tabindex="-1">434</div>
+      </div>
+      <div role="row" aria-rowindex="19" data-ok-row-id="s-18">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="99" tabindex="-1">99</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="495" tabindex="-1">495</div>
+      </div>
+      <div role="row" aria-rowindex="20" data-ok-row-id="s-19">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="46" tabindex="-1">46</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="368" tabindex="-1">368</div>
+      </div>
+      <div role="row" aria-rowindex="21" data-ok-row-id="s-20">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="83" tabindex="-1">83</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="498" tabindex="-1">498</div>
+      </div>
+      <div role="row" aria-rowindex="22" data-ok-row-id="s-21">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="30" tabindex="-1">30</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="120" tabindex="-1">120</div>
+      </div>
+      <div role="row" aria-rowindex="23" data-ok-row-id="s-22">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="67" tabindex="-1">67</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="469" tabindex="-1">469</div>
+      </div>
+      <div role="row" aria-rowindex="24" data-ok-row-id="s-23">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="14" tabindex="-1">14</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="70" tabindex="-1">70</div>
+      </div>
+      <div role="row" aria-rowindex="25" data-ok-row-id="s-24">
+        <div role="gridcell" aria-colindex="1" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="units" data-ok-align="right" data-ok-value="51" tabindex="-1">51</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="revenue" data-ok-align="right" data-ok-value="408" tabindex="-1">408</div>
+      </div>
+    </div>
+  </div>
+  <div data-ok-data-grid-chart>
+    <figure data-ok-chart data-ok-type="line" data-ok-x-type="category" data-ok-curve="smooth" data-ok-legend="bottom" data-ok-fill="gradient" data-ok-yaxis="title Revenue; opposite title Units" id="grid-charts-combo-chart">
+      <table data-ok-chart-data>
+        <caption>Chart of the data</caption>
+        <thead>
+          <tr>
+            <th scope="col">Category</th>
+            <th scope="col" data-ok-type="bar" data-ok-color="primary-dark" data-ok-y-axis="0">Revenue</th>
+            <th scope="col" data-ok-type="line" data-ok-color="warning" data-ok-y-axis="1">Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">North</th>
+            <td data-ok-value="1760">1,760</td>
+            <td>300</td>
+          </tr>
+          <tr>
+            <th scope="row">South</th>
+            <td data-ok-value="2119">2,119</td>
+            <td>342</td>
+          </tr>
+          <tr>
+            <th scope="row">East</th>
+            <td data-ok-value="1770">1,770</td>
+            <td>294</td>
+          </tr>
+          <tr>
+            <th scope="row">West</th>
+            <td data-ok-value="2098">2,098</td>
+            <td>336</td>
+          </tr>
+        </tbody>
+      </table>
+    </figure>
+  </div>
+  <div data-ok-data-grid-live role="status"></div>
+  <div data-ok-data-grid-loading data-ok-variant="linear-progress" role="status" aria-label="Loading" hidden><span role="progressbar" data-ok-linear-progress data-ok-variant="indeterminate" data-ok-color="primary" aria-label="Loading"><span data-ok-linear-progress-bar="1"></span><span data-ok-linear-progress-bar="2"></span></span></div>
+  <div data-ok-data-grid-overlay role="status" hidden></div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="grid-charts-combo-column-menu">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <ul role="menu" data-ok-menu>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="asc">Sort by ASC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="desc">Sort by DESC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unsort">Unsort</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="left">Move left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="right">Move right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-left">Pin to left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-right">Pin to right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unpin">Unpin</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="group">Group by</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-none" hidden>Aggregation: none</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-sum" hidden>Aggregation: sum</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-avg" hidden>Aggregation: avg</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-min" hidden>Aggregation: min</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-max" hidden>Aggregation: max</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-size" hidden>Aggregation: size</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="filter">Filter</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="hide">Hide column</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="columns">Manage columns</li>
+    </ul>
+  </div>
+</div>

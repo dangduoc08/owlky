@@ -4,6 +4,7 @@
  * integration's data. Pure functions over rows the owner keeps.
  */
 
+import type { ChartYAxis } from "../chart/chart-axes.js";
 import {
   type ChartColor,
   type ChartCurve,
@@ -574,7 +575,38 @@ export function gridPivot<R>(
     }
     return 0;
   });
-  const keyed = colFields.length ? sorted : [[]];
+  const {
+    columns: pivotColumns,
+    columnGroupingModel,
+    aggregationModel,
+  } = gridPivotLayout(sorted, colFields.length, values, columns, labelOf);
+  const byField = new Map(pivotColumns.map((c) => [c.field, c]));
+  return {
+    columns: pivotColumns,
+    columnGroupingModel,
+    aggregationModel,
+    rowGroupingModel: model.rows.filter((r) => !r.hidden && has(r.field)).map((r) => r.field),
+    value(row, field) {
+      const column = byField.get(field);
+      if (!column) return value(row, field);
+      const inBucket = colFields.every((c, i) => text(row, c.field) === column.pivotKeys[i]);
+      return inBucket ? value(row, column.pivotValueField) : undefined;
+    },
+  };
+}
+
+/**
+ * The pivot's columns and column groups from its key tuples (in order) and values: one column per
+ * tuple and value, column groups one level per column field, named by its key.
+ */
+export function gridPivotLayout(
+  tuples: readonly (readonly string[])[],
+  levels: number,
+  values: readonly { field: string; aggFunc: string }[],
+  columns: readonly GridColumn[],
+  labelOf: (fn: string) => string = (fn) => fn,
+): Pick<GridPivotResult<never>, "columns" | "columnGroupingModel" | "aggregationModel"> {
+  const keyed = levels ? tuples : [[]];
   const pivotColumns: GridPivotColumn[] = [];
   const aggregationModel: GridAggregationModel = {};
   for (const keys of keyed)
@@ -589,16 +621,15 @@ export function gridPivot<R>(
         hideable: false,
         resizable: true,
         pivotValueField: v.field,
-        pivotKeys: keys,
+        pivotKeys: [...keys],
       });
       aggregationModel[field] = v.aggFunc;
     }
-  // Column groups: one level per column field, named by its key.
   const columnGroupingModel: GridColumnGroup[] = [];
-  if (colFields.length) {
-    const build = (level: number, prefix: string[]): GridColumnGroup[] => {
+  if (levels) {
+    const build = (level: number, prefix: readonly string[]): GridColumnGroup[] => {
       const seen: string[] = [];
-      for (const keys of sorted)
+      for (const keys of tuples)
         if (JSON.stringify(keys.slice(0, level)) === JSON.stringify(prefix)) {
           const key = keys[level] as string;
           if (!seen.includes(key)) seen.push(key);
@@ -609,7 +640,7 @@ export function gridPivot<R>(
           groupId: `pivot-group:${path.map(encodeURIComponent).join("/")}`,
           headerName: key,
           children:
-            level === colFields.length - 1
+            level === levels - 1
               ? values.map((v) => ({ field: gridPivotField(path, v.field, v.aggFunc) }))
               : build(level + 1, path),
         };
@@ -617,18 +648,72 @@ export function gridPivot<R>(
     };
     columnGroupingModel.push(...build(0, []));
   }
-  const byField = new Map(pivotColumns.map((c) => [c.field, c]));
+  return { columns: pivotColumns, columnGroupingModel, aggregationModel };
+}
+
+/**
+ * A pivot column of a server response (MUI X `GridGetRowsResponsePivotColumn`): one key of a
+ * pivot column field, with the keys of the next field in `children`. `group` is the key's text, or
+ * a row whose value of that field is the key; `key` (optional) names the key in the rows' fields.
+ */
+export interface GridGetRowsResponsePivotColumn {
+  key?: string | undefined;
+  group: string | Record<string, unknown>;
+  children?: GridGetRowsResponsePivotColumn[] | undefined;
+}
+
+/** The field of a server row that holds a pivot value: its keys and value field, `>->` between. */
+export const gridServerPivotField = (keys: readonly string[], valueField: string): string =>
+  [...keys, valueField].join(">->");
+
+/** A server pivot (4.18.93): the layout from the response's columns, and the rows' fields. */
+export interface GridServerPivot {
+  columns: GridPivotColumn[];
+  columnGroupingModel: GridColumnGroup[];
+  aggregationModel: GridAggregationModel;
+  rowGroupingModel: string[];
+  /** The server row field that holds a pivot column's value (`undefined`: not a pivot column). */
+  serverField(field: string): string | undefined;
+}
+
+/**
+ * The pivot of a data source (MUI X server-side pivoting): columns from the response's
+ * `pivotColumns` tree (in its order; leaves at the depth of the model's column fields), one per
+ * leaf path and value; the server rows hold the values in `gridServerPivotField` fields.
+ */
+export function gridServerPivot(
+  pivotColumns: readonly GridGetRowsResponsePivotColumn[] | undefined,
+  columns: readonly GridColumn[],
+  model: GridPivotModel,
+  labelOf: (fn: string) => string = (fn) => fn,
+): GridServerPivot {
+  const has = (field: string) => columns.some((c) => c.field === field);
+  const colFields = model.columns.filter((c) => !c.hidden && has(c.field));
+  const values = model.values.filter((v) => !v.hidden && has(v.field));
+  const keyOf = (node: GridGetRowsResponsePivotColumn, level: number): string => {
+    if (typeof node.key === "string") return node.key;
+    if (typeof node.group === "string") return node.group;
+    const own = node.group[(colFields[level] as { field: string }).field];
+    return own === null || own === undefined ? "" : String(own);
+  };
+  const tuples: string[][] = [];
+  const walk = (nodes: readonly GridGetRowsResponsePivotColumn[], prefix: string[]) => {
+    for (const node of nodes) {
+      if (!node || typeof node !== "object") continue;
+      const path = [...prefix, keyOf(node, prefix.length)];
+      if (path.length >= colFields.length) tuples.push(path);
+      else if (Array.isArray(node.children)) walk(node.children, path);
+    }
+  };
+  if (colFields.length) walk(pivotColumns ?? [], []);
+  const layout = gridPivotLayout(tuples, colFields.length, values, columns, labelOf);
+  const fields = new Map(
+    layout.columns.map((c) => [c.field, gridServerPivotField(c.pivotKeys, c.pivotValueField)]),
+  );
   return {
-    columns: pivotColumns,
-    columnGroupingModel,
-    aggregationModel,
+    ...layout,
     rowGroupingModel: model.rows.filter((r) => !r.hidden && has(r.field)).map((r) => r.field),
-    value(row, field) {
-      const column = byField.get(field);
-      if (!column) return value(row, field);
-      const inBucket = colFields.every((c, i) => text(row, c.field) === column.pivotKeys[i]);
-      return inBucket ? value(row, column.pivotValueField) : undefined;
-    },
+    serverField: (field) => fields.get(field),
   };
 }
 
@@ -708,8 +793,54 @@ export const gridChartTypes = [
   "donut",
   "radar",
   "scatter",
+  "combo",
 ] as const;
 export type GridChartType = (typeof gridChartTypes)[number];
+/**
+ * How a combo chart draws a value (`seriesTypes`, 4.18.88): its first value as columns, the
+ * others as lines by default.
+ */
+export const gridComboSeriesTypes = ["column", "line", "area"] as const;
+export type GridComboSeriesType = (typeof gridComboSeriesTypes)[number];
+/**
+ * Functions that merge the rows of one category (ApexGrid chart `aggregation`, 4.18.88): `count`
+ * counts the rows, the others combine their numbers (`median`: the middle one, or the mean of the
+ * two middle ones).
+ */
+export const gridChartAggregations = ["sum", "avg", "count", "min", "max", "median"] as const;
+export type GridChartAggregation = (typeof gridChartAggregations)[number];
+/** Types with value axes that a second, opposite axis can join (`secondaryValues`). */
+const AXES: readonly GridChartType[] = ["column", "line", "area", "combo"];
+
+/** One category's value from its rows' values (`null`: no number to combine). */
+export function gridChartAggregate(
+  values: readonly unknown[],
+  fn: GridChartAggregation,
+): number | null {
+  if (fn === "count") return values.length;
+  const numbers = values.flatMap((value) => {
+    const n = gridSortValue(value, "number");
+    return typeof n === "number" && Number.isFinite(n) ? [n] : [];
+  });
+  if (!numbers.length) return null;
+  switch (fn) {
+    case "sum":
+      return numbers.reduce((a, b) => a + b, 0);
+    case "avg":
+      return numbers.reduce((a, b) => a + b, 0) / numbers.length;
+    case "min":
+      return Math.min(...numbers);
+    case "max":
+      return Math.max(...numbers);
+    default: {
+      const sorted = [...numbers].sort((a, b) => a - b);
+      const middle = Math.floor(sorted.length / 2);
+      return sorted.length % 2
+        ? (sorted[middle] as number)
+        : ((sorted[middle - 1] as number) + (sorted[middle] as number)) / 2;
+    }
+  }
+}
 /** Types that stack their series (MUI X `stacked`). */
 export const gridStackableChartTypes: readonly GridChartType[] = ["column", "bar", "line", "area"];
 /** Types that draw the first series only, one slice per category. */
@@ -765,6 +896,19 @@ export interface GridChartModel {
    * draws the rows that pass the other filters.
    */
   crossFilter?: boolean | undefined;
+  /**
+   * Rows of one category (the `dimension`'s text) merge into one point with this function, without
+   * row grouping; with groups, range or cross-filtering charts it replaces the aggregation model's
+   * function (ApexGrid `aggregation`).
+   */
+  aggregation?: GridChartAggregation | undefined;
+  /** `combo` charts: how each value field is drawn (default: the first as columns, others lines). */
+  seriesTypes?: Readonly<Record<string, GridComboSeriesType>> | undefined;
+  /**
+   * Value fields drawn on a second value axis on the right (column, line, area and combo charts;
+   * ApexGrid `secondaryMeasures`). The primary axis keeps the other values.
+   */
+  secondaryValues?: readonly string[] | undefined;
 }
 
 /** A series of the grid's chart (an entry of the Chart component's `series`). */
@@ -772,6 +916,10 @@ export interface GridChartSeries {
   name: string;
   data: ChartPointInput[];
   color?: ChartColor | undefined;
+  /** Combo charts: how this series is drawn. */
+  type?: ChartType | undefined;
+  /** Two value axes: this series' axis (`1`: the secondary one, on the right). */
+  yAxis?: number | undefined;
 }
 
 export interface GridChartData {
@@ -833,6 +981,15 @@ export function gridChartData<T>(
   const colors = (model.colors ?? []).filter((c) => chartColors.includes(c));
   const sliced = SLICED.includes(type);
   const xs = type === "scatter" && xOf ? items.map((item) => numberOf(xOf(item))) : null;
+  const secondary = new Set(model.secondaryValues ?? []);
+  const isSecondary = (column: GridChartColumn) =>
+    secondary.has(column.pivotValueField ?? column.field);
+  const twoAxes = gridChartTwoAxes(model, fields);
+  const comboType = (column: GridChartColumn, index: number): ChartType => {
+    const own = model.seriesTypes?.[column.pivotValueField ?? column.field];
+    const kind = own && gridComboSeriesTypes.includes(own) ? own : index === 0 ? "column" : "line";
+    return kind === "column" ? "bar" : kind;
+  };
   return {
     categories: items.map(categoryOf),
     series: fields.map((column, index) => {
@@ -846,10 +1003,26 @@ export function gridChartData<T>(
           ? values.map((y, i) => ({ y, color: colors[i % colors.length] as ChartColor }))
           : values;
       const color = !sliced && colors.length ? colors[index % colors.length] : undefined;
-      return { name: nameOf(column), data, ...(color ? { color } : {}) };
+      return {
+        name: nameOf(column),
+        data,
+        ...(color ? { color } : {}),
+        ...(type === "combo" ? { type: comboType(column, index) } : {}),
+        ...(twoAxes ? { yAxis: isSecondary(column) ? 1 : 0 } : {}),
+      };
     }),
     ...(xs ? { xType: "numeric" as const } : {}),
   };
+}
+
+/** Whether a chart draws two value axes: a type with axes, values on both sides. */
+export function gridChartTwoAxes(
+  model: GridChartModel,
+  fields: readonly GridChartColumn[],
+): boolean {
+  const secondary = new Set(model.secondaryValues ?? []);
+  const on = fields.map((column) => secondary.has(column.pivotValueField ?? column.field));
+  return AXES.includes(model.type ?? "column") && on.includes(true) && on.includes(false);
 }
 
 /** The Chart component's options for a chart model (React props, HTML attributes). */
@@ -869,6 +1042,8 @@ export interface GridChartOptions {
   startAngle?: number;
   endAngle?: number;
   donutSize?: number;
+  /** Two value axes (`secondaryValues`): the primary one, then the opposite one. */
+  yaxis?: ChartYAxis[];
 }
 
 /** Whether the chart stacks its series: a stackable type, two series or more. */
@@ -886,7 +1061,8 @@ export function gridChartOptions(
   const type = model.type ?? "column";
   const sliced = SLICED.includes(type);
   const options: GridChartOptions = {
-    type: type === "column" ? "bar" : type,
+    // A combo chart is a line chart whose series say how they're drawn.
+    type: type === "column" ? "bar" : type === "combo" ? "line" : type,
     xType: data?.xType ?? "category",
   };
   if (type === "bar") options.horizontal = true;
@@ -898,7 +1074,20 @@ export function gridChartOptions(
     if (model.curve && model.curve !== "smooth") options.curve = model.curve;
     if (model.showMark) options.markerSize = 4;
   }
-  if (model.seriesAxisLabel && !sliced && type !== "radar") options.yTitle = model.seriesAxisLabel;
+  const axes = data?.series.some((series) => series.yAxis === 1) ?? false;
+  if (axes) {
+    // Each axis draws its own scale; the second one names its series.
+    const names = (data as GridChartData).series.filter((series) => series.yAxis === 1);
+    options.yaxis = [
+      model.seriesAxisLabel ? { title: model.seriesAxisLabel } : {},
+      { opposite: true, title: names.map((series) => series.name).join(" · ") },
+    ];
+  } else if (model.seriesAxisLabel && !sliced && type !== "radar")
+    options.yTitle = model.seriesAxisLabel;
+  if (type === "combo") {
+    if (model.curve && model.curve !== "smooth") options.curve = model.curve;
+    if (model.showMark) options.markerSize = 4;
+  }
   if (model.showToolbar) options.toolbar = true;
   if (model.animations) options.animations = true;
   if (sliced) {
@@ -941,6 +1130,23 @@ export function sanitizeGridChartModel(input: unknown): GridChartModel {
     out.values = value["values"].filter((v): v is string => typeof v === "string");
   for (const key of ["stacked", "showMark", "showToolbar", "animations", "crossFilter"] as const)
     if (typeof value[key] === "boolean") out[key] = value[key];
+  if (gridChartAggregations.includes(value["aggregation"] as GridChartAggregation))
+    out.aggregation = value["aggregation"] as GridChartAggregation;
+  if (Array.isArray(value["secondaryValues"]))
+    out.secondaryValues = value["secondaryValues"].filter(
+      (v): v is string => typeof v === "string",
+    );
+  const types = value["seriesTypes"];
+  if (typeof types === "object" && types !== null && !Array.isArray(types)) {
+    const kept: Record<string, GridComboSeriesType> = {};
+    for (const [field, kind] of Object.entries(types))
+      if (
+        !["__proto__", "constructor", "prototype"].includes(field) &&
+        gridComboSeriesTypes.includes(kind as GridComboSeriesType)
+      )
+        kept[field] = kind as GridComboSeriesType;
+    out.seriesTypes = kept;
+  }
   if (value["itemLabel"] === "none" || value["itemLabel"] === "value")
     out.itemLabel = value["itemLabel"];
   if (chartLegends.includes(value["legend"] as ChartLegend))

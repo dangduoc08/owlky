@@ -921,6 +921,32 @@ export interface DataGridParts {
   "data-ok-data-grid-fill-handle": Value<"">;
   /** While the fill handle is dragged: on the cells it would fill. */
   "data-ok-fill-target": Value<"">;
+  /** The Columns panel's content as a tool panel (`columnsToolPanel`). */
+  "data-ok-data-grid-columns-tool": Value<"">;
+  /** In the tool panel: the list of columns, in the grid's order. */
+  "data-ok-data-grid-columns-list": Value<"">;
+  /** In the tool panel's list: one column (its switch, pin menu and move buttons); `hidden` by the search. */
+  "data-ok-data-grid-columns-item": Value<"">;
+  /** On a column's Move up / Move down buttons in the tool panel: `up` or `down`. */
+  "data-ok-data-grid-columns-move": Value<"up" | "down">;
+  /** In the tool panel: "No columns", shown when the search matches none. */
+  "data-ok-data-grid-columns-empty": Value<"">;
+  /** In the tool panel: the `row-groups` or `values` section (outside pivot mode). */
+  "data-ok-data-grid-columns-section": Value<"row-groups" | "values">;
+  /** A tool panel section's title. */
+  "data-ok-data-grid-columns-section-title": Value<"">;
+  /** On a Row groups checkbox: the field it groups by. */
+  "data-ok-data-grid-columns-group": Value<string>;
+  /** In the tool panel: the Show all, Hide all and Reset buttons. */
+  "data-ok-data-grid-columns-actions": Value<"">;
+  /** On a tool panel button: `show-all`, `hide-all` or `reset`. */
+  "data-ok-data-grid-columns-action": Value<"show-all" | "hide-all" | "reset">;
+  /** On the cells the active range chart draws: `category` (its dimension) or `series` (a value). */
+  "data-ok-chart-range": Value<"category" | "series">;
+  /** On a range chart's cells: the outline edges, `top`, `right`, `bottom` and `left`. */
+  "data-ok-chart-range-edge": Value<string>;
+  /** In the range chart's bottom end cell: the handle that resizes the range when dragged. */
+  "data-ok-data-grid-chart-handle": Value<"">;
   /** On a row: `false` when it can't be moved (`isRowReorderable`). */
   "data-ok-reorderable": Value<"false">;
   /** With an unknown row count: `false` when no page follows the current one. */

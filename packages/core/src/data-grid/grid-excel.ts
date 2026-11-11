@@ -4,7 +4,13 @@
  * so the grid needs no dependency. Text is never written as a formula: exported data may come
  * from users.
  */
+
 import type { GridColumn } from "./data-grid.js";
+import {
+  type GridExportSource,
+  type GridGetRowsToExportParams,
+  parseGridExportSource,
+} from "./grid-structure.js";
 
 /* ------------------------------------------------------------------ ZIP (stored) */
 
@@ -98,6 +104,10 @@ export interface GridExcelOptions {
   allColumns?: boolean | undefined;
   /** Default "Sheet1" (at most 31 characters, without `[]:*?/\`). */
   sheetName?: string | undefined;
+  /** Which rows: `filtered` (default), `selected`, `page` or `all` (ApexGrid `source`). */
+  source?: GridExportSource | undefined;
+  /** The ids of the rows to export, in order (MUI X); wins over `source`. */
+  getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined;
 }
 
 /** XML text: escaped, characters XML can't hold dropped. */
@@ -234,5 +244,7 @@ export function parseGridExcelOptions(json: string | null): GridExcelOptions {
   if (typeof value["allColumns"] === "boolean") out.allColumns = value["allColumns"];
   if (Array.isArray(value["fields"]))
     out.fields = value["fields"].filter((f): f is string => typeof f === "string");
+  const source = parseGridExportSource(value["source"]);
+  if (source) out.source = source;
   return out;
 }

@@ -4,6 +4,19 @@ import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
 import { DataGrid, type DataGridProps, type GridColDef } from "./data-grid.js";
 
+/** Resolves once `element` loses `data-ok-open` (a MutationObserver, never a polling wait). */
+const closed = (element: Element): Promise<void> =>
+  element.hasAttribute("data-ok-open")
+    ? new Promise((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (element.hasAttribute("data-ok-open")) return;
+          observer.disconnect();
+          resolve();
+        });
+        observer.observe(element, { attributes: true, attributeFilter: ["data-ok-open"] });
+      })
+    : Promise.resolve();
+
 interface Issue {
   id: string;
   title: string;
@@ -83,6 +96,8 @@ describe("DataGrid context menu", () => {
     await expectNoAxeViolations(document.body);
     // Escape closes it; the focus goes back to the cell.
     await userEvent.keyboard("{Escape}");
+    // React flushes the close a little later on a loaded runner: wait for the attribute to go.
+    await closed(menu());
     expect(menu().hasAttribute("data-ok-open")).toBe(false);
     expect(document.activeElement).toBe(target);
   });

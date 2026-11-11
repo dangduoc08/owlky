@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanupDom, mount } from "../test-utils.js";
 import {
+  createGridStateWatcher,
   gridAutoPageSize,
   gridColSpans,
   gridDensityFactor,
@@ -108,6 +109,67 @@ describe("measureGridColumn", () => {
     const element = mount(`<div dir="rtl"><span>x</span></div>`).firstElementChild as Element;
     expect(isGridRtl(element)).toBe(true);
     expect(isGridRtl(document.body)).toBe(false);
+  });
+});
+
+describe("rows in the state (4.18.91)", () => {
+  it("selection, detail panels, pinned rows and the row order: strings, once each", () => {
+    expect(
+      sanitizeGridState({
+        rowSelection: { model: ["a", 2, "a", "b"] },
+        detailPanel: { expandedRowIds: ["c", "c"] },
+        pinnedRows: { top: ["x", "y"], bottom: ["y", "z", 1] },
+        rowOrder: { orderedIds: ["b", "a", "b"] },
+      }),
+    ).toEqual({
+      rowSelection: { model: ["a", "b"] },
+      detailPanel: { expandedRowIds: ["c"] },
+      pinnedRows: { top: ["x", "y"], bottom: ["z"] },
+      rowOrder: { orderedIds: ["b", "a"] },
+    });
+    expect(
+      sanitizeGridState({
+        rowSelection: { model: "a" },
+        detailPanel: 1,
+        pinnedRows: { top: "x" },
+        rowOrder: {},
+      }),
+    ).toEqual({ pinnedRows: {} });
+  });
+
+  it("the state watcher reports settled changes once, not while a pointer is pressed", async () => {
+    const root = mount("<div></div>").firstElementChild as HTMLElement;
+    let density = "standard";
+    const report = vi.fn();
+    const watcher = createGridStateWatcher(
+      root,
+      () => ({ density: density as "standard" }),
+      report,
+    );
+    const tick = () => new Promise<void>((resolve) => queueMicrotask(resolve));
+    watcher.check();
+    await tick();
+    expect(report).not.toHaveBeenCalled();
+    density = "compact";
+    watcher.check();
+    watcher.check();
+    await tick();
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenLastCalledWith({ density: "compact" });
+    root.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    density = "comfortable";
+    watcher.check();
+    await tick();
+    expect(report).toHaveBeenCalledTimes(1);
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    await tick();
+    expect(report).toHaveBeenLastCalledWith({ density: "comfortable" });
+    document.dispatchEvent(new PointerEvent("pointercancel"));
+    watcher.destroy();
+    density = "standard";
+    watcher.check();
+    await tick();
+    expect(report).toHaveBeenCalledTimes(2);
   });
 });
 

@@ -150,6 +150,8 @@ describe("xlsx", () => {
       fields: ["a"],
     });
     expect(parseGridExcelOptions('{"fileName":1}')).toEqual({});
+    expect(parseGridExcelOptions('{"source":"all"}')).toEqual({ source: "all" });
+    expect(parseGridExcelOptions('{"source":"x"}')).toEqual({});
     expect(parseGridExcelOptions("[]")).toEqual({});
     expect(parseGridExcelOptions("{")).toEqual({});
     expect(parseGridExcelOptions(null)).toEqual({});

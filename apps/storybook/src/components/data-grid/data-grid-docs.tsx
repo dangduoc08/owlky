@@ -5,10 +5,12 @@ import autoGroup from "../../../../../packages/html/src/components/data-grid/exa
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
+import chartsCombo from "../../../../../packages/html/src/components/data-grid/examples/charts-combo.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
 import chartsRange from "../../../../../packages/html/src/components/data-grid/examples/charts-range.html?raw";
 import columnsGroup from "../../../../../packages/html/src/components/data-grid/examples/columns-group.html?raw";
+import columnsTool from "../../../../../packages/html/src/components/data-grid/examples/columns-tool.html?raw";
 import contextGroup from "../../../../../packages/html/src/components/data-grid/examples/context-group.html?raw";
 import dimensionsBorders from "../../../../../packages/html/src/components/data-grid/examples/dimensions-borders.html?raw";
 import dimensionsPages from "../../../../../packages/html/src/components/data-grid/examples/dimensions-pages.html?raw";
@@ -443,6 +445,70 @@ export function CustomersWithTotals() {
 }`,
   },
   {
+    id: "server-pivoting",
+    title: "Pivot on the server",
+    body: "With a data source, a pivoted grid lets the server compute the pivot. `getRows()` receives the `pivotModel`, and the grid asks for the groups of the pivot's row fields in `groupFields` and `groupKeys`, as with server-side grouping. The response adds `pivotColumns`: the keys of the pivot's column fields as a tree, such as `[{ group: \"2024\", children: [{ group: \"Q1\" }] }]`. A `group` can also be a row whose value of the field is the key, and `key` names the key when it differs from the text. Each row holds a pivot value in a field named by its keys and the value field, joined by `>->`, such as `2024>->Q1>->revenue`. `getGroupKey(row)` and `getChildrenCount(row)` tell the grid each group's key and whether it has children, and `getAggregatedValue(row, field)` reads a value when your rows keep them elsewhere. A change to the pivot model asks the server again. In HTML, give the same data source to `setDataSource()` on a grid with `data-ok-pivot-model` and `data-ok-pivot-active`. The pivot's rows don't need a row template.",
+    html: `<script type="module">
+  const grid = window.Owlky.get(document.getElementById("grid-pivot"), "data-grid");
+  grid.setDataSource({
+    // params: { sortModel, filterModel, paginationModel, groupKeys, groupFields, pivotModel }
+    async getRows(params) {
+      const response = await fetch("/api/sales/pivot", {
+        method: "POST",
+        body: JSON.stringify(params),
+      });
+      // { rows: [{ id: "north", region: "North", "2024>->revenue": 5400 }],
+      //   pivotColumns: [{ group: "2024" }, { group: "2025" }] }
+      return response.json();
+    },
+    getGroupKey: (row) => row.region,
+    getChildrenCount: (row) => row.childCount,
+  });
+</script>`,
+    react: `import type { GridDataSource } from "@owlky/core";
+import { DataGrid, type GridColDef } from "@owlky/react";
+
+type Sale = { id: string; region: string; year: number; revenue: number; childCount: number };
+
+const sales: GridDataSource<Sale> = {
+  // params: { sortModel, filterModel, paginationModel, groupKeys, groupFields, pivotModel }
+  async getRows(params) {
+    const response = await fetch("/api/sales/pivot", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    // { rows, rowCount, pivotColumns }
+    return response.json();
+  },
+  getGroupKey: (row) => row.region,
+  getChildrenCount: (row) => row.childCount,
+};
+
+const columns: GridColDef<Sale>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "year", headerName: "Year", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+const noRows: Sale[] = [];
+
+export function SalesPivot() {
+  return (
+    <DataGrid
+      aria-label="Revenue by region and year"
+      rows={noRows}
+      columns={columns}
+      dataSource={sales}
+      pivotActive
+      pivotModel={{
+        rows: [{ field: "region" }],
+        columns: [{ field: "year" }],
+        values: [{ field: "revenue", aggFunc: "sum" }],
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "rows-from-data",
     title: "Build HTML rows from data",
     body: 'In HTML, the grid can build its rows from data instead of markup. Put one row inside `<template data-ok-data-grid-row>` in the grid: `setRows(rows)` copies it for each item, sets `data-ok-row-id` from `id`, and fills each cell with the value of its field as text. For cells with more than text, add `<template data-ok-data-grid-cell="<field>">`: its elements marked `data-ok-data-grid-value` receive the value. Values are always set as text, never as markup, so data from a server can\'t add scripts to the page.',
@@ -451,7 +517,7 @@ export function CustomersWithTotals() {
   {
     id: "selection",
     title: "Choose how rows are selected",
-    body: 'With `checkboxSelection`, people select rows with checkboxes, a click on the row, Space and Ctrl + A. Set `disableMultipleRowSelection` to allow one row at a time: selecting a row clears the others, and the header has no **Select all** checkbox. To keep some rows from being selected, return `false` from `isRowSelectable` in React, or put `data-ok-selectable="false"` on the row in HTML. Their checkbox is disabled. `checkboxSelectionVisibleOnly` makes **Select all** select the current page only. When rows go away, their ids leave the selection, unless you set `keepNonExistentRowsSelected`. Use it with server pagination, where the rows of other pages aren\'t loaded.',
+    body: "With `checkboxSelection`, people select rows with checkboxes, a click on the row, Space and Ctrl + A. To select a range, they click a row, then Shift + click another row or its checkbox: every row in between takes the clicked row's new state. On the keyboard, Shift + Space selects the focused row and Shift + Up or Shift + Down extends the selection to the next row, or shrinks it when that row is already selected. Ranges cover the rows that pass the filters, on every page, in the shown order. With `cellSelection`, Shift + arrows select cells instead. Set `disableMultipleRowSelection` to allow one row at a time: selecting a row clears the others, and the header has no **Select all** checkbox. To keep some rows from being selected, return `false` from `isRowSelectable` in React, or put `data-ok-selectable=\"false\"` on the row in HTML. Their checkbox is disabled. `checkboxSelectionVisibleOnly` makes **Select all** select the current page only. When rows go away, their ids leave the selection, unless you set `keepNonExistentRowsSelected`. Use it with server pagination, where the rows of other pages aren't loaded.",
     html: `${gridOf(layoutTasks, { attrs: "data-ok-disable-multiple-row-selection" })}`,
     react: `import { DataGrid, type GridColDef } from "@owlky/react";
 
@@ -553,6 +619,48 @@ export function People() {
 }`,
   },
   {
+    id: "state-persistence",
+    title: "Save and restore the grid's state",
+    body: "`exportState()` returns the grid's state as plain JSON: the sort, filters, page, columns, density, groups, aggregation, pivot and charts. It also holds the rows people work on. `rowSelection.model` lists the selected rows with checkbox selection, `detailPanel.expandedRowIds` the rows whose detail panel is open, `pinnedRows` the ids of the rows pinned to the `top` and the `bottom`, and `rowOrder.orderedIds` the order people gave the rows by moving them. `restoreState(state)` applies a saved state again. Pinned rows can come from the rows or the pinned rows, so restoring can pin a row of the body or put a pinned row back in it. To save the state as people change it, use `onStateChange` in React or the `ok:data-grid:statechange` event in HTML. Each one reports the new state once a change has settled: once per change, and only after a drag ends. Store the state where your app keeps settings, such as `localStorage`. `restoreState()` checks what it receives, so a state from storage or a URL can't change anything else.",
+    html: `<script type="module">
+  const element = document.getElementById("agenda");
+  const grid = window.Owlky.get(element, "data-grid");
+  // Restore the saved view, then save every settled change
+  grid.restoreState(JSON.parse(localStorage.getItem("agenda-grid") ?? "{}"));
+  element.addEventListener("ok:data-grid:statechange", (event) =>
+    localStorage.setItem("agenda-grid", JSON.stringify(event.detail.state)),
+  );
+</script>`,
+    react: `import { DataGrid, type GridColDef, type GridInitialState } from "@owlky/react";
+
+const rows = [
+  { id: 1, title: "Welcome", speaker: "Ana Lima" },
+  { id: 2, title: "Design systems", speaker: "Jonah Pereira" },
+  { id: 3, title: "Accessible grids", speaker: "Priya Raman" },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "title", headerName: "Talk", flex: 1 },
+  { field: "speaker", headerName: "Speaker", flex: 1 },
+];
+
+const saved: GridInitialState = JSON.parse(localStorage.getItem("agenda-grid") ?? "{}");
+
+export function Agenda() {
+  return (
+    <DataGrid
+      aria-label="Agenda"
+      rows={rows}
+      columns={columns}
+      checkboxSelection
+      rowReordering
+      initialState={saved}
+      onStateChange={(state) => localStorage.setItem("agenda-grid", JSON.stringify(state))}
+    />
+  );
+}`,
+  },
+  {
     id: "validation",
     title: "Check edited values",
     body: "Check a value while people type it, and keep the cell open until it's valid. In React, return `{ error }` from the column's `preProcessEditCellProps`: `true` marks the field as invalid, and a text also shows as a message under the cell. In HTML, listen to `ok:data-grid:validate` and set `event.detail.error`. Enter and leaving the cell keep it open while the value has an error. Escape cancels. `isCellEditable` in React, or `data-ok-editable=\"false\"` on a cell in HTML, makes single cells read-only. Typing a character on an editable cell starts editing with that character.",
@@ -649,6 +757,56 @@ export function DataGridExportOptions() {
       showToolbar
       csvOptions={{ delimiter: ";", fileName: "products" }}
       printOptions={{ hideFooter: false }}
+    />
+  );
+}`,
+  },
+  {
+    id: "rows-to-export",
+    title: "Choose the rows to export",
+    body: 'By default, CSV, Excel and print exports hold the rows that pass the filters, in the shown order. Set `source` in `csvOptions`, `excelOptions` or `printOptions` to export other rows: `"selected"` exports the selected rows among them, `"page"` the rows of the current page, and `"all"` every row in its original order, whatever the filters. For any other choice, give `getRowsToExport` a function that returns the ids of the rows to export, in order. It gets the grid\'s API in `apiRef` and the id lists `filteredSortedRowIds`, `rowIds`, `paginatedRowIds` and `selectedRowIds`, and it wins over `source`. Print only prints rows that pass the filters, because it copies the rows the grid shows. In HTML, write `source` in the JSON of `data-ok-csv-options`, `data-ok-excel-options` or `data-ok-print-options`, or pass the options to `toCsv`, `exportCsv`, `toExcel`, `exportExcel` and `print`. There, `apiRef.current` is the grid\'s instance.',
+    html: `<script type="module">
+  const grid = window.Owlky.get(document.getElementById("products"), "data-grid");
+  // The selected rows, else every row that passes the filters.
+  grid.exportCsv({
+    fileName: "products",
+    getRowsToExport: ({ selectedRowIds, filteredSortedRowIds }) =>
+      selectedRowIds.length
+        ? filteredSortedRowIds.filter((id) => selectedRowIds.includes(id))
+        : filteredSortedRowIds,
+  });
+  grid.exportExcel({ fileName: "all-products", source: "all" });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const rows = [
+  { id: 1, product: "Desk", stock: 12 },
+  { id: 2, product: "Chair", stock: 0 },
+  { id: 3, product: "Lamp", stock: 31 },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "product", headerName: "Product", flex: 1 },
+  { field: "stock", headerName: "Stock", type: "number", width: 110 },
+];
+
+export function DataGridRowsToExport() {
+  return (
+    <DataGrid
+      aria-label="Products"
+      rows={rows}
+      columns={columns}
+      checkboxSelection
+      showToolbar
+      csvOptions={{ source: "selected", fileName: "selected-products" }}
+      excelOptions={{
+        fileName: "products-in-stock",
+        getRowsToExport: ({ filteredSortedRowIds, apiRef }) =>
+          filteredSortedRowIds.filter((id) => {
+            const api = apiRef.current as { getRow(id: string): { stock: number } | undefined };
+            return (api.getRow(id)?.stock ?? 0) > 0;
+          }),
+      }}
     />
   );
 }`,
@@ -1321,9 +1479,60 @@ export function DataGridChartsConfiguration() {
 }`,
   },
   {
+    id: "charts-combo",
+    title: "Aggregate a chart and mix series types",
+    body: `A chart of rows draws one point per row. Set \`aggregation\` in the chart model to merge the rows of each category instead, without grouping the grid: the rows with the same \`dimension\` text become one point. The chart merges every row that passes the filters, on every page.
+
+- **\`aggregation\`:** \`"sum"\`, \`"avg"\`, \`"count"\` (the number of rows), \`"min"\`, \`"max"\` or \`"median"\`. With row grouping, range charts and cross-filtering, it replaces the function of the aggregation model.
+- **\`type: "combo"\`:** draws each value in its own way. The first value shows as columns and the others as lines, unless \`seriesTypes\` says otherwise, such as \`{ units: "area" }\`. The values are \`"column"\`, \`"line"\` and \`"area"\`.
+- **\`secondaryValues\`:** the value fields that use a second value axis, on the right. Use it for values on a different scale, such as units next to revenue. It works with column, line, area and combo charts. The second axis is named after its series, and \`seriesAxisLabel\` names the first one.
+
+The chart panel's **Chart type** menu offers **Combo** too.`,
+    html: `<!-- The chart model is JSON on the grid: data-ok-chart-model -->
+${gridOf(chartsCombo, { rows: 6 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridComboChart() {
+  return (
+    <DataGrid
+      aria-label="Revenue and units by region"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        chartsIntegration: {
+          model: {
+            type: "combo",
+            dimension: "region",
+            values: ["revenue", "units"],
+            aggregation: "sum",
+            secondaryValues: ["units"],
+            seriesAxisLabel: "Revenue",
+          },
+        },
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "charts-range",
     title: "Chart a range of cells",
-    body: "With `cellSelection` and `chartsIntegration`, people can chart the cells they select, as in a spreadsheet. Select the cells, then press Alt + F1 on a cell, or select **Chart from selection** in the chart panel. The first column of the range names the categories, unless it holds numbers: then the categories are the rows' positions. Each number column of the range becomes a series, named by its header. Rows with the same category merge into one, with the column's aggregation function or a sum. With several charts, the new chart is added after the others and the panel edits it, so you can pick its type right away. With one chart, the range replaces what the chart shows. The grid announces the new chart to screen readers. A range without numbers creates no chart, and the grid says so. From code, call `createRangeChart()`, with an optional `cellRange`, `chartType`, `label` and `id`. It returns the new chart's `id` and model, or `null` when the range holds no number. A range chart keeps its rows in the model's `rows`: it shows the ones that pass the filters, in the grid's sort order. In HTML, the grid builds the new chart's region itself and fires the cancelable `ok:data-grid:chart` first.",
+    body: "With `cellSelection` and `chartsIntegration`, people can chart the cells they select, as in a spreadsheet. Select the cells, then press Alt + F1 on a cell, or select **Chart from selection** in the chart panel. The first column of the range names the categories, unless it holds numbers: then the categories are the rows' positions. Each number column of the range becomes a series, named by its header. Rows with the same category merge into one, with the column's aggregation function or a sum. With several charts, the new chart is added after the others and the panel edits it, so you can pick its type right away. With one chart, the range replaces what the chart shows. The grid announces the new chart to screen readers. A range without numbers creates no chart, and the grid says so. From code, call `createRangeChart()`, with an optional `cellRange`, `chartType`, `label` and `id`. It returns the new chart's `id` and model, or `null` when the range holds no number. A range chart keeps its rows in the model's `rows`: it shows the ones that pass the filters, in the grid's sort order. In HTML, the grid builds the new chart's region itself and fires the cancelable `ok:data-grid:chart` first. While a range chart is the active chart, its cells on the page are outlined: the categories in blue and the series in green. Drag the square at the outline's bottom end corner to resize the range, over more rows or more number columns, and press Escape while dragging to put it back. On the keyboard, select the cells with Shift + arrows and press Alt + Shift + F1: the active range chart draws them instead.",
     html: `${gridOf(chartsRange, { rows: 4 })}
 <script type="module">
   const element = document.getElementById("grid-charts-range");
@@ -1956,6 +2165,38 @@ export function WorkBreakdown() {
 }`,
   },
   {
+    id: "columns-tool-panel",
+    title: "Manage columns from a tool panel",
+    body: "Set `columnsToolPanel` to turn the **Columns** panel into a tool panel, where people arrange the whole grid in one place. **Search columns** narrows the list by header name, and accents don't count. Each column has its switch, a **Pin** menu (not pinned, left or right) and **Move up** and **Move down** buttons that change its place among the columns. The **Row groups** section groups the rows by the columns people check, in the order they check them. The **Values** section picks an aggregation function for each column, such as sum or average. Both sections show outside pivot mode, when grouping and aggregation are on. **Show all** and **Hide all** switch every hideable column on or off. **Reset** brings back the columns, pins, groups and values the grid started with. Every change goes through the grid's models and events, so `onColumnVisibilityModelChange`, `onColumnOrderChange`, `onPinnedColumnsChange`, `onRowGroupingModelChange` and `onAggregationModelChange` (HTML: the `ok:data-grid:columns`, `order`, `pinned`, `rowgrouping` and `aggregation` events) report them. Every control is a native field or button, so the panel works with the keyboard alone. In HTML, add `data-ok-columns-tool-panel` to the grid and the tool panel's markup to the Columns popover.",
+    html: `${gridOf(columnsTool)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const tasks = [
+  { id: 1, task: "Plan the sprint", team: "Core", owner: "Ana", points: 3 },
+  { id: 2, task: "Write the guide", team: "Docs", owner: "Bao", points: 2 },
+  { id: 3, task: "Draw the icons", team: "Design", owner: "Chloe", points: 5 },
+];
+
+const columns: GridColDef<(typeof tasks)[number]>[] = [
+  { field: "task", headerName: "Task", flex: 1 },
+  { field: "team", headerName: "Team" },
+  { field: "owner", headerName: "Owner" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function DataGridColumnsToolPanel() {
+  return (
+    <DataGrid
+      aria-label="Team tasks"
+      rows={tasks}
+      columns={columns}
+      showToolbar
+      columnsToolPanel
+    />
+  );
+}`,
+  },
+  {
     id: "column-options",
     title: "Set options per column",
     body: 'Each column can turn grid features off for itself. `hideSortIcons` hides the sort arrow, while the header still sorts. `disableColumnMenu` removes the column\'s menu. `disableReorder` keeps the column in its place: it doesn\'t drag, and other columns can\'t move past it. `disableExport` leaves it out of the CSV, Excel and print exports. `pinnable: false` hides the pin items of its menu. `cellClassName` and `headerClassName` add class names, as a string or from a function, so your CSS can style a column or single cells. `rowHeader: true` makes the column\'s cells row headers (`role="rowheader"`), so screen readers announce them with the other cells of the row. `display: "flex"` lays out cell content in a row, centered. With `rowSpanning`, `rowSpanValueGetter` returns the value that neighbouring cells compare to merge, such as the owner within a team. `pastedValueParser` turns pasted text into the cell\'s value. In HTML, write `data-ok-disable-reorder`, `data-ok-disable-export` and `data-ok-pinnable="false"` on the header, leave out the sort icon or the menu button, and write `role="rowheader"`, `class`, `data-ok-display` and `data-ok-row-span-value` on the cells. Set a paste parser with `setPastedValueParser(field, parser)`.',
@@ -2296,6 +2537,7 @@ export function Issues() {
 - **\`ok:data-grid:menuopen\`** and **\`ok:data-grid:menuclose\`** report \`detail.menu\` and \`detail.target\`. **\`ok:data-grid:preferencepanelopen\`** and **\`ok:data-grid:preferencepanelclose\`** report \`detail.openedPanelValue\`. **\`ok:data-grid:sidebaropen\`** and **\`ok:data-grid:sidebarclose\`** report \`detail.value\`.
 - **\`ok:data-grid:containerresize\`** reports the grid's \`detail.width\` and \`detail.height\`. **\`ok:data-grid:columnresize\`** reports \`detail.field\` and \`detail.width\` while an edge is dragged.
 - **\`ok:data-grid:fetchrows\`** reports \`detail.firstRowToRender\` and \`detail.lastRowToRender\` when the rendered rows change and \`data-ok-row-count\` is more than the rows in the grid. **\`ok:data-grid:excelexportstate\`** reports \`detail.state\`, \`pending\` then \`finished\`. **\`ok:data-grid:beforeclipboardpaste\`** is cancelable and takes a promise in \`detail.waitUntil(promise)\`.
+- **\`ok:data-grid:statechange\`** reports \`exportState()\` in \`detail.state\` once a change has settled: once per change, and after a drag ends.
 - **\`ok:data-grid:fill\`** reports the cells the fill handle (or Ctrl + D, Ctrl + R) is about to write, each with the cell it repeats, in \`detail.cells\`. It's cancelable.
 - **\`ok:data-grid:roworder\`** also reports \`detail.oldParentId\` and \`detail.parentId\` for tree rows. \`setPivotingColDef(def)\` changes the pivot's columns (\`headerName\`, \`width\`, \`minWidth\`, \`maxWidth\`, \`align\`, \`headerAlign\`), and \`data-ok-pivot-panel-open\` opens the pivot panel.
 - **\`ok:data-grid:rowcountchange\`** reports \`detail.count\`, and **\`ok:data-grid:paginationmetachange\`** reports a data source's \`detail.hasNextPage\`. \`setDataSource(source, { cache })\` replaces the cache of responses (\`null\` turns it off).
@@ -2589,7 +2831,11 @@ const PREVIEWS = {
         ["Page Up / Page Down", "Up / down one screen of rows"],
         ["Enter or Space on a header", "Sorts the column (Shift: adds it to the sort)"],
         ["Ctrl + Enter on a header", "Opens the column menu"],
-        ["Space on a row", "Selects or clears the row"],
+        ["Space or Shift + Space on a row", "Selects or clears the row"],
+        [
+          "Shift + Up / Shift + Down on a row",
+          "Extends the row selection to the row above / below (shrinks it over selected rows)",
+        ],
         ["Ctrl + A", "Selects or clears every row"],
         ["Alt + Left / Alt + Right on a header", "Makes the column narrower / wider by 10 pixels"],
         ["Enter or F2 on an editable cell", "Edits the cell (Enter saves, Escape cancels)"],
@@ -2602,6 +2848,10 @@ const PREVIEWS = {
         ["Alt + Up / Alt + Down on a row handle", "Moves the row up / down"],
         ["Shift + arrow keys (cell selection)", "Extends the selected range"],
         ["Alt + F1 on a cell (cell selection)", "Charts the selected cells"],
+        [
+          "Alt + Shift + F1 on a cell (cell selection)",
+          "The active range chart draws the selected cells",
+        ],
         ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
         [
           "Ctrl + D / Ctrl + R on a cell (cellSelectionFillHandle)",

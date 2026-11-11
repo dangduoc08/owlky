@@ -396,6 +396,17 @@ describe("prepareGridPrint", () => {
     expect(body.style.getPropertyValue("--_ok-data-grid-before")).toBe("");
   });
 
+  it("prints the rows to export only", () => {
+    const copy = mount(ROOT).firstElementChild as HTMLElement;
+    const body = copy.querySelector("[data-ok-data-grid-body]") as HTMLElement;
+    const second = (body.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+    (body.firstElementChild as HTMLElement).setAttribute("data-ok-row-id", "1");
+    second.setAttribute("data-ok-row-id", "2");
+    body.append(second);
+    prepareGridPrint(copy, { rowIds: ["2"] }, ["a"], "10px");
+    expect([...body.children].map((row) => row.getAttribute("data-ok-row-id"))).toEqual(["2"]);
+  });
+
   it("keeps the toolbar, footer and checkboxes when asked", () => {
     const copy = mount(ROOT).firstElementChild as HTMLElement;
     prepareGridPrint(

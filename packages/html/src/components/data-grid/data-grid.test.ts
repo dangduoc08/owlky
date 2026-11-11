@@ -48,7 +48,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(44));
+  it("covers every story group", () => expect(snippets).toHaveLength(46));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
   const scripted = (path: string) => /(large|server|lazy|server-aggregation)-group/.test(path);
@@ -2145,7 +2145,7 @@ describe("data grid custom editors and edit modes", () => {
     instance.setRowModesModel({ "is-1": { mode: "edit", fieldToFocus: "priority" } });
     expect(document.activeElement).toBe(cell("is-1", "priority").querySelector("select"));
     expect(instance.rowModesModel).toEqual({
-      "is-1": { mode: "edit" },
+      "is-1": { mode: "edit", fieldToFocus: "priority" },
     });
     instance.setRowModesModel({ "is-1": { mode: "view" } });
     expect(root.querySelector('[data-ok-row-id="is-1"]')?.hasAttribute("data-ok-editing")).toBe(

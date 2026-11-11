@@ -5,6 +5,8 @@
  * field)` (the raw value, for sorting and filtering) and `text(row, field)` (what the cell shows).
  */
 
+import type { GridExportSource, GridGetRowsToExportParams } from "./grid-structure.js";
+
 export const gridColumnTypes = [
   "string",
   "number",
@@ -834,6 +836,62 @@ export function toggleGridRows(selected: readonly string[], ids: readonly string
   return [...selected, ...ids.filter((id) => !selected.includes(id))];
 }
 
+/** Selects (`on`) or clears every row of `range`, keeping the rest of the selection. */
+function setGridRows(selected: readonly string[], range: readonly string[], on: boolean): string[] {
+  if (!on) return selected.filter((id) => !range.includes(id));
+  return [...selected, ...range.filter((id) => !selected.includes(id))];
+}
+
+/**
+ * Shift + click on a row or its checkbox (MUI X `expandMouseRowRangeSelection`): the rows from the
+ * anchor (the row toggled last, else the clicked one) to the clicked row take the clicked row's
+ * new state. A selected row clears the rows from the anchor up to the one before it (it stays).
+ * `ids`: the rows a range can cover, in their shown order (selectable data rows).
+ */
+export function gridRowRangeSelection(
+  selected: readonly string[],
+  ids: readonly string[],
+  anchor: string | null,
+  id: string,
+): string[] {
+  const start = anchor !== null && ids.includes(anchor) ? anchor : id;
+  const startIndex = ids.indexOf(start);
+  let endIndex = ids.indexOf(id);
+  if (endIndex < 0) return [...selected];
+  const isSelected = selected.includes(id);
+  if (isSelected) {
+    if (startIndex === endIndex) return [...selected];
+    endIndex += startIndex > endIndex ? 1 : -1;
+  }
+  const [from, to] = startIndex <= endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+  return setGridRows(selected, ids.slice(from, to + 1), !isSelected);
+}
+
+/**
+ * Shift + Up / Down (MUI X): focus moved from the row `from` to the row `to`; `to` and the rows in
+ * between take `to`'s new state (a selected `to` clears the rows passed, so going back shrinks the
+ * range). Without `multiple`, `to` replaces the selection (or clears it).
+ */
+export function gridRowArrowSelection(
+  selected: readonly string[],
+  ids: readonly string[],
+  from: string,
+  to: string,
+  multiple = true,
+): string[] {
+  const next = ids.indexOf(to);
+  const previous = ids.indexOf(from);
+  if (next < 0) return [...selected];
+  const isNextSelected = selected.includes(to);
+  if (!multiple) return isNextSelected ? selected.filter((id) => id !== to) : [to];
+  if (previous < 0) return setGridRows(selected, [to], !isNextSelected);
+  const [start, end] =
+    next > previous
+      ? [previous, isNextSelected ? next - 1 : next]
+      : [isNextSelected ? next + 1 : next, previous];
+  return setGridRows(selected, ids.slice(start, end + 1), !isNextSelected);
+}
+
 /** Whether selecting a row also selects related rows (MUI X `rowSelectionPropagation`). */
 export interface GridRowSelectionPropagation {
   /** Selecting every selectable descendant of a parent selects the parent; clearing one clears it. */
@@ -939,6 +997,10 @@ export interface GridCsvOptions {
   fields?: readonly string[] | undefined;
   /** Hidden columns too. Default false. */
   allColumns?: boolean | undefined;
+  /** Which rows: `filtered` (default), `selected`, `page` or `all` (ApexGrid `source`). */
+  source?: GridExportSource | undefined;
+  /** The ids of the rows to export, in order (MUI X); wins over `source`. */
+  getRowsToExport?: ((params: GridGetRowsToExportParams) => readonly string[]) | undefined;
 }
 
 /** The columns an export (CSV, print) includes: `fields` in order, else shown or all columns. */
@@ -977,6 +1039,16 @@ export function gridToCsv<R>(
 /** Default labels (MUI X locale text keys). */
 export const gridDefaultLabels = {
   toolbarColumns: "Columns",
+  /** Columns tool panel (`columnsToolPanel`, 4.18.90; MUI X `columnsManagement…` keys). */
+  columnsManagementSearchTitle: "Search columns",
+  columnsManagementShowAll: "Show all",
+  columnsManagementHideAll: "Hide all",
+  columnsManagementReset: "Reset",
+  columnsManagementNoColumns: "No columns",
+  columnsManagementPin: "Pin",
+  columnsManagementNotPinned: "Not pinned",
+  columnsManagementRowGroups: "Row groups",
+  columnsManagementValues: "Values",
   toolbarFilters: "Filters",
   toolbarDensity: "Density",
   toolbarExport: "Export",
@@ -1076,6 +1148,7 @@ export const gridDefaultLabels = {
   chartTypeDonut: "Donut",
   chartTypeRadar: "Radar",
   chartTypeScatter: "Scatter",
+  chartTypeCombo: "Combo",
   chartsStacked: "Stacked",
   chartsItemLabel: "Show values",
   chartsLegend: "Legend",
@@ -1090,6 +1163,8 @@ export const gridDefaultLabels = {
   /** `{label}` is replaced (the new chart's name). */
   chartsRangeCreated: "Chart created: {label}",
   chartsRangeRefused: "Select cells with numbers to create a chart",
+  /** `{label}` is replaced (the chart's label). */
+  chartsRangeUpdated: "Chart range updated: {label}",
   chartsCrossFilter: "Filter the grid",
   /** `{field}` and `{values}` are replaced (the column's name, the categories). */
   chartsCrossFilterApplied: "Filtered by {field}: {values}",

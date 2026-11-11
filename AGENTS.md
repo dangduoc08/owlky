@@ -607,6 +607,19 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   The chart rewrites table cells in place, so tests read cell texts, not `tr.textContent`
   (whitespace of the snippet stays). Snippets of pivoted examples hold the unpivoted rows +
   `data-ok-pivot-active`, but the pivoted chart's table and panel (render React twice).
+  `secondaryValues` goes through the Chart's `yaxis` (HTML `data-ok-yaxis`, which the grid removes
+  itself: it is a text attribute, not one of the chart's option attributes).
+- Data grid batch E (4.18.87–93): `data-grid-snippets.mjs` rewrites `cells-group` / `pivot-derived`
+  with today's date in their pickers: revert those two unless the change is yours. A dispatched
+  `click` on a checkbox toggles it and fires `change` itself: HTML tests never dispatch `change`
+  after it (Shift + click ranges read Shift from that click). State reports (`onStateChange`,
+  `ok:data-grid:statechange`) come a microtask after the update and wait for a pressed pointer's
+  release: tests resolve a microtask, and dispatch `pointerup` on the document after a synthetic
+  `pointerdown`. Server pivot rows (HTML) are built with DOM methods and their data lives in a
+  `WeakMap`: read values through the instance or the cells, never `data-ok-value`. Moving items of
+  the columns tool panel keeps the focused one in place (the others move around it), or the focus
+  is lost. Range chart handle drags in the 414px test page: `scrollIntoView` the target cell
+  before measuring it (`elementFromPoint` sees nothing outside the viewport).
 - Date pickers (ADR-0022): field sections are `contenteditable` spinbuttons whose text only the owner
   writes — core `createFieldController` cancels `beforeinput` and restores IME text. Browsers keep
   the selection inside the focused editable section, so select-all is `data-ok-all-selected` on the

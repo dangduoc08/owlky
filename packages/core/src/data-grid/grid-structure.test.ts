@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanupDom, mount } from "../test-utils.js";
+import type { GridGetRowsToExportParams } from "./grid-structure.js";
 import {
   createGridRowReorder,
   gridCanMoveColumn,
@@ -11,10 +12,12 @@ import {
   gridMissingRanges,
   gridMovedTreePath,
   gridParentsFromPaths,
+  gridRowsToExport,
   gridTreeRowMove,
   gridTreeRows,
   moveGridRow,
   parseGridExportOptions,
+  parseGridExportSource,
 } from "./grid-structure.js";
 import { createGridDataSourceCache } from "./grid-virtual.js";
 
@@ -317,6 +320,31 @@ describe("export options from markup", () => {
     expect(parseGridExportOptions("{bad")).toEqual({});
     expect(parseGridExportOptions("[1]")).toEqual({});
     expect(parseGridExportOptions(null)).toEqual({});
+    expect(parseGridExportOptions('{"source":"selected"}')).toEqual({ source: "selected" });
+    expect(parseGridExportOptions('{"source":"everything"}')).toEqual({});
+  });
+});
+
+describe("rows to export (4.18.92)", () => {
+  const ids = {
+    filteredSortedRowIds: ["c", "a", "d"],
+    rowIds: ["a", "b", "c", "d"],
+    paginatedRowIds: ["c", "a"],
+    selectedRowIds: ["d", "b", "a"],
+    apiRef: { current: null },
+  };
+  it("source shortcuts: filtered (default), selected among them, page, all", () => {
+    expect(gridRowsToExport(ids, undefined)).toEqual(["c", "a", "d"]);
+    expect(gridRowsToExport(ids, "filtered")).toEqual(["c", "a", "d"]);
+    expect(gridRowsToExport(ids, "selected")).toEqual(["a", "d"]);
+    expect(gridRowsToExport(ids, "page")).toEqual(["c", "a"]);
+    expect(gridRowsToExport(ids, "all")).toEqual(["a", "b", "c", "d"]);
+  });
+  it("getRowsToExport wins: its order, known ids once", () => {
+    const get = (given: GridGetRowsToExportParams) => [...given.selectedRowIds, "zz", "d"];
+    expect(gridRowsToExport(ids, "page", get)).toEqual(["d", "b", "a"]);
+    expect(parseGridExportSource("all")).toBe("all");
+    expect(parseGridExportSource(1)).toBeUndefined();
   });
 });
 

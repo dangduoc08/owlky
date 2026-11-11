@@ -8,10 +8,12 @@ import {
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
   gridAggregationPositionOf,
+  gridChartAggregate,
   gridChartData,
   gridChartFields,
   gridChartOptions,
   gridChartStacked,
+  gridChartTwoAxes,
   gridGroupComparator,
   gridGroupFooterId,
   gridGroupingField,
@@ -20,9 +22,12 @@ import {
   gridGroupRowId,
   gridPivot,
   gridPivotField,
+  gridPivotLayout,
   gridPivotRole,
   gridRowGroups,
   gridSelectionStats,
+  gridServerPivot,
+  gridServerPivotField,
   gridStatusItems,
   gridTreeGroups,
   gridWithGroupFooters,
@@ -810,5 +815,161 @@ describe("grid state", () => {
       chartsIntegration: { model: 1 },
     });
     expect(empty).toEqual({ pivoting: {} });
+  });
+});
+
+describe("chart aggregation, combo and a second axis (4.18.88)", () => {
+  const columns: GridColumn[] = [
+    { field: "region", headerName: "Region" },
+    { field: "revenue", headerName: "Revenue", type: "number" },
+    { field: "deals", headerName: "Deals", type: "number" },
+  ];
+  const items = [{ region: "N", revenue: 10, deals: 2 }];
+  type Item = (typeof items)[number];
+  it("aggregates: sum, avg, count, min, max, median", () => {
+    const values = [4, "2", null, 9, "x", 1];
+    expect(gridChartAggregate(values, "sum")).toBe(16);
+    expect(gridChartAggregate(values, "avg")).toBe(4);
+    expect(gridChartAggregate(values, "count")).toBe(6);
+    expect(gridChartAggregate(values, "min")).toBe(1);
+    expect(gridChartAggregate(values, "max")).toBe(9);
+    expect(gridChartAggregate(values, "median")).toBe(3);
+    expect(gridChartAggregate([5, 1, 3], "median")).toBe(3);
+    expect(gridChartAggregate([null], "sum")).toBeNull();
+    expect(gridChartAggregate([], "count")).toBe(0);
+  });
+  it("combo series types and the secondary axis", () => {
+    const combo = gridChartData(
+      items,
+      { type: "combo", values: ["revenue", "deals"], secondaryValues: ["deals"] },
+      columns,
+      (row: Item) => row.region,
+      (row: Item, field) => row[field as "revenue"],
+    );
+    expect(combo.series.map((s) => [s.type, s.yAxis])).toEqual([
+      ["bar", 0],
+      ["line", 1],
+    ]);
+    const options = gridChartOptions(
+      { type: "combo", seriesAxisLabel: "USD", curve: "straight", showMark: true },
+      combo,
+    );
+    expect(options).toMatchObject({
+      type: "line",
+      curve: "straight",
+      markerSize: 4,
+      yaxis: [{ title: "USD" }, { opposite: true, title: "Deals" }],
+    });
+    expect(options.yTitle).toBeUndefined();
+    const own = gridChartData(
+      items,
+      {
+        type: "combo",
+        values: ["revenue", "deals"],
+        seriesTypes: { revenue: "area", deals: "column" },
+      },
+      columns,
+      (row: Item) => row.region,
+      (row: Item, field) => row[field as "revenue"],
+    );
+    expect(own.series.map((s) => [s.type, s.yAxis])).toEqual([
+      ["area", undefined],
+      ["bar", undefined],
+    ]);
+    // One side only, or a type without axes: one axis.
+    expect(gridChartTwoAxes({ type: "line", secondaryValues: ["deals"] }, columns.slice(2))).toBe(
+      false,
+    );
+    expect(gridChartTwoAxes({ type: "pie", secondaryValues: ["deals"] }, columns.slice(1))).toBe(
+      false,
+    );
+    expect(gridChartTwoAxes({ secondaryValues: ["deals"] }, columns.slice(1))).toBe(true);
+    expect(gridChartOptions({ type: "column", seriesAxisLabel: "USD" }, own).yTitle).toBe("USD");
+    // Two axes without a title on the first; a smooth combo keeps the default curve.
+    const plain = gridChartOptions({ type: "combo", curve: "smooth" }, combo);
+    expect(plain.yaxis?.[0]).toEqual({});
+    expect(plain.curve).toBeUndefined();
+    expect(plain.markerSize).toBeUndefined();
+    // The layout's labels default to the function names.
+    expect(
+      gridPivotLayout([["a"]], 1, [{ field: "revenue", aggFunc: "sum" }], columns).columns[0]
+        ?.headerName,
+    ).toBe("Revenue (sum)");
+  });
+  it("sanitizes the new keys", () => {
+    expect(
+      sanitizeGridChartModel({
+        type: "combo",
+        aggregation: "median",
+        secondaryValues: ["a", 2],
+        seriesTypes: JSON.parse('{"a":"line","b":"pie","__proto__":"line"}'),
+      }),
+    ).toEqual({
+      type: "combo",
+      aggregation: "median",
+      secondaryValues: ["a"],
+      seriesTypes: { a: "line" },
+    });
+    expect(sanitizeGridChartModel({ aggregation: "mode", seriesTypes: [] })).toEqual({});
+  });
+});
+
+describe("server-side pivoting (4.18.93)", () => {
+  const columns: GridColumn[] = [
+    { field: "region", headerName: "Region" },
+    { field: "year", headerName: "Year", type: "number" },
+    { field: "quarter", headerName: "Quarter" },
+    { field: "revenue", headerName: "Revenue", type: "number" },
+  ];
+  it("columns from the response's tree, rows' fields with >-> between keys", () => {
+    const pivot = gridServerPivot(
+      [
+        { group: "2024", children: [{ group: "Q1" }, { group: { quarter: "Q2" } }] },
+        { key: "y25", group: "2025", children: [{ group: "Q1" }, null as never] },
+        { group: "2026" },
+      ],
+      columns,
+      {
+        rows: [{ field: "region" }, { field: "gone" }],
+        columns: [{ field: "year" }, { field: "quarter" }],
+        values: [{ field: "revenue", aggFunc: "sum" }],
+      },
+      (fn) => fn.toUpperCase(),
+    );
+    expect(pivot.rowGroupingModel).toEqual(["region"]);
+    expect(pivot.columns.map((c) => c.pivotKeys)).toEqual([
+      ["2024", "Q1"],
+      ["2024", "Q2"],
+      ["y25", "Q1"],
+    ]);
+    expect(pivot.columns[0]?.headerName).toBe("Revenue (SUM)");
+    const field = pivot.columns[2]?.field as string;
+    expect(pivot.serverField(field)).toBe("y25>->Q1>->revenue");
+    expect(gridServerPivotField([], "revenue")).toBe("revenue");
+    expect(pivot.serverField("revenue")).toBeUndefined();
+    expect(pivot.columnGroupingModel.map((g) => g.headerName)).toEqual(["2024", "y25"]);
+    expect(pivot.aggregationModel[field]).toBe("sum");
+  });
+  it("without column fields: one column per value; a missing tree is no keys", () => {
+    const pivot = gridServerPivot(undefined, columns, {
+      rows: [],
+      columns: [],
+      values: [{ field: "revenue", aggFunc: "avg" }],
+    });
+    expect(pivot.columns).toHaveLength(1);
+    expect(pivot.serverField(pivot.columns[0]?.field as string)).toBe("revenue");
+    expect(pivot.columnGroupingModel).toEqual([]);
+    const none = gridServerPivot(undefined, columns, {
+      rows: [],
+      columns: [{ field: "year" }],
+      values: [{ field: "revenue", aggFunc: "sum" }],
+    });
+    expect(none.columns).toEqual([]);
+    const blank = gridServerPivot([{ group: {} }], columns, {
+      rows: [],
+      columns: [{ field: "year" }],
+      values: [{ field: "revenue", aggFunc: "sum" }],
+    });
+    expect(blank.columns[0]?.pivotKeys).toEqual([""]);
   });
 });

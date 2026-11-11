@@ -121,7 +121,10 @@ const budgets = [
   // 299.5 kB after Phase 5.4 layout (ADR-0062: FLIP layout nodes with nested correction, the
   // HTML layout watcher, shared values for the scroll progress smoothing, `initial`): 294.47 kB
   // (from 289.25 kB). Optimization is deferred to 1.0 prep.
-  ["packages/html/dist/owlky.js", 299_500, "HTML runtime + all components (IIFE)"],
+  // 307 kB after the 6.0 Apex gaps (organization chart tree mode and selection, data grid row
+  // ranges, rows to export, state, chart aggregation / combo, range outline, columns tool panel,
+  // server pivoting): 302.21 kB. Optimization is deferred to 1.0 prep.
+  ["packages/html/dist/owlky.js", 307_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -234,7 +237,9 @@ const budgets = [
   // number input: stories, guides, docs sections and API entries): 1450.8 kB.
   // 1.55 MB after Phase 5.2 and 5.3 (scroll progress: a new spec, guide and three stories;
   // gestures and the swipeable Drawer: stories, docs sections and API entries): 1505.3 kB.
-  ["packages/mcp/manifest.json", 1_550_000, "MCP manifest (npm tarball, not a browser download)"],
+  // 1.6 MB after the 6.0 Apex gaps (ApexTree and ApexGrid rows: stories, docs sections, API
+  // entries, two ADRs): 1550.65 kB.
+  ["packages/mcp/manifest.json", 1_600_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;

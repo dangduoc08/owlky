@@ -23,6 +23,11 @@ export interface GridNavigationOptions {
   /** Ctrl / Cmd + A: select every row. */
   onSelectAll(): void;
   /**
+   * Shift + Up / Down on a body cell moved the focus from the row `from` to the row `to` (both
+   * with `aria-selected`): extend the row selection (MUI X).
+   */
+  onRowRange?(from: HTMLElement, to: HTMLElement): void;
+  /**
    * Enter, F2 or a printable key on a body cell: start editing it (`key`: the typed character,
    * which replaces the value).
    */
@@ -340,6 +345,21 @@ export function createGridNavigation(
       setStop(destination);
       gridFocusTarget(destination).focus();
       destination.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+      // Shift + Up / Down: the rows passed join (or leave) the selection.
+      const from = cell.closest<HTMLElement>('[role="row"]');
+      const to = destination.closest<HTMLElement>('[role="row"]');
+      if (
+        options.onRowRange &&
+        event.shiftKey &&
+        !header &&
+        (key === "ArrowUp" || key === "ArrowDown") &&
+        from &&
+        to &&
+        from !== to &&
+        from.hasAttribute("aria-selected") &&
+        to.hasAttribute("aria-selected")
+      )
+        options.onRowRange(from, to);
     },
     { signal },
   );

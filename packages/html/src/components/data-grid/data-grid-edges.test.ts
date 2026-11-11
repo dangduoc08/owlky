@@ -268,12 +268,19 @@ describe("edits started from the keyboard and moved by the modes setter", () => 
     expect(cell(root, "is-2", "points").hasAttribute("data-ok-editing")).toBe(true);
   });
 
-  it("the row modes model names the row being edited", () => {
+  it("the row modes model names the row being edited and its fieldToFocus (as React)", () => {
     const { root, instance } = setup(snippet("editors-group"), (r) =>
       r.setAttribute("data-ok-edit-mode", "row"),
     );
     cell(root, "is-3", "title").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
-    expect(instance.rowModesModel).toEqual({ "is-3": { mode: "edit" } });
+    expect(instance.rowModesModel).toEqual({ "is-3": { mode: "edit", fieldToFocus: "title" } });
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+    expect(instance.rowModesModel).toEqual({});
+    // Started on another cell: that field is the one to focus.
+    cell(root, "is-3", "points").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(instance.rowModesModel).toEqual({ "is-3": { mode: "edit", fieldToFocus: "points" } });
   });
 });
 

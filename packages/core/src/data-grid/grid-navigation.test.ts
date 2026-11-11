@@ -87,6 +87,42 @@ describe("createGridNavigation", () => {
     expect(press(document.activeElement as Element, "x")).toBe(true);
   });
 
+  it("Shift + Up / Down reports a row range; Shift + Space toggles the row", () => {
+    const host = mount(GRID);
+    const grid = host.querySelector<HTMLElement>("#g") as HTMLElement;
+    const onRowRange = vi.fn();
+    const onToggleRow = vi.fn();
+    createGridNavigation(grid, {
+      onSort: vi.fn(),
+      onColumnMenu: vi.fn(),
+      onToggleRow,
+      onSelectAll: vi.fn(),
+      onRowRange,
+    });
+    const rows = grid.querySelectorAll<HTMLElement>("[data-ok-data-grid-body] > [role='row']");
+    const name = (n: number) => (rows[n] as HTMLElement).children[1] as HTMLElement;
+    name(0).focus();
+    press(name(0), " ", { shiftKey: true });
+    expect(onToggleRow).toHaveBeenCalledWith(rows[0]);
+    press(name(0), "ArrowDown", { shiftKey: true });
+    expect(document.activeElement).toBe(name(1));
+    expect(onRowRange).toHaveBeenLastCalledWith(rows[0], rows[1]);
+    press(name(1), "ArrowUp", { shiftKey: true });
+    expect(onRowRange).toHaveBeenLastCalledWith(rows[1], rows[0]);
+    // Not without Shift, not sideways, not at an edge, not from the header.
+    press(name(0), "ArrowDown");
+    press(name(1), "ArrowRight", { shiftKey: true });
+    const top = grid.querySelector<HTMLElement>('[data-ok-field="name"]') as HTMLElement;
+    press(top, "ArrowDown", { shiftKey: true });
+    name(2).focus();
+    press(name(2), "ArrowDown", { shiftKey: true });
+    // Rows without selection don't report.
+    (rows[1] as HTMLElement).removeAttribute("aria-selected");
+    name(0).focus();
+    press(name(0), "ArrowDown", { shiftKey: true });
+    expect(onRowRange).toHaveBeenCalledTimes(2);
+  });
+
   it("intents: sort, column menu, row toggle, select all", () => {
     const { grid, spies } = setup();
     const header = grid.querySelector<HTMLElement>('[data-ok-field="name"]') as HTMLElement;
