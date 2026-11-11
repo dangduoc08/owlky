@@ -2076,6 +2076,59 @@ export function Tasks() {
 }`,
   },
   {
+    id: "listen",
+    title: "Listen to the grid",
+    body: "The grid reports what happens around its cells. Column headers report double clicks, right clicks and the pointer moving over them. Menus and panels report opening and closing, however they opened: the column menu, **Density**, **Export** and the cell menu as menus, **Columns** and **Filters** as preference panels, **Pivot** and **Chart** as sidebars. `onResize` reports the size of the grid, and `onColumnResize` reports each width while a column's edge is dragged. `onColumnWidthChange` still reports the width on release. `onBeforeClipboardPasteStart` runs before a paste writes any cell. Throw or return a promise that rejects to cancel the paste, for example after a confirmation. In HTML, these are events on the grid, and a listener passes a promise to `detail.waitUntil` to make a paste wait.",
+    html: `${gridOf(filtersGroup)}
+<script>
+  const grid = document.getElementById("grid-filters");
+  grid.addEventListener("ok:data-grid:menuopen", (event) => {
+    console.log("Menu opened:", event.detail.menu);
+  });
+  grid.addEventListener("ok:data-grid:preferencepanelopen", (event) => {
+    console.log("Panel opened:", event.detail.openedPanelValue);
+  });
+  grid.addEventListener("ok:data-grid:containerresize", (event) => {
+    console.log("Grid size:", event.detail.width, event.detail.height);
+  });
+  grid.addEventListener("ok:data-grid:beforeclipboardpaste", (event) => {
+    // Cancels the paste unless the visitor agrees
+    if (!window.confirm("Paste these cells?")) event.preventDefault();
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", points: 3 },
+  { id: 2, title: "Update the docs", points: 2 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1, editable: true },
+  { field: "points", headerName: "Points", type: "number", editable: true },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      showToolbar
+      onMenuOpen={({ menu }) => console.log("Menu opened:", menu)}
+      onPreferencePanelOpen={({ openedPanelValue }) =>
+        console.log("Panel opened:", openedPanelValue)
+      }
+      onResize={({ width, height }) => console.log("Grid size:", width, height)}
+      onBeforeClipboardPasteStart={() => {
+        // Throwing cancels the paste
+        if (!window.confirm("Paste these cells?")) throw new Error("Canceled");
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -2097,6 +2150,10 @@ export function Tasks() {
 - **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. **\`ok:data-grid:activechart\`** reports the chart the panel switches to in \`detail.id\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
 - **\`ok:data-grid:undo\`** and **\`ok:data-grid:redo\`** report the ids of the rows an undo or a redo changed, in \`detail.ids\`. The instance's \`history\` has \`undo()\`, \`redo()\`, \`canUndo()\`, \`canRedo()\` and \`clear()\`.
 - **\`ok:data-grid:cellmodes\`** and **\`ok:data-grid:rowmodes\`** fire when people start or stop editing, with the next modes model in \`detail.model\`. They're cancelable. The instance has \`cellModesModel\` and \`rowModesModel\` with their setters, and \`setEditCellValue({ id, field, value })\`.
+- **\`ok:data-grid:columnheaderdoubleclick\`**, **\`ok:data-grid:columnheadercontextmenu\`** (cancelable: \`preventDefault()\` closes the browser's menu), **\`ok:data-grid:columnheaderenter\`**, **\`ok:data-grid:columnheaderleave\`**, **\`ok:data-grid:columnheaderover\`** and **\`ok:data-grid:columnheaderout\`** report \`detail.field\`.
+- **\`ok:data-grid:menuopen\`** and **\`ok:data-grid:menuclose\`** report \`detail.menu\` and \`detail.target\`. **\`ok:data-grid:preferencepanelopen\`** and **\`ok:data-grid:preferencepanelclose\`** report \`detail.openedPanelValue\`. **\`ok:data-grid:sidebaropen\`** and **\`ok:data-grid:sidebarclose\`** report \`detail.value\`.
+- **\`ok:data-grid:containerresize\`** reports the grid's \`detail.width\` and \`detail.height\`. **\`ok:data-grid:columnresize\`** reports \`detail.field\` and \`detail.width\` while an edge is dragged.
+- **\`ok:data-grid:fetchrows\`** reports \`detail.firstRowToRender\` and \`detail.lastRowToRender\` when the rendered rows change and \`data-ok-row-count\` is more than the rows in the grid. **\`ok:data-grid:excelexportstate\`** reports \`detail.state\`, \`pending\` then \`finished\`. **\`ok:data-grid:beforeclipboardpaste\`** is cancelable and takes a promise in \`detail.waitUntil(promise)\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {

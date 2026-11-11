@@ -55,11 +55,13 @@ import {
   type GridHistoryApi,
   type GridHistoryChange,
   type GridLabels,
+  type GridMenuName,
   type GridPinnedColumns,
   type GridPivotColumn,
   type GridPivotModel,
   type GridPivotResult,
   type GridPivotSection,
+  type GridPreferencePanelName,
   type GridPrintLayout,
   type GridRangeChart,
   type GridRangeChartParams,
@@ -67,6 +69,7 @@ import {
   type GridRowSelectionPropagation,
   type GridRowWindow,
   type GridSelectionTree,
+  type GridSidebarName,
   type GridSortDirection,
   type GridSortModel,
   type GridState,
@@ -129,6 +132,7 @@ import {
   gridLockedFields,
   gridMissingRanges,
   gridOperatorNeedsValue,
+  gridOverlayOf,
   gridPinSide,
   gridPivot,
   gridPivotDerivedColumns,
@@ -308,6 +312,55 @@ export interface DataGridEvents {
   celldoubleclick: EventSpec<{ id: string; field: string; value: unknown }>;
   /** After a click on a column header. */
   columnheaderclick: EventSpec<{ field: string }>;
+  /** After a double click on a column header (not on its buttons or resize handle). */
+  columnheaderdoubleclick: EventSpec<{ field: string }>;
+  /** A right click on a column header. Call `preventDefault()` to keep the browser's own menu closed. */
+  columnheadercontextmenu: EventSpec<{ field: string }, true>;
+  /** After the pointer entered a column header. */
+  columnheaderenter: EventSpec<{ field: string }>;
+  /** After the pointer left a column header. */
+  columnheaderleave: EventSpec<{ field: string }>;
+  /** After the pointer moved onto a column header or an element inside it. */
+  columnheaderover: EventSpec<{ field: string }>;
+  /** After the pointer moved off a column header or an element inside it. */
+  columnheaderout: EventSpec<{ field: string }>;
+  /** After a grid menu opened: the column menu, Density, Export or the cell menu. */
+  menuopen: EventSpec<{ menu: GridMenuName; target: Element | null }>;
+  /** After a grid menu closed. */
+  menuclose: EventSpec<{ menu: GridMenuName; target: Element | null }>;
+  /** After the Columns or Filters panel opened. */
+  preferencepanelopen: EventSpec<{ openedPanelValue: GridPreferencePanelName }>;
+  /** After the Columns or Filters panel closed. */
+  preferencepanelclose: EventSpec<{ openedPanelValue: GridPreferencePanelName }>;
+  /** After the Pivot or Chart panel opened. */
+  sidebaropen: EventSpec<{ value: GridSidebarName }>;
+  /** After the Pivot or Chart panel closed. */
+  sidebarclose: EventSpec<{ value: GridSidebarName }>;
+  /** After the grid's own size changed, in pixels (the first one: the size at setup). */
+  containerresize: EventSpec<{ width: number; height: number }>;
+  /** While a column's edge is dragged, with each new width (`resize`: on release). */
+  columnresize: EventSpec<{ field: string; width: number | undefined }>;
+  /**
+   * The rendered rows changed while `data-ok-row-count` is more than the rows in the grid (client
+   * pagination, no data source): load the rows of `firstRowToRender` up to, and not including,
+   * `lastRowToRender`.
+   */
+  fetchrows: EventSpec<{
+    firstRowToRender: number;
+    lastRowToRender: number;
+    sortModel: GridSortModel;
+    filterModel: GridFilterModel;
+  }>;
+  /** An Excel export started (`pending`) or ended (`finished`). */
+  excelexportstate: EventSpec<{ state: "pending" | "finished" }>;
+  /**
+   * Before a paste writes any cell. Call `preventDefault()` to cancel it, or pass a promise to
+   * `waitUntil`: the grid waits for it, and a rejection cancels the paste.
+   */
+  beforeclipboardpaste: EventSpec<
+    { data: string[][]; waitUntil(promise: Promise<unknown>): void },
+    true
+  >;
 }
 
 export interface DataGridInstance extends ComponentInstance {
@@ -2403,6 +2456,28 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (wait > 0) lazyState.timer = setTimeout(run, wait);
       else run();
     };
+    // Rendered rows that the page may still have to load (MUI X `onFetchRows`).
+    let fetchWindow = "";
+    const reportFetch = (virtual: boolean, range: GridRowWindow) => {
+      const count = readNumber(element, rowCountOption) as number | undefined;
+      if (
+        !virtual ||
+        source ||
+        serverSide(paginationMode) ||
+        count === undefined ||
+        count <= rowEls.length
+      )
+        return;
+      const key = `${range.start}:${range.end}`;
+      if (key === fetchWindow) return;
+      fetchWindow = key;
+      emit("fetchrows", {
+        firstRowToRender: range.start,
+        lastRowToRender: range.end,
+        sortModel,
+        filterModel,
+      });
+    };
     let drawing = false;
     const draw = () => {
       const vp = viewport as GridViewport;
@@ -2443,6 +2518,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         };
       }
       const shownRows = pageList.slice(range.start, range.end);
+      reportFetch(virtual, range);
       for (const row of shownRows) layoutRow(row);
       // Rows, each followed by its open detail panel.
       const items: HTMLElement[] = [];
@@ -3409,6 +3485,33 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         left = fields.indexOf(cell?.getAttribute("data-ok-field") ?? "");
         if (top < 0 || left < 0) return;
       }
+      const waits: Promise<unknown>[] = [];
+      const allowed = emit(
+        "beforeclipboardpaste",
+        { data, waitUntil: (promise) => waits.push(promise) },
+        { cancelable: true },
+      );
+      if (!allowed) return;
+      const write = () => writePaste(data, top, left, fill, picked);
+      if (!waits.length) write();
+      // A rejection cancels the paste (the grid may be gone by the time it settles).
+      else
+        Promise.all(waits).then(
+          () => {
+            if (!signal.aborted) write();
+          },
+          () => {},
+        );
+    };
+    const writePaste = (
+      data: string[][],
+      top: number,
+      left: number,
+      fill: boolean,
+      picked: ReturnType<typeof gridSelectedBlock> | null,
+    ) => {
+      const ids = pageIds();
+      const fields = shownFields();
       if (!emit("clipboardpaste", { data }, { cancelable: true })) return;
       const rowIds = fill ? (picked as { ids: string[] }).ids : ids.slice(top, top + data.length);
       const changes: GridHistoryChange<DataRow>[] = [];
@@ -4514,8 +4617,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const exportExcel = (
       given: GridExcelOptions = {},
       options = { ...excelDefaults(), ...given },
-    ) =>
+    ) => {
+      emit("excelexportstate", { state: "pending" });
       download(`${fileName(options.fileName)}.xlsx`, toExcel(options) as BlobPart, GRID_XLSX_TYPE);
+      emit("excelexportstate", { state: "finished" });
+    };
     const print = (
       given: GridPrintOptions = {},
       options: GridPrintOptions = {
@@ -4575,6 +4681,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         return;
       widths = { ...widths, [field]: clampGridWidth(column, width) };
       layout();
+      emit("columnresize", { field, width: widths[field] });
       if (done) emit("resize", { field, width: widths[field] });
     };
     const setOrder = (fields: string[]) =>
@@ -5191,6 +5298,91 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       },
       { signal },
     );
+
+    // Column header pointer events (MUI X `onColumnHeaderEnter`…): the data columns' headers.
+    const headerField = (target: EventTarget | null) => {
+      const header = (target as Element | null)?.closest?.('[role="columnheader"][data-ok-field]');
+      const field = header?.getAttribute("data-ok-field");
+      return field && main.contains(header as Element) && !isSpecial(field)
+        ? { field, header: header as Element }
+        : null;
+    };
+    main.addEventListener(
+      "dblclick",
+      (event) => {
+        const hit = headerField(event.target);
+        if (hit && !(event.target as Element).closest("button, input, [data-ok-data-grid-resize]"))
+          emit("columnheaderdoubleclick", { field: hit.field });
+      },
+      { signal },
+    );
+    main.addEventListener(
+      "contextmenu",
+      (event) => {
+        const hit = headerField(event.target);
+        if (hit && !emit("columnheadercontextmenu", { field: hit.field }, { cancelable: true }))
+          event.preventDefault();
+      },
+      { signal },
+    );
+    main.addEventListener(
+      "mouseover",
+      (event) => {
+        const hit = headerField(event.target);
+        if (!hit) return;
+        if (!hit.header.contains(event.relatedTarget as Node | null))
+          emit("columnheaderenter", { field: hit.field });
+        emit("columnheaderover", { field: hit.field });
+      },
+      { signal },
+    );
+    main.addEventListener(
+      "mouseout",
+      (event) => {
+        const hit = headerField(event.target);
+        if (!hit) return;
+        emit("columnheaderout", { field: hit.field });
+        if (!hit.header.contains(event.relatedTarget as Node | null))
+          emit("columnheaderleave", { field: hit.field });
+      },
+      { signal },
+    );
+    // Menus and panels report opening and closing (MUI X `onMenuOpen`…); they are Popovers.
+    const menuTargets = new WeakMap<Element, Element | null>();
+    const overlayEvent = (open: boolean) => (event: Event) => {
+      const popover = event.target as Element;
+      if (!id || !popover.id.startsWith(`${id}-`)) return;
+      const overlay = gridOverlayOf(popover.id.slice(id.length + 1));
+      if (overlay?.kind === "menu") {
+        if (open) {
+          const anchor = (event as CustomEvent<{ anchor: unknown }>).detail.anchor;
+          menuTargets.set(popover, anchor instanceof Element ? anchor : null);
+        }
+        emit(open ? "menuopen" : "menuclose", {
+          menu: overlay.value,
+          target: menuTargets.get(popover) ?? null,
+        });
+      } else if (overlay?.kind === "preference")
+        emit(open ? "preferencepanelopen" : "preferencepanelclose", {
+          openedPanelValue: overlay.value,
+        });
+      else if (overlay?.kind === "sidebar")
+        emit(open ? "sidebaropen" : "sidebarclose", { value: overlay.value });
+    };
+    element.addEventListener("ok:popover:open", overlayEvent(true), { signal });
+    element.addEventListener("ok:popover:close", overlayEvent(false), { signal });
+    // The grid's own size (MUI X `onResize`): the first event is the size at setup.
+    if (typeof ResizeObserver === "function") {
+      let last = "";
+      const sized = new ResizeObserver(() => {
+        const { width, height } = element.getBoundingClientRect();
+        if (last === `${width}x${height}`) return;
+        last = `${width}x${height}`;
+        emit("containerresize", { width, height });
+      });
+      sized.observe(element);
+      signal.addEventListener("abort", () => sized.disconnect());
+    }
 
     // Pointer: header sorting, menu buttons, row selection, checkboxes.
     element.addEventListener(

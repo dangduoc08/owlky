@@ -143,6 +143,12 @@
       "name": "ok:data-grid:aggregation"
      },
      {
+      "cancelable": true,
+      "description": "Before a paste writes any cell. Call `preventDefault()` to cancel it, or pass a promise to `waitUntil`: the grid waits for it, and a rejection cancels the paste.",
+      "detail": "{ data: string[][]; waitUntil(promise: Promise<unknown>): void; }",
+      "name": "ok:data-grid:beforeclipboardpaste"
+     },
+     {
       "cancelable": false,
       "description": "After a click on a cell, with its raw value.",
       "detail": "{ id: string; field: string; value: unknown; }",
@@ -192,9 +198,57 @@
      },
      {
       "cancelable": true,
+      "description": "A right click on a column header. Call `preventDefault()` to keep the browser's own menu closed.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheadercontextmenu"
+     },
+     {
+      "cancelable": false,
+      "description": "After a double click on a column header (not on its buttons or resize handle).",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderdoubleclick"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer entered a column header.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderenter"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer left a column header.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderleave"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer moved off a column header or an element inside it.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderout"
+     },
+     {
+      "cancelable": false,
+      "description": "After the pointer moved onto a column header or an element inside it.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderover"
+     },
+     {
+      "cancelable": false,
+      "description": "While a column's edge is dragged, with each new width (`resize`: on release).",
+      "detail": "{ field: string; width: number | undefined; }",
+      "name": "ok:data-grid:columnresize"
+     },
+     {
+      "cancelable": true,
       "description": "Before the column visibility changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: Record<string, boolean>; }",
       "name": "ok:data-grid:columns"
+     },
+     {
+      "cancelable": false,
+      "description": "After the grid's own size changed, in pixels (the first one: the size at setup).",
+      "detail": "{ width: number; height: number; }",
+      "name": "ok:data-grid:containerresize"
      },
      {
       "cancelable": true,
@@ -245,16 +299,40 @@
       "name": "ok:data-grid:editstop"
      },
      {
+      "cancelable": false,
+      "description": "An Excel export started (`pending`) or ended (`finished`).",
+      "detail": "{ state: \"finished\" | \"pending\"; }",
+      "name": "ok:data-grid:excelexportstate"
+     },
+     {
       "cancelable": true,
       "description": "Before a tree row expands or collapses. Call `preventDefault()` to refuse.",
       "detail": "{ id: string; expanded: boolean; }",
       "name": "ok:data-grid:expand"
      },
      {
+      "cancelable": false,
+      "description": "The rendered rows changed while `data-ok-row-count` is more than the rows in the grid (client pagination, no data source): load the rows of `firstRowToRender` up to, and not including, `lastRowToRender`.",
+      "detail": "{ firstRowToRender: number; lastRowToRender: number; sortModel: GridSortModel; filterModel: GridFilterModel; }",
+      "name": "ok:data-grid:fetchrows"
+     },
+     {
       "cancelable": true,
       "description": "Before the filter model changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: GridFilterModel; }",
       "name": "ok:data-grid:filter"
+     },
+     {
+      "cancelable": false,
+      "description": "After a grid menu closed.",
+      "detail": "{ menu: GridMenuName; target: Element | null; }",
+      "name": "ok:data-grid:menuclose"
+     },
+     {
+      "cancelable": false,
+      "description": "After a grid menu opened: the column menu, Density, Export or the cell menu.",
+      "detail": "{ menu: GridMenuName; target: Element | null; }",
+      "name": "ok:data-grid:menuopen"
      },
      {
       "cancelable": true,
@@ -273,6 +351,18 @@
       "description": "Before the pivot model or mode changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: GridPivotModel; active: boolean; }",
       "name": "ok:data-grid:pivot"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Columns or Filters panel closed.",
+      "detail": "{ openedPanelValue: GridPreferencePanelName; }",
+      "name": "ok:data-grid:preferencepanelclose"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Columns or Filters panel opened.",
+      "detail": "{ openedPanelValue: GridPreferencePanelName; }",
+      "name": "ok:data-grid:preferencepanelopen"
      },
      {
       "cancelable": false,
@@ -327,6 +417,18 @@
       "description": "Before the row selection changes (row ids). Call `preventDefault()` to keep it.",
       "detail": "{ model: string[]; }",
       "name": "ok:data-grid:selection"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Pivot or Chart panel closed.",
+      "detail": "{ value: GridSidebarName; }",
+      "name": "ok:data-grid:sidebarclose"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Pivot or Chart panel opened.",
+      "detail": "{ value: GridSidebarName; }",
+      "name": "ok:data-grid:sidebaropen"
      },
      {
       "cancelable": true,
@@ -2633,6 +2735,11 @@
       "type": "((model: GridAggregationModel) => void)"
      },
      {
+      "description": "Called before a paste writes any cell. Throw, or return a promise that rejects, to cancel the paste; a promise makes the grid wait for it (a confirmation dialog, for example).",
+      "name": "onBeforeClipboardPasteStart",
+      "type": "((params: { data: string[][]; }) => unknown)"
+     },
+     {
       "description": "Called on a click on a cell.",
       "name": "onCellClick",
       "type": "((params: GridCellParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
@@ -2698,9 +2805,44 @@
       "type": "((params: { field: string; colDef: GridColDef<R>; }, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
      },
      {
+      "description": "Called on a right click on a column header.",
+      "name": "onColumnHeaderContextMenu",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called on a double click on a column header (not on its buttons or resize handle).",
+      "name": "onColumnHeaderDoubleClick",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer enters a column header.",
+      "name": "onColumnHeaderEnter",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer leaves a column header.",
+      "name": "onColumnHeaderLeave",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer moves off a column header or an element inside it.",
+      "name": "onColumnHeaderOut",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
+      "description": "Called when the pointer moves onto a column header or an element inside it.",
+      "name": "onColumnHeaderOver",
+      "type": "GridColumnHeaderHandler<R>"
+     },
+     {
       "description": "Called when the column order changes, with the fields in their new order.",
       "name": "onColumnOrderChange",
       "type": "((fields: string[]) => void)"
+     },
+     {
+      "description": "Called while a column's edge is dragged, with each new width (`onColumnWidthChange`: on release).",
+      "name": "onColumnResize",
+      "type": "((field: string, width: number) => void)"
      },
      {
       "description": "Called when the column visibility changes.",
@@ -2728,9 +2870,29 @@
       "type": "((ids: string[]) => void)"
      },
      {
+      "description": "Called when an Excel export starts (`\"pending\"`) and ends (`\"finished\"`).",
+      "name": "onExcelExportStateChange",
+      "type": "((state: \"finished\" | \"pending\") => void)"
+     },
+     {
+      "description": "Called when the rendered rows change while `rowCount` is more than the rows given (with client-side pagination, no data source): load the rows of `firstRowToRender` up to, and not including, `lastRowToRender`.",
+      "name": "onFetchRows",
+      "type": "((params: GridFetchRowsParams) => void)"
+     },
+     {
       "description": "Called when the filter model changes.",
       "name": "onFilterModelChange",
       "type": "((model: GridFilterModel) => void)"
+     },
+     {
+      "description": "Called when a grid menu closes.",
+      "name": "onMenuClose",
+      "type": "((params: GridMenuParams) => void)"
+     },
+     {
+      "description": "Called when a grid menu opens: the column menu, Density, Export or the cell menu.",
+      "name": "onMenuOpen",
+      "type": "((params: GridMenuParams) => void)"
      },
      {
       "description": "Called when the page or the page size changes.",
@@ -2753,6 +2915,16 @@
       "type": "((model: GridPivotModel) => void)"
      },
      {
+      "description": "Called when the Columns or Filters panel closes.",
+      "name": "onPreferencePanelClose",
+      "type": "((params: GridPreferencePanelParams) => void)"
+     },
+     {
+      "description": "Called when the Columns or Filters panel opens.",
+      "name": "onPreferencePanelOpen",
+      "type": "((params: GridPreferencePanelParams) => void)"
+     },
+     {
       "description": "Called when `processRowUpdate` throws or rejects.",
       "name": "onProcessRowUpdateError",
       "type": "((error: unknown) => void)"
@@ -2761,6 +2933,11 @@
       "description": "Called after a redo, with the ids of the rows it changed again.",
       "name": "onRedo",
       "type": "((params: { ids: string[]; }) => void)"
+     },
+     {
+      "description": "Called when the grid's own size changes, with its width and height in pixels.",
+      "name": "onResize",
+      "type": "((containerSize: { width: number; height: number; }) => void)"
      },
      {
       "description": "Called on a click on a row.",
@@ -2806,6 +2983,16 @@
       "description": "The rows were scrolled near their end (infinite loading). Called once per row count.",
       "name": "onRowsScrollEnd",
       "type": "((params: { visibleRowsCount: number; }) => void)"
+     },
+     {
+      "description": "Called when the Pivot or Chart panel closes.",
+      "name": "onSidebarClose",
+      "type": "((params: GridSidebarParams) => void)"
+     },
+     {
+      "description": "Called when the Pivot or Chart panel opens.",
+      "name": "onSidebarOpen",
+      "type": "((params: GridSidebarParams) => void)"
      },
      {
       "description": "Called when the sort model changes.",
@@ -3049,8 +3236,20 @@
    "type": "\"cellDoubleClick\" | \"enterKeyDown\" | \"f2KeyDown\" | \"printableKeyDown\""
   },
   {
+   "name": "GridMenuName",
+   "type": "\"column\" | \"context\" | \"density\" | \"export\""
+  },
+  {
+   "name": "GridPreferencePanelName",
+   "type": "\"columns\" | \"filters\""
+  },
+  {
    "name": "GridRowModesModel",
    "type": "{ [x: string]: GridRowModeEntry; }"
+  },
+  {
+   "name": "GridSidebarName",
+   "type": "\"charts\" | \"pivot\""
   },
   {
    "name": "GridSortDirection",

@@ -56,10 +56,12 @@ import {
   type GridHistoryChange,
   type GridHistoryStack,
   type GridLabels,
+  type GridMenuName,
   type GridNavigation,
   type GridPinnedColumns,
   type GridPivotModel,
   type GridPivotSection,
+  type GridPreferencePanelName,
   type GridRangeChart,
   type GridRangeChartParams,
   type GridRowModesModel,
@@ -67,6 +69,7 @@ import {
   type GridRowWindow,
   type GridSelectionTree,
   type GridSetFilterValue,
+  type GridSidebarName,
   type GridSortDirection,
   type GridSortingOrder,
   type GridSortModel,
@@ -133,6 +136,7 @@ import {
   gridLockedFields,
   gridMissingRanges,
   gridOperatorNeedsValue,
+  gridOverlayOf,
   gridPinSide,
   gridPivot,
   gridPivotDerivedColumns,
@@ -512,6 +516,42 @@ export interface GridPaginationModel {
 /** The state a grid starts with (the shape `exportState()` returns). */
 export type GridInitialState = GridState;
 
+/** Called with the column header it happened on and the native event. */
+export type GridColumnHeaderHandler<R> = (
+  params: { field: string; colDef: GridColDef<R> },
+  event: MouseEvent<HTMLElement>,
+) => void;
+
+/** What opened or closed in `onMenuOpen` / `onMenuClose`. */
+export interface GridMenuParams {
+  /** Which menu. */
+  menu: GridMenuName;
+  /** The button it opened from (`null`: the cell menu, opened at a point). */
+  target: HTMLElement | null;
+}
+
+/** What opened or closed in `onPreferencePanelOpen` / `onPreferencePanelClose`. */
+export interface GridPreferencePanelParams {
+  /** Which panel. */
+  openedPanelValue: GridPreferencePanelName;
+}
+
+/** What opened or closed in `onSidebarOpen` / `onSidebarClose`. */
+export interface GridSidebarParams {
+  /** Which panel. */
+  value: GridSidebarName;
+}
+
+/** What `onFetchRows` asks for. */
+export interface GridFetchRowsParams {
+  /** Index of the first rendered row. */
+  firstRowToRender: number;
+  /** Index after the last rendered row. */
+  lastRowToRender: number;
+  sortModel: GridSortModel;
+  filterModel: GridFilterModel;
+}
+
 export interface DataGridProps<R>
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onChange" | "contextMenu"> {
   /** The rows: one object per row. */
@@ -757,6 +797,47 @@ export interface DataGridProps<R>
   onColumnHeaderClick?:
     | ((params: { field: string; colDef: GridColDef<R> }, event: MouseEvent<HTMLElement>) => void)
     | undefined;
+  /** Called on a double click on a column header (not on its buttons or resize handle). */
+  onColumnHeaderDoubleClick?: GridColumnHeaderHandler<R> | undefined;
+  /** Called on a right click on a column header. */
+  onColumnHeaderContextMenu?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer enters a column header. */
+  onColumnHeaderEnter?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer leaves a column header. */
+  onColumnHeaderLeave?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer moves onto a column header or an element inside it. */
+  onColumnHeaderOver?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when the pointer moves off a column header or an element inside it. */
+  onColumnHeaderOut?: GridColumnHeaderHandler<R> | undefined;
+  /** Called when a grid menu opens: the column menu, Density, Export or the cell menu. */
+  onMenuOpen?: ((params: GridMenuParams) => void) | undefined;
+  /** Called when a grid menu closes. */
+  onMenuClose?: ((params: GridMenuParams) => void) | undefined;
+  /** Called when the Columns or Filters panel opens. */
+  onPreferencePanelOpen?: ((params: GridPreferencePanelParams) => void) | undefined;
+  /** Called when the Columns or Filters panel closes. */
+  onPreferencePanelClose?: ((params: GridPreferencePanelParams) => void) | undefined;
+  /** Called when the Pivot or Chart panel opens. */
+  onSidebarOpen?: ((params: GridSidebarParams) => void) | undefined;
+  /** Called when the Pivot or Chart panel closes. */
+  onSidebarClose?: ((params: GridSidebarParams) => void) | undefined;
+  /** Called when the grid's own size changes, with its width and height in pixels. */
+  onResize?: ((containerSize: { width: number; height: number }) => void) | undefined;
+  /** Called while a column's edge is dragged, with each new width (`onColumnWidthChange`: on release). */
+  onColumnResize?: ((field: string, width: number) => void) | undefined;
+  /**
+   * Called when the rendered rows change while `rowCount` is more than the rows given (with
+   * client-side pagination, no data source): load the rows of `firstRowToRender` up to, and not
+   * including, `lastRowToRender`.
+   */
+  onFetchRows?: ((params: GridFetchRowsParams) => void) | undefined;
+  /** Called when an Excel export starts (`"pending"`) and ends (`"finished"`). */
+  onExcelExportStateChange?: ((state: "pending" | "finished") => void) | undefined;
+  /**
+   * Called before a paste writes any cell. Throw, or return a promise that rejects, to cancel the
+   * paste; a promise makes the grid wait for it (a confirmation dialog, for example).
+   */
+  onBeforeClipboardPasteStart?: ((params: { data: string[][] }) => unknown) | undefined;
   /** Receives the grid's methods. */
   apiRef?: RefObject<GridApi<R> | null> | undefined;
   /** Returns whether a cell can be edited (over the column's `editable`). */
@@ -1224,6 +1305,8 @@ interface FilterRowAt {
   onRemove: () => void;
 }
 
+/** Parts of a header whose double click isn't the header's own. */
+const HEADER_CONTROLS = "button, input, [data-ok-data-grid-resize]";
 type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" | null;
 
 function DataGridInner<R>(
@@ -1328,6 +1411,23 @@ function DataGridInner<R>(
     onCellDoubleClick,
     onCellKeyDown,
     onColumnHeaderClick,
+    onColumnHeaderDoubleClick,
+    onColumnHeaderContextMenu,
+    onColumnHeaderEnter,
+    onColumnHeaderLeave,
+    onColumnHeaderOver,
+    onColumnHeaderOut,
+    onMenuOpen,
+    onMenuClose,
+    onPreferencePanelOpen,
+    onPreferencePanelClose,
+    onSidebarOpen,
+    onSidebarClose,
+    onResize,
+    onColumnResize,
+    onFetchRows,
+    onExcelExportStateChange,
+    onBeforeClipboardPasteStart,
     apiRef,
     isCellEditable,
     onCellEditStart,
@@ -2379,6 +2479,41 @@ function DataGridInner<R>(
     setDetailIds(
       detailIds.includes(rowId) ? detailIds.filter((d) => d !== rowId) : [...detailIds, rowId],
     );
+  // The grid's own size (MUI X `onResize`): the first report is the size at mount.
+  const resized = useRef(onResize);
+  resized.current = onResize;
+  useEffect(() => {
+    if (typeof ResizeObserver !== "function") return;
+    const root = rootRef.current as HTMLDivElement;
+    let last = "";
+    const observer = new ResizeObserver(() => {
+      const { width, height } = root.getBoundingClientRect();
+      if (last === `${width}x${height}`) return;
+      last = `${width}x${height}`;
+      resized.current?.({ width, height });
+    });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
+  // Rendered rows that the page may still have to load (MUI X `onFetchRows`).
+  const fetchWindow =
+    onFetchRows &&
+    range &&
+    !dataSource &&
+    !server.page &&
+    rowCount !== undefined &&
+    rowCount > rows.length
+      ? `${range.start}:${range.end}`
+      : null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reports each new window once.
+  useEffect(() => {
+    if (fetchWindow === null) return;
+    const [firstRowToRender, lastRowToRender] = fetchWindow.split(":").map(Number) as [
+      number,
+      number,
+    ];
+    onFetchRows?.({ firstRowToRender, lastRowToRender, sortModel, filterModel });
+  }, [fetchWindow]);
   // Sticky offsets of pinned columns, after every layout.
   useLayoutEffect(() => syncGridPinning(gridRef.current as HTMLDivElement));
   const scrollEnd = useRef<() => void>(undefined as never);
@@ -2634,6 +2769,7 @@ function DataGridInner<R>(
     if (!column || disableColumnResize || !isGridResizable(column)) return;
     const next = clampGridWidth(column, width);
     setWidths((current) => ({ ...current, [field]: next }));
+    onColumnResize?.(field, next);
     if (done) onColumnWidthChange?.(field, next);
   };
   const autosize = useRef<(options?: GridAutosizeOptions) => void>(undefined as never);
@@ -3057,6 +3193,22 @@ function DataGridInner<R>(
     const data = splitClipboardPastedText
       ? splitClipboardPastedText(text)
       : parseGridClipboard(text);
+    const cell = (document.activeElement as Element | null)?.closest(
+      '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
+    );
+    // Read now: a confirmation may move the focus before the cells are written.
+    const origin = {
+      id: cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
+      field: cell?.getAttribute("data-ok-field") ?? "",
+    };
+    if (!onBeforeClipboardPasteStart) return writePaste(data, origin);
+    new Promise((resolve) => resolve(onBeforeClipboardPasteStart({ data }))).then(
+      () => clipboard.current.writePaste(data, origin),
+      // A rejection cancels the paste.
+      () => {},
+    );
+  };
+  const writePaste = (data: string[][], origin: { id: string; field: string }) => {
     const picked = cellSelection ? gridSelectedBlock(cellModel, cellRowIds, cellFields) : null;
     let top: number;
     let left: number;
@@ -3066,13 +3218,8 @@ function DataGridInner<R>(
       top = cellRowIds.indexOf(picked.ids[0] as string);
       left = cellFields.indexOf(picked.fields[0] as string);
     } else {
-      const cell = (document.activeElement as Element | null)?.closest(
-        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
-      );
-      top = cellRowIds.indexOf(
-        cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
-      );
-      left = cellFields.indexOf(cell?.getAttribute("data-ok-field") ?? "");
+      top = cellRowIds.indexOf(origin.id);
+      left = cellFields.indexOf(origin.field);
       if (top < 0 || left < 0) return;
     }
     onClipboardPasteStart?.({ data });
@@ -3118,11 +3265,13 @@ function DataGridInner<R>(
   const clipboard = useRef<{
     copyText: () => string | null;
     pasteText: (text: string) => void;
+    writePaste: (data: string[][], origin: { id: string; field: string }) => void;
     canPaste: () => boolean;
   }>(null as never);
   clipboard.current = {
     copyText,
     pasteText,
+    writePaste,
     canPaste: () => !disableClipboardPaste && columns.some(editable),
   };
   const copied = useRef(onClipboardCopy);
@@ -3210,6 +3359,37 @@ function DataGridInner<R>(
     };
   }, []);
 
+  // Menus and panels report opening and closing (MUI X `onMenuOpen`…), whatever opened them.
+  const overlays = useRef<Record<string, { name: string; target: HTMLElement | null } | null>>({});
+  const reportOverlay = useRef<(name: string, open: boolean, target: HTMLElement | null) => void>(
+    undefined as never,
+  );
+  reportOverlay.current = (name, open, target) => {
+    const overlay = gridOverlayOf(name);
+    if (overlay?.kind === "menu")
+      (open ? onMenuOpen : onMenuClose)?.({ menu: overlay.value, target });
+    else if (overlay?.kind === "preference")
+      (open ? onPreferencePanelOpen : onPreferencePanelClose)?.({
+        openedPanelValue: overlay.value,
+      });
+    else if (overlay?.kind === "sidebar")
+      (open ? onSidebarOpen : onSidebarClose)?.({ value: overlay.value });
+  };
+  useEffect(() => {
+    const next = {
+      panel: panel ? { name: panel as string, target: anchor } : null,
+      column: menuAnchor ? { name: "column-menu", target: menuAnchor } : null,
+      context: cellMenu ? { name: "context-menu", target: null } : null,
+    };
+    for (const key of Object.keys(next) as (keyof typeof next)[]) {
+      const before = overlays.current[key] ?? null;
+      const now = next[key];
+      if (before?.name === now?.name) continue;
+      if (before) reportOverlay.current(before.name, false, before.target);
+      if (now) reportOverlay.current(now.name, true, now.target);
+    }
+    overlays.current = next;
+  }, [panel, anchor, menuAnchor, cellMenu]);
   // Exports hold data rows (filtered, sorted): grouped and pivoted grids export their rows.
   const exportRows = () =>
     pivot
@@ -3234,12 +3414,15 @@ function DataGridInner<R>(
       (row, field) => textOf(sourceOf(field), row),
       options,
     );
-  const exportExcel = (options: GridExcelOptions = excelOptions ?? {}) =>
+  const exportExcel = (options: GridExcelOptions = excelOptions ?? {}) => {
+    onExcelExportStateChange?.("pending");
     download(
       `${options.fileName ?? exportFileName}.xlsx`,
       getExcel(options) as BlobPart,
       GRID_XLSX_TYPE,
     );
+    onExcelExportStateChange?.("finished");
+  };
   const exportCsv = (options: GridCsvOptions = csvOptions ?? {}) =>
     downloadCsv(options.fileName ?? exportFileName, getCsv(options));
   const print = (options: GridPrintOptions = printOptions ?? {}) => setPrinting({ ...options });
@@ -5646,6 +5829,7 @@ function DataGridInner<R>(
               const name = column.headerName ?? column.field;
               const start = colStart(column);
               const header = (
+                // biome-ignore lint/a11y/useKeyWithMouseEvents: the pointer events only report; the keyboard reaches the header through focus.
                 <div
                   key={column.field}
                   role="columnheader"
@@ -5706,6 +5890,25 @@ function DataGridInner<R>(
                     onColumnHeaderClick?.({ field: column.field, colDef: column }, event);
                     sortBy.current(column.field, event.shiftKey);
                   }}
+                  onDoubleClick={(event) => {
+                    if ((event.target as Element).closest(HEADER_CONTROLS)) return;
+                    onColumnHeaderDoubleClick?.({ field: column.field, colDef: column }, event);
+                  }}
+                  onContextMenu={(event) =>
+                    onColumnHeaderContextMenu?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseEnter={(event) =>
+                    onColumnHeaderEnter?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseLeave={(event) =>
+                    onColumnHeaderLeave?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseOver={(event) =>
+                    onColumnHeaderOver?.({ field: column.field, colDef: column }, event)
+                  }
+                  onMouseOut={(event) =>
+                    onColumnHeaderOut?.({ field: column.field, colDef: column }, event)
+                  }
                 >
                   <span data-ok-data-grid-header-title="">
                     {column.renderHeader

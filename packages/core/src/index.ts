@@ -925,6 +925,13 @@ export {
   moveGridCell,
 } from "./data-grid/grid-navigation.js";
 export {
+  type GridMenuName,
+  type GridOverlay,
+  type GridPreferencePanelName,
+  type GridSidebarName,
+  gridOverlayOf,
+} from "./data-grid/grid-overlays.js";
+export {
   createGridPivotDrag,
   type GridPivotDerivedColumn,
   type GridPivotDrag,
