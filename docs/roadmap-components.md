@@ -160,6 +160,24 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.80 | E — audit 3.1 (could) | Carousel | Embla v9 method aliases (`goTo`, `goToNext`, `selectedSnap`, `snapList`…), `snapIndex(slide)`, events `resize`, `slideschanged`, `pointermove` | ✅ |
 | 4.18.81 | E — audit 3.1 (could) | Lightbox | `render.slideContainer`, `render.buttonPrev` / `buttonNext` / `buttonClose` (+ plugin buttons), `render.iconLoading` / `iconError` | ✅ |
 | 4.18.82 | E — audit 3.1 (could) | Walktour | option `offset`; step `id` and `data` (in events) | ✅ |
+| 4.18.83 | E — ApexTree, from 6.0 (must, **ADR** superseding ADR-0036's keyboard) | Organization chart | node selection: `enableSelection` `single` · `multi`, `selectedNodes` / `onSelectionChange` (`setSelection(ids)`, `clearSelection()`, `getSelection()`), Space toggles, `ok:organization-chart:select` | ⬜ |
+| 4.18.84 | E — ApexTree, from 6.0 (must, same ADR as 4.18.83) | Organization chart | arrow-key navigation (ApexTree `a11y`): ↑ / ↓ visible nodes, → expand or first child, ← collapse or parent, Home / End, typeahead | ⬜ |
+| 4.18.85 | E — ApexTree, from 6.0 (must) | Organization chart | lineage breadcrumb (`enableBreadcrumb`): `getNodePath(id)` and a composed Breadcrumbs story that follows the highlighted or selected node | ⬜ |
+| 4.18.86 | E — ApexTree, from 6.0 (must) | Chart (`tree`) | node label position (`externalLabel`: `align`, `verticalAlign`, `offsetX` / `offsetY`, `rotation`, per level or per node) | ⬜ |
+| 4.18.87 | E — ApexGrid, from 6.0 (must) | Data grid | row range selection: Shift + click on rows and checkboxes, Shift + Space, Shift + ↑ / ↓ | ⬜ |
+| 4.18.88 | E — ApexGrid, from 6.0 (must) | Data grid (+ Chart) | chart model `aggregation` (`sum` · `avg` · `count` · `min` · `max` · `median`, categories merged by `dimension` without grouping), `combo` type (series type per value), `secondaryValues` on a second value axis (Chart `yaxis[]` `opposite`) | ⬜ |
+| 4.18.89 | E — ApexGrid, from 6.0 (must) | Data grid | range chart source: an outline on the charted cells with a handle that resizes the range (keyboard alternative, WCAG 2.5.7) | ⬜ |
+| 4.18.90 | E — ApexGrid, from 6.0 (must) | Data grid | Columns panel as a tool panel: search, Show / Hide all, Reset, pin and reorder from the panel, row-group and aggregation sections outside pivot mode | ⬜ |
+| 4.18.91 | E — ApexGrid, from 6.0 (must) | Data grid | `exportState` / `restoreState` with `rowSelection`, `pinnedRows`, manual row order and open detail panels; `onStateChange` / `ok:data-grid:statechange` after settled changes | ⬜ |
+| 4.18.92 | E — ApexGrid, from 6.0 (must) | Data grid | rows to export: `csvOptions` / `excelOptions` `getRowsToExport` (MUI X; check the name), shortcuts for selected / filtered / all rows (ApexGrid `source`) | ⬜ |
+| 4.18.93 | E — ApexGrid, from 6.0 (must; ADR if the ADR-0021 data source contract changes) | Data grid | server-side pivoting: data source pivot params and pivot columns in the response (ApexGrid `pivotCols` / `pivotResultFields`; MUI X names checked first) | ⬜ |
+| 4.18.94 | E — ApexMaps, from 6.0 (must) | Map | proportional symbols: core `mapSizeScale(values, { method: sqrt · linear, range })` → a `circle-radius` expression, a nested-circle size legend, a second color field, a Bubbles story | ⬜ |
+| 4.18.95 | E — ApexMaps, from 6.0 (must) | Map | hexbin: core `mapHexbin(points, { radius, aggregate: count · mean })` → hexagon GeoJSON classed with `mapScale`, a story | ⬜ |
+| 4.18.96 | E — ApexMaps, from 6.0 (must) | Map / Chart (`geo`) | pixel map: a choropleth drawn as a dot / square / hexagon lattice | ⬜ |
+| 4.18.97 | E — ApexMaps, from 6.0 (must) | Map + Chart (`geo`) | pattern fills for region classes (dots, lines, diagonal, squares from tokens; WCAG 1.4.1); image fills per region | ⬜ |
+| 4.18.98 | E — ApexMaps, from 6.0 (must, **ADR**) | Map | box selection (Shift + drag selects by label anchor, Alt adds, Escape cancels; conflicts with `boxZoom`), multi-selection of regions, linked maps by `group` with a bidirectional filter | ⬜ |
+| 4.18.99 | E — ApexMaps, from 6.0 (must) | Map + Chart (`geo`) | auto-generated description: type, region count, value range, classes, extremes, regions with no data | ⬜ |
+| 4.18.100 | E — ApexMaps, from 6.0 (must) | Chart (`geo`) | annotations by coordinate or region key, with feature labels giving way to them | ⬜ |
 | 4.19 | F — Minimals Utilities, spread across components (owner's decision 2026-11-09: no Utilities group) | Typography (+ Link) | "Text max line": a `maxLines` option (CSS `line-clamp`, beside `noWrap`), a "Text max line" story with 1–4 lines and "As link" | ✅ |
 | 4.20 | F | Text field (+ Snackbar) | "Copy to clipboard": a copy IconButton in an end adornment and copy on double click, a core helper on a user gesture with the refused path handled, a "Copied" toast | ✅ |
 | 4.21 | F | Foundations › Colors (+ Paper / Card, Typography) | "Gradient": `--ok-gradient-*` tokens from the palette (follow presets and dark mode), gradient text, border, background and paper examples | ✅ |
@@ -182,14 +200,14 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 5.1 | Engine | `animate(element, keyframes, options)` on the Web Animations API, springs as `linear()` easing, interruption from the current value, exit before removal → Dialog exit transitions and the Motion "Logo" story (the last "Pending integrations" row) | ✅ |
 | 5.2 | Scroll | scroll-linked progress (`animation-timeline`, JavaScript fallback for Firefox): the reference's Scroll progress page (`minimals.cc/components/extra/scroll-progress`, built on Framer Motion's `useScroll`) — sections "Container scroll-y", "Container scroll-x" and "Scroll document", drawn with Linear / Circular progress | ✅ |
 | 5.3 | Gestures | drag with inertia and constraints, spring hover / tap | ✅ |
-| 5.4 | Layout | layout animations (FLIP), shared values | ⬜ |
+| 5.4 | Layout | layout animations (FLIP), shared values | ✅ |
 | 5.5 | Later | shared-element transitions (evaluate View Transitions first) | ⏸ |
 
 ## Phase 6 — Final sweep (owner's decision 2026-11-09)
 
 | # | Step | Scope | Status |
 |---|---|---|---|
-| 6.0 | Apex products complete (owner 2026-11-10) | before `/integrate`: ApexTree ↔ Organization chart (4.18.1–4.18.7), ApexGrid ↔ Data grid (4.18.9–4.18.14), ApexMaps ↔ Map (4.18.15–4.18.17) all ✅; then audit each product's current feature and demo pages again against Owlky and add a must row in batch E for any gap 2.4 missed, built before 6.1 | ⬜ |
+| 6.0 | Apex products complete (owner 2026-11-10) | before `/integrate`: ApexTree ↔ Organization chart (4.18.1–4.18.7), ApexGrid ↔ Data grid (4.18.9–4.18.14), ApexMaps ↔ Map (4.18.15–4.18.17) all ✅; then audit each product's current feature and demo pages again against Owlky and add a must row in batch E for any gap 2.4 missed, built before 6.1. Audit done 2026-11-11: 18 gaps → 4.18.83–4.18.100; items the specs and ADR-0059 §8 record as not built (log / diverging scales and OkLab ramps, orthographic projection and rotation, shape ↔ hex morph, arc curvature / flow / width, `drillTo` / `drillUp`, label collision and pan / zoom on Chart `geo`) wait for the owner's decision | 🔄 |
 | 6.1 | `/integrate` with the Fable model | after phases 1–5 and 6.0, run `/integrate` (no argument) once more, as agents on the **Fable** model (`model: "fable"`), to find and close every wait left on a component that now exists — stand-ins, deferred stories, story demo CSS for surfaces or fonts — with a fresh pair of eyes | ⬜ |
 | 6.2 | Re-check | rerun the discovery of `/integrate` step 3; "Pending integrations" must be empty and the docs API reference complete (3.4 green) | ⬜ |
 
