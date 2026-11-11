@@ -1321,3 +1321,155 @@ describe("OrganizationChart zoom and pan", () => {
     expect(html).toContain("data-ok-enable-zoom-pan");
   });
 });
+
+// --- Tree, selection, keyboard and breadcrumb (ADR-0063) ---------------------------------------
+
+describe("OrganizationChart tree, selection and keyboard", () => {
+  /** MutationObserver callbacks run on a microtask; React state flushes in act(). */
+  const flush = () =>
+    act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  const keyOn = (element: HTMLElement, key: string) =>
+    act(() => {
+      element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+    });
+
+  it("is off by default: lists, no roles, no tab stops, the same markup as before", () => {
+    const before = renderToString(<Collapsible />);
+    render(<Collapsible />);
+    expect(chart().hasAttribute("role")).toBe(false);
+    expect(node("a").hasAttribute("tabindex")).toBe(false);
+    expect(before).not.toContain("data-ok-enable-selection");
+    expect(before).not.toContain("data-ok-enable-keyboard-navigation");
+    expect(before).not.toContain("data-ok-selected");
+  });
+
+  it("enableKeyboardNavigation makes a tree with one tab stop; arrows walk and toggle", async () => {
+    const onCollapse = vi.fn();
+    render(<Collapsible enableKeyboardNavigation onCollapse={onCollapse} />);
+    await flush();
+    const tree = screen.getByRole("tree", { name: "Team" });
+    expect(tree.hasAttribute("data-ok-enable-keyboard-navigation")).toBe(true);
+    expect(screen.getAllByRole("treeitem").length).toBeGreaterThanOrEqual(5);
+    expect(node("lead").getAttribute("tabindex")).toBe("0");
+    expect(toggleOf("b").getAttribute("tabindex")).toBe("-1");
+    expect(node("a").hasAttribute("aria-selected")).toBe(false);
+    act(() => node("lead").focus());
+    keyOn(node("lead"), "ArrowDown");
+    expect(document.activeElement).toBe(node("a"));
+    keyOn(node("a"), "ArrowDown");
+    keyOn(node("b"), "ArrowLeft");
+    expect(onCollapse).toHaveBeenCalledWith("b");
+    await finish();
+    expect(listOf("b").hidden).toBe(true);
+    expect(node("b").getAttribute("aria-expanded")).toBe("false");
+    keyOn(node("b"), "ArrowDown");
+    expect(document.activeElement).toBe(node("lazy"));
+    keyOn(node("lazy"), "Home");
+    expect(document.activeElement).toBe(node("lead"));
+    keyOn(node("lead"), "End");
+    expect(document.activeElement).toBe(node("lazy"));
+  });
+
+  it("single selection: a click or Space selects, again clears; onSelectionChange reports", async () => {
+    const onSelectionChange = vi.fn();
+    render(<Collapsible enableSelection="single" onSelectionChange={onSelectionChange} />);
+    await flush();
+    expect(screen.getByRole("tree").hasAttribute("aria-multiselectable")).toBe(false);
+    click(node("a").firstElementChild as HTMLElement);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(["a"]);
+    expect(node("a").hasAttribute("data-ok-selected")).toBe(true);
+    await flush();
+    expect(node("a").getAttribute("aria-selected")).toBe("true");
+    act(() => node("c").focus());
+    keyOn(node("c"), " ");
+    expect(onSelectionChange).toHaveBeenLastCalledWith(["c"]);
+    expect(node("a").hasAttribute("data-ok-selected")).toBe(false);
+    keyOn(node("c"), " ");
+    expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("multi selection, controlled, with the apiRef methods and getNodePath", async () => {
+    const apiRef: MutableRefObject<OrganizationChartApi | undefined> = { current: undefined };
+    const onSelectionChange = vi.fn();
+    const { rerender } = render(
+      <Collapsible
+        apiRef={apiRef}
+        enableSelection="multi"
+        selectedNodes={["b"]}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+    await flush();
+    expect(screen.getByRole("tree").getAttribute("aria-multiselectable")).toBe("true");
+    expect(node("b").getAttribute("aria-selected")).toBe("true");
+    expect(node("b").getAttribute("tabindex")).toBe("0");
+    click(node("d").firstElementChild as HTMLElement);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(["b", "d"]);
+    // Controlled: the prop decides.
+    expect(node("d").hasAttribute("data-ok-selected")).toBe(false);
+    rerender(
+      <Collapsible
+        apiRef={apiRef}
+        enableSelection="multi"
+        selectedNodes={["b", "d"]}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+    expect(apiRef.current?.getSelection()).toEqual(["b", "d"]);
+    act(() => apiRef.current?.setSelection(["a", "a", "c"]));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(["a", "c"]);
+    onSelectionChange.mockClear();
+    act(() => apiRef.current?.setSelection(["b", "d"]));
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    act(() => apiRef.current?.clearSelection());
+    expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+    expect(apiRef.current?.getNodePath("d")).toEqual(["lead", "b", "c", "d"]);
+    expect(apiRef.current?.getNodePath("nobody")).toEqual([]);
+  });
+
+  it("uncontrolled defaults; methods do nothing without selection; nodes without nodeId aren't selectable", async () => {
+    const apiRef: MutableRefObject<OrganizationChartApi | undefined> = { current: undefined };
+    const { rerender } = render(
+      <Team apiRef={apiRef} enableSelection="multi" defaultSelectedNodes={["x"]} />,
+    );
+    await flush();
+    click(screen.getByText("First").parentElement as HTMLElement);
+    expect(apiRef.current?.getSelection()).toEqual(["x"]);
+    expect(nodeOf("First").hasAttribute("aria-selected")).toBe(false);
+    rerender(<Team apiRef={apiRef} enableSelection={false} />);
+    await flush();
+    expect(chart().hasAttribute("role")).toBe(false);
+    act(() => apiRef.current?.setSelection(["x", "y"]));
+    expect(apiRef.current?.getSelection()).toEqual(["x"]);
+  });
+
+  it("the focus highlight follows a focused tree item", async () => {
+    render(<Collapsible enableKeyboardNavigation highlightOnHover dimOpacity={0.5} />);
+    await flush();
+    await userEvent.keyboard("{Tab}");
+    expect(document.activeElement).toBe(node("lead"));
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowRight}");
+    expect(document.activeElement).toBe(node("c"));
+    for (const label of document.querySelectorAll("[data-ok-organization-chart-label]"))
+      await settled(label);
+    expect(getComputedStyle(node("a").firstElementChild as Element).opacity).toBe("0.5");
+    expect(getComputedStyle(node("c").firstElementChild as Element).opacity).toBe("1");
+    expect(getComputedStyle(node("b").firstElementChild as Element).opacity).toBe("1");
+    expect(node("c").style.getPropertyValue("--_ok-org-path-offset")).not.toBe("");
+    // The focus ring is on the label, not around the whole branch.
+    expect(getComputedStyle(node("c")).outlineStyle).toBe("none");
+    expect(getComputedStyle(node("c").firstElementChild as Element).outlineStyle).toBe("solid");
+  });
+
+  it("renders data-ok-selected on the server, and no tree attributes", () => {
+    const html = renderToString(
+      <Collapsible enableSelection="single" defaultSelectedNodes={["c"]} />,
+    );
+    expect(html).toContain('data-ok-enable-selection="single"');
+    expect(html).toMatch(/data-ok-node-id="c" data-ok-selected=""/);
+    expect(html).not.toContain('role="tree');
+  });
+});

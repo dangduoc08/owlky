@@ -391,6 +391,7 @@ export {
   organizationChartNodeAttributes,
   organizationChartNodeOptions,
   organizationChartOptions,
+  organizationChartSelectionModes,
   orientations,
   type PaginationAnatomyOptions,
   type PaginationColor,
@@ -1424,6 +1425,17 @@ export {
   organizationChartToggle,
   revealOrganizationChartNode,
 } from "./organization-chart/organization-chart.js";
+export {
+  createOrganizationChartTree,
+  type OrganizationChartSelectionMode,
+  type OrganizationChartTree,
+  type OrganizationChartTreeOptions,
+  organizationChartNodePath,
+  organizationChartSelect,
+  organizationChartSelected,
+  organizationChartSelection,
+  organizationChartVisible,
+} from "./organization-chart/organization-chart-tree.js";
 export {
   centerOrganizationChartNode,
   clampOrganizationChartZoom,

@@ -3,12 +3,15 @@ import {
   clampOrganizationChartZoom,
   createOrganizationChartController,
   createOrganizationChartHighlight,
+  createOrganizationChartTree,
   createOrganizationChartZoom,
   ORGANIZATION_CHART_LENGTHS,
   ORGANIZATION_CHART_ZOOM_STEP,
   type OrganizationChartAction,
   type OrganizationChartController,
   type OrganizationChartLength,
+  type OrganizationChartSelectionMode,
+  type OrganizationChartTree,
   organizationChartAncestors,
   organizationChartExpanded,
   organizationChartHighlighted,
@@ -16,8 +19,13 @@ import {
   organizationChartLoaded,
   organizationChartNode,
   organizationChartNodeId,
+  organizationChartNodePath,
+  organizationChartNodes,
   organizationChartOptions,
   organizationChartPlan,
+  organizationChartSelect,
+  organizationChartSelected,
+  organizationChartSelection,
   organizationChartStyle,
   organizationChartToggle,
   readNumber,
@@ -40,6 +48,8 @@ const OBSERVED = [
   options.zoom.attr,
   options.minZoom.attr,
   options.maxZoom.attr,
+  options.enableKeyboardNavigation.attr,
+  options.enableSelection.attr,
 ];
 
 /** Nodes `loadchildren` may answer with: elements, a fragment, or nothing (no children). */
@@ -59,6 +69,15 @@ export interface OrganizationChartEvents {
    * keys or the toolbar; `data-ok-enable-zoom-pan`). `preventDefault()` keeps the current level.
    */
   zoom: EventSpec<{ zoom: number; previous: number }, true>;
+  /**
+   * The user selected or deselected a node (a click on its label, or Space;
+   * `data-ok-enable-selection`). `selectedNodes` is the selection it asks for, `selected` whether
+   * this node is in it. `preventDefault()` keeps the current selection.
+   */
+  select: EventSpec<
+    { selectedNodes: string[]; nodeId: string; node: HTMLElement; selected: boolean },
+    true
+  >;
   /**
    * A node whose children list is empty is expanding for the first time. Call
    * `respondWith(nodesOrPromise)` with its child nodes (`li[data-ok-organization-chart-node]`
@@ -120,6 +139,14 @@ export interface OrganizationChartInstance extends ComponentInstance {
    * expanding its collapsed ancestors. Resolves once the scroll starts.
    */
   centerOnNode(nodeId: string): Promise<void>;
+  /** Selects these nodes (their `data-ok-node-id`), replacing the selection; `single` keeps the first. */
+  setSelection(nodeIds: readonly string[]): void;
+  /** Deselects every node. */
+  clearSelection(): void;
+  /** The `data-ok-node-id`s of the selected nodes, in the order they were selected. */
+  getSelection(): string[];
+  /** The `data-ok-node-id`s from the root node to this node (empty when it isn't found), for a breadcrumb. */
+  getNodePath(nodeId: string): string[];
 }
 
 const isNodes = (value: unknown): value is Iterable<Node> =>
@@ -158,6 +185,36 @@ export const organizationChart = defineComponent<
   setup(element, { emit }) {
     let written: string[] = [];
     let controller: OrganizationChartController | null = null;
+    let tree: OrganizationChartTree | null = null;
+    /** Selection order (the markup only knows which nodes are selected). */
+    let order: string[] = organizationChartSelected(element)
+      .map(organizationChartNodeId)
+      .filter((id): id is string => id !== null);
+    const mode = (): OrganizationChartSelectionMode | undefined => {
+      const value = element.getAttribute(options.enableSelection.attr);
+      return value === "single" || value === "multi" ? value : undefined;
+    };
+    /** The selection in order: the remembered order, then nodes selected in the markup since. */
+    const selection = () => {
+      const marked = organizationChartSelected(element)
+        .map(organizationChartNodeId)
+        .filter((id): id is string => id !== null);
+      order = [
+        ...order.filter((id) => marked.includes(id)),
+        ...marked.filter((id) => !order.includes(id)),
+      ];
+      return order;
+    };
+    /** Writes a selection (`data-ok-selected` on its nodes, removed from the others). */
+    const select = (ids: readonly string[]) => {
+      order = [...ids];
+      for (const node of organizationChartNodes(element)) {
+        const id = organizationChartNodeId(node);
+        const on = id !== null && ids.includes(id);
+        if (on !== node.hasAttribute("data-ok-selected"))
+          node.toggleAttribute("data-ok-selected", on);
+      }
+    };
     const highlight = createOrganizationChartHighlight(element);
     const zoomer = createOrganizationChartZoom(element);
     const limits = () => {
@@ -265,6 +322,32 @@ export const organizationChart = defineComponent<
         },
       });
 
+      const selecting = mode();
+      if (element.hasAttribute(options.enableKeyboardNavigation.attr) || selecting) {
+        tree ??= createOrganizationChartTree(element);
+        tree.update({
+          enabled: true,
+          selection: selecting,
+          onToggle(node, expand) {
+            const detail = { nodeId: organizationChartNodeId(node), node };
+            if (!emit(expand ? "expand" : "collapse", detail, { cancelable: true })) return;
+            void change(node, expand);
+          },
+          onSelect(node) {
+            const current = mode();
+            const nodeId = organizationChartNodeId(node);
+            if (!current || nodeId === null) return;
+            const next = organizationChartSelect(selection(), nodeId, current);
+            const detail = { selectedNodes: next, nodeId, node, selected: next.includes(nodeId) };
+            if (!emit("select", detail, { cancelable: true })) return;
+            select(next);
+          },
+        });
+      } else {
+        tree?.destroy();
+        tree = null;
+      }
+
       const enabled = element.hasAttribute(options.enableExpandCollapse.attr);
       if (!enabled) {
         controller?.destroy();
@@ -344,8 +427,19 @@ export const organizationChart = defineComponent<
           if (!organizationChartExpanded(ancestor)) void change(ancestor, true);
         return centerOrganizationChartNode(node);
       },
+      setSelection: (ids) => {
+        const current = mode();
+        if (current) select(organizationChartSelection(ids, current));
+      },
+      clearSelection: () => select([]),
+      getSelection: () => [...selection()],
+      getNodePath: (id) =>
+        organizationChartNodePath(element, id)
+          .map(organizationChartNodeId)
+          .filter((item): item is string => item !== null),
       destroy() {
         observer.disconnect();
+        tree?.destroy();
         highlight.destroy();
         zoomer.destroy();
         controller?.destroy();

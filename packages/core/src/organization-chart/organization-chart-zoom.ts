@@ -325,7 +325,10 @@ export function createOrganizationChartZoom(
       "keydown",
       (event) => {
         if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
-        if (!own(event) || (event.target as Element).closest?.(OWN_KEYS)) return;
+        if (!own(event)) return;
+        // The chart's own tree (ADR-0063) keeps the zoom keys; other widgets keep theirs.
+        const widget = (event.target as Element).closest?.(OWN_KEYS);
+        if (widget && widget !== root) return;
         const action =
           event.key === "+" || event.key === "="
             ? "in"

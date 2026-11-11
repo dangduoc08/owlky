@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(23));
+  it("covers every story group", () => expect(snippets).toHaveLength(25));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -1098,5 +1098,189 @@ describe("organization chart zoom and pan (ADR-0056)", () => {
     runtime?.stop();
     runtime = undefined;
     expect(root.style.getPropertyValue("--_ok-org-zoom")).toBe("");
+  });
+});
+
+interface SelectionInstance {
+  setSelection(ids: readonly string[]): void;
+  clearSelection(): void;
+  getSelection(): string[];
+  getNodePath(id: string): string[];
+  centerOnNode(id: string): Promise<void>;
+}
+
+const press = (target: Element, key: string) => {
+  const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+  target.dispatchEvent(event);
+  return event;
+};
+
+describe("organization chart tree, selection and breadcrumb (ADR-0063)", () => {
+  const story = (name: string) => {
+    const html = snippets.find(([path]) => path.endsWith(`/${name}-group.html`))?.[1] as string;
+    return mount(local(html));
+  };
+  const nodeOf = (host: Element, id: string) =>
+    host.querySelector(`[data-ok-node-id="${id}"]`) as HTMLElement;
+  const api = (host: Element, id: string) =>
+    runtime?.get(
+      host.querySelector(`#${id}`) as Element,
+      "organization-chart",
+    ) as unknown as SelectionInstance;
+
+  it("the snippets are plain lists until the runtime turns them into a tree", async () => {
+    const host = story("selection");
+    const root = host.querySelector("#org-selection") as HTMLElement;
+    expect(root.hasAttribute("role")).toBe(false);
+    start();
+    await settle();
+    expect(root.getAttribute("role")).toBe("tree");
+    expect(root.getAttribute("aria-multiselectable")).toBe("true");
+    expect(nodeOf(host, "maya").getAttribute("role")).toBe("treeitem");
+    expect(nodeOf(host, "priya").getAttribute("aria-selected")).toBe("true");
+    expect(nodeOf(host, "maya").getAttribute("aria-selected")).toBe("false");
+    // The selected node holds the tab stop.
+    expect(nodeOf(host, "priya").getAttribute("tabindex")).toBe("0");
+    expect(root.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+    await expectNoAxeViolations(host);
+  });
+
+  it("a click or Space asks through a cancelable select event, then writes data-ok-selected", async () => {
+    const host = story("selection");
+    start();
+    await settle();
+    const root = host.querySelector("#org-selection") as HTMLElement;
+    const events: { selectedNodes: string[]; nodeId: string; selected: boolean }[] = [];
+    root.addEventListener("ok:organization-chart:select", (event) =>
+      events.push((event as CustomEvent).detail),
+    );
+    (nodeOf(host, "jonah").firstElementChild as HTMLElement).click();
+    expect(events.at(-1)).toMatchObject({
+      selectedNodes: ["priya", "jonah"],
+      nodeId: "jonah",
+      selected: true,
+    });
+    expect(nodeOf(host, "jonah").hasAttribute("data-ok-selected")).toBe(true);
+    await settle();
+    expect(nodeOf(host, "jonah").getAttribute("aria-selected")).toBe("true");
+    nodeOf(host, "priya").focus();
+    expect(press(nodeOf(host, "priya"), " ").defaultPrevented).toBe(true);
+    expect(events.at(-1)).toMatchObject({ selectedNodes: ["jonah"], selected: false });
+    expect(nodeOf(host, "priya").hasAttribute("data-ok-selected")).toBe(false);
+    const stop = (event: Event) => event.preventDefault();
+    root.addEventListener("ok:organization-chart:select", stop);
+    press(nodeOf(host, "priya"), " ");
+    expect(nodeOf(host, "priya").hasAttribute("data-ok-selected")).toBe(false);
+    root.removeEventListener("ok:organization-chart:select", stop);
+    expect(api(host, "org-selection").getSelection()).toEqual(["jonah"]);
+  });
+
+  it("methods set, clear and read the selection without events; single keeps one node", async () => {
+    const host = story("selection");
+    start();
+    await settle();
+    const root = host.querySelector("#org-selection") as HTMLElement;
+    let events = 0;
+    root.addEventListener("ok:organization-chart:select", () => events++);
+    const chart = api(host, "org-selection");
+    chart.setSelection(["leila", "jonah", "leila"]);
+    expect(chart.getSelection()).toEqual(["leila", "jonah"]);
+    expect(nodeOf(host, "priya").hasAttribute("data-ok-selected")).toBe(false);
+    chart.clearSelection();
+    expect(root.querySelector("[data-ok-selected]")).toBeNull();
+    root.setAttribute("data-ok-enable-selection", "single");
+    await settle();
+    expect(root.hasAttribute("aria-multiselectable")).toBe(false);
+    chart.setSelection(["zara", "oskar"]);
+    expect(chart.getSelection()).toEqual(["zara"]);
+    (nodeOf(host, "oskar").firstElementChild as HTMLElement).click();
+    expect(chart.getSelection()).toEqual(["oskar"]);
+    expect(events).toBe(1);
+    // Off: the tree goes, the state stays in the markup, methods do nothing.
+    root.removeAttribute("data-ok-enable-selection");
+    await settle();
+    expect(root.hasAttribute("role")).toBe(false);
+    expect(nodeOf(host, "oskar").hasAttribute("aria-selected")).toBe(false);
+    chart.setSelection(["maya"]);
+    expect(chart.getSelection()).toEqual(["oskar"]);
+    // Keyboard navigation alone: a tree without selection.
+    root.setAttribute("data-ok-enable-keyboard-navigation", "");
+    await settle();
+    expect(root.getAttribute("role")).toBe("tree");
+    expect(nodeOf(host, "maya").hasAttribute("aria-selected")).toBe(false);
+  });
+
+  it("arrow keys walk the chart and expand or collapse through the cancelable events", async () => {
+    const host = story("breadcrumb");
+    start();
+    await settle();
+    const root = host.querySelector("#org-breadcrumb") as HTMLElement;
+    const events: string[] = [];
+    for (const type of ["expand", "collapse"])
+      root.addEventListener(`ok:organization-chart:${type}`, (event) =>
+        events.push(`${type}:${(event as CustomEvent<{ nodeId: string }>).detail.nodeId}`),
+      );
+    nodeOf(host, "maya").focus();
+    press(nodeOf(host, "maya"), "ArrowDown");
+    expect(document.activeElement).toBe(nodeOf(host, "jonah"));
+    press(nodeOf(host, "jonah"), "ArrowLeft");
+    await finish();
+    expect(list(host, "jonah").hidden).toBe(true);
+    press(nodeOf(host, "jonah"), "ArrowLeft");
+    expect(document.activeElement).toBe(nodeOf(host, "maya"));
+    press(nodeOf(host, "maya"), "ArrowLeft");
+    await finish();
+    expect(events).toEqual(["collapse:jonah", "collapse:maya"]);
+    expect(list(host, "maya").hidden).toBe(true);
+    expect(nodeOf(host, "maya").getAttribute("aria-expanded")).toBe("false");
+    press(nodeOf(host, "maya"), "ArrowRight");
+    await finish();
+    expect(list(host, "maya").hidden).toBe(false);
+    press(nodeOf(host, "maya"), "ArrowRight");
+    expect(document.activeElement).toBe(nodeOf(host, "jonah"));
+    press(nodeOf(host, "jonah"), "End");
+    expect(document.activeElement).toBe(nodeOf(host, "zara"));
+    press(nodeOf(host, "zara"), "Home");
+    press(nodeOf(host, "maya"), "t");
+    expect(document.activeElement).toBe(nodeOf(host, "tomas"));
+    // Enter toggles the focused branch.
+    press(nodeOf(host, "tomas"), "ArrowUp");
+    press(nodeOf(host, "sofia"), "Enter");
+    await finish();
+    expect(events.at(-1)).toBe("collapse:sofia");
+    // The toggles left the Tab order.
+    expect(toggle(host, "maya").getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("the breadcrumb follows the selection through getNodePath (story script pattern)", async () => {
+    const host = story("breadcrumb");
+    start();
+    await settle();
+    const chart = api(host, "org-breadcrumb");
+    expect(chart.getNodePath("sofia")).toEqual(["maya", "priya", "elias", "sofia"]);
+    expect(chart.getNodePath("nobody")).toEqual([]);
+    expect(chart.getSelection()).toEqual(["sofia"]);
+    const trail = () =>
+      [...host.querySelectorAll("[data-ok-breadcrumbs-item]")].map((item) =>
+        item.textContent?.trim(),
+      );
+    expect(trail()).toEqual(["Maya Lindqvist", "Priya Raman", "Elias Novak", "Sofia Marchetti"]);
+    const root = host.querySelector("#org-breadcrumb") as HTMLElement;
+    root.addEventListener("ok:organization-chart:select", (event) => {
+      const [id] = (event as CustomEvent<{ selectedNodes: string[] }>).detail.selectedNodes;
+      const path = id ? chart.getNodePath(id) : [];
+      const list = host.querySelector("[data-ok-breadcrumbs-list]") as HTMLElement;
+      list.replaceChildren(
+        ...path.map((item) => {
+          const li = document.createElement("li");
+          li.setAttribute("data-ok-breadcrumbs-item", "");
+          li.textContent = item;
+          return li;
+        }),
+      );
+    });
+    (nodeOf(host, "zara").firstElementChild as HTMLElement).click();
+    expect(trail()).toEqual(["maya", "leila", "zara"]);
+    await expectNoAxeViolations(host);
   });
 });

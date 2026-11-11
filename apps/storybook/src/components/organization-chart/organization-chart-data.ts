@@ -124,3 +124,32 @@ export const PRODUCT: PersonNode = {
 /** Number of people in a list of nodes, at every depth. */
 export const headcount = (nodes: PersonNode[]): number =>
   nodes.reduce((total, node) => total + 1 + headcount(node.children ?? []), 0);
+
+/** Every person of the company (the CEO first), in tree order. */
+export const EVERYONE: Person[] = [
+  CEO,
+  ...(function walk(nodes: PersonNode[]): PersonNode[] {
+    return nodes.flatMap((node) => [node, ...walk(node.children ?? [])]);
+  })(PEOPLE),
+];
+
+/** A person's name from their id. */
+export const nameOf = (id: string): string =>
+  EVERYONE.find((person) => person.id === id)?.name ?? id;
+
+/**
+ * The ids from the CEO down to a person: what the chart's `getNodePath(id)` returns for the
+ * company chart (the stories render it on the server too, before any chart exists).
+ */
+export function pathOf(id: string): string[] {
+  const walk = (nodes: PersonNode[], trail: string[]): string[] | null => {
+    for (const node of nodes) {
+      const here = [...trail, node.id];
+      if (node.id === id) return here;
+      const found = walk(node.children ?? [], here);
+      if (found) return found;
+    }
+    return null;
+  };
+  return id === CEO.id ? [CEO.id] : (walk(PEOPLE, [CEO.id]) ?? []);
+}

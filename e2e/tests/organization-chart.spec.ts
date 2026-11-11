@@ -78,6 +78,8 @@ for (const impl of implementations) {
         "search",
         "lazy-children",
         "zoom-pan",
+        "selection",
+        "keyboard-breadcrumb",
       ]) {
         await openStory(page, storyId(impl, "organization-chart", story));
         const gaps = await connectorGaps(page);
@@ -514,6 +516,87 @@ for (const impl of implementations) {
       await priya.click();
       await expect(priya).not.toHaveAttribute("aria-busy", "true");
       await expect(page.getByText("Elias Novak", { exact: true })).toBeVisible();
+    });
+
+    test("selection: pointer, Space and the buttons; the status names the people", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "selection"));
+      const tree = page.getByRole("tree", { name: "Selectable organization chart" });
+      await expect(tree).toHaveAttribute("aria-multiselectable", "true");
+      const item = (id: string) => page.locator(`[data-ok-node-id="${id}"]`);
+      await expect(item("priya")).toHaveAttribute("aria-selected", "true");
+      const card = item("jonah").locator("> [data-ok-organization-chart-label]");
+      await card.scrollIntoViewIfNeeded();
+      if (isMobile) await card.tap();
+      else await card.click();
+      await expect(item("jonah")).toHaveAttribute("aria-selected", "true");
+      await expect(page.getByRole("status")).toHaveText("Selected: Priya Raman, Jonah Pereira");
+      // Space on the focused node deselects it.
+      await expect(item("jonah")).toBeFocused();
+      await page.keyboard.press("Space");
+      await expect(item("jonah")).toHaveAttribute("aria-selected", "false");
+      await expect(page.getByRole("status")).toHaveText("Selected: Priya Raman");
+      await page.getByRole("button", { name: "Select the leads" }).click();
+      for (const id of ["jonah", "priya", "leila"])
+        await expect(item(id)).toHaveAttribute("aria-selected", "true");
+      await expect(page.getByRole("status")).toHaveText(
+        "Selected: Jonah Pereira, Priya Raman, Leila Haddad",
+      );
+      await page.getByRole("button", { name: "Clear selection" }).click();
+      await expect(page.locator("[data-ok-selected]")).toHaveCount(0);
+      await expect(page.getByRole("status")).toHaveText("No one is selected.");
+    });
+
+    test("keyboard: one tab stop, arrows, typeahead; the breadcrumb follows the selection", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "keyboard-breadcrumb"));
+      const item = (id: string) => page.locator(`[data-ok-node-id="${id}"]`);
+      const crumbs = page.getByRole("navigation", { name: "Path to the selected person" });
+      await expect(crumbs.locator("li[data-ok-breadcrumbs-item]")).toHaveText([
+        "Maya Lindqvist",
+        "Priya Raman",
+        "Elias Novak",
+        "Sofia Marchetti",
+      ]);
+      await expect(page.locator('[data-ok-organization-chart] [tabindex="0"]')).toHaveCount(1);
+      // The selected node holds the tab stop.
+      await item("sofia").focus();
+      await expect(item("sofia")).toBeFocused();
+      await page.keyboard.press("ArrowDown");
+      await expect(item("tomas")).toBeFocused();
+      await page.keyboard.press("ArrowLeft");
+      await expect(item("sofia")).toBeFocused();
+      await page.keyboard.press("ArrowLeft");
+      await expect(item("sofia")).toHaveAttribute("aria-expanded", "false");
+      await page.keyboard.press("ArrowRight");
+      await expect(item("sofia")).toHaveAttribute("aria-expanded", "true");
+      await page.keyboard.press("Home");
+      await expect(item("maya")).toBeFocused();
+      await page.keyboard.press("z");
+      await expect(item("zara")).toBeFocused();
+      await page.keyboard.press("Space");
+      await expect(item("zara")).toHaveAttribute("aria-selected", "true");
+      await expect(item("sofia")).toHaveAttribute("aria-selected", "false");
+      await expect(crumbs.locator("li[data-ok-breadcrumbs-item]")).toHaveText([
+        "Maya Lindqvist",
+        "Leila Haddad",
+        "Zara Okafor",
+      ]);
+      await expect(crumbs.locator('[aria-current="location"]')).toHaveText("Zara Okafor");
+      // A manager in the trail selects them.
+      await crumbs.getByRole("button", { name: "Leila Haddad" }).click();
+      await expect(item("leila")).toHaveAttribute("aria-selected", "true");
+      await expect(crumbs.locator("li[data-ok-breadcrumbs-item]")).toHaveText([
+        "Maya Lindqvist",
+        "Leila Haddad",
+      ]);
+      // Tab leaves the tree in one step.
+      await item("leila").focus();
+      await page.keyboard.press("Tab");
+      await expect(page.locator("[data-ok-organization-chart] :focus")).toHaveCount(0);
     });
   });
 }

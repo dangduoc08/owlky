@@ -36,10 +36,10 @@ selection that assistive technology announces can't live on plain list items; a 
    `createOrganizationChartTree(root, options)` writes `role="tree"` on the root,
    `role="treeitem"` on every node of this chart (nested charts left out), `role="group"` on
    children lists, `aria-multiselectable="true"` (multi), `aria-selected` on nodes with an id
-   (`true` / `false`, selection only), `aria-expanded` on branches (mirrored from the toggle),
-   `aria-labelledby` naming each item by its label (the label gets an `ok-org-label-<n>` id when
-   it has none; a treeitem named from its content would read its whole subtree), and the roving
-   `tabindex` (one `0`, the others `-1`); toggles leave the Tab order (`tabindex="-1"`: the keys
+   (`true` / `false`, selection only), `aria-expanded` on branches (mirrored from the toggle)
+   and the roving `tabindex` (one `0`, the others `-1`). Items are named from their content, as
+   Tree view's are (an `aria-labelledby` naming an item by its label alone fails axe
+   `label-content-name-mismatch`: the item's visible text includes its children). Toggles leave the Tab order (`tabindex="-1"`: the keys
    do their job, the pointer still clicks them). It follows DOM changes (MutationObserver) and
    removes everything it wrote when the options turn off or on `destroy()`. React renders none of
    it (as Carousel, ADR-0033): without JavaScript the snippet is the plain lists, which is the

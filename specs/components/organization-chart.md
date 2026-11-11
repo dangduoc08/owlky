@@ -3,7 +3,7 @@
 Reference: Minimal UI kit "Organization chart" page, sections Simple, Standard, Group (content
 only). Upstream: `react-organizational-chart` (`Tree`, `TreeNode`; ADR-0015, ADR-0036); expand and
 collapse after ApexTree (ADR-0051); direction after ApexTree (ADR-0052); zoom and pan after
-ApexTree (ADR-0056).
+ApexTree (ADR-0056); selection, arrow keys and the lineage breadcrumb after ApexTree (ADR-0063).
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/organization-chart
 HTML source: written by us (the upstream is React only)
@@ -15,7 +15,9 @@ length options into private custom properties in HTML. Opt-in (`enableExpandColl
 collapse and expand with a toggle button, their children list is a Collapse, children can load on
 demand. Opt-in (`highlightOnHover`): hovering or focusing a node highlights its path to the root
 and fades the others; `highlightNode(id)` highlights a node found by a search (an Autocomplete
-composed next to the chart) without fading.
+composed next to the chart) without fading. Opt-in (`enableKeyboardNavigation`, `enableSelection`,
+ADR-0063): the lists become an ARIA tree with one tab stop and arrow keys, nodes can be selected
+(`single` · `multi`), and a composed Breadcrumbs can follow the selected node (`getNodePath(id)`).
 
 ## Anatomy
 ```
@@ -25,9 +27,12 @@ ul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-l
   [data-ok-collapse-badge-threshold]? [data-ok-highlight-on-hover]? [data-ok-dim-opacity]?
   [data-ok-edge-color-mode]? [data-ok-group-leaf-nodes]? [data-ok-group-leaf-nodes-spacing]?
   [data-ok-enable-zoom-pan]? [data-ok-zoom]? [data-ok-min-zoom]? [data-ok-max-zoom]?
-  [data-ok-panning]? [id]?                                (id: named by a toolbar)
+  [data-ok-panning]? [data-ok-enable-keyboard-navigation]? [data-ok-enable-selection]?
+  [id]?                                                   (id: named by a toolbar)
   [aria-label | aria-labelledby]
-  li[data-ok-organization-chart-node][data-ok-node-id]?[data-ok-highlighted]?
+  [role=tree][aria-multiselectable]?                      (tree mode, written by core)
+  li[data-ok-organization-chart-node][data-ok-node-id]?[data-ok-highlighted]?[data-ok-selected]?
+    [role=treeitem][tabindex][aria-expanded]?[aria-selected]?   (tree mode, written by core)
     [data-ok-line-color]?[data-ok-line-style]?            (the root node: React `label`;
                                                            per-node lines, 4.18.6)
     div[data-ok-organization-chart-label]                 (any content)
@@ -38,7 +43,7 @@ ul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-l
       span[data-ok-circular-progress][data-ok-organization-chart-spinner][aria-hidden]?
                                                           (lazy nodes: a CircularProgress)
       span[data-ok-organization-chart-badge]?             (hidden count, written by the script)
-    ul[data-ok-organization-chart-children][data-ok-collapse]?[id]?[hidden]?
+    ul[data-ok-organization-chart-children][data-ok-collapse]?[id]?[hidden]?[role=group]?
                                                           (only when there are children, or
                                                            empty + hidden on a lazy node)
       li[data-ok-organization-chart-node]                 (OrganizationChartNode, any depth)
@@ -83,6 +88,8 @@ Root: `data-ok-organization-chart`. Unknown values fall back to the default.
 | `zoom` | `data-ok-zoom="…"` | number | number | `1` | The zoom level, from `minZoom` to `maxZoom` (1 is 100%). Changed by the user with zoom and pan on. |
 | `minZoom` | `data-ok-min-zoom="…"` | number | number | `0.25` | The smallest zoom level. |
 | `maxZoom` | `data-ok-max-zoom="…"` | number | number | `2` | The largest zoom level. |
+| `enableKeyboardNavigation` | `data-ok-enable-keyboard-navigation` | flag | boolean | off | The chart becomes a tree with one tab stop: the arrow keys move between visible nodes, expand and collapse them, Home and End go to the first and last node, letters jump to a node. |
+| `enableSelection` | `data-ok-enable-selection="…"` | style | `single` `multi` | — | Nodes with an id can be selected with a click or Space: `single` (one node) or `multi` (several). Turns on keyboard navigation. |
 <!-- /options:organization-chart -->
 
 Per node (4.18.6, ApexTree `edgeColorMode: "node"`):
@@ -178,6 +185,11 @@ untrusted CSS. `lineStyle` keeps `solid` / `dashed` / `dotted` (other border sty
   direction's rules (descendant selectors): give nested charts the same direction.
 
 ## States
+Tree mode (ADR-0063): the focused tree item (`li:focus-visible`: a 2px `--ok-text-primary` ring on
+its label, 6px out; the item itself draws no outline) · selected (`data-ok-selected`: a 2px
+`--ok-palette-primary-main` ring on the label as a `box-shadow`, so focus and selection show
+together; `aria-selected="true"`) · selectable labels have `cursor: pointer` on hover-capable
+devices.
 Highlight: hovered / focused path (`:hover` / `:focus-within` on a label, `:hover` /
 `:focus-visible` on a toggle, `data-ok-highlight-on-hover`: the other labels and toggles at
 `opacity: 1 - dimOpacity`) · highlighted node (`data-ok-highlighted`: a ring on its label, its
@@ -251,7 +263,27 @@ node), expands the collapsed ancestors (no events, like the batch methods), then
 without `nodeId` can't be highlighted from code.
 
 ## Keyboard
-None of its own without zoom. Controls in labels follow DOM order: a node, its toggle, then its children, in
+Tree mode (`enableKeyboardNavigation` or `enableSelection`, ADR-0063): one tab stop, the tree
+items (`li`) take the focus.
+
+| Key | Action |
+|---|---|
+| ↓ / ↑ | Next / previous visible node, in tree order |
+| → | Expands a collapsed branch (lazy ones load); otherwise the first child |
+| ← | Collapses an expanded branch; otherwise the parent |
+| Home / End | First / last visible node |
+| Enter | Expands or collapses the node (collapsible charts) |
+| Space | Selects the node, or deselects it (`enableSelection`; nodes with an id) |
+| Letters, digits | Typeahead: the next visible node whose label starts with the typed text (500 ms) |
+
+Right-to-left charts swap → and ←. The keys follow the tree order in every `direction` (the
+drawing may put children above or before their parent: ADR-0052). With zoom and pan, + / = / − /
+0 stay the zoom's (typeahead skips them). The tab stop is the last focused node, else the first
+selected node, else the root node; when a collapse hides it, it moves (with the focus) to the
+nearest visible ancestor. Toggles leave the Tab order (`tabindex="-1"`); controls inside labels
+stay in it, after their node (keep them out of charts meant for keyboard navigation).
+
+Without tree mode: none of its own without zoom. Controls in labels follow DOM order: a node, its toggle, then its children, in
 every direction (only flex directions change, never the DOM).
 Toggles are native buttons (Enter / Space). Label clicks are a pointer shortcut only.
 Zoom (`enableZoomPan`): **+** or **=** zooms in, **−** zooms out, **0** resets, on the focused
@@ -259,6 +291,14 @@ scroll area or any control in the chart; the toolbar's buttons are the pointer-f
 the wheel, pinch and drag. Arrow keys scroll the focused Scrollbar.
 
 ## Accessibility
+Tree mode (ADR-0063): `role="tree"` on the root (named by its `aria-label`), `treeitem` on each
+node of this chart (nested charts left out), `group` on children lists, `aria-expanded` on
+collapsible branches (mirrored from their toggle), `aria-selected` on nodes with an id and
+`aria-multiselectable` (multi) while selection is on. Items are named from their content, as in
+Tree view (axe `label-content-name-mismatch` rejects an `aria-labelledby` that names an item
+without its children). Browsers compute level, position and set size from the nesting. Selection
+is announced, never shown by color alone (a ring). Without JavaScript the markup stays nested
+lists, the right semantics for a chart nobody can operate.
 Highlight: faded nodes are below the text contrast minimum while a hover / focus highlight
 lasts (transient, user-driven; `dimOpacity={0}` keeps full contrast, the path colors remain); a
 search result fades nothing for that reason. The highlight is visual: the composed search
@@ -288,6 +328,24 @@ node }`), `ok:organization-chart:loadchildren` (`{ nodeId, node, respondWith }`)
 `fitScreen()`, `centerOnNode(id)` (Promise), `destroy()`. React: the same methods on `apiRef`.
 Highlight and zoom methods emit no events. `ok:organization-chart:zoom` (cancelable,
 `{ zoom, previous }`): the user asked for another level.
+Selection (ADR-0063): `ok:organization-chart:select` (cancelable, `{ selectedNodes, nodeId, node,
+selected }`: the selection asked for and whether this node is in it), from a click on a label
+(outside its interactive content) or Space; the runtime then writes `data-ok-selected`. Methods
+`setSelection(ids)` (single: the first id; unknown ids are kept as given), `clearSelection()`,
+`getSelection()` (ids in selection order), `getNodePath(id)` (ids from the root node to the
+node, nodes without an id left out; empty when not found). React: `enableKeyboardNavigation`,
+`enableSelection` (`"single"` · `"multi"` · `false`), `selectedNodes` / `defaultSelectedNodes` /
+`onSelectionChange(ids)` (every change, methods included), the same methods on `apiRef`. Core:
+`createOrganizationChartTree(root, options)` (`enabled`, `selection`, `onToggle`, `onSelect`;
+`update`, `sync`, `focus(node)`, `destroy`), `organizationChartSelect(current, id, mode)`,
+`organizationChartSelection(ids, mode)`, `organizationChartSelected(root)`,
+`organizationChartVisible(node)`, `organizationChartNodePath(root, id)`.
+
+Lineage breadcrumb (4.18.85, composition): a `Breadcrumbs` next to the chart (stories "Keyboard
+and breadcrumb", docs) whose items are the path's names: managers as Links rendered as buttons
+(`value` = the node id) that select the manager and `centerOnNode` it, the selected node last as
+`span[aria-current="location"]`. It follows `onSelectionChange` (React) or
+`ok:organization-chart:select` (HTML) through `getNodePath(id)`.
 
 ## Responsive
 Same layout at every breakpoint: the chart never wraps (a tree keeps its shape) and keeps its
@@ -349,10 +407,23 @@ checked 2026-11-10; ADR-0051):
 | `zoom(zoomFactor)`, `fitScreen()`, `centerOnNode(nodeId)` | same (React `apiRef`, HTML instance) + `zoomIn`, `zoomOut`, `setZoom`, `getZoom`, `resetZoom` | kept | fit never enlarges past 100%; `centerOnNode` opens collapsed ancestors and returns a promise |
 | — | `zoom` / `defaultZoom` / `onZoomChange`, `minZoom`, `maxZoom`, `ok:organization-chart:zoom` | added | state, limits and the HTML event |
 | `exportToSvg()`, the toolbar's export button | — | not applicable | the chart is HTML, not SVG |
+| `enableSelection` (`'single'` · `'multi'` · `false`) | same (React; HTML `data-ok-enable-selection`, not written when off) | kept | turns the tree on (ADR-0063); nodes with an id only |
+| `graph.getSelection()`, `setSelection(ids)`, `clearSelection()` | same (React `apiRef`, HTML instance) | kept | methods emit no HTML events |
+| `graph.onSelectionChange(listener)` | React `onSelectionChange`; HTML `ok:organization-chart:select` (cancelable) | renamed | user intent in HTML, every change in React |
+| — | `selectedNodes` / `defaultSelectedNodes`, `data-ok-selected` | added | state |
+| `a11y.enabled` | `enableKeyboardNavigation` | renamed | an ARIA tree written by core, roving focus (ADR-0063) |
+| `a11y.label`, `locale.messages.rootAriaLabel` | the root's `aria-label` / `aria-labelledby` | not applicable | |
+| `aria-level`, `aria-posinset`, `aria-setsize` on items | computed by browsers from the nesting | not applicable | |
+| keys: arrows, Home / End, Enter, Space, a–z typeahead | same, + digits; RTL swaps → / ← | kept | |
+| `enableBreadcrumb`, `setBreadcrumbHandler(handler)`, `locale.messages.breadcrumbAriaLabel` | a composed `Breadcrumbs` + `getNodePath(id)` | renamed | the root is a list (no room for a `nav`); trail, labels and collapsing are the Breadcrumbs' |
+| — | `getNodePath(id)` | added | ids from the root node down |
 | `viewPortWidth`, `viewPortHeight`, `paddingX`, `paddingY` | the Scrollbar's size and padding | not applicable | no SVG coordinate space |
 | `enableAnimation` for `centerOnNode` | reduced motion decides | not applicable | smooth scroll unless reduced motion; zoom steps are instant |
 
 ## Parity notes
+Tree mode: the roles, `aria-expanded` / `aria-selected` / `aria-multiselectable` on items and the
+roving `tabindex` are written by the shared core controller in both (React renders none); React
+renders `data-ok-selected`, which the selection snippets carry.
 The path measures (`--_ok-org-path-*`) are CSSOM on both sides (parity ignores `style`). The search
 snippet is the React render (the Autocomplete's ids renamed `org-search-<n>`, `autoComplete` →
 `autocomplete`); its status line starts empty. Otherwise none: the same markup; React's `style` and the runtime's CSSOM properties are equal (parity

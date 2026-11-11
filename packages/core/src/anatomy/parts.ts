@@ -1868,6 +1868,8 @@ export interface OrganizationChartParts {
   "data-ok-organization-chart-zoom-value": Part<"output">;
   /** On the chart: set while a mouse drag pans its scroll area. */
   "data-ok-panning": State;
+  /** On a node with an id: it is selected (`data-ok-enable-selection`). Written by the script after `ok:organization-chart:select`, or by `setSelection(ids)`. */
+  "data-ok-selected": State;
 }
 
 /** Pagination: parts, states, values and triggers. */

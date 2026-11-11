@@ -117,6 +117,12 @@
      },
      {
       "cancelable": true,
+      "description": "The user selected or deselected a node (a click on its label, or Space; `data-ok-enable-selection`). `selectedNodes` is the selection it asks for, `selected` whether this node is in it. `preventDefault()` keeps the current selection.",
+      "detail": "{ selectedNodes: string[]; nodeId: string; node: HTMLElement; selected: boolean; }",
+      "name": "ok:organization-chart:select"
+     },
+     {
+      "cancelable": true,
       "description": "The user asked for another zoom level (Ctrl or Command with the wheel, a pinch, the + / − / 0 keys or the toolbar; `data-ok-enable-zoom-pan`). `preventDefault()` keeps the current level.",
       "detail": "{ zoom: number; previous: number; }",
       "name": "ok:organization-chart:zoom"
@@ -133,6 +139,12 @@
       "description": "Removes the highlight.",
       "kind": "method",
       "name": "clearHighlight",
+      "type": "() => void"
+     },
+     {
+      "description": "Deselects every node.",
+      "kind": "method",
+      "name": "clearSelection",
       "type": "() => void"
      },
      {
@@ -190,6 +202,18 @@
       "type": "() => string | null"
      },
      {
+      "description": "The `data-ok-node-id`s from the root node to this node (empty when it isn't found), for a breadcrumb.",
+      "kind": "method",
+      "name": "getNodePath",
+      "type": "(nodeId: string) => string[]"
+     },
+     {
+      "description": "The `data-ok-node-id`s of the selected nodes, in the order they were selected.",
+      "kind": "method",
+      "name": "getSelection",
+      "type": "() => string[]"
+     },
+     {
       "description": "The zoom level shown.",
       "kind": "method",
       "name": "getZoom",
@@ -212,6 +236,12 @@
       "kind": "method",
       "name": "resetZoom",
       "type": "() => void"
+     },
+     {
+      "description": "Selects these nodes (their `data-ok-node-id`), replacing the selection; `single` keeps the first.",
+      "kind": "method",
+      "name": "setSelection",
+      "type": "(nodeIds: readonly string[]) => void"
      },
      {
       "description": "Sets the zoom level (1 is 100%), within `data-ok-min-zoom` and `data-ok-max-zoom`.",
@@ -428,6 +458,24 @@
       "kind": "number",
       "min": 0.01,
       "name": "maxZoom"
+     },
+     {
+      "attr": "data-ok-enable-keyboard-navigation",
+      "description": "The chart becomes a tree with one tab stop: the arrow keys move between visible nodes, expand and collapse them, Home and End go to the first and last node, letters jump to a node.",
+      "kind": "flag",
+      "name": "enableKeyboardNavigation"
+     },
+     {
+      "attr": "data-ok-enable-selection",
+      "default": "single",
+      "description": "Nodes with an id can be selected with a click or Space: `single` (one node) or `multi` (several). Turns on keyboard navigation.",
+      "kind": "style",
+      "name": "enableSelection",
+      "optional": true,
+      "values": [
+       "single",
+       "multi"
+      ]
      }
     ],
     "parts": [
@@ -542,6 +590,11 @@
       "description": "On the chart: set while a mouse drag pans its scroll area.",
       "kind": "state",
       "name": "data-ok-panning"
+     },
+     {
+      "description": "On a node with an id: it is selected (`data-ok-enable-selection`). Written by the script after `ok:organization-chart:select`, or by `setSelection(ids)`.",
+      "kind": "state",
+      "name": "data-ok-selected"
      }
     ],
     "runtime": "organization-chart"
@@ -589,6 +642,11 @@
       "type": "string | null"
      },
      {
+      "description": "The `nodeId`s selected at first (uncontrolled). Default none.",
+      "name": "defaultSelectedNodes",
+      "type": "readonly string[]"
+     },
+     {
       "default": "1",
       "description": "The zoom level at first (uncontrolled).",
       "name": "defaultZoom",
@@ -617,6 +675,18 @@
       "description": "Nodes with children get a toggle button that collapses and expands them.",
       "name": "enableExpandCollapse",
       "type": "boolean"
+     },
+     {
+      "default": "false",
+      "description": "The chart becomes a tree with one tab stop: the arrow keys move between visible nodes, expand and collapse them, Home and End go to the first and last node, letters jump to a node.",
+      "name": "enableKeyboardNavigation",
+      "type": "boolean"
+     },
+     {
+      "default": "false",
+      "description": "Nodes with a `nodeId` can be selected with a click on their label or Space: `single` (one node) or `multi` (several). Turns on keyboard navigation.",
+      "name": "enableSelection",
+      "type": "false | OrganizationChartSelectionMode"
      },
      {
       "default": "false",
@@ -741,9 +811,19 @@
       "type": "((nodeId: string | null) => void)"
      },
      {
+      "description": "Called with the selected `nodeId`s after a click, Space or a method call.",
+      "name": "onSelectionChange",
+      "type": "((nodeIds: string[]) => void)"
+     },
+     {
       "description": "Called with the new level after a zoom by the user or a method call.",
       "name": "onZoomChange",
       "type": "((level: number) => void)"
+     },
+     {
+      "description": "Controlled `nodeId`s of the selected nodes.",
+      "name": "selectedNodes",
+      "type": "readonly string[]"
      },
      {
       "default": "\"Child nodes\"",
@@ -899,6 +979,10 @@
   {
    "name": "OrganizationChartLoadedNodes",
    "type": "Iterable<Node> | Node | null"
+  },
+  {
+   "name": "OrganizationChartSelectionMode",
+   "type": "\"multi\" | \"single\""
   }
  ]
 }
