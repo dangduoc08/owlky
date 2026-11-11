@@ -89,6 +89,39 @@ describe("Chart (geo)", () => {
     expect(root().querySelector("[data-ok-chart-selected-mark]")).not.toBeNull();
   });
 
+  it("draws pixel maps, pattern fills and pictures (4.18.96, 4.18.97)", async () => {
+    const PIXEL =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+    const { rerender } = renderGeo({ geoLayout: "pixel", pixelShape: "square", pixelSpacing: 6 });
+    expect(root().getAttribute("data-ok-pixel-shape")).toBe("square");
+    expect(root().getAttribute("data-ok-pixel-spacing")).toBe("6");
+    expect(root().querySelector('[data-ok-chart-series][data-ok-layout="pixel"]')).not.toBeNull();
+    expect((regions()[0]?.getAttribute("d") ?? "").split("M").length).toBeGreaterThan(3);
+    rerender(
+      <div style={{ width: 400 }}>
+        <Chart
+          label="Sales"
+          type="geo"
+          geometry={GEOMETRY}
+          regions={[{ ...REGIONS[0], image: PIXEL } as never, REGIONS[1] as never]}
+          joinBy="name"
+          fill="pattern"
+          imageFit="contain"
+        />
+      </div>,
+    );
+    const [west, east] = regions();
+    expect(west?.getAttribute("fill")).toMatch(/^url\(#.+-image-0\)$/);
+    expect(east?.getAttribute("data-ok-pattern")).toBe("verticalLines");
+    expect(root().querySelector("image")?.getAttribute("preserveAspectRatio")).toBe(
+      "xMidYMid meet",
+    );
+    expect(root().getAttribute("data-ok-image-fit")).toBe("contain");
+    expect(root().querySelector("th[data-ok-image]")?.getAttribute("data-ok-image")).toBe(PIXEL);
+    expect(root().querySelector("[data-ok-chart-legend-marker][data-ok-pattern]")).not.toBeNull();
+    await expectNoAxeViolations(document.body);
+  });
+
   it("draws hex tiles without geometry", () => {
     render(
       <Chart

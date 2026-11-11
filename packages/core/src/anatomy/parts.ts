@@ -271,6 +271,12 @@ export interface ChartParts {
   "data-ok-cell": Part<"th">;
   /** Geo charts: the short text of a region's hex tile (on the table's row header). */
   "data-ok-label": Part<"th">;
+  /** Geo charts: a decorative picture that fills the region (on the table's row header): an http(s), relative or `data:image/…` URL. */
+  "data-ok-image": Part<"th">;
+  /** Geo charts: the definition of a region's picture fill (a `pattern` in the SVG's `defs`). */
+  "data-ok-chart-image": Part<"pattern">;
+  /** Geo charts, `pixel` layout: on the regions' series group. */
+  "data-ok-layout": Value<"pixel">;
   /** One cell of an icicle chart. */
   "data-ok-chart-icicle-cell": Part<"rect">;
   /** Sunburst and icicle charts: the controls before the plot, a **Back** button and the drilled path (a status). */
@@ -591,7 +597,7 @@ export interface ChartParts {
   "data-ok-dash-array": Value<string>;
   /** On a marker, a legend marker or a tooltip marker: the series' marker shape. */
   "data-ok-shape": Value<"square" | "triangle" | "diamond" | "cross" | "plus" | "star">;
-  /** On a legend or tooltip marker: the series' pattern. */
+  /** On a legend or tooltip marker: the series' pattern. Geo charts: on a region, its class's pattern. */
   "data-ok-pattern": Value<
     "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
   >;
@@ -1752,6 +1758,10 @@ export interface MapParts {
   "data-ok-map-legend-circle": Part<"span">;
   /** On a size legend circle: its radius in px (on the list: the largest one). */
   "data-ok-radius": Value<string>;
+  /** On a legend swatch: the pattern of the class, drawn over its color (`mapPatternLayer`). */
+  "data-ok-pattern": Value<
+    "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
+  >;
   /** On a cell of the regions table: the region's value, a number. */
   "data-ok-value": Value<string>;
 }

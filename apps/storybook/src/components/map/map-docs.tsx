@@ -19,6 +19,7 @@ import greatCircles from "../../../../../packages/html/src/components/map/exampl
 import hexbin from "../../../../../packages/html/src/components/map/examples/hexbin-group.html?raw";
 import interactionGroup from "../../../../../packages/html/src/components/map/examples/interaction-group.html?raw";
 import markersGroup from "../../../../../packages/html/src/components/map/examples/markers-popups-group.html?raw";
+import patternFills from "../../../../../packages/html/src/components/map/examples/pattern-fills-group.html?raw";
 import pixelMap from "../../../../../packages/html/src/components/map/examples/pixel-map-group.html?raw";
 import regionDrilldown from "../../../../../packages/html/src/components/map/examples/region-drilldown-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -476,6 +477,66 @@ export function SquareMap() {
 }`,
   },
   {
+    id: "pattern-fills",
+    title: "Fill classes with patterns",
+    body: "Colors alone don't tell classes apart for everyone, or on a grayscale printout. Give each class a texture too. `mapPatternLayer({ id, source, scale, patterns })` returns a fill layer with one pattern per class of the scale: `circles` (dots), `horizontalLines`, `verticalLines`, `slantedLines` (diagonal lines) or `squares`, the same patterns as the Chart. `dots`, `lines` and `diagonal` work too. Without `patterns`, each class takes the next pattern, and `null` leaves a class plain. Regions without a value never get a pattern.\n\nDraw the pattern layer between the fill and the outline of `mapRegionLayers`. The map draws each pattern in a translucent black ink when the layer needs it, so the textures read on every class color and in both themes. Pass the same `patterns` to `MapLegend`: its swatches repeat the textures.",
+    html: `${snippetElement(patternFills, "data-ok-map-source ")}
+
+<!-- The legend's swatches carry the same patterns -->
+<div data-ok-map-corner="bottom-left">
+${indent(snippetElement(patternFills, "data-ok-map-legend "), 2)}
+</div>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapLegend,
+  MapView,
+  mapPatternLayer,
+  mapRegionLayers,
+  mapScale,
+  Source,
+} from "@owlky/react";
+
+const STATES = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Oregon", name: "Oregon", value: 4.24 },
+];
+const scale = mapScale(
+  STATES.map((state) => state.value),
+  { method: "jenks", classes: 2 },
+);
+const patterns = ["circles", "slantedLines"] as const;
+const [fill, outline] = mapRegionLayers({
+  id: "states-fill",
+  source: "states",
+  scale,
+}) as unknown as [LayerProps, LayerProps];
+const texture = mapPatternLayer({
+  id: "states-texture",
+  source: "states",
+  scale,
+  patterns,
+}) as unknown as LayerProps;
+
+export function PatternMap() {
+  return (
+    <MapView
+      aria-label="Map of three western states by population"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -118, latitude: 39, zoom: 4 }}
+    >
+      <Source id="states" type="geojson" data="us-states.geojson" promoteId="name">
+        <Layer {...fill} />
+        <Layer {...texture} />
+        <Layer {...outline} />
+      </Source>
+      <MapLegend scale={scale} patterns={patterns} title="Population (millions)" />
+    </MapView>
+  );
+}`,
+  },
+  {
     id: "view",
     title: "Move the map",
     body: '`initialViewState` sets where the map starts: `longitude`, `latitude`, `zoom`, `pitch` and `bearing`, or `bounds` to fit. To control the view, pass `viewState` and update it from `onMove`. The map ref has `flyTo`, `easeTo`, `jumpTo` and `fitBounds`, and `getMap()` returns the MapLibre map for anything else.\n\nIn HTML, the root\'s `data-ok-longitude`, `data-ok-latitude` and `data-ok-zoom` set the view, and the map moves when you change them. Any element with `data-ok-map-fly-to="<map id>"` and `data-ok-view="longitude,latitude,zoom"` flies the map there when it is clicked, or when a radio button is selected. With reduced motion, the map jumps instead of flying.',
@@ -915,6 +976,12 @@ const PREVIEWS = {
           html: "ul[data-ok-map-legend-sizes] › span[data-ok-map-legend-circle][data-ok-radius]",
           type: "MapSizeScaleResult",
           description: "Nested circles of a size scale, with their values.",
+        },
+        {
+          react: "MapLegend patterns",
+          html: "span[data-ok-map-legend-swatch][data-ok-pattern]",
+          type: "(MapPatternStyle | null)[]",
+          description: "The texture of each class, as in the map's pattern layer.",
         },
         {
           react: "MapLegend showNull / nullLabel / formatter / tickFormatter",

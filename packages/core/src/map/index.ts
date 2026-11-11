@@ -84,6 +84,16 @@ export {
   parseMapPadding,
 } from "./map.js";
 export {
+  drawMapPattern,
+  type MapPatternLayerOptions,
+  type MapPatternStyle,
+  mapClassPatterns,
+  mapPatternImage,
+  mapPatternLayer,
+  mapPatternStyle,
+  mapPatternStyles,
+} from "./patterns.js";
+export {
   type MapBubbleLayerOptions,
   type MapSizeLegendItem,
   type MapSizeMethod,

@@ -5,6 +5,7 @@
  */
 import { type MapScaleClass, mapScale, mapScaleLabel } from "../map/choropleth.js";
 import { latticePoints, latticeShape, type MapPixelShape, mapPixelShapes } from "../map/lattice.js";
+import { type ChartCueOptions, chartPatternAt, chartPatternDefs } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartLayout,
@@ -19,6 +20,7 @@ import {
 import {
   type ChartColor,
   type ChartPart,
+  type ChartPattern,
   type ChartTableCell,
   type ChartTableModel,
   chartColors,
@@ -30,6 +32,25 @@ export const chartProjections = ["equalEarth", "mercator", "equirectangular"] as
 export type ChartProjection = (typeof chartProjections)[number];
 export const chartGeoLayouts = ["geographic", "hex", "pixel"] as const;
 export type ChartGeoLayout = (typeof chartGeoLayouts)[number];
+/** How a region's picture fills the region's box (4.18.97, ApexMaps image fill `fit`). */
+export const chartImageFits = ["cover", "contain", "fill"] as const;
+export type ChartImageFit = (typeof chartImageFits)[number];
+const ASPECT: Record<ChartImageFit, string> = {
+  cover: "xMidYMid slice",
+  contain: "xMidYMid meet",
+  fill: "none",
+};
+/** A picture URL that can't run script: http(s), relative, or a raster / SVG `data:` image. */
+export const safeChartImage = (value: unknown): string | null => {
+  if (typeof value !== "string") return null;
+  const url = value.trim();
+  if (!url || url.length > 200_000) return null;
+  if (/^data:image\/(png|jpe?g|gif|webp|avif|svg\+xml)[;,]/i.test(url)) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  // Relative URLs: no scheme before the first slash, question mark or hash.
+  return /^[^:/?#]*(?:[/?#]|$)/.test(url) && !/^[a-z][a-z0-9+.-]*:/i.test(url) ? url : null;
+};
+
 /** Cells of a pixel map (4.18.96): the Map's lattice shapes. */
 export const chartPixelShapes = mapPixelShapes;
 export type ChartPixelShape = MapPixelShape;
@@ -45,6 +66,8 @@ export interface ChartGeoRegion {
   readonly name?: string | undefined;
   /** Short text of the hex cell (`dataLabels`). Default: the name. */
   readonly label?: string | undefined;
+  /** A decorative picture that fills the region (http(s), a relative URL or a `data:image/…` URL). */
+  readonly image?: string | undefined;
   /** The value that colors the region; `null`: no data. */
   readonly value?: number | string | null | undefined;
 }
@@ -84,6 +107,8 @@ export interface ChartGeoOptions {
   readonly projection?: ChartProjection | undefined;
   /** Geo charts: `geographic` shapes (default), `hex` tiles or a `pixel` lattice of dots. */
   readonly geoLayout?: ChartGeoLayout | undefined;
+  /** Geo charts: how region pictures fill their region's box: `cover` (default), `contain` or `fill`. */
+  readonly imageFit?: ChartImageFit | undefined;
   /** Pixel layouts: `circle` (default), `square` or `hexagon` cells. */
   readonly pixelShape?: ChartPixelShape | undefined;
   /** Pixel layouts: px between lattice points (3 to 64). Default 8. */
@@ -423,11 +448,20 @@ export function layoutGeo(
     colors?: readonly ChartColor[] | undefined;
     hidden?: readonly number[] | undefined;
     dataLabels?: boolean | undefined;
-  },
+    idPrefix?: string | undefined;
+  } & Pick<ChartCueOptions, "fill" | "fillPattern" | "colorBlindMode">,
   format: ChartFormat,
 ): {
   layout: ChartLayout;
-  legend: { index: number; name: string; color: ChartColor; hidden: boolean }[] | null;
+  legend:
+    | {
+        index: number;
+        name: string;
+        color: ChartColor;
+        hidden: boolean;
+        pattern?: ChartPattern | undefined;
+      }[]
+    | null;
   table: ChartTableModel;
 } {
   const width = Math.max(40, Math.round(options.width));
@@ -473,6 +507,16 @@ export function layoutGeo(
   const colorOf = (value: number | null) =>
     (value === null ? undefined : scale.colors[scale.classOf(value)]) as ChartColor | undefined;
   const hidden = new Set(options.hidden ?? []);
+  // Pattern fills per class (4.18.97, WCAG 1.4.1): the chart's `fill="pattern"`, `fillPattern`
+  // or `colorBlindMode`, one pattern per class in turn.
+  const prefix = options.idPrefix ?? "ok-chart";
+  const patternDefs = chartPatternDefs(prefix);
+  const classPattern = (classIndex: number) =>
+    classIndex < 0 ? undefined : chartPatternAt(options, classIndex);
+  const imageDefs: ChartNode[] = [];
+  const fit = chartImageFits.includes(options.imageFit as ChartImageFit)
+    ? (options.imageFit as ChartImageFit)
+    : "cover";
   const label = (item: MapScaleClass) => mapScaleLabel(item, (value) => format.value(value, 0));
 
   // --- Shapes --------------------------------------------------------------------------
@@ -507,18 +551,54 @@ export function layoutGeo(
     const color = colorOf(value);
     const d = pathOf(rings);
     const muted = classIndex >= 0 && hidden.has(classIndex);
+    const { left, right, top, bottom } = box(rings as Ring[]);
+    const image = safeChartImage(region.image);
+    const pattern = color ? classPattern(classIndex) : undefined;
+    let fill: string | undefined;
+    if (image) {
+      // A picture in the region's box, over the class color (seen around a `contain` fit).
+      const id = `${prefix}-image-${index}`;
+      const frame = {
+        x: fmt(left),
+        y: fmt(top),
+        width: fmt(right - left),
+        height: fmt(bottom - top),
+      };
+      imageDefs.push(
+        node(
+          "pattern",
+          {
+            id,
+            patternUnits: "userSpaceOnUse",
+            ...frame,
+            "data-ok-chart-image": "",
+            ...(color ? { "data-ok-color": color } : {}),
+          },
+          [
+            node("rect", {
+              ...frame,
+              "data-ok-chart-pattern-tint": "",
+              "fill-opacity": color ? "1" : "0",
+            }),
+            node("image", { href: image, ...frame, preserveAspectRatio: ASPECT[fit] }),
+          ],
+        ),
+      );
+      fill = `url(#${id})`;
+    } else if (pattern && color) fill = patternDefs.fill(pattern, color);
     shapes.push(
       node("path", {
         d: hexCell ? d : drawnPath(rings),
         "data-ok-chart-region": region.id,
         ...(color ? { "data-ok-color": color } : { "data-ok-no-data": "" }),
+        ...(fill ? { fill } : {}),
+        ...(pattern && !image ? { "data-ok-pattern": pattern } : {}),
         ...(muted ? { "fill-opacity": "0.18" } : {}),
       }),
     );
     const name = region.name ?? region.id;
     const noData = format.part("noData" as ChartPart);
     const valueText = value === null ? noData : format.value(value, 0);
-    const { left, right, top, bottom } = box(rings as Ring[]);
     const [cx, cy] = centerPoint;
     marks.push({
       series: 0,
@@ -640,6 +720,9 @@ export function layoutGeo(
     marks,
     activeRadius: 0,
     nodes: [
+      ...(imageDefs.length || patternDefs.nodes().length
+        ? [node("defs", {}, [...patternDefs.nodes(), ...imageDefs])]
+        : []),
       node("g", { "data-ok-chart-geo-background": "" }, background),
       node("g", { "data-ok-chart-crosshair": "" }, []),
       node("g", { "data-ok-chart-series-group": "" }, [
@@ -664,6 +747,7 @@ export function layoutGeo(
     name: label(item),
     color: item.color as ChartColor,
     hidden: hidden.has(item.index),
+    ...(classPattern(item.index) ? { pattern: classPattern(item.index) } : {}),
   }));
 
   // --- Table ---------------------------------------------------------------------------
@@ -687,6 +771,7 @@ export function layoutGeo(
           attrs: {
             ...(region.id !== name ? { "data-ok-value": region.id } : {}),
             ...(region.label !== undefined ? { "data-ok-label": region.label } : {}),
+            ...(safeChartImage(region.image) ? { "data-ok-image": region.image as string } : {}),
             ...(cell ? { "data-ok-cell": `${cell.col},${cell.row}` } : {}),
           },
         },
@@ -725,7 +810,14 @@ export function readChartGeoTable(table: HTMLTableElement): {
     if (!id) continue;
     const raw = value?.getAttribute("data-ok-value") ?? value?.textContent?.trim();
     const label = header?.getAttribute("data-ok-label") ?? undefined;
-    regions.push({ id, name, ...(label !== undefined ? { label } : {}), value: raw || null });
+    const image = header?.getAttribute("data-ok-image") ?? undefined;
+    regions.push({
+      id,
+      name,
+      ...(label !== undefined ? { label } : {}),
+      ...(image !== undefined ? { image } : {}),
+      value: raw || null,
+    });
     const cell = header?.getAttribute("data-ok-cell")?.split(",").map(Number);
     if (cell && cell.length === 2 && cell.every((n) => Number.isFinite(n)))
       hexCells.push({ id, col: cell[0] as number, row: cell[1] as number });

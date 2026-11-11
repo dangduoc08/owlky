@@ -1922,6 +1922,19 @@
       "name": "graticule"
      },
      {
+      "attr": "data-ok-image-fit",
+      "default": "cover",
+      "description": "Geo charts: how a region's picture (`data-ok-image` on its row header) fills the region's box: `cover` (the default, cropped), `contain` (the whole picture on the class color) or `fill` (stretched).",
+      "kind": "style",
+      "name": "imageFit",
+      "optional": true,
+      "values": [
+       "cover",
+       "contain",
+       "fill"
+      ]
+     },
+     {
       "attr": "data-ok-pixel-shape",
       "default": "circle",
       "description": "Geo charts, `pixel` layout: the shape of each cell, `circle` (the default), `square` or `hexagon` (hexagons sit in rows half a step apart).",
@@ -2528,6 +2541,14 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-icicle-cell"
+     },
+     {
+      "description": "Geo charts: the definition of a region's picture fill (a `pattern` in the SVG's `defs`).",
+      "elements": [
+       "pattern"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-image"
      },
      {
       "description": "The legend. Absent with one series or `legend=\"none\"`.",
@@ -3291,6 +3312,14 @@
       "value": "string"
      },
      {
+      "description": "Geo charts: a decorative picture that fills the region (on the table's row header): an http(s), relative or `data:image/…` URL.",
+      "elements": [
+       "th"
+      ],
+      "kind": "part",
+      "name": "data-ok-image"
+     },
+     {
       "description": "On a data cell or a legend item: its position.",
       "kind": "value",
       "name": "data-ok-index",
@@ -3323,6 +3352,14 @@
       ],
       "kind": "part",
       "name": "data-ok-label"
+     },
+     {
+      "description": "Geo charts, `pixel` layout: on the regions' series group.",
+      "kind": "value",
+      "name": "data-ok-layout",
+      "value": [
+       "pixel"
+      ]
      },
      {
       "description": "The locale that formats numbers and dates, such as `en-US`.",
@@ -3390,7 +3427,7 @@
       ]
      },
      {
-      "description": "On a legend or tooltip marker: the series' pattern.",
+      "description": "On a legend or tooltip marker: the series' pattern. Geo charts: on a region, its class's pattern.",
       "kind": "value",
       "name": "data-ok-pattern",
       "value": [
@@ -4002,6 +4039,12 @@
       "description": "Bars run left to right, categories down the side.",
       "name": "horizontal",
       "type": "boolean"
+     },
+     {
+      "default": "\"cover\"",
+      "description": "Geo charts: how a region's `image` fills the region's box, `cover` (cropped), `contain` (whole, on the class color) or `fill` (stretched).",
+      "name": "imageFit",
+      "type": "\"contain\" | \"cover\" | \"fill\""
      },
      {
       "description": "Stock charts: indicators of the first series (the price), such as `{ type: \"sma\", period: 20 }`. Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price; `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci` and `pvt` get a pane each.",
@@ -5117,6 +5160,12 @@
       "description": "Bars run left to right, categories down the side.",
       "name": "horizontal",
       "type": "boolean"
+     },
+     {
+      "default": "\"cover\"",
+      "description": "Geo charts: how a region's `image` fills the region's box, `cover` (cropped), `contain` (whole, on the class color) or `fill` (stretched).",
+      "name": "imageFit",
+      "type": "\"contain\" | \"cover\" | \"fill\""
      },
      {
       "description": "Stock charts: indicators of the first series (the price), such as `{ type: \"sma\", period: 20 }`. Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price; `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci` and `pvt` get a pane each.",

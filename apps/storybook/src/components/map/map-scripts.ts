@@ -764,6 +764,10 @@ element.querySelector("[data-ok-map-panel] button").addEventListener("click", ()
     scriptSource: `${REGISTER}
 // The circles' sizes and colors are MapLibre expressions in the layer: no other script.`,
   },
+  "pattern-fills": {
+    scriptSource: `${REGISTER}
+// The map draws the ok-pattern-<style> images its pattern layer asks for: no other script.`,
+  },
   hexbin: {
     script: hexbin,
     scriptSource: `import { getRuntime } from "@owlky/html";

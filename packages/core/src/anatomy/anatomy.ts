@@ -39,10 +39,12 @@ import {
 import { type ChartBeeswarmSpread, chartBeeswarmSpreads } from "../chart/chart-beeswarm.js";
 import {
   type ChartGeoLayout,
+  type ChartImageFit,
   type ChartPixelShape,
   type ChartProjection,
   type ChartScaleMethod,
   chartGeoLayouts,
+  chartImageFits,
   chartPixelShapes,
   chartProjections,
   chartScaleMethods,
@@ -5781,6 +5783,13 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-graticule",
     "Geo charts: lines of longitude and latitude every 30 degrees.",
   ),
+  imageFit: style(
+    "data-ok-image-fit",
+    chartImageFits,
+    "cover",
+    "Geo charts: how a region's picture (`data-ok-image` on its row header) fills the region's box: `cover` (the default, cropped), `contain` (the whole picture on the class color) or `fill` (stretched).",
+    { optional: true },
+  ),
   pixelShape: style(
     "data-ok-pixel-shape",
     chartPixelShapes,
@@ -5904,6 +5913,7 @@ export interface ChartAnatomyOptions {
   sphere?: boolean | undefined;
   graticule?: boolean | undefined;
   pixelShape?: ChartPixelShape | undefined;
+  imageFit?: ChartImageFit | undefined;
   pixelSpacing?: number | undefined;
   pixelSize?: number | undefined;
   streamOffset?: ChartStreamOffset | undefined;

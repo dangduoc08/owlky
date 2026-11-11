@@ -112,6 +112,27 @@ describe("chart runtime (geo)", () => {
     expect(title(host)).toBe("East");
   });
 
+  it("draws pixel maps, patterns and pictures from attributes (4.18.96, 4.18.97)", async () => {
+    const PIXEL =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+    const host = mount(
+      `${json("shapes", GEOMETRY)}${figure(
+        'data-ok-geometry="shapes" data-ok-geo-layout="pixel" data-ok-pixel-shape="hexagon" data-ok-fill="pattern"',
+      ).replace("<th>West</th>", `<th data-ok-image="${PIXEL}">West</th>`)}`,
+    );
+    start();
+    expect(host.querySelector('[data-ok-chart-series][data-ok-layout="pixel"]')).not.toBeNull();
+    const [west, east] = regions(host);
+    expect(west?.getAttribute("fill")).toMatch(/-image-0\)$/);
+    expect(east?.getAttribute("data-ok-pattern")).toBe("verticalLines");
+    expect(host.querySelector("image")?.getAttribute("href")).toBe(PIXEL);
+    expect(host.querySelector("pattern[data-ok-chart-pattern]")).not.toBeNull();
+    root(host).setAttribute("data-ok-image-fit", "fill");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(host.querySelector("image")?.getAttribute("preserveAspectRatio")).toBe("none");
+    await expectNoAxeViolations(host);
+  });
+
   it("draws hex tiles from the table's cells, no geometry needed", () => {
     const host =
       mount(`<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="hex"><table data-ok-chart-data>

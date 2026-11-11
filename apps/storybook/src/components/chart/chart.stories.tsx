@@ -177,6 +177,8 @@ export const GeoProjections: StoryObj = geoStory("geo-projections");
 export const GeoHex: StoryObj = story("geo-hex");
 // Roadmap 4.18.96: pixel maps.
 export const GeoPixel: StoryObj = geoStory("geo-pixel");
+// Roadmap 4.18.97: pattern fills and pictures per region.
+export const GeoPatterns: StoryObj = geoStory("geo-patterns");
 // Roadmap 4.18.19: crossfilter between the charts of a group.
 export const Crossfilter: StoryObj = story("crossfilter");
 export const Streamgraph: StoryObj = story("streamgraph");

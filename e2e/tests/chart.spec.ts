@@ -75,6 +75,7 @@ const STORIES = [
   "geo-projections",
   "geo-hex",
   "geo-pixel",
+  "geo-patterns",
   "unit",
   "waffle",
   "beeswarm",

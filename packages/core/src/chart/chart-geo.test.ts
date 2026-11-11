@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type ChartRenderInput, renderChart } from "./chart.js";
 import { chartActiveAt, chartActiveNodes, chartTooltip, nextChartActive } from "./chart-active.js";
-import { chartGeoContains, chartProject, readChartGeoTable } from "./chart-geo.js";
+import { chartGeoContains, chartProject, readChartGeoTable, safeChartImage } from "./chart-geo.js";
 import type { ChartLayout, ChartNode } from "./chart-layout.js";
 import { chartSelectedNodes } from "./chart-select.js";
 
@@ -531,5 +531,103 @@ describe("renderChart geo: pixel maps (4.18.96)", () => {
   it("leaves other layouts' trees unchanged", () => {
     const series = collect(draw().layout.nodes, "data-ok-chart-series")[0];
     expect(series?.attrs["data-ok-layout"]).toBeUndefined();
+  });
+});
+
+describe("renderChart geo: patterns and pictures (4.18.97)", () => {
+  const PIXEL =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E";
+
+  it("fills each class with the next pattern, repeated in the legend", () => {
+    const { layout, legend } = draw({
+      fill: "pattern",
+      scaleMethod: "equalInterval",
+      scaleClasses: 3,
+    });
+    const regions = regionsOf(layout);
+    expect(regions.map((region) => region.attrs["data-ok-pattern"])).toEqual([
+      "slantedLines",
+      "squares",
+      "circles",
+    ]);
+    expect(regions[0]?.attrs["fill"]).toBe("url(#t-pattern-slantedLines-primary-lighter)");
+    const defs = layout.nodes.find((item) => item.tag === "defs");
+    expect(collect(defs ? [defs] : [], "data-ok-chart-pattern")).toHaveLength(3);
+    expect(legend?.map((item) => item.pattern)).toEqual(["slantedLines", "squares", "circles"]);
+    // One pattern for every class.
+    const one = draw({ fillPattern: "verticalLines" });
+    expect(new Set(regionsOf(one.layout).map((region) => region.attrs["data-ok-pattern"]))).toEqual(
+      new Set(["verticalLines"]),
+    );
+    // Without patterns, no defs and no fill attribute.
+    expect(draw().layout.nodes.some((item) => item.tag === "defs")).toBe(false);
+    expect(regionsOf(draw().layout)[0]?.attrs["fill"]).toBeUndefined();
+  });
+
+  it("leaves regions without data plain", () => {
+    const { layout } = draw({
+      colorBlindMode: true,
+      regions: [...REGIONS.slice(0, 2), { id: "east", name: "East", value: null }],
+    });
+    const east = regionsOf(layout).find(
+      (region) => region.attrs["data-ok-chart-region"] === "east",
+    );
+    expect(east?.attrs["fill"]).toBeUndefined();
+    expect(east?.attrs["data-ok-no-data"]).toBe("");
+  });
+
+  it("fills regions with pictures in their box, fitted as asked", () => {
+    const { layout, table } = draw({
+      regions: [
+        { ...REGIONS[0], image: PIXEL } as never,
+        { ...REGIONS[1], image: "javascript:alert(1)" } as never,
+        { ...REGIONS[2], image: "flags/east.png" } as never,
+      ],
+      imageFit: "contain",
+    });
+    const regions = regionsOf(layout);
+    expect(regions[0]?.attrs["fill"]).toBe("url(#t-image-0)");
+    expect(regions[1]?.attrs["fill"]).toBeUndefined();
+    expect(regions[2]?.attrs["fill"]).toBe("url(#t-image-2)");
+    const images = collect(layout.nodes, "preserveAspectRatio");
+    expect(images.map((item) => item.attrs["href"])).toEqual([PIXEL, "flags/east.png"]);
+    expect(images[0]?.attrs["preserveAspectRatio"]).toBe("xMidYMid meet");
+    const pattern = collect(layout.nodes, "data-ok-chart-image")[0];
+    expect(pattern?.attrs["width"]).toBe(images[0]?.attrs["width"]);
+    expect(pattern?.attrs["data-ok-color"]).toBe(regions[0]?.attrs["data-ok-color"]);
+    // The table keeps safe pictures and reads them back.
+    expect(table.rows.map((row) => row.header.attrs["data-ok-image"])).toEqual([
+      PIXEL,
+      undefined,
+      "flags/east.png",
+    ]);
+    expect(
+      collect(
+        draw({ regions: [{ ...REGIONS[0], image: PIXEL } as never], imageFit: "fill" }).layout
+          .nodes,
+        "preserveAspectRatio",
+      )[0]?.attrs["preserveAspectRatio"],
+    ).toBe("none");
+  });
+
+  it("accepts only pictures that can't run script", () => {
+    expect(safeChartImage("https://example.com/a.png")).toBe("https://example.com/a.png");
+    expect(safeChartImage("data:image/png;base64,AAAA")).toBe("data:image/png;base64,AAAA");
+    expect(safeChartImage("./a.png")).toBe("./a.png");
+    expect(safeChartImage("data:text/html,<b>")).toBeNull();
+    expect(safeChartImage(" javascript:void(0)")).toBeNull();
+    expect(safeChartImage("")).toBeNull();
+    expect(safeChartImage(3)).toBeNull();
+  });
+
+  it("reads pictures from the table", () => {
+    const table = document.createElement("table");
+    const row = table.insertRow();
+    const th = document.createElement("th");
+    th.setAttribute("data-ok-image", "a.png");
+    th.textContent = "West";
+    row.append(th);
+    row.insertCell().textContent = "1";
+    expect(readChartGeoTable(table).regions[0]).toMatchObject({ id: "West", image: "a.png" });
   });
 });

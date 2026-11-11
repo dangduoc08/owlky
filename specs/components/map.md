@@ -316,6 +316,25 @@ Roadmap 4.18.96, after ApexMaps' pixel series (`shape`, `grid: 'geo'`, `spacing`
   apply unchanged. HTML: `instance.pixelGrid()`.
 - Not built: `grid: 'screen'` (spacing in pixels, rebuilt on zoom), the `diamond` shape.
 
+## Pattern fills
+Roadmap 4.18.97, after ApexMaps' patterns sample (`fill.pattern` per `classIndex`; WCAG 1.4.1).
+- `mapPatternLayer({ id, source, sourceLayer?, scale, patterns?, mutedOpacity = 0.15 })` (pure,
+  `patterns.ts`): a `fill` layer whose `fill-pattern` is `["case", is-number, ["step", input,
+  "ok-pattern-<p0>", b1, …], "ok-pattern-none"]` over the scale's own `input` and breaks;
+  `fill-opacity` 0.15 when `muted`, else 1. Styles are the Chart's (`slantedLines`, `squares`,
+  `circles`, `horizontalLines`, `verticalLines`; aliases `dots`, `lines`, `diagonal`); default one
+  per class in turn, `null` = none. Drawn between `mapRegionLayers`' fill and outline.
+- The controller answers MapLibre's `styleimagemissing` for `ok-pattern-<style>` / `ok-pattern-none`
+  with `drawMapPattern` (an 8px tile at pixel ratio 2, the Chart's marks, ink
+  `rgb(<--ok-palette-common-black-channel> / 0.5)`); other ids are left to the page. Images come
+  back after a style reload the same way.
+- `MapLegend patterns` writes `data-ok-pattern` on the swatches; CSS draws the same textures as
+  gradients over the swatch color.
+- Not built: ApexMaps `checks`, `grid`, `crosshatch` and `custom` paths, `size` / line weight
+  options (fixed 8px tiles), ink picked per class for contrast, image fills on the Map (MapLibre's
+  `fill-pattern` repeats an image at its pixel size: no `cover` / `contain`; use the Chart's
+  `type="geo"` for pictures per region).
+
 ## Great circles, drilldown, export
 Roadmap 4.18.16 (ApexMaps checked 2026-11-11: arc series, drilldown, breadcrumb).
 - `greatCircle(from, to, { steps = 64 (1–1024; non-finite: 64), properties })` (pure, `@owlky/core/map`,
@@ -473,6 +492,7 @@ The "API mapping" paragraph above records the details; this table adds a status 
 | ApexMaps bubble layer (`size.scale` `sqrt` · `linear`, `size.range`, `color`, `opacity`, `stroke`, `sortBySize`) | `mapSizeScale({ method, range })` + `mapBubbleLayer({ size, color, opacity })` | renamed (4.18.94) | `scale` → `method`; a second color field is a `mapScale` with its own `input`; legend `MapLegend variant="size"` |
 | ApexMaps hexbin layer (`aggregate` `count` · `mean`, `minCount`, `scale.domain`) | `mapHexbin(points, { radius, aggregate, valueProperty, minCount })` + `mapScale` thresholds | renamed (4.18.95) | `radius` in degrees (cells fixed in the Mercator plane), not screen px |
 | ApexMaps pixel series (`shape` `circle` · `square` · `hexagon` · `diamond`, `grid` `geo` · `screen`, `spacing`, `size`) | `mapPixelGrid(geometry, { shape, spacing, size })` + `promoteId` | renamed (4.18.96) | degrees only (`grid: 'geo'`); `diamond` not built; Chart: `geoLayout="pixel"` (px, `grid: 'screen'`) |
+| ApexMaps `fill.pattern` (`dots`, `squares`, `lines`, `diagonal`, …; per `classIndex`), legend pattern swatches | `mapPatternLayer({ scale, patterns })`, `MapLegend patterns` | renamed (4.18.97) | the Chart's pattern names, ApexMaps' as aliases; `checks`, `grid`, `crosshatch`, `custom` not built; image fills: Chart `type="geo"` only |
 | ApexMaps `geo.projection`, `geo.layout: 'hex'`, `geo.sphere`, `geo.graticule` | Chart `type="geo"` (ADR-0059) | renamed | SVG charts without tiles; `orthographic`, rotation, morphing not built |
 
 ## Parity notes

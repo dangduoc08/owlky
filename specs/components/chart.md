@@ -234,7 +234,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
       tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
         + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
-    Geo (ADR-0059): thead › tr › th[scope=col][data-ok-part="name|y"]; tbody › tr › th[scope=row][data-ok-value]?[data-ok-label]?[data-ok-cell="col,row"]? + td[data-ok-value]?
+    Geo (ADR-0059): thead › tr › th[scope=col][data-ok-part="name|y"]; tbody › tr › th[scope=row][data-ok-value]?[data-ok-label]?[data-ok-cell="col,row"]?[data-ok-image]? + td[data-ok-value]?
     Tree, sunburst, icicle: thead › tr › th[scope=col][data-ok-part="name|parent|y"] (y only when a node has a value);
       one row per node in preorder: tbody › tr › th[scope=row][data-ok-value]? (id when it differs
       from the name)[data-ok-color]? (where a color starts: own, or the palette on roots and a single root's children) + td[data-ok-value]? (the parent's name, its id
@@ -505,6 +505,16 @@ Geo charts (core `chart-geo.ts`, ADR-0059): `type="geo"`, no tile style, no MapL
   data are pixelated too. `mark.geo` keeps the region's outline (hits between the dots, the active
   and selection outlines). The series group gets `data-ok-layout="pixel"` (CSS drops the paper
   stroke); other layouts' trees are unchanged.
+- Patterns (4.18.97, WCAG 1.4.1): `fill="pattern"`, `fillPattern` or `colorBlindMode` give each class
+  `chartPatternAt(input, classIndex)` (the series patterns of 4.18.62, in turn): the region gets
+  `fill="url(#<prefix>-pattern-<style>-<color>)"` and `data-ok-pattern`, the legend items `pattern`;
+  no-data regions stay plain. CSS fills regions only `:not([fill])`.
+- Pictures: `regions[].image` (HTML `th[data-ok-image]`, kept in the table only when safe:
+  `safeChartImage` allows http(s), relative and `data:image/(png|jpeg|gif|webp|avif|svg+xml)`) fill the
+  region with `pattern#<prefix>-image-<row>[data-ok-chart-image][data-ok-color]` in `userSpaceOnUse`
+  at the region's box › `rect[data-ok-chart-pattern-tint]` (the class color, opacity 1; 0 without a
+  value) + `image[href][preserveAspectRatio]` (`imageFit`: `cover` = `xMidYMid slice` default,
+  `contain` = `meet`, `fill` = `none`). Defs come first in the tree, only when used.
 - Not built: `orthographic` and rotation, pan and zoom, shape ↔ hex morph, bubbles / markers on
   `geo`, a null legend item, label collision, a `diamond` pixel shape.
 
@@ -725,6 +735,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `scaleClasses` | `data-ok-scale-classes="…"` | number | number | `5` | Geo charts: how many value classes (at most the colors available). |
 | `sphere` | `data-ok-sphere` | flag | boolean | off | Geo charts: the outline of the globe behind the regions. |
 | `graticule` | `data-ok-graticule` | flag | boolean | off | Geo charts: lines of longitude and latitude every 30 degrees. |
+| `imageFit` | `data-ok-image-fit="…"` | style | `cover` `contain` `fill` | — | Geo charts: how a region's picture (`data-ok-image` on its row header) fills the region's box: `cover` (the default, cropped), `contain` (the whole picture on the class color) or `fill` (stretched). |
 | `pixelShape` | `data-ok-pixel-shape="…"` | style | `circle` `square` `hexagon` | — | Geo charts, `pixel` layout: the shape of each cell, `circle` (the default), `square` or `hexagon` (hexagons sit in rows half a step apart). |
 | `pixelSpacing` | `data-ok-pixel-spacing="…"` | number | number | `8` | Geo charts, `pixel` layout: the distance between the cells' centers in px (3 to 64). |
 | `pixelSize` | `data-ok-pixel-size="…"` | number | number | `80` | Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). |

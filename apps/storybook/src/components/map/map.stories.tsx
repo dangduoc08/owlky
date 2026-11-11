@@ -31,6 +31,8 @@ import { InteractionDemo } from "./demos/interaction.js";
 import interactionSource from "./demos/interaction.tsx?raw";
 import { MarkersPopupsDemo } from "./demos/markers-popups.js";
 import markersSource from "./demos/markers-popups.tsx?raw";
+import { PatternFillsDemo } from "./demos/pattern-fills.js";
+import patternFillsSource from "./demos/pattern-fills.tsx?raw";
 import { PixelMapDemo } from "./demos/pixel-map.js";
 import pixelMapSource from "./demos/pixel-map.tsx?raw";
 import { RegionDrilldownDemo } from "./demos/region-drilldown.js";
@@ -178,3 +180,10 @@ export const Choropleth = story(
 export const Bubbles = story("Bubbles", "bubbles", "Bubbles", BubblesDemo, bubblesSource);
 export const Hexbin = story("Hexbin", "hexbin", "Hexbin", HexbinDemo, hexbinSource);
 export const PixelMap = story("Pixel map", "pixel-map", "Pixel map", PixelMapDemo, pixelMapSource);
+export const PatternFills = story(
+  "Pattern fills",
+  "pattern-fills",
+  "Pattern fills",
+  PatternFillsDemo,
+  patternFillsSource,
+);

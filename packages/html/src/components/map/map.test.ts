@@ -523,6 +523,22 @@ describe("map choropleth", () => {
     expect(instance.map?.getLayer("quake-bins-fill")?.type).toBe("fill");
   });
 
+  it("draws pattern fills per class (pattern-fills snippet)", async () => {
+    const { host, instance } = await setup(snippet("pattern-fills"));
+    expect(instance.map?.getLayer("patterns-texture")?.type).toBe("fill");
+    instance.map?.fire("styleimagemissing", { id: "ok-pattern-circles" });
+    expect(instance.map?.hasImage("ok-pattern-circles")).toBe(true);
+    const swatches = host.querySelectorAll("[data-ok-map-legend-swatch][data-ok-pattern]");
+    expect([...swatches].map((swatch) => swatch.getAttribute("data-ok-pattern"))).toEqual([
+      "circles",
+      "horizontalLines",
+      "slantedLines",
+      "squares",
+    ]);
+    expect(getComputedStyle(swatches[0] as Element).backgroundImage).toContain("gradient");
+    await expectNoAxeViolations(host);
+  });
+
   it("passes axe with the choropleth snippet loaded", async () => {
     const { host } = await setup(snippet("choropleth"));
     expect(host.querySelectorAll("[data-ok-map-region]")).toHaveLength(51);

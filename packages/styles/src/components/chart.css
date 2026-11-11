@@ -1241,13 +1241,17 @@
   /* Geo charts (ADR-0059): regions in the class color, separated by the paper; the muted classes' opacity is an
      attribute (CSS never sets fill-opacity here). Regions without a value use the page's neutral. */
   :where([data-ok-chart-region]) {
-    fill: var(--_ok-chart-c);
     stroke: var(--ok-bg-paper);
     stroke-width: 0.75;
     stroke-linejoin: round;
   }
 
-  :where([data-ok-chart-region][data-ok-no-data]) {
+  /* Regions with a pattern or a picture (4.18.97) carry their own fill. */
+  :where([data-ok-chart-region]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-region][data-ok-no-data]:not([fill])) {
     fill: var(--ok-bg-neutral);
   }
 

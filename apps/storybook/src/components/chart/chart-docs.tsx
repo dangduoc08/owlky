@@ -1080,6 +1080,72 @@ export function HexagonMap() {
 }`,
   },
   {
+    id: "geo-patterns",
+    title: "Fill regions with patterns or pictures",
+    body: `Classes that differ only by color are hard to tell apart for many people. Set \`fill\` to \`pattern\` and each class of a geo chart gets the next pattern as well as its color, or set \`fillPattern\` to give every class the same one. \`colorBlindMode\` turns patterns on too. The legend's markers repeat the patterns, and regions without a value stay plain.
+
+A region can also show a picture, for example a flag or a photo of the place. Give it an \`image\`: an http(s) URL, a relative URL or a \`data:image\` URL (other URLs are ignored). In HTML, write it on the table's row header as \`data-ok-image\`. \`imageFit\` sets how the picture fills the region's box: \`cover\` (the default, cropped), \`contain\` (the whole picture on the class color) or \`fill\` (stretched). Pictures are decorative: the value stays in the tooltip, the legend and the table.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-fill="pattern" data-ok-image-fit="contain" data-ok-join-by="name" data-ok-geometry="shapes" data-ok-height="300">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row" data-ok-image="pictures/nevada.png">Nevada</th><td data-ok-value="3.1">3.1</td></tr>
+      <tr><th scope="row">Utah</th><td data-ok-value="3.27">3.27</td></tr>
+    </tbody>
+  </table>
+</figure>
+<script type="application/json" id="shapes">
+  {"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"name":"Nevada"},"geometry":{"type":"Polygon","coordinates":[[[-120,35],[-114,35],[-114,42],[-120,42],[-120,35]]]}},
+    {"type":"Feature","properties":{"name":"Utah"},"geometry":{"type":"Polygon","coordinates":[[[-114,37],[-109,37],[-109,42],[-114,42],[-114,37]]]}}
+  ]}
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+
+const shapes = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+
+export function PatternedMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      fill="pattern"
+      imageFit="contain"
+      geometry={shapes}
+      joinBy="name"
+      height={300}
+      regions={[
+        { id: "Nevada", name: "Nevada", value: 3.1, image: "pictures/nevada.png" },
+        { id: "Utah", name: "Utah", value: 3.27 },
+      ]}
+    />
+  );
+}`,
+  },
+  {
     id: "icicle",
     title: "Show parts of a hierarchy as bands",
     body: `An icicle chart shows the same hierarchy as a sunburst, in bands: one band per level, and each node a cell as long as its share of its parent. Long names and deep trees read better in bands than in rings, and cells of one level are easy to compare by length. Set \`type\` to \`icicle\` and describe the nodes as for a tree chart. See "Show a hierarchy as a tree".

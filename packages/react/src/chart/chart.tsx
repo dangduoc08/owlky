@@ -28,6 +28,7 @@ import {
   type ChartHexCell,
   type ChartHierarchyAction,
   type ChartHierarchyNode,
+  type ChartImageFit,
   type ChartIndicator,
   type ChartLayoutType,
   type ChartLeaf,
@@ -201,6 +202,8 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   sphere?: boolean | undefined;
   /** Geo charts: lines of longitude and latitude every 30 degrees. */
   graticule?: boolean | undefined;
+  /** Geo charts: how a region's `image` fills the region's box, `cover` (cropped), `contain` (whole, on the class color) or `fill` (stretched). Default `"cover"`. */
+  imageFit?: ChartImageFit | undefined;
   /** Geo charts, `pixel` layout: the shape of each cell, `circle`, `square` or `hexagon`. Default `"circle"`. */
   pixelShape?: ChartPixelShape | undefined;
   /** Geo charts, `pixel` layout: px between the cells' centers (3 to 64). Default 8. */
@@ -752,6 +755,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     scaleThresholds,
     sphere,
     graticule,
+    imageFit,
     pixelShape,
     pixelSpacing,
     pixelSize,
@@ -950,6 +954,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     scaleClasses,
     sphere,
     graticule,
+    imageFit,
     pixelShape,
     pixelSpacing,
     pixelSize,
@@ -1316,6 +1321,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         scaleThresholds,
         sphere,
         graticule,
+        imageFit,
         pixelShape,
         pixelSpacing,
         pixelSize,
@@ -1493,6 +1499,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       scaleThresholds,
       sphere,
       graticule,
+      imageFit,
       pixelShape,
       pixelSpacing,
       pixelSize,

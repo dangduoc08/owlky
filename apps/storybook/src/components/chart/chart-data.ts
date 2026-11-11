@@ -279,6 +279,23 @@ const GEO_HEX_LAYOUT: [string, string, number, number, number][] = [
 ];
 for (const [, name, , , value] of GEO_HEX_LAYOUT) GEO_REGIONS.push({ id: name, name, value });
 GEO_REGIONS.sort((a, b) => a.name.localeCompare(b.name));
+/**
+ * "Geo patterns": decorative pictures for the Four Corners states (original SVGs, inline: no
+ * network). A desert sky over red rock in four lights: picture content, not theme colors.
+ */
+const landscape = (sky: string, rock: string) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="${sky}"/><path d="M0 28 10 18 16 24 26 12 40 26V40H0Z" fill="${rock}"/></svg>`,
+  )}`;
+const GEO_PICTURES: Record<string, string> = {
+  Arizona: landscape("#f3d9a4", "#a85a32"),
+  Colorado: landscape("#a9d6ea", "#5e7a4a"),
+  "New Mexico": landscape("#f6c09a", "#8f3b2b"),
+  Utah: landscape("#d8e7f0", "#b3653c"),
+};
+const GEO_PICTURE_REGIONS = GEO_REGIONS.map((region) =>
+  GEO_PICTURES[region.id] ? { ...region, image: GEO_PICTURES[region.id] } : region,
+);
 const GEO_HEX_REGIONS = GEO_HEX_LAYOUT.map(([label, name, , , value]) => ({
   id: name,
   name,
@@ -2080,6 +2097,37 @@ export const chartExamples: Record<string, ChartExample> = {
         regions: GEO_REGIONS,
         joinBy: "name",
         scaleMethod: "jenks",
+        colors: ["info"],
+        localeText: { y: "Population" },
+      },
+    ],
+  },
+  // Roadmap 4.18.97 (ApexMaps patterns and image fills; WCAG 1.4.1).
+  "geo-patterns": {
+    title: "Pattern fills",
+    props: {
+      id: "chart-geo-patterns",
+      label: "Population by state with a pattern per class, millions",
+      type: "geo",
+      fill: "pattern",
+      valueSuffix: "M",
+      height: 360,
+      regions: GEO_REGIONS,
+      joinBy: "name",
+      scaleMethod: "jenks",
+      scaleClasses: 4,
+      localeText: { y: "Population" },
+    },
+    more: [
+      {
+        id: "chart-geo-pictures",
+        label: "Population by state, with pictures on the Four Corners states, millions",
+        type: "geo",
+        valueSuffix: "M",
+        height: 360,
+        regions: GEO_PICTURE_REGIONS,
+        joinBy: "name",
+        imageFit: "cover",
         colors: ["info"],
         localeText: { y: "Population" },
       },

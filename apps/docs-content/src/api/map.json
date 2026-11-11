@@ -46,6 +46,10 @@
    "value": "600"
   },
   {
+   "name": "--ok-palette-common-black-channel",
+   "value": "0 0 0"
+  },
+  {
    "name": "--ok-palette-common-white",
    "value": "#FFFFFF"
   },
@@ -974,6 +978,18 @@
       "value": "string"
      },
      {
+      "description": "On a legend swatch: the pattern of the class, drawn over its color (`mapPatternLayer`).",
+      "kind": "value",
+      "name": "data-ok-pattern",
+      "value": [
+       "circles",
+       "horizontalLines",
+       "slantedLines",
+       "squares",
+       "verticalLines"
+      ]
+     },
+     {
       "description": "On a vector or GeoJSON source: the property used as feature id.",
       "kind": "value",
       "name": "data-ok-promote-id",
@@ -1403,6 +1419,11 @@
       "description": "Called when a class is pressed or released (interactive legends).",
       "name": "onLegendToggle",
       "type": "((event: MapLegendToggleEvent) => void)"
+     },
+     {
+      "description": "A pattern per class (`null`: none), as in `mapPatternLayer`: the swatches repeat the map's textures.",
+      "name": "patterns",
+      "type": "readonly (\"circles\" | \"horizontalLines\" | \"slantedLines\" | \"squares\" | \"verticalLines\" | null)[]"
      },
      {
       "default": "bottom-left",

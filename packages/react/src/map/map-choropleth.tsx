@@ -2,6 +2,7 @@
 
 import { type MapLegendVariant, type MapPosition, mapLegendAttributes } from "@owlky/core";
 import {
+  type MapPatternStyle,
   type MapScaleClass,
   type MapScaleResult,
   type MapSizeScaleResult,
@@ -22,6 +23,8 @@ export {
   type MapHexbinOptions,
   type MapHexbinPoint,
   type MapLngLat,
+  type MapPatternLayerOptions,
+  type MapPatternStyle,
   type MapPixelGridOptions,
   type MapPixelShape,
   type MapRegionLayersOptions,
@@ -36,6 +39,7 @@ export {
   type MapSizeScaleResult,
   mapBubbleLayer,
   mapHexbin,
+  mapPatternLayer,
   mapPixelGrid,
   mapRegionLayers,
   mapScale,
@@ -194,6 +198,8 @@ export interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, "ti
   nullLabel?: string | undefined;
   /** Text of a class. Default: its range, such as "1.5 – 3". */
   formatter?: ((item: MapScaleClass, index: number) => string) | undefined;
+  /** A pattern per class (`null`: none), as in `mapPatternLayer`: the swatches repeat the map's textures. */
+  patterns?: readonly (MapPatternStyle | null)[] | undefined;
   /** Text of a number in the default class text and the gradient's ticks. */
   tickFormatter?: ((value: number) => string) | undefined;
   /** Called when a class is pressed or released (interactive legends). */
@@ -214,6 +220,7 @@ export function MapLegend({
   showNull,
   nullLabel,
   formatter,
+  patterns,
   tickFormatter = formatNumber,
   onLegendToggle,
   id,
@@ -237,6 +244,7 @@ export function MapLegend({
     min: String(item.min),
     max: String(item.max),
     none: false,
+    pattern: patterns?.[index] ?? undefined,
   }));
   if (showNull && scale)
     items.push({
@@ -246,6 +254,7 @@ export function MapLegend({
       min: "",
       max: "",
       none: true,
+      pattern: undefined,
     });
   return (
     <InCorner position={position}>
@@ -301,6 +310,7 @@ export function MapLegend({
                   <span
                     data-ok-map-legend-swatch=""
                     data-ok-swatch={item.color}
+                    data-ok-pattern={item.pattern}
                     aria-hidden="true"
                   />
                   <span data-ok-map-legend-label="">{item.text}</span>

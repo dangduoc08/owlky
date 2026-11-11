@@ -30,6 +30,7 @@ import {
   supportsWebGL,
 } from "./helpers.js";
 import { type MapLabels, mapLabels } from "./icons.js";
+import { drawMapPattern, mapPatternOfImage } from "./patterns.js";
 import { createMapRegions } from "./regions.js";
 
 /** A MapLibre style: a style URL or a style object. */
@@ -1186,6 +1187,17 @@ export function createMapController(
         element.setAttribute("data-ok-ready", "");
         scan();
       } else paintAttribution();
+    });
+    // Pattern fills (4.18.97): `ok-pattern-<style>` images are drawn when a layer asks for them.
+    instance.on("styleimagemissing", (event: { id: string }) => {
+      const style = mapPatternOfImage(event.id);
+      if (style === undefined || instance.hasImage(event.id)) return;
+      const channel =
+        getComputedStyle(element).getPropertyValue("--ok-palette-common-black-channel").trim() ||
+        "0 0 0";
+      instance.addImage(event.id, drawMapPattern(style, `rgb(${channel} / 0.5)`, 2), {
+        pixelRatio: 2,
+      });
     });
     instance.on("load", () => {
       loaded = true;
