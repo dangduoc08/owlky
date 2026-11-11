@@ -86,4 +86,5 @@ Audit 2026-11-09 against MUI API page Typography.
 | `paragraph` | `component="p"` + `gutterBottom` | not applicable | deprecated upstream |
 | theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |
 | Minimals "Text max line" (`TextMaxLine` `line`, `persistent`, `asLink`) | `maxLines` (1–10), `persistent`; As link = `Link` with `maxLines` | kept (4.19) | `line` renamed `maxLines` (roadmap); counts above 10 need consumer CSS (`-webkit-line-clamp`) |
+| Minimals "Gradient › Text" (`textGradient`) | `--ok-gradient-<color>-text` + `background-clip: text` (consumer CSS) | kept as tokens (4.21) | no option: Foundations › Colors › Gradient |
 | `sx`, `classes` | — | not applicable | ADR-0015 |

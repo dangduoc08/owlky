@@ -59644,7 +59644,7 @@
      "title": "Options"
     },
     {
-     "body": "`--ok-bg-paper` background, `--ok-text-primary` text, `--ok-radius-md` corners (`square`: 0).\n`elevation` 0–24 → `box-shadow: var(--ok-elevation-<n>)` (0: none), changes animate over\n`--ok-duration-standard` / `--ok-easing-standard` (none with reduced motion). `outlined`: no\nshadow, `1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16)` (Minimals' theme), elevation\nignored. No size, padding or display of its own: the content and the author's layout decide.\nDark mode: the same `--ok-bg-paper` at every elevation (Minimals' theme drops MUI's lightening\ngradient; the dark paper already differs from the dark page background).",
+     "body": "`--ok-bg-paper` background, `--ok-text-primary` text, `--ok-radius-md` corners (`square`: 0).\n`elevation` 0–24 → `box-shadow: var(--ok-elevation-<n>)` (0: none), changes animate over\n`--ok-duration-standard` / `--ok-easing-standard` (none with reduced motion). `outlined`: no\nshadow, `1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16)` (Minimals' theme), elevation\nignored. No size, padding or display of its own: the content and the author's layout decide.\nDark mode: the same `--ok-bg-paper` at every elevation (Minimals' theme drops MUI's lightening\ngradient; the dark paper already differs from the dark page background).\nGlass paper (Minimals \"Utilities › Gradient › Paper\", row 4.21): no option; the\n`--ok-gradient-paper` token as `background` plus a `backdrop-filter` on any Paper (Foundations ›\nColors › Gradient), so the schema stays MUI's.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -72388,7 +72388,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API page Typography.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `align`, `gutterBottom`, `noWrap`, `component`, `variantMapping`, `children` | same | kept | |\n| `color` | palette names + `textPrimary` / `textSecondary` / `textDisabled` | kept | no arbitrary strings (`\"text.secondary\"`) |\n| `paragraph` | `component=\"p\"` + `gutterBottom` | not applicable | deprecated upstream |\n| theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |\n| Minimals \"Text max line\" (`TextMaxLine` `line`, `persistent`, `asLink`) | `maxLines` (1–10), `persistent`; As link = `Link` with `maxLines` | kept (4.19) | `line` renamed `maxLines` (roadmap); counts above 10 need consumer CSS (`-webkit-line-clamp`) |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "body": "Audit 2026-11-09 against MUI API page Typography.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `align`, `gutterBottom`, `noWrap`, `component`, `variantMapping`, `children` | same | kept | |\n| `color` | palette names + `textPrimary` / `textSecondary` / `textDisabled` | kept | no arbitrary strings (`\"text.secondary\"`) |\n| `paragraph` | `component=\"p\"` + `gutterBottom` | not applicable | deprecated upstream |\n| theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |\n| Minimals \"Text max line\" (`TextMaxLine` `line`, `persistent`, `asLink`) | `maxLines` (1–10), `persistent`; As link = `Link` with `maxLines` | kept (4.19) | `line` renamed `maxLines` (roadmap); counts above 10 need consumer CSS (`-webkit-line-clamp`) |\n| Minimals \"Gradient › Text\" (`textGradient`) | `--ok-gradient-<color>-text` + `background-clip: text` (consumer CSS) | kept as tokens (4.21) | no option: Foundations › Colors › Gradient |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -78356,7 +78356,7 @@
      "title": "Palette"
     },
     {
-     "body": "All colors are CSS custom properties that start with `--ok-`.\n\n- **Palette shades:** `--ok-palette-<color>-<shade>`. For example, `--ok-palette-primary-main` or `--ok-palette-grey-200`.\n- **Colored text:** `--ok-palette-<color>-text`.\n- **Neutral text:** `--ok-text-primary`, `--ok-text-secondary` and `--ok-text-disabled`.\n- **Backgrounds:** `--ok-bg-default` for the page, `--ok-bg-paper` for cards and menus, and `--ok-bg-neutral` for subtle fills.\n- **Lines:** `--ok-divider`.\n- **Interaction states:** `--ok-action-hover`, `--ok-action-selected`, `--ok-action-focus`, `--ok-action-disabled` and `--ok-action-disabled-bg`.\n- **Transparency:** each palette shade has a matching `-channel` variable that holds its RGB values, such as `0 167 111`.\n\nText, background, line and state colors change with the theme. Palette shades stay the same in every theme.",
+     "body": "All colors are CSS custom properties that start with `--ok-`.\n\n- **Palette shades:** `--ok-palette-<color>-<shade>`. For example, `--ok-palette-primary-main` or `--ok-palette-grey-200`.\n- **Colored text:** `--ok-palette-<color>-text`.\n- **Neutral text:** `--ok-text-primary`, `--ok-text-secondary` and `--ok-text-disabled`.\n- **Backgrounds:** `--ok-bg-default` for the page, `--ok-bg-paper` for cards and menus, and `--ok-bg-neutral` for subtle fills.\n- **Lines:** `--ok-divider`.\n- **Interaction states:** `--ok-action-hover`, `--ok-action-selected`, `--ok-action-focus`, `--ok-action-disabled` and `--ok-action-disabled-bg`.\n- **Transparency:** each palette shade has a matching `-channel` variable that holds its RGB values, such as `0 167 111`.\n- **Gradients:** `--ok-gradient-<color>` for fills, `--ok-gradient-<color>-text` for text and `--ok-gradient-paper` for translucent paper.\n\nText, background, line and state colors change with the theme. Palette shades stay the same in every theme.",
      "id": "tokens",
      "title": "Token reference"
     },
@@ -78382,7 +78382,21 @@
      "title": "Build surfaces that follow the theme"
     },
     {
-     "body": "If your project uses Tailwind CSS v4, import the Owlky theme after Tailwind. Every palette shade and theme color then becomes a utility class, such as `bg-primary`, `text-primary-dark`, `bg-grey-200`, `text-text-secondary`, `bg-paper` and `border-divider`.",
+     "body": "Each palette color has two gradients. They are `background-image` values, so you can use them anywhere CSS takes an image.\n\n- **Text:** `--ok-gradient-<color>-text` runs from the color's `text` tone to a deeper shade: `darker` in the light theme and `lighter` in the dark theme. Every point of it reaches a contrast ratio of at least 4.5:1 on the theme's backgrounds. Clip it to the text with `background-clip: text` and make the text color transparent.\n- **Fill:** `--ok-gradient-<color>` runs from the `light` shade to the `main` shade. For a gradient border, paint the paper color on the padding box and the gradient on the border box, under a transparent border.\n\nThe `primary` gradients follow the preset, and the text gradients follow the theme, like the palette colors they come from.",
+     "html": "<style>\n  .gradient-title {\n    color: transparent;\n    background-image: var(--ok-gradient-primary-text);\n    -webkit-background-clip: text;\n    background-clip: text;\n  }\n  .gradient-border {\n    padding: 24px;\n    border: 2px solid transparent;\n    border-radius: 16px;\n    background:\n      linear-gradient(var(--ok-bg-paper), var(--ok-bg-paper)) padding-box,\n      var(--ok-gradient-secondary) border-box;\n  }\n</style>\n\n<h2 data-ok-typography data-ok-variant=\"h3\" class=\"gradient-title\">Owlky UI</h2>\n<div class=\"gradient-border\">\n  <p data-ok-typography data-ok-variant=\"body2\">A card with a gradient border.</p>\n</div>",
+     "id": "gradient-text",
+     "react": "import { Typography } from \"@owlky/react\";\n\nconst title = {\n  color: \"transparent\",\n  backgroundImage: \"var(--ok-gradient-primary-text)\",\n  WebkitBackgroundClip: \"text\",\n  backgroundClip: \"text\",\n};\n\nconst border = {\n  padding: 24,\n  border: \"2px solid transparent\",\n  borderRadius: 16,\n  background:\n    \"linear-gradient(var(--ok-bg-paper), var(--ok-bg-paper)) padding-box, var(--ok-gradient-secondary) border-box\",\n};\n\nexport function GradientTitle() {\n  return (\n    <>\n      <Typography variant=\"h3\" component=\"h2\" style={title}>\n        Owlky UI\n      </Typography>\n      <div style={border}>\n        <Typography variant=\"body2\">A card with a gradient border.</Typography>\n      </div>\n    </>\n  );\n}",
+     "title": "Add gradient text and borders"
+    },
+    {
+     "body": "Use `--ok-gradient-<color>` as the background of decorative surfaces, such as a banner or a cover. Its `light` shade is pale, so don't put text on it: put the text on the paper next to it.\n\n`--ok-gradient-paper` is the theme's paper color at 90% opacity, with soft `info` and `error` glows in two corners. Add a `backdrop-filter` to blur what is behind it, like the menus and popovers of Owlky. It follows the theme, so the same paper works in light and dark mode.",
+     "html": "<style>\n  .glass {\n    overflow: hidden;\n    background: var(--ok-gradient-paper);\n    -webkit-backdrop-filter: blur(20px);\n    backdrop-filter: blur(20px);\n  }\n  .cover {\n    height: 96px;\n    background-image: var(--ok-gradient-info);\n  }\n  .glass-content {\n    padding: 24px;\n  }\n</style>\n\n<div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"0\" class=\"glass\">\n  <div class=\"cover\"></div>\n  <div class=\"glass-content\">\n    <h3 data-ok-typography data-ok-variant=\"h6\">Weekly report</h3>\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\">Glass paper over the page.</p>\n  </div>\n</div>",
+     "id": "gradient-background",
+     "react": "import { Paper, Typography } from \"@owlky/react\";\n\nconst glass = {\n  overflow: \"hidden\",\n  background: \"var(--ok-gradient-paper)\",\n  WebkitBackdropFilter: \"blur(20px)\",\n  backdropFilter: \"blur(20px)\",\n};\n\nconst cover = {\n  height: 96,\n  backgroundImage: \"var(--ok-gradient-info)\",\n};\n\nexport function WeeklyReport() {\n  return (\n    <Paper elevation={0} style={glass}>\n      <div style={cover} />\n      <div style={{ padding: 24 }}>\n        <Typography variant=\"h6\" component=\"h3\">\n          Weekly report\n        </Typography>\n        <Typography variant=\"body2\" color=\"textSecondary\">\n          Glass paper over the page.\n        </Typography>\n      </div>\n    </Paper>\n  );\n}",
+     "title": "Fill backgrounds and paper with gradients"
+    },
+    {
+     "body": "If your project uses Tailwind CSS v4, import the Owlky theme after Tailwind. Every palette shade and theme color then becomes a utility class, such as `bg-primary`, `text-primary-dark`, `bg-grey-200`, `text-text-secondary`, `bg-paper` and `border-divider`. Gradients have no utility of their own: use an arbitrary value, such as `bg-(image:--ok-gradient-primary)`.",
      "html": "/* In your main CSS file */\n@import \"tailwindcss\";\n@import \"@owlky/styles/owlky.css\";\n@import \"@owlky/styles/theme.css\";\n\n<!-- In your HTML -->\n<p class=\"rounded-md bg-primary-lighter px-2 text-primary-darker\">Tailwind + Owlky colors</p>",
      "id": "tailwind",
      "react": "// Set up Tailwind once, in your main CSS file:\n//   @import \"tailwindcss\";\n//   @import \"@owlky/styles/owlky.css\";\n//   @import \"@owlky/styles/theme.css\";\n\nexport function ColorTag() {\n  return (\n    <p className=\"rounded-md bg-primary-lighter px-2 text-primary-darker\">Tailwind + Owlky colors</p>\n  );\n}",
@@ -78403,7 +78417,7 @@
      "title": "Switch themes and presets"
     },
     {
-     "body": "- Neutral text colors and the `text` tone of each palette color meet WCAG 2.2 level AA (a contrast ratio of at least 4.5:1) on the theme backgrounds, in light and dark mode.\n- Filled components use `contrast-text` on the `main` shade. Some of these brand combinations are below 4.5:1, so avoid them for long text.\n- To check your own color pairs, use `contrastRatio(foreground, background)` from `@owlky/tokens`.\n- To place text on any color, let `getContrastText(color, [\"#FFFFFF\", \"#000000\"])` choose between white and black. The result always has a contrast ratio of at least 4.58:1.\n- Don't rely on color alone to convey meaning. Add text or an icon, as Alert does.",
+     "body": "- Neutral text colors and the `text` tone of each palette color meet WCAG 2.2 level AA (a contrast ratio of at least 4.5:1) on the theme backgrounds, in light and dark mode.\n- Filled components use `contrast-text` on the `main` shade. Some of these brand combinations are below 4.5:1, so avoid them for long text.\n- To check your own color pairs, use `contrastRatio(foreground, background)` from `@owlky/tokens`.\n- Gradient text uses `--ok-gradient-<color>-text`: every point of it meets AA on the theme's backgrounds. The fills of `--ok-gradient-<color>` start on a pale shade, so keep text off them.\n- To place text on any color, let `getContrastText(color, [\"#FFFFFF\", \"#000000\"])` choose between white and black. The result always has a contrast ratio of at least 4.58:1.\n- Don't rely on color alone to convey meaning. Add text or an icon, as Alert does.",
      "id": "accessibility",
      "title": "Accessibility"
     }
@@ -84050,6 +84064,78 @@
     "group": "font",
     "name": "--ok-font-weight-semibold",
     "value": "600"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-error",
+    "value": "linear-gradient(135deg, var(--ok-palette-error-light), var(--ok-palette-error-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-error-text), var(--ok-palette-error-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-error-text), var(--ok-palette-error-darker))",
+    "name": "--ok-gradient-error-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-info",
+    "value": "linear-gradient(135deg, var(--ok-palette-info-light), var(--ok-palette-info-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-info-text), var(--ok-palette-info-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-info-text), var(--ok-palette-info-darker))",
+    "name": "--ok-gradient-info-text"
+   },
+   {
+    "dark": "radial-gradient(circle at 100% 0%, rgb(var(--ok-palette-info-main-channel) / 0.12), transparent 40%), radial-gradient(circle at 0% 100%, rgb(var(--ok-palette-error-main-channel) / 0.12), transparent 40%), linear-gradient(rgb(var(--ok-bg-paper-channel) / 0.9), rgb(var(--ok-bg-paper-channel) / 0.9))",
+    "group": "gradient",
+    "light": "radial-gradient(circle at 100% 0%, rgb(var(--ok-palette-info-main-channel) / 0.12), transparent 40%), radial-gradient(circle at 0% 100%, rgb(var(--ok-palette-error-main-channel) / 0.12), transparent 40%), linear-gradient(rgb(var(--ok-bg-paper-channel) / 0.9), rgb(var(--ok-bg-paper-channel) / 0.9))",
+    "name": "--ok-gradient-paper"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-primary",
+    "value": "linear-gradient(135deg, var(--ok-palette-primary-light), var(--ok-palette-primary-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-primary-text), var(--ok-palette-primary-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-primary-text), var(--ok-palette-primary-darker))",
+    "name": "--ok-gradient-primary-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-secondary",
+    "value": "linear-gradient(135deg, var(--ok-palette-secondary-light), var(--ok-palette-secondary-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-secondary-text), var(--ok-palette-secondary-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-secondary-text), var(--ok-palette-secondary-darker))",
+    "name": "--ok-gradient-secondary-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-success",
+    "value": "linear-gradient(135deg, var(--ok-palette-success-light), var(--ok-palette-success-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-success-text), var(--ok-palette-success-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-success-text), var(--ok-palette-success-darker))",
+    "name": "--ok-gradient-success-text"
+   },
+   {
+    "group": "gradient",
+    "name": "--ok-gradient-warning",
+    "value": "linear-gradient(135deg, var(--ok-palette-warning-light), var(--ok-palette-warning-main))"
+   },
+   {
+    "dark": "linear-gradient(90deg, var(--ok-palette-warning-text), var(--ok-palette-warning-lighter))",
+    "group": "gradient",
+    "light": "linear-gradient(90deg, var(--ok-palette-warning-text), var(--ok-palette-warning-darker))",
+    "name": "--ok-gradient-warning-text"
    },
    {
     "group": "illustration",

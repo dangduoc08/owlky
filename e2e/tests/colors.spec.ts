@@ -69,6 +69,38 @@ test.describe("Foundations / Colors", () => {
     await expect(page.getByRole("status")).toHaveText(/#5BE49B/);
   });
 
+  test("Gradient: tokens paint text, borders, fills and paper; presets and themes change them", async ({
+    page,
+  }) => {
+    const read = () =>
+      page.evaluate(() => {
+        const root = document.querySelector("#storybook-root") as HTMLElement;
+        const title = root.querySelector("p") as HTMLElement;
+        const fill = root.querySelector('[role="img"]') as HTMLElement;
+        const paper = root.querySelector("[data-ok-paper]") as HTMLElement;
+        return {
+          title: getComputedStyle(title).backgroundImage,
+          clip: getComputedStyle(title).backgroundClip,
+          fill: getComputedStyle(fill).backgroundImage,
+          paper: getComputedStyle(paper).backgroundImage,
+        };
+      });
+    await openStory(page, "foundations-colors--gradient");
+    const light = await read();
+    expect(light.clip).toBe("text");
+    expect(light.title).toBe("linear-gradient(90deg, rgb(0, 120, 103), rgb(0, 75, 80))");
+    expect(light.fill).toBe("linear-gradient(135deg, rgb(91, 228, 155), rgb(0, 167, 111))");
+    expect(light.paper).toMatch(/radial-gradient/);
+    await openStory(page, "foundations-colors--gradient", "dark");
+    const dark = await read();
+    expect(dark.title).toBe("linear-gradient(90deg, rgb(91, 228, 155), rgb(200, 250, 214))");
+    expect(dark.paper).not.toBe(light.paper);
+    await openStory(page, "foundations-colors--gradient", "light", "", "preset:cyan");
+    expect((await read()).fill).toBe(
+      "linear-gradient(135deg, rgb(104, 205, 249), rgb(7, 141, 238))",
+    );
+  });
+
   test("uses one column on small screens", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await openStory(page, "foundations-colors--primary");

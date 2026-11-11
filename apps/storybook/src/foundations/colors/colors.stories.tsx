@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ColorsDocs } from "./colors-docs.js";
+import { Gradients } from "./gradients.js";
 import { Palette } from "./palette.js";
 
 const meta = {
@@ -38,3 +39,10 @@ export const Success: Story = { args: { palette: "success" } };
 export const Warning: Story = { args: { palette: "warning" } };
 export const ErrorPalette: Story = { name: "Error", args: { palette: "error" } };
 export const Grey: Story = { args: { palette: "grey" } };
+
+/** Gradient tokens (`--ok-gradient-*`): text, border, background and paper. Follows Theme and Preset. */
+export const Gradient: Story = {
+  args: { palette: "primary" },
+  parameters: { controls: { disable: true } },
+  render: () => <Gradients />,
+};

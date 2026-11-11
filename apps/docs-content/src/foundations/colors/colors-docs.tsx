@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button } from "@owlky/react";
+import { Alert, Button, Paper, Typography } from "@owlky/react";
 import {
   contrastRatio,
   defaultTheme,
@@ -162,6 +162,110 @@ function SemanticCardPreview() {
   );
 }
 
+const gradientTitle = {
+  color: "transparent",
+  backgroundImage: "var(--ok-gradient-primary-text)",
+  WebkitBackgroundClip: "text",
+  backgroundClip: "text",
+};
+
+const gradientBorder = {
+  padding: 24,
+  border: "2px solid transparent",
+  borderRadius: 16,
+  background:
+    "linear-gradient(var(--ok-bg-paper), var(--ok-bg-paper)) padding-box, var(--ok-gradient-secondary) border-box",
+};
+
+/** Gradient text in every palette color, and a gradient border, in both themes. */
+function GradientTextPreview() {
+  return (
+    <Preview className="bg-neutral! items-stretch!">
+      {(["light", "dark"] as const).map((theme) => (
+        <div
+          key={theme}
+          data-ok-theme={theme}
+          className="flex min-w-[14rem] flex-1 flex-col gap-3 rounded-2xl p-5"
+          style={{ backgroundColor: "var(--ok-bg-paper)", color: "var(--ok-text-primary)" }}
+        >
+          <Typography variant="h3" component="p" style={gradientTitle}>
+            Owlky UI
+          </Typography>
+          <div className="flex flex-wrap gap-x-3">
+            {paletteColorNames
+              .filter((name) => name !== "primary")
+              .map((name) => (
+                <Typography
+                  key={name}
+                  variant="subtitle1"
+                  component="span"
+                  style={{ ...gradientTitle, backgroundImage: `var(--ok-gradient-${name}-text)` }}
+                >
+                  {capitalize(name)}
+                </Typography>
+              ))}
+          </div>
+          <div style={gradientBorder}>
+            <Typography variant="body2">A card with a gradient border.</Typography>
+          </div>
+        </div>
+      ))}
+    </Preview>
+  );
+}
+
+/** Gradient fills (decorative) and the glass paper over a colorful backdrop. */
+function GradientBackgroundPreview() {
+  return (
+    <Preview className="flex-col items-stretch!">
+      <div className="flex flex-wrap gap-2" aria-hidden="true">
+        {paletteColorNames.map((name) => (
+          <span
+            key={name}
+            className="h-12 w-20 rounded-xl"
+            style={{ backgroundImage: `var(--ok-gradient-${name})` }}
+          />
+        ))}
+      </div>
+      <div className="relative flex flex-wrap gap-4 p-4">
+        <span
+          aria-hidden="true"
+          className="absolute top-2 left-6 size-24 rounded-full"
+          style={{ backgroundImage: "var(--ok-gradient-warning)" }}
+        />
+        <span
+          aria-hidden="true"
+          className="absolute right-6 bottom-2 size-20 rounded-full"
+          style={{ backgroundImage: "var(--ok-gradient-secondary)" }}
+        />
+        {(["light", "dark"] as const).map((theme) => (
+          <div key={theme} data-ok-theme={theme} className="min-w-[12rem] flex-1">
+            <Paper
+              elevation={0}
+              style={{
+                overflow: "hidden",
+                background: "var(--ok-gradient-paper)",
+                WebkitBackdropFilter: "blur(20px)",
+                backdropFilter: "blur(20px)",
+              }}
+            >
+              <div style={{ height: 64, backgroundImage: "var(--ok-gradient-info)" }} />
+              <div style={{ padding: 24 }}>
+                <Typography variant="h6" component="p">
+                  Weekly report
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Glass paper over the page.
+                </Typography>
+              </div>
+            </Paper>
+          </div>
+        ))}
+      </div>
+    </Preview>
+  );
+}
+
 function TailwindPreview() {
   return (
     <Preview>
@@ -170,6 +274,7 @@ function TailwindPreview() {
       </p>
       <p className="m-0 rounded-md bg-grey-200 px-2 text-grey-800">bg-grey-200</p>
       <p className="m-0 rounded-md border border-solid border-divider bg-paper px-2">bg-paper</p>
+      <span aria-hidden="true" className="h-6 w-16 rounded-md bg-(image:--ok-gradient-primary)" />
     </Preview>
   );
 }
@@ -317,6 +422,8 @@ export const colorsPreviews: Record<string, () => ReactNode> = {
   semantic: SemanticCardPreview,
   tailwind: TailwindPreview,
   javascript: JavaScriptPreview,
+  "gradient-text": GradientTextPreview,
+  "gradient-background": GradientBackgroundPreview,
   themes: ThemesPreview,
   accessibility: AccessibilityPreview,
 };

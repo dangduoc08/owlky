@@ -217,3 +217,86 @@ describe("drop-shadow tokens follow the scheme's shadow color", () => {
     expect(light.boxShadow).not.toBe(dark.boxShadow);
   });
 });
+
+describe("gradient tokens follow the nearest preset and scheme", () => {
+  const style = document.createElement("style");
+  afterEach(() => {
+    style.remove();
+    document.body.replaceChildren();
+  });
+
+  /** Computed `background-image` of `value` on `#probe` inside `html`. */
+  function image(html: string, value: string): string {
+    style.textContent = themeToCss(defaultTheme);
+    document.head.append(style);
+    const host = document.createElement("div");
+    host.innerHTML = html;
+    document.body.append(host);
+    const probe = host.querySelector("#probe") as HTMLElement;
+    probe.style.backgroundImage = value;
+    const computed = getComputedStyle(probe).backgroundImage;
+    host.remove();
+    // color-mix() may serialize as color(srgb …): write every color as rgb() channels.
+    return computed.replace(
+      /color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)\)/g,
+      (_, r, g, b) => `rgb(${[r, g, b].map((c) => Math.round(Number(c) * 255)).join(", ")})`,
+    );
+  }
+
+  const SCOPES: [name: string, html: string, dark: boolean][] = [
+    ["default light", '<span id="probe"></span>', false],
+    ["dark", '<div data-ok-theme="dark"><span id="probe"></span></div>', true],
+    ["preset", '<div data-ok-preset="cyan"><span id="probe"></span></div>', false],
+    [
+      "preset inside dark",
+      '<div data-ok-theme="dark"><div data-ok-preset="cyan"><span id="probe"></span></div></div>',
+      true,
+    ],
+    [
+      "dark inside preset",
+      '<div data-ok-preset="cyan"><div data-ok-theme="dark"><span id="probe"></span></div></div>',
+      true,
+    ],
+    [
+      "light inside dark preset",
+      '<div data-ok-theme="dark" data-ok-preset="red"><div data-ok-theme="light"><span id="probe"></span></div></div>',
+      false,
+    ],
+  ];
+
+  it.each(SCOPES)("%s: the text gradient ends away from the surface", (_, html, isDark) => {
+    const end = isDark ? "lighter" : "darker";
+    expect(image(html, "var(--ok-gradient-primary-text)")).toBe(
+      image(
+        html,
+        `linear-gradient(90deg, var(--ok-palette-primary-text), var(--ok-palette-primary-${end}))`,
+      ),
+    );
+  });
+
+  it.each(SCOPES)("%s: the fill gradient uses the scope's primary", (_, html) => {
+    expect(image(html, "var(--ok-gradient-primary)")).toBe(
+      image(
+        html,
+        "linear-gradient(135deg, var(--ok-palette-primary-light), var(--ok-palette-primary-main))",
+      ),
+    );
+  });
+
+  it("presets change the primary gradient; the paper gradient follows the scheme", () => {
+    const plain = image('<span id="probe"></span>', "var(--ok-gradient-primary)");
+    const cyan = image(
+      '<div data-ok-preset="cyan"><span id="probe"></span></div>',
+      "var(--ok-gradient-primary)",
+    );
+    expect(plain).toContain("rgb(0, 167, 111)");
+    expect(cyan).toContain("rgb(7, 141, 238)");
+    const lightPaper = image('<span id="probe"></span>', "var(--ok-gradient-paper)");
+    const darkPaper = image(
+      '<div data-ok-theme="dark"><span id="probe"></span></div>',
+      "var(--ok-gradient-paper)",
+    );
+    expect(lightPaper).toMatch(/radial-gradient/);
+    expect(lightPaper).not.toBe(darkPaper);
+  });
+});
