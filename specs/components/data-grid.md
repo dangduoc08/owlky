@@ -24,6 +24,12 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          [aria-haspopup][aria-controls="<id>-columns|filters|density|export"] (HTML: data-ok-popover-open)
          (toolbarVariant="icon": IconButton[aria-labelledby] + Tooltip#<id>-<panel>-tooltip)
     Popover#<id>-columns › div[data-ok-data-grid-panel][role=group] › FormControlLabel(Switch[data-ok-field])…
+      (columnsToolPanel, 4.18.90: div[data-ok-data-grid-columns-tool] › TextField#<id>-columns-search,
+       div[data-ok-data-grid-columns-list] › div[data-ok-data-grid-columns-item][data-ok-field][hidden]?
+       › FormControlLabel(Switch), TextField select #<id>-columns-<field>-pin?, IconButton[data-ok-data-grid-columns-move=up|down] × 2;
+       span[data-ok-data-grid-columns-empty][hidden]?; div[data-ok-data-grid-columns-section=row-groups|values][role=group]
+       › span[data-ok-data-grid-columns-section-title], Checkbox[data-ok-data-grid-columns-group] | TextField select #<id>-columns-<field>-aggregation;
+       div[data-ok-data-grid-columns-actions] › Button[data-ok-data-grid-columns-action=show-all|hide-all|reset])
     Popover#<id>-filters › div[data-ok-data-grid-panel][role=group]
          › div[data-ok-data-grid-filter]… › IconButton[data-ok-data-grid-filter-remove],
            (rows 2+) TextField select #<id>-filter-logic-<n> (and / or; disabled after row 2),
@@ -259,6 +265,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `contextMenu` | `data-ok-context-menu` | flag | boolean | off | A right click, Shift + F10 or the Menu key on a cell opens a menu: copy, paste, export, chart, pin. |
 | `filterGroups` | `data-ok-filter-groups` | flag | boolean | off | The filter panel nests groups of filters, each with its own And / Or (Add group). |
 | `autoGenerate` | `data-ok-auto-generate` | flag | boolean | off | Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`). |
+| `columnsToolPanel` | `data-ok-columns-tool-panel` | flag | boolean | off | The Columns panel becomes a tool panel: search, Show all / Hide all, Reset, pin and move each column, row groups and values. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -704,6 +711,32 @@ Shift + arrows extend the cell range only. A Shift + press clears the page's tex
 `preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
 checkbox's click, which comes before its `change`.
 
+Columns tool panel (4.18.90, ApexGrid "Columns tool panel", AG Grid's columns tool panel, MUI X
+`columnsManagement` labels): with `columnsToolPanel` (HTML `data-ok-columns-tool-panel` + the panel's
+markup) the Columns popover holds `div[data-ok-data-grid-panel][data-ok-data-grid-columns-tool]`: a
+search TextField (`#<id>-columns-search`, type search, "Search columns"; matches header names with
+accents folded; non-matching items `hidden`, "No columns" `span[data-ok-data-grid-columns-empty]`
+when none match), `div[data-ok-data-grid-columns-list]` with one
+`div[data-ok-data-grid-columns-item][data-ok-field]` per data column in the grid's order (the
+switch, disabled for `hideable: false`; a Pin TextField select `#<id>-columns-<field>-pin` "Pin
+<header>" with Not pinned / Pin to left / Pin to right, left out with `disableColumnPinning`,
+disabled for `pinnable: false`; IconButtons `[data-ok-data-grid-columns-move=up|down]` "Move up:
+<header>", disabled at the ends, for `disableReorder` columns and with `disableColumnReorder`; the
+pressed one keeps the focus, or the other at an end), then outside pivot mode the sections
+`div[data-ok-data-grid-columns-section=row-groups|values][role=group][aria-labelledby]` (Row groups:
+a Checkbox `[data-ok-data-grid-columns-group=<field>]` per groupable column, checked ones appended to
+the grouping model, not with `disableRowGrouping` or tree data; Values: a TextField select
+`#<id>-columns-<field>-aggregation` per column with aggregation functions, "none" first, not with
+`disableAggregation`; HTML hides the sections while pivoting), and `div[data-ok-data-grid-columns-actions]`
+with Buttons `[data-ok-data-grid-columns-action=show-all|hide-all|reset]`: every hideable column on
+/ off; back to the visibility, order, pins, grouping and aggregation at mount (HTML: at setup) and an
+empty search. Every change goes through the existing models and events. Locale keys
+`columnsManagementSearchTitle`, `columnsManagementShowAll`, `columnsManagementHideAll`,
+`columnsManagementReset`, `columnsManagementNoColumns`, `columnsManagementPin`,
+`columnsManagementNotPinned`, `columnsManagementRowGroups`, `columnsManagementValues`. Opt-in (the
+default panel keeps its switches, so existing markup is unchanged); MUI X's single "Show/Hide All"
+checkbox is two buttons; not provided: drag and drop between the list and the sections, a side bar.
+
 Range chart outline (4.18.89, AG Grid's chart range; core `gridChartRangeMarks`,
 `gridResizeChartRange`, `createGridChartRangeHandle`): while the panel's chart (the active one) is a
 range chart, its cells among the page's shown rows and fields get `data-ok-chart-range="category"`
@@ -961,6 +994,7 @@ the detailed record of what is kept.
 | Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef` | same | kept (4.18.57) | object or `(originalColumnField, columnGroupPath)` (the column's keys); React overrides `headerName`, `description`, `width`, `minWidth`, `maxWidth`, `flex`, `align`, `headerAlign`, `headerClassName`, `cellClassName`, `resizable`; HTML `setPivotingColDef(def | null)` with `headerName`, `width`, `minWidth`, `maxWidth`, `align`, `headerAlign` (the headers the runtime builds) |
 | Pivot: `pivotPanelOpen` / `onPivotPanelOpenChange` | same | kept (4.18.57) | deprecated upstream (sidebar), kept as asked: the toolbar's Pivot popover; given, the prop decides and clicks only call `onPivotPanelOpenChange`; React writes `data-ok-pivot-panel-open`; HTML: the attribute opens and closes the panel, and follows it (the panel's own events stay `ok:data-grid:sidebaropen` / `sidebarclose`) |
+| (MUI X `GridColumnsManagement`: search, Show/Hide All, Reset; ApexGrid / AG Grid columns tool panel) | `columnsToolPanel` | added (4.18.90) | opt-in; adds pin and move per column, Row groups and Values sections; MUI X `slotProps.columnsManagement` options (`searchPredicate`, `getTogglableColumns`, `toggleAllMode`…) not applicable (no slots) |
 | Server-side pivoting: params `pivotModel`, response `pivotColumns` (`GridGetRowsResponsePivotColumn`), value fields `<keys>>-><field>` | same | kept (4.18.93, ADR-0063) | default `pivotingColDef` naming as MUI X; root totals from `aggregateRow` not shown while pivoting |
 | (not in MUI X; ApexGrid chart `definition.aggregation`, `type: "combo"`, `secondaryMeasures`) | chart model `aggregation`, type `combo` + `seriesTypes`, `secondaryValues` | added (4.18.88) | renamed `secondaryMeasures` → `secondaryValues` (the model's `values`); combo series types per value field |
 | `onStateChange`; `initialState.detailPanel.expandedRowIds` | same | kept (4.18.91) | `onStateChange(state)` gets `exportState()` once settled (MUI X: the internal state on every change, with `event` and `details`); state keys added beyond MUI X: `rowSelection`, `pinnedRows` (ids), `rowOrder`; HTML `ok:data-grid:statechange` |

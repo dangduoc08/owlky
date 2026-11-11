@@ -806,6 +806,35 @@ for (const impl of implementations) {
       await expect(box(groups, "tt-1")).not.toBeChecked();
     });
 
+    test("columns tool panel: search, move, pin and group by keyboard", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "columns"));
+      const grid = page.locator("#grid-columns-tool");
+      await grid.getByRole("button", { name: "Columns" }).click();
+      const panel = page.locator("#grid-columns-tool-columns");
+      await panel.getByRole("searchbox", { name: "Search columns" }).fill("own");
+      await expect(panel.locator("[data-ok-data-grid-columns-item]:not([hidden])")).toHaveCount(1);
+      await panel.getByRole("searchbox", { name: "Search columns" }).fill("");
+      const down = panel.getByRole("button", { name: "Move down: Task" });
+      await down.focus();
+      await page.keyboard.press("Enter");
+      await expect(down).toBeFocused();
+      await expect(
+        grid.locator('[data-ok-data-grid-header] [role="columnheader"][data-ok-field]').first(),
+      ).toHaveAttribute("data-ok-field", "team");
+      await panel.getByLabel("Pin Points").selectOption("left");
+      await expect(grid.locator('[role="columnheader"][data-ok-field="points"]')).toHaveAttribute(
+        "data-ok-pinned",
+        "left",
+      );
+      await panel.getByRole("checkbox", { name: "Team" }).check();
+      await expect(
+        grid.locator('[data-ok-row-id^="auto-generated-row-team"]').first(),
+      ).toBeVisible();
+      await panel.getByRole("button", { name: "Reset" }).click();
+      await expect(grid.locator("[data-ok-generated]")).toHaveCount(0);
+      await expect(grid.locator("[data-ok-pinned]")).toHaveCount(0);
+    });
+
     test("column options: row headers, merged owners, a fixed first column", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "column-options"));
       const grid = page.getByRole("grid", { name: "Team tasks" });

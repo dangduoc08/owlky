@@ -10,6 +10,7 @@ import chartsGroup from "../../../../../packages/html/src/components/data-grid/e
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
 import chartsRange from "../../../../../packages/html/src/components/data-grid/examples/charts-range.html?raw";
 import columnsGroup from "../../../../../packages/html/src/components/data-grid/examples/columns-group.html?raw";
+import columnsTool from "../../../../../packages/html/src/components/data-grid/examples/columns-tool.html?raw";
 import contextGroup from "../../../../../packages/html/src/components/data-grid/examples/context-group.html?raw";
 import dimensionsBorders from "../../../../../packages/html/src/components/data-grid/examples/dimensions-borders.html?raw";
 import dimensionsPages from "../../../../../packages/html/src/components/data-grid/examples/dimensions-pages.html?raw";
@@ -2159,6 +2160,38 @@ export function WorkBreakdown() {
       // Children follow their parent; parents stay as they are
       rowSelectionPropagation={{ descendants: true, parents: false }}
       checkboxColDef={{ width: 60 }}
+    />
+  );
+}`,
+  },
+  {
+    id: "columns-tool-panel",
+    title: "Manage columns from a tool panel",
+    body: "Set `columnsToolPanel` to turn the **Columns** panel into a tool panel, where people arrange the whole grid in one place. **Search columns** narrows the list by header name, and accents don't count. Each column has its switch, a **Pin** menu (not pinned, left or right) and **Move up** and **Move down** buttons that change its place among the columns. The **Row groups** section groups the rows by the columns people check, in the order they check them. The **Values** section picks an aggregation function for each column, such as sum or average. Both sections show outside pivot mode, when grouping and aggregation are on. **Show all** and **Hide all** switch every hideable column on or off. **Reset** brings back the columns, pins, groups and values the grid started with. Every change goes through the grid's models and events, so `onColumnVisibilityModelChange`, `onColumnOrderChange`, `onPinnedColumnsChange`, `onRowGroupingModelChange` and `onAggregationModelChange` (HTML: the `ok:data-grid:columns`, `order`, `pinned`, `rowgrouping` and `aggregation` events) report them. Every control is a native field or button, so the panel works with the keyboard alone. In HTML, add `data-ok-columns-tool-panel` to the grid and the tool panel's markup to the Columns popover.",
+    html: `${gridOf(columnsTool)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const tasks = [
+  { id: 1, task: "Plan the sprint", team: "Core", owner: "Ana", points: 3 },
+  { id: 2, task: "Write the guide", team: "Docs", owner: "Bao", points: 2 },
+  { id: 3, task: "Draw the icons", team: "Design", owner: "Chloe", points: 5 },
+];
+
+const columns: GridColDef<(typeof tasks)[number]>[] = [
+  { field: "task", headerName: "Task", flex: 1 },
+  { field: "team", headerName: "Team" },
+  { field: "owner", headerName: "Owner" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function DataGridColumnsToolPanel() {
+  return (
+    <DataGrid
+      aria-label="Team tasks"
+      rows={tasks}
+      columns={columns}
+      showToolbar
+      columnsToolPanel
     />
   );
 }`,

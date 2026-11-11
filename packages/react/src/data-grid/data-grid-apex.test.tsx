@@ -507,10 +507,10 @@ describe("DataGrid range chart outline and handle (4.18.89)", () => {
       (c) =>
         `${c.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id")}:${c.getAttribute("data-ok-field")}:${c.getAttribute("data-ok-chart-range")}`,
     );
-  const columns: GridColDef<Row & { bonus: number }>[] = [
+  const columns = [
     ...COLUMNS,
     { field: "bonus", headerName: "Bonus", type: "number" },
-  ];
+  ] as unknown as GridColDef<Row & { bonus: number }>[];
   const rows = ROWS.map((row, i) => ({ ...row, bonus: i * 10 }));
 
   it("outlines the charted cells; the handle resizes; Escape restores; Alt + Shift + F1", async () => {
@@ -592,5 +592,108 @@ describe("DataGrid range chart outline and handle (4.18.89)", () => {
       "Select cells with numbers to create a chart",
     );
     await expectNoAxeViolations(document.body);
+  });
+});
+
+describe("DataGrid columns tool panel (4.18.90)", () => {
+  const headerFields = () =>
+    [
+      ...document.querySelectorAll(
+        '[data-ok-data-grid-header] [role="columnheader"][data-ok-field]',
+      ),
+    ]
+      .filter((h) => !(h as HTMLElement).hidden)
+      .map((h) => h.getAttribute("data-ok-field"));
+  const items = () => [
+    ...document.querySelectorAll<HTMLElement>("[data-ok-data-grid-columns-item]"),
+  ];
+
+  it("searches, shows and hides all, pins, moves, groups, aggregates and resets", async () => {
+    const onColumnVisibilityModelChange = vi.fn();
+    render(
+      <DataGrid
+        id="t"
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        showToolbar
+        columnsToolPanel
+        onColumnVisibilityModelChange={onColumnVisibilityModelChange}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Columns" }));
+    const panel = document.getElementById("t-columns") as HTMLElement;
+    const search = within(panel).getByRole("searchbox", { name: "Search columns" });
+    await userEvent.type(search, "sco");
+    expect(
+      items()
+        .filter((i) => !i.hidden)
+        .map((i) => i.getAttribute("data-ok-field")),
+    ).toEqual(["score"]);
+    await userEvent.clear(search);
+    await userEvent.type(search, "zz");
+    expect(panel.querySelector("[data-ok-data-grid-columns-empty]")?.hasAttribute("hidden")).toBe(
+      false,
+    );
+    await userEvent.clear(search);
+    await userEvent.click(within(panel).getByRole("button", { name: "Hide all" }));
+    expect(onColumnVisibilityModelChange).toHaveBeenLastCalledWith({
+      name: false,
+      team: false,
+      score: false,
+    });
+    await userEvent.click(within(panel).getByRole("button", { name: "Show all" }));
+    expect(headerFields()).toEqual(["name", "team", "score"]);
+    // Pin and move from the panel.
+    await userEvent.selectOptions(within(panel).getByLabelText("Pin Score"), "left");
+    expect(
+      document
+        .querySelector('[role="columnheader"][data-ok-field="score"]')
+        ?.getAttribute("data-ok-pinned"),
+    ).toBe("left");
+    await userEvent.click(within(panel).getByRole("button", { name: "Move down: Name" }));
+    expect(items().map((i) => i.getAttribute("data-ok-field"))).toEqual(["team", "name", "score"]);
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Move down: Name");
+    // Row groups and values.
+    await userEvent.click(within(panel).getByRole("checkbox", { name: "Team" }));
+    expect(document.querySelector('[data-ok-row-id^="auto-generated-row-team"]')).not.toBeNull();
+    await userEvent.selectOptions(within(panel).getByRole("combobox", { name: "Score" }), "sum");
+    expect(
+      document.querySelector(
+        '[role="columnheader"][data-ok-field="score"] [data-ok-data-grid-aggregation-label]',
+      )?.textContent,
+    ).toBe("sum");
+    await expectNoAxeViolations(document.body);
+    // Reset: back to the start.
+    await userEvent.click(within(panel).getByRole("button", { name: "Reset" }));
+    expect(items().map((i) => i.getAttribute("data-ok-field"))).toEqual(["name", "team", "score"]);
+    expect(document.querySelector("[data-ok-pinned]")).toBeNull();
+    expect(document.querySelector('[data-ok-row-id^="auto-generated-row-team"]')).toBeNull();
+    expect(document.querySelector("[data-ok-data-grid-aggregation-label]")).toBeNull();
+  });
+
+  it("no sections while pivoting; locked columns don't move", async () => {
+    render(
+      <DataGrid
+        id="p"
+        aria-label="People"
+        rows={ROWS}
+        columns={[
+          { ...(COLUMNS[0] as GridColDef<Row>), disableReorder: true },
+          ...COLUMNS.slice(1),
+        ]}
+        showToolbar
+        columnsToolPanel
+        disableColumnPinning
+        pivotActive
+        pivotModel={{
+          rows: [{ field: "team" }],
+          columns: [],
+          values: [{ field: "score", aggFunc: "sum" }],
+        }}
+      />,
+    );
+    expect(document.querySelector("[data-ok-data-grid-columns-section]")).toBeNull();
+    expect(items()).toHaveLength(0);
   });
 });

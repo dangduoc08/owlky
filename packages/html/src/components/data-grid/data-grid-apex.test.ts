@@ -423,3 +423,92 @@ describe("HTML data grid range chart outline and handle (4.18.89)", () => {
     await expectNoAxeViolations(root);
   });
 });
+
+describe("HTML data grid columns tool panel (4.18.90)", () => {
+  it("searches, shows and hides all, pins, moves, groups, aggregates and resets", async () => {
+    const { host, root, instance } = setup(snippet("columns-tool"));
+    const panel = host.querySelector("#grid-columns-tool-columns") as HTMLElement;
+    (host.querySelector('[aria-controls="grid-columns-tool-columns"]') as HTMLElement).click();
+    // The popover focuses its first field a frame later.
+    await new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
+    const items = () =>
+      [...panel.querySelectorAll<HTMLElement>("[data-ok-data-grid-columns-item]")].map((item) =>
+        item.getAttribute("data-ok-field"),
+      );
+    const change = (control: HTMLInputElement | HTMLSelectElement) =>
+      control.dispatchEvent(new Event("change", { bubbles: true }));
+    const search = panel.querySelector("#grid-columns-tool-columns-search") as HTMLInputElement;
+    search.value = "ow";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(
+      [...panel.querySelectorAll<HTMLElement>("[data-ok-data-grid-columns-item]")]
+        .filter((i) => !i.hidden)
+        .map((i) => i.getAttribute("data-ok-field")),
+    ).toEqual(["owner"]);
+    search.value = "zz";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(panel.querySelector<HTMLElement>("[data-ok-data-grid-columns-empty]")?.hidden).toBe(
+      false,
+    );
+    search.value = "";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    const action = (name: string) =>
+      (
+        panel.querySelector(`[data-ok-data-grid-columns-action="${name}"]`) as HTMLButtonElement
+      ).click();
+    action("hide-all");
+    expect(Object.values(instance.columnVisibilityModel).every((v) => v === false)).toBe(true);
+    expect((panel.querySelector("input[data-ok-field]") as HTMLInputElement).checked).toBe(false);
+    action("show-all");
+    expect(Object.values(instance.columnVisibilityModel).every((v) => v === true)).toBe(true);
+    const pin = panel.querySelector("#grid-columns-tool-columns-points-pin") as HTMLSelectElement;
+    pin.value = "right";
+    change(pin);
+    expect(instance.pinnedColumns.right).toEqual(["points"]);
+    const down = panel.querySelector(
+      '[data-ok-data-grid-columns-item][data-ok-field="task"] [data-ok-data-grid-columns-move="down"]',
+    ) as HTMLButtonElement;
+    down.focus();
+    down.click();
+    expect(items().slice(0, 2)).toEqual(["team", "task"]);
+    expect(document.activeElement).toBe(down);
+    const group = panel.querySelector(
+      '[data-ok-data-grid-columns-group="team"]',
+    ) as HTMLInputElement;
+    group.checked = true;
+    change(group);
+    expect(instance.rowGroupingModel).toEqual(["team"]);
+    const values = panel.querySelector(
+      "#grid-columns-tool-columns-points-aggregation",
+    ) as HTMLSelectElement;
+    values.value = "sum";
+    change(values);
+    expect(instance.aggregationModel).toEqual({ points: "sum" });
+    values.value = "";
+    change(values);
+    expect(instance.aggregationModel).toEqual({});
+    // Code changes show in the panel.
+    instance.setColumnVisibilityModel({ owner: false });
+    expect((panel.querySelector('input[data-ok-field="owner"]') as HTMLInputElement).checked).toBe(
+      false,
+    );
+    instance.setAggregationModel({ points: "max" });
+    expect(values.value).toBe("max");
+    await expectNoAxeViolations(root);
+    action("reset");
+    expect(items()).toEqual(["task", "team", "owner", "points", "due"]);
+    expect(instance.pinnedColumns.right ?? []).toEqual([]);
+    expect(instance.rowGroupingModel).toEqual([]);
+    expect(instance.aggregationModel).toEqual({});
+    expect(search.value).toBe("");
+    expect(group.checked).toBe(false);
+    // Pivoting hides the sections.
+    instance.setPivotModel({ rows: [{ field: "team" }], columns: [], values: [] });
+    instance.setPivotActive(true);
+    expect(
+      [...panel.querySelectorAll<HTMLElement>("[data-ok-data-grid-columns-section]")].every(
+        (section) => section.hidden,
+      ),
+    ).toBe(true);
+  });
+});

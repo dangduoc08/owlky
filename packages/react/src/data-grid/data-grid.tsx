@@ -138,6 +138,7 @@ import {
   gridFilterGroupSuffix,
   gridFilterOperators,
   gridFilterValues,
+  gridFoldText,
   gridFooterRowCount,
   gridFooterRowSelected,
   gridGroupComparator,
@@ -1154,6 +1155,12 @@ export interface DataGridProps<R>
    * model keeps them in `filterModel.groups`.
    */
   filterGroups?: boolean | undefined;
+  /**
+   * The Columns panel becomes a tool panel (ApexGrid / AG Grid): a search, **Show all**, **Hide
+   * all** and **Reset**, a pin menu and Move up / Move down for each column, and the **Row groups**
+   * and **Values** sections (outside pivot mode).
+   */
+  columnsToolPanel?: boolean | undefined;
 }
 
 /** The cell a context menu opened on (`getContextMenuItems`, an item's `onClick`). */
@@ -1654,6 +1661,7 @@ function DataGridInner<R>(
     contextMenu,
     getContextMenuItems,
     filterGroups,
+    columnsToolPanel,
     "aria-label": ariaLabelProp,
     "aria-labelledby": ariaLabelledby,
     ...props
@@ -4560,6 +4568,246 @@ function DataGridInner<R>(
     if (checkboxSelection && multiple && event.shiftKey) window.getSelection()?.removeAllRanges();
   };
 
+  // Columns tool panel (4.18.90): search, show / hide all, reset, pin and move, groups and values.
+  const [columnSearch, setColumnSearch] = useState("");
+  const toolReset = useRef({
+    visibility,
+    order,
+    pinned,
+    grouping: groupingModel,
+    aggregation: aggregationState,
+  });
+  const refocusTool = useRef<{ field: string; direction: "up" | "down" } | null>(null);
+  useLayoutEffect(() => {
+    const target = refocusTool.current;
+    if (!target) return;
+    refocusTool.current = null;
+    const item = rootRef.current?.querySelector(
+      `[data-ok-data-grid-columns-item][data-ok-field="${CSS.escape(target.field)}"]`,
+    );
+    const pressed = item?.querySelector<HTMLButtonElement>(
+      `[data-ok-data-grid-columns-move="${target.direction}"]`,
+    );
+    const other = item?.querySelector<HTMLButtonElement>(
+      `[data-ok-data-grid-columns-move="${target.direction === "up" ? "down" : "up"}"]`,
+    );
+    (pressed && !pressed.disabled ? pressed : other)?.focus();
+  });
+  const toolColumns = pivot
+    ? []
+    : fields.flatMap((field) => {
+        const column = columnsProp.find((c) => c.field === field);
+        return column ? [column] : [];
+      });
+  const toolLocked = gridLockedFields(columnsProp);
+  const toolQuery = gridFoldText(columnSearch.trim(), true);
+  const toolMatches = (column: GridColDef<R>) =>
+    !toolQuery || gridFoldText(column.headerName ?? column.field, true).includes(toolQuery);
+  const toolHideable = toolColumns.filter(isGridHideable).map((c) => c.field);
+  const setAllVisible = (shownNext: boolean) =>
+    setVisibility({
+      ...visibility,
+      ...Object.fromEntries(toolHideable.map((field) => [field, shownNext])),
+    });
+  const columnsTool = (
+    <div
+      data-ok-data-grid-panel=""
+      data-ok-data-grid-columns-tool=""
+      role="group"
+      aria-label={labels.toolbarColumns}
+    >
+      <TextField
+        id={`${id}-columns-search`}
+        type="search"
+        size="small"
+        label={labels.columnsManagementSearchTitle}
+        value={columnSearch}
+        onChange={setColumnSearch}
+      />
+      <div data-ok-data-grid-columns-list="">
+        {toolColumns.map((column, index) => {
+          const name = column.headerName ?? column.field;
+          const side = gridPinSide(pinned, column.field) ?? "none";
+          const locked = !!disableColumnReorder || toolLocked.includes(column.field);
+          const move = (direction: "up" | "down") => {
+            refocusTool.current = { field: column.field, direction };
+            setOrder(moveGridColumn(fields, column.field, direction === "up" ? -1 : 1, toolLocked));
+          };
+          return (
+            <div
+              key={column.field}
+              data-ok-data-grid-columns-item=""
+              data-ok-field={column.field}
+              hidden={!toolMatches(column) || undefined}
+            >
+              <FormControlLabel
+                label={name}
+                control={
+                  <Switch
+                    size="small"
+                    data-ok-field={column.field}
+                    checked={visibility[column.field] !== false}
+                    disabled={!isGridHideable(column)}
+                    onChange={(checked) =>
+                      setVisibility({ ...visibility, [column.field]: checked })
+                    }
+                  />
+                }
+              />
+              {!disableColumnPinning && (
+                <TextField
+                  id={`${id}-columns-${column.field}-pin`}
+                  select
+                  size="small"
+                  label={`${labels.columnsManagementPin} ${name}`}
+                  value={side}
+                  disabled={column.pinnable === false}
+                  onChange={(next) =>
+                    setPinned(
+                      pinGridColumn(
+                        pinned,
+                        column.field,
+                        next === "none" ? null : (next as "left" | "right"),
+                      ),
+                    )
+                  }
+                >
+                  <option value="none">{labels.columnsManagementNotPinned}</option>
+                  <option value="left">{labels.pinToLeft}</option>
+                  <option value="right">{labels.pinToRight}</option>
+                </TextField>
+              )}
+              <IconButton
+                size="sm"
+                data-ok-data-grid-columns-move="up"
+                aria-label={`${labels.pivotMoveUp}: ${name}`}
+                disabled={locked || index === 0}
+                onClick={() => move("up")}
+              >
+                <MoveIcon />
+              </IconButton>
+              <IconButton
+                size="sm"
+                data-ok-data-grid-columns-move="down"
+                aria-label={`${labels.pivotMoveDown}: ${name}`}
+                disabled={locked || index === toolColumns.length - 1}
+                onClick={() => move("down")}
+              >
+                <MoveIcon down />
+              </IconButton>
+            </div>
+          );
+        })}
+        <span
+          data-ok-data-grid-columns-empty=""
+          hidden={toolColumns.some(toolMatches) || undefined}
+        >
+          {labels.columnsManagementNoColumns}
+        </span>
+      </div>
+      {!pivot && !disableRowGrouping && !treeData && (
+        <div
+          data-ok-data-grid-columns-section="row-groups"
+          role="group"
+          aria-labelledby={`${id}-columns-row-groups`}
+        >
+          <span id={`${id}-columns-row-groups`} data-ok-data-grid-columns-section-title="">
+            {labels.columnsManagementRowGroups}
+          </span>
+          {toolColumns
+            .filter((c) => c.groupable !== false && c.type !== "actions")
+            .map((column) => (
+              <FormControlLabel
+                key={column.field}
+                label={column.headerName ?? column.field}
+                control={
+                  <Checkbox
+                    size="small"
+                    data-ok-data-grid-columns-group={column.field}
+                    checked={groupingModel.includes(column.field)}
+                    onChange={(checked) =>
+                      setGroupingModel(
+                        checked
+                          ? [...groupingModel, column.field]
+                          : groupingModel.filter((f) => f !== column.field),
+                      )
+                    }
+                  />
+                }
+              />
+            ))}
+        </div>
+      )}
+      {!pivot && !disableAggregation && (
+        <div
+          data-ok-data-grid-columns-section="values"
+          role="group"
+          aria-labelledby={`${id}-columns-values`}
+        >
+          <span id={`${id}-columns-values`} data-ok-data-grid-columns-section-title="">
+            {labels.columnsManagementValues}
+          </span>
+          {toolColumns
+            .filter((c) => functionsOf(c).length > 0)
+            .map((column) => (
+              <TextField
+                key={column.field}
+                id={`${id}-columns-${column.field}-aggregation`}
+                select
+                size="small"
+                label={column.headerName ?? column.field}
+                value={aggregationState[column.field] ?? ""}
+                onChange={(next) => {
+                  const { [column.field]: _, ...rest } = aggregationState;
+                  setAggregationModel(next ? { ...rest, [column.field]: next } : rest);
+                }}
+              >
+                <option value="">{labels.aggregationMenuItemNone}</option>
+                {functionsOf(column).map((fn) => (
+                  <option key={fn} value={fn}>
+                    {aggLabel(fn)}
+                  </option>
+                ))}
+              </TextField>
+            ))}
+        </div>
+      )}
+      <div data-ok-data-grid-columns-actions="">
+        <Button
+          size="sm"
+          variant="text"
+          data-ok-data-grid-columns-action="show-all"
+          onClick={() => setAllVisible(true)}
+        >
+          {labels.columnsManagementShowAll}
+        </Button>
+        <Button
+          size="sm"
+          variant="text"
+          data-ok-data-grid-columns-action="hide-all"
+          onClick={() => setAllVisible(false)}
+        >
+          {labels.columnsManagementHideAll}
+        </Button>
+        <Button
+          size="sm"
+          variant="text"
+          data-ok-data-grid-columns-action="reset"
+          onClick={() => {
+            const start = toolReset.current;
+            setVisibility(start.visibility);
+            setOrder(start.order);
+            setPinned(start.pinned);
+            setGroupingModel(start.grouping);
+            setAggregationModel(start.aggregation);
+            setColumnSearch("");
+          }}
+        >
+          {labels.columnsManagementReset}
+        </Button>
+      </div>
+    </div>
+  );
   const menuColumn = columns.find((c) => c.field === menuField);
   /** Whether Move left / Move right can move the menu's column (columns with `disableReorder` stay). */
   const movable = (field: string | null, delta: number) => {
@@ -5204,24 +5452,28 @@ function DataGridInner<R>(
           placement="bottom-end"
           onOpenChange={(next) => !next && closePanel()}
         >
-          <div data-ok-data-grid-panel="" role="group" aria-label={labels.toolbarColumns}>
-            {columnsProp.filter(isGridHideable).map((column) => (
-              <FormControlLabel
-                key={column.field}
-                label={column.headerName ?? column.field}
-                control={
-                  <Switch
-                    size="small"
-                    data-ok-field={column.field}
-                    checked={visibility[column.field] !== false}
-                    onChange={(checked) =>
-                      setVisibility({ ...visibility, [column.field]: checked })
-                    }
-                  />
-                }
-              />
-            ))}
-          </div>
+          {columnsToolPanel ? (
+            columnsTool
+          ) : (
+            <div data-ok-data-grid-panel="" role="group" aria-label={labels.toolbarColumns}>
+              {columnsProp.filter(isGridHideable).map((column) => (
+                <FormControlLabel
+                  key={column.field}
+                  label={column.headerName ?? column.field}
+                  control={
+                    <Switch
+                      size="small"
+                      data-ok-field={column.field}
+                      checked={visibility[column.field] !== false}
+                      onChange={(checked) =>
+                        setVisibility({ ...visibility, [column.field]: checked })
+                      }
+                    />
+                  }
+                />
+              ))}
+            </div>
+          )}
         </Popover>
       )}
       {!disableColumnFilter && (
@@ -6422,6 +6674,7 @@ function DataGridInner<R>(
         contextMenu,
         filterGroups,
         autoGenerate: autoColumns,
+        columnsToolPanel,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(rowSelection ? {} : { "data-ok-row-selection": "false" })}

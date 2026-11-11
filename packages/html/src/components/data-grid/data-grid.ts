@@ -131,6 +131,7 @@ import {
   gridFilterGroupSuffix,
   gridFilterOperators,
   gridFilterValues,
+  gridFoldText,
   gridFooterRowCount,
   gridFooterRowSelected,
   gridFormats,
@@ -186,6 +187,7 @@ import {
   gridWithGroupFooters,
   isGridCellSelected,
   isGridGroupingField,
+  isGridHideable,
   isGridRangeChart,
   isGridResizable,
   isGridSetFilter,
@@ -997,6 +999,77 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     ];
     const id = element.id;
     const byId = (suffix: string) => (id ? document.getElementById(`${id}-${suffix}`) : null);
+    const toolPanel = () =>
+      byId("columns")?.querySelector<HTMLElement>("[data-ok-data-grid-columns-tool]") ?? null;
+    /** The columns tool panel follows the models: order, switches, pins, moves, groups, values. */
+    const syncToolPanel = () => {
+      const panel = toolPanel();
+      const list = panel?.querySelector<HTMLElement>("[data-ok-data-grid-columns-list]");
+      if (!panel || !list) return;
+      const items = [
+        ...list.querySelectorAll<HTMLElement>(":scope > [data-ok-data-grid-columns-item]"),
+      ];
+      const byField = new Map(items.map((item) => [item.getAttribute("data-ok-field"), item]));
+      const sorted = orderGridColumns(baseColumns, order).flatMap(
+        (c) => byField.get(c.field) ?? [],
+      );
+      // Moving the focused button blurs it: put the focus back (on the other one at an end).
+      const focused = document.activeElement;
+      if (sorted.some((item, i) => items[i] !== item)) {
+        const empty = list.querySelector("[data-ok-data-grid-columns-empty]");
+        // The item holding the focus stays put: the others move around it.
+        const still = sorted.find((item) => item.contains(focused));
+        const at = still ? sorted.indexOf(still) : -1;
+        if (still) {
+          for (const item of sorted.slice(0, at)) list.insertBefore(item, still);
+          let previous = still;
+          for (const item of sorted.slice(at + 1)) {
+            previous.after(item);
+            previous = item;
+          }
+          if (empty) list.append(empty);
+        } else for (const item of sorted) list.insertBefore(item, empty);
+      }
+      const locked = gridLockedFields(baseColumns);
+      const fixed = element.hasAttribute(disableColumnReorder.attr);
+      sorted.forEach((item, index) => {
+        const field = item.getAttribute("data-ok-field") as string;
+        const toggle = item.querySelector<HTMLInputElement>("input[data-ok-field]");
+        if (toggle) toggle.checked = visibility[field] !== false;
+        const pin = item.querySelector<HTMLSelectElement>("select");
+        if (pin) pin.value = gridPinSide(pinned, field) ?? "none";
+        const up = item.querySelector<HTMLButtonElement>('[data-ok-data-grid-columns-move="up"]');
+        const down = item.querySelector<HTMLButtonElement>(
+          '[data-ok-data-grid-columns-move="down"]',
+        );
+        const still = fixed || locked.includes(field);
+        if (up) up.disabled = still || index === 0;
+        if (down) down.disabled = still || index === sorted.length - 1;
+      });
+      if (focused instanceof HTMLButtonElement && list.contains(focused)) {
+        const other = focused
+          .closest("[data-ok-data-grid-columns-item]")
+          ?.querySelector<HTMLButtonElement>(
+            `[data-ok-data-grid-columns-move]:not([data-ok-data-grid-columns-move="${focused.getAttribute("data-ok-data-grid-columns-move")}"])`,
+          );
+        (focused.disabled && other && !other.disabled ? other : focused).focus();
+      }
+      for (const box of panel.querySelectorAll<HTMLInputElement>(
+        "[data-ok-data-grid-columns-group]",
+      ))
+        box.checked = rowGrouping.includes(
+          box.getAttribute("data-ok-data-grid-columns-group") as string,
+        );
+      for (const select of panel.querySelectorAll<HTMLSelectElement>(
+        '[data-ok-data-grid-columns-section="values"] select',
+      ))
+        select.value =
+          aggregationModel[select.id.slice(`${id}-columns-`.length, -"-aggregation".length)] ?? "";
+      for (const section of panel.querySelectorAll<HTMLElement>(
+        "[data-ok-data-grid-columns-section]",
+      ))
+        section.hidden = !!pivot;
+    };
     // `data-ok-row-selection="false"` turns selection off (React leaves the checkboxes out too).
     const checkbox =
       element.hasAttribute("data-ok-checkbox-selection") &&
@@ -1707,6 +1780,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         "input[data-ok-field]",
       ) ?? [])
         input.checked = visibility[input.getAttribute("data-ok-field") as string] !== false;
+      syncToolPanel();
       windowColumns([...body.children].filter((child): child is HTMLElement => child.matches(ROW)));
       syncGridPinning(main);
     };
@@ -3338,6 +3412,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         commitGrouping();
       });
     const commitGrouping = () => {
+      syncToolPanel();
       if (rowGrouping.length)
         element.setAttribute("data-ok-row-grouping-model", JSON.stringify(rowGrouping));
       else element.removeAttribute("data-ok-row-grouping-model");
@@ -3350,6 +3425,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         commitAggregation();
       });
     const commitAggregation = () => {
+      syncToolPanel();
       if (Object.keys(aggregationModel).length)
         element.setAttribute("data-ok-aggregation-model", JSON.stringify(aggregationModel));
       else element.removeAttribute("data-ok-aggregation-model");
@@ -5128,7 +5204,101 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       (event) => {
         const input = event.target as HTMLInputElement;
         const field = input.getAttribute("data-ok-field");
-        setVisibility({ ...visibility, [field as string]: input.checked });
+        if (field) setVisibility({ ...visibility, [field]: input.checked });
+      },
+      { signal },
+    );
+    // Columns tool panel (4.18.90): search, show / hide all, reset, pin and move, groups, values.
+    const toolStart = {
+      visibility: { ...visibility },
+      order: [...order],
+      pinned: { left: [...(pinned.left ?? [])], right: [...(pinned.right ?? [])] },
+      grouping: [...rowGrouping],
+      aggregation: { ...aggregationModel },
+    };
+    const toolSearch = byId("columns-search") as HTMLInputElement | null;
+    const searchTool = () => {
+      const panel = toolPanel();
+      if (!panel) return;
+      const query = gridFoldText((toolSearch?.value ?? "").trim(), true);
+      let any = false;
+      for (const item of panel.querySelectorAll<HTMLElement>("[data-ok-data-grid-columns-item]")) {
+        const label = item.querySelector("[data-ok-form-control-label-text]")?.textContent ?? "";
+        item.hidden = !!query && !gridFoldText(label, true).includes(query);
+        any ||= !item.hidden;
+      }
+      const empty = panel.querySelector<HTMLElement>("[data-ok-data-grid-columns-empty]");
+      if (empty) empty.hidden = any;
+    };
+    toolSearch?.addEventListener("input", searchTool, { signal });
+    const fieldOfTool = (control: Element, suffix: string) =>
+      control.id.slice(`${id}-columns-`.length, -suffix.length);
+    byId("columns")?.addEventListener(
+      "change",
+      (event) => {
+        const control = event.target as HTMLInputElement | HTMLSelectElement;
+        if (!toolPanel()?.contains(control)) return;
+        const group = control.getAttribute("data-ok-data-grid-columns-group");
+        if (group) {
+          const checked = (control as HTMLInputElement).checked;
+          setRowGrouping(
+            checked ? [...rowGrouping, group] : rowGrouping.filter((f) => f !== group),
+          );
+        } else if (control.id.endsWith("-pin")) {
+          const side = control.value;
+          setPinned(
+            pinGridColumn(
+              pinned,
+              fieldOfTool(control, "-pin"),
+              side === "left" || side === "right" ? side : null,
+            ),
+          );
+        } else if (control.id.endsWith("-aggregation")) {
+          const field = fieldOfTool(control, "-aggregation");
+          const { [field]: _, ...rest } = aggregationModel;
+          setAggregation(control.value ? { ...rest, [field]: control.value } : rest);
+        }
+        syncToolPanel();
+      },
+      { signal },
+    );
+    byId("columns")?.addEventListener(
+      "click",
+      (event) => {
+        const target = event.target as Element;
+        if (!toolPanel()?.contains(target)) return;
+        const action = target
+          .closest("[data-ok-data-grid-columns-action]")
+          ?.getAttribute("data-ok-data-grid-columns-action");
+        const hideable = baseColumns.filter(isGridHideable).map((c) => c.field);
+        if (action === "show-all" || action === "hide-all")
+          setVisibility({
+            ...visibility,
+            ...Object.fromEntries(hideable.map((f) => [f, action === "show-all"])),
+          });
+        else if (action === "reset") {
+          setVisibility({ ...toolStart.visibility });
+          setOrder([...toolStart.order]);
+          setPinned({ ...toolStart.pinned });
+          setRowGrouping([...toolStart.grouping]);
+          setAggregation({ ...toolStart.aggregation });
+          if (toolSearch) toolSearch.value = "";
+          searchTool();
+        }
+        const button = target.closest<HTMLButtonElement>("[data-ok-data-grid-columns-move]");
+        const field = button
+          ?.closest("[data-ok-data-grid-columns-item]")
+          ?.getAttribute("data-ok-field");
+        if (button && field)
+          setOrder(
+            moveGridColumn(
+              arrangedFields(),
+              field,
+              button.getAttribute("data-ok-data-grid-columns-move") === "up" ? -1 : 1,
+              gridLockedFields(columns),
+            ),
+          );
+        syncToolPanel();
       },
       { signal },
     );

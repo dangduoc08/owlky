@@ -1229,6 +1229,54 @@
     font-weight: var(--ok-font-weight-semibold);
   }
 
+  /* Columns tool panel (columnsToolPanel): a row per column, then the groups and values. */
+  :where([data-ok-data-grid-columns-list], [data-ok-data-grid-columns-section]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 1);
+  }
+
+  :where([data-ok-data-grid-columns-item]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 1);
+  }
+
+  :where([data-ok-data-grid-columns-item] > [data-ok-form-control-label]) {
+    flex: 1 1 calc(var(--ok-spacing) * 32);
+    min-width: 0;
+  }
+
+  :where([data-ok-data-grid-columns-item] > [data-ok-text-field]) {
+    flex: 0 1 calc(var(--ok-spacing) * 36);
+    min-width: 0;
+  }
+
+  :where([data-ok-data-grid-columns-section]) {
+    padding-block-start: calc(var(--ok-spacing) * 2);
+    border-block-start: 1px dashed var(--ok-divider);
+  }
+
+  :where([data-ok-data-grid-columns-section-title]) {
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-data-grid-columns-empty]) {
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-data-grid-columns-actions]) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 1);
+  }
+
+  :where([data-ok-data-grid-columns-item][hidden], [data-ok-data-grid-columns-empty][hidden]) {
+    display: none;
+  }
+
   :where([data-ok-data-grid-pivot-empty]) {
     color: var(--ok-text-secondary);
   }

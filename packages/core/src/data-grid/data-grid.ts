@@ -1039,6 +1039,16 @@ export function gridToCsv<R>(
 /** Default labels (MUI X locale text keys). */
 export const gridDefaultLabels = {
   toolbarColumns: "Columns",
+  /** Columns tool panel (`columnsToolPanel`, 4.18.90; MUI X `columnsManagement…` keys). */
+  columnsManagementSearchTitle: "Search columns",
+  columnsManagementShowAll: "Show all",
+  columnsManagementHideAll: "Hide all",
+  columnsManagementReset: "Reset",
+  columnsManagementNoColumns: "No columns",
+  columnsManagementPin: "Pin",
+  columnsManagementNotPinned: "Not pinned",
+  columnsManagementRowGroups: "Row groups",
+  columnsManagementValues: "Values",
   toolbarFilters: "Filters",
   toolbarDensity: "Density",
   toolbarExport: "Export",

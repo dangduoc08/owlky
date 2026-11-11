@@ -4156,12 +4156,17 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-auto-generate",
     "Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`).",
   ),
+  columnsToolPanel: flag(
+    "data-ok-columns-tool-panel",
+    "The Columns panel becomes a tool panel: search, Show all / Hide all, Reset, pin and move each column, row groups and values.",
+  ),
 });
 
 export interface DataGridAnatomyOptions {
   contextMenu?: boolean | undefined;
   filterGroups?: boolean | undefined;
   autoGenerate?: boolean | undefined;
+  columnsToolPanel?: boolean | undefined;
   columnHeaderHeight?: number | undefined;
   columnGroupHeaderHeight?: number | undefined;
   headerFilterHeight?: number | undefined;

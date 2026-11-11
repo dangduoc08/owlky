@@ -251,6 +251,15 @@ export const RELEASES = [
  * Story groups beyond the reference's sections (roadmap batch E). Snippets: `node
  * apps/storybook/scripts/data-grid-snippets.mjs`.
  */
+/* The columns tool panel story: plain columns (story data). */
+const toolPanelColumns: GridColDef<TeamTask>[] = [
+  { field: "task", headerName: "Task", flex: 1, minWidth: 160 },
+  { field: "team", headerName: "Team", width: 120 },
+  { field: "owner", headerName: "Owner", width: 120 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+  { field: "due", headerName: "Due", width: 130 },
+];
+
 export const moreStories: Record<string, ReactGroup[]> = {
   sorting: [
     {
@@ -334,6 +343,21 @@ export const moreStories: Record<string, ReactGroup[]> = {
           rows={TEAM_TASKS}
           columns={teamColumns}
           rowSpanning
+          showToolbar
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Columns tool panel",
+      content: (
+        <DataGrid
+          id="grid-columns-tool"
+          aria-label="Team tasks"
+          className="sb-grid-wide"
+          rows={TEAM_TASKS}
+          columns={toolPanelColumns}
+          columnsToolPanel
           showToolbar
           hideFooter
         />
@@ -537,7 +561,10 @@ export const MORE_FILES = {
   modes: [["Edit modes", "group"]],
   history: [["Undo and redo", "group"]],
   footer: [["Footer, label and Tab navigation", "group"]],
-  columns: [["Column options", "group"]],
+  columns: [
+    ["Column options", "group"],
+    ["Columns tool panel", "tool"],
+  ],
   set: [["Set filter", "group"]],
   context: [["Context menu", "group"]],
   filters: [["Filter groups", "group"]],
