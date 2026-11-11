@@ -593,10 +593,13 @@ for (const impl of implementations) {
         "Maya Lindqvist",
         "Leila Haddad",
       ]);
-      // Tab leaves the tree in one step.
+      // Shift+Tab leaves the tree in one step, to its scroll area (Firefox keeps the focus when
+      // Tab leaves the page's last control).
       await item("leila").focus();
-      await page.keyboard.press("Tab");
-      await expect(page.locator("[data-ok-organization-chart] :focus")).toHaveCount(0);
+      await page.keyboard.press("Shift+Tab");
+      await expect(
+        page.getByRole("region", { name: "Organization chart with a breadcrumb, scrollable" }),
+      ).toBeFocused();
     });
   });
 }
