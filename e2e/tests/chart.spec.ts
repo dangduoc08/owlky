@@ -70,6 +70,9 @@ const STORIES = [
   "tree",
   "sunburst",
   "icicle",
+  "geo",
+  "geo-projections",
+  "geo-hex",
   "crossfilter",
 ];
 
@@ -736,6 +739,49 @@ for (const impl of implementations) {
       await expect(back).toBeHidden();
       const table = page.getByRole("table", { name: /^Cloud spend by service/ });
       await expect(table.getByRole("row")).toHaveCount(15);
+    });
+  });
+}
+
+// Roadmap 4.18.17 (ADR-0059): geo charts.
+for (const impl of implementations) {
+  test.describe(`chart geo (${impl})`, () => {
+    test("draws the states and walks them with the keyboard", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "geo"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-region]")).toHaveCount(51);
+      const box = plot(page);
+      await box.focus();
+      await page.keyboard.press("Home");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText(/\S/);
+      const before = await tooltip(page).locator("[data-ok-chart-tooltip-title]").textContent();
+      await page.keyboard.press("ArrowRight");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).not.toHaveText(
+        before as string,
+      );
+    });
+
+    test("names the region under the pointer and mutes a class from the legend", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "geo"));
+      const first = page.locator("[data-ok-chart]").first();
+      const region = first.locator('[data-ok-chart-region="Colorado"]');
+      await region.hover();
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("Colorado");
+      const item = first.locator("[data-ok-chart-legend-item]").first();
+      await item.click();
+      await expect(item).toHaveAttribute("aria-pressed", "false");
+      await expect(
+        first.locator('[data-ok-chart-region][fill-opacity="0.18"]').first(),
+      ).toBeAttached();
+    });
+
+    test("draws hex tiles and labels them", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "geo-hex"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-region]")).toHaveCount(51);
+      await expect(first.locator("[data-ok-chart-partition-label]").first()).toBeAttached();
     });
   });
 }

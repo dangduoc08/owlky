@@ -19,6 +19,7 @@ import {
   filterChartData,
 } from "./chart-filter.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
+import { type ChartGeoOptions, layoutGeo } from "./chart-geo.js";
 import {
   type ChartDirection,
   type ChartEdgeStyle,
@@ -87,7 +88,7 @@ import {
 } from "./chart-zoom.js";
 
 /** Everything a chart is drawn from (React props or the HTML root's attributes and table). */
-export interface ChartRenderInput extends ChartFormatOptions {
+export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly type?: ChartType | undefined;
   readonly xType?: ChartXType | undefined;
   /** Every type but `sankey`. */
@@ -294,6 +295,7 @@ export const chartIdPrefix = (raw: string): string =>
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
   if (input.type === "sankey") return renderSankey(input);
+  if (input.type === "geo") return renderGeo(input);
   if (isHierarchyChart(input.type)) return renderHierarchy(input);
   const axes = chartYAxes(input.yaxis);
   // Several value axes (4.18.59): every series gets its axis (written on its table column).
@@ -510,6 +512,19 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     partLabels: input.partLabels,
   });
   return { data, format, layout, legend, table, extent, zoom: zoomable ? zoom : null, zoomable };
+}
+
+/** Geo charts (ADR-0059): regions or hex tiles; the legend lists value classes. */
+function renderGeo(input: ChartRenderInput): ChartRender {
+  const data = chartData({ type: "geo", series: [] });
+  const format = chartFormat(data, input);
+  const { layout: base, legend, table } = layoutGeo(input, format);
+  // Selected regions: outlines over the regions, under the hover highlight.
+  const nodes = [...base.nodes];
+  const marked = chartSelectedNodes(base, chartSelection(input.selectedDataPoints));
+  if (marked.length) nodes.splice(nodes.length - 1, 0, ...marked);
+  const layout: ChartLayout = { ...base, nodes };
+  return { data, format, layout, legend, table, extent: null, zoom: null, zoomable: false };
 }
 
 /** Sankey charts (ADR-0047): links instead of series; no legend, no zoom. */

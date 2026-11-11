@@ -26,6 +26,12 @@ export {
   readSourceDeclaration,
 } from "./declarations.js";
 export {
+  type GreatCircleFeature,
+  type GreatCircleOptions,
+  greatCircle,
+  type MapLngLat,
+} from "./geo.js";
+export {
   type AttributionPart,
   autoAnchor,
   distanceMeters,
@@ -43,6 +49,8 @@ export {
   type MapDragPhase,
   type MapEvent,
   type MapEventType,
+  type MapExportFormat,
+  type MapExportOptions,
   type MapGeolocateState,
   type MapInitialViewState,
   type MapLayerSpec,

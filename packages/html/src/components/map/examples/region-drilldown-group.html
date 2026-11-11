@@ -1,0 +1,54 @@
+<div id="map-drilldown" data-ok-map data-ok-longitude="-96" data-ok-latitude="38" data-ok-zoom="3" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-label="Map of the United States by region">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <p data-ok-map-description id="map-drilldown-description">The four US Census regions, colored by their population. Select a region to zoom to it and see its states.</p>
+  <div data-ok-map-status role="status"></div>
+  <div data-ok-map-source data-ok-id="regions" data-ok-type="geojson" data-ok-data="maps/us-regions.geojson" data-ok-promote-id="name" hidden>
+    <div data-ok-map-layer data-ok-id="regions-fill" data-ok-type="fill" data-ok-layout='{"visibility":"visible"}' data-ok-paint='{"fill-color":["case",["==",["typeof",["feature-state","value"]],"number"],["step",["feature-state","value"],"var(--ok-palette-primary-lighter)",64.438,"var(--ok-palette-primary-light)",70.91,"var(--ok-palette-primary-main)",76.67,"var(--ok-palette-primary-dark)",97.662,"var(--ok-palette-primary-darker)"],"var(--ok-text-disabled)"],"fill-opacity":["case",["boolean",["feature-state","muted"],false],0.15,["any",["boolean",["feature-state","hover"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","selected"],false]],0.95,0.8]}'></div>
+    <div data-ok-map-layer data-ok-id="regions-fill-outline" data-ok-type="line" data-ok-layout='{"visibility":"visible"}' data-ok-paint='{"line-color":["case",["any",["boolean",["feature-state","selected"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],"var(--ok-text-primary)","var(--ok-bg-paper)"],"line-width":["case",["boolean",["feature-state","selected"],false],2.5,["any",["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],1.5,0.5]}'></div>
+  </div>
+  <div data-ok-map-source data-ok-id="states" data-ok-type="geojson" data-ok-data="maps/us-states.geojson" data-ok-promote-id="name" hidden>
+    <div data-ok-map-layer data-ok-id="states-fill" data-ok-type="fill" data-ok-layout='{"visibility":"none"}' data-ok-paint='{"fill-color":["case",["==",["typeof",["feature-state","value"]],"number"],["step",["feature-state","value"],"var(--ok-palette-primary-lighter)",1.38,"var(--ok-palette-primary-light)",3.19,"var(--ok-palette-primary-main)",5.77,"var(--ok-palette-primary-dark)",9.29,"var(--ok-palette-primary-darker)"],"var(--ok-text-disabled)"],"fill-opacity":["case",["boolean",["feature-state","muted"],false],0.15,["any",["boolean",["feature-state","hover"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","selected"],false]],0.95,0.8]}' data-ok-filter='["==",["get","region"],""]'></div>
+    <div data-ok-map-layer data-ok-id="states-fill-outline" data-ok-type="line" data-ok-layout='{"visibility":"none"}' data-ok-paint='{"line-color":["case",["any",["boolean",["feature-state","selected"],false],["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],"var(--ok-text-primary)","var(--ok-bg-paper)"],"line-width":["case",["boolean",["feature-state","selected"],false],2.5,["any",["boolean",["feature-state","focus"],false],["boolean",["feature-state","hover"],false]],1.5,0.5]}' data-ok-filter='["==",["get","region"],""]'></div>
+  </div>
+  <div id="map-drilldown-regions" data-ok-map-regions data-ok-source="regions" data-ok-layer="regions-fill">
+    <div data-ok-map-regions-list role="listbox" tabindex="0" aria-label="Regions"></div>
+    <table>
+      <caption>Population by US Census region</caption>
+      <thead>
+        <tr>
+          <th scope="col">Region</th>
+          <th scope="col">Population</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-ok-id="Northeast"><th scope="row">Northeast</th><td data-ok-value="57.61">57.61 million</td></tr>
+        <tr data-ok-id="Midwest"><th scope="row">Midwest</th><td data-ok-value="68.99">68.99 million</td></tr>
+        <tr data-ok-id="South"><th scope="row">South</th><td data-ok-value="126.27">126.27 million</td></tr>
+        <tr data-ok-id="West"><th scope="row">West</th><td data-ok-value="78.59">78.59 million</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div data-ok-map-panel data-ok-position="top-left" data-ok-theme="dark">
+    <nav aria-label="Map level" data-ok-breadcrumbs>
+      <ol data-ok-breadcrumbs-list>
+        <li data-ok-breadcrumbs-item><button type="button" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover" aria-current="page">United States</button></li>
+      </ol>
+    </nav>
+  </div>
+  <div data-ok-map-corner="top-left"></div>
+  <div data-ok-map-corner="top-right">
+    <div data-ok-map-control data-ok-map-navigation>
+      <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="compass" aria-label="Reset north"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-compass-icon><path d="M12 3 16 12H8Z" data-ok-map-compass-north></path><path d="M8 12h8l-4 9Z" data-ok-map-compass-south></path></svg></button>
+    </div>
+  </div>
+  <div data-ok-map-corner="bottom-left"></div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>
+      <summary aria-label="Map credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01"></path></svg></summary>
+      <div data-ok-map-attribution-text></div>
+    </details>
+  </div>
+</div>

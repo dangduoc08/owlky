@@ -33,6 +33,7 @@ export const chartTypes = [
   "tree",
   "sunburst",
   "icicle",
+  "geo",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -117,6 +118,7 @@ const wholeTypes: readonly ChartType[] = [
   "tree",
   "sunburst",
   "icicle",
+  "geo",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -150,7 +152,8 @@ export type ChartPart =
   | "parent"
   | "children"
   | "collapsed"
-  | "level";
+  | "level"
+  | "noData";
 const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   boxPlot: ["min", "q1", "median", "q3", "max"],
   rangeArea: ["low", "high"],
@@ -189,6 +192,7 @@ export const chartPartNames: readonly ChartPart[] = [
   "children",
   "collapsed",
   "level",
+  "noData",
 ];
 /** Default text of each part (table headers and tooltip rows). */
 export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
@@ -220,6 +224,8 @@ export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   children: "Children",
   collapsed: "Collapsed",
   level: "Level",
+  // Geo charts (ADR-0059): a region without a value.
+  noData: "No data",
 };
 
 /** One value of a point that has several: a number, or a date (timelines: ISO 8601, ms or Date). */

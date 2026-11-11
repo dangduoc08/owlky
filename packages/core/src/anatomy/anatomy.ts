@@ -37,6 +37,14 @@ import {
   slidesToShowAttr,
 } from "../carousel/carousel-model.js";
 import {
+  type ChartGeoLayout,
+  type ChartProjection,
+  type ChartScaleMethod,
+  chartGeoLayouts,
+  chartProjections,
+  chartScaleMethods,
+} from "../chart/chart-geo.js";
+import {
   type ChartDirection,
   type ChartEdgeStyle,
   type ChartLayoutType,
@@ -4520,7 +4528,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) or `icicle` (the same hierarchy as bands, each node a cell sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value), `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `geo` (regions of GeoJSON geometry or hex tiles, colored by value classes, no map tiles: `geometry` and `regions` in React, a table of regions and `data-ok-geometry` or `setGeometry()` in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4903,6 +4911,38 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`, the default) or becomes the top level (`both`).",
     { optional: true },
   ),
+  projection: style(
+    "data-ok-projection",
+    chartProjections,
+    "equalEarth",
+    "Geo charts: `equalEarth` (equal areas, the default), `mercator` (straight rhumb lines) or `equirectangular`.",
+    { optional: true },
+  ),
+  geoLayout: style(
+    "data-ok-geo-layout",
+    chartGeoLayouts,
+    "geographic",
+    "Geo charts: real boundaries (`geographic`, the default) or equal hex tiles (`hex`).",
+    { optional: true },
+  ),
+  scaleMethod: style(
+    "data-ok-scale-method",
+    chartScaleMethods,
+    "quantile",
+    "Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`).",
+    { optional: true },
+  ),
+  scaleClasses: number(
+    "data-ok-scale-classes",
+    5,
+    "Geo charts: how many value classes (at most the colors available).",
+    { min: 1 },
+  ),
+  sphere: flag("data-ok-sphere", "Geo charts: the outline of the globe behind the regions."),
+  graticule: flag(
+    "data-ok-graticule",
+    "Geo charts: lines of longitude and latitude every 30 degrees.",
+  ),
   crossfilter: style(
     "data-ok-crossfilter",
     chartCrossfilters,
@@ -5000,6 +5040,12 @@ export interface ChartAnatomyOptions {
   disableZoomOnClick?: boolean | undefined;
   zoomType?: ChartZoomType | undefined;
   crossfilter?: ChartCrossfilter | undefined;
+  projection?: ChartProjection | undefined;
+  geoLayout?: ChartGeoLayout | undefined;
+  scaleMethod?: ChartScaleMethod | undefined;
+  scaleClasses?: number | undefined;
+  sphere?: boolean | undefined;
+  graticule?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

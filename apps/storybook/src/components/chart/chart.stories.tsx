@@ -6,7 +6,7 @@ import { chartExamples } from "./chart-data.js";
 import { ChartDocs } from "./chart-docs.js";
 import { CHART_CONTROLS, CHART_FILES, chartCode, chartStories } from "./chart-examples.js";
 import liveSource from "./chart-live.tsx?raw";
-import { LIVE_SCRIPT_SOURCE, liveScript } from "./chart-scripts.js";
+import { GEO_SCRIPT_SOURCE, geoScript, LIVE_SCRIPT_SOURCE, liveScript } from "./chart-scripts.js";
 import tooltipSource from "./chart-tooltip.tsx?raw";
 
 const controls: StoryControls = { ...CHART_CONTROLS, target: Chart };
@@ -38,6 +38,28 @@ const liveStory = (name: string): StoryObj => ({
       group: { script: liveScript, scriptSource: LIVE_SCRIPT_SOURCE },
     }),
     react: reactGroupsStory(chartStories[name] ?? [], undefined, liveSource),
+  }),
+  name: chartExamples[name]?.title ?? name,
+});
+
+/** The Code panel of a geo story: the shapes the demo adds, as a React user would import them. */
+const geoCode = (code: string) =>
+  `import usStates from "./us-states.json";\n${code.replace("<Chart\n", "<Chart\n      geometry={usStates}\n")}`;
+
+/**
+ * Geo charts: the same geometry on both sides. HTML has it from a page script, so the markup
+ * stays the table of regions; React passes it as a prop.
+ */
+const geoStory = (name: string): StoryObj => ({
+  ...frameworkStory({
+    html: snippetStory(snippets, name, CHART_FILES[name] ?? [], SETUP, undefined, {
+      group: { script: geoScript, scriptSource: GEO_SCRIPT_SOURCE },
+    }),
+    react: reactGroupsStory(
+      chartStories[name] ?? [],
+      undefined,
+      chartExamples[name] ? geoCode(chartCode(chartExamples[name])) : undefined,
+    ),
   }),
   name: chartExamples[name]?.title ?? name,
 });
@@ -147,5 +169,9 @@ export const Tree: StoryObj = story("tree");
 export const Sunburst: StoryObj = story("sunburst");
 // Roadmap 4.18.21 (ADR-0058): icicle charts.
 export const Icicle: StoryObj = story("icicle");
+// Roadmap 4.18.17 (ADR-0059): offline SVG geo maps.
+export const Geo: StoryObj = geoStory("geo");
+export const GeoProjections: StoryObj = geoStory("geo-projections");
+export const GeoHex: StoryObj = story("geo-hex");
 // Roadmap 4.18.19: crossfilter between the charts of a group.
 export const Crossfilter: StoryObj = story("crossfilter");

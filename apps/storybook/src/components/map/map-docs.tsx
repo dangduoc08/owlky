@@ -13,8 +13,11 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MapView, Marker, NavigationControl, ScaleControl } from "@owlky/react";
 import changeTheme from "../../../../../packages/html/src/components/map/examples/change-theme-group.html?raw";
 import choropleth from "../../../../../packages/html/src/components/map/examples/choropleth-group.html?raw";
+import exportMapGroup from "../../../../../packages/html/src/components/map/examples/export-map-group.html?raw";
+import greatCircles from "../../../../../packages/html/src/components/map/examples/great-circles-group.html?raw";
 import interactionGroup from "../../../../../packages/html/src/components/map/examples/interaction-group.html?raw";
 import markersGroup from "../../../../../packages/html/src/components/map/examples/markers-popups-group.html?raw";
+import regionDrilldown from "../../../../../packages/html/src/components/map/examples/region-drilldown-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
@@ -334,6 +337,161 @@ export function MapControls() {
     body: "These props set the style, the content and the callbacks. They aren't options, because HTML writes them as markup or listens to events.",
   },
   {
+    id: "great-circles",
+    title: "Draw great circle routes",
+    body: "A great circle is the shortest path between two places on the globe. On a flat map it looks curved, which is why flight routes bend toward the poles. `greatCircle(from, to, options)` returns that arc as a GeoJSON feature, from two `[longitude, latitude]` positions. `steps` sets how many segments it has (64 by default), and `properties` become the feature's properties.\n\nAn arc that crosses the antimeridian (the 180° meridian, in the Pacific) comes back as a `MultiLineString` split at ±180°, so the line doesn't jump across the map. Coordinates that don't exist throw a `RangeError`. Add the features to a `line` layer. In HTML, `greatCircle` is also on the map's instance, for pages that load the map from the CDN.",
+    html: `${snippetElement(greatCircles, "data-ok-map-source ")}
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-great-circles");
+  const map = getRuntime().get(element, "map");
+  map.setSourceData("routes", {
+    type: "FeatureCollection",
+    features: [map.greatCircle([103.99, 1.36], [-118.41, 33.94])],
+  });
+</script>`,
+    react: `import { greatCircle, Layer, MapView, Source } from "@owlky/react";
+
+// Singapore to Los Angeles: this arc crosses the antimeridian, so it has two parts
+const routes = {
+  type: "FeatureCollection" as const,
+  features: [greatCircle([103.99, 1.36], [-118.41, 33.94])],
+};
+
+export function FlightRoutes() {
+  return (
+    <MapView
+      aria-label="Flight route from Singapore to Los Angeles"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: 160, latitude: 25, zoom: 1 }}
+    >
+      <Source id="routes" type="geojson" data={routes}>
+        <Layer
+          id="routes-line"
+          type="line"
+          paint={{ "line-color": "var(--ok-palette-primary-main)", "line-width": 2 }}
+        />
+      </Source>
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "region-drilldown",
+    title: "Drill down into regions",
+    body: 'A drilldown starts with large regions and shows the parts of the one people pick. Join each level to a source with `MapRegions` and listen for its select event: `onRegionSelect` in React and `ok:map:regionselect` in HTML. It fires for a click on the map and for Enter in the list of regions, so one handler covers the pointer and the keyboard.\n\nWhen a region is selected, change the data of `MapRegions`, hide the layers of the level above and call `fitBounds` with the frame of the region. Filter the next level\'s layers with a MapLibre expression, such as `["==", ["get", "region"], "West"]`. A `Breadcrumbs` component in a `MapPanel` shows the path. Keep the first item a button when it becomes the current page, so the focus stays on it when people go back.',
+    html: `<!-- The level you start from, with the map's other parts -->
+${snippetElement(regionDrilldown, "data-ok-map-regions ")}
+
+<!-- The path -->
+${snippetElement(regionDrilldown, "data-ok-breadcrumbs")}
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-drilldown");
+  const regions = element.querySelector("[data-ok-map-regions]");
+  regions.addEventListener("ok:map:regionselect", (event) => {
+    if (event.detail.id === "West")
+      getRuntime().get(element, "map").fitBounds([[-124.8, 31.3], [-102, 49]], { padding: 32 });
+  });
+</script>`,
+    react: `import { Link, Breadcrumbs, MapPanel, type MapRef, MapRegions, MapView } from "@owlky/react";
+import { useRef, useState } from "react";
+
+const REGIONS = [
+  { id: "West", name: "West", value: 78.59 },
+  { id: "South", name: "South", value: 126.27 },
+];
+const WEST = [
+  { id: "California", name: "California", value: 39.54 },
+  { id: "Oregon", name: "Oregon", value: 4.24 },
+];
+
+export function RegionDrilldown() {
+  const mapRef = useRef<MapRef>(null);
+  const [region, setRegion] = useState<string | null>(null);
+  const showRegion = (next: string | null) => {
+    setRegion(next);
+    mapRef.current?.fitBounds(
+      next
+        ? [
+            [-124.8, 31.3],
+            [-102, 49],
+          ]
+        : [
+            [-125, 24.5],
+            [-66.5, 49.5],
+          ],
+      { padding: 32 },
+    );
+  };
+  return (
+    <MapView
+      ref={mapRef}
+      aria-label="Population by region"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -96, latitude: 38, zoom: 3 }}
+    >
+      <MapRegions
+        source={region ? "states" : "regions"}
+        layer={region ? "states-fill" : "regions-fill"}
+        data={region ? WEST : REGIONS}
+        caption="Population in millions"
+        onRegionSelect={({ id }) => {
+          if (region === null && id !== null) showRegion(String(id));
+        }}
+      />
+      <MapPanel position="top-left">
+        <Breadcrumbs aria-label="Map level">
+          <Link component="button" type="button" underline="hover" onClick={() => showRegion(null)}>
+            United States
+          </Link>
+          {region && <span aria-current="page">{region}</span>}
+        </Breadcrumbs>
+      </MapPanel>
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "export",
+    title: "Download the map as an image",
+    body: "`exportMap(\"png\", options)` draws a frame and resolves with a PNG `Blob` of the canvas. By default, it also saves a file, named after the map or after `fileName`. It's on the ref in React and on the instance in HTML. Set `download` to `false` to only get the `Blob`, for example to send it to a server.\n\nCall it inside a click or a key press, because browsers block downloads that no person asked for. The promise rejects, and nothing is saved, in these cases: the page isn't handling a user gesture (`NotAllowedError`), the map isn't drawn (`InvalidStateError`), the format is unknown (`TypeError`) or the browser can't read the canvas (`SecurityError` or `NotSupportedError`). Show that message to the person.\n\nThe image holds only the canvas. Controls, markers and popups are page elements over the canvas and are not in the file, so credit the map data's sources yourself where you publish the image.",
+    html: `${snippetElement(exportMapGroup, "data-ok-map-panel ")}
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-export");
+  element.querySelector("[data-ok-map-panel] button").addEventListener("click", () => {
+    getRuntime().get(element, "map").exportMap("png", { fileName: "united-states" });
+  });
+</script>`,
+    react: `import { Button, type MapRef, MapPanel, MapView } from "@owlky/react";
+import { useRef } from "react";
+
+export function DownloadMap() {
+  const mapRef = useRef<MapRef>(null);
+  return (
+    <MapView
+      ref={mapRef}
+      aria-label="Map to download"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -98, latitude: 38.5, zoom: 3 }}
+    >
+      <MapPanel position="top-left">
+        <Button onClick={() => mapRef.current?.exportMap("png", { fileName: "united-states" })}>
+          Download PNG
+        </Button>
+      </MapPanel>
+    </MapView>
+  );
+}`,
+  },
+  {
     id: "api",
     title: "Events and methods",
     body: `- **\`ok:map:load\`**, **\`ok:map:move\`**, **\`ok:map:moveend\`**, **\`ok:map:click\`**, **\`ok:map:mousemove\`**, **\`ok:map:mouseenter\`**, **\`ok:map:mouseleave\`** and the other map events fire on the map with \`detail.viewState\`, and for pointer events \`lngLat\`, \`point\` and \`features\`.
@@ -341,7 +499,7 @@ export function MapControls() {
 - **\`ok:map:markerdragstart\`**, **\`ok:map:markerdrag\`** and **\`ok:map:markerdragend\`** fire on a marker with \`detail.lngLat\`.
 - **\`ok:map:regionselect\`** fires on a \`div[data-ok-map-regions]\` with \`detail.id\`, which is \`null\` when the selection is cleared. **\`ok:map:legendtoggle\`** fires on a legend with \`detail.classIndex\` and \`detail.active\`, the pressed classes.
 - **\`ok:map:fullscreen\`**, **\`ok:map:geolocate\`**, **\`ok:map:geolocateerror\`**, **\`ok:map:trackuserlocation\`** and **\`ok:map:fallback\`** report the controls and a map that can't draw.
-- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), scale(values, options) }\`. \`scale\` is \`mapScale\`, for pages that load the map from the CDN.
+- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on), exportMap(format, options), scale(values, options), greatCircle(from, to, options) }\`. \`scale\` is \`mapScale\` and \`greatCircle\` the same function as in JavaScript, for pages that load the map from the CDN.
 - **React:** event props such as \`onLoad\`, \`onMove\`, \`onClick\`, \`onMouseMove\` and \`onMouseEnter\`; a ref with \`getMap()\`, \`flyTo\`, \`easeTo\`, \`jumpTo\` and \`fitBounds\`; and \`useMap()\` inside a map or a \`MapProvider\`.`,
   },
   {

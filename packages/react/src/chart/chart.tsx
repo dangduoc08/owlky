@@ -15,10 +15,14 @@ import {
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
+  type ChartGeoLayout,
+  type ChartGeometry,
+  type ChartGeoRegion,
   type ChartGestureMode,
   type ChartGestures,
   type ChartGrid,
   type ChartGroupFilter,
+  type ChartHexCell,
   type ChartHierarchyAction,
   type ChartHierarchyNode,
   type ChartIndicator,
@@ -32,8 +36,10 @@ import {
   type ChartNode,
   type ChartOrientation,
   type ChartPattern,
+  type ChartProjection,
   type ChartSankeyEdge,
   type ChartSankeyNode,
+  type ChartScaleMethod,
   type ChartSelectionDetail,
   type ChartSeries,
   type ChartStackType,
@@ -138,6 +144,28 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   hierarchy?: ChartHierarchyNode | readonly ChartHierarchyNode[] | undefined;
   /** Tree and icicle charts: where the root sits, or `radial` (trees: the root in the center). Default `"top"`. */
   direction?: ChartDirection | undefined;
+  /** Geo charts: the regions' shapes, a GeoJSON `FeatureCollection`, feature or list of features. */
+  geometry?: ChartGeometry | null | undefined;
+  /** Geo charts: one region's id, name, short tile label and value, joined to the geometry by id. */
+  regions?: readonly ChartGeoRegion[] | undefined;
+  /** Geo charts: the feature property that holds the region id. Default: the feature's `id`, then its `id`, `iso_a2` or `name` property. */
+  joinBy?: string | undefined;
+  /** Geo charts: `equalEarth` (equal areas), `mercator` or `equirectangular`. Default `"equalEarth"`. */
+  projection?: ChartProjection | undefined;
+  /** Geo charts: real boundaries or equal tiles. Default `"geographic"`. */
+  geoLayout?: ChartGeoLayout | undefined;
+  /** Geo charts, `hex` layout: each region's cell in an odd-r offset grid. Without them, cells follow the geometry. */
+  hexCells?: readonly ChartHexCell[] | undefined;
+  /** Geo charts: how values are split into classes. Default `"quantile"`. */
+  scaleMethod?: ChartScaleMethod | undefined;
+  /** Geo charts: how many value classes (at most the colors available). Default 5. */
+  scaleClasses?: number | undefined;
+  /** Geo charts, `threshold` method: the class breaks. */
+  scaleThresholds?: readonly number[] | undefined;
+  /** Geo charts: the outline of the globe behind the regions. */
+  sphere?: boolean | undefined;
+  /** Geo charts: lines of longitude and latitude every 30 degrees. */
+  graticule?: boolean | undefined;
   /** Tree charts: `tree` (a tidy tree) or `cluster` (a dendrogram). Default `"tree"`. */
   layoutType?: ChartLayoutType | undefined;
   /** Tree charts: links with right angles, curved or straight. Default `"orthogonal"`. */
@@ -464,6 +492,17 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     whitespace,
     edgeOpacity,
     axisTitles,
+    geometry,
+    regions,
+    joinBy,
+    projection,
+    geoLayout,
+    hexCells,
+    scaleMethod,
+    scaleClasses,
+    scaleThresholds,
+    sphere,
+    graticule,
     hierarchy,
     direction,
     layoutType,
@@ -590,6 +629,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     stackOnlyBar,
     stackTotals,
     dataLabelPosition,
+    projection,
+    geoLayout,
+    scaleMethod,
+    scaleClasses,
+    sphere,
+    graticule,
     backgroundBars,
     backgroundBarOpacity,
     backgroundBarRadius,
@@ -785,6 +830,17 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         whitespace: validWhitespace,
         edgeOpacity: validEdgeOpacity,
         axisTitles,
+        geometry,
+        regions,
+        joinBy,
+        projection,
+        geoLayout,
+        hexCells,
+        scaleMethod,
+        scaleClasses,
+        scaleThresholds,
+        sphere,
+        graticule,
         hierarchy,
         direction: validDirection,
         layoutType: validLayoutType,
@@ -891,6 +947,17 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validWhitespace,
       validEdgeOpacity,
       axisTitles,
+      geometry,
+      regions,
+      joinBy,
+      projection,
+      geoLayout,
+      hexCells,
+      scaleMethod,
+      scaleClasses,
+      scaleThresholds,
+      sphere,
+      graticule,
       hierarchy,
       validDirection,
       validLayoutType,
@@ -1363,6 +1430,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       ref={mergedRef}
       {...attributes}
       {...chartTextAttributes({
+        type: chartType,
+        colors: chartType === "geo" ? colors : undefined,
         yTitle,
         totalLabel,
         valuePrefix,
@@ -1371,6 +1440,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         group,
         brushTarget,
         colorRanges,
+        joinBy,
+        scaleThresholds,
         axisTitles,
         indicators,
         yaxis,

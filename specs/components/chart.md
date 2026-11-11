@@ -155,6 +155,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-active] › path[data-ok-chart-active-node] (the arc's outline)
     Icicle (ADR-0058; root [data-ok-direction]?[data-ok-spacing]?[data-ok-leaf]?[data-ok-tint]?
       [data-ok-zoom-type]?[data-ok-disable-zoom-on-click]?[data-ok-drill-node]?):
+      g[data-ok-chart-series][data-ok-type=geo] › path[data-ok-chart-region="<id>"][data-ok-color|data-ok-no-data][fill-opacity]?×n
+                                                   (before the series: g[data-ok-chart-geo-background] › path[data-ok-chart-sphere]? + path[data-ok-chart-graticule]?)
       g[data-ok-chart-series][data-ok-type=icicle] › rect[data-ok-chart-icicle-cell][rx=2][fill-opacity][stroke-width][data-ok-color]×n
       g[data-ok-chart-data-labels] › text[data-ok-chart-partition-label="inside|plain"] (centered, never rotated)
       g[data-ok-chart-active] › rect[data-ok-chart-active-node] (1px inside the cell)
@@ -192,6 +194,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
       tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
         + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
+    Geo (ADR-0059): thead › tr › th[scope=col][data-ok-part="name|y"]; tbody › tr › th[scope=row][data-ok-value]?[data-ok-label]?[data-ok-cell="col,row"]? + td[data-ok-value]?
     Tree, sunburst, icicle: thead › tr › th[scope=col][data-ok-part="name|parent|y"] (y only when a node has a value);
       one row per node in preorder: tbody › tr › th[scope=row][data-ok-value]? (id when it differs
       from the name)[data-ok-color]? (where a color starts: own, or the palette on roots and a single root's children) + td[data-ok-value]? (the parent's name, its id
@@ -400,6 +403,31 @@ Icicle geometry (core `chart-icicle.ts` on `chart-partition.ts`, ADR-0058):
 - Labels (12px, estimated): centered in cells at least 30px long and a line + 6px tall, cut with an
   ellipsis; tones as for arcs. `dataLabels`: the value after the name.
 
+Geo charts (core `chart-geo.ts`, ADR-0059): `type="geo"`, no tile style, no MapLibre.
+- `geometry` (GeoJSON `FeatureCollection` / feature / list; `Polygon` and `MultiPolygon` only) and
+  `regions: { id, name?, label?, value? }[]`, joined by `joinBy` (feature property; default the feature's
+  `id`, then its `id` / `iso_a2` / `name` property). Limits: 2000 regions, 400 000 coordinates. HTML:
+  the table (`th` name, `data-ok-value` id, `data-ok-label` tile text, `data-ok-cell="col,row"`, `td`
+  value) and `data-ok-geometry="<id of a script[type=application/json]>"` or `setGeometry()`.
+- Projections: `equalEarth` (default; Šavrič et al. 2018), `mercator`, `equirectangular`. Rings are not
+  resampled. `sphere` draws the projected globe and fits it; `graticule`: 30° lines. Without
+  `sphere` the fit is the features' box (8px padding).
+- `mapScale` (the Map's) classifies `value`s: `scaleMethod`, `scaleClasses` (default 5),
+  `scaleThresholds`; `colors`: one color → its five shades, several → a ramp (default `primary`
+  shades). Each class is a `data-ok-color`; a region with no value is `data-ok-no-data`
+  (`--ok-bg-neutral`, tooltip "No data", `localeText.noData`).
+- Legend: one item per class (range text), `hidden` / `hiddenSeries` are class indexes and mute regions
+  (`fill-opacity` 0.18 attribute). No null class item.
+- Keyboard: layout mode `cell` (arrows to the nearest region center, Home / End top-left / bottom-right,
+  `mark.px/py` = biggest ring's centroid); hit test even-odd on the rings (`mark.geo`); selection
+  outlines the region; tooltip title is the name, one row with `localeText.y`.
+- `geoLayout="hex"`: pointy-top hexagons in an odd-r offset grid at `hexCells` (`{ id, col, row }`;
+  a hex map needs no geometry) or, without them, placed from the centroids (fills outward from
+  the middle). `dataLabels`: the `label` / name when it fits the shape's box (white from the upper
+  half of the classes).
+- Not built: `orthographic` and rotation, pan and zoom, shape ↔ hex morph, bubbles / markers on
+  `geo`, a null legend item, label collision.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -423,7 +451,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) or `icicle` (the same hierarchy as bands, each node a cell sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `geo` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value), `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `geo` (regions of GeoJSON geometry or hex tiles, colored by value classes, no map tiles: `geometry` and `regions` in React, a table of regions and `data-ok-geometry` or `setGeometry()` in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -494,6 +522,12 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `tint` | `data-ok-tint="…"` | number | number | — | Sunburst and icicle charts: how much paler each level is than the level its color starts at (0 to 1; default 0.14). |
 | `disableZoomOnClick` | `data-ok-disable-zoom-on-click` | flag | boolean | off | Sunburst and icicle charts: a click, Enter or Space on a node doesn't zoom into it. |
 | `zoomType` | `data-ok-zoom-type="…"` | style | `value` `both` | — | Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`, the default) or becomes the top level (`both`). |
+| `projection` | `data-ok-projection="…"` | style | `equalEarth` `mercator` `equirectangular` | — | Geo charts: `equalEarth` (equal areas, the default), `mercator` (straight rhumb lines) or `equirectangular`. |
+| `geoLayout` | `data-ok-geo-layout="…"` | style | `geographic` `hex` | — | Geo charts: real boundaries (`geographic`, the default) or equal hex tiles (`hex`). |
+| `scaleMethod` | `data-ok-scale-method="…"` | style | `quantile` `equalInterval` `jenks` `threshold` | — | Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`). |
+| `scaleClasses` | `data-ok-scale-classes="…"` | number | number | `5` | Geo charts: how many value classes (at most the colors available). |
+| `sphere` | `data-ok-sphere` | flag | boolean | off | Geo charts: the outline of the globe behind the regions. |
+| `graticule` | `data-ok-graticule` | flag | boolean | off | Geo charts: lines of longitude and latitude every 30 degrees. |
 | `crossfilter` | `data-ok-crossfilter="…"` | style | `filter` `highlight` | — | Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |

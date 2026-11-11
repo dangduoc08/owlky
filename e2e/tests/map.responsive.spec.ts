@@ -76,6 +76,9 @@ const STORIES = [
   "heatmap",
   "side-by-side",
   "choropleth",
+  "great-circles",
+  "region-drilldown",
+  "export-map",
 ];
 
 for (const viewport of viewports) {

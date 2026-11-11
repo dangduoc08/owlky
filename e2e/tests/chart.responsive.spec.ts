@@ -50,6 +50,9 @@ const STORIES = [
   "tree",
   "sunburst",
   "icicle",
+  "geo",
+  "geo-projections",
+  "geo-hex",
   "stock",
   "stock-overlays",
   "stock-oscillators",
@@ -148,7 +151,10 @@ for (const viewport of viewports) {
           await expect(page.locator("[data-ok-chart][data-ok-ready]")).toHaveCount(
             story === "sparklines" || story === "synchronized" || story === "tree"
               ? 3
-              : story === "brush" || story === "sunburst" || story === "icicle"
+              : story === "brush" ||
+                  story === "sunburst" ||
+                  story === "icicle" ||
+                  story === "geo-projections"
                 ? 2
                 : 1,
           );

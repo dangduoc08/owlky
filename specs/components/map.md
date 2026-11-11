@@ -196,13 +196,14 @@ spec + `id`), `Layer` (MapLibre layer spec + `id`, `source`, `beforeId`), contro
 `onTrackUserLocationStart|End`), `FullscreenControl`, `ScaleControl` (`maxWidth`, `unit`),
 `AttributionControl` (`compact`), `GlobeControl`, `TerrainControl` (`source`, `exaggeration`),
 `MapControl` (custom), each with `position`; `MapPanel` (`position`); `MapProvider` + `useMap()`;
-ref `MapRef` (`getMap()`, `controller`, `getViewState()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`).
+ref `MapRef` (`getMap()`, `controller`, `getViewState()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`,
+`exportMap(format?, { fileName?, download? })`).
 Choropleth parts: `MapRegions` (`source`, `sourceLayer`, `layer`, `data: { id, name, value }[]`,
 `caption`, `nameLabel`, `valueLabel`, `formatValue`, `listLabel`, `onRegionSelect({ id })`) and
 `MapLegend` (`scale`, `position` default `bottom-left`, `variant`, `title`, `interactive`, `showNull`,
 `nullLabel`, `formatter(item, index)`, `tickFormatter(value)`, `onLegendToggle({ classIndex, active })`);
 helpers (core `@owlky/core/map`, re-exported by `@owlky/react`): `mapScale`, `mapRegionLayers`,
-`mapScaleLabel`, `mapPaletteColors`, `jenksBreaks`.
+`mapScaleLabel`, `mapPaletteColors`, `jenksBreaks`, `greatCircle`.
 
 API mapping (react-map-gl): renamed `Map` → `MapView` (a component named `Map` shadows the global `Map` in consumer modules, Biome `noShadowRestrictedNames`). Kept `mapStyle`, `initialViewState`, `viewState` and the view props,
 `minZoom` … `maxPitch`, `maxBounds`, `projection`, `renderWorldCopies`, `cooperativeGestures`, the
@@ -256,6 +257,26 @@ Roadmap 4.18.15, after ApexMaps (apexcharts.com/apexmaps, docs checked 2026-11-1
   `sqrt` continuous scales, ordinal (category) scales, OkLab-resampled ramps (palette arrays are
   used as given), multi-selection, legend `align` / `width` / `marker`, ApexMaps' own geometry
   registry and `joinBy` (MapLibre sources and feature ids instead).
+
+## Great circles, drilldown, export
+Roadmap 4.18.16 (ApexMaps checked 2026-11-11: arc series, drilldown, breadcrumb).
+- `greatCircle(from, to, { steps = 64 (1–1024; non-finite: 64), properties })` (pure, `@owlky/core/map`,
+  `@owlky/react`, HTML instance): spherical interpolation, coordinates rounded to 6 decimals.
+  Returns a GeoJSON `Feature`, a `LineString`, or a `MultiLineString` split at ±180° when a
+  segment jumps more than 180° of longitude (crossing latitude linear between two samples).
+  Opposite points go through a point at right angles (any great circle is shortest). Throws
+  `RangeError` on non-finite coordinates or `|latitude| > 90`.
+- Region drilldown is composition (story `region-drilldown`, no new API): `MapRegions` per level,
+  `onRegionSelect` / `ok:map:regionselect` (pointer and keyboard), `fitBounds`, layer `filter` and
+  `layout`, `Breadcrumbs` in a `MapPanel`. The selection is dropped when its row goes away.
+- `exportMap("png", { fileName?, download = true })`: the canvas is read inside a `render` event
+  (the buffer is cleared after each frame; no `preserveDrawingBuffer`), resolves with the `Blob`,
+  saved as `<slug of fileName or labels.map>.png`. Rejects: `NotAllowedError` (no user gesture,
+  only when `download`), `InvalidStateError` (no map, or removed before the frame), `TypeError`
+  (format), `SecurityError` / `NotSupportedError` from the canvas (nothing saved).
+- Not built (ApexMaps): arc `curvature`, `width.range`, `endpoints`, `flow` (compose layers),
+  `drillTo` / `drillUp` methods and automatic parent detection (app data decides the level),
+  overlays in the PNG (page elements), `svg` export (the Chart's `type="geo"` does it).
 
 ## Layout and tokens
 Root: 480px high (`--ok-spacing` × 120), `--ok-radius-md`, `overflow: hidden`; fullscreen fallback is
@@ -340,8 +361,8 @@ pitchend|click|dblclick|contextmenu|mousemove|mouseenter|mouseleave` (detail: th
 `ok:map:geolocateerror` (`{ code, message }`), `ok:map:trackuserlocation` (`{ tracking }`),
 `ok:map:fallback` (`{ reason }`), `ok:map:regionselect` (on `[data-ok-map-regions]`, `{ id }`),
 `ok:map:legendtoggle` (on the legend, `{ classIndex, active }`). Instance: `{ controller, map, viewState, flyTo, easeTo, jumpTo,
-fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, clusterId), openPopup(popup),
-closePopup(popup), fullscreen, setFullscreen(on), scale }` (`scale` = core `mapScale`, for CDN pages). Worker: `setMapWorkerUrl(url)` from
+fitBounds, exportMap(format?, options?), setSourceData(id, data), getClusterExpansionZoom(source, clusterId), openPopup(popup),
+closePopup(popup), fullscreen, setFullscreen(on), scale, greatCircle }` (`scale` = core `mapScale`, `greatCircle` = core `greatCircle`, for CDN pages). Worker: `setMapWorkerUrl(url)` from
 `@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; `owlky-map.js` finds
 `owlky-map-worker.js` next to itself).
 
@@ -389,7 +410,9 @@ The "API mapping" paragraph above records the details; this table adds a status 
 | ApexMaps `series.joinBy`, `series.data` | `MapRegions data` joined by feature id (`promoteId`) | renamed | |
 | ApexMaps accessibility (roving keyboard, data table) | `MapRegions` listbox + table | kept | |
 | ApexMaps `tooltip`, `dataLabels`, `setSelection()`, `frameFeature()` | compose `Popup` / symbol layers; `fitBounds` | deferred | |
-| great circles, geo maps | — | deferred (4.18.16–4.18.17) | |
+| ApexMaps arc series (`from`, `to`, `geodesic`) | `greatCircle(from, to)` + a `line` layer | renamed | `curvature`, `width.range`, `endpoints`, `flow` not built (compose layers) |
+| ApexMaps `drilldown`, `breadcrumb`, `drilldown` / `drillup` events, `drillTo`, `drillUp` | `MapRegions` + `fitBounds` + `Breadcrumbs` (composition) | not applicable | app code owns the levels |
+| ApexMaps `geo.projection`, `geo.layout: 'hex'`, `geo.sphere`, `geo.graticule` | Chart `type="geo"` (ADR-0059) | renamed | SVG charts without tiles; `orthographic`, rotation, morphing not built |
 
 ## Parity notes
 - Choropleth: the regions list's options, its `aria-activedescendant`, the legend's `aria-pressed`

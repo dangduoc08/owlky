@@ -10,6 +10,8 @@ import {
   type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
+  type ChartGeoLayout,
+  type ChartGeometry,
   type ChartGestureMode,
   type ChartGrid,
   type ChartGroupFilter,
@@ -26,7 +28,9 @@ import {
   type ChartPart,
   type ChartPattern,
   type ChartPointInput,
+  type ChartProjection,
   type ChartRender,
+  type ChartScaleMethod,
   type ChartSelectionDetail,
   type ChartSeries,
   type ChartStackType,
@@ -83,6 +87,7 @@ import {
   parseChartYAxes,
   placeChartTooltip,
   readChartAnnotations,
+  readChartGeoTable,
   readChartHierarchyTable,
   readChartSankeyTable,
   readChartTable,
@@ -199,6 +204,8 @@ export interface ChartInstance extends ComponentInstance {
   readonly drillNode: string | null;
   /** Sunburst and icicle charts: zooms into a node (`null`: the whole chart; no event). */
   setDrillNode(id: string | null): void;
+  /** Geo charts: the regions' shapes as GeoJSON, for pages that don't use `data-ok-geometry` (`null`: back to the attribute). */
+  setGeometry(geometry: ChartGeometry | null): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -209,6 +216,7 @@ const OPTION_ATTRIBUTES = [
     .map((spec) => spec.attr)
     .filter((attr) => attr.startsWith("data-ok-")),
   ...Object.values(CHART_TEXT_ATTRIBUTES),
+  "data-ok-geometry",
 ];
 const text = (element: Element, name: string) => element.getAttribute(name) ?? undefined;
 /** Core nodes → SVG elements (attributes and text only: never markup). */
@@ -602,6 +610,24 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       box.replaceChildren(content);
     };
 
+    /** Geo charts: the shapes set through `setGeometry`, else the JSON element named by the root. */
+    let geometryOverride: ChartGeometry | null = null;
+    let parsedGeometry: { source: string; value: ChartGeometry | null } | null = null;
+    const geometryOf = (): ChartGeometry | null => {
+      if (geometryOverride) return geometryOverride;
+      const id = element.getAttribute("data-ok-geometry");
+      const source = id ? (document.getElementById(id)?.textContent ?? "") : "";
+      if (parsedGeometry?.source === source) return parsedGeometry.value;
+      let value: ChartGeometry | null = null;
+      try {
+        value = source ? (JSON.parse(source) as ChartGeometry) : null;
+      } catch {
+        // Unusable JSON draws no shapes; the table still shows the data.
+      }
+      parsedGeometry = { source, value };
+      return value;
+    };
+
     const draw = () => {
       // First: the table leaves the flow before the plot is measured (sparklines fill the root).
       element.setAttribute("data-ok-ready", "");
@@ -610,10 +636,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       // Sankey charts (ADR-0047): the table lists links, not series; hierarchy charts (ADR-0058)
       // one node per row.
       const flow = type === "sankey" && table ? readChartSankeyTable(table) : undefined;
+      const geo = type === "geo" && table ? readChartGeoTable(table) : undefined;
       const tree = isHierarchyChart(type) && table ? readChartHierarchyTable(table) : undefined;
-      const read = flow || tree ? EMPTY : data();
+      const read = flow || tree || geo ? EMPTY : data();
       const { series, categories } = read;
       if (flow) partLabels = flow.partLabels;
+      else if (geo) partLabels = geo.partLabels;
       else if (tree) partLabels = tree.partLabels;
       else if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
       const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
@@ -642,6 +670,22 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         edgeOpacity: readNumber(element, o.edgeOpacity) as number | undefined,
         axisTitles: parseChartList(element.getAttribute(CHART_TEXT_ATTRIBUTES.axisTitles)),
         hierarchy: tree?.hierarchy,
+        geometry: type === "geo" ? geometryOf() : undefined,
+        regions: geo?.regions,
+        colors: geo
+          ? parseChartColors(element.getAttribute(CHART_TEXT_ATTRIBUTES.colors))
+          : undefined,
+        joinBy: text(element, CHART_TEXT_ATTRIBUTES.joinBy),
+        projection: readStyle(element, o.projection) as ChartProjection | undefined,
+        geoLayout: readStyle(element, o.geoLayout) as ChartGeoLayout | undefined,
+        hexCells: geo?.hexCells,
+        scaleMethod: readStyle(element, o.scaleMethod) as ChartScaleMethod | undefined,
+        scaleClasses: readNumber(element, o.scaleClasses) as number | undefined,
+        scaleThresholds: parseChartList(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.scaleThresholds),
+        )?.map(Number),
+        sphere: element.hasAttribute(o.sphere.attr),
+        graticule: element.hasAttribute(o.graticule.attr),
         direction: readStyle(element, o.direction) as ChartDirection | undefined,
         layoutType: readStyle(element, o.layoutType) as ChartLayoutType | undefined,
         edgeStyle: readStyle(element, o.edgeStyle) as ChartEdgeStyle | undefined,
@@ -1391,6 +1435,10 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       },
       get collapsedNodes() {
         return collapsedNodes();
+      },
+      setGeometry(geometry: ChartGeometry | null) {
+        geometryOverride = geometry;
+        draw();
       },
       setCollapsedNodes(ids) {
         writeCollapsed([...new Set(ids.map(String))]);
