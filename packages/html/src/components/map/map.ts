@@ -1,6 +1,7 @@
 import { mapHandlers, mapOptions, readBehavior, readNumber, readStyle } from "@owlky/core";
 import {
   createMapController,
+  greatCircle,
   type MapController,
   type MapEvent,
   type MapEventType,
@@ -89,6 +90,8 @@ export interface MapInstance extends ComponentInstance {
   jumpTo: MapController["jumpTo"];
   /** Moves the camera so that the bounds fit the map. */
   fitBounds: MapController["fitBounds"];
+  /** The map's canvas as a PNG `Blob`, also saved as a file unless `download` is `false`. Rejects outside a user gesture or when the browser can't read the canvas. */
+  exportMap: MapController["exportMap"];
   /** Replaces the data of a GeoJSON source (no markup change; for animations). */
   setSourceData(id: string, data: unknown): void;
   /** The zoom level at which a cluster of a clustered source breaks apart. */
@@ -103,6 +106,8 @@ export interface MapInstance extends ComponentInstance {
   setFullscreen(fullscreen: boolean): void;
   /** Classifies values for a choropleth (core `mapScale`): class breaks, token colors and the MapLibre expressions. */
   scale: typeof mapScale;
+  /** The great circle arc between two `[longitude, latitude]` positions, as a GeoJSON feature (core `greatCircle`), for CDN pages. */
+  greatCircle: typeof greatCircle;
 }
 
 /** Map events re-dispatched as `ok:map:<type>` (detail: the core `MapEvent`). */
@@ -405,6 +410,7 @@ export const map = defineComponent<MapInstance, MapEvents>({
       easeTo: controller.easeTo,
       jumpTo: controller.jumpTo,
       fitBounds: controller.fitBounds,
+      exportMap: controller.exportMap,
       setSourceData: controller.setSourceData,
       getClusterExpansionZoom: controller.getClusterExpansionZoom,
       openPopup,
@@ -414,6 +420,7 @@ export const map = defineComponent<MapInstance, MapEvents>({
       },
       setFullscreen: controller.setFullscreen,
       scale: mapScale,
+      greatCircle,
       destroy() {
         declarations.disconnect();
         attributes.disconnect();

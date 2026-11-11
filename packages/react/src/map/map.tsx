@@ -178,6 +178,11 @@ export interface MapRef {
   easeTo: MapController["easeTo"];
   jumpTo: MapController["jumpTo"];
   fitBounds: MapController["fitBounds"];
+  /**
+   * The canvas as a PNG `Blob`, also saved as a file unless `download` is `false`. Rejects outside a
+   * user gesture, before the map is drawn, or when the browser can't read the canvas.
+   */
+  exportMap: MapController["exportMap"];
 }
 
 const SETTING_KEYS = [
@@ -393,6 +398,10 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
       easeTo: (options) => controller?.easeTo(options),
       jumpTo: (options) => controller?.jumpTo(options),
       fitBounds: (target, options) => controller?.fitBounds(target, options),
+      exportMap: (format, options) =>
+        controller
+          ? controller.exportMap(format, options)
+          : Promise.reject(new DOMException("The map is not drawn.", "InvalidStateError")),
     }),
     [controller],
   );

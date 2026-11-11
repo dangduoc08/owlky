@@ -13,8 +13,12 @@ import { ClustersDemo } from "./demos/clusters.js";
 import clustersSource from "./demos/clusters.tsx?raw";
 import { DraggableMarkersDemo } from "./demos/draggable-markers.js";
 import draggableSource from "./demos/draggable-markers.tsx?raw";
+import { ExportMapDemo } from "./demos/export-map.js";
+import exportMapSource from "./demos/export-map.tsx?raw";
 import { GeojsonAnimationDemo } from "./demos/geojson-animation.js";
 import animationSource from "./demos/geojson-animation.tsx?raw";
+import { GreatCirclesDemo } from "./demos/great-circles.js";
+import greatCirclesSource from "./demos/great-circles.tsx?raw";
 import { HeatmapDemo } from "./demos/heatmap.js";
 import heatmapSource from "./demos/heatmap.tsx?raw";
 import { HighlightByFilterDemo } from "./demos/highlight-by-filter.js";
@@ -23,6 +27,8 @@ import { InteractionDemo } from "./demos/interaction.js";
 import interactionSource from "./demos/interaction.tsx?raw";
 import { MarkersPopupsDemo } from "./demos/markers-popups.js";
 import markersSource from "./demos/markers-popups.tsx?raw";
+import { RegionDrilldownDemo } from "./demos/region-drilldown.js";
+import regionDrilldownSource from "./demos/region-drilldown.tsx?raw";
 import { SideBySideDemo } from "./demos/side-by-side.js";
 import sideBySideSource from "./demos/side-by-side.tsx?raw";
 import { ViewportAnimationDemo } from "./demos/viewport-animation.js";
@@ -140,6 +146,21 @@ export const SideBySide = story(
   SideBySideDemo,
   sideBySideSource,
 );
+export const GreatCircles = story(
+  "Great circles",
+  "great-circles",
+  "Great circles",
+  GreatCirclesDemo,
+  greatCirclesSource,
+);
+export const RegionDrilldown = story(
+  "Region drilldown",
+  "region-drilldown",
+  "Region drilldown",
+  RegionDrilldownDemo,
+  regionDrilldownSource,
+);
+export const ExportMap = story("Export", "export-map", "Export", ExportMapDemo, exportMapSource);
 export const Choropleth = story(
   "Choropleth",
   "choropleth",

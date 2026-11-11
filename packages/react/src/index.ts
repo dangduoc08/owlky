@@ -435,9 +435,13 @@ export {
   useMap,
 } from "./map/map.js";
 export {
+  type GreatCircleFeature,
+  type GreatCircleOptions,
+  greatCircle,
   MapLegend,
   type MapLegendProps,
   type MapLegendToggleEvent,
+  type MapLngLat,
   type MapRegionDatum,
   type MapRegionLayersOptions,
   type MapRegionSelectEvent,

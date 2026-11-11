@@ -145,6 +145,21 @@ function Demo() {
 const mapOf = (ref: { current: MapRef | null }) =>
   ref.current?.getMap() as NonNullable<ReturnType<MapRef["getMap"]>>;
 
+describe("MapRef.exportMap", () => {
+  it("exports a PNG once the map is drawn and refuses before", async () => {
+    const ref = createRef<MapRef>();
+    render(<MapView ref={ref} mapStyle={STYLE} />);
+    const load = new Promise<void>((resolve) => {
+      const check = () =>
+        ref.current?.getMap()?.loaded() ? resolve() : requestAnimationFrame(check);
+      check();
+    });
+    await load;
+    const blob = await act(() => (ref.current as MapRef).exportMap("png", { download: false }));
+    expect(blob.type).toBe("image/png");
+  });
+});
+
 describe("Map", () => {
   it("renders the anatomy and its options as attributes", () => {
     // A style URL that never loads (.invalid): only the markup matters here.

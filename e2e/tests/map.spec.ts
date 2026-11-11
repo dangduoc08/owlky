@@ -242,6 +242,45 @@ for (const impl of implementations) {
       await expect(hovered).toHaveCount(0);
     });
 
+    test("drills into a region from the list and back with the breadcrumb", async ({ page }) => {
+      await openMap(page, impl, "region-drilldown");
+      const list = page.getByRole("listbox", { name: "Regions" });
+      await expect(list.getByRole("option")).toHaveCount(4);
+      await list.focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("Enter");
+      const states = page.getByRole("listbox", { name: "States of the Northeast" });
+      await expect(states.getByRole("option")).toHaveCount(9);
+      await expect(states.getByRole("option", { name: /^New York: / })).toBeAttached();
+      const crumbs = page.getByRole("navigation", { name: "Map level" });
+      await expect(crumbs.locator('[aria-current="page"]')).toHaveText("Northeast");
+      const root = crumbs.getByRole("button", { name: "United States" });
+      await root.click();
+      await expect(page.getByRole("listbox", { name: "Regions" }).getByRole("option")).toHaveCount(
+        4,
+      );
+      await expect(root).toHaveAttribute("aria-current", "page");
+      await expect(root).toBeFocused();
+    });
+
+    test("draws the great circle routes", async ({ page }) => {
+      await openMap(page, impl, "great-circles");
+      const canvas = page.getByRole("region", { name: "Flight routes from Singapore" });
+      await expect(canvas).toHaveAttribute("aria-roledescription", "map");
+    });
+
+    test("downloads the map as a PNG", async ({ page }) => {
+      await openMap(page, impl, "export-map");
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        page.getByRole("button", { name: "Download PNG" }).click(),
+      ]);
+      expect(download.suggestedFilename()).toBe("united-states.png");
+      await expect(page.locator("[data-ok-map-panel]").getByRole("status")).toHaveText(
+        "Saved united-states.png.",
+      );
+    });
+
     test("shows the choropleth's table without WebGL", async ({ page }) => {
       await page.addInitScript(() => {
         HTMLCanvasElement.prototype.getContext = () => null;

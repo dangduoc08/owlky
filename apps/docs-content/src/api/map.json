@@ -376,6 +376,12 @@
       "type": "(options: EaseToOptions) => void"
      },
      {
+      "description": "The map's canvas as a PNG `Blob`, also saved as a file unless `download` is `false`. Rejects outside a user gesture or when the browser can't read the canvas.",
+      "kind": "property",
+      "name": "exportMap",
+      "type": "(format?: \"png\" | undefined, options?: MapExportOptions | undefined) => Promise<Blob>"
+     },
+     {
       "description": "Moves the camera so that the bounds fit the map.",
       "kind": "property",
       "name": "fitBounds",
@@ -398,6 +404,12 @@
       "kind": "method",
       "name": "getClusterExpansionZoom",
       "type": "(sourceId: string, clusterId: number) => Promise<number>"
+     },
+     {
+      "description": "The great circle arc between two `[longitude, latitude]` positions, as a GeoJSON feature (core `greatCircle`), for CDN pages.",
+      "kind": "property",
+      "name": "greatCircle",
+      "type": "(from: MapLngLat, to: MapLngLat, options?: GreatCircleOptions | undefined) => GreatCircleFeature"
      },
      {
       "description": "Moves the camera to a place at once.",

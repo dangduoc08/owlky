@@ -4,7 +4,20 @@
  */
 import { getRuntime, type MapInstance, map } from "@owlky/html";
 import type { HtmlGroup } from "../../helpers/groups.js";
-import { DAYS, dayLabel, MAP_STYLES, pointOnCircle, regionFilter } from "./map-data.js";
+import {
+  AIRPORT_HUB,
+  AIRPORTS,
+  CENSUS_REGIONS,
+  type CensusRegion,
+  DAYS,
+  dayLabel,
+  MAP_STYLES,
+  pointOnCircle,
+  regionFilter,
+  regionRows,
+  stateRows,
+  US_BOUNDS,
+} from "./map-data.js";
 
 type Script = NonNullable<HtmlGroup["script"]>;
 
@@ -290,6 +303,132 @@ const sideBySide: Script = (row) => {
   ]);
 };
 
+const greatCircles: Script = (row) => {
+  const { map: instance } = first(row);
+  if (!instance) return () => {};
+  instance.setSourceData("routes", {
+    type: "FeatureCollection",
+    features: AIRPORTS.map((airport) =>
+      instance.greatCircle(AIRPORT_HUB.position, airport.position, {
+        properties: { name: airport.name },
+      }),
+    ),
+  });
+  instance.setSourceData("airports", {
+    type: "FeatureCollection",
+    features: [AIRPORT_HUB, ...AIRPORTS].map(({ name, position }) => ({
+      type: "Feature",
+      properties: { name },
+      geometry: { type: "Point", coordinates: position },
+    })),
+  });
+  return () => {};
+};
+
+/** Writes the first breadcrumb, and a second one for the region (DOM methods: no `innerHTML`). */
+function renderCrumbs(list: HTMLElement, region: CensusRegion | null) {
+  const root = list.querySelector("button") as HTMLElement;
+  if (region === null) root.setAttribute("aria-current", "page");
+  else root.removeAttribute("aria-current");
+  for (const extra of [...list.children].slice(1)) extra.remove();
+  if (region === null) return;
+  const separator = document.createElement("li");
+  separator.setAttribute("data-ok-breadcrumbs-separator", "");
+  separator.setAttribute("aria-hidden", "true");
+  separator.textContent = "/";
+  const item = document.createElement("li");
+  item.setAttribute("data-ok-breadcrumbs-item", "");
+  const current = document.createElement("span");
+  current.setAttribute("aria-current", "page");
+  current.textContent = region;
+  item.append(current);
+  list.append(separator, item);
+}
+
+/** Writes the rows of the regions' table (name, value). */
+function renderRows(body: HTMLElement, rows: { id: string; name: string; value: number }[]) {
+  body.replaceChildren(
+    ...rows.map(({ id, name, value }) => {
+      const row = document.createElement("tr");
+      row.setAttribute("data-ok-id", id);
+      const header = document.createElement("th");
+      header.scope = "row";
+      header.textContent = name;
+      const cell = document.createElement("td");
+      cell.setAttribute("data-ok-value", String(value));
+      cell.textContent = `${value.toFixed(2)} million`;
+      row.append(header, cell);
+      return row;
+    }),
+  );
+}
+
+const regionDrilldown: Script = (row) => {
+  const { root, map: instance } = first(row);
+  const regions = root.querySelector("[data-ok-map-regions]") as HTMLElement;
+  const list = root.querySelector("[data-ok-breadcrumbs-list]") as HTMLElement;
+  const body = regions.querySelector("tbody") as HTMLElement;
+  const caption = regions.querySelector("caption") as HTMLElement;
+  const nameHeader = regions.querySelector("thead th") as HTMLElement;
+  const options = regions.querySelector("[data-ok-map-regions-list]") as HTMLElement;
+  const layers = [...root.querySelectorAll<HTMLElement>("[data-ok-map-layer]")];
+  let region: CensusRegion | null = null;
+  const show = (next: CensusRegion | null) => {
+    region = next;
+    for (const layer of layers) {
+      const states = (layer.getAttribute("data-ok-id") as string).startsWith("states");
+      layer.setAttribute(
+        "data-ok-layout",
+        JSON.stringify({ visibility: states === (next !== null) ? "visible" : "none" }),
+      );
+      if (states) layer.setAttribute("data-ok-filter", JSON.stringify(regionFilter(next ?? "")));
+    }
+    regions.setAttribute("data-ok-source", next ? "states" : "regions");
+    regions.setAttribute("data-ok-layer", next ? "states-fill" : "regions-fill");
+    caption.textContent = next
+      ? `Population of the ${next} by state`
+      : "Population by US Census region";
+    nameHeader.textContent = next ? "State" : "Region";
+    options.setAttribute("aria-label", next ? `States of the ${next}` : "Regions");
+    renderRows(body, next ? stateRows(next) : regionRows);
+    renderCrumbs(list, next);
+    instance?.fitBounds(next ? CENSUS_REGIONS[next].bounds : US_BOUNDS, { padding: 32 });
+  };
+  return listen([
+    [
+      regions,
+      "ok:map:regionselect",
+      (event) => {
+        const { id } = (event as CustomEvent<{ id: string | null }>).detail;
+        if (region === null && id !== null) show(id as CensusRegion);
+      },
+    ],
+    [list.querySelector("button"), "click", () => show(null)],
+  ]);
+};
+
+const exportMap: Script = (row) => {
+  const { root, map: instance } = first(row);
+  const button = root.querySelector("[data-ok-map-panel] button");
+  const status = root.querySelector('[role="status"]:not([data-ok-map-status])') as HTMLElement;
+  return listen([
+    [
+      button,
+      "click",
+      () => {
+        instance
+          ?.exportMap("png", { fileName: "united-states" })
+          .then(() => {
+            status.textContent = "Saved united-states.png.";
+          })
+          .catch((error: Error) => {
+            status.textContent = `Could not save the map: ${error.message}`;
+          });
+      },
+    ],
+  ]);
+};
+
 export const MAP_SCRIPTS: Record<string, Pick<HtmlGroup, "script" | "scriptSource">> = {
   "change-theme": {
     script: changeTheme,
@@ -478,5 +617,112 @@ for (const element of maps) {
         });
   });
 }`,
+  },
+  "great-circles": {
+    script: greatCircles,
+    scriptSource: `import { getRuntime } from "@owlky/html";
+${REGISTER}
+
+const element = document.querySelector("#map-great-circles");
+const map = getRuntime().get(element, "map");
+const hub = [103.99, 1.36];
+const airports = {
+  London: [-0.45, 51.47],
+  "Los Angeles": [-118.41, 33.94],
+  Sydney: [151.18, -33.95],
+  Johannesburg: [28.24, -26.13],
+  Tokyo: [140.39, 35.77],
+};
+// One arc from the hub to each airport, a GeoJSON feature each.
+map.setSourceData("routes", {
+  type: "FeatureCollection",
+  features: Object.entries(airports).map(([name, position]) =>
+    map.greatCircle(hub, position, { properties: { name } }),
+  ),
+});
+map.setSourceData("airports", {
+  type: "FeatureCollection",
+  features: Object.entries({ Singapore: hub, ...airports }).map(([name, coordinates]) => ({
+    type: "Feature",
+    properties: { name },
+    geometry: { type: "Point", coordinates },
+  })),
+});`,
+  },
+  "region-drilldown": {
+    script: regionDrilldown,
+    scriptSource: `import { getRuntime } from "@owlky/html";
+${REGISTER}
+
+const element = document.querySelector("#map-drilldown");
+const map = getRuntime().get(element, "map");
+const regions = element.querySelector("[data-ok-map-regions]");
+// Your data: the frame of each region and its states.
+const levels = {
+  West: { bounds: [[-124.8, 31.3], [-102, 49]], rows: [["California", 39.54], ["Nevada", 3.1]] },
+};
+const whole = [[-125, 24.5], [-66.5, 49.5]];
+let current = null;
+
+/** Shows one level: its layers, its rows, its breadcrumb and its frame. */
+function show(region) {
+  current = region;
+  for (const layer of element.querySelectorAll("[data-ok-map-layer]")) {
+    const states = layer.getAttribute("data-ok-id").startsWith("states");
+    layer.setAttribute(
+      "data-ok-layout",
+      JSON.stringify({ visibility: states === (region !== null) ? "visible" : "none" }),
+    );
+    if (states) layer.setAttribute("data-ok-filter", JSON.stringify(["==", ["get", "region"], region ?? ""]));
+  }
+  regions.setAttribute("data-ok-source", region ? "states" : "regions");
+  regions.setAttribute("data-ok-layer", region ? "states-fill" : "regions-fill");
+  regions.querySelector("tbody").replaceChildren(
+    ...(region ? levels[region].rows : topLevelRows).map(([name, value]) => {
+      const row = document.createElement("tr");
+      row.setAttribute("data-ok-id", name);
+      const header = document.createElement("th");
+      header.scope = "row";
+      header.textContent = name;
+      const cell = document.createElement("td");
+      cell.dataset.okValue = value;
+      cell.textContent = value + " million";
+      row.append(header, cell);
+      return row;
+    }),
+  );
+  map.fitBounds(region ? levels[region].bounds : whole, { padding: 32 });
+}
+
+const topLevelRows = [...regions.querySelectorAll("tbody tr")].map((row) => [
+  row.getAttribute("data-ok-id"),
+  Number(row.querySelector("td").getAttribute("data-ok-value")),
+]);
+// A click on a region, or Enter in the list of regions, goes down one level.
+regions.addEventListener("ok:map:regionselect", (event) => {
+  if (current === null && event.detail.id !== null) show(event.detail.id);
+});
+// The first breadcrumb goes back up.
+element.querySelector("[data-ok-breadcrumbs] button").addEventListener("click", () => show(null));`,
+  },
+  "export-map": {
+    script: exportMap,
+    scriptSource: `import { getRuntime } from "@owlky/html";
+${REGISTER}
+
+const element = document.querySelector("#map-export");
+const map = getRuntime().get(element, "map");
+const status = element.querySelector('[data-ok-map-panel] [role="status"]');
+element.querySelector("[data-ok-map-panel] button").addEventListener("click", () => {
+  // Must run inside the click: downloads need a user gesture.
+  map
+    .exportMap("png", { fileName: "united-states" })
+    .then(() => {
+      status.textContent = "Saved united-states.png.";
+    })
+    .catch((error) => {
+      status.textContent = \`Could not save the map: \${error.message}\`;
+    });
+});`,
   },
 };

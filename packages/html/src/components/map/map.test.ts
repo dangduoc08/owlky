@@ -100,6 +100,22 @@ describe("map snippets", () => {
 });
 
 describe("map runtime", () => {
+  it("exports a PNG and refuses outside a gesture", async () => {
+    const { instance } = await setup(BASIC());
+    const blob = await instance.exportMap("png", { download: false });
+    expect(blob.type).toBe("image/png");
+    vi.spyOn(navigator, "userActivation", "get").mockReturnValue({
+      isActive: false,
+    } as UserActivation);
+    await expect(instance.exportMap("png")).rejects.toMatchObject({ name: "NotAllowedError" });
+  });
+
+  it("offers greatCircle to pages without a bundler", async () => {
+    const { instance } = await setup(BASIC());
+    const arc = instance.greatCircle([0, 0], [10, 0], { steps: 2 });
+    expect(arc.geometry.coordinates).toHaveLength(3);
+  });
+
   it("reports map events with the view state", async () => {
     const host = mount(BASIC());
     const root = host.querySelector("[data-ok-map]") as HTMLElement;

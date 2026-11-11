@@ -17,6 +17,7 @@ import {
   mapHandlers,
   mapScaleUnits,
 } from "../anatomy/anatomy.js";
+import { chartFileName, gesture, save } from "../chart/chart-export.js";
 import {
   autoAnchor,
   distanceMeters,
@@ -37,6 +38,16 @@ export type MapSourceSpec = Parameters<MapLibreMap["addSource"]>[1];
 export type MapLayerSpec = Parameters<MapLibreMap["addLayer"]>[0];
 /** The MapLibre map (escape hatch for everything Owlky doesn't wrap). */
 export type { MapLibreMap };
+
+/** Image formats of `exportMap`. */
+export type MapExportFormat = "png";
+
+export interface MapExportOptions {
+  /** The file name without its extension. Default: from the map's accessible name. */
+  readonly fileName?: string | undefined;
+  /** Save a file. `false` only resolves with the image, without a user gesture. Default `true`. */
+  readonly download?: boolean | undefined;
+}
 
 export interface MapViewState {
   readonly longitude: number;
@@ -185,6 +196,12 @@ export interface MapController {
   easeTo(options: EaseToOptions): void;
   jumpTo(options: JumpToOptions): void;
   fitBounds(bounds: LngLatBoundsLike, options?: FitBoundsOptions): void;
+  /**
+   * The canvas as an image: resolves with its `Blob` and, by default, saves it as a file. Rejects
+   * (and saves nothing) outside a user gesture, without a drawn map, on an unknown format, or when
+   * the browser can't make the file.
+   */
+  exportMap(format?: MapExportFormat, options?: MapExportOptions): Promise<Blob>;
   setSettings(settings: Partial<MapSettings>): void;
   setMapStyle(style: MapStyle | undefined, dark?: MapStyle | undefined): void;
   setLabels(labels: Partial<MapLabels>): void;
@@ -827,6 +844,44 @@ export function createMapController(
     map?.resize();
     options.onFullscreenChange?.(on);
   };
+  /**
+   * The drawing buffer is cleared after each frame (no `preserveDrawingBuffer`, which costs every
+   * frame), so the canvas is read inside a `render` event, while the frame is still there.
+   */
+  const capture = (target: MapLibreMap) =>
+    new Promise<Blob>((resolve, reject) => {
+      const removed = () => reject(new DOMException("The map was removed.", "InvalidStateError"));
+      target.once("remove", removed);
+      target.once("render", () => {
+        target.off("remove", removed);
+        try {
+          target
+            .getCanvas()
+            .toBlob(
+              (blob) =>
+                blob
+                  ? resolve(blob)
+                  : reject(new DOMException("The map has no image.", "NotSupportedError")),
+              "image/png",
+            );
+        } catch (error) {
+          reject(error);
+        }
+      });
+      target.triggerRepaint();
+    });
+  const exportMap = async (
+    format: MapExportFormat = "png",
+    { fileName, download = true }: MapExportOptions = {},
+  ): Promise<Blob> => {
+    if (format !== "png") throw new TypeError(`Unknown format: ${format}`);
+    if (download && !gesture())
+      throw new DOMException("Downloads need a user gesture.", "NotAllowedError");
+    if (!map) throw new DOMException("The map is not drawn.", "InvalidStateError");
+    const blob = await capture(map);
+    if (download) save(blob, `${chartFileName(fileName ?? labels.map)}.png`);
+    return blob;
+  };
   const setFullscreen = (on: boolean) => {
     if (on === element.hasAttribute("data-ok-fullscreen")) return;
     if (on && fullscreenSupported()) {
@@ -1306,6 +1361,7 @@ export function createMapController(
     fitBounds(bounds, fit) {
       map?.fitBounds(bounds, fit);
     },
+    exportMap,
     setSettings: applySettings,
     setMapStyle(style, dark) {
       lightStyle = safeStyle(style);

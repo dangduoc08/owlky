@@ -7,6 +7,10 @@ import { useMapContext } from "./map-context.js";
 import { InCorner } from "./map-controls.js";
 
 export {
+  type GreatCircleFeature,
+  type GreatCircleOptions,
+  greatCircle,
+  type MapLngLat,
   type MapRegionLayersOptions,
   type MapScaleClass,
   type MapScaleMethod,

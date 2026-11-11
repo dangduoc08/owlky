@@ -16,6 +16,8 @@ export const MAP_STYLES = {
 /** Files in Storybook's static folder (relative, so they work under any base path). */
 export const EARTHQUAKES = "maps/earthquakes.geojson";
 export const US_STATES = "maps/us-states.geojson";
+/** The four US Census regions, built from the same states (`scripts/us-regions.mjs`). */
+export const US_REGIONS = "maps/us-regions.geojson";
 
 export interface Country {
   code: string;
@@ -308,4 +310,134 @@ export const STATE_POPULATION: [string, number][] = [
   ["West Virginia", 1.79],
   ["Wisconsin", 5.89],
   ["Wyoming", 0.58],
+];
+
+// --- Region drilldown ------------------------------------------------------------------------
+
+export const CENSUS_REGION_NAMES = ["Northeast", "Midwest", "South", "West"] as const;
+export type CensusRegion = (typeof CENSUS_REGION_NAMES)[number];
+type LngLatBounds = [[number, number], [number, number]];
+
+/** The contiguous US, for the top level. Alaska and Hawaii stay on the map but off this frame. */
+export const US_BOUNDS: LngLatBounds = [
+  [-125, 24.5],
+  [-66.5, 49.5],
+];
+
+/** The frame and the states of each region (`properties.region` of the states file). */
+export const CENSUS_REGIONS: Record<CensusRegion, { bounds: LngLatBounds; states: string[] }> = {
+  Northeast: {
+    bounds: [
+      [-80.6, 39.7],
+      [-66.9, 47.5],
+    ],
+    states: [
+      "Connecticut",
+      "Maine",
+      "Massachusetts",
+      "New Hampshire",
+      "New Jersey",
+      "New York",
+      "Pennsylvania",
+      "Rhode Island",
+      "Vermont",
+    ],
+  },
+  Midwest: {
+    bounds: [
+      [-104.1, 36],
+      [-80.5, 49.4],
+    ],
+    states: [
+      "Illinois",
+      "Indiana",
+      "Iowa",
+      "Kansas",
+      "Michigan",
+      "Minnesota",
+      "Missouri",
+      "Nebraska",
+      "North Dakota",
+      "Ohio",
+      "South Dakota",
+      "Wisconsin",
+    ],
+  },
+  South: {
+    bounds: [
+      [-106.7, 25],
+      [-75, 40.7],
+    ],
+    states: [
+      "Alabama",
+      "Arkansas",
+      "Delaware",
+      "District of Columbia",
+      "Florida",
+      "Georgia",
+      "Kentucky",
+      "Louisiana",
+      "Maryland",
+      "Mississippi",
+      "North Carolina",
+      "Oklahoma",
+      "South Carolina",
+      "Tennessee",
+      "Texas",
+      "Virginia",
+      "West Virginia",
+    ],
+  },
+  West: {
+    // The contiguous part: Alaska and Hawaii are in the region but would shrink the frame.
+    bounds: [
+      [-124.8, 31.3],
+      [-102, 49],
+    ],
+    states: [
+      "Alaska",
+      "Arizona",
+      "California",
+      "Colorado",
+      "Hawaii",
+      "Idaho",
+      "Montana",
+      "Nevada",
+      "New Mexico",
+      "Oregon",
+      "Utah",
+      "Washington",
+      "Wyoming",
+    ],
+  },
+};
+
+const population = new Map(STATE_POPULATION);
+
+/** The states of a region, as the `MapRegions` rows. */
+export const stateRows = (region: CensusRegion) =>
+  CENSUS_REGIONS[region].states.map((name) => ({
+    id: name,
+    name,
+    value: population.get(name) ?? 0,
+  }));
+
+/** The regions and their total population, as the `MapRegions` rows. */
+export const regionRows = CENSUS_REGION_NAMES.map((name) => ({
+  id: name,
+  name,
+  value: Math.round(stateRows(name).reduce((sum, state) => sum + state.value, 0) * 100) / 100,
+}));
+
+// --- Great circles ---------------------------------------------------------------------------
+
+type Airport = { name: string; position: [longitude: number, latitude: number] };
+
+export const AIRPORT_HUB: Airport = { name: "Singapore", position: [103.99, 1.36] };
+export const AIRPORTS: Airport[] = [
+  { name: "London", position: [-0.45, 51.47] },
+  { name: "Los Angeles", position: [-118.41, 33.94] },
+  { name: "Sydney", position: [151.18, -33.95] },
+  { name: "Johannesburg", position: [28.24, -26.13] },
+  { name: "Tokyo", position: [140.39, 35.77] },
 ];
