@@ -62,6 +62,8 @@ describe("pivot sections", () => {
     expect(moveGridPivotField(MODEL, "units", "values", -3).values).toEqual([
       { field: "units", aggFunc: "avg" },
     ]);
+    // A field from no section yet comes in bare.
+    expect(moveGridPivotField(MODEL, "price", "rows", 9).rows.at(-1)).toEqual({ field: "price" });
     const moved = moveGridPivotField(MODEL, "region", "values", 0, "size");
     expect(moved.rows).toEqual([{ field: "product" }]);
     expect(moved.values).toEqual([
@@ -173,6 +175,17 @@ describe("pivot drag", () => {
     pointer("pointerdown", field("product"), at(field("product")));
     pointer("pointermove", document, at(field("price")));
     pointer("pointerup", document, at(field("price")));
+    expect(onMove).not.toHaveBeenCalled();
+    // Another pointer's moves, and Escape before the drag starts, do nothing.
+    pointer("pointerdown", handle("product"), at(handle("product")));
+    document.dispatchEvent(
+      new PointerEvent("pointermove", { bubbles: true, pointerId: 7, ...at(field("price")) }),
+    );
+    expect(field("product").hasAttribute("data-ok-dragging")).toBe(false);
+    const early = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+    document.dispatchEvent(early);
+    expect(early.defaultPrevented).toBe(false);
+    pointer("pointerup", document, at(handle("product")));
     expect(onMove).not.toHaveBeenCalled();
     // Destroying mid-drag ends it.
     pointer("pointerdown", handle("product"), at(handle("product")));
