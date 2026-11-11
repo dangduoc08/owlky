@@ -142,7 +142,11 @@ describe("stock layout", () => {
         { type: "cci", period: 5 },
       ],
     });
-    const layout = layoutStock(render.data, { width: 600, height: 300 }, render.format);
+    const layout = layoutStock(
+      render.data,
+      { width: 600, height: 300, idPrefix: "t", format: render.format },
+      render.format,
+    );
     expect(new Set(layout.marks.map((mark) => mark.series))).toEqual(new Set([0, 1, 2]));
     const rsi = find(layout.nodes, "data-ok-chart-pane", "1")[0];
     expect(find(rsi?.children ?? [], "data-ok-chart-guide")).toHaveLength(2);

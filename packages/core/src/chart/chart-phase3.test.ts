@@ -533,7 +533,8 @@ describe("funnels and slopes called directly", () => {
       categories: ["a"],
       series: [{ name: "N", data: [3, 2] }],
     });
-    const funnel = layoutFunnel(data, { width: 400, height: 240 }, chartFormat(data));
+    const format = chartFormat(data);
+    const funnel = layoutFunnel(data, { width: 400, height: 240, idPrefix: "t", format }, format);
     expect(funnel.marks).toHaveLength(2);
     expect(find(funnel.nodes, "data-ok-chart-tick").map((n) => n.text)).toEqual(["a", "2"]);
     const slopeData = chartData({
@@ -544,7 +545,12 @@ describe("funnels and slopes called directly", () => {
         { name: "B", data: [2, 1] },
       ],
     });
-    const slope = layoutSlope(slopeData, { width: 400, height: 240 }, chartFormat(slopeData));
+    const slopeFormat = chartFormat(slopeData);
+    const slope = layoutSlope(
+      slopeData,
+      { width: 400, height: 240, idPrefix: "t", format: slopeFormat },
+      slopeFormat,
+    );
     expect(new Set(slope.marks.map((mark) => mark.series))).toEqual(new Set([0, 1]));
   });
 });

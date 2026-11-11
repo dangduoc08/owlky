@@ -217,7 +217,7 @@ describe("chartIndicatorSeries", () => {
       const [bands] = chartIndicatorSeries(data, [{ type: "bollinger", period: 3, stdDev }]);
       const point = bands?.points.find((p) => p.range && p.range[1] !== p.range[0]);
       const [lo, hi] = point?.range ?? [0, 0];
-      return { name: bands?.name, width: hi - lo };
+      return { name: bands?.name, width: (hi ?? 0) - (lo ?? 0) };
     };
     expect(width(3).name).toBe("Bollinger 3, 3");
     expect(width().name).toBe("Bollinger 3, 2");

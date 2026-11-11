@@ -276,7 +276,7 @@ describe("measure rulers on bars and several series", () => {
     const band = all(layout.nodes).find((n) => n.attrs["data-ok-chart-measure-band"] !== undefined);
     const first = layout.slots[1] as { pos: number };
     // The band starts half a category before the first slot's center.
-    expect(Number(band?.attrs.x)).toBeLessThan(first.pos);
+    expect(Number(band?.attrs["x"])).toBeLessThan(first.pos);
   });
 });
 
