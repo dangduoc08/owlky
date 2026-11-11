@@ -228,6 +228,56 @@ describe("draggable annotations", () => {
     );
     expect(chartAnnotationText({ axis: "y", y: 1 })).toBe("Annotation: 1");
   });
+
+  it("keeps positions it can't move, and falls back on axes without categories", () => {
+    const numeric = chartData({ type: "scatter", series: [{ name: "A", data: [[0, 0]] }] });
+    // A numeric axis can't place "abc": the annotation keeps its x.
+    expect(moveChartAnnotation(numeric, { axis: "x", x: "abc" }, 1, 0).x).toBe("abc");
+    // A point without y moves along x only.
+    const data = chartData({ categories: MONTHS, series: [] });
+    expect(moveChartAnnotation(data, { axis: "point", x: "Feb" }, 1, 5)).toEqual({
+      axis: "point",
+      x: "Mar",
+      y: undefined,
+    });
+    // A category axis with no categories: positions clamp to the first slot.
+    const empty = chartData({ categories: [], series: [] });
+    expect(moveChartAnnotation(empty, { axis: "x", x: 2 }, 1, 0).x).toBe(0);
+  });
+
+  it("picks the nearest of several annotations in reach; text notes reach three times as far", () => {
+    const hits = [
+      { index: 0, axis: "y" as const, py: 100 },
+      { index: 1, axis: "y" as const, py: 104 },
+      { index: 2, axis: "text" as const, px: 300, py: 50 },
+    ];
+    expect(chartAnnotationAt(hits, 10, 103)).toBe(1);
+    expect(chartAnnotationAt(hits, 10, 101)).toBe(0);
+    expect(chartAnnotationAt(hits, 315, 50)).toBe(2);
+    expect(chartAnnotationAt(hits, 330, 50)).toBeUndefined();
+  });
+});
+
+describe("measure rulers on bars and several series", () => {
+  it("span rulers read the first series where marks share an x, and bands cover the bars", () => {
+    const render = renderChart({
+      ...base,
+      type: "bar",
+      series: [
+        { name: "A", data: [10, 20, 15, 30, 25, 40] },
+        { name: "B", data: [1, 2, 3, 4, 5, 6] },
+      ],
+      measures: [{ x1: 1, y1: 0, x2: 2, y2: 0 }],
+      measureMode: "span",
+    });
+    const { layout } = render;
+    const span = chartMeasureBetween(layout, "span", { x: 1, y: 0 }, { x: 2, y: 0 });
+    expect([span.y1, span.y2]).toEqual([20, 15]);
+    const band = all(layout.nodes).find((n) => n.attrs["data-ok-chart-measure-band"] !== undefined);
+    const first = layout.slots[1] as { pos: number };
+    // The band starts half a category before the first slot's center.
+    expect(Number(band?.attrs["x"])).toBeLessThan(first.pos);
+  });
 });
 
 describe("measure and annotation gestures", () => {

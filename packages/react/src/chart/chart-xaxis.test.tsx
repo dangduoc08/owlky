@@ -64,6 +64,11 @@ describe("Chart x axis and forecast", () => {
     );
     const root = container.querySelector("[data-ok-chart]") as HTMLElement;
     expect(root.getAttribute("data-ok-brush-target")).toBe("a b");
+    // A list of empty ids is no brush at all.
+    const { container: none } = render(
+      <Chart label="Plain" brushTarget={["", ""]} categories={MONTHS} series={SALES} />,
+    );
+    expect(none.querySelector("[data-ok-chart]")?.hasAttribute("data-ok-brush-target")).toBe(false);
     expect(root.querySelector("[data-ok-chart-annotation-text]")?.textContent).toBe("Note");
     expect(
       root

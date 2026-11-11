@@ -75,6 +75,19 @@ describe("tree rows", () => {
       { id: "r", parent: "q", name: "r" },
     ];
     expect(gridTreeRows(loop, { ...base, expanded: () => true }).map((r) => r.id)).toEqual(["p"]);
+    // A repeated id under itself (bad data) is shown once and ends there.
+    const twice: Node[] = [
+      { id: "x", parent: null, name: "x" },
+      { id: "x", parent: "x", name: "x again" },
+    ];
+    const shown = gridTreeRows(twice, { ...base, expanded: () => true });
+    expect(shown.map((r) => r.row.name)).toEqual(["x"]);
+    expect(shown[0]?.childrenCount).toBe(1);
+  });
+
+  it("fields outside every column group move next to each other", () => {
+    expect(gridCanMoveColumn(new Map(), "a", "b")).toBe(true);
+    expect(gridCanMoveColumn(new Map([["a", ["g"]]]), "a", "b")).toBe(false);
   });
 
   it("parents from paths", () => {

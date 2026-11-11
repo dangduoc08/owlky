@@ -159,3 +159,66 @@ describe("trellis panels", () => {
     expect(dates[0]?.title).toBe("2025-01-01");
   });
 });
+
+describe("drilldown and trellis edge cases", () => {
+  it("drops levels whose id isn't a string", () => {
+    expect(
+      chartDrilldownLevels([
+        { id: 7 as never, series: [] },
+        null as never,
+        { id: "ok", series: [] },
+      ]).map((level) => level.id),
+    ).toEqual(["ok"]);
+  });
+
+  it("reads level tables: no caption, no own type, the chart's type, an unknown type, shared rows", () => {
+    const root = document.createElement("figure");
+    const table = (attrs: string, caption = "") =>
+      `<table data-ok-chart-drilldown${attrs}>${caption}<thead><tr><th>x</th><th>S</th></tr></thead><tbody><tr><th>1</th><td>1</td></tr></tbody></table>`;
+    root.innerHTML = [
+      table('="plain"'),
+      table('="same" data-ok-type="bar"', "<caption>  </caption>"),
+      table('="odd" data-ok-type="nope"'),
+      table('="area" data-ok-type="area"', "<caption>Area</caption>"),
+    ].join("");
+    const tables = readChartDrilldownTables(root, "category", "bar");
+    expect(tables.map((level) => [level.id, level.name, level.type])).toEqual([
+      ["plain", undefined, undefined],
+      ["same", undefined, undefined],
+      ["odd", undefined, undefined],
+      ["area", "Area", "area"],
+    ]);
+    expect(tables[0]?.categories).toEqual(["1"]);
+    // Timeline rows sharing a category: the level has no categories, its points carry x.
+    const timeline = document.createElement("figure");
+    timeline.innerHTML = `<table data-ok-chart-drilldown="t"><thead><tr><th>Task</th><th colspan="2">Design</th></tr><tr><th data-ok-part="start">s</th><th data-ok-part="end">e</th></tr></thead><tbody><tr><th>A</th><td data-ok-value="2025-01-01">a</td><td data-ok-value="2025-01-20">b</td></tr><tr><th>A</th><td data-ok-value="2025-01-22">a</td><td data-ok-value="2025-01-30">b</td></tr></tbody></table>`;
+    const shared = readChartDrilldownTables(timeline, "category", "timeline");
+    expect(shared[0]?.categories).toBeUndefined();
+    expect((shared[0]?.series[0]?.data[1] as { x: string } | undefined)?.x).toBe("A");
+  });
+
+  it("trellis by category reads [x, y] pairs, objects and ranges; gaps and short series are null", () => {
+    const panels = chartTrellisPanels({
+      series: [
+        { name: "Pairs", data: [[0, 4] as never, [1, 8] as never] },
+        { name: "Objects", data: [{ y: 6 } as never, { x: 1 } as never] },
+        { name: "Ranges", data: [{ y: [2, 9] } as never] },
+      ],
+      categories: ["Jan", "Feb"],
+      by: "category",
+    });
+    expect(panels[0]?.series[0]?.data).toEqual([4, 6, 2]);
+    expect(panels[1]?.series[0]?.data).toEqual([8, null, null]);
+    // By series, a range's high end counts toward the shared domain.
+    const ranges = chartTrellisPanels({ series: [{ name: "R", data: [{ y: [2, 9] } as never] }] });
+    expect(ranges[0]?.yMax).toBeGreaterThanOrEqual(9);
+    // No categories: no panels.
+    expect(chartTrellisPanels({ series: [{ name: "S", data: [1] }], by: "category" })).toEqual([]);
+  });
+
+  it("an all-zero shared domain still has a height", () => {
+    const panels = chartTrellisPanels({ series: [{ name: "Flat", data: [0, 0] }] });
+    expect(panels[0]?.yMin).toBe(0);
+    expect(panels[0]?.yMax).toBeGreaterThan(0);
+  });
+});

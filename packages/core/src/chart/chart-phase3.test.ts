@@ -3,6 +3,7 @@ import { chartAttributes } from "../anatomy/anatomy.js";
 import { type ChartRenderInput, renderChart } from "./chart.js";
 import { chartActiveAt, chartActiveNodes, chartTooltip, nextChartActive } from "./chart-active.js";
 import { squarify } from "./chart-cells.js";
+import { chartFormat } from "./chart-format.js";
 import type { ChartLayout, ChartNode } from "./chart-layout.js";
 import {
   type ChartSeries,
@@ -11,6 +12,7 @@ import {
   isWholeChart,
   readChartTable,
 } from "./chart-model.js";
+import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 
 /*
  * Phase 3 (ADR-0027, ADR-0029): box plots, heatmaps, treemaps, bubbles, range areas, funnels,
@@ -521,6 +523,35 @@ describe("funnels and slopes", () => {
     expect(find(one.layout.nodes, "data-ok-chart-marker")).toHaveLength(0);
     expect(find(one.layout.nodes, "data-ok-chart-line")[0]?.attrs["stroke-dasharray"]).toBe("3");
     expect(draw({ type: "slope", series: [] }).layout.marks).toEqual([]);
+  });
+});
+
+describe("funnels and slopes called directly", () => {
+  it("number the categories the data doesn't name, and show every series without `hidden`", () => {
+    const data = chartData({
+      type: "funnel",
+      categories: ["a"],
+      series: [{ name: "N", data: [3, 2] }],
+    });
+    const format = chartFormat(data);
+    const funnel = layoutFunnel(data, { width: 400, height: 240, idPrefix: "t", format }, format);
+    expect(funnel.marks).toHaveLength(2);
+    expect(find(funnel.nodes, "data-ok-chart-tick").map((n) => n.text)).toEqual(["a", "2"]);
+    const slopeData = chartData({
+      type: "slope",
+      categories: ["a", "b"],
+      series: [
+        { name: "A", data: [1, 2] },
+        { name: "B", data: [2, 1] },
+      ],
+    });
+    const slopeFormat = chartFormat(slopeData);
+    const slope = layoutSlope(
+      slopeData,
+      { width: 400, height: 240, idPrefix: "t", format: slopeFormat },
+      slopeFormat,
+    );
+    expect(new Set(slope.marks.map((mark) => mark.series))).toEqual(new Set([0, 1]));
   });
 });
 

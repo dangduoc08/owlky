@@ -185,6 +185,25 @@ describe("sunburst layout", () => {
   });
 });
 
+describe("sunburst and icicle without a share", () => {
+  it("draws no arc or cell for a node worth nothing; its siblings share the turn", () => {
+    const data: ChartHierarchyNode[] = [
+      { name: "Some", value: 3 },
+      { name: "None", value: 0 },
+      { name: "More", value: 1 },
+    ];
+    for (const type of ["sunburst", "icicle"] as const) {
+      const { layout } = renderChart({ ...base, type, hierarchy: data });
+      const ids = layout.marks.map((mark) => mark.tree?.id);
+      expect(ids).toEqual(["Some", "More"]);
+    }
+    const sunburst = draw({ hierarchy: data }).layout;
+    const some = hit(sunburst, "Some");
+    const more = hit(sunburst, "More");
+    expect(some.end - some.start).toBeCloseTo(3 * (more.end - more.start), 1);
+  });
+});
+
 describe("sunburst interaction", () => {
   const { layout } = draw({ hierarchy: DATA });
   const key = (from: string | null, name: string) => {

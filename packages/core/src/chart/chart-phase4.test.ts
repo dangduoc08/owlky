@@ -1090,6 +1090,22 @@ describe("export", () => {
     const plain = document.createElement("table");
     plain.innerHTML = "<tr><th>X</th></tr><tr><td>1</td></tr>";
     expect(chartCsv(plain)).toBe("X\r\n1");
+    // Ragged rows: a short header line and short body lines are padded with empty fields.
+    const ragged = document.createElement("table");
+    ragged.innerHTML =
+      "<thead><tr><th>X</th><th></th></tr></thead><tbody><tr><td>1</td><td>2</td><td>3</td></tr><tr><td>4</td></tr></tbody>";
+    expect(chartCsv(ragged).split("\r\n")).toEqual(["X,,", "1,2,3", "4,,"]);
+  });
+
+  it("an SVG without a viewBox or a paper color gets the default size on white", () => {
+    const root = document.createElement("figure");
+    root.innerHTML = `<svg data-ok-chart-svg><rect width="1" height="1"></rect></svg>`;
+    root.style.setProperty("--ok-bg-paper", " ");
+    document.body.append(root);
+    const text = chartSvgText(root);
+    expect(text).toContain('width="640"');
+    expect(text).toContain('height="320"');
+    expect(text).toMatch(/<rect width="100%" height="100%" fill="#ffffff"/);
   });
 
   it("inlines paints into the SVG and adds the paper background", () => {
@@ -1338,5 +1354,137 @@ describe("gestures", () => {
     plot.dispatchEvent(new PointerEvent("pointermove", { pointerId: 1, pointerType: "mouse" }));
     expect(commits).toEqual([]);
     gestures.destroy();
+  });
+
+  /** A host whose layout the test swaps mid-drag. */
+  const swappable = (
+    mode: "zoom" | "pan" | "brush" | "measure",
+    range: ChartZoom | null = null,
+  ) => {
+    const plot = document.createElement("div");
+    plot.style.width = "400px";
+    plot.style.height = "240px";
+    document.body.append(plot);
+    const render = draw(LINE);
+    let layout: typeof render.layout | undefined = render.layout;
+    const state = {
+      range,
+      previews: [] as (ChartZoom | null)[],
+      commits: [] as (ChartZoom | null)[],
+      measures: [] as boolean[],
+    };
+    const gestures = createChartGestures(plot, {
+      layout: () => layout,
+      mode: () => mode,
+      range: () => state.range,
+      extent: () => render.extent,
+      preview: (r) => state.previews.push(r),
+      commit: (r) => {
+        state.commits.push(r);
+        state.range = r;
+      },
+      measure: (_from, _to, end) => state.measures.push(end),
+    });
+    const box = plot.getBoundingClientRect();
+    const map = render.layout.x as { from: number; to: number };
+    const at = (i: number) => box.left + map.from + ((map.to - map.from) * i) / 7;
+    const fire = (type: string, x: number, init: PointerEventInit = {}) =>
+      plot.dispatchEvent(
+        new PointerEvent(type, {
+          clientX: x,
+          clientY: box.top + 100,
+          bubbles: true,
+          pointerId: 1,
+          pointerType: "mouse",
+          button: 0,
+          ...init,
+        }),
+      );
+    const setLayout = (next: typeof layout) => {
+      layout = next;
+    };
+    return { plot, state, gestures, at, fire, render, setLayout };
+  };
+
+  it("a layout that goes away mid-drag stops the drag; one without an x axis pans nothing", () => {
+    const zoom = swappable("zoom");
+    zoom.fire("pointerdown", zoom.at(2));
+    zoom.setLayout(undefined);
+    zoom.fire("pointermove", zoom.at(5));
+    expect(zoom.state.previews).toEqual([]);
+    zoom.fire("pointerup", zoom.at(5));
+    // A pan whose new layout has no x axis: no units per px, positions at 0, an index axis.
+    const pan = swappable("pan", { min: 2, max: 4 });
+    pan.setLayout({ ...pan.render.layout, x: { ...pan.render.layout.x, to: 0, from: 0 } as never });
+    pan.fire("pointerdown", pan.at(4));
+    pan.setLayout({ ...pan.render.layout, x: undefined });
+    pan.fire("pointermove", pan.at(2));
+    expect(pan.state.commits.at(-1)).toEqual({ min: 2, max: 4 });
+  });
+
+  it("a press on a plot with no width uses the layout's own width", () => {
+    const zoom = swappable("zoom");
+    zoom.plot.style.width = "0px";
+    zoom.plot.style.overflow = "visible";
+    zoom.fire("pointerdown", zoom.plot.getBoundingClientRect().left + 100);
+    zoom.fire("pointermove", zoom.plot.getBoundingClientRect().left + 300);
+    expect(zoom.state.previews.length).toBeGreaterThan(0);
+    zoom.fire("pointerup", zoom.plot.getBoundingClientRect().left + 300);
+  });
+
+  it("measure drags start reporting only after the pointer moves 4px", () => {
+    const measure = swappable("measure");
+    measure.fire("pointerdown", measure.at(2));
+    measure.fire("pointermove", measure.at(2) + 1);
+    expect(measure.state.measures).toEqual([]);
+    measure.fire("pointermove", measure.at(4));
+    expect(measure.state.measures).toEqual([false]);
+    measure.fire("pointerup", measure.at(4));
+    expect(measure.state.measures).toEqual([false, true]);
+  });
+
+  it("two fingers at one spot pinch from a 1px distance", () => {
+    const { state, at, fire } = swappable("zoom", { min: 1, max: 7 });
+    fire("pointerdown", at(3), { pointerType: "touch", pointerId: 1 });
+    fire("pointerdown", at(3), { pointerType: "touch", pointerId: 2 });
+    fire("pointermove", at(3), { pointerType: "touch", pointerId: 2 });
+    const pinched = state.commits.at(-1) as ChartZoom;
+    // Same distance before and after: the window keeps its width.
+    expect(pinched.max - pinched.min).toBeCloseTo(6, 5);
+    fire("pointerup", at(3), { pointerType: "touch", pointerId: 2 });
+    fire("pointerup", at(3), { pointerType: "touch", pointerId: 1 });
+  });
+
+  it("a brush with no selection and no extent draws a new one", () => {
+    const plot = document.createElement("div");
+    plot.style.width = "400px";
+    document.body.append(plot);
+    const render = draw(LINE);
+    const commits: (ChartZoom | null)[] = [];
+    createChartGestures(plot, {
+      layout: () => render.layout,
+      mode: () => "brush",
+      range: () => null,
+      extent: () => null,
+      preview: () => {},
+      commit: (r) => commits.push(r),
+    });
+    const box = plot.getBoundingClientRect();
+    const fire = (type: string, x: number) =>
+      plot.dispatchEvent(
+        new PointerEvent(type, {
+          clientX: box.left + x,
+          clientY: box.top + 50,
+          bubbles: true,
+          pointerId: 1,
+          pointerType: "mouse",
+          button: 0,
+        }),
+      );
+    fire("pointerdown", 100);
+    fire("pointermove", 200);
+    fire("pointerup", 200);
+    // Without an extent nothing can be clamped: the brush reports no selection.
+    expect(commits.every((range) => range === null)).toBe(true);
   });
 });

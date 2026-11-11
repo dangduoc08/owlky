@@ -211,4 +211,27 @@ describe("chartIndicatorSeries", () => {
     expect(sma?.name).toBe("SMA 20");
     expect(volume?.points.every((p) => p.color === undefined)).toBe(true);
   });
+
+  it("takes a valid band width: 3 deviations are wider than the default 2", () => {
+    const width = (stdDev?: number) => {
+      const [bands] = chartIndicatorSeries(data, [{ type: "bollinger", period: 3, stdDev }]);
+      const point = bands?.points.find((p) => p.range && p.range[1] !== p.range[0]);
+      const [lo, hi] = point?.range ?? [0, 0];
+      return { name: bands?.name, width: (hi ?? 0) - (lo ?? 0) };
+    };
+    expect(width(3).name).toBe("Bollinger 3, 3");
+    expect(width().name).toBe("Bollinger 3, 2");
+    expect(width(3).width).toBeCloseTo((width().width * 3) / 2, 2);
+  });
+
+  it("a window with a missing high or low has no stochastic value", () => {
+    const p = prices(close);
+    const { k } = stochasticValues(
+      { ...p, high: [p.high[0] ?? null, null, ...p.high.slice(2)] },
+      3,
+      1,
+    );
+    // Bars 1–3 see the gap; bar 4's window (2–4) doesn't.
+    expect(k.slice(0, 5).map((v) => v === null)).toEqual([true, true, true, true, false]);
+  });
 });

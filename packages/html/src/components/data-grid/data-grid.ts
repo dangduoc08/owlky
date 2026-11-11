@@ -4490,7 +4490,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (!back) return;
         set.replaceWith(back);
         (back.querySelector("input") as HTMLInputElement).value = "";
-        if (!wantSet) return syncValueField(row);
+        // Again with the value field back in place (another set column builds its own list).
+        return syncValueField(row);
       }
       if (wantSet) {
         const box = (input?.closest<HTMLElement>("[data-ok-text-field]") ??

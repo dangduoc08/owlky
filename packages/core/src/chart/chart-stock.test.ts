@@ -5,6 +5,7 @@ import { chartActiveAt, chartActiveNodes, chartTooltip } from "./chart-active.js
 import { createChartGestures } from "./chart-gestures.js";
 import type { ChartLayout, ChartNode } from "./chart-layout.js";
 import { readChartTable } from "./chart-model.js";
+import { layoutStock } from "./chart-stock.js";
 import { chartTextAttributes } from "./chart-text.js";
 import type { ChartZoom } from "./chart-zoom.js";
 
@@ -132,6 +133,23 @@ describe("stock layout", () => {
       ["RSI 14", true],
     ]);
     expect(render.layout.marks.some((m) => m.series === 1 || m.series === 2)).toBe(false);
+  });
+
+  it("without a hidden list, every series of every pane draws, with the RSI guides", () => {
+    const render = draw({
+      indicators: [
+        { type: "rsi", period: 5 },
+        { type: "cci", period: 5 },
+      ],
+    });
+    const layout = layoutStock(
+      render.data,
+      { width: 600, height: 300, idPrefix: "t", format: render.format },
+      render.format,
+    );
+    expect(new Set(layout.marks.map((mark) => mark.series))).toEqual(new Set([0, 1, 2]));
+    const rsi = find(layout.nodes, "data-ok-chart-pane", "1")[0];
+    expect(find(rsi?.children ?? [], "data-ok-chart-guide")).toHaveLength(2);
   });
 
   it("draws a navigator with the zoom as a brush", () => {

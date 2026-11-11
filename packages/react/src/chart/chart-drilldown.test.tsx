@@ -63,6 +63,41 @@ describe("Chart drilldown", () => {
     fireEvent.click(back);
     expect(onDrilldownChange).toHaveBeenCalledWith([]);
   });
+
+  it("Back at the top level does nothing; a level with several values per point has a two-row head", () => {
+    const onDrilldownChange = vi.fn();
+    const { container } = render(
+      <Chart
+        label="Scores"
+        type="bar"
+        categories={["2015"]}
+        series={[{ name: "Scores", data: [{ y: 7, drilldown: "boxes" }] }]}
+        drilldown={[
+          {
+            id: "boxes",
+            name: "Spread",
+            type: "boxPlot",
+            categories: ["A", "B"],
+            series: [
+              { name: "Scores", data: [{ y: [54, 66, 69, 75, 88] }, { y: [31, 39, 45, 51, 59] }] },
+            ],
+          },
+        ]}
+        onDrilldownChange={onDrilldownChange}
+      />,
+    );
+    const back = container.querySelector("[data-ok-chart-drill-up]") as HTMLButtonElement;
+    fireEvent.click(back);
+    expect(onDrilldownChange).not.toHaveBeenCalled();
+    const table = container.querySelector('table[data-ok-chart-drilldown="boxes"]') as HTMLElement;
+    const heads = table.querySelectorAll("thead tr");
+    expect(heads).toHaveLength(2);
+    expect(heads[0]?.querySelector("[colspan='5']")?.getAttribute("scope")).toBe("colgroup");
+    expect([...(heads[1]?.querySelectorAll("th") ?? [])].map((th) => th.scope)).toEqual(
+      Array(5).fill("col"),
+    );
+    expect(heads[1]?.textContent).toBe("MinimumQ1MedianQ3Maximum");
+  });
 });
 
 describe("ChartTrellis", () => {

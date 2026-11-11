@@ -413,4 +413,21 @@ describe("data grid set filter", () => {
     expect(panel.querySelector("[data-ok-data-grid-set-filter]")).toBeNull();
     expect(panel.querySelector<HTMLInputElement>("#grid-set-filter-value")?.type).toBe("text");
   });
+
+  it("filter panel: another set column replaces the checklist with its own", () => {
+    const { host } = setup(snippet("set-group"));
+    const panel = host.querySelector("#grid-set-filters") as HTMLElement;
+    const field = panel.querySelector("#grid-set-filter-field") as HTMLSelectElement;
+    const change = (value: string) => {
+      field.value = value;
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+    change("points");
+    change("priority");
+    const lists = panel.querySelectorAll("[data-ok-data-grid-set-filter]");
+    expect(lists).toHaveLength(1);
+    expect(lists[0]?.getAttribute("data-ok-field")).toBe("priority");
+    expect(lists[0]?.id).toBe("grid-set-filter-value");
+    expect(values(lists[0] as Element)).toEqual(["High", "Low", "Medium"]);
+  });
 });

@@ -157,4 +157,84 @@ describe("Chart crossfilter", () => {
     fireEvent.keyDown(overview as HTMLElement, { key: "0" });
     expect(onFilter).toHaveBeenLastCalledWith(null, false);
   });
+
+  it("a chart whose filter was replaced by another's keeps the newer one when it deselects", () => {
+    const onFilter = vi.fn();
+    const { container } = render(
+      <>
+        <Chart
+          label="A"
+          type="bar"
+          group="swap"
+          crossfilter="highlight"
+          categories={REGIONS}
+          series={ORDERS}
+        />
+        <Chart
+          label="B"
+          type="bar"
+          group="swap"
+          crossfilter="highlight"
+          categories={REGIONS}
+          series={REVENUE}
+        />
+        <Chart
+          label="C"
+          type="bar"
+          group="swap"
+          crossfilter="filter"
+          categories={REGIONS}
+          series={REVENUE}
+          onFilterChange={onFilter}
+        />
+      </>,
+    );
+    const [a, b] = plots(container);
+    fireEvent.keyDown(a as HTMLElement, { key: "Home" });
+    fireEvent.keyDown(a as HTMLElement, { key: "Enter" });
+    expect(onFilter).toHaveBeenLastCalledWith([0], false);
+    fireEvent.keyDown(b as HTMLElement, { key: "End" });
+    fireEvent.keyDown(b as HTMLElement, { key: "Enter" });
+    expect(onFilter).toHaveBeenLastCalledWith([3], false);
+    // A deselects North: the group's filter is B's, so nothing changes.
+    fireEvent.keyDown(a as HTMLElement, { key: "Enter" });
+    expect(onFilter).toHaveBeenLastCalledWith([3], false);
+    const third = container.querySelectorAll("[data-ok-chart]")[2] as HTMLElement;
+    expect(third.querySelectorAll("[data-ok-chart-bar]")).toHaveLength(1);
+  });
+
+  it("a chart linking again with a selection still filters its group", () => {
+    const onFilter = vi.fn();
+    const view = (mode: "filter" | "highlight") => (
+      <>
+        <Chart
+          label="A"
+          type="bar"
+          group="relink"
+          crossfilter={mode}
+          categories={REGIONS}
+          series={ORDERS}
+        />
+        <Chart
+          label="B"
+          type="bar"
+          group="relink"
+          crossfilter="filter"
+          categories={REGIONS}
+          series={REVENUE}
+          onFilterChange={onFilter}
+        />
+      </>
+    );
+    const { container, rerender } = render(view("filter"));
+    const [a] = plots(container);
+    fireEvent.keyDown(a as HTMLElement, { key: "Home" });
+    fireEvent.keyDown(a as HTMLElement, { key: "Enter" });
+    expect(onFilter).toHaveBeenLastCalledWith([0], false);
+    onFilter.mockClear();
+    rerender(view("highlight"));
+    expect(onFilter).toHaveBeenLastCalledWith([0], false);
+    const second = container.querySelectorAll("[data-ok-chart]")[1] as HTMLElement;
+    expect(second.querySelectorAll("[data-ok-chart-bar]")).toHaveLength(1);
+  });
 });
