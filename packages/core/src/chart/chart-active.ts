@@ -263,6 +263,7 @@ const BLOCKS: readonly string[] = [
   "rangeBar",
   "timeline",
   "waterfall",
+  "violin",
 ];
 /** Series types whose points have their own colors in the tooltip (not the series color). */
 const OWN_COLORS: readonly string[] = [
@@ -582,6 +583,23 @@ function tooltipOf(
         {
           name: several("waterfall") ? `${series.name} (${total})` : total,
           value: value((range as readonly number[])[1] as number),
+          color,
+        },
+      ];
+    }
+    if (mark.type === "violin" && range) {
+      // Violins (4.18.21): the five numbers and how many observations they summarize.
+      return [
+        ...BOX.map((part, i) => ({
+          name: several("violin") ? `${series.name} (${format.part(part)})` : format.part(part),
+          value: value(range[i] as number),
+          color,
+        })),
+        {
+          name: several("violin")
+            ? `${series.name} (${format.part("count")})`
+            : format.part("count"),
+          value: format.number(mark.count as number),
           color,
         },
       ];

@@ -45,6 +45,9 @@ import {
   type ChartTooltipCorner,
   type ChartTooltipMode,
   type ChartType,
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
   type ChartXType,
   type ChartYAxis,
   type ChartZoom,
@@ -364,6 +367,30 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
   hideConnectors?: boolean | undefined;
+  /** Violins: each violin fills its slot (`individual`) or all share one density scale (`group`). Default `"individual"`. */
+  violinNormalize?: ChartViolinNormalize | undefined;
+  /** Violins: symmetric (`both`) or half a violin: `left`, `right`, `top` or `bottom`. Default `"both"`. */
+  violinSide?: ChartViolinSide | undefined;
+  /** Violins: multiplies the drawn half-width. Default 1. */
+  bandwidthScale?: number | undefined;
+  /** Violins: the kernel width of the density estimate, in value units. Default Silverman's rule. */
+  kdeBandwidth?: number | undefined;
+  /** Violins: density samples per violin (4 to 256). Default 64. */
+  kdeResolution?: number | undefined;
+  /** Violins: a five-number box beside the density. */
+  violinBox?: boolean | undefined;
+  /** Violin boxes: whiskers at the extremes (`minmax`) or Tukey's fences (`tukey`). Default `"minmax"`. */
+  violinWhiskers?: ChartViolinWhiskers | undefined;
+  /** Violins: no dots for the observations. */
+  hideViolinPoints?: boolean | undefined;
+  /** Violins: the radius of the observation dots in pixels. Default 2.5. */
+  violinPointSize?: number | undefined;
+  /** Violins: how far the dots spread, as a share of the half-width (0 to 1). Default 0.5. */
+  violinJitter?: number | undefined;
+  /** Violins: the dots may leave the density outline. */
+  unconstrainedViolinPoints?: boolean | undefined;
+  /** Violins: the most dots per violin; extra observations are thinned evenly. Default 3000. */
+  violinMaxPoints?: number | undefined;
   /** Streamgraphs: the baseline: `wiggle`, `silhouette`, `zero` or `expand`. Default `"wiggle"`. */
   streamOffset?: ChartStreamOffset | undefined;
   /** Streamgraphs: the stacking order: `inside-out`, `inverse` or `none`. Default `"inside-out"`. */
@@ -554,6 +581,18 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     hideStreamLabels,
     streamLabelMinWidth,
     streamHoverOpacity,
+    violinNormalize,
+    violinSide,
+    bandwidthScale,
+    kdeBandwidth,
+    kdeResolution,
+    violinBox,
+    violinWhiskers,
+    hideViolinPoints,
+    violinPointSize,
+    violinJitter,
+    unconstrainedViolinPoints,
+    violinMaxPoints,
     dumbbellColors,
     dataLabelBackground,
     dataLabelFormatter,
@@ -663,6 +702,18 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     hideStreamLabels,
     streamLabelMinWidth,
     streamHoverOpacity,
+    violinNormalize,
+    violinSide,
+    bandwidthScale,
+    kdeBandwidth,
+    kdeResolution,
+    violinBox,
+    violinWhiskers,
+    hideViolinPoints,
+    violinPointSize,
+    violinJitter,
+    unconstrainedViolinPoints,
+    violinMaxPoints,
     crossfilter,
     direction,
     layoutType,
@@ -728,6 +779,20 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const streamLabelsOff = attributes["data-ok-hide-stream-labels"] !== undefined;
   const validStreamLabelMin = number("data-ok-stream-label-min-width");
   const validStreamHover = number("data-ok-stream-hover-opacity");
+  const validViolinNormalize = attributes["data-ok-violin-normalize"] as
+    | ChartViolinNormalize
+    | undefined;
+  const validViolinSide = attributes["data-ok-violin-side"] as ChartViolinSide | undefined;
+  const validBandwidthScale = number("data-ok-bandwidth-scale");
+  const validKdeBandwidth = number("data-ok-kde-bandwidth");
+  const validKdeResolution = number("data-ok-kde-resolution");
+  const violinBoxOn = attributes["data-ok-violin-box"] !== undefined;
+  const validWhiskers = attributes["data-ok-violin-whiskers"] as ChartViolinWhiskers | undefined;
+  const violinPointsOff = attributes["data-ok-hide-violin-points"] !== undefined;
+  const validViolinPointSize = number("data-ok-violin-point-size");
+  const validViolinJitter = number("data-ok-violin-jitter");
+  const violinUnconstrained = attributes["data-ok-unconstrained-violin-points"] !== undefined;
+  const validViolinMax = number("data-ok-violin-max-points");
   const validCrossfilter = attributes["data-ok-crossfilter"] as ChartCrossfilter | undefined;
   const navigatorOn = attributes["data-ok-navigator"] !== undefined;
   // A navigator zooms the chart: its gestures and keys are on.
@@ -884,6 +949,18 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         hideStreamLabels: streamLabelsOff,
         streamLabelMinWidth: validStreamLabelMin,
         streamHoverOpacity: validStreamHover,
+        violinNormalize: validViolinNormalize,
+        violinSide: validViolinSide,
+        bandwidthScale: validBandwidthScale,
+        kdeBandwidth: validKdeBandwidth,
+        kdeResolution: validKdeResolution,
+        violinBox: violinBoxOn,
+        violinWhiskers: validWhiskers,
+        hideViolinPoints: violinPointsOff,
+        violinPointSize: validViolinPointSize,
+        violinJitter: validViolinJitter,
+        unconstrainedViolinPoints: violinUnconstrained,
+        violinMaxPoints: validViolinMax,
         dumbbellColors,
         dataLabelBackground,
         dataLabelFormatter,
@@ -995,6 +1072,18 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       streamLabelsOff,
       validStreamLabelMin,
       validStreamHover,
+      validViolinNormalize,
+      validViolinSide,
+      validBandwidthScale,
+      validKdeBandwidth,
+      validKdeResolution,
+      violinBoxOn,
+      validWhiskers,
+      violinPointsOff,
+      validViolinPointSize,
+      validViolinJitter,
+      violinUnconstrained,
+      validViolinMax,
       dumbbellColors,
       dataLabelBackground,
       dataLabelFormatter,

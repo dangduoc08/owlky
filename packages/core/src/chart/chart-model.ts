@@ -1,6 +1,13 @@
 import { paletteColorNames } from "@owlky/tokens";
 import { pick } from "../options/define.js";
 import { toTimestamp } from "./chart-scale.js";
+import {
+  type ChartViolinInput,
+  type ChartViolinStats,
+  chartDensityText,
+  chartViolinStats,
+  parseChartViolinCell,
+} from "./chart-stats.js";
 
 /*
  * Chart data model (ADR-0024). React passes series as props; the HTML runtime reads them from the
@@ -34,6 +41,7 @@ export const chartTypes = [
   "sunburst",
   "icicle",
   "streamgraph",
+  "violin",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -119,6 +127,7 @@ const wholeTypes: readonly ChartType[] = [
   "sunburst",
   "icicle",
   "streamgraph",
+  "violin",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -152,7 +161,8 @@ export type ChartPart =
   | "parent"
   | "children"
   | "collapsed"
-  | "level";
+  | "level"
+  | "count";
 const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   boxPlot: ["min", "q1", "median", "q3", "max"],
   rangeArea: ["low", "high"],
@@ -163,6 +173,8 @@ const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   timeline: ["start", "end"],
   // Dumbbells (4.18.21): the two ends in the order given (never sorted).
   dumbbell: ["start", "end"],
+  // Violins (4.18.21): the observations' summary (the observations stay in `data-ok-samples`).
+  violin: ["count", "min", "q1", "median", "q3", "max"],
 };
 export const chartParts = (type: ChartType): readonly ChartPart[] => PARTS[type] ?? [];
 /** Every part name (an allowlist for labels read from tables and props). */
@@ -191,6 +203,7 @@ export const chartPartNames: readonly ChartPart[] = [
   "children",
   "collapsed",
   "level",
+  "count",
 ];
 /** Default text of each part (table headers and tooltip rows). */
 export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
@@ -222,6 +235,8 @@ export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   children: "Children",
   collapsed: "Collapsed",
   level: "Level",
+  // Violins (4.18.21): the number of observations (table headers and tooltip rows).
+  count: "Count",
 };
 
 /** One value of a point that has several: a number, or a date (timelines: ISO 8601, ms or Date). */
@@ -261,11 +276,14 @@ export type ChartPointInput =
   | readonly [x: number | string | Date, y: number | readonly ChartRangeValue[] | null, z?: number]
   | {
       readonly x?: number | string | Date;
-      readonly y: number | readonly ChartRangeValue[] | null;
+      /** Violins: observations, or a precomputed curve in `density` (with optional `points`). */
+      readonly y: number | readonly ChartRangeValue[] | ChartViolinInput | null;
       readonly z?: number | undefined;
       readonly color?: ChartColor | undefined;
       /** Stock charts: the bar's traded volume (ApexStock's `v`). */
       readonly v?: number | undefined;
+      /** Violins: the observations (drawn as dots; the density is estimated from them). */
+      readonly points?: readonly number[] | undefined;
       /** Waterfall charts: the bar shows the running total (its `y` is ignored). */
       readonly isTotal?: boolean | undefined;
       /** Waterfall charts: a subtotal bar, the running total in the subtotal color. */
@@ -318,6 +336,8 @@ export interface ChartPoint {
    * total). Steps have none: `range` is `[before, after]`, `y` the change.
    */
   readonly sum?: ChartSum | undefined;
+  /** Violins (4.18.21): the statistics (`y` is the median, `range` the five numbers). */
+  readonly violin?: ChartViolinStats | undefined;
 }
 
 /** Waterfall bars that show the running total (ApexCharts `isTotal` / `isSubtotal`). */
@@ -407,8 +427,9 @@ export function chartData(input: {
     input.xType,
     type === "scatter" || type === "bubble" ? "numeric" : "category",
   );
-  // Streamgraphs join series on x: numeric x values are labels, in order of first use.
-  const xType = type === "streamgraph" && givenX === "numeric" ? "category" : givenX;
+  // Streamgraphs and violins join series on x: numeric x values are labels, in order of first use.
+  const xType =
+    (type === "streamgraph" || type === "violin") && givenX === "numeric" ? "category" : givenX;
   const palette = (input.colors ?? []).filter(isColor);
   const categories: (string | number)[] = [];
   if (xType === "category")
@@ -440,6 +461,7 @@ export function chartData(input: {
       let rawY: unknown = raw;
       let rawZ: unknown;
       let rawV: unknown;
+      let rawPoints: unknown;
       let color: ChartColor | undefined;
       let sum: ChartSum | undefined;
       if (Array.isArray(raw)) {
@@ -456,11 +478,13 @@ export function chartData(input: {
           color?: unknown;
           isTotal?: unknown;
           isSubtotal?: unknown;
+          points?: unknown;
         };
         x = xType === "numeric" ? numericX(point.x) : categoryOf(point.x, position);
         rawY = point.y;
         rawZ = point.z;
         rawV = point.v;
+        rawPoints = point.points;
         if (isColor(point.color)) color = point.color;
         if (seriesType === "waterfall")
           sum =
@@ -469,7 +493,11 @@ export function chartData(input: {
       if (x === undefined) return;
       let y: number | null;
       let range: number[] | undefined;
-      if (parts > 0) {
+      const violin = seriesType === "violin" ? chartViolinStats(rawY, rawPoints) : null;
+      if (seriesType === "violin") {
+        y = violin ? violin.five[2] : null;
+        if (violin) range = [...violin.five];
+      } else if (parts > 0) {
         // Box plots and ranges: every value or none, sorted (a box is never inside out); candles
         // keep their order (y is the close). Timelines take dates.
         const parse = (value: unknown) =>
@@ -497,6 +525,7 @@ export function chartData(input: {
         ...(z !== null ? { z } : {}),
         ...(volume !== null && volume >= 0 ? { volume } : {}),
         ...(sum ? { sum } : {}),
+        ...(violin ? { violin } : {}),
       });
     });
     if (seriesType === "waterfall") runningTotals(points);
@@ -681,6 +710,19 @@ export function chartTable(
         if (!point || point.y === null)
           return [...Array.from({ length: width }, () => empty), ...tail];
         // Waterfall charts: one cell per point, the change or (sums) the running total.
+        // Violins: the summary as text, the observations (or the curve) in an attribute.
+        if (data.series[index]?.type === "violin" && point.violin) {
+          const { violin } = point;
+          return [
+            {
+              text: violin.samples.length ? formatNumber(violin.count) : "",
+              attrs: violin.samples.length
+                ? { "data-ok-samples": violin.samples.join(" ") }
+                : { "data-ok-density": chartDensityText(violin.density ?? []) },
+            },
+            ...violin.five.map((value) => cell(value, options.formatValue(value, index))),
+          ];
+        }
         if (data.series[index]?.type === "waterfall") {
           const own = cell(point.y, options.formatValue(point.y, index), point.color);
           return [point.sum ? { ...own, attrs: { ...own.attrs, "data-ok-sum": point.sum } } : own];
@@ -730,6 +772,7 @@ export function readChartTable(
     if (chartPartNames.includes(part) && label && !partLabels[part]) partLabels[part] = label;
   }
   const dates = type === "timeline";
+  const violin = type === "violin";
   const bodyRows = [...table.rows].filter((row) => !headRows.includes(row));
   const raw = (cell: Element | undefined) => cell?.getAttribute("data-ok-value") ?? cellText(cell);
   const categories: (string | number)[] = [];
@@ -770,6 +813,14 @@ export function readChartTable(
       // Waterfall charts: a cell of the running total (its text is the computed total).
       const sum = cell?.getAttribute("data-ok-sum");
       const v = volumeAt >= 0 ? value(first + volumeAt) : null;
+      // Violins: the data is the observations or the curve, never the summary cells' text.
+      if (violin)
+        return {
+          y: parseChartViolinCell(
+            cell?.getAttribute("data-ok-samples"),
+            cell?.getAttribute("data-ok-density"),
+          ),
+        };
       let y: number | number[] | null;
       let z: number | null = null;
       if (parts.includes("z")) {

@@ -40,6 +40,9 @@ import {
   type ChartTooltipCorner,
   type ChartTooltipMode,
   type ChartType,
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
   type ChartXType,
   type ChartZoom,
   type ChartZoomReason,
@@ -736,6 +739,24 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           ? (readStyle(element, o.streamOrder) as ChartStreamOrder)
           : undefined,
         hideStreamLabels: element.hasAttribute(o.hideStreamLabels.attr),
+        violinNormalize: element.hasAttribute(o.violinNormalize.attr)
+          ? (readStyle(element, o.violinNormalize) as ChartViolinNormalize)
+          : undefined,
+        violinSide: element.hasAttribute(o.violinSide.attr)
+          ? (readStyle(element, o.violinSide) as ChartViolinSide)
+          : undefined,
+        bandwidthScale: readNumber(element, o.bandwidthScale) as number | undefined,
+        kdeBandwidth: readNumber(element, o.kdeBandwidth) as number | undefined,
+        kdeResolution: readNumber(element, o.kdeResolution) as number | undefined,
+        violinBox: element.hasAttribute(o.violinBox.attr),
+        violinWhiskers: element.hasAttribute(o.violinWhiskers.attr)
+          ? (readStyle(element, o.violinWhiskers) as ChartViolinWhiskers)
+          : undefined,
+        hideViolinPoints: element.hasAttribute(o.hideViolinPoints.attr),
+        violinPointSize: readNumber(element, o.violinPointSize) as number | undefined,
+        violinJitter: readNumber(element, o.violinJitter) as number | undefined,
+        unconstrainedViolinPoints: element.hasAttribute(o.unconstrainedViolinPoints.attr),
+        violinMaxPoints: readNumber(element, o.violinMaxPoints) as number | undefined,
         streamLabelMinWidth: readNumber(element, o.streamLabelMinWidth) as number | undefined,
         streamHoverOpacity: readNumber(element, o.streamHoverOpacity) as number | undefined,
         dumbbellColors: parseChartDumbbellColors(

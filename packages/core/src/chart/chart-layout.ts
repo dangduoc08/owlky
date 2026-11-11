@@ -296,6 +296,8 @@ export interface ChartMark {
   readonly sum?: ChartSum | undefined;
   /** Dumbbells: the colors of the start and end markers (tooltip rows). */
   readonly ends?: readonly [ChartColor, ChartColor] | undefined;
+  /** Violins: the number of observations (a tooltip row). */
+  readonly count?: number | undefined;
   /** Streamgraphs: the column's total (a tooltip row). */
   readonly total?: number | undefined;
   /** Streamgraphs: the nodes that show one band over the others (per-point tooltips). */
@@ -562,7 +564,14 @@ const flatScale = (min: number, max: number) => {
 // --- Layout -----------------------------------------------------------------------------------
 
 /** Series types that `horizontal` turns (left to right). */
-const TURNABLE: readonly ChartType[] = ["bar", "boxPlot", "rangeBar", "waterfall", "dumbbell"];
+const TURNABLE: readonly ChartType[] = [
+  "bar",
+  "boxPlot",
+  "rangeBar",
+  "waterfall",
+  "dumbbell",
+  "violin",
+];
 /** Series types drawn in category bands. */
 const BANDED: readonly ChartType[] = [
   "bar",
@@ -572,6 +581,7 @@ const BANDED: readonly ChartType[] = [
   "timeline",
   "waterfall",
   "dumbbell",
+  "violin",
 ];
 /** Series types that fit the value scale to their data (no zero baseline). */
 const FITTED: readonly ChartType[] = [
@@ -583,6 +593,7 @@ const FITTED: readonly ChartType[] = [
   "timeline",
   "dumbbell",
   "streamgraph",
+  "violin",
 ];
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));

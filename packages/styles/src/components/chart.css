@@ -1235,6 +1235,35 @@
     fill: var(--ok-palette-common-white);
   }
 
+  /* Violins (4.18.21): the density outline, the box beside it and the observations. */
+  :where([data-ok-chart-violin]) {
+    fill-opacity: 0.32;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 1.5px;
+  }
+
+  :where([data-ok-chart-violin]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-violin-box]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-text-primary);
+    stroke-width: 1px;
+  }
+
+  :where([data-ok-chart-violin-whisker], [data-ok-chart-violin-median]) {
+    stroke: var(--ok-text-primary);
+    stroke-width: 1px;
+  }
+
+  :where([data-ok-chart-violin-point]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.9;
+    stroke: var(--ok-bg-paper);
+    stroke-width: 1px;
+  }
+
   /* Streamgraph bands (4.18.21): meet without a seam; a pattern fills them through `fill`. */
   :where([data-ok-chart-stream-band]) {
     stroke: none;

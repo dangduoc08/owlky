@@ -80,6 +80,12 @@ import { layoutStock } from "./chart-stock.js";
 import { type ChartStreamOffset, type ChartStreamOrder, layoutStream } from "./chart-stream.js";
 import { layoutTree } from "./chart-tree.js";
 import {
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
+  layoutViolin,
+} from "./chart-violin.js";
+import {
   type ChartZoom,
   chartSelectionNodes,
   chartZoomExtent,
@@ -235,6 +241,30 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly streamLabelMinWidth?: number | undefined;
   /** Streamgraphs with per-point tooltips: the other bands' opacity. Default 0.35. */
   readonly streamHoverOpacity?: number | undefined;
+  /** Violins (4.18.21): each violin's own width scale (`individual`) or one scale (`group`). */
+  readonly violinNormalize?: ChartViolinNormalize | undefined;
+  /** Violins: symmetric, or half a violin on one side. Default `"both"`. */
+  readonly violinSide?: ChartViolinSide | undefined;
+  /** Violins: multiplies the drawn half-width. Default 1. */
+  readonly bandwidthScale?: number | undefined;
+  /** Violins: the kernel width in value units (default Silverman's rule). */
+  readonly kdeBandwidth?: number | undefined;
+  /** Violins: density samples per violin. Default 64. */
+  readonly kdeResolution?: number | undefined;
+  /** Violins: a five-number box beside the density. */
+  readonly violinBox?: boolean | undefined;
+  /** Violin boxes: whisker ends (`minmax` or `tukey`). */
+  readonly violinWhiskers?: ChartViolinWhiskers | undefined;
+  /** Violins: no observation dots. */
+  readonly hideViolinPoints?: boolean | undefined;
+  /** Violins: dot radius in px. Default 2.5. */
+  readonly violinPointSize?: number | undefined;
+  /** Violins: dot spread as a share of the half-width (0 to 1). Default 0.5. */
+  readonly violinJitter?: number | undefined;
+  /** Violins: dots may leave the outline. */
+  readonly unconstrainedViolinPoints?: boolean | undefined;
+  /** Violins: dots per violin; extra ones are thinned. Default 3000. */
+  readonly violinMaxPoints?: number | undefined;
   /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
@@ -349,6 +379,26 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     treemap: (d, o) => layoutTreemap(d, o, format),
     funnel: (d, o) => layoutFunnel(d, o, format),
     slope: (d, o) => layoutSlope(d, o, format),
+    violin: (d, o) =>
+      layoutViolin(
+        d,
+        o,
+        {
+          normalize: input.violinNormalize,
+          side: input.violinSide,
+          bandwidthScale: input.bandwidthScale,
+          kdeBandwidth: input.kdeBandwidth,
+          kdeResolution: input.kdeResolution,
+          box: input.violinBox,
+          whiskers: input.violinWhiskers,
+          hidePoints: input.hideViolinPoints,
+          pointSize: input.violinPointSize,
+          jitter: input.violinJitter,
+          unconstrained: input.unconstrainedViolinPoints,
+          maxPoints: input.violinMaxPoints,
+        },
+        format,
+      ),
     streamgraph: (d, o) =>
       layoutStream(
         d,

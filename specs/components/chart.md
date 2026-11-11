@@ -164,6 +164,13 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-series][data-ok-type=streamgraph][data-ok-color][data-ok-index] › path[data-ok-chart-stream-band][fill=url(#…)]?
       (bottom to top in the stacking order); labels › text[data-ok-chart-data-label="inside|plain"] (series names)
       active, tooltip="point": rect[data-ok-chart-stream-veil][fill-opacity] + path[data-ok-chart-stream-band][data-ok-color]
+    Violin (4.18.21; root [data-ok-violin-normalize]?[data-ok-violin-side]?[data-ok-bandwidth-scale]?
+      [data-ok-kde-bandwidth]?[data-ok-kde-resolution]?[data-ok-violin-box]?[data-ok-violin-whiskers]?
+      [data-ok-hide-violin-points]?[data-ok-violin-point-size]?[data-ok-violin-jitter]?
+      [data-ok-unconstrained-violin-points]?[data-ok-violin-max-points]?):
+      g[data-ok-chart-series][data-ok-type=violin] › (path[data-ok-chart-violin][fill=url(#…)]?
+      + line[data-ok-chart-violin-whisker]×2 + rect[data-ok-chart-violin-box] + line[data-ok-chart-violin-median] (violinBox)
+      + (circle | path)[data-ok-chart-violin-point]*)×n
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
@@ -202,6 +209,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       one row per node in preorder: tbody › tr › th[scope=row][data-ok-value]? (id when it differs
       from the name)[data-ok-color]? (where a color starts: own, or the palette on roots and a single root's children) + td[data-ok-value]? (the parent's name, its id
       when it differs; empty for roots) + td[data-ok-value]? (value; parents: the sum)
+    Violin: thead › tr › th[scope=col][rowspan=2] + th[scope=colgroup][colspan=6]; second row th[data-ok-part="count|min|q1|median|q3|max"];
+      one row per category: tbody › tr › th[scope=row] + td[data-ok-samples] (the count; observations) | td[data-ok-density] (empty; value:weight pairs) + td×5 (the summary, never read back)
   ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
     li[data-ok-annotation="x|y|point"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]? › label text
 Root text attributes (phase 4): [data-ok-group]? [data-ok-brush-target]? [data-ok-color-ranges]?
@@ -423,6 +432,21 @@ Streamgraph geometry (core `chart-stream.ts`, drawn on `layoutChart`'s axes, 4.1
   the veil is off).
 - Cues: `fill="pattern"` / `colorBlindMode` fill bands with patterns; names on the bands.
 
+Violin geometry (core `chart-stats.ts`, `chart-violin.ts` on `layoutChart`'s axes, 4.18.21):
+- Data: `y` = observations, or `{ density: [[value, weight]], points: [...] }`; point-level `points` also
+  works. `chartData` keeps `y` = median, `range` = the five numbers and `point.violin` (at most 20 000
+  observations). A whole type (no mixed charts); numeric x values are labels in order of first use.
+- Curve: the given `density` (sorted), or a Gaussian KDE (bandwidth `kdeBandwidth` or Silverman's
+  `0.9 · min(sd, IQR / 1.34) · n^(−1/5)`), `kdeResolution` (64, 4–256) values from three bandwidths
+  below the minimum to three above the maximum; the value scale spans the curve.
+- Width: `violinNormalize` `individual` (each violin's own peak) or `group`; half-width = slot / 2 ·
+  `bandwidthScale`. `violinSide` draws half a violin (`left`/`top` negative, `right`/`bottom` positive).
+- Box (`violinBox`): the quartiles in a 15% (at least 4px) wide box, a median line and whiskers
+  (`minmax` or Tukey's 1.5 × IQR). Dots: jittered by a golden ratio sequence, so renders agree;
+  `violinMaxPoints` (3000) thins evenly; `unconstrainedViolinPoints` lets them leave the outline.
+- Tooltip: the five numbers and `Count` (`Series (Part)` with several series). Index mode, a band
+  highlight; marks are blocks (`box`), so clicks select them.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -446,7 +470,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `streamgraph` (stacked bands around a moving baseline, with a total per x value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` `violin` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value) or `violin` (the distribution of observations per category as a mirrored density curve). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -511,6 +535,18 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `streamOrder` | `data-ok-stream-order="…"` | style | `inside-out` `inverse` `none` | — | Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order). |
 | `hideStreamLabels` | `data-ok-hide-stream-labels` | flag | boolean | off | Streamgraphs: no series names on the bands. |
 | `streamLabelMinWidth` | `data-ok-stream-label-min-width="…"` | number | number | — | Streamgraphs: bands thinner than this many pixels get no name (default 24). |
+| `violinNormalize` | `data-ok-violin-normalize="…"` | style | `individual` `group` | — | Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`). |
+| `violinSide` | `data-ok-violin-side="…"` | style | `both` `left` `right` `top` `bottom` | — | Violins: symmetric (`both`, the default) or half a violin: `left`, `right`, `top` or `bottom`. |
+| `bandwidthScale` | `data-ok-bandwidth-scale="…"` | number | number | — | Violins: multiplies the drawn half-width (default 1). This is not the statistical bandwidth (`kdeBandwidth`). |
+| `kdeBandwidth` | `data-ok-kde-bandwidth="…"` | number | number | — | Violins: the kernel width of the density estimate, in value units (default Silverman's rule of thumb). |
+| `kdeResolution` | `data-ok-kde-resolution="…"` | number | number | — | Violins: how many density samples each violin uses (4 to 256; default 64). |
+| `violinBox` | `data-ok-violin-box` | flag | boolean | off | Violins: a five-number box beside the density. |
+| `violinWhiskers` | `data-ok-violin-whiskers="…"` | style | `minmax` `tukey` | — | Violins with a box: the whiskers end at the data's extremes (`minmax`, the default) or at Tukey's 1.5 × IQR fences (`tukey`). |
+| `hideViolinPoints` | `data-ok-hide-violin-points` | flag | boolean | off | Violins: no dots for the observations. |
+| `violinPointSize` | `data-ok-violin-point-size="…"` | number | number | — | Violins: the radius of the observation dots in pixels (default 2.5). |
+| `violinJitter` | `data-ok-violin-jitter="…"` | number | number | — | Violins: how far the dots spread, as a share of the half-width (0 to 1; default 0.5). |
+| `unconstrainedViolinPoints` | `data-ok-unconstrained-violin-points` | flag | boolean | off | Violins: the dots may leave the density outline. |
+| `violinMaxPoints` | `data-ok-violin-max-points="…"` | number | number | — | Violins: the most dots drawn per violin; extra observations are thinned evenly (default 3000). |
 | `streamHoverOpacity` | `data-ok-stream-hover-opacity="…"` | number | number | — | Streamgraphs with `tooltip="point"`: the opacity of the bands that are not active (0 to 1; default 0.35). |
 | `direction` | `data-ok-direction="…"` | style | `top` `bottom` `left` `right` `radial` | — | Tree and icicle charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (trees: the root in the center, levels as rings). |
 | `layoutType` | `data-ok-layout-type="…"` | style | `tree` `cluster` | — | Tree charts: `tree` (a tidy tree, the default) or `cluster` (a dendrogram: every leaf on the last level). |
@@ -920,6 +956,14 @@ Option areas not covered by the table above:
 | `plotOptions.streamgraph.hover.show`, `.opacity` | `streamHoverOpacity` (`data-ok-stream-hover-opacity`) | renamed (4.18.21) | 0.35; with `tooltip="point"` only (a veil over the plot); `1` is `hover.show: false`. The default tooltip stays per x value (crosshair, shared rows, keyboard) |
 | streamgraph `yaxis.show` false by default | `yaxis={{ show: true }}` · `data-ok-yaxis` | kept (4.18.21) | the grid is off with it (`grid` turns it on) |
 | streamgraph `stroke.curve: "monotoneCubic"` | `curve` (`smooth` by default: horizontal tangents, no overshoot) | renamed (4.18.21) | |
+| `chart.type: "violin"` (ApexCharts 7.1+, 8: `apexcharts/violin`) | `type="violin"` | kept (4.18.21) | a whole type |
+| violin data: flat `y` list, `y: { density, points }`, point `points` | same | kept (4.18.21) | HTML: `td[data-ok-samples]` / `td[data-ok-density]`, the summary cells are the accessible view |
+| `plotOptions.violin.normalize`, `.side`, `.bandwidthScale` | `violinNormalize`, `violinSide`, `bandwidthScale` | renamed (4.18.21) | |
+| `plotOptions.violin.kde.bandwidth`, `.resolution` | `kdeBandwidth`, `kdeResolution` | renamed (4.18.21) | |
+| `plotOptions.violin.box.show`, `.whiskers` | `violinBox`, `violinWhiskers` | renamed (4.18.21) | `.width`, `.strokeWidth`, `.fillColor`, `.capWidth`: fixed by the design |
+| `plotOptions.violin.points.show`, `.size`, `.jitter`, `.constrainToViolin`, `.maxPoints` | `hideViolinPoints`, `violinPointSize`, `violinJitter`, `unconstrainedViolinPoints`, `violinMaxPoints` | renamed (4.18.21) | `.shape` follows `markerShape` / `colorBlindMode` |
+| `plotOptions.violin.points.position`, `.laneWidth` (raincloud lanes), `.opacity`, `.fillColor`, `.strokeColor`, `.strokeWidth`, `.colorScale` | — | not built | no raincloud lane; dots use the series color and tokens |
+| `plotOptions.bar.distributed` (colors per category) | point `color` | renamed (4.18.21) | |
 | ApexCharts v8 types `streamgraph`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | `type="tree"` | kept (4.18.7, ADR-0058) | see "API mapping" (ApexTree rows) |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
@@ -1039,5 +1083,7 @@ Option areas not covered by the table above:
   and a prefix; a horizontal headcount change with own colors).
 - Streamgraph story (4.18.21): Streamgraph (listening time by genre with the wiggle baseline; a 100%
   per-quarter stream with a straight curve, one tooltip per band and patterns).
+- Violin story (4.18.21): Violin (observations with box and dots; a horizontal two-series half-violin
+  of precomputed curves with one density scale and patterns).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

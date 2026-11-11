@@ -417,7 +417,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `streamgraph` (stacked bands around a moving baseline, with a total per x value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value) or `violin` (the distribution of observations per category as a mirrored density curve). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -446,7 +446,8 @@
        "tree",
        "sunburst",
        "icicle",
-       "streamgraph"
+       "streamgraph",
+       "violin"
       ]
      },
      {
@@ -1287,6 +1288,105 @@
       "kind": "number",
       "min": 0,
       "name": "streamLabelMinWidth"
+     },
+     {
+      "attr": "data-ok-violin-normalize",
+      "default": "individual",
+      "description": "Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`).",
+      "kind": "style",
+      "name": "violinNormalize",
+      "optional": true,
+      "values": [
+       "individual",
+       "group"
+      ]
+     },
+     {
+      "attr": "data-ok-violin-side",
+      "default": "both",
+      "description": "Violins: symmetric (`both`, the default) or half a violin: `left`, `right`, `top` or `bottom`.",
+      "kind": "style",
+      "name": "violinSide",
+      "optional": true,
+      "values": [
+       "both",
+       "left",
+       "right",
+       "top",
+       "bottom"
+      ]
+     },
+     {
+      "attr": "data-ok-bandwidth-scale",
+      "description": "Violins: multiplies the drawn half-width (default 1). This is not the statistical bandwidth (`kdeBandwidth`).",
+      "kind": "number",
+      "min": 0,
+      "name": "bandwidthScale"
+     },
+     {
+      "attr": "data-ok-kde-bandwidth",
+      "description": "Violins: the kernel width of the density estimate, in value units (default Silverman's rule of thumb).",
+      "kind": "number",
+      "min": 0,
+      "name": "kdeBandwidth"
+     },
+     {
+      "attr": "data-ok-kde-resolution",
+      "description": "Violins: how many density samples each violin uses (4 to 256; default 64).",
+      "kind": "number",
+      "min": 4,
+      "name": "kdeResolution"
+     },
+     {
+      "attr": "data-ok-violin-box",
+      "description": "Violins: a five-number box beside the density.",
+      "kind": "flag",
+      "name": "violinBox"
+     },
+     {
+      "attr": "data-ok-violin-whiskers",
+      "default": "minmax",
+      "description": "Violins with a box: the whiskers end at the data's extremes (`minmax`, the default) or at Tukey's 1.5 × IQR fences (`tukey`).",
+      "kind": "style",
+      "name": "violinWhiskers",
+      "optional": true,
+      "values": [
+       "minmax",
+       "tukey"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-violin-points",
+      "description": "Violins: no dots for the observations.",
+      "kind": "flag",
+      "name": "hideViolinPoints"
+     },
+     {
+      "attr": "data-ok-violin-point-size",
+      "description": "Violins: the radius of the observation dots in pixels (default 2.5).",
+      "kind": "number",
+      "min": 0.5,
+      "name": "violinPointSize"
+     },
+     {
+      "attr": "data-ok-violin-jitter",
+      "description": "Violins: how far the dots spread, as a share of the half-width (0 to 1; default 0.5).",
+      "kind": "number",
+      "min": 0,
+      "name": "violinJitter"
+     },
+     {
+      "attr": "data-ok-unconstrained-violin-points",
+      "description": "Violins: the dots may leave the density outline.",
+      "kind": "flag",
+      "name": "unconstrainedViolinPoints"
+     },
+     {
+      "attr": "data-ok-violin-max-points",
+      "description": "Violins: the most dots drawn per violin; extra observations are thinned evenly (default 3000).",
+      "kind": "number",
+      "min": 1,
+      "name": "violinMaxPoints"
      },
      {
       "attr": "data-ok-stream-hover-opacity",
@@ -2349,6 +2449,47 @@
       "name": "data-ok-chart-tree-node"
      },
      {
+      "description": "A violin's density outline.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin"
+     },
+     {
+      "description": "A violin's five-number box.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-box"
+     },
+     {
+      "description": "A violin's median line.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-median"
+     },
+     {
+      "description": "A dot for one observation of a violin.",
+      "elements": [
+       "circle",
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-point"
+     },
+     {
+      "description": "A violin's whisker.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-violin-whisker"
+     },
+     {
       "description": "The web of a radar chart.",
       "elements": [
        "path"
@@ -2405,6 +2546,12 @@
       "description": "Marks a dashed series.",
       "kind": "state",
       "name": "data-ok-dashed"
+     },
+     {
+      "description": "On a violin's data cell without observations: its curve as `value:weight` pairs.",
+      "kind": "value",
+      "name": "data-ok-density",
+      "value": "string"
      },
      {
       "description": "Markers on single points, such as \\`0 3 error star 8; 1 2\\`.",
@@ -2507,6 +2654,7 @@
       "kind": "value",
       "name": "data-ok-part",
       "value": [
+       "count",
        "high",
        "low",
        "max",
@@ -2538,6 +2686,12 @@
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
       "kind": "state",
       "name": "data-ok-ready"
+     },
+     {
+      "description": "On a violin's data cell: its observations, separated by spaces.",
+      "kind": "value",
+      "name": "data-ok-samples",
+      "value": "string"
      },
      {
       "description": "On a marker, a legend marker or a tooltip marker: the series' marker shape.",
@@ -2680,6 +2834,11 @@
       "description": "Bars: a grey track the height of the plot behind each bar.",
       "name": "backgroundBars",
       "type": "boolean"
+     },
+     {
+      "description": "Violins: multiplies the drawn half-width. Default 1.",
+      "name": "bandwidthScale",
+      "type": "number"
      },
      {
       "description": "Horizontal bar thickness in % of a category. Default 40 (funnels 80).",
@@ -2934,6 +3093,11 @@
       "type": "boolean"
      },
      {
+      "description": "Violins: no dots for the observations.",
+      "name": "hideViolinPoints",
+      "type": "boolean"
+     },
+     {
       "description": "Tree charts: the nodes, nested (`{ id, name, value, color, children }`; one root or several). `id` defaults to the name; parents' values are the sum of their children.",
       "name": "hierarchy",
       "type": "ChartHierarchyNode | readonly ChartHierarchyNode[]"
@@ -2951,6 +3115,16 @@
      {
       "description": "Sunburst charts: the hole in the center in % of the radius (0 to 90). Default 15.",
       "name": "innerSize",
+      "type": "number"
+     },
+     {
+      "description": "Violins: the kernel width of the density estimate, in value units. Default Silverman's rule.",
+      "name": "kdeBandwidth",
+      "type": "number"
+     },
+     {
+      "description": "Violins: density samples per violin (4 to 256). Default 64.",
+      "name": "kdeResolution",
       "type": "number"
      },
      {
@@ -3198,6 +3372,11 @@
       "type": "ChartType"
      },
      {
+      "description": "Violins: the dots may leave the density outline.",
+      "name": "unconstrainedViolinPoints",
+      "type": "boolean"
+     },
+     {
       "description": "Replaces the value text in the tooltip, the table and the value axis (`series` -1).",
       "name": "valueFormatter",
       "type": "((value: number, series: number) => string)"
@@ -3211,6 +3390,44 @@
       "description": "Text after every value (\"%\").",
       "name": "valueSuffix",
       "type": "string"
+     },
+     {
+      "description": "Violins: a five-number box beside the density.",
+      "name": "violinBox",
+      "type": "boolean"
+     },
+     {
+      "description": "Violins: how far the dots spread, as a share of the half-width (0 to 1). 5.",
+      "name": "violinJitter",
+      "type": "number"
+     },
+     {
+      "description": "Violins: the most dots per violin; extra observations are thinned evenly. Default 3000.",
+      "name": "violinMaxPoints",
+      "type": "number"
+     },
+     {
+      "default": "\"individual\"",
+      "description": "Violins: each violin fills its slot (`individual`) or all share one density scale (`group`).",
+      "name": "violinNormalize",
+      "type": "\"group\" | \"individual\""
+     },
+     {
+      "description": "Violins: the radius of the observation dots in pixels. 5.",
+      "name": "violinPointSize",
+      "type": "number"
+     },
+     {
+      "default": "\"both\"",
+      "description": "Violins: symmetric (`both`) or half a violin: `left`, `right`, `top` or `bottom`.",
+      "name": "violinSide",
+      "type": "\"both\" | \"bottom\" | \"left\" | \"right\" | \"top\""
+     },
+     {
+      "default": "\"minmax\"",
+      "description": "Violin boxes: whiskers at the extremes (`minmax`) or Tukey's fences (`tukey`).",
+      "name": "violinWhiskers",
+      "type": "\"minmax\" | \"tukey\""
      },
      {
       "default": "\"error\"",
@@ -3313,7 +3530,7 @@
   },
   {
    "name": "ChartPart",
-   "type": "\"children\" | \"close\" | \"collapsed\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
+   "type": "\"children\" | \"close\" | \"collapsed\" | \"count\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
   },
   {
    "name": "ChartStripeColor",
@@ -3325,7 +3542,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"violin\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

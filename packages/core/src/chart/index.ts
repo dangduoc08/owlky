@@ -240,6 +240,16 @@ export {
   hasChartDataPoint,
   toggleChartSelection,
 } from "./chart-select.js";
+export {
+  type ChartViolinInput,
+  type ChartViolinStats,
+  chartBandwidth,
+  chartKernelDensity,
+  chartQuantile,
+  chartTukeyEnds,
+  chartViolinStats,
+  parseChartViolinCell,
+} from "./chart-stats.js";
 export { type ChartStockOptions, layoutStock } from "./chart-stock.js";
 export {
   type ChartStreamOffset,
@@ -271,6 +281,16 @@ export {
   chartTools,
 } from "./chart-toolbar.js";
 export { type ChartTreeOptions, layoutTree } from "./chart-tree.js";
+export {
+  type ChartViolinNormalize,
+  type ChartViolinOptions,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
+  chartViolinCurve,
+  chartViolinNormalize,
+  chartViolinSides,
+  chartViolinWhiskers,
+} from "./chart-violin.js";
 export {
   type ChartZoom,
   type ChartZoomReason,

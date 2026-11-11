@@ -87,6 +87,14 @@ import {
   chartStreamOffsets,
   chartStreamOrders,
 } from "../chart/chart-stream.js";
+import {
+  type ChartViolinNormalize,
+  type ChartViolinSide,
+  type ChartViolinWhiskers,
+  chartViolinNormalize,
+  chartViolinSides,
+  chartViolinWhiskers,
+} from "../chart/chart-violin.js";
 import { type GridDensity, gridDensities } from "../data-grid/data-grid.js";
 import { type GanttBarLabel, ganttBarLabels } from "../gantt/gantt-render.js";
 import { type GanttView, ganttViews } from "../gantt/gantt-scale.js";
@@ -4526,7 +4534,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `streamgraph` (stacked bands around a moving baseline, with a total per x value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value) or `violin` (the distribution of observations per category as a mirrored density curve). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4872,6 +4880,69 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Streamgraphs: bands thinner than this many pixels get no name (default 24).",
     { min: 0 },
   ),
+  violinNormalize: style(
+    "data-ok-violin-normalize",
+    chartViolinNormalize,
+    "individual",
+    "Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`).",
+    { optional: true },
+  ),
+  violinSide: style(
+    "data-ok-violin-side",
+    chartViolinSides,
+    "both",
+    "Violins: symmetric (`both`, the default) or half a violin: `left`, `right`, `top` or `bottom`.",
+    { optional: true },
+  ),
+  bandwidthScale: number(
+    "data-ok-bandwidth-scale",
+    undefined,
+    "Violins: multiplies the drawn half-width (default 1). This is not the statistical bandwidth (`kdeBandwidth`).",
+    { min: 0 },
+  ),
+  kdeBandwidth: number(
+    "data-ok-kde-bandwidth",
+    undefined,
+    "Violins: the kernel width of the density estimate, in value units (default Silverman's rule of thumb).",
+    { min: 0 },
+  ),
+  kdeResolution: number(
+    "data-ok-kde-resolution",
+    undefined,
+    "Violins: how many density samples each violin uses (4 to 256; default 64).",
+    { min: 4 },
+  ),
+  violinBox: flag("data-ok-violin-box", "Violins: a five-number box beside the density."),
+  violinWhiskers: style(
+    "data-ok-violin-whiskers",
+    chartViolinWhiskers,
+    "minmax",
+    "Violins with a box: the whiskers end at the data's extremes (`minmax`, the default) or at Tukey's 1.5 × IQR fences (`tukey`).",
+    { optional: true },
+  ),
+  hideViolinPoints: flag("data-ok-hide-violin-points", "Violins: no dots for the observations."),
+  violinPointSize: number(
+    "data-ok-violin-point-size",
+    undefined,
+    "Violins: the radius of the observation dots in pixels (default 2.5).",
+    { min: 0.5 },
+  ),
+  violinJitter: number(
+    "data-ok-violin-jitter",
+    undefined,
+    "Violins: how far the dots spread, as a share of the half-width (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
+  unconstrainedViolinPoints: flag(
+    "data-ok-unconstrained-violin-points",
+    "Violins: the dots may leave the density outline.",
+  ),
+  violinMaxPoints: number(
+    "data-ok-violin-max-points",
+    undefined,
+    "Violins: the most dots drawn per violin; extra observations are thinned evenly (default 3000).",
+    { min: 1 },
+  ),
   streamHoverOpacity: number(
     "data-ok-stream-hover-opacity",
     undefined,
@@ -5041,6 +5112,18 @@ export interface ChartAnatomyOptions {
   hideStreamLabels?: boolean | undefined;
   streamLabelMinWidth?: number | undefined;
   streamHoverOpacity?: number | undefined;
+  violinNormalize?: ChartViolinNormalize | undefined;
+  violinSide?: ChartViolinSide | undefined;
+  bandwidthScale?: number | undefined;
+  kdeBandwidth?: number | undefined;
+  kdeResolution?: number | undefined;
+  violinBox?: boolean | undefined;
+  violinWhiskers?: ChartViolinWhiskers | undefined;
+  hideViolinPoints?: boolean | undefined;
+  violinPointSize?: number | undefined;
+  violinJitter?: number | undefined;
+  unconstrainedViolinPoints?: boolean | undefined;
+  violinMaxPoints?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

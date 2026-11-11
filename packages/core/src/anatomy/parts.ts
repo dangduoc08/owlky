@@ -389,6 +389,20 @@ export interface ChartParts {
   "data-ok-chart-selection": Part<"rect">;
   /** On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`. */
   "data-ok-chart-step": Value<"up" | "down" | "total" | "subtotal">;
+  /** A violin's density outline. */
+  "data-ok-chart-violin": Part<"path">;
+  /** A violin's five-number box. */
+  "data-ok-chart-violin-box": Part<"rect">;
+  /** A violin's median line. */
+  "data-ok-chart-violin-median": Part<"line">;
+  /** A dot for one observation of a violin. */
+  "data-ok-chart-violin-point": Part<"circle" | "path">;
+  /** A violin's whisker. */
+  "data-ok-chart-violin-whisker": Part<"line">;
+  /** On a violin's data cell: its observations, separated by spaces. */
+  "data-ok-samples": Value<string>;
+  /** On a violin's data cell without observations: its curve as `value:weight` pairs. */
+  "data-ok-density": Value<string>;
   /** A streamgraph band. */
   "data-ok-chart-stream-band": Part<"path">;
   /** The veil over a streamgraph while one band is active (with `tooltip="point"`). */
@@ -499,6 +513,7 @@ export interface ChartParts {
   >;
   /** On a data table header cell: which value of a point the column holds. */
   "data-ok-part": Value<
+    | "count"
     | "min"
     | "q1"
     | "median"

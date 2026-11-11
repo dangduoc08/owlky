@@ -1961,4 +1961,97 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21: violin charts (ApexCharts `violin`).
+  violin: {
+    title: "Violin",
+    props: {
+      label: "Delivery time by plan, in hours",
+      type: "violin",
+      violinBox: true,
+      valueSuffix: " h",
+      height: 320,
+      categories: ["Basic", "Plus", "Premium"],
+      series: [
+        {
+          name: "Delivery time",
+          data: [
+            { y: [12, 14, 16, 18, 19, 20, 21, 22, 24, 25, 27, 30, 34, 38, 41, 48] },
+            { y: [10, 11, 12, 12, 13, 14, 14, 15, 16, 17, 18, 19, 20, 22, 24] },
+            { y: [4, 5, 5, 6, 6, 7, 7, 8, 8, 8, 9, 10, 11, 12, 13, 15] },
+          ],
+        },
+      ],
+    },
+    more: [
+      {
+        label: "Response time by region, this year and last year, in milliseconds",
+        type: "violin",
+        horizontal: true,
+        violinSide: "top",
+        violinNormalize: "group",
+        hideViolinPoints: true,
+        colorBlindMode: true,
+        valueSuffix: " ms",
+        height: 280,
+        categories: ["North", "South"],
+        series: [
+          {
+            name: "This year",
+            data: [
+              {
+                y: {
+                  density: [
+                    [20, 1],
+                    [40, 6],
+                    [60, 9],
+                    [80, 5],
+                    [100, 2],
+                    [120, 1],
+                  ],
+                },
+              },
+              {
+                y: {
+                  density: [
+                    [40, 1],
+                    [70, 4],
+                    [90, 8],
+                    [110, 6],
+                    [140, 2],
+                  ],
+                },
+              },
+            ],
+          },
+          {
+            name: "Last year",
+            data: [
+              {
+                y: {
+                  density: [
+                    [40, 2],
+                    [70, 7],
+                    [100, 8],
+                    [130, 4],
+                    [160, 1],
+                  ],
+                },
+              },
+              {
+                y: {
+                  density: [
+                    [60, 2],
+                    [90, 5],
+                    [120, 7],
+                    [150, 5],
+                    [180, 2],
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 };

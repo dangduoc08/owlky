@@ -70,6 +70,7 @@ const STORIES = [
   "tree",
   "sunburst",
   "icicle",
+  "violin",
   "streamgraph",
   "crossfilter",
 ];
@@ -815,6 +816,23 @@ for (const impl of implementations) {
       expect(await first.locator("[data-ok-chart-stream-band]").first().getAttribute("d")).not.toBe(
         before,
       );
+    });
+  });
+}
+
+// Roadmap 4.18.21: violin charts.
+for (const impl of implementations) {
+  test.describe(`chart violin (${impl})`, () => {
+    test("the keyboard reads the five numbers and the count", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "violin"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-violin]")).toHaveCount(3);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Basic");
+      const rows = first.locator("[data-ok-chart-tooltip-row]");
+      await expect(rows).toHaveCount(6);
+      await expect(rows.last()).toHaveText("Count16");
     });
   });
 }

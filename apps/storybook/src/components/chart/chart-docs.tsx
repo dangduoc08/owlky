@@ -30,6 +30,7 @@ import synchronizedGroup from "../../../../../packages/html/src/components/chart
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import treeGroup from "../../../../../packages/html/src/components/chart/examples/tree-group.html?raw";
+import violinGroup from "../../../../../packages/html/src/components/chart/examples/violin-group.html?raw";
 import waterfallGroup from "../../../../../packages/html/src/components/chart/examples/waterfall-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -117,6 +118,7 @@ export function MonthlySales() {
 - **\`sunburst\`:** a hierarchy as rings, each node an arc sized by its value. See "Show parts of a hierarchy as rings".
 - **\`icicle\`:** a hierarchy as bands, each node a cell sized by its value, such as a flame graph. See "Show parts of a hierarchy as bands".
 - **\`streamgraph\`:** stacked bands around a moving baseline, for how a mix changes over time. See "Show a changing mix over time".
+- **\`violin\`:** the distribution of observations in each category as a mirrored density curve. See "Compare distributions".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -895,6 +897,37 @@ export function ListeningByGenre() {
         { name: "Hip hop", data: [20, 24, 30, 36, 44, 52, 58, 62, 56, 48, 40, 30] },
         { name: "Classical", data: [18, 16, 14, 12, 12, 14, 16, 18, 22, 26, 30, 34] },
       ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "violin",
+    title: "Compare distributions",
+    body: `A violin chart shows how the observations of each category spread, as a density curve mirrored around a line. It shows what a box plot hides, such as two clusters in one category. Set \`type\` to \`violin\`, and give each category its observations in \`y\` as a list of numbers. To draw a precomputed curve, set \`y\` to \`{ density: [[value, weight]], points: [value] }\`: the curve is drawn as given and \`points\` are optional. In HTML, the table cell of a category holds the summary as text, and the observations in \`data-ok-samples\`, separated by spaces, or the curve in \`data-ok-density\` as \`value:weight\` pairs.
+
+- **\`violinNormalize\`:** \`individual\` (the default) scales each violin to its own peak, and \`group\` shares one density scale, so widths compare across categories.
+- **\`violinSide\`:** \`both\` (the default) or half a violin: \`left\` and \`right\` for vertical charts, \`top\` and \`bottom\` for \`horizontal\` ones.
+- **\`kdeBandwidth\` and \`kdeResolution\`:** the kernel width in value units (Silverman's rule of thumb by default) and the samples per curve (64 by default). \`bandwidthScale\` scales the drawn width instead.
+- **\`violinBox\`:** adds a box of the quartiles and a median line. \`violinWhiskers\` ends the whiskers at the extremes (\`minmax\`, the default) or at Tukey's fences (\`tukey\`).
+- **\`hideViolinPoints\`, \`violinPointSize\`, \`violinJitter\`, \`violinMaxPoints\`, \`unconstrainedViolinPoints\`:** the dots of the observations. The spread is a fixed sequence, so the dots stay in place between renders.
+
+The tooltip lists the five numbers and the count. The arrow keys move between categories, and the data table shows the same summary. Use \`colorBlindMode\` to give each series its own pattern and marker shape.`,
+    html: `${snippetElement(violinGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const hours = [12, 14, 16, 18, 19, 20, 21, 22, 24, 25, 27, 30, 34, 38, 41, 48];
+
+export function DeliveryTimes() {
+  return (
+    <Chart
+      label="Delivery time, in hours"
+      type="violin"
+      violinBox
+      valueSuffix=" h"
+      height={320}
+      categories={["Basic"]}
+      series={[{ name: "Delivery time", data: [{ y: hours }] }]}
     />
   );
 }`,
@@ -1852,6 +1885,27 @@ const PREVIEWS = {
           { name: "Phone", data: [40, 44, 52, 58, 66] },
           { name: "Desktop", data: [46, 42, 38, 34, 30] },
           { name: "Tablet", data: [14, 14, 10, 8, 4] },
+        ]}
+      />
+    </Preview>
+  ),
+  violin: () => (
+    <Preview>
+      <Chart
+        label="Test scores by class"
+        type="violin"
+        violinBox
+        violinWhiskers="tukey"
+        height={240}
+        categories={["Class A", "Class B"]}
+        series={[
+          {
+            name: "Score",
+            data: [
+              { y: [42, 55, 58, 61, 66, 68, 71, 73, 74, 78, 81, 86, 92] },
+              { y: [31, 38, 44, 48, 52, 55, 60, 62, 64, 71, 75] },
+            ],
+          },
         ]}
       />
     </Preview>
