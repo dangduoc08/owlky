@@ -121,7 +121,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.41 | E — audit 3.1 (could) | Snackbar | `toast.promise` `unwrap()`, `finally`, toast options; `toast.getHistory()` / `getToasts()`, `useSonner()` | ✅ |
 | 4.18.42 | E — audit 3.1 (could) | Menu | `MenuList` `disabledItemsFocusable`, `disableListWrap` | ✅ |
 | 4.18.43 | E — audit 3.1 (could) | Popover, Menu | `transitionDuration` | ✅ |
-| 4.18.44 | E — audit 3.1 (could) | Dialog | `transitionDuration` (with 5.1 exit transitions) | ⬜ |
+| 4.18.44 | E — audit 3.1 (could) | Dialog | `transitionDuration` (with 5.1 exit transitions) | ✅ |
 | 4.18.45 | E — audit 3.1 (could) | Dialog, Drawer | Modal props `disableRestoreFocus`, `disableScrollLock`; Drawer `ModalProps.keepMounted` (with 4.8) | ✅ |
 | 4.18.46 | E — audit 3.1 (could) | Drawer | `SwipeableDrawer`: `onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`; a button to open and close stays (WCAG 2.5.7); shares a core swipe helper with 4.14 | ⏸ |
 | 4.18.47 | E — audit 3.1 (could) | Accordion | `AccordionActions` `disableSpacing` | ✅ |
@@ -179,7 +179,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 
 | # | Step | Scope | Status |
 |---|---|---|---|
-| 5.1 | Engine | `animate(element, keyframes, options)` on the Web Animations API, springs as `linear()` easing, interruption from the current value, exit before removal → Dialog exit transitions and the Motion "Logo" story (the last "Pending integrations" row) | ⬜ |
+| 5.1 | Engine | `animate(element, keyframes, options)` on the Web Animations API, springs as `linear()` easing, interruption from the current value, exit before removal → Dialog exit transitions and the Motion "Logo" story (the last "Pending integrations" row) | ✅ |
 | 5.2 | Scroll | scroll-linked progress (`animation-timeline`, JavaScript fallback for Firefox): the reference's Scroll progress page (`minimals.cc/components/extra/scroll-progress`, built on Framer Motion's `useScroll`) — sections "Container scroll-y", "Container scroll-x" and "Scroll document", drawn with Linear / Circular progress | ⬜ |
 | 5.3 | Gestures | drag with inertia and constraints, spring hover / tap | ⬜ |
 | 5.4 | Layout | layout animations (FLIP), shared values | ⬜ |
