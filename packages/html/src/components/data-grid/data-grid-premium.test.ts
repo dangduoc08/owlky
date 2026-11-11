@@ -971,6 +971,7 @@ describe("data grid charts integration: every chart type (HTML)", () => {
       "donut",
       "radar",
       "scatter",
+      "combo",
     ]);
     const stacked = q<HTMLInputElement>("[data-ok-data-grid-chart-stacked]");
     expect(stacked.disabled).toBe(true);

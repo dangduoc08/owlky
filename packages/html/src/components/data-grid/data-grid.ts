@@ -94,6 +94,7 @@ import {
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
+  gridChartAggregate,
   gridChartData,
   gridChartFields,
   gridChartGroups,
@@ -4180,11 +4181,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         grouped ? (grouping()[0] as string) : null,
         { pivot: !!pivot || serverSide(filterMode), numeric },
       );
+      // An aggregated chart (4.18.88) merges every filtered row of a category, without groups.
+      const aggregated = !!chartModel.aggregation && !pivot && !numeric;
       const sourceRows = range
         ? chartDataRows(filterModel).filter((row) => range.has(idOf(row)))
         : crossField
           ? chartDataRows(gridCrossFilterBase(filterModel, crossField))
-          : null;
+          : aggregated && dimension && !grouped
+            ? chartDataRows(filterModel)
+            : null;
       // Their categories merge rows of the same text (or group key), aggregated (ApexGrid).
       const keyField = grouped ? (grouping()[0] as string) : dimension?.field;
       const merged =
@@ -4205,12 +4210,17 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const byRowId = top ? new Map(rowEls.map((row) => [idOf(row), row])) : null;
       const aggregation = activeAggregation();
       const aggregateOf = (list: HTMLElement[], field: string) =>
-        gridAggregate(
-          list,
-          { [field]: aggregation[field] ?? aggregationModel[field] ?? "sum" },
-          candidates,
-          value,
-        )[field];
+        aggregated && chartModel.aggregation
+          ? gridChartAggregate(
+              list.map((row) => value(row, field)),
+              chartModel.aggregation,
+            )
+          : gridAggregate(
+              list,
+              { [field]: aggregation[field] ?? aggregationModel[field] ?? "sum" },
+              candidates,
+              value,
+            )[field];
       const rowItems =
         sourceRows ?? pageList.filter((row) => !row.hasAttribute("data-ok-generated"));
       const data =
@@ -4267,15 +4277,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (cross) chartCross.set(chartRegion, cross);
       else chartCross.delete(chartRegion);
       if (active) chartSeriesCount = data?.series.length ?? 0;
-      const { yTitle, ...options } = gridChartOptions(chartModel, data);
+      const { yTitle, yaxis, ...options } = gridChartOptions(chartModel, data);
       const attributes: Record<string, string> = {
         ...chartAttributes(options),
-        ...chartTextAttributes({ yTitle }),
+        ...chartTextAttributes({ yTitle, yaxis }),
       };
       for (const spec of Object.values(chartOptions.options))
         if (spec.attr.startsWith("data-ok-") && !(spec.attr in attributes))
           figure.removeAttribute(spec.attr);
       if (!yTitle) figure.removeAttribute("data-ok-y-title");
+      if (!yaxis) figure.removeAttribute("data-ok-yaxis");
       for (const [name, attr] of Object.entries(attributes))
         if (figure.getAttribute(name) !== attr) figure.setAttribute(name, attr);
       const key = JSON.stringify([data, options.type, options.xType]);

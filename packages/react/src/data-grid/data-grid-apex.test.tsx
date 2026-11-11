@@ -341,3 +341,81 @@ describe("DataGrid state with rows and onStateChange (4.18.91)", () => {
     expect(pinnedIds("top")).toEqual(["90"]);
   });
 });
+
+describe("DataGrid chart aggregation, combo and a second axis (4.18.88)", () => {
+  const tableRows = () =>
+    [...document.querySelectorAll("[data-ok-data-grid-chart] [data-ok-chart-data] tbody tr")].map(
+      (tr) => [...tr.children].map((cell) => (cell.textContent ?? "").trim()),
+    );
+  const heads = () => [
+    ...document.querySelectorAll("[data-ok-data-grid-chart] [data-ok-chart-data] thead th"),
+  ];
+
+  it("aggregation merges the filtered rows of a category, without grouping", () => {
+    const { rerender } = render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        chartsIntegration
+        initialState={{ pagination: { paginationModel: { page: 0, pageSize: 2 } } }}
+        chartModel={{ dimension: "team", values: ["score"], aggregation: "count" }}
+      />,
+    );
+    // Every filtered row counts, not only the page's.
+    expect(tableRows()).toEqual([
+      ["Red", "3"],
+      ["Blue", "2"],
+    ]);
+    rerender(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        chartsIntegration
+        filterModel={{ items: [{ field: "score", operator: ">", value: "6" }] }}
+        chartModel={{ dimension: "team", values: ["score"], aggregation: "median" }}
+      />,
+    );
+    expect(tableRows()).toEqual([
+      ["Red", "21"],
+      ["Blue", "25"],
+    ]);
+  });
+
+  it("combo charts draw a type per value; secondary values get the opposite axis", async () => {
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={[...COLUMNS, { field: "bonus", headerName: "Bonus", type: "number" }]}
+        chartsIntegration
+        showToolbar
+        chartModel={{
+          type: "combo",
+          dimension: "name",
+          values: ["score", "bonus"],
+          secondaryValues: ["bonus"],
+          seriesAxisLabel: "Points",
+        }}
+      />,
+    );
+    const types = heads().map((th) => [
+      th.getAttribute("data-ok-type"),
+      th.getAttribute("data-ok-y-axis"),
+    ]);
+    expect(types.slice(1)).toEqual([
+      ["bar", "0"],
+      ["line", "1"],
+    ]);
+    const figure = document.querySelector(
+      "[data-ok-data-grid-chart] [data-ok-chart]",
+    ) as HTMLElement;
+    expect(figure.getAttribute("data-ok-type")).toBe("line");
+    expect(figure.getAttribute("data-ok-yaxis")).toBe("title Points; opposite title Bonus");
+    await userEvent.click(within(document.body).getByRole("button", { name: "Chart" }));
+    const select = document.querySelector('select[id$="-chart-type"]') as HTMLSelectElement;
+    expect(select.value).toBe("combo");
+    expect([...select.options].map((o) => o.textContent)).toContain("Combo");
+  });
+});

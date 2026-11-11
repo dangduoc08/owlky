@@ -1138,6 +1138,7 @@ export const gridDefaultLabels = {
   chartTypeDonut: "Donut",
   chartTypeRadar: "Radar",
   chartTypeScatter: "Scatter",
+  chartTypeCombo: "Combo",
   chartsStacked: "Stacked",
   chartsItemLabel: "Show values",
   chartsLegend: "Legend",

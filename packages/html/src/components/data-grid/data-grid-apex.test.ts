@@ -238,3 +238,50 @@ describe("HTML data grid state with rows and statechange (4.18.91)", () => {
     expect(instance.exportState().detailPanel).toEqual({ expandedRowIds: [] });
   });
 });
+
+describe("HTML data grid chart aggregation, combo and a second axis (4.18.88)", () => {
+  const texts = (section: HTMLTableSectionElement) =>
+    [...section.rows].map((tr) => [...tr.cells].map((cell) => (cell.textContent ?? "").trim()));
+
+  it("aggregation merges the rows of a category; combo series and the opposite axis", () => {
+    const { host, root, instance } = setup(snippet("charts-group"), (r) =>
+      r.removeAttribute("data-ok-row-grouping-model"),
+    );
+    // Every row's region and revenue, to compare with the chart.
+    const counts = new Map<string, number>();
+    for (const row of root.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')) {
+      const region = (row.querySelector('[data-ok-field="region"]')?.textContent ?? "").trim();
+      counts.set(region, (counts.get(region) ?? 0) + 1);
+    }
+    instance.setChartModel({ dimension: "region", values: ["revenue"], aggregation: "count" });
+    const region = host.querySelector("[data-ok-data-grid-chart]") as HTMLElement;
+    const table = region.querySelector("table") as HTMLTableElement;
+    expect(texts(table.tBodies[0] as HTMLTableSectionElement)).toEqual(
+      [...counts].map(([key, count]) => [key, String(count)]),
+    );
+    instance.setChartModel({
+      type: "combo",
+      dimension: "region",
+      values: ["revenue", "units"],
+      aggregation: "sum",
+      secondaryValues: ["units"],
+      seriesTypes: { revenue: "area" },
+    });
+    const figure = region.querySelector("[data-ok-chart]") as HTMLElement;
+    expect(figure.getAttribute("data-ok-type")).toBe("line");
+    expect(figure.getAttribute("data-ok-yaxis")).toBe("; opposite title Units");
+    const heads = [...((table.tHead as HTMLTableSectionElement).rows[0]?.cells ?? [])].slice(1);
+    expect(
+      heads.map((th) => [th.getAttribute("data-ok-type"), th.getAttribute("data-ok-y-axis")]),
+    ).toEqual([
+      ["area", "0"],
+      ["line", "1"],
+    ]);
+    expect((host.querySelector("#grid-charts-chart-type") as HTMLSelectElement).value).toBe(
+      "combo",
+    );
+    // Back to one axis: the attribute goes.
+    instance.setChartModel({ dimension: "region", values: ["revenue"] });
+    expect(figure.hasAttribute("data-ok-yaxis")).toBe(false);
+  });
+});

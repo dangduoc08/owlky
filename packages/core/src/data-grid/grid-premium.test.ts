@@ -8,10 +8,12 @@ import {
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
   gridAggregationPositionOf,
+  gridChartAggregate,
   gridChartData,
   gridChartFields,
   gridChartOptions,
   gridChartStacked,
+  gridChartTwoAxes,
   gridGroupComparator,
   gridGroupFooterId,
   gridGroupingField,
@@ -810,5 +812,91 @@ describe("grid state", () => {
       chartsIntegration: { model: 1 },
     });
     expect(empty).toEqual({ pivoting: {} });
+  });
+});
+
+describe("chart aggregation, combo and a second axis (4.18.88)", () => {
+  const columns: GridColumn[] = [
+    { field: "region", headerName: "Region" },
+    { field: "revenue", headerName: "Revenue", type: "number" },
+    { field: "deals", headerName: "Deals", type: "number" },
+  ];
+  const items = [{ region: "N", revenue: 10, deals: 2 }];
+  type Item = (typeof items)[number];
+  it("aggregates: sum, avg, count, min, max, median", () => {
+    const values = [4, "2", null, 9, "x", 1];
+    expect(gridChartAggregate(values, "sum")).toBe(16);
+    expect(gridChartAggregate(values, "avg")).toBe(4);
+    expect(gridChartAggregate(values, "count")).toBe(6);
+    expect(gridChartAggregate(values, "min")).toBe(1);
+    expect(gridChartAggregate(values, "max")).toBe(9);
+    expect(gridChartAggregate(values, "median")).toBe(3);
+    expect(gridChartAggregate([5, 1, 3], "median")).toBe(3);
+    expect(gridChartAggregate([null], "sum")).toBeNull();
+    expect(gridChartAggregate([], "count")).toBe(0);
+  });
+  it("combo series types and the secondary axis", () => {
+    const combo = gridChartData(
+      items,
+      { type: "combo", values: ["revenue", "deals"], secondaryValues: ["deals"] },
+      columns,
+      (row: Item) => row.region,
+      (row: Item, field) => row[field as "revenue"],
+    );
+    expect(combo.series.map((s) => [s.type, s.yAxis])).toEqual([
+      ["bar", 0],
+      ["line", 1],
+    ]);
+    const options = gridChartOptions(
+      { type: "combo", seriesAxisLabel: "USD", curve: "straight", showMark: true },
+      combo,
+    );
+    expect(options).toMatchObject({
+      type: "line",
+      curve: "straight",
+      markerSize: 4,
+      yaxis: [{ title: "USD" }, { opposite: true, title: "Deals" }],
+    });
+    expect(options.yTitle).toBeUndefined();
+    const own = gridChartData(
+      items,
+      {
+        type: "combo",
+        values: ["revenue", "deals"],
+        seriesTypes: { revenue: "area", deals: "column" },
+      },
+      columns,
+      (row: Item) => row.region,
+      (row: Item, field) => row[field as "revenue"],
+    );
+    expect(own.series.map((s) => [s.type, s.yAxis])).toEqual([
+      ["area", undefined],
+      ["bar", undefined],
+    ]);
+    // One side only, or a type without axes: one axis.
+    expect(gridChartTwoAxes({ type: "line", secondaryValues: ["deals"] }, columns.slice(2))).toBe(
+      false,
+    );
+    expect(gridChartTwoAxes({ type: "pie", secondaryValues: ["deals"] }, columns.slice(1))).toBe(
+      false,
+    );
+    expect(gridChartTwoAxes({ secondaryValues: ["deals"] }, columns.slice(1))).toBe(true);
+    expect(gridChartOptions({ type: "column", seriesAxisLabel: "USD" }, own).yTitle).toBe("USD");
+  });
+  it("sanitizes the new keys", () => {
+    expect(
+      sanitizeGridChartModel({
+        type: "combo",
+        aggregation: "median",
+        secondaryValues: ["a", 2],
+        seriesTypes: JSON.parse('{"a":"line","b":"pie","__proto__":"line"}'),
+      }),
+    ).toEqual({
+      type: "combo",
+      aggregation: "median",
+      secondaryValues: ["a"],
+      seriesTypes: { a: "line" },
+    });
+    expect(sanitizeGridChartModel({ aggregation: "mode", seriesTypes: [] })).toEqual({});
   });
 });

@@ -5,6 +5,7 @@ import autoGroup from "../../../../../packages/html/src/components/data-grid/exa
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
+import chartsCombo from "../../../../../packages/html/src/components/data-grid/examples/charts-combo.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
 import chartsRange from "../../../../../packages/html/src/components/data-grid/examples/charts-range.html?raw";
@@ -1406,6 +1407,57 @@ export function DataGridChartsConfiguration() {
         },
         chartsIntegration: {
           model: { type: "column", values: ["revenue"], stacked: true, legend: "bottom" },
+        },
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "charts-combo",
+    title: "Aggregate a chart and mix series types",
+    body: `A chart of rows draws one point per row. Set \`aggregation\` in the chart model to merge the rows of each category instead, without grouping the grid: the rows with the same \`dimension\` text become one point. The chart merges every row that passes the filters, on every page.
+
+- **\`aggregation\`:** \`"sum"\`, \`"avg"\`, \`"count"\` (the number of rows), \`"min"\`, \`"max"\` or \`"median"\`. With row grouping, range charts and cross-filtering, it replaces the function of the aggregation model.
+- **\`type: "combo"\`:** draws each value in its own way. The first value shows as columns and the others as lines, unless \`seriesTypes\` says otherwise, such as \`{ units: "area" }\`. The values are \`"column"\`, \`"line"\` and \`"area"\`.
+- **\`secondaryValues\`:** the value fields that use a second value axis, on the right. Use it for values on a different scale, such as units next to revenue. It works with column, line, area and combo charts. The second axis is named after its series, and \`seriesAxisLabel\` names the first one.
+
+The chart panel's **Chart type** menu offers **Combo** too.`,
+    html: `<!-- The chart model is JSON on the grid: data-ok-chart-model -->
+${gridOf(chartsCombo, { rows: 6 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "Europe", product: "Lamp", units: 120, revenue: 5400 },
+  { id: 2, region: "Europe", product: "Chair", units: 80, revenue: 10400 },
+  { id: 3, region: "Asia", product: "Lamp", units: 200, revenue: 9000 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridComboChart() {
+  return (
+    <DataGrid
+      aria-label="Revenue and units by region"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      initialState={{
+        chartsIntegration: {
+          model: {
+            type: "combo",
+            dimension: "region",
+            values: ["revenue", "units"],
+            aggregation: "sum",
+            secondaryValues: ["units"],
+            seriesAxisLabel: "Revenue",
+          },
         },
       }}
     />

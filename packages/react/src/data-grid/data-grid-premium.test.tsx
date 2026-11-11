@@ -1510,6 +1510,7 @@ describe("DataGrid charts integration and date filters", () => {
       "Donut",
       "Radar",
       "Scatter",
+      "Combo",
     ]);
     // Stacking needs two series of a stackable type.
     const stacked = within(panel).getByRole("switch", { name: "Stacked" }) as HTMLInputElement;

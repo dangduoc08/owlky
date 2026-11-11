@@ -702,6 +702,24 @@ Shift + arrows extend the cell range only. A Shift + press clears the page's tex
 `preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
 checkbox's click, which comes before its `change`.
 
+Chart aggregation, combo and a second axis (4.18.88, ApexGrid chart `definition`: `aggregation`,
+`type: "combo"`, `secondaryMeasures`; core `gridChartAggregate`, `gridChartTwoAxes`): model
+`aggregation` (`sum` · `avg` · `count` · `min` · `max` · `median`; `count` counts rows, the others
+combine the numbers, `median` the middle one or the mean of the two middle ones) merges the rows of
+one `dimension` text into one category, without row grouping, over every row that passes the filters
+(every page, sorted; categories in first-appearance order); with groups, range and cross-filtering
+charts it replaces the aggregation model's function. Not for pivoted grids or numeric scatter
+charts. Type `combo` (panel **Combo**, locale key `chartTypeCombo`) is a Chart `line` chart whose
+series carry their type: model `seriesTypes` (`{ [field]: "column" | "line" | "area" }`), default the
+first value as columns, the others as lines; curve and markers apply to its lines. Model
+`secondaryValues` (value fields; column, line, area and combo charts, with values on both sides) puts
+those series on a second value axis: the Chart's `yaxis` `[{ title: seriesAxisLabel? }, { opposite:
+true, title: <the secondary series' names> }]` (HTML `data-ok-yaxis`, removed again when one axis is
+left) and each series' `yAxis` (0 or 1; the data table's `data-ok-y-axis`, `data-ok-type`). The Chart
+component is unchanged (mixed series and several value axes exist since 4.18.59). Not provided: panel
+controls for `aggregation`, `seriesTypes` and `secondaryValues` (model and `setChartModel` only; the
+panel keeps them while editing other settings), stacking combo charts.
+
 State with rows (4.18.91, ApexGrid `getState()` / `setState()` / `stateChanged`): `exportState()`
 adds `rowSelection: { model }` (checkbox selection on), `detailPanel: { expandedRowIds }` (MUI X's key;
 an array, MUI X v8 a `Set`; grids with detail panels), `pinnedRows: { top, bottom }` (row ids; grids
@@ -909,6 +927,7 @@ the detailed record of what is kept.
 | Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef` | same | kept (4.18.57) | object or `(originalColumnField, columnGroupPath)` (the column's keys); React overrides `headerName`, `description`, `width`, `minWidth`, `maxWidth`, `flex`, `align`, `headerAlign`, `headerClassName`, `cellClassName`, `resizable`; HTML `setPivotingColDef(def | null)` with `headerName`, `width`, `minWidth`, `maxWidth`, `align`, `headerAlign` (the headers the runtime builds) |
 | Pivot: `pivotPanelOpen` / `onPivotPanelOpenChange` | same | kept (4.18.57) | deprecated upstream (sidebar), kept as asked: the toolbar's Pivot popover; given, the prop decides and clicks only call `onPivotPanelOpenChange`; React writes `data-ok-pivot-panel-open`; HTML: the attribute opens and closes the panel, and follows it (the panel's own events stay `ok:data-grid:sidebaropen` / `sidebarclose`) |
+| (not in MUI X; ApexGrid chart `definition.aggregation`, `type: "combo"`, `secondaryMeasures`) | chart model `aggregation`, type `combo` + `seriesTypes`, `secondaryValues` | added (4.18.88) | renamed `secondaryMeasures` → `secondaryValues` (the model's `values`); combo series types per value field |
 | `onStateChange`; `initialState.detailPanel.expandedRowIds` | same | kept (4.18.91) | `onStateChange(state)` gets `exportState()` once settled (MUI X: the internal state on every change, with `event` and `details`); state keys added beyond MUI X: `rowSelection`, `pinnedRows` (ids), `rowOrder`; HTML `ok:data-grid:statechange` |
 | Export: `csvOptions.getRowsToExport`, `excelOptions.getRowsToExport`, `printOptions.getRowsToExport` (`GridGetRowsToExportParams`) | same (+ `source`) | kept (4.18.92) | params carry `apiRef` and id lists instead of selectors; `source` (`filtered` · `selected` · `page` · `all`, ApexGrid) added; default stays the filtered rows (MUI X: the selected rows when any) |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |

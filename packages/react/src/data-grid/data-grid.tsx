@@ -96,6 +96,7 @@ import {
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
+  gridChartAggregate,
   gridChartData,
   gridChartFields,
   gridChartGroups,
@@ -4746,6 +4747,8 @@ function DataGridInner<R>(
       pivot: !!pivot || server.filter,
       numeric,
     });
+    // An aggregated chart (4.18.88) merges every filtered row of a category, without groups.
+    const aggregated = !!chartModel.aggregation && !pivot && !numeric;
     const sourceRows = range
       ? localSort(server.filter ? orderedRows : localFilter(orderedRows)).filter(
           (row) => isData(row) && range.has(idOf(row)),
@@ -4754,7 +4757,9 @@ function DataGridInner<R>(
         ? localSort(localFilter(orderedRows, gridCrossFilterBase(filterModel, crossField))).filter(
             isData,
           )
-        : null;
+        : aggregated && dimension && !grouped
+          ? localSort(server.filter ? orderedRows : localFilter(orderedRows)).filter(isData)
+          : null;
     // Their categories merge rows of the same text (or group key), aggregated (ApexGrid).
     const keyField = grouped ? (grouping[0] as string) : dimension;
     const merged =
@@ -4777,13 +4782,18 @@ function DataGridInner<R>(
     const chartColumnOf = (field: string) =>
       chartCandidates.find((c) => c.field === field) as GridColDef<R>;
     const aggregateOf = (list: readonly R[], field: string) =>
-      gridAggregate(
-        list,
-        { [field]: aggregationModel[field] ?? aggregationState[field] ?? "sum" },
-        chartCandidates,
-        (r, f) => rawValue(chartColumnOf(f), r),
-        aggregationFunctions,
-      )[field];
+      aggregated && chartModel.aggregation
+        ? gridChartAggregate(
+            list.map((r) => rawValue(chartColumnOf(field), r)),
+            chartModel.aggregation,
+          )
+        : gridAggregate(
+            list,
+            { [field]: aggregationModel[field] ?? aggregationState[field] ?? "sum" },
+            chartCandidates,
+            (r, f) => rawValue(chartColumnOf(f), r),
+            aggregationFunctions,
+          )[field];
     const rowItems = sourceRows ?? pageRows.filter(isData);
     const chartData = !chartShown
       ? null
