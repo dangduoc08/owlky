@@ -97,7 +97,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.16 | E (must, owner 2026-11-10) | Map | core `greatCircle(from, to)` (geodesic arcs, antimeridian split), a region drilldown story (click → `fitBounds` → sub-regions, breadcrumbs), `exportMap("png")` | ✅ |
 | 4.18.17 | E (must, owner 2026-11-10, **ADR**) | Chart or a new component | offline SVG geo maps without a tile style: projection (Equal Earth), regions as SVG with the chart's legend, tooltip and keyboard, hex tile layouts | ✅ |
 | 4.18.19 | E — ApexCharts Premium (should) | Chart | crossfilter between charts of a `group` (a slice click or a brush filters the others; Linked Views / Highlight Filter) | ✅ |
-| 4.18.20 | E (could) | Chart | measure ruler (span · free, keyboard alternative, pinned rulers, `clearMeasures`), draggable annotations that report data coordinates (Ink) | 🔄 |
+| 4.18.20 | E (could) | Chart | measure ruler (span · free, keyboard alternative, pinned rulers, `clearMeasures`), draggable annotations that report data coordinates (Ink) | ✅ |
 | 4.18.21 | E — ApexCharts v8 (should: waterfall, dumbbell first) | Chart | new types `waterfall`, `dumbbell`, `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` (prop-level mapping in 3.1) | ✅ |
 | 4.18.22 | E — audit 3.1 (should) | Button, Icon button, Fab (+ Button group) | polymorphic `component` / `LinkComponent` (router links); Icon button `href` (icon links); Button group `component` | ✅ |
 | 4.18.23 | E — audit 3.1 (should) | Autocomplete | `readOnly`, `onHighlightChange`, `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, configurable `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | ✅ |
@@ -142,10 +142,10 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.62 | E — audit 3.1 (should) | Chart | non-color series cues: `markers.shape`, `markers.discrete`, `fill.pattern`, `colorBlindMode` (WCAG 1.4.1); `stroke.width` per series | ✅ |
 | 4.18.63 | E — audit 3.1 (should) | Chart | tooltip: `tooltip: false`, per-point mode (`shared: false`), fixed position, custom content (React node / HTML `<template>`) | ✅ |
 | 4.18.64 | E — audit 3.1 (should) | Chart | legend `horizontalAlign`, `showForSingleSeries`, toggle opt-out, custom items; grid lines per axis, stripes | ✅ |
-| 4.18.65 | E — audit 3.1 (could) | Chart | `xaxis.group` (two-level categories), label rotation, fixed x `min` / `max` / `range`; `forecastDataPoints`; `noData`; text annotations; several `brush.targets` | 🔄 |
-| 4.18.66 | E — audit 3.1 (could) | Chart | `dataReducer` (LTTB downsampling of the drawing) | 🔄 |
-| 4.18.67 | E — audit 3.1 (could) | Chart | timeline `rangeBarGroupRows` / `rangeBarOverlap`, `hideZeroBarsWhenGrouped` | 🔄 |
-| 4.18.68 | E — audit 3.1 (could, **ADR**) | Chart | drilldown (`drillDown` / `drillUp` / `drillToRoot`, back control, events); trellis small multiples | 🔄 |
+| 4.18.65 | E — audit 3.1 (could) | Chart | `xaxis.group` (two-level categories), label rotation, fixed x `min` / `max` / `range`; `forecastDataPoints`; `noData`; text annotations; several `brush.targets` | ✅ |
+| 4.18.66 | E — audit 3.1 (could) | Chart | `dataReducer` (LTTB downsampling of the drawing) | ✅ |
+| 4.18.67 | E — audit 3.1 (could) | Chart | timeline `rangeBarGroupRows` / `rangeBarOverlap`, `hideZeroBarsWhenGrouped` | ✅ |
+| 4.18.68 | E — audit 3.1 (could, **ADR**) | Chart | drilldown (`drillDown` / `drillUp` / `drillToRoot`, back control, events); trellis small multiples | ✅ |
 | 4.18.69 | E — audit 3.1 (should) | Tree view | `onItemSelectionToggle`, `onItemClick`, `onItemFocus`; `isItemDisabled`, `isItemSelectionDisabled` / TreeItem `disableSelection`, `disabledItemsFocusable`, `getItemChildren` (with 4.11) | ✅ |
 | 4.18.70 | E — audit 3.1 (could, **ADR**) | Tree view | `itemChildrenIndentation`; virtualization (`itemHeight`, flat DOM `domStructure`) | ⏸ |
 | 4.18.71 | E — audit 3.1 (should) | Tabs | link tabs (Tab `href` / `component`, navigation pattern with `aria-current`) | ✅ |
