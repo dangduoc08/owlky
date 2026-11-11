@@ -9,7 +9,7 @@ import {
   editorToolbarShortcut,
 } from "./bubble-menu.js";
 import { createEditorController, type EditorController } from "./editor.js";
-import type { EditorMentionItem, EditorMentionOptions } from "./mention.js";
+import { createMention, type EditorMentionItem, type EditorMentionOptions } from "./mention.js";
 import { createToolbarNavigation, editorTableActions, editorToolButton } from "./toolbar.js";
 
 let controller: EditorController | undefined;
@@ -534,5 +534,160 @@ describe("bubble menu", () => {
     navigation.destroy();
     expect(editorToolButton("bold")?.label).toBe("Bold");
     expect(editorToolButton("link")?.popover).toBe(true);
+  });
+});
+
+describe("edge paths", () => {
+  const PEOPLE: EditorMentionItem[] = [
+    { id: "ada", label: "Ada Lovelace" },
+    { id: "grace", label: "Grace Hopper" },
+  ];
+  const filter = (q: string) =>
+    PEOPLE.filter((p) => p.label.toLowerCase().includes(q.toLowerCase()));
+  const options = (listbox: Element) => [...listbox.querySelectorAll('[role="option"]')];
+
+  it("mentions: a query typed while the list shows repositions it instead of reopening", async () => {
+    const { content, byId } = page();
+    const list = byId("mentions");
+    const listbox = list.querySelector('[role="listbox"]') as HTMLElement;
+    const c = create(content, {
+      content: "<p></p>",
+      mentions: { items: filter, list: () => list },
+    });
+    c.editor.view.focus();
+    await userEvent.keyboard("@");
+    await until(list, () => options(listbox).length === 2);
+    expect(list.hasAttribute("data-ok-open")).toBe(true);
+    await userEvent.keyboard("g");
+    await until(list, () => options(listbox).length === 1);
+    expect(list.hasAttribute("data-ok-open")).toBe(true);
+    expect(options(listbox)[0]?.textContent).toBe("Grace Hopper");
+    expect(content.getAttribute("aria-activedescendant")).toBe(`${listbox.id}-0`);
+  });
+
+  it("mentions: a list without a listbox, or before the editor exists, shows no options", async () => {
+    const { content, byId } = page();
+    const list = byId("mentions");
+    const listbox = list.querySelector('[role="listbox"]') as HTMLElement;
+    // The mention renderer reaches no editor: the options show, the text box gets no ARIA.
+    const c = create(content, {
+      content: "<p></p>",
+      extensions: [createMention({ items: filter, list: () => list }, () => null)],
+    });
+    c.editor.view.focus();
+    await userEvent.keyboard("@");
+    await until(list, () => options(listbox).length === 2);
+    expect(content.hasAttribute("aria-activedescendant")).toBe(false);
+    expect(content.hasAttribute("aria-controls")).toBe(false);
+    await userEvent.keyboard("{Escape}");
+    controller?.destroy();
+    controller = undefined;
+    cleanupDom();
+    // A list element with no listbox in it: nothing to paint, nothing breaks.
+    const again = page();
+    const empty = again.byId("mentions");
+    empty.replaceChildren();
+    const d = create(again.content, {
+      content: "<p></p>",
+      mentions: { items: filter, list: () => empty },
+    });
+    d.editor.view.focus();
+    await userEvent.keyboard("@a");
+    await nextFrame();
+    expect(empty.children).toHaveLength(0);
+    expect(again.content.hasAttribute("aria-activedescendant")).toBe(false);
+  });
+
+  it("mentions: a query that grows without a list element, and a press on a stale option, do nothing", async () => {
+    const { content } = page();
+    const c = create(content, {
+      content: "<p></p>",
+      mentions: { items: filter, list: () => null },
+    });
+    c.editor.view.focus();
+    await userEvent.keyboard("@");
+    await nextFrame();
+    await userEvent.keyboard("a");
+    await nextFrame();
+    expect(content.hasAttribute("aria-activedescendant")).toBe(false);
+    controller?.destroy();
+    controller = undefined;
+    cleanupDom();
+    const again = page();
+    const list = again.byId("mentions");
+    const listbox = list.querySelector('[role="listbox"]') as HTMLElement;
+    const d = create(again.content, {
+      content: "<p></p>",
+      mentions: { items: filter, list: () => list },
+    });
+    d.editor.view.focus();
+    await userEvent.keyboard("@g");
+    await until(list, () => options(listbox).length === 1);
+    // An option the list no longer has an item for (added after the last paint).
+    const stale = document.createElement("li");
+    stale.setAttribute("data-ok-editor-mention-option", "");
+    listbox.append(stale);
+    stale.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+    expect(d.getValue()).not.toContain("data-id");
+  });
+
+  it("content check: emitContentError is passed on, and the error's disableCollaboration is a no-op", () => {
+    const { content } = page();
+    const errors: { disableCollaboration: () => void }[] = [];
+    const c = create(content, {
+      content: "<p>Kept</p>",
+      enableContentCheck: true,
+      emitContentError: true,
+      onEvent: (name, props) => {
+        if (name === "contentError") errors.push(props as (typeof errors)[number]);
+      },
+    });
+    expect(c.editor.options.emitContentError).toBe(true);
+    c.setContent("<custom-element>No</custom-element>");
+    expect(errors).toHaveLength(1);
+    expect(() => errors[0]?.disableCollaboration()).not.toThrow();
+    expect(c.getText()).toContain("Kept");
+  });
+
+  it("bubble menu: Tiptap's 250 ms default delay, a blur cancels a pending update, destroy clears it", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      const { content, bubble } = page();
+      const c = create(content);
+      menu = createEditorBubbleMenu(c.editor, bubble);
+      c.editor.view.focus();
+      select(c, "world");
+      vi.advanceTimersByTime(200);
+      expect(bubble.hasAttribute("data-ok-open")).toBe(false);
+      vi.advanceTimersByTime(60);
+      expect(bubble.hasAttribute("data-ok-open")).toBe(true);
+      // A new selection is pending when the editor loses focus: it hides at once.
+      select(c, "Hello");
+      c.editor.view.dom.blur();
+      expect(bubble.hasAttribute("data-ok-open")).toBe(false);
+      vi.advanceTimersByTime(300);
+      expect(bubble.hasAttribute("data-ok-open")).toBe(false);
+      // Destroyed with an update pending: it never runs.
+      c.editor.view.focus();
+      select(c, "world");
+      menu.destroy();
+      menu = undefined;
+      vi.advanceTimersByTime(300);
+      expect(bubble.hasAttribute("data-ok-open")).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("bubble menu: update after the editor is destroyed does nothing", () => {
+    const { content, bubble } = page();
+    const c = create(content);
+    const onOpenChange = vi.fn();
+    menu = createEditorBubbleMenu(c.editor, bubble, { updateDelay: 0, onOpenChange });
+    c.destroy();
+    controller = undefined;
+    menu.update();
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(bubble.hasAttribute("data-ok-open")).toBe(false);
   });
 });
