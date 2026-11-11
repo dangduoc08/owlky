@@ -150,8 +150,10 @@ import {
   gridQuickFilterValues,
   gridRangeChartId,
   gridRangeChartModel,
+  gridRowArrowSelection,
   gridRowGroups,
   gridRowOffsets,
+  gridRowRangeSelection,
   gridRowSpans,
   gridRowWindow,
   gridRowWindowOf,
@@ -1108,9 +1110,25 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       (element.hasAttribute(checkboxSelectionVisibleOnly.attr) ? pageList : filtered).filter(
         selectable,
       );
+    // The row toggled last: Shift + click ranges start there (MUI X `lastRowToggled`).
+    let anchorRow: string | null = null;
+    /** Rows a range covers: the shown, selectable data rows of every page, in order. */
+    const rangeIds = () => sortedList.filter(selectable).map(idOf);
+    /** Shift + click on a row or its checkbox: the rows from the anchor (MUI X). */
+    const rangeTo = (row: HTMLElement) => {
+      if (!checkbox) return;
+      if (!multiple() || row.hasAttribute("data-ok-generated")) {
+        toggle(row, true);
+        return;
+      }
+      if (!selectable(row)) return;
+      select(gridRowRangeSelection(selection, rangeIds(), anchorRow, idOf(row)));
+      anchorRow = idOf(row);
+    };
     const toggle = (row: HTMLElement, box = false) => {
       if (!checkbox) return;
       const rowId = idOf(row);
+      anchorRow = rowId;
       const group = row.hasAttribute("data-ok-generated");
       if (selectionTree && (box || !group) && selectionIds.has(rowId)) {
         if (!group && !selectionTree.selectable(rowId)) return;
@@ -1493,6 +1511,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       onColumnMenu: (field, header) =>
         openColumnMenu(field, header.querySelector("[data-ok-data-grid-menu-button]")),
       onToggleRow: (row) => toggle(row),
+      onRowRange: (from, to) => {
+        // Cell selection extends the cell range with Shift + arrows instead.
+        if (!checkbox || cellsOn()) return;
+        select(gridRowArrowSelection(selection, rangeIds(), idOf(from), idOf(to), multiple()));
+      },
       onSelectAll: () => {
         // Cell selection: every cell of the page.
         if (cellsOn()) {
@@ -5735,10 +5758,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     }
 
     // Pointer: header sorting, menu buttons, row selection, checkboxes.
+    /** The row checkbox a Shift + click is toggling (its `change` follows the click). */
+    let shiftBox: Element | null = null;
     element.addEventListener(
       "click",
       (event) => {
         const target = event.target as Element;
+        shiftBox = event.shiftKey
+          ? target.closest('[data-ok-data-grid-checkbox] input[type="checkbox"]')
+          : null;
         const treeToggle = target.closest("[data-ok-data-grid-tree-toggle]");
         if (treeToggle) {
           toggleExpansion(treeToggle.closest<HTMLElement>(ROW) as HTMLElement);
@@ -5776,8 +5804,19 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           checkbox &&
           !element.hasAttribute(disableRowSelectionOnClick.attr) &&
           !target.closest(INTERACTIVE)
-        )
-          toggle(row);
+        ) {
+          if ((event as MouseEvent).shiftKey) rangeTo(row);
+          else toggle(row);
+        }
+      },
+      { signal },
+    );
+    // Shift + press: no text selection between the rows (MUI X `preventSelectionOnShift`).
+    main.addEventListener(
+      "mousedown",
+      (event) => {
+        if (checkbox && multiple() && event.shiftKey && (event.target as Element).closest(ROW))
+          window.getSelection()?.removeAllRanges();
       },
       { signal },
     );
@@ -5790,7 +5829,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         // Selection off (`data-ok-row-selection="false"`): checkboxes left in the markup do nothing.
         if (!box || !checkbox) return;
         const row = box.closest<HTMLElement>(ROW);
-        if (row) toggle(row, true);
+        // Shift + click on a checkbox selects the range (the click comes before its change).
+        const range = shiftBox === box;
+        shiftBox = null;
+        if (row && range) rangeTo(row);
+        else if (row) toggle(row, true);
         else select(toggleGridRows(selection, allRows().map(idOf)));
         mark();
       },

@@ -787,6 +787,8 @@ export {
   gridOperatorNeedsValue,
   gridPinSide,
   gridQuickFilterValues,
+  gridRowArrowSelection,
+  gridRowRangeSelection,
   gridSelectAllState,
   gridSelectableDescendants,
   gridSetFilterSearch,

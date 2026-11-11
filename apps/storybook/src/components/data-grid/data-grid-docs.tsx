@@ -451,7 +451,7 @@ export function CustomersWithTotals() {
   {
     id: "selection",
     title: "Choose how rows are selected",
-    body: 'With `checkboxSelection`, people select rows with checkboxes, a click on the row, Space and Ctrl + A. Set `disableMultipleRowSelection` to allow one row at a time: selecting a row clears the others, and the header has no **Select all** checkbox. To keep some rows from being selected, return `false` from `isRowSelectable` in React, or put `data-ok-selectable="false"` on the row in HTML. Their checkbox is disabled. `checkboxSelectionVisibleOnly` makes **Select all** select the current page only. When rows go away, their ids leave the selection, unless you set `keepNonExistentRowsSelected`. Use it with server pagination, where the rows of other pages aren\'t loaded.',
+    body: "With `checkboxSelection`, people select rows with checkboxes, a click on the row, Space and Ctrl + A. To select a range, they click a row, then Shift + click another row or its checkbox: every row in between takes the clicked row's new state. On the keyboard, Shift + Space selects the focused row and Shift + Up or Shift + Down extends the selection to the next row, or shrinks it when that row is already selected. Ranges cover the rows that pass the filters, on every page, in the shown order. With `cellSelection`, Shift + arrows select cells instead. Set `disableMultipleRowSelection` to allow one row at a time: selecting a row clears the others, and the header has no **Select all** checkbox. To keep some rows from being selected, return `false` from `isRowSelectable` in React, or put `data-ok-selectable=\"false\"` on the row in HTML. Their checkbox is disabled. `checkboxSelectionVisibleOnly` makes **Select all** select the current page only. When rows go away, their ids leave the selection, unless you set `keepNonExistentRowsSelected`. Use it with server pagination, where the rows of other pages aren't loaded.",
     html: `${gridOf(layoutTasks, { attrs: "data-ok-disable-multiple-row-selection" })}`,
     react: `import { DataGrid, type GridColDef } from "@owlky/react";
 
@@ -2589,7 +2589,11 @@ const PREVIEWS = {
         ["Page Up / Page Down", "Up / down one screen of rows"],
         ["Enter or Space on a header", "Sorts the column (Shift: adds it to the sort)"],
         ["Ctrl + Enter on a header", "Opens the column menu"],
-        ["Space on a row", "Selects or clears the row"],
+        ["Space or Shift + Space on a row", "Selects or clears the row"],
+        [
+          "Shift + Up / Shift + Down on a row",
+          "Extends the row selection to the row above / below (shrinks it over selected rows)",
+        ],
         ["Ctrl + A", "Selects or clears every row"],
         ["Alt + Left / Alt + Right on a header", "Makes the column narrower / wider by 10 pixels"],
         ["Enter or F2 on an editable cell", "Edits the cell (Enter saves, Escape cancels)"],

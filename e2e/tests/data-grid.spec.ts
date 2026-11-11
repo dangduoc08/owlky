@@ -63,6 +63,40 @@ for (const impl of implementations) {
       ).toHaveAttribute("aria-selected", "true");
     });
 
+    test("row ranges: Shift + click, Shift + checkbox, Shift + Down / Up", async ({
+      page,
+      isMobile,
+    }) => {
+      test.skip(isMobile, "Keyboard and Shift + click.");
+      await openStory(page, storyId(impl, "datagrid", "basic"));
+      const rows = page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])');
+      const selected = () =>
+        page
+          .locator('[data-ok-data-grid-body] > [role="row"][aria-selected="true"]')
+          .evaluateAll((list) => list.map((row) => row.getAttribute("data-ok-row-id")));
+      const ids = await rows.evaluateAll((list) =>
+        list.map((row) => row.getAttribute("data-ok-row-id")),
+      );
+      await rows.nth(1).locator('[data-ok-field="age"]').click();
+      await rows
+        .nth(3)
+        .locator('[data-ok-field="age"]')
+        .click({ modifiers: ["Shift"] });
+      expect(await selected()).toEqual(ids.slice(1, 4));
+      await rows
+        .nth(5)
+        .locator("[data-ok-data-grid-checkbox] input")
+        .click({ modifiers: ["Shift"] });
+      expect(await selected()).toEqual(ids.slice(1, 6));
+      // No text selected between the rows.
+      expect(await page.evaluate(() => window.getSelection()?.toString() ?? "")).toBe("");
+      await rows.nth(5).locator('[data-ok-field="age"]').focus();
+      await page.keyboard.press("Shift+ArrowDown");
+      expect(await selected()).toEqual(ids.slice(1, 7));
+      await page.keyboard.press("Shift+ArrowUp");
+      expect(await selected()).toEqual(ids.slice(1, 6));
+    });
+
     test("touch: tap a checkbox, open the columns panel and hide a column", async ({
       page,
       isMobile,

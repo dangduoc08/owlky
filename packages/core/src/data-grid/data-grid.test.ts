@@ -24,6 +24,8 @@ import {
   gridHeaderAlign,
   gridOperatorNeedsValue,
   gridQuickFilterValues,
+  gridRowArrowSelection,
+  gridRowRangeSelection,
   gridSelectAllState,
   gridSetFilterSearch,
   gridSetFilterSummary,
@@ -441,6 +443,42 @@ describe("data grid selection and export", () => {
     expect(toggleGridRow(["a", "b"], "a")).toEqual(["b"]);
     expect(toggleGridRows(["z"], ["a", "b"])).toEqual(["z", "a", "b"]);
     expect(toggleGridRows(["a", "b", "z"], ["a", "b"])).toEqual(["z"]);
+  });
+
+  it("row ranges: Shift + click from the anchor (MUI X expandMouseRowRangeSelection)", () => {
+    const ids = ["a", "b", "c", "d", "e"];
+    // Anchor b, click d: b..d selected, others kept.
+    expect(gridRowRangeSelection(["z", "b"], ids, "b", "d")).toEqual(["z", "b", "c", "d"]);
+    // Upwards.
+    expect(gridRowRangeSelection(["d"], ids, "d", "b")).toEqual(["d", "b", "c"]);
+    // No anchor (or one that went away): the clicked row alone.
+    expect(gridRowRangeSelection([], ids, null, "c")).toEqual(["c"]);
+    expect(gridRowRangeSelection([], ids, "gone", "c")).toEqual(["c"]);
+    // A selected row clears the rows from the anchor up to it (the clicked row stays).
+    expect(gridRowRangeSelection(["a", "b", "c", "d"], ids, "a", "d")).toEqual(["d"]);
+    expect(gridRowRangeSelection(["b", "c", "d", "e"], ids, "e", "c")).toEqual(["b", "c"]);
+    // The anchor itself, selected: nothing changes.
+    expect(gridRowRangeSelection(["c"], ids, "c", "c")).toEqual(["c"]);
+    // A row outside the list: nothing changes.
+    expect(gridRowRangeSelection(["a"], ids, "a", "x")).toEqual(["a"]);
+  });
+
+  it("row ranges: Shift + Up / Down (MUI X)", () => {
+    const ids = ["a", "b", "c", "d"];
+    // Down from b (unselected c): b and c join.
+    expect(gridRowArrowSelection([], ids, "b", "c")).toEqual(["b", "c"]);
+    // Back up from c to b (b selected): c leaves.
+    expect(gridRowArrowSelection(["b", "c"], ids, "c", "b")).toEqual(["b"]);
+    // Down onto a selected row: the row passed leaves.
+    expect(gridRowArrowSelection(["b", "c"], ids, "b", "c")).toEqual(["c"]);
+    // Up onto an unselected row.
+    expect(gridRowArrowSelection(["c"], ids, "c", "b")).toEqual(["c", "b"]);
+    // Single selection: the row replaces the selection, or clears it.
+    expect(gridRowArrowSelection(["a"], ids, "a", "b", false)).toEqual(["b"]);
+    expect(gridRowArrowSelection(["b"], ids, "a", "b", false)).toEqual([]);
+    // From a row outside the list (a group row): only the target.
+    expect(gridRowArrowSelection([], ids, "g", "b")).toEqual(["b"]);
+    expect(gridRowArrowSelection(["a"], ids, "a", "x")).toEqual(["a"]);
   });
 
   it("CSV: quotes, formula neutralization, BOM, CRLF; actions columns skipped", () => {

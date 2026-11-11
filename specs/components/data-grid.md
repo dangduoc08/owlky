@@ -689,6 +689,19 @@ header. Not generated in HTML: other special columns (reorder, detail panels, tr
 groups, header filter cells; JSON data and late data (generation runs once, at setup: `setRows` then
 fills the generated columns).
 
+Row ranges (4.18.87, MUI X `expandMouseRowRangeSelection` and its keyboard rules; core
+`gridRowRangeSelection`, `gridRowArrowSelection`): with checkbox selection, Shift + click on a row
+or on its checkbox sets every row from the anchor (the row toggled last, else the clicked one) to
+the clicked row to the clicked row's new state; on a selected row the rows from the anchor up to
+the one before it are cleared. Ranges cover the selectable data rows that pass the filters, on every
+page, in the shown order (collapsed tree children aside); unselectable rows are skipped and ignore
+the press. Shift + Space toggles the focused row like Space. Shift + Up / Down (core
+`createGridNavigation` `onRowRange`) moves the focus and gives the rows passed the next row's new
+state (`disableMultipleRowSelection`: the next row replaces the selection). With `cellSelection`,
+Shift + arrows extend the cell range only. A Shift + press clears the page's text selection (MUI X
+`preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
+checkbox's click, which comes before its `change`.
+
 Columns, rows and pivot (4.18.57): tree reordering keeps a moved row's subtree together and refuses
 drops into it; drop marks show only where `isValidRowReorder` agrees.
 
@@ -714,7 +727,8 @@ runs before anything is written, and the target (selection corner or focused cel
 | Page Up / Page Down | One screen of rows |
 | Enter / Space (header) | Sort (Shift: add) |
 | Ctrl / Cmd + Enter (header) | Column menu |
-| Space (cell) | Toggle the row's selection |
+| Space, Shift + Space (cell) | Toggle the row's selection (sets the range anchor) |
+| Shift + Up / Down (cell, row selection, not `cellSelection`) | Move and extend the row selection (MUI X: the rows passed take the next row's new state, so going back shrinks it) |
 | Ctrl / Cmd + A | Select / clear every row |
 | Alt + ← / → (header) | Narrower / wider by 10px |
 | Enter / F2 (editable cell) | Edit; in the field: Enter commits, Escape cancels |

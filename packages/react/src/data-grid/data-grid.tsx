@@ -157,8 +157,10 @@ import {
   gridQuickFilterValues,
   gridRangeChartId,
   gridRangeChartModel,
+  gridRowArrowSelection,
   gridRowGroups,
   gridRowOffsets,
+  gridRowRangeSelection,
   gridRowSpans,
   gridRowWindow,
   gridRowWindowOf,
@@ -2508,6 +2510,11 @@ function DataGridInner<R>(
         openMenu.current(field, header.querySelector("[data-ok-data-grid-menu-button]")),
       onToggleRow: (row) => toggleRow.current(row.getAttribute("data-ok-row-id") as string),
       onSelectAll: () => selectEvery.current(),
+      onRowRange: (from, to) =>
+        arrowRange.current(
+          from.getAttribute("data-ok-row-id") as string,
+          to.getAttribute("data-ok-row-id") as string,
+        ),
       onEdit: (cell, reason, key) =>
         startEdit.current(
           cell.closest('[role="row"]')?.getAttribute("data-ok-row-id") as string,
@@ -2989,7 +2996,32 @@ function DataGridInner<R>(
     );
   };
   const toggleRow = useRef<(id: string) => void>(undefined as never);
+  // The row toggled last: Shift + click ranges start there (MUI X `lastRowToggled`).
+  const anchorRow = useRef<string | null>(null);
+  /** Whether the row checkbox being changed was clicked with Shift. */
+  const shiftBox = useRef(false);
+  /** Rows a range covers: the shown, selectable data rows of every page, in order. */
+  const rangeIds = () => sorted.filter(selectable).map(idOf);
+  const rangeTo = useRef<(id: string) => void>(undefined as never);
+  rangeTo.current = (rowId) => {
+    // Single selection or no anchor yet: a plain toggle (MUI X).
+    if (!multiple) {
+      toggleRow.current(rowId);
+      return;
+    }
+    const row = view.find((r) => idOf(r) === rowId);
+    if (!row || !selectable(row)) return;
+    setSelection(gridRowRangeSelection(selection, rangeIds(), anchorRow.current, rowId));
+    anchorRow.current = rowId;
+  };
+  const arrowRange = useRef<(from: string, to: string) => void>(undefined as never);
+  arrowRange.current = (from, to) => {
+    // Cell selection extends the cell range with Shift + arrows instead.
+    if (cellSelection) return;
+    setSelection(gridRowArrowSelection(selection, rangeIds(), from, to, multiple));
+  };
   toggleRow.current = (rowId) => {
+    anchorRow.current = rowId;
     // Rows with aria-selected (checkbox selection) and group rows with a checkbox reach here.
     const node = tree?.get(rowId);
     if (selectionTree && node) {
@@ -4315,7 +4347,12 @@ function DataGridInner<R>(
     onRowClickProp?.(rowParams(row, i), event);
     if (!checkboxSelection || disableRowSelectionOnClick) return;
     if ((event.target as Element).closest("button, a, input, label, select, textarea")) return;
-    toggleRow.current(idOf(row));
+    if (event.shiftKey) rangeTo.current(idOf(row));
+    else toggleRow.current(idOf(row));
+  };
+  // Shift + press: no text selection between the rows (MUI X `preventSelectionOnShift`).
+  const onRowMouseDown = (event: MouseEvent<HTMLElement>) => {
+    if (checkboxSelection && multiple && event.shiftKey) window.getSelection()?.removeAllRanges();
   };
 
   const menuColumn = columns.find((c) => c.field === menuField);
@@ -5422,6 +5459,7 @@ function DataGridInner<R>(
         {...(editing?.rowId === rowId && editing.field === null ? { "data-ok-editing": "" } : {})}
         style={Object.keys(rowStyle).length ? (rowStyle as CSSProperties) : undefined}
         onClick={onRowClick(row, i)}
+        onMouseDown={onRowMouseDown}
         onDoubleClick={(event) => onRowDoubleClick?.(params, event)}
       >
         {specials.map((special) => specialCell(special.field, row, place, node, hasChildren, open))}
@@ -5885,7 +5923,16 @@ function DataGridInner<R>(
                 ? !gridSelectableDescendants(selectionTree as GridSelectionTree, rowId).length
                 : !selectable(row)
             }
-            onChange={() => toggleRow.current(rowId)}
+            onClick={(event) => {
+              shiftBox.current = event.shiftKey;
+            }}
+            onChange={() => {
+              // Shift + click on a checkbox selects the range (MUI X); its click comes first.
+              const range = shiftBox.current && !groupBox;
+              shiftBox.current = false;
+              if (range) rangeTo.current(rowId);
+              else toggleRow.current(rowId);
+            }}
           />
         </div>
       );
