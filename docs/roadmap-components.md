@@ -78,7 +78,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.15 | D — heavy | Data grid | `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, group footers, server-side aggregation, `getPivotDerivedColumns`, pivot panel drag and drop, one chart per grid | ✅ |
 | 4.16 | D | Editor | Tiptap `extensions` / `editorProps` pass-through, bubble menus, tables, mentions, a form `name` | ✅ |
 | 4.17 | D | Walktour | `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | ✅ |
-| 4.18 | E — from the audits | any | rows added by 2.4 and 3.1 | ⬜ |
+| 4.18 | E — from the audits | any | rows added by 2.4 and 3.1 | ✅ |
 | 4.18.1 | E — ApexTree (must, **ADR** superseding ADR-0036) | Organization chart | collapsible nodes (`enableExpandCollapse`, `expandCollapseOnNodeClick`, a badge with the hidden count), `expandAll` / `collapseAll` / `expandToDepth`, lazy children (`loadChildren`), `ok:organization-chart:expand`, a toggle button per branch (`aria-expanded`), Collapse for the children list | ✅ |
 | 4.18.2 | E (should, **ADR**) | Organization chart | `direction` `top` · `bottom` · `left` · `right` (connectors on logical properties, right to left mirrors) | ✅ |
 | 4.18.3 | E (must, owner 2026-11-10) | Organization chart | `groupLeafNodes`: leaf children stacked in one column under their parent (CSS) | ✅ |
@@ -207,7 +207,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 
 | # | Step | Scope | Status |
 |---|---|---|---|
-| 6.0 | Apex products complete (owner 2026-11-10) | before `/integrate`: ApexTree ↔ Organization chart (4.18.1–4.18.7), ApexGrid ↔ Data grid (4.18.9–4.18.14), ApexMaps ↔ Map (4.18.15–4.18.17) all ✅; then audit each product's current feature and demo pages again against Owlky and add a must row in batch E for any gap 2.4 missed, built before 6.1. Audit done 2026-11-11: 18 gaps → 4.18.83–4.18.100, all ✅ 2026-11-11; items the specs and ADR-0059 §8 record as not built (log / diverging scales and OkLab ramps, orthographic projection and rotation, shape ↔ hex morph, arc curvature / flow / width, `drillTo` / `drillUp`, label collision and pan / zoom on Chart `geo`) wait for the owner's decision | 🔄 |
+| 6.0 | Apex products complete (owner 2026-11-10) | before `/integrate`: ApexTree ↔ Organization chart (4.18.1–4.18.7), ApexGrid ↔ Data grid (4.18.9–4.18.14), ApexMaps ↔ Map (4.18.15–4.18.17) all ✅; then audit each product's current feature and demo pages again against Owlky and add a must row in batch E for any gap 2.4 missed, built before 6.1. Audit done 2026-11-11: 18 gaps → 4.18.83–4.18.100, all ✅ 2026-11-11; items the specs and ADR-0059 §8 record as not built (log / diverging scales and OkLab ramps, orthographic projection and rotation, shape ↔ hex morph, arc curvature / flow / width, `drillTo` / `drillUp`, label collision and pan / zoom on Chart `geo`) stay recorded as not built unless the owner promotes them | ✅ |
 | 6.1 | `/integrate` with the Fable model | after phases 1–5 and 6.0, run `/integrate` (no argument) once more, as agents on the **Fable** model (`model: "fable"`), to find and close every wait left on a component that now exists — stand-ins, deferred stories, story demo CSS for surfaces or fonts — with a fresh pair of eyes | ⬜ |
 | 6.2 | Re-check | rerun the discovery of `/integrate` step 3; "Pending integrations" must be empty and the docs API reference complete (3.4 green) | ⬜ |
 
