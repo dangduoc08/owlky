@@ -871,7 +871,9 @@
 
   /* No tooltip (4.18.63): it stays a visually hidden status, so the keyboard's values are still
      announced. */
-  :where([data-ok-chart][data-ok-tooltip="none"] > [data-ok-chart-plot] > [data-ok-chart-tooltip]) {
+  :where(
+    [data-ok-chart][data-ok-tooltip-mode="none"] > [data-ok-chart-plot] > [data-ok-chart-tooltip]
+  ) {
     width: 1px;
     min-width: 0;
     height: 1px;

@@ -121,9 +121,9 @@ describe("fixed tooltips and context", () => {
 
   it("writes the options", () => {
     expect(chartAttributes({ tooltip: "point", tooltipFixed: "bottomLeft" })).toMatchObject({
-      "data-ok-tooltip": "point",
+      "data-ok-tooltip-mode": "point",
       "data-ok-tooltip-fixed": "bottomLeft",
     });
-    expect(chartAttributes({})["data-ok-tooltip"]).toBeUndefined();
+    expect(chartAttributes({})["data-ok-tooltip-mode"]).toBeUndefined();
   });
 });

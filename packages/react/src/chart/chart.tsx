@@ -932,7 +932,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validPattern = attributes["data-ok-fill-pattern"] as ChartPattern | undefined;
   const validStrokeWidth = number("data-ok-stroke-width");
   const blind = attributes["data-ok-color-blind-mode"] !== undefined;
-  const validTooltip = attributes["data-ok-tooltip"] as ChartTooltipMode | undefined;
+  const validTooltip = attributes["data-ok-tooltip-mode"] as ChartTooltipMode | undefined;
   const validCorner = attributes["data-ok-tooltip-fixed"] as ChartTooltipCorner | undefined;
   const validGrid = attributes["data-ok-grid"] as ChartGrid | undefined;
   const validRowOpacity = number("data-ok-grid-row-opacity");

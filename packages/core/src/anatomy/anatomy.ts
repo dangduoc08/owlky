@@ -4788,7 +4788,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series.",
   ),
   tooltip: style(
-    "data-ok-tooltip",
+    "data-ok-tooltip-mode",
     chartTooltipModes,
     "shared",
     "Tooltip: `shared` lists every series of the category, `point` only the value under the pointer (or the keyboard), `none` shows none (the values are still announced).",

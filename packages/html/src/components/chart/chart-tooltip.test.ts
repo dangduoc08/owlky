@@ -45,7 +45,7 @@ describe("tooltip", () => {
     expect(tipOf(none as HTMLElement).hidden).toBe(false);
     expect(tipOf(none as HTMLElement).getBoundingClientRect().width).toBeLessThanOrEqual(1);
     await expectNoAxeViolations(host);
-    (point as HTMLElement).setAttribute("data-ok-tooltip", "shared");
+    (point as HTMLElement).setAttribute("data-ok-tooltip-mode", "shared");
     await settle();
     key(point as HTMLElement, "Home");
     expect(

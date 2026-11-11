@@ -19,7 +19,7 @@ describe("Chart tooltip", () => {
       <Chart label="Orders" type="bar" tooltip="point" categories={DAYS} series={SERIES} />,
     );
     const root = container.querySelector("[data-ok-chart]") as HTMLElement;
-    expect(root.getAttribute("data-ok-tooltip")).toBe("point");
+    expect(root.getAttribute("data-ok-tooltip-mode")).toBe("point");
     fireEvent.keyDown(plotOf(root), { key: "Home" });
     expect(tipOf(root).querySelectorAll("[data-ok-chart-tooltip-row]")).toHaveLength(1);
     expect(tipOf(root).textContent).toContain("Online44");

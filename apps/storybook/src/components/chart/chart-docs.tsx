@@ -1536,7 +1536,7 @@ export function ChartAxes() {
     title: "Change the tooltip",
     body: `By default, the tooltip lists the values of every series in the category under the pointer or the keyboard. Change it with these options:
 
-- **One value:** \`tooltip="point"\` (\`data-ok-tooltip="point"\` in HTML) shows only the column, bar or point under the pointer, and the arrow keys move value by value.
+- **One value:** \`tooltip="point"\` (\`data-ok-tooltip-mode="point"\` in HTML) shows only the column, bar or point under the pointer, and the arrow keys move value by value.
 - **No tooltip:** \`tooltip="none"\` shows no tooltip. Screen readers still announce the values the keyboard moves to, because the tooltip stays as a hidden status region.
 - **Fixed position:** \`tooltipFixed\` (\`data-ok-tooltip-fixed\`) keeps the tooltip in a corner of the plot, so it never covers the values: \`topLeft\`, \`topRight\`, \`bottomLeft\` or \`bottomRight\`.
 
