@@ -180,7 +180,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | # | Step | Scope | Status |
 |---|---|---|---|
 | 5.1 | Engine | `animate(element, keyframes, options)` on the Web Animations API, springs as `linear()` easing, interruption from the current value, exit before removal → Dialog exit transitions and the Motion "Logo" story (the last "Pending integrations" row) | ✅ |
-| 5.2 | Scroll | scroll-linked progress (`animation-timeline`, JavaScript fallback for Firefox): the reference's Scroll progress page (`minimals.cc/components/extra/scroll-progress`, built on Framer Motion's `useScroll`) — sections "Container scroll-y", "Container scroll-x" and "Scroll document", drawn with Linear / Circular progress | ⬜ |
+| 5.2 | Scroll | scroll-linked progress (`animation-timeline`, JavaScript fallback for Firefox): the reference's Scroll progress page (`minimals.cc/components/extra/scroll-progress`, built on Framer Motion's `useScroll`) — sections "Container scroll-y", "Container scroll-x" and "Scroll document", drawn with Linear / Circular progress | ✅ |
 | 5.3 | Gestures | drag with inertia and constraints, spring hover / tap | ⬜ |
 | 5.4 | Layout | layout animations (FLIP), shared values | ⬜ |
 | 5.5 | Later | shared-element transitions (evaluate View Transitions first) | ⏸ |
