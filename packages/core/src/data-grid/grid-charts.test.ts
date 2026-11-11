@@ -279,12 +279,12 @@ describe("the range on the grid (4.18.89)", () => {
       name: { kind: "category", edges: "top left" },
       a: { kind: "series", edges: "top right" },
     });
-    expect(marks.cells["2"]?.a).toEqual({ kind: "series", edges: "right bottom" });
+    expect(marks.cells["2"]?.["a"]).toEqual({ kind: "series", edges: "right bottom" });
     expect(marks.cells["3"]).toBeUndefined();
     expect(marks.handle).toEqual({ id: "2", field: "a" });
     // A row between them (sorted elsewhere) splits the outline.
     const split = gridChartRangeMarks(model, ["1", "9", "2"], ["a"]);
-    expect(split.cells["1"]?.a?.edges).toBe("top right bottom left");
+    expect(split.cells["1"]?.["a"]?.edges).toBe("top right bottom left");
     expect(gridChartRangeMarks({ values: ["a"] }, ["1"], ["a"])).toEqual({
       cells: {},
       handle: null,
