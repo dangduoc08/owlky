@@ -17,7 +17,7 @@ async function withImports(file, seen = new Set()) {
 
 const budgets = [
   // 255 kB since the rest of ApexCharts v8 types (roadmap 4.18.21: streamgraph, violin with its KDE,
-  // beeswarm, waffle, unit layouts and their options): 251.1 kB. Optimization is deferred to 1.0 prep.
+  // beeswarm, waffle, unit layouts and their options): 251.6 kB. Optimization is deferred to 1.0 prep.
   // 245 kB once the chart hierarchy types (tree, sunburst, icicle, ADR-0058) merged with the data
   // grid's cell menu, filter groups and generated columns: 241.9 kB. Optimization is deferred to 1.0 prep.
   // 239 kB since the tree chart type (4.18.7, ADR-0058: the hierarchy model and table, tidy /
