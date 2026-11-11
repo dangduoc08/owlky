@@ -1,0 +1,410 @@
+{
+ "css": [
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-font-size-xl",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-font-weight-regular",
+   "value": "400"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-phone-input",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After the number changed: `value` (international form such as `+61298765432`, `\"\"` when there is no number), `national`, `international`, `country`, `valid` and `possible`.",
+      "detail": "PhoneValueDetails",
+      "name": "ok:phone-input:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After the selected country changed (`country` is `undefined` for International).",
+      "detail": "{ country: CountryCode | undefined; }",
+      "name": "ok:phone-input:countrychange"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The selected country (`undefined`: International).",
+      "kind": "property",
+      "name": "country",
+      "type": "CountryCode"
+     },
+     {
+      "description": "The number's national and international forms and checks.",
+      "kind": "property",
+      "name": "details",
+      "type": "PhoneValueDetails"
+     },
+     {
+      "description": "Selects a country (`undefined`: International) without emitting events, as a pick would.",
+      "kind": "method",
+      "name": "setCountry",
+      "type": "(country: string | undefined) => void"
+     },
+     {
+      "description": "Sets the number (such as `+61298765432`) without emitting events; its country is selected.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: string) => void"
+     },
+     {
+      "description": "The number in international form without spaces, such as `+61298765432` (`\"\"` when there is none).",
+      "kind": "property",
+      "name": "value",
+      "type": "string"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-country",
+      "description": "A fixed country, such as `AU`: the country select is turned off and numbers are read as this country's.",
+      "kind": "state",
+      "name": "country"
+     },
+     {
+      "attr": "data-ok-default-country",
+      "description": "The country selected at first, such as `DE` (none: the number is typed in international form).",
+      "kind": "state",
+      "name": "defaultCountry"
+     },
+     {
+      "attr": "data-ok-international",
+      "description": "Show numbers in international form (`+61 2 9876 5432`) instead of national (`(02) 9876 5432`).",
+      "kind": "flag",
+      "name": "international"
+     },
+     {
+      "attr": "data-ok-country-calling-code-editable",
+      "default": true,
+      "description": "International form with a selected country: the calling code can be changed (`false` keeps it).",
+      "kind": "behavior",
+      "name": "countryCallingCodeEditable"
+     },
+     {
+      "attr": "data-ok-hide-select",
+      "description": "No country select (the markup leaves it out).",
+      "kind": "flag",
+      "name": "hideSelect"
+     },
+     {
+      "attr": "data-ok-countries",
+      "description": "The countries offered, such as `AU,NZ` (all by default).",
+      "kind": "state",
+      "name": "countries"
+     },
+     {
+      "attr": "data-ok-country-options-order",
+      "description": "Countries listed first, such as `US,CA,...` (`...` places the others).",
+      "kind": "state",
+      "name": "countryOptionsOrder"
+     },
+     {
+      "attr": "data-ok-add-international-option",
+      "default": true,
+      "description": "An International option at the top of the country list (`false` leaves it out).",
+      "kind": "behavior",
+      "name": "addInternationalOption"
+     },
+     {
+      "attr": "data-ok-limit-max-length",
+      "description": "Digits past the longest number of the country are refused.",
+      "kind": "flag",
+      "name": "limitMaxLength"
+     },
+     {
+      "attr": "data-ok-focus-input-on-country-selection",
+      "default": true,
+      "description": "Picking a country moves the focus to the input (`false` keeps it on the select).",
+      "kind": "behavior",
+      "name": "focusInputOnCountrySelection"
+     },
+     {
+      "attr": "data-ok-locale",
+      "description": "Language of the country names, such as `fr` (default `en`).",
+      "kind": "state",
+      "name": "locale"
+     },
+     {
+      "attr": "data-ok-validate",
+      "description": "After the person leaves the field, an invalid number shows the error state and `invalidText`.",
+      "kind": "flag",
+      "name": "validate"
+     },
+     {
+      "attr": "data-ok-invalid-text",
+      "description": "The helper text shown while the number is invalid (with `validate`).",
+      "kind": "state",
+      "name": "invalidText"
+     },
+     {
+      "attr": "disabled",
+      "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+      "description": "Native `disabled` on the input; the country select is disabled too.",
+      "kind": "native",
+      "name": "disabled"
+     },
+     {
+      "attr": "value",
+      "description": "The number as E.164 (`value` / `defaultValue` + `onChange(value, details)`); HTML: the input's text.",
+      "event": "ok:phone-input:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The start adornment that holds the country select (a Select without a variant).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-phone-input-country"
+     },
+     {
+      "description": "The flag of a country option (an emoji, or a globe for International); hidden from screen readers.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-phone-input-flag"
+     }
+    ],
+    "runtime": "phone-input"
+   },
+   "name": "PhoneInput",
+   "react": {
+    "description": "A text field for phone numbers: a country select in the start adornment (a Select of MenuItems with flags), formatting as you type and the value in international form. Every TextField prop works; `ref` and the remaining props go to the input.",
+    "native": "HTMLInputElement",
+    "props": [
+     {
+      "default": "true",
+      "description": "An International option at the top of the country list.",
+      "name": "addInternationalOption",
+      "type": "boolean"
+     },
+     {
+      "description": "Class of the root (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"default\"",
+      "description": "Focus color; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "\"div\"",
+      "description": "The root element.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "The countries offered, such as `[\"AU\", \"NZ\"]`. Default: every country.",
+      "name": "countries",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "A fixed country, such as `\"AU\"`: the country select is turned off and numbers are read as this country's.",
+      "name": "country",
+      "type": "string"
+     },
+     {
+      "default": "true",
+      "description": "International form with a selected country: the calling code can be changed.",
+      "name": "countryCallingCodeEditable",
+      "type": "boolean"
+     },
+     {
+      "description": "\"` places the others).",
+      "name": "countryOptionsOrder",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "The country selected at first, such as `\"DE\"`. Without it, the number is typed in international form.",
+      "name": "defaultCountry",
+      "type": "string"
+     },
+     {
+      "default": "\"\"",
+      "description": "Uncontrolled initial value, such as `\"+61298765432\"`.",
+      "name": "defaultValue",
+      "type": "string"
+     },
+     {
+      "description": "Standard: draw no underline (give the field another focus style).",
+      "name": "disableUnderline",
+      "type": "boolean"
+     },
+     {
+      "description": "An `InputAdornment` with `position=\"end\"`.",
+      "name": "endAdornment",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Error colors and `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Picking a country moves the focus to the input.",
+      "name": "focusInputOnCountrySelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Show the focus colors even when the field doesn't have focus.",
+      "name": "focused",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "Text under the field, such as a hint or an error message (linked with `aria-describedby`).",
+      "name": "helperText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Hide the label visually: it still names the input, and the field is laid out as if it had none (a filled field gets less padding above the value).",
+      "name": "hiddenLabel",
+      "type": "boolean"
+     },
+     {
+      "description": "Leave the country select out.",
+      "name": "hideSelect",
+      "type": "boolean"
+     },
+     {
+      "description": "Show numbers in international form (`+61 2 9876 5432`) instead of national (`(02) 9876 5432`).",
+      "name": "international",
+      "type": "boolean"
+     },
+     {
+      "description": "The helper text shown while the number is invalid (with `validate`).",
+      "name": "invalidText",
+      "type": "string"
+     },
+     {
+      "description": "The floating label; it names the input.",
+      "name": "label",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Country names and other texts: `{ AU: \"Australie\", ZZ: \"International\", country: \"Country\" }`.",
+      "name": "labels",
+      "type": "PhoneInputLabels"
+     },
+     {
+      "description": "Refuse digits past the longest number of the country.",
+      "name": "limitMaxLength",
+      "type": "boolean"
+     },
+     {
+      "default": "\"en\"",
+      "description": "DisplayNames`), such as `\"fr\"`.",
+      "name": "locale",
+      "type": "string"
+     },
+     {
+      "default": "\"none\"",
+      "description": "Vertical margin.",
+      "name": "margin",
+      "type": "\"dense\" | \"none\" | \"normal\""
+     },
+     {
+      "default": "min",
+      "description": "Phone metadata from libphonenumber-js (`min`, `mobile` or `max`).",
+      "name": "metadata",
+      "type": "MetadataJson"
+     },
+     {
+      "description": "Outlined: keep the outline's notch open even when the label rests in the box.",
+      "name": "notched",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the new value, such as `\"+61298765432\"` (`\"\"` when there is no number), and its details: `national`, `international`, `country`, `valid` and `possible`.",
+      "name": "onChange",
+      "type": "((value: string, details: PhoneValueDetails) => void)"
+     },
+     {
+      "description": "Called when the selected country changes (`undefined`: International).",
+      "name": "onCountryChange",
+      "type": "((country: CountryCode | undefined) => void)"
+     },
+     {
+      "description": "Keep the label above the value even when the field is empty.",
+      "name": "shrink",
+      "type": "boolean"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` or `small` (dense).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Style of the root.",
+      "name": "style",
+      "type": "CSSProperties"
+     },
+     {
+      "description": "After the person leaves the field, an invalid number shows the error state and `invalidText`.",
+      "name": "validate",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled value in international form without spaces, such as `\"+61298765432\"` (`\"\"` = empty).",
+      "name": "value",
+      "type": "string"
+     },
+     {
+      "default": "\"outlined\"",
+      "description": "Outline, tinted fill or underline.",
+      "name": "variant",
+      "type": "\"filled\" | \"outlined\" | \"standard\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "phone-input",
+ "title": "Phone input",
+ "types": [
+  {
+   "name": "PhoneInputLabels",
+   "type": "Readonly<Record<string, string>> & { readonly ZZ?: string; readonly country?: string; }"
+  }
+ ]
+}

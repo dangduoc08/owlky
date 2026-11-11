@@ -144,7 +144,8 @@ Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, 
 | `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |
 
 Related reference features: copy to clipboard (4.20) and number input (4.24), sections below;
-phone input (4.25).
+phone input (4.25): its own spec, `phone-input.md` (a TextField root with `data-ok-phone-input`,
+opt-in, ADR-0061).
 
 ## Copy to clipboard (roadmap 4.20)
 Reference: Minimals "Utilities" page (https://minimals.cc/components/extra/utilities), section

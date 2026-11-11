@@ -72,8 +72,8 @@ Markdown ADR-0035).
    `internationalIcon`, `inputComponent`, `countrySelectComponent`, `containerComponent`,
    `smartCaret` (always on), `initialValueFormat` (always national when the value's country is
    selected).
-10. **Size budget:** `owlky-phone.js` measured 45.3 kB gzip (libphonenumber-js and its metadata
-    about 35.5 kB of it); budget 47.5 kB in `check-size.mjs`.
+10. **Size budget:** `owlky-phone.js` measured 44.8 kB gzip (libphonenumber-js and its metadata
+    about 35.5 kB of it); budget 47.5 kB in `check-size.mjs`. `owlky.js` only gains the option schema.
 
 ## Consequences
 - Pages without a phone input never load the metadata; pages with one load about 45 kB once.

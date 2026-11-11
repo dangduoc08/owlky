@@ -14,6 +14,7 @@ export const FOLDER_SPEC = {
   toaster: "snackbar",
   clipboard: "text-field",
   "number-field": "text-field",
+  phone: "phone-input",
   "toggle-group": "toggle-button",
   "avatar-group": "avatar",
   "chart-trellis": "chart",

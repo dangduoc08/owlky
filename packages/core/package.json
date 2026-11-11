@@ -25,6 +25,10 @@
       "types": "./dist/markdown/index.d.ts",
       "import": "./dist/markdown/index.js"
     },
+    "./phone": {
+      "types": "./dist/phone/index.d.ts",
+      "import": "./dist/phone/index.js"
+    },
     "./map": {
       "types": "./dist/map/index.d.ts",
       "import": "./dist/map/index.js"
@@ -72,6 +76,7 @@
     "@types/hast": "3.0.5",
     "hast-util-sanitize": "5.0.2",
     "html-url-attributes": "3.0.1",
+    "libphonenumber-js": "1.13.15",
     "maplibre-gl": "6.16.0",
     "monaco-editor": "0.57.0",
     "property-information": "7.2.0",

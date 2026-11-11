@@ -29,6 +29,7 @@ const config: StorybookConfig = {
             replacement: pkg("core/src/illustrations/index.ts"),
           },
           { find: /^@owlky\/core\/markdown$/, replacement: pkg("core/src/markdown/index.ts") },
+          { find: /^@owlky\/core\/phone$/, replacement: pkg("core/src/phone/index.ts") },
           {
             find: /^@owlky\/core\/code-editor$/,
             replacement: pkg("core/src/code-editor/index.ts"),
@@ -45,6 +46,7 @@ const config: StorybookConfig = {
           { find: /^@owlky\/html\/map$/, replacement: pkg("html/src/map.ts") },
           { find: /^@owlky\/html\/illustrations$/, replacement: pkg("html/src/illustrations.ts") },
           { find: /^@owlky\/html\/markdown$/, replacement: pkg("html/src/markdown.ts") },
+          { find: /^@owlky\/html\/phone$/, replacement: pkg("html/src/phone.ts") },
           { find: /^@snippets\//, replacement: `${pkg("html/src/components")}/` },
         ],
       },

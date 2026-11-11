@@ -491,6 +491,8 @@ const pairs: [component: string, story: string][] = [
   ["map", "export-map"],
   ["markdown", "html-content"],
   ["markdown", "markdown-content"],
+  ["phone-input", "phone-input"],
+  ["phone-input", "validation"],
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
@@ -599,6 +601,12 @@ async function loaded(page: Page, key: string) {
     await expect(page.locator("[data-ok-markdown] h1")).toBeVisible();
     await expect(page.locator("[data-ok-markdown] .hljs-keyword").first()).toBeVisible();
     await imagesSettled(page);
+    return;
+  }
+  if (key.startsWith("phone-input/")) {
+    // The HTML runtime builds the country lists (React renders them).
+    for (const list of await page.locator("[data-ok-phone-input-country] [role=listbox]").all())
+      await expect(list.locator("[role=option]").first()).toBeAttached();
     return;
   }
   if (key.startsWith("code-editor/")) {

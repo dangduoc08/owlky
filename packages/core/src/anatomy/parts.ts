@@ -1824,6 +1824,14 @@ export interface PaginationParts {
   "data-ok-sibling-count": Value<string>;
 }
 
+/** Phone input: parts, states, values and triggers. */
+export interface PhoneInputParts {
+  /** The start adornment that holds the country select (a Select without a variant). */
+  "data-ok-phone-input-country": Part<"div">;
+  /** The flag of a country option (an emoji, or a globe for International); hidden from screen readers. */
+  "data-ok-phone-input-flag": Part<"span">;
+}
+
 /** Popover: parts, states, values and triggers. */
 export interface PopoverParts {
   /** The point the popover opens at with `data-ok-anchor-reference="anchorPosition"`: `top,left` in px from the viewport's top left corner. */

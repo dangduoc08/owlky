@@ -174,6 +174,14 @@ Markdown, and write the Markdown, with `&` and `<` escaped, in a `pre[data-ok-ma
 </div>
 ```
 
+**Phone input** is a separate script as well: libphonenumber-js and its numbering data add about
+45 kB gzip. Load it after `owlky.js`; it fills the country list itself, so the snippet's
+`ul[data-ok-select-listbox]` stays empty (copy the markup from the Phone input snippets).
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-phone.js" defer></script>
+```
+
 ## npm
 
 ```ts
@@ -201,6 +209,7 @@ await import("@owlky/html/map");
 // Markdown is opt-in too: import "@owlky/html/markdown", or register it with plugins or a highlighter.
 import { createMarkdown } from "@owlky/html";
 getRuntime().register(createMarkdown({ highlighter: createLowlight(common) })).start();
+// The phone input too: import "@owlky/html/phone", or register createPhoneInput({ metadata, labels }).
 ```
 
 ## Runtime API

@@ -35,7 +35,7 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   await expect
     .poll(() =>
       page
-        .locator("[data-ok-text-field]")
+        .locator("[data-ok-text-field]:not([data-ok-phone-input])")
         .evaluate((element) => (element as HTMLElement).style.getPropertyValue("--_ok-max-rows")),
     )
     .toBe("3");
@@ -124,6 +124,13 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   await expect(illustration).toHaveAttribute("aria-hidden", "true");
   await expect(illustration.locator("[data-ok-tone]").first()).toBeAttached();
   await expect(illustration).toHaveCSS("width", "240px");
+  // Phone input (owlky-phone.js): the country list is built with DOM methods, typing is formatted.
+  const phone = page.getByRole("textbox", { name: "Phone number" });
+  await expect(phone).toHaveValue("(02) 9876 5432");
+  await expect(page.locator("#csp-phone-country-listbox [role=option]").first()).toBeAttached();
+  await phone.fill("");
+  await phone.pressSequentially("0312345678");
+  await expect(phone).toHaveValue("(03) 1234 5678");
   const markdown = page.locator("#csp-markdown");
   await expect(markdown.getByRole("heading", { name: "Notes" })).toBeVisible();
   await expect(markdown.getByRole("cell", { name: "3" })).toHaveCSS("text-align", "right");

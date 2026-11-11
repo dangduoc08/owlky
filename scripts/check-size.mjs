@@ -146,6 +146,13 @@ const budgets = [
   // and property-information are nearly all of owlky-markdown.js (about 102 kB measured);
   // owlky.js stays free of them.
   ["packages/html/dist/owlky-markdown.js", 110_000, "Markdown + unified (IIFE, after owlky.js)"],
+  // The phone input is opt-in (ADR-0061): libphonenumber-js with its `min` metadata is about
+  // 35.5 kB of owlky-phone.js (44.8 kB measured); owlky.js stays free of it (checked below).
+  [
+    "packages/html/dist/owlky-phone.js",
+    47_500,
+    "Phone input + libphonenumber-js (IIFE, after owlky.js)",
+  ],
   // Illustrations are opt-in (ADR-0041): the 16 pictures' node trees are nearly all of
   // owlky-illustrations.js (10.3 kB measured; 5.5 kB minified ESM); owlky.js stays free
   // of them.
@@ -214,6 +221,17 @@ const budgets = [
 ];
 
 let failed = false;
+
+// Opt-in engines stay out of the main bundle: the phone metadata (ADR-0061) is in owlky-phone.js only.
+{
+  const marker = "country_calling_codes";
+  const main = await readFile("packages/html/dist/owlky.js", "utf8");
+  const phone = await readFile("packages/html/dist/owlky-phone.js", "utf8");
+  const ok = !main.includes(marker) && phone.includes(marker);
+  failed ||= !ok;
+  console.log(`${ok ? "ok  " : "FAIL"} Phone metadata only in owlky-phone.js, never in owlky.js`);
+}
+
 for (const [file, limit, label] of budgets) {
   // A list of files is downloaded together: each is gzipped on its own, as servers send them.
   const files = Array.isArray(file) ? file : [file];

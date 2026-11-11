@@ -1,0 +1,122 @@
+/*
+ * Phone input — spec: specs/components/phone-input.md, ADR-0061
+ *
+ * Anatomy:   div[data-ok-text-field][data-ok-phone-input]               (a TextField root)
+ *              › div[data-ok-text-field-control]
+ *                  › div[data-ok-text-field-adornment="start"][data-ok-phone-input-country]?
+ *                      › div[data-ok-select][data-ok-display-empty]       (a bare Select)
+ *                          › div[data-ok-select-display][role=combobox]   (the flag + hidden name)
+ *                          › svg[data-ok-select-icon]
+ *                          › div[data-ok-popover] › ul[data-ok-select-listbox]
+ *                              › li[data-ok-menu-item][role=option]
+ *                                  › span[data-ok-list-item-icon][data-ok-phone-input-flag]
+ *                                  › span[data-ok-list-item-text] (name, "AU (+61)")
+ *                  › input[data-ok-text-field-input][type=tel]
+ * States:    the trigger's aria-disabled (a fixed country, a disabled field): no arrow
+ *
+ * The country select is composed bare (`data-ok-select` without a variant, like TablePagination's):
+ * this file draws it inside the field, a divider after it, and restyles the composed MenuItem /
+ * ListItemIcon / ListItemText parts for flags. Loaded after list.css, menu.css and select.css
+ * (same zero specificity, later wins). Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  /* The adornment holds a control, not text: no adornment typography, a divider at its end. */
+  :where([data-ok-phone-input-country]) {
+    align-self: stretch;
+    max-height: none;
+    padding-inline-end: calc(var(--ok-spacing) * 2);
+    border-inline-end: 1px solid var(--ok-divider);
+    color: var(--ok-text-primary);
+    font-weight: var(--ok-font-weight-regular);
+  }
+
+  :where([data-ok-phone-input-country] > [data-ok-select]) {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--ok-radius-sm);
+  }
+
+  :where([data-ok-phone-input-country] > [data-ok-select] > [data-ok-select-display]) {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    padding-block: var(--ok-spacing);
+    padding-inline: var(--ok-spacing) calc(var(--ok-spacing) * 5);
+    border-radius: inherit;
+  }
+
+  :where(
+    [data-ok-phone-input-country] > [data-ok-select] > [data-ok-select-display]:focus-visible
+  ) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 0;
+  }
+
+  /* A fixed country or a disabled field: the flag alone, no arrow. */
+  :where(
+    [data-ok-phone-input-country]
+      > [data-ok-select]
+      > [data-ok-select-display][aria-disabled="true"]
+  ) {
+    padding-inline-end: var(--ok-spacing);
+    cursor: default;
+  }
+
+  :where([data-ok-phone-input-country] [data-ok-select-display][aria-disabled="true"] ~ svg) {
+    display: none;
+  }
+
+  :where([data-ok-phone-input-country] > [data-ok-select] > [data-ok-select-icon]) {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 50%;
+    width: calc(var(--ok-spacing) * 4);
+    height: calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-secondary);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  /* Flags: emoji (or the globe) at icon size, in the field and in the list. */
+  :where([data-ok-phone-input-flag]) {
+    justify-content: center;
+    width: calc(var(--ok-spacing) * 6);
+    margin-inline-end: 0;
+    font-size: var(--ok-font-size-xl);
+    line-height: 1;
+  }
+
+  :where([data-ok-phone-input-flag] > svg) {
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+  }
+
+  /* The field shows the flag; the name stays for screen readers (the combobox's value). */
+  :where([data-ok-phone-input-country] [data-ok-select-display] > [data-ok-list-item-text]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* A disabled field dims its flag like its text. */
+  :where(
+    [data-ok-phone-input]:has(> [data-ok-text-field-control] > :disabled) [data-ok-select-display]
+  ) {
+    opacity: 0.48;
+  }
+
+  /* The list: wide enough for names and codes, scrolling when long. */
+  :where([data-ok-phone-input-country] [data-ok-popover]) {
+    width: min(calc(var(--ok-spacing) * 80), calc(100vw - var(--ok-spacing) * 8));
+    max-height: min(calc(var(--ok-spacing) * 100), calc(100vh - var(--ok-spacing) * 8));
+    white-space: normal;
+  }
+}
