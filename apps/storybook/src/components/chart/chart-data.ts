@@ -2054,4 +2054,48 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21: beeswarm charts (ApexCharts unit `layout: "scatter"`).
+  beeswarm: {
+    title: "Beeswarm",
+    props: {
+      label: "Salaries by department, thousands of dollars",
+      type: "beeswarm",
+      valueSuffix: "k",
+      height: 300,
+      categories: [
+        "Ann",
+        "Ben",
+        "Caro",
+        "Dan",
+        "Eve",
+        "Finn",
+        "Gia",
+        "Hugo",
+        "Ivy",
+        "Jon",
+        "Kim",
+        "Leo",
+      ],
+      series: [
+        { name: "Sales", data: [55, 62, 58, 71, 66, 60, 64, 58, 73, 69, 61, 57] },
+        { name: "Design", data: [72, 80, 75, 78, 83, 90, 68, 74, null, null, null, null] },
+        { name: "Support", data: [41, 44, 39, 47, 45, 42, 40, 43, 46, null, null, null] },
+      ],
+    },
+    more: [
+      {
+        label: "Response time per request, milliseconds",
+        type: "beeswarm",
+        orientation: "vertical",
+        beeswarmSpread: "jitter",
+        markerSize: 3,
+        colorBlindMode: true,
+        height: 300,
+        series: [
+          { name: "API", data: [120, 132, 140, 151, 158, 160, 171, 180, 195, 210, 240, 310] },
+          { name: "Web", data: [80, 92, 95, 101, 110, 118, 124, 131, 140, 155, 172, 190] },
+        ],
+      },
+    ],
+  },
 };

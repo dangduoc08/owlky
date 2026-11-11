@@ -4,6 +4,7 @@ import {
   CHART_DEFAULT_WIDTH,
   type ChartActive,
   type ChartAnnotation,
+  type ChartBeeswarmSpread,
   type ChartColor,
   type ChartColorRange,
   type ChartCrossfilter,
@@ -367,6 +368,8 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
   hideConnectors?: boolean | undefined;
+  /** Beeswarm charts: dots push apart just enough not to overlap (`swarm`) or spread across the lane by a fixed sequence (`jitter`). Default `"swarm"`. */
+  beeswarmSpread?: ChartBeeswarmSpread | undefined;
   /** Violins: each violin fills its slot (`individual`) or all share one density scale (`group`). Default `"individual"`. */
   violinNormalize?: ChartViolinNormalize | undefined;
   /** Violins: symmetric (`both`) or half a violin: `left`, `right`, `top` or `bottom`. Default `"both"`. */
@@ -581,6 +584,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     hideStreamLabels,
     streamLabelMinWidth,
     streamHoverOpacity,
+    beeswarmSpread,
     violinNormalize,
     violinSide,
     bandwidthScale,
@@ -702,6 +706,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     hideStreamLabels,
     streamLabelMinWidth,
     streamHoverOpacity,
+    beeswarmSpread,
     violinNormalize,
     violinSide,
     bandwidthScale,
@@ -779,6 +784,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const streamLabelsOff = attributes["data-ok-hide-stream-labels"] !== undefined;
   const validStreamLabelMin = number("data-ok-stream-label-min-width");
   const validStreamHover = number("data-ok-stream-hover-opacity");
+  const validBeeswarmSpread = attributes["data-ok-beeswarm-spread"] as
+    | ChartBeeswarmSpread
+    | undefined;
   const validViolinNormalize = attributes["data-ok-violin-normalize"] as
     | ChartViolinNormalize
     | undefined;
@@ -949,6 +957,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         hideStreamLabels: streamLabelsOff,
         streamLabelMinWidth: validStreamLabelMin,
         streamHoverOpacity: validStreamHover,
+        beeswarmSpread: validBeeswarmSpread,
         violinNormalize: validViolinNormalize,
         violinSide: validViolinSide,
         bandwidthScale: validBandwidthScale,
@@ -1072,6 +1081,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       streamLabelsOff,
       validStreamLabelMin,
       validStreamHover,
+      validBeeswarmSpread,
       validViolinNormalize,
       validViolinSide,
       validBandwidthScale,

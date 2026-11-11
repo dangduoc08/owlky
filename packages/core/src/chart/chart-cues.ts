@@ -203,6 +203,7 @@ export function withChartCues(data: ChartData, options: ChartCueOptions): ChartD
     const drawsMarkers =
       entry.type === "scatter" ||
       entry.type === "violin" ||
+      entry.type === "beeswarm" ||
       (lineMarkers && (entry.type === "line" || entry.type === "area"));
     const pattern = entry.fillPattern ?? (patterns ? chartPatternAt(options, index) : undefined);
     const dash =

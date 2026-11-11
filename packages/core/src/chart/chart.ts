@@ -4,6 +4,7 @@ import {
   chartAnnotations,
 } from "./chart-annotations.js";
 import { type ChartYAxis, chartYAxes, withChartAxes } from "./chart-axes.js";
+import { type ChartBeeswarmSpread, layoutBeeswarm } from "./chart-beeswarm.js";
 import { layoutHeatmap, layoutTreemap } from "./chart-cells.js";
 import {
   type ChartDiscreteMarker,
@@ -102,7 +103,9 @@ export interface ChartRenderInput extends ChartFormatOptions {
   /** Sankey charts (ADR-0047): nodes (optional: titles and colors) and the links between them. */
   readonly nodes?: readonly ChartSankeyNode[] | undefined;
   readonly edges?: readonly ChartSankeyEdge[] | undefined;
-  /** Sankey charts: flow direction. Default `"horizontal"`. */
+  /** Beeswarm charts: how equal values separate in a lane. Default `"swarm"`. */
+  readonly beeswarmSpread?: ChartBeeswarmSpread | undefined;
+  /** Sankey charts: flow direction; beeswarm charts: the value axis. Default `"horizontal"`. */
   readonly orientation?: ChartOrientation | undefined;
   /** Sankey charts: node thickness along the flow in px. Default 20. */
   readonly nodeWidth?: number | undefined;
@@ -379,6 +382,13 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     treemap: (d, o) => layoutTreemap(d, o, format),
     funnel: (d, o) => layoutFunnel(d, o, format),
     slope: (d, o) => layoutSlope(d, o, format),
+    beeswarm: (d, o) =>
+      layoutBeeswarm(
+        d,
+        o,
+        { spread: input.beeswarmSpread, orientation: input.orientation },
+        format,
+      ),
     violin: (d, o) =>
       layoutViolin(
         d,

@@ -151,3 +151,4 @@ export const Icicle: StoryObj = story("icicle");
 export const Crossfilter: StoryObj = story("crossfilter");
 export const Streamgraph: StoryObj = story("streamgraph");
 export const Violin: StoryObj = story("violin");
+export const Beeswarm: StoryObj = story("beeswarm");

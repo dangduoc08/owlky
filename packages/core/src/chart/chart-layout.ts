@@ -571,6 +571,7 @@ const TURNABLE: readonly ChartType[] = [
   "waterfall",
   "dumbbell",
   "violin",
+  "beeswarm",
 ];
 /** Series types drawn in category bands. */
 const BANDED: readonly ChartType[] = [
@@ -582,6 +583,7 @@ const BANDED: readonly ChartType[] = [
   "waterfall",
   "dumbbell",
   "violin",
+  "beeswarm",
 ];
 /** Series types that fit the value scale to their data (no zero baseline). */
 const FITTED: readonly ChartType[] = [
@@ -594,6 +596,7 @@ const FITTED: readonly ChartType[] = [
   "dumbbell",
   "streamgraph",
   "violin",
+  "beeswarm",
 ];
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -616,7 +619,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       visible.every(({ series }) => TURNABLE.includes(typeOf(series))));
   const numeric = data.xType === "numeric";
   const mode =
-    data.series.length > 0 && data.series.every((s) => s.type === "scatter" || s.type === "bubble")
+    data.series.length > 0 &&
+    data.series.every((s) => s.type === "scatter" || s.type === "bubble" || s.type === "beeswarm")
       ? "point"
       : "index";
   const banded =

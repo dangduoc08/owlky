@@ -389,6 +389,8 @@ export interface ChartParts {
   "data-ok-chart-selection": Part<"rect">;
   /** On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`. */
   "data-ok-chart-step": Value<"up" | "down" | "total" | "subtotal">;
+  /** A dot of one observation in a beeswarm chart. */
+  "data-ok-chart-bee": Part<"circle" | "path">;
   /** A violin's density outline. */
   "data-ok-chart-violin": Part<"path">;
   /** A violin's five-number box. */

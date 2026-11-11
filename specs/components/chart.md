@@ -171,6 +171,9 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-series][data-ok-type=violin] › (path[data-ok-chart-violin][fill=url(#…)]?
       + line[data-ok-chart-violin-whisker]×2 + rect[data-ok-chart-violin-box] + line[data-ok-chart-violin-median] (violinBox)
       + (circle | path)[data-ok-chart-violin-point]*)×n
+    Beeswarm (4.18.21; root [data-ok-beeswarm-spread]?[data-ok-orientation]?[data-ok-marker-size]?):
+      g[data-ok-chart-grid] + g[data-ok-chart-axis] (lanes = series names; the value axis horizontal by default);
+      g[data-ok-chart-series][data-ok-type=beeswarm][data-ok-index] › (circle | path)[data-ok-chart-bee][data-ok-color]?[data-ok-shape]?×n
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
@@ -447,6 +450,19 @@ Violin geometry (core `chart-stats.ts`, `chart-violin.ts` on `layoutChart`'s axe
 - Tooltip: the five numbers and `Count` (`Series (Part)` with several series). Index mode, a band
   highlight; marks are blocks (`box`), so clicks select them.
 
+Beeswarm geometry (core `chart-beeswarm.ts` on `layoutChart`'s axes, 4.18.21):
+- Data: one series per lane, one value per observation (`null`: none); observations are named by
+  `categories` or `{ x, y }` points, else numbered from 1. One table row per observation. A whole type.
+- Lanes are the band scale: `layoutChart` gets one category per visible series and a point that spans
+  its values; the value axis is horizontal by default (`orientation="vertical"` turns it). Hidden lanes
+  reflow.
+- Swarm: dots sorted by value, each pushed from the center only as far as the dots within a
+  diameter along the axis allow (smallest offset). Without `markerSize` the radius starts at 5 and
+  shrinks (at least 2) to fit the lane (90 % of the band); what still overflows is squeezed.
+- `jitter`: a golden ratio sequence across the lane. Both are deterministic.
+- `point` mode: one tooltip per dot (name, series, value), keyboard in reading order, Enter / click selects.
+- Cues: `colorBlindMode` / `markerShape` shapes per lane, lane labels; a point's `color` wins.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -470,7 +486,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` `violin` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value) or `violin` (the distribution of observations per category as a mirrored density curve). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` `tree` `sunburst` `icicle` `streamgraph` `violin` `beeswarm` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve) or `beeswarm` (each observation a dot in its series' lane, along the value axis). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -500,7 +516,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `zoom` | `data-ok-zoom` | flag | boolean | off | Zoom and pan the x axis: drag to select (mouse), pinch or drag (touch), Ctrl + wheel, keys `+` `-` `0` and Shift + arrows. |
 | `toolbar` | `data-ok-toolbar` | flag | boolean | off | A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV). |
 | `animations` | `data-ok-animations` | flag | boolean | off | Series grow in when first drawn and move to new values on updates (never with reduced motion). |
-| `orientation` | `data-ok-orientation="…"` | style | `horizontal` `vertical` | — | Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`). |
+| `orientation` | `data-ok-orientation="…"` | style | `horizontal` `vertical` | — | Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`). Beeswarm charts: the value axis runs left to right (`horizontal`, the default) or upward (`vertical`). |
 | `nodeWidth` | `data-ok-node-width="…"` | number | number | `20` | Sankey charts: node thickness along the flow in px. |
 | `whitespace` | `data-ok-whitespace="…"` | number | number | `0.18` | Sankey charts: share of the fullest rank left between its nodes (0 to 0.9). |
 | `edgeOpacity` | `data-ok-edge-opacity="…"` | number | number | `0.4` | Sankey charts: link opacity (0 to 1). |
@@ -535,6 +551,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `streamOrder` | `data-ok-stream-order="…"` | style | `inside-out` `inverse` `none` | — | Streamgraphs: the stacking order: `inside-out` (series that peak first in the middle, the default), `inverse` or `none` (the series order). |
 | `hideStreamLabels` | `data-ok-hide-stream-labels` | flag | boolean | off | Streamgraphs: no series names on the bands. |
 | `streamLabelMinWidth` | `data-ok-stream-label-min-width="…"` | number | number | — | Streamgraphs: bands thinner than this many pixels get no name (default 24). |
+| `beeswarmSpread` | `data-ok-beeswarm-spread="…"` | style | `swarm` `jitter` | — | Beeswarm charts: dots push apart just enough not to overlap (`swarm`, the default) or spread across the lane by a fixed sequence (`jitter`). |
 | `violinNormalize` | `data-ok-violin-normalize="…"` | style | `individual` `group` | — | Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`). |
 | `violinSide` | `data-ok-violin-side="…"` | style | `both` `left` `right` `top` `bottom` | — | Violins: symmetric (`both`, the default) or half a violin: `left`, `right`, `top` or `bottom`. |
 | `bandwidthScale` | `data-ok-bandwidth-scale="…"` | number | number | — | Violins: multiplies the drawn half-width (default 1). This is not the statistical bandwidth (`kdeBandwidth`). |
@@ -964,6 +981,13 @@ Option areas not covered by the table above:
 | `plotOptions.violin.points.show`, `.size`, `.jitter`, `.constrainToViolin`, `.maxPoints` | `hideViolinPoints`, `violinPointSize`, `violinJitter`, `unconstrainedViolinPoints`, `violinMaxPoints` | renamed (4.18.21) | `.shape` follows `markerShape` / `colorBlindMode` |
 | `plotOptions.violin.points.position`, `.laneWidth` (raincloud lanes), `.opacity`, `.fillColor`, `.strokeColor`, `.strokeWidth`, `.colorScale` | — | not built | no raincloud lane; dots use the series color and tokens |
 | `plotOptions.bar.distributed` (colors per category) | point `color` | renamed (4.18.21) | |
+| `plotOptions.unit.layout: "scatter"` with `scatter.y: "lanes"` (`apexcharts/unit`) | `type="beeswarm"` | renamed (4.18.21) | one series per lane |
+| `plotOptions.unit.scatter.spread` (`swarm` · `jitter`) | `beeswarmSpread` (`data-ok-beeswarm-spread`, optional) | renamed (4.18.21) | default `swarm` |
+| `plotOptions.unit.scatter.orientation` | `orientation` (`data-ok-orientation`) | kept (4.18.21) | default `horizontal`, the value axis |
+| `plotOptions.unit.size` | `markerSize` | renamed (4.18.21) | default auto (fits the lane) |
+| beeswarm datum `value`, `name` / `label`, `fillColor` | `y`, `x` (or `categories`), `color` | renamed (4.18.21) | |
+| `plotOptions.unit.scatter.xMin` / `.xMax`, `.xTitle`, `.xFormatter`, `.tickAmount`, `.gridlines` | `yMin` / `yMax`, `yTitle`, `valueFormatter`, `yaxis.tickAmount`, `grid` | renamed (4.18.21) | |
+| `plotOptions.unit.scatter.y: "value"` (2D), `.sizeField`, `.sizeRange`, `.laneLabelWidth`, `.yMin` … | — | not applicable | 2D and sized dots are `scatter` and `bubble` charts; labels are sized by the estimated text |
 | ApexCharts v8 types `streamgraph`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | `type="tree"` | kept (4.18.7, ADR-0058) | see "API mapping" (ApexTree rows) |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
@@ -1085,5 +1109,6 @@ Option areas not covered by the table above:
   per-quarter stream with a straight curve, one tooltip per band and patterns).
 - Violin story (4.18.21): Violin (observations with box and dots; a horizontal two-series half-violin
   of precomputed curves with one density scale and patterns).
+- Beeswarm story (4.18.21): Beeswarm (salaries by department, swarm; response times, vertical jitter with shapes).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

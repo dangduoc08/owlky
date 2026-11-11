@@ -42,6 +42,7 @@ export const chartTypes = [
   "icicle",
   "streamgraph",
   "violin",
+  "beeswarm",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -128,6 +129,7 @@ const wholeTypes: readonly ChartType[] = [
   "icicle",
   "streamgraph",
   "violin",
+  "beeswarm",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -427,9 +429,12 @@ export function chartData(input: {
     input.xType,
     type === "scatter" || type === "bubble" ? "numeric" : "category",
   );
-  // Streamgraphs and violins join series on x: numeric x values are labels, in order of first use.
+  // Streamgraphs, violins and beeswarms join series on x: numeric x values are labels, in order of
+  // first use.
   const xType =
-    (type === "streamgraph" || type === "violin") && givenX === "numeric" ? "category" : givenX;
+    (type === "streamgraph" || type === "violin" || type === "beeswarm") && givenX === "numeric"
+      ? "category"
+      : givenX;
   const palette = (input.colors ?? []).filter(isColor);
   const categories: (string | number)[] = [];
   if (xType === "category")
@@ -548,6 +553,11 @@ export function chartData(input: {
       ...(dashArray !== null && dashArray >= 0 && dashArray <= 500 ? { dashArray } : {}),
     };
   });
+  // Beeswarms name each observation by its category; without names, they count from 1.
+  if (type === "beeswarm") {
+    const longest = Math.max(0, ...series.map((entry) => entry.points.length));
+    while (categories.length < longest) categories.push(String(categories.length + 1));
+  }
   return { type, xType, categories, series };
 }
 

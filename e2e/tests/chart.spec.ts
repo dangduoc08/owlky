@@ -70,6 +70,7 @@ const STORIES = [
   "tree",
   "sunburst",
   "icicle",
+  "beeswarm",
   "violin",
   "streamgraph",
   "crossfilter",
@@ -833,6 +834,32 @@ for (const impl of implementations) {
       const rows = first.locator("[data-ok-chart-tooltip-row]");
       await expect(rows).toHaveCount(6);
       await expect(rows.last()).toHaveText("Count16");
+    });
+  });
+}
+
+// Roadmap 4.18.21: beeswarm charts.
+for (const impl of implementations) {
+  test.describe(`chart beeswarm (${impl})`, () => {
+    test("the keyboard reaches every observation with its name and value", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "beeswarm"));
+      const first = page.locator("[data-ok-chart]").first();
+      const dots = first.locator("[data-ok-chart-bee]");
+      await expect(dots).toHaveCount(29);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText(/^[A-Z][a-z]+$/);
+      await page.keyboard.press("End");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Design90k");
+    });
+
+    test("a click selects a dot, and a legend item removes a lane", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "beeswarm"));
+      const first = page.locator("[data-ok-chart]").first();
+      await first.locator("[data-ok-chart-bee]").nth(4).click();
+      await expect(first.locator("[data-ok-chart-selected-mark]")).toHaveCount(1);
+      await first.locator("[data-ok-chart-legend-item]").first().click();
+      await expect(first.locator("[data-ok-chart-bee]")).toHaveCount(17);
     });
   });
 }

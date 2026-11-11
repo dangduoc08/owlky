@@ -417,7 +417,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value) or `violin` (the distribution of observations per category as a mirrored density curve). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve) or `beeswarm` (each observation a dot in its series' lane, along the value axis). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -447,7 +447,8 @@
        "sunburst",
        "icicle",
        "streamgraph",
-       "violin"
+       "violin",
+       "beeswarm"
       ]
      },
      {
@@ -824,7 +825,7 @@
      {
       "attr": "data-ok-orientation",
       "default": "horizontal",
-      "description": "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`).",
+      "description": "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`). Beeswarm charts: the value axis runs left to right (`horizontal`, the default) or upward (`vertical`).",
       "kind": "style",
       "name": "orientation",
       "optional": true,
@@ -1290,6 +1291,18 @@
       "name": "streamLabelMinWidth"
      },
      {
+      "attr": "data-ok-beeswarm-spread",
+      "default": "swarm",
+      "description": "Beeswarm charts: dots push apart just enough not to overlap (`swarm`, the default) or spread across the lane by a fixed sequence (`jitter`).",
+      "kind": "style",
+      "name": "beeswarmSpread",
+      "optional": true,
+      "values": [
+       "swarm",
+       "jitter"
+      ]
+     },
+     {
       "attr": "data-ok-violin-normalize",
       "default": "individual",
       "description": "Violins: each violin fills its slot (`individual`, the default) or all share one density scale (`group`).",
@@ -1749,6 +1762,15 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-bar"
+     },
+     {
+      "description": "A dot of one observation in a beeswarm chart.",
+      "elements": [
+       "circle",
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-bee"
      },
      {
       "description": "One half of a box plot's box.",
@@ -2846,6 +2868,12 @@
       "type": "number"
      },
      {
+      "default": "\"swarm\"",
+      "description": "Beeswarm charts: dots push apart just enough not to overlap (`swarm`) or spread across the lane by a fixed sequence (`jitter`).",
+      "name": "beeswarmSpread",
+      "type": "\"jitter\" | \"swarm\""
+     },
+     {
       "description": "Box plots: color of the box below the median (default a lighter tone of the series color).",
       "name": "boxLowerColor",
       "type": "ChartColor"
@@ -3542,7 +3570,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"violin\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"beeswarm\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"streamgraph\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"violin\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

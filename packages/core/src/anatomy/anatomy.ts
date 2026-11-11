@@ -36,6 +36,7 @@ import {
   responsiveValues,
   slidesToShowAttr,
 } from "../carousel/carousel-model.js";
+import { type ChartBeeswarmSpread, chartBeeswarmSpreads } from "../chart/chart-beeswarm.js";
 import {
   type ChartDirection,
   type ChartEdgeStyle,
@@ -4534,7 +4535,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value) or `violin` (the distribution of observations per category as a mirrored density curve). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) `icicle` (the same hierarchy as bands, each node a cell sized by its value), `streamgraph` (stacked bands around a moving baseline, with a total per x value), `violin` (the distribution of observations per category as a mirrored density curve) or `beeswarm` (each observation a dot in its series' lane, along the value axis). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4680,7 +4681,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-orientation",
     chartOrientations,
     "horizontal",
-    "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`).",
+    "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`). Beeswarm charts: the value axis runs left to right (`horizontal`, the default) or upward (`vertical`).",
     { optional: true },
   ),
   nodeWidth: number(
@@ -4879,6 +4880,13 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     undefined,
     "Streamgraphs: bands thinner than this many pixels get no name (default 24).",
     { min: 0 },
+  ),
+  beeswarmSpread: style(
+    "data-ok-beeswarm-spread",
+    chartBeeswarmSpreads,
+    "swarm",
+    "Beeswarm charts: dots push apart just enough not to overlap (`swarm`, the default) or spread across the lane by a fixed sequence (`jitter`).",
+    { optional: true },
   ),
   violinNormalize: style(
     "data-ok-violin-normalize",
@@ -5112,6 +5120,7 @@ export interface ChartAnatomyOptions {
   hideStreamLabels?: boolean | undefined;
   streamLabelMinWidth?: number | undefined;
   streamHoverOpacity?: number | undefined;
+  beeswarmSpread?: ChartBeeswarmSpread | undefined;
   violinNormalize?: ChartViolinNormalize | undefined;
   violinSide?: ChartViolinSide | undefined;
   bandwidthScale?: number | undefined;

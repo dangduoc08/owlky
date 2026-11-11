@@ -1235,6 +1235,14 @@
     fill: var(--ok-palette-common-white);
   }
 
+  /* Beeswarm dots (4.18.21): a paper ring keeps touching dots apart. */
+  :where([data-ok-chart-bee]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.9;
+    stroke: var(--ok-bg-paper);
+    stroke-width: 1px;
+  }
+
   /* Violins (4.18.21): the density outline, the box beside it and the observations. */
   :where([data-ok-chart-violin]) {
     fill-opacity: 0.32;

@@ -43,6 +43,12 @@ export {
   withChartAxes,
 } from "./chart-axes.js";
 export {
+  type ChartBeeswarmOptions,
+  type ChartBeeswarmSpread,
+  chartBeeswarmSpreads,
+  chartSwarmOffsets,
+} from "./chart-beeswarm.js";
+export {
   type ChartCueOptions,
   type ChartDiscreteMarker,
   chartCueDashes,

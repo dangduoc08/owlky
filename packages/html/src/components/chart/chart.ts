@@ -1,6 +1,7 @@
 import {
   CHART_TEXT_ATTRIBUTES,
   type ChartActive,
+  type ChartBeeswarmSpread,
   type ChartColor,
   type ChartCrossfilter,
   type ChartCurve,
@@ -739,6 +740,9 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           ? (readStyle(element, o.streamOrder) as ChartStreamOrder)
           : undefined,
         hideStreamLabels: element.hasAttribute(o.hideStreamLabels.attr),
+        beeswarmSpread: element.hasAttribute(o.beeswarmSpread.attr)
+          ? (readStyle(element, o.beeswarmSpread) as ChartBeeswarmSpread)
+          : undefined,
         violinNormalize: element.hasAttribute(o.violinNormalize.attr)
           ? (readStyle(element, o.violinNormalize) as ChartViolinNormalize)
           : undefined,

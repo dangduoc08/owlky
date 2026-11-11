@@ -5,6 +5,7 @@ import { Chart } from "@owlky/react";
 import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
 import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
+import beeswarmGroup from "../../../../../packages/html/src/components/chart/examples/beeswarm-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
 import colorBlindGroup from "../../../../../packages/html/src/components/chart/examples/color-blind-group.html?raw";
 import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
@@ -119,6 +120,7 @@ export function MonthlySales() {
 - **\`icicle\`:** a hierarchy as bands, each node a cell sized by its value, such as a flame graph. See "Show parts of a hierarchy as bands".
 - **\`streamgraph\`:** stacked bands around a moving baseline, for how a mix changes over time. See "Show a changing mix over time".
 - **\`violin\`:** the distribution of observations in each category as a mirrored density curve. See "Compare distributions".
+- **\`beeswarm\`:** each observation as a dot in its series' lane, along the value axis. See "Show every observation".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -928,6 +930,39 @@ export function DeliveryTimes() {
       height={320}
       categories={["Basic"]}
       series={[{ name: "Delivery time", data: [{ y: hours }] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "beeswarm",
+    title: "Show every observation",
+    body: `A beeswarm chart draws one dot per observation, in a lane per series, along the value axis. Dots with close values move apart across the lane, so you see the shape of the data and every value in it. Set \`type\` to \`beeswarm\` and pass one series per lane. Each value is an observation. Name observations with \`categories\`, or \`{ x, y }\` points. Without names, they are numbered.
+
+- **\`beeswarmSpread\`:** \`swarm\` (the default) pushes dots apart just enough not to overlap, and \`jitter\` spreads them across the lane by a fixed sequence.
+- **\`orientation\`:** the value axis runs \`horizontal\`, the default, or \`vertical\`.
+- **\`markerSize\`:** the dot radius in pixels. Without it, the dots shrink to fit a crowded lane.
+- **\`colorBlindMode\` and \`markerShape\`:** give each lane its own shape, so lanes differ by more than color and position.
+
+The tooltip shows one observation with its name and value. Arrow keys move through the observations in reading order, Home and End go to the first and last, and Enter or Space selects one. The data table lists one row per observation.`,
+    html: `${snippetElement(beeswarmGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const people = ["Ann", "Ben", "Caro", "Dan", "Eve", "Finn", "Gia", "Hugo", "Ivy", "Jon", "Kim", "Leo"];
+
+export function SalariesByDepartment() {
+  return (
+    <Chart
+      label="Salaries by department, thousands of dollars"
+      type="beeswarm"
+      valueSuffix="k"
+      height={300}
+      categories={people}
+      series={[
+        { name: "Sales", data: [55, 62, 58, 71, 66, 60, 64, 58, 73, 69, 61, 57] },
+        { name: "Design", data: [72, 80, 75, 78, 83, 90, 68, 74, null, null, null, null] },
+        { name: "Support", data: [41, 44, 39, 47, 45, 42, 40, 43, 46, null, null, null] },
+      ]}
     />
   );
 }`,
@@ -1906,6 +1941,20 @@ const PREVIEWS = {
               { y: [31, 38, 44, 48, 52, 55, 60, 62, 64, 71, 75] },
             ],
           },
+        ]}
+      />
+    </Preview>
+  ),
+  beeswarm: () => (
+    <Preview>
+      <Chart
+        label="Build times by branch, in minutes"
+        type="beeswarm"
+        beeswarmSpread="jitter"
+        height={220}
+        series={[
+          { name: "Main", data: [4, 5, 6, 6, 7, 8, 8, 9, 11] },
+          { name: "Release", data: [9, 10, 12, 13, 15, 16, 18] },
         ]}
       />
     </Preview>
