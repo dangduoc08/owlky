@@ -6,6 +6,7 @@ const STORIES: [component: string, story: string][] = [
   ["avatar", "letter"],
   ["avatar", "grouped"],
   ["avatar", "sizes"],
+  ["avatar", "color-preview"],
   ["badge", "standard"],
   ["badge", "status"],
   ["chip", "filled"],

@@ -173,3 +173,67 @@ describe("RadioGroup", () => {
     await expectNoAxeViolations(container);
   });
 });
+
+describe("Radio swatches (color picker)", () => {
+  const COLORS = [
+    ["Orange", "#FF9800"],
+    ["Yellow", "#FFEB3B"],
+    ["Teal", "var(--ok-palette-primary-main)"],
+  ] as const;
+
+  it("renders named swatches; the picked one grows and shows a mark", async () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <RadioGroup row aria-label="Color" defaultValue="#FF9800" onChange={onChange}>
+        {COLORS.map(([name, value]) => (
+          <Radio key={value} value={value} swatch={value} aria-label={name} />
+        ))}
+      </RadioGroup>,
+    );
+    const orange = screen.getByRole("radio", { name: "Orange" });
+    const root = rootOf(orange);
+    expect(root).toHaveAttribute("data-ok-swatch", "#FF9800");
+    expect(root).not.toHaveAttribute("data-ok-shape");
+    expect(root.querySelector("[data-ok-radio-icon]")).toBeNull();
+    const swatch = root.querySelector("[data-ok-radio-swatch]") as HTMLElement;
+    expect(swatch).toHaveAttribute("aria-hidden", "true");
+    expect(css(swatch).backgroundColor).toBe("rgb(255, 152, 0)");
+    expect(css(swatch).width).toBe("28px");
+    expect(css(swatch.querySelector("svg") as Element).display).toBe("block");
+    const yellow = screen.getByRole("radio", { name: "Yellow" });
+    const yellowSwatch = rootOf(yellow).querySelector("[data-ok-radio-swatch]") as HTMLElement;
+    expect(css(yellowSwatch).width).toBe("20px");
+    await userEvent.click(yellow);
+    expect(onChange).toHaveBeenCalledWith("#FFEB3B");
+    expect(css(yellowSwatch).color).toBe("rgb(0, 0, 0)");
+    expect(
+      css(
+        rootOf(screen.getByRole("radio", { name: "Teal" })).querySelector(
+          "[data-ok-radio-swatch]",
+        ) as Element,
+      ).backgroundColor,
+    ).toBe("rgb(0, 167, 111)");
+    await expectNoAxeViolations(container);
+  });
+
+  it("keeps a custom mark, a shape, the author's style; drops colors that aren't colors", () => {
+    render(
+      <Radio
+        swatch={HOSTILE}
+        shape="rounded"
+        aria-label="Bad"
+        checkedIcon={<b>x</b>}
+        style={{ margin: 2 }}
+      />,
+    );
+    const root = rootOf(screen.getByRole("radio", { name: "Bad" }));
+    expect(root).toHaveAttribute("data-ok-swatch", "");
+    expect(root).toHaveAttribute("data-ok-shape", "rounded");
+    expect(root.style.getPropertyValue("--_ok-swatch")).toBe("");
+    expect(root.style.margin).toBe("2px");
+    expect(root.querySelector("[data-ok-radio-swatch] b")).not.toBeNull();
+    expect(renderToString(<Radio swatch="#FF9800" aria-label="Orange" />)).toContain(
+      "--_ok-swatch:#FF9800",
+    );
+  });
+});

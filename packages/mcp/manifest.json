@@ -319,6 +319,7 @@
   "data-ok-checkbox-mark",
   "data-ok-checkbox-selection",
   "data-ok-checkbox-selection-visible-only",
+  "data-ok-checkbox-swatch",
   "data-ok-chip",
   "data-ok-chip-action",
   "data-ok-chip-delete",
@@ -1270,6 +1271,7 @@
   "data-ok-radio-group",
   "data-ok-radio-icon",
   "data-ok-radio-input",
+  "data-ok-radio-swatch",
   "data-ok-raised",
   "data-ok-range",
   "data-ok-range-bar-group-rows",
@@ -3743,6 +3745,14 @@
       "value": "#DFE3E8"
      },
      {
+      "name": "--ok-palette-grey-500",
+      "value": "#919EAB"
+     },
+     {
+      "name": "--ok-palette-grey-500-channel",
+      "value": "145 158 171"
+     },
+     {
       "name": "--ok-palette-grey-700",
       "value": "#454F5B"
      },
@@ -3765,6 +3775,27 @@
      {
       "name": "--ok-spacing",
       "value": "0.25rem"
+     },
+     {
+      "dark": "#FFFFFF",
+      "light": "#1C252E",
+      "name": "--ok-text-primary"
+     },
+     {
+      "name": "--ok-typography-subtitle2-font-family",
+      "value": "var(--ok-font-family)"
+     },
+     {
+      "name": "--ok-typography-subtitle2-font-size",
+      "value": "0.875rem"
+     },
+     {
+      "name": "--ok-typography-subtitle2-font-weight",
+      "value": "600"
+     },
+     {
+      "name": "--ok-typography-subtitle2-line-height",
+      "value": "1.5714"
      }
     ],
     "entries": [
@@ -3824,9 +3855,15 @@
          "name": "data-ok-avatar-fallback"
         },
         {
-         "description": "The \"+n\" avatar of a group that shows more avatars than `max`.",
+         "description": "The \"+n\" avatar of a group that shows more avatars than `max`. In a group of color dots it is plain text.",
          "kind": "part",
          "name": "data-ok-avatar-surplus"
+        },
+        {
+         "description": "A color dot's color (the color preview): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the dot stays grey).",
+         "kind": "value",
+         "name": "data-ok-swatch",
+         "value": "string"
         }
        ],
        "runtime": "avatar"
@@ -3871,6 +3908,11 @@
         {
          "description": "Candidate pictures for `src` at other resolutions (the `srcset` of the `img`).",
          "name": "srcSet",
+         "type": "string"
+        },
+        {
+         "description": "A color dot instead of a picture (a color preview): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. The avatar is then empty: name the group.",
+         "name": "swatch",
          "type": "string"
         },
         {
@@ -3940,7 +3982,8 @@
    ],
    "referenceUrl": "https://minimals.cc/components/mui/avatar",
    "related": [
-    "badge"
+    "badge",
+    "radio"
    ],
    "requiredParts": {},
    "root": "data-ok-avatar",
@@ -4013,22 +4056,22 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-avatar][data-ok-variant][data-ok-color][data-ok-size]?[data-ok-avatar-surplus]?\n  img[src][alt] | text | svg[aria-hidden] | span[data-ok-avatar-fallback][aria-hidden] (HTML, after an image error)\ndiv[data-ok-avatar-group][data-ok-spacing] › span[data-ok-avatar]… › span[data-ok-avatar][data-ok-avatar-surplus]?\n```\nReact renders `data-ok-runtime=\"off\"` on avatars.",
+     "body": "```\nspan[data-ok-avatar][data-ok-variant][data-ok-color][data-ok-size]?[data-ok-avatar-surplus]?\n  img[src][alt] | text | svg[aria-hidden] | span[data-ok-avatar-fallback][aria-hidden] (HTML, after an image error)\ndiv[data-ok-avatar-group][data-ok-spacing] › span[data-ok-avatar]… › span[data-ok-avatar][data-ok-avatar-surplus]?\n```\nColor preview: an AvatarGroup of color dots. `span[data-ok-avatar][data-ok-swatch=<css color>]`\n(empty: no person icon) and the group's surplus as plain text (\"+13\"); name the group\n(`role=\"img\"` + `aria-label` listing the colors). React renders `data-ok-runtime=\"off\"` on avatars.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `avatar`: listed under \"options\".)\n\n(Options of `avatar-group`: listed under \"options\".)\n\nReact: `src`, `srcSet`, `sizes`, `alt`, `children`, `imgProps` (upstream `slotProps.img`);\nAvatarGroup `max` (5, at least 2), `total`, `renderSurplus(n)`, `variant` (cloned onto the\nchildren). Beyond MUI, from the reference: `color` (Minimals), `size` (the reference sizes with\n`sx`). AvatarGroup `spacing`: `medium`, `small` or a number of px (MUI). Not applicable: `sx`,\n`classes`, `slots`, `slotProps`, `component`.",
+     "body": "(Options of `avatar`: listed under \"options\".)\n\n(Options of `avatar-group`: listed under \"options\".)\n\n`swatch` (React; HTML `data-ok-swatch`): the avatar's background, a CSS color or `var(--ok-…)`\ntoken, sanitized as Radio's swatches (specs/components/radio.md); it goes through\n`--_ok-swatch` (React `style`, HTML `avatar` runtime through CSSOM).\n\nReact: `src`, `srcSet`, `sizes`, `alt`, `children`, `imgProps` (upstream `slotProps.img`);\nAvatarGroup `max` (5, at least 2), `total`, `renderSurplus(n)`, `variant` (cloned onto the\nchildren). Beyond MUI, from the reference: `color` (Minimals), `size` (the reference sizes with\n`sx`). AvatarGroup `spacing`: `medium`, `small` or a number of px (MUI). Not applicable: `sx`,\n`classes`, `slots`, `slotProps`, `component`.",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "40px default (`--ok-spacing` × 10), `size` → `--_ok-avatar-size`; letters 0.45 × size,\nsemibold; `rounded` `--ok-radius-lg`, `square` 0. Default background `--ok-palette-grey-300`\nwith `--ok-palette-grey-700` letters (AA; the reference uses `text-secondary`); colors\n`--ok-c-main` / `--ok-c-contrast`. Group: 2px `--ok-bg-paper` border, overlap −8px (small −16px;\na number n → −n px through `--_ok-overlap`, core `avatarGroupStyle`);\nsurplus `primary-lighter` / `primary-dark`, 0.32 × size.",
+     "body": "40px default (`--ok-spacing` × 10), `size` → `--_ok-avatar-size`; letters 0.45 × size,\nsemibold; `rounded` `--ok-radius-lg`, `square` 0. Default background `--ok-palette-grey-300`\nwith `--ok-palette-grey-700` letters (AA; the reference uses `text-secondary`); colors\n`--ok-c-main` / `--ok-c-contrast`. Group: 2px `--ok-bg-paper` border, overlap −8px (small −16px;\na number n → −n px through `--_ok-overlap`, core `avatarGroupStyle`);\nsurplus `primary-lighter` / `primary-dark`, 0.32 × size. Swatch avatars: background\n`--_ok-swatch` (grey 500 until set) with a 1px inset ring (`--ok-palette-grey-500-channel` at\n0.16); in a group that holds swatches the surplus is text: no circle, `--ok-text-primary`,\n`--ok-typography-subtitle2-*`, 2px after the last dot (the kit's ColorPreview: 16px dots\noverlapping by 6px, `spacing={6}`).",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "React: on image error, children → first letter of `alt` → a person icon. HTML runtime `avatar`:\n`data-ok-size` → `--_ok-avatar-size` (CSSOM, observed); `error` on an `img` (capture) → the image\ngets `hidden` and, if the avatar has no other content, a `span[data-ok-avatar-fallback]` with the\nalt's first letter (textContent). HTML runtime `avatar-group` (behavior-only folder): a numeric\n`data-ok-spacing` → `--_ok-overlap` (CSSOM, observed); React writes the same property in `style`.",
+     "body": "React: on image error, children → first letter of `alt` → a person icon. HTML runtime `avatar`:\n`data-ok-size` → `--_ok-avatar-size` and `data-ok-swatch` → `--_ok-swatch` (CSSOM, observed); `error` on an `img` (capture) → the image\ngets `hidden` and, if the avatar has no other content, a `span[data-ok-avatar-fallback]` with the\nalt's first letter (textContent). HTML runtime `avatar-group` (behavior-only folder): a numeric\n`data-ok-spacing` → `--_ok-overlap` (CSSOM, observed); React writes the same property in `style`.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -4043,7 +4086,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against MUI API pages Avatar, AvatarGroup.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `src`, `srcSet`, `sizes`, `alt`, `children`, `variant` | same | kept | fallback order as upstream |\n| `slotProps.img` | `imgProps` | renamed | |\n| `slots.fallback` | built-in person icon / `span[data-ok-avatar-fallback]` | not applicable | composition: pass children |\n| `component` | — | not applicable | always `span` |\n| — | `color`, `size` | kept | beyond upstream (Minimals) |\n| `AvatarGroup` `max`, `total`, `renderSurplus`, `variant`, `children` | same (React); HTML writes the surplus | kept | |\n| `AvatarGroup` `spacing` (`medium` · `small` · number) | same; HTML `data-ok-spacing=\"medium | small | <px>\"` | kept | Phase 4 row 4.12 |\n| `AvatarGroup` `component`, `slots.surplus` | `renderSurplus` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "body": "Audit 2026-11-09 against MUI API pages Avatar, AvatarGroup.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `src`, `srcSet`, `sizes`, `alt`, `children`, `variant` | same | kept | fallback order as upstream |\n| `slotProps.img` | `imgProps` | renamed | |\n| `slots.fallback` | built-in person icon / `span[data-ok-avatar-fallback]` | not applicable | composition: pass children |\n| `component` | — | not applicable | always `span` |\n| — | `color`, `size` | kept | beyond upstream (Minimals) |\n| `AvatarGroup` `max`, `total`, `renderSurplus`, `variant`, `children` | same (React); HTML writes the surplus | kept | |\n| `AvatarGroup` `spacing` (`medium` · `small` · number) | same; HTML `data-ok-spacing=\"medium | small | <px>\"` | kept | Phase 4 row 4.12 |\n| `AvatarGroup` `component`, `slots.surplus` | `renderSurplus` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |\n| ColorPreview (kit) `colors`, `limit`, `size`, `gap` | AvatarGroup of `Avatar swatch` · `max` (= limit + 1, the surplus counts), Avatar `size`, `spacing` | renamed | composition (roadmap 4.23) |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -4125,6 +4168,15 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { Avatar, AvatarGroup } from \"@owlky/react\";\n\n{/* Spacing */}\n<AvatarGroup spacing=\"medium\">\n  <Avatar src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\" />\n  <Avatar src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\" />\n  <Avatar src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\" />\n</AvatarGroup>\n<AvatarGroup spacing=\"small\">\n  <Avatar src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\" />\n  <Avatar src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\" />\n  <Avatar src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\" />\n</AvatarGroup>\n<AvatarGroup spacing={24}>\n  <Avatar src=\"avatars/avatar-1.svg\" alt=\"Jayvion Simon\" />\n  <Avatar src=\"avatars/avatar-2.svg\" alt=\"Lucian Obrien\" />\n  <Avatar src=\"avatars/avatar-3.svg\" alt=\"Deja Brady\" />\n</AvatarGroup>\n",
      "snippets": [
       "spacing-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/avatar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Color preview -->\n<div data-ok-avatar-group data-ok-spacing=\"6\" role=\"img\" aria-label=\"19 colors: Orange, Deep purple, Light green, Teal, Indigo, Light blue and 13 more\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#FF9800\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#673AB7\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#8BC34A\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#009688\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#3F51B5\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#03A9F4\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-avatar-surplus>+13</span>\n</div>",
+     "id": "components-avatar--color-preview",
+     "name": "Color preview",
+     "react": "import { Avatar, AvatarGroup } from \"@owlky/react\";\n\nconst COLORS = [\n  { name: \"Orange\", value: \"#FF9800\" },\n  { name: \"Deep purple\", value: \"#673AB7\" },\n  { name: \"Light green\", value: \"#8BC34A\" },\n  { name: \"Teal\", value: \"#009688\" },\n  { name: \"Indigo\", value: \"#3F51B5\" },\n  { name: \"Light blue\", value: \"#03A9F4\" },\n  { name: \"Blue grey\", value: \"#607D8B\" },\n  { name: \"Green\", value: \"#4CAF50\" },\n  { name: \"Cyan\", value: \"#00BCD4\" },\n  { name: \"Lime\", value: \"#CDDC39\" },\n  { name: \"Pink\", value: \"#E91E63\" },\n  { name: \"Amber\", value: \"#FFC107\" },\n  { name: \"Purple\", value: \"#9C27B0\" },\n  { name: \"Deep orange\", value: \"#FF5722\" },\n  { name: \"Brown\", value: \"#795548\" },\n  { name: \"Blue\", value: \"#2196F3\" },\n  { name: \"Red\", value: \"#F44336\" },\n  { name: \"Yellow\", value: \"#FFEB3B\" },\n  { name: \"Grey\", value: \"#9E9E9E\" },\n];\nconst SHOWN = 6;\n\n/** A product's colors: the first six as overlapping dots, then how many more. */\nexport function ColorPreviewDemo() {\n  const names = COLORS.slice(0, SHOWN).map((color) => color.name);\n  const label = `${COLORS.length} colors: ${names.join(\", \")} and ${COLORS.length - SHOWN} more`;\n  return (\n    <AvatarGroup max={SHOWN + 1} spacing={6} role=\"img\" aria-label={label}>\n      {COLORS.map(({ value }) => (\n        <Avatar key={value} swatch={value} size={16} />\n      ))}\n    </AvatarGroup>\n  );\n}\n",
+     "snippets": [
+      "color-preview-group.html"
      ]
     }
    ],
@@ -17101,6 +17153,14 @@
       "value": "#FFFFFF"
      },
      {
+      "name": "--ok-palette-grey-500",
+      "value": "#919EAB"
+     },
+     {
+      "name": "--ok-palette-grey-500-channel",
+      "value": "145 158 171"
+     },
+     {
       "name": "--ok-palette-primary-main",
       "value": "#00A76F"
      },
@@ -17111,6 +17171,14 @@
      {
       "name": "--ok-radius-full",
       "value": "9999px"
+     },
+     {
+      "name": "--ok-radius-sm",
+      "value": "6px"
+     },
+     {
+      "name": "--ok-shadow-z8",
+      "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
      },
      {
       "name": "--ok-spacing",
@@ -17166,6 +17234,18 @@
          "name": "indeterminate"
         },
         {
+         "attr": "data-ok-shape",
+         "default": "rounded",
+         "description": "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+         "kind": "style",
+         "name": "shape",
+         "optional": true,
+         "values": [
+          "circular",
+          "rounded"
+         ]
+        },
+        {
          "attr": "disabled",
          "children": ":scope > input",
          "description": "Native `disabled` on the input.",
@@ -17206,6 +17286,20 @@
          ],
          "kind": "part",
          "name": "data-ok-checkbox-mark"
+        },
+        {
+         "description": "A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while checked.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-checkbox-swatch"
+        },
+        {
+         "description": "A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey).",
+         "kind": "value",
+         "name": "data-ok-swatch",
+         "value": "string"
         }
        ],
        "runtime": "checkbox"
@@ -17216,7 +17310,7 @@
        "native": "HTMLInputElement",
        "props": [
         {
-         "description": "Replaces the checked icon.",
+         "description": "Replaces the checked icon (with `swatch`: the mark on the checked swatch).",
          "name": "checkedIcon",
          "type": "ReactNode"
         },
@@ -17252,6 +17346,11 @@
          "type": "((checked: boolean) => void)"
         },
         {
+         "description": "Swatch shape: `rounded` (default) or `circular`.",
+         "name": "shape",
+         "type": "\"circular\" | \"rounded\""
+        },
+        {
          "default": "\"medium\"",
          "description": "`medium` (40px target, 24px icon) or `small` (36 / 20px).",
          "name": "size",
@@ -17261,6 +17360,11 @@
          "description": "Style of the root span.",
          "name": "style",
          "type": "CSSProperties"
+        },
+        {
+         "description": "Shows a color swatch instead of the icons (a color picker): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Name the checkbox with the color's name (`aria-label=\"Orange\"`).",
+         "name": "swatch",
+         "type": "string"
         }
        ]
       }
@@ -17274,11 +17378,13 @@
    ],
    "referenceUrl": "https://minimals.cc/components/mui/checkbox",
    "related": [
-    "form-control-label"
+    "form-control",
+    "form-control-label",
+    "radio",
+    "typography"
    ],
    "requiredParts": {
     "data-ok-checkbox": [
-     "data-ok-checkbox-icon",
      "data-ok-checkbox-input"
     ]
    },
@@ -17321,6 +17427,18 @@
        "name": "indeterminate"
       },
       {
+       "attr": "data-ok-shape",
+       "default": "rounded",
+       "description": "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+       "kind": "style",
+       "name": "shape",
+       "optional": true,
+       "values": [
+        "circular",
+        "rounded"
+       ]
+      },
+      {
        "attr": "disabled",
        "children": ":scope > input",
        "description": "Native `disabled` on the input.",
@@ -17345,12 +17463,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-checkbox][data-ok-color][data-ok-size][data-ok-indeterminate]?\n  input[type=checkbox][data-ok-checkbox-input]   (name, value, checked, disabled, required, aria-*; covers the target, opacity 0)\n  span[data-ok-checkbox-icon=\"unchecked\"][aria-hidden=\"true\"] › svg\n  span[data-ok-checkbox-icon=\"checked\"][aria-hidden=\"true\"]   › svg (› path[data-ok-checkbox-mark])\n  span[data-ok-checkbox-icon=\"indeterminate\"][aria-hidden=\"true\"] › svg (› path[data-ok-checkbox-mark])\n```\nAll three icon slots are always present; CSS shows one. React renders `data-ok-runtime=\"off\"` on\nthe root. React `ref` and the remaining props go to the **input**; `className` / `style` to the root.",
+     "body": "```\nspan[data-ok-checkbox][data-ok-color][data-ok-size][data-ok-indeterminate]?\n  input[type=checkbox][data-ok-checkbox-input]   (name, value, checked, disabled, required, aria-*; covers the target, opacity 0)\n  span[data-ok-checkbox-icon=\"unchecked\"][aria-hidden=\"true\"] › svg\n  span[data-ok-checkbox-icon=\"checked\"][aria-hidden=\"true\"]   › svg (› path[data-ok-checkbox-mark])\n  span[data-ok-checkbox-icon=\"indeterminate\"][aria-hidden=\"true\"] › svg (› path[data-ok-checkbox-mark])\n```\nColor swatch (`swatch`), in a `FormGroup row` for a multiple color picker:\n```\nspan[data-ok-checkbox][data-ok-color][data-ok-size][data-ok-swatch=<css color>][data-ok-shape]?\n  input[type=checkbox][data-ok-checkbox-input][aria-label=<color name>]\n  span[data-ok-checkbox-swatch][aria-hidden=\"true\"] › svg (check mark, shown while checked)\n```\nThe icon slots give way to the swatch. Swatch colors go through `--_ok-swatch` /\n`--_ok-swatch-mark` (React `style`, HTML `checkbox` runtime through CSSOM); same rules as Radio\n(specs/components/radio.md › Swatch options, Layout and tokens), `rounded` by default.\n\nWithout a swatch all three icon slots are always present; CSS shows one. React renders `data-ok-runtime=\"off\"` on\nthe root. React `ref` and the remaining props go to the **input**; `className` / `style` to the root.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `checkbox`: listed under \"options\".)\n\nReact only: `icon`, `checkedIcon`, `indeterminateIcon` (ReactNode; HTML: your SVG in the slot),\n`onChange(checked)`. Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.",
+     "body": "(Options of `checkbox`: listed under \"options\".)\n\n`swatch` (React; HTML `data-ok-swatch`): a CSS color or `var(--ok-…)` token (sanitized like\nRadio's). `shape` (`circular` · `rounded`) applies to swatches only.\n\nReact only: `icon`, `checkedIcon`, `indeterminateIcon` (ReactNode; HTML: your SVG in the slot),\n`onChange(checked)`. Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.",
      "id": "options",
      "title": "Options"
     },
@@ -17370,7 +17488,7 @@
      "title": "States"
     },
     {
-     "body": "Native toggling. React sets `input.indeterminate` from the prop on every render (a click clears\nthe native flag; the prop stays the truth). HTML runtime `checkbox`:\n- mirrors `data-ok-indeterminate` to `input.indeterminate` (mount + attribute changes; a mixed\n  state set by other code, such as Table's select-all, is left alone);\n- on a user `change`, clears the checkbox's mixed state;\n- a checkbox whose input has `aria-controls=\"<ids>\"` is a **parent** (WAI-ARIA mixed checkbox):\n  its change checks / clears every listed checkbox; any listed checkbox's change recomputes the\n  parent (`selectAllState`: all → checked, some → mixed, none → clear), up nested parents.\n  Ids resolve in the input's root (shadow-safe); unknown ids and cycles are ignored.\nWithout the runtime: toggling and the `data-ok-indeterminate` icon work; `aria-checked=mixed` and\nparents don't.",
+     "body": "Native toggling. React sets `input.indeterminate` from the prop on every render (a click clears\nthe native flag; the prop stays the truth). HTML runtime `checkbox`:\n- mirrors `data-ok-indeterminate` to `input.indeterminate` (mount + attribute changes; a mixed\n  state set by other code, such as Table's select-all, is left alone);\n- on a user `change`, clears the checkbox's mixed state;\n- a checkbox whose input has `aria-controls=\"<ids>\"` is a **parent** (WAI-ARIA mixed checkbox):\n  its change checks / clears every listed checkbox; any listed checkbox's change recomputes the\n  parent (`selectAllState`: all → checked, some → mixed, none → clear), up nested parents.\n  Ids resolve in the input's root (shadow-safe); unknown ids and cycles are ignored.\n- writes a swatch's `--_ok-swatch` / `--_ok-swatch-mark` from `data-ok-swatch` (core\n  `swatchStyle`), again when it changes.\nWithout the runtime: toggling and the `data-ok-indeterminate` icon work; swatches show grey; `aria-checked=mixed` and\nparents don't.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -17390,7 +17508,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Checkbox`, mui.com/material-ui/api/checkbox/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color` | `color` | kept | + `default` (text color) |\n| `size` (`small` · `medium`) | `size` | kept | |\n| `indeterminate` | `indeterminate` | kept | HTML `data-ok-indeterminate` |\n| `icon`, `checkedIcon`, `indeterminateIcon` | same | kept | React only; HTML: own SVG in the slot |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | `className` / `style` → the root |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Checkbox`, mui.com/material-ui/api/checkbox/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color` | `color` | kept | + `default` (text color) |\n| `size` (`small` · `medium`) | `size` | kept | |\n| `indeterminate` | `indeterminate` | kept | HTML `data-ok-indeterminate` |\n| `icon`, `checkedIcon`, `indeterminateIcon` | same | kept | React only; HTML: own SVG in the slot |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | `className` / `style` → the root |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |\n| ColorPicker (kit) `options`, `value: string[]`, `onChange(values)` | one `Checkbox swatch` per color in a `FormGroup row`; the app keeps the array | renamed | composition |\n| ColorPicker `variant` (`circular` · `rounded`) | `shape` | renamed | as Radio |\n| ColorPicker `size`, `limit`, `slotProps` | `size` / — | renamed / not applicable | as Radio |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -17455,6 +17573,15 @@
      "react": "import { selectAllState } from \"@owlky/core\";\nimport { Checkbox, FormControlLabel } from \"@owlky/react\";\nimport { useId, useState } from \"react\";\n\n/** A parent checkbox that checks or clears its children and shows mixed in between. */\nexport function IndeterminateDemo() {\n  const id = useId();\n  const [children, setChildren] = useState([true, false]);\n  const { checked, indeterminate } = selectAllState(\n    children.filter(Boolean).length,\n    children.length,\n  );\n  return (\n    <>\n      <FormControlLabel\n        label=\"Parent\"\n        control={\n          <Checkbox\n            aria-controls={children.map((_, i) => `${id}-${i}`).join(\" \")}\n            checked={checked}\n            indeterminate={indeterminate}\n            onChange={(next) => setChildren(children.map(() => next))}\n          />\n        }\n      />\n      <div>\n        {children.map((value, i) => (\n          <FormControlLabel\n            // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list of two children.\n            key={i}\n            label={`Child ${i + 1}`}\n            control={\n              <Checkbox\n                id={`${id}-${i}`}\n                checked={value}\n                onChange={(next) => setChildren(children.map((c, j) => (j === i ? next : c)))}\n              />\n            }\n          />\n        ))}\n      </div>\n    </>\n  );\n}\n",
      "snippets": [
       "indeterminate-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/checkbox.css + components/form-control.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Multiple -->\n<div class=\"sb-color-picker\">\n  <div data-ok-form-group data-ok-row role=\"group\" aria-label=\"Colors\" class=\"sb-color-picker-swatches\">\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#FF9800\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Orange\" name=\"colors\" value=\"#FF9800\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#673AB7\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Deep purple\" name=\"colors\" value=\"#673AB7\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#8BC34A\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Light green\" name=\"colors\" value=\"#8BC34A\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#009688\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Teal\" name=\"colors\" value=\"#009688\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#3F51B5\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Indigo\" name=\"colors\" value=\"#3F51B5\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#03A9F4\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Light blue\" name=\"colors\" value=\"#03A9F4\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#607D8B\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Blue grey\" name=\"colors\" value=\"#607D8B\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#4CAF50\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Green\" name=\"colors\" checked value=\"#4CAF50\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#00BCD4\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Cyan\" name=\"colors\" checked value=\"#00BCD4\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#CDDC39\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Lime\" name=\"colors\" value=\"#CDDC39\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#E91E63\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Pink\" name=\"colors\" value=\"#E91E63\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#FFC107\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Amber\" name=\"colors\" value=\"#FFC107\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#9C27B0\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Purple\" name=\"colors\" value=\"#9C27B0\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#FF5722\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Deep orange\" name=\"colors\" value=\"#FF5722\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#795548\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Brown\" name=\"colors\" value=\"#795548\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#2196F3\">\n      <input type=\"checkbox\" data-ok-checkbox-input aria-label=\"Blue\" name=\"colors\" value=\"#2196F3\">\n      <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n  </div>\n  <p data-ok-typography data-ok-variant=\"body2\" id=\"color-picker-values\">#4CAF50, #00BCD4</p>\n</div>\n\n<script type=\"module\">\n// Show the picked colors under the swatches, in the palette's order\nconst group = document.querySelector('[role=\"group\"][aria-label=\"Colors\"]');\nconst output = document.getElementById(\"color-picker-values\");\ngroup.addEventListener(\"change\", () => {\n  const checked = group.querySelectorAll(\"input:checked\");\n  output.textContent = [...checked].map((input) => input.value).join(\", \");\n});\n</script>",
+     "id": "components-checkbox--color-picker",
+     "name": "Color picker",
+     "react": "import { Checkbox, FormGroup, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst COLORS = [\n  { name: \"Orange\", value: \"#FF9800\" },\n  { name: \"Deep purple\", value: \"#673AB7\" },\n  { name: \"Light green\", value: \"#8BC34A\" },\n  { name: \"Teal\", value: \"#009688\" },\n  { name: \"Indigo\", value: \"#3F51B5\" },\n  { name: \"Light blue\", value: \"#03A9F4\" },\n  { name: \"Blue grey\", value: \"#607D8B\" },\n  { name: \"Green\", value: \"#4CAF50\" },\n  { name: \"Cyan\", value: \"#00BCD4\" },\n  { name: \"Lime\", value: \"#CDDC39\" },\n  { name: \"Pink\", value: \"#E91E63\" },\n  { name: \"Amber\", value: \"#FFC107\" },\n  { name: \"Purple\", value: \"#9C27B0\" },\n  { name: \"Deep orange\", value: \"#FF5722\" },\n  { name: \"Brown\", value: \"#795548\" },\n  { name: \"Blue\", value: \"#2196F3\" },\n];\n\n/** A multiple color picker: checkbox swatches, each named after its color. */\nexport function ColorPickerDemo() {\n  const [colors, setColors] = useState([\"#4CAF50\", \"#00BCD4\"]);\n  return (\n    <div className=\"sb-color-picker\">\n      <FormGroup row role=\"group\" aria-label=\"Colors\" className=\"sb-color-picker-swatches\">\n        {COLORS.map(({ name, value }) => (\n          <Checkbox\n            key={value}\n            name=\"colors\"\n            value={value}\n            swatch={value}\n            aria-label={name}\n            checked={colors.includes(value)}\n            onChange={(checked) =>\n              // Keep the palette's order, as the form submits the values.\n              setColors(\n                COLORS.map((color) => color.value).filter((color) =>\n                  color === value ? checked : colors.includes(color),\n                ),\n              )\n            }\n          />\n        ))}\n      </FormGroup>\n      <Typography variant=\"body2\" id=\"color-picker-values\">\n        {colors.join(\", \")}\n      </Typography>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "color-picker-group.html"
      ]
     }
    ],
@@ -60586,6 +60713,18 @@
       "value": "cubic-bezier(0.4, 0, 0.2, 1)"
      },
      {
+      "name": "--ok-palette-common-white",
+      "value": "#FFFFFF"
+     },
+     {
+      "name": "--ok-palette-grey-500",
+      "value": "#919EAB"
+     },
+     {
+      "name": "--ok-palette-grey-500-channel",
+      "value": "145 158 171"
+     },
+     {
       "name": "--ok-palette-primary-main",
       "value": "#00A76F"
      },
@@ -60596,6 +60735,14 @@
      {
       "name": "--ok-radius-full",
       "value": "9999px"
+     },
+     {
+      "name": "--ok-radius-sm",
+      "value": "6px"
+     },
+     {
+      "name": "--ok-shadow-z8",
+      "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
      },
      {
       "name": "--ok-spacing",
@@ -60645,6 +60792,18 @@
          ]
         },
         {
+         "attr": "data-ok-shape",
+         "default": "circular",
+         "description": "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+         "kind": "style",
+         "name": "shape",
+         "optional": true,
+         "values": [
+          "circular",
+          "rounded"
+         ]
+        },
+        {
          "attr": "disabled",
          "children": ":scope > input",
          "description": "Native `disabled` on the input.",
@@ -60676,8 +60835,23 @@
          ],
          "kind": "part",
          "name": "data-ok-radio-input"
+        },
+        {
+         "description": "A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while selected.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-radio-swatch"
+        },
+        {
+         "description": "A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey).",
+         "kind": "value",
+         "name": "data-ok-swatch",
+         "value": "string"
         }
-       ]
+       ],
+       "runtime": "radio"
       },
       "name": "Radio",
       "react": {
@@ -60685,7 +60859,7 @@
        "native": "HTMLInputElement",
        "props": [
         {
-         "description": "Replaces the selected icon.",
+         "description": "Replaces the selected icon (with `swatch`: the mark on the selected swatch).",
          "name": "checkedIcon",
          "type": "ReactNode"
         },
@@ -60711,6 +60885,11 @@
          "type": "((checked: boolean) => void)"
         },
         {
+         "description": "Swatch shape: `circular` (default) or `rounded`.",
+         "name": "shape",
+         "type": "\"circular\" | \"rounded\""
+        },
+        {
          "default": "\"medium\"",
          "description": "`medium` (40px target, 24px icon) or `small` (36 / 20px).",
          "name": "size",
@@ -60720,6 +60899,11 @@
          "description": "Style of the root span.",
          "name": "style",
          "type": "CSSProperties"
+        },
+        {
+         "description": "Shows a color swatch instead of the icons (a color picker): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Name the radio with the color's name (`aria-label=\"Orange\"`).",
+         "name": "swatch",
+         "type": "string"
         },
         {
          "description": "Identifies the radio in a `RadioGroup` (and in the submitted form).",
@@ -60792,9 +60976,14 @@
    "referenceUrl": "https://minimals.cc/components/mui/radio-button",
    "related": [
     "form-control",
-    "form-control-label"
+    "form-control-label",
+    "typography"
    ],
-   "requiredParts": {},
+   "requiredParts": {
+    "data-ok-radio": [
+     "data-ok-radio-input"
+    ]
+   },
    "root": "data-ok-radio",
    "schemas": [
     {
@@ -60825,6 +61014,18 @@
        "values": [
         "medium",
         "small"
+       ]
+      },
+      {
+       "attr": "data-ok-shape",
+       "default": "circular",
+       "description": "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+       "kind": "style",
+       "name": "shape",
+       "optional": true,
+       "values": [
+        "circular",
+        "rounded"
        ]
       },
       {
@@ -60871,17 +61072,17 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[role=radiogroup][data-ok-radio-group][data-ok-row]?[aria-label|aria-labelledby]\n  (label[data-ok-form-control-label] ›)? span[data-ok-radio][data-ok-color][data-ok-size]\n    input[type=radio][data-ok-radio-input][name][value]   (covers the target, opacity 0)\n    span[data-ok-radio-icon=\"unchecked\"][aria-hidden=\"true\"] › svg\n    span[data-ok-radio-icon=\"checked\"][aria-hidden=\"true\"]   › svg\n```\nReact `ref` and the remaining props go to the input (`RadioGroup`: the group element);\n`className` / `style` to the root span.",
+     "body": "```\ndiv[role=radiogroup][data-ok-radio-group][data-ok-row]?[aria-label|aria-labelledby]\n  (label[data-ok-form-control-label] ›)? span[data-ok-radio][data-ok-color][data-ok-size]\n    input[type=radio][data-ok-radio-input][name][value]   (covers the target, opacity 0)\n    span[data-ok-radio-icon=\"unchecked\"][aria-hidden=\"true\"] › svg\n    span[data-ok-radio-icon=\"checked\"][aria-hidden=\"true\"]   › svg\n```\nColor swatch (`swatch`): the icons give way to one swatch.\n```\nspan[data-ok-radio][data-ok-color][data-ok-size][data-ok-swatch=<css color>][data-ok-shape]?\n  input[type=radio][data-ok-radio-input][aria-label=<color name>]\n  span[data-ok-radio-swatch][aria-hidden=\"true\"] › svg (check mark, shown while checked)\n```\nReact `ref` and the remaining props go to the input (`RadioGroup`: the group element);\n`className` / `style` to the root span. Swatch colors are user data, not tokens: they reach CSS as\n`--_ok-swatch` (and the mark color `--_ok-swatch-mark`) through React `style` or the HTML `radio`\nruntime (CSSOM); snippets never carry `style`.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `radio`: listed under \"options\".)\n\n(Options of `radio-group`: listed under \"options\".)\n\nReact: `RadioGroup` `name` (default `useId()`), `value` / `defaultValue` / `onChange(value)`;\n`Radio` `value`, `icon` / `checkedIcon`, standalone `onChange(checked)`. Upstream `disableRipple`,\n`sx`, `classes`, `slots`, `slotProps` don't apply.",
+     "body": "(Options of `radio`: listed under \"options\".)\n\n(Options of `radio-group`: listed under \"options\".)\n\nSwatch options: `swatch` (React prop; HTML `data-ok-swatch`, free text so not in the schema): a\nCSS color (`#hex`, `rgb()` / `hsl()` / `oklch()`…, a named color) or a `var(--ok-…)` token;\nanything else (`url(`, `;`, braces, quotes, longer than 64 characters, or refused by\n`CSS.supports`) is dropped and the swatch shows grey. `shape` only applies to swatches.\n\nReact: `RadioGroup` `name` (default `useId()`), `value` / `defaultValue` / `onChange(value)`;\n`Radio` `value`, `icon` / `checkedIcon`, standalone `onChange(checked)`. Upstream `disableRipple`,\n`sx`, `classes`, `slots`, `slotProps` don't apply.",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "Same as Checkbox: target 40 / 36px, icon 24 / 20px, unchecked `--ok-text-secondary`, checked\n`--ok-c-main` (`default` = `--ok-text-primary`), disabled `--ok-action-disabled`, hover main\nchannel at 0.08, focus-visible 2px `currentColor` ring inside the target. Group: flex column;\n`row` → row, wrapping.",
+     "body": "Swatches (`[data-ok-swatch]`): target 36px (× 9; `small` 28px, × 7), swatch 20px (× 5; `small`\n16px), checked 28px (× 7; `small` 20px) with `--ok-shadow-z8` and a check mark (`--ok-icon` 60% of\nthe swatch) in white or pure black, whichever contrasts more with a `#hex` / `rgb()` color (white\nfor other formats); a 1px inset ring `--ok-palette-grey-500-channel` at 0.16 keeps light colors\nvisible; `circular` (radio default) `--ok-radius-full`, `rounded` (checkbox default)\n`--ok-radius-sm`; hover `--ok-action-hover` on the target; focus-visible 2px `--ok-text-primary`\nring around the swatch (offset 2px); disabled at 0.48 opacity; forced colors keep the swatch\ncolor (`forced-color-adjust: none`) and draw a `CanvasText` ring on the checked one.\n\nSame as Checkbox: target 40 / 36px, icon 24 / 20px, unchecked `--ok-text-secondary`, checked\n`--ok-c-main` (`default` = `--ok-text-primary`), disabled `--ok-action-disabled`, hover main\nchannel at 0.08, focus-visible 2px `currentColor` ring inside the target. Group: flex column;\n`row` → row, wrapping.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -60891,7 +61092,7 @@
      "title": "Responsive behavior"
     },
     {
-     "body": "From the input via `:has()`: `:checked`, `:disabled`, `:focus-visible`. Native selection.",
+     "body": "From the input via `:has()`: `:checked`, `:disabled`, `:focus-visible`. Native selection.\nSwatches: checked = larger swatch + check mark + shadow (never color alone). HTML runtime\n`radio` (swatches only): writes `--_ok-swatch` / `--_ok-swatch-mark` from `data-ok-swatch`\n(core `swatchStyle`), again when it changes. Without the runtime a swatch shows grey; selection\nstill works.",
      "id": "states-behavior",
      "title": "States / Behavior"
     },
@@ -60901,7 +61102,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "`role=\"radiogroup\"` named by the author; each radio named by its label. Brand colors follow the\nreference (ADR-0014).",
+     "body": "`role=\"radiogroup\"` named by the author; each radio named by its label. Swatches name each\ninput with the color's name (`aria-label=\"Orange\"`), not only its code. Brand colors follow the\nreference (ADR-0014).",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -60911,7 +61112,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Radio`, `RadioGroup`, mui.com/material-ui/api/radio/ and /radio-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Radio `checked`, `disabled`, `required`, `id`, `name`, `value` | native props on the input | kept | in a group: `name` / `checked` from the group |\n| Radio `color`, `size` | same | kept | `color` + `default` |\n| Radio `icon`, `checkedIcon` | same | kept | React only |\n| Radio `onChange(event, checked)` | `onChange(checked)` | renamed | standalone radios |\n| Radio `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| RadioGroup `children`, `name`, `value`, `defaultValue` | same | kept | `name` default `useId()` |\n| RadioGroup `onChange(event, value)` | `onChange(value)` | renamed | |\n| RadioGroup `row` (FormGroup) | `row` | kept | |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Radio`, `RadioGroup`, mui.com/material-ui/api/radio/ and /radio-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Radio `checked`, `disabled`, `required`, `id`, `name`, `value` | native props on the input | kept | in a group: `name` / `checked` from the group |\n| Radio `color`, `size` | same | kept | `color` + `default` |\n| Radio `icon`, `checkedIcon` | same | kept | React only |\n| Radio `onChange(event, checked)` | `onChange(checked)` | renamed | standalone radios |\n| Radio `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| RadioGroup `children`, `name`, `value`, `defaultValue` | same | kept | `name` default `useId()` |\n| RadioGroup `onChange(event, value)` | `onChange(value)` | renamed | |\n| RadioGroup `row` (FormGroup) | `row` | kept | |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |\n| ColorPicker (kit) `options` | one `Radio swatch` per color | renamed | composition: a `RadioGroup row` |\n| ColorPicker `value`, `onChange(value)` (single) | `RadioGroup` `value`, `onChange(value)` | kept | |\n| ColorPicker `variant` (`circular` · `rounded`) | `shape` | renamed | `variant` would suggest a look for every radio |\n| ColorPicker `size` | `size` (`medium` · `small`) | renamed | fixed steps instead of px |\n| ColorPicker `limit` (`auto` · number) | — | not applicable | the group wraps; show fewer colors by passing fewer |\n| ColorPicker `slotProps` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -60957,6 +61158,15 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from \"@owlky/react\";\n\n{/* Colors */}\n<FormControl component=\"fieldset\">\n  <FormLabel component=\"legend\" id=\"radio-colors-label\">Colors</FormLabel>\n  <RadioGroup name=\"colors\" aria-labelledby=\"radio-colors-label\">\n    <FormControlLabel label=\"Default\" control={<Radio value=\"default\" color=\"default\" />} />\n    <FormControlLabel label=\"Primary\" control={<Radio value=\"primary\" color=\"primary\" />} />\n    <FormControlLabel label=\"Secondary\" control={<Radio value=\"secondary\" color=\"secondary\" />} />\n    <FormControlLabel label=\"Info\" control={<Radio value=\"info\" color=\"info\" />} />\n    <FormControlLabel label=\"Success\" control={<Radio value=\"success\" color=\"success\" />} />\n    <FormControlLabel label=\"Warning\" control={<Radio value=\"warning\" color=\"warning\" />} />\n    <FormControlLabel label=\"Error\" control={<Radio value=\"error\" color=\"error\" />} />\n    <FormControlLabel label=\"Disabled\" control={<Radio value=\"disabled\" color=\"error\" disabled />} />\n  </RadioGroup>\n</FormControl>\n",
      "snippets": [
       "colors-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/radio.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Single -->\n<div class=\"sb-color-picker\">\n  <div role=\"radiogroup\" data-ok-radio-group data-ok-row aria-label=\"Color\">\n    <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#FF9800\">\n      <input type=\"radio\" data-ok-radio-input aria-label=\"Orange\" name=\"color\" checked value=\"#FF9800\">\n      <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#673AB7\">\n      <input type=\"radio\" data-ok-radio-input aria-label=\"Deep purple\" name=\"color\" value=\"#673AB7\">\n      <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#8BC34A\">\n      <input type=\"radio\" data-ok-radio-input aria-label=\"Light green\" name=\"color\" value=\"#8BC34A\">\n      <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#009688\">\n      <input type=\"radio\" data-ok-radio-input aria-label=\"Teal\" name=\"color\" value=\"#009688\">\n      <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#3F51B5\">\n      <input type=\"radio\" data-ok-radio-input aria-label=\"Indigo\" name=\"color\" value=\"#3F51B5\">\n      <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n    <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#03A9F4\">\n      <input type=\"radio\" data-ok-radio-input aria-label=\"Light blue\" name=\"color\" value=\"#03A9F4\">\n      <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n    </span>\n  </div>\n  <p data-ok-typography data-ok-variant=\"body2\" id=\"color-picker-value\">#FF9800</p>\n</div>\n\n<script type=\"module\">\n// Show the picked color under the swatches\nconst group = document.querySelector('[role=\"radiogroup\"][aria-label=\"Color\"]');\nconst output = document.getElementById(\"color-picker-value\");\ngroup.addEventListener(\"change\", (event) => {\n  output.textContent = event.target.value;\n});\n</script>",
+     "id": "components-radio--color-picker",
+     "name": "Color picker",
+     "react": "import { Radio, RadioGroup, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst COLORS = [\n  { name: \"Orange\", value: \"#FF9800\" },\n  { name: \"Deep purple\", value: \"#673AB7\" },\n  { name: \"Light green\", value: \"#8BC34A\" },\n  { name: \"Teal\", value: \"#009688\" },\n  { name: \"Indigo\", value: \"#3F51B5\" },\n  { name: \"Light blue\", value: \"#03A9F4\" },\n];\n\n/** A single color picker: radio swatches, each named after its color. */\nexport function ColorPickerDemo() {\n  const [color, setColor] = useState(\"#FF9800\");\n  return (\n    <div className=\"sb-color-picker\">\n      <RadioGroup row name=\"color\" aria-label=\"Color\" value={color} onChange={setColor}>\n        {COLORS.map(({ name, value }) => (\n          <Radio key={value} value={value} swatch={value} aria-label={name} />\n        ))}\n      </RadioGroup>\n      <Typography variant=\"body2\" id=\"color-picker-value\">\n        {color}\n      </Typography>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "color-picker-group.html"
      ]
     }
    ],
@@ -76690,6 +76900,13 @@
      "title": "Change the overlap"
     },
     {
+     "body": "Set `swatch` to a color to turn an avatar into a color dot, such as the colors a product comes in. Put the dots in an avatar group: they overlap like avatars, and the surplus becomes plain text such as \"+13\".\n\n- **Colors:** use a CSS color or a `var(--ok-…)` token. Values that aren't colors are ignored, and the dot stays grey.\n- **Size and overlap:** set `size` on the dots, such as `16`, and `spacing` on the group, such as `6`. In React, `max` counts the surplus too: `max={4}` shows three dots and the surplus.\n- **Name:** the dots are empty, so give the group `role=\"img\"` and an `aria-label` that lists the colors.\n\nIn HTML, `data-ok-swatch` holds the color, and the script paints it.",
+     "html": "<div data-ok-avatar-group data-ok-spacing=\"6\" role=\"img\" aria-label=\"5 colors: Orange, Deep purple, Light green and 2 more\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#FF9800\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#673AB7\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-swatch=\"#8BC34A\"></span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-size=\"16\" data-ok-avatar-surplus>+2</span>\n</div>",
+     "id": "color-preview",
+     "react": "import { Avatar, AvatarGroup } from \"@owlky/react\";\n\nconst COLORS = [\"#FF9800\", \"#673AB7\", \"#8BC34A\", \"#009688\", \"#3F51B5\"];\n\nexport function ProductColors() {\n  return (\n    <AvatarGroup max={4} spacing={6} role=\"img\" aria-label=\"5 colors: Orange, Deep purple, Light green and 2 more\">\n      {COLORS.map((color) => (\n        <Avatar key={color} swatch={color} size={16} />\n      ))}\n    </AvatarGroup>\n  );\n}",
+     "title": "Preview colors"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -76710,7 +76927,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Picture avatars are named by the image's `alt`. Use `alt=\"\"` when a name is already next to the avatar.\n- Initials and icons are decorative by default. Give the avatar `role=\"img\"` and `aria-label` when it's the only place that says who it is.\n- Grey avatars use dark grey initials, with a contrast ratio of at least 4.5:1. Palette colors follow the design.",
+     "body": "- Picture avatars are named by the image's `alt`. Use `alt=\"\"` when a name is already next to the avatar.\n- Initials and icons are decorative by default. Give the avatar `role=\"img\"` and `aria-label` when it's the only place that says who it is.\n- Color dots are empty: name their group with `role=\"img\"` and an `aria-label` that lists the colors. Dots keep their color in forced colors mode.\n- Grey avatars use dark grey initials, with a contrast ratio of at least 4.5:1. Palette colors follow the design.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -77707,6 +77924,13 @@
      "title": "Select all with a parent checkbox"
     },
     {
+     "body": "Set `swatch` to a color to turn a checkbox into a color swatch, and put the swatches in a form group to let people pick several colors. Checked swatches grow, cast a shadow and show a check mark, so the selection doesn't depend on color alone.\n\n- **Colors:** use a CSS color or a `var(--ok-…)` token. Values that aren't colors are ignored, and the swatch stays grey.\n- **Names:** name each checkbox after its color with `aria-label`, and the group with `role=\"group\"` and `aria-label`.\n- **Shape and size:** `shape` is `rounded` (the default for checkboxes) or `circular`. The `small` size has a 28px target.\n\nIn HTML, `data-ok-swatch` holds the color, and the script paints it.",
+     "html": "<div data-ok-form-group data-ok-row role=\"group\" aria-label=\"Colors\">\n  <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#4CAF50\">\n    <input type=\"checkbox\" data-ok-checkbox-input name=\"colors\" value=\"#4CAF50\" aria-label=\"Green\" checked>\n    <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n  </span>\n  <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#00BCD4\">\n    <input type=\"checkbox\" data-ok-checkbox-input name=\"colors\" value=\"#00BCD4\" aria-label=\"Cyan\" checked>\n    <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n  </span>\n  <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#E91E63\">\n    <input type=\"checkbox\" data-ok-checkbox-input name=\"colors\" value=\"#E91E63\" aria-label=\"Pink\">\n    <span data-ok-checkbox-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n  </span>\n</div>",
+     "id": "color-picker",
+     "react": "import { Checkbox, FormGroup } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst COLORS = [\n  { name: \"Green\", value: \"#4CAF50\" },\n  { name: \"Cyan\", value: \"#00BCD4\" },\n  { name: \"Pink\", value: \"#E91E63\" },\n];\n\nexport function ColorsField() {\n  const [colors, setColors] = useState([\"#4CAF50\", \"#00BCD4\"]);\n  return (\n    <FormGroup row role=\"group\" aria-label=\"Colors\">\n      {COLORS.map(({ name, value }) => (\n        <Checkbox\n          key={value}\n          name=\"colors\"\n          value={value}\n          swatch={value}\n          aria-label={name}\n          checked={colors.includes(value)}\n          onChange={(checked) =>\n            setColors(checked ? [...colors, value] : colors.filter((color) => color !== value))\n          }\n        />\n      ))}\n    </FormGroup>\n  );\n}",
+     "title": "Pick several colors"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The form control label has its own options.",
      "id": "options",
      "title": "Options"
@@ -77727,7 +77951,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Every checkbox needs a name: a form control label, or `aria-label` / `aria-labelledby` on the input.\n- The mixed state sets the input's `indeterminate`, so screen readers announce \"mixed\". A parent lists its children in `aria-controls`.\n- Focus is shown with a 2px ring inside the target. The target is at least 36 × 36px.\n- The unchecked box uses the secondary text color, with a contrast ratio of at least 4.5:1. Brand colors of checked boxes follow the design, so light colors such as `warning` are below 3:1 on white.\n- Group related checkboxes under a heading or a `<fieldset>` with a `<legend>`.",
+     "body": "- Every checkbox needs a name: a form control label, or `aria-label` / `aria-labelledby` on the input.\n- The mixed state sets the input's `indeterminate`, so screen readers announce \"mixed\". A parent lists its children in `aria-controls`.\n- Focus is shown with a 2px ring inside the target. The target is at least 36 × 36px (28 × 28px for small swatches).\n- Color swatches need a name each (the color's name, not its code). Checked swatches are larger and show a check mark. In forced colors mode, swatches keep their color and the checked ones get an outline.\n- The unchecked box uses the secondary text color, with a contrast ratio of at least 4.5:1. Brand colors of checked boxes follow the design, so light colors such as `warning` are below 3:1 on white.\n- Group related checkboxes under a heading or a `<fieldset>` with a `<legend>`.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -81074,6 +81298,13 @@
      "title": "Choose a color and size"
     },
     {
+     "body": "Set `swatch` to a color to turn a radio into a color swatch, and put the swatches in a row to make a color picker. The swatch shows the color, and the selected one grows, casts a shadow and shows a check mark, so the selection doesn't depend on color alone.\n\n- **Colors:** use a CSS color, such as `#FF9800`, `rgb(0 150 136)` or `teal`, or a token such as `var(--ok-palette-primary-main)`. Values that aren't colors are ignored, and the swatch stays grey. The check mark is white or black, whichever contrasts more with a `#hex` or `rgb()` color.\n- **Names:** name each radio after its color with `aria-label`, such as \"Orange\". Screen readers would otherwise read only a value like \"#FF9800\".\n- **Shape and size:** `shape` is `circular` (the default) or `rounded`. The `small` size has a 28px target.\n\nIn HTML, `data-ok-swatch` holds the color, and the script paints it. Without the script, the swatches are grey, and picking a color still works.",
+     "html": "<div role=\"radiogroup\" data-ok-radio-group data-ok-row aria-label=\"Color\">\n  <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#FF9800\">\n    <input type=\"radio\" data-ok-radio-input name=\"color\" value=\"#FF9800\" aria-label=\"Orange\" checked>\n    <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n  </span>\n  <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#673AB7\">\n    <input type=\"radio\" data-ok-radio-input name=\"color\" value=\"#673AB7\" aria-label=\"Deep purple\">\n    <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n  </span>\n  <span data-ok-radio data-ok-color=\"primary\" data-ok-size=\"medium\" data-ok-swatch=\"#009688\">\n    <input type=\"radio\" data-ok-radio-input name=\"color\" value=\"#009688\" aria-label=\"Teal\">\n    <span data-ok-radio-swatch aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"m5 12.5 4.5 4.5L19 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg></span>\n  </span>\n</div>",
+     "id": "color-picker",
+     "react": "import { Radio, RadioGroup } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst COLORS = [\n  { name: \"Orange\", value: \"#FF9800\" },\n  { name: \"Deep purple\", value: \"#673AB7\" },\n  { name: \"Teal\", value: \"#009688\" },\n];\n\nexport function ColorField() {\n  const [color, setColor] = useState(\"#FF9800\");\n  return (\n    <RadioGroup row name=\"color\" aria-label=\"Color\" value={color} onChange={setColor}>\n      {COLORS.map(({ name, value }) => (\n        <Radio key={value} value={value} swatch={value} aria-label={name} />\n      ))}\n    </RadioGroup>\n  );\n}",
+     "title": "Pick a color"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The form control label has its own options.",
      "id": "options",
      "title": "Options"
@@ -81094,7 +81325,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Name the group with `aria-label` or `aria-labelledby`, and each radio with a form control label (or `aria-label`).\n- Only the checked radio is in the tab order; the arrow keys move the selection.\n- Focus is shown with a 2px ring inside the target. The target is at least 36 × 36px.\n- Unselected radios use the secondary text color, with a contrast ratio of at least 4.5:1. Brand colors of selected radios follow the design.",
+     "body": "- Name the group with `aria-label` or `aria-labelledby`, and each radio with a form control label (or `aria-label`).\n- Only the checked radio is in the tab order; the arrow keys move the selection.\n- Focus is shown with a 2px ring inside the target. The target is at least 36 × 36px (28 × 28px for small swatches).\n- Color swatches need a name each (the color's name, not its code). The selected swatch is larger and shows a check mark. In forced colors mode, swatches keep their color and the selected one gets an outline.\n- Unselected radios use the secondary text color, with a contrast ratio of at least 4.5:1. Brand colors of selected radios follow the design.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -82846,6 +83077,7 @@
   "data-ok-checkbox-icon": "data-ok-checkbox",
   "data-ok-checkbox-input": "data-ok-checkbox",
   "data-ok-checkbox-mark": "data-ok-checkbox",
+  "data-ok-checkbox-swatch": "data-ok-checkbox",
   "data-ok-chip-action": "data-ok-chip",
   "data-ok-chip-delete": "data-ok-chip",
   "data-ok-chip-icon": "data-ok-chip",
@@ -83064,6 +83296,7 @@
   "data-ok-popover-arrow": "data-ok-popover",
   "data-ok-radio-icon": "data-ok-radio",
   "data-ok-radio-input": "data-ok-radio",
+  "data-ok-radio-swatch": "data-ok-radio",
   "data-ok-rating-empty": "data-ok-rating",
   "data-ok-rating-icon": "data-ok-rating",
   "data-ok-rating-input": "data-ok-rating",

@@ -25,6 +25,18 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
    "name": "--ok-palette-primary-main",
    "value": "#00A76F"
   },
@@ -35,6 +47,14 @@
   {
    "name": "--ok-radius-full",
    "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
   },
   {
    "name": "--ok-spacing",
@@ -84,6 +104,18 @@
       ]
      },
      {
+      "attr": "data-ok-shape",
+      "default": "circular",
+      "description": "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+      "kind": "style",
+      "name": "shape",
+      "optional": true,
+      "values": [
+       "circular",
+       "rounded"
+      ]
+     },
+     {
       "attr": "disabled",
       "children": ":scope > input",
       "description": "Native `disabled` on the input.",
@@ -115,8 +147,23 @@
       ],
       "kind": "part",
       "name": "data-ok-radio-input"
+     },
+     {
+      "description": "A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while selected.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-radio-swatch"
+     },
+     {
+      "description": "A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey).",
+      "kind": "value",
+      "name": "data-ok-swatch",
+      "value": "string"
      }
-    ]
+    ],
+    "runtime": "radio"
    },
    "name": "Radio",
    "react": {
@@ -124,7 +171,7 @@
     "native": "HTMLInputElement",
     "props": [
      {
-      "description": "Replaces the selected icon.",
+      "description": "Replaces the selected icon (with `swatch`: the mark on the selected swatch).",
       "name": "checkedIcon",
       "type": "ReactNode"
      },
@@ -150,6 +197,11 @@
       "type": "((checked: boolean) => void)"
      },
      {
+      "description": "Swatch shape: `circular` (default) or `rounded`.",
+      "name": "shape",
+      "type": "\"circular\" | \"rounded\""
+     },
+     {
       "default": "\"medium\"",
       "description": "`medium` (40px target, 24px icon) or `small` (36 / 20px).",
       "name": "size",
@@ -159,6 +211,11 @@
       "description": "Style of the root span.",
       "name": "style",
       "type": "CSSProperties"
+     },
+     {
+      "description": "Shows a color swatch instead of the icons (a color picker): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Name the radio with the color's name (`aria-label=\"Orange\"`).",
+      "name": "swatch",
+      "type": "string"
      },
      {
       "description": "Identifies the radio in a `RadioGroup` (and in the submitted form).",

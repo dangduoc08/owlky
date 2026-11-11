@@ -37,7 +37,7 @@ const mixed = (input: HTMLInputElement) =>
   input.indeterminate && input.closest("[data-ok-checkbox]")?.hasAttribute("data-ok-indeterminate");
 
 describe("checkbox snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(7));
+  it("covers every story group", () => expect(snippets).toHaveLength(8));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
@@ -47,11 +47,15 @@ describe("checkbox snippets", () => {
       const input = root.querySelector(":scope > input[type=checkbox][data-ok-checkbox-input]");
       expect(input).not.toBeNull();
       const icons = [...root.querySelectorAll(":scope > [data-ok-checkbox-icon]")];
-      expect(icons.map((i) => i.getAttribute("data-ok-checkbox-icon"))).toEqual([
-        "unchecked",
-        "checked",
-        "indeterminate",
-      ]);
+      const swatch = root.hasAttribute("data-ok-swatch");
+      expect(icons.map((i) => i.getAttribute("data-ok-checkbox-icon"))).toEqual(
+        swatch ? [] : ["unchecked", "checked", "indeterminate"],
+      );
+      expect(root.querySelectorAll(":scope > [data-ok-checkbox-swatch]")).toHaveLength(
+        swatch ? 1 : 0,
+      );
+      // Swatches are named after their color, not its code.
+      if (swatch) expect(input?.getAttribute("aria-label")).toMatch(/^[A-Z][a-z ]+$/);
       for (const icon of icons) expect(icon.getAttribute("aria-hidden")).toBe("true");
       for (const svg of root.querySelectorAll("svg"))
         expect(svg.getAttribute("aria-hidden")).toBe("true");
@@ -65,6 +69,43 @@ describe("checkbox snippets", () => {
     start();
     await settle();
     await expectNoAxeViolations(host);
+  });
+});
+
+describe("checkbox runtime (color swatches)", () => {
+  const swatch = (attrs: string, input = "") =>
+    `<span data-ok-checkbox data-ok-color="primary" data-ok-size="medium" ${attrs}><input type="checkbox" data-ok-checkbox-input aria-label="Green" ${input}><span data-ok-checkbox-swatch aria-hidden="true"><svg viewBox="0 0 24 24"></svg></span></span>`;
+
+  it("paints swatches, follows changes, checks with a mark and cleans up", async () => {
+    const host = mount(
+      swatch('data-ok-swatch="rgb(76 175 80)"') +
+        swatch('data-ok-swatch="teal" data-ok-shape="circular"', "disabled") +
+        '<span data-ok-checkbox data-ok-swatch="#000"></span>',
+    );
+    start();
+    const [green, teal] = host.querySelectorAll<HTMLElement>("[data-ok-checkbox]") as unknown as [
+      HTMLElement,
+      HTMLElement,
+    ];
+    const part = (root: HTMLElement) => root.querySelector("[data-ok-checkbox-swatch]") as Element;
+    expect(getComputedStyle(part(green)).backgroundColor).toBe("rgb(76, 175, 80)");
+    expect(getComputedStyle(part(green)).borderRadius).toBe("6px");
+    expect(getComputedStyle(part(teal)).borderRadius).toBe("9999px");
+    expect(getComputedStyle(part(teal)).opacity).toBe("0.48");
+    // A named color can't be read without CSS: a white mark.
+    expect(teal.style.getPropertyValue("--_ok-swatch-mark")).toBe("var(--ok-palette-common-white)");
+    await userEvent.click(green.querySelector("input") as HTMLInputElement);
+    for (const animation of part(green).getAnimations()) animation.finish();
+    expect(getComputedStyle(part(green)).width).toBe("28px");
+    expect(getComputedStyle(part(green).querySelector("svg") as Element).display).toBe("block");
+    green.setAttribute("data-ok-swatch", "#E91E63");
+    await settle();
+    expect(getComputedStyle(part(green)).backgroundColor).toBe("rgb(233, 30, 99)");
+    green.removeAttribute("data-ok-swatch");
+    await settle();
+    expect(green.style.getPropertyValue("--_ok-swatch")).toBe("");
+    runtime?.stop();
+    expect(teal.style.getPropertyValue("--_ok-swatch")).toBe("");
   });
 });
 

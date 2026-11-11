@@ -1,0 +1,8 @@
+---
+"@owlky/core": minor
+"@owlky/react": minor
+"@owlky/styles": minor
+"@owlky/html": minor
+---
+
+Radio, Checkbox and Avatar: color pickers. `swatch` (HTML `data-ok-swatch`) turns a Radio or a Checkbox into a color swatch on its native input: a `RadioGroup row` is a single color picker, a `FormGroup row` of checkboxes a multiple one. The selected swatch grows from 20 to 28px, casts `--ok-shadow-z8` and shows a check mark in white or pure black (whichever contrasts more with a `#hex` / `rgb()` color), so the selection never depends on color alone; forced colors mode keeps the swatch colors and outlines the selected ones. New option `shape` (`data-ok-shape`: `circular`, the Radio default, or `rounded`, the Checkbox default; swatches only), `small` swatches have a 28px target, and `checkedIcon` replaces the mark. On an Avatar, `swatch` draws a color dot (no fallback icon); in an AvatarGroup of dots the "+N" surplus is plain text, for a color preview (`size={16}`, `spacing={6}`, the group named with `role="img"` and `aria-label`). Swatch colors are user data: a CSS color or a `var(--ok-…)` token, sanitized (no `url(`, `;`, braces or quotes, at most 64 characters, `CSS.supports` where available; anything else leaves the swatch grey), written as the private `--_ok-swatch` / `--_ok-swatch-mark` properties through React `style` or, in HTML, through CSSOM by the `checkbox` and `avatar` runtimes and a new `radio` runtime (`[data-ok-radio][data-ok-swatch]`). Snippets never carry `style`. Core: `swatchColor`, `swatchChannels`, `swatchStyle`, `swatchShapes` / `SwatchShape`. Stories: Radio and Checkbox "Color picker", Avatar "Color preview", with docs sections.

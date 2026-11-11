@@ -1,5 +1,7 @@
 import { checkboxOptions, selectAllState } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
+import { syncCustomProperties } from "../../runtime/style.js";
+import { SWATCH, syncSwatch } from "../../runtime/swatch.js";
 
 const MIXED = checkboxOptions.options.indeterminate.attr;
 const INPUT = ":scope > input[type=checkbox]";
@@ -60,16 +62,27 @@ function syncParents(from: HTMLInputElement, seen = new Set<HTMLInputElement>())
  *          </span>
  * The runtime keeps `data-ok-indeterminate` and the input's `indeterminate` in step (a user
  * click clears both), and makes a checkbox with `aria-controls="<ids>"` a parent: it checks or
- * clears every listed checkbox and shows mixed when only some are checked. Events: native
- * `change` (only for the checkbox the user changed).
+ * clears every listed checkbox and shows mixed when only some are checked. A color swatch
+ * (`data-ok-swatch`, with `span[data-ok-checkbox-swatch]` instead of the icons) gets its color as
+ * `--_ok-swatch` / `--_ok-swatch-mark` (CSSOM), again when it changes. Events: native `change`
+ * (only for the checkbox the user changed).
  */
 export const checkbox = defineComponent({
   name: "checkbox",
   selector: "[data-ok-checkbox]",
 
   setup(element) {
+    let written = syncSwatch(element, []);
+    const swatch = new MutationObserver(() => {
+      written = syncSwatch(element, written);
+    });
+    swatch.observe(element, { attributes: true, attributeFilter: [SWATCH] });
+    const stopSwatch = () => {
+      swatch.disconnect();
+      syncCustomProperties(element, {}, written);
+    };
     const input = inputOf(element);
-    if (!input) return {};
+    if (!input) return { destroy: stopSwatch };
     const apply = () => {
       if (element.hasAttribute(MIXED)) input.indeterminate = true;
       else if (input.indeterminate) input.indeterminate = false;
@@ -82,7 +95,12 @@ export const checkbox = defineComponent({
     }
     const observer = new MutationObserver(apply);
     observer.observe(element, { attributes: true, attributeFilter: [MIXED] });
-    return { destroy: () => observer.disconnect() };
+    return {
+      destroy() {
+        observer.disconnect();
+        stopSwatch();
+      },
+    };
   },
 
   delegate: [

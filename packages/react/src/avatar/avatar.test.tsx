@@ -192,3 +192,36 @@ describe("AvatarGroup", () => {
     await expectNoAxeViolations(container);
   });
 });
+
+describe("Avatar swatches (color preview)", () => {
+  it("renders empty color dots and a text surplus in a group", async () => {
+    const { container } = render(
+      <AvatarGroup max={3} spacing={6} role="img" aria-label="4 colors: Orange, Teal and 2 more">
+        <Avatar swatch="#FF9800" size={16} />
+        <Avatar swatch="teal" size={16} />
+        <Avatar swatch="#2196F3" size={16} />
+        <Avatar swatch="#9E9E9E" size={16} />
+      </AvatarGroup>,
+    );
+    const group = screen.getByRole("img", { name: "4 colors: Orange, Teal and 2 more" });
+    const [orange, teal, surplus] = group.querySelectorAll<HTMLElement>(
+      "[data-ok-avatar]",
+    ) as unknown as [HTMLElement, HTMLElement, HTMLElement];
+    expect(orange).toHaveAttribute("data-ok-swatch", "#FF9800");
+    expect(orange.childNodes).toHaveLength(0);
+    expect(css(orange).backgroundColor).toBe("rgb(255, 152, 0)");
+    expect(css(teal).backgroundColor).toBe("rgb(0, 128, 128)");
+    expect(surplus.textContent).toBe("+2");
+    expect(css(surplus).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    expect(css(surplus).fontSize).toBe("14px");
+    await expectNoAxeViolations(container);
+  });
+
+  it("drops colors that aren't colors", () => {
+    render(<Avatar swatch={HOSTILE} data-testid="a" />);
+    const avatar = screen.getByTestId("a");
+    expect(avatar).toHaveAttribute("data-ok-swatch", "");
+    expect(avatar.style.getPropertyValue("--_ok-swatch")).toBe("");
+    expect(avatar.querySelector("svg")).toBeNull();
+  });
+});

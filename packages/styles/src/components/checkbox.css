@@ -8,6 +8,7 @@
  *            data-ok-size  = medium (default) | small
  *            data-ok-indeterminate (mixed; the input's `indeterminate` also counts)
  * States:    read from the input with :has(): :checked, :indeterminate, :disabled, :focus-visible
+ * Swatches:  data-ok-swatch (a color → --_ok-swatch), data-ok-shape = rounded (default) | circular
  *
  * Native input, visually replaced by the icons (they follow currentColor; custom icons too).
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
@@ -138,8 +139,84 @@
     cursor: default;
   }
 
+  /*
+   * Color swatches (`data-ok-swatch`, roadmap 4.23): one swatch instead of the icons. Its color is
+   * `--_ok-swatch` and its mark `--_ok-swatch-mark` (React style / HTML runtime, CSSOM). Checked:
+   * larger, a mark and a shadow, never the color alone.
+   */
+  :where([data-ok-checkbox][data-ok-swatch]) {
+    --_ok-main: var(--ok-text-primary);
+    --_ok-hover: var(--ok-action-hover);
+    --_ok-swatch-size: calc(var(--ok-spacing) * 5);
+    --_ok-swatch-checked: calc(var(--ok-spacing) * 7);
+    --_ok-swatch-radius: var(--ok-radius-sm);
+
+    width: calc(var(--ok-spacing) * 9);
+    height: calc(var(--ok-spacing) * 9);
+    border-radius: var(--_ok-swatch-radius);
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-checkbox][data-ok-swatch][data-ok-size="small"]) {
+    --_ok-swatch-size: calc(var(--ok-spacing) * 4);
+    --_ok-swatch-checked: calc(var(--ok-spacing) * 5);
+
+    width: calc(var(--ok-spacing) * 7);
+    height: calc(var(--ok-spacing) * 7);
+  }
+
+  :where([data-ok-checkbox][data-ok-swatch][data-ok-shape="circular"]) {
+    --_ok-swatch-radius: var(--ok-radius-full);
+  }
+
+  :where([data-ok-checkbox-swatch]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--_ok-swatch-size);
+    height: var(--_ok-swatch-size);
+    border-radius: var(--_ok-swatch-radius);
+    background-color: var(--_ok-swatch, var(--ok-palette-grey-500));
+    box-shadow: inset 0 0 0 1px rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    color: var(--_ok-swatch-mark, var(--ok-palette-common-white));
+    forced-color-adjust: none;
+    transition-duration: var(--ok-duration-shortest);
+    transition-property: width, height, box-shadow;
+    transition-timing-function: var(--ok-easing-standard);
+  }
+
+  :where([data-ok-checkbox-swatch] > svg) {
+    display: none;
+    width: 60%;
+    height: 60%;
+  }
+
+  :where([data-ok-checkbox]:has(> input:checked) > [data-ok-checkbox-swatch]) {
+    width: var(--_ok-swatch-checked);
+    height: var(--_ok-swatch-checked);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--ok-palette-grey-500-channel) / 0.16),
+      var(--ok-shadow-z8);
+  }
+
+  :where([data-ok-checkbox]:has(> input:checked) > [data-ok-checkbox-swatch] > svg) {
+    display: block;
+  }
+
+  :where([data-ok-checkbox]:has(> input:disabled) > [data-ok-checkbox-swatch]) {
+    opacity: 0.48;
+  }
+
+  @media (forced-colors: active) {
+    :where([data-ok-checkbox]:has(> input:checked) > [data-ok-checkbox-swatch]) {
+      outline: 2px solid CanvasText;
+      outline-offset: 2px;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    :where([data-ok-checkbox]) {
+    :where([data-ok-checkbox], [data-ok-checkbox-swatch]) {
       transition: none;
     }
   }

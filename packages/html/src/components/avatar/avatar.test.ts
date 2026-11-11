@@ -36,7 +36,7 @@ const BROKEN = "data:image/png;base64,broken";
 const local = (html: string) => html.replaceAll(/src="avatars\/[^"]+"/g, `src="${PIXEL}"`);
 
 describe("avatar snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(8));
+  it("covers every story group", () => expect(snippets).toHaveLength(9));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -59,6 +59,28 @@ describe("avatar snippets", () => {
 });
 
 describe("avatar runtime", () => {
+  it("data-ok-swatch paints a color dot; the group's surplus becomes text", async () => {
+    const host = mount(
+      '<div data-ok-avatar-group data-ok-spacing="6" role="img" aria-label="Colors"><span data-ok-avatar data-ok-size="16" data-ok-swatch="#FF9800"></span><span data-ok-avatar data-ok-size="16" data-ok-swatch="url(x)"></span><span data-ok-avatar data-ok-size="16" data-ok-avatar-surplus>+13</span></div>',
+    );
+    start();
+    await settle();
+    const [dot, bad, surplus] = host.querySelectorAll<HTMLElement>(
+      "[data-ok-avatar]",
+    ) as unknown as [HTMLElement, HTMLElement, HTMLElement];
+    expect(getComputedStyle(dot).backgroundColor).toBe("rgb(255, 152, 0)");
+    expect(getComputedStyle(dot).width).toBe("16px");
+    expect(getComputedStyle(bad).backgroundColor).toBe("rgb(145, 158, 171)");
+    expect(getComputedStyle(surplus).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    expect(getComputedStyle(surplus).fontSize).toBe("14px");
+    expect(getComputedStyle(surplus).width).not.toBe("16px");
+    dot.setAttribute("data-ok-swatch", "#2196F3");
+    await settle();
+    expect(getComputedStyle(dot).backgroundColor).toBe("rgb(33, 150, 243)");
+    runtime?.stop();
+    expect(dot.style.getPropertyValue("--_ok-swatch")).toBe("");
+  });
+
   const one = (attrs: string, inner = "") =>
     mount(
       `<span data-ok-avatar data-ok-variant="circular" data-ok-color="default" ${attrs}>${inner}</span>`,

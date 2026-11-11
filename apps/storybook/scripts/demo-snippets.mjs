@@ -191,6 +191,10 @@ const DEMOS = [
     "countdown-seconds",
     countdownTrigger("restart"),
   ],
+  // Color pickers (roadmap 4.23): swatch colors are written by the runtimes (no `style`).
+  ["radio", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],
+  ["checkbox", "color-picker-demo.tsx", "ColorPickerDemo", "color-picker-group"],
+  ["avatar", "color-preview-demo.tsx", "ColorPreviewDemo", "color-preview-group"],
 ];
 
 const only = process.argv.slice(2);

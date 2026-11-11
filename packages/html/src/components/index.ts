@@ -48,6 +48,7 @@ import { numberField } from "./number-field/number-field.js";
 import { organizationChart } from "./organization-chart/organization-chart.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
+import { radio } from "./radio/radio.js";
 import { rating } from "./rating/rating.js";
 import { select } from "./select/select.js";
 import { slider } from "./slider/slider.js";
@@ -103,6 +104,7 @@ export const components: readonly ComponentDefinition[] = [
   breadcrumbs as ComponentDefinition,
   stepper as ComponentDefinition,
   mobileStepper as ComponentDefinition,
+  radio as ComponentDefinition,
   rating as ComponentDefinition,
   slider as ComponentDefinition,
   transferList as ComponentDefinition,

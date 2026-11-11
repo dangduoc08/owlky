@@ -1,6 +1,7 @@
-import { avatarOptions, parseNumber, progressSize } from "@owlky/core";
+import { avatarOptions, parseNumber, progressSize, swatchStyle } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
+import { SWATCH } from "../../runtime/swatch.js";
 
 const { size } = avatarOptions.options;
 
@@ -28,8 +29,9 @@ function fallBack(img: HTMLImageElement) {
  * Markup:  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default" data-ok-size="56">
  *            <img src="…" alt="Jayvion Simon">
  *          </span>
- * CSS only, except: `data-ok-size` becomes `--_ok-avatar-size` (CSSOM), and an image that fails
- * to load is hidden and replaced by the first letter of its `alt`.
+ * CSS only, except: `data-ok-size` becomes `--_ok-avatar-size` and a color dot's `data-ok-swatch`
+ * becomes `--_ok-swatch` (CSSOM), and an image that fails to load is hidden and replaced by the
+ * first letter of its `alt`.
  */
 export const avatar = defineComponent({
   name: "avatar",
@@ -41,7 +43,10 @@ export const avatar = defineComponent({
       const value = parseNumber(size, element.getAttribute(size.attr));
       written = syncCustomProperties(
         element,
-        value !== undefined ? { "--_ok-avatar-size": progressSize(value) as string } : {},
+        {
+          ...(value !== undefined ? { "--_ok-avatar-size": progressSize(value) as string } : {}),
+          ...(element.hasAttribute(SWATCH) ? swatchStyle(element.getAttribute(SWATCH)) : {}),
+        },
         written,
       );
     };
@@ -50,7 +55,7 @@ export const avatar = defineComponent({
     const img = element.querySelector<HTMLImageElement>(":scope > img");
     if (img?.complete && img.naturalWidth === 0 && img.getAttribute("src")) fallBack(img);
     const observer = new MutationObserver(draw);
-    observer.observe(element, { attributes: true, attributeFilter: [size.attr] });
+    observer.observe(element, { attributes: true, attributeFilter: [size.attr, SWATCH] });
     return {
       destroy() {
         observer.disconnect();

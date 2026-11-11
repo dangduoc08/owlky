@@ -8,6 +8,7 @@
  *            data-ok-size    = a number (px) or length → --_ok-avatar-size (React style / HTML runtime)
  *            data-ok-spacing = medium (default) | small | <px> (group overlap; px: --_ok-overlap
  *            from React's style or the avatar-group runtime, CSSOM)
+ *            data-ok-swatch  = a color → --_ok-swatch (the background; React style / HTML runtime)
  *
  * Letters scale with the size (0.45 × size). Single :where() selectors in @layer components.
  */
@@ -96,5 +97,32 @@
     --_ok-fg: var(--ok-palette-primary-dark);
 
     font-size: calc(var(--_ok-size) * 0.32);
+  }
+
+  /*
+   * Color swatches (`data-ok-swatch`, roadmap 4.23: the color preview): the background is
+   * `--_ok-swatch` (React style / HTML runtime, CSSOM), ringed so light colors stay visible. In a
+   * group of swatches the surplus is plain text after the last dot.
+   */
+  :where([data-ok-avatar][data-ok-swatch]) {
+    --_ok-bg: var(--_ok-swatch, var(--ok-palette-grey-500));
+
+    box-shadow: inset 0 0 0 1px rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    forced-color-adjust: none;
+  }
+
+  :where([data-ok-avatar-group]:has(> [data-ok-swatch]) > [data-ok-avatar-surplus]) {
+    width: auto;
+    height: auto;
+    margin-inline-start: calc(var(--ok-spacing) * 0.5);
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-typography-subtitle2-font-family);
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
   }
 }

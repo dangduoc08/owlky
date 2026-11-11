@@ -5,6 +5,9 @@ import {
   radioGroupAttributes,
   type SelectionControlColor,
   type SelectionControlSize,
+  type SwatchShape,
+  swatchColor,
+  swatchStyle,
 } from "@owlky/core";
 import {
   type CSSProperties,
@@ -39,6 +42,22 @@ function CheckedIcon() {
   );
 }
 
+/** The check mark of a checked color swatch (decorative, same SVG as the HTML snippets). */
+function SwatchMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path
+        d="m5 12.5 4.5 4.5L19 7.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 interface RadioGroupContextValue {
   name: string;
   value: string | null;
@@ -57,8 +76,12 @@ export interface RadioProps
   value?: string | undefined;
   /** Replaces the unselected icon. */
   icon?: ReactNode;
-  /** Replaces the selected icon. */
+  /** Replaces the selected icon (with `swatch`: the mark on the selected swatch). */
   checkedIcon?: ReactNode;
+  /** Shows a color swatch instead of the icons (a color picker): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Name the radio with the color's name (`aria-label="Orange"`). */
+  swatch?: string | undefined;
+  /** Swatch shape: `circular` (default) or `rounded`. */
+  shape?: SwatchShape | undefined;
   /** Standalone: called with `true` when the radio gets selected. */
   onChange?: ((checked: boolean) => void) | undefined;
   /** Class of the root span (other props go to the input). */
@@ -72,13 +95,19 @@ export interface RadioProps
  * `RadioGroup` it takes the group's name and selection. `ref` and the remaining props go to the input.
  */
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
-  { color, size, value, icon, checkedIcon, onChange, className, style, ...props },
+  { color, size, value, icon, checkedIcon, swatch, shape, onChange, className, style, ...props },
   ref,
 ) {
   const group = useContext(RadioGroupContext);
   const inGroup = group !== null && value !== undefined;
+  const swatched = swatch !== undefined;
   return (
-    <span {...radioAttributes({ color, size })} className={className} style={style}>
+    <span
+      {...radioAttributes({ color, size, shape })}
+      {...(swatched ? { "data-ok-swatch": swatchColor(swatch) ?? "" } : {})}
+      className={className}
+      style={swatched ? { ...(swatchStyle(swatch) as CSSProperties), ...style } : style}
+    >
       <input
         ref={ref}
         type="radio"
@@ -92,12 +121,20 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
           onChange?.(event.currentTarget.checked);
         }}
       />
-      <span data-ok-radio-icon="unchecked" aria-hidden="true">
-        {icon ?? <UncheckedIcon />}
-      </span>
-      <span data-ok-radio-icon="checked" aria-hidden="true">
-        {checkedIcon ?? <CheckedIcon />}
-      </span>
+      {swatched ? (
+        <span data-ok-radio-swatch="" aria-hidden="true">
+          {checkedIcon ?? <SwatchMark />}
+        </span>
+      ) : (
+        <>
+          <span data-ok-radio-icon="unchecked" aria-hidden="true">
+            {icon ?? <UncheckedIcon />}
+          </span>
+          <span data-ok-radio-icon="checked" aria-hidden="true">
+            {checkedIcon ?? <CheckedIcon />}
+          </span>
+        </>
+      )}
     </span>
   );
 });

@@ -896,6 +896,18 @@ export type LabelPlacement = (typeof labelPlacements)[number];
 
 const CONTROL_INPUT = ":scope > input";
 
+/** Shapes of a color swatch (Radio, Checkbox with `swatch`). */
+export const swatchShapes = ["circular", "rounded"] as const;
+export type SwatchShape = (typeof swatchShapes)[number];
+const swatchShape = (fallback: SwatchShape) =>
+  style(
+    "data-ok-shape",
+    swatchShapes,
+    fallback,
+    "Color swatches only (`swatch`): a circle or a square with rounded corners.",
+    { optional: true },
+  );
+
 export const checkboxOptions = defineOptions("checkbox", "data-ok-checkbox", {
   color: style(
     "data-ok-color",
@@ -908,6 +920,7 @@ export const checkboxOptions = defineOptions("checkbox", "data-ok-checkbox", {
     "data-ok-indeterminate",
     "Mixed state: shows a dash and sets the input's `indeterminate` (`aria-checked=mixed`).",
   ),
+  shape: swatchShape("rounded"),
   disabled: native("disabled", "Native `disabled` on the input.", { children: CONTROL_INPUT }),
   checked: state(
     "checked",
@@ -920,6 +933,7 @@ export interface CheckboxAnatomyOptions {
   color?: SelectionControlColor | undefined;
   size?: SelectionControlSize | undefined;
   indeterminate?: boolean | undefined;
+  shape?: SwatchShape | undefined;
 }
 
 /** `data-ok-*` attributes of a checkbox's root span. */
@@ -993,6 +1007,7 @@ export const radioOptions = defineOptions("radio", "data-ok-radio", {
     "Color when selected (`default` = text color).",
   ),
   size: style("data-ok-size", selectionControlSizes, "medium", "Target 40 / 36px, icon 24 / 20px."),
+  shape: swatchShape("circular"),
   disabled: native("disabled", "Native `disabled` on the input.", { children: CONTROL_INPUT }),
   checked: state("checked", "Native `checked` (in a group: the group's `value`).", "change"),
 });
@@ -1000,6 +1015,7 @@ export const radioOptions = defineOptions("radio", "data-ok-radio", {
 export interface RadioAnatomyOptions {
   color?: SelectionControlColor | undefined;
   size?: SelectionControlSize | undefined;
+  shape?: SwatchShape | undefined;
 }
 
 /** `data-ok-*` attributes of a radio's root span. */

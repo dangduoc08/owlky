@@ -9,6 +9,7 @@ const STORIES: [component: "checkbox" | "switch", story: string][] = [
   ["checkbox", "placement"],
   ["checkbox", "colors"],
   ["checkbox", "indeterminate"],
+  ["checkbox", "color-picker"],
   ["switch", "basic"],
   ["switch", "sizes"],
   ["switch", "placements"],

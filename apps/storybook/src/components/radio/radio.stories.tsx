@@ -1,7 +1,10 @@
 import { Radio } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
+import { SINGLE_COLOR_SCRIPT_SOURCE, singleColorScript } from "../shared/color-picker-scripts.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { ColorPickerDemo } from "./color-picker-demo.js";
+import colorPickerSource from "./color-picker-demo.tsx?raw";
 import { RadioDocs } from "./radio-docs.js";
 import {
   basicGroups,
@@ -56,3 +59,23 @@ export const Colors: StoryObj = frameworkStory({
   html: snippetStory(snippets, "colors", files("Colors"), grouped, RADIO_CONTROLS),
   react: reactGroupsStory(colorGroups, controls),
 });
+
+export const ColorPicker: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "color-picker",
+      [["Single", "group"]],
+      // The runtime paints the swatches (data-ok-swatch).
+      htmlSetup(["radio.css", "typography.css"], true),
+      undefined,
+      { group: { script: singleColorScript, scriptSource: SINGLE_COLOR_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Single", content: <ColorPickerDemo /> }],
+      undefined,
+      colorPickerSource,
+    ),
+  }),
+  name: "Color picker",
+};

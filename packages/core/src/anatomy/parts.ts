@@ -87,8 +87,10 @@ export interface AutocompleteParts {
 export interface AvatarParts {
   /** The fallback icon, shown when the picture fails or there is none. */
   "data-ok-avatar-fallback": Part<"span">;
-  /** The "+n" avatar of a group that shows more avatars than `max`. */
+  /** The "+n" avatar of a group that shows more avatars than `max`. In a group of color dots it is plain text. */
   "data-ok-avatar-surplus": Part;
+  /** A color dot's color (the color preview): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the dot stays grey). */
+  "data-ok-swatch": Value<string>;
 }
 
 /** Backdrop: parts, states, values and triggers. */
@@ -646,6 +648,10 @@ export interface CheckboxParts {
   "data-ok-checkbox-input": Part<"input">;
   /** The check mark inside the checked icon. */
   "data-ok-checkbox-mark": Part<"path">;
+  /** A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while checked. */
+  "data-ok-checkbox-swatch": Part<"span">;
+  /** A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey). */
+  "data-ok-swatch": Value<string>;
 }
 
 /** Chip: parts, states, values and triggers. */
@@ -1864,6 +1870,10 @@ export interface RadioParts {
   "data-ok-radio-icon": Value<"unchecked" | "checked">;
   /** The native radio. It covers the control, invisible. */
   "data-ok-radio-input": Part<"input">;
+  /** A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while selected. */
+  "data-ok-radio-swatch": Part<"span">;
+  /** A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey). */
+  "data-ok-swatch": Value<string>;
 }
 
 /** Rating: parts, states, values and triggers. */

@@ -26,6 +26,14 @@
    "value": "#DFE3E8"
   },
   {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
    "name": "--ok-palette-grey-700",
    "value": "#454F5B"
   },
@@ -48,6 +56,27 @@
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
   }
  ],
  "entries": [
@@ -107,9 +136,15 @@
       "name": "data-ok-avatar-fallback"
      },
      {
-      "description": "The \"+n\" avatar of a group that shows more avatars than `max`.",
+      "description": "The \"+n\" avatar of a group that shows more avatars than `max`. In a group of color dots it is plain text.",
       "kind": "part",
       "name": "data-ok-avatar-surplus"
+     },
+     {
+      "description": "A color dot's color (the color preview): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the dot stays grey).",
+      "kind": "value",
+      "name": "data-ok-swatch",
+      "value": "string"
      }
     ],
     "runtime": "avatar"
@@ -154,6 +189,11 @@
      {
       "description": "Candidate pictures for `src` at other resolutions (the `srcset` of the `img`).",
       "name": "srcSet",
+      "type": "string"
+     },
+     {
+      "description": "A color dot instead of a picture (a color preview): a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. The avatar is then empty: name the group.",
+      "name": "swatch",
       "type": "string"
      },
      {

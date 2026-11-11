@@ -452,6 +452,7 @@ export {
   type StepAnatomyOptions,
   type StepperAnatomyOptions,
   type StepperVariant,
+  type SwatchShape,
   type SwitchAnatomyOptions,
   type SwitchEdge,
   scrollbarAttributes,
@@ -479,6 +480,7 @@ export {
   stepperAttributes,
   stepperOptions,
   stepperVariants,
+  swatchShapes,
   switchAttributes,
   switchEdges,
   switchOptions,
@@ -1392,6 +1394,7 @@ export {
   type StepState,
   stepState,
 } from "./stepper/stepper.js";
+export { swatchChannels, swatchColor, swatchStyle } from "./swatch/swatch.js";
 export {
   compareCellValues,
   defaultLabelDisplayedRows,
