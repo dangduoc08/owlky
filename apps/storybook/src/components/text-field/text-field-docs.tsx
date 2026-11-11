@@ -11,8 +11,10 @@ import {
   TextField,
 } from "@owlky/react";
 import { useState } from "react";
+import copyButtonGroup from "../../../../../packages/html/src/components/text-field/examples/copy-to-clipboard-button.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { CopyButtonDemo, CopyDoubleClickDemo } from "./copy-demo.js";
 import { EyeIcon, PersonIcon } from "./text-field-examples.js";
 
 const SEARCH_SVG = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>`;
@@ -239,6 +241,53 @@ export function TextFieldMultiline() {
 }`,
   },
   {
+    id: "copy",
+    title: "Copy text to the clipboard",
+    body: `Put a copy button in the end adornment to let people copy what the field holds. In React, call \`copy(text)\` from \`useCopyToClipboard()\` in the button's click handler. In HTML, give the button \`data-ok-clipboard-copy\`, and the script copies the input of the text field around it.
+
+Browsers only allow a copy while the page handles a click or a key press, and some refuse it, for example when a permission policy blocks the clipboard. Without the Clipboard API, Owlky uses the browser's copy command instead. \`copy()\` never throws: it resolves \`{ ok: true }\`, or \`{ ok: false, reason }\` with the reason \`gesture\`, \`unsupported\` or \`denied\`. Tell people the result either way, because nothing on the screen changes after a copy. A toast does this, and the toaster's live region announces the message to screen readers. In HTML, \`data-ok-clipboard-toast\` and \`data-ok-clipboard-error-toast\` name the \`<template>\` toasts to show.
+
+To copy other text, set the trigger's value to the \`id\` of the element to copy, or put the text in \`data-ok-clipboard-text\`. With \`data-ok-clipboard-trigger="dblclick"\`, a double click copies instead of a click. A double click needs a pointer, so also offer a button that copies the same text for keyboard users.`,
+    html: `<!-- Load once per page: the script copies and shows the toasts -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+${copyButtonGroup.trimEnd()}`,
+    react: `import { IconButton, InputAdornment, TextField, Toaster, toast, useCopyToClipboard } from "@owlky/react";
+import { CopyIcon } from "lucide-react";
+import { useState } from "react";
+
+export function CopyLink() {
+  const [value, setValue] = useState("https://www.npmjs.com/package/@owlky/react");
+  const { copy } = useCopyToClipboard();
+  const onCopy = async () => {
+    const result = await copy(value);
+    // The toaster's live region announces the result.
+    if (result.ok) toast.success("Copied!");
+    else toast.error("Couldn't copy. Select the text and copy it yourself.");
+  };
+  return (
+    <>
+      <TextField
+        id="copy-link"
+        fullWidth
+        label="Link"
+        value={value}
+        onChange={setValue}
+        endAdornment={
+          <InputAdornment position="end">
+            <IconButton edge="end" aria-label="Copy" onClick={onCopy}>
+              <CopyIcon />
+            </IconButton>
+          </InputAdornment>
+        }
+      />
+      <Toaster closeButton />
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -251,8 +300,8 @@ export function TextFieldMultiline() {
   {
     id: "events",
     title: "Events and methods",
-    body: `- **HTML:** the input fires the native \`input\` and \`change\` events. There are no instance methods.
-- **React:** \`onChange(value)\` is called with the new value. Use \`value\` to control the field, or \`defaultValue\` to let it keep its own state. The \`ref\` and every other prop, such as \`name\`, \`type\` or \`autoComplete\`, go to the input.`,
+    body: `- **HTML:** the input fires the native \`input\` and \`change\` events. After each copy, a copy trigger fires \`ok:clipboard:copy\` with \`detail.text\`, \`detail.ok\` and, when the copy failed, \`detail.reason\`. Its instance method \`copy()\` copies as a press does.
+- **React:** \`onChange(value)\` is called with the new value. \`useCopyToClipboard()\` returns \`copy(text)\` and \`copiedText\`, the text of the last successful copy. Use \`value\` to control the field, or \`defaultValue\` to let it keep its own state. The \`ref\` and every other prop, such as \`name\`, \`type\` or \`autoComplete\`, go to the input.`,
   },
   {
     id: "keyboard",
@@ -267,7 +316,8 @@ export function TextFieldMultiline() {
 - Required fields show an asterisk. The asterisk is hidden from screen readers, which announce the input's \`required\` state instead.
 - The resting label and the helper text use the secondary text color, and error text uses the error text tone: each has a contrast ratio of at least 4.5:1. The error border uses the brand error color.
 - Focus shows as a 2px border, line or ring in the text color.
-- Set \`autoComplete\` (such as \`email\` or \`current-password\`) so browsers and password managers can fill the field.`,
+- Set \`autoComplete\` (such as \`email\` or \`current-password\`) so browsers and password managers can fill the field.
+- A copy changes nothing on the screen: announce its result, for example with a toast, whose live region screen readers read. Give icon-only copy buttons a name such as "Copy", and offer a button wherever a double click copies.`,
   },
   apiReferenceSection(textFieldApi),
 ];
@@ -395,6 +445,12 @@ const PREVIEWS = {
       <TextField multiline minRows={2} maxRows={6} label="Bio" fullWidth />
     </Preview>
   ),
+  copy: () => (
+    <Preview>
+      <CopyButtonDemo />
+      <CopyDoubleClickDemo />
+    </Preview>
+  ),
   options: () => <OptionsTable schema={textFieldOptions} />,
   props: () => (
     <PropsTable
@@ -477,6 +533,24 @@ const PREVIEWS = {
           html: "any element with data-ok-text-field-input",
           type: "ElementType",
           description: "Rendered instead of the `<input>`, with the input's props and `ref`.",
+        },
+        {
+          react: "useCopyToClipboard()",
+          html: "data-ok-clipboard-copy",
+          type: "hook / attribute",
+          description:
+            "Copies text on a press: `copy(text)` in React. In HTML, the input of the text field around the button, or the element the value names.",
+        },
+        {
+          html: "data-ok-clipboard-text / data-ok-clipboard-trigger",
+          type: "attribute",
+          description: "Text to copy instead of an element's. `dblclick` copies on a double click.",
+        },
+        {
+          html: "data-ok-clipboard-toast / data-ok-clipboard-error-toast",
+          type: "attribute",
+          description:
+            "The `<template>` toast to show after a copy, or when the browser refuses it.",
         },
         {
           html: "data-ok-text-field-reveal",

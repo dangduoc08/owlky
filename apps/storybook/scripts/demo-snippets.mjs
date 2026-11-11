@@ -69,7 +69,51 @@ const editorSnippet =
     return html;
   };
 
-/** [component, demo file, export, snippet name, HTML transform?] */
+const CLOSE_ICON =
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" /></svg>';
+/** The copy demos' toasts, as the React `toast.success` / `toast.error` calls render them. */
+const COPY_TOASTS = `<template id="copy-done">
+  <li data-ok-toast data-ok-type="success">
+    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z" fill="currentColor" /></svg></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Copied!</div>
+    </div>
+    <button type="button" data-ok-toast-close aria-label="Close">${CLOSE_ICON}</button>
+  </li>
+</template>
+<template id="copy-failed">
+  <li data-ok-toast data-ok-type="error">
+    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z" fill="currentColor" /></svg></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Couldn't copy. Select the text and copy it yourself.</div>
+    </div>
+    <button type="button" data-ok-toast-close aria-label="Close">${CLOSE_ICON}</button>
+  </li>
+</template>`;
+const COPY_TOAST_ATTRS =
+  ' data-ok-clipboard-toast="copy-done" data-ok-clipboard-error-toast="copy-failed"';
+
+/**
+ * Copy to clipboard (roadmap 4.20): the React demos' handlers become `data-ok-clipboard-*`
+ * triggers; the toasts they show become templates after the toaster.
+ */
+const copyButtonSnippet = (markup) =>
+  markup.replace(
+    /(<button\b[^>]*aria-label="Copy")/,
+    `$1 data-ok-clipboard-copy${COPY_TOAST_ATTRS}`,
+  );
+const copyDoubleClickSnippet = (markup) =>
+  markup
+    .replace(
+      /(<p\b[^>]*id="copy-text")/,
+      `$1 data-ok-clipboard-copy data-ok-clipboard-trigger="dblclick"${COPY_TOAST_ATTRS}`,
+    )
+    .replace(
+      /(<button\b[^>]*aria-label="Copy text")/,
+      `$1 data-ok-clipboard-copy="copy-text"${COPY_TOAST_ATTRS}`,
+    );
+
+/** [component, demo file, export, snippet name, HTML transform?, markup appended as written?] */
 const DEMOS = [
   [
     "popover",
@@ -104,6 +148,21 @@ const DEMOS = [
     "MentionsDemo",
     "mentions-group",
     editorSnippet(editorContent.MENTION_CONTENT, { people: true }),
+  ],
+  [
+    "text-field",
+    "copy-demo.tsx",
+    "CopyButtonDemo",
+    "copy-to-clipboard-button",
+    copyButtonSnippet,
+    COPY_TOASTS,
+  ],
+  [
+    "text-field",
+    "copy-demo.tsx",
+    "CopyDoubleClickDemo",
+    "copy-to-clipboard-double-click",
+    copyDoubleClickSnippet,
   ],
 ];
 
@@ -174,7 +233,7 @@ function pretty(markup) {
     .replace(/@@kept:(\d+)@@/g, (_, index) => kept[Number(index)]);
 }
 
-demos.forEach(([component, , , name, transform], i) => {
+demos.forEach(([component, , , name, transform, appended], i) => {
   let snippet = html[i]
     .replace(/<link rel="preload"[^>]*>/g, "")
     .replace(/ data-ok-runtime="off"/g, "")
@@ -186,6 +245,9 @@ demos.forEach(([component, , , name, transform], i) => {
     .replace(/(<(?:img|input)\b[^>]*?)\/>/g, "$1>");
   const out = resolve(root, `packages/html/src/components/${component}/examples`);
   mkdirSync(out, { recursive: true });
-  writeFileSync(resolve(out, `${name}.html`), `${pretty(snippet)}\n`);
+  writeFileSync(
+    resolve(out, `${name}.html`),
+    `${pretty(snippet)}\n${appended ? `${appended}\n` : ""}`,
+  );
   console.log(`${component}/examples/${name}.html`);
 });

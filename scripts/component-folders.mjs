@@ -12,6 +12,7 @@ export const FOLDER_SPEC = {
   "mobile-stepper": "stepper",
   "table-pagination": "table",
   toaster: "snackbar",
+  clipboard: "text-field",
   "toggle-group": "toggle-button",
   "avatar-group": "avatar",
   "chart-trellis": "chart",

@@ -689,6 +689,13 @@ export {
 } from "./carousel/carousel-model.js";
 export * from "./chart/index.js";
 export {
+  type CopyFailure,
+  type CopyOptions,
+  type CopyResult,
+  clipboardText,
+  copyToClipboard,
+} from "./clipboard/clipboard.js";
+export {
   autoCollapseDuration,
   COLLAPSE_STATE,
   type CollapseCallbacks,

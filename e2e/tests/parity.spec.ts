@@ -318,6 +318,7 @@ const pairs: [component: string, story: string][] = [
   ["text-field", "outlined"],
   ["text-field", "filled"],
   ["text-field", "standard"],
+  ["text-field", "copy-to-clipboard"],
   ["select", "basic"],
   ["select", "variants"],
   ["select", "labels-helper-text"],

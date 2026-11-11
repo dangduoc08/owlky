@@ -141,9 +141,40 @@ Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, 
 | `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |
 | `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |
 | `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |
+| `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |
 
-Related reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).
+Related reference features: copy to clipboard (4.20, section below), number input (4.24), phone
+input (4.25).
+
+## Copy to clipboard (roadmap 4.20)
+Reference: Minimals "Utilities" page (https://minimals.cc/components/extra/utilities), section
+"Copy to clipboard": a field with a copy button in its end adornment ("onChange"), a paragraph
+copied on double click ("onDoubleClick"), each copy followed by a "Copied!" toast. Upstream: the
+reference's `useCopyToClipboard` hook (`{ copy, copiedText }`, usehooks-ts).
+
+- **Core** `copyToClipboard(text, { document? }): Promise<CopyResult>` (`core/src/clipboard`):
+  never throws. Outside a user gesture (`navigator.userActivation.isActive === false`, checked
+  before any await) → `{ ok: false, reason: "gesture" }` without calling the browser. Clipboard API
+  `writeText`; no API → the copy command (`execCommand("copy")` with a one-off `copy` listener
+  that writes the text: no text area, focus and selection untouched) or `"unsupported"`; the API
+  rejects (permission, policy) → the copy command, else `"denied"`. `clipboardText(element)`:
+  form control value, else text with white space collapsed.
+- **React** `useCopyToClipboard()` → `{ copy(text): Promise<CopyResult>, copiedText }`
+  (`copiedText` = last successful copy, `null` after a failure). Apps compose an `IconButton` in an
+  `InputAdornment` and call `toast.success` / `toast.error` with the result.
+- **HTML** runtime `clipboard` (behavior-only folder, markup in `text-field/examples`): triggers
+  `[data-ok-clipboard-copy]` (value = source id; empty = the text field's input around a button,
+  else the trigger itself), `data-ok-clipboard-text` (literal text), `data-ok-clipboard-trigger=
+  "dblclick"`, `data-ok-clipboard-toast` / `data-ok-clipboard-error-toast` (`<template>` toasts shown
+  in the page's toaster, or `data-ok-toast-toaster`). Event `ok:clipboard:copy` (`detail.text`,
+  `ok`, `reason?`), instance `copy()`. React markup (`data-ok-runtime="off"`) is never handled.
+- **Announcement:** the toast. The toaster list is a polite live region, so "Copied!" (or the
+  error) is announced; the docs tell apps without a toaster to announce the result themselves.
+- **Double click** is a pointer-only shortcut: the story adds a "Copy text" button that copies the
+  same paragraph (WCAG 2.1.1), an intentional addition to the reference.
+- Not built: copying rich text / images (`ClipboardItem`), reading the clipboard (paste).
 
 ## Parity notes
 React stories render the password button without state (apps own `type`, see the docs page);
-`data-ok-text-field-reveal` is an HTML hook (ignored by parity).
+`data-ok-text-field-reveal` is an HTML hook (ignored by parity), and so are the
+`data-ok-clipboard-*` triggers (React copies from click handlers).

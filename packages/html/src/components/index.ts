@@ -17,6 +17,7 @@ import { chartTrellis } from "./chart-trellis/chart-trellis.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
+import { clipboard } from "./clipboard/clipboard.js";
 import { collapse } from "./collapse/collapse.js";
 import { countUp } from "./count-up/count-up.js";
 import { dataGrid } from "./data-grid/data-grid.js";
@@ -91,6 +92,7 @@ export const components: readonly ComponentDefinition[] = [
   table as ComponentDefinition,
   tablePagination as ComponentDefinition,
   textField as ComponentDefinition,
+  clipboard as ComponentDefinition,
   select as ComponentDefinition,
   toggleButton as ComponentDefinition,
   toggleGroup as ComponentDefinition,

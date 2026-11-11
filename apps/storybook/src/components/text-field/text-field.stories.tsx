@@ -1,7 +1,9 @@
 import { TextField } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
-import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { type GroupFiles, htmlSetup, snippetStory } from "../shared/snippets.js";
+import { CopyButtonDemo, CopyDoubleClickDemo } from "./copy-demo.js";
+import copySource from "./copy-demo.tsx?raw";
 import { TextFieldDocs } from "./text-field-docs.js";
 import { GROUP_FILES, TEXT_FIELD_CONTROLS, variantGroups } from "./text-field-examples.js";
 
@@ -50,3 +52,29 @@ export default meta;
 export const Outlined: StoryObj = story("outlined");
 export const Filled: StoryObj = story("filled");
 export const Standard: StoryObj = story("standard");
+
+const COPY_FILES: GroupFiles = [
+  ["Copy button", "button"],
+  ["Double click", "double-click"],
+];
+
+/** Copy to clipboard (roadmap 4.20): a copy button in the end adornment, copy on double click. */
+export const CopyToClipboard: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "copy-to-clipboard",
+      COPY_FILES,
+      htmlSetup(["typography.css", "text-field.css", "icon-button.css", "snackbar.css"], true),
+    ),
+    react: reactGroupsStory(
+      [
+        { title: "Copy button", content: <CopyButtonDemo /> },
+        { title: "Double click", content: <CopyDoubleClickDemo /> },
+      ],
+      undefined,
+      copySource,
+    ),
+  }),
+  name: "Copy to clipboard",
+};

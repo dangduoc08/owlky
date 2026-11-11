@@ -484,6 +484,66 @@
    }
   },
   {
+   "html": {
+    "attribute": "data-ok-clipboard",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After each copy: the `text`, `ok`, and when it failed the `reason` (`gesture`, `unsupported` or `denied`). Show your own message from here when you don't use the toasts.",
+      "detail": "{ text: string; ok: boolean; reason?: CopyFailure; }",
+      "name": "ok:clipboard:copy"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Copies the trigger's text, as a click (or a double click) on it does. Call it from a click or a key press handler: outside a user gesture the browser refuses (`reason: \"gesture\"`).",
+      "kind": "method",
+      "name": "copy",
+      "type": "() => Promise<CopyResult>"
+     }
+    ],
+    "parts": [
+     {
+      "description": "A copy trigger (HTML): a press copies the text of the element its value names. Empty: a button copies the input of the text field around it; any other element copies its own text.",
+      "kind": "trigger",
+      "name": "data-ok-clipboard-copy",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "On a copy trigger: the `<template>` toast shown when the browser refuses the copy.",
+      "kind": "value",
+      "name": "data-ok-clipboard-error-toast",
+      "value": "string"
+     },
+     {
+      "description": "On a copy trigger: the text to copy, instead of an element's.",
+      "kind": "value",
+      "name": "data-ok-clipboard-text",
+      "value": "string"
+     },
+     {
+      "description": "\".",
+      "kind": "value",
+      "name": "data-ok-clipboard-toast",
+      "value": "string"
+     },
+     {
+      "description": "On a copy trigger: `dblclick` copies on a double click instead of a click.",
+      "kind": "value",
+      "name": "data-ok-clipboard-trigger",
+      "value": [
+       "click",
+       "dblclick"
+      ]
+     }
+    ],
+    "runtime": "clipboard"
+   },
+   "name": "Clipboard"
+  },
+  {
    "name": "FilledInput",
    "react": {
     "description": "The filled field box without a label or a helper text.",
@@ -901,5 +961,15 @@
  ],
  "format": 1,
  "name": "text-field",
- "title": "Text field"
+ "title": "Text field",
+ "types": [
+  {
+   "name": "CopyFailure",
+   "type": "\"denied\" | \"gesture\" | \"unsupported\""
+  },
+  {
+   "name": "CopyResult",
+   "type": "{ readonly ok: true; } | { readonly ok: false; readonly reason: CopyFailure; }"
+  }
+ ]
 }

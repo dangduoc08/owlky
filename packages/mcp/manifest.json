@@ -331,6 +331,12 @@
   "data-ok-clear-on-escape",
   "data-ok-clearable",
   "data-ok-click-tolerance",
+  "data-ok-clipboard",
+  "data-ok-clipboard-copy",
+  "data-ok-clipboard-error-toast",
+  "data-ok-clipboard-text",
+  "data-ok-clipboard-toast",
+  "data-ok-clipboard-trigger",
   "data-ok-close-button",
   "data-ok-close-button-action",
   "data-ok-close-on-backdrop-click",
@@ -67968,6 +67974,66 @@
       }
      },
      {
+      "html": {
+       "attribute": "data-ok-clipboard",
+       "events": [
+        {
+         "cancelable": false,
+         "description": "After each copy: the `text`, `ok`, and when it failed the `reason` (`gesture`, `unsupported` or `denied`). Show your own message from here when you don't use the toasts.",
+         "detail": "{ text: string; ok: boolean; reason?: CopyFailure; }",
+         "name": "ok:clipboard:copy"
+        }
+       ],
+       "methods": [
+        {
+         "description": "Copies the trigger's text, as a click (or a double click) on it does. Call it from a click or a key press handler: outside a user gesture the browser refuses (`reason: \"gesture\"`).",
+         "kind": "method",
+         "name": "copy",
+         "type": "() => Promise<CopyResult>"
+        }
+       ],
+       "parts": [
+        {
+         "description": "A copy trigger (HTML): a press copies the text of the element its value names. Empty: a button copies the input of the text field around it; any other element copies its own text.",
+         "kind": "trigger",
+         "name": "data-ok-clipboard-copy",
+         "value": [
+          "id"
+         ]
+        },
+        {
+         "description": "On a copy trigger: the `<template>` toast shown when the browser refuses the copy.",
+         "kind": "value",
+         "name": "data-ok-clipboard-error-toast",
+         "value": "string"
+        },
+        {
+         "description": "On a copy trigger: the text to copy, instead of an element's.",
+         "kind": "value",
+         "name": "data-ok-clipboard-text",
+         "value": "string"
+        },
+        {
+         "description": "\".",
+         "kind": "value",
+         "name": "data-ok-clipboard-toast",
+         "value": "string"
+        },
+        {
+         "description": "On a copy trigger: `dblclick` copies on a double click instead of a click.",
+         "kind": "value",
+         "name": "data-ok-clipboard-trigger",
+         "value": [
+          "click",
+          "dblclick"
+         ]
+        }
+       ],
+       "runtime": "clipboard"
+      },
+      "name": "Clipboard"
+     },
+     {
       "name": "FilledInput",
       "react": {
        "description": "The filled field box without a label or a helper text.",
@@ -68382,6 +68448,16 @@
        ]
       }
      }
+    ],
+    "types": [
+     {
+      "name": "CopyFailure",
+      "type": "\"denied\" | \"gesture\" | \"unsupported\""
+     },
+     {
+      "name": "CopyResult",
+      "type": "{ readonly ok: true; } | { readonly ok: false; readonly reason: CopyFailure; }"
+     }
     ]
    },
    "guide": "text-field",
@@ -68392,7 +68468,8 @@
     "InputAdornment",
     "InputBase",
     "OutlinedInput",
-    "TextField"
+    "TextField",
+    "useCopyToClipboard"
    ],
    "referenceUrl": "https://minimals.cc/components/mui/text-field",
    "related": [
@@ -68401,7 +68478,9 @@
     "icon-button",
     "menu",
     "popover",
-    "select"
+    "select",
+    "snackbar",
+    "typography"
    ],
    "requiredParts": {
     "data-ok-text-field": [
@@ -68598,12 +68677,17 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |\n| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |\n| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |\n| InputBase `margin` (`dense`) | `size=\"small\"` | renamed | Owlky's `margin` is the outer margin of TextField |\n| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |\n| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
+     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | same | kept | 4.18.25: `data-ok-hidden-label` (the label is visually hidden but still names the input; the field is laid out as without a label: filled gets the label-less padding, outlined no notch, standard no space above, the placeholder shows), `data-ok-focused` (focus colors, floating label and ring without focus; hover doesn't override them), React `component` = the root element (HTML: any element) |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | same | kept | 4.18.25: `data-ok-disable-pointer-events` on the adornment (`pointer-events: none`); `component` default `span` (MUI `div`) |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput`, `FilledInput`, `Input` | same | kept | 4.18.26: TextField's markup without label and helper, `data-ok-input-base` on the root (InputBase: no `data-ok-variant`, no box). Props: the TextField's input props (`size`, `color`, `error`, `fullWidth`, adornments, `multiline` / rows, `value` / `onChange(value)`, native props; `ref` = the input). Name them with `aria-label`; MUI's FormControl + InputLabel composition around them: deferred (the Select has it) |\n| OutlinedInput `label`, `notched` | same | kept | 4.18.26: `label` fills the outline's legend only (no label element); `notched` = `data-ok-notched` (the notch stays open; without it a standalone notch stays closed, MUI's default outside a FormControl) |\n| FilledInput / Input `disableUnderline`, FilledInput `hiddenLabel` | same | kept | 4.18.26: `data-ok-disable-underline` removes the standard underline and its focus line; the filled look has no underline (its focus ring stays, WCAG 2.4.7). `hiddenLabel` = `data-ok-hidden-label` (standalone fields are laid out without a label anyway) |\n| InputBase `margin` (`dense`) | `size=\"small\"` | renamed | Owlky's `margin` is the outer margin of TextField |\n| `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |\n| `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n| `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |\n\nRelated reference features: copy to clipboard (4.20, section below), number input (4.24), phone\ninput (4.25).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
     {
-     "body": "React stories render the password button without state (apps own `type`, see the docs page);\n`data-ok-text-field-reveal` is an HTML hook (ignored by parity).",
+     "body": "Reference: Minimals \"Utilities\" page (https://minimals.cc/components/extra/utilities), section\n\"Copy to clipboard\": a field with a copy button in its end adornment (\"onChange\"), a paragraph\ncopied on double click (\"onDoubleClick\"), each copy followed by a \"Copied!\" toast. Upstream: the\nreference's `useCopyToClipboard` hook (`{ copy, copiedText }`, usehooks-ts).\n\n- **Core** `copyToClipboard(text, { document? }): Promise<CopyResult>` (`core/src/clipboard`):\n  never throws. Outside a user gesture (`navigator.userActivation.isActive === false`, checked\n  before any await) → `{ ok: false, reason: \"gesture\" }` without calling the browser. Clipboard API\n  `writeText`; no API → the copy command (`execCommand(\"copy\")` with a one-off `copy` listener\n  that writes the text: no text area, focus and selection untouched) or `\"unsupported\"`; the API\n  rejects (permission, policy) → the copy command, else `\"denied\"`. `clipboardText(element)`:\n  form control value, else text with white space collapsed.\n- **React** `useCopyToClipboard()` → `{ copy(text): Promise<CopyResult>, copiedText }`\n  (`copiedText` = last successful copy, `null` after a failure). Apps compose an `IconButton` in an\n  `InputAdornment` and call `toast.success` / `toast.error` with the result.\n- **HTML** runtime `clipboard` (behavior-only folder, markup in `text-field/examples`): triggers\n  `[data-ok-clipboard-copy]` (value = source id; empty = the text field's input around a button,\n  else the trigger itself), `data-ok-clipboard-text` (literal text), `data-ok-clipboard-trigger=\n  \"dblclick\"`, `data-ok-clipboard-toast` / `data-ok-clipboard-error-toast` (`<template>` toasts shown\n  in the page's toaster, or `data-ok-toast-toaster`). Event `ok:clipboard:copy` (`detail.text`,\n  `ok`, `reason?`), instance `copy()`. React markup (`data-ok-runtime=\"off\"`) is never handled.\n- **Announcement:** the toast. The toaster list is a polite live region, so \"Copied!\" (or the\n  error) is announced; the docs tell apps without a toaster to announce the result themselves.\n- **Double click** is a pointer-only shortcut: the story adds a \"Copy text\" button that copies the\n  same paragraph (WCAG 2.1.1), an intentional addition to the reference.\n- Not built: copying rich text / images (`ClipboardItem`), reading the clipboard (paste).",
+     "id": "copy-to-clipboard-roadmap-4-20",
+     "title": "Copy to clipboard (roadmap 4.20)"
+    },
+    {
+     "body": "React stories render the password button without state (apps own `type`, see the docs page);\n`data-ok-text-field-reveal` is an HTML hook (ignored by parity), and so are the\n`data-ok-clipboard-*` triggers (React copies from click handlers).",
      "id": "parity-notes",
      "title": "Parity notes"
     }
@@ -68653,6 +68737,16 @@
       "standard-select.html",
       "standard-sizes.html",
       "standard-type.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/typography.css + components/text-field.css + components/icon-button.css + components/snackbar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Copy button -->\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n  <label data-ok-text-field-label for=\"copy-link\">Link</label>\n  <div data-ok-text-field-control>\n    <input id=\"copy-link\" data-ok-text-field-input placeholder=\" \" value=\"https://www.npmjs.com/package/@owlky/react\">\n    <span data-ok-text-field-adornment=\"end\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"end\" aria-label=\"Copy\" data-ok-clipboard-copy data-ok-clipboard-toast=\"copy-done\" data-ok-clipboard-error-toast=\"copy-failed\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.5\" y=\"7.5\" width=\"12\" height=\"13\" rx=\"2.5\" fill=\"currentColor\"></rect><path d=\"M8.5 4.5h8a3 3 0 0 1 3 3v9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"></path></svg></button></span>\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Link</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\">\n  </ol>\n</section>\n<template id=\"copy-done\">\n  <li data-ok-toast data-ok-type=\"success\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Copied!</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"copy-failed\">\n  <li data-ok-toast data-ok-type=\"error\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Couldn't copy. Select the text and copy it yourself.</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n\n<!-- Double click -->\n<p data-ok-typography data-ok-variant=\"body1\" id=\"copy-text\" data-ok-clipboard-copy data-ok-clipboard-trigger=\"dblclick\" data-ok-clipboard-toast=\"copy-done\" data-ok-clipboard-error-toast=\"copy-failed\">Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Sed aliquam, nisi quis porttitor congue, elit erat euismod orci, ac placerat dolor lectus quis orci. Cras non dolor.</p>\n<button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" aria-label=\"Copy text\" data-ok-clipboard-copy=\"copy-text\" data-ok-clipboard-toast=\"copy-done\" data-ok-clipboard-error-toast=\"copy-failed\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.5\" y=\"7.5\" width=\"12\" height=\"13\" rx=\"2.5\" fill=\"currentColor\"></rect><path d=\"M8.5 4.5h8a3 3 0 0 1 3 3v9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"></path></svg></button>",
+     "id": "components-text-field--copy-to-clipboard",
+     "name": "Copy to clipboard",
+     "react": "import type { CopyResult } from \"@owlky/core\";\nimport {\n  IconButton,\n  InputAdornment,\n  TextField,\n  Toaster,\n  Typography,\n  toast,\n  useCopyToClipboard,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst TEXT =\n  \"Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Sed aliquam, nisi quis porttitor congue, elit erat euismod orci, ac placerat dolor lectus quis orci. Cras non dolor.\";\n\nfunction CopyIcon() {\n  return (\n    <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">\n      <rect x=\"3.5\" y=\"7.5\" width=\"12\" height=\"13\" rx=\"2.5\" fill=\"currentColor\" />\n      <path\n        d=\"M8.5 4.5h8a3 3 0 0 1 3 3v9\"\n        fill=\"none\"\n        stroke=\"currentColor\"\n        strokeWidth=\"1.5\"\n        strokeLinecap=\"round\"\n      />\n    </svg>\n  );\n}\n\n/** A toast after each copy: its polite live region announces the result. */\nfunction notify(result: CopyResult) {\n  if (result.ok) toast.success(\"Copied!\");\n  else toast.error(\"Couldn't copy. Select the text and copy it yourself.\");\n}\n\n/** A copy button in the field's end adornment copies what the field holds. */\nexport function CopyButtonDemo() {\n  const [value, setValue] = useState(\"https://www.npmjs.com/package/@owlky/react\");\n  const { copy } = useCopyToClipboard();\n  return (\n    <>\n      <TextField\n        id=\"copy-link\"\n        fullWidth\n        label=\"Link\"\n        value={value}\n        onChange={setValue}\n        endAdornment={\n          <InputAdornment position=\"end\">\n            <IconButton\n              edge=\"end\"\n              aria-label=\"Copy\"\n              onClick={async () => notify(await copy(value))}\n            >\n              <CopyIcon />\n            </IconButton>\n          </InputAdornment>\n        }\n      />\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** A double click copies the paragraph; the button does the same from the keyboard. */\nexport function CopyDoubleClickDemo() {\n  const { copy } = useCopyToClipboard();\n  return (\n    <>\n      <Typography id=\"copy-text\" onDoubleClick={async () => notify(await copy(TEXT))}>\n        {TEXT}\n      </Typography>\n      <IconButton aria-label=\"Copy text\" onClick={async () => notify(await copy(TEXT))}>\n        <CopyIcon />\n      </IconButton>\n    </>\n  );\n}\n",
+     "snippets": [
+      "copy-to-clipboard-button.html",
+      "copy-to-clipboard-double-click.html"
      ]
     }
    ],
@@ -81082,6 +81176,13 @@
      "title": "Accept several lines"
     },
     {
+     "body": "Put a copy button in the end adornment to let people copy what the field holds. In React, call `copy(text)` from `useCopyToClipboard()` in the button's click handler. In HTML, give the button `data-ok-clipboard-copy`, and the script copies the input of the text field around it.\n\nBrowsers only allow a copy while the page handles a click or a key press, and some refuse it, for example when a permission policy blocks the clipboard. Without the Clipboard API, Owlky uses the browser's copy command instead. `copy()` never throws: it resolves `{ ok: true }`, or `{ ok: false, reason }` with the reason `gesture`, `unsupported` or `denied`. Tell people the result either way, because nothing on the screen changes after a copy. A toast does this, and the toaster's live region announces the message to screen readers. In HTML, `data-ok-clipboard-toast` and `data-ok-clipboard-error-toast` name the `<template>` toasts to show.\n\nTo copy other text, set the trigger's value to the `id` of the element to copy, or put the text in `data-ok-clipboard-text`. With `data-ok-clipboard-trigger=\"dblclick\"`, a double click copies instead of a click. A double click needs a pointer, so also offer a button that copies the same text for keyboard users.",
+     "html": "<!-- Load once per page: the script copies and shows the toasts -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"none\">\n  <label data-ok-text-field-label for=\"copy-link\">Link</label>\n  <div data-ok-text-field-control>\n    <input id=\"copy-link\" data-ok-text-field-input placeholder=\" \" value=\"https://www.npmjs.com/package/@owlky/react\">\n    <span data-ok-text-field-adornment=\"end\"><button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" data-ok-edge=\"end\" aria-label=\"Copy\" data-ok-clipboard-copy data-ok-clipboard-toast=\"copy-done\" data-ok-clipboard-error-toast=\"copy-failed\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.5\" y=\"7.5\" width=\"12\" height=\"13\" rx=\"2.5\" fill=\"currentColor\"></rect><path d=\"M8.5 4.5h8a3 3 0 0 1 3 3v9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"></path></svg></button></span>\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Link</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\">\n  </ol>\n</section>\n<template id=\"copy-done\">\n  <li data-ok-toast data-ok-type=\"success\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Copied!</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"copy-failed\">\n  <li data-ok-toast data-ok-type=\"error\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Couldn't copy. Select the text and copy it yourself.</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>",
+     "id": "copy",
+     "react": "import { IconButton, InputAdornment, TextField, Toaster, toast, useCopyToClipboard } from \"@owlky/react\";\nimport { CopyIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nexport function CopyLink() {\n  const [value, setValue] = useState(\"https://www.npmjs.com/package/@owlky/react\");\n  const { copy } = useCopyToClipboard();\n  const onCopy = async () => {\n    const result = await copy(value);\n    // The toaster's live region announces the result.\n    if (result.ok) toast.success(\"Copied!\");\n    else toast.error(\"Couldn't copy. Select the text and copy it yourself.\");\n  };\n  return (\n    <>\n      <TextField\n        id=\"copy-link\"\n        fullWidth\n        label=\"Link\"\n        value={value}\n        onChange={setValue}\n        endAdornment={\n          <InputAdornment position=\"end\">\n            <IconButton edge=\"end\" aria-label=\"Copy\" onClick={onCopy}>\n              <CopyIcon />\n            </IconButton>\n          </InputAdornment>\n        }\n      />\n      <Toaster closeButton />\n    </>\n  );\n}",
+     "title": "Copy text to the clipboard"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -81092,7 +81193,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **HTML:** the input fires the native `input` and `change` events. There are no instance methods.\n- **React:** `onChange(value)` is called with the new value. Use `value` to control the field, or `defaultValue` to let it keep its own state. The `ref` and every other prop, such as `name`, `type` or `autoComplete`, go to the input.",
+     "body": "- **HTML:** the input fires the native `input` and `change` events. After each copy, a copy trigger fires `ok:clipboard:copy` with `detail.text`, `detail.ok` and, when the copy failed, `detail.reason`. Its instance method `copy()` copies as a press does.\n- **React:** `onChange(value)` is called with the new value. `useCopyToClipboard()` returns `copy(text)` and `copiedText`, the text of the last successful copy. Use `value` to control the field, or `defaultValue` to let it keep its own state. The `ref` and every other prop, such as `name`, `type` or `autoComplete`, go to the input.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -81102,7 +81203,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- The label is a `<label for>`, so it names the input. A field without a label needs `aria-label`. Don't use the placeholder as the only label: it disappears when people type.\n- Helper text is linked with `aria-describedby`; an error also sets `aria-invalid`.\n- Required fields show an asterisk. The asterisk is hidden from screen readers, which announce the input's `required` state instead.\n- The resting label and the helper text use the secondary text color, and error text uses the error text tone: each has a contrast ratio of at least 4.5:1. The error border uses the brand error color.\n- Focus shows as a 2px border, line or ring in the text color.\n- Set `autoComplete` (such as `email` or `current-password`) so browsers and password managers can fill the field.",
+     "body": "- The label is a `<label for>`, so it names the input. A field without a label needs `aria-label`. Don't use the placeholder as the only label: it disappears when people type.\n- Helper text is linked with `aria-describedby`; an error also sets `aria-invalid`.\n- Required fields show an asterisk. The asterisk is hidden from screen readers, which announce the input's `required` state instead.\n- The resting label and the helper text use the secondary text color, and error text uses the error text tone: each has a contrast ratio of at least 4.5:1. The error border uses the brand error color.\n- Focus shows as a 2px border, line or ring in the text color.\n- Set `autoComplete` (such as `email` or `current-password`) so browsers and password managers can fill the field.\n- A copy changes nothing on the screen: announce its result, for example with a toast, whose live region screen readers read. Give icon-only copy buttons a name such as \"Copy\", and offer a button wherever a double click copies.",
      "id": "accessibility",
      "title": "Accessibility"
     },

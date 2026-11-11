@@ -724,6 +724,10 @@ export {
   type TextFieldSelectProps,
 } from "./text-field/text-field.js";
 export {
+  type UseCopyToClipboard,
+  useCopyToClipboard,
+} from "./text-field/use-copy-to-clipboard.js";
+export {
   Timeline,
   TimelineConnector,
   TimelineContent,
