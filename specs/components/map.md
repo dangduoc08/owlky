@@ -166,7 +166,7 @@ Root: `data-ok-map-legend`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `variant` | `data-ok-variant="…"` | style | `classes` `gradient` | `classes` | `classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest. |
+| `variant` | `data-ok-variant="…"` | style | `classes` `gradient` `size` | `classes` | `classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest; `size`: nested circles of a size scale (proportional symbols). |
 | `interactive` | `data-ok-interactive="false"` turns it off | behavior | boolean | on | Classes are toggle buttons: pressing some mutes the regions outside them. |
 <!-- /options:map-legend -->
 
@@ -301,6 +301,20 @@ Roadmap 4.18.94 / 4.18.95, after ApexMaps' bubble and hexbin samples (checked 20
 - Instance helpers for CDN pages: `sizeScale`, `hexbin` (and `pixelGrid`, below).
 - Not built (ApexMaps): hexbin `radius` in screen pixels (rebinned on zoom), the `nearest`
   interaction radius (hit testing is MapLibre's), bubble clustering, a size legend `align`.
+
+## Pixel maps
+Roadmap 4.18.96, after ApexMaps' pixel series (`shape`, `grid: 'geo'`, `spacing`, `size`).
+- `mapPixelGrid(geometry, { shape = "circle" | "square" | "hexagon", spacing = 1, size = 0.8, joinBy?, property = "region" })`
+  (pure, `lattice.ts`, shared with the Chart's `geoLayout="pixel"`): a lattice anchored at the
+  plane's origin in the Web Mercator plane (degrees; hexagon rows `spacing · √3 / 2` apart, odd
+  rows shifted half a step), one closed `Polygon` cell per lattice point inside a region (even-odd
+  over all its rings), `{ [property]: String(id) }`; circles are 16-gons, hexagons pointy-top with
+  `size` across flats; `size` clamped to 0.1–1, at most 200 000 cells. Region ids: `joinBy`, else
+  the feature id, `id` or `name` property; features without one are skipped.
+- The source sets `promoteId` to `property`: every cell of a region shares one feature state, so
+  `mapScale`, `mapRegionLayers`, `MapRegions` (hover, keyboard, selection) and `MapLegend` (muting)
+  apply unchanged. HTML: `instance.pixelGrid()`.
+- Not built: `grid: 'screen'` (spacing in pixels, rebuilt on zoom), the `diamond` shape.
 
 ## Great circles, drilldown, export
 Roadmap 4.18.16 (ApexMaps checked 2026-11-11: arc series, drilldown, breadcrumb).
@@ -458,6 +472,7 @@ The "API mapping" paragraph above records the details; this table adds a status 
 | ApexMaps `drilldown`, `breadcrumb`, `drilldown` / `drillup` events, `drillTo`, `drillUp` | `MapRegions` + `fitBounds` + `Breadcrumbs` (composition) | not applicable | app code owns the levels |
 | ApexMaps bubble layer (`size.scale` `sqrt` · `linear`, `size.range`, `color`, `opacity`, `stroke`, `sortBySize`) | `mapSizeScale({ method, range })` + `mapBubbleLayer({ size, color, opacity })` | renamed (4.18.94) | `scale` → `method`; a second color field is a `mapScale` with its own `input`; legend `MapLegend variant="size"` |
 | ApexMaps hexbin layer (`aggregate` `count` · `mean`, `minCount`, `scale.domain`) | `mapHexbin(points, { radius, aggregate, valueProperty, minCount })` + `mapScale` thresholds | renamed (4.18.95) | `radius` in degrees (cells fixed in the Mercator plane), not screen px |
+| ApexMaps pixel series (`shape` `circle` · `square` · `hexagon` · `diamond`, `grid` `geo` · `screen`, `spacing`, `size`) | `mapPixelGrid(geometry, { shape, spacing, size })` + `promoteId` | renamed (4.18.96) | degrees only (`grid: 'geo'`); `diamond` not built; Chart: `geoLayout="pixel"` (px, `grid: 'screen'`) |
 | ApexMaps `geo.projection`, `geo.layout: 'hex'`, `geo.sphere`, `geo.graticule` | Chart `type="geo"` (ADR-0059) | renamed | SVG charts without tiles; `orthographic`, rotation, morphing not built |
 
 ## Parity notes

@@ -1741,7 +1741,8 @@
       "optional": true,
       "values": [
        "geographic",
-       "hex"
+       "hex",
+       "pixel"
       ]
      },
      {
@@ -1919,6 +1920,35 @@
       "description": "Geo charts: lines of longitude and latitude every 30 degrees.",
       "kind": "flag",
       "name": "graticule"
+     },
+     {
+      "attr": "data-ok-pixel-shape",
+      "default": "circle",
+      "description": "Geo charts, `pixel` layout: the shape of each cell, `circle` (the default), `square` or `hexagon` (hexagons sit in rows half a step apart).",
+      "kind": "style",
+      "name": "pixelShape",
+      "optional": true,
+      "values": [
+       "circle",
+       "square",
+       "hexagon"
+      ]
+     },
+     {
+      "attr": "data-ok-pixel-spacing",
+      "default": 8,
+      "description": "Geo charts, `pixel` layout: the distance between the cells' centers in px (3 to 64).",
+      "kind": "number",
+      "min": 3,
+      "name": "pixelSpacing"
+     },
+     {
+      "attr": "data-ok-pixel-size",
+      "default": 80,
+      "description": "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100).",
+      "kind": "number",
+      "min": 10,
+      "name": "pixelSize"
      },
      {
       "attr": "data-ok-crossfilter",
@@ -3886,7 +3916,7 @@
       "default": "\"geographic\"",
       "description": "Geo charts: real boundaries or equal tiles.",
       "name": "geoLayout",
-      "type": "\"geographic\" | \"hex\""
+      "type": "\"geographic\" | \"hex\" | \"pixel\""
      },
      {
       "description": "Geo charts: the regions' shapes, a GeoJSON `FeatureCollection`, feature or list of features.",
@@ -4173,6 +4203,22 @@
      {
       "description": "Stock charts: height of each indicator pane in px. Default 120.",
       "name": "paneHeight",
+      "type": "number"
+     },
+     {
+      "default": "\"circle\"",
+      "description": "Geo charts, `pixel` layout: the shape of each cell, `circle`, `square` or `hexagon`.",
+      "name": "pixelShape",
+      "type": "\"circle\" | \"hexagon\" | \"square\""
+     },
+     {
+      "description": "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). Default 80.",
+      "name": "pixelSize",
+      "type": "number"
+     },
+     {
+      "description": "Geo charts, `pixel` layout: px between the cells' centers (3 to 64). Default 8.",
+      "name": "pixelSpacing",
       "type": "number"
      },
      {
@@ -4985,7 +5031,7 @@
       "default": "\"geographic\"",
       "description": "Geo charts: real boundaries or equal tiles.",
       "name": "geoLayout",
-      "type": "\"geographic\" | \"hex\""
+      "type": "\"geographic\" | \"hex\" | \"pixel\""
      },
      {
       "description": "Geo charts: the regions' shapes, a GeoJSON `FeatureCollection`, feature or list of features.",
@@ -5277,6 +5323,22 @@
      {
       "description": "Stock charts: height of each indicator pane in px. Default 120.",
       "name": "paneHeight",
+      "type": "number"
+     },
+     {
+      "default": "\"circle\"",
+      "description": "Geo charts, `pixel` layout: the shape of each cell, `circle`, `square` or `hexagon`.",
+      "name": "pixelShape",
+      "type": "\"circle\" | \"hexagon\" | \"square\""
+     },
+     {
+      "description": "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). Default 80.",
+      "name": "pixelSize",
+      "type": "number"
+     },
+     {
+      "description": "Geo charts, `pixel` layout: px between the cells' centers (3 to 64). Default 8.",
+      "name": "pixelSpacing",
       "type": "number"
      },
      {

@@ -1251,6 +1251,11 @@
     fill: var(--ok-bg-neutral);
   }
 
+  /* Pixel maps (4.18.96): the lattice cells stand apart without a paper outline. */
+  :where([data-ok-chart-series][data-ok-layout="pixel"] > [data-ok-chart-region]) {
+    stroke: none;
+  }
+
   :where([data-ok-chart-sphere]) {
     fill: var(--ok-bg-neutral);
     stroke: var(--ok-divider);

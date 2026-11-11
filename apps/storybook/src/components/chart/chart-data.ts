@@ -2051,6 +2051,40 @@ export const chartExamples: Record<string, ChartExample> = {
       localeText: { y: "Population" },
     },
   },
+  // Roadmap 4.18.96 (ApexMaps pixel series): the same choropleth as a lattice of cells.
+  "geo-pixel": {
+    title: "Pixel map",
+    props: {
+      id: "chart-geo-pixel",
+      label: "Population by state as a dot map, millions",
+      type: "geo",
+      geoLayout: "pixel",
+      valueSuffix: "M",
+      height: 360,
+      regions: GEO_REGIONS,
+      joinBy: "name",
+      scaleMethod: "jenks",
+      localeText: { y: "Population" },
+    },
+    more: [
+      {
+        id: "chart-geo-pixel-hexagon",
+        label: "Population by state as a hexagon lattice, millions",
+        type: "geo",
+        geoLayout: "pixel",
+        pixelShape: "hexagon",
+        pixelSpacing: 10,
+        pixelSize: 100,
+        valueSuffix: "M",
+        height: 360,
+        regions: GEO_REGIONS,
+        joinBy: "name",
+        scaleMethod: "jenks",
+        colors: ["info"],
+        localeText: { y: "Population" },
+      },
+    ],
+  },
   // Roadmap 4.18.21 (ADR-0058): icicle charts (ApexCharts v8 `icicle`, `direction`, `zoomType`).
   icicle: {
     title: "Icicle",

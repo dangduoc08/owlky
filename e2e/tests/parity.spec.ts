@@ -500,6 +500,7 @@ const pairs: [component: string, story: string][] = [
   ["map", "choropleth"],
   ["map", "bubbles"],
   ["map", "hexbin"],
+  ["map", "pixel-map"],
   ["map", "great-circles"],
   ["map", "region-drilldown"],
   ["map", "export-map"],

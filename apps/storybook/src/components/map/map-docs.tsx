@@ -19,6 +19,7 @@ import greatCircles from "../../../../../packages/html/src/components/map/exampl
 import hexbin from "../../../../../packages/html/src/components/map/examples/hexbin-group.html?raw";
 import interactionGroup from "../../../../../packages/html/src/components/map/examples/interaction-group.html?raw";
 import markersGroup from "../../../../../packages/html/src/components/map/examples/markers-popups-group.html?raw";
+import pixelMap from "../../../../../packages/html/src/components/map/examples/pixel-map-group.html?raw";
 import regionDrilldown from "../../../../../packages/html/src/components/map/examples/region-drilldown-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -389,6 +390,87 @@ export function QuakeHexbins() {
         <Layer {...fill} />
       </Source>
       <MapLegend scale={scale} interactive={false} title="Earthquakes per hexagon" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "pixel-map",
+    title: "Draw a pixel map",
+    body: "A pixel map is a choropleth drawn as a lattice of dots, squares or hexagons. `mapPixelGrid(geometry, options)` returns one small polygon for each lattice point inside each region, with the region's id in a property (`region` by default, `property` to rename it). `shape` is `circle` (the default), `square` or `hexagon`, `spacing` is the distance between the points in degrees of longitude (1 by default) and `size` is each cell's width as a share of the spacing (0.8 by default). `joinBy` names the feature property that holds each region's id.\n\nSet the source's `promoteId` to that property. Every cell of a region then shares the region's feature state, so `mapScale`, `mapRegionLayers`, `MapRegions` and `MapLegend` work as on a choropleth: the cells take the region's color, the list and the table give its value, and a legend class mutes its cells. In HTML, `pixelGrid` is also on the map's instance.",
+    html: `${snippetElement(pixelMap, "data-ok-map-source ")}
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const element = document.querySelector("#map-pixel");
+  const map = getRuntime().get(element, "map");
+  const response = await fetch("maps/us-states.geojson");
+  const states = await response.json();
+  map.setSourceData("pixels", map.pixelGrid(states, { spacing: 0.8, joinBy: "name" }));
+</script>`,
+    react: `import {
+  Layer,
+  type LayerProps,
+  MapRegions,
+  MapView,
+  mapPixelGrid,
+  mapRegionLayers,
+  mapScale,
+  Source,
+} from "@owlky/react";
+
+const states = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+const STATES = [
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Utah", name: "Utah", value: 3.27 },
+];
+const cells = mapPixelGrid(states, { shape: "square", spacing: 0.5, joinBy: "name" });
+const scale = mapScale(
+  STATES.map((state) => state.value),
+  { classes: 2 },
+);
+const [fill] = mapRegionLayers({ id: "pixels-fill", source: "pixels", scale }) as unknown as [
+  LayerProps,
+];
+
+export function SquareMap() {
+  return (
+    <MapView
+      aria-label="Nevada and Utah as squares, by population"
+      mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: -114, latitude: 38.5, zoom: 4 }}
+    >
+      {/* Every cell of a state shares the state's feature state */}
+      <Source id="pixels" type="geojson" data={cells} promoteId="region">
+        <Layer {...fill} />
+      </Source>
+      <MapRegions
+        source="pixels"
+        layer="pixels-fill"
+        data={STATES}
+        caption="Population by state, millions"
+      />
     </MapView>
   );
 }`,

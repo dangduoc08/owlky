@@ -488,3 +488,48 @@ describe("renderChart geo: edges", () => {
     expect(hexCells).toEqual([]);
   });
 });
+
+describe("renderChart geo: pixel maps (4.18.96)", () => {
+  const cells = (d: string) => d.split("M").length - 1;
+
+  it("draws each region as lattice cells, keeping the region's outline for hits", () => {
+    const { layout } = draw({ geoLayout: "pixel" });
+    const series = collect(layout.nodes, "data-ok-chart-series")[0];
+    expect(series?.attrs["data-ok-layout"]).toBe("pixel");
+    const [west] = regionsOf(layout);
+    const d = String(west?.attrs["d"]);
+    // Circles: two arcs per cell.
+    expect(d).toContain("a");
+    expect(cells(d)).toBeGreaterThan(4);
+    const mark = layout.marks[0];
+    const geo = mark?.geo;
+    expect(geo?.d.startsWith("M")).toBe(true);
+    expect(cells(geo?.d ?? "")).toBe(1);
+    expect(geo && mark ? chartGeoContains(geo, mark.px, mark.py) : false).toBe(true);
+  });
+
+  it("draws squares and hexagons, sized and spaced by the options", () => {
+    const d = (input: Partial<ChartRenderInput>) =>
+      String(regionsOf(draw({ geoLayout: "pixel", ...input }).layout)[0]?.attrs["d"]);
+    const squares = d({ pixelShape: "square", pixelSpacing: 20 });
+    const fine = d({ pixelShape: "square", pixelSpacing: 5 });
+    expect(squares).not.toContain("a");
+    expect(cells(fine)).toBeGreaterThan(cells(squares));
+    const hex = d({ pixelShape: "hexagon", pixelSize: 100 });
+    expect(hex.split("M")[1]?.split("L")).toHaveLength(6);
+    // Invalid options fall back to circles; spacing and size are clamped.
+    expect(d({ pixelShape: "star" as never, pixelSpacing: 0.5, pixelSize: 500 })).toContain("a");
+  });
+
+  it("pixelates regions without data too", () => {
+    const { layout } = draw({ geoLayout: "pixel", regions: REGIONS.slice(0, 1) });
+    const empty = regionsOf(layout).filter((item) => item.attrs["data-ok-no-data"] !== undefined);
+    expect(empty).toHaveLength(2);
+    expect(cells(String(empty[0]?.attrs["d"]))).toBeGreaterThan(1);
+  });
+
+  it("leaves other layouts' trees unchanged", () => {
+    const series = collect(draw().layout.nodes, "data-ok-chart-series")[0];
+    expect(series?.attrs["data-ok-layout"]).toBeUndefined();
+  });
+});

@@ -18,6 +18,7 @@ import {
   regionRows,
   stateRows,
   US_BOUNDS,
+  US_STATES,
 } from "./map-data.js";
 
 type Script = NonNullable<HtmlGroup["script"]>;
@@ -334,6 +335,24 @@ const hexbin: Script = (row) => {
     .then((quakes) => {
       if (live && instance)
         instance.setSourceData("quake-bins", instance.hexbin(quakes, { radius: 0.75 }));
+    })
+    .catch(() => {});
+  return () => {
+    live = false;
+  };
+};
+
+const pixelMap: Script = (row) => {
+  const { map: instance } = first(row);
+  let live = true;
+  fetch(US_STATES)
+    .then((response) => response.json())
+    .then((states) => {
+      if (live && instance)
+        instance.setSourceData(
+          "pixels",
+          instance.pixelGrid(states, { shape: "circle", spacing: 0.8, joinBy: "name" }),
+        );
     })
     .catch(() => {});
   return () => {
@@ -755,5 +774,17 @@ const map = getRuntime().get(element, "map");
 // Count the earthquakes in hexagons of 0.75 degrees, then give the cells to the source.
 const response = await fetch("maps/earthquakes.geojson");
 map.setSourceData("quake-bins", map.hexbin(await response.json(), { radius: 0.75 }));`,
+  },
+  "pixel-map": {
+    script: pixelMap,
+    scriptSource: `import { getRuntime } from "@owlky/html";
+${REGISTER}
+
+const element = document.querySelector("#map-pixel");
+const map = getRuntime().get(element, "map");
+// A dot every 0.8 degrees inside each state, tagged with the state's name (the source's promoteId).
+const response = await fetch("maps/us-states.geojson");
+const states = await response.json();
+map.setSourceData("pixels", map.pixelGrid(states, { shape: "circle", spacing: 0.8, joinBy: "name" }));`,
   },
 };

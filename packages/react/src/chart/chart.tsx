@@ -43,6 +43,7 @@ import {
   type ChartNode,
   type ChartOrientation,
   type ChartPattern,
+  type ChartPixelShape,
   type ChartProjection,
   type ChartPxPoint,
   type ChartRender,
@@ -200,6 +201,12 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   sphere?: boolean | undefined;
   /** Geo charts: lines of longitude and latitude every 30 degrees. */
   graticule?: boolean | undefined;
+  /** Geo charts, `pixel` layout: the shape of each cell, `circle`, `square` or `hexagon`. Default `"circle"`. */
+  pixelShape?: ChartPixelShape | undefined;
+  /** Geo charts, `pixel` layout: px between the cells' centers (3 to 64). Default 8. */
+  pixelSpacing?: number | undefined;
+  /** Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100). Default 80. */
+  pixelSize?: number | undefined;
   /** Tree charts: `tree` (a tidy tree) or `cluster` (a dendrogram). Default `"tree"`. */
   layoutType?: ChartLayoutType | undefined;
   /** Tree charts: links with right angles, curved or straight. Default `"orthogonal"`. */
@@ -745,6 +752,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     scaleThresholds,
     sphere,
     graticule,
+    pixelShape,
+    pixelSpacing,
+    pixelSize,
     hierarchy,
     direction,
     layoutType,
@@ -940,6 +950,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     scaleClasses,
     sphere,
     graticule,
+    pixelShape,
+    pixelSpacing,
+    pixelSize,
     backgroundBars,
     backgroundBarOpacity,
     backgroundBarRadius,
@@ -1303,6 +1316,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         scaleThresholds,
         sphere,
         graticule,
+        pixelShape,
+        pixelSpacing,
+        pixelSize,
         hierarchy,
         direction: validDirection,
         layoutType: validLayoutType,
@@ -1477,6 +1493,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       scaleThresholds,
       sphere,
       graticule,
+      pixelShape,
+      pixelSpacing,
+      pixelSize,
       hierarchy,
       validDirection,
       validLayoutType,

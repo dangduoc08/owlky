@@ -39,9 +39,11 @@ import {
 import { type ChartBeeswarmSpread, chartBeeswarmSpreads } from "../chart/chart-beeswarm.js";
 import {
   type ChartGeoLayout,
+  type ChartPixelShape,
   type ChartProjection,
   type ChartScaleMethod,
   chartGeoLayouts,
+  chartPixelShapes,
   chartProjections,
   chartScaleMethods,
 } from "../chart/chart-geo.js";
@@ -5779,6 +5781,25 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-graticule",
     "Geo charts: lines of longitude and latitude every 30 degrees.",
   ),
+  pixelShape: style(
+    "data-ok-pixel-shape",
+    chartPixelShapes,
+    "circle",
+    "Geo charts, `pixel` layout: the shape of each cell, `circle` (the default), `square` or `hexagon` (hexagons sit in rows half a step apart).",
+    { optional: true },
+  ),
+  pixelSpacing: number(
+    "data-ok-pixel-spacing",
+    8,
+    "Geo charts, `pixel` layout: the distance between the cells' centers in px (3 to 64).",
+    { min: 3 },
+  ),
+  pixelSize: number(
+    "data-ok-pixel-size",
+    80,
+    "Geo charts, `pixel` layout: each cell's width in % of the spacing (10 to 100).",
+    { min: 10 },
+  ),
   crossfilter: style(
     "data-ok-crossfilter",
     chartCrossfilters,
@@ -5882,6 +5903,9 @@ export interface ChartAnatomyOptions {
   scaleClasses?: number | undefined;
   sphere?: boolean | undefined;
   graticule?: boolean | undefined;
+  pixelShape?: ChartPixelShape | undefined;
+  pixelSpacing?: number | undefined;
+  pixelSize?: number | undefined;
   streamOffset?: ChartStreamOffset | undefined;
   streamOrder?: ChartStreamOrder | undefined;
   hideStreamLabels?: boolean | undefined;

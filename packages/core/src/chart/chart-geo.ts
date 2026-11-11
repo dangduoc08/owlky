@@ -4,6 +4,7 @@
  * `mapScale`, whose module is pure. Layout mode `cell`: keyboard moves between region centers.
  */
 import { type MapScaleClass, mapScale, mapScaleLabel } from "../map/choropleth.js";
+import { latticePoints, latticeShape, type MapPixelShape, mapPixelShapes } from "../map/lattice.js";
 import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartLayout,
@@ -27,8 +28,11 @@ import { fitChartText } from "./chart-sankey.js";
 
 export const chartProjections = ["equalEarth", "mercator", "equirectangular"] as const;
 export type ChartProjection = (typeof chartProjections)[number];
-export const chartGeoLayouts = ["geographic", "hex"] as const;
+export const chartGeoLayouts = ["geographic", "hex", "pixel"] as const;
 export type ChartGeoLayout = (typeof chartGeoLayouts)[number];
+/** Cells of a pixel map (4.18.96): the Map's lattice shapes. */
+export const chartPixelShapes = mapPixelShapes;
+export type ChartPixelShape = MapPixelShape;
 /** `mapScale` methods, under the names ApexMaps uses too (`naturalBreaks`, `quantize`). */
 export const chartScaleMethods = ["quantile", "equalInterval", "jenks", "threshold"] as const;
 export type ChartScaleMethod = (typeof chartScaleMethods)[number];
@@ -78,8 +82,14 @@ export interface ChartGeoOptions {
   readonly joinBy?: string | undefined;
   /** Geo charts: `equalEarth` (default), `mercator` or `equirectangular`. */
   readonly projection?: ChartProjection | undefined;
-  /** Geo charts: `geographic` shapes (default) or `hex` tiles. */
+  /** Geo charts: `geographic` shapes (default), `hex` tiles or a `pixel` lattice of dots. */
   readonly geoLayout?: ChartGeoLayout | undefined;
+  /** Pixel layouts: `circle` (default), `square` or `hexagon` cells. */
+  readonly pixelShape?: ChartPixelShape | undefined;
+  /** Pixel layouts: px between lattice points (3 to 64). Default 8. */
+  readonly pixelSpacing?: number | undefined;
+  /** Pixel layouts: each cell's width in % of the spacing (10 to 100). Default 80. */
+  readonly pixelSize?: number | undefined;
   /** Hex layouts: a cell per region; without them, cells are placed from the geometry. */
   readonly hexCells?: readonly ChartHexCell[] | undefined;
   /** Geo charts: how values are split into classes. Default `quantile`. */
@@ -109,6 +119,7 @@ export interface ChartGeoMark {
 }
 
 const MAX_REGIONS = 2000;
+const MAX_PIXELS = 40_000;
 const MAX_COORDINATES = 400_000;
 const RADIANS = Math.PI / 180;
 const PADDING = 8;
@@ -208,6 +219,28 @@ const finiteValue = (value: ChartGeoRegion["value"]): number | null => {
 
 const pathOf = (rings: readonly Ring[]) =>
   rings.map((ring) => `M${ring.map(([x, y]) => `${fmt(x)} ${fmt(y)}`).join("L")}Z`).join("");
+
+/** The cells of a pixel map inside fitted rings, as one path (circles as two arcs). */
+function pixelPath(
+  rings: readonly Ring[],
+  spacing: number,
+  shape: ChartPixelShape,
+  width: number,
+  limit: number,
+): { d: string; count: number } {
+  const points = latticePoints(rings, spacing, shape, limit);
+  const r = width / 2;
+  const d = points
+    .map(([x, y]) =>
+      shape === "circle"
+        ? `M${fmt(x - r)} ${fmt(y)}a${fmt(r)} ${fmt(r)} 0 1 0 ${fmt(width)} 0a${fmt(r)} ${fmt(r)} 0 1 0 ${fmt(-width)} 0Z`
+        : `M${latticeShape(shape, x, y, width)
+            .map(([px, py]) => `${fmt(px)} ${fmt(py)}`)
+            .join("L")}Z`,
+    )
+    .join("");
+  return { d, count: points.length };
+}
 
 /** Area of a ring (absolute value), for the label's anchor. */
 const ringArea = (ring: readonly (readonly [number, number])[]) => {
@@ -403,6 +436,23 @@ export function layoutGeo(
   const project = PROJECTIONS[projection];
   const regions = (options.regions ?? []).slice(0, MAX_REGIONS);
   const hexLayout = options.geoLayout === "hex";
+  const pixelLayout = options.geoLayout === "pixel";
+  const pixelShape: ChartPixelShape = chartPixelShapes.includes(
+    options.pixelShape as ChartPixelShape,
+  )
+    ? (options.pixelShape as ChartPixelShape)
+    : "circle";
+  const pixelSpacing = Math.max(3, Math.min(64, Number(options.pixelSpacing) || 8));
+  const pixelWidth =
+    (pixelSpacing * Math.max(10, Math.min(100, Number(options.pixelSize) || 80))) / 100;
+  let pixelBudget = MAX_PIXELS;
+  /** The drawn path of a region: its outline, or its lattice cells in pixel layouts. */
+  const drawnPath = (rings: readonly Ring[]) => {
+    if (!pixelLayout) return pathOf(rings);
+    const { d, count } = pixelPath(rings, pixelSpacing, pixelShape, pixelWidth, pixelBudget);
+    pixelBudget = Math.max(0, pixelBudget - count);
+    return d;
+  };
 
   // --- Scale ---------------------------------------------------------------------------
   const given = options.colors?.filter((color) => chartColors.includes(color)) ?? [];
@@ -445,7 +495,12 @@ export function layoutGeo(
   const shapes: ChartNode[] = [];
   const labels: ChartNode[] = [];
   const marks: ChartMark[] = [];
-  const addRegion = (index: number, rings: readonly Ring[], centerPoint: [number, number]) => {
+  const addRegion = (
+    index: number,
+    rings: readonly Ring[],
+    centerPoint: [number, number],
+    hexCell = false,
+  ) => {
     const region = regions[index] as ChartGeoRegion;
     const value = values[index] as number | null;
     const classIndex = value === null ? -1 : scale.classOf(value);
@@ -454,7 +509,7 @@ export function layoutGeo(
     const muted = classIndex >= 0 && hidden.has(classIndex);
     shapes.push(
       node("path", {
-        d,
+        d: hexCell ? d : drawnPath(rings),
         "data-ok-chart-region": region.id,
         ...(color ? { "data-ok-color": color } : { "data-ok-no-data": "" }),
         ...(muted ? { "fill-opacity": "0.18" } : {}),
@@ -545,7 +600,7 @@ export function layoutGeo(
         const row = Number(cell.row);
         const cx = originX + (col + (row % 2 === 1 ? 0.5 : 0)) * hw;
         const cy = originY + row * r * 1.5;
-        addRegion(index, [hexRing(cx, cy, r * 0.96)], [cx, cy]);
+        addRegion(index, [hexRing(cx, cy, r * 0.96)], [cx, cy], true);
       }
     }
   } else if (projected.length || sphere) {
@@ -562,7 +617,7 @@ export function layoutGeo(
         // Geometry without data: drawn, not interactive.
         shapes.push(
           node("path", {
-            d: pathOf(fitted),
+            d: drawnPath(fitted),
             "data-ok-chart-region": key ?? "",
             "data-ok-no-data": "",
           }),
@@ -590,7 +645,12 @@ export function layoutGeo(
       node("g", { "data-ok-chart-series-group": "" }, [
         node(
           "g",
-          { "data-ok-chart-series": "", "data-ok-type": "geo", "data-ok-index": "0" },
+          {
+            "data-ok-chart-series": "",
+            "data-ok-type": "geo",
+            "data-ok-index": "0",
+            ...(pixelLayout ? { "data-ok-layout": "pixel" } : {}),
+          },
           shapes,
         ),
       ]),

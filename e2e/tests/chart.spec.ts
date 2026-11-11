@@ -74,6 +74,7 @@ const STORIES = [
   "geo",
   "geo-projections",
   "geo-hex",
+  "geo-pixel",
   "unit",
   "waffle",
   "beeswarm",
@@ -802,6 +803,17 @@ for (const impl of implementations) {
       const first = page.locator("[data-ok-chart]").first();
       await expect(first.locator("[data-ok-chart-region]")).toHaveCount(51);
       await expect(first.locator("[data-ok-chart-partition-label]").first()).toBeAttached();
+    });
+
+    test("draws a pixel map whose cells name their state", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "geo-pixel"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator('[data-ok-chart-series][data-ok-layout="pixel"]')).toBeAttached();
+      const texas = first.locator('[data-ok-chart-region="Texas"]');
+      // Many cells in one path: a subpath per dot.
+      expect(((await texas.getAttribute("d")) ?? "").split("M").length).toBeGreaterThan(20);
+      await texas.hover();
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("Texas");
     });
   });
 }
