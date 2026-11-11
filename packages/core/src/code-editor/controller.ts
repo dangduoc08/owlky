@@ -58,6 +58,8 @@ export interface DiffEditorState {
   readonly originalModelPath?: string | undefined;
   readonly modifiedModelPath?: string | undefined;
   readonly theme?: CodeEditorTheme | undefined;
+  /** Reveals this line (1-based) of the modified text; both sides scroll together. */
+  readonly line?: number | undefined;
   readonly options?: DiffEditorOptions | undefined;
 }
 
@@ -85,7 +87,7 @@ export interface DiffEditorController {
   readonly status: CodeEditorStatus;
   readonly editor: DiffEditorInstance | null;
   readonly monaco: Monaco | null;
-  /** Applies changed props: original, modified, languages, model paths, theme, options. */
+  /** Applies changed props: original, modified, languages, model paths, theme, line, options. */
   update(next: DiffEditorState): void;
   destroy(): void;
 }
@@ -388,6 +390,7 @@ export function createDiffEditorController(
       setModels(monaco, created);
       // Monaco applies the side labels only through updateOptions (and drops them on the next one).
       created.updateOptions(labels);
+      if (props.line !== undefined) created.revealLine(props.line);
       theme = bindTheme(monaco, element, () => props.theme ?? "auto", [
         created.getOriginalEditor(),
         created.getModifiedEditor(),
@@ -432,6 +435,8 @@ export function createDiffEditorController(
         labels = { ...labels, ...labelsOf(next.options) };
         editor.updateOptions({ ...labels, ...next.options });
       }
+      if ("line" in next && next.line !== undefined && next.line !== previous.line)
+        editor.revealLine(next.line);
       if ("theme" in next && next.theme !== previous.theme) theme?.use();
     },
     destroy() {

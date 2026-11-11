@@ -102,4 +102,16 @@ describe("DiffEditor", () => {
     expect(models().modified.uri.toString()).toBe("file:///m2.md");
     expect(models().modified.getLanguageId()).toBe("json");
   });
+
+  it("reveals `line` and follows it", async () => {
+    const text = "x\n".repeat(300);
+    const { root, ready, rerenderWith } = setup({ original: text, modified: text, line: 250 });
+    expect(root.getAttribute("data-ok-line")).toBe("250");
+    const editor = await ready();
+    expect(editor.getModifiedEditor().getScrollTop()).toBeGreaterThan(0);
+    const reveal = vi.spyOn(editor, "revealLine");
+    rerenderWith({ original: text, modified: text, line: 2 });
+    expect(reveal).toHaveBeenCalledWith(2);
+    expect(root.getAttribute("data-ok-line")).toBe("2");
+  });
 });

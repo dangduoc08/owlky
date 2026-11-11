@@ -17257,6 +17257,13 @@
          ]
         },
         {
+         "attr": "data-ok-line",
+         "description": "Scrolls both sides to this line of the modified text (1-based).",
+         "kind": "number",
+         "min": 1,
+         "name": "line"
+        },
+        {
          "attr": "data-ok-keep-current-original-model",
          "description": "Keeps the original model when the editor is removed.",
          "kind": "flag",
@@ -17348,6 +17355,11 @@
          "description": "Language of both models.",
          "name": "language",
          "type": "string"
+        },
+        {
+         "description": "Scrolls both sides to this line of the modified text (1-based).",
+         "name": "line",
+         "type": "number"
         },
         {
          "description": "Shown until Monaco is ready. \".",
@@ -17988,6 +18000,13 @@
        ]
       },
       {
+       "attr": "data-ok-line",
+       "description": "Scrolls both sides to this line of the modified text (1-based).",
+       "kind": "number",
+       "min": 1,
+       "name": "line"
+      },
+      {
        "attr": "data-ok-keep-current-original-model",
        "description": "Keeps the original model when the editor is removed.",
        "kind": "flag",
@@ -18034,7 +18053,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\ndiv[data-ok-code-editor][data-ok-status=loading|ready|error]?[data-ok-language]?[data-ok-path]?\n   [data-ok-monaco-theme]?[data-ok-line]?[data-ok-width]?[data-ok-height]?[data-ok-options]?\n   [data-ok-save-view-state=\"false\"]?[data-ok-keep-current-model]?\n  textarea[data-ok-code-editor-value][aria-label][spellcheck=false][autocomplete=off][autocapitalize=off][wrap=off]\n  div[data-ok-code-editor-loading][role=status]       (\"Loading...\" or the `loading` content)\n  div[data-ok-code-editor-content][class]?            (Monaco: div.monaco-editor …)\ndiv[data-ok-diff-editor][data-ok-status]?[data-ok-language]?[data-ok-original-language]?[data-ok-modified-language]?\n   [data-ok-original-model-path]?[data-ok-modified-model-path]?[data-ok-monaco-theme]?[data-ok-width]?[data-ok-height]?\n   [data-ok-options]?[data-ok-keep-current-original-model]?[data-ok-keep-current-modified-model]?\n  textarea[data-ok-diff-editor-original][aria-label] + textarea[data-ok-diff-editor-modified][aria-label]\n  div[data-ok-diff-editor-loading][role=status]\n  div[data-ok-diff-editor-content][class]?            (Monaco: div.monaco-diff-editor …)\n```\n`data-ok-status` is written by the owner (React state, HTML runtime), never in snippets.",
+     "body": "```\ndiv[data-ok-code-editor][data-ok-status=loading|ready|error]?[data-ok-language]?[data-ok-path]?\n   [data-ok-monaco-theme]?[data-ok-line]?[data-ok-width]?[data-ok-height]?[data-ok-options]?\n   [data-ok-save-view-state=\"false\"]?[data-ok-keep-current-model]?\n  textarea[data-ok-code-editor-value][aria-label][spellcheck=false][autocomplete=off][autocapitalize=off][wrap=off]\n  div[data-ok-code-editor-loading][role=status]       (\"Loading...\" or the `loading` content)\n  div[data-ok-code-editor-content][class]?            (Monaco: div.monaco-editor …)\ndiv[data-ok-diff-editor][data-ok-status]?[data-ok-language]?[data-ok-original-language]?[data-ok-modified-language]?\n   [data-ok-original-model-path]?[data-ok-modified-model-path]?[data-ok-monaco-theme]?[data-ok-width]?[data-ok-height]?\n   [data-ok-line]?[data-ok-options]?[data-ok-keep-current-original-model]?[data-ok-keep-current-modified-model]?\n  textarea[data-ok-diff-editor-original][aria-label] + textarea[data-ok-diff-editor-modified][aria-label]\n  div[data-ok-diff-editor-loading][role=status]\n  div[data-ok-diff-editor-content][class]?            (Monaco: div.monaco-diff-editor …)\n```\n`data-ok-status` is written by the owner (React state, HTML runtime), never in snippets.",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -18049,7 +18068,7 @@
      "title": "States"
     },
     {
-     "body": "- Loading: `loader.init()` once per page; `beforeMount(monaco)` then the editor; `onMount(editor,\n  monaco)`; status `ready`. Monaco is imported from the `monaco-editor` package (bundlers) or from\n  `paths.vs` (`owlky-code-editor.js`: the `monaco/` folder next to it, or the script's\n  `data-ok-monaco-path`).\n- Models (`@monaco-editor/react`'s rules): the first model is `path ?? defaultPath` (created with\n  `value ?? defaultValue` and `defaultLanguage ?? language` if it doesn't exist). A new `path`\n  switches to that model (created on first use), saving the old view state and restoring the\n  new one (`saveViewState`). `value` replaces the content as one undoable edit (`setValue` when\n  read only) and fires no `onChange`; `language` sets the current model's language; `line`\n  reveals a line; `options` → `updateOptions`. Unmount disposes the model unless\n  `keepCurrentModel`.\n- Diff: original and modified models from `original` / `modified` with `originalLanguage ??\n  language` / `modifiedLanguage ?? language` (default `text`) and their model paths; new values\n  update them (modified as an undoable edit); unmount disposes both models unless kept.\n- Validation: `onValidate(markers)` / `ok:code-editor:validate` whenever the current model's\n  markers change (languages with workers: JSON, CSS, HTML, TypeScript / JavaScript).\n- Themes: `auto` → `owlky-light` / `owlky-dark` built from the scope's tokens (`--ok-bg-paper`,\n  `--ok-text-*`, palette `-text` tones for syntax, `primary-main` cursor and focus); Monaco has one\n  theme per page: the editor focused, mounted or re-themed last picks it. `data-ok-theme`,\n  `data-ok-preset` and system scheme changes re-apply it. Default font `--ok-font-family-mono`.\n- Size: `width` / `height` (default 100%; at least 300px when no height) through\n  `--_ok-code-editor-width|height`; Monaco follows its container (`automaticLayout`).",
+     "body": "- Loading: `loader.init()` once per page; `beforeMount(monaco)` then the editor; `onMount(editor,\n  monaco)`; status `ready`. Monaco is imported from the `monaco-editor` package (bundlers) or from\n  `paths.vs` (`owlky-code-editor.js`: the `monaco/` folder next to it, or the script's\n  `data-ok-monaco-path`).\n- Models (`@monaco-editor/react`'s rules): the first model is `path ?? defaultPath` (created with\n  `value ?? defaultValue` and `defaultLanguage ?? language` if it doesn't exist). A new `path`\n  switches to that model (created on first use), saving the old view state and restoring the\n  new one (`saveViewState`). `value` replaces the content as one undoable edit (`setValue` when\n  read only) and fires no `onChange`; `language` sets the current model's language; `line`\n  reveals a line; `options` → `updateOptions`. Unmount disposes the model unless\n  `keepCurrentModel`.\n- Diff: original and modified models from `original` / `modified` with `originalLanguage ??\n  language` / `modifiedLanguage ?? language` (default `text`) and their model paths; new values\n  update them (modified as an undoable edit); `line` reveals a line of the modified text (both\n  sides scroll together); unmount disposes both models unless kept.\n- Validation: `onValidate(markers)` / `ok:code-editor:validate` whenever the current model's\n  markers change (languages with workers: JSON, CSS, HTML, TypeScript / JavaScript).\n- Themes: `auto` → `owlky-light` / `owlky-dark` built from the scope's tokens (`--ok-bg-paper`,\n  `--ok-text-*`, palette `-text` tones for syntax, `primary-main` cursor and focus); Monaco has one\n  theme per page: the editor focused, mounted or re-themed last picks it. `data-ok-theme`,\n  `data-ok-preset` and system scheme changes re-apply it. Default font `--ok-font-family-mono`.\n- Size: `width` / `height` (default 100%; at least 300px when no height) through\n  `--_ok-code-editor-width|height`; Monaco follows its container (`automaticLayout`).",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -18074,7 +18093,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: `@monaco-editor/react` 4.7 README (Editor, DiffEditor, `useMonaco`, `loader`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Editor `defaultValue`, `defaultLanguage`, `defaultPath`, `value`, `language`, `path`, `line`, `loading`, `options`, `overrideServices`, `saveViewState`, `keepCurrentModel`, `width`, `height` | same | kept | |\n| `className`, `wrapperProps` | same | kept | `className` on the content element (as upstream), `wrapperProps` on the root |\n| `beforeMount`, `onMount`, `onChange(value, event)`, `onValidate(markers)` | same | kept | |\n| `theme` (default `\"light\"`) | `theme` (default `\"auto\"`) | renamed | `auto` follows `data-ok-theme` |\n| DiffEditor `original`, `modified`, `language`, `originalLanguage`, `modifiedLanguage`, `originalModelPath`, `modifiedModelPath`, `keepCurrentOriginalModel`, `keepCurrentModifiedModel`, `theme`, `loading`, `options`, `width`, `height`, `className`, `wrapperProps`, `beforeMount`, `onMount` | same | kept | |\n| DiffEditor `line` | — | deferred | |\n| `useMonaco()` | same | kept | |\n| `loader.config({ paths: { vs }, monaco, \"vs/nls\" })`, `loader.init()` | same | kept | no CDN default (self-hosted `paths.vs`); adds `import`, `getWorker`; `init()` cancelable |\n| `loader.__getMonacoInstance` | `getMonaco()` | renamed | |\n\nBeyond upstream: `aria-label` (default \"Code editor\"), `onError(error)`, `ref` to the root.",
+     "body": "Upstream: `@monaco-editor/react` 4.7 README (Editor, DiffEditor, `useMonaco`, `loader`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Editor `defaultValue`, `defaultLanguage`, `defaultPath`, `value`, `language`, `path`, `line`, `loading`, `options`, `overrideServices`, `saveViewState`, `keepCurrentModel`, `width`, `height` | same | kept | |\n| `className`, `wrapperProps` | same | kept | `className` on the content element (as upstream), `wrapperProps` on the root |\n| `beforeMount`, `onMount`, `onChange(value, event)`, `onValidate(markers)` | same | kept | |\n| `theme` (default `\"light\"`) | `theme` (default `\"auto\"`) | renamed | `auto` follows `data-ok-theme` |\n| DiffEditor `original`, `modified`, `language`, `originalLanguage`, `modifiedLanguage`, `originalModelPath`, `modifiedModelPath`, `keepCurrentOriginalModel`, `keepCurrentModifiedModel`, `theme`, `loading`, `options`, `width`, `height`, `className`, `wrapperProps`, `beforeMount`, `onMount` | same | kept | |\n| DiffEditor `line` | same | kept | 4.18.32: `data-ok-line`; `revealLine` on the diff editor (the modified side's line; both sides scroll together), at mount and on every new value |\n| `useMonaco()` | same | kept | |\n| `loader.config({ paths: { vs }, monaco, \"vs/nls\" })`, `loader.init()` | same | kept | no CDN default (self-hosted `paths.vs`); adds `import`, `getWorker`; `init()` cancelable |\n| `loader.__getMonacoInstance` | `getMonaco()` | renamed | |\n\nBeyond upstream: `aria-label` (default \"Code editor\"), `onError(error)`, `ref` to the root.",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -73971,10 +73990,10 @@
      "title": "Edit several files"
     },
     {
-     "body": "The diff editor shows an original and a modified text side by side, with the changes highlighted. People can edit the modified side. Set `original` and `modified`, a `language` for both or `originalLanguage` and `modifiedLanguage`, and model paths when the texts are files. Set the option `renderSideBySide` to `false` for one column, for example on narrow screens.",
-     "html": "<div data-ok-diff-editor data-ok-language=\"markdown\" data-ok-height=\"320\">\n  <textarea data-ok-diff-editor-original aria-label=\"Original\" spellcheck=\"false\" autocomplete=\"off\" autocapitalize=\"off\" wrap=\"off\"># Notes</textarea>\n  <textarea data-ok-diff-editor-modified aria-label=\"Modified\" spellcheck=\"false\" autocomplete=\"off\" autocapitalize=\"off\" wrap=\"off\"># Release notes</textarea>\n  <div data-ok-diff-editor-loading role=\"status\">Loading</div>\n  <div data-ok-diff-editor-content></div>\n</div>",
+     "body": "The diff editor shows an original and a modified text side by side, with the changes highlighted. People can edit the modified side. Set `original` and `modified`, a `language` for both or `originalLanguage` and `modifiedLanguage`, and model paths when the texts are files. Set the option `renderSideBySide` to `false` for one column, for example on narrow screens. Set `line` (HTML: `data-ok-line`) to scroll both sides to a line of the modified text, such as the first change. A new value scrolls again.",
+     "html": "<div data-ok-diff-editor data-ok-language=\"markdown\" data-ok-height=\"320\" data-ok-line=\"1\">\n  <textarea data-ok-diff-editor-original aria-label=\"Original\" spellcheck=\"false\" autocomplete=\"off\" autocapitalize=\"off\" wrap=\"off\"># Notes</textarea>\n  <textarea data-ok-diff-editor-modified aria-label=\"Modified\" spellcheck=\"false\" autocomplete=\"off\" autocapitalize=\"off\" wrap=\"off\"># Release notes</textarea>\n  <div data-ok-diff-editor-loading role=\"status\">Loading</div>\n  <div data-ok-diff-editor-content></div>\n</div>",
      "id": "diff",
-     "react": "import { DiffEditor } from \"@owlky/react\";\n\nexport function Changes() {\n  return (\n    <DiffEditor height={320} language=\"markdown\" original=\"# Notes\" modified=\"# Release notes\" />\n  );\n}",
+     "react": "import { DiffEditor } from \"@owlky/react\";\n\nexport function Changes() {\n  return (\n    <DiffEditor\n      height={320}\n      language=\"markdown\"\n      line={1}\n      original=\"# Notes\"\n      modified=\"# Release notes\"\n    />\n  );\n}",
      "title": "Compare two versions"
     },
     {

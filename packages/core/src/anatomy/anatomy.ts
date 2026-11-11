@@ -4595,6 +4595,12 @@ export const diffEditorOptions = defineOptions("diff-editor", "data-ok-diff-edit
     "Height (number = px, or a CSS length such as `90vh`). Default `100%`, at least 300px when not given.",
     { min: 0, units: CODE_EDITOR_UNITS },
   ),
+  line: number(
+    "data-ok-line",
+    undefined,
+    "Scrolls both sides to this line of the modified text (1-based).",
+    { min: 1 },
+  ),
   keepCurrentOriginalModel: flag(
     "data-ok-keep-current-original-model",
     "Keeps the original model when the editor is removed.",
@@ -4616,6 +4622,7 @@ export type DiffEditorAnatomyOptions = {
   theme?: string | undefined;
   width?: number | string | undefined;
   height?: number | string | undefined;
+  line?: number | undefined;
   keepCurrentOriginalModel?: boolean | undefined;
   keepCurrentModifiedModel?: boolean | undefined;
 };

@@ -109,8 +109,8 @@ export function Files() {
   {
     id: "diff",
     title: "Compare two versions",
-    body: "The diff editor shows an original and a modified text side by side, with the changes highlighted. People can edit the modified side. Set `original` and `modified`, a `language` for both or `originalLanguage` and `modifiedLanguage`, and model paths when the texts are files. Set the option `renderSideBySide` to `false` for one column, for example on narrow screens.",
-    html: `<div data-ok-diff-editor data-ok-language="markdown" data-ok-height="320">
+    body: "The diff editor shows an original and a modified text side by side, with the changes highlighted. People can edit the modified side. Set `original` and `modified`, a `language` for both or `originalLanguage` and `modifiedLanguage`, and model paths when the texts are files. Set the option `renderSideBySide` to `false` for one column, for example on narrow screens. Set `line` (HTML: `data-ok-line`) to scroll both sides to a line of the modified text, such as the first change. A new value scrolls again.",
+    html: `<div data-ok-diff-editor data-ok-language="markdown" data-ok-height="320" data-ok-line="1">
   <textarea data-ok-diff-editor-original aria-label="Original" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"># Notes</textarea>
   <textarea data-ok-diff-editor-modified aria-label="Modified" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"># Release notes</textarea>
   <div data-ok-diff-editor-loading role="status">Loading</div>
@@ -120,7 +120,13 @@ export function Files() {
 
 export function Changes() {
   return (
-    <DiffEditor height={320} language="markdown" original="# Notes" modified="# Release notes" />
+    <DiffEditor
+      height={320}
+      language="markdown"
+      line={1}
+      original="# Notes"
+      modified="# Release notes"
+    />
   );
 }`,
   },
