@@ -2474,6 +2474,51 @@ export const chartExamples: Record<string, ChartExample> = {
       ],
     },
   },
+  measure: {
+    title: "Measure",
+    props: {
+      label: "Monthly sales, measured between two months",
+      categories: YEAR,
+      measure: "span",
+      markerSize: 4,
+      series: [{ name: "Sales", data: [12, 19, 15, 25, 22, 30, 34, 40, 44, 38, 42, 50] }],
+    },
+    more: [
+      {
+        label: "Height and weight, measured between two points",
+        type: "scatter",
+        measure: "free",
+        measurePinOnRelease: true,
+        toolbar: true,
+        series: [
+          {
+            name: "Samples",
+            data: [
+              [20, 31],
+              [35, 42],
+              [50, 47],
+              [62, 58],
+              [75, 61],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "annotations-drag": {
+    title: "Draggable annotations",
+    props: {
+      label: "Weekly visits with a target you can move",
+      categories: MONTHS,
+      markerSize: 4,
+      series: [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }],
+      annotations: [
+        { axis: "y", y: 60, label: "Target", color: "success", draggable: true },
+        { axis: "x", x: "Jun", label: "Launch", draggable: true },
+        { axis: "point", x: "Aug", y: 81, label: "Record", color: "error" },
+      ],
+    },
+  },
   "timeline-rows": {
     title: "Timeline rows",
     props: {

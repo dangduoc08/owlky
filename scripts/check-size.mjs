@@ -103,7 +103,10 @@ const budgets = [
   // 250 kB since the geo charts (ADR-0059: projections, hex tiles, `mapScale`): 246.84 kB.
   // 260 kB once the geo charts merged with the ApexCharts v8 types (streamgraph, violin, beeswarm,
   // waffle, unit, roadmap 4.18.21): 256.7 kB. Optimization is deferred to 1.0 prep.
-  ["packages/html/dist/owlky.js", 260_000, "HTML runtime + all components (IIFE)"],
+  // 268 kB after the chart coulds 4.18.65, .66, .67 and .20 (x axis groups, rotation and windows,
+  // forecasts, no data, text annotations, the data reducer, timeline rows, measure rulers and
+  // draggable annotations): 263.68 kB.
+  ["packages/html/dist/owlky.js", 268_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables

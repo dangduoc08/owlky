@@ -23,9 +23,14 @@ export {
 } from "./chart-active.js";
 export {
   type ChartAnnotation,
+  type ChartAnnotationAnchor,
   type ChartAnnotationAxis,
+  chartAnnotationAnchors,
+  chartAnnotationHits,
+  chartAnnotationIndexes,
   chartAnnotationItems,
   chartAnnotations,
+  readChartAnnotation,
   readChartAnnotations,
 } from "./chart-annotations.js";
 export {
@@ -102,6 +107,7 @@ export {
   type ChartGestureHost,
   type ChartGestureMode,
   type ChartGestures,
+  type ChartPxPoint,
   createChartGestures,
 } from "./chart-gestures.js";
 export {
@@ -177,6 +183,25 @@ export {
   layoutChart,
 } from "./chart-layout.js";
 export { type ChartLink, type ChartLinkMember, linkChart } from "./chart-link.js";
+export {
+  CHART_MAX_MEASURES,
+  type ChartAnnotationHit,
+  type ChartMeasure,
+  type ChartMeasureMode,
+  chartAnnotationAt,
+  chartAnnotationKey,
+  chartAnnotationText,
+  chartAnnotationX,
+  chartMeasureActive,
+  chartMeasureAt,
+  chartMeasureBetween,
+  chartMeasureModes,
+  chartMeasureNodes,
+  chartMeasures,
+  chartMeasureText,
+  dragChartAnnotation,
+  moveChartAnnotation,
+} from "./chart-measure.js";
 export {
   type ChartCircularType,
   type ChartColor,

@@ -89,6 +89,8 @@ const STORIES = [
   "data-reducer",
   "timeline-rows",
   "column-zero-bars",
+  "measure",
+  "annotations-drag",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

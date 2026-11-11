@@ -121,6 +121,11 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       forecast (4.18.65): path[data-ok-chart-line][data-ok-chart-forecast][stroke-dasharray], path[data-ok-chart-area][data-ok-chart-forecast][fill-opacity],
                           path[data-ok-chart-bar][data-ok-chart-forecast][fill-opacity]
       no data (4.18.65): text[data-ok-chart-no-data] (last child of the SVG, only when `noDataText` is set and nothing is drawn)
+      measure rulers (4.18.20): g[data-ok-chart-measures] (before the active group) › g[data-ok-chart-measure="span|free"] ›
+                          rect[data-ok-chart-measure-band] | line[data-ok-chart-measure-line], circle[data-ok-chart-measure-end]×2,
+                          rect[data-ok-chart-measure-tag] + text[data-ok-chart-measure-label][data-ok-trend="up|down|flat"]
+      draggable annotations (4.18.20): g[data-ok-chart-annotation][data-ok-draggable]?[data-ok-picked]?
+  span[data-ok-chart-status][role=status]                (after the plot: charts with draggable annotations and no toolbar; announces moves)
       selection:   g[data-ok-chart-brush] (before the active group) › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2 (brush charts)
       badges:      g[data-ok-chart-data-labels] › (rect[data-ok-chart-data-label-badge] + text[data-ok-chart-data-label=outside])×n
     Sankey (ADR-0047; root [data-ok-orientation]?[data-ok-node-width]?[data-ok-whitespace]?
@@ -663,6 +668,8 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `xRange` | `data-ok-x-range="…"` | number | number | — | Shows the last so many x units, ending at `xMax` or the last x value (a sliding window for live data). |
 | `xLabelRotate` | `data-ok-x-label-rotate="…"` | number | number | — | X labels turn by this many degrees (-90 to 90) when they don't fit flat. Without it, labels that don't fit are left out. |
 | `xLabelRotateAlways` | `data-ok-x-label-rotate-always` | flag | boolean | off | X labels turn by `xLabelRotate` even when they fit flat. |
+| `measure` | `data-ok-measure="…"` | style | `span` `free` | — | Measure rulers: a **Measure** button in the toolbar; a drag (or Enter at two points) then measures the change between two x positions (`span`, the series' values) or two points (`free`). |
+| `measurePinOnRelease` | `data-ok-measure-pin-on-release` | flag | boolean | off | Measure rulers stay on the chart when the drag ends, up to 20 of them (without it, a new ruler replaces the last one). |
 | `rangeBarGroupRows` | `data-ok-range-bar-group-rows` | flag | boolean | off | Range bars and timelines: the series share one lane per category, so bars of different series line up in a row. |
 | `disableRangeBarOverlap` | `data-ok-disable-range-bar-overlap` | flag | boolean | off | Range bars and timelines: bars that overlap in time go to lanes of their own instead of being drawn over each other. |
 | `hideZeroBarsWhenGrouped` | `data-ok-hide-zero-bars-when-grouped` | flag | boolean | off | Grouped columns: zero and empty bars take no slot, so the other bars of a category close up around its center. |
@@ -1111,7 +1118,9 @@ Option areas not covered by the table above:
 | `chart.events` `click` (any click), `markerClick`, `xAxisLabelClick` | — | deferred | axis labels are in the `aria-hidden` SVG (the table's row headers are their accessible view); a label selection needs focusable labels first |
 | `chart.events` `animationEnd`, `beforeMount`, `mounted`, `updated`, `keyDown`, `keyUp` | — | not applicable | lifecycle: React effects / runtime setup; DOM key events |
 | `chart.events` `crossFilter`, `filterChange`, `highlightFilterChanged` | HTML `ok:chart:filter` (detail `{ categories, own }`) · React `onFilterChange(categories, own)` · instance `filter`, `clearFilter()` | renamed (4.18.19, ADR-0054) | one event for both modes |
-| `chart.events` `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.20) | |
+| `chart.events.measured` | React `onMeasured({ measure, measures, text })` · HTML `ok:chart:measure` | renamed (4.18.20) | after a ruler is drawn (drag end, or the second Enter / Space) |
+| annotation `draggable`, `chart.events.annotationDragged` | `annotations[].draggable` (`li[data-ok-draggable]`) · React `onAnnotationChange({ index, annotation })` · HTML `ok:chart:annotation` (the runtime rewrites the item's `data-ok-x` / `-x2` / `-y` / `-y2`) | renamed (4.18.20) | data coordinates, snapped to categories on index axes; `x` lines move along x, `y` lines along y, points and text both; bands move whole. Keyboard (WCAG 2.5.7): A picks up the next draggable annotation, arrows move it (a category or a tenth of a numeric window; a twentieth of the value axis), Enter / Space / Escape drop it; the status announces the position |
+| `chart.events` `annotationEdited` / `Created` / `Styled` / `Deleted` (ApexCharts Ink) | — | not built | drawing tools (an editor of annotations) are not part of the chart |
 | drilldown: `drillDown` / `drillUp` / `drillToRoot` / `clearDrilldownCache`, events `drillDownStart` / `End` / `Error`, `drillUp` | — | deferred | category → child series, with a back control |
 | trellis / small multiples: `ApexCharts.trellis`, `rowSeries`, `getPanels`, `getPanel`, `promotePanel`, `restorePanels` | — | deferred | one chart per category on shared axes |
 | `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / not built (4.18.21) | `beatChange` and the register methods are callback APIs with no HTML form; themes are tokens; `exec`: the element instance |
@@ -1122,7 +1131,11 @@ Option areas not covered by the table above:
 | `chart.selection` (preselected range, fill, stroke) | the target's zoom | renamed | style fixed by the design |
 | crossfilter (Premium Linked Views / Highlight Filter): a click or brush in one chart filters the others | `crossfilter: "filter" \| "highlight"` (`data-ok-crossfilter`, optional) on charts of a `group` | renamed (4.18.19, ADR-0054) | Linked Views → `filter`, Highlight Filter → `highlight`; sources: the selection (click, Enter, Space) and brushes; categories by position; a **Clear filter** button and a polite status |
 | crossfilter on value ranges (Highlight Filter bins), numeric x ranges, filter persistence, filters across React and HTML charts | — | deferred / not applicable | ranges of values and numeric axes: a later row; groups are per library copy (ADR-0031) |
-| measure tool (`toolbar.tools.measure`), draggable annotations | — | deferred (4.18.20) | |
+| `chart.measure.enabled`, `.mode` (`span` · `free`), `toolbar.tools.measure` | `measure` (`data-ok-measure="span|free"`, optional): a **Measure** toggle (`aria-pressed`) and **Clear measures** in the toolbar (shown for them even without `toolbar`) | renamed (4.18.20) | measure mode replaces zoom and pan drags (the pan tool turns it off); span rulers read the first drawn series at both x positions; the ruler's text (`"Mar → Jul: +19 (+126.7%)"`) is on its tag and announced by the toolbar status; vertical charts with an x axis |
+| `chart.measure.pinOnRelease` | `measurePinOnRelease` (`data-ok-measure-pin-on-release`) | kept (4.18.20) | up to 20 pinned rulers; without it a new ruler replaces the last |
+| `clearMeasures` method | HTML `clearMeasures()`, `measures`, `setMeasures(list)`; React `measures` (controlled) / `defaultMeasures` / `onMeasuresChange` | renamed (4.18.20) | rulers are `{ x1, y1, x2, y2 }` in data coordinates (core `chartMeasures` validates them) |
+| measure keyboard alternative | in measure mode, Enter / Space at one value then another; Escape forgets the first | kept (4.18.20) | WCAG 2.5.7 |
+| `chart.measure.key`, `.colors`, `.band`, `.guides`, `.markers`, `.format`, `.label` | — | not applicable | license keys; colors and parts fixed by the design (tokens); texts from the chart's formatters |
 | `chart.accessibility` (`description`, keyboard navigation, announcements) | always on: `caption` (`label`), the data table, keyboard slots, live text | kept | |
 | `chart.locales`, `chart.defaultLocale` | `locale` (Intl) + `localeText` | renamed | |
 | `chart.dataReducer` (`enabled`, `targetPoints`, `threshold`) | `dataReducer`, `dataReducerTargetPoints` (250), `dataReducerThreshold` (500) (`data-ok-data-reducer*`) | renamed (4.18.66) | lines and areas (core `chart-reducer.ts`, LTTB per run between gaps on the zoomed window, so zooming shows detail); only the drawing: the table, the marks (tooltip, keyboard, selection) and the value scale keep every point; the markers and data labels of dropped points are not drawn |

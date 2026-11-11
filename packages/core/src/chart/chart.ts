@@ -1,5 +1,6 @@
 import {
   type ChartAnnotation,
+  chartAnnotationHits,
   chartAnnotationNodes,
   chartAnnotations,
 } from "./chart-annotations.js";
@@ -45,6 +46,13 @@ import {
   layoutChart,
   node,
 } from "./chart-layout.js";
+import {
+  type ChartAnnotationHit,
+  type ChartMeasure,
+  type ChartMeasureMode,
+  chartMeasureNodes,
+  chartMeasures,
+} from "./chart-measure.js";
 import {
   type ChartColor,
   type ChartCurve,
@@ -338,6 +346,12 @@ export interface ChartRenderInput extends ChartFormatOptions, ChartGeoOptions {
   readonly xLabelRotateAlways?: boolean | undefined;
   /** A second row of x labels: `{ title, cols }`, each spanning `cols` categories. */
   readonly xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /** Measure rulers (4.18.20), in data coordinates (validated by `chartMeasures`). */
+  readonly measures?: readonly ChartMeasure[] | undefined;
+  /** How rulers measure: `span` (default) or `free`. */
+  readonly measureMode?: ChartMeasureMode | undefined;
+  /** The draggable annotation the keyboard picked up (an index in `annotations`). */
+  readonly pickedAnnotation?: number | undefined;
   /** Range bars and timelines (4.18.67): every series in one lane per category. */
   readonly rangeBarGroupRows?: boolean | undefined;
   /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
@@ -402,6 +416,8 @@ export interface ChartRender {
   readonly zoomable: boolean;
   /** The message drawn because there is nothing to draw (4.18.65; also added to the plot's name). */
   readonly noData?: string | undefined;
+  /** Where the draggable annotations are drawn (4.18.20; pointer hits). */
+  readonly annotationHits?: readonly ChartAnnotationHit[] | undefined;
 }
 
 /** Default SVG width before the chart is measured (server render, first paint). */
@@ -679,7 +695,8 @@ function renderChartData(input: ChartRenderInput): ChartRender {
   const zoomable = base.x !== undefined && extent !== null && !input.sparkline;
   // Phase 4 overlays: annotations over the series, then a selection (brush or drag), badges.
   let nodes: ChartNode[] = [...base.nodes];
-  const annotations = chartAnnotationNodes(data, base, chartAnnotations(input.annotations));
+  const validAnnotations = chartAnnotations(input.annotations);
+  const annotations = chartAnnotationNodes(data, base, validAnnotations, input.pickedAnnotation);
   const selected = input.brush
     ? (clampChartZoom(input.selection, extent, kind) ?? extent)
     : input.selection
@@ -697,6 +714,15 @@ function renderChartData(input: ChartRenderInput): ChartRender {
     nodes.splice(at < 0 ? before("data-ok-chart-active") : at, 0, ...annotations);
   }
   if (selection.length) nodes.splice(before("data-ok-chart-active"), 0, ...selection);
+  // Measure rulers (4.18.20): over the series, under the hover highlight.
+  const rulers = chartMeasureNodes(
+    base,
+    data,
+    format,
+    input.measureMode ?? "span",
+    chartMeasures(input.measures),
+  );
+  if (rulers.length) nodes.splice(before("data-ok-chart-active"), 0, ...rulers);
   // Highlight filters (ADR-0054): tints behind the filtered categories, under the series.
   const tints = input.crossfilter === "highlight" ? chartFilterNodes(base, filter) : [];
   if (tints.length) {
@@ -770,7 +796,18 @@ function renderChartData(input: ChartRenderInput): ChartRender {
     groupAt: xGroups.length ? (index) => chartXGroupAt(xGroups, index) : undefined,
     forecastCount,
   });
-  return { data, format, layout, legend, table, extent, zoom: zoomable ? zoom : null, zoomable };
+  const hits = chartAnnotationHits(data, base, validAnnotations);
+  return {
+    data,
+    format,
+    layout,
+    legend,
+    table,
+    extent,
+    zoom: zoomable ? zoom : null,
+    zoomable,
+    ...(hits.length ? { annotationHits: hits } : {}),
+  };
 }
 
 /** Geo charts (ADR-0059): regions or hex tiles; the legend lists value classes. */

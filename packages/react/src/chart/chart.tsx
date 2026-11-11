@@ -35,12 +35,15 @@ import {
   type ChartLink,
   type ChartLocaleText,
   type ChartMarkerShape,
+  type ChartMeasure,
+  type ChartMeasureMode,
   type ChartNoDataAlign,
   type ChartNoDataVerticalAlign,
   type ChartNode,
   type ChartOrientation,
   type ChartPattern,
   type ChartProjection,
+  type ChartPxPoint,
   type ChartSankeyEdge,
   type ChartSankeyNode,
   type ChartScaleMethod,
@@ -68,7 +71,12 @@ import {
   chartActiveAt,
   chartActiveMarks,
   chartActiveNodes,
+  chartAnnotationAt,
+  chartAnnotationIndexes,
   chartAnnotationItems,
+  chartAnnotationKey,
+  chartAnnotations,
+  chartAnnotationText,
   chartAttributes,
   chartBrushCategories,
   chartDrillLabels,
@@ -80,6 +88,11 @@ import {
   chartIdPrefix,
   chartMarkAt,
   chartMarkPoint,
+  chartMeasureActive,
+  chartMeasureAt,
+  chartMeasureBetween,
+  chartMeasures,
+  chartMeasureText,
   chartSelection,
   chartTextAttributes,
   chartToolbar,
@@ -90,6 +103,7 @@ import {
   chartTreeMarkOf,
   chartZoomKey,
   createChartGestures,
+  dragChartAnnotation,
   exportChart,
   hasChartDataPoint,
   linkChart,
@@ -538,6 +552,32 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   xLabelRotateAlways?: boolean | undefined;
   /** A second row of x labels: each `{ title, cols }` spans `cols` categories. */
   xaxisGroups?: readonly ChartXGroup[] | undefined;
+  /**
+   * Measure rulers: a **Measure** button in the toolbar. In measure mode a drag, or Enter or Space
+   * at two points, measures the change between two x positions (`span`: the series' values) or two
+   * points (`free`).
+   */
+  measure?: ChartMeasureMode | undefined;
+  /** Rulers stay on the chart when the drag ends (up to 20); without it a new one replaces the last. */
+  measurePinOnRelease?: boolean | undefined;
+  /** Controlled: the rulers, in data coordinates (`{ x1, y1, x2, y2 }`). */
+  measures?: readonly ChartMeasure[] | undefined;
+  /** Uncontrolled initial rulers. */
+  defaultMeasures?: readonly ChartMeasure[] | undefined;
+  /** Called with the rulers after one is added or they are cleared. */
+  onMeasuresChange?: ((measures: ChartMeasure[]) => void) | undefined;
+  /** Called after a ruler is drawn, with it, every ruler and its text (ApexCharts' `measured`). */
+  onMeasured?:
+    | ((detail: { measure: ChartMeasure; measures: ChartMeasure[]; text: string }) => void)
+    | undefined;
+  /**
+   * Called after a draggable annotation was moved (a drag, or the keyboard: A picks it up, arrows
+   * move it, Enter drops it), with its index in `annotations` and its new coordinates. Update
+   * `annotations` to keep it there (ApexCharts' `annotationDragged`).
+   */
+  onAnnotationChange?:
+    | ((detail: { index: number; annotation: ChartAnnotation }) => void)
+    | undefined;
   /** Range bars and timelines: the series share one lane per category. */
   rangeBarGroupRows?: boolean | undefined;
   /** Range bars and timelines: bars that overlap in time go to lanes of their own. */
@@ -573,6 +613,7 @@ const NO_HIDDEN: readonly number[] = [];
 const NO_IDS: readonly string[] = [];
 const NO_POINTS: readonly ChartDataPoint[] = [];
 const NO_SERIES: readonly ChartSeries[] = [];
+const NO_MEASURES: readonly ChartMeasure[] = [];
 /** Least height of a sparkline without `height` (the CSS default of `--_ok-chart-height`). */
 const SPARKLINE_HEIGHT = 40;
 const PRESERVED = /^(data-|aria-)/;
@@ -768,6 +809,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     xLabelRotate,
     xLabelRotateAlways,
     xaxisGroups,
+    measure,
+    measurePinOnRelease,
+    measures: measuresProp,
+    defaultMeasures = NO_MEASURES,
+    onMeasuresChange,
+    onMeasured,
+    onAnnotationChange,
     rangeBarGroupRows,
     disableRangeBarOverlap,
     hideZeroBarsWhenGrouped,
@@ -900,6 +948,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     xRange,
     xLabelRotate,
     xLabelRotateAlways,
+    measure,
+    measurePinOnRelease,
     rangeBarGroupRows,
     disableRangeBarOverlap,
     hideZeroBarsWhenGrouped,
@@ -1049,6 +1099,44 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validXRange = number("data-ok-x-range");
   const validXRotate = number("data-ok-x-label-rotate");
   const xRotateAlways = attributes["data-ok-x-label-rotate-always"] !== undefined;
+  // Measure rulers and draggable annotations (4.18.20).
+  const validMeasure = attributes["data-ok-measure"] as ChartMeasureMode | undefined;
+  const pinOn = attributes["data-ok-measure-pin-on-release"] !== undefined;
+  const [rulers, setRulers] = useControllableState<readonly ChartMeasure[]>({
+    value: measuresProp,
+    defaultValue: defaultMeasures,
+    onChange: onMeasuresChange as ((value: readonly ChartMeasure[]) => void) | undefined,
+  });
+  const validRulers = useMemo(() => chartMeasures(rulers), [rulers]);
+  const [measuring, setMeasuring] = useState(false);
+  const [rulerPreview, setRulerPreview] = useState<ChartMeasure | null>(null);
+  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  /** Annotations moved here but not yet given back through `annotations` (by index). */
+  const [moved, setMoved] = useState<ReadonlyMap<number, ChartAnnotation>>(() => new Map());
+  const [picked, setPicked] = useState<number | null>(null);
+  const lastPicked = useRef(-1);
+  // New annotations from the owner replace the moves made here.
+  const [annotationSource, setAnnotationSource] = useState(annotations);
+  if (annotationSource !== annotations) {
+    setAnnotationSource(annotations);
+    setMoved(new Map());
+  }
+  const shownAnnotations = useMemo(
+    () =>
+      moved.size === 0
+        ? annotations
+        : (annotations ?? []).map((entry, index) => moved.get(index) ?? entry),
+    [annotations, moved],
+  );
+  /** Positions in `annotations` of the valid ones (core indexes them in that order). */
+  const annotationIndexes = useMemo(
+    () => chartAnnotationIndexes(shownAnnotations),
+    [shownAnnotations],
+  );
+  const drawnRulers = useMemo(
+    () => (rulerPreview ? [...(pinOn ? validRulers : []), rulerPreview] : validRulers),
+    [rulerPreview, pinOn, validRulers],
+  );
   const groupRowsOn = attributes["data-ok-range-bar-group-rows"] !== undefined;
   const overlapOff = attributes["data-ok-disable-range-bar-overlap"] !== undefined;
   const hideZeroOn = attributes["data-ok-hide-zero-bars-when-grouped"] !== undefined;
@@ -1217,7 +1305,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         dataLabelFormatter,
         legendValues,
         colorRanges,
-        annotations,
+        annotations: shownAnnotations,
+        measures: drawnRulers,
+        measureMode: validMeasure,
+        pickedAnnotation: picked === null ? undefined : annotationIndexes.indexOf(picked),
         partLabels: localeText,
         zoom: zoomControlled ? zoomRange : innerZoom.range,
         zoomFrom: zoomControlled ? undefined : innerZoom.from,
@@ -1384,7 +1475,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       dataLabelFormatter,
       legendValues,
       colorRanges,
-      annotations,
+      shownAnnotations,
+      drawnRulers,
+      validMeasure,
+      picked,
+      annotationIndexes,
       localeText,
       zoomControlled,
       zoomRange,
@@ -1436,11 +1531,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   /** Gestures and keys: zoomable charts zoom, brush charts move their selection. */
   const gestureMode: ChartGestureMode = brushTargets
     ? "brush"
-    : zoomOn && render.zoomable
-      ? pan
-        ? "pan"
-        : "zoom"
-      : "none";
+    : measuring && validMeasure
+      ? "measure"
+      : zoomOn && render.zoomable
+        ? pan
+          ? "pan"
+          : "zoom"
+        : "none";
   const modeRef = useRef(gestureMode);
   modeRef.current = gestureMode;
 
@@ -1571,12 +1668,59 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         modeRef.current === "brush"
           ? setBrushRef.current(range)
           : setZoomRef.current(range, "user"),
+      measure: (from, to, end) => measureRef.current(from, to, end),
+      annotationAt: (point) => {
+        const hits = renderRef.current.annotationHits;
+        return hits ? chartAnnotationAt(hits, point.px, point.py) : undefined;
+      },
+      dragAnnotation: (index, from, to, end) => dragRef.current(index, from, to, end),
     });
     gesturesRef.current = gestures;
     return () => gestures.destroy();
   }, []);
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
+
+  /** Adds a ruler (or replaces the last one without pinning) and announces it. */
+  const addRuler = (ruler: ChartMeasure) => {
+    const next = [...(pinOn ? validRulers : []), ruler].slice(-20);
+    setRulers(next);
+    const text = chartMeasureText(render.data, render.format, ruler);
+    setStatus(text);
+    onMeasured?.({ measure: ruler, measures: next, text });
+  };
+  /** Measure mode: a drag draws a ruler between its ends. */
+  const measureDrag = (from: ChartPxPoint, to: ChartPxPoint, end: boolean) => {
+    const current = renderRef.current.layout;
+    const a = chartMeasureAt(current, from.px, from.py);
+    const b = chartMeasureAt(current, to.px, to.py);
+    if (!a || !b || !validMeasure) return;
+    const ruler = chartMeasureBetween(current, validMeasure, a, b);
+    if (!end) setRulerPreview(ruler);
+    else {
+      setRulerPreview(null);
+      addRuler(ruler);
+    }
+  };
+  const measureRef = useRef(measureDrag);
+  measureRef.current = measureDrag;
+  /** The annotation at a position of the shown list, moved (a drag or the keyboard). */
+  const moveAnnotation = (index: number, next: ChartAnnotation, end: boolean) => {
+    setMoved((map) => new Map(map).set(index, next));
+    if (end) onAnnotationChange?.({ index, annotation: next });
+  };
+  const annotationDrag = (hit: number, from: ChartPxPoint, to: ChartPxPoint, end: boolean) => {
+    const index = annotationIndexes[hit];
+    const source = index === undefined ? undefined : annotations?.[index];
+    if (index === undefined || !source) return;
+    const valid = chartAnnotations([source])[0];
+    if (!valid) return;
+    const next = dragChartAnnotation(renderRef.current.layout, render.data, valid, from, to);
+    moveAnnotation(index, next, end);
+    if (end) setStatus(chartAnnotationText(next));
+  };
+  const dragRef = useRef(annotationDrag);
+  dragRef.current = annotationDrag;
 
   // Draw at the measured width (the first render uses the default, scaled by the viewBox).
   // Sparklines also take the plot's height (their SVG is out of flow, so no feedback loop).
@@ -1706,6 +1850,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       select([chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number])]);
   };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (annotationKey(event)) {
+      event.preventDefault();
+      return;
+    }
+    if (measureKey(event)) {
+      event.preventDefault();
+      return;
+    }
     if (
       (event.key === "Enter" || event.key === " ") &&
       !event.repeat &&
@@ -1760,6 +1912,70 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     setActive(next);
   };
 
+  /**
+   * The keyboard alternative to dragging annotations (WCAG 2.5.7): A picks up the next draggable
+   * one, arrows move it, Enter, Space or Escape drops it. Returns whether the key was used.
+   */
+  function annotationKey(event: KeyboardEvent<HTMLDivElement>) {
+    const draggable = (render.annotationHits ?? []).map((hit) => hit.index);
+    if (picked !== null) {
+      const index = picked;
+      const current = shownAnnotations?.[index];
+      const valid = current ? chartAnnotations([current])[0] : undefined;
+      if (event.key === "Enter" || event.key === " " || event.key === "Escape") {
+        setPicked(null);
+        if (valid) {
+          moveAnnotation(index, valid, true);
+          setStatus(
+            `${localeText?.annotationDropped ?? chartToolLabels.annotationDropped}: ${chartAnnotationText(valid)}`,
+          );
+        }
+        return true;
+      }
+      const next = valid ? chartAnnotationKey(layout, render.data, valid, event.key) : undefined;
+      if (!next) return false;
+      moveAnnotation(index, next, false);
+      setStatus(chartAnnotationText(next));
+      return true;
+    }
+    if (event.key.toLowerCase() !== "a" || event.ctrlKey || event.metaKey || event.altKey)
+      return false;
+    if (draggable.length === 0) return false;
+    // A again picks the next draggable annotation after the last one picked.
+    const positions = draggable.map((hit) => annotationIndexes[hit] as number);
+    const next = positions.find((index) => index > lastPicked.current) ?? positions[0];
+    if (next === undefined) return false;
+    lastPicked.current = next;
+    setPicked(next);
+    const entry = chartAnnotations([shownAnnotations?.[next] as ChartAnnotation])[0];
+    if (entry) setStatus(chartAnnotationText(entry));
+    return true;
+  }
+  /**
+   * The keyboard alternative to measuring with a drag: in measure mode Enter or Space at one point
+   * sets where the ruler starts, at another adds it; Escape forgets the start.
+   */
+  function measureKey(event: KeyboardEvent<HTMLDivElement>) {
+    if (!measuring || !validMeasure) return false;
+    if (event.key === "Escape" && anchor) {
+      setAnchor(null);
+      return true;
+    }
+    if ((event.key !== "Enter" && event.key !== " ") || event.repeat) return false;
+    const at = chartMeasureActive(layout, activeRef.current);
+    if (!at) return false;
+    if (!anchor) {
+      setAnchor(at);
+      setStatus(
+        `${localeText?.measureFrom ?? chartToolLabels.measureFrom} ${chartMeasureText(render.data, render.format, { x1: at.x, y1: at.y, x2: at.x, y2: at.y }).split(" → ")[0]}`,
+      );
+    } else {
+      setAnchor(null);
+      addRuler(chartMeasureBetween(layout, validMeasure, anchor, at));
+    }
+    return true;
+  }
+
   const hover = chartActiveNodes(layout, shown ? active : null);
   const nodes = layout.nodes.map((node) =>
     node.attrs["data-ok-chart-crosshair"] !== undefined
@@ -1776,17 +1992,31 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     setHidden(next);
   };
 
-  const tools = toolbar
-    ? chartToolbar({
-        zoom: zoomOn && render.zoomable,
-        zoomed: render.zoom !== null,
-        pan,
-        text: localeText,
-      })
-    : [];
+  const tools =
+    toolbar || validMeasure
+      ? chartToolbar({
+          zoom: Boolean(toolbar) && zoomOn && render.zoomable,
+          zoomed: render.zoom !== null,
+          pan,
+          text: localeText,
+          measure: Boolean(validMeasure) && render.zoomable,
+          measuring,
+          measured: validRulers.length > 0,
+          downloads: Boolean(toolbar),
+        })
+      : [];
   const runTool = (tool: ChartTool) => {
-    if (tool === "pan") setPan((on) => !on);
-    else if (tool === "reset") setZoom(null, "user");
+    if (tool === "measure") {
+      setMeasuring((on) => !on);
+      setPan(false);
+      setAnchor(null);
+    } else if (tool === "clearMeasures") {
+      setRulers([]);
+      setStatus("");
+    } else if (tool === "pan") {
+      setPan((on) => !on);
+      setMeasuring(false);
+    } else if (tool === "reset") setZoom(null, "user");
     else if (tool === "zoomIn" || tool === "zoomOut")
       setZoom(zoomChartBy(render.zoom, render.extent, kind, tool === "zoomIn" ? 0.5 : 2), "user");
     else {
@@ -1796,7 +2026,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       );
     }
   };
-  const annotationItems = chartAnnotationItems(annotations ?? []);
+  const annotationItems = chartAnnotationItems(shownAnnotations ?? []);
 
   return (
     <figure
@@ -1978,6 +2208,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
               )}
         </div>
       </div>
+      {tools.length === 0 && render.annotationHits && (
+        <span data-ok-chart-status="" role="status">
+          {status}
+        </span>
+      )}
       {validCrossfilter && (
         <div data-ok-chart-filter="">
           <button

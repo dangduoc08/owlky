@@ -20,7 +20,13 @@ import {
  * fingers pinch; `pan`: every drag pans; `brush`: a drag moves the selection, its edges resize it,
  * elsewhere a new one is drawn; `none`: no gestures.
  */
-export type ChartGestureMode = "zoom" | "pan" | "brush" | "none";
+export type ChartGestureMode = "zoom" | "pan" | "brush" | "measure" | "none";
+
+/** A px position in the layout's own px. */
+export interface ChartPxPoint {
+  readonly px: number;
+  readonly py: number;
+}
 
 export interface ChartGestureHost {
   layout(): ChartLayout | undefined;
@@ -33,6 +39,12 @@ export interface ChartGestureHost {
   preview(range: ChartZoom | null): void;
   /** A new zoom (or brush selection). */
   commit(range: ChartZoom | null): void;
+  /** Measure mode (4.18.20): a drag from `from` to `to`, moving or ended. */
+  measure?(from: ChartPxPoint, to: ChartPxPoint, end: boolean): void;
+  /** The draggable annotation under a press, if any (4.18.20; any mode). */
+  annotationAt?(point: ChartPxPoint): number | undefined;
+  /** A draggable annotation dragged from `from` to `to`, moving or ended. */
+  dragAnnotation?(index: number, from: ChartPxPoint, to: ChartPxPoint, end: boolean): void;
 }
 
 export interface ChartGestures {
@@ -55,6 +67,8 @@ type Drag = (
   | { kind: "pan"; from: number; range: ChartZoom | null; scale: number }
   | { kind: "resize"; edge: "min" | "max"; range: ChartZoom }
   | { kind: "pinch"; distance: number; range: ChartZoom | null; center: number }
+  | { kind: "measure"; from: ChartPxPoint }
+  | { kind: "annotation"; index: number; from: ChartPxPoint }
 ) & { nav?: boolean };
 
 /** Edge slack of brush handles in px. */
@@ -117,8 +131,24 @@ export function createChartGestures(plot: HTMLElement, host: ChartGestureHost): 
     }
     const layout = host.layout();
     const mode = host.mode();
-    if (!layout?.x || mode === "none" || (event.pointerType === "mouse" && event.button !== 0))
-      return;
+    const primary = event.pointerType !== "mouse" || event.button === 0;
+    // Draggable annotations (4.18.20) move in every mode; measure mode draws a ruler.
+    if (layout?.x && primary && pointers.size === 0) {
+      const at = { px: local(event.clientX), py: localY(event.clientY) };
+      const hit = host.annotationAt?.(at);
+      if (hit !== undefined || mode === "measure") {
+        pointers.set(event.pointerId, at.px);
+        drag =
+          hit !== undefined
+            ? { kind: "annotation", index: hit, from: at }
+            : { kind: "measure", from: at };
+        try {
+          plot.setPointerCapture(event.pointerId);
+        } catch {}
+        return;
+      }
+    }
+    if (!layout?.x || mode === "none" || mode === "measure" || !primary) return;
     const x = local(event.clientX);
     pointers.set(event.pointerId, x);
     const range = host.range();
@@ -169,6 +199,14 @@ export function createChartGestures(plot: HTMLElement, host: ChartGestureHost): 
     const x = local(event.clientX);
     pointers.set(event.pointerId, x);
     if (drag.kind === "pinch" || Math.abs(event.clientX - pressX) >= 4) moved = true;
+    if (drag.kind === "measure" || drag.kind === "annotation") {
+      const to = { px: x, py: localY(event.clientY) };
+      if (Math.hypot(to.px - drag.from.px, to.py - drag.from.py) >= 4) moved = true;
+      if (!moved) return;
+      if (drag.kind === "measure") host.measure?.(drag.from, to, false);
+      else host.dragAnnotation?.(drag.index, drag.from, to, false);
+      return;
+    }
     const layout = view();
     if (!layout) return;
     // Navigator drags act like a brush on the zoom (ADR-0047).
@@ -211,6 +249,12 @@ export function createChartGestures(plot: HTMLElement, host: ChartGestureHost): 
     if (pointers.size > 0 && current?.kind === "pinch") return;
     drag = undefined;
     pointers.clear();
+    if ((current?.kind === "measure" || current?.kind === "annotation") && moved) {
+      const to = { px: local(event.clientX), py: localY(event.clientY) };
+      if (current.kind === "measure") host.measure?.(current.from, to, true);
+      else host.dragAnnotation?.(current.index, current.from, to, true);
+      return;
+    }
     if (current?.kind === "select" && current.moved && host.mode() !== "brush" && !current.nav) {
       const layout = host.layout();
       host.preview(null);

@@ -184,6 +184,8 @@ const pairs: [component: string, story: string][] = [
   ["chart", "data-reducer"],
   ["chart", "timeline-rows"],
   ["chart", "column-zero-bars"],
+  ["chart", "measure"],
+  ["chart", "annotations-drag"],
   ["chart", "unit"],
   ["chart", "waffle"],
   ["chart", "beeswarm"],

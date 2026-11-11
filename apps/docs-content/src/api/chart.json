@@ -254,6 +254,12 @@
       "name": "ok:chart:active"
      },
      {
+      "cancelable": false,
+      "description": "After a draggable annotation (`li[data-ok-draggable]`) was moved by a drag or the keyboard and its list item rewritten: its index among the valid list items and its new coordinates.",
+      "detail": "{ index: number; annotation: ChartAnnotation; }",
+      "name": "ok:chart:annotation"
+     },
+     {
       "cancelable": true,
       "description": "Sunburst and icicle charts: before a click, Enter, Space, Escape or the **Back** button zooms into a node (`id`, and the names from the root in `path`) or out (`null` at the top). Call `preventDefault()` to refuse.",
       "detail": "{ id: string | null; path: string[]; }",
@@ -270,6 +276,12 @@
       "description": "After the group's crossfilter changed (charts with `data-ok-crossfilter`): the filtered category indexes (`null`: none) and whether this chart set it.",
       "detail": "{ categories: number[] | null; own: boolean; }",
       "name": "ok:chart:filter"
+     },
+     {
+      "cancelable": false,
+      "description": "After a drag, or Enter or Space at a second point in measure mode, drew a ruler: the ruler, every ruler and its text.",
+      "detail": "{ measure: ChartMeasure; measures: ChartMeasure[]; text: string; }",
+      "name": "ok:chart:measure"
      },
      {
       "cancelable": false,
@@ -310,6 +322,12 @@
       "type": "() => void"
      },
      {
+      "description": "Removes every ruler (no event).",
+      "kind": "method",
+      "name": "clearMeasures",
+      "type": "() => void"
+     },
+     {
       "description": "Tree charts: ids of the nodes whose children are hidden (`data-ok-collapsed-nodes`).",
       "kind": "property",
       "name": "collapsedNodes",
@@ -338,6 +356,12 @@
       "kind": "property",
       "name": "hiddenSeries",
       "type": "readonly number[]"
+     },
+     {
+      "description": "Measure rulers (`data-ok-measure`), in data coordinates.",
+      "kind": "property",
+      "name": "measures",
+      "type": "readonly ChartMeasure[]"
      },
      {
       "description": "Reads the table and the options again and redraws (done automatically on changes).",
@@ -391,7 +415,13 @@
       "description": "Localized texts: tool names, the export error and part labels (tables carry their own).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(text: Readonly<Partial<Record<\"clearFilter\" | \"drillUp\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+      "type": "(text: Readonly<Partial<Record<\"annotation\" | \"annotationDropped\" | \"clearFilter\" | \"drillUp\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"measureFrom\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+     },
+     {
+      "description": "Shows exactly these rulers (invalid ones are dropped; no event).",
+      "kind": "method",
+      "name": "setMeasures",
+      "type": "(measures: readonly ChartMeasure[]) => void"
      },
      {
       "description": "Selects exactly these points (invalid entries are dropped; no event).",
@@ -1731,6 +1761,24 @@
       "name": "xLabelRotateAlways"
      },
      {
+      "attr": "data-ok-measure",
+      "default": "span",
+      "description": "Measure rulers: a **Measure** button in the toolbar; a drag (or Enter at two points) then measures the change between two x positions (`span`, the series' values) or two points (`free`).",
+      "kind": "style",
+      "name": "measure",
+      "optional": true,
+      "values": [
+       "span",
+       "free"
+      ]
+     },
+     {
+      "attr": "data-ok-measure-pin-on-release",
+      "description": "Measure rulers stay on the chart when the drag ends, up to 20 of them (without it, a new ruler replaces the last one).",
+      "kind": "flag",
+      "name": "measurePinOnRelease"
+     },
+     {
       "attr": "data-ok-range-bar-group-rows",
       "description": "Range bars and timelines: the series share one lane per category, so bars of different series line up in a row.",
       "kind": "flag",
@@ -2474,6 +2522,63 @@
       "name": "data-ok-chart-marker"
      },
      {
+      "description": "A measure ruler: `span` (between two x positions) or `free` (between two points).",
+      "kind": "value",
+      "name": "data-ok-chart-measure",
+      "value": [
+       "free",
+       "span"
+      ]
+     },
+     {
+      "description": "A span ruler's band across the plot.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-measure-band"
+     },
+     {
+      "description": "An end of a ruler.",
+      "elements": [
+       "circle"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-measure-end"
+     },
+     {
+      "description": "A ruler's text: the two positions and the change.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-measure-label"
+     },
+     {
+      "description": "A free ruler's line.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-measure-line"
+     },
+     {
+      "description": "The box behind a ruler's text.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-measure-tag"
+     },
+     {
+      "description": "The layer of measure rulers.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-measures"
+     },
+     {
       "description": "On a data grid: the chart panel's model, as JSON.",
       "kind": "value",
       "name": "data-ok-chart-model",
@@ -3041,6 +3146,11 @@
       "value": "string"
      },
      {
+      "description": "On an annotation list item and its drawing: the annotation can be moved by a drag or the keyboard.",
+      "kind": "state",
+      "name": "data-ok-draggable"
+     },
+     {
       "description": "Sunburst and icicle charts: the id of the node zoomed into. Written by the chart.",
       "kind": "value",
       "name": "data-ok-drill-node",
@@ -3202,6 +3312,11 @@
       ]
      },
      {
+      "description": "On a drawn annotation: the keyboard holds it (arrows move it, Enter or Escape drops it).",
+      "kind": "state",
+      "name": "data-ok-picked"
+     },
+     {
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
       "kind": "state",
       "name": "data-ok-ready"
@@ -3263,6 +3378,16 @@
       "kind": "value",
       "name": "data-ok-total-label",
       "value": "string"
+     },
+     {
+      "description": "On a ruler's text: whether the value went `up`, `down` or stayed `flat`.",
+      "kind": "value",
+      "name": "data-ok-trend",
+      "value": [
+       "down",
+       "flat",
+       "up"
+      ]
      },
      {
       "description": "Text before every value, such as `$`.",
@@ -3542,6 +3667,11 @@
       "description": "Uncontrolled initial hidden series.",
       "name": "defaultHiddenSeries",
       "type": "readonly number[]"
+     },
+     {
+      "description": "Uncontrolled initial rulers.",
+      "name": "defaultMeasures",
+      "type": "readonly ChartMeasure[]"
      },
      {
       "description": "Uncontrolled initial selection.",
@@ -3826,7 +3956,7 @@
      {
       "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names, the export error and `selected`.",
       "name": "localeText",
-      "type": "Readonly<Partial<Record<\"clearFilter\" | \"drillUp\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
+      "type": "ChartLocaleText"
      },
      {
       "description": "Marker shape of every series: `\"circle\"` (default), `\"square\"`, `\"triangle\"`, `\"diamond\"`, `\"cross\"`, `\"plus\"` or `\"star\"`. Series may set `markerShape` themselves.",
@@ -3842,6 +3972,21 @@
       "description": "Waffle and unit charts: the most marks drawn; counts scale down above it. Default 5000.",
       "name": "maxUnits",
       "type": "number"
+     },
+     {
+      "description": "Measure rulers: a **Measure** button in the toolbar. In measure mode a drag, or Enter or Space at two points, measures the change between two x positions (`span`: the series' values) or two points (`free`).",
+      "name": "measure",
+      "type": "\"free\" | \"span\""
+     },
+     {
+      "description": "Rulers stay on the chart when the drag ends (up to 20); without it a new one replaces the last.",
+      "name": "measurePinOnRelease",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled: the rulers, in data coordinates (`{ x1, y1, x2, y2 }`).",
+      "name": "measures",
+      "type": "readonly ChartMeasure[]"
      },
      {
       "description": "Stock charts: a navigator under the chart (the whole price line, the zoom as a brush).",
@@ -3881,6 +4026,11 @@
       "type": "((active: ChartActive | null) => void)"
      },
      {
+      "description": "Called after a draggable annotation was moved (a drag, or the keyboard: A picks it up, arrows move it, Enter drops it), with its index in `annotations` and its new coordinates. Update `annotations` to keep it there (ApexCharts' `annotationDragged`).",
+      "name": "onAnnotationChange",
+      "type": "((detail: { index: number; annotation: ChartAnnotation; }) => void)"
+     },
+     {
       "description": "Tree charts: called with the collapsed ids after a node is expanded or collapsed.",
       "name": "onCollapsedNodesChange",
       "type": "((collapsedNodes: string[]) => void)"
@@ -3904,6 +4054,16 @@
       "description": "Called with the new hidden series when a legend item is toggled.",
       "name": "onHiddenSeriesChange",
       "type": "((hidden: number[]) => void)"
+     },
+     {
+      "description": "Called after a ruler is drawn, with it, every ruler and its text (ApexCharts' `measured`).",
+      "name": "onMeasured",
+      "type": "((detail: { measure: ChartMeasure; measures: ChartMeasure[]; text: string; }) => void)"
+     },
+     {
+      "description": "Called with the rulers after one is added or they are cleared.",
+      "name": "onMeasuresChange",
+      "type": "((measures: ChartMeasure[]) => void)"
      },
      {
       "description": "Called with the new zoom: the chart's own gestures (`\"user\"`), its group or a brush.",
@@ -4313,7 +4473,7 @@
   },
   {
    "name": "ChartTool",
-   "type": "\"csv\" | \"pan\" | \"png\" | \"reset\" | \"svg\" | \"zoomIn\" | \"zoomOut\""
+   "type": "\"clearMeasures\" | \"csv\" | \"measure\" | \"pan\" | \"png\" | \"reset\" | \"svg\" | \"zoomIn\" | \"zoomOut\""
   },
   {
    "name": "ChartType",

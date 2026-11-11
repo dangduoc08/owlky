@@ -1386,6 +1386,51 @@
     stroke-width: 2px;
   }
 
+  /* Measure rulers (4.18.20): a band or a line, two ends and a tag with the change. */
+  :where([data-ok-chart-measure-band]) {
+    fill: var(--ok-text-primary);
+    fill-opacity: 0.08;
+    stroke: var(--ok-text-secondary);
+    stroke-dasharray: 4 3;
+  }
+
+  :where([data-ok-chart-measure-line]) {
+    stroke: var(--ok-text-primary);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+
+  :where([data-ok-chart-measure-end]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-text-primary);
+    stroke-width: 2;
+  }
+
+  :where([data-ok-chart-measure-tag]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-divider);
+  }
+
+  :where([data-ok-chart-measure-label]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Draggable annotations (4.18.20): a grab cursor; the one the keyboard holds is outlined. */
+  :where([data-ok-chart-plot]:has([data-ok-chart-annotation][data-ok-draggable])) {
+    touch-action: pan-y;
+  }
+
+  :where([data-ok-chart-annotation][data-ok-draggable]) {
+    cursor: grab;
+  }
+
+  :where([data-ok-chart-annotation][data-ok-picked]) {
+    outline: 2px dashed var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
   /* X axis groups (4.18.65): a second row of labels and the ticks between the groups. */
   :where([data-ok-chart-axis-group]) {
     fill: var(--ok-text-primary);

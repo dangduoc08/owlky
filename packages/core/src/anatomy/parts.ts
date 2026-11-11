@@ -467,6 +467,26 @@ export interface ChartParts {
   "data-ok-chart-axis-group-tick": Part<"line">;
   /** A free text annotation. */
   "data-ok-chart-annotation-text": Part<"text">;
+  /** The layer of measure rulers. */
+  "data-ok-chart-measures": Part<"g">;
+  /** A measure ruler: `span` (between two x positions) or `free` (between two points). */
+  "data-ok-chart-measure": Value<"span" | "free">;
+  /** A span ruler's band across the plot. */
+  "data-ok-chart-measure-band": Part<"rect">;
+  /** A free ruler's line. */
+  "data-ok-chart-measure-line": Part<"line">;
+  /** An end of a ruler. */
+  "data-ok-chart-measure-end": Part<"circle">;
+  /** The box behind a ruler's text. */
+  "data-ok-chart-measure-tag": Part<"rect">;
+  /** A ruler's text: the two positions and the change. */
+  "data-ok-chart-measure-label": Part<"text">;
+  /** On a ruler's text: whether the value went `up`, `down` or stayed `flat`. */
+  "data-ok-trend": Value<"up" | "down" | "flat">;
+  /** On an annotation list item and its drawing: the annotation can be moved by a drag or the keyboard. */
+  "data-ok-draggable": State;
+  /** On a drawn annotation: the keyboard holds it (arrows move it, Enter or Escape drops it). */
+  "data-ok-picked": State;
   /** The message drawn when there is nothing to draw (`noDataText`). */
   "data-ok-chart-no-data": Part<"text">;
   /** A dashed line, faint area or bar of the forecast tail (`forecastCount`). */

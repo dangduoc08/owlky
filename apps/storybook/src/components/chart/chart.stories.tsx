@@ -193,3 +193,6 @@ export const DataReducer: StoryObj = story("data-reducer");
 // Roadmap 4.18.67: timeline rows and zero bars of grouped columns.
 export const TimelineRows: StoryObj = story("timeline-rows");
 export const ColumnZeroBars: StoryObj = story("column-zero-bars");
+// Roadmap 4.18.20: measure rulers and draggable annotations.
+export const Measure: StoryObj = story("measure");
+export const AnnotationsDrag: StoryObj = story("annotations-drag");

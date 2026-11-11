@@ -57,6 +57,7 @@ import {
   chartLeaves,
   chartZoomTypes,
 } from "../chart/chart-hierarchy.js";
+import { type ChartMeasureMode, chartMeasureModes } from "../chart/chart-measure.js";
 import {
   type ChartColor,
   type ChartCrossfilter,
@@ -5148,6 +5149,17 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-x-label-rotate-always",
     "X labels turn by `xLabelRotate` even when they fit flat.",
   ),
+  measure: style(
+    "data-ok-measure",
+    chartMeasureModes,
+    "span",
+    "Measure rulers: a **Measure** button in the toolbar; a drag (or Enter at two points) then measures the change between two x positions (`span`, the series' values) or two points (`free`).",
+    { optional: true },
+  ),
+  measurePinOnRelease: flag(
+    "data-ok-measure-pin-on-release",
+    "Measure rulers stay on the chart when the drag ends, up to 20 of them (without it, a new ruler replaces the last one).",
+  ),
   rangeBarGroupRows: flag(
     "data-ok-range-bar-group-rows",
     "Range bars and timelines: the series share one lane per category, so bars of different series line up in a row.",
@@ -5364,6 +5376,8 @@ export interface ChartAnatomyOptions {
   xRange?: number | undefined;
   xLabelRotate?: number | undefined;
   xLabelRotateAlways?: boolean | undefined;
+  measure?: ChartMeasureMode | undefined;
+  measurePinOnRelease?: boolean | undefined;
   rangeBarGroupRows?: boolean | undefined;
   disableRangeBarOverlap?: boolean | undefined;
   hideZeroBarsWhenGrouped?: boolean | undefined;

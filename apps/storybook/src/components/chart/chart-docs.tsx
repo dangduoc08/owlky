@@ -3,6 +3,7 @@ import chartApi from "@owlky/docs-content/api/chart.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Chart } from "@owlky/react";
 import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
+import annotationsDragGroup from "../../../../../packages/html/src/components/chart/examples/annotations-drag-group.html?raw";
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
 import annotationsTextGroup from "../../../../../packages/html/src/components/chart/examples/annotations-text-group.html?raw";
 import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
@@ -24,6 +25,7 @@ import icicleGroup from "../../../../../packages/html/src/components/chart/examp
 import legendGroup from "../../../../../packages/html/src/components/chart/examples/legend-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
 import markerShapesGroup from "../../../../../packages/html/src/components/chart/examples/marker-shapes-group.html?raw";
+import measureGroup from "../../../../../packages/html/src/components/chart/examples/measure-group.html?raw";
 import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
 import multipleYAxesGroup from "../../../../../packages/html/src/components/chart/examples/multiple-y-axes-group.html?raw";
 import noDataGroup from "../../../../../packages/html/src/components/chart/examples/no-data-group.html?raw";
@@ -1797,6 +1799,71 @@ export function ChartDataReducer() {
 }`,
   },
   {
+    id: "measure",
+    title: "Measure changes",
+    body: `Set \`measure\` (\`data-ok-measure\`) to add a **Measure** button to the chart's toolbar. Select it, then drag across the plot to draw a ruler. Its tag shows the two positions and the change, such as "Mar → Jul: +19 (+126.7%)", and the chart announces it.
+
+- **Span:** \`measure="span"\` measures between two x positions, with the values of the first series there.
+- **Free:** \`measure="free"\` measures between the two points where the drag starts and ends.
+- **Pinned rulers:** \`measurePinOnRelease\` keeps every ruler, up to 20. Without it, a new ruler replaces the last one. **Clear measures** removes them.
+- **Keyboard:** in measure mode, move to a value with the arrow keys and press Enter or Space, then do the same at a second value. Escape forgets the first one.
+
+React keeps the rulers in \`measures\` (controlled) or \`defaultMeasures\` and calls \`onMeasured\` and \`onMeasuresChange\`. In HTML, the \`ok:chart:measure\` event fires, and the instance has \`measures\`, \`setMeasures(list)\` and \`clearMeasures()\`.`,
+    html: snippetElement(measureGroup, "data-ok-chart ", 1),
+    react: `import type { ChartMeasure } from "@owlky/core";
+import { Chart } from "@owlky/react";
+import { useState } from "react";
+
+const points = [
+  { name: "Samples", data: [[20, 31], [35, 42], [50, 47], [62, 58], [75, 61]] as [number, number][] },
+];
+
+export function ChartMeasureExample() {
+  const [rulers, setRulers] = useState<ChartMeasure[]>([]);
+  return (
+    <Chart
+      label="Height and weight"
+      type="scatter"
+      measure="free"
+      measurePinOnRelease
+      toolbar
+      measures={rulers}
+      onMeasuresChange={setRulers}
+      series={points}
+    />
+  );
+}`,
+  },
+  {
+    id: "annotations-drag",
+    title: "Move annotations",
+    body: "Set `draggable` on an annotation (`data-ok-draggable` on its list item) to let people move it. A drag moves a vertical line along the x axis, a horizontal line along the value axis, and points and text in both directions, snapped to the categories. Without a pointer, press A on the focused chart to pick up the next draggable annotation, move it with the arrow keys, and drop it with Enter, Space or Escape. The chart announces where it is. React calls `onAnnotationChange` with its index and new coordinates: update `annotations` with them. The HTML runtime writes the new coordinates on the list item and fires `ok:chart:annotation`.",
+    html: snippetElement(annotationsDragGroup, "data-ok-chart "),
+    react: `import type { ChartAnnotation } from "@owlky/core";
+import { Chart } from "@owlky/react";
+import { useState } from "react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+const visits = [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }];
+
+export function ChartMovableTarget() {
+  const [annotations, setAnnotations] = useState<ChartAnnotation[]>([
+    { axis: "y", y: 60, label: "Target", color: "success", draggable: true },
+  ]);
+  return (
+    <Chart
+      label="Weekly visits with a target"
+      categories={months}
+      series={visits}
+      annotations={annotations}
+      onAnnotationChange={({ index, annotation }) =>
+        setAnnotations((list) => list.map((entry, i) => (i === index ? annotation : entry)))
+      }
+    />
+  );
+}`,
+  },
+  {
     id: "timeline-rows",
     title: "Arrange timeline rows",
     body: "By default each series of a timeline has its own lane in every category. Set `rangeBarGroupRows` (`data-ok-range-bar-group-rows`) to put every series in one lane per category, as a schedule does. Write several points with the same `x` to place several bars in a row; in HTML, repeat the row header for each bar. Bars that overlap in time are drawn over each other. Set `disableRangeBarOverlap` (`data-ok-disable-range-bar-overlap`) to give them lanes of their own, which also works for several bars of one series in a category.",
@@ -1905,6 +1972,29 @@ export function ChartNoData() {
 ];
 
 const PREVIEWS = {
+  measure: () => (
+    <Preview>
+      <Chart
+        label="Monthly sales"
+        height={220}
+        measure="span"
+        defaultMeasures={[{ x1: 1, y1: 41, x2: 4, y2: 49 }]}
+        categories={MONTHS}
+        series={SALES}
+      />
+    </Preview>
+  ),
+  "annotations-drag": () => (
+    <Preview>
+      <Chart
+        label="Weekly visits with a target"
+        height={220}
+        categories={MONTHS}
+        series={[{ name: "Visits", data: [30, 41, 27, 43, 63, 71] }]}
+        annotations={[{ axis: "y", y: 50, label: "Target", color: "success", draggable: true }]}
+      />
+    </Preview>
+  ),
   "timeline-rows": () => (
     <Preview>
       <Chart

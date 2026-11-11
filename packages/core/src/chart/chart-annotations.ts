@@ -1,4 +1,5 @@
 import { type ChartLayout, type ChartNode, chartTextWidth, fmt, node } from "./chart-layout.js";
+import type { ChartAnnotationHit } from "./chart-measure.js";
 import { type ChartColor, type ChartData, chartColors, parseChartNumber } from "./chart-model.js";
 import { toTimestamp } from "./chart-scale.js";
 import { chartPxOf } from "./chart-zoom.js";
@@ -31,6 +32,8 @@ export interface ChartAnnotation {
   readonly color?: ChartColor | undefined;
   /** Text annotations: how the label lines up with its position. Default `middle`. */
   readonly textAnchor?: ChartAnnotationAnchor | undefined;
+  /** The annotation can be moved by a drag, or by the keyboard (4.18.20). */
+  readonly draggable?: boolean | undefined;
 }
 
 const AXES: readonly ChartAnnotationAxis[] = ["x", "y", "point", "text"];
@@ -68,9 +71,15 @@ export function chartAnnotations(list: readonly ChartAnnotation[] | undefined): 
         ...(entry.axis === "text" && chartAnnotationAnchors.includes(entry.textAnchor as "start")
           ? { textAnchor: entry.textAnchor }
           : {}),
+        ...(entry.draggable === true ? { draggable: true } : {}),
       },
     ];
   });
+}
+
+/** The positions in `list` of the annotations `chartAnnotations` keeps (moves report these). */
+export function chartAnnotationIndexes(list: readonly ChartAnnotation[] | undefined): number[] {
+  return (list ?? []).flatMap((entry, index) => (chartAnnotations([entry]).length ? [index] : []));
 }
 
 /** The annotation list items React renders and HTML authors write (`li` attributes and text). */
@@ -86,29 +95,32 @@ export function chartAnnotationItems(
       ...(entry.y2 !== undefined ? { "data-ok-y2": String(entry.y2) } : {}),
       ...(entry.color ? { "data-ok-color": entry.color } : {}),
       ...(entry.textAnchor ? { "data-ok-text-anchor": entry.textAnchor } : {}),
+      ...(entry.draggable ? { "data-ok-draggable": "" } : {}),
     },
     text: entry.label ?? "",
   }));
 }
 
+/** One annotation list item as written (not validated). */
+export function readChartAnnotation(item: Element): ChartAnnotation {
+  const attr = (name: string) => item.getAttribute(name) ?? undefined;
+  return {
+    axis: attr("data-ok-annotation") as ChartAnnotationAxis,
+    x: attr("data-ok-x"),
+    x2: attr("data-ok-x2"),
+    y: attr("data-ok-y") as unknown as number,
+    y2: attr("data-ok-y2") as unknown as number,
+    label: item.textContent?.trim() || undefined,
+    color: attr("data-ok-color") as ChartColor,
+    textAnchor: attr("data-ok-text-anchor") as ChartAnnotationAnchor,
+    draggable: item.hasAttribute("data-ok-draggable"),
+  };
+}
+
 /** Reads the annotations of a `ul[data-ok-chart-annotations]` (HTML). */
 export function readChartAnnotations(list: Element | null): ChartAnnotation[] {
   if (!list) return [];
-  return chartAnnotations(
-    [...list.children].map((item) => {
-      const attr = (name: string) => item.getAttribute(name) ?? undefined;
-      return {
-        axis: attr("data-ok-annotation") as ChartAnnotationAxis,
-        x: attr("data-ok-x"),
-        x2: attr("data-ok-x2"),
-        y: attr("data-ok-y") as unknown as number,
-        y2: attr("data-ok-y2") as unknown as number,
-        label: item.textContent?.trim() || undefined,
-        color: attr("data-ok-color") as ChartColor,
-        textAnchor: attr("data-ok-text-anchor") as ChartAnnotationAnchor,
-      };
-    }),
-  );
+  return chartAnnotations([...list.children].map(readChartAnnotation));
 }
 
 /** An x value's position on the axis: a category, a date between categories or a number. */
@@ -137,6 +149,8 @@ export function chartAnnotationNodes(
   data: ChartData,
   layout: ChartLayout,
   list: readonly ChartAnnotation[],
+  /** The annotation the keyboard picked up (4.18.20): drawn with `data-ok-picked`. */
+  picked?: number,
 ): ChartNode[] {
   const { x: xMap, y: yMap, plot } = layout;
   if (!xMap || !yMap || list.length === 0) return [];
@@ -181,7 +195,12 @@ export function chartAnnotationNodes(
     ];
   };
   const groups: ChartNode[] = [];
-  for (const entry of list) {
+  /** Draggable annotations say so (a grab cursor); the picked one is outlined. */
+  const marks = (entry: ChartAnnotation, index: number) => ({
+    ...(entry.draggable ? { "data-ok-draggable": "" } : {}),
+    ...(picked === index ? { "data-ok-picked": "" } : {}),
+  });
+  for (const [index, entry] of list.entries()) {
     const children: ChartNode[] = [];
     if (entry.axis === "x") {
       const a = pxOf(entry.x);
@@ -272,7 +291,11 @@ export function chartAnnotationNodes(
         groups.push(
           node(
             "g",
-            { "data-ok-chart-annotation": "text", "data-ok-color": entry.color ?? "info" },
+            {
+              "data-ok-chart-annotation": "text",
+              "data-ok-color": entry.color ?? "info",
+              ...marks(entry, index),
+            },
             children,
           ),
         );
@@ -291,10 +314,33 @@ export function chartAnnotationNodes(
     groups.push(
       node(
         "g",
-        { "data-ok-chart-annotation": entry.axis, "data-ok-color": entry.color ?? "info" },
+        {
+          "data-ok-chart-annotation": entry.axis,
+          "data-ok-color": entry.color ?? "info",
+          ...marks(entry, index),
+        },
         children,
       ),
     );
   }
   return groups.length ? [node("g", { "data-ok-chart-annotation-layer": "" }, groups)] : [];
+}
+
+/** Where the draggable annotations are drawn (4.18.20): lines by one coordinate, points by both. */
+export function chartAnnotationHits(
+  data: ChartData,
+  layout: ChartLayout,
+  list: readonly ChartAnnotation[],
+): ChartAnnotationHit[] {
+  const { x: xMap, y: yMap } = layout;
+  if (!xMap || !yMap) return [];
+  return list.flatMap((entry, index): ChartAnnotationHit[] => {
+    if (!entry.draggable) return [];
+    const at = entry.x === undefined ? undefined : xValue(data, entry.x);
+    const px = at === undefined ? undefined : chartPxOf(xMap, at);
+    const py = entry.y === undefined ? undefined : chartPxOf(yMap, entry.y);
+    if (entry.axis === "x") return px === undefined ? [] : [{ index, axis: "x", px }];
+    if (entry.axis === "y") return py === undefined ? [] : [{ index, axis: "y", py }];
+    return px === undefined || py === undefined ? [] : [{ index, axis: entry.axis, px, py }];
+  });
 }
