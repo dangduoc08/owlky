@@ -227,3 +227,117 @@ describe("DataGrid rows to export (4.18.92)", () => {
     frame.remove();
   });
 });
+
+describe("DataGrid state with rows and onStateChange (4.18.91)", () => {
+  const microtask = () => new Promise<void>((resolve) => queueMicrotask(resolve));
+  const pinnedIds = (side: "top" | "bottom") =>
+    [...document.querySelectorAll(`[data-ok-data-grid-pinned-rows="${side}"] > [role="row"]`)].map(
+      (row) => row.getAttribute("data-ok-row-id"),
+    );
+
+  it("exports and restores the selection, open panels, pinned rows and the row order", async () => {
+    const apiRef = { current: null as GridApi<Row> | null };
+    const onStateChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        checkboxSelection
+        rowReordering
+        getDetailPanelContent={({ row }) => <p>{`About ${row.name}`}</p>}
+        pinnedRows={{ top: [{ id: 90, name: "Top", team: "-", score: 0 }] }}
+        onStateChange={onStateChange}
+      />,
+    );
+    await act(microtask);
+    expect(onStateChange).not.toHaveBeenCalled();
+    const api = () => apiRef.current as GridApi<Row>;
+    expect(api().exportState()).toMatchObject({
+      rowSelection: { model: [] },
+      detailPanel: { expandedRowIds: [] },
+      pinnedRows: { top: ["90"], bottom: [] },
+    });
+    expect(api().exportState().rowOrder).toBeUndefined();
+    await userEvent.click(nameCell(1));
+    await act(microtask);
+    expect(onStateChange).toHaveBeenCalledTimes(1);
+    expect(onStateChange.mock.calls[0]?.[0].rowSelection).toEqual({ model: ["2"] });
+    act(() =>
+      api().restoreState({
+        rowSelection: { model: ["3", "4"] },
+        detailPanel: { expandedRowIds: ["1"] },
+        pinnedRows: { top: ["2"], bottom: ["90"] },
+        rowOrder: { orderedIds: ["5", "4", "3", "1"] },
+      }),
+    );
+    await act(microtask);
+    expect(pinnedIds("top")).toEqual(["2"]);
+    expect(pinnedIds("bottom")).toEqual(["90"]);
+    expect(
+      bodyRows()
+        .filter((row) => row.hasAttribute("data-ok-row-id"))
+        .map((row) => row.getAttribute("data-ok-row-id")),
+    ).toEqual(["5", "4", "3", "1"]);
+    expect(document.querySelector('[data-ok-detail-for="1"]')).not.toBeNull();
+    expect(selected()).toEqual(["4", "3"]);
+    expect(
+      document
+        .querySelector('[data-ok-row-id="1"] [data-ok-data-grid-detail-toggle]')
+        ?.getAttribute("aria-expanded"),
+    ).toBe("true");
+    const state = api().exportState();
+    expect(state.rowSelection).toEqual({ model: ["3", "4"] });
+    expect(state.detailPanel).toEqual({ expandedRowIds: ["1"] });
+    expect(state.pinnedRows).toEqual({ top: ["2"], bottom: ["90"] });
+    expect(state.rowOrder).toEqual({ orderedIds: ["5", "4", "3", "1"] });
+    expect(onStateChange).toHaveBeenLastCalledWith(state);
+    const calls = onStateChange.mock.calls.length;
+    // A pressed pointer holds the report until its release.
+    const root = document.querySelector("[data-ok-data-grid]") as HTMLElement;
+    root.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    act(() => api().setRowSelectionModel([]));
+    await act(microtask);
+    expect(onStateChange).toHaveBeenCalledTimes(calls);
+    act(() => {
+      document.dispatchEvent(new PointerEvent("pointerup"));
+    });
+    await act(microtask);
+    expect(onStateChange).toHaveBeenCalledTimes(calls + 1);
+  });
+
+  it("initialState starts with them; new pinnedRows replace restored pins", () => {
+    const pins = { top: [{ id: 90, name: "Top", team: "-", score: 0 }] };
+    const { rerender } = render(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        checkboxSelection
+        getDetailPanelContent={({ row }) => <p>{`About ${row.name}`}</p>}
+        pinnedRows={pins}
+        initialState={{
+          rowSelection: { model: ["1"] },
+          detailPanel: { expandedRowIds: ["2"] },
+          pinnedRows: { top: ["3"] },
+          rowOrder: { orderedIds: ["5", "4"] },
+        }}
+      />,
+    );
+    expect(pinnedIds("top")).toEqual(["3"]);
+    expect(selected()).toEqual(["1"]);
+    expect(nameCell(0).textContent).toBe("Emma");
+    expect(document.querySelector('[data-ok-detail-for="2"]')).not.toBeNull();
+    rerender(
+      <DataGrid
+        aria-label="People"
+        rows={ROWS}
+        columns={COLUMNS}
+        checkboxSelection
+        pinnedRows={{ ...pins }}
+      />,
+    );
+    expect(pinnedIds("top")).toEqual(["90"]);
+  });
+});

@@ -702,6 +702,21 @@ Shift + arrows extend the cell range only. A Shift + press clears the page's tex
 `preventSelectionOnShift`). Group rows (row grouping) toggle as before. HTML reads Shift from the
 checkbox's click, which comes before its `change`.
 
+State with rows (4.18.91, ApexGrid `getState()` / `setState()` / `stateChanged`): `exportState()`
+adds `rowSelection: { model }` (checkbox selection on), `detailPanel: { expandedRowIds }` (MUI X's key;
+an array, MUI X v8 a `Set`; grids with detail panels), `pinnedRows: { top, bottom }` (row ids; grids
+with pinned rows) and `rowOrder: { orderedIds }` (after a manual move or a restored order);
+`restoreState()` and React `initialState` apply them (core `sanitizeGridState`: strings, each id once,
+a bottom id also on top dropped). Restored pins take rows from `pinnedRows` and from the body (a body
+row pinned leaves the body; an unpinned one goes back at its end); React keeps them until `pinnedRows`
+changes, HTML moves the row elements (building or removing the pinned rowgroups, `aria-selected`
+dropped on pinned rows). Restored orders put the listed ids first, the others after. `onStateChange`
+(React) / `ok:data-grid:statechange` (`{ state }`, HTML) report `exportState()` once it settles (core
+`createGridStateWatcher`): a microtask after an update compares the JSON with the last report (the
+state at mount or setup first, never reported), and nothing is reported while a pointer is pressed
+in the grid (drags, fills), only after its release. MUI X's `onStateChange(state, event, details)` gets
+its internal state; Owlky gives the exported state (the JSON people store).
+
 Rows to export (4.18.92, core `gridRowsToExport`): `csvOptions`, `excelOptions` and `printOptions`
 (and the options of `getDataAsCsv`, `getDataAsExcel`, `exportDataAsPrint`; HTML `toCsv`, `exportCsv`,
 `toExcel`, `exportExcel`, `print`) take MUI X's `getRowsToExport(params)` → row ids in order (unknown
@@ -810,6 +825,7 @@ the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
 (`{ menu, target }`), `preferencepanelopen` / `preferencepanelclose` (`{ openedPanelValue }`), `sidebaropen` /
 `sidebarclose` (`{ value }`), `containerresize` (`{ width, height }`), `columnresize` (`{ field, width }`),
 `fetchrows`, `excelexportstate` (`{ state }`), `beforeclipboardpaste` (cancelable, `{ data, waitUntil }`).
+(4.18.91) `ok:data-grid:statechange` (`{ state }`: `exportState()` once settled).
 (4.18.58) `ok:data-grid:fill` (cancelable, `{ cells }`: each cell with the cell it repeats).
 (4.18.57) `ok:data-grid:roworder` adds `oldParentId` / `parentId` for tree rows; instance
 `setPivotingColDef(def | null)`.
@@ -893,6 +909,7 @@ the detailed record of what is kept.
 | Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef` | same | kept (4.18.57) | object or `(originalColumnField, columnGroupPath)` (the column's keys); React overrides `headerName`, `description`, `width`, `minWidth`, `maxWidth`, `flex`, `align`, `headerAlign`, `headerClassName`, `cellClassName`, `resizable`; HTML `setPivotingColDef(def | null)` with `headerName`, `width`, `minWidth`, `maxWidth`, `align`, `headerAlign` (the headers the runtime builds) |
 | Pivot: `pivotPanelOpen` / `onPivotPanelOpenChange` | same | kept (4.18.57) | deprecated upstream (sidebar), kept as asked: the toolbar's Pivot popover; given, the prop decides and clicks only call `onPivotPanelOpenChange`; React writes `data-ok-pivot-panel-open`; HTML: the attribute opens and closes the panel, and follows it (the panel's own events stay `ok:data-grid:sidebaropen` / `sidebarclose`) |
+| `onStateChange`; `initialState.detailPanel.expandedRowIds` | same | kept (4.18.91) | `onStateChange(state)` gets `exportState()` once settled (MUI X: the internal state on every change, with `event` and `details`); state keys added beyond MUI X: `rowSelection`, `pinnedRows` (ids), `rowOrder`; HTML `ok:data-grid:statechange` |
 | Export: `csvOptions.getRowsToExport`, `excelOptions.getRowsToExport`, `printOptions.getRowsToExport` (`GridGetRowsToExportParams`) | same (+ `source`) | kept (4.18.92) | params carry `apiRef` and id lists instead of selectors; `source` (`filtered` · `selected` · `page` · `all`, ApexGrid) added; default stays the filtered rows (MUI X: the selected rows when any) |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |

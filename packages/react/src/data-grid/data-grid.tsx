@@ -17,6 +17,7 @@ import {
   createGridPivotDrag,
   createGridRowReorder,
   createGridScrollWatcher,
+  createGridStateWatcher,
   dataGridAttributes,
   filterGridRows,
   formatIsoDate,
@@ -81,6 +82,7 @@ import {
   type GridSortingOrder,
   type GridSortModel,
   type GridState,
+  type GridStateWatcher,
   type GridTreeRow,
   type GridViewport,
   gridActiveChartId,
@@ -945,6 +947,11 @@ export interface DataGridProps<R>
   ignoreDiacritics?: boolean | undefined;
   /** Options of the CSV export (file name, delimiter, fields…). */
   csvOptions?: GridCsvOptions | undefined;
+  /**
+   * Called with `exportState()` once the grid's state settles after a change (MUI X
+   * `onStateChange`): once per change, not while a pointer drags, not at mount.
+   */
+  onStateChange?: ((state: GridState) => void) | undefined;
   /** Options of the print export (title, fields…). */
   printOptions?: GridPrintOptions | undefined;
   /** Toolbar buttons with text (default) or icons with tooltips. */
@@ -1568,6 +1575,7 @@ function DataGridInner<R>(
     quickFilterExcludeHiddenColumns,
     ignoreDiacritics,
     csvOptions,
+    onStateChange,
     printOptions,
     toolbarVariant = "labeled",
     treeData,
@@ -1668,7 +1676,7 @@ function DataGridInner<R>(
   const navigation = useRef<GridNavigation | null>(null);
   const [selection, setSelection] = useControllableState<readonly string[]>({
     value: rowSelectionModel,
-    defaultValue: [],
+    defaultValue: initialState?.rowSelection?.model ?? [],
     onChange: (next) => onRowSelectionModelChange?.([...next]),
   });
   const [sortModel, setSortModel] = useControllableState<GridSortModel>({
@@ -1777,13 +1785,34 @@ function DataGridInner<R>(
   const [overrides, setOverrides] = useState<ReadonlyMap<string, R>>(new Map());
   const refocus = useRef<{ rowId: string; field: string } | null>(null);
   // New rows from the parent replace the edits shown so far.
+  // `initialState.rowOrder` survives the mount.
+  const rowsMounted = useRef(false);
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs when `rows` changes.
   useEffect(() => {
     setOverrides(new Map());
-    setRowOrder(null);
+    if (rowsMounted.current) setRowOrder(null);
+    rowsMounted.current = true;
   }, [rows]);
   // Row reordering: an order of ids set by moves (new rows from the parent reset it).
-  const [rowOrder, setRowOrder] = useState<readonly string[] | null>(null);
+  const [rowOrder, setRowOrder] = useState<readonly string[] | null>(
+    initialState?.rowOrder?.orderedIds ?? null,
+  );
+  // Pinned rows restored by `restoreState` (ids), until `pinnedRows` changes.
+  const [pinOverride, setPinOverride] = useState<{
+    top: readonly string[];
+    bottom: readonly string[];
+  } | null>(
+    initialState?.pinnedRows
+      ? { top: initialState.pinnedRows.top ?? [], bottom: initialState.pinnedRows.bottom ?? [] }
+      : null,
+  );
+  // A new `pinnedRows` replaces the restored pins (not at mount: `initialState` may set them).
+  const pinsMounted = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when `pinnedRows` changes.
+  useEffect(() => {
+    if (pinsMounted.current) setPinOverride(null);
+    pinsMounted.current = true;
+  }, [pinnedRows]);
   const [panel, setPanel] = useState<Panel>(null);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [menuField, setMenuField] = useState<string | null>(null);
@@ -1829,7 +1858,21 @@ function DataGridInner<R>(
   // they follow `base`, so a reload doesn't drop what's still in the new rows.
   const hideWhileLoading =
     !!dataSource && !lazy && sourceLoading && !(dataSourceKeepPreviousData && !serverTree);
-  const view = hideWhileLoading ? [] : base.map((row) => overrides.get(idOf(row)) ?? row);
+  // Restored pinned rows come from `pinnedRows` and `rows`; rows pinned from `rows` leave the body.
+  const pinnedIds = pinOverride ? new Set([...pinOverride.top, ...pinOverride.bottom]) : null;
+  const pinPool = pinOverride
+    ? new Map(
+        [...(pinnedRows?.top ?? []), ...(pinnedRows?.bottom ?? []), ...base].map((row) => [
+          idOf(row),
+          overrides.get(idOf(row)) ?? row,
+        ]),
+      )
+    : null;
+  const view = hideWhileLoading
+    ? []
+    : base
+        .filter((row) => !pinnedIds?.has(idOf(row)))
+        .map((row) => overrides.get(idOf(row)) ?? row);
   const rank = rowOrder ? new Map(rowOrder.map((rowId, i) => [rowId, i])) : null;
   const orderedRows = rank
     ? [...view].sort((a, b) => (rank.get(idOf(a)) ?? rank.size) - (rank.get(idOf(b)) ?? rank.size))
@@ -2259,7 +2302,7 @@ function DataGridInner<R>(
   const pageRows = sorted.slice(pageStart, pageEnd);
   const [detailIds, setDetailIds] = useControllableState<readonly string[]>({
     value: detailPanelExpandedRowIds,
-    defaultValue: [],
+    defaultValue: initialState?.detailPanel?.expandedRowIds ?? [],
     onChange: (next) => onDetailPanelExpandedRowIdsChange?.([...next]),
   });
   const detailOf = (row: R) =>
@@ -2446,8 +2489,9 @@ function DataGridInner<R>(
   // Header filters: a header row under the column headers.
   const filterRow = headerFilters ? 1 : 0;
   const footerRow = rootAggregates ? 1 : 0;
-  const topRows = pinnedRows?.top ?? [];
-  const bottomRows = pinnedRows?.bottom ?? [];
+  const pinnedOf = (ids: readonly string[]) => ids.flatMap((rowId) => pinPool?.get(rowId) ?? []);
+  const topRows = pinOverride ? pinnedOf(pinOverride.top) : (pinnedRows?.top ?? []);
+  const bottomRows = pinOverride ? pinnedOf(pinOverride.bottom) : (pinnedRows?.bottom ?? []);
   // Column virtualization: only the scrolling columns in view (fixed widths, no spans or groups).
   const trackPx = (c: GridColDef<R>) =>
     widths[c.field] !== undefined
@@ -3879,9 +3923,21 @@ function DataGridInner<R>(
           },
         }
       : {}),
+    // 4.18.91: rows (selection, detail panels, pinned rows, the manual order).
+    ...(checkboxSelection ? { rowSelection: { model: [...selection] } } : {}),
+    ...(getDetailPanelContent ? { detailPanel: { expandedRowIds: [...detailIds] } } : {}),
+    ...(topRows.length || bottomRows.length || pinOverride
+      ? { pinnedRows: { top: topRows.map(idOf), bottom: bottomRows.map(idOf) } }
+      : {}),
+    ...(rowOrder ? { rowOrder: { orderedIds: [...rowOrder] } } : {}),
   });
   const restoreState = (input: unknown) => {
     const state = sanitizeGridState(input);
+    if (state.rowSelection?.model) setSelection(state.rowSelection.model);
+    if (state.detailPanel?.expandedRowIds) setDetailIds(state.detailPanel.expandedRowIds);
+    if (state.pinnedRows)
+      setPinOverride({ top: state.pinnedRows.top ?? [], bottom: state.pinnedRows.bottom ?? [] });
+    if (state.rowOrder?.orderedIds) setRowOrder(state.rowOrder.orderedIds);
     if (state.sorting?.sortModel) setSortModel(state.sorting.sortModel);
     if (state.filter?.filterModel) {
       setFilterModel(state.filter.filterModel);
@@ -3902,6 +3958,22 @@ function DataGridInner<R>(
     if (state.pivoting?.active !== undefined) setPivotActive(state.pivoting.active);
     if (state.chartsIntegration) restoreCharts(state.chartsIntegration);
   };
+  // `onStateChange`: the exported state, reported once it settles (core `createGridStateWatcher`).
+  const stateRead = useRef(exportState);
+  stateRead.current = exportState;
+  const stateReport = useRef(onStateChange);
+  stateReport.current = onStateChange;
+  const stateWatcher = useRef<GridStateWatcher | null>(null);
+  useEffect(() => {
+    const watcher = createGridStateWatcher(
+      rootRef.current as HTMLElement,
+      () => stateRead.current(),
+      (state) => stateReport.current?.(state),
+    );
+    stateWatcher.current = watcher;
+    return () => watcher.destroy();
+  }, []);
+  useEffect(() => stateWatcher.current?.check());
   const scrollToIndexes = ({ rowIndex, colIndex }: { rowIndex?: number; colIndex?: number }) => {
     const grid = gridRef.current as HTMLDivElement;
     if (rowIndex !== undefined && rowIndex >= 0 && rowIndex < pageRows.length) {

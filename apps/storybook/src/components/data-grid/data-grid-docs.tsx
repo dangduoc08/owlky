@@ -553,6 +553,48 @@ export function People() {
 }`,
   },
   {
+    id: "state-persistence",
+    title: "Save and restore the grid's state",
+    body: "`exportState()` returns the grid's state as plain JSON: the sort, filters, page, columns, density, groups, aggregation, pivot and charts. It also holds the rows people work on. `rowSelection.model` lists the selected rows with checkbox selection, `detailPanel.expandedRowIds` the rows whose detail panel is open, `pinnedRows` the ids of the rows pinned to the `top` and the `bottom`, and `rowOrder.orderedIds` the order people gave the rows by moving them. `restoreState(state)` applies a saved state again. Pinned rows can come from the rows or the pinned rows, so restoring can pin a row of the body or put a pinned row back in it. To save the state as people change it, use `onStateChange` in React or the `ok:data-grid:statechange` event in HTML. Each one reports the new state once a change has settled: once per change, and only after a drag ends. Store the state where your app keeps settings, such as `localStorage`. `restoreState()` checks what it receives, so a state from storage or a URL can't change anything else.",
+    html: `<script type="module">
+  const element = document.getElementById("agenda");
+  const grid = window.Owlky.get(element, "data-grid");
+  // Restore the saved view, then save every settled change
+  grid.restoreState(JSON.parse(localStorage.getItem("agenda-grid") ?? "{}"));
+  element.addEventListener("ok:data-grid:statechange", (event) =>
+    localStorage.setItem("agenda-grid", JSON.stringify(event.detail.state)),
+  );
+</script>`,
+    react: `import { DataGrid, type GridColDef, type GridState } from "@owlky/react";
+
+const rows = [
+  { id: 1, title: "Welcome", speaker: "Ana Lima" },
+  { id: 2, title: "Design systems", speaker: "Jonah Pereira" },
+  { id: 3, title: "Accessible grids", speaker: "Priya Raman" },
+];
+
+const columns: GridColDef<(typeof rows)[number]>[] = [
+  { field: "title", headerName: "Talk", flex: 1 },
+  { field: "speaker", headerName: "Speaker", flex: 1 },
+];
+
+const saved: GridState = JSON.parse(localStorage.getItem("agenda-grid") ?? "{}");
+
+export function Agenda() {
+  return (
+    <DataGrid
+      aria-label="Agenda"
+      rows={rows}
+      columns={columns}
+      checkboxSelection
+      rowReordering
+      initialState={saved}
+      onStateChange={(state) => localStorage.setItem("agenda-grid", JSON.stringify(state))}
+    />
+  );
+}`,
+  },
+  {
     id: "validation",
     title: "Check edited values",
     body: "Check a value while people type it, and keep the cell open until it's valid. In React, return `{ error }` from the column's `preProcessEditCellProps`: `true` marks the field as invalid, and a text also shows as a message under the cell. In HTML, listen to `ok:data-grid:validate` and set `event.detail.error`. Enter and leaving the cell keep it open while the value has an error. Escape cancels. `isCellEditable` in React, or `data-ok-editable=\"false\"` on a cell in HTML, makes single cells read-only. Typing a character on an editable cell starts editing with that character.",
@@ -2346,6 +2388,7 @@ export function Issues() {
 - **\`ok:data-grid:menuopen\`** and **\`ok:data-grid:menuclose\`** report \`detail.menu\` and \`detail.target\`. **\`ok:data-grid:preferencepanelopen\`** and **\`ok:data-grid:preferencepanelclose\`** report \`detail.openedPanelValue\`. **\`ok:data-grid:sidebaropen\`** and **\`ok:data-grid:sidebarclose\`** report \`detail.value\`.
 - **\`ok:data-grid:containerresize\`** reports the grid's \`detail.width\` and \`detail.height\`. **\`ok:data-grid:columnresize\`** reports \`detail.field\` and \`detail.width\` while an edge is dragged.
 - **\`ok:data-grid:fetchrows\`** reports \`detail.firstRowToRender\` and \`detail.lastRowToRender\` when the rendered rows change and \`data-ok-row-count\` is more than the rows in the grid. **\`ok:data-grid:excelexportstate\`** reports \`detail.state\`, \`pending\` then \`finished\`. **\`ok:data-grid:beforeclipboardpaste\`** is cancelable and takes a promise in \`detail.waitUntil(promise)\`.
+- **\`ok:data-grid:statechange\`** reports \`exportState()\` in \`detail.state\` once a change has settled: once per change, and after a drag ends.
 - **\`ok:data-grid:fill\`** reports the cells the fill handle (or Ctrl + D, Ctrl + R) is about to write, each with the cell it repeats, in \`detail.cells\`. It's cancelable.
 - **\`ok:data-grid:roworder\`** also reports \`detail.oldParentId\` and \`detail.parentId\` for tree rows. \`setPivotingColDef(def)\` changes the pivot's columns (\`headerName\`, \`width\`, \`minWidth\`, \`maxWidth\`, \`align\`, \`headerAlign\`), and \`data-ok-pivot-panel-open\` opens the pivot panel.
 - **\`ok:data-grid:rowcountchange\`** reports \`detail.count\`, and **\`ok:data-grid:paginationmetachange\`** reports a data source's \`detail.hasNextPage\`. \`setDataSource(source, { cache })\` replaces the cache of responses (\`null\` turns it off).

@@ -928,11 +928,13 @@ export {
   gridFillWithin,
 } from "./data-grid/grid-fill.js";
 export {
+  createGridStateWatcher,
   type GridFormat,
   type GridHeaderHeights,
   type GridRowSpans,
   type GridSpan,
   type GridState,
+  type GridStateWatcher,
   gridAutoPageSize,
   gridColSpans,
   gridDensityFactor,

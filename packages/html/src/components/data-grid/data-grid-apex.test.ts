@@ -155,3 +155,86 @@ describe("HTML data grid rows to export (4.18.92)", () => {
     frame.remove();
   });
 });
+
+describe("HTML data grid state with rows and statechange (4.18.91)", () => {
+  const microtask = () => new Promise<void>((resolve) => queueMicrotask(resolve));
+  const pinned = (root: Element, side: "top" | "bottom") =>
+    [...root.querySelectorAll(`[data-ok-data-grid-pinned-rows="${side}"] > [role="row"]`)].map(
+      (row) => row.getAttribute("data-ok-row-id"),
+    );
+  const bodyIds = (root: Element) =>
+    rowsOf(root)
+      .filter((row) => row.hasAttribute("data-ok-row-id"))
+      .map((row) => row.getAttribute("data-ok-row-id"));
+
+  it("pinned rows and the manual order: exported, restored, reported once settled", async () => {
+    const { root, instance } = setup(snippet("ordering-group"));
+    const changes: unknown[] = [];
+    root.addEventListener("ok:data-grid:statechange", (event) =>
+      changes.push((event as CustomEvent).detail.state),
+    );
+    expect(instance.exportState()).toMatchObject({
+      pinnedRows: { top: ["a-start"], bottom: ["a-end"] },
+    });
+    expect(instance.exportState().rowOrder).toBeUndefined();
+    expect(instance.exportState().rowSelection).toBeUndefined();
+    const handle = rowsOf(root)[0]?.querySelector(
+      "[data-ok-data-grid-reorder-handle]",
+    ) as HTMLElement;
+    key(handle, "ArrowDown", { altKey: true });
+    await microtask();
+    expect(changes).toHaveLength(1);
+    expect(instance.exportState().rowOrder).toEqual({ orderedIds: ["a-2", "a-1", "a-3", "a-4"] });
+    instance.restoreState({
+      pinnedRows: { top: ["a-3"], bottom: ["a-end", "a-start"] },
+      rowOrder: { orderedIds: ["a-4", "a-3", "a-2", "a-1"] },
+    });
+    expect(pinned(root, "top")).toEqual(["a-3"]);
+    expect(pinned(root, "bottom")).toEqual(["a-end", "a-start"]);
+    expect(bodyIds(root)).toEqual(["a-4", "a-2", "a-1"]);
+    expect(root.querySelector('[data-ok-row-id="a-3"]')?.getAttribute("aria-rowindex")).toBe("2");
+    await microtask();
+    expect(changes).toHaveLength(2);
+    expect(changes[1]).toMatchObject({
+      pinnedRows: { top: ["a-3"], bottom: ["a-end", "a-start"] },
+      rowOrder: { orderedIds: ["a-4", "a-2", "a-1"] },
+    });
+    // Unpinned rows go back to the body; no pinned rows left: no groups.
+    instance.restoreState({ pinnedRows: { top: [], bottom: [] } });
+    expect(root.querySelector("[data-ok-data-grid-pinned-rows]")).toBeNull();
+    expect(bodyIds(root)).toHaveLength(6);
+    // A pressed pointer holds the report until its release.
+    root.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    instance.restoreState({ rowOrder: { orderedIds: ["a-1"] } });
+    await microtask();
+    const held = changes.length;
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    await microtask();
+    expect(changes.length).toBe(held + 1);
+    await expectNoAxeViolations(root);
+  });
+
+  it("the selection and open detail panels", async () => {
+    const basic = setup(snippet("basic-group"));
+    basic.instance.restoreState({ rowSelection: { model: ["p-002", "p-003"] } });
+    expect(basic.instance.selection).toEqual(["p-002", "p-003"]);
+    expect(
+      basic.root.querySelector('[data-ok-row-id="p-002"]')?.getAttribute("aria-selected"),
+    ).toBe("true");
+    expect(basic.instance.exportState().rowSelection).toEqual({ model: ["p-002", "p-003"] });
+    runtime?.stop();
+    resetPage();
+    const { root, instance } = setup(snippet("detail-group"));
+    expect(instance.exportState().detailPanel).toEqual({ expandedRowIds: [] });
+    instance.restoreState({ detailPanel: { expandedRowIds: ["o-1002"] } });
+    expect(
+      root
+        .querySelector('[data-ok-row-id="o-1002"] [data-ok-data-grid-detail-toggle]')
+        ?.getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(root.querySelector('[data-ok-detail-for="o-1002"]')).not.toBeNull();
+    expect(instance.exportState().detailPanel).toEqual({ expandedRowIds: ["o-1002"] });
+    instance.restoreState({ detailPanel: { expandedRowIds: [] } });
+    expect(instance.exportState().detailPanel).toEqual({ expandedRowIds: [] });
+  });
+});

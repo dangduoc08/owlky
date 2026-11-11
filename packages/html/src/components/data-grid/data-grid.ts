@@ -19,6 +19,7 @@ import {
   createGridPivotDrag,
   createGridRowReorder,
   createGridScrollWatcher,
+  createGridStateWatcher,
   dataGridOptions,
   filterGridRows,
   GRID_AGGREGATION_ROOT_ID,
@@ -79,6 +80,7 @@ import {
   type GridSortDirection,
   type GridSortModel,
   type GridState,
+  type GridStateWatcher,
   type GridViewport,
   gridActiveChartId,
   gridAggregate,
@@ -249,6 +251,11 @@ type GridModelEvent =
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface DataGridEvents {
+  /**
+   * After the grid's state settles: `exportState()` changed (once per change, not while a pointer
+   * drags, not at setup). MUI X `onStateChange`.
+   */
+  statechange: EventSpec<{ state: GridState }>;
   /** Before the sort model changes. Call `preventDefault()` to keep it. */
   sort: EventSpec<{ model: GridSortModel }, true>;
   /** Before the filter model changes. Call `preventDefault()` to keep it. */
@@ -959,6 +966,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
   setup(element, { emit, signal, runtime }) {
     /** The instance (the rows to export callback's `apiRef.current`), once setup returns it. */
     let instanceRef: DataGridInstance | null = null;
+    // `ok:data-grid:statechange`: the exported state once it settles (core watcher, after setup).
+    let stateWatcher: GridStateWatcher | null = null;
+    const stateCheck = () => stateWatcher?.check();
     // grid, or treegrid with tree data.
     const main = element.querySelector<HTMLElement>("[data-ok-data-grid-main]") as HTMLElement;
     const body = main.querySelector<HTMLElement>("[data-ok-data-grid-body]") as HTMLElement;
@@ -1655,6 +1665,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const listHidden = new WeakSet<HTMLElement>();
     const windowHidden = new WeakSet<HTMLElement>();
     const layout = () => {
+      stateCheck();
       const arranged = arrangeGridColumns(orderGridColumns(columns, order), pinned);
       const shown = visibleGridColumns(arranged, visibility);
       shownNow = shown;
@@ -1958,6 +1969,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ? rows()
         : filterGridRows(rows(), filterModel, baseColumns, cellValue, cellText, filterOptions());
     const apply = () => {
+      stateCheck();
       const all = rows();
       variableRows = hasOwnHeights();
       let sorted: HTMLElement[];
@@ -3009,9 +3021,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
     // Master-detail: open or close a row's panel (`ok:data-grid:detailpanel`, cancelable).
     const toggleDetail = (row: HTMLElement) => {
+      const next = !detailOpen.has(idOf(row));
+      if (!emit("detailpanel", { id: idOf(row), expanded: next }, { cancelable: true })) return;
+      setDetail(row, next);
+    };
+    /** Opens or closes a row's panel (no event: `toggleDetail` asks first, `restoreState` sets). */
+    const setDetail = (row: HTMLElement, next: boolean) => {
+      stateCheck();
       const rowId = idOf(row);
-      const next = !detailOpen.has(rowId);
-      if (!emit("detailpanel", { id: rowId, expanded: next }, { cancelable: true })) return;
       if (next) detailOpen.add(rowId);
       else detailOpen.delete(rowId);
       const toggle = row.querySelector<HTMLElement>("[data-ok-data-grid-detail-toggle]");
@@ -3030,6 +3047,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     // Row reordering (`ok:data-grid:roworder`, cancelable): no sort, filter or lazy rows; tree
     // rows (not from a server) move with their children, among siblings or to another parent.
     const live = element.querySelector<HTMLElement>("[data-ok-data-grid-live]");
+    /** Whether rows were moved (the state's `rowOrder`). */
+    let rowsReordered = false;
     const parentOfRow = (row: HTMLElement) => row.getAttribute("data-ok-parent");
     const treeMove = (rowId: string, drop: { target: string; position: "above" | "below" }) => {
       if (!isTree()) return undefined;
@@ -3077,6 +3096,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ? { id: rowId, oldIndex, targetIndex, oldParentId, parentId: tree.parent }
           : { id: rowId, oldIndex, targetIndex };
         if (!emit("roworder", detail, { cancelable: true })) return;
+        rowsReordered = true;
         if (tree) {
           rowEls = tree.order.map((rid) => byRowId.get(rid) as HTMLElement);
           if (tree.parent) moving.setAttribute("data-ok-parent", tree.parent);
@@ -3107,6 +3127,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       );
     };
     const mark = () => {
+      stateCheck();
       syncFooter();
       if (!checkbox) return;
       const tree = selectionTree;
@@ -3186,6 +3207,58 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         sortModel = model;
         refresh();
       });
+    };
+    /** The data rows pinned to a side (not the aggregation footer). */
+    const pinnedDataRows = (side: "top" | "bottom") =>
+      [
+        ...main.querySelectorAll<HTMLElement>(
+          `[data-ok-data-grid-pinned-rows="${side}"] > [role="row"][data-ok-row-id]`,
+        ),
+      ].filter(
+        (row) =>
+          !row.hasAttribute("data-ok-generated") &&
+          !row.hasAttribute("data-ok-data-grid-aggregation-row"),
+      );
+    /** Pins rows by id (`restoreState`): from the body or the other side; the others go back. */
+    const pinRows = (top: readonly string[], bottom: readonly string[]) => {
+      const pinnedNow = [...pinnedDataRows("top"), ...pinnedDataRows("bottom")];
+      const byRowId = new Map([...rowEls, ...pinnedNow].map((row) => [idOf(row), row]));
+      const wanted = new Set([...top, ...bottom]);
+      for (const row of pinnedNow)
+        if (!wanted.has(idOf(row))) {
+          row.remove();
+          if (checkbox) row.setAttribute("aria-selected", "false");
+          rowEls = [...rowEls, row];
+        }
+      rowEls = rowEls.filter((row) => !wanted.has(idOf(row)));
+      for (const [side, ids] of [
+        ["top", top],
+        ["bottom", bottom],
+      ] as const) {
+        let group = main.querySelector<HTMLElement>(`[data-ok-data-grid-pinned-rows="${side}"]`);
+        if (!group && ids.length) {
+          group = document.createElement("div");
+          group.setAttribute("role", "rowgroup");
+          group.setAttribute("data-ok-data-grid-pinned-rows", side);
+          if (side === "top") body.before(group);
+          else body.after(group);
+        }
+        if (!group) continue;
+        const footer = group.querySelector(":scope > [data-ok-data-grid-aggregation-row]");
+        for (const rowId of ids) {
+          const row = byRowId.get(rowId);
+          if (!row) continue;
+          row.hidden = false;
+          row.removeAttribute("aria-selected");
+          group.insertBefore(row, footer);
+        }
+        if (!group.children.length) group.remove();
+      }
+      const first = groupRowEls().length + (filterRowEl() ? 1 : 0) + 2;
+      pinnedDataRows("top").forEach((row, index) => {
+        row.setAttribute("aria-rowindex", String(first + index));
+      });
+      apply();
     };
     const select = (ids: string[]) => {
       change("selection", ids, (model) => {
@@ -6157,9 +6230,36 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
               },
             }
           : {}),
+        // 4.18.91: rows (selection, detail panels, pinned rows, the manual order).
+        ...(checkbox ? { rowSelection: { model: [...selection] } } : {}),
+        ...(main.querySelector("[data-ok-data-grid-detail-toggle]") || panels.size
+          ? { detailPanel: { expandedRowIds: [...detailOpen] } }
+          : {}),
+        ...(pinnedDataRows("top").length || pinnedDataRows("bottom").length
+          ? {
+              pinnedRows: {
+                top: pinnedDataRows("top").map(idOf),
+                bottom: pinnedDataRows("bottom").map(idOf),
+              },
+            }
+          : {}),
+        ...(rowsReordered ? { rowOrder: { orderedIds: rowEls.map(idOf) } } : {}),
       }),
       restoreState(input) {
         const state = sanitizeGridState(input);
+        if (state.rowSelection?.model) selection = [...state.rowSelection.model];
+        const expanded = state.detailPanel?.expandedRowIds;
+        if (expanded)
+          for (const row of rows())
+            if (row.querySelector("[data-ok-data-grid-detail-toggle]"))
+              setDetail(row, expanded.includes(idOf(row)));
+        if (state.pinnedRows) pinRows(state.pinnedRows.top ?? [], state.pinnedRows.bottom ?? []);
+        if (state.rowOrder?.orderedIds) {
+          const rank = new Map(state.rowOrder.orderedIds.map((rowId, i) => [rowId, i]));
+          const at = (row: HTMLElement) => rank.get(idOf(row)) ?? rank.size;
+          rowEls = [...rowEls].sort((a, b) => at(a) - at(b));
+          rowsReordered = true;
+        }
         if (state.sorting?.sortModel) sortModel = state.sorting.sortModel;
         if (state.filter?.filterModel) filterModel = state.filter.filterModel;
         const paging = state.pagination?.paginationModel;
@@ -6192,6 +6292,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (state.pivoting) showPivot();
         layout();
         refresh();
+        mark();
       },
       setFilterOperators(field, list) {
         operators[field] = list;
@@ -6381,6 +6482,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       },
     };
     instanceRef = instanceObject;
+    stateWatcher = createGridStateWatcher(element, instanceObject.exportState, (state) =>
+      emit("statechange", { state }),
+    );
+    signal.addEventListener("abort", () => stateWatcher?.destroy());
     return instanceObject;
   },
 });

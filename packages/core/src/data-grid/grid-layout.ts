@@ -233,6 +233,71 @@ export interface GridState {
   pivoting?: { model?: GridPivotModel | undefined; active?: boolean | undefined } | undefined;
   /** The charts (MUI X `chartsIntegration`; `chartsToJSON()` returns this part alone). */
   chartsIntegration?: GridChartsState | undefined;
+  /** The selected row ids (4.18.91; ApexGrid `selection`). */
+  rowSelection?: { model?: string[] | undefined } | undefined;
+  /** The rows whose detail panel is open (MUI X `detailPanel.expandedRowIds`, as an array). */
+  detailPanel?: { expandedRowIds?: string[] | undefined } | undefined;
+  /** The ids of the rows pinned to the top and the bottom (4.18.91; ApexGrid `rowPinning`). */
+  pinnedRows?: { top?: string[] | undefined; bottom?: string[] | undefined } | undefined;
+  /** The rows' manual order after row reordering (4.18.91), by id. */
+  rowOrder?: { orderedIds?: string[] | undefined } | undefined;
+}
+
+/**
+ * Reports a grid's state once it settles (`onStateChange`, `ok:data-grid:statechange`): `check()`
+ * compares `read()`'s JSON with the last one reported (the state at creation first) in a
+ * microtask, so one change reports once however many updates it takes; nothing is reported while
+ * a pointer is pressed in the grid (a column or row drag, a fill), only after its release.
+ */
+export interface GridStateWatcher {
+  check(): void;
+  destroy(): void;
+}
+
+export function createGridStateWatcher(
+  root: HTMLElement,
+  read: () => GridState,
+  report: (state: GridState) => void,
+): GridStateWatcher {
+  const abort = new AbortController();
+  const { signal } = abort;
+  let last = JSON.stringify(read());
+  let pressed = false;
+  let queued = false;
+  const run = () => {
+    queued = false;
+    if (pressed || signal.aborted) return;
+    const state = read();
+    const json = JSON.stringify(state);
+    if (json === last) return;
+    last = json;
+    report(state);
+  };
+  const check = () => {
+    if (queued) return;
+    queued = true;
+    queueMicrotask(run);
+  };
+  root.addEventListener(
+    "pointerdown",
+    () => {
+      pressed = true;
+    },
+    { signal },
+  );
+  const release = () => {
+    if (!pressed) return;
+    pressed = false;
+    check();
+  };
+  root.ownerDocument.addEventListener("pointerup", release, { signal });
+  root.ownerDocument.addEventListener("pointercancel", release, { signal });
+  return {
+    check,
+    destroy() {
+      abort.abort();
+    },
+  };
 }
 
 const UNSAFE = new Set(["__proto__", "constructor", "prototype"]);
@@ -362,6 +427,26 @@ export function sanitizeGridState(input: unknown): GridState {
       ...(typeof pivoting["active"] === "boolean" ? { active: pivoting["active"] } : {}),
     };
   }
+  const selected = isRecord(input["rowSelection"])
+    ? strings(input["rowSelection"]["model"])
+    : undefined;
+  if (selected) state.rowSelection = { model: [...new Set(selected)] };
+  const expanded = isRecord(input["detailPanel"])
+    ? strings(input["detailPanel"]["expandedRowIds"])
+    : undefined;
+  if (expanded) state.detailPanel = { expandedRowIds: [...new Set(expanded)] };
+  if (isRecord(input["pinnedRows"])) {
+    const top = strings(input["pinnedRows"]["top"]);
+    const bottom = strings(input["pinnedRows"]["bottom"])?.filter((rowId) => !top?.includes(rowId));
+    state.pinnedRows = {
+      ...(top ? { top: [...new Set(top)] } : {}),
+      ...(bottom ? { bottom: [...new Set(bottom)] } : {}),
+    };
+  }
+  const ordered = isRecord(input["rowOrder"])
+    ? strings(input["rowOrder"]["orderedIds"])
+    : undefined;
+  if (ordered) state.rowOrder = { orderedIds: [...new Set(ordered)] };
   if (isRecord(input["chartsIntegration"])) {
     const kept = sanitizeGridChartsState(input["chartsIntegration"]);
     if (Object.keys(kept).length) state.chartsIntegration = kept;
