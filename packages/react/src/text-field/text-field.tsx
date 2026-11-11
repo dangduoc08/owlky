@@ -157,11 +157,19 @@ interface Standalone {
   readonly legend: ReactNode;
 }
 
+/** What a component built on the TextField markup (NumberField) adds to its root. */
+export interface FieldHost {
+  /** More `data-ok-*` attributes on the root (after the text field's). */
+  readonly attributes?: Readonly<Record<string, string>> | undefined;
+  /** The root element. */
+  readonly ref?: Ref<HTMLElement> | undefined;
+}
+
 /**
  * The TextField markup. Standalone inputs render it without a label and a helper text, with
- * `data-ok-input-base` on the root.
+ * `data-ok-input-base` on the root. Internal: not exported from the package.
  */
-function useFieldMarkup(
+export function useFieldMarkup(
   {
     variant,
     size,
@@ -198,6 +206,7 @@ function useFieldMarkup(
   }: TextFieldProps,
   ref: Ref<TextFieldElement>,
   standalone?: Standalone,
+  host?: FieldHost,
 ) {
   // Standalone inputs have no label element (OutlinedInput's `label` only sizes the notch).
   const label = standalone ? undefined : labelProp;
@@ -338,7 +347,9 @@ function useFieldMarkup(
     {
       ...attributes,
       ...(standalone ? { "data-ok-input-base": "" } : {}),
+      ...host?.attributes,
       "data-ok-runtime": "off",
+      ref: host?.ref,
       className,
       style: { ...rowStyle, ...style },
     },

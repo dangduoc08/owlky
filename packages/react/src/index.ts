@@ -707,6 +707,7 @@ export {
   Tabs,
   type TabsProps,
 } from "./tabs/tabs.js";
+export { NumberField, type NumberFieldProps } from "./text-field/number-field.js";
 export {
   FilledInput,
   type FilledInputProps,
@@ -723,6 +724,10 @@ export {
   type TextFieldProps,
   type TextFieldSelectProps,
 } from "./text-field/text-field.js";
+export {
+  type UseCopyToClipboard,
+  useCopyToClipboard,
+} from "./text-field/use-copy-to-clipboard.js";
 export {
   Timeline,
   TimelineConnector,

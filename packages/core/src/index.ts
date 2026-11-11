@@ -366,6 +366,9 @@ export {
   motionVariants,
   multiSectionDigitalClockAttributes,
   multiSectionDigitalClockOptions,
+  type NumberFieldAnatomyOptions,
+  numberFieldAttributes,
+  numberFieldOptions,
   type OrganizationChartAnatomyOptions,
   type OrganizationChartDirection,
   type OrganizationChartEdgeColorMode,
@@ -690,6 +693,13 @@ export {
   slideTween,
 } from "./carousel/carousel-model.js";
 export * from "./chart/index.js";
+export {
+  type CopyFailure,
+  type CopyOptions,
+  type CopyResult,
+  clipboardText,
+  copyToClipboard,
+} from "./clipboard/clipboard.js";
 export {
   autoCollapseDuration,
   COLLAPSE_STATE,
@@ -1163,6 +1173,24 @@ export {
   replayMotion,
   splitMotionText,
 } from "./motion/motion.js";
+export {
+  clampNumber,
+  createNumberFieldController,
+  formatNumberInput,
+  type NumberFieldCallbacks,
+  type NumberFieldChangeDetails,
+  type NumberFieldChangeReason,
+  type NumberFieldController,
+  type NumberFieldControllerOptions,
+  type NumberFieldSettings,
+  type NumberFieldState,
+  numberFieldSettings,
+  numberFieldState,
+  parseNumberInput,
+  readNumberFieldSettings,
+  stepNumberValue,
+  typedNumberChange,
+} from "./number-field/number-field.js";
 export {
   type BehaviorOption,
   type FlagOption,

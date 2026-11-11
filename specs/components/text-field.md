@@ -141,9 +141,149 @@ Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, 
 | `inputComponent` (`slotProps.input.inputComponent`) | same | kept | 4.18.26: React only; replaces the `<input>` (not textareas or selects), gets the input's props and `ref`. HTML: any element with `data-ok-text-field-input` |
 | `slotProps.input.notched` / `disableUnderline` | `notched` / `disableUnderline` | renamed | 4.18.26, TextField |
 | `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |
+| `useCopyToClipboard` (reference hook, usehooks-ts) | `useCopyToClipboard()` → `{ copy, copiedText }` | kept | 4.20: `copy` resolves a `CopyResult` (`ok`, `reason`) instead of a boolean, so the message can say why |
 
-Related reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).
+Related reference features: copy to clipboard (4.20) and number input (4.24), sections below;
+phone input (4.25).
+
+## Copy to clipboard (roadmap 4.20)
+Reference: Minimals "Utilities" page (https://minimals.cc/components/extra/utilities), section
+"Copy to clipboard": a field with a copy button in its end adornment ("onChange"), a paragraph
+copied on double click ("onDoubleClick"), each copy followed by a "Copied!" toast. Upstream: the
+reference's `useCopyToClipboard` hook (`{ copy, copiedText }`, usehooks-ts).
+
+- **Core** `copyToClipboard(text, { document? }): Promise<CopyResult>` (`core/src/clipboard`):
+  never throws. Outside a user gesture (`navigator.userActivation.isActive === false`, checked
+  before any await) → `{ ok: false, reason: "gesture" }` without calling the browser. Clipboard API
+  `writeText`; no API → the copy command (`execCommand("copy")` with a one-off `copy` listener
+  that writes the text: no text area, focus and selection untouched) or `"unsupported"`; the API
+  rejects (permission, policy) → the copy command, else `"denied"`. `clipboardText(element)`:
+  form control value, else text with white space collapsed.
+- **React** `useCopyToClipboard()` → `{ copy(text): Promise<CopyResult>, copiedText }`
+  (`copiedText` = last successful copy, `null` after a failure). Apps compose an `IconButton` in an
+  `InputAdornment` and call `toast.success` / `toast.error` with the result.
+- **HTML** runtime `clipboard` (behavior-only folder, markup in `text-field/examples`): triggers
+  `[data-ok-clipboard-copy]` (value = source id; empty = the text field's input around a button,
+  else the trigger itself), `data-ok-clipboard-text` (literal text), `data-ok-clipboard-trigger=
+  "dblclick"`, `data-ok-clipboard-toast` / `data-ok-clipboard-error-toast` (`<template>` toasts shown
+  in the page's toaster, or `data-ok-toast-toaster`). Event `ok:clipboard:copy` (`detail.text`,
+  `ok`, `reason?`), instance `copy()`. React markup (`data-ok-runtime="off"`) is never handled.
+- **Announcement:** the toast. The toaster list is a polite live region, so "Copied!" (or the
+  error) is announced; the docs tell apps without a toaster to announce the result themselves.
+- **Double click** is a pointer-only shortcut: the story adds a "Copy text" button that copies the
+  same paragraph (WCAG 2.1.1), an intentional addition to the reference.
+- Not built: copying rich text / images (`ClipboardItem`), reading the clipboard (paste).
+
+## Number input (roadmap 4.24)
+Reference: Minimals "Utilities" page, section "Number input": Basic, With helper text, Disabled
+(a value between a minus and a plus button). Upstream: MUI's Number Field page (a demo composed on
+Base UI `NumberField`, mui.com/material-ui/react-number-field/) and Base UI's `NumberField` API
+(base-ui.com/react/components/number-field), mapped prop by prop below. Created with `/implement`.
+
+**Decision: a WAI-ARIA spin button on `input type="text"`, not `input type="number"`.** A native
+number input brings its own spinner (unstyleable, too small for touch, absent on mobile Safari),
+changes the value on mouse wheel, reports `""` for text it can't parse (so a half-typed `-` or a
+locale's decimal comma is lost), has no Page Up / Page Down in Safari, and the reference uses a
+text input. The spin button pattern gives one keyboard map in every engine: `role="spinbutton"`
+with `aria-valuenow` / `-min` / `-max` on a text input (`inputmode="decimal"` for the numeric
+keyboard, `autocomplete="off"`), and the buttons out of the tab order (`tabindex="-1"`, APG).
+
+### Anatomy
+```
+div[data-ok-text-field]…[data-ok-number-field][data-ok-min]?[data-ok-max]?[data-ok-step-size]?[data-ok-small-step]?[data-ok-large-step]?[data-ok-snap-on-step]?[data-ok-allow-out-of-range]?
+  label[data-ok-text-field-label][for]?
+  div[data-ok-text-field-control]
+    span[data-ok-text-field-adornment="start"] › button[data-ok-icon-button][data-ok-edge="start"][tabindex=-1][aria-label="Decrease"][aria-controls=<input id>][data-ok-number-field-decrement][disabled]? › svg
+    input[data-ok-text-field-input][role=spinbutton][inputmode=decimal][autocomplete=off][aria-valuenow]?[aria-valuemin]?[aria-valuemax]?[placeholder=" "][value]
+    span[data-ok-text-field-adornment="end"] › button[…][data-ok-number-field-increment] › svg
+    fieldset[data-ok-text-field-outline]   (outlined)
+  div[data-ok-text-field-helper][id]?
+```
+The step attributes avoid `data-ok-step`, the Stepper's step root (`stepper.css` loads after
+`text-field.css` and would style the field). Icon buttons: `sm` in a small field, `md` otherwise.
+
+### Options
+<!-- options:number-field (generated by `pnpm specs:options` from the schema in packages/core/src/anatomy/anatomy.ts) -->
+Root: `data-ok-number-field`. Unknown values fall back to the default.
+
+| React | HTML | Kind | Values | Default | Description |
+|---|---|---|---|---|---|
+| `min` | `data-ok-min="…"` | number | number | — | Lowest value (none by default). |
+| `max` | `data-ok-max="…"` | number | number | — | Highest value (none by default). |
+| `step` | `data-ok-step-size="…"` | number | number | `1` | How much the buttons and Arrow Up / Arrow Down change the value. |
+| `smallStep` | `data-ok-small-step="…"` | number | number | `0.1` | Step with Alt + Arrow Up / Arrow Down. |
+| `largeStep` | `data-ok-large-step="…"` | number | number | `10` | Step of Page Up / Page Down and Shift + Arrow Up / Arrow Down. |
+| `snapOnStep` | `data-ok-snap-on-step` | flag | boolean | off | A step lands on a multiple of the step (counted from `min`), such as 1.5 → 2. |
+| `allowOutOfRange` | `data-ok-allow-out-of-range` | flag | boolean | off | Typed values outside `min` / `max` stay as typed (steps still stop at the bounds). |
+| `disabled` | `disabled` on each `[data-ok-text-field-control] > [data-ok-text-field-input]` | native | boolean | off | Native `disabled` on the input; the buttons are disabled too. |
+| `readOnly` | `readonly` on each `[data-ok-text-field-control] > [data-ok-text-field-input]` | native | boolean | off | Native `readonly` on the input: it can be focused and copied, not changed. |
+| `value` | `value` · event `ok:number-field:change` | state | — | — | The number (`value` / `defaultValue` + `onValueChange(value, details)`). |
+<!-- /options:number-field -->
+
+React `NumberField` (+ every TextField prop except `value` / `defaultValue` / `onChange`,
+`multiline`, `select`, `type`, `inputComponent` and the adornments): `value` / `defaultValue`
+(`number | null`), `onValueChange(value, { reason })`, `onValueCommitted(value, { reason })`,
+`decrementLabel` / `incrementLabel` ("Decrease" / "Increase": the buttons' names, for
+translations). `ref` = the input.
+
+### Behavior
+Core `createNumberFieldController(root, { getValue, onChange, onCommit }, { input? })` reports
+intent; the model is pure (`parseNumberInput`, `stepNumberValue`, `clampNumber`,
+`numberFieldState`, `typedNumberChange`, `readNumberFieldSettings` / `numberFieldSettings`).
+- Steps clamp to `min` / `max` and round to the precision of their terms (0.1 + 0.2 = 0.3); from an
+  empty field a step gives 0 (or the nearest bound); `snapOnStep` lands on `min + k × step`.
+- Typing reports each text that is a number (`input-change`) or empty (`input-clear`) without
+  rewriting it; Enter or leaving the input commits: empty → `null`, not a number → the current
+  value, otherwise clamped (unless `allowOutOfRange`). Each commit shows the owner's value again.
+- Button presses keep the focus where it is (`mousedown` default prevented); a disabled field
+  disables both buttons, a read-only one too (its input can still be focused and copied); a
+  button is disabled at its bound.
+- React reports typing from its own `onChange` (`{ input: false }`): a state update from a native
+  `input` listener re-renders the controlled input before React sees the keystroke and undoes it.
+- HTML runtime `number-field` (behavior-only folder; markup in `text-field/examples`): the value
+  is the input's text at setup; it rewrites the text on each commit and keeps `aria-valuenow` /
+  `-min` / `-max` and the buttons' `disabled` in step (also when `data-ok-min` / `-max`, the input's
+  `disabled` or `readonly` change). Events `ok:number-field:change` (`{ value, reason }`,
+  cancelable: refuses the value) and `ok:number-field:commit`; instance `getValue()`,
+  `setValue(value)` (clamped, no event), `stepUp(amount?)`, `stepDown(amount?)`.
+
+### Keyboard
+| Key | Action |
+|---|---|
+| Arrow Up / Arrow Down | Step up / down by `step` (Shift: `largeStep`, Alt: `smallStep`) |
+| Page Up / Page Down | Step up / down by `largeStep` |
+| Home / End | Go to `min` / `max` (without that bound: move the caret, as in any text input) |
+| Enter | Commit the typed text (the form still submits) |
+| Ctrl / Cmd + arrows | Left to the browser (caret and selection) |
+
+### Accessibility
+The input is the only tab stop and is named by the label (or `aria-label`); helper text describes
+it. The buttons are named ("Decrease" / "Increase"), point at the input with `aria-controls`, are
+≥ 28 × 28 px (WCAG 2.5.8) and stay out of the tab order (the keys do the same, APG spin button).
+Disabled buttons use the Icon button's disabled color (inactive, exempt from contrast).
+
+### Upstream API mapping (Base UI `NumberField`)
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Root `value`, `defaultValue`, `onValueChange(value, eventDetails)`, `onValueCommitted` | same | kept | details carry `reason` only (`input-change`, `input-clear`, `input-blur`, `keyboard`, `increment-press`, `decrement-press`) |
+| Root `min`, `max`, `step`, `smallStep`, `largeStep`, `snapOnStep`, `allowOutOfRange` | same | kept | HTML `data-ok-min` / `-max` / `-step-size` / `-small-step` / `-large-step` / `-snap-on-step` / `-allow-out-of-range`; `step="any"`: not applicable (no native step validation on a text input) |
+| Root `disabled`, `readOnly`, `required`, `name`, `id`, `form`, `inputRef` | native input props, `ref` | kept / renamed | `inputRef` → `ref` (as TextField) |
+| Root `format`, `locale` (`Intl.NumberFormat` display and parsing) | — | deferred | needs a locale-aware parser (group and decimal separators, percent, currency) for typed text; plain numbers today |
+| Root `allowWheelScrub`, `ScrubArea` (`direction`, `pixelSensitivity`, `teleportDistance`) | — | deferred | pointer-only gestures beyond the reference; the buttons and keys cover them |
+| Increment / Decrement press-and-hold auto repeat | — | deferred | one step per press (the keys repeat) |
+| `Group`, `Input`, `Increment`, `Decrement` parts | the TextField control, input and two Icon buttons in the adornments | renamed | `incrementLabel` / `decrementLabel` name the buttons (Base UI: your own children) |
+| Input `aria-roledescription` ("Number field") | `role="spinbutton"` | renamed | the role says it is a number control |
+| `className`, `style`, `render`, `nativeButton` | — | not applicable | ADR-0015 |
+| MUI demo `label`, `size`, `error`, `helperText` | TextField props | kept | MUI's NumberSpinner layout (buttons beside the field) = the reference's buttons on both sides |
+
+### Intentional differences from the reference
+- The reference group (minus · tinted value with a caption · plus, one border) becomes the TextField
+  look with the buttons in the adornments (the roadmap row: "buttons in the adornment"); its
+  caption under the value ("Bedrooms") is the field's floating label.
+- The reference has no keyboard steps (its arrows do nothing) and lets the minus button act at 0:
+  Owlky follows the APG spin button and disables a button at its bound.
 
 ## Parity notes
 React stories render the password button without state (apps own `type`, see the docs page);
-`data-ok-text-field-reveal` is an HTML hook (ignored by parity).
+`data-ok-text-field-reveal` is an HTML hook (ignored by parity), and so are the
+`data-ok-clipboard-*` triggers (React copies from click handlers).

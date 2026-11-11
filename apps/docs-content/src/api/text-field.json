@@ -484,6 +484,66 @@
    }
   },
   {
+   "html": {
+    "attribute": "data-ok-clipboard",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After each copy: the `text`, `ok`, and when it failed the `reason` (`gesture`, `unsupported` or `denied`). Show your own message from here when you don't use the toasts.",
+      "detail": "{ text: string; ok: boolean; reason?: CopyFailure; }",
+      "name": "ok:clipboard:copy"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Copies the trigger's text, as a click (or a double click) on it does. Call it from a click or a key press handler: outside a user gesture the browser refuses (`reason: \"gesture\"`).",
+      "kind": "method",
+      "name": "copy",
+      "type": "() => Promise<CopyResult>"
+     }
+    ],
+    "parts": [
+     {
+      "description": "A copy trigger (HTML): a press copies the text of the element its value names. Empty: a button copies the input of the text field around it; any other element copies its own text.",
+      "kind": "trigger",
+      "name": "data-ok-clipboard-copy",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "On a copy trigger: the `<template>` toast shown when the browser refuses the copy.",
+      "kind": "value",
+      "name": "data-ok-clipboard-error-toast",
+      "value": "string"
+     },
+     {
+      "description": "On a copy trigger: the text to copy, instead of an element's.",
+      "kind": "value",
+      "name": "data-ok-clipboard-text",
+      "value": "string"
+     },
+     {
+      "description": "\".",
+      "kind": "value",
+      "name": "data-ok-clipboard-toast",
+      "value": "string"
+     },
+     {
+      "description": "On a copy trigger: `dblclick` copies on a double click instead of a click.",
+      "kind": "value",
+      "name": "data-ok-clipboard-trigger",
+      "value": [
+       "click",
+       "dblclick"
+      ]
+     }
+    ],
+    "runtime": "clipboard"
+   },
+   "name": "Clipboard"
+  },
+  {
    "name": "FilledInput",
    "react": {
     "description": "The filled field box without a label or a helper text.",
@@ -798,6 +858,304 @@
    }
   },
   {
+   "html": {
+    "attribute": "data-ok-number-field",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "reason`: `input-change`, `input-clear`, `input-blur`, `keyboard`, `increment-press` or `decrement-press`). Typing reports values as they become numbers. `preventDefault()` refuses the value.",
+      "detail": "{ value: number | null; reason: NumberFieldChangeReason; }",
+      "name": "ok:number-field:change"
+     },
+     {
+      "cancelable": false,
+      "description": "value` is the field's value, shown again as its text.",
+      "detail": "{ value: number | null; reason: NumberFieldChangeReason; }",
+      "name": "ok:number-field:commit"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The value: a number, or `null` when the field is empty.",
+      "kind": "method",
+      "name": "getValue",
+      "type": "() => number | null"
+     },
+     {
+      "description": "Sets the value (kept within `min` / `max` unless out-of-range values are allowed). Fires no event.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: number | null) => void"
+     },
+     {
+      "description": "One step down, as a press of the decrement button (`amount` defaults to the step).",
+      "kind": "method",
+      "name": "stepDown",
+      "type": "(amount?: number | undefined) => void"
+     },
+     {
+      "description": "One step up, as a press of the increment button (`amount` defaults to the step).",
+      "kind": "method",
+      "name": "stepUp",
+      "type": "(amount?: number | undefined) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-min",
+      "description": "Lowest value (none by default).",
+      "kind": "number",
+      "name": "min"
+     },
+     {
+      "attr": "data-ok-max",
+      "description": "Highest value (none by default).",
+      "kind": "number",
+      "name": "max"
+     },
+     {
+      "attr": "data-ok-step-size",
+      "default": 1,
+      "description": "How much the buttons and Arrow Up / Arrow Down change the value.",
+      "kind": "number",
+      "min": 0,
+      "name": "step"
+     },
+     {
+      "attr": "data-ok-small-step",
+      "default": 0.1,
+      "description": "Step with Alt + Arrow Up / Arrow Down.",
+      "kind": "number",
+      "min": 0,
+      "name": "smallStep"
+     },
+     {
+      "attr": "data-ok-large-step",
+      "default": 10,
+      "description": "Step of Page Up / Page Down and Shift + Arrow Up / Arrow Down.",
+      "kind": "number",
+      "min": 0,
+      "name": "largeStep"
+     },
+     {
+      "attr": "data-ok-snap-on-step",
+      "description": "A step lands on a multiple of the step (counted from `min`), such as 1.5 → 2.",
+      "kind": "flag",
+      "name": "snapOnStep"
+     },
+     {
+      "attr": "data-ok-allow-out-of-range",
+      "description": "Typed values outside `min` / `max` stay as typed (steps still stop at the bounds).",
+      "kind": "flag",
+      "name": "allowOutOfRange"
+     },
+     {
+      "attr": "disabled",
+      "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+      "description": "Native `disabled` on the input; the buttons are disabled too.",
+      "kind": "native",
+      "name": "disabled"
+     },
+     {
+      "attr": "readonly",
+      "children": ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]",
+      "description": "Native `readonly` on the input: it can be focused and copied, not changed.",
+      "kind": "native",
+      "name": "readOnly"
+     },
+     {
+      "attr": "value",
+      "description": "The number (`value` / `defaultValue` + `onValueChange(value, details)`).",
+      "event": "ok:number-field:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "A number field's button that steps the value down (an Icon button in the start adornment).",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-number-field-decrement"
+     },
+     {
+      "description": "A number field's button that steps the value up (an Icon button in the end adornment).",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-number-field-increment"
+     }
+    ],
+    "runtime": "number-field"
+   },
+   "name": "NumberField",
+   "react": {
+    "description": "A text field whose input is a spin button, with decrement and increment buttons in its adornments. `ref` and the remaining props go to the input.",
+    "native": "HTMLInputElement",
+    "props": [
+     {
+      "description": "Typed values outside `min` / `max` stay as typed; steps still stop at the bounds.",
+      "name": "allowOutOfRange",
+      "type": "boolean"
+     },
+     {
+      "description": "Class of the root (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"default\"",
+      "description": "Focus color; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "\"div\"",
+      "description": "The root element.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "default": "\"Decrease\"",
+      "description": "The decrement button's accessible name.",
+      "name": "decrementLabel",
+      "type": "string"
+     },
+     {
+      "default": "null",
+      "description": "Uncontrolled initial value. (empty).",
+      "name": "defaultValue",
+      "type": "number | null"
+     },
+     {
+      "description": "Standard: draw no underline (give the field another focus style).",
+      "name": "disableUnderline",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors and `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Show the focus colors even when the field doesn't have focus.",
+      "name": "focused",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "Text under the field, such as a hint or an error message (linked with `aria-describedby`).",
+      "name": "helperText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Hide the label visually: it still names the input, and the field is laid out as if it had none (a filled field gets less padding above the value).",
+      "name": "hiddenLabel",
+      "type": "boolean"
+     },
+     {
+      "default": "\"Increase\"",
+      "description": "The increment button's accessible name.",
+      "name": "incrementLabel",
+      "type": "string"
+     },
+     {
+      "description": "The floating label; it names the input.",
+      "name": "label",
+      "type": "ReactNode"
+     },
+     {
+      "default": "10",
+      "description": "Step of Page Up / Page Down and Shift + Arrow Up / Arrow Down.",
+      "name": "largeStep",
+      "type": "number"
+     },
+     {
+      "default": "\"none\"",
+      "description": "Vertical margin.",
+      "name": "margin",
+      "type": "\"dense\" | \"none\" | \"normal\""
+     },
+     {
+      "description": "Highest value.",
+      "name": "max",
+      "type": "number"
+     },
+     {
+      "description": "Lowest value.",
+      "name": "min",
+      "type": "number"
+     },
+     {
+      "description": "Outlined: keep the outline's notch open even when the label rests in the box.",
+      "name": "notched",
+      "type": "boolean"
+     },
+     {
+      "description": "reason`: `input-change`, `input-clear`, `input-blur`, `keyboard`, `increment-press` or `decrement-press`).",
+      "name": "onValueChange",
+      "type": "((value: number | null, details: NumberFieldChangeDetails) => void)"
+     },
+     {
+      "description": "Called when the person finishes a change: a step, a press, Enter or leaving the input.",
+      "name": "onValueCommitted",
+      "type": "((value: number | null, details: NumberFieldChangeDetails) => void)"
+     },
+     {
+      "description": "Keep the label above the value even when the field is empty.",
+      "name": "shrink",
+      "type": "boolean"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` or `small` (dense).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "default": "0.1",
+      "description": "Step with Alt + Arrow Up / Arrow Down.",
+      "name": "smallStep",
+      "type": "number"
+     },
+     {
+      "description": "5 → 2).",
+      "name": "snapOnStep",
+      "type": "boolean"
+     },
+     {
+      "default": "1",
+      "description": "How much the buttons and Arrow Up / Arrow Down change the value.",
+      "name": "step",
+      "type": "number"
+     },
+     {
+      "description": "Style of the root.",
+      "name": "style",
+      "type": "CSSProperties"
+     },
+     {
+      "description": "Controlled value (`null` = empty).",
+      "name": "value",
+      "type": "number | null"
+     },
+     {
+      "default": "\"outlined\"",
+      "description": "Outline, tinted fill or underline.",
+      "name": "variant",
+      "type": "\"filled\" | \"outlined\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
    "name": "OutlinedInput",
    "react": {
     "description": "The outlined field box without a label or a helper text.",
@@ -901,5 +1259,19 @@
  ],
  "format": 1,
  "name": "text-field",
- "title": "Text field"
+ "title": "Text field",
+ "types": [
+  {
+   "name": "CopyFailure",
+   "type": "\"denied\" | \"gesture\" | \"unsupported\""
+  },
+  {
+   "name": "CopyResult",
+   "type": "{ readonly ok: true; } | { readonly ok: false; readonly reason: CopyFailure; }"
+  },
+  {
+   "name": "NumberFieldChangeReason",
+   "type": "\"decrement-press\" | \"increment-press\" | \"input-blur\" | \"input-change\" | \"input-clear\" | \"keyboard\""
+  }
+ ]
 }

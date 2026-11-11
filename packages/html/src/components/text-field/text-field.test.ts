@@ -34,7 +34,7 @@ const field = (attrs = "", input = '<input id="f" data-ok-text-field-input place
   `<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" ${attrs}><label data-ok-text-field-label for="f">Name</label><div data-ok-text-field-control>${input}<fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Name</span></legend></fieldset></div></div>`;
 
 describe("text field snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(21));
+  it("covers every story group", () => expect(snippets).toHaveLength(26));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);

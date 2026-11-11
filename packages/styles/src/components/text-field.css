@@ -22,6 +22,8 @@
  *            data-ok-hidden-label: the label is visually hidden (it still names the input) and the
  *            field is laid out as if it had none; adornment data-ok-disable-pointer-events
  *            data-ok-notched (outline notch open), data-ok-disable-underline (standard)
+ * Number:    data-ok-number-field on the root: input[role=spinbutton] centered between Icon
+ *            buttons [data-ok-number-field-decrement] / [data-ok-number-field-increment]
  * Standalone: data-ok-input-base on the root (InputBase / OutlinedInput / FilledInput / Input):
  *            no label or helper; InputBase has no data-ok-variant (no box)
  *
@@ -610,6 +612,19 @@
     [data-ok-text-field][data-ok-variant="standard"] > [data-ok-text-field-control]:has(> :disabled)
   )::before {
     border-bottom-style: dotted;
+  }
+
+  /*
+   * Number field (data-ok-number-field, roadmap 4.24): the value sits centered between the
+   * decrement and increment buttons (Icon buttons in the adornments); a narrower default width.
+   */
+  :where([data-ok-number-field]:not([data-ok-full-width])) {
+    width: calc(var(--ok-spacing) * 40);
+  }
+
+  :where([data-ok-number-field] > [data-ok-text-field-control] > [data-ok-text-field-input]) {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -2116,6 +2116,23 @@ export interface TabsParts {
 
 /** Text field: parts, states, values and triggers. */
 export interface TextFieldParts {
+  /**
+   * A copy trigger (HTML): a press copies the text of the element its value names. Empty: a
+   * button copies the input of the text field around it; any other element copies its own text.
+   */
+  "data-ok-clipboard-copy": Trigger<"id">;
+  /** On a copy trigger: the `<template>` toast shown when the browser refuses the copy. */
+  "data-ok-clipboard-error-toast": Value<string>;
+  /** On a copy trigger: the text to copy, instead of an element's. */
+  "data-ok-clipboard-text": Value<string>;
+  /** On a copy trigger: the `<template>` toast shown after a copy, such as "Copied!". */
+  "data-ok-clipboard-toast": Value<string>;
+  /** On a copy trigger: `dblclick` copies on a double click instead of a click. */
+  "data-ok-clipboard-trigger": Value<"click" | "dblclick">;
+  /** A number field's button that steps the value down (an Icon button in the start adornment). */
+  "data-ok-number-field-decrement": Part<"button">;
+  /** A number field's button that steps the value up (an Icon button in the end adornment). */
+  "data-ok-number-field-increment": Part<"button">;
   /** An adornment before or after the input, such as an icon or a unit. */
   "data-ok-text-field-adornment": Value<"start" | "end">;
   /** On an adornment: presses go through it to the input (React `disablePointerEvents`). */

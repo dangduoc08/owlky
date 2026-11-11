@@ -1,0 +1,8 @@
+---
+"@owlky/core": minor
+"@owlky/react": minor
+"@owlky/styles": minor
+"@owlky/html": minor
+---
+
+Text field: number input. React `NumberField` renders a text field whose input is a WAI-ARIA spin button (`role="spinbutton"`, `inputmode="decimal"`, `aria-valuenow` / `-min` / `-max`) between decrement and increment Icon buttons in its adornments, with Base UI's names: `value` / `defaultValue` (`number | null`), `onValueChange(value, { reason })`, `onValueCommitted`, `min`, `max`, `step` (1), `smallStep` (0.1, Alt + arrows), `largeStep` (10, Page Up / Page Down and Shift + arrows), `snapOnStep`, `allowOutOfRange`, plus `decrementLabel` / `incrementLabel`; Home / End go to the bounds, Enter or leaving the input commits typed text (clamped, invalid text reverts), a button turns off at its bound. HTML: `data-ok-number-field` with `data-ok-min`, `data-ok-max`, `data-ok-step-size`, `data-ok-small-step`, `data-ok-large-step`, `data-ok-snap-on-step`, `data-ok-allow-out-of-range` on a text field root, `[data-ok-number-field-decrement]` / `[data-ok-number-field-increment]` buttons, a `number-field` runtime with `ok:number-field:change` (cancelable) and `ok:number-field:commit` events and `getValue()`, `setValue()`, `stepUp()`, `stepDown()`. Core: `numberFieldOptions` / `numberFieldAttributes`, `createNumberFieldController`, `parseNumberInput`, `formatNumberInput`, `stepNumberValue`, `clampNumber`, `numberFieldState`, `typedNumberChange`, `numberFieldSettings` / `readNumberFieldSettings`. Styles: the value is centered and the field is 160px wide unless `fullWidth`. Text field gets a "Number input" story and docs section.
