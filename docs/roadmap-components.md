@@ -103,13 +103,13 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.23 | E — audit 3.1 (should) | Autocomplete | `readOnly`, `onHighlightChange`, `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, configurable `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | ✅ |
 | 4.18.24 | E — audit 3.1 (could) | Autocomplete | `renderValue` (custom chips), `clearIcon` / `popupIcon` / `forcePopupIcon`, object values (`getOptionLabel` / `isOptionEqualToValue` / `getOptionKey` / `getOptionValue`), public `useAutocomplete` / `createFilterOptions` | ✅ |
 | 4.18.25 | E — audit 3.1 (should) | Text field | FormControl props `hiddenLabel`, `focused`, `component`; InputAdornment `disablePointerEvents`, `component` | ✅ |
-| 4.18.26 | E — audit 3.1 (could) | Text field (+ Select) | standalone `InputBase` / `OutlinedInput` (`notched`) / `FilledInput` (`disableUnderline`) / `Input`, `inputComponent` | ⬜ |
+| 4.18.26 | E — audit 3.1 (could) | Text field (+ Select) | standalone `InputBase` / `OutlinedInput` (`notched`) / `FilledInput` (`disableUnderline`) / `Input`, `inputComponent` | ✅ |
 | 4.18.27 | E — audit 3.1 (should) | Select | InputBase `startAdornment` / `endAdornment` | ✅ |
 | 4.18.28 | E — audit 3.1 (could) | Slider | `tabIndex` | ✅ |
 | 4.18.29 | E — audit 3.1 (should) | Date pickers (fields) | `clearButtonPosition`, `openPickerButtonPosition`, public `startAdornment` / `endAdornment`, `shouldRespectLeadingZeros`, `fieldRef` (field API), TextField props `color` / `margin` / `hiddenLabel` / `focused`, `selectedSections` `"all"` / section type | ✅ |
-| 4.18.30 | E — audit 3.1 (could) | Date pickers | range fields `dateSeparator`; calendars and clocks `focusedView` / `onFocusedViewChange`; TimeClock `showViewSwitcher`; static pickers `displayStaticWrapperAs` | ⬜ |
+| 4.18.30 | E — audit 3.1 (could) | Date pickers | range fields `dateSeparator`; calendars and clocks `focusedView` / `onFocusedViewChange`; TimeClock `showViewSwitcher`; static pickers `displayStaticWrapperAs` | ✅ |
 | 4.18.31 | E — audit 3.1 (could) | Upload | `dragFileRejections` (MIME / surplus rejections during a drag) | ✅ |
-| 4.18.32 | E — audit 3.1 (could) | Code editor | DiffEditor `line` | ⬜ |
+| 4.18.32 | E — audit 3.1 (could) | Code editor | DiffEditor `line` | ✅ |
 | 4.18.33 | E — audit 3.1 (should) | Editor | React access to the Tiptap editor (`onCreate` / editor ref) and Tiptap events (`create`, `focus`, `blur`, `selectionUpdate`, `transaction`, `paste`, `drop`, `delete`, `contentError`); `getJSON()` / `getText()` | ✅ |
 | 4.18.34 | E — audit 3.1 (could) | Editor | `editorProps`, `parseOptions`, `enableInputRules` / `enablePasteRules`, `textDirection`, `autofocus`; form `name` (hidden input) (with 4.16) | ✅ |
 | 4.18.35 | E — audit 3.1 (could, **ADR**) | Editor | `extensions` pass-through (tables, mentions), `BubbleMenu` / `FloatingMenu` / `useEditor` (with 4.16: new Tiptap extension dependencies, schema and sanitizer impact) | ✅ |
@@ -156,7 +156,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.76 | E — audit 3.1 (should) | Sortable | auto scroll near Scrollbar / page edges while dragging; disabled items; `onDragStart` / `onDragOver` / `onDragCancel`; HTML `messages` | ✅ |
 | 4.18.77 | E — audit 3.1 (could) | Sortable | swapping strategy; drag by the whole item (no handle) | ✅ |
 | 4.18.78 | E — audit 3.1 (should) | Motion | `component` (any element); `viewport.margin` / `root`; in-view events (`onViewportEnter` / `Leave`, `ok:motion:enter` / `leave`) | ✅ |
-| 4.18.79 | E — audit 3.1 (could) | Map | reactive `light` / `sky`, `styleDiffing`, camera `padding`; Marker `scale`, `clickTolerance` | ⬜ |
+| 4.18.79 | E — audit 3.1 (could) | Map | reactive `light` / `sky`, `styleDiffing`, camera `padding`; Marker `scale`, `clickTolerance` | ✅ |
 | 4.18.80 | E — audit 3.1 (could) | Carousel | Embla v9 method aliases (`goTo`, `goToNext`, `selectedSnap`, `snapList`…), `snapIndex(slide)`, events `resize`, `slideschanged`, `pointermove` | ✅ |
 | 4.18.81 | E — audit 3.1 (could) | Lightbox | `render.slideContainer`, `render.buttonPrev` / `buttonNext` / `buttonClose` (+ plugin buttons), `render.iconLoading` / `iconError` | ✅ |
 | 4.18.82 | E — audit 3.1 (could) | Walktour | option `offset`; step `id` and `data` (in events) | ✅ |
