@@ -6,6 +6,7 @@
 import { type MapScaleClass, mapScale, mapScaleLabel } from "../map/choropleth.js";
 import { type GeoDescriptionStrings, geoDescription } from "../map/describe.js";
 import { latticePoints, latticeShape, type MapPixelShape, mapPixelShapes } from "../map/lattice.js";
+import { type ChartAnnotation, chartAnnotations, chartAnnotationTag } from "./chart-annotations.js";
 import { type ChartCueOptions, chartPatternAt, chartPatternDefs } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
 import {
@@ -450,6 +451,7 @@ export function layoutGeo(
     hidden?: readonly number[] | undefined;
     dataLabels?: boolean | undefined;
     idPrefix?: string | undefined;
+    annotations?: readonly ChartAnnotation[] | undefined;
   } & Pick<ChartCueOptions, "fill" | "fillPattern" | "colorBlindMode">,
   format: ChartFormat,
 ): {
@@ -538,7 +540,13 @@ export function layoutGeo(
   const sphere = options.sphere ? sphereRing(project, projection) : null;
 
   const shapes: ChartNode[] = [];
-  const labels: ChartNode[] = [];
+  /** Data labels with their boxes (annotations push the ones they cover out, 4.18.100). */
+  const labels: {
+    node: ChartNode;
+    box: { left: number; top: number; right: number; bottom: number };
+  }[] = [];
+  /** Plane coordinates of a longitude / latitude (geographic and pixel layouts). */
+  let place: ((longitude: number, latitude: number) => [number, number]) | null = null;
   const marks: ChartMark[] = [];
   const addRegion = (
     index: number,
@@ -630,8 +638,10 @@ export function layoutGeo(
       const room = right - left - 4;
       if (room >= 12 && bottom - top >= FONT + 2 && chartTextWidth(text) <= room * 1.15) {
         const fitted = fitChartText(text, room);
-        labels.push(
-          node(
+        const half = chartTextWidth(fitted) / 2;
+        labels.push({
+          box: { left: cx - half, top: cy - FONT / 2, right: cx + half, bottom: cy + FONT / 2 },
+          node: node(
             "text",
             {
               x: fmt(cx),
@@ -644,7 +654,7 @@ export function layoutGeo(
             undefined,
             fitted,
           ),
-        );
+        });
       }
     }
   };
@@ -686,6 +696,7 @@ export function layoutGeo(
     }
   } else if (projected.length || sphere) {
     const fit = fitter(sphere ? [sphere] : projected.flatMap(({ rings }) => rings), width, height);
+    place = (longitude, latitude) => fit(project(longitude, latitude));
     if (sphere)
       background.push(node("path", { d: pathOf([sphere.map(fit)]), "data-ok-chart-sphere": "" }));
     if (options.graticule) {
@@ -708,6 +719,92 @@ export function layoutGeo(
       addRegion(index, fitted, centroid(fitted));
     }
   }
+
+  // --- Annotations (4.18.100) --------------------------------------------------------------
+  // Points and texts at a longitude / latitude, or at a region's label anchor (points outline it).
+  // Annotations always win: data labels under an annotation's marker or tag are dropped.
+  const boxes: { left: number; top: number; right: number; bottom: number }[] = [];
+  const annotationGroups: ChartNode[] = [];
+  for (const entry of chartAnnotations(options.annotations)) {
+    if (entry.axis !== "point" && entry.axis !== "text") continue;
+    let at: [number, number] | null = null;
+    let outline: string | undefined;
+    if (entry.region !== undefined) {
+      const mark = marks.find((each) => regions[each.index]?.id === entry.region);
+      if (mark) {
+        at = [mark.px, mark.py];
+        outline = mark.geo?.d;
+      }
+    } else {
+      const longitude = Number(entry.x);
+      const latitude = Number(entry.y);
+      if (place && Number.isFinite(longitude) && Number.isFinite(latitude))
+        at = place(longitude, Math.max(-90, Math.min(90, latitude)));
+    }
+    if (!at) continue;
+    const [px, py] = at;
+    if (px < -0.5 || px > width + 0.5 || py < -0.5 || py > height + 0.5) continue;
+    const children: ChartNode[] = [];
+    if (entry.axis === "text") {
+      const label = entry.label as string;
+      const size = chartTextWidth(label);
+      const anchor = entry.textAnchor ?? "middle";
+      const left = anchor === "start" ? px : anchor === "end" ? px - size : px - size / 2;
+      boxes.push({ left, top: py - FONT / 2, right: left + size, bottom: py + FONT / 2 });
+      children.push(
+        node(
+          "text",
+          {
+            x: fmt(px),
+            y: fmt(py),
+            dy: "0.35em",
+            "text-anchor": anchor,
+            "data-ok-chart-annotation-text": "",
+          },
+          undefined,
+          label,
+        ),
+      );
+    } else {
+      if (outline && entry.axis === "point")
+        children.push(node("path", { d: outline, "data-ok-chart-annotation-outline": "" }));
+      children.push(
+        node("circle", {
+          cx: fmt(px),
+          cy: fmt(py),
+          r: "5",
+          "data-ok-chart-annotation-marker": "",
+        }),
+      );
+      boxes.push({ left: px - 5, top: py - 5, right: px + 5, bottom: py + 5 });
+      if (entry.label) {
+        const tag = chartAnnotationTag(px, py - 30, entry.label, "middle", width, height);
+        children.push(...tag);
+        const rect = tag[0]?.attrs ?? {};
+        const left = Number(rect["x"]);
+        const top = Number(rect["y"]);
+        boxes.push({ left, top, right: left + Number(rect["width"]), bottom: top + 18 });
+      }
+    }
+    annotationGroups.push(
+      node(
+        "g",
+        { "data-ok-chart-annotation": entry.axis, "data-ok-color": entry.color ?? "info" },
+        children,
+      ),
+    );
+  }
+  const keptLabels = boxes.length
+    ? labels.filter(({ box: label }) =>
+        boxes.every(
+          (other) =>
+            label.right <= other.left ||
+            label.left >= other.right ||
+            label.bottom <= other.top ||
+            label.top >= other.bottom,
+        ),
+      )
+    : labels;
 
   const layout: ChartLayout = {
     width,
@@ -738,7 +835,14 @@ export function layoutGeo(
           shapes,
         ),
       ]),
-      node("g", { "data-ok-chart-data-labels": "" }, labels),
+      ...(annotationGroups.length
+        ? [node("g", { "data-ok-chart-annotation-layer": "" }, annotationGroups)]
+        : []),
+      node(
+        "g",
+        { "data-ok-chart-data-labels": "" },
+        keptLabels.map((label) => label.node),
+      ),
       node("g", { "data-ok-chart-active": "" }, []),
     ],
   };

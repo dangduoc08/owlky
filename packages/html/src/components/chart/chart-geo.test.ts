@@ -152,6 +152,21 @@ describe("chart runtime (geo)", () => {
     await expectNoAxeViolations(host);
   });
 
+  it("reads region annotations from the list (4.18.100)", () => {
+    const host = mount(
+      `${json("shapes", GEOMETRY)}${figure('data-ok-geometry="shapes"').replace(
+        "</table>",
+        '</table><ul data-ok-chart-annotations><li data-ok-annotation="point" data-ok-region="East" data-ok-color="error">Here</li><li data-ok-annotation="point" data-ok-x="-50" data-ok-y="10">There</li></ul>',
+      )}`,
+    );
+    start();
+    const groups = host.querySelectorAll("g[data-ok-chart-annotation]");
+    expect(groups).toHaveLength(2);
+    expect(groups[0]?.getAttribute("data-ok-color")).toBe("error");
+    expect(groups[0]?.querySelector("[data-ok-chart-annotation-outline]")).not.toBeNull();
+    expect(groups[1]?.querySelector("[data-ok-chart-annotation-label]")?.textContent).toBe("There");
+  });
+
   it("draws hex tiles from the table's cells, no geometry needed", () => {
     const host =
       mount(`<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="hex"><table data-ok-chart-data>

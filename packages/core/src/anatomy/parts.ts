@@ -273,6 +273,10 @@ export interface ChartParts {
   "data-ok-label": Part<"th">;
   /** Geo charts: a decorative picture that fills the region (on the table's row header): an http(s), relative or `data:image/…` URL. */
   "data-ok-image": Part<"th">;
+  /** Geo charts: on an annotation list item, the id of the region it marks (instead of `data-ok-x` / `data-ok-y`, longitude and latitude). */
+  "data-ok-region": Value<string>;
+  /** Geo charts: the outline of the region a point annotation marks. */
+  "data-ok-chart-annotation-outline": Part<"path">;
   /** A text that describes the chart (the plot's description); `auto` on geo charts writes it from the data. */
   "data-ok-description": Part<"figure">;
   /** Set by the runtime: the plot's description, visually hidden (from `data-ok-description`). */

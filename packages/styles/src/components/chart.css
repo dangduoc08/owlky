@@ -1407,6 +1407,15 @@
     stroke-width: 2px;
   }
 
+  /* Geo charts (4.18.100): a point annotation on a region outlines the region. */
+  :where([data-ok-chart-annotation-outline]) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2px;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
   /* Trellis (ADR-0060): small multiples in a grid; a promoted panel spans it. */
   :where([data-ok-chart-trellis]) {
     display: grid;

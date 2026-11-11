@@ -678,3 +678,86 @@ describe("renderChart: descriptions (4.18.99)", () => {
     ).toBe("Flat.");
   });
 });
+
+describe("renderChart geo: annotations (4.18.100)", () => {
+  const groupsOf = (layout: ChartLayout) => collect(layout.nodes, "data-ok-chart-annotation");
+
+  it("places points and texts by longitude / latitude or by region", () => {
+    const { layout } = draw({
+      annotations: [
+        { axis: "point", region: "middle", label: "Capital", color: "error" },
+        { axis: "point", x: -35, y: 5 },
+        { axis: "text", x: 25, y: 5, label: "East side", textAnchor: "start" },
+        { axis: "point", region: "nowhere", label: "Lost" },
+        { axis: "x", x: 3 },
+        { axis: "point", x: 500, y: 5 },
+      ],
+    });
+    const groups = groupsOf(layout);
+    expect(groups.map((group) => group.attrs["data-ok-chart-annotation"])).toEqual([
+      "point",
+      "point",
+      "text",
+    ]);
+    const middle = layout.marks[1];
+    const [capital, plain, text] = groups;
+    const marker = collect(capital ? [capital] : [], "data-ok-chart-annotation-marker")[0];
+    expect([Number(marker?.attrs["cx"]), Number(marker?.attrs["cy"])]).toEqual([
+      middle?.px,
+      middle?.py,
+    ]);
+    expect(capital?.attrs["data-ok-color"]).toBe("error");
+    expect(
+      collect(capital ? [capital] : [], "data-ok-chart-annotation-outline")[0]?.attrs["d"],
+    ).toBe(middle?.geo?.d);
+    expect(collect(capital ? [capital] : [], "data-ok-chart-annotation-label")[0]?.text).toBe(
+      "Capital",
+    );
+    // A coordinate: inside West's square, west of Middle.
+    const point = collect(plain ? [plain] : [], "data-ok-chart-annotation-marker")[0];
+    expect(Number(point?.attrs["cx"])).toBeLessThan(middle?.px ?? 0);
+    expect(collect(plain ? [plain] : [], "data-ok-chart-annotation-outline")).toHaveLength(0);
+    expect(
+      collect(text ? [text] : [], "data-ok-chart-annotation-text")[0]?.attrs["text-anchor"],
+    ).toBe("start");
+    // The layer sits before the data labels.
+    const order = layout.nodes.map((item) => Object.keys(item.attrs)[0]);
+    expect(order.indexOf("data-ok-chart-annotation-layer")).toBe(
+      order.indexOf("data-ok-chart-data-labels") - 1,
+    );
+  });
+
+  it("drops the data labels an annotation covers, never the annotation", () => {
+    const labels = (input: Partial<ChartRenderInput>) =>
+      collect(
+        draw({ dataLabels: true, ...input }).layout.nodes,
+        "data-ok-chart-partition-label",
+      ).map((item) => item.text);
+    expect(labels({})).toEqual(["West", "Middle", "East"]);
+    expect(labels({ annotations: [{ axis: "point", region: "middle" }] })).toEqual([
+      "West",
+      "East",
+    ]);
+    expect(labels({ annotations: [{ axis: "text", region: "east", label: "Here" }] })).toEqual([
+      "West",
+      "Middle",
+    ]);
+  });
+
+  it("places region annotations on hex tiles, and coordinates only on maps", () => {
+    const { layout } = draw({
+      geoLayout: "hex",
+      geometry: null,
+      hexCells: [
+        { id: "west", col: 0, row: 0 },
+        { id: "middle", col: 1, row: 0 },
+        { id: "east", col: 2, row: 0 },
+      ],
+      annotations: [
+        { axis: "point", region: "east" },
+        { axis: "point", x: 0, y: 0 },
+      ],
+    });
+    expect(groupsOf(layout)).toHaveLength(1);
+  });
+});

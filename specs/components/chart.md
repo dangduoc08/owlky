@@ -242,7 +242,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Violin: thead › tr › th[scope=col][rowspan=2] + th[scope=colgroup][colspan=6]; second row th[data-ok-part="count|min|q1|median|q3|max"];
       one row per category: tbody › tr › th[scope=row] + td[data-ok-samples] (the count; observations) | td[data-ok-density] (empty; value:weight pairs) + td×5 (the summary, never read back)
   ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
-    li[data-ok-annotation="x|y|point|text"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]?[data-ok-text-anchor]? › label text
+    li[data-ok-annotation="x|y|point|text"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]?[data-ok-text-anchor]?[data-ok-region]? (geo) › label text
 Root text attributes (phase 4): [data-ok-group]? [data-ok-brush-target]? [data-ok-color-ranges]?
   (4.18.65) [data-ok-xaxis-groups]? [data-ok-no-data-text]? (4.18.68) [data-ok-drilldown-path]?
 
@@ -520,8 +520,18 @@ Geo charts (core `chart-geo.ts`, ADR-0059): `type="geo"`, no tile style, no MapL
   tooltip, visually hidden), on every type; `"auto"` on geo charts is `chartGeoDescription` (the
   Map's `geoDescription`: layout → choropleth / hex / pixel, values as `format.value`, classes =
   legend item names); `descriptionStrings` (React prop, HTML `setDescriptionStrings()`) translate it.
+- Annotations (4.18.100, ApexMaps points by coordinate and features by key; ADR-0031's model):
+  `point` and `text` annotations take `x` = longitude, `y` = latitude (geographic and pixel layouts:
+  the projection's fit; outside the plot: skipped) or `region` (any layout: the region's label
+  anchor, `mark.px/py`; a point adds `path[data-ok-chart-annotation-outline]` of the region's
+  outline); HTML `li[data-ok-region]`. Drawn in `g[data-ok-chart-annotation-layer]` before the data
+  labels, as on other charts (marker r 5, tag 30px above, `text` with `textAnchor`). Data labels
+  whose box meets a marker, tag or text box are dropped; annotations never move. `x` / `y` lines and
+  bands, dragging and the keyboard pick-up are not on geo charts.
 - Not built: `orthographic` and rotation, pan and zoom, shape ↔ hex morph, bubbles / markers on
-  `geo`, a null legend item, label collision, a `diamond` pixel shape.
+  `geo`, a null legend item, label collision between regions (only annotations push labels out), a
+  `diamond` pixel shape, ApexMaps area annotations by bounds and connector lines, pattern `size` /
+  line weight options.
 
 Streamgraph geometry (core `chart-stream.ts`, drawn on `layoutChart`'s axes, 4.18.21):
 - Data: series as for a line chart, joined on x (a missing value counts as zero, negatives are floored

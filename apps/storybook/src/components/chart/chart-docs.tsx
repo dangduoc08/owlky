@@ -1187,6 +1187,78 @@ export function DescribedHexMap() {
 }`,
   },
   {
+    id: "geo-annotations",
+    title: "Annotate places on a geo chart",
+    body: `Geo charts take the chart's \`annotations\` too. A \`point\` draws a marker with an optional label, and a \`text\` draws its label alone. Place one at a longitude and latitude with \`x\` and \`y\` (geographic and pixel layouts), or on a region with \`region\`, its id: the annotation sits at the region's label anchor, and a point also outlines the region. Region annotations work on hex tiles as well. In HTML, write each one as a list item of \`ul[data-ok-chart-annotations]\` with \`data-ok-region\`, or \`data-ok-x\` and \`data-ok-y\`.
+
+Annotations always win over the regions' data labels: a label that an annotation's marker or tag covers is not drawn, and the annotation never moves. Annotations are listed after the data table for assistive technology, like on every chart.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-join-by="name" data-ok-geometry="shapes" data-ok-height="300">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Nevada</th><td data-ok-value="3.1">3.1</td></tr>
+      <tr><th scope="row">Utah</th><td data-ok-value="3.27">3.27</td></tr>
+    </tbody>
+  </table>
+  <ul data-ok-chart-annotations>
+    <li data-ok-annotation="point" data-ok-region="Utah" data-ok-color="error">Beehive State</li>
+    <li data-ok-annotation="point" data-ok-x="-115.14" data-ok-y="36.17">Las Vegas</li>
+  </ul>
+</figure>
+<script type="application/json" id="shapes">
+  {"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"name":"Nevada"},"geometry":{"type":"Polygon","coordinates":[[[-120,35],[-114,35],[-114,42],[-120,42],[-120,35]]]}},
+    {"type":"Feature","properties":{"name":"Utah"},"geometry":{"type":"Polygon","coordinates":[[[-114,37],[-109,37],[-109,42],[-114,42],[-114,37]]]}}
+  ]}
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+
+const shapes = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+
+export function AnnotatedMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      geometry={shapes}
+      joinBy="name"
+      height={300}
+      regions={[
+        { id: "Nevada", name: "Nevada", value: 3.1 },
+        { id: "Utah", name: "Utah", value: 3.27 },
+      ]}
+      annotations={[
+        { axis: "point", region: "Utah", label: "Beehive State", color: "error" },
+        { axis: "point", x: -115.14, y: 36.17, label: "Las Vegas" },
+      ]}
+    />
+  );
+}`,
+  },
+  {
     id: "icicle",
     title: "Show parts of a hierarchy as bands",
     body: `An icicle chart shows the same hierarchy as a sunburst, in bands: one band per level, and each node a cell as long as its share of its parent. Long names and deep trees read better in bands than in rings, and cells of one level are easy to compare by length. Set \`type\` to \`icicle\` and describe the nodes as for a tree chart. See "Show a hierarchy as a tree".

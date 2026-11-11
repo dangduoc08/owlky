@@ -155,6 +155,24 @@ describe("Chart (geo)", () => {
     await expectNoAxeViolations(document.body);
   });
 
+  it("annotates regions and coordinates; labels give way (4.18.100)", () => {
+    renderGeo({
+      dataLabels: true,
+      annotations: [
+        { axis: "point", region: "West", label: "Here" },
+        { axis: "text", x: 30, y: 10, label: "East" },
+      ],
+    });
+    const items = root().querySelectorAll("[data-ok-chart-annotations] li");
+    expect(items[0]?.getAttribute("data-ok-region")).toBe("West");
+    expect(root().querySelector("[data-ok-chart-annotation-outline]")).not.toBeNull();
+    expect(root().querySelector("[data-ok-chart-annotation-text]")?.textContent).toBe("East");
+    const labels = [...root().querySelectorAll("[data-ok-chart-partition-label]")].map(
+      (label) => label.textContent,
+    );
+    expect(labels).not.toContain("West");
+  });
+
   it("draws hex tiles without geometry", () => {
     render(
       <Chart

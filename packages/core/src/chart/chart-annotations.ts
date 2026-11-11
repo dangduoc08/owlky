@@ -34,6 +34,48 @@ export interface ChartAnnotation {
   readonly textAnchor?: ChartAnnotationAnchor | undefined;
   /** The annotation can be moved by a drag, or by the keyboard (4.18.20). */
   readonly draggable?: boolean | undefined;
+  /**
+   * Geo charts (4.18.100): the region id the point or text annotation marks (at the region's
+   * label anchor; points also outline it). Without it, `x` is a longitude and `y` a latitude.
+   */
+  readonly region?: string | undefined;
+}
+
+/** A label tag: a filled rounded box with the text, kept inside a `width` × `height` SVG. */
+export function chartAnnotationTag(
+  x: number,
+  y: number,
+  text: string,
+  anchor: "start" | "end" | "middle",
+  width: number,
+  height: number,
+): ChartNode[] {
+  const size = chartTextWidth(text) + 12;
+  let left = anchor === "start" ? x : anchor === "end" ? x - size : x - size / 2;
+  left = Math.max(0, Math.min(left, width - size));
+  const top = Math.max(0, Math.min(y, height - 18));
+  return [
+    node("rect", {
+      x: fmt(left),
+      y: fmt(top),
+      width: fmt(size),
+      height: "18",
+      rx: "4",
+      "data-ok-chart-annotation-tag": "",
+    }),
+    node(
+      "text",
+      {
+        x: fmt(left + size / 2),
+        y: fmt(top + 9),
+        dy: "0.35em",
+        "text-anchor": "middle",
+        "data-ok-chart-annotation-label": "",
+      },
+      undefined,
+      text,
+    ),
+  ];
 }
 
 const AXES: readonly ChartAnnotationAxis[] = ["x", "y", "point", "text"];
@@ -56,8 +98,14 @@ export function chartAnnotations(list: readonly ChartAnnotation[] | undefined): 
     const y2 = parseChartNumber(entry.y2);
     const x = xText(entry.x);
     const x2 = xText(entry.x2);
-    if (entry.axis !== "y" && x === undefined) return [];
-    if (entry.axis !== "x" && y === null) return [];
+    const region =
+      (entry.axis === "point" || entry.axis === "text") &&
+      typeof entry.region === "string" &&
+      entry.region.trim()
+        ? entry.region.trim().slice(0, 200)
+        : undefined;
+    if (entry.axis !== "y" && x === undefined && !region) return [];
+    if (entry.axis !== "x" && y === null && !region) return [];
     if (entry.axis === "text" && !entry.label) return [];
     return [
       {
@@ -72,6 +120,7 @@ export function chartAnnotations(list: readonly ChartAnnotation[] | undefined): 
           ? { textAnchor: entry.textAnchor }
           : {}),
         ...(entry.draggable === true ? { draggable: true } : {}),
+        ...(region ? { region } : {}),
       },
     ];
   });
@@ -96,6 +145,7 @@ export function chartAnnotationItems(
       ...(entry.color ? { "data-ok-color": entry.color } : {}),
       ...(entry.textAnchor ? { "data-ok-text-anchor": entry.textAnchor } : {}),
       ...(entry.draggable ? { "data-ok-draggable": "" } : {}),
+      ...(entry.region ? { "data-ok-region": entry.region } : {}),
     },
     text: entry.label ?? "",
   }));
@@ -114,6 +164,7 @@ export function readChartAnnotation(item: Element): ChartAnnotation {
     color: attr("data-ok-color") as ChartColor,
     textAnchor: attr("data-ok-text-anchor") as ChartAnnotationAnchor,
     draggable: item.hasAttribute("data-ok-draggable"),
+    region: attr("data-ok-region"),
   };
 }
 
@@ -166,34 +217,8 @@ export function chartAnnotationNodes(
   };
   const pyOf = (value: number) => chartPxOf(yMap, value);
   /** A label tag: a filled rounded box with the text, kept inside the SVG. */
-  const tag = (x: number, y: number, text: string, anchor: "start" | "end" | "middle") => {
-    const width = chartTextWidth(text) + 12;
-    let left = anchor === "start" ? x : anchor === "end" ? x - width : x - width / 2;
-    left = Math.max(0, Math.min(left, layout.width - width));
-    const top = Math.max(0, Math.min(y, layout.height - 18));
-    return [
-      node("rect", {
-        x: fmt(left),
-        y: fmt(top),
-        width: fmt(width),
-        height: "18",
-        rx: "4",
-        "data-ok-chart-annotation-tag": "",
-      }),
-      node(
-        "text",
-        {
-          x: fmt(left + width / 2),
-          y: fmt(top + 9),
-          dy: "0.35em",
-          "text-anchor": "middle",
-          "data-ok-chart-annotation-label": "",
-        },
-        undefined,
-        text,
-      ),
-    ];
-  };
+  const tag = (x: number, y: number, text: string, anchor: "start" | "end" | "middle") =>
+    chartAnnotationTag(x, y, text, anchor, layout.width, layout.height);
   const groups: ChartNode[] = [];
   /** Draggable annotations say so (a grab cursor); the picked one is outlined. */
   const marks = (entry: ChartAnnotation, index: number) => ({

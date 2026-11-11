@@ -2155,6 +2155,14 @@
       "name": "data-ok-chart-annotation-marker"
      },
      {
+      "description": "Geo charts: the outline of the region a point annotation marks.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-outline"
+     },
+     {
       "description": "The background of an annotation's label.",
       "elements": [
        "rect"
@@ -3474,6 +3482,12 @@
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
       "kind": "state",
       "name": "data-ok-ready"
+     },
+     {
+      "description": "Geo charts: on an annotation list item, the id of the region it marks (instead of `data-ok-x` / `data-ok-y`, longitude and latitude).",
+      "kind": "value",
+      "name": "data-ok-region",
+      "value": "string"
      },
      {
       "description": "On a violin's data cell: its observations, separated by spaces.",

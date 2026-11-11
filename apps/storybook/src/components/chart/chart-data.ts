@@ -2134,6 +2134,28 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.100 (ApexMaps annotations): by coordinate and by region; labels give way.
+  "geo-annotations": {
+    title: "Geo annotations",
+    props: {
+      id: "chart-geo-annotations",
+      label: "Population by state with annotations, millions",
+      type: "geo",
+      valueSuffix: "M",
+      height: 420,
+      dataLabels: true,
+      regions: GEO_HEX_REGIONS,
+      joinBy: "name",
+      scaleMethod: "jenks",
+      colors: ["success"],
+      annotations: [
+        { axis: "point", region: "California", label: "Most populous", color: "error" },
+        { axis: "point", x: -77.04, y: 38.91, label: "Washington, D.C.", color: "info" },
+        { axis: "text", x: -101, y: 47.5, label: "Great Plains", color: "warning" },
+      ],
+      localeText: { y: "Population" },
+    },
+  },
   // Roadmap 4.18.21 (ADR-0058): icicle charts (ApexCharts v8 `icicle`, `direction`, `zoomType`).
   icicle: {
     title: "Icicle",

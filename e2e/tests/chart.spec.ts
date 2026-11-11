@@ -76,6 +76,7 @@ const STORIES = [
   "geo-hex",
   "geo-pixel",
   "geo-patterns",
+  "geo-annotations",
   "unit",
   "waffle",
   "beeswarm",
@@ -803,6 +804,25 @@ for (const impl of implementations) {
       await openStory(page, storyId(impl, "chart", "geo-hex"));
       const first = page.locator("[data-ok-chart]").first();
       await expect(first.locator("[data-ok-chart-region]")).toHaveCount(51);
+      await expect(first.locator("[data-ok-chart-partition-label]").first()).toBeAttached();
+    });
+
+    test("annotates places and drops the labels under them", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "geo-annotations"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("g[data-ok-chart-annotation]")).toHaveCount(3);
+      await expect(first.locator("[data-ok-chart-annotation-outline]")).toHaveCount(1);
+      await expect(first.locator("[data-ok-chart-annotation-label]").first()).toHaveText(
+        "Most populous",
+      );
+      await expect(first.locator("[data-ok-chart-annotations] li").first()).toHaveAttribute(
+        "data-ok-region",
+        "California",
+      );
+      // California's own label gives way to its annotation.
+      await expect(
+        first.locator("[data-ok-chart-partition-label]", { hasText: /^CA$/ }),
+      ).toHaveCount(0);
       await expect(first.locator("[data-ok-chart-partition-label]").first()).toBeAttached();
     });
 
