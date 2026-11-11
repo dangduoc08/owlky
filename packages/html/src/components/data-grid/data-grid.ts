@@ -5262,7 +5262,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       "click",
       (event) => {
         const target = event.target as Element;
-        if (!toolPanel()?.contains(target)) return;
+        // Only its buttons: a click on a checkbox comes before its change (syncing would undo it).
+        if (!toolPanel()?.contains(target) || !target.closest("button")) return;
         const action = target
           .closest("[data-ok-data-grid-columns-action]")
           ?.getAttribute("data-ok-data-grid-columns-action");

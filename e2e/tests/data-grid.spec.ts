@@ -807,7 +807,7 @@ for (const impl of implementations) {
     });
 
     test("columns tool panel: search, move, pin and group by keyboard", async ({ page }) => {
-      await openStory(page, storyId(impl, "datagrid", "columns"));
+      await openStory(page, storyId(impl, "datagrid", "column-options"));
       const grid = page.locator("#grid-columns-tool");
       await grid.getByRole("button", { name: "Columns" }).click();
       const panel = page.locator("#grid-columns-tool-columns");
@@ -837,7 +837,8 @@ for (const impl of implementations) {
 
     test("column options: row headers, merged owners, a fixed first column", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "column-options"));
-      const grid = page.getByRole("grid", { name: "Team tasks" });
+      // The first grid of the story (the second one shows the columns tool panel).
+      const grid = page.locator("#grid-columns").getByRole("grid", { name: "Team tasks" });
       await expect(grid.getByRole("rowheader")).toHaveCount(5);
       await expect(grid.locator('[data-ok-row-id="tt-1"] [data-ok-field="owner"]')).toHaveAttribute(
         "aria-rowspan",
