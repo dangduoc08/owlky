@@ -78,6 +78,21 @@ export {
 } from "./chart-filter.js";
 export { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 export {
+  type ChartGeoFeature,
+  type ChartGeoLayout,
+  type ChartGeometry,
+  type ChartGeoRegion,
+  type ChartHexCell,
+  type ChartProjection,
+  type ChartScaleMethod,
+  chartGeoLayouts,
+  chartProject,
+  chartProjections,
+  chartScaleMethods,
+  layoutGeo,
+  readChartGeoTable,
+} from "./chart-geo.js";
+export {
   type ChartGestureHost,
   type ChartGestureMode,
   type ChartGestures,

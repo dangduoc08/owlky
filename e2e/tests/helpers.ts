@@ -184,6 +184,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       // Map (ADR-0025): HTML triggers; React opens popups and flies the map from handlers.
       "data-ok-map-popup-open",
       "data-ok-map-fly-to",
+      "data-ok-geometry",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);

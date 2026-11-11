@@ -179,6 +179,73 @@ const MINUTES = Array.from({ length: 30 }, (_, i) => `10:${String(i).padStart(2,
 const wave = (i: number, base: number, amplitude: number) =>
   Math.round(base + amplitude * Math.sin(i / 3) + (amplitude / 3) * Math.cos(i * 1.1));
 
+/** US states with the 2020 census population (U.S. Census Bureau, public domain), millions. */
+const GEO_REGIONS: { id: string; name: string; value: number }[] = [];
+
+/** Odd-r offset tile grid (rows of hex cells, original arrangement). */
+const GEO_HEX_LAYOUT: [string, string, number, number, number][] = [
+  ["AK", "Alaska", 0, 0, 0.73],
+  ["ME", "Maine", 10, 0, 1.36],
+  ["VT", "Vermont", 9, 1, 0.64],
+  ["NH", "New Hampshire", 10, 1, 1.38],
+  ["WA", "Washington", 1, 2, 7.71],
+  ["MT", "Montana", 2, 2, 1.08],
+  ["ND", "North Dakota", 3, 2, 0.78],
+  ["MN", "Minnesota", 4, 2, 5.71],
+  ["WI", "Wisconsin", 5, 2, 5.89],
+  ["MI", "Michigan", 7, 2, 10.08],
+  ["NY", "New York", 9, 2, 20.2],
+  ["MA", "Massachusetts", 10, 2, 7.03],
+  ["OR", "Oregon", 1, 3, 4.24],
+  ["ID", "Idaho", 2, 3, 1.84],
+  ["WY", "Wyoming", 3, 3, 0.58],
+  ["SD", "South Dakota", 4, 3, 0.89],
+  ["IA", "Iowa", 5, 3, 3.19],
+  ["IL", "Illinois", 6, 3, 12.81],
+  ["IN", "Indiana", 7, 3, 6.79],
+  ["OH", "Ohio", 8, 3, 11.8],
+  ["PA", "Pennsylvania", 9, 3, 13.0],
+  ["NJ", "New Jersey", 10, 3, 9.29],
+  ["CT", "Connecticut", 11, 3, 3.61],
+  ["RI", "Rhode Island", 12, 3, 1.1],
+  ["CA", "California", 1, 4, 39.54],
+  ["NV", "Nevada", 2, 4, 3.1],
+  ["UT", "Utah", 3, 4, 3.27],
+  ["CO", "Colorado", 4, 4, 5.77],
+  ["NE", "Nebraska", 5, 4, 1.96],
+  ["MO", "Missouri", 6, 4, 6.15],
+  ["KY", "Kentucky", 7, 4, 4.51],
+  ["WV", "West Virginia", 8, 4, 1.79],
+  ["VA", "Virginia", 9, 4, 8.63],
+  ["MD", "Maryland", 10, 4, 6.18],
+  ["AZ", "Arizona", 2, 5, 7.15],
+  ["NM", "New Mexico", 3, 5, 2.12],
+  ["KS", "Kansas", 4, 5, 2.94],
+  ["AR", "Arkansas", 5, 5, 3.01],
+  ["TN", "Tennessee", 6, 5, 6.91],
+  ["NC", "North Carolina", 7, 5, 10.44],
+  ["SC", "South Carolina", 8, 5, 5.12],
+  ["DC", "District of Columbia", 9, 5, 0.69],
+  ["DE", "Delaware", 10, 5, 0.99],
+  ["OK", "Oklahoma", 4, 6, 3.96],
+  ["LA", "Louisiana", 5, 6, 4.66],
+  ["MS", "Mississippi", 6, 6, 2.96],
+  ["AL", "Alabama", 7, 6, 5.02],
+  ["GA", "Georgia", 8, 6, 10.71],
+  ["HI", "Hawaii", 0, 7, 1.46],
+  ["TX", "Texas", 4, 7, 29.15],
+  ["FL", "Florida", 9, 7, 21.54],
+];
+for (const [, name, , , value] of GEO_HEX_LAYOUT) GEO_REGIONS.push({ id: name, name, value });
+GEO_REGIONS.sort((a, b) => a.name.localeCompare(b.name));
+const GEO_HEX_REGIONS = GEO_HEX_LAYOUT.map(([label, name, , , value]) => ({
+  id: name,
+  name,
+  label,
+  value,
+}));
+const GEO_HEX_CELLS = GEO_HEX_LAYOUT.map(([, id, col, row]) => ({ id, col, row }));
+
 export const chartExamples: Record<string, ChartExample> = {
   line: {
     title: "Line",
@@ -1838,6 +1905,67 @@ export const chartExamples: Record<string, ChartExample> = {
         ],
       },
     ],
+  },
+  // Roadmap 4.18.17 (ADR-0059): geo charts on the US states (Natural Earth, public domain).
+  // The geometry is added by the demo (React) and the page script (HTML).
+  geo: {
+    title: "Geo map",
+    props: {
+      id: "chart-geo",
+      label: "Population by state, 2020 census, millions",
+      type: "geo",
+      valueSuffix: "M",
+      height: 420,
+      regions: GEO_REGIONS,
+      joinBy: "name",
+      scaleMethod: "jenks",
+      localeText: { y: "Population" },
+    },
+  },
+  "geo-projections": {
+    title: "Geo projections",
+    props: {
+      id: "chart-geo-mercator",
+      label: "Population by state in a Mercator projection, millions",
+      type: "geo",
+      projection: "mercator",
+      valueSuffix: "M",
+      height: 340,
+      regions: GEO_REGIONS,
+      joinBy: "name",
+      colors: ["info"],
+      localeText: { y: "Population" },
+    },
+    more: [
+      {
+        id: "chart-geo-sphere",
+        label: "Population by state on the whole Equal Earth globe, millions",
+        type: "geo",
+        valueSuffix: "M",
+        height: 340,
+        regions: GEO_REGIONS,
+        joinBy: "name",
+        sphere: true,
+        graticule: true,
+        colors: ["info"],
+        localeText: { y: "Population" },
+      },
+    ],
+  },
+  "geo-hex": {
+    title: "Hex tile map",
+    props: {
+      label: "Population by state in a hex tile map, millions",
+      type: "geo",
+      geoLayout: "hex",
+      valueSuffix: "M",
+      height: 420,
+      dataLabels: true,
+      regions: GEO_HEX_REGIONS,
+      hexCells: GEO_HEX_CELLS,
+      scaleMethod: "jenks",
+      localeText: { y: "Population" },
+    },
   },
   // Roadmap 4.18.21 (ADR-0058): icicle charts (ApexCharts v8 `icicle`, `direction`, `zoomType`).
   icicle: {

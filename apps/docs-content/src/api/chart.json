@@ -9,6 +9,11 @@
    "value": "color-mix(in srgb, #919EAB 16%, transparent)"
   },
   {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
    "dark": "#1C252E",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
@@ -371,6 +376,12 @@
       "type": "(formatters: ChartFormatters) => void"
      },
      {
+      "description": "Geo charts: the regions' shapes as GeoJSON, for pages that don't use `data-ok-geometry` (`null`: back to the attribute).",
+      "kind": "method",
+      "name": "setGeometry",
+      "type": "(geometry: ChartGeometry | null) => void"
+     },
+     {
       "description": "Hides exactly these series (no event).",
       "kind": "method",
       "name": "setHiddenSeries",
@@ -417,7 +428,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) or `icicle` (the same hierarchy as bands, each node a cell sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value), `icicle` (the same hierarchy as bands, each node a cell sized by its value) or `geo` (regions of GeoJSON geometry or hex tiles, colored by value classes, no map tiles: `geometry` and `regions` in React, a table of regions and `data-ok-geometry` or `setGeometry()` in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -445,7 +456,8 @@
        "dumbbell",
        "tree",
        "sunburst",
-       "icicle"
+       "icicle",
+       "geo"
       ]
      },
      {
@@ -1345,6 +1357,65 @@
       ]
      },
      {
+      "attr": "data-ok-projection",
+      "default": "equalEarth",
+      "description": "Geo charts: `equalEarth` (equal areas, the default), `mercator` (straight rhumb lines) or `equirectangular`.",
+      "kind": "style",
+      "name": "projection",
+      "optional": true,
+      "values": [
+       "equalEarth",
+       "mercator",
+       "equirectangular"
+      ]
+     },
+     {
+      "attr": "data-ok-geo-layout",
+      "default": "geographic",
+      "description": "Geo charts: real boundaries (`geographic`, the default) or equal hex tiles (`hex`).",
+      "kind": "style",
+      "name": "geoLayout",
+      "optional": true,
+      "values": [
+       "geographic",
+       "hex"
+      ]
+     },
+     {
+      "attr": "data-ok-scale-method",
+      "default": "quantile",
+      "description": "Geo charts: how values are split into classes: `quantile` (the default), `equalInterval`, `jenks` (natural breaks) or `threshold` (your own `scaleThresholds`).",
+      "kind": "style",
+      "name": "scaleMethod",
+      "optional": true,
+      "values": [
+       "quantile",
+       "equalInterval",
+       "jenks",
+       "threshold"
+      ]
+     },
+     {
+      "attr": "data-ok-scale-classes",
+      "default": 5,
+      "description": "Geo charts: how many value classes (at most the colors available).",
+      "kind": "number",
+      "min": 1,
+      "name": "scaleClasses"
+     },
+     {
+      "attr": "data-ok-sphere",
+      "description": "Geo charts: the outline of the globe behind the regions.",
+      "kind": "flag",
+      "name": "sphere"
+     },
+     {
+      "attr": "data-ok-graticule",
+      "description": "Geo charts: lines of longitude and latitude every 30 degrees.",
+      "kind": "flag",
+      "name": "graticule"
+     },
+     {
       "attr": "data-ok-crossfilter",
       "default": "highlight",
       "description": "Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them).",
@@ -1410,6 +1481,14 @@
       "kind": "value",
       "name": "data-ok-brush-target",
       "value": "string"
+     },
+     {
+      "description": "Geo charts: the cell of a region in a hex layout, `column,row` (on the table's row header).",
+      "elements": [
+       "th"
+      ],
+      "kind": "part",
+      "name": "data-ok-cell"
      },
      {
       "description": "The highlight of the active point or category.",
@@ -1815,6 +1894,22 @@
       "name": "data-ok-chart-filter-status"
      },
      {
+      "description": "Geo charts: the group behind the regions that holds the sphere and the graticule.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-geo-background"
+     },
+     {
+      "description": "Geo charts: lines of longitude and latitude (`graticule`).",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-graticule"
+     },
+     {
       "description": "The grid.",
       "elements": [
        "g"
@@ -2035,6 +2130,14 @@
       "name": "data-ok-chart-radial"
      },
      {
+      "description": "Geo charts: one region's shape or hex tile. The value is the region's id; `data-ok-no-data` when it has no value.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-region"
+     },
+     {
       "description": "The outlines of the selected points, slices, blocks and cells. Absent without a selection.",
       "elements": [
        "g"
@@ -2083,6 +2186,14 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-slice"
+     },
+     {
+      "description": "Geo charts: the outline of the globe behind the regions (`sphere`).",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-sphere"
      },
      {
       "description": "A visually hidden live region that announces failed downloads.",
@@ -2326,6 +2437,14 @@
       "value": "string"
      },
      {
+      "description": "Geo charts: the colors of the value classes, separated by spaces.",
+      "elements": [
+       "figure"
+      ],
+      "kind": "part",
+      "name": "data-ok-colors"
+     },
+     {
       "description": "Legend names instead of the series' names, separated by \\`;\\`.",
       "kind": "value",
       "name": "data-ok-custom-legend-items",
@@ -2373,6 +2492,14 @@
       ]
      },
      {
+      "description": "Geo charts: the id of the JSON `<script>` element with the GeoJSON (HTML only).",
+      "elements": [
+       "figure"
+      ],
+      "kind": "part",
+      "name": "data-ok-geometry"
+     },
+     {
       "description": "Column stripe colors separated by spaces: palette names, \\`grey\\` or \\`transparent\\`.",
       "kind": "value",
       "name": "data-ok-grid-column-colors",
@@ -2409,6 +2536,22 @@
       "value": "string"
      },
      {
+      "description": "Geo charts: the feature property that holds the region id.",
+      "elements": [
+       "figure"
+      ],
+      "kind": "part",
+      "name": "data-ok-join-by"
+     },
+     {
+      "description": "Geo charts: the short text of a region's hex tile (on the table's row header).",
+      "elements": [
+       "th"
+      ],
+      "kind": "part",
+      "name": "data-ok-label"
+     },
+     {
       "description": "The locale that formats numbers and dates, such as `en-US`.",
       "kind": "value",
       "name": "data-ok-locale",
@@ -2432,6 +2575,14 @@
        "star",
        "triangle"
       ]
+     },
+     {
+      "description": "Geo charts: on a region without a value; drawn in the neutral background.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-no-data"
      },
      {
       "description": "On a value axis group: the axis is on the right of the plot.",
@@ -2474,6 +2625,14 @@
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
       "kind": "state",
       "name": "data-ok-ready"
+     },
+     {
+      "description": "Geo charts, `threshold` method: the class breaks, separated by semicolons.",
+      "elements": [
+       "figure"
+      ],
+      "kind": "part",
+      "name": "data-ok-scale-thresholds"
      },
      {
       "description": "On a marker, a legend marker or a tooltip marker: the series' marker shape.",
@@ -2820,6 +2979,22 @@
       "type": "\"circles\" | \"horizontalLines\" | \"slantedLines\" | \"squares\" | \"verticalLines\""
      },
      {
+      "default": "\"geographic\"",
+      "description": "Geo charts: real boundaries or equal tiles.",
+      "name": "geoLayout",
+      "type": "\"geographic\" | \"hex\""
+     },
+     {
+      "description": "Geo charts: the regions' shapes, a GeoJSON `FeatureCollection`, feature or list of features.",
+      "name": "geometry",
+      "type": "ChartGeometry | null"
+     },
+     {
+      "description": "Geo charts: lines of longitude and latitude every 30 degrees.",
+      "name": "graticule",
+      "type": "boolean"
+     },
+     {
       "description": "Grid lines: `\"y\"` (default) horizontal, along the value ticks (between the bars of horizontal bar charts); `\"x\"` vertical; `\"both\"` or `\"none\"`.",
       "name": "grid",
       "type": "\"both\" | \"none\" | \"x\" | \"y\""
@@ -2855,6 +3030,11 @@
       "type": "number"
      },
      {
+      "description": "Geo charts, `hex` layout: each region's cell in an odd-r offset grid. Without them, cells follow the geometry.",
+      "name": "hexCells",
+      "type": "readonly ChartHexCell[]"
+     },
+     {
       "description": "Controlled: indexes of the series (pie, donut, radial bar: categories) hidden through the legend.",
       "name": "hiddenSeries",
       "type": "readonly number[]"
@@ -2883,6 +3063,11 @@
       "description": "Sunburst charts: the hole in the center in % of the radius (0 to 90). Default 15.",
       "name": "innerSize",
       "type": "number"
+     },
+     {
+      "description": "Geo charts: the feature property that holds the region id. Default: the feature's `id`, then its `id`, `iso_a2` or `name` property.",
+      "name": "joinBy",
+      "type": "string"
      },
      {
       "description": "Accessible name of the chart and the caption of its data table.",
@@ -3005,6 +3190,33 @@
       "type": "number"
      },
      {
+      "default": "\"equalEarth\"",
+      "description": "Geo charts: `equalEarth` (equal areas), `mercator` or `equirectangular`.",
+      "name": "projection",
+      "type": "\"equalEarth\" | \"equirectangular\" | \"mercator\""
+     },
+     {
+      "description": "Geo charts: one region's id, name, short tile label and value, joined to the geometry by id.",
+      "name": "regions",
+      "type": "readonly ChartGeoRegion[]"
+     },
+     {
+      "description": "Geo charts: how many value classes (at most the colors available). Default 5.",
+      "name": "scaleClasses",
+      "type": "number"
+     },
+     {
+      "default": "\"quantile\"",
+      "description": "Geo charts: how values are split into classes.",
+      "name": "scaleMethod",
+      "type": "\"equalInterval\" | \"jenks\" | \"quantile\" | \"threshold\""
+     },
+     {
+      "description": "Geo charts, `threshold` method: the class breaks.",
+      "name": "scaleThresholds",
+      "type": "readonly number[]"
+     },
+     {
       "description": "Controlled: the selected points (`{ seriesIndex, dataPointIndex }`). A click selects the point, slice or cell under the pointer, Enter or Space the active one.",
       "name": "selectedDataPoints",
       "type": "readonly ChartDataPoint[]"
@@ -3027,6 +3239,11 @@
      {
       "description": "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
       "name": "sparkline",
+      "type": "boolean"
+     },
+     {
+      "description": "Geo charts: the outline of the globe behind the regions.",
+      "name": "sphere",
       "type": "boolean"
      },
      {
@@ -3221,8 +3438,12 @@
    "type": "\"csv\" | \"png\" | \"svg\""
   },
   {
+   "name": "ChartGeometry",
+   "type": "ChartGeoFeature | readonly ChartGeoFeature[] | { readonly type: \"FeatureCollection\"; readonly features: readonly ChartGeoFeature[]; }"
+  },
+  {
    "name": "ChartPart",
-   "type": "\"children\" | \"close\" | \"collapsed\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
+   "type": "\"children\" | \"close\" | \"collapsed\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"noData\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
   },
   {
    "name": "ChartStripeColor",
@@ -3234,7 +3455,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"geo\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

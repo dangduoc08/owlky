@@ -1,5 +1,6 @@
 import { chartMarkerNode } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
+import { chartGeoContains } from "./chart-geo.js";
 import { nextChartTreeMark, onChartTreeMark } from "./chart-hierarchy.js";
 import {
   type ChartArc,
@@ -86,9 +87,10 @@ export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartA
   }
   if (layout.mode === "cell") {
     // The cell under the pointer (heatmap, treemap).
-    const mark = layout.marks.findIndex(({ cell }) => {
+    const mark = layout.marks.findIndex(({ cell, geo }) => {
       const c = cell as ChartRect;
-      return x >= c.x && x <= c.x + c.width && y >= c.y && y <= c.y + c.height;
+      const inside = x >= c.x && x <= c.x + c.width && y >= c.y && y <= c.y + c.height;
+      return inside && (!geo || chartGeoContains(geo, x, y));
     });
     return mark < 0 ? null : { kind: "mark", mark };
   }
@@ -311,6 +313,11 @@ export function chartActiveNodes(
     const mark = layout.marks[active.mark];
     if (!mark) return { under: [], over: [] };
     if (mark.flow) return { under: [], over: flowNodes(layout, mark) };
+    if (mark.geo)
+      return {
+        under: [],
+        over: [{ tag: "path", attrs: { d: mark.geo.d, "data-ok-chart-active-cell": "" } }],
+      };
     if (mark.tree) return { under: [], over: [...treeNodes(layout, mark), mark.tree.outline] };
     if (mark.cell) {
       // An outline around the cell (heatmap, treemap).
@@ -607,6 +614,7 @@ function tooltipOf(
     const mark = layout.marks[active.mark];
     if (!mark) return null;
     if (mark.flow) return { title: mark.flow.title, rows: mark.flow.rows, x: mark.px, y: mark.py };
+    if (mark.geo) return { title: mark.geo.title, rows: mark.geo.rows, x: mark.px, y: mark.py };
     if (mark.tree) return { title: mark.tree.title, rows: mark.tree.rows, x: mark.px, y: mark.py };
     return {
       title: format.title(xOf(mark.x)),

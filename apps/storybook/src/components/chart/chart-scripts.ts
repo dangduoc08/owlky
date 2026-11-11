@@ -1,5 +1,7 @@
-import { getRuntime } from "@owlky/html";
+import type { ChartGeometry } from "@owlky/core";
+import { type ChartInstance, getRuntime } from "@owlky/html";
 import { LIVE_POINTS, liveLabel, liveValue } from "./chart-data.js";
+import { US_STATES_GEOMETRY } from "./chart-geo-geometry.js";
 
 interface ChartApi {
   updateSeries(series: readonly { name: string; data: number[] }[], categories?: string[]): void;
@@ -48,3 +50,20 @@ function onData(time, requests) {
 
 // Replace everything at once.
 chart.updateSeries([{ name: "Requests", data: [42, 51, 47] }], ["10:00:00", "10:00:05", "10:00:10"]);`;
+
+/** Geo stories: the page script hands the geometry to every chart in the row. */
+export function geoScript(row: HTMLElement) {
+  const runtime = getRuntime();
+  runtime.init(row);
+  for (const element of row.querySelectorAll<HTMLElement>("[data-ok-chart]"))
+    runtime.get<ChartInstance>(element, "chart")?.setGeometry(US_STATES_GEOMETRY as ChartGeometry);
+  return () => {};
+}
+
+export const GEO_SCRIPT_SOURCE = `import { getRuntime } from "@owlky/html";
+
+// Your GeoJSON: Natural Earth's public domain boundaries, for example.
+const response = await fetch("/maps/us-states.geojson");
+const geometry = await response.json();
+for (const element of document.querySelectorAll("[data-ok-chart]"))
+  getRuntime().get(element, "chart").setGeometry(geometry);`;

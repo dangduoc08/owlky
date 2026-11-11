@@ -54,6 +54,25 @@ const STOCK_BARS = STOCK_DAYS.map((_, i) => {
   };
 });
 
+const GEO_PREVIEW_REGIONS = [
+  { id: "Washington", name: "Washington", label: "WA", value: 7.71 },
+  { id: "Montana", name: "Montana", label: "MT", value: 1.08 },
+  { id: "Oregon", name: "Oregon", label: "OR", value: 4.24 },
+  { id: "Idaho", name: "Idaho", label: "ID", value: 1.84 },
+  { id: "California", name: "California", label: "CA", value: 39.54 },
+  { id: "Nevada", name: "Nevada", label: "NV", value: 3.1 },
+  { id: "Utah", name: "Utah", label: "UT", value: 3.27 },
+];
+const GEO_PREVIEW_CELLS = [
+  { id: "Washington", col: 0, row: 0 },
+  { id: "Montana", col: 1, row: 0 },
+  { id: "Oregon", col: 0, row: 1 },
+  { id: "Idaho", col: 1, row: 1 },
+  { id: "California", col: 0, row: 2 },
+  { id: "Nevada", col: 1, row: 2 },
+  { id: "Utah", col: 2, row: 2 },
+];
+
 export const chartSections: GuideSection[] = [
   {
     id: "overview",
@@ -114,6 +133,7 @@ export function MonthlySales() {
 - **\`dumbbell\`:** two values per category, such as before and after, joined by a line. See "Compare two values per category".
 - **\`tree\`:** a hierarchy of nodes joined by links, such as teams or a site map. See "Show a hierarchy as a tree".
 - **\`sunburst\`:** a hierarchy as rings, each node an arc sized by its value. See "Show parts of a hierarchy as rings".
+- **\`geo\`:** regions from GeoJSON or hex tiles, colored by value classes, with no map tiles. See "Draw a map without tiles".
 - **\`icicle\`:** a hierarchy as bands, each node a cell sized by its value, such as a flame graph. See "Show parts of a hierarchy as bands".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
@@ -796,6 +816,118 @@ export function CloudSpend() {
       valueSuffix="k"
       height={400}
       hierarchy={spend}
+    />
+  );
+}`,
+  },
+  {
+    id: "geo",
+    title: "Draw a map without tiles",
+    body: `A geo chart draws regions as SVG from your GeoJSON: no tile service, no WebGL and no extra download, and the chart stays a themed picture with the legend, tooltip, keyboard and data table of every other chart. Use the Map component instead when people need to pan and zoom, or to see streets. Set \`type\` to \`geo\`.
+
+- **\`geometry\`:** the shapes as a GeoJSON \`FeatureCollection\`, one feature or a list. In HTML, put the JSON in a \`<script type="application/json">\` element and set \`data-ok-geometry\` to its id, or pass it to \`setGeometry()\` on the chart's instance.
+- **\`regions\`:** the data, one object per region with \`id\`, \`name\` and \`value\`. Set \`joinBy\` to the feature property that holds the id. In HTML, the regions are the rows of the chart's table.
+- **\`projection\`:** \`equalEarth\` (the default, which keeps areas comparable), \`mercator\` or \`equirectangular\`. The geometry must be split at ±180°.
+- **\`sphere\` and \`graticule\`:** draw the outline of the globe and lines every 30 degrees. With \`sphere\` the whole globe fits the chart, not only your regions.
+- **\`scaleMethod\`, \`scaleClasses\` and \`scaleThresholds\`:** sort the values into classes as \`mapScale\` does: \`quantile\` (the default), \`equalInterval\`, \`jenks\` or \`threshold\`. \`colors\` takes one color, used in its five shades, or your own ramp.
+
+The legend lists the classes with their ranges as text, so values never depend on color alone. Select a class to mute its regions. Press the arrow keys to move between regions and hear their name and value, and press Enter to select one. A region without a value says "No data". Text and table labels come from \`localeText\`, for example \`localeText={{ y: "Population", noData: "No data" }}\`.`,
+    html: `<script type="application/json" id="shapes">
+  {"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"name":"Nevada"},"geometry":{"type":"Polygon","coordinates":[[[-120,35],[-114,35],[-114,42],[-120,42],[-120,35]]]}},
+    {"type":"Feature","properties":{"name":"Utah"},"geometry":{"type":"Polygon","coordinates":[[[-114,37],[-109,37],[-109,42],[-114,42],[-114,37]]]}}
+  ]}
+</script>
+<figure data-ok-chart data-ok-type="geo" data-ok-join-by="name" data-ok-geometry="shapes" data-ok-height="300">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Nevada</th><td data-ok-value="3.1">3.1</td></tr>
+      <tr><th scope="row">Utah</th><td data-ok-value="3.27">3.27</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+const shapes = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Nevada" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-120, 35], [-114, 35], [-114, 42], [-120, 42], [-120, 35]]],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Utah" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[-114, 37], [-109, 37], [-109, 42], [-114, 42], [-114, 37]]],
+      },
+    },
+  ],
+};
+const regions = [
+  { id: "Nevada", name: "Nevada", value: 3.1 },
+  { id: "Utah", name: "Utah", value: 3.27 },
+];
+
+export function PopulationMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      geometry={shapes}
+      regions={regions}
+      joinBy="name"
+      height={300}
+    />
+  );
+}`,
+  },
+  {
+    id: "hex-tiles",
+    title: "Show regions as equal hex tiles",
+    body: `A hex tile map gives every region the same size, so small regions with large values stay visible. Set \`geoLayout\` to \`hex\`. With \`hexCells\`, one object per region with \`id\`, \`col\` and \`row\` in an offset grid where odd rows sit half a tile to the right, the map needs no geometry at all. In HTML, write the position on the table's row header as \`data-ok-cell="col,row"\`. Without cells, the chart places a tile for each region near its position in the geometry. Set \`dataLabels\` to show each region's short \`label\`.`,
+    html: `<figure data-ok-chart data-ok-type="geo" data-ok-geo-layout="hex" data-ok-data-labels data-ok-height="240">
+  <table data-ok-chart-data>
+    <caption>Population, millions</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="name">State</th><th scope="col" data-ok-part="y">Population</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row" data-ok-cell="0,0" data-ok-label="WA">Washington</th><td data-ok-value="7.71">7.71</td></tr>
+      <tr><th scope="row" data-ok-cell="1,0" data-ok-label="ID">Idaho</th><td data-ok-value="1.84">1.84</td></tr>
+      <tr><th scope="row" data-ok-cell="0,1" data-ok-label="OR">Oregon</th><td data-ok-value="4.24">4.24</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function HexMap() {
+  return (
+    <Chart
+      label="Population, millions"
+      type="geo"
+      geoLayout="hex"
+      dataLabels
+      height={240}
+      regions={[
+        { id: "Washington", name: "Washington", label: "WA", value: 7.71 },
+        { id: "Idaho", name: "Idaho", label: "ID", value: 1.84 },
+        { id: "Oregon", name: "Oregon", label: "OR", value: 4.24 },
+      ]}
+      hexCells={[
+        { id: "Washington", col: 0, row: 0 },
+        { id: "Idaho", col: 1, row: 0 },
+        { id: "Oregon", col: 0, row: 1 },
+      ]}
     />
   );
 }`,
@@ -1798,6 +1930,34 @@ const PREVIEWS = {
         colors={["warning"]}
         categories={["North", "South", "East", "West", "Central"]}
         series={[{ name: "Revenue", data: [96, 71, 64, 88, 35] }]}
+      />
+    </Preview>
+  ),
+  geo: () => (
+    <Preview>
+      <Chart
+        label="Population by state, millions"
+        type="geo"
+        geoLayout="hex"
+        dataLabels
+        valueSuffix="M"
+        height={280}
+        regions={GEO_PREVIEW_REGIONS}
+        hexCells={GEO_PREVIEW_CELLS}
+      />
+    </Preview>
+  ),
+  "hex-tiles": () => (
+    <Preview>
+      <Chart
+        label="Population by state, millions"
+        type="geo"
+        geoLayout="hex"
+        dataLabels
+        valueSuffix="M"
+        height={280}
+        regions={GEO_PREVIEW_REGIONS}
+        hexCells={GEO_PREVIEW_CELLS}
       />
     </Preview>
   ),

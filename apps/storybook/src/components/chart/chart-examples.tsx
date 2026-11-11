@@ -3,6 +3,7 @@ import { Chart, type ChartProps } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { type ChartExample, chartExamples } from "./chart-data.js";
+import { US_STATES_GEOMETRY } from "./chart-geo-geometry.js";
 import { LiveChart } from "./chart-live.js";
 import { CustomTooltipChart } from "./chart-tooltip.js";
 
@@ -14,7 +15,11 @@ export const chartStories: Record<string, ReactGroup[]> = Object.fromEntries(
       {
         title,
         content:
-          story === "live-data" ? (
+          story.startsWith("geo") && !story.endsWith("-hex") ? (
+            [props, ...more].map((chart) => (
+              <Chart key={chart.label} {...chart} geometry={US_STATES_GEOMETRY} />
+            ))
+          ) : story === "live-data" ? (
             <LiveChart />
           ) : story === "tooltip-custom" ? (
             <CustomTooltipChart />

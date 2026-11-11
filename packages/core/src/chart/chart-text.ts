@@ -47,6 +47,14 @@ export interface ChartTextOptions {
   readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
   /** Tree charts: ids of the collapsed nodes (`"Sales; Support"`, ADR-0058). */
   readonly collapsedNodes?: readonly string[] | undefined;
+  /** Written only for geo charts, whose table has no color column. */
+  readonly type?: string | undefined;
+  /** Geo charts: the class ramp (`"info"`, or several colors), read back as `colors`. */
+  readonly colors?: readonly ChartColor[] | undefined;
+  /** Geo charts: the feature property that holds the region id (ADR-0059). */
+  readonly joinBy?: string | undefined;
+  /** Geo charts, `threshold` method: the class breaks (`"10; 20; 40"`). */
+  readonly scaleThresholds?: readonly number[] | undefined;
   /** Sunburst and icicle charts: the id of the node zoomed into (ADR-0058). */
   readonly drillNode?: string | null | undefined;
 }
@@ -61,6 +69,9 @@ export const CHART_TEXT_ATTRIBUTES = {
   brushTarget: "data-ok-brush-target",
   colorRanges: "data-ok-color-ranges",
   axisTitles: "data-ok-axis-titles",
+  colors: "data-ok-colors",
+  joinBy: "data-ok-join-by",
+  scaleThresholds: "data-ok-scale-thresholds",
   indicators: "data-ok-indicators",
   yaxis: "data-ok-yaxis",
   xTitle: "data-ok-x-title",
@@ -172,11 +183,24 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
   const out: Record<string, string> = {};
   for (const [key, attr] of Object.entries(CHART_TEXT_ATTRIBUTES)) {
     const value = options[key as keyof ChartTextOptions];
+    if (key === "colors") {
+      const text =
+        options.type === "geo"
+          ? ((value as readonly ChartColor[] | undefined) ?? []).join(" ")
+          : "";
+      if (text) out[attr] = text;
+      continue;
+    }
     if (key === "yaxis") {
       const text = chartYAxesText(value as ChartYAxis | readonly ChartYAxis[] | undefined);
       if (text) out[attr] = text;
     } else if (key === "indicators") {
       const text = chartIndicatorsText((value as readonly ChartIndicator[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "scaleThresholds") {
+      const text = ((value as readonly number[] | undefined) ?? [])
+        .filter((item) => Number.isFinite(item))
+        .join("; ");
       if (text) out[attr] = text;
     } else if (key === "axisTitles") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);

@@ -36,6 +36,7 @@
  *                 (the lineage) + circle[data-ok-chart-active-node] in the active group;
  *               Sunburst (ADR-0058): path[data-ok-chart-arc][fill-opacity][stroke-width] +
  *                 text[data-ok-chart-partition-label="inside|plain"], path[data-ok-chart-active-node];
+ *               Geo (ADR-0059): path[data-ok-chart-region][data-ok-color|data-ok-no-data][fill-opacity]? + path[data-ok-chart-sphere]? + path[data-ok-chart-graticule]?;
  *               Icicle (ADR-0058): rect[data-ok-chart-icicle-cell][fill-opacity][stroke-width] + the same
  *                 labels, rect[data-ok-chart-active-node];
  *             div[data-ok-chart-drill] › button[data-ok-chart-drill-up] + span[data-ok-chart-drill-path]
@@ -1222,6 +1223,30 @@
     fill: var(--_ok-chart-c);
     stroke: var(--ok-bg-paper);
     stroke-linejoin: round;
+  }
+
+  /* Geo charts (ADR-0059): regions in the class color, separated by the paper; the muted classes' opacity is an
+     attribute (CSS never sets fill-opacity here). Regions without a value use the page's neutral. */
+  :where([data-ok-chart-region]) {
+    fill: var(--_ok-chart-c);
+    stroke: var(--ok-bg-paper);
+    stroke-width: 0.75;
+    stroke-linejoin: round;
+  }
+
+  :where([data-ok-chart-region][data-ok-no-data]) {
+    fill: var(--ok-bg-neutral);
+  }
+
+  :where([data-ok-chart-sphere]) {
+    fill: var(--ok-bg-neutral);
+    stroke: var(--ok-divider);
+  }
+
+  :where([data-ok-chart-graticule]) {
+    fill: none;
+    stroke: var(--ok-divider);
+    stroke-width: 0.5;
   }
 
   :where([data-ok-chart-partition-label]) {

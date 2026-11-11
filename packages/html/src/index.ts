@@ -19,6 +19,7 @@ export {
 } from "@owlky/core";
 export type { AccordionInstance } from "./components/accordion/accordion.js";
 export type { AlertInstance } from "./components/alert/alert.js";
+export type { ChartInstance } from "./components/chart/chart.js";
 export {
   type CodeEditorElementInstance,
   type CreateCodeEditorOptions,

@@ -6,6 +6,7 @@ import {
   chartPatternDefs,
 } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
+import type { ChartGeoMark } from "./chart-geo.js";
 import type { ChartHierarchyState, ChartTreeMark } from "./chart-hierarchy.js";
 import {
   type ChartColor,
@@ -246,6 +247,8 @@ export interface ChartMark {
   readonly cell?: ChartRect | undefined;
   /** Sankey charts: the node or link, its tooltip and its highlight. */
   readonly flow?: ChartFlow | undefined;
+  /** Geo charts (ADR-0059): the region's outline, rings for hits and its tooltip. */
+  readonly geo?: ChartGeoMark | undefined;
   /** Hierarchy charts (ADR-0058): the node, its relatives, its shape and its tooltip. */
   readonly tree?: ChartTreeMark | undefined;
   /** Blocks (bars, boxes, candles, range bars, funnel bars): the rectangle they cover. */

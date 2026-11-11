@@ -237,6 +237,28 @@ export interface ChartParts {
   "data-ok-chart-active-node": Part<"circle" | "path" | "rect">;
   /** One arc of a sunburst chart (the drilled node: the center disc). */
   "data-ok-chart-arc": Part<"path">;
+  /** Geo charts: the colors of the value classes, separated by spaces. */
+  "data-ok-colors": Part<"figure">;
+  /** Geo charts: the feature property that holds the region id. */
+  "data-ok-join-by": Part<"figure">;
+  /** Geo charts, `threshold` method: the class breaks, separated by semicolons. */
+  "data-ok-scale-thresholds": Part<"figure">;
+  /** Geo charts: on a region without a value; drawn in the neutral background. */
+  "data-ok-no-data": Part<"path">;
+  /** Geo charts: one region's shape or hex tile. The value is the region's id; `data-ok-no-data` when it has no value. */
+  "data-ok-chart-region": Part<"path">;
+  /** Geo charts: the group behind the regions that holds the sphere and the graticule. */
+  "data-ok-chart-geo-background": Part<"g">;
+  /** Geo charts: the outline of the globe behind the regions (`sphere`). */
+  "data-ok-chart-sphere": Part<"path">;
+  /** Geo charts: lines of longitude and latitude (`graticule`). */
+  "data-ok-chart-graticule": Part<"path">;
+  /** Geo charts: the id of the JSON `<script>` element with the GeoJSON (HTML only). */
+  "data-ok-geometry": Part<"figure">;
+  /** Geo charts: the cell of a region in a hex layout, `column,row` (on the table's row header). */
+  "data-ok-cell": Part<"th">;
+  /** Geo charts: the short text of a region's hex tile (on the table's row header). */
+  "data-ok-label": Part<"th">;
   /** One cell of an icicle chart. */
   "data-ok-chart-icicle-cell": Part<"rect">;
   /** Sunburst and icicle charts: the controls before the plot, a **Back** button and the drilled path (a status). */
