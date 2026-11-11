@@ -354,7 +354,7 @@ export function Customers() {
   {
     id: "server",
     title: "Load rows from a server",
-    body: 'A data source lets the server sort, filter and page the rows. The grid calls `getRows()` with the sort model, the filter model and the page, and shows the rows it returns. `rowCount` is the total number of rows on the server, for the pagination. Responses are kept in a cache, so going back to a page doesn\'t ask the server again. Pass `dataSourceCache={null}` to turn the cache off. Errors go to `onDataSourceError` in React and to `ok:data-grid:datasourceerror` in HTML. To handle the requests yourself, set `sortingMode`, `filterMode` and `paginationMode` to `"server"`, pass `rowCount`, and load the rows in the change callbacks. While data loads, `loadingVariant` picks a progress bar, a spinner or placeholder rows (`"skeleton"`).',
+    body: 'A data source lets the server sort, filter and page the rows. The grid calls `getRows()` with the sort model, the filter model and the page, and shows the rows it returns. `rowCount` is the total number of rows on the server, for the pagination. Responses are kept in a cache, so going back to a page doesn\'t ask the server again. Pass `dataSourceCache={null}` to turn the cache off. While a request is pending, flat rows go away; pass `dataSourceKeepPreviousData` to keep them until the new rows arrive. Errors go to `onDataSourceError` in React and to `ok:data-grid:datasourceerror` in HTML. To handle the requests yourself, set `sortingMode`, `filterMode` and `paginationMode` to `"server"`, pass `rowCount`, and load the rows in the change callbacks. While data loads, `loadingVariant` picks a progress bar, a spinner or placeholder rows (`"skeleton"`).',
     html: `<script type="module">
   const element = document.getElementById("customers");
   const grid = window.Owlky.get(element, "data-grid");
@@ -2076,6 +2076,51 @@ export function Tasks() {
 }`,
   },
   {
+    id: "unknown-row-count",
+    title: "Page through rows of unknown length",
+    body: 'When the server doesn\'t know the total, set `rowCount={-1}`. The pagination shows "1–25 of more than 25", and the next page stays available. `estimatedRowCount` shows "1–25 of around 500" instead, for as long as the estimate is ahead of the page. Pass `paginationMeta={{ hasNextPage: false }}` on the last page: the grid then fixes the total at the rows seen so far and turns the next page off. A data source can return `pageInfo: { hasNextPage }` in place of `rowCount`, and `onPaginationMetaChange` reports it. `onRowCountChange` reports each new count. `filterDebounceMs` and `columnFilterDebounceMs` make the quick filter, the filter panel and the header filters wait after each keystroke before they ask for rows. The field shows what people type at once. With tree data, `disableChildrenFiltering` and `disableChildrenSorting` limit filtering and sorting to the top-level rows.',
+    html: `<!-- An unknown total: the grid's data-ok-pagination-mode="server" and data-ok-row-count="-1" -->
+${gridOf(serverGroup, { attrs: 'data-ok-pagination-mode="server" data-ok-row-count="-1" data-ok-estimated-row-count="500"' })}
+<script>
+  const grid = document.getElementById("grid-server");
+  grid.addEventListener("ok:data-grid:rowcountchange", (event) => {
+    console.log("Row count:", event.detail.count);
+  });
+  // On the last page, tell the grid that no page follows
+  grid.setAttribute("data-ok-has-next-page", "false");
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+import { useState } from "react";
+
+const allIssues = Array.from({ length: 120 }, (_, i) => ({
+  id: i + 1,
+  title: \`Issue \${i + 1}\`,
+}));
+
+const columns: GridColDef<(typeof allIssues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+];
+
+export function Issues() {
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 25 });
+  const start = paginationModel.page * paginationModel.pageSize;
+  const rows = allIssues.slice(start, start + paginationModel.pageSize);
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={rows}
+      columns={columns}
+      paginationMode="server"
+      paginationModel={paginationModel}
+      onPaginationModelChange={setPaginationModel}
+      rowCount={-1}
+      estimatedRowCount={500}
+      paginationMeta={{ hasNextPage: start + paginationModel.pageSize < allIssues.length }}
+    />
+  );
+}`,
+  },
+  {
     id: "listen",
     title: "Listen to the grid",
     body: "The grid reports what happens around its cells. Column headers report double clicks, right clicks and the pointer moving over them. Menus and panels report opening and closing, however they opened: the column menu, **Density**, **Export** and the cell menu as menus, **Columns** and **Filters** as preference panels, **Pivot** and **Chart** as sidebars. `onResize` reports the size of the grid, and `onColumnResize` reports each width while a column's edge is dragged. `onColumnWidthChange` still reports the width on release. `onBeforeClipboardPasteStart` runs before a paste writes any cell. Throw or return a promise that rejects to cancel the paste, for example after a confirmation. In HTML, these are events on the grid, and a listener passes a promise to `detail.waitUntil` to make a paste wait.",
@@ -2154,6 +2199,7 @@ export function Issues() {
 - **\`ok:data-grid:menuopen\`** and **\`ok:data-grid:menuclose\`** report \`detail.menu\` and \`detail.target\`. **\`ok:data-grid:preferencepanelopen\`** and **\`ok:data-grid:preferencepanelclose\`** report \`detail.openedPanelValue\`. **\`ok:data-grid:sidebaropen\`** and **\`ok:data-grid:sidebarclose\`** report \`detail.value\`.
 - **\`ok:data-grid:containerresize\`** reports the grid's \`detail.width\` and \`detail.height\`. **\`ok:data-grid:columnresize\`** reports \`detail.field\` and \`detail.width\` while an edge is dragged.
 - **\`ok:data-grid:fetchrows\`** reports \`detail.firstRowToRender\` and \`detail.lastRowToRender\` when the rendered rows change and \`data-ok-row-count\` is more than the rows in the grid. **\`ok:data-grid:excelexportstate\`** reports \`detail.state\`, \`pending\` then \`finished\`. **\`ok:data-grid:beforeclipboardpaste\`** is cancelable and takes a promise in \`detail.waitUntil(promise)\`.
+- **\`ok:data-grid:rowcountchange\`** reports \`detail.count\`, and **\`ok:data-grid:paginationmetachange\`** reports a data source's \`detail.hasNextPage\`. \`setDataSource(source, { cache })\` replaces the cache of responses (\`null\` turns it off).
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {

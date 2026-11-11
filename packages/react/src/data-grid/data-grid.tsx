@@ -9,6 +9,7 @@ import {
   createGridColumnControls,
   createGridContextMenu,
   createGridDataSourceCache,
+  createGridDebounce,
   createGridHistoryKeys,
   createGridHistoryStack,
   createGridNavigation,
@@ -58,6 +59,7 @@ import {
   type GridLabels,
   type GridMenuName,
   type GridNavigation,
+  type GridPaginationMeta,
   type GridPinnedColumns,
   type GridPivotModel,
   type GridPivotSection,
@@ -137,6 +139,7 @@ import {
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridOverlayOf,
+  gridPaginationCount,
   gridPinSide,
   gridPivot,
   gridPivotDerivedColumns,
@@ -165,6 +168,7 @@ import {
   gridToXlsx,
   gridTreeGroups,
   gridTreeRows,
+  gridUnknownCountPattern,
   gridWithGroupFooters,
   isGridCellSelected,
   isGridFilterable,
@@ -709,7 +713,16 @@ export interface DataGridProps<R>
   filterMode?: "client" | "server" | undefined;
   /** `server`: `rows` are the current page and `rowCount` the total. */
   paginationMode?: "client" | "server" | undefined;
+  /** Total rows on the server; `-1` when it isn't known yet. */
   rowCount?: number | undefined;
+  /** With `rowCount={-1}`: the pagination shows "around" this number until the page passes it. */
+  estimatedRowCount?: number | undefined;
+  /** With `rowCount={-1}`: `hasNextPage: false` fixes the total at the rows seen so far. */
+  paginationMeta?: GridPaginationMeta | undefined;
+  /** Called when a data source reports a new `pageInfo`. */
+  onPaginationMetaChange?: ((meta: GridPaginationMeta) => void) | undefined;
+  /** Called when the row count changes. */
+  onRowCountChange?: ((count: number) => void) | undefined;
   /** Shows the loading overlay. */
   loading?: boolean | undefined;
   /** Default `linear-progress`. */
@@ -724,6 +737,18 @@ export interface DataGridProps<R>
   dataSourceCache?: GridDataSourceCache<R> | null | undefined;
   /** Called when the data source fails to load rows. */
   onDataSourceError?: ((error: unknown) => void) | undefined;
+  /** The rows stay on screen until the new ones arrive (flat rows; tree and grouped rows reset). */
+  dataSourceKeepPreviousData?: boolean | undefined;
+  /** How often (ms) rows whose cache entry expired load again in the background. Default `0`: never. */
+  dataSourceRevalidateMs?: number | undefined;
+  /** Wait (ms) after a keystroke in the quick filter or the filter panel before filtering. Default `0`. */
+  filterDebounceMs?: number | undefined;
+  /** Wait (ms) after a keystroke in a header filter before filtering. Default `0`. */
+  columnFilterDebounceMs?: number | undefined;
+  /** Tree data: filters apply to top-level rows only; a row's children show with it. */
+  disableChildrenFiltering?: boolean | undefined;
+  /** Tree data: sorting orders top-level rows only. */
+  disableChildrenSorting?: boolean | undefined;
   /** One row at a time (no select all). */
   disableMultipleRowSelection?: boolean | undefined;
   /** Returns whether a row can be selected. */
@@ -1377,6 +1402,16 @@ function DataGridInner<R>(
     filterMode = "client",
     paginationMode = "client",
     rowCount,
+    estimatedRowCount,
+    paginationMeta,
+    onPaginationMetaChange,
+    onRowCountChange,
+    dataSourceKeepPreviousData,
+    dataSourceRevalidateMs = 0,
+    filterDebounceMs = 0,
+    columnFilterDebounceMs = 0,
+    disableChildrenFiltering,
+    disableChildrenSorting,
     loading,
     loadingVariant = "linear-progress",
     onRowsScrollEnd,
@@ -1652,6 +1687,7 @@ function DataGridInner<R>(
     rows: readonly R[];
     rowCount?: number | undefined;
     aggregateRow?: Record<string, unknown> | undefined;
+    pageInfo?: { hasNextPage?: boolean | undefined } | undefined;
   }>({
     rows: [],
   });
@@ -1682,7 +1718,11 @@ function DataGridInner<R>(
   };
   const idOf = (row: R) =>
     isHole(row) ? `__loading__-${row[HOLE]}` : isGroup(row) ? row[GROUP].id : String(getRowId(row));
-  const view = base.map((row) => overrides.get(idOf(row)) ?? row);
+  // While a data source loads, the rows go away (MUI X) unless asked to stay. Not for selections:
+  // they follow `base`, so a reload doesn't drop what's still in the new rows.
+  const hideWhileLoading =
+    !!dataSource && !lazy && sourceLoading && !(dataSourceKeepPreviousData && !serverTree);
+  const view = hideWhileLoading ? [] : base.map((row) => overrides.get(idOf(row)) ?? row);
   const rank = rowOrder ? new Map(rowOrder.map((rowId, i) => [rowId, i])) : null;
   const orderedRows = rank
     ? [...view].sort((a, b) => (rank.get(idOf(a)) ?? rank.size) - (rank.get(idOf(b)) ?? rank.size))
@@ -1983,10 +2023,14 @@ function DataGridInner<R>(
         node.id,
         Math.min(...node.leafIds.map((leaf) => place?.get(byId.get(leaf) as R) ?? 0)),
       );
+    const rootsFilter = !!treeData && !!disableChildrenFiltering && !serverTree;
     const options = {
       idOf,
       parentOf: (row: R) => parents.get(idOf(row)) ?? null,
-      keep: pass ? (row: R) => !isGroup(row) && pass.has(row) : undefined,
+      // Roots only: a generated root (no data of its own) stays, with its children.
+      keep: pass ? (row: R) => (isGroup(row) ? rootsFilter : pass.has(row)) : undefined,
+      filterRootsOnly: rootsFilter,
+      sortRootsOnly: !!treeData && !!disableChildrenSorting && !serverTree,
       compare: place
         ? gridGroupComparator<R>({
             isGroup,
@@ -2076,10 +2120,23 @@ function DataGridInner<R>(
                 : localFilter(orderedRows),
           )
       : null;
-  const total = server.page
-    ? ((dataSource ? sourced.rowCount : rowCount) ?? sorted.length)
-    : sorted.length;
-  const pageCount = Math.max(Math.ceil(total / pagination.pageSize), 1);
+  const pageMeta = paginationMeta ?? sourced.pageInfo;
+  const total = gridPaginationCount(
+    server.page
+      ? ((dataSource ? (sourced.rowCount ?? (sourced.pageInfo ? -1 : undefined)) : rowCount) ??
+          sorted.length)
+      : sorted.length,
+    {
+      hasNextPage: pageMeta?.hasNextPage,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      pageRows: sorted.length,
+    },
+  );
+  // aria-rowcount -1: the total isn't known.
+  const knownTotal = Math.max(total, 0);
+  const pageCount =
+    total === -1 ? Number.POSITIVE_INFINITY : Math.max(Math.ceil(total / pagination.pageSize), 1);
   const page = Math.min(pagination.page, pageCount - 1);
   // Rows of the page: all of them with server pagination or without a footer.
   const unpaged = server.page || hideFooter || hideFooterPagination || lazy;
@@ -2557,7 +2614,7 @@ function DataGridInner<R>(
     if (!autoPageSize || !main || hideFooter || hideFooterPagination || lazy) return;
     const size = gridAutoPageSize(main, baseHeight + 1);
     if (size === pagination.pageSize) return;
-    const last = Math.max(Math.ceil(total / size), 1) - 1;
+    const last = total === -1 ? pagination.page : Math.max(Math.ceil(total / size), 1) - 1;
     setPagination({ page: Math.min(pagination.page, last), pageSize: size });
   };
   useEffect(() => {
@@ -2607,6 +2664,44 @@ function DataGridInner<R>(
       current = false;
     };
   }, [dataSource, cache, request, onDataSourceError, lazy]);
+  // Server pagination reports (MUI X `onRowCountChange`, `onPaginationMetaChange`).
+  const reportedCount = useRef(total);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reports when the count changes.
+  useEffect(() => {
+    if (reportedCount.current === total) return;
+    reportedCount.current = total;
+    onRowCountChange?.(total);
+  }, [total]);
+  const reportedInfo = useRef(JSON.stringify(sourced.pageInfo ?? null));
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reports when the source's info changes.
+  useEffect(() => {
+    const next = JSON.stringify(sourced.pageInfo ?? null);
+    if (reportedInfo.current === next) return;
+    reportedInfo.current = next;
+    if (sourced.pageInfo) onPaginationMetaChange?.(sourced.pageInfo);
+  }, [JSON.stringify(sourced.pageInfo ?? null)]);
+  // Rows whose cache entry expired load again in the background (`dataSourceRevalidateMs`).
+  const revalidateRequest = useRef(request);
+  revalidateRequest.current = request;
+  useEffect(() => {
+    if (!dataSource || lazy || serverTree || dataSourceRevalidateMs <= 0) return;
+    const timer = setInterval(() => {
+      const asked = revalidateRequest.current;
+      const params = JSON.parse(asked);
+      if (cache?.get(params)) return;
+      dataSource
+        .getRows(params)
+        .then((response) => {
+          cache?.set(params, response);
+          if (revalidateRequest.current === asked)
+            setSourced((current) =>
+              JSON.stringify(current) === JSON.stringify(response) ? current : response,
+            );
+        })
+        .catch((error: unknown) => onDataSourceError?.(error));
+    }, dataSourceRevalidateMs);
+    return () => clearInterval(timer);
+  }, [dataSource, lazy, serverTree, dataSourceRevalidateMs, cache, onDataSourceError]);
   // Lazy loading: ask for the chunks the window misses (throttled); a new sort or filter restarts.
   const lazyAggregation = aggregating && !pivot ? requestedAggregation : null;
   const lazyKey = JSON.stringify({ sortModel, filterModel, lazyAggregation });
@@ -3676,12 +3771,32 @@ function DataGridInner<R>(
     setPickerDrafts(drafts);
     if (!(key in drafts)) apply(isoValue(date, type));
   };
+  // Debounced filter fields show the typed text at once; the model follows after the wait, with
+  // whatever the latest render knows (other fields may have changed meanwhile).
+  const [filterDrafts, setFilterDrafts] = useState<Record<string, string>>({});
+  const debounce = useRef(createGridDebounce());
+  useEffect(() => () => debounce.current.clear(), []);
+  const filterFlushers = useRef<Record<string, (text: string) => void>>({});
+  const typedFilter = (key: string, ms: number, apply: (text: string) => void) => {
+    filterFlushers.current[key] = apply;
+    return (text: string) => {
+      if (ms <= 0) return apply(text);
+      setFilterDrafts((current) => ({ ...current, [key]: text }));
+      debounce.current.run(key, ms, () => {
+        setFilterDrafts(({ [key]: _, ...rest }) => rest);
+        filterFlushers.current[key]?.(text);
+      });
+    };
+  };
   // The typed text (with its spaces); the model keeps the words.
   const [quickText, setQuickText] = useState(() => (filterModel.quickFilterValues ?? []).join(" "));
-  const setQuick = (text: string) => {
-    setQuickText(text);
+  const applyQuick = typedFilter("quick", filterDebounceMs, (text) => {
     setFilterModel({ ...filterModel, quickFilterValues: gridQuickFilterValues(text) });
     setPagination({ ...pagination, page: 0 });
+  });
+  const setQuick = (text: string) => {
+    setQuickText(text);
+    applyQuick(text);
   };
   const newItem = (): GridFilterItem => ({
     field: columnsProp.find(isGridFilterable)?.field ?? "",
@@ -3804,8 +3919,13 @@ function DataGridInner<R>(
             label={labels.filterPanelInputLabel}
             placeholder={labels.filterPanelInputPlaceholder}
             disabled={!gridOperatorNeedsValue(item.operator, column?.filterOperators)}
-            value={typeof item.value === "string" ? item.value : (item.value ?? []).join(", ")}
-            onChange={(value) => at.onItem({ ...item, value })}
+            value={
+              filterDrafts[`panel${suffix}`] ??
+              (typeof item.value === "string" ? item.value : (item.value ?? []).join(", "))
+            }
+            onChange={typedFilter(`panel${suffix}`, filterDebounceMs, (value) =>
+              at.onItem({ ...item, value }),
+            )}
           />
         )}
       </div>
@@ -4842,8 +4962,10 @@ function DataGridInner<R>(
             id={fieldId}
             size="small"
             label={label}
-            value={value}
-            onChange={(next) => setHeaderFilter(column, next)}
+            value={filterDrafts[`header-${column.field}`] ?? value}
+            onChange={typedFilter(`header-${column.field}`, columnFilterDebounceMs, (next) =>
+              setHeaderFilter(column, next),
+            )}
           />
         )}
       </div>
@@ -4993,7 +5115,7 @@ function DataGridInner<R>(
       place === "top"
         ? headerLevels + filterRow + 2 + index
         : place === "bottom"
-          ? headerLevels + filterRow + topRows.length + total + 2 + index
+          ? headerLevels + filterRow + topRows.length + knownTotal + 2 + index
           : firstRowIndex + index + rowOffset;
     const detail = place === "body" ? detailOf(row) : null;
     const detailHeight =
@@ -5370,7 +5492,7 @@ function DataGridInner<R>(
   const footerRowElement = rootAggregates && (
     <div
       role="row"
-      aria-rowindex={headerLevels + filterRow + topRows.length + total + 2 + bottomRows.length}
+      aria-rowindex={headerLevels + filterRow + topRows.length + knownTotal + 2 + bottomRows.length}
       data-ok-row-id={GRID_AGGREGATION_ROOT_ID}
       data-ok-data-grid-aggregation-row=""
     >
@@ -5685,6 +5807,13 @@ function DataGridInner<R>(
         filterMode,
         paginationMode,
         rowCount,
+        estimatedRowCount,
+        dataSourceKeepPreviousData,
+        dataSourceRevalidateMs: dataSourceRevalidateMs || undefined,
+        filterDebounceMs: filterDebounceMs || undefined,
+        columnFilterDebounceMs: columnFilterDebounceMs || undefined,
+        disableChildrenFiltering,
+        disableChildrenSorting,
         loading: busy,
         loadingVariant,
         scrollEndThreshold: scrollEndThreshold === 80 ? undefined : scrollEndThreshold,
@@ -5771,6 +5900,9 @@ function DataGridInner<R>(
             ),
           }
         : {})}
+      {...(paginationMeta?.hasNextPage !== undefined
+        ? { "data-ok-has-next-page": String(paginationMeta.hasNextPage) }
+        : {})}
       {...(csvOptions
         ? {
             "data-ok-csv-options": JSON.stringify(
@@ -5808,7 +5940,9 @@ function DataGridInner<R>(
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledby}
         aria-rowcount={
-          headerLevels + filterRow + 1 + topRows.length + total + bottomRows.length + footerRow
+          total === -1
+            ? -1
+            : headerLevels + filterRow + 1 + topRows.length + total + bottomRows.length + footerRow
         }
         aria-colcount={colCount}
         {...(checkboxSelection && multiple ? { "aria-multiselectable": true } : {})}
@@ -6226,10 +6360,20 @@ function DataGridInner<R>(
               onPageChange={(next) => setPagination({ ...pagination, page: next })}
               onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
               labelRowsPerPage={labels.paginationRowsPerPage}
-              {...(localeText?.paginationDisplayedRows
+              {...(localeText?.paginationDisplayedRows || total === -1
                 ? {
                     labelDisplayedRows: (range: { from: number; to: number; count: number }) =>
-                      gridDisplayedRows(labels.paginationDisplayedRows, range),
+                      gridDisplayedRows(
+                        total === -1
+                          ? gridUnknownCountPattern(
+                              labels.paginationDisplayedRows,
+                              labels,
+                              estimatedRowCount,
+                              range.to,
+                            )
+                          : labels.paginationDisplayedRows,
+                        range,
+                      ),
                   }
                 : {})}
             />

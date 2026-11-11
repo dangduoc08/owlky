@@ -999,6 +999,13 @@ export {
   setGridPivotRole,
 } from "./data-grid/grid-premium.js";
 export {
+  createGridDebounce,
+  type GridDebounce,
+  type GridPaginationMeta,
+  gridPaginationCount,
+  gridUnknownCountPattern,
+} from "./data-grid/grid-server.js";
+export {
   createGridRowReorder,
   type GridColumnGroup,
   type GridGroupCell,

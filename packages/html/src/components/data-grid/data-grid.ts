@@ -11,6 +11,7 @@ import {
   createGridColumnControls,
   createGridContextMenu,
   createGridDataSourceCache,
+  createGridDebounce,
   createGridHistoryKeys,
   createGridHistoryStack,
   createGridNavigation,
@@ -41,6 +42,7 @@ import {
   type GridComparators,
   type GridCsvOptions,
   type GridDataSource,
+  type GridDataSourceCache,
   type GridDensity,
   type GridEditStartReason,
   type GridEditTarget,
@@ -133,6 +135,7 @@ import {
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridOverlayOf,
+  gridPaginationCount,
   gridPinSide,
   gridPivot,
   gridPivotDerivedColumns,
@@ -159,6 +162,7 @@ import {
   gridToTsv,
   gridToXlsx,
   gridTreeRows,
+  gridUnknownCountPattern,
   gridWithGroupFooters,
   isGridCellSelected,
   isGridGroupingField,
@@ -351,6 +355,10 @@ export interface DataGridEvents {
     sortModel: GridSortModel;
     filterModel: GridFilterModel;
   }>;
+  /** After the row count changed (`-1`: not known). */
+  rowcountchange: EventSpec<{ count: number }>;
+  /** After a data source reported a new `pageInfo`. */
+  paginationmetachange: EventSpec<{ hasNextPage?: boolean | undefined }>;
   /** An Excel export started (`pending`) or ended (`finished`). */
   excelexportstate: EventSpec<{ state: "pending" | "finished" }>;
   /**
@@ -460,8 +468,14 @@ export interface DataGridInstance extends ComponentInstance {
    * `[data-ok-data-grid-value]` elements get the value). Needs `id` on each row.
    */
   setRows(rows: readonly DataRow[]): void;
-  /** Loads the rows from a server for the current sort, filter and page (`null`: stop). */
-  setDataSource(source: GridDataSource<DataRow> | null): void;
+  /**
+   * Loads the rows from a server for the current sort, filter and page (`null`: stop). `cache`
+   * replaces the default cache of responses (`null`: none), the grid's `dataSourceCache`.
+   */
+  setDataSource(
+    source: GridDataSource<DataRow> | null,
+    options?: { cache?: GridDataSourceCache<DataRow> | null },
+  ): void;
   /** Phase 6 (MUI X Premium). These setters don't emit events. */
   readonly rowGroupingModel: string[];
   /** The aggregation (field to function). */
@@ -575,6 +589,13 @@ const {
   autoPageSize,
   contextMenu: contextMenuOption,
   filterGroups: filterGroupsOption,
+  estimatedRowCount,
+  dataSourceKeepPreviousData,
+  dataSourceRevalidateMs,
+  filterDebounceMs,
+  columnFilterDebounceMs,
+  disableChildrenFiltering,
+  disableChildrenSorting,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -1082,6 +1103,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         },
       };
     };
+    /** Tree data, not from a server: a flag that limits filtering or sorting to top-level rows. */
+    const rootsOnly = (option: { attr: string }) =>
+      element.hasAttribute(treeData.attr) && !source && element.hasAttribute(option.attr);
     const filterOptions = () => ({
       ignoreDiacritics: element.hasAttribute(ignoreDiacritics.attr),
       quickFilterLogicOperator: readStyle(element, quickFilterLogicOperator) as "and" | "or",
@@ -1774,10 +1798,40 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let sortedList: HTMLElement[] = [];
     let rowShift = 0;
     let total = 0;
+    let lastTotal: number | null = null;
+    const hasNextAttribute = () => {
+      const given = element.getAttribute("data-ok-has-next-page");
+      return given === null ? undefined : given === "true";
+    };
+    /** The pagination's text while the total isn't known: "around n", else "more than". */
+    const syncUnknownCount = () => {
+      if (total !== -1) {
+        if (unknownPattern !== null) {
+          // Back to the words given in the page.
+          if (unknownPattern)
+            pagination?.setAttribute("data-ok-label-displayed-rows", unknownPattern);
+          else pagination?.removeAttribute("data-ok-label-displayed-rows");
+          unknownPattern = null;
+        }
+        return;
+      }
+      unknownPattern ??= pagination?.getAttribute("data-ok-label-displayed-rows") ?? "";
+      pagination?.setAttribute(
+        "data-ok-label-displayed-rows",
+        gridUnknownCountPattern(
+          unknownPattern || labels.paginationDisplayedRows,
+          labels,
+          readNumber(element, estimatedRowCount) as number | undefined,
+          Number.isFinite(pageSize) ? (page + 1) * pageSize : 0,
+        ),
+      );
+    };
+    let unknownPattern: string | null = null;
     let viewport: GridViewport | null = null;
     let spacers: string[] = [];
     let source: GridDataSource<DataRow> | null = null;
     let sourceCount: number | undefined;
+    let sourceInfo: { hasNextPage?: boolean | undefined } | undefined;
     // Server-side aggregation: the data source's values of every row (the footer row).
     let sourceAggregateRow: Record<string, unknown> | undefined;
     /** The aggregation the data source is asked for (none while pivoting or not aggregating). */
@@ -1837,6 +1891,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           parentOf: (row) => row.getAttribute("data-ok-parent"),
           expanded: (rowId, level) => expansion.get(rowId) ?? gridExpandedByDepth(depth, level),
           keep: pass ? (row) => pass.has(row) : undefined,
+          filterRootsOnly: rootsOnly(disableChildrenFiltering),
+          sortRootsOnly: rootsOnly(disableChildrenSorting),
           compare: place
             ? (a, b) => (place.get(a) as number) - (place.get(b) as number)
             : undefined,
@@ -1937,7 +1993,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           idOf,
           parentOf: (row) => nodes.parentOf.get(idOf(row)) ?? null,
           expanded: (rowId, level) => expansion.get(rowId) ?? gridExpandedByDepth(depth, level),
-          keep: pass ? (row) => !generatedRow(row) && pass.has(row) : undefined,
+          keep: pass
+            ? (row) => (generatedRow(row) ? rootsOnly(disableChildrenFiltering) : pass.has(row))
+            : undefined,
+          filterRootsOnly: rootsOnly(disableChildrenFiltering),
+          sortRootsOnly: rootsOnly(disableChildrenSorting),
           compare: place
             ? gridGroupComparator<HTMLElement>({
                 isGroup: generatedRow,
@@ -2041,16 +2101,31 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           : sortGridRows(filtered, sortModel, columns, value, comparatorOf);
       }
       const serverPage = serverSide(paginationMode);
-      total = serverPage
-        ? (sourceCount ??
-          (readNumber(element, rowCountOption) as number | undefined) ??
-          sorted.length)
-        : sorted.length;
+      const hasNext = sourceInfo?.hasNextPage ?? hasNextAttribute();
+      total = gridPaginationCount(
+        serverPage
+          ? (sourceCount ??
+              (sourceInfo ? -1 : undefined) ??
+              (readNumber(element, rowCountOption) as number | undefined) ??
+              sorted.length)
+          : sorted.length,
+        { hasNextPage: hasNext, page, pageSize, pageRows: sorted.length },
+      );
+      if (total !== lastTotal) {
+        if (lastTotal !== null) emit("rowcountchange", { count: total });
+        lastTotal = total;
+      }
       pagination?.setAttribute("data-ok-count", String(total));
       const paged = paging() && Number.isFinite(pageSize) && !serverPage;
       // Server pages count too: the page stays within the server's rows.
-      const pages = Number.isFinite(pageSize) ? Math.max(Math.ceil(total / pageSize), 1) : 1;
+      const pages =
+        total === -1
+          ? Number.POSITIVE_INFINITY
+          : Number.isFinite(pageSize)
+            ? Math.max(Math.ceil(total / pageSize), 1)
+            : 1;
       page = Math.min(page, pages - 1);
+      syncUnknownCount();
       pager()?.refresh();
       const pageStart = paged ? page * pageSize : 0;
       pageList = paged ? sorted.slice(pageStart, pageStart + pageSize) : sorted;
@@ -2086,9 +2161,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ),
       ];
       bottom.forEach((row, index) => {
-        row.setAttribute("aria-rowindex", String(first + total + index));
+        row.setAttribute("aria-rowindex", String(first + Math.max(total, 0) + index));
       });
-      main.setAttribute("aria-rowcount", String(first - 1 + total + bottom.length));
+      main.setAttribute(
+        "aria-rowcount",
+        total === -1 ? "-1" : String(first - 1 + total + bottom.length),
+      );
     };
     /** Aggregation: the function's name in headers and the footer row of every filtered row. */
     const syncAggregation = (first: number) => {
@@ -2604,7 +2682,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const size = gridAutoPageSize(main, baseHeight() + 1);
       if (size === pageSize) return;
       // The pagination reports each change (resetting the page): set the target after.
-      const target = Math.min(page, Math.max(Math.ceil(total / size), 1) - 1);
+      const target = total === -1 ? page : Math.min(page, Math.max(Math.ceil(total / size), 1) - 1);
       pagination?.setAttribute("data-ok-rows-per-page", String(size));
       pager()?.setRowsPerPage(size);
       pageSize = size;
@@ -2616,6 +2694,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       fit.observe(main);
       signal.addEventListener("abort", () => fit.disconnect());
     }
+    const debounce = createGridDebounce();
+    signal.addEventListener("abort", () => debounce.clear());
     const scrollWatcher = createGridScrollWatcher(main, {
       onChange: (next) => {
         viewport = next;
@@ -2695,7 +2775,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         return row;
       }
     };
-    const sourceCache = createGridDataSourceCache<DataRow>();
+    // `setDataSource(source, { cache })` replaces it (`null`: no cache).
+    let sourceCache: GridDataSourceCache<DataRow> | null = createGridDataSourceCache<DataRow>();
     let request = 0;
     const load = () => {
       if (lazy()) {
@@ -2714,11 +2795,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
           : {}),
       };
-      const cached = sourceCache.get(params);
+      const cached = sourceCache?.get(params);
       const show = (response: GridGetRowsResponse<DataRow>) => {
         sourceCount = response.rowCount;
         sourceAggregateRow = response.aggregateRow;
+        const nextInfo = JSON.stringify(response.pageInfo ?? null);
+        const changed = nextInfo !== JSON.stringify(sourceInfo ?? null);
+        sourceInfo = response.pageInfo;
         buildRows(response.rows);
+        if (changed && response.pageInfo)
+          emit("paginationmetachange", response.pageInfo as { hasNextPage?: boolean });
       };
       if (cached) {
         show(cached);
@@ -2726,19 +2812,67 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       }
       const id = ++request;
       element.setAttribute(loadingOption.attr, "");
+      // While it loads, the rows go away (MUI X) unless asked to stay (flat rows only). The
+      // selection stays: `rowEls` comes back when the new rows are built, or on a failure.
+      const previous = rowEls;
+      if (!element.hasAttribute(dataSourceKeepPreviousData.attr) || isTree() || serverGrouping()) {
+        rowEls = [];
+        apply();
+      }
       current
         .getRows(params)
         .then((response) => {
-          sourceCache.set(params, response);
+          sourceCache?.set(params, response);
           if (id === request) show(response);
         })
         .catch((error: unknown) => {
-          if (id === request) emit("datasourceerror", { error });
+          if (id !== request) return;
+          rowEls = previous;
+          apply();
+          emit("datasourceerror", { error });
         })
         .finally(() => {
           if (id === request) element.removeAttribute(loadingOption.attr);
         });
     };
+    // Rows whose cache entry expired load again in the background (MUI X `dataSourceRevalidateMs`).
+    let revalidating = false;
+    let revalidateTimer: ReturnType<typeof setInterval> | undefined;
+    const syncRevalidate = () => {
+      clearInterval(revalidateTimer);
+      const ms = readNumber(element, dataSourceRevalidateMs) as number;
+      revalidateTimer = undefined;
+      if (ms <= 0) return;
+      revalidateTimer = setInterval(() => {
+        if (!source || revalidating || lazy() || isTree() || serverGrouping()) return;
+        const params = {
+          sortModel,
+          filterModel,
+          paginationModel: { page, pageSize: Number.isFinite(pageSize) ? pageSize : 0 },
+          ...(serverAggregationModel()
+            ? { aggregationModel: serverAggregationModel() as GridAggregationModel }
+            : {}),
+        };
+        if (sourceCache?.get(params)) return;
+        const asked = request;
+        revalidating = true;
+        source
+          .getRows(params)
+          .then((response) => {
+            sourceCache?.set(params, response);
+            if (asked !== request) return;
+            sourceCount = response.rowCount;
+            sourceInfo = response.pageInfo;
+            sourceAggregateRow = response.aggregateRow;
+            buildRows(response.rows);
+          })
+          .catch((error: unknown) => emit("datasourceerror", { error }))
+          .finally(() => {
+            revalidating = false;
+          });
+      }, ms);
+    };
+    signal.addEventListener("abort", () => clearInterval(revalidateTimer));
     /** After a sort, filter or page change: ask the data source, or apply locally. */
     const refresh = () => {
       if (source && (isTree() || serverGrouping())) loadedChildren.clear();
@@ -3324,8 +3458,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     headerGroup.addEventListener(
       "input",
       (event) => {
-        if ((event.target as Element).closest("[data-ok-data-grid-header-filters]"))
-          onHeaderFilter(event);
+        const target = event.target as Element;
+        if (!target.closest("[data-ok-data-grid-header-filters]")) return;
+        if (target.matches("input"))
+          debounce.run(
+            `header-${target.closest("[data-ok-filter-field]")?.getAttribute("data-ok-filter-field")}`,
+            readNumber(element, columnFilterDebounceMs) as number,
+            () => onHeaderFilter(event),
+          );
+        else onHeaderFilter(event);
       },
       { signal },
     );
@@ -3623,7 +3764,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             Promise.resolve(source.updateRow({ rowId: idOf(row), updatedRow, previousRow }))
               .then((saved) => {
                 fillCells(row, saved);
-                sourceCache.clear();
+                sourceCache?.clear();
               })
               .catch((error: unknown) => {
                 fillCells(row, previousRow);
@@ -4488,7 +4629,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (list) {
           if (!(event.target as Element).matches('input[type="checkbox"]'))
             setListChange(list, event.target as Element);
-        } else setFilter(readFilters());
+        } else if ((event.target as Element).matches("input"))
+          debounce.run("panel", readNumber(element, filterDebounceMs) as number, () =>
+            setFilter(readFilters()),
+          );
+        else setFilter(readFilters());
       },
       { signal },
     );
@@ -4542,10 +4687,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       ?.addEventListener(
         "input",
         (event) =>
-          setFilter({
-            ...filterModel,
-            quickFilterValues: gridQuickFilterValues((event.target as HTMLInputElement).value),
-          }),
+          debounce.run("quick", readNumber(element, filterDebounceMs) as number, () =>
+            setFilter({
+              ...filterModel,
+              quickFilterValues: gridQuickFilterValues((event.target as HTMLInputElement).value),
+            }),
+          ),
         { signal },
       );
 
@@ -4958,7 +5105,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         Promise.resolve(source.updateRow({ rowId: idOf(row), updatedRow, previousRow }))
           .then((saved) => {
             fillCells(row, saved);
-            sourceCache.clear();
+            sourceCache?.clear();
           })
           .catch((error: unknown) => {
             fillCells(row, previousRow);
@@ -5523,6 +5670,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let columnModeNow = readStyle(element, rowGroupingColumnMode);
     let positionsNow = element.getAttribute("data-ok-aggregation-position");
     let pagingNow = paging();
+    let countsNow = [
+      element.getAttribute(rowCountOption.attr),
+      element.getAttribute(estimatedRowCount.attr),
+      element.getAttribute("data-ok-has-next-page"),
+    ].join("|");
+    let revalidateNow = element.getAttribute(dataSourceRevalidateMs.attr);
     const options = new MutationObserver(() => {
       reflect();
       if (pivotOn() !== pivotNow) {
@@ -5537,6 +5690,20 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (element.getAttribute("data-ok-aggregation-position") !== positionsNow) {
         positionsNow = element.getAttribute("data-ok-aggregation-position");
         apply();
+      }
+      // A new server count or next page: the pagination follows.
+      const nextCounts = [
+        element.getAttribute(rowCountOption.attr),
+        element.getAttribute(estimatedRowCount.attr),
+        element.getAttribute("data-ok-has-next-page"),
+      ].join("|");
+      if (nextCounts !== countsNow) {
+        countsNow = nextCounts;
+        apply();
+      }
+      if (element.getAttribute(dataSourceRevalidateMs.attr) !== revalidateNow) {
+        revalidateNow = element.getAttribute(dataSourceRevalidateMs.attr);
+        syncRevalidate();
       }
       // Pages on or off: the rows page again; the footer's counts follow.
       if (paging() !== pagingNow) {
@@ -5572,6 +5739,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         hideFooterPagination.attr,
         hideFooterRowCount.attr,
         hideFooterSelectedRowCount.attr,
+        estimatedRowCount.attr,
+        "data-ok-has-next-page",
+        rowCountOption.attr,
+        dataSourceRevalidateMs.attr,
         columnHeaderHeight.attr,
         columnGroupHeaderHeight.attr,
         headerFilterHeight.attr,
@@ -5587,6 +5758,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     if (pivotOn()) showPivot();
     else apply();
     reflect();
+    syncRevalidate();
     scrollWatcher.measure();
     if (element.hasAttribute(autosizeOnMount.attr)) {
       autosize();
@@ -5816,13 +5988,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       setRows(data) {
         buildRows(data);
       },
-      setDataSource(next) {
+      setDataSource(next, sourceOptions) {
         source = next;
+        if (sourceOptions?.cache !== undefined) sourceCache = sourceOptions.cache;
         // A new source: lazily loaded rows belonged to the old one.
         lazyLoaded.clear();
         lazyState.key = "";
         sourceCount = undefined;
-        sourceCache.clear();
+        sourceCache?.clear();
         if (next) load();
         else apply();
       },

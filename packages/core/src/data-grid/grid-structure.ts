@@ -32,6 +32,10 @@ export interface GridTreeOptions<R> {
   keep?: ((row: R) => boolean) | undefined;
   /** Order of siblings. Default: as given. */
   compare?: ((a: R, b: R) => number) | undefined;
+  /** `keep` decides top-level rows only; their descendants show with them (MUI X `disableChildrenFiltering`). */
+  filterRootsOnly?: boolean | undefined;
+  /** `compare` orders top-level rows only (MUI X `disableChildrenSorting`). */
+  sortRootsOnly?: boolean | undefined;
 }
 
 /**
@@ -65,13 +69,15 @@ export function gridTreeRows<R>(rows: readonly R[], options: GridTreeOptions<R>)
     }
     trail.delete(id);
     descendants.set(id, count);
-    passes.set(id, inside || (options.keep ? options.keep(row) : true));
+    const own = options.keep ? options.keep(row) : true;
+    // Roots only: a child shows with its root, whatever it holds.
+    passes.set(id, options.filterRootsOnly ? trail.size > 0 || own : inside || own);
   };
   for (const row of children.get(null) ?? []) visit(row, new Set());
   const out: GridTreeRow<R>[] = [];
   const walk = (parent: string | null, depth: number, seen: Set<string>) => {
     const shown = (children.get(parent) ?? []).filter((row) => passes.get(options.idOf(row)));
-    if (options.compare) shown.sort(options.compare);
+    if (options.compare && (parent === null || !options.sortRootsOnly)) shown.sort(options.compare);
     shown.forEach((row, index) => {
       const id = options.idOf(row);
       if (seen.has(id)) return;

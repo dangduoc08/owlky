@@ -341,6 +341,12 @@
       "name": "ok:data-grid:order"
      },
      {
+      "cancelable": false,
+      "description": "After a data source reported a new `pageInfo`.",
+      "detail": "{ hasNextPage?: boolean | undefined; }",
+      "name": "ok:data-grid:paginationmetachange"
+     },
+     {
       "cancelable": true,
       "description": "Before the pinned columns change. Call `preventDefault()` to keep them.",
       "detail": "{ model: GridPinnedColumns; }",
@@ -381,6 +387,12 @@
       "description": "After a click on a row.",
       "detail": "{ id: string; }",
       "name": "ok:data-grid:rowclick"
+     },
+     {
+      "cancelable": false,
+      "description": "After the row count changed (`-1`: not known).",
+      "detail": "{ count: number; }",
+      "name": "ok:data-grid:rowcountchange"
      },
      {
       "cancelable": false,
@@ -667,10 +679,10 @@
       "type": "(field: string, width: number) => void"
      },
      {
-      "description": "Loads the rows from a server for the current sort, filter and page (`null`: stop).",
+      "description": "Loads the rows from a server for the current sort, filter and page (`null`: stop). `cache` replaces the default cache of responses (`null`: none), the grid's `dataSourceCache`.",
       "kind": "method",
       "name": "setDataSource",
-      "type": "(source: GridDataSource<DataRow> | null) => void"
+      "type": "(source: GridDataSource<DataRow> | null, options?: { cache?: GridDataSourceCache<DataRow> | null; } | undefined) => void"
      },
      {
       "description": "Sets the value of a field being edited, such as from a custom editor's widget.",
@@ -700,7 +712,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 126 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 128 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's values, returns the value to write. `null`: back to parsing by the column type.",
@@ -918,10 +930,17 @@
      },
      {
       "attr": "data-ok-row-count",
-      "description": "Total rows on the server.",
+      "description": "Total rows on the server (`-1`: not known yet).",
+      "kind": "number",
+      "min": -1,
+      "name": "rowCount"
+     },
+     {
+      "attr": "data-ok-estimated-row-count",
+      "description": "With an unknown row count: the pagination shows \"around\" this number while the page is before it.",
       "kind": "number",
       "min": 0,
-      "name": "rowCount"
+      "name": "estimatedRowCount"
      },
      {
       "attr": "data-ok-loading",
@@ -1156,6 +1175,48 @@
        "withModifierKey",
        "always"
       ]
+     },
+     {
+      "attr": "data-ok-data-source-keep-previous-data",
+      "description": "With a data source: the rows stay until the new ones arrive (flat rows; tree and grouped rows reset).",
+      "kind": "flag",
+      "name": "dataSourceKeepPreviousData"
+     },
+     {
+      "attr": "data-ok-data-source-revalidate-ms",
+      "default": 0,
+      "description": "With a data source: how often (ms) rows whose cache entry expired load again (`0`: never).",
+      "kind": "number",
+      "min": 0,
+      "name": "dataSourceRevalidateMs"
+     },
+     {
+      "attr": "data-ok-filter-debounce-ms",
+      "default": 0,
+      "description": "Wait (ms) after a keystroke in the quick filter or the filter panel before filtering.",
+      "kind": "number",
+      "min": 0,
+      "name": "filterDebounceMs"
+     },
+     {
+      "attr": "data-ok-column-filter-debounce-ms",
+      "default": 0,
+      "description": "Wait (ms) after a keystroke in a header filter before filtering.",
+      "kind": "number",
+      "min": 0,
+      "name": "columnFilterDebounceMs"
+     },
+     {
+      "attr": "data-ok-disable-children-filtering",
+      "description": "Tree data: filters apply to top-level rows only; a row's children show with it.",
+      "kind": "flag",
+      "name": "disableChildrenFiltering"
+     },
+     {
+      "attr": "data-ok-disable-children-sorting",
+      "description": "Tree data: sorting orders top-level rows only.",
+      "kind": "flag",
+      "name": "disableChildrenSorting"
      },
      {
       "attr": "data-ok-status-bar",
@@ -2100,6 +2161,15 @@
       "value": "string"
      },
      {
+      "description": "With an unknown row count: `false` when no page follows the current one.",
+      "kind": "value",
+      "name": "data-ok-has-next-page",
+      "value": [
+       "false",
+       "true"
+      ]
+     },
+     {
       "description": "Hides the number of children of tree rows.",
       "kind": "state",
       "name": "data-ok-hide-descendant-count"
@@ -2356,6 +2426,12 @@
       "type": "number"
      },
      {
+      "default": "0",
+      "description": "Wait (ms) after a keystroke in a header filter before filtering.",
+      "name": "columnFilterDebounceMs",
+      "type": "number"
+     },
+     {
       "default": "columnHeaderHeight",
       "description": "Column group header height, px, before the density factor.",
       "name": "columnGroupHeaderHeight",
@@ -2407,6 +2483,17 @@
       "type": "GridDataSourceCache<R> | null"
      },
      {
+      "description": "The rows stay on screen until the new ones arrive (flat rows; tree and grouped rows reset).",
+      "name": "dataSourceKeepPreviousData",
+      "type": "boolean"
+     },
+     {
+      "default": "0",
+      "description": "How often (ms) rows whose cache entry expired load again in the background. never.",
+      "name": "dataSourceRevalidateMs",
+      "type": "number"
+     },
+     {
       "description": "Levels open at first (`-1`: all). Default 0.",
       "name": "defaultGroupingExpansionDepth",
       "type": "number"
@@ -2425,6 +2512,16 @@
      {
       "description": "No aggregation (no Aggregation items in the column menu).",
       "name": "disableAggregation",
+      "type": "boolean"
+     },
+     {
+      "description": "Tree data: filters apply to top-level rows only; a row's children show with it.",
+      "name": "disableChildrenFiltering",
+      "type": "boolean"
+     },
+     {
+      "description": "Tree data: sorting orders top-level rows only.",
+      "name": "disableChildrenSorting",
       "type": "boolean"
      },
      {
@@ -2513,6 +2610,11 @@
       "type": "\"cell\" | \"row\""
      },
      {
+      "description": "With `rowCount={-1}`: the pagination shows \"around\" this number until the page passes it.",
+      "name": "estimatedRowCount",
+      "type": "number"
+     },
+     {
       "description": "Options of the Excel export.",
       "name": "excelOptions",
       "type": "GridExcelOptions"
@@ -2521,6 +2623,12 @@
       "description": "csv`). Default \"data\".",
       "name": "exportFileName",
       "type": "string"
+     },
+     {
+      "default": "0",
+      "description": "Wait (ms) after a keystroke in the quick filter or the filter panel before filtering.",
+      "name": "filterDebounceMs",
+      "type": "number"
      },
      {
       "description": "groups`.",
@@ -2895,6 +3003,11 @@
       "type": "((params: GridMenuParams) => void)"
      },
      {
+      "description": "Called when a data source reports a new `pageInfo`.",
+      "name": "onPaginationMetaChange",
+      "type": "((meta: GridPaginationMeta) => void)"
+     },
+     {
       "description": "Called when the page or the page size changes.",
       "name": "onPaginationModelChange",
       "type": "((model: GridPaginationModel) => void)"
@@ -2943,6 +3056,11 @@
       "description": "Called on a click on a row.",
       "name": "onRowClick",
       "type": "((params: GridRowParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
+     },
+     {
+      "description": "Called when the row count changes.",
+      "name": "onRowCountChange",
+      "type": "((count: number) => void)"
      },
      {
       "description": "Called on a double click on a row.",
@@ -3011,6 +3129,11 @@
       "type": "readonly number[]"
      },
      {
+      "description": "With `rowCount={-1}`: `hasNextPage: false` fixes the total at the rows seen so far.",
+      "name": "paginationMeta",
+      "type": "GridPaginationMeta"
+     },
+     {
       "description": "`server`: `rows` are the current page and `rowCount` the total.",
       "name": "paginationMode",
       "type": "\"client\" | \"server\""
@@ -3066,7 +3189,7 @@
       "type": "number"
      },
      {
-      "description": "Total rows on the server.",
+      "description": "Total rows on the server; `-1` when it isn't known yet.",
       "name": "rowCount",
       "type": "number"
      },

@@ -1025,6 +1025,8 @@ export const gridDefaultLabels = {
   paginationRowsPerPage: "Rows per page:",
   /** `{from}`, `{to}` and `{count}` are replaced. */
   paginationDisplayedRows: "{from}–{to} of {count}",
+  paginationCountAround: "around {count}",
+  paginationCountMoreThan: "more than {to}",
   treeDataGroupingHeaderName: "Group",
   treeDataExpand: "see children",
   treeDataCollapse: "hide children",

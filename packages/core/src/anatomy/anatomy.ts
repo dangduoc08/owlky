@@ -3445,7 +3445,18 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "client",
     "`server`: the rows are the current page; `rowCount` is the total.",
   ),
-  rowCount: number("data-ok-row-count", undefined, "Total rows on the server.", { min: 0 }),
+  rowCount: number(
+    "data-ok-row-count",
+    undefined,
+    "Total rows on the server (`-1`: not known yet).",
+    { min: -1 },
+  ),
+  estimatedRowCount: number(
+    "data-ok-estimated-row-count",
+    undefined,
+    'With an unknown row count: the pagination shows "around" this number while the page is before it.',
+    { min: 0 },
+  ),
   loading: flag("data-ok-loading", "Data is loading: an overlay shows progress."),
   loadingVariant: style(
     "data-ok-loading-variant",
@@ -3582,6 +3593,36 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "withModifierKey",
     "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
     { optional: true },
+  ),
+  dataSourceKeepPreviousData: flag(
+    "data-ok-data-source-keep-previous-data",
+    "With a data source: the rows stay until the new ones arrive (flat rows; tree and grouped rows reset).",
+  ),
+  dataSourceRevalidateMs: number(
+    "data-ok-data-source-revalidate-ms",
+    0,
+    "With a data source: how often (ms) rows whose cache entry expired load again (`0`: never).",
+    { min: 0 },
+  ),
+  filterDebounceMs: number(
+    "data-ok-filter-debounce-ms",
+    0,
+    "Wait (ms) after a keystroke in the quick filter or the filter panel before filtering.",
+    { min: 0 },
+  ),
+  columnFilterDebounceMs: number(
+    "data-ok-column-filter-debounce-ms",
+    0,
+    "Wait (ms) after a keystroke in a header filter before filtering.",
+    { min: 0 },
+  ),
+  disableChildrenFiltering: flag(
+    "data-ok-disable-children-filtering",
+    "Tree data: filters apply to top-level rows only; a row's children show with it.",
+  ),
+  disableChildrenSorting: flag(
+    "data-ok-disable-children-sorting",
+    "Tree data: sorting orders top-level rows only.",
   ),
   statusBar: flag(
     "data-ok-status-bar",
@@ -3735,6 +3776,13 @@ export interface DataGridAnatomyOptions {
   filterMode?: "client" | "server" | undefined;
   paginationMode?: "client" | "server" | undefined;
   rowCount?: number | undefined;
+  estimatedRowCount?: number | undefined;
+  dataSourceKeepPreviousData?: boolean | undefined;
+  dataSourceRevalidateMs?: number | undefined;
+  filterDebounceMs?: number | undefined;
+  columnFilterDebounceMs?: number | undefined;
+  disableChildrenFiltering?: boolean | undefined;
+  disableChildrenSorting?: boolean | undefined;
   loading?: boolean | undefined;
   loadingVariant?: "linear-progress" | "circular-progress" | "skeleton" | undefined;
   scrollEndThreshold?: number | undefined;

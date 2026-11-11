@@ -192,7 +192,8 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `sortingMode` | `data-ok-sorting-mode="…"` | style | `client` `server` | `client` | `server`: the grid reports the sort model and shows the rows as given. |
 | `filterMode` | `data-ok-filter-mode="…"` | style | `client` `server` | `client` | `server`: the grid reports the filter model and shows the rows as given. |
 | `paginationMode` | `data-ok-pagination-mode="…"` | style | `client` `server` | `client` | `server`: the rows are the current page; `rowCount` is the total. |
-| `rowCount` | `data-ok-row-count="…"` | number | number | — | Total rows on the server. |
+| `rowCount` | `data-ok-row-count="…"` | number | number | — | Total rows on the server (`-1`: not known yet). |
+| `estimatedRowCount` | `data-ok-estimated-row-count="…"` | number | number | — | With an unknown row count: the pagination shows "around" this number while the page is before it. |
 | `loading` | `data-ok-loading` | flag | boolean | off | Data is loading: an overlay shows progress. |
 | `loadingVariant` | `data-ok-loading-variant="…"` | style | `linear-progress` `circular-progress` `skeleton` | `linear-progress` | How loading shows: a bar, a spinner or placeholder rows. |
 | `scrollEndThreshold` | `data-ok-scroll-end-threshold="…"` | number | number | `80` | Distance from the end of the rows (px) that reports the scroll end. |
@@ -225,6 +226,12 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `headerFilters` | `data-ok-header-filters` | flag | boolean | off | A row of filter fields under the column headers. |
 | `chartsIntegration` | `data-ok-charts-integration` | flag | boolean | off | A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping. |
 | `multipleColumnsSortingMode` | `data-ok-multiple-columns-sorting-mode="…"` | style | `withModifierKey` `always` | — | Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`. |
+| `dataSourceKeepPreviousData` | `data-ok-data-source-keep-previous-data` | flag | boolean | off | With a data source: the rows stay until the new ones arrive (flat rows; tree and grouped rows reset). |
+| `dataSourceRevalidateMs` | `data-ok-data-source-revalidate-ms="…"` | number | number | `0` | With a data source: how often (ms) rows whose cache entry expired load again (`0`: never). |
+| `filterDebounceMs` | `data-ok-filter-debounce-ms="…"` | number | number | `0` | Wait (ms) after a keystroke in the quick filter or the filter panel before filtering. |
+| `columnFilterDebounceMs` | `data-ok-column-filter-debounce-ms="…"` | number | number | `0` | Wait (ms) after a keystroke in a header filter before filtering. |
+| `disableChildrenFiltering` | `data-ok-disable-children-filtering` | flag | boolean | off | Tree data: filters apply to top-level rows only; a row's children show with it. |
+| `disableChildrenSorting` | `data-ok-disable-children-sorting` | flag | boolean | off | Tree data: sorting orders top-level rows only. |
 | `statusBar` | `data-ok-status-bar` | flag | boolean | off | With cell selection: a bar under the rows counts the selected cells and sums their numbers. |
 | `historyStackSize` | `data-ok-history-stack-size="…"` | number | number | `30` | Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off). |
 | `hideFooterPagination` | `data-ok-hide-footer-pagination` | flag | boolean | off | No pagination in the footer: every row shows, with the row count. |
@@ -675,6 +682,11 @@ header. Not generated in HTML: other special columns (reorder, detail panels, tr
 groups, header filter cells; JSON data and late data (generation runs once, at setup: `setRows` then
 fills the generated columns).
 
+Server options (4.18.56): `rowCount` `-1` is an unknown total: the pagination shows "1–25 of more than
+25" (or "of around n" with `estimatedRowCount`, while n is past the page), next stays enabled until
+`hasNextPage: false` fixes the total at the rows seen. Filter debounces delay the model only; the
+field keeps what was typed.
+
 Events (4.18.55): header pointer events fire for data columns only. A menu or panel reports opening
 and closing however it happened (a button, the keyboard, a click outside); switching panels reports
 the close first. React reports from its state (an effect), HTML from the Popovers' `ok:popover:open`
@@ -756,6 +768,7 @@ the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
 (`{ menu, target }`), `preferencepanelopen` / `preferencepanelclose` (`{ openedPanelValue }`), `sidebaropen` /
 `sidebarclose` (`{ value }`), `containerresize` (`{ width, height }`), `columnresize` (`{ field, width }`),
 `fetchrows`, `excelexportstate` (`{ state }`), `beforeclipboardpaste` (cancelable, `{ data, waitUntil }`).
+(4.18.56) `ok:data-grid:rowcountchange` (`{ count }`), `paginationmetachange` (`{ hasNextPage }`); `setDataSource(source, { cache })`.
 Batch E: `ok:data-grid:undo` / `redo` (`{ ids }`), instance `history` (`undo()`, `redo()`,
 `clear()`, `canUndo()`, `canRedo()`); `ok:data-grid:cellmodes` / `rowmodes` (cancelable, `{ model }`: the next modes model of a
 start or stop people make); instance `cellModesModel`, `rowModesModel`, `setCellModesModel(model)`,
@@ -798,10 +811,11 @@ the detailed record of what is kept.
 | Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef` | same | kept (4.18.52) | `rowSelection={false}` also drops the checkbox column; HTML `data-ok-row-selection="false"` (a behavior option). Propagation default `{ parents: true, descendants: true }` (MUI X v8), client side with several rows; group rows of row grouping get a checkbox with `descendants` (checked / mixed from their rows; group ids never enter the model); parents not selected with some selected descendants show mixed; HTML `data-ok-row-selection-propagation` (JSON). Not done: deselecting rows a new filter hides (MUI X). `checkboxColDef`: `width`, `headerName` (the header's label with single selection), `headerClassName`, `cellClassName`; HTML: the checkbox header's `data-ok-width` and class names in the markup |
 | Selection: `disableRowSelectionExcludeModel` | — | not applicable | id array model |
 | Sorting / filtering / quick filter: models + callbacks, `sortingMode`, `filterMode`, `disableColumnSorting`, `disableColumnFilter`, `disableMultipleColumnsSorting` / `-Filtering`, `quickFilter*`, `ignoreDiacritics` | same | kept | |
-| Filtering: `filterDebounceMs`, `columnFilterDebounceMs`, `disableChildrenFiltering`, `disableChildrenSorting` | — | deferred | |
+| Filtering: `filterDebounceMs`, `columnFilterDebounceMs` | same | kept (4.18.56) | default `0` (MUI X `150`: existing grids filter at once); `filterDebounceMs` covers the quick filter and the filter panel's typed values, `columnFilterDebounceMs` the header filters' text fields (selects and date pickers apply at once); the field shows what was typed, the model follows; core `createGridDebounce` |
+| Filtering: `disableChildrenFiltering`, `disableChildrenSorting` | same | kept (4.18.56) | tree data, client side only (a data source ignores them); core `gridTreeRows` options `filterRootsOnly`, `sortRootsOnly`; a generated root stays with its children; a child that passes doesn't keep a root that doesn't |
 | Pagination: `pagination`, `paginationModel`, `paginationMode`, `pageSizeOptions`, `rowCount` | same | kept | |
 | Pagination: `autoPageSize` | same | kept (4.18.53) | rows of the grid's row height (not per-row heights); the rows per page select goes away; HTML: `data-ok-auto-page-size` (the runtime writes the pagination's `data-ok-rows-per-page`) |
-| Pagination: `paginationMeta` / `onPaginationMetaChange`, `estimatedRowCount`, `onRowCountChange` | — | deferred | unknown row counts (4.18.56) |
+| Pagination: `paginationMeta` / `onPaginationMetaChange`, `estimatedRowCount`, `onRowCountChange`, `rowCount: -1` | same | kept (4.18.56) | `hasNextPage` only (MUI X adds nothing else that applies here); a data source sends `pageInfo: { hasNextPage }` (`onPaginationMetaChange` reports it) and no `rowCount` means unknown then; core `gridPaginationCount`, `gridUnknownCountPattern`; locale keys `paginationCountAround`, `paginationCountMoreThan`; `aria-rowcount="-1"` while unknown; not with lazy loading (`rowCount` given); HTML `data-ok-row-count="-1"`, `data-ok-estimated-row-count`, `data-ok-has-next-page`, `ok:data-grid:rowcountchange`, `paginationmetachange` |
 | Layout: `density`, `rowHeight`, `getRowHeight`, `getEstimatedRowHeight`, `getRowSpacing`, `rowSpanning`, `listView` | same | kept | |
 | Layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `rowSpacingType`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `autoHeight` | same | kept (4.18.53) | heights × the density factor as root private properties (core `gridHeaderHeightProperties`; HTML through CSSOM); `headerFilterHeight` defaults to `columnHeaderHeight`, else 56px (MUI X: the header height); `rowSpacingType="border"` is padding inside the row (its background covers it); `autoHeight` sets the root's `block-size: auto` and stops the scroll area's flex (an author height still wins) |
 | Layout: `height`, `scrollbarSize`, `resizeThrottleMs`, `throttleRowsMs`, `nonce`, `logger`, `logLevel`, `experimentalFeatures`, `featureDependencies` | — | not applicable | consumer CSS / engine internals (no injected styles) |
@@ -821,7 +835,8 @@ the detailed record of what is kept.
 | Events: `onExcelExportStateChange` | same | kept (4.18.55) | `"pending"` then `"finished"` around the download (the export is synchronous here); HTML `ok:data-grid:excelexportstate` (`{ state }`) |
 | Keyboard: `tabNavigation` (`none` · `content` · `header` · `all`) | same | kept (4.18.54) | core `createGridNavigation` reads the root's `data-ok-tab-navigation`; headers are the column headers' row (not groups or header filters) |
 | Data source / server: `dataSource`, `dataSourceCache`, `onDataSourceError`, `lazyLoading`, `lazyLoadingRequestThrottleMs`, `disableVirtualization`, `rowBufferPx`, `columnBufferPx` | same | kept | |
-| Data source: `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`; `virtualizeColumnsWithAutoRowHeight` | — | deferred | |
+| Data source: `dataSourceKeepPreviousData`, `dataSourceRevalidateMs` | same | kept (4.18.56) | behavior change (MUI X): without `dataSourceKeepPreviousData`, flat rows now go away while a request is pending (tree and grouped rows always do); the selection stays; a failed request brings the rows back. `dataSourceRevalidateMs`: flat, non-lazy grids; only rows whose cache entry expired (no cache: every tick), silently, a failure goes to `onDataSourceError`; HTML `setDataSource(source, { cache })` (new) gives it a cache (`dataSourceCache`) |
+| Data source: `virtualizeColumnsWithAutoRowHeight` | — | deferred | 4.18.57 |
 | Tree data / master-detail / row order / pinned rows: `treeData`, `getTreeDataPath`, `groupingColDef`, `defaultGroupingExpansionDepth`, `isGroupExpandedByDefault`, detail panel props, `rowReordering`, `onRowOrderChange`, `pinnedRows` | same | kept | |
 | Row order: `isRowReorderable`, `isValidRowReorder`, `setTreeDataPath` (reorder in tree data) | — | deferred | |
 | Row grouping / aggregation / pivot: models + callbacks, `disableRowGrouping`, `aggregationFunctions`, `aggregationRowsScope`, `getAggregationPosition` (root and groups: `inline`, `footer`, `null`), `disablePivoting`, `pivotActive` | same | kept | HTML: `data-ok-aggregation-position` by level |

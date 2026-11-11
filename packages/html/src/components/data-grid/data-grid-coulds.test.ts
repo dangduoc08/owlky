@@ -236,3 +236,155 @@ describe("data grid events (4.18.55)", () => {
     expect(edits).toEqual([]);
   });
 });
+
+describe("data grid server options (4.18.56)", () => {
+  const body = (root: Element) => [
+    ...root.querySelectorAll('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+  ];
+  const displayed = (root: Element) =>
+    root.querySelector("[data-ok-table-pagination-displayed]")?.textContent;
+  const nextButton = (root: Element) =>
+    root.querySelector('[data-ok-table-pagination-action="next"]') as HTMLButtonElement;
+  const main = (root: Element) => root.querySelector("[data-ok-data-grid-main]") as HTMLElement;
+  const people = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({
+      id: `c-${i + 1}`,
+      firstName: `P${i + 1}`,
+      lastName: "Doe",
+      age: 20 + i,
+      city: "Lima",
+    }));
+  const serverGrid = (extra = "") =>
+    snippet("server-group").replace(
+      "<div data-ok-data-grid ",
+      `<div data-ok-data-grid data-ok-disable-virtualization ${extra} `,
+    );
+
+  it("rowCount -1: unknown until the server says the last page", async () => {
+    const { root, instance } = setup(
+      serverGrid(
+        'data-ok-pagination-mode="server" data-ok-row-count="-1" data-ok-has-next-page="true"',
+      ),
+    );
+    instance.setDataSource(null);
+    await settle();
+    expect(displayed(root)).toMatch(/more than/);
+    expect(main(root).getAttribute("aria-rowcount")).toBe("-1");
+    expect(nextButton(root).disabled).toBe(false);
+    root.setAttribute("data-ok-has-next-page", "false");
+    await settle();
+    expect(displayed(root)).toMatch(/of \d+$/);
+    expect(nextButton(root).disabled).toBe(true);
+  });
+
+  it("estimatedRowCount shows around n while the page is before it", async () => {
+    const { root, instance } = setup(
+      serverGrid(
+        'data-ok-pagination-mode="server" data-ok-row-count="-1" data-ok-estimated-row-count="500"',
+      ),
+    );
+    instance.setDataSource(null);
+    await settle();
+    expect(displayed(root)).toMatch(/of around 500$/);
+    root.removeAttribute("data-ok-estimated-row-count");
+    await settle();
+    expect(displayed(root)).toMatch(/more than/);
+  });
+
+  it("rowcountchange reports a new count", async () => {
+    const { root, instance } = setup(
+      serverGrid('data-ok-pagination-mode="server" data-ok-row-count="20"'),
+    );
+    instance.setDataSource(null);
+    await settle();
+    const seen = events(root, "rowcountchange");
+    root.setAttribute("data-ok-row-count", "40");
+    await settle();
+    expect(seen).toEqual([{ count: 40 }]);
+  });
+
+  it("reads pageInfo from a data source and reports it", async () => {
+    const { root, instance } = setup(serverGrid());
+    const seen = events(root, "paginationmetachange");
+    instance.setDataSource({
+      getRows: async () => ({ rows: people(5), pageInfo: { hasNextPage: false } }),
+    });
+    await vi.waitUntil(() => seen.length > 0);
+    expect(seen).toEqual([{ hasNextPage: false }]);
+    await settle();
+    expect(nextButton(root).disabled).toBe(true);
+  });
+
+  it("hides the rows while a data source loads, unless asked to keep them", async () => {
+    const { root, instance } = setup(serverGrid());
+    const pending: ((rows: ReturnType<typeof people>) => void)[] = [];
+    const finish = async (index: number, rows: ReturnType<typeof people>) => {
+      pending[index]?.(rows);
+      await settle();
+    };
+    instance.setDataSource({
+      getRows: () =>
+        new Promise((resolve) => pending.push((rows) => resolve({ rows, rowCount: 8 }))),
+    });
+    await finish(0, people(5));
+    expect(body(root)).toHaveLength(5);
+    const age = root.querySelector('[role="columnheader"][data-ok-field="age"]') as HTMLElement;
+    age.click();
+    await settle();
+    expect(body(root)).toHaveLength(0);
+    await finish(1, people(5));
+    expect(body(root)).toHaveLength(5);
+    root.setAttribute("data-ok-data-source-keep-previous-data", "");
+    age.click();
+    await settle();
+    expect(body(root)).toHaveLength(5);
+    await finish(2, people(2));
+    expect(body(root)).toHaveLength(2);
+  });
+
+  it("dataSourceRevalidateMs reloads expired rows without the loading state", async () => {
+    const { root, instance } = setup(serverGrid('data-ok-data-source-revalidate-ms="30"'));
+    let rows = people(5);
+    const getRows = vi.fn(async () => ({ rows, rowCount: 8 }));
+    instance.setDataSource({ getRows }, { cache: null });
+    await settle();
+    rows = people(1);
+    await vi.waitUntil(() => getRows.mock.calls.length > 1);
+    await vi.waitUntil(() => body(root).length === 1);
+    expect(root.hasAttribute("data-ok-loading")).toBe(false);
+  });
+
+  it("waits filterDebounceMs before filtering", async () => {
+    const { root } = setup(
+      snippet("filters-group").replace(
+        "<div data-ok-data-grid ",
+        '<div data-ok-data-grid data-ok-filter-debounce-ms="40" ',
+      ),
+    );
+    const seen = events(root, "filter");
+    const quick = root.querySelector("[data-ok-data-grid-quick-filter] input") as HTMLInputElement;
+    quick.value = "Per";
+    quick.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(seen).toEqual([]);
+    await vi.waitUntil(() => seen.length > 0);
+    expect(seen.at(-1)).toMatchObject({ model: { quickFilterValues: ["Per"] } });
+  });
+
+  it("disableChildrenFiltering keeps a passing root's children", async () => {
+    const { root, instance } = setup(snippet("tree-group"));
+    const header = root.querySelector(
+      '[role="columnheader"][data-ok-field]:not([data-ok-field^="__"])',
+    ) as HTMLElement;
+    const field = header.getAttribute("data-ok-field") as string;
+    const rows = () => body(root).length;
+    const all = rows();
+    instance.setFilterModel({ items: [{ field, operator: "contains", value: "Ann" }] });
+    await settle();
+    const filtered = rows();
+    root.setAttribute("data-ok-disable-children-filtering", "");
+    instance.setFilterModel({ items: [{ field, operator: "contains", value: "Ann" }] });
+    await settle();
+    expect(rows()).toBeGreaterThanOrEqual(filtered);
+    expect(all).toBeGreaterThan(0);
+  });
+});

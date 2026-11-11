@@ -1,3 +1,4 @@
+import type { GridDataSource } from "@owlky/core";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
@@ -293,5 +294,292 @@ describe("DataGrid events (4.18.55)", () => {
     });
     expect(processRowUpdate.mock.calls[0]?.[0]).toMatchObject({ id: 3, name: "Cid" });
     await expectNoAxeViolations(document.body);
+  });
+});
+
+describe("DataGrid server options (4.18.56)", () => {
+  const page = () => document.querySelector("[data-ok-table-pagination-displayed]")?.textContent;
+  const next = () => screen.getByRole("button", { name: "Go to next page" }) as HTMLButtonElement;
+  const five = ROWS.slice(0, 5);
+
+  it("rowCount -1: an unknown total until the server says the last page", () => {
+    const { rerender } = render(
+      <DataGrid
+        aria-label="People"
+        rows={five}
+        columns={COLUMNS}
+        paginationMode="server"
+        rowCount={-1}
+        pageSizeOptions={[5]}
+        initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
+        paginationMeta={{ hasNextPage: true }}
+      />,
+    );
+    expect(page()).toBe("1–5 of more than 5");
+    expect(grid().getAttribute("aria-rowcount")).toBe("-1");
+    expect(next().disabled).toBe(false);
+    expect(
+      document.querySelector("[data-ok-data-grid]")?.getAttribute("data-ok-has-next-page"),
+    ).toBe("true");
+    rerender(
+      <DataGrid
+        aria-label="People"
+        rows={five}
+        columns={COLUMNS}
+        paginationMode="server"
+        rowCount={-1}
+        pageSizeOptions={[5]}
+        initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
+        paginationMeta={{ hasNextPage: false }}
+      />,
+    );
+    expect(page()).toBe("1–5 of 5");
+    expect(next().disabled).toBe(true);
+    expect(grid().getAttribute("aria-rowcount")).toBe("6");
+  });
+
+  it("estimatedRowCount shows while the page is before it", () => {
+    const { rerender } = render(
+      <DataGrid
+        aria-label="People"
+        rows={five}
+        columns={COLUMNS}
+        paginationMode="server"
+        rowCount={-1}
+        estimatedRowCount={100}
+        pageSizeOptions={[5]}
+        initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
+      />,
+    );
+    expect(page()).toBe("1–5 of around 100");
+    rerender(
+      <DataGrid
+        aria-label="People"
+        rows={five}
+        columns={COLUMNS}
+        paginationMode="server"
+        rowCount={-1}
+        estimatedRowCount={3}
+        pageSizeOptions={[5]}
+        initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
+      />,
+    );
+    expect(page()).toBe("1–5 of more than 5");
+  });
+
+  it("onRowCountChange reports a new count, not the first one", () => {
+    const onRowCountChange = vi.fn();
+    const base = {
+      "aria-label": "People",
+      rows: ROWS,
+      columns: COLUMNS,
+      paginationMode: "server" as const,
+      onRowCountChange,
+    };
+    const { rerender } = render(<DataGrid {...base} rowCount={20} />);
+    expect(onRowCountChange).not.toHaveBeenCalled();
+    rerender(<DataGrid {...base} rowCount={40} />);
+    expect(onRowCountChange).toHaveBeenCalledExactlyOnceWith(40);
+  });
+
+  it("reads pageInfo from a data source and reports it", async () => {
+    const onPaginationMetaChange = vi.fn();
+    const dataSource: GridDataSource<Row> = {
+      getRows: async () => ({ rows: five, pageInfo: { hasNextPage: false } }),
+    };
+    render(
+      <DataGrid
+        aria-label="People"
+        columns={COLUMNS}
+        rows={[]}
+        dataSource={dataSource}
+        pageSizeOptions={[5]}
+        initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
+        onPaginationMetaChange={onPaginationMetaChange}
+      />,
+    );
+    await act(tick);
+    await act(tick);
+    expect(onPaginationMetaChange).toHaveBeenCalledExactlyOnceWith({ hasNextPage: false });
+    expect(page()).toBe("1–5 of 5");
+  });
+
+  it("hides the rows while a data source loads, unless asked to keep them", async () => {
+    const pending: ((rows: Row[]) => void)[] = [];
+    const dataSource: GridDataSource<Row> = {
+      getRows: () =>
+        new Promise((resolve) => pending.push((rows) => resolve({ rows, rowCount: 8 }))),
+    };
+    const shown = () => grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]').length;
+    const sort = () => act(async () => fireEvent.click(header("name")));
+    const settle = async (index: number, rows: Row[]) => {
+      await act(async () => {
+        pending[index]?.(rows);
+        await tick();
+      });
+    };
+    const props = {
+      "aria-label": "People",
+      columns: COLUMNS,
+      rows: [] as Row[],
+      dataSource,
+      dataSourceCache: null,
+    };
+    const { rerender } = render(<DataGrid {...props} />);
+    await settle(0, five);
+    expect(shown()).toBe(5);
+    await sort();
+    expect(grid().getAttribute("aria-busy")).toBe("true");
+    expect(shown()).toBe(0);
+    await settle(1, five);
+    expect(shown()).toBe(5);
+    rerender(<DataGrid {...props} dataSourceKeepPreviousData />);
+    await sort();
+    expect(shown()).toBe(5);
+    await settle(2, ROWS.slice(0, 2));
+    expect(shown()).toBe(2);
+  });
+
+  it("dataSourceRevalidateMs reloads expired rows without the loading state", async () => {
+    let rows = five;
+    const getRows = vi.fn(async () => ({ rows, rowCount: 8 }));
+    render(
+      <DataGrid
+        aria-label="People"
+        columns={COLUMNS}
+        rows={[]}
+        dataSource={{ getRows }}
+        dataSourceCache={null}
+        dataSourceRevalidateMs={30}
+        hideFooter
+      />,
+    );
+    await act(tick);
+    await act(tick);
+    const first = cell(1, "name");
+    expect(first.textContent).toBe("Person 1");
+    rows = [{ id: 1, name: "Changed", age: 1 }];
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    });
+    expect(cell(1, "name").textContent).toBe("Changed");
+    expect(grid().hasAttribute("aria-busy")).toBe(false);
+    expect(getRows.mock.calls.length).toBeGreaterThan(1);
+  });
+
+  it("waits filterDebounceMs before filtering, and shows what was typed at once", async () => {
+    const onFilterModelChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="People"
+        showToolbar
+        rows={ROWS}
+        columns={COLUMNS}
+        onFilterModelChange={onFilterModelChange}
+        filterDebounceMs={40}
+      />,
+    );
+    const quick = document.querySelector(
+      "[data-ok-data-grid-quick-filter] input",
+    ) as HTMLInputElement;
+    fireEvent.change(quick, { target: { value: "Per" } });
+    expect(quick.value).toBe("Per");
+    expect(onFilterModelChange).not.toHaveBeenCalled();
+    await vi.waitUntil(() => onFilterModelChange.mock.calls.length > 0);
+    expect(onFilterModelChange.mock.lastCall?.[0].quickFilterValues).toEqual(["Per"]);
+  });
+
+  it("waits columnFilterDebounceMs on header filters and keeps the typed text", async () => {
+    const onFilterModelChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="People"
+        headerFilters
+        rows={ROWS}
+        columns={COLUMNS}
+        onFilterModelChange={onFilterModelChange}
+        columnFilterDebounceMs={40}
+      />,
+    );
+    const field = document.querySelector('[data-ok-filter-field="name"] input') as HTMLInputElement;
+    fireEvent.change(field, { target: { value: "Ann" } });
+    expect(field.value).toBe("Ann");
+    expect(onFilterModelChange).not.toHaveBeenCalled();
+    await vi.waitUntil(() => onFilterModelChange.mock.calls.length > 0);
+    expect(onFilterModelChange.mock.lastCall?.[0].items[0]).toMatchObject({
+      field: "name",
+      value: "Ann",
+    });
+  });
+
+  it("filterDebounceMs 0 filters at once", () => {
+    const onFilterModelChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="People"
+        showToolbar
+        rows={ROWS}
+        columns={COLUMNS}
+        onFilterModelChange={onFilterModelChange}
+      />,
+    );
+    fireEvent.change(document.querySelector("[data-ok-data-grid-quick-filter] input") as Element, {
+      target: { value: "Per" },
+    });
+    expect(onFilterModelChange).toHaveBeenCalledOnce();
+  });
+
+  describe("tree data, children left alone", () => {
+    interface Node {
+      id: number;
+      path: string[];
+      name: string;
+    }
+    const TREE: Node[] = [
+      { id: 1, path: ["b"], name: "B root" },
+      { id: 2, path: ["b", "z"], name: "Z child" },
+      { id: 3, path: ["b", "a"], name: "A child" },
+      { id: 4, path: ["a"], name: "A root" },
+    ];
+    const TREE_COLUMNS: GridColDef<Node>[] = [{ field: "name", headerName: "Name", width: 160 }];
+    const treeRows = () =>
+      [...grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]')].map(
+        (row) => row.querySelector('[data-ok-field="name"]')?.textContent,
+      );
+    const base = {
+      "aria-label": "Tree",
+      rows: TREE,
+      columns: TREE_COLUMNS,
+      treeData: true,
+      getTreeDataPath: (row: Node) => row.path,
+      defaultGroupingExpansionDepth: -1,
+      hideFooter: true,
+      disableVirtualization: true,
+    };
+
+    it("disableChildrenFiltering shows a passing root's children, and hides those of the others", () => {
+      const filterModel = { items: [{ field: "name", operator: "contains", value: "root" }] };
+      const { rerender } = render(<DataGrid {...base} filterModel={filterModel} />);
+      expect(treeRows()).toEqual(["B root", "A root"]);
+      rerender(<DataGrid {...base} filterModel={filterModel} disableChildrenFiltering />);
+      expect(treeRows()).toEqual(["B root", "Z child", "A child", "A root"]);
+      // A child that matches doesn't keep a root that doesn't.
+      rerender(
+        <DataGrid
+          {...base}
+          filterModel={{ items: [{ field: "name", operator: "contains", value: "Z child" }] }}
+          disableChildrenFiltering
+        />,
+      );
+      expect(treeRows()).toEqual([]);
+    });
+
+    it("disableChildrenSorting sorts top-level rows only", () => {
+      const sortModel = [{ field: "name", sort: "asc" as const }];
+      const { rerender } = render(<DataGrid {...base} sortModel={sortModel} />);
+      expect(treeRows()).toEqual(["A root", "B root", "A child", "Z child"]);
+      rerender(<DataGrid {...base} sortModel={sortModel} disableChildrenSorting />);
+      expect(treeRows()).toEqual(["A root", "B root", "Z child", "A child"]);
+    });
   });
 });
