@@ -230,7 +230,11 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   integrate it without breaking DOM or API. **Every** stand-in gets a row, including story-only
   CSS in `.storybook/preview.css` that draws a surface (radius + paper background + a shadow →
   Paper / Card) or sets fonts (`--ok-typography-*` / `--ok-font-*` → Typography): the 2026-11-09
-  `/integrate` sweep found 14 such stand-ins that had no row. Story CSS keeps layout only;
+  `/integrate` sweep found 14 such stand-ins that had no row, and the 2026-11-12 sweep nine
+  more, in places the first one didn't grep: outlined boxes (`border` + radius → Paper
+  `variant="outlined"`), Tailwind utilities in Foundations components (`rounded-* bg-paper
+  shadow-*` → Paper / Card, a styled `<a>` → Link) and docs examples (`<input type="range">` →
+  Slider, a `tabindex` + `overflow: auto` box → Scrollbar). Story CSS keeps layout only;
   exceptions are Storybook chrome (`.sb-group-title`, `.sb-row > [data-ok-theme]`) and demos
   whose point is the plain-CSS styling (Typography "Theme keys", the picker toolbar title).
 - A new component closes **every** wait on it in the same review: stand-ins *and* deferred
