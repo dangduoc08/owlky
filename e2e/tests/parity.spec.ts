@@ -582,14 +582,17 @@ async function loaded(page: Page, key: string) {
     return;
   }
   if (key.startsWith("carousel/")) {
-    // Carousels measure once mounted; pictures change slide sizes as they load.
+    // Carousels measure once mounted. Slide pictures are lazy Images (far slides never load):
+    // wait for the eager thumbnails, then for each Image's state to match its picture.
     await page.waitForFunction(() =>
       [...document.querySelectorAll("[data-ok-carousel]")].every((root) =>
         root.hasAttribute("data-ok-ready"),
       ),
     );
-    await page.waitForFunction(() => [...document.images].every((image) => image.complete));
-    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50))));
+    await page.waitForFunction(() =>
+      [...document.images].every((image) => image.complete || image.closest("[data-ok-image]")),
+    );
+    await imagesSettled(page);
     return;
   }
   if (key.startsWith("map/")) {
