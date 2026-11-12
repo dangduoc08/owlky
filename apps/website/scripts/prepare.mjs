@@ -1,10 +1,18 @@
 // Runs before `next dev` / `next build` (ADR-0040):
-//   - copies the built CDN bundle (packages/html/dist) to public/cdn/;
+//   - copies the built CDN bundle (packages/html/dist: owlky.js and its modules/) to public/cdn/;
 //   - writes one static sandbox page per HTML example (public/sandbox/…): **Open HTML demo**
 //     shows it in an iframe, so the HTML runtime never shares a page with React;
 //   - extracts what the pages read from the MCP manifest (option schemas, spec sections) into
 //     src/generated/manifest.json, so the 6 MB manifest never reaches a bundle.
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { app, loadContent, requireBuild, root } from "./content.mjs";
 
@@ -20,6 +28,11 @@ for (const [from, to] of [
   ["packages/styles/dist/base.css", "base.css"],
 ])
   copyFileSync(join(root, from), join(cdn, to));
+// The lazy modules owlky.js loads next to itself (ADR-0068), without their source maps.
+cpSync(join(root, "packages/html/dist/modules"), join(cdn, "modules"), {
+  recursive: true,
+  filter: (source) => !source.endsWith(".map"),
+});
 
 // ── Sandbox pages ──────────────────────────────────────────────────────────────────────────────
 const { PAGES } = await loadContent("site.ts");

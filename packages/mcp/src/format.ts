@@ -79,6 +79,20 @@ export function componentMarkdown(
     component.referenceUrl ? `Reference: ${component.referenceUrl}` : undefined,
     component.guide ? `Guide: ${code(component.guide)} (get_guide)` : undefined,
   ].filter(Boolean);
+  const imports = component.imports;
+  const importLines = imports
+    ? [
+        imports.react
+          ? `- React: \`import { ${component.react.join(", ")} } from "${imports.react}"\``
+          : "",
+        imports.html ? `- HTML runtime (bundlers): ${code(imports.html)}` : "",
+        imports.core ? `- Core: ${code(imports.core)}` : "",
+        imports.css?.length ? `- CSS: ${imports.css.map(code).join(", ")}` : "",
+        imports.cdnModule
+          ? `- CDN: \`owlky.js\` loads \`modules/${imports.cdnModule}.js\` when the page holds the component (\`data-ok-preload="${imports.cdnModule}"\` loads it ahead of use)`
+          : "",
+      ].filter(Boolean)
+    : [];
   const parts = Object.entries(component.requiredParts).map(
     ([root, list]) => `- ${code(root)} needs ${list.map(code).join(", ")}`,
   );
@@ -86,6 +100,7 @@ export function componentMarkdown(
     `# ${component.title} (${code(component.name)})`,
     component.summary,
     facts.map((fact) => `- ${fact}`).join("\n"),
+    importLines.length ? `## Imports\n\n${importLines.join("\n")}` : "",
     component.schemas.length
       ? `## Options\n\nUnknown values fall back to the default.\n\n${component.schemas.map(optionsTable).join("\n\n")}`
       : "",

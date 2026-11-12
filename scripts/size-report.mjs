@@ -230,19 +230,37 @@ function group(slices, keyOf, total) {
 // --- 1. Bundles ----------------------------------------------------------------------------
 
 const dist = at("packages/html/dist");
-const bundleFiles = (await readdir(dist)).filter(
-  (f) => /^owlky(-[\w-]+)?\.js$/.test(f) && f !== "owlky-map-worker.js",
-);
+// `owlky.js`, the opt-in shims, and since S2 the lazy modules and their shared chunks (ADR-0068).
+const listJs = async (dir) =>
+  (await readdir(join(dist, dir)).catch(() => []))
+    .filter((f) => f.endsWith(".js"))
+    .map((f) => (dir ? `${dir}/${f}` : f));
+const bundleFiles = [
+  ...(await listJs("")).filter(
+    (f) => /^owlky(-[\w-]+)?\.js$/.test(f) && f !== "owlky-map-worker.js",
+  ),
+  ...(await listJs("modules")),
+  ...(await listJs("modules/chunks")),
+];
 const bundles = {};
 const anatomyRows = {};
+const mainSources = new Set();
+const duplicated = { parts: [], sources: new Set() };
 for (const file of bundleFiles.sort((a, b) =>
   a === "owlky.js" ? -1 : b === "owlky.js" ? 1 : a.localeCompare(b),
 )) {
   const { code, slices } = await attribute(join(dist, file));
   const total = gz(code);
   const families = group(slices, (s) => familyOf(s.source), total);
-  // Collapse dependencies of the opt-in bundles into one row per package, top 6 + the rest.
   bundles[file] = { raw: Buffer.byteLength(code), gzip: total, families };
+  // Code in both owlky.js and a lazy file has two module instances (ADR-0068 §2).
+  if (file === "owlky.js") for (const slice of slices) mainSources.add(slice.source);
+  else if (file.startsWith("modules/"))
+    for (const slice of slices)
+      if (slice.source !== "(unmapped)" && mainSources.has(slice.source)) {
+        duplicated.parts.push(slice.text);
+        duplicated.sources.add(slice.source);
+      }
   const anatomy = slices.filter((s) => ANATOMY.test(s.source));
   if (anatomy.length) {
     const anatomyGzip = families.find((r) => r.name === "anatomy (option schemas)")?.gzipShare ?? 0;
@@ -459,16 +477,55 @@ for (const [label, names, direct] of REACT) {
 
 // HTML: the CDN page today (one `<link>`, `owlky.js` and the opt-in scripts it needs).
 const cdn = (file) => bundles[file]?.gzip ?? 0;
-const HTML_CDN = [
-  ["Light page (Button, Dialog)", ["owlky.js"]],
-  ["Data grid page", ["owlky.js"]],
-  ["Chart page", ["owlky.js"]],
-  ["Editor page", ["owlky.js", "owlky-editor.js"]],
-  ["Markdown page", ["owlky.js", "owlky-markdown.js"]],
-  ["Phone input page", ["owlky.js", "owlky-phone.js"]],
-  ["Map page", ["owlky.js", "owlky-map.js", "owlky-map-worker.js"]],
-  ["Code editor page (Monaco loads on mount)", ["owlky.js", "owlky-code-editor.js"]],
+/** A lazy module and every chunk it imports statically (what the loader downloads), relative. */
+async function moduleFiles(name, seen = new Set()) {
+  const file = name.endsWith(".js") ? name : `modules/${name}.js`;
+  if (seen.has(file) || !existsSync(join(dist, file))) return [];
+  seen.add(file);
+  const code = await readFile(join(dist, file), "utf8");
+  const imports = [...code.matchAll(/(?:from|import)\s*["'](\.{1,2}\/[^"']+\.js)["']/g)].map((m) =>
+    relative(dist, join(dirname(join(dist, file)), m[1])),
+  );
+  return [file, ...(await Promise.all(imports.map((each) => moduleFiles(each, seen)))).flat()];
+}
+const lazy = existsSync(join(dist, "modules"));
+const page = async (...modules) => [
+  "owlky.js",
+  ...new Set((await Promise.all(modules.map((m) => moduleFiles(m)))).flat()),
 ];
+const HTML_CDN = lazy
+  ? [
+      ["Light page (Button, Dialog)", await page()],
+      ["Data grid page", await page("data-grid")],
+      ["Chart page", await page("chart")],
+      ["Date picker page", await page("date-picker")],
+      ["Editor page", await page("editor")],
+      ["Markdown page", await page("markdown")],
+      ["Phone input page", await page("phone-input")],
+      ["Map page", [...(await page("map")), "owlky-map-worker.js"]],
+      ["Code editor page (Monaco loads on mount)", await page("code-editor")],
+    ]
+  : [
+      ["Light page (Button, Dialog)", ["owlky.js"]],
+      ["Data grid page", ["owlky.js"]],
+      ["Chart page", ["owlky.js"]],
+      ["Editor page", ["owlky.js", "owlky-editor.js"]],
+      ["Markdown page", ["owlky.js", "owlky-markdown.js"]],
+      ["Phone input page", ["owlky.js", "owlky-phone.js"]],
+      ["Map page", ["owlky.js", "owlky-map.js", "owlky-map-worker.js"]],
+      ["Code editor page (Monaco loads on mount)", ["owlky.js", "owlky-code-editor.js"]],
+    ];
+// Each lazy module with the chunks it imports statically: what loading it downloads.
+const lazyModules = {};
+for (const file of await listJs("modules")) {
+  const name = file.slice("modules/".length, -3);
+  const files = await moduleFiles(name);
+  lazyModules[name] = {
+    own: bundles[file]?.gzip ?? 0,
+    gzip: files.reduce((n, f) => n + (bundles[f]?.gzip ?? 0), 0),
+    files,
+  };
+}
 const htmlCdn = HTML_CDN.map(([label, files]) => ({
   label,
   files,
@@ -645,6 +702,8 @@ const FAMILY_COLUMNS = [
 ];
 
 for (const [file, info] of Object.entries(bundles)) {
+  // Shims and shared chunks are in the JSON only; modules print their top families.
+  if (file.startsWith("modules/chunks/") || info.raw < 1000) continue;
   log(`\n${file}: ${kB(info.raw)} kB raw, ${kB(info.gzip)} kB gzip`);
   const rows = info.families;
   const top = file === "owlky.js" ? rows : rows.slice(0, 8);
@@ -671,7 +730,25 @@ table(react, [
   ["CSS per file", (r) => `${kB(r.css.perComponent)} (${r.css.files.length} files)`],
   ["CSS full", (r) => kB(r.css.full)],
 ]);
-log("\nHTML scenarios, CDN today (owlky.css + scripts):");
+if (Object.keys(lazyModules).length) {
+  log("\nLazy modules (each with the chunks it imports; shared chunks count in each):");
+  table(
+    Object.entries(lazyModules)
+      .map(([name, info]) => ({ name, ...info }))
+      .sort((a, b) => b.gzip - a.gzip),
+    [
+      ["module", (r) => r.name],
+      ["own gzip", (r) => kB(r.own)],
+      ["with imports", (r) => kB(r.gzip)],
+      ["files", (r) => r.files.length],
+    ],
+  );
+}
+if (duplicated.sources.size)
+  log(
+    `Code in both owlky.js and the lazy files: ${duplicated.sources.size} source files, ${kB(gz(duplicated.parts.join("")))} kB gzip (in the lazy files).`,
+  );
+log("\nHTML scenarios, CDN (owlky.css + the scripts the page downloads):");
 table(htmlCdn, [
   ["page", (r) => r.label],
   ["JS gzip", (r) => kB(r.jsGzip)],
@@ -702,6 +779,12 @@ const json = {
   generated: new Date().toISOString(),
   bundles,
   css,
+  modules: lazyModules,
+  duplicated: {
+    raw: Buffer.byteLength(duplicated.parts.join("")),
+    gzip: duplicated.parts.length ? gz(duplicated.parts.join("")) : 0,
+    sources: [...duplicated.sources].sort(),
+  },
   scenarios: {
     react: react.map(({ code, ...rest }) => rest),
     htmlCdn,

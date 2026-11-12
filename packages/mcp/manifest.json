@@ -1171,6 +1171,7 @@
   "data-ok-mobile-stepper-text",
   "data-ok-modified-language",
   "data-ok-modified-model-path",
+  "data-ok-modules",
   "data-ok-monaco-path",
   "data-ok-monaco-theme",
   "data-ok-month",
@@ -1314,6 +1315,7 @@
   "data-ok-popover-hover",
   "data-ok-popover-open",
   "data-ok-position",
+  "data-ok-preload",
   "data-ok-preset",
   "data-ok-prevent-drop-on-document",
   "data-ok-preview",
@@ -1845,6 +1847,18 @@
  ],
  "commonParts": [
   {
+   "description": "js` script: the folder of its lazy modules, when it isn't `modules/` next to the script.",
+   "kind": "value",
+   "name": "data-ok-modules",
+   "value": "string"
+  },
+  {
+   "description": "js` script: lazy modules to load at once, separated by spaces, such as `chart data-grid`.",
+   "kind": "value",
+   "name": "data-ok-preload",
+   "value": "string"
+  },
+  {
    "description": "Applies a color preset to this element and everything inside it, such as `purple`.",
    "kind": "value",
    "name": "data-ok-preset",
@@ -2152,6 +2166,14 @@
     ]
    },
    "guide": "accordion",
+   "imports": {
+    "core": "@owlky/core/accordion",
+    "css": [
+     "@owlky/styles/components/accordion.css"
+    ],
+    "html": "@owlky/html/accordion",
+    "react": "@owlky/react/accordion"
+   },
    "name": "accordion",
    "react": [
     "Accordion",
@@ -2597,6 +2619,14 @@
     ]
    },
    "guide": "alert",
+   "imports": {
+    "core": "@owlky/core/alert",
+    "css": [
+     "@owlky/styles/components/alert.css"
+    ],
+    "html": "@owlky/html/alert",
+    "react": "@owlky/react/alert"
+   },
    "name": "alert",
    "react": [
     "Alert",
@@ -3476,6 +3506,15 @@
     ]
    },
    "guide": "autocomplete",
+   "imports": {
+    "cdnModule": "autocomplete",
+    "core": "@owlky/core/autocomplete",
+    "css": [
+     "@owlky/styles/components/autocomplete.css"
+    ],
+    "html": "@owlky/html/autocomplete",
+    "react": "@owlky/react/autocomplete"
+   },
    "name": "autocomplete",
    "react": [
     "Autocomplete",
@@ -4051,6 +4090,14 @@
     ]
    },
    "guide": "avatar",
+   "imports": {
+    "core": "@owlky/core/avatar",
+    "css": [
+     "@owlky/styles/components/avatar.css"
+    ],
+    "html": "@owlky/html/avatar",
+    "react": "@owlky/react/avatar"
+   },
    "name": "avatar",
    "react": [
     "Avatar",
@@ -4423,6 +4470,14 @@
     ]
    },
    "guide": "backdrop",
+   "imports": {
+    "core": "@owlky/core/backdrop",
+    "css": [
+     "@owlky/styles/components/backdrop.css"
+    ],
+    "html": "@owlky/html/backdrop",
+    "react": "@owlky/react/backdrop"
+   },
    "name": "backdrop",
    "react": [
     "Backdrop"
@@ -4749,6 +4804,13 @@
     ]
    },
    "guide": "badge",
+   "imports": {
+    "core": "@owlky/core/badge",
+    "css": [
+     "@owlky/styles/components/badge.css"
+    ],
+    "react": "@owlky/react/badge"
+   },
    "name": "badge",
    "react": [
     "Badge"
@@ -5157,6 +5219,14 @@
     ]
    },
    "guide": "breadcrumbs",
+   "imports": {
+    "core": "@owlky/core/breadcrumbs",
+    "css": [
+     "@owlky/styles/components/breadcrumbs.css"
+    ],
+    "html": "@owlky/html/breadcrumbs",
+    "react": "@owlky/react/breadcrumbs"
+   },
    "name": "breadcrumbs",
    "react": [
     "Breadcrumbs",
@@ -5621,6 +5691,13 @@
     ]
    },
    "guide": "button",
+   "imports": {
+    "core": "@owlky/core/button",
+    "css": [
+     "@owlky/styles/components/button.css"
+    ],
+    "react": "@owlky/react/button"
+   },
    "name": "button",
    "react": [
     "Button"
@@ -6057,6 +6134,13 @@
     ]
    },
    "guide": "button-group",
+   "imports": {
+    "core": "@owlky/core/button-group",
+    "css": [
+     "@owlky/styles/components/button-group.css"
+    ],
+    "react": "@owlky/react/button-group"
+   },
    "name": "button-group",
    "react": [
     "ButtonGroup"
@@ -6634,6 +6718,13 @@
     ]
    },
    "guide": "card",
+   "imports": {
+    "core": "@owlky/core/card",
+    "css": [
+     "@owlky/styles/components/card.css"
+    ],
+    "react": "@owlky/react/card"
+   },
    "name": "card",
    "react": [
     "Card",
@@ -8374,6 +8465,15 @@
     ]
    },
    "guide": "carousel",
+   "imports": {
+    "cdnModule": "carousel",
+    "core": "@owlky/core/carousel",
+    "css": [
+     "@owlky/styles/components/carousel.css"
+    ],
+    "html": "@owlky/html/carousel",
+    "react": "@owlky/react/carousel"
+   },
    "name": "carousel",
    "react": [
     "Carousel",
@@ -14987,6 +15087,15 @@
     ]
    },
    "guide": "chart",
+   "imports": {
+    "cdnModule": "chart",
+    "core": "@owlky/core/chart",
+    "css": [
+     "@owlky/styles/components/chart.css"
+    ],
+    "html": "@owlky/html/chart",
+    "react": "@owlky/react/chart"
+   },
    "name": "chart",
    "react": [
     "Chart",
@@ -17725,6 +17834,14 @@
     ]
    },
    "guide": "checkbox",
+   "imports": {
+    "core": "@owlky/core/checkbox",
+    "css": [
+     "@owlky/styles/components/checkbox.css"
+    ],
+    "html": "@owlky/html/checkbox",
+    "react": "@owlky/react/checkbox"
+   },
    "name": "checkbox",
    "react": [
     "Checkbox"
@@ -18245,6 +18362,14 @@
     ]
    },
    "guide": "chip",
+   "imports": {
+    "core": "@owlky/core/chip",
+    "css": [
+     "@owlky/styles/components/chip.css"
+    ],
+    "html": "@owlky/html/chip",
+    "react": "@owlky/react/chip"
+   },
    "name": "chip",
    "react": [
     "Chip"
@@ -18615,6 +18740,14 @@
     ]
    },
    "guide": "circular-progress",
+   "imports": {
+    "core": "@owlky/core/circular-progress",
+    "css": [
+     "@owlky/styles/components/circular-progress.css"
+    ],
+    "html": "@owlky/html/circular-progress",
+    "react": "@owlky/react/circular-progress"
+   },
    "name": "circular-progress",
    "react": [
     "CircularProgress"
@@ -19918,6 +20051,15 @@
     ]
    },
    "guide": "code-editor",
+   "imports": {
+    "cdnModule": "code-editor",
+    "core": "@owlky/core/code-editor",
+    "css": [
+     "@owlky/styles/components/code-editor.css"
+    ],
+    "html": "@owlky/html/code-editor",
+    "react": "@owlky/react/code-editor"
+   },
    "name": "code-editor",
    "react": [
     "CodeEditor",
@@ -20900,6 +21042,14 @@
     ]
    },
    "guide": "collapse",
+   "imports": {
+    "core": "@owlky/core/collapse",
+    "css": [
+     "@owlky/styles/components/collapse.css"
+    ],
+    "html": "@owlky/html/collapse",
+    "react": "@owlky/react/collapse"
+   },
    "name": "collapse",
    "react": [
     "Collapse"
@@ -24732,6 +24882,15 @@
     ]
    },
    "guide": "data-grid",
+   "imports": {
+    "cdnModule": "data-grid",
+    "core": "@owlky/core/data-grid",
+    "css": [
+     "@owlky/styles/components/data-grid.css"
+    ],
+    "html": "@owlky/html/data-grid",
+    "react": "@owlky/react/data-grid"
+   },
    "name": "data-grid",
    "react": [
     "DataGrid",
@@ -39502,6 +39661,21 @@
     ]
    },
    "guide": "date-picker",
+   "imports": {
+    "cdnModule": "date-picker",
+    "core": "@owlky/core/date-picker",
+    "css": [
+     "@owlky/styles/components/date-field.css",
+     "@owlky/styles/components/date-calendar.css",
+     "@owlky/styles/components/date-picker.css",
+     "@owlky/styles/components/time-clock.css",
+     "@owlky/styles/components/digital-clock.css",
+     "@owlky/styles/components/date-range-calendar.css",
+     "@owlky/styles/components/date-range-picker.css"
+    ],
+    "html": "@owlky/html/date-picker",
+    "react": "@owlky/react/date-picker"
+   },
    "name": "date-picker",
    "react": [
     "DateCalendar",
@@ -41010,6 +41184,14 @@
     ]
    },
    "guide": "dialog",
+   "imports": {
+    "core": "@owlky/core/dialog",
+    "css": [
+     "@owlky/styles/components/dialog.css"
+    ],
+    "html": "@owlky/html/dialog",
+    "react": "@owlky/react/dialog"
+   },
    "name": "dialog",
    "react": [
     "Dialog",
@@ -41444,6 +41626,13 @@
     ]
    },
    "guide": "divider",
+   "imports": {
+    "core": "@owlky/core/divider",
+    "css": [
+     "@owlky/styles/components/divider.css"
+    ],
+    "react": "@owlky/react/divider"
+   },
    "name": "divider",
    "react": [
     "Divider"
@@ -42220,6 +42409,14 @@
     ]
    },
    "guide": "drawer",
+   "imports": {
+    "core": "@owlky/core/drawer",
+    "css": [
+     "@owlky/styles/components/drawer.css"
+    ],
+    "html": "@owlky/html/drawer",
+    "react": "@owlky/react/drawer"
+   },
    "name": "drawer",
    "react": [
     "Drawer",
@@ -43478,6 +43675,15 @@
     ]
    },
    "guide": "editor",
+   "imports": {
+    "cdnModule": "editor",
+    "core": "@owlky/core/editor",
+    "css": [
+     "@owlky/styles/components/editor.css"
+    ],
+    "html": "@owlky/html/editor",
+    "react": "@owlky/react/editor"
+   },
    "name": "editor",
    "react": [
     "Editor"
@@ -43957,6 +44163,13 @@
     ]
    },
    "guide": "fab",
+   "imports": {
+    "core": "@owlky/core/fab",
+    "css": [
+     "@owlky/styles/components/fab.css"
+    ],
+    "react": "@owlky/react/fab"
+   },
    "name": "fab",
    "react": [
     "Fab"
@@ -44604,6 +44817,13 @@
     ]
    },
    "guide": "form-control",
+   "imports": {
+    "core": "@owlky/core/form-control",
+    "css": [
+     "@owlky/styles/components/form-control.css"
+    ],
+    "react": "@owlky/react/form-control"
+   },
    "name": "form-control",
    "react": [
     "FormControl",
@@ -45100,6 +45320,13 @@
       }
      }
     ]
+   },
+   "imports": {
+    "core": "@owlky/core/form-control-label",
+    "css": [
+     "@owlky/styles/components/form-control-label.css"
+    ],
+    "react": "@owlky/react/form-control-label"
    },
    "name": "form-control-label",
    "react": [
@@ -46276,6 +46503,15 @@
     ]
    },
    "guide": "gantt",
+   "imports": {
+    "cdnModule": "gantt",
+    "core": "@owlky/core/gantt",
+    "css": [
+     "@owlky/styles/components/gantt.css"
+    ],
+    "html": "@owlky/html/gantt",
+    "react": "@owlky/react/gantt"
+   },
    "name": "gantt",
    "react": [
     "Gantt"
@@ -46868,6 +47104,13 @@
     ]
    },
    "guide": "icon-button",
+   "imports": {
+    "core": "@owlky/core/icon-button",
+    "css": [
+     "@owlky/styles/components/icon-button.css"
+    ],
+    "react": "@owlky/react/icon-button"
+   },
    "name": "icon-button",
    "react": [
     "IconButton"
@@ -47309,6 +47552,14 @@
       }
      }
     ]
+   },
+   "imports": {
+    "cdnModule": "illustration",
+    "core": "@owlky/core/illustration",
+    "css": [
+     "@owlky/styles/components/illustration.css"
+    ],
+    "react": "@owlky/react/illustration"
    },
    "name": "illustration",
    "react": [
@@ -47874,6 +48125,14 @@
     ]
    },
    "guide": "image",
+   "imports": {
+    "core": "@owlky/core/image",
+    "css": [
+     "@owlky/styles/components/image.css"
+    ],
+    "html": "@owlky/html/image",
+    "react": "@owlky/react/image"
+   },
    "name": "image",
    "react": [
     "Image"
@@ -48329,6 +48588,13 @@
     ]
    },
    "guide": "label",
+   "imports": {
+    "core": "@owlky/core/label",
+    "css": [
+     "@owlky/styles/components/label.css"
+    ],
+    "react": "@owlky/react/label"
+   },
    "name": "label",
    "react": [
     "Label"
@@ -49976,6 +50242,15 @@
     ]
    },
    "guide": "lightbox",
+   "imports": {
+    "cdnModule": "carousel",
+    "core": "@owlky/core/lightbox",
+    "css": [
+     "@owlky/styles/components/lightbox.css"
+    ],
+    "html": "@owlky/html/lightbox",
+    "react": "@owlky/react/lightbox"
+   },
    "name": "lightbox",
    "react": [
     "Lightbox",
@@ -50626,6 +50901,14 @@
     ]
    },
    "guide": "linear-progress",
+   "imports": {
+    "core": "@owlky/core/linear-progress",
+    "css": [
+     "@owlky/styles/components/linear-progress.css"
+    ],
+    "html": "@owlky/html/linear-progress",
+    "react": "@owlky/react/linear-progress"
+   },
    "name": "linear-progress",
    "react": [
     "LinearProgress"
@@ -51012,6 +51295,13 @@
     ]
    },
    "guide": "link",
+   "imports": {
+    "core": "@owlky/core/link",
+    "css": [
+     "@owlky/styles/components/link.css"
+    ],
+    "react": "@owlky/react/link"
+   },
    "name": "link",
    "react": [
     "Link"
@@ -51758,6 +52048,14 @@
     ]
    },
    "guide": "list",
+   "imports": {
+    "core": "@owlky/core/list",
+    "css": [
+     "@owlky/styles/components/list.css"
+    ],
+    "html": "@owlky/html/list",
+    "react": "@owlky/react/list"
+   },
    "name": "list",
    "react": [
     "List",
@@ -54486,6 +54784,15 @@
     ]
    },
    "guide": "map",
+   "imports": {
+    "cdnModule": "map",
+    "core": "@owlky/core/map",
+    "css": [
+     "@owlky/styles/components/map.css"
+    ],
+    "html": "@owlky/html/map",
+    "react": "@owlky/react/map"
+   },
    "name": "map",
    "react": [
     "AttributionControl",
@@ -55952,6 +56259,15 @@
     ]
    },
    "guide": "markdown",
+   "imports": {
+    "cdnModule": "markdown",
+    "core": "@owlky/core/markdown",
+    "css": [
+     "@owlky/styles/components/markdown.css"
+    ],
+    "html": "@owlky/html/markdown",
+    "react": "@owlky/react/markdown"
+   },
    "name": "markdown",
    "react": [
     "Markdown",
@@ -56539,6 +56855,14 @@
     ]
    },
    "guide": "menu",
+   "imports": {
+    "core": "@owlky/core/menu",
+    "css": [
+     "@owlky/styles/components/menu.css"
+    ],
+    "html": "@owlky/html/menu",
+    "react": "@owlky/react/menu"
+   },
    "name": "menu",
    "react": [
     "Menu",
@@ -58512,6 +58836,18 @@
     ]
    },
    "guide": "motion",
+   "imports": {
+    "cdnModule": "motion",
+    "core": "@owlky/core/motion",
+    "css": [
+     "@owlky/styles/components/motion.css",
+     "@owlky/styles/components/count-up.css",
+     "@owlky/styles/components/countdown.css",
+     "@owlky/styles/components/motion-border.css"
+    ],
+    "html": "@owlky/html/motion",
+    "react": "@owlky/react/motion"
+   },
    "name": "motion",
    "react": [
     "CountUp",
@@ -60253,6 +60589,15 @@
     ]
    },
    "guide": "organization-chart",
+   "imports": {
+    "cdnModule": "organization-chart",
+    "core": "@owlky/core/organization-chart",
+    "css": [
+     "@owlky/styles/components/organization-chart.css"
+    ],
+    "html": "@owlky/html/organization-chart",
+    "react": "@owlky/react/organization-chart"
+   },
    "name": "organization-chart",
    "react": [
     "OrganizationChart",
@@ -61247,6 +61592,14 @@
     ]
    },
    "guide": "pagination",
+   "imports": {
+    "core": "@owlky/core/pagination",
+    "css": [
+     "@owlky/styles/components/pagination.css"
+    ],
+    "html": "@owlky/html/pagination",
+    "react": "@owlky/react/pagination"
+   },
    "name": "pagination",
    "react": [
     "Pagination",
@@ -61697,6 +62050,13 @@
     ]
    },
    "guide": "paper",
+   "imports": {
+    "core": "@owlky/core/paper",
+    "css": [
+     "@owlky/styles/components/paper.css"
+    ],
+    "react": "@owlky/react/paper"
+   },
    "name": "paper",
    "react": [
     "Paper"
@@ -62271,6 +62631,14 @@
     ]
    },
    "guide": "phone-input",
+   "imports": {
+    "cdnModule": "phone-input",
+    "core": "@owlky/core/phone-input",
+    "css": [
+     "@owlky/styles/components/phone-input.css"
+    ],
+    "react": "@owlky/react/phone-input"
+   },
    "name": "phone-input",
    "react": [
     "PhoneInput"
@@ -62851,6 +63219,14 @@
     ]
    },
    "guide": "popover",
+   "imports": {
+    "core": "@owlky/core/popover",
+    "css": [
+     "@owlky/styles/components/popover.css"
+    ],
+    "html": "@owlky/html/popover",
+    "react": "@owlky/react/popover"
+   },
    "name": "popover",
    "react": [
     "Popover"
@@ -63355,6 +63731,14 @@
     ]
    },
    "guide": "radio",
+   "imports": {
+    "core": "@owlky/core/radio",
+    "css": [
+     "@owlky/styles/components/radio.css"
+    ],
+    "html": "@owlky/html/radio",
+    "react": "@owlky/react/radio"
+   },
    "name": "radio",
    "react": [
     "Radio",
@@ -63878,6 +64262,14 @@
     ]
    },
    "guide": "rating",
+   "imports": {
+    "core": "@owlky/core/rating",
+    "css": [
+     "@owlky/styles/components/rating.css"
+    ],
+    "html": "@owlky/html/rating",
+    "react": "@owlky/react/rating"
+   },
    "name": "rating",
    "react": [
     "Rating",
@@ -64174,6 +64566,15 @@
     ]
    },
    "guide": "scroll-progress",
+   "imports": {
+    "cdnModule": "motion",
+    "core": "@owlky/core/scroll-progress",
+    "css": [
+     "@owlky/styles/components/scroll-progress.css"
+    ],
+    "html": "@owlky/html/scroll-progress",
+    "react": "@owlky/react/scroll-progress"
+   },
    "name": "scroll-progress",
    "react": [
     "useScroll"
@@ -64355,6 +64756,13 @@
     ]
    },
    "guide": "scrollbar",
+   "imports": {
+    "core": "@owlky/core/scrollbar",
+    "css": [
+     "@owlky/styles/components/scrollbar.css"
+    ],
+    "react": "@owlky/react/scrollbar"
+   },
    "name": "scrollbar",
    "react": [
     "Scrollbar"
@@ -65048,6 +65456,14 @@
     ]
    },
    "guide": "select",
+   "imports": {
+    "core": "@owlky/core/select",
+    "css": [
+     "@owlky/styles/components/select.css"
+    ],
+    "html": "@owlky/html/select",
+    "react": "@owlky/react/select"
+   },
    "name": "select",
    "react": [
     "InputLabel",
@@ -65873,6 +66289,14 @@
     ]
    },
    "guide": "slider",
+   "imports": {
+    "core": "@owlky/core/slider",
+    "css": [
+     "@owlky/styles/components/slider.css"
+    ],
+    "html": "@owlky/html/slider",
+    "react": "@owlky/react/slider"
+   },
    "name": "slider",
    "react": [
     "Slider"
@@ -66715,6 +67139,14 @@
     ]
    },
    "guide": "snackbar",
+   "imports": {
+    "core": "@owlky/core/snackbar",
+    "css": [
+     "@owlky/styles/components/snackbar.css"
+    ],
+    "html": "@owlky/html/snackbar",
+    "react": "@owlky/react/snackbar"
+   },
    "name": "snackbar",
    "react": [
     "TOAST_ICONS",
@@ -67368,6 +67800,15 @@
     ]
    },
    "guide": "sortable",
+   "imports": {
+    "cdnModule": "sortable",
+    "core": "@owlky/core/sortable",
+    "css": [
+     "@owlky/styles/components/sortable.css"
+    ],
+    "html": "@owlky/html/sortable",
+    "react": "@owlky/react/sortable"
+   },
    "name": "sortable",
    "react": [
     "Sortable",
@@ -68276,6 +68717,14 @@
     ]
    },
    "guide": "stepper",
+   "imports": {
+    "core": "@owlky/core/stepper",
+    "css": [
+     "@owlky/styles/components/stepper.css"
+    ],
+    "html": "@owlky/html/stepper",
+    "react": "@owlky/react/stepper"
+   },
    "name": "stepper",
    "react": [
     "MobileStepper",
@@ -68790,6 +69239,13 @@
     ]
    },
    "guide": "switch",
+   "imports": {
+    "core": "@owlky/core/switch",
+    "css": [
+     "@owlky/styles/components/switch.css"
+    ],
+    "react": "@owlky/react/switch"
+   },
    "name": "switch",
    "react": [
     "Switch"
@@ -69645,6 +70101,14 @@
     ]
    },
    "guide": "table",
+   "imports": {
+    "core": "@owlky/core/table",
+    "css": [
+     "@owlky/styles/components/table.css"
+    ],
+    "html": "@owlky/html/table",
+    "react": "@owlky/react/table"
+   },
    "name": "table",
    "react": [
     "Table",
@@ -70370,6 +70834,14 @@
     ]
    },
    "guide": "tabs",
+   "imports": {
+    "core": "@owlky/core/tabs",
+    "css": [
+     "@owlky/styles/components/tabs.css"
+    ],
+    "html": "@owlky/html/tabs",
+    "react": "@owlky/react/tabs"
+   },
    "name": "tabs",
    "react": [
     "Tab",
@@ -71939,6 +72411,14 @@
     ]
    },
    "guide": "text-field",
+   "imports": {
+    "core": "@owlky/core/text-field",
+    "css": [
+     "@owlky/styles/components/text-field.css"
+    ],
+    "html": "@owlky/html/text-field",
+    "react": "@owlky/react/text-field"
+   },
    "name": "text-field",
    "react": [
     "FilledInput",
@@ -72573,6 +73053,13 @@
     ]
    },
    "guide": "timeline",
+   "imports": {
+    "core": "@owlky/core/timeline",
+    "css": [
+     "@owlky/styles/components/timeline.css"
+    ],
+    "react": "@owlky/react/timeline"
+   },
    "name": "timeline",
    "react": [
     "Timeline",
@@ -73163,6 +73650,14 @@
     ]
    },
    "guide": "toggle-button",
+   "imports": {
+    "core": "@owlky/core/toggle-button",
+    "css": [
+     "@owlky/styles/components/toggle-button.css"
+    ],
+    "html": "@owlky/html/toggle-button",
+    "react": "@owlky/react/toggle-button"
+   },
    "name": "toggle-button",
    "react": [
     "ToggleButton",
@@ -73696,6 +74191,14 @@
     ]
    },
    "guide": "tooltip",
+   "imports": {
+    "core": "@owlky/core/tooltip",
+    "css": [
+     "@owlky/styles/components/tooltip.css"
+    ],
+    "html": "@owlky/html/tooltip",
+    "react": "@owlky/react/tooltip"
+   },
    "name": "tooltip",
    "react": [
     "Tooltip"
@@ -74153,6 +74656,15 @@
     ]
    },
    "guide": "transfer-list",
+   "imports": {
+    "cdnModule": "transfer-list",
+    "core": "@owlky/core/transfer-list",
+    "css": [
+     "@owlky/styles/components/transfer-list.css"
+    ],
+    "html": "@owlky/html/transfer-list",
+    "react": "@owlky/react/transfer-list"
+   },
    "name": "transfer-list",
    "react": [
     "TransferList"
@@ -75150,6 +75662,15 @@
     ]
    },
    "guide": "tree-view",
+   "imports": {
+    "cdnModule": "tree-view",
+    "core": "@owlky/core/tree-view",
+    "css": [
+     "@owlky/styles/components/tree-view.css"
+    ],
+    "html": "@owlky/html/tree-view",
+    "react": "@owlky/react/tree-view"
+   },
    "name": "tree-view",
    "react": [
     "RichTreeView",
@@ -75834,6 +76355,13 @@
     ]
    },
    "guide": "typography",
+   "imports": {
+    "core": "@owlky/core/typography",
+    "css": [
+     "@owlky/styles/components/typography.css"
+    ],
+    "react": "@owlky/react/typography"
+   },
    "name": "typography",
    "react": [
     "Typography"
@@ -77629,6 +78157,15 @@
     ]
    },
    "guide": "upload",
+   "imports": {
+    "cdnModule": "upload",
+    "core": "@owlky/core/upload",
+    "css": [
+     "@owlky/styles/components/upload.css"
+    ],
+    "html": "@owlky/html/upload",
+    "react": "@owlky/react/upload"
+   },
    "name": "upload",
    "react": [
     "Dropzone",
@@ -78771,6 +79308,15 @@
     ]
    },
    "guide": "walktour",
+   "imports": {
+    "cdnModule": "walktour",
+    "core": "@owlky/core/walktour",
+    "css": [
+     "@owlky/styles/components/walktour.css"
+    ],
+    "html": "@owlky/html/walktour",
+    "react": "@owlky/react/walktour"
+   },
    "name": "walktour",
    "react": [
     "Walktour"

@@ -1,9 +1,8 @@
 /**
- * <script> / CDN entry (IIFE): `owlky-phone.js`. Load it after `owlky.js`: it registers the
- * phone input on the same page-wide runtime (ADR-0007 slot) and adds no global of its own. The
- * country select is the Select runtime of `owlky.js`.
+ * <script> / CDN entry (IIFE): `owlky-phone.js`, a shim since ADR-0068 (ADR-0061). `owlky.js` loads
+ * `modules/phone-input.js` by itself when the page holds the component; this script only loads it
+ * ahead of use, like `data-ok-preload="phone-input"` on `owlky.js`. Load it after `owlky.js`.
  */
-import { phoneInput } from "./components/phone-input/phone-input.js";
-import { getRuntime } from "./runtime/global.js";
+import { loadShim } from "./loader/shim.js";
 
-getRuntime().register(phoneInput).start();
+loadShim("phone-input", "owlky-phone.js");

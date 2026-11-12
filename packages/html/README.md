@@ -124,63 +124,47 @@ Then paste component snippets (Storybook HTML/* pages). Components
 inserted later (htmx, Turbo, `innerHTML`) are initialized automatically and cleaned up when
 removed. Loading the script twice is harmless.
 
-The **Editor** is a separate script, because its editing engine (Tiptap) adds about 125 kB gzip.
-Load it after `owlky.js` on pages that have an editor:
+**`owlky.js` loads what the page uses.** It holds the runtime and the common components (about
+45 kB gzip). Larger components, such as the Chart, the Data grid, the date pickers, the Editor,
+the Map, Markdown and the Phone input, are modules in the `modules/` folder next to `owlky.js`.
+When the page holds one, `owlky.js` loads its module and the component starts. Until then, the
+markup works as it does without JavaScript: a chart shows its data table, for example. Host the
+whole `dist/` folder, so `modules/`, `monaco/` and `owlky-map-worker.js` sit next to `owlky.js`.
+
+- **Preload:** list modules in `data-ok-preload` to load them before the page needs them, such
+  as a chart at the top of the page. The modules are `chart`, `data-grid`, `date-picker`,
+  `gantt`, `carousel` (Carousel and Lightbox), `motion`, `organization-chart`, `upload`,
+  `walktour`, `tree-view`, `sortable`, `autocomplete`, `transfer-list`, `editor`, `map`,
+  `markdown`, `code-editor`, `phone-input` and `illustration`.
+- **Another folder:** `data-ok-modules="/assets/owlky/modules/"` serves the modules from there.
+- **From JavaScript:** `await Owlky.load("chart")` loads a module; `Owlky.loaded("chart")`
+  tells whether it has loaded.
+- **Errors:** a module that fails to load logs an error and dispatches `ok:runtime:error` on
+  `document` (`detail`: `module`, `url`, `error`). The next `Owlky.load()` or the browser coming
+  back online loads it again.
+- **Strict CSP:** modules are same-origin ES modules with no inline code, so
+  `script-src 'self'` and Trusted Types (`require-trusted-types-for 'script'`) work unchanged.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-editor.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js" data-ok-preload="chart" defer></script>
 ```
 
-The **Code editor** is a separate script too. `owlky-code-editor.js` is about 11 kB gzip and loads
-Monaco only when an editor appears, from the `monaco/` folder next to it (about 1.15 MB gzip for
-the first editor, more for the TypeScript language service). Host the whole `dist/` folder, or
-point `data-ok-monaco-path` at your own copy of `dist/monaco/`: Monaco's workers must come from
-the page's origin. Monaco needs `style-src 'unsafe-inline'` and a few Trusted Types policies; see
-the Code editor docs page.
+The older scripts (`owlky-editor.js`, `owlky-map.js`, `owlky-markdown.js`, `owlky-phone.js`,
+`owlky-illustrations.js`, `owlky-code-editor.js`) still work: each one only preloads its module.
 
-```html
-<script src="/assets/owlky/owlky-code-editor.js" defer></script>
-The **Map** is a separate script too, because its map engine (MapLibre GL JS) adds about 300 kB
-gzip. Load it after `owlky.js` on pages that have a map. It loads its worker,
-`owlky-map-worker.js`, from the same folder. Owlky includes no map tiles: pass the URL of a MapLibre
-style, such as one of OpenFreeMap's free styles.
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-map.js" defer></script>
-```
-
-**Illustrations** are a separate script too (about 10 kB gzip with all 16 pictures). The snippets
-are inline SVG that needs only the stylesheet. Load `owlky-illustrations.js` after `owlky.js` to
-draw named placeholders and apply `data-ok-size`, or register `createIllustration([…])` with the
-pictures you import from `@owlky/core/illustrations`.
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-illustrations.js" defer></script>
-
-<svg data-ok-illustration="error-404" data-ok-color="primary" aria-hidden="true"></svg>
-```
-
-**Markdown** is a separate script too, because its parser (unified, with GitHub Flavored Markdown
-and an HTML sanitizer) adds about 100 kB gzip. Load it after `owlky.js` on pages that render
-Markdown, and write the Markdown, with `&` and `<` escaped, in a `pre[data-ok-markdown-source]`.
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-markdown.js" defer></script>
-
-<div data-ok-markdown>
-<pre data-ok-markdown-source># Release notes
-
-- [x] Faster start-up</pre>
-</div>
-```
-
-**Phone input** is a separate script as well: libphonenumber-js and its numbering data add about
-45 kB gzip. Load it after `owlky.js`; it fills the country list itself, so the snippet's
-`ul[data-ok-select-listbox]` stays empty (copy the markup from the Phone input snippets).
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-phone.js" defer></script>
-```
+- **Code editor:** Monaco loads only when an editor appears, from the `monaco/` folder (about
+  1.15 MB gzip for the first editor). Point `data-ok-monaco-path` (on a script tag) at your own
+  copy of `dist/monaco/`: Monaco's workers must come from the page's origin. Monaco needs
+  `style-src 'unsafe-inline'` and a few Trusted Types policies; see the Code editor docs page.
+- **Map:** MapLibre GL JS loads its worker, `owlky-map-worker.js`, from `dist/`. Owlky includes
+  no map tiles: pass the URL of a MapLibre style, such as one of OpenFreeMap's free styles.
+- **Illustrations:** the snippets are inline SVG that needs only the stylesheet. Named
+  placeholders (`<svg data-ok-illustration="error-404" aria-hidden="true"></svg>`) load the
+  set of pictures.
+- **Markdown:** write the Markdown, with `&` and `<` escaped, in a `pre[data-ok-markdown-source]`
+  inside `[data-ok-markdown]`.
+- **Phone input:** the module fills the country list itself, so the snippet's
+  `ul[data-ok-select-listbox]` stays empty (copy the markup from the Phone input snippets).
 
 ## npm
 
@@ -215,5 +199,6 @@ getRuntime().register(createMarkdown({ highlighter: createLowlight(common) })).s
 ## Runtime API
 
 `Owlky` (CDN) / `getRuntime()` (npm): `start()`, `stop()`, `init(root?)`,
-`destroy(root?)`, `get(element, "<component>")`, `connect(shadowRoot)`, `supports`, `version`.
+`destroy(root?)`, `get(element, "<component>")`, `connect(shadowRoot)`, `load(module)`,
+`loaded(module)`, `supports`, `version`.
 Events bubble as `ok:<component>:<event>`. Details: ADR-0005, ADR-0007.

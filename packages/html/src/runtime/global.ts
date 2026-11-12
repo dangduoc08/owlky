@@ -35,6 +35,8 @@ function createInactiveRuntime(): Runtime {
     destroy: () => {},
     get: () => undefined,
     getOrCreate: () => undefined,
+    load: () => Promise.resolve(),
+    loaded: () => false,
   };
   return inactive;
 }

@@ -1,0 +1,81 @@
+/*
+ * The light components (ADR-0068 §2): what `owlky.js` registers itself. Every other definition of
+ * `components` (./index.ts) is in a lazy module (`../loader/modules.ts`, `../modules/*.ts`), loaded
+ * when the page holds one of its roots. `modules.test.ts` checks that both lists cover
+ * `components` exactly once.
+ */
+import type { ComponentDefinition } from "../runtime/types.js";
+import { accordion } from "./accordion/accordion.js";
+import { alert } from "./alert/alert.js";
+import { avatar } from "./avatar/avatar.js";
+import { avatarGroup } from "./avatar-group/avatar-group.js";
+import { backdrop } from "./backdrop/backdrop.js";
+import { breadcrumbs } from "./breadcrumbs/breadcrumbs.js";
+import { checkbox } from "./checkbox/checkbox.js";
+import { chip } from "./chip/chip.js";
+import { circularProgress } from "./circular-progress/circular-progress.js";
+import { clipboard } from "./clipboard/clipboard.js";
+import { collapse } from "./collapse/collapse.js";
+import { countdown } from "./countdown/countdown.js";
+import { dialog } from "./dialog/dialog.js";
+import { drawer } from "./drawer/drawer.js";
+import { image } from "./image/image.js";
+import { linearProgress } from "./linear-progress/linear-progress.js";
+import { list } from "./list/list.js";
+import { menu } from "./menu/menu.js";
+import { mobileStepper } from "./mobile-stepper/mobile-stepper.js";
+import { numberField } from "./number-field/number-field.js";
+import { pagination } from "./pagination/pagination.js";
+import { popover } from "./popover/popover.js";
+import { radio } from "./radio/radio.js";
+import { rating } from "./rating/rating.js";
+import { select } from "./select/select.js";
+import { slider } from "./slider/slider.js";
+import { stepper } from "./stepper/stepper.js";
+import { table } from "./table/table.js";
+import { tablePagination } from "./table-pagination/table-pagination.js";
+import { tabs } from "./tabs/tabs.js";
+import { textField } from "./text-field/text-field.js";
+import { toaster } from "./toaster/toaster.js";
+import { toggleButton } from "./toggle-button/toggle-button.js";
+import { toggleGroup } from "./toggle-group/toggle-group.js";
+import { tooltip } from "./tooltip/tooltip.js";
+
+/** In the order of `components`: overlays first (ADR-0005), Image before anything it sizes. */
+export const lightComponents: readonly ComponentDefinition[] = [
+  tooltip as ComponentDefinition,
+  toaster as ComponentDefinition,
+  popover as ComponentDefinition,
+  menu as ComponentDefinition,
+  dialog as ComponentDefinition,
+  backdrop as ComponentDefinition,
+  collapse as ComponentDefinition,
+  accordion as ComponentDefinition,
+  alert as ComponentDefinition,
+  avatar as ComponentDefinition,
+  avatarGroup as ComponentDefinition,
+  checkbox as ComponentDefinition,
+  chip as ComponentDefinition,
+  circularProgress as ComponentDefinition,
+  drawer as ComponentDefinition,
+  linearProgress as ComponentDefinition,
+  list as ComponentDefinition,
+  pagination as ComponentDefinition,
+  table as ComponentDefinition,
+  tablePagination as ComponentDefinition,
+  textField as ComponentDefinition,
+  clipboard as ComponentDefinition,
+  numberField as ComponentDefinition,
+  select as ComponentDefinition,
+  toggleButton as ComponentDefinition,
+  toggleGroup as ComponentDefinition,
+  tabs as ComponentDefinition,
+  breadcrumbs as ComponentDefinition,
+  stepper as ComponentDefinition,
+  mobileStepper as ComponentDefinition,
+  radio as ComponentDefinition,
+  rating as ComponentDefinition,
+  slider as ComponentDefinition,
+  countdown as ComponentDefinition,
+  image as ComponentDefinition,
+];
