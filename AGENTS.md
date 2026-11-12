@@ -510,6 +510,17 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   positioned layer takes a slot in that order (comment at `[data-ok-data-grid-header]`).
   `e2e/tests/data-grid.scroll.spec.ts` scrolls every story and checks `elementFromPoint` on header
   and pinned-row cells.
+- Data grid cell editors (ADR-0067) are InputBase (text, number, dates), a bare listbox Select
+  (`singleSelect`) and a small Checkbox (`boolean`); `data-ok-data-grid-edit-input` marks the field
+  that takes the focus (the Select's trigger, never its `aria-hidden` form input, which also holds
+  the HTML value). The listbox is a top-layer Popover *inside* the cell: grid navigation ignores
+  keys from `[role=combobox]` and inside a listbox, and the copy / undo / cell menu guards skip
+  anything inside a `[data-ok-editing]` cell. Enter on the trigger saves, so the grid takes it
+  before the Select controller (React `onKeyDownCapture`, HTML a capture listener on `main`; the
+  controller skips `defaultPrevented` keys). A cell-mode pick saves after the draft is set (React:
+  an effect on `drafts`; HTML: `ok:select:close` with reason `select`). The list is open at the start
+  in cell mode: tests pick options by role (`option`), not `selectOptions()`. The HTML grid composes
+  the `select` runtime: a test runtime must register it (and the popover) or the list never opens.
 - Data grid date time filters (`dateTime` columns) use the DateTimePicker (same `[data-ok-date-picker]`
   root and `ok:date-picker:change` event, `data-ok-value-type="date-time"`); HTML filter panels copy
   `template[data-ok-data-grid-date-time]`; the value is `YYYY-MM-DDTHH:mm:ss` (local). A header

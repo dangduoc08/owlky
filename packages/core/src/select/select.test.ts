@@ -169,6 +169,25 @@ describe("createSelectController", () => {
     expect(spies.onOpen).not.toHaveBeenCalled();
   });
 
+  it("a key a host already handled is ignored (a data grid editor saves on Enter)", () => {
+    const { trigger, root, spies, options } = setup();
+    root.parentElement?.addEventListener("keydown", (event) => event.preventDefault(), {
+      capture: true,
+      once: true,
+    });
+    trigger.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }),
+    );
+    expect(spies.onOpen).not.toHaveBeenCalled();
+    (options[1] as HTMLElement).addEventListener("keydown", (event) => event.preventDefault(), {
+      once: true,
+    });
+    (options[1] as HTMLElement).dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }),
+    );
+    expect(spies.onPick).not.toHaveBeenCalled();
+  });
+
   it("isInert overrides the trigger's attributes", () => {
     const { trigger, key, spies, current } = setup({ inert: true });
     key(trigger, "Enter");

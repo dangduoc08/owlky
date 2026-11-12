@@ -790,8 +790,11 @@ export interface DataGridParts {
   "data-ok-data-grid-edit-error": Part<"span">;
   /** HTML only: a column's own editor (renderEditCell), named by its field; copied into the edited cell. */
   "data-ok-data-grid-edit-cell": Part<"template">;
-  /** The input of an edited cell (in an editor template: the field that holds the value). */
-  "data-ok-data-grid-edit-input": Part<"select">;
+  /**
+   * The field of an edited cell, which takes the focus: the input of an InputBase or a Checkbox,
+   * or the trigger of a Select (in an editor template: the field that holds the value).
+   */
+  "data-ok-data-grid-edit-input": Part<"input">;
   /** An export button in the toolbar and its format. */
   "data-ok-data-grid-export": Value<"csv" | "print" | "excel">;
   /** The filter panel. */

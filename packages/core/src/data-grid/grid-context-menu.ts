@@ -87,7 +87,9 @@ export interface GridContextMenuController {
 
 const BODY_CELL =
   '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]';
-const EDITING = "input, textarea, select, [contenteditable]";
+/** Fields, and anything inside a cell being edited (a Select editor's trigger and listbox). */
+const EDITING =
+  'input, textarea, select, [contenteditable], :is([role="gridcell"], [role="rowheader"])[data-ok-editing] *';
 /** How long after a keyboard open the browser's own `contextmenu` event is swallowed, ms. */
 const KEY_WINDOW = 1000;
 

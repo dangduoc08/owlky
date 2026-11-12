@@ -24,7 +24,9 @@ div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-margin][data-ok-e
 Standalone inputs (4.18.26: `InputBase`, `OutlinedInput`, `FilledInput`, `Input`) are this markup
 without the label and the helper, with `data-ok-input-base` on the root; `InputBase` has no
 `data-ok-variant` (no outline, fill or underline; input padding 4px 0, small 1px 0). Their notch
-stays closed unless `data-ok-notched` (OutlinedInput `label` fills the legend only).
+stays closed unless `data-ok-notched` (OutlinedInput `label` fills the legend only). The Data
+grid edits text, number and date cells with an InputBase (`fullWidth`, restyled by data-grid.css;
+ADR-0067).
 Inputs and textareas always carry a `placeholder` (" " when none): `:not(:placeholder-shown)` is
 how CSS knows there is a value. React renders `data-ok-runtime="off"` on the root; `ref` and the
 remaining props go to the input; `className` / `style` to the root.

@@ -252,7 +252,9 @@ export interface GridHistoryKeyOptions {
   redo(): void;
 }
 
-const HISTORY_EDITING = "input, textarea, select, [contenteditable]";
+/** Fields, and anything inside a cell being edited (a Select editor's trigger and listbox). */
+const HISTORY_EDITING =
+  'input, textarea, select, [contenteditable], :is([role="gridcell"], [role="rowheader"])[data-ok-editing] *';
 
 /**
  * Undo and redo keys on the grid's cells and headers: Ctrl / Cmd + Z undoes, Ctrl / Cmd + Shift + Z

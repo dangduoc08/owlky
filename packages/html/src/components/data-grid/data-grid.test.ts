@@ -568,12 +568,14 @@ describe("data grid runtime, phase 2", () => {
     await userEvent.keyboard("{Control>}a{/Control}99{Escape}");
     expect(cellOf(host, "p-002", "age").textContent).toBe("35");
     await userEvent.dblClick(cellOf(host, "p-002", "team"));
-    await userEvent.selectOptions(
-      cellOf(host, "p-002", "team").querySelector("select") as HTMLSelectElement,
-      "Sales",
+    // The list editor opens at the start in cell mode; a pick saves the cell.
+    await userEvent.click(
+      cellOf(host, "p-002", "team").querySelector(
+        '[role="option"][data-ok-value="Sales"]',
+      ) as Element,
     );
-    cellOf(host, "p-003", "email").focus();
     expect(cellOf(host, "p-002", "team").textContent).toBe("Sales");
+    expect(cellOf(host, "p-002", "team").hasAttribute("data-ok-editing")).toBe(false);
     root.addEventListener("ok:data-grid:edit", (e) => e.preventDefault(), { once: true });
     await userEvent.dblClick(cellOf(host, "p-003", "remote"));
     await userEvent.click(cellOf(host, "p-003", "remote").querySelector("input") as HTMLElement);
@@ -582,6 +584,166 @@ describe("data grid runtime, phase 2", () => {
     // Not editable.
     await userEvent.dblClick(cellOf(host, "p-001", "email"));
     expect(cellOf(host, "p-001", "email").querySelector("input")).toBeNull();
+  });
+
+  it("editors are InputBase, Select and Checkbox (ADR-0067), with no axe violations", async () => {
+    const { host, root } = setupAdvanced();
+    const id = root.id || "grid";
+    cellOf(host, "p-001", "firstName").focus();
+    await userEvent.keyboard("{Enter}");
+    const input = cellOf(host, "p-001", "firstName").querySelector("input") as HTMLInputElement;
+    const base = input.closest("[data-ok-text-field]") as HTMLElement;
+    expect(base.parentElement).toBe(cellOf(host, "p-001", "firstName"));
+    expect(
+      ["data-ok-input-base", "data-ok-full-width", "data-ok-margin"].map((a) =>
+        base.hasAttribute(a),
+      ),
+    ).toEqual([true, true, true]);
+    expect(input.id).toBe(`${id}-p-001-firstName-edit`);
+    expect(input.hasAttribute("data-ok-data-grid-edit-input")).toBe(true);
+    expect(input.hasAttribute("data-ok-text-field-input")).toBe(true);
+    expect(input.placeholder).toBe(" ");
+    await expectNoAxeViolations(host);
+    await userEvent.keyboard("{Escape}");
+    cellOf(host, "p-001", "age").focus();
+    await userEvent.keyboard("{Enter}");
+    expect(cellOf(host, "p-001", "age").querySelector("input")?.type).toBe("number");
+    await userEvent.keyboard("{Escape}");
+    cellOf(host, "p-001", "remote").focus();
+    await userEvent.keyboard("{Enter}");
+    const box = cellOf(host, "p-001", "remote").querySelector("input") as HTMLInputElement;
+    const check = box.closest("[data-ok-checkbox]") as HTMLElement;
+    expect(check.parentElement).toBe(cellOf(host, "p-001", "remote"));
+    expect(check.getAttribute("data-ok-size")).toBe("small");
+    expect(check.querySelectorAll("[data-ok-checkbox-icon]")).toHaveLength(3);
+    expect(box.hasAttribute("data-ok-checkbox-input")).toBe(true);
+    expect(document.activeElement).toBe(box);
+    // Space toggles, Escape cancels.
+    await userEvent.keyboard(" ");
+    expect(box.checked).toBe(true);
+    await expectNoAxeViolations(host);
+    await userEvent.keyboard("{Escape}");
+    expect(cellOf(host, "p-001", "remote").textContent).toBe("false");
+    cellOf(host, "p-001", "team").focus();
+    await userEvent.keyboard("{Enter}");
+    const team = cellOf(host, "p-001", "team");
+    const trigger = team.querySelector('[role="combobox"]') as HTMLElement;
+    expect(trigger.closest("[data-ok-select]")?.parentElement).toBe(team);
+    expect(trigger.closest("[data-ok-select]")?.hasAttribute("data-ok-variant")).toBe(false);
+    expect(trigger.id).toBe(`${id}-p-001-team-edit`);
+    expect(trigger.getAttribute("tabindex")).toBe("-1");
+    expect(trigger.getAttribute("aria-label")).toBe("Edit Team");
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement?.getAttribute("data-ok-value")).toBe("Design");
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("the list editor: keys stay in the list, Enter picks and saves, Escape cancels", async () => {
+    const { host, root } = setupAdvanced();
+    const events: string[] = [];
+    root.addEventListener("ok:data-grid:edit", (e) =>
+      events.push(`edit ${JSON.stringify((e as CustomEvent).detail.row)}`),
+    );
+    root.addEventListener("ok:data-grid:editstop", (e) =>
+      events.push(`stop ${(e as CustomEvent).detail.reason}`),
+    );
+    const team = cellOf(host, "p-001", "team");
+    team.focus();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{ArrowDown}");
+    expect(document.activeElement?.getAttribute("data-ok-value")).toBe("Engineering");
+    expect(team.hasAttribute("data-ok-editing")).toBe(true);
+    await userEvent.keyboard("{Enter}");
+    // A pick saves like `stopCellEditMode`: no stop reason.
+    expect(events).toEqual(['edit {"team":"Engineering"}']);
+    expect(team.textContent).toBe("Engineering");
+    expect(document.activeElement).toBe(team);
+    // Escape in the list closes it and cancels.
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{ArrowUp}{Escape}");
+    expect(team.hasAttribute("data-ok-editing")).toBe(false);
+    expect(team.textContent).toBe("Engineering");
+    expect(events.at(-1)).toBe("stop escapeKeyDown");
+    expect(document.querySelector('[role="listbox"]')).toBeNull();
+    // Tab closes the list; Enter on the trigger saves the unchanged value.
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{Tab}");
+    const trigger = team.querySelector('[role="combobox"]') as HTMLElement;
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger);
+    await userEvent.keyboard("{Enter}");
+    expect(events.slice(-2)).toEqual(["stop enterKeyDown", 'edit {"team":"Engineering"}']);
+    expect(team.hasAttribute("data-ok-editing")).toBe(false);
+    // Ctrl + Z inside the editor doesn't undo; leaving the cell saves.
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{Control>}z{/Control}");
+    expect(team.hasAttribute("data-ok-editing")).toBe(true);
+    expect(team.querySelector('[role="combobox"]')?.textContent).toBe("Engineering");
+    cellOf(host, "p-002", "email").focus();
+    expect(team.hasAttribute("data-ok-editing")).toBe(false);
+    expect(events.at(-2)).toBe("stop cellFocusOut");
+  });
+
+  it("the list editor in row mode starts closed; a pick sets the field, Enter saves the row", async () => {
+    const { host, root } = setupAdvanced();
+    root.setAttribute("data-ok-edit-mode", "row");
+    const edits: unknown[] = [];
+    root.addEventListener("ok:data-grid:edit", (e) => edits.push((e as CustomEvent).detail.row));
+    cellOf(host, "p-002", "team").focus();
+    await userEvent.keyboard("{Enter}");
+    const trigger = cellOf(host, "p-002", "team").querySelector('[role="combobox"]') as HTMLElement;
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger);
+    await userEvent.keyboard("{ArrowDown}");
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    // Enter on an option picks it; the row stays in edit mode.
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{Enter}");
+    expect(edits).toEqual([]);
+    expect(trigger.textContent).toBe("Support");
+    expect(document.activeElement).toBe(trigger);
+    await userEvent.keyboard("{Enter}");
+    expect(edits).toHaveLength(1);
+    expect(edits[0]).toMatchObject({ team: "Support" });
+    expect(cellOf(host, "p-002", "team").textContent).toBe("Support");
+    // The saved pick is one undo step.
+    expect(document.activeElement).toBe(cellOf(host, "p-002", "team"));
+    await userEvent.keyboard("{Control>}z{/Control}");
+    expect(cellOf(host, "p-002", "team").textContent).toBe("Engineering");
+  });
+
+  it("validation marks every editor; an invalid pick keeps the cell open", async () => {
+    const { host, root } = setupAdvanced();
+    const id = root.id || "grid";
+    root.addEventListener("ok:data-grid:validate", (e) => {
+      const detail = (e as CustomEvent<{ field: string; error?: string }>).detail;
+      detail.error = `Bad ${detail.field}`;
+    });
+    cellOf(host, "p-001", "remote").focus();
+    await userEvent.keyboard("{Enter} ");
+    const box = cellOf(host, "p-001", "remote").querySelector("input") as HTMLInputElement;
+    expect(box.getAttribute("aria-invalid")).toBe("true");
+    expect(box.getAttribute("aria-describedby")).toBe(`${id}-p-001-remote-error`);
+    await userEvent.keyboard("{Escape}");
+    cellOf(host, "p-001", "lastName").focus();
+    await userEvent.keyboard("x");
+    const input = cellOf(host, "p-001", "lastName").querySelector("input") as HTMLInputElement;
+    await userEvent.keyboard("y");
+    expect(input.value).toBe("xy");
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(input.closest("[data-ok-text-field]")?.hasAttribute("data-ok-error")).toBe(true);
+    await userEvent.keyboard("{Escape}");
+    const team = cellOf(host, "p-001", "team");
+    team.focus();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.click(team.querySelector('[data-ok-value="Sales"]') as Element);
+    expect(team.hasAttribute("data-ok-editing")).toBe(true);
+    const trigger = team.querySelector('[role="combobox"]') as HTMLElement;
+    expect(trigger.getAttribute("aria-invalid")).toBe("true");
+    expect(trigger.getAttribute("aria-describedby")).toBe(`${id}-p-001-team-error`);
+    expect(team.querySelector("[data-ok-data-grid-edit-error]")?.textContent).toBe("Bad team");
+    await userEvent.keyboard("{Escape}");
+    expect(team.hasAttribute("data-ok-editing")).toBe(false);
+    expect(team.textContent).toBe("Design");
   });
 
   it("row editing edits every editable cell; focus inside the row keeps it open", async () => {
@@ -1496,8 +1658,10 @@ describe("data grid runtime, phase 4 edges", () => {
     ) as HTMLElement;
     team.focus();
     key(team, "x");
-    expect(team.querySelector("select")).not.toBeNull();
-    key(team.querySelector("select") as Element, "Escape");
+    expect(team.querySelector('[role="combobox"]')).not.toBeNull();
+    // The typed character doesn't become the value of a list editor.
+    expect((team.querySelector("[data-ok-select-input]") as HTMLInputElement).value).not.toBe("x");
+    key(team.querySelector('[role="combobox"]') as Element, "Escape");
     runtime?.stop();
     runtime = undefined;
     resetPage();
@@ -2051,11 +2215,12 @@ describe("data grid custom editors and edit modes", () => {
     // A built-in editor still works next to it, and a checkbox value can be set.
     cell("is-4", "priority").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
     instance.setEditCellValue({ id: "is-4", field: "priority", value: "Low" });
-    expect((cell("is-4", "priority").querySelector("select") as HTMLSelectElement).value).toBe(
-      "Low",
-    );
+    expect(
+      (cell("is-4", "priority").querySelector("[data-ok-select-input]") as HTMLInputElement).value,
+    ).toBe("Low");
+    expect(cell("is-4", "priority").querySelector('[role="combobox"]')?.textContent).toBe("Low");
     cell("is-4", "priority")
-      .querySelector("select")
+      .querySelector('[role="combobox"]')
       ?.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     expect(cell("is-4", "priority").textContent).toBe("Low");
     await settle();
@@ -2143,7 +2308,13 @@ describe("data grid custom editors and edit modes", () => {
     instance.setCellModesModel({ "is-1": { title: { mode: "edit" } } });
     expect(instance.cellModesModel).toEqual({});
     instance.setRowModesModel({ "is-1": { mode: "edit", fieldToFocus: "priority" } });
-    expect(document.activeElement).toBe(cell("is-1", "priority").querySelector("select"));
+    expect(document.activeElement).toBe(
+      cell("is-1", "priority").querySelector('[role="combobox"]'),
+    );
+    // Row mode: the list editor starts closed.
+    expect(
+      cell("is-1", "priority").querySelector('[role="combobox"]')?.getAttribute("aria-expanded"),
+    ).toBe("false");
     expect(instance.rowModesModel).toEqual({
       "is-1": { mode: "edit", fieldToFocus: "priority" },
     });

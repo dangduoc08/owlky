@@ -67,8 +67,12 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         div[role=gridcell][data-ok-data-grid-checkbox] › Checkbox
         div[role=gridcell][aria-colindex][data-ok-field][data-ok-align][data-ok-value]?[data-ok-text]?
            [data-ok-pinned]?[data-ok-editing]?[hidden]?[data-ok-display=flex]?[data-ok-row-span-value]?
-           (role=rowheader for rowHeader columns)   (editing: input|select[data-ok-data-grid-edit-input]
-           [aria-invalid]? + span[data-ok-data-grid-edit-error][role=alert]?)
+           (role=rowheader for rowHeader columns)   (editing, ADR-0067: InputBase
+           div[data-ok-text-field][data-ok-input-base] › … › input[data-ok-data-grid-edit-input] |
+           bare Select div[data-ok-select] › div[data-ok-select-display][data-ok-data-grid-edit-input]
+           [role=combobox][tabindex=-1] + listbox Popover | Checkbox span[data-ok-checkbox][data-ok-size=small]
+           › input[data-ok-data-grid-edit-input]; the field [id=<grid>-<row>-<field>-edit]
+           [aria-invalid]? [aria-describedby]? + span[data-ok-data-grid-edit-error][role=alert]?)
            [aria-colspan]? (covered cells: [hidden][data-ok-covered]) [aria-rowspan]? (covered:
            [data-ok-covered][aria-hidden=true], kept in place) [data-ok-editable=false]? [class]?
   template[data-ok-data-grid-row]                (HTML only: one row, copied by setRows / data sources)
@@ -418,10 +422,26 @@ Resizing: drag the end edge of a header (core `createGridColumnControls`) or Alt
 (10px); widths at least `minWidth`; the release doesn't sort. Reordering: drag a header onto
 another, or Move left / right. Pinning: Pin to left / right, Unpin; pinned cells are sticky
 (`syncGridPinning` measures header widths into `--_ok-data-grid-pin`), the checkbox column joins
-the left side. Editing: double click, Enter or F2 on an editable cell; text / number / date /
-datetime-local inputs, a select for `singleSelect`, a checkbox for `boolean`; Enter commits, Escape
+the left side. Editing: double click, Enter or F2 on an editable cell; Enter commits, Escape
 cancels, leaving the cell (row mode: the row) commits; focus returns to the cell. HTML shows the
 committed value as text (no formatters) and fires `ok:data-grid:edit` (cancelable).
+Editors (ADR-0067, MUI X `GridEditInputCell` / `GridEditDateCell` / `GridEditSingleSelectCell` /
+`GridEditBooleanCell`; core `gridEditorKind`, `gridEditorId`): an InputBase (`fullWidth`, type
+text / `number` / `date` / `datetime-local`; numbers stay a native number input, not NumberField),
+a bare listbox Select for `singleSelect` (the grid draws its field) and a small primary Checkbox for
+`boolean`. The field keeps `data-ok-data-grid-edit-input`, `aria-label` "Edit <header>",
+`aria-invalid` / `aria-describedby`; an invalid InputBase gets `data-ok-error`. The Select opens at
+the start in cell mode (MUI X `initialOpen`), on the selected option, and starts closed in row mode;
+a pick (Enter, Space, click) saves the cell in cell mode (as `stopCellEditMode`: no edit stop event
+or reason), in row mode it sets the field and returns the focus to the trigger; Escape (list or
+trigger) cancels; Enter on the trigger saves (core `createSelectController` skips prevented keys).
+The listbox is a top-layer Popover inside the cell, so focus in it is focus in the cell; grid
+navigation ignores keys from a combobox or inside a listbox, its focus target skips `aria-hidden`
+inputs, and copy / paste / undo / the cell menu ignore keys inside a cell being edited. HTML builds
+the markup with DOM methods and composes the `select` runtime (`ok:select:close` reason `select`
+saves a cell-mode pick); InputBase and Checkbox need no runtime. `data-grid.css` restyles the
+composed roots (`[data-ok-editing] > …`): fill the cell, 2px inset primary outline (error color when
+invalid).
 Virtualization (on unless `disableVirtualization`): once the main area is measured and scrolls
 (bounded height), only the rows within the visible area ± 150px (`GRID_ROW_BUFFER`) are in the DOM;
 padding on the body stands for the rest. The first render and SSR show every row. Grids that grow
@@ -848,6 +868,10 @@ runs before anything is written, and the target (selection corner or focused cel
 | Ctrl / Cmd + A | Select / clear every row |
 | Alt + ← / → (header) | Narrower / wider by 10px |
 | Enter / F2 (editable cell) | Edit; in the field: Enter commits, Escape cancels |
+| Arrows, Home / End, a character (list editor open) | Move between its options (the Select's keys) |
+| Enter / Space (list editor option) | Pick; cell mode saves the cell, row mode returns to the trigger |
+| Arrow Down / Up, Space, Alt + Arrow Down (list editor's closed trigger) | Open the list |
+| Space (boolean editor) | Toggle the checkbox |
 | A character (editable cell) | Edit, starting with that character |
 | Right to left | Left / Right and Alt + Left / Right follow the reading order |
 | Shift + arrows (cellSelection) | Extend the cell range from the anchor |

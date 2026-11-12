@@ -308,7 +308,9 @@ export interface GridClipboard {
   destroy(): void;
 }
 
-const EDITING = "input, textarea, select, [contenteditable]";
+/** Fields, and anything inside a cell being edited (a Select editor's trigger and listbox). */
+const EDITING =
+  'input, textarea, select, [contenteditable], :is([role="gridcell"], [role="rowheader"])[data-ok-editing] *';
 
 /**
  * Clipboard copy and paste on the grid's cells: Ctrl / Cmd + C copies `copyText()`, Ctrl / Cmd + V

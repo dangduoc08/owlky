@@ -174,6 +174,15 @@ describe("undo and redo", () => {
     press(cell, { key: "x", ctrlKey: true });
     press(grid.querySelector("input") as HTMLElement, { key: "z", ctrlKey: true });
     press(grid.querySelector("button") as HTMLElement, { key: "z", ctrlKey: true });
+    // A Select editor's trigger inside a cell being edited keeps the key too.
+    const editing = document.createElement("div");
+    editing.setAttribute("role", "gridcell");
+    editing.setAttribute("data-ok-editing", "");
+    const trigger = document.createElement("div");
+    trigger.setAttribute("role", "combobox");
+    editing.append(trigger);
+    grid.append(editing);
+    expect(press(trigger, { key: "z", ctrlKey: true })).toBe(false);
     enabled = false;
     expect(press(cell, { key: "z", ctrlKey: true })).toBe(false);
     expect(calls).toEqual(["undo", "redo", "redo"]);

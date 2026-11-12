@@ -7,6 +7,8 @@ import {
   type GridColumn,
   gridColumnTemplate,
   gridEditInputType,
+  gridEditorId,
+  gridEditorKind,
   gridEditText,
   gridExportColumns,
   gridLockedFields,
@@ -167,6 +169,13 @@ describe("editing values", () => {
       ["number", "date", "dateTime", "boolean", "string"].map((t) => gridEditInputType(t as never)),
     ).toEqual(["number", "date", "datetime-local", "checkbox", "text"]);
     expect(gridEditInputType()).toBe("text");
+    expect(
+      ["singleSelect", "boolean", "number", "date", "string"].map((t) =>
+        gridEditorKind(t as never),
+      ),
+    ).toEqual(["select", "checkbox", "input", "input", "input"]);
+    expect(gridEditorKind()).toBe("input");
+    expect(gridEditorId("g", "r-1", "name")).toBe("g-r-1-name-edit");
   });
 });
 

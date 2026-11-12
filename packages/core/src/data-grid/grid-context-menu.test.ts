@@ -129,6 +129,15 @@ describe("createGridContextMenu", () => {
     expect(contextMenu(grid.querySelector('[role="columnheader"]') as Element)).toBe(true);
     expect(contextMenu(grid.querySelector('[data-ok-field="d"]') as Element)).toBe(true);
     expect(key(grid.querySelector("input") as Element, "ContextMenu")).toBe(true);
+    // A cell being edited: its editor (a Select's trigger) keeps the browser's menu.
+    const trigger = document.createElement("div");
+    trigger.setAttribute("role", "combobox");
+    cell.append(trigger);
+    cell.setAttribute("data-ok-editing", "");
+    expect(contextMenu(trigger)).toBe(true);
+    expect(key(trigger, "ContextMenu")).toBe(true);
+    cell.removeAttribute("data-ok-editing");
+    trigger.remove();
     off();
     expect(contextMenu(cell)).toBe(true);
     expect(key(cell, "ContextMenu")).toBe(true);
