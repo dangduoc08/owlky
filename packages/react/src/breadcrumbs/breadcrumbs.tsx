@@ -1,6 +1,11 @@
 "use client";
 
-import { BREADCRUMBS_EXPAND_TEXT, breadcrumbsAttributes, breadcrumbsCollapse } from "@owlky/core";
+import {
+  BREADCRUMBS_EXPAND_TEXT,
+  breadcrumbsAttributes,
+  breadcrumbsCollapse,
+  menuDotsLinear,
+} from "@owlky/core";
 import {
   Children,
   forwardRef,
@@ -11,16 +16,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { Icon } from "../utils/icon.js";
 
 /** The "more" icon of the expand button (decorative). */
 function MoreIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-      <circle cx="6" cy="12" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="18" cy="12" r="2" />
-    </svg>
-  );
+  return <Icon icon={menuDotsLinear} />;
 }
 
 export interface BreadcrumbsProps extends HTMLAttributes<HTMLElement> {

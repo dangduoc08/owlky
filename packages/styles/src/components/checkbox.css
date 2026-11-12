@@ -4,6 +4,8 @@
  * Anatomy:   span[data-ok-checkbox]
  *              › input[type=checkbox][data-ok-checkbox-input]        (the control; covers the target)
  *              › span[data-ok-checkbox-icon="unchecked" | "checked" | "indeterminate"][aria-hidden]
+ *                › span[data-ok-checkbox-box] › svg[data-ok-icon][data-ok-checkbox-mark]?
+ *                  (default icons: the box from tokens, the mark a Solar icon; custom icons: an svg)
  * Modifiers: data-ok-color = primary (default) | default | secondary | info | success | warning | error
  *            data-ok-size  = medium (default) | small
  *            data-ok-indeterminate (mixed; the input's `indeterminate` also counts)
@@ -62,9 +64,34 @@
     height: 100%;
   }
 
+  /* The default box: 18 / 24 of the icon box, filled when checked or indeterminate. */
+  :where([data-ok-checkbox-box]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 75%;
+    height: 75%;
+    margin: 12.5%;
+    border: calc(var(--ok-icon-stroke) * 1px) solid currentColor;
+    border-radius: var(--ok-radius-control-sm);
+  }
+
+  :where(
+    [data-ok-checkbox-icon="checked"] > [data-ok-checkbox-box],
+    [data-ok-checkbox-icon="indeterminate"] > [data-ok-checkbox-box]
+  ) {
+    background-color: currentColor;
+  }
+
+  /* The mark keeps the icon stroke on screen although it is drawn at the box's size. */
   :where([data-ok-checkbox-mark]) {
+    display: block;
+    width: 100%;
+    height: 100%;
     fill: none;
     stroke: var(--_ok-mark);
+    stroke-width: calc(var(--ok-icon-stroke) * 4 / 3);
   }
 
   /* Which icon shows: unchecked → checked → indeterminate (wins). */
@@ -209,6 +236,17 @@
   }
 
   @media (forced-colors: active) {
+    :where(
+        [data-ok-checkbox-icon="checked"] > [data-ok-checkbox-box],
+        [data-ok-checkbox-icon="indeterminate"] > [data-ok-checkbox-box]
+      ) {
+      background-color: CanvasText;
+    }
+
+    :where([data-ok-checkbox-mark]) {
+      stroke: Canvas;
+    }
+
     :where([data-ok-checkbox]:has(> input:checked) > [data-ok-checkbox-swatch]) {
       outline: var(--ok-focus-ring-width) solid CanvasText;
       outline-offset: var(--ok-focus-ring-offset);

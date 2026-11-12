@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  galleryRemoveLinear,
   type ImageEffect,
   type ImageFit,
   type ImageOverlay,
@@ -25,22 +26,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 
 /** Shown over the placeholder when the picture fails to load (decorative). */
 export function ImageErrorIcon() {
-  return (
-    <svg data-ok-image-icon="" aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path d="m4 16 4.5-4.5 3 3L15 11l5 5" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="9" cy="8.5" r="1.5" fill="currentColor" />
-      <path d="m3 3 18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
+  return <Icon icon={galleryRemoveLinear} data-ok-image-icon="" />;
 }
 
 type ImgEvent = SyntheticEvent<HTMLImageElement, Event>;

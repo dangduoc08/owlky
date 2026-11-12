@@ -198,7 +198,8 @@ describe("image runtime", () => {
     await stateIs(root, "error");
     const icon = root.querySelector(":scope > [data-ok-image-icon]") as SVGElement;
     expect(icon.getAttribute("aria-hidden")).toBe("true");
-    expect(icon.querySelectorAll("path, circle")).toHaveLength(4);
+    expect(icon.getAttribute("data-ok-icon")).toBe("gallery-remove-linear");
+    expect(icon.querySelectorAll("path, circle").length).toBeGreaterThan(0);
     expect(errors).toEqual([{ src: BROKEN }]);
     // A second error keeps one icon.
     imgOf(host).dispatchEvent(new Event("error"));

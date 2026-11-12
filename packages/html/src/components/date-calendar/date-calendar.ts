@@ -15,6 +15,7 @@ import {
   focusPickerViewPart,
   formatCalendarMonth,
   formatIsoDate,
+  type IconData,
   initialView,
   isDateDisabled,
   isMonthDisabled,
@@ -47,12 +48,12 @@ import {
   morph,
   type PickerDateApi,
   pickerDateApi,
+  pickerIcon,
   pickerToday,
   type RuleFunctions,
   readLocale,
   readLocaleText,
   readRules,
-  strokeIcon,
   toDate,
 } from "./picker-dom.js";
 
@@ -181,7 +182,7 @@ export const dateCalendar = defineComponent<DateCalendarInstance, DateCalendarEv
         navButton("prev", text.previousMonth, ARROW_LEFT),
         navButton("next", text.nextMonth, ARROW_RIGHT),
       ]);
-    const navButton = (kind: "prev" | "next", name: string, d: string) =>
+    const navButton = (kind: "prev" | "next", name: string, icon: IconData) =>
       h(
         "button",
         {
@@ -193,7 +194,7 @@ export const dateCalendar = defineComponent<DateCalendarInstance, DateCalendarEv
           "aria-label": name,
           title: name,
         },
-        [strokeIcon(d)],
+        [pickerIcon(icon)],
       );
 
     const dayGrid = () => {

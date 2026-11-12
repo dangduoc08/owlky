@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  altArrowDownLinear,
   parseNumber,
   type SelectionControlColor,
   type SelectionControlSize,
@@ -23,21 +24,11 @@ import {
   useId,
 } from "react";
 import { type SelectBehaviorProps, SelectRoot, type SelectValue } from "../select/select.js";
+import { Icon } from "../utils/icon.js";
 
 /** The select's arrow (decorative, same SVG as the HTML snippets). */
 function SelectIcon() {
-  return (
-    <svg data-ok-text-field-select-icon="" aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="m7 10 5 5 5-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  return <Icon icon={altArrowDownLinear} data-ok-text-field-select-icon="" />;
 }
 
 export interface InputAdornmentProps extends HTMLAttributes<HTMLSpanElement> {

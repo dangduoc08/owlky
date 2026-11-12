@@ -5,12 +5,14 @@
  *              › (label[data-ok-form-control-label] ›)? span[data-ok-radio]
  *                › input[type=radio][data-ok-radio-input]               (the control; covers the target)
  *                › span[data-ok-radio-icon="unchecked" | "checked"][aria-hidden]
+ *                  › span[data-ok-radio-ring]                         (default icons; custom icons: an svg)
  * Modifiers: data-ok-color = primary (default) | default | secondary | info | success | warning | error
  *            data-ok-size  = medium (default) | small
  * States:    read from the input with :has(): :checked, :disabled, :focus-visible
  * Swatches:  data-ok-swatch (a color → --_ok-swatch), data-ok-shape = circular | rounded
  *
- * Native radios: the browser keeps one per name checked and moves with the arrow keys.
+ * Native radios: the browser keeps one per name checked and moves with the arrow keys. The default
+ * ring and dot are drawn here from tokens (radius, the icon stroke), not by an icon.
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
  * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
  */
@@ -71,6 +73,26 @@
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  /* The default ring: 20 / 24 of the icon box, the dot (checked) half of the ring. */
+  :where([data-ok-radio-ring]) {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    width: 83.333%;
+    height: 83.333%;
+    margin: 8.333%;
+    border: calc(var(--ok-icon-stroke) * 1px) solid currentColor;
+    border-radius: var(--ok-radius-full);
+  }
+
+  :where([data-ok-radio-icon="checked"] > [data-ok-radio-ring])::before {
+    content: "";
+    position: absolute;
+    inset: 22%;
+    border-radius: inherit;
+    background-color: currentColor;
   }
 
   :where([data-ok-radio-icon="unchecked"]) {

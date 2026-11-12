@@ -70,6 +70,28 @@ URL in \`monaco.css\`).`,
   ],
 };
 
+/**
+ * Third-party artwork generated into Owlky's own sources, so no source map names its npm package:
+ * the files that ship it are the bundles whose maps list one of `sources` and the snippets (`.html`) that
+ * contain `markup`.
+ */
+const ARTWORK = [
+  {
+    name: "@iconify-json/solar",
+    from: "packages/core",
+    sources: ["packages/core/src/icons/solar.ts", "packages/core/dist/icons/solar.js"],
+    markup: 'data-ok-icon="',
+    license: "CC-BY-4.0",
+    url: "https://github.com/480-Design/Solar-Icon-Set",
+    text: `Component icons are drawings of the Solar icon set by 480 Design
+(https://www.figma.com/community/file/1166831539721848736), read from the \`@iconify-json/solar\`
+package and written into \`src/icons/solar.ts\` by \`scripts/icons.mjs\` (the HTML snippets carry
+the same paths). Licensed under the Creative Commons Attribution 4.0 International license (CC BY
+4.0, https://creativecommons.org/licenses/by/4.0/). Changes: the \`stroke-width\` attribute is
+removed (a stylesheet sets it) and a group's presentation attributes move to the \`<svg>\`.`,
+  },
+];
+
 /** Notes added to an entry (by npm package name). */
 const NOTES = {
   "libphonenumber-js":
@@ -202,6 +224,30 @@ function shipped(pkg) {
       note: NOTES[manifest.name],
     };
   });
+  for (const art of ARTWORK) {
+    const sources = new Set(art.sources.map((path) => join(root, path)));
+    const files = new Set();
+    for (const file of walk(dist)) {
+      if (file.endsWith(".map")) {
+        const map = readJson(file);
+        const base = resolve(dirname(file), map.sourceRoot ?? "");
+        if ((map.sources ?? []).some((entry) => sources.has(resolve(base, entry))))
+          files.add(relative(pkgDir, file.replace(/\.map$/, "")));
+      } else if (file.endsWith(".html") && readFileSync(file, "utf8").includes(art.markup))
+        files.add(relative(pkgDir, dirname(file)));
+    }
+    if (!files.size) continue;
+    const dir = resolvePackage(art.name, join(root, art.from));
+    entries.push({
+      name: art.name,
+      version: readJson(join(dir, "package.json")).version,
+      declared: art.license,
+      license: art.license,
+      source: art.url,
+      files: [...files].sort(),
+      texts: [{ file: "Attribution", text: art.text }],
+    });
+  }
   for (const extra of EXTRAS[pkg] ?? [])
     if (existsSync(join(pkgDir, extra.when)))
       entries.push({

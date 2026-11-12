@@ -387,12 +387,6 @@
     display: block;
     width: 100%;
     height: 100%;
-    fill: currentColor;
-  }
-
-  :where([data-ok-upload-file] path + path) {
-    fill: var(--ok-palette-common-white);
-    fill-opacity: 0.4;
   }
 
   :where([data-ok-upload-file-ext]) {
@@ -400,7 +394,7 @@
     right: 0;
     bottom: 18%;
     left: 0;
-    color: var(--ok-palette-common-white);
+    color: var(--_ok-file);
     font-size: calc(var(--ok-spacing) * 2);
     font-weight: var(--ok-font-weight-bold);
     line-height: 1;

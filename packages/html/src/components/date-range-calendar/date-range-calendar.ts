@@ -17,6 +17,7 @@ import {
   formatCalendarMonth,
   formatIsoDate,
   formatIsoRange,
+  type IconData,
   initialRangeMonth,
   isDateDisabled,
   isSameDay,
@@ -52,13 +53,13 @@ import {
   morph,
   type PickerDateApi,
   pickerDateApi,
+  pickerIcon,
   pickerToday,
   type RuleFunctions,
   readLocale,
   readLocaleText,
   readRules,
   readTimezone,
-  strokeIcon,
 } from "../date-calendar/picker-dom.js";
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
@@ -210,7 +211,7 @@ export const dateRangeCalendar = defineComponent<
     const allowed = (next: RangePosition) =>
       !available || available.includes(next) ? next : (available[0] ?? next);
 
-    const navButton = (kind: "prev" | "next", name: string, d: string) =>
+    const navButton = (kind: "prev" | "next", name: string, icon: IconData) =>
       h(
         "button",
         {
@@ -222,7 +223,7 @@ export const dateRangeCalendar = defineComponent<
           "aria-label": name,
           title: name,
         },
-        [strokeIcon(d)],
+        [pickerIcon(icon)],
       );
 
     const monthBlock = (month: Date, index: number, months: Date[]) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  altArrowDownLinear,
   createSelectController,
   initialSelectOption,
   inputLabelAttributes,
@@ -38,6 +39,7 @@ import {
 import { FormLabel, type FormLabelProps, useFormControl } from "../form-control/form-control.js";
 import { ListSubheader } from "../list/list.js";
 import { Popover } from "../popover/popover.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 
 /** A value of one option. Values compare as strings (`10` and `"10"` are the same option). */
@@ -49,18 +51,7 @@ export type { SelectCloseReason };
 
 /** The select's arrow (decorative, same SVG as the HTML snippets). */
 function SelectIcon(props: HTMLAttributes<SVGSVGElement>) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" {...props}>
-      <path
-        d="m7 10 5 5 5-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  return <Icon {...props} icon={altArrowDownLinear} />;
 }
 
 /** Props of the menu that holds the options (MUI `MenuProps`). */

@@ -505,6 +505,9 @@ importers:
       '@date-fns/tz':
         specifier: 1.5.0
         version: 1.5.0
+      '@iconify-json/solar':
+        specifier: 1.2.13
+        version: 1.2.13
       '@types/luxon':
         specifier: 3.7.6
         version: 3.7.6

@@ -1136,6 +1136,15 @@ export {
 } from "./drawer/drawer-swipe.js";
 export * from "./gantt/index.js";
 export {
+  createIcon,
+  type IconData,
+  type IconNode,
+  type IconTag,
+  iconAttributes,
+  iconTree,
+} from "./icons/icon.js";
+export * from "./icons/solar.js";
+export {
   type Illustration,
   type IllustrationAttributeName,
   type IllustrationNode,
@@ -1735,7 +1744,6 @@ export {
   evaluateUploadFiles,
   flattenUploadAccept,
   formatUploadSize,
-  UPLOAD_FILE_ICON,
   type UploadAccept,
   type UploadAcceptGroup,
   type UploadAcceptMap,

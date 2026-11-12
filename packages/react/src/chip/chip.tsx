@@ -2,6 +2,7 @@ import {
   type ChipColor,
   type ChipVariant,
   chipAttributes,
+  closeCircleLinear,
   linkRel,
   type SelectionControlSize,
 } from "@owlky/core";
@@ -15,18 +16,11 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
+import { Icon } from "../utils/icon.js";
 
 /** Default delete icon (decorative, same SVG as the HTML snippets). */
 function DeleteIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-    </svg>
-  );
+  return <Icon icon={closeCircleLinear} />;
 }
 
 export interface ChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, "color" | "onClick"> {

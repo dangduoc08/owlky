@@ -1158,14 +1158,6 @@
     white-space: nowrap;
   }
 
-  :where([data-ok-chart-tool-icon]) {
-    fill: none;
-    stroke: currentcolor;
-    stroke-width: var(--ok-line-width-md);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
   :where([data-ok-chart-legend-value]) {
     color: var(--ok-text-primary);
     font-weight: var(--ok-font-weight-semibold);
