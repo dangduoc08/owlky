@@ -824,8 +824,8 @@ lock and Tab kept inside (core `holdEditorFullscreen`), heading menu items in th
 "—" rule in the language menu; React no longer reloads a controlled value Tiptap writes differently.
 Additive (minor). Kept differences: inline code is primary text (AA), Undo / Redo / Remove link are
 disabled when they can't run, toolbar labels carry no shortcut text (`aria-keyshortcuts`).
-**Backlog (deferred):** Tiptap `extensions` / `editorProps` pass-through, bubble menu, tables,
-mentions, task lists, a form `name` (hidden input with the HTML), character count.
+**Backlog (deferred):** task lists, character count. Built later (roadmap-components 4.16, ADR-0050):
+Tiptap `extensions` / `editorProps` pass-through, bubble menu, tables, mentions, a form `name`.
 
 ## ✅ Components — Code editor (2026-11-09)
 Created with `/component` from `https://monaco-react.surenatoyan.com/` (the `@monaco-editor/react`
@@ -917,8 +917,8 @@ ButtonGroup / ToggleButton / ToggleButtonGroup `fullWidth`, IconButton `edge` + 
 `standard`; Drawer `closeOnEscape` → `disableEscapeKeyDown`, `closeOnBackdropClick` removed (refuse
 with the reason). Defaults: ButtonGroup `variant="outlined"`.
 
-**Backlog (deferred):** Table toolbar (title, selected count, filter). Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
-keyboard actions (pragmatic-drag-and-drop accessibility guidance).
+**Backlog (deferred):** Table toolbar (title, selected count, filter). Sortable "Move to top / bottom"
+keyboard actions (pragmatic-drag-and-drop accessibility guidance). Sortable auto-scroll near an edge is built.
 
 ## Next — components (order approved 2026-11-05)
 Dependency-first: leaf components before the ones built from them, the ones that close the most
@@ -959,7 +959,7 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    `owlky://guides/<id>` and prompts `build-html-page`, `build-react-page`; registered as `owlky`
    in `.mcp.json`; a packed-tarball smoke test in CI (`pnpm smoke:mcp`). A remote MCP on owlky.com
    is deferred, so the website stays static.
-5. **Component completion** (next; owner's decision 2026-11-09: finish every component before the
+5. ✅ **Component completion** (done 2026-11-12; owner's decision 2026-11-09: finish every component before the
    website continues): tracked on its own in [`docs/roadmap-components.md`](roadmap-components.md)
    — stability, ApexCharts parity, upstream API audit with a complete API reference on every docs
    page, every remaining gap, Motion full version.
@@ -998,9 +998,8 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    size optimization (owner 2026-11-10: later, not before 0.1.0): per-page budgets for sample pages
    and per component, and a lighter CDN core with opt-in heavy bundles (data grid, chart, pickers, Gantt),
    plus the backlogs (Table toolbar, Sortable
-   auto-scroll and move to top / bottom, Motion `component`, Dialog `keepMounted`), Paper composed
-   inside Popover / Menu / Dialog / Drawer / TableContainer / Map controls / Autocomplete listbox
-   (no visual change), and the flaky e2e pixel parity of `carousel / thumbs-y` (about 2 of 60 runs
+   move to top / bottom, Editor task lists and character count; Motion `component`, Dialog `keepMounted`,
+   Sortable auto-scroll and Paper in the library's surfaces (ADR-0066) are built), and the flaky e2e pixel parity of `carousel / thumbs-y` (about 2 of 60 runs
    with 4 workers, already before Wave 8; waiting for image decode and scroll settle didn't fix it). Carousel bug: with `loop`, a viewport resize (also Playwright's screenshot resize) jumps a
    looping carousel to another slide (found by the landing page, which turns `loop` off for now).
 10. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private

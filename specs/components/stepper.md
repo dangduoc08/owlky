@@ -93,8 +93,8 @@ API mapping (MUI): kept Stepper `activeStep`, `alternativeLabel`, `orientation`,
 Step `active`, `completed`, `disabled`, `index`; StepLabel `error`, `optional`, `icon`;
 StepContent; MobileStepper `steps`, `activeStep`, `variant`, `position`, `backButton`,
 `nextButton`. Beyond MUI (reference "Customized stepper"): Stepper `variant` (`dot`, `circle`);
-`getStepLabel` (accessible name of dots / bar, MUI has none). Deferred (roadmap backlog):
-`nonLinear`, `StepButton`, Step `expanded` / `last`, StepContent `TransitionComponent` /
+`getStepLabel` (accessible name of dots / bar, MUI has none). Built later (roadmap-components 4.10): `nonLinear`, `StepButton`, Step `expanded` / `last`.
+Deferred (roadmap backlog): StepContent `TransitionComponent` /
 `transitionDuration` / `TransitionProps` (it is always a Collapse with `timeout="auto"`, MUI's defaults),
 MobileStepper `LinearProgressProps`. Not applicable: `component`, `slots`, `slotProps`, `classes`,
 `sx`, `StepIconComponent` / `StepIconProps` (use `icon`).

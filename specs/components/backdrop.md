@@ -28,8 +28,7 @@ Root: `data-ok-backdrop`. Unknown values fall back to the default.
 <!-- /options:backdrop -->
 
 React: `open` (required, `data-ok-open` when true), `invisible`, `children`, `ref` and DOM props
-on the root (`onClick` closes it in the demo). Deferred: `transitionDuration` (upstream API audit,
-`docs/roadmap.md`). Not applicable: `component`, `slots`, `slotProps` (one `div`), `classes`,
+on the root (`onClick` closes it in the demo). `transitionDuration`: built later (roadmap-components 4.9). Not applicable: `component`, `slots`, `slotProps` (one `div`), `classes`,
 `sx`, Fade props (`TransitionComponent`: one CSS fade).
 
 ## Layout and tokens
