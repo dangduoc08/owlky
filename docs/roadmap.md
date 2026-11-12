@@ -525,7 +525,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Image: arbitrary `ratio` values (Image backlog) | Carousel stories and docs page: the slides' pictures (`ImageSlide`, `CardSlide`, the Animation hero) | `div.sb-carousel-image` / `-card` / `-hero` + a plain `img`; demo CSS gives the ratio (16/10, 4/1, 3/1, 2/1, 5/2, fill), the cover fit and the placeholder color. The reference composes its Image; ours offers 11 fixed ratios, and the Parallax story marks the `img` itself (`data-ok-carousel-parallax`) |
 | Owner decision (ADR: anatomy change): Paper composed by the library's own surfaces | Popover / Menu paper, Dialog paper, Drawer content, Autocomplete listbox, Map controls and popups (MUI composes Paper there: `PaperProps`, `elevation`); `TableContainer component={Paper}` in the Table stories | each draws its surface in its own CSS (paper background, radius, a shadow token). Composing Paper adds `data-ok-paper` and its options to those roots: every overlay snippet and consumer markup changes, so it is not additive |
 | Owner decision (ADR: anatomy and keyboard change): Select, Checkbox and InputBase as the Data grid's cell editors (MUI X `GridEditSingleSelectCell`, `GridEditBooleanCell`, `GridEditInputCell`) | Data grid editing, React and the HTML runtime | native `select`, `input[type=checkbox]` and `input` marked `data-ok-data-grid-edit-input`, styled by `data-grid.css` (`accent-color` for the checkbox) |
 
@@ -695,8 +694,10 @@ markup; both Markdown stories use it. Additive (minor).
 Differences: Image is fluid (its container's width) instead of the reference's fixed grid cells;
 the error state and `fit` / `position` are beyond the reference; the reference's alt texts are the
 ratios, ours describe the pictures.
-**Backlog:** arbitrary ratios and overlay gradients (consumer CSS today), a `threshold` for when
-lazy loading starts (the browser decides).
+**Backlog:** ~~arbitrary ratios~~ ✅ (2026-11-12: any `width/height` or number, written as
+`--_ok-image-ratio` by React `style` and the HTML runtime; the Carousel stories, docs page and
+snippets compose Image for their slide pictures, closing that Pending integration), overlay
+gradients (consumer CSS today), a `threshold` for when lazy loading starts (the browser decides).
 
 ## ✅ Components — Upload (ADR-0037, 2026-11-09)
 Created with `/component` from the reference "Upload" page, every section as a story: Upload

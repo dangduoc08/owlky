@@ -98,8 +98,13 @@ export interface ImageProps
   onError?: ((event: ImgEvent) => void) | undefined;
   /** Ref of the `<img>` (`ref` is the root). */
   imgRef?: Ref<HTMLImageElement> | undefined;
-  /** Other attributes of the `<img>`. */
-  imgProps?: ImgHTMLAttributes<HTMLImageElement> | undefined;
+  /**
+   * Other attributes of the `<img>`, `data-*` ones included (such as
+   * `data-ok-carousel-parallax`, which marks the picture a parallax carousel moves).
+   */
+  imgProps?:
+    | (ImgHTMLAttributes<HTMLImageElement> & { [data: `data-${string}`]: string | undefined })
+    | undefined;
 }
 
 /**

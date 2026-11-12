@@ -274,9 +274,9 @@
       "type": "string | number"
      },
      {
-      "description": "Other attributes of the `<img>`.",
+      "description": "Other attributes of the `<img>`, `data-*` ones included (such as `data-ok-carousel-parallax`, which marks the picture a parallax carousel moves).",
       "name": "imgProps",
-      "type": "ImgHTMLAttributes<HTMLImageElement>"
+      "type": "(ImgHTMLAttributes<HTMLImageElement> & { [data: `data-${string}`]: string | undefined; })"
      },
      {
       "description": "Ref of the `<img>` (`ref` is the root).",
