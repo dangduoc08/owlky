@@ -1,8 +1,20 @@
 {
  "css": [
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-size-xl",
@@ -13,7 +25,7 @@
    "value": "400"
   },
   {
-   "name": "--ok-radius-sm",
+   "name": "--ok-radius-control-sm",
    "value": "6px"
   },
   {

@@ -14,6 +14,10 @@
    "name": "--ok-bg-default"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -28,6 +32,22 @@
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-icon-stroke",
+   "value": "1.5"
   },
   {
    "name": "--ok-palette-common-white",
@@ -50,12 +70,12 @@
    "value": "0 167 111"
   },
   {
-   "name": "--ok-radius-full",
-   "value": "9999px"
+   "name": "--ok-radius-control-sm",
+   "value": "6px"
   },
   {
-   "name": "--ok-radius-sm",
-   "value": "6px"
+   "name": "--ok-radius-full",
+   "value": "9999px"
   },
   {
    "name": "--ok-shadow-z8",
@@ -143,6 +163,14 @@
     ],
     "parts": [
      {
+      "description": "The default icons' box, drawn by the stylesheet (filled when checked or indeterminate).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-checkbox-box"
+     },
+     {
       "description": "The icon of one state. The checkbox shows the one that matches.",
       "kind": "value",
       "name": "data-ok-checkbox-icon",
@@ -161,9 +189,9 @@
       "name": "data-ok-checkbox-input"
      },
      {
-      "description": "The check mark inside the checked icon.",
+      "description": "The mark inside the box of the checked and indeterminate icons: a check or a dash.",
       "elements": [
-       "path"
+       "svg"
       ],
       "kind": "part",
       "name": "data-ok-checkbox-mark"

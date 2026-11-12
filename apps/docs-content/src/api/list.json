@@ -14,6 +14,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
@@ -30,12 +34,32 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
    "name": "--ok-font-family",
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-weight-medium",
    "value": "500"
+  },
+  {
+   "name": "--ok-item-padding-x",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-item-padding-y",
+   "value": "0.5rem"
   },
   {
    "name": "--ok-palette-grey-700",

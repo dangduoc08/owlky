@@ -21,7 +21,19 @@
    "value": "0px 5px 5px -3px color-mix(in srgb, var(--ok-shadow-color) 20%, transparent), 0px 8px 10px 1px color-mix(in srgb, var(--ok-shadow-color) 14%, transparent), 0px 3px 14px 2px color-mix(in srgb, var(--ok-shadow-color) 12%, transparent)"
   },
   {
-   "name": "--ok-radius-xl",
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-radius-surface",
    "value": "16px"
   },
   {
@@ -31,11 +43,6 @@
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
-  },
-  {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
-   "name": "--ok-text-primary"
   }
  ],
  "entries": [

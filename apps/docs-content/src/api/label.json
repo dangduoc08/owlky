@@ -6,6 +6,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -22,8 +26,8 @@
    "name": "--ok-c-text"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-xs",
@@ -32,6 +36,14 @@
   {
    "name": "--ok-font-weight-bold",
    "value": "700"
+  },
+  {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
   },
   {
    "name": "--ok-palette-error-darker",
@@ -94,7 +106,7 @@
    "value": "#FFF5CC"
   },
   {
-   "name": "--ok-radius-sm",
+   "name": "--ok-radius-control-sm",
    "value": "6px"
   },
   {

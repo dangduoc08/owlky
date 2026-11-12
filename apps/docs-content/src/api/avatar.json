@@ -6,6 +6,14 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "description": "The text color on the main color.",
    "name": "--ok-c-contrast"
   },
@@ -50,7 +58,7 @@
    "value": "9999px"
   },
   {
-   "name": "--ok-radius-lg",
+   "name": "--ok-radius-surface-md",
    "value": "12px"
   },
   {
