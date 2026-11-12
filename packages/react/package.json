@@ -50,7 +50,6 @@
     "components",
     "tailwindcss",
     "accessible",
-    "design-system",
-    "minimal"
+    "design-system"
   ]
 }

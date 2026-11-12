@@ -167,5 +167,9 @@ To publish, push a `release/v<version>` tag on a `main` commit; see
 
 ## License
 
-MIT. The visual language is inspired by the Minimal dashboard design; Owlky uses none of its code or
-assets.
+MIT. Some packages bundle third-party code under their own licenses. Each of those packages lists
+it in a `THIRD_PARTY_NOTICES.md` file.
+
+The visual language is inspired by the Minimal dashboard design. Owlky copies none of its code.
+Before version 0.1.0, Owlky's own style presets replace the design values and demo content that
+came from it. Owlky isn't affiliated with Minimal UI or MUI.

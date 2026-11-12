@@ -84,6 +84,30 @@ for (const [name, schema] of Object.entries(optionSchemas)) {
 // ── Specs ──────────────────────────────────────────────────────────────────────────────────────
 const GENERATED = /<!-- options:([a-z-]+) [^>]*-->[\s\S]*?<!-- \/options:\1 -->/g;
 
+/**
+ * Specs are maintainer documents and name the design reference they were recorded from. The
+ * manifest ships on npm, so its spec text drops `Reference URL:` lines and links to the
+ * reference site, and names the reference generically.
+ */
+function publicText(text) {
+  return text
+    .split("\n")
+    .filter((line) => !/^\s*Reference URL:/.test(line))
+    .join("\n")
+    .replace(/\s*\(https?:\/\/(?:www\.)?minimals\.cc[^)\s]*\)/g, "")
+    .replace(/https?:\/\/(?:www\.)?minimals\.cc[^\s,;)]*(?:[,;]\s*)?/g, "")
+    .replace(/\bMinimal UI kit\b/g, "the reference kit")
+    .replace(/\bMinimal(?:s|'s)? (?=(?:dashboard|look|style|design|theme)\b)/g, "reference ")
+    .replace(
+      /\b(the |The )?Minimal(?:s'|'s)(?=\s)/g,
+      (_, the) => `${the === "The " ? "The" : "the"} reference's`,
+    )
+    .replace(/\b(the |The )Minimals\b/g, (_, the) => `${the}reference`)
+    .replace(/(^|[.!?|]\s+|\n)Minimals\b/g, (_, start) => `${start}The reference`)
+    .replace(/\bMinimals\b/g, "the reference")
+    .replace(/\bMinimal (?=`)/g, "the reference ");
+}
+
 function parseSpec(name, text) {
   const lines = text.split("\n");
   const title = lines[0]?.replace(/^#\s+/, "").trim() ?? name;
@@ -104,20 +128,27 @@ function parseSpec(name, text) {
   const schemas = [...text.matchAll(/<!-- options:([a-z-]+) /g)].map((match) => match[1]);
   for (const schema of schemas)
     if (!optionSchemas[schema]) fail(`${name}.md names an unknown schema "${schema}"`);
-  const out = rest.map((section) => ({
-    id: slug(section.title),
-    title: section.title,
-    body: section.lines
-      .join("\n")
-      .replace(GENERATED, (_, schema) => `(Options of \`${schema}\`: listed under "options".)`)
-      .trim(),
-  }));
+  const out = rest.map((section) => {
+    const sectionTitle = publicText(section.title);
+    return {
+      id: slug(sectionTitle),
+      title: sectionTitle,
+      body: publicText(
+        section.lines
+          .join("\n")
+          .replace(GENERATED, (_, schema) => `(Options of \`${schema}\`: listed under "options".)`),
+      ).trim(),
+    };
+  });
   const purpose = out.find((section) => section.id === "purpose")?.body ?? "";
   const summary = (purpose.split(/\n\s*\n/)[0] ?? "").replace(/\s+/g, " ").trim();
   return {
     title,
     summary,
-    referenceUrl: /^Reference URL:\s*(\S+)/m.exec(head)?.[1],
+    // Links to the design reference stay in the specs (maintainer documents), not on npm.
+    referenceUrl: [/^Reference URL:\s*(\S+)/m.exec(head)?.[1]].find(
+      (url) => url && !/minimals\.cc/.test(url),
+    ),
     schemas,
     sections: out,
   };

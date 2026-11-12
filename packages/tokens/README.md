@@ -48,7 +48,7 @@ Default colors are verified for WCAG 2.2 AA contrast in light and dark mode.
 
 ## Contrast
 
-Brand colors follow the Minimal reference (ADR-0014): white text on `main` fills (dark on
+Brand colors use white text on `main` fills (dark text on
 warning) and `main`-colored text for outlined / text variants. Neutral text and soft-variant text
 (`-text` tones) meet WCAG 2.2 AA, which the tests enforce.
 

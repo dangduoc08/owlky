@@ -1,9 +1,9 @@
 import type { ColorScheme, GreyScale, Theme } from "./types.js";
 
 /*
- * Default theme. Visual language of the Minimal dashboard (soft greys, green primary, generous
- * radius, soft tinted shadows). `contrastText` follows the reference (white on fills, dark on
- * warning — ADR-0014); neutral text and `paletteText` (soft variants) meet WCAG 2.2 AA.
+ * Default theme: soft greys, green primary, generous radius, soft tinted shadows. `contrastText`
+ * is white on fills and dark on warning (ADR-0014); neutral text and `paletteText` (soft
+ * variants) meet WCAG 2.2 AA.
  */
 
 const grey: GreyScale = {
