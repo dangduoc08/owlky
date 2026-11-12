@@ -57,7 +57,7 @@ component and each `/integrate` run.
 | MUI X | Data grid | ✅ phases 1–6 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
 | MUI X | Date pickers | ✅ complete, phases 1–4 (ADR-0022, ADR-0026, ADR-0028, ADR-0030) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider; TimePicker, DateTimePicker (desktop, mobile, static), TimeField, DateTimeField, TimeClock, DigitalClock, MultiSectionDigitalClock; DateRangeCalendar, DateRangePicker (desktop, mobile, static), TimeRangePicker, DateTimeRangePicker (desktop, mobile), single and multi input range fields (date, time, date time); time zones, date adapters (Day.js, date-fns, Luxon, Moment), calendar systems, locale packs, right to left, slots and view renderers | Date pickers |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
+| Extra | Animate | ✅ full (ADR-0062) | Motion, MotionGroup, MotionText, CountUp, MotionBorder, Countdown, MotionPresence, LayoutGroup; Dialog `transition` | Motion |
 | Extra | Carousel | ✅ (ADR-0033) | Carousel, CarouselStage, CarouselViewport, CarouselSlide, CarouselArrows, CarouselDots, CarouselProgress, CarouselThumbs, CarouselThumb, CarouselPlayButton | Carousel |
 | Extra | Chart | ✅ complete, phases 1–4 (ADR-0024, ADR-0027, ADR-0029, ADR-0031) | Chart | Chart |
 | Extra (ApexSankey reference) | Sankey | ✅ (ADR-0047) | Chart `type="sankey"` | Chart |
@@ -78,7 +78,7 @@ component and each `/integrate` run.
 | Extra | Multi-language | not planned | — | Next |
 | Extra | Navigation bar | not planned | — | Next |
 | Extra | Organization chart | ✅ (ADR-0036) | OrganizationChart, OrganizationChartNode | Organization chart |
-| Extra | Scroll progress | Motion full, phase 2 | — | Next — Motion, full version |
+| Extra | Scroll progress | ✅ (ADR-0062) | Linear / Circular progress `scroll`, `useScroll` | Motion |
 | Extra | Scrollbar | ✅ | Scrollbar | Scrollbar |
 | Extra (Sonner) | Snackbar | ✅ | Toaster, toast() | Popover, Tooltip, Menu, Dialog & Snackbar |
 | Extra | Upload | ✅ (ADR-0037) | Upload, UploadAvatar, UploadBox | Upload |
@@ -963,6 +963,10 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    website continues): tracked on its own in [`docs/roadmap-components.md`](roadmap-components.md)
    — stability, ApexCharts parity, upstream API audit with a complete API reference on every docs
    page, every remaining gap, Motion full version.
+5b. **Bundle size before 0.1.0** (owner's decision 2026-11-12, supersedes "size optimization later" of
+   2026-11-10): tracked in [`docs/roadmap-size.md`](roadmap-size.md) — per-component entries, a
+   loader `owlky.js` that loads heavy components on demand, schema metadata out of the runtime,
+   CSS per component, scenario budgets and no more budget raises.
 6. **Website** (ADR-0040).
    - ✅ **Phase 1** (2026-11-09): `apps/website` (Next.js 16, static export, built with Owlky and
      its theme settings; Home, Get started, Foundations › Colors, Components › Button; Shiki code
@@ -995,8 +999,7 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    - Not planned: React Native and Flutter (no DOM), Ember, Lit / Web Component wrappers (the HTML
      package covers framework-free use), Qwik unless users ask.
 9. **1.0 prep:** accessibility audit and docs polish (the upstream API audit moved to component completion),
-   size optimization (owner 2026-11-10: later, not before 0.1.0): per-page budgets for sample pages
-   and per component, and a lighter CDN core with opt-in heavy bundles (data grid, chart, pickers, Gantt),
+   further size work after [`roadmap-size.md`](roadmap-size.md) (moved before 0.1.0 on 2026-11-12),
    plus the backlogs (Table toolbar, Sortable
    move to top / bottom, Editor task lists and character count; Motion `component`, Dialog `keepMounted`,
    Sortable auto-scroll and Paper in the library's surfaces (ADR-0066) are built), and the flaky e2e pixel parity of `carousel / thumbs-y` (about 2 of 60 runs
