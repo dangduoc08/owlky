@@ -7,6 +7,8 @@
  *              › img[alt]
  *              › svg[data-ok-image-icon][aria-hidden]? (after an error)
  * Modifiers: data-ok-ratio    = 1/1 | 2/3 | 3/2 | 3/4 | 4/3 | 4/6 | 6/4 | 9/16 | 16/9 | 9/21 | 21/9
+ *                               | any other <width>/<height> or number (`16/10`, `1.6`): the value
+ *                               comes from --_ok-image-ratio (React `style`, HTML runtime CSSOM)
  *            data-ok-fit      = cover (default) | contain | fill | none | scale-down
  *            data-ok-position = center (default) | top | bottom | left | right | top-left | …
  *            data-ok-effect   = blur (default) | opacity | black-and-white | none
@@ -21,6 +23,9 @@
 
 @layer components {
   :where([data-ok-image]) {
+    /* A custom ratio is the root's own (an outer Image's value must not reach a nested one). */
+    --_ok-image-ratio: initial;
+
     position: relative;
     display: block;
     flex-shrink: 0;
@@ -90,6 +95,29 @@
 
   :where([data-ok-image][data-ok-ratio="21/9"]) {
     aspect-ratio: 21 / 9;
+  }
+
+  /* Any other ratio (`16/10`, `1.6`): the picture itself takes it from --_ok-image-ratio and
+     sizes the root. Until the owner writes it (no runtime), the picture keeps its own ratio. */
+  :where(
+    [data-ok-image][data-ok-ratio]:not(
+        [data-ok-ratio="1/1"],
+        [data-ok-ratio="2/3"],
+        [data-ok-ratio="3/2"],
+        [data-ok-ratio="3/4"],
+        [data-ok-ratio="4/3"],
+        [data-ok-ratio="4/6"],
+        [data-ok-ratio="6/4"],
+        [data-ok-ratio="9/16"],
+        [data-ok-ratio="16/9"],
+        [data-ok-ratio="9/21"],
+        [data-ok-ratio="21/9"]
+      )
+      > img
+  ) {
+    position: static;
+    height: auto;
+    aspect-ratio: var(--_ok-image-ratio);
   }
 
   /* --- Fit and position ------------------------------------------------------------------- */

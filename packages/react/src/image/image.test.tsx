@@ -115,6 +115,28 @@ describe("Image", () => {
     expect(document.querySelectorAll("img")).toHaveLength(1);
   });
 
+  it("takes any other ratio through a private property, next to the author's style", () => {
+    const { container, rerender } = render(
+      <Image src={PIXEL} alt="Wide" ratio="16/10" style={{ width: 160 }} />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const img = root.querySelector("img") as HTMLImageElement;
+    expect(root.dataset["okRatio"]).toBe("16/10");
+    expect(root.style.getPropertyValue("--_ok-image-ratio")).toBe("16 / 10");
+    expect(root.style.width).toBe("160px");
+    expect(getComputedStyle(img).position).toBe("static");
+    expect(root.getBoundingClientRect().height).toBeCloseTo(100, 0);
+    rerender(<Image src={PIXEL} alt="Wide" ratio={4} style={{ width: 160 }} />);
+    expect(root.dataset["okRatio"]).toBe("4");
+    expect(root.getBoundingClientRect().height).toBeCloseTo(40, 0);
+    // A named ratio stays a CSS rule: no private property.
+    rerender(<Image src={PIXEL} alt="Wide" ratio="16/9" />);
+    expect(root.style.getPropertyValue("--_ok-image-ratio")).toBe("");
+    expect(getComputedStyle(img).position).toBe("absolute");
+    rerender(<Image src={PIXEL} alt="Wide" ratio="0/1" />);
+    expect(root.hasAttribute("data-ok-ratio")).toBe(false);
+  });
+
   it("renders the overlay and its gradient colors", () => {
     const { container } = render(
       <Image src={PIXEL} alt="City" overlay="info" overlayFrom="secondary" />,

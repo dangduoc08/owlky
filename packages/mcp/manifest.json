@@ -47520,7 +47520,7 @@
         {
          "attr": "data-ok-ratio",
          "default": "1/1",
-         "description": "Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio.",
+         "description": "Aspect ratio (width/height) the picture is cropped to: one of these, any other `width/height` such as `16/10`, or a number such as `1.6`. None: the picture's own ratio.",
          "kind": "style",
          "name": "ratio",
          "optional": true,
@@ -47766,9 +47766,9 @@
          "type": "\"bottom\" | \"bottom-left\" | \"bottom-right\" | \"center\" | \"left\" | \"right\" | \"top\" | \"top-left\" | \"top-right\""
         },
         {
-         "description": "Aspect ratio the picture is cropped to (`\"16/9\"`). Default: the picture's own ratio.",
+         "description": "6`). Default: the picture's own ratio.",
          "name": "ratio",
-         "type": "\"1/1\" | \"16/9\" | \"2/3\" | \"21/9\" | \"3/2\" | \"3/4\" | \"4/3\" | \"4/6\" | \"6/4\" | \"9/16\" | \"9/21\""
+         "type": "ImageRatioValue"
         },
         {
          "description": "The `referrerpolicy` of the `img`.",
@@ -47803,6 +47803,12 @@
        ]
       }
      }
+    ],
+    "types": [
+     {
+      "name": "ImageRatioValue",
+      "type": "number | `${number}/${number}`"
+     }
     ]
    },
    "guide": "image",
@@ -47823,10 +47829,11 @@
       {
        "attr": "data-ok-ratio",
        "default": "1/1",
-       "description": "Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio.",
+       "description": "Aspect ratio (width/height) the picture is cropped to: one of these, any other `width/height` such as `16/10`, or a number such as `1.6`. None: the picture's own ratio.",
        "kind": "style",
        "name": "ratio",
        "optional": true,
+       "pattern": "(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:/(?:\\d+(?:\\.\\d+)?|\\.\\d+))?",
        "values": [
         "1/1",
         "2/3",
@@ -47959,7 +47966,7 @@
      "title": "Options"
     },
     {
-     "body": "Root `display: block`, `position: relative`, `overflow: hidden`, `max-width: 100%`. The `img`\nfills the root (`width` / `height` 100%, `object-fit` / `object-position` from `fit` /\n`position`); with `ratio` the root takes `aspect-ratio` and the `img` is absolute. Without\n`ratio` the picture keeps its own ratio (`width` / `height` attributes reserve it).\nPlaceholder: radial gradient, transparent white center → `grey-500 / 0.48` (the reference's SVG).\nOverlay: `dark` = `grey-900 / 0.48`; a color = `linear-gradient(transparent, <main> / 0.8)`; with\n`overlayFrom`: `linear-gradient(to top, <from main> / 0.24, <main> / 0.8)`. Error icon: 40% of\nthe box, at most 48px, `text-disabled`. Effects: `opacity` `--ok-duration-shortest`, `filter`\n`--ok-duration-standard`, `--ok-easing-standard`; `blur(12px)` / `grayscale(1)` while loading.\nCorners are the consumer's (stories: `--ok-radius-xl`).",
+     "body": "Root `display: block`, `position: relative`, `overflow: hidden`, `max-width: 100%`. The `img`\nfills the root (`width` / `height` 100%, `object-fit` / `object-position` from `fit` /\n`position`); with a named `ratio` the root takes `aspect-ratio` and the `img` is absolute. Without\n`ratio` the picture keeps its own ratio (`width` / `height` attributes reserve it).\nCustom ratios (2026-11-12, the Image backlog): any other `width/height` (`16/10`, `4/1`) or a\nnumber (`1.6`) — core `imageRatio()` validates (both terms positive, spaces dropped) and the value\nis written as given in `data-ok-ratio` (schema `pattern`); CSS can't read it from the attribute,\nso core `imageStyle()` turns it into `--_ok-image-ratio` (`16 / 10`), written by React `style` and\nby the HTML runtime through CSSOM (snippets never carry `style`). The `img` of a custom ratio\nstays in the flow (`position: static`, `height: auto`, `aspect-ratio: var(--_ok-image-ratio)`) and\nsizes the root, so before the runtime writes the property (no JavaScript) the picture keeps its\nown ratio instead of collapsing. The root resets `--_ok-image-ratio: initial` (nested Images).\nThe 11 named ratios keep their attribute rules (no private property).\nPlaceholder: radial gradient, transparent white center → `grey-500 / 0.48` (the reference's SVG).\nOverlay: `dark` = `grey-900 / 0.48`; a color = `linear-gradient(transparent, <main> / 0.8)`; with\n`overlayFrom`: `linear-gradient(to top, <from main> / 0.24, <main> / 0.8)`. Error icon: 40% of\nthe box, at most 48px, `text-disabled`. Effects: `opacity` `--ok-duration-shortest`, `filter`\n`--ok-duration-standard`, `--ok-easing-standard`; `blur(12px)` / `grayscale(1)` while loading.\nCorners are the consumer's (stories: `--ok-radius-xl`).",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -47969,7 +47976,7 @@
      "title": "States"
     },
     {
-     "body": "React: state `loading` until the `img` fires `load` / `error`; after mount (hydration) it reads\n`complete` / `naturalWidth` (core `imageLoadState`) for pictures that settled before React. A new\n`src` / `srcSet` starts at `loading` again. HTML runtime `image`: the same from `complete` at\nsetup, `load` / `error` listeners on the `img`, and a MutationObserver on `src` / `srcset` /\n`sizes`. Lazy loading is the browser's (`loading=\"lazy\"`).",
+     "body": "React: state `loading` until the `img` fires `load` / `error`; after mount (hydration) it reads\n`complete` / `naturalWidth` (core `imageLoadState`) for pictures that settled before React. A new\n`src` / `srcSet` starts at `loading` again. HTML runtime `image`: the same from `complete` at\nsetup, `load` / `error` listeners on the `img`, and a MutationObserver on `src` / `srcset` /\n`sizes`; a second one on the root's `data-ok-ratio` keeps `--_ok-image-ratio` in step (removed on\n`destroy()`). Lazy loading is the browser's (`loading=\"lazy\"`).",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -82504,7 +82511,7 @@
      "title": "Overview"
     },
     {
-     "body": "Set `ratio` to give the image a fixed shape, such as `16/9` for a cover or `1/1` for a tile. The image takes the full width of its container and the height that the ratio gives. The picture covers that box and is cropped to it. Use `fit` to show the whole picture instead (`contain`), and `position` to choose which part stays in view, such as `top` for portraits. Without `ratio`, the picture keeps its own shape: set `width` and `height` to the picture's size, so the page reserves the space before it loads and doesn't shift.",
+     "body": "Set `ratio` to give the image a fixed shape, such as `16/9` for a cover or `1/1` for a tile. The image takes the full width of its container and the height that the ratio gives. The picture covers that box and is cropped to it. Besides the named ratios, `ratio` takes any other `width/height`, such as `16/10` or `4/1`, or a number such as `1.6`. In HTML, the runtime applies such a ratio, so without JavaScript the picture keeps its own shape. Use `fit` to show the whole picture instead (`contain`), and `position` to choose which part stays in view, such as `top` for portraits. Without `ratio`, the picture keeps its own shape: set `width` and `height` to the picture's size, so the page reserves the space before it loads and doesn't shift.",
      "html": "<span data-ok-image data-ok-ratio=\"21/9\" data-ok-fit=\"cover\" data-ok-position=\"top\"\n      data-ok-effect=\"blur\">\n  <span data-ok-image-placeholder aria-hidden=\"true\"></span>\n  <img src=\"team.jpg\" alt=\"The team on the office roof\" loading=\"lazy\" decoding=\"async\">\n</span>",
      "id": "ratio",
      "react": "import { Image } from \"@owlky/react\";\n\nexport function Team() {\n  return <Image src=\"team.jpg\" alt=\"The team on the office roof\" ratio=\"21/9\" position=\"top\" />;\n}",

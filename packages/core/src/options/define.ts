@@ -3,7 +3,8 @@
  * attributes), the HTML runtime (attributes → options), Storybook Controls and parity tests.
  *
  * Kinds:
- * - `style`    enum written as `data-ok-<option>="<value>"` (unknown values → default)
+ * - `style`    enum written as `data-ok-<option>="<value>"` (unknown values → default; with a
+ *              `pattern`, other values that match it are written as given)
  * - `flag`     boolean written as a presence attribute (`data-ok-full-width`)
  * - `native`   boolean native attribute (`disabled`)
  * - `behavior` boolean read by the runtime on every action; `data-ok-<option>="false"` turns it off
@@ -29,6 +30,12 @@ export interface StyleOption<V extends string = string> extends OptionBase {
   readonly default: V;
   /** Written only when a valid value is given; otherwise the attribute is absent. */
   readonly optional?: boolean | undefined;
+  /**
+   * Values beyond `values` that are valid too (a regular expression source, matched whole), such
+   * as Image's `16/10` ratios. Such values reach the DOM as written; CSS reads them from a
+   * private property the owner writes.
+   */
+  readonly pattern?: string | undefined;
 }
 
 export interface FlagOption extends OptionBase {
@@ -90,7 +97,7 @@ export const style = /* @__NO_SIDE_EFFECTS__ */ <const V extends string>(
   values: readonly V[],
   defaultValue: V,
   description: string,
-  extra: Pick<OptionBase, "children" | "when"> & { optional?: boolean } = {},
+  extra: Pick<OptionBase, "children" | "when"> & { optional?: boolean; pattern?: string } = {},
 ): StyleOption<V> => ({
   kind: "style",
   attr,
@@ -154,6 +161,13 @@ export const defineOptions = /* @__NO_SIDE_EFFECTS__ */ <
 export const pick = <T extends string>(values: readonly T[], value: unknown, fallback: T): T =>
   values.includes(value as T) ? (value as T) : fallback;
 
+/** `value` is one of a style option's values, or matches its `pattern`. */
+export function isStyleValue(spec: StyleOption, value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  if (spec.values.includes(value)) return true;
+  return spec.pattern !== undefined && new RegExp(`^(?:${spec.pattern})$`).test(value);
+}
+
 /** A decimal number, with an optional exponent (`5e-8`: the String() of tiny steps). */
 const NUMBER = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/i;
 
@@ -194,8 +208,7 @@ export function optionAttributes(
     if (spec.when !== undefined && values[spec.when] !== true) continue;
     if (spec.kind === "style") {
       if (!spec.optional) attributes[spec.attr] = pick(spec.values, values[key], spec.default);
-      else if (spec.values.includes(values[key] as string))
-        attributes[spec.attr] = values[key] as string;
+      else if (isStyleValue(spec, values[key])) attributes[spec.attr] = values[key];
     } else if (spec.kind === "flag" && values[key] === true) attributes[spec.attr] = "";
     else if (spec.kind === "number" && spec.attr.startsWith("data-ok-")) {
       const value = parseNumber(spec, values[key]);

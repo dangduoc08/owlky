@@ -28,7 +28,7 @@ export function Beach() {
   {
     id: "ratio",
     title: "Crop to an aspect ratio",
-    body: "Set `ratio` to give the image a fixed shape, such as `16/9` for a cover or `1/1` for a tile. The image takes the full width of its container and the height that the ratio gives. The picture covers that box and is cropped to it. Use `fit` to show the whole picture instead (`contain`), and `position` to choose which part stays in view, such as `top` for portraits. Without `ratio`, the picture keeps its own shape: set `width` and `height` to the picture's size, so the page reserves the space before it loads and doesn't shift.",
+    body: "Set `ratio` to give the image a fixed shape, such as `16/9` for a cover or `1/1` for a tile. The image takes the full width of its container and the height that the ratio gives. The picture covers that box and is cropped to it. Besides the named ratios, `ratio` takes any other `width/height`, such as `16/10` or `4/1`, or a number such as `1.6`. In HTML, the runtime applies such a ratio, so without JavaScript the picture keeps its own shape. Use `fit` to show the whole picture instead (`contain`), and `position` to choose which part stays in view, such as `top` for portraits. Without `ratio`, the picture keeps its own shape: set `width` and `height` to the picture's size, so the page reserves the space before it loads and doesn't shift.",
     html: `<span data-ok-image data-ok-ratio="21/9" data-ok-fit="cover" data-ok-position="top"
       data-ok-effect="blur">
   <span data-ok-image-placeholder aria-hidden="true"></span>

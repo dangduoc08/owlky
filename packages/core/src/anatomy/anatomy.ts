@@ -3050,6 +3050,36 @@ export const imageOverlays = ["dark", ...paletteColorNames] as const;
 export const imageStates = ["loading", "loaded", "error"] as const;
 
 export type ImageRatio = (typeof imageRatios)[number];
+
+/** A positive decimal, `16`, `1.6` or `.5` (the parts of a custom ratio). */
+const RATIO_NUMBER = String.raw`(?:\d+(?:\.\d+)?|\.\d+)`;
+/** Any ratio Image accepts besides its named ones: `<width>/<height>` or one number. */
+const IMAGE_RATIO = `${RATIO_NUMBER}(?:/${RATIO_NUMBER})?`;
+
+/**
+ * A valid Image ratio as written in `data-ok-ratio` (spaces removed: `"16 / 10"` → `"16/10"`), or
+ * `undefined`. Named ratios (`16/9`) and custom ones (`16/10`, `4/1`, a number such as `1.6`)
+ * are valid when both terms are positive.
+ */
+export function imageRatio(value: unknown): string | undefined {
+  const text =
+    typeof value === "number" ? String(value) : typeof value === "string" ? value : undefined;
+  if (text === undefined || text.length > 32) return undefined;
+  const ratio = text.replace(/\s+/g, "");
+  if (!new RegExp(`^${IMAGE_RATIO}$`).test(ratio)) return undefined;
+  return ratio.split("/").every((term) => Number(term) > 0) ? ratio : undefined;
+}
+
+/**
+ * Private properties of an image root (React `style`, HTML CSSOM): a custom ratio becomes
+ * `--_ok-image-ratio` (`"16 / 10"`); named ratios are CSS rules on `data-ok-ratio`, so they need
+ * none.
+ */
+export function imageStyle(ratio: unknown): Record<`--_ok-${string}`, string> {
+  const value = imageRatio(ratio);
+  if (value === undefined || imageRatios.includes(value as ImageRatio)) return {};
+  return { "--_ok-image-ratio": value.replace("/", " / ") };
+}
 export type ImageFit = (typeof imageFits)[number];
 export type ImagePosition = (typeof imagePositions)[number];
 export type ImageEffect = (typeof imageEffects)[number];
@@ -3061,8 +3091,8 @@ export const imageOptions = defineOptions("image", "data-ok-image", {
     "data-ok-ratio",
     imageRatios,
     "1/1",
-    "Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio.",
-    { optional: true },
+    "Aspect ratio (width/height) the picture is cropped to: one of these, any other `width/height` such as `16/10`, or a number such as `1.6`. None: the picture's own ratio.",
+    { optional: true, pattern: IMAGE_RATIO },
   ),
   fit: style("data-ok-fit", imageFits, "cover", "How the picture fills its box (`object-fit`)."),
   position: style(
@@ -3106,8 +3136,11 @@ export const imageOptions = defineOptions("image", "data-ok-image", {
   ),
 });
 
+/** A named ratio, any other `width/height` (`"16/10"`) or a number (`1.6`). */
+export type ImageRatioValue = ImageRatio | `${number}/${number}` | number;
+
 export interface ImageAnatomyOptions {
-  ratio?: ImageRatio | undefined;
+  ratio?: ImageRatioValue | string | undefined;
   fit?: ImageFit | undefined;
   position?: ImagePosition | undefined;
   effect?: ImageEffect | undefined;
@@ -3121,6 +3154,7 @@ export interface ImageAnatomyOptions {
 export const imageAttributes = (options: ImageAnatomyOptions = {}): DataAttributes =>
   optionAttributes(imageOptions, {
     ...options,
+    ratio: imageRatio(options.ratio),
     overlayFrom: options.overlay && options.overlay !== "dark" ? options.overlayFrom : undefined,
   });
 
