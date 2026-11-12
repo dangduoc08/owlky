@@ -456,6 +456,11 @@ pass the filters, and the HTML grid drives the chart through `updateSeries` inst
 table. The panel gained Stacked, Show values and Legend fields. The Charts integration story gained
 "Pivot chart" and "Donut chart". Deferred: several dimensions (a grouped axis) and several charts
 per grid.
+Integration 2026-11-12 (owner decision, ADR-0067): the cell editors are Owlky's InputBase (text,
+number and date columns; numbers stay a native number input), a bare listbox Select
+(`singleSelect`, open at the start in cell mode) and a Checkbox (`boolean`), in React and the HTML
+runtime (closes the Pending integration "Select, Checkbox and InputBase as the Data grid's cell
+editors"; a major changeset, the edited cells' markup changed).
 
 The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
 phase, or into "Pending integrations" below when they need a missing component.
@@ -527,7 +532,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 |---|---|---|
 | Image: arbitrary `ratio` values (Image backlog) | Carousel stories and docs page: the slides' pictures (`ImageSlide`, `CardSlide`, the Animation hero) | `div.sb-carousel-image` / `-card` / `-hero` + a plain `img`; demo CSS gives the ratio (16/10, 4/1, 3/1, 2/1, 5/2, fill), the cover fit and the placeholder color. The reference composes its Image; ours offers 11 fixed ratios, and the Parallax story marks the `img` itself (`data-ok-carousel-parallax`) |
 | Owner decision (ADR: anatomy change): Paper composed by the library's own surfaces | Popover / Menu paper, Dialog paper, Drawer content, Autocomplete listbox, Map controls and popups (MUI composes Paper there: `PaperProps`, `elevation`); `TableContainer component={Paper}` in the Table stories | each draws its surface in its own CSS (paper background, radius, a shadow token). Composing Paper adds `data-ok-paper` and its options to those roots: every overlay snippet and consumer markup changes, so it is not additive |
-| Owner decision (ADR: anatomy and keyboard change): Select, Checkbox and InputBase as the Data grid's cell editors (MUI X `GridEditSingleSelectCell`, `GridEditBooleanCell`, `GridEditInputCell`) | Data grid editing, React and the HTML runtime | native `select`, `input[type=checkbox]` and `input` marked `data-ok-data-grid-edit-input`, styled by `data-grid.css` (`accent-color` for the checkbox) |
 
 **Sweep of 2026-11-12** (`/integrate` with no argument, roadmap-components 6.1): the table was
 empty; the discovery found waits that had never been recorded. Closed, by composition in stories,
