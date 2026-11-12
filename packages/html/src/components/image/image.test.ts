@@ -276,11 +276,15 @@ describe("image runtime", () => {
     expect(root.style.getPropertyValue("--_ok-image-ratio")).toBe("");
   });
 
-  it("does nothing without an img", () => {
-    const host = mount('<span data-ok-image data-ok-fit="cover"></span>');
+  it("does nothing without an img (a custom ratio still applies until stop())", () => {
+    const host = mount('<span data-ok-image data-ok-fit="cover" data-ok-ratio="3/1"></span>');
     const rt = start();
     expect(rt.get<ImageInstance>(rootOf(host), "image")?.state).toBe("loaded");
     expect(rootOf(host).hasAttribute("data-ok-state")).toBe(false);
+    expect(rootOf(host).style.getPropertyValue("--_ok-image-ratio")).toBe("3 / 1");
+    rt.stop();
+    runtime = undefined;
+    expect(rootOf(host).style.getPropertyValue("--_ok-image-ratio")).toBe("");
   });
 
   it("ignores hostile option values", async () => {
