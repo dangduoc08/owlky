@@ -247,6 +247,8 @@ export interface MenuProps extends Omit<MenuListProps, "autoFocus" | "autoFocusI
   id?: string | undefined;
   /** Props of the popover paper (`className`, `style`, …). */
   paperProps?: HTMLAttributes<HTMLDivElement> | undefined;
+  /** Shadow depth of the paper, 0–24. Default: the theme's dropdown shadow. */
+  elevation?: number | undefined;
 }
 
 /**
@@ -267,6 +269,7 @@ export const Menu = forwardRef<HTMLUListElement, MenuProps>(function Menu(
     disableAutoFocusItem,
     id,
     paperProps,
+    elevation,
     onClick,
     children,
     ...props
@@ -298,6 +301,7 @@ export const Menu = forwardRef<HTMLUListElement, MenuProps>(function Menu(
       anchorPosition={anchorPosition}
       marginThreshold={marginThreshold}
       transitionDuration={transitionDuration}
+      elevation={elevation}
       id={id}
       initialFocus={() => initialMenuItem(listRef.current as HTMLUListElement)}
       {...paperProps}

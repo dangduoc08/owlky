@@ -4,7 +4,7 @@ import { createRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { expectNoAxeViolations, finishExit } from "../test-utils.js";
+import { expectNoAxeViolations, finishExit, settled } from "../test-utils.js";
 import {
   Dialog,
   DialogActions,
@@ -47,6 +47,16 @@ function Demo({
   );
 }
 
+/** The computed `box-shadow` of a token (a probe element, removed again). */
+function shadowOf(token: string): string {
+  const probe = document.createElement("div");
+  probe.style.boxShadow = `var(${token})`;
+  document.body.append(probe);
+  const value = getComputedStyle(probe).boxShadow;
+  probe.remove();
+  return value;
+}
+
 describe("Dialog", () => {
   it("renders a closed dialog named by its title, with the paper inside", () => {
     render(<Demo />);
@@ -61,6 +71,30 @@ describe("Dialog", () => {
     const title = dialog.querySelector("[data-ok-dialog-title]") as HTMLElement;
     expect(dialog.getAttribute("aria-labelledby")).toBe(title.id);
     expect(dialog.querySelector(":scope > [data-ok-dialog-paper]")).not.toBeNull();
+  });
+
+  it("the paper is a Paper: the dialog shadow by default, Paper's with an elevation", async () => {
+    const { rerender } = render(<Demo />);
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    const dialog = document.querySelector("dialog") as HTMLDialogElement;
+    const paper = dialog.querySelector(":scope > [data-ok-dialog-paper]") as HTMLElement;
+    expect(Object.keys(paper.dataset).slice(0, 2)).toEqual(["okDialogPaper", "okPaper"]);
+    expect(dialog.hasAttribute("data-ok-elevation")).toBe(false);
+    expect(getComputedStyle(paper).boxShadow).toBe(shadowOf("--ok-shadow-dialog"));
+    expect(getComputedStyle(paper).borderRadius).toBe("16px");
+    rerender(<Demo elevation={8} />);
+    expect(paper.dataset["okElevation"]).toBe("8");
+    expect(dialog.hasAttribute("data-ok-elevation")).toBe(false);
+    // Paper animates shadow changes: read the value once the transition is over.
+    await settled(paper);
+    expect(getComputedStyle(paper).boxShadow).toBe(shadowOf("--ok-elevation-8"));
+    rerender(<Demo elevation={8} fullScreen />);
+    await settled(paper);
+    expect(getComputedStyle(paper).boxShadow).toBe("none");
+    await expectNoAxeViolations();
+    await userEvent.keyboard("{Escape}");
+    await finishExit(dialog);
+    expect(dialog.open).toBe(false);
   });
 
   it("opens modally, focuses the first field, sizes the paper; Escape and the backdrop close", async () => {

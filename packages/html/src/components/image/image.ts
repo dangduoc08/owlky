@@ -1,5 +1,6 @@
-import { type ImageState, imageLoadState } from "@owlky/core";
+import { type ImageState, imageLoadState, imageOptions, imageStyle } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
+import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -58,12 +59,22 @@ export interface ImageEvents {
  * CSS only, except the load state: `data-ok-state` (`loading` → `loaded` | `error`) from the
  * picture's `load` / `error` events (and `complete` at setup), `ok:image:load` /
  * `ok:image:error`, and a broken-image icon after an error. A new `src` / `srcset` loads again.
+ * A custom `data-ok-ratio` (`16/10`, `1.6`) becomes `--_ok-image-ratio` (CSSOM).
  */
 export const image = defineComponent<ComponentInstance, ImageEvents>({
   name: "image",
   selector: "[data-ok-image]",
 
   setup(element, { signal, emit }) {
+    // A custom ratio is a private property (named ratios are CSS rules on the attribute).
+    const { attr } = imageOptions.options.ratio;
+    let written: string[] = [];
+    const drawRatio = () => {
+      written = syncCustomProperties(element, imageStyle(element.getAttribute(attr)), written);
+    };
+    drawRatio();
+    const ratioObserver = new MutationObserver(drawRatio);
+    ratioObserver.observe(element, { attributes: true, attributeFilter: [attr] });
     const img = element.querySelector<HTMLImageElement>(":scope > img");
     let current: ImageState = "loaded";
     const set = (next: ImageState) => {
@@ -77,6 +88,10 @@ export const image = defineComponent<ComponentInstance, ImageEvents>({
       return {
         get state() {
           return current;
+        },
+        destroy() {
+          ratioObserver.disconnect();
+          syncCustomProperties(element, {}, written);
         },
       };
     set(imageLoadState(img));
@@ -105,6 +120,8 @@ export const image = defineComponent<ComponentInstance, ImageEvents>({
       },
       destroy() {
         observer.disconnect();
+        ratioObserver.disconnect();
+        syncCustomProperties(element, {}, written);
         element.removeAttribute("data-ok-state");
         element.querySelector(":scope > [data-ok-image-icon]")?.remove();
       },

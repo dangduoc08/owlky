@@ -130,9 +130,10 @@ export const components: readonly ComponentDefinition[] = [
   dateRangeCalendar as ComponentDefinition,
   multiInputRangeField as ComponentDefinition,
   dateRangePicker as ComponentDefinition,
+  // Before the carousel: an Image's custom ratio (CSSOM) sizes the slides the carousel measures.
+  image as ComponentDefinition,
   carousel as ComponentDefinition,
   organizationChart as ComponentDefinition,
-  image as ComponentDefinition,
   lightbox as ComponentDefinition,
   upload as ComponentDefinition,
   walktour as ComponentDefinition,

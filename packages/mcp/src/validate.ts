@@ -56,9 +56,10 @@ const NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
 function checkValue(option: ManifestOption, value: string): string | undefined {
   switch (option.kind) {
     case "style":
-      return option.values?.includes(value)
+      return option.values?.includes(value) ||
+        (option.pattern !== undefined && new RegExp(`^(?:${option.pattern})$`).test(value))
         ? undefined
-        : `expects one of ${option.values?.map((v) => `"${v}"`).join(", ")}`;
+        : `expects one of ${option.values?.map((v) => `"${v}"`).join(", ")}${option.pattern ? " or a matching value" : ""}`;
     case "behavior":
       return value === "" || value === "true" || value === "false"
         ? undefined

@@ -2,7 +2,7 @@
  * Drawer — spec: specs/components/drawer.md
  *
  * Anatomy:  dialog[data-ok-drawer]          transparent, full-viewport layout container
- *             › div[data-ok-drawer-content] the visible paper
+ *             › div[data-ok-drawer-content][data-ok-paper] the visible paper (a Paper, ADR-0066)
  * Modifiers: data-ok-anchor = left (default) | right | top | bottom
  *            data-ok-variant = temporary (default: modal <dialog>) | persistent | permanent
  *            (docked: an <aside> in the page flow, closed with `hidden`), data-ok-hide-backdrop
@@ -68,6 +68,8 @@
     margin-right: auto;
     overflow: auto;
     overscroll-behavior: contain;
+    /* A square Paper (MUI's Drawer passes `square`): paper.css loads first. */
+    border-radius: 0;
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-dialog-start);
     outline: none;

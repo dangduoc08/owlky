@@ -72,6 +72,40 @@ const markup = `
   </dialog>
   <button type="button" id="outer" data-ok-dialog-close="d">Close from outside</button>`;
 
+/** The computed `box-shadow` of a token (a probe element, removed again). */
+function shadowOf(token: string): string {
+  const probe = document.createElement("div");
+  probe.style.boxShadow = `var(${token})`;
+  document.body.append(probe);
+  const value = getComputedStyle(probe).boxShadow;
+  probe.remove();
+  return value;
+}
+
+/** The element's box shadow once Paper's shadow transition is over. */
+async function shadowAfterTransition(element: Element): Promise<string> {
+  // Reading a style flushes it, which starts the transitions of the new state.
+  getComputedStyle(element).boxShadow;
+  await Promise.all(element.getAnimations().map((animation) => animation.finished.catch(() => {})));
+  return getComputedStyle(element).boxShadow;
+}
+
+describe("dialog paper (a Paper, ADR-0066)", () => {
+  it("keeps the dialog shadow and radius; data-ok-elevation on the paper picks Paper's shadow", async () => {
+    const host = mount(
+      markup.replace("<div data-ok-dialog-paper>", "<div data-ok-dialog-paper data-ok-paper>"),
+    );
+    start();
+    await userEvent.click(host.querySelector("#open") as HTMLElement);
+    const paper = host.querySelector("[data-ok-dialog-paper]") as HTMLElement;
+    expect(getComputedStyle(paper).boxShadow).toBe(shadowOf("--ok-shadow-dialog"));
+    expect(getComputedStyle(paper).borderRadius).toBe("16px");
+    paper.setAttribute("data-ok-elevation", "12");
+    expect(await shadowAfterTransition(paper)).toBe(shadowOf("--ok-elevation-12"));
+    await expectNoAxeViolations(host);
+  });
+});
+
 describe("dialog runtime", () => {
   it("opens modally from its trigger, focuses inside, closes with the close button", async () => {
     const host = mount(markup);

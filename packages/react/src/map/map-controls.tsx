@@ -43,7 +43,7 @@ export interface MapControlProps extends HTMLAttributes<HTMLDivElement> {
 export function MapControl({ position = "top-right", children, ...props }: MapControlProps) {
   return (
     <InCorner position={position}>
-      <div {...props} data-ok-map-control="">
+      <div {...props} data-ok-map-control="" data-ok-paper="">
         {children}
       </div>
     </InCorner>
@@ -71,7 +71,11 @@ export function NavigationControl({
   const { labels } = useMapContext("NavigationControl");
   return (
     <InCorner position={position}>
-      <div data-ok-map-control="" {...mapControlAttributes("navigation", { visualizePitch })}>
+      <div
+        data-ok-map-control=""
+        data-ok-paper=""
+        {...mapControlAttributes("navigation", { visualizePitch })}
+      >
         {showZoom ? (
           <>
             <button type="button" data-ok-map-action="zoom-in" aria-label={labels.zoomIn}>
@@ -138,6 +142,7 @@ export function GeolocateControl({
     <InCorner position={position}>
       <div
         data-ok-map-control=""
+        data-ok-paper=""
         {...mapControlAttributes("geolocate", {
           trackUserLocation,
           showUserLocation,
@@ -167,7 +172,7 @@ export function FullscreenControl({ position = "top-right" }: FullscreenControlP
   const { labels } = useMapContext("FullscreenControl");
   return (
     <InCorner position={position}>
-      <div data-ok-map-control="">
+      <div data-ok-map-control="" data-ok-paper="">
         <button
           type="button"
           data-ok-map-action="fullscreen"
@@ -238,7 +243,7 @@ export function GlobeControl({ position = "top-right" }: GlobeControlProps) {
   const { labels } = useMapContext("GlobeControl");
   return (
     <InCorner position={position}>
-      <div data-ok-map-control="">
+      <div data-ok-map-control="" data-ok-paper="">
         <button
           type="button"
           data-ok-map-action="globe"
@@ -270,7 +275,7 @@ export function TerrainControl({
   const { labels } = useMapContext("TerrainControl");
   return (
     <InCorner position={position}>
-      <div data-ok-map-control="">
+      <div data-ok-map-control="" data-ok-paper="">
         <button
           type="button"
           data-ok-map-action="terrain"

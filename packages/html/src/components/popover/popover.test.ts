@@ -16,6 +16,22 @@ import type { PopoverInstance } from "./popover.js";
 const snippets = Object.entries(
   import.meta.glob("./examples/*.html", { query: "?raw", import: "default", eager: true }),
 ) as [string, string][];
+// Every snippet of the package (ADR-0066: the library's surfaces are Papers).
+const allSnippets = Object.entries(
+  import.meta.glob("../*/examples/*.html", { query: "?raw", import: "default", eager: true }),
+) as [string, string][];
+const SURFACES =
+  "[data-ok-popover], [data-ok-dialog-paper], [data-ok-drawer-content], [data-ok-map-control], [data-ok-map-popup-content]";
+
+/** The computed `box-shadow` of a token (a probe element, removed again). */
+function shadowOf(token: string): string {
+  const probe = document.createElement("div");
+  probe.style.boxShadow = `var(${token})`;
+  document.body.append(probe);
+  const value = getComputedStyle(probe).boxShadow;
+  probe.remove();
+  return value;
+}
 
 let runtime: Runtime | undefined;
 const start = () => {
@@ -75,6 +91,55 @@ const markup = `
   </div>
   <div id="p2" popover="manual" data-ok-popover data-ok-placement="top">Hint</div>
   <button type="button" id="outside">Outside</button>`;
+
+/** The element's box shadow once Paper's shadow transition is over. */
+async function shadowAfterTransition(element: Element): Promise<string> {
+  // Reading a style flushes it, which starts the transitions of the new state.
+  getComputedStyle(element).boxShadow;
+  await Promise.all(element.getAnimations().map((animation) => animation.finished.catch(() => {})));
+  return getComputedStyle(element).boxShadow;
+}
+
+describe("surfaces are Papers (ADR-0066)", () => {
+  it("every popover, dialog paper, drawer content and map surface in the snippets has data-ok-paper", () => {
+    let count = 0;
+    for (const [file, html] of allSnippets) {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const roots = [doc.body, ...[...doc.querySelectorAll("template")].map((t) => t.content)];
+      for (const root of roots)
+        for (const surface of root.querySelectorAll(SURFACES)) {
+          count++;
+          expect(
+            surface.hasAttribute("data-ok-paper"),
+            `${file}: ${surface.outerHTML.slice(0, 80)}`,
+          ).toBe(true);
+        }
+    }
+    expect(count).toBeGreaterThan(200);
+  });
+
+  it("keeps the dropdown shadow; an elevation gives Paper's shadow", async () => {
+    const host = mount(`
+      <button type="button" id="t" data-ok-popover-open="p">Open</button>
+      <div id="p" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom" role="dialog" aria-label="P">
+        <button type="button">Inside</button>
+      </div>`);
+    start();
+    const popover = host.querySelector("#p") as HTMLElement;
+    await userEvent.click(host.querySelector("#t") as HTMLElement);
+    expect(getComputedStyle(popover).boxShadow).toBe(shadowOf("--ok-shadow-dropdown"));
+    expect(getComputedStyle(popover).borderRadius).toBe("10px");
+    popover.setAttribute("data-ok-elevation", "6");
+    expect(await shadowAfterTransition(popover)).toBe(shadowOf("--ok-elevation-6"));
+    popover.setAttribute("data-ok-elevation", "0");
+    expect(await shadowAfterTransition(popover)).toBe("none");
+    // Older markup without the marker keeps the popover's own look.
+    popover.removeAttribute("data-ok-paper");
+    popover.removeAttribute("data-ok-elevation");
+    expect(await shadowAfterTransition(popover)).toBe(shadowOf("--ok-shadow-dropdown"));
+    await expectNoAxeViolations(host);
+  });
+});
 
 describe("popover runtime", () => {
   it("a trigger toggles it, syncs aria-expanded, moves focus in and back, emits events", async () => {

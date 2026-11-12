@@ -698,7 +698,10 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   away first (`userEvent.hover` on a fixed corner element) or Chrome's layout-time `mouseenter`
   pauses it. Settling is a 120 ms scroll debounce; tests of a synchronous move must not wait for a
   second settle (`idle(root)` in the core test). Snippets are generated from the React examples
-  (`renderToStaticMarkup`, drop `style`, `data-ok-runtime`, `data-ok-state`, preload `<link>`s);
+  (`pnpm build && node apps/storybook/scripts/carousel-snippets.mjs`: `renderToStaticMarkup`, drop
+  `style`, `data-ok-runtime`, `data-ok-state`, preload `<link>`s). Story slides compose Image
+  (lazy, custom ratios such as `16/10` written by the runtimes), so e2e waits for each Image's
+  state to match its `img`, never for every `img` to be `complete` (far slides never load);
   HTML tests swap story images for an SVG pixel *with a size*, or overlays cover the dots
   (axe `target-size`). In a git worktree under `.claude/`, the repo's `coverage.include`
   (`packages/*/src/**`) matches nothing: measure with an include such as `**/src/carousel/**`.
@@ -823,6 +826,17 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   path disables the paper's and `dialog::backdrop`'s animations. React `keepMounted={false}`
   children stay rendered until the exit ends (`shown` state); MotionPresence waits for the Motions
   that register through its context (children without Motions leave at once).
+- Library surfaces are Papers (ADR-0066): every popover root (`popoverAttributes()` writes
+  `data-ok-paper` right after `data-ok-popover`; Walktour steps and the Editor overlays write it
+  by hand), the Dialog paper, the Drawer content and the Map controls / popup contents. Their own
+  CSS restates radius, background and shadow after `paper.css`; a default shadow rule is
+  `:not([data-ok-elevation])`, so an `elevation` (Popover, Menu, Dialog: `surfacePaperAttributes`)
+  picks Paper's shadow. Paper's `transition: box-shadow` now runs on them: tests that change an
+  elevation read the shadow after `settled(element)` (mid-transition values serialize as
+  `oklab(…)`). A new surface puts the marker right after its own (snippets read `data-ok-x
+  data-ok-paper`) and must not carry Paper's `variant` when it has a `data-ok-variant` of its
+  own. `querySelectorAll("[data-ok-paper]")` now finds overlays too: scope Paper checks to their
+  story.
 - Collapse (ADR-0044): `hidden` is the state; core `createCollapseController` watches it (a
   MutationObserver, before paint) and animates with the Web Animations API, so tests `finish()` the
   element's animations and then wait a task (the controller settles on `animation.finished`; a

@@ -178,6 +178,41 @@
       "name": "transitionDuration"
      },
      {
+      "attr": "data-ok-elevation",
+      "default": "8",
+      "description": "Shadow depth of the paper, `0`–`24` (`--ok-elevation-<n>`). Without it, the theme's dropdown shadow.",
+      "kind": "style",
+      "name": "elevation",
+      "optional": true,
+      "values": [
+       "0",
+       "1",
+       "2",
+       "3",
+       "4",
+       "5",
+       "6",
+       "7",
+       "8",
+       "9",
+       "10",
+       "11",
+       "12",
+       "13",
+       "14",
+       "15",
+       "16",
+       "17",
+       "18",
+       "19",
+       "20",
+       "21",
+       "22",
+       "23",
+       "24"
+      ]
+     },
+     {
       "attr": "data-ok-open",
       "description": "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
       "event": "ok:popover:close",
@@ -232,7 +267,7 @@
    },
    "name": "Popover",
    "react": {
-    "description": "A `div[popover=manual]` in the top layer, positioned next to `anchorEl` by the core popover controller. Controlled, like MUI: keep `open` in state and set it from `onOpenChange`.",
+    "description": "Controlled, like MUI: keep `open` in state and set it from `onOpenChange`.",
     "native": "HTMLDivElement",
     "props": [
      {
@@ -275,6 +310,11 @@
       "description": "Focus isn't moved back to the anchor on close.",
       "name": "disableRestoreFocus",
       "type": "boolean"
+     },
+     {
+      "description": "Shadow depth of the paper, 0–24 (`--ok-elevation-<n>`). Default: the theme's dropdown shadow. The popover is a Paper.",
+      "name": "elevation",
+      "type": "number"
      },
      {
       "description": "Where focus goes on open; default: the first focusable element, else the popover.",

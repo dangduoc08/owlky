@@ -421,7 +421,7 @@
   {
    "html": {
     "attribute": "data-ok-drawer-content",
-    "description": "The drawer's surface and its content.",
+    "description": "The drawer's surface and its content, a square Paper (with `data-ok-paper`).",
     "elements": [
      "div"
     ]

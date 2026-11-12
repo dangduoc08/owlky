@@ -86,7 +86,7 @@ const SUBHEADER = "[data-ok-list-subheader]";
  *                     aria-expanded="false" aria-controls="m-listbox" autocomplete="off" placeholder=" ">
  *              <span data-ok-text-field-adornment="end">…clear and toggle icon buttons…</span> …
  *            <template data-ok-autocomplete-tag>…a small Chip with a delete button…</template>  (multiple)
- *            <div data-ok-popover data-ok-autocomplete-paper popover="manual" data-ok-disable-auto-focus …>
+ *            <div data-ok-popover data-ok-paper data-ok-autocomplete-paper popover="manual" data-ok-disable-auto-focus …>
  *              <ul role="listbox" id="m-listbox"><li role="option" id="m-option-0" data-ok-value="a" aria-selected="false">A</li>…</ul>
  *              <div data-ok-autocomplete-no-options hidden>No options</div>
  *            </div>

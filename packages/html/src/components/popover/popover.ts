@@ -66,7 +66,7 @@ function triggersOf(element: Element): Element[] {
  * Popover — spec: specs/components/popover.md (also the paper of Menu)
  *
  * Markup:   <button data-ok-popover-open="p1" aria-haspopup="dialog" aria-expanded="false">
- *           <div id="p1" popover="manual" data-ok-popover data-ok-placement="bottom">…</div>
+ *           <div id="p1" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom">…</div>
  * Triggers: [data-ok-popover-open="id"] toggles on click; [data-ok-popover-hover="id"] opens on
  *           hover and focus, closes on leave and blur (without moving focus). Both carry
  *           `aria-expanded`, kept in sync.

@@ -51,7 +51,7 @@ const fromPopover = (reason: PopoverCloseReason): SelectCloseReason | "api" =>
  *            <input data-ok-select-input aria-hidden="true" tabindex="-1" name="age" value="10" placeholder=" ">
  *            <svg data-ok-select-icon aria-hidden="true" viewBox="0 0 24 24">…</svg>
  *            <fieldset data-ok-select-outline aria-hidden="true"><legend><span>Age</span></legend></fieldset>
- *            <div data-ok-popover popover="manual" id="age-menu" data-ok-placement="bottom-start" tabindex="-1">
+ *            <div data-ok-popover data-ok-paper popover="manual" id="age-menu" data-ok-placement="bottom-start" tabindex="-1">
  *              <span data-ok-popover-arrow aria-hidden="true"></span>
  *              <ul data-ok-select-listbox role="listbox" id="age-listbox" aria-labelledby="age-label">
  *                <li data-ok-menu-item role="option" tabindex="-1" aria-selected="true" data-ok-selected data-ok-value="10">Ten</li> …

@@ -80,7 +80,7 @@
      {
       "attr": "data-ok-ratio",
       "default": "1/1",
-      "description": "Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio.",
+      "description": "Aspect ratio (width/height) the picture is cropped to: one of these, any other `width/height` such as `16/10`, or a number such as `1.6`. None: the picture's own ratio.",
       "kind": "style",
       "name": "ratio",
       "optional": true,
@@ -274,9 +274,9 @@
       "type": "string | number"
      },
      {
-      "description": "Other attributes of the `<img>`.",
+      "description": "Other attributes of the `<img>`, `data-*` ones included (such as `data-ok-carousel-parallax`, which marks the picture a parallax carousel moves).",
       "name": "imgProps",
-      "type": "ImgHTMLAttributes<HTMLImageElement>"
+      "type": "(ImgHTMLAttributes<HTMLImageElement> & { [data: `data-${string}`]: string | undefined; })"
      },
      {
       "description": "Ref of the `<img>` (`ref` is the root).",
@@ -326,9 +326,9 @@
       "type": "\"bottom\" | \"bottom-left\" | \"bottom-right\" | \"center\" | \"left\" | \"right\" | \"top\" | \"top-left\" | \"top-right\""
      },
      {
-      "description": "Aspect ratio the picture is cropped to (`\"16/9\"`). Default: the picture's own ratio.",
+      "description": "6`). Default: the picture's own ratio.",
       "name": "ratio",
-      "type": "\"1/1\" | \"16/9\" | \"2/3\" | \"21/9\" | \"3/2\" | \"3/4\" | \"4/3\" | \"4/6\" | \"6/4\" | \"9/16\" | \"9/21\""
+      "type": "ImageRatioValue"
      },
      {
       "description": "The `referrerpolicy` of the `img`.",
@@ -366,5 +366,11 @@
  ],
  "format": 1,
  "name": "image",
- "title": "Image"
+ "title": "Image",
+ "types": [
+  {
+   "name": "ImageRatioValue",
+   "type": "number | `${number}/${number}`"
+  }
+ ]
 }

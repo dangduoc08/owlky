@@ -76,13 +76,13 @@ export interface MenuEvents {
  * Menu — spec: specs/components/menu.md
  *
  * Markup:  <button data-ok-popover-open="m1" aria-haspopup="menu" aria-expanded="false" id="b1">
- *          <div id="m1" popover="manual" data-ok-popover data-ok-placement="bottom-start">
+ *          <div id="m1" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start">
  *            <ul data-ok-menu role="menu" aria-labelledby="b1">
  *              <li data-ok-menu-item role="menuitem" tabindex="-1">Profile</li>
  *              <li role="none" data-ok-menu-submenu>
  *                <div data-ok-menu-item role="menuitem" tabindex="-1" aria-haspopup="menu"
  *                     aria-expanded="false" aria-controls="m2" id="t2">More</div>
- *                <div id="m2" popover="manual" data-ok-popover data-ok-placement="right-start">
+ *                <div id="m2" popover="manual" data-ok-popover data-ok-paper data-ok-placement="right-start">
  *                  <ul data-ok-menu role="menu" aria-labelledby="t2">…</ul>
  *                </div>
  *              </li>

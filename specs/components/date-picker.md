@@ -53,7 +53,7 @@ div[data-ok-date-picker][data-ok-picker-variant][data-ok-orientation][data-ok-op
   div[popover=manual][data-ok-popover][data-ok-placement=bottom-start][data-ok-disable-auto-focus]
       [role=dialog][aria-label][data-ok-date-picker-paper]                         (desktop, responsive)
   dialog[data-ok-dialog][data-ok-max-width=xs][aria-label][data-ok-date-picker-dialog]
-    div[data-ok-dialog-paper]                                                     (mobile, responsive)
+    div[data-ok-dialog-paper][data-ok-paper]                                                     (mobile, responsive)
   div[data-ok-picker-layout][data-ok-orientation]                                 (in the popover, the dialog paper, or inline)
     div[data-ok-picker-toolbar][hidden]? › span[data-ok-picker-toolbar-overline][id] + span[data-ok-picker-toolbar-title]
     ul[data-ok-picker-shortcuts][aria-label]? › li › span[data-ok-chip][data-ok-picker-shortcut][data-ok-value]? › button[data-ok-chip-action]

@@ -18,7 +18,7 @@ export const menuSections: GuideSection[] = [
   aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu" data-ok-popover-open="account-menu">
   <span data-ok-button-label>Account</span>
 </button>
-<div id="account-menu" popover="manual" data-ok-popover data-ok-placement="bottom-start">
+<div id="account-menu" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start">
   <ul data-ok-menu role="menu" aria-labelledby="account-button">
     <li data-ok-menu-item role="menuitem" tabindex="-1">Profile</li>
     <li data-ok-menu-item role="menuitem" tabindex="-1">Logout</li>
@@ -113,13 +113,13 @@ export function SortMenu() {
   aria-haspopup="menu" aria-expanded="false" aria-controls="file-menu" data-ok-popover-open="file-menu">
   <span data-ok-button-label>File</span>
 </button>
-<div id="file-menu" popover="manual" data-ok-popover data-ok-placement="bottom-start">
+<div id="file-menu" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start">
   <ul data-ok-menu role="menu" aria-labelledby="file-button">
     <li data-ok-menu-item role="menuitem" tabindex="-1">New file</li>
     <li role="none" data-ok-menu-submenu>
       <div id="share-trigger" data-ok-menu-item role="menuitem" tabindex="-1" aria-haspopup="menu"
         aria-expanded="false" aria-controls="share-menu">Share<svg data-ok-menu-submenu-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
-      <div id="share-menu" popover="manual" data-ok-popover data-ok-placement="right-start">
+      <div id="share-menu" popover="manual" data-ok-popover data-ok-paper data-ok-placement="right-start">
         <ul data-ok-menu role="menu" aria-labelledby="share-trigger">
           <li data-ok-menu-item role="menuitem" tabindex="-1">Email</li>
           <li data-ok-menu-item role="menuitem" tabindex="-1">Copy link</li>
@@ -220,7 +220,7 @@ export function SortMenu() {
   {
     id: "options",
     title: "Options",
-    body: "The menu's popover takes the Popover options, such as `placement` (default `bottom-start` for menus). Every option works the same way in both versions.",
+    body: "The menu's popover takes the Popover options, such as `placement` (default `bottom-start` for menus) and `elevation`. Every option works the same way in both versions.",
   },
   {
     id: "props",

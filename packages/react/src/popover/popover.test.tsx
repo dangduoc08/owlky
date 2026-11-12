@@ -3,7 +3,7 @@ import { createRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, settled } from "../test-utils.js";
 import { Popover, type PopoverProps } from "./popover.js";
 
 function Demo(
@@ -54,6 +54,16 @@ function Hover() {
   );
 }
 
+/** The computed `box-shadow` of a token (a probe element, removed again). */
+function shadowOf(token: string): string {
+  const probe = document.createElement("div");
+  probe.style.boxShadow = `var(${token})`;
+  document.body.append(probe);
+  const value = getComputedStyle(probe).boxShadow;
+  probe.remove();
+  return value;
+}
+
 describe("Popover", () => {
   it("renders a closed div[popover=manual] with its options", () => {
     render(<Demo placement="right-end" arrow disableEscapeKeyDown />);
@@ -91,6 +101,31 @@ describe("Popover", () => {
     await userEvent.click(open);
     await userEvent.click(screen.getByRole("button", { name: "Outside" }));
     expect(onChange).toHaveBeenLastCalledWith(false, "backdrop");
+    await expectNoAxeViolations();
+  });
+
+  it("is a Paper: the dropdown shadow by default, Paper's shadow with an elevation", async () => {
+    const { rerender } = render(<Demo />);
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    const popover = screen.getByRole("dialog");
+    expect(Object.keys(popover.dataset).slice(0, 2)).toEqual(["okPopover", "okPaper"]);
+    expect(popover.hasAttribute("data-ok-elevation")).toBe(false);
+    const style = getComputedStyle(popover);
+    expect(style.boxShadow).toBe(shadowOf("--ok-shadow-dropdown"));
+    expect(style.borderRadius).toBe("10px");
+    expect(style.backgroundColor).not.toBe(getComputedStyle(document.body).backgroundColor);
+    // Paper animates shadow changes: read each value once the transition is over.
+    rerender(<Demo elevation={4} />);
+    expect(popover.dataset["okElevation"]).toBe("4");
+    await settled(popover);
+    expect(getComputedStyle(popover).boxShadow).toBe(shadowOf("--ok-elevation-4"));
+    rerender(<Demo elevation={0} />);
+    await settled(popover);
+    expect(getComputedStyle(popover).boxShadow).toBe("none");
+    rerender(<Demo elevation={99} />);
+    expect(popover.hasAttribute("data-ok-elevation")).toBe(false);
+    await settled(popover);
+    expect(getComputedStyle(popover).boxShadow).toBe(shadowOf("--ok-shadow-dropdown"));
     await expectNoAxeViolations();
   });
 

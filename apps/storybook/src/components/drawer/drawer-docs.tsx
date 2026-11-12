@@ -31,7 +31,7 @@ The drawer is a native \`<dialog>\`, so the browser keeps focus inside it and cl
 </button>
 
 <dialog id="filters" data-ok-drawer data-ok-anchor="right" data-ok-variant="temporary" aria-label="Filters">
-  <div data-ok-drawer-content>
+  <div data-ok-drawer-content data-ok-paper>
     <section data-ok-scrollbar aria-label="Filter options" tabindex="0">
       <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="filter-shoes"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Shoes</span></label>
       <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="filter-bags"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Bags</span></label>
@@ -76,7 +76,7 @@ export function Filters() {
   <span data-ok-button-label>Menu</span>
 </button>
 <dialog id="menu" data-ok-drawer data-ok-anchor="bottom" data-ok-variant="temporary" aria-label="Menu">
-  <div data-ok-drawer-content>
+  <div data-ok-drawer-content data-ok-paper>
     <nav aria-label="Main">
       <ul data-ok-list>
         <li data-ok-list-item data-ok-disable-padding><a href="/dashboard" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Dashboard</span></span></a></li>
@@ -116,7 +116,7 @@ export function BottomMenu() {
     title: "Close the drawer",
     body: "Escape and a click on the backdrop ask the drawer to close. Add your own close button with `DrawerClose` in React, or `data-ok-drawer-close` in HTML. Set `disableEscapeKeyDown` or `hideBackdrop` to turn those ways off.",
     html: `<dialog id="filters" data-ok-drawer data-ok-anchor="right" data-ok-variant="temporary" aria-label="Filters">
-  <div data-ok-drawer-content>
+  <div data-ok-drawer-content data-ok-paper>
     <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="close-filter-shoes"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Shoes</span></label>
           <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="close-filter-bags"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Bags</span></label>
           <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="close-filter-jackets"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Jackets</span></label>
@@ -191,7 +191,7 @@ export function EditPanel() {
     body: "Set `variant` to `persistent` for a drawer that people can show and hide next to the content, or `permanent` for one that is always visible. Docked drawers have no backdrop and don't trap focus. Place the drawer and the page area in a flex row (left and right) or column (top and bottom).",
     html: `<div style="display: flex">
   <aside data-ok-drawer data-ok-anchor="left" data-ok-variant="permanent" aria-label="Navigation">
-    <div data-ok-drawer-content>
+    <div data-ok-drawer-content data-ok-paper>
       <nav aria-label="Main">
         <ul data-ok-list>
           <li data-ok-list-item data-ok-disable-padding><a href="/dashboard" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Dashboard</span></span></a></li>
@@ -246,7 +246,7 @@ export function DrawerDocked() {
 </button>
 <dialog id="filters" data-ok-drawer data-ok-anchor="right" data-ok-variant="temporary" data-ok-elevation="4"
   data-ok-transition-duration="150" aria-label="Filters">
-  <div data-ok-drawer-content>
+  <div data-ok-drawer-content data-ok-paper>
     <p data-ok-typography data-ok-variant="body2">Filters slide in quickly.</p>
   </div>
 </dialog>`,
@@ -279,7 +279,7 @@ In React, \`onOpenChange\` receives \`"swipe"\` as the reason. In HTML, \`ok:dra
   <span data-ok-button-label>Menu</span>
 </button>
 <dialog id="menu" data-ok-drawer data-ok-anchor="left" data-ok-variant="temporary" data-ok-swipeable aria-label="Menu">
-  <div data-ok-drawer-content>
+  <div data-ok-drawer-content data-ok-paper>
     <p data-ok-typography data-ok-variant="body2">Swipe left to close.</p>
     <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-drawer-close>
       <span data-ok-button-label>Close</span>

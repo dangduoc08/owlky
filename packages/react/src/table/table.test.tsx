@@ -1,8 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
-import { useState } from "react";
+import { createRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
+import { Paper } from "../paper/paper.js";
 import { Scrollbar } from "../scrollbar/scrollbar.js";
 import { expectNoAxeViolations } from "../test-utils.js";
 import {
@@ -93,6 +94,40 @@ describe("Table anatomy", () => {
     expect(screen.getByText("262").dataset).toMatchObject({ okAlign: "right", okSize: "small" });
     expect(screen.getByText("Total").localName).toBe("td");
     expect(screen.getByText("Total").closest("tfoot")).not.toBeNull();
+  });
+
+  it("TableContainer renders another component: component={Paper} puts the table on a paper", async () => {
+    const ref = createRef<HTMLElement>();
+    const { container } = render(
+      <TableContainer ref={ref} component={Paper} elevation={2}>
+        <Scrollbar aria-label="Desserts on paper">
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Eclair</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Scrollbar>
+      </TableContainer>,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(ref.current).toBe(root);
+    expect(root.tagName).toBe("DIV");
+    expect(root.dataset).toMatchObject({
+      okPaper: "",
+      okVariant: "elevation",
+      okElevation: "2",
+      okTableContainer: "",
+    });
+    const style = getComputedStyle(root);
+    expect(style.borderTopLeftRadius).not.toBe("0px");
+    // The rounded corners clip the header and rows (the Scrollbar scrolls).
+    expect(style.overflow).toBe("hidden");
+    expect(style.boxShadow).not.toBe("none");
+    render(<TableContainer component="div" data-testid="plain" />);
+    expect(screen.getByTestId("plain").tagName).toBe("DIV");
+    await expectNoAxeViolations();
   });
 
   it("sort labels: active, direction, hidden icon and a custom icon", () => {

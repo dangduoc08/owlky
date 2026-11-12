@@ -1,4 +1,4 @@
-import { carouselOptions } from "@owlky/core";
+import { carouselOptions, type ImageRatioValue } from "@owlky/core";
 import {
   Button,
   Carousel,
@@ -11,6 +11,7 @@ import {
   CarouselThumb,
   CarouselThumbs,
   CarouselViewport,
+  Image,
   Motion,
   MotionGroup,
   Typography,
@@ -22,8 +23,9 @@ import type { GroupFiles } from "../shared/snippets.js";
  * Carousel stories: one per reference section (plus Drag free, Slides to scroll and Right to left,
  * beyond it). Images are original SVG artwork made for these stories
  * (`apps/storybook/public/carousel/`, same license as the repository), referenced relatively so
- * they work under the e2e server's sub-path. The `sb-carousel-*` classes are story-only demo markup
- * (`.storybook/preview.css`). The HTML snippets are generated from these examples.
+ * they work under the e2e server's sub-path. Slide pictures are Images (ratio, cover fit,
+ * placeholder); the `sb-carousel-*` classes are story-only layout (`.storybook/preview.css`). The
+ * HTML snippets are generated from these examples: `node apps/storybook/scripts/carousel-snippets.mjs`.
  */
 
 export const SLIDES = [
@@ -42,23 +44,27 @@ const image = (index: number) => `carousel/slide-${index + 1}.svg`;
 /** A picture slide with its number in a badge (as on the reference). */
 function ImageSlide({
   index,
+  ratio = "4/3",
   className = "",
   parallax = false,
 }: {
   index: number;
+  ratio?: ImageRatioValue | null | undefined;
   className?: string;
   parallax?: boolean;
 }) {
   return (
     <CarouselSlide>
-      <div className={`sb-carousel-image ${className}`.trim()}>
+      <div className={`sb-carousel-slide ${className}`.trim()}>
         <Typography variant="subtitle2" component="span" className="sb-carousel-index">
           {index + 1}
         </Typography>
-        <img
+        <Image
           src={image(index)}
           alt={SLIDES[index]?.[0] ?? ""}
-          data-ok-carousel-parallax={parallax ? "" : undefined}
+          ratio={ratio ?? undefined}
+          className={ratio === null ? "sb-carousel-fill" : undefined}
+          imgProps={parallax ? PARALLAX : undefined}
         />
       </div>
     </CarouselSlide>
@@ -66,15 +72,18 @@ function ImageSlide({
 }
 ImageSlide.displayName = "ImageSlide";
 
+/** The Parallax story moves the picture itself (the Image's `img`). */
+const PARALLAX = { "data-ok-carousel-parallax": "" };
+
 /** A card slide: picture, title and a link-like button (Dots number). */
 function CardSlide({ index }: { index: number }) {
   return (
     <CarouselSlide>
-      <div className="sb-carousel-card">
+      <div className="sb-carousel-slide">
         <Typography variant="subtitle2" component="span" className="sb-carousel-index">
           {index + 1}
         </Typography>
-        <img src={image(index)} alt="" />
+        <Image src={image(index)} alt="" ratio="3/4" />
         <div className="sb-carousel-card-content">
           <Typography variant="h5" component="h3">
             {SLIDES[index]?.[1]}
@@ -107,6 +116,9 @@ function ArrowIcon({ direction = "next" }: { direction?: "prev" | "next" }) {
 ArrowIcon.displayName = "ArrowIcon";
 
 const range = (count: number) => Array.from({ length: count }, (_, i) => i);
+
+/** Auto height: a different shape per slide, so the carousel's height changes. */
+const AUTO_HEIGHT_RATIOS = ["4/1", "3/1", "2/1", "5/2"] as const;
 
 /** Story groups (one per story), in the same order as the HTML snippets `<story>-example.html`. */
 export const carouselStories: Record<string, ReactGroup[]> = {
@@ -215,7 +227,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
         <Carousel className="sb-carousel" aria-label="Fade" effect="fade">
           <CarouselViewport>
             {range(4).map((i) => (
-              <ImageSlide key={i} index={i} className="sb-carousel-wide" />
+              <ImageSlide key={i} index={i} ratio="16/10" />
             ))}
           </CarouselViewport>
           <div className="sb-carousel-controls">
@@ -264,7 +276,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
           <CarouselStage>
             <CarouselViewport className="sb-carousel-rounded">
               {range(4).map((i) => (
-                <ImageSlide key={i} index={i + 4} className="sb-carousel-wide" />
+                <ImageSlide key={i} index={i + 4} ratio="16/10" />
               ))}
             </CarouselViewport>
             <CarouselProgress variant="autoplay" color="info" placement="top-end" />
@@ -285,7 +297,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
           <CarouselStage>
             <CarouselViewport className="sb-carousel-rounded">
               {range(4).map((i) => (
-                <ImageSlide key={i} index={i} className="sb-carousel-wide" />
+                <ImageSlide key={i} index={i} ratio="16/10" />
               ))}
             </CarouselViewport>
             <CarouselProgress color="info" placement="top-end" />
@@ -302,7 +314,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
           <CarouselStage>
             <CarouselViewport className="sb-carousel-rounded">
               {range(8).map((i) => (
-                <ImageSlide key={i} index={i} className="sb-carousel-wide" />
+                <ImageSlide key={i} index={i} ratio="16/10" />
               ))}
             </CarouselViewport>
             <CarouselArrows variant="number" placement="bottom-end" />
@@ -326,7 +338,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
           <CarouselStage>
             <CarouselViewport className="sb-carousel-rounded">
               {range(8).map((i) => (
-                <ImageSlide key={i} index={(i + 4) % 8} className="sb-carousel-wide" />
+                <ImageSlide key={i} index={(i + 4) % 8} ratio="16/10" />
               ))}
             </CarouselViewport>
             <CarouselArrows variant="number" placement="bottom-start" />
@@ -376,7 +388,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
           </div>
           <CarouselViewport className="sb-carousel-rounded">
             {range(4).map((i) => (
-              <ImageSlide key={i} index={i + 1} className={`sb-carousel-h-${i + 1}`} />
+              <ImageSlide key={i} index={i + 1} ratio={AUTO_HEIGHT_RATIOS[i]} />
             ))}
           </CarouselViewport>
         </Carousel>
@@ -391,7 +403,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
           <CarouselStage>
             <CarouselViewport className="sb-carousel-rounded">
               {range(4).map((i) => (
-                <ImageSlide key={i} index={i + 3} className="sb-carousel-fill" />
+                <ImageSlide key={i} index={i + 3} ratio={null} className="sb-carousel-fill" />
               ))}
             </CarouselViewport>
             <CarouselDots color="warning" placement="top-end" />
@@ -436,11 +448,11 @@ export const carouselStories: Record<string, ReactGroup[]> = {
             <CarouselViewport className="sb-carousel-rounded">
               {range(4).map((i) => (
                 <CarouselSlide key={i}>
-                  <div className="sb-carousel-hero">
+                  <div className="sb-carousel-slide sb-carousel-hero">
                     <Typography variant="subtitle2" component="span" className="sb-carousel-index">
                       {i + 1}
                     </Typography>
-                    <img src={image(i + 2)} alt="" />
+                    <Image src={image(i + 2)} alt="" ratio="16/9" />
                     <MotionGroup once={false} className="sb-carousel-hero-content">
                       <Motion variant="fadeInRight">
                         <Typography variant="h3">{SLIDES[i + 2]?.[1]}</Typography>
@@ -549,7 +561,7 @@ export const carouselStories: Record<string, ReactGroup[]> = {
         >
           <CarouselViewport>
             {range(8).map((i) => (
-              <ImageSlide key={i} index={i} className="sb-carousel-square" />
+              <ImageSlide key={i} index={i} ratio="1/1" />
             ))}
           </CarouselViewport>
           <div className="sb-carousel-controls">

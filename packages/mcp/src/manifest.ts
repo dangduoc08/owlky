@@ -16,6 +16,8 @@ export interface ManifestOption {
   readonly attr: string;
   readonly description: string;
   readonly values?: readonly string[];
+  /** Style options: other valid values, a regular expression source matched whole (`16/10`). */
+  readonly pattern?: string;
   readonly default?: string | number | boolean;
   readonly optional?: boolean;
   readonly when?: string;

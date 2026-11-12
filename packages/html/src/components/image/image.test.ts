@@ -251,11 +251,40 @@ describe("image runtime", () => {
     expect(components).toContain(image);
   });
 
-  it("does nothing without an img", () => {
-    const host = mount('<span data-ok-image data-ok-fit="cover"></span>');
+  it("writes a custom ratio through CSSOM, follows changes and cleans up", async () => {
+    const host = mount(markup(`${PIXEL}#r`, 'data-ok-ratio="16/10"'));
+    const root = rootOf(host);
+    root.style.width = "160px";
+    await imgOf(host).decode();
+    // Before the runtime: the picture keeps its own ratio (8 × 6).
+    expect(root.getBoundingClientRect().height).toBeCloseTo(120, 0);
+    const rt = start();
+    expect(root.style.getPropertyValue("--_ok-image-ratio")).toBe("16 / 10");
+    expect(root.getBoundingClientRect().height).toBeCloseTo(100, 0);
+    root.setAttribute("data-ok-ratio", "4");
+    await settle();
+    expect(root.getBoundingClientRect().height).toBeCloseTo(40, 0);
+    // A named ratio is a CSS rule: the property goes away.
+    root.setAttribute("data-ok-ratio", "16/9");
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-image-ratio")).toBe("");
+    expect(root.getBoundingClientRect().height).toBeCloseTo(90, 0);
+    root.setAttribute("data-ok-ratio", "2/1");
+    await settle();
+    rt.stop();
+    runtime = undefined;
+    expect(root.style.getPropertyValue("--_ok-image-ratio")).toBe("");
+  });
+
+  it("does nothing without an img (a custom ratio still applies until stop())", () => {
+    const host = mount('<span data-ok-image data-ok-fit="cover" data-ok-ratio="3/1"></span>');
     const rt = start();
     expect(rt.get<ImageInstance>(rootOf(host), "image")?.state).toBe("loaded");
     expect(rootOf(host).hasAttribute("data-ok-state")).toBe(false);
+    expect(rootOf(host).style.getPropertyValue("--_ok-image-ratio")).toBe("3 / 1");
+    rt.stop();
+    runtime = undefined;
+    expect(rootOf(host).style.getPropertyValue("--_ok-image-ratio")).toBe("");
   });
 
   it("ignores hostile option values", async () => {

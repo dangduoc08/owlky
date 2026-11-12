@@ -31,7 +31,7 @@ div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-color][data-ok-ma
            [aria-haspopup=listbox][aria-expanded][aria-controls][aria-disabled]?   › the selected option's content
         input[data-ok-select-input][aria-hidden][tabindex=-1][value=<country code | "">][disabled]?
         svg[data-ok-select-icon][aria-hidden]
-        div[data-ok-popover][popover=manual][id=<input id>-country-menu] › span[data-ok-popover-arrow]
+        div[data-ok-popover][data-ok-paper][popover=manual][id=<input id>-country-menu] › span[data-ok-popover-arrow]
           ul[data-ok-select-listbox][role=listbox]                       (empty in HTML snippets: the runtime fills it)
             li[data-ok-menu-item][role=option][tabindex=-1][aria-selected][data-ok-selected]?[data-ok-value=""|<code>]
               span[data-ok-list-item-icon][data-ok-phone-input-flag][aria-hidden=true] › emoji flag | svg (globe)

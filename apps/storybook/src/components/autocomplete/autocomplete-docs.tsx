@@ -34,7 +34,7 @@ export const autocompleteSections: GuideSection[] = [
       <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Fruit</span></legend></fieldset>
     </div>
   </div>
-  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" data-ok-disable-auto-focus
     data-ok-disable-restore-focus data-ok-autocomplete-paper>
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <ul role="listbox" id="fruit-listbox" aria-label="Fruit">

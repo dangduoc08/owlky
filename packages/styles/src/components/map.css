@@ -8,10 +8,10 @@
  *              › div[data-ok-map-status][role=status]
  *              › div[data-ok-map-marker][data-ok-anchor][data-ok-color] › svg[data-ok-map-pin] | content
  *              › div[data-ok-map-popup][role=dialog][data-ok-current-anchor]
- *                  › span[data-ok-map-popup-tip] + div[data-ok-map-popup-content] + button[data-ok-map-popup-close]?
+ *                  › span[data-ok-map-popup-tip] + div[data-ok-map-popup-content][data-ok-paper] + button[data-ok-map-popup-close]?
  *              › div[data-ok-map-panel][data-ok-position][data-ok-theme=dark]
  *              › div[data-ok-map-corner=top-left|top-right|bottom-left|bottom-right]
- *                  › div[data-ok-map-control] › button[data-ok-map-action] › svg
+ *                  › div[data-ok-map-control][data-ok-paper] › button[data-ok-map-action] › svg
  *                  › div[data-ok-map-scale] · details[data-ok-map-attribution]
  *                  › div[data-ok-map-legend][data-ok-variant] › ul › li › button[data-ok-map-legend-class] | gradient
  *              › div[data-ok-map-regions] › div[data-ok-map-regions-list][role=listbox] + table (choropleth)

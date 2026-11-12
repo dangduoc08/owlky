@@ -1508,30 +1508,18 @@
   }
 }
 
-/* Carousel (story-only demo markup): the slides' pictures, number badges, cards and control rows. */
+/* Carousel (story-only layout): the slides' frames (their pictures are Images), number badges,
+   card and hero text, and control rows. */
 .sb-carousel {
   flex: 1 1 100%;
   min-width: 0;
   max-width: 50rem;
 }
 
-.sb-carousel-image,
-.sb-carousel-card,
-.sb-carousel-hero {
+.sb-carousel-slide {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 4 / 3;
   border-radius: var(--ok-radius-xl);
-  background-color: var(--ok-bg-neutral);
-}
-
-.sb-carousel-image > img,
-.sb-carousel-card > img,
-.sb-carousel-hero > img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .sb-carousel-index {
@@ -1572,14 +1560,6 @@
   border-radius: var(--ok-radius-xl);
 }
 
-.sb-carousel-wide {
-  aspect-ratio: 16 / 10;
-}
-
-.sb-carousel-square {
-  aspect-ratio: 1;
-}
-
 .sb-carousel-w-1 {
   width: min(14rem, 70vw);
 }
@@ -1592,37 +1572,16 @@
   width: min(18rem, 75vw);
 }
 
-.sb-carousel-h-1 {
-  aspect-ratio: 4 / 1;
-}
-
-.sb-carousel-h-2 {
-  aspect-ratio: 3 / 1;
-}
-
-.sb-carousel-h-3 {
-  aspect-ratio: 2 / 1;
-}
-
-.sb-carousel-h-4 {
-  aspect-ratio: 5 / 2;
-}
-
 .sb-carousel-vertical {
   height: 24rem;
 }
 
 .sb-carousel-fill {
   height: 100%;
-  aspect-ratio: auto;
 }
 
 .sb-carousel-thumbs {
   margin-top: calc(var(--ok-spacing) * 4);
-}
-
-.sb-carousel-card {
-  aspect-ratio: 3 / 4;
 }
 
 .sb-carousel-card-content,
@@ -1643,7 +1602,6 @@
 }
 
 .sb-carousel-hero {
-  aspect-ratio: 16 / 9;
   border-radius: 0;
 }
 

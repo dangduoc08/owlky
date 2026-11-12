@@ -236,7 +236,9 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       data-ok-offset={offsetAttribute(offset)}
     >
       <span data-ok-map-popup-tip="" aria-hidden="true" />
-      <div data-ok-map-popup-content="">{children}</div>
+      <div data-ok-map-popup-content="" data-ok-paper="">
+        {children}
+      </div>
       {closeButton ? (
         <button type="button" data-ok-map-popup-close="" aria-label={context.labels.close}>
           <svg

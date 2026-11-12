@@ -18,6 +18,7 @@ import {
   CarouselThumb,
   CarouselThumbs,
   CarouselViewport,
+  Image,
 } from "@owlky/react";
 import alignExample from "../../../../../packages/html/src/components/carousel/examples/align-example.html?raw";
 import autoplayExample from "../../../../../packages/html/src/components/carousel/examples/autoplay-example.html?raw";
@@ -39,12 +40,21 @@ const PICTURES = [0, 1, 2, 3, 4];
 function Picture({ index }: { index: number }) {
   return (
     <CarouselSlide>
-      <div className="sb-carousel-image">
-        <img src={`carousel/slide-${index + 1}.svg`} alt={SLIDES[index]?.[0] ?? ""} />
+      <div className="sb-carousel-slide">
+        <Image src={`carousel/slide-${index + 1}.svg`} alt={SLIDES[index]?.[0] ?? ""} ratio="4/3" />
       </div>
     </CarouselSlide>
   );
 }
+
+/** An Image slide's HTML (the markup the React `Image` renders). */
+const htmlPicture = (src: string, alt: string, current = "") =>
+  `<div role="group" aria-roledescription="slide" aria-label="${current}" data-ok-carousel-slide${current.startsWith("1 ") ? " data-ok-snapped" : ""}>
+        <span data-ok-image data-ok-ratio="16/10" data-ok-fit="cover" data-ok-position="center" data-ok-effect="blur">
+          <span data-ok-image-placeholder aria-hidden="true"></span>
+          <img src="${src}" alt="${alt}" loading="lazy" decoding="async">
+        </span>
+      </div>`;
 
 export const carouselSections: GuideSection[] = [
   {
@@ -59,9 +69,9 @@ export const carouselSections: GuideSection[] = [
   data-ok-loop data-ok-slides-to-show="70%" data-ok-slide-spacing="20">
   <div data-ok-carousel-viewport tabindex="0">
     <div data-ok-carousel-container>
-      <div role="group" aria-roledescription="slide" aria-label="1 of 3" data-ok-carousel-slide data-ok-snapped><img src="photo-1.jpg" alt="Mountain lake"></div>
-      <div role="group" aria-roledescription="slide" aria-label="2 of 3" data-ok-carousel-slide><img src="photo-2.jpg" alt="Forest in the fog"></div>
-      <div role="group" aria-roledescription="slide" aria-label="3 of 3" data-ok-carousel-slide><img src="photo-3.jpg" alt="Desert road"></div>
+      ${htmlPicture("photo-1.jpg", "Mountain lake", "1 of 3")}
+      ${htmlPicture("photo-2.jpg", "Forest in the fog", "2 of 3")}
+      ${htmlPicture("photo-3.jpg", "Desert road", "3 of 3")}
     </div>
     <span data-ok-carousel-live aria-live="polite" aria-atomic="true"></span>
   </div>
@@ -71,7 +81,7 @@ export const carouselSections: GuideSection[] = [
     <button type="button" data-ok-carousel-dot aria-label="Go to slide 3"></button>
   </div>
 </section>`,
-    react: `import { Carousel, CarouselDots, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, CarouselDots, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 
 export function FeaturedPhotos({ photos }: { photos: { src: string; alt: string }[] }) {
   return (
@@ -79,7 +89,7 @@ export function FeaturedPhotos({ photos }: { photos: { src: string; alt: string 
       <CarouselViewport>
         {photos.map((photo) => (
           <CarouselSlide key={photo.src}>
-            <img src={photo.src} alt={photo.alt} />
+            <Image src={photo.src} alt={photo.alt} ratio="16/10" />
           </CarouselSlide>
         ))}
       </CarouselViewport>
@@ -101,6 +111,7 @@ export function FeaturedPhotos({ photos }: { photos: { src: string; alt: string 
   CarouselThumb,
   CarouselThumbs,
   CarouselViewport,
+  Image,
 } from "@owlky/react";
 
 const photos = [
@@ -116,7 +127,7 @@ export function CarouselAnatomy() {
         <CarouselViewport>
           {photos.map((photo) => (
             <CarouselSlide key={photo.src}>
-              <img src={photo.src} alt={photo.alt} />
+              <Image src={photo.src} alt={photo.alt} ratio="16/10" />
             </CarouselSlide>
           ))}
         </CarouselViewport>
@@ -138,7 +149,7 @@ export function CarouselAnatomy() {
     title: "Size and space the slides",
     body: 'By default each slide fills the view. Set `slidesToShow` to a number of slides (`3`, `1.5`), a share of the view (`"70%"`) or `auto` to keep each slide\'s own width. Pass one value per breakpoint for responsive carousels, such as `{ xs: 1, sm: 2, md: 3 }`: in HTML, write `data-ok-slides-to-show`, `data-ok-slides-to-show-sm` and so on. `slideSpacing` sets the gap between slides in pixels. `slidesToScroll` moves several slides per step, or as many as fit with `auto`.',
     html: `${snippetElement(slidesToScrollExample, "data-ok-carousel ")}`,
-    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 
 const photos = [
   { src: "photo-1.jpg", alt: "Mountain lake" },
@@ -157,7 +168,7 @@ export function CarouselSizes() {
       <CarouselViewport>
         {photos.map((photo) => (
           <CarouselSlide key={photo.src}>
-            <img src={photo.src} alt={photo.alt} />
+            <Image src={photo.src} alt={photo.alt} ratio="16/10" />
           </CarouselSlide>
         ))}
       </CarouselViewport>
@@ -170,7 +181,7 @@ export function CarouselSizes() {
     title: "Align and contain the slides",
     body: "`align` places the selected slides at the `start`, `center` (the default) or `end` of the view, or at a fraction of it, such as `0.1`. `containScroll` decides what happens at both ends: `trimSnaps` (the default) stops at the first and last slide without empty space, `keepSnaps` keeps a stop for every slide, and `false` leaves space so that even the first and last slides can reach their alignment. `startIndex` selects a slide when the carousel loads.",
     html: `${snippetElement(alignExample, "data-ok-carousel ")}`,
-    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 
 const photos = [
   { src: "photo-1.jpg", alt: "Mountain lake" },
@@ -184,7 +195,7 @@ export function CarouselAlign() {
       <CarouselViewport>
         {photos.map((photo) => (
           <CarouselSlide key={photo.src}>
-            <img src={photo.src} alt={photo.alt} />
+            <Image src={photo.src} alt={photo.alt} ratio="16/10" />
           </CarouselSlide>
         ))}
       </CarouselViewport>
@@ -197,7 +208,7 @@ export function CarouselAlign() {
     title: "Loop, drag and scroll",
     body: "Set `loop` to make the first slide follow the last one. The carousel reorders the slides visually instead of copying them, so screen readers and the Tab key still meet each slide once, in order. Loops need content at least one view and two steps long; shorter carousels stop at their ends. `dragFree` lets slides glide with momentum instead of snapping, `skipSnaps` lets a strong swipe pass several slides, `draggable` turns dragging off, and `wheelGestures` moves one slide per mouse wheel or trackpad gesture.",
     html: `${snippetElement(dragFreeExample, "data-ok-carousel ")}`,
-    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 
 const photos = [
   { src: "photo-1.jpg", alt: "Mountain lake" },
@@ -211,7 +222,7 @@ export function CarouselLoop() {
       <CarouselViewport>
         {photos.map((photo) => (
           <CarouselSlide key={photo.src}>
-            <img src={photo.src} alt={photo.alt} />
+            <Image src={photo.src} alt={photo.alt} ratio="16/10" />
           </CarouselSlide>
         ))}
       </CarouselViewport>
@@ -222,18 +233,21 @@ export function CarouselLoop() {
   {
     id: "effects",
     title: "Add an effect",
-    body: "`effect` changes how slides move. `fade` stacks the slides and cross-fades between them. `opacity` and `scale` dim or shrink the slides away from the selected one while you scroll. `parallax` moves a layer inside each slide more slowly than the slide: mark that layer with `data-ok-carousel-parallax`, inside a box that clips it. `autoHeight` makes the carousel as tall as the selected slide.",
+    body: "`effect` changes how slides move. `fade` stacks the slides and cross-fades between them. `opacity` and `scale` dim or shrink the slides away from the selected one while you scroll. `parallax` moves a layer inside each slide more slowly than the slide: mark that layer with `data-ok-carousel-parallax`, inside a box that clips it. With an Image, mark its picture (`imgProps` in React): the Image clips it. `autoHeight` makes the carousel as tall as the selected slide.",
     html: `${snippetElement(parallaxExample, "data-ok-carousel ")}`,
-    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 
 export function CarouselEffects() {
   return (
     <Carousel aria-label="Parallax" loop effect="parallax" slidesToShow="70%">
       <CarouselViewport>
         <CarouselSlide>
-          <div className="frame">
-            <img data-ok-carousel-parallax="" src="photo-1.jpg" alt="Mountain lake" />
-          </div>
+          <Image
+            src="photo-1.jpg"
+            alt="Mountain lake"
+            ratio="4/3"
+            imgProps={{ "data-ok-carousel-parallax": "" }}
+          />
         </CarouselSlide>
       </CarouselViewport>
     </Carousel>
@@ -245,7 +259,7 @@ export function CarouselEffects() {
     title: "Play slides automatically",
     body: "`autoplay` moves to the next slide every `autoplayDelay` milliseconds, and `autoScroll` scrolls continuously at `autoScrollSpeed` pixels per frame. Both pause while the pointer is over the carousel, and stop when a swipe, a drag or keyboard focus reaches it, so people can read at their own pace. Always add a `CarouselPlayButton`: its label switches between **Play** and **Pause**. Neither starts on its own when the system asks for reduced motion. Set `playOnInit` to `false` to wait for the button.",
     html: `${snippetElement(autoplayExample, "data-ok-carousel ")}`,
-    react: `import { Carousel, CarouselPlayButton, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, CarouselPlayButton, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 
 const photos = [
   { src: "photo-1.jpg", alt: "Mountain lake" },
@@ -260,7 +274,7 @@ export function CarouselAutoplay() {
       <CarouselViewport>
         {photos.map((photo) => (
           <CarouselSlide key={photo.src}>
-            <img src={photo.src} alt={photo.alt} />
+            <Image src={photo.src} alt={photo.alt} ratio="16/10" />
           </CarouselSlide>
         ))}
       </CarouselViewport>
@@ -292,7 +306,7 @@ export function CarouselControls() {
     html: `${snippetElement(yAxisExample, "data-ok-carousel ")}
 
 ${snippetElement(rtlExample, "data-ok-carousel ")}`,
-    react: `import { Carousel, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 
 const photos = [
   { src: "photo-1.jpg", alt: "Mountain lake" },
@@ -306,7 +320,7 @@ export function CarouselDirection() {
       <CarouselViewport>
         {photos.map((photo) => (
           <CarouselSlide key={photo.src}>
-            <img src={photo.src} alt={photo.alt} />
+            <Image src={photo.src} alt={photo.alt} ratio="16/10" />
           </CarouselSlide>
         ))}
       </CarouselViewport>
@@ -338,7 +352,7 @@ Three events report changes around the slides. **Resize** fires when the viewpor
     status.textContent = \`\${event.detail.entries.length} parts changed size.\`;
   });
 </script>`,
-    react: `import { Carousel, type CarouselApi, CarouselSlide, CarouselViewport } from "@owlky/react";
+    react: `import { Carousel, type CarouselApi, CarouselSlide, CarouselViewport, Image } from "@owlky/react";
 import { useRef, useState } from "react";
 
 const photos = [
@@ -365,7 +379,7 @@ export function CarouselControls() {
         <CarouselViewport>
           {photos.map((photo) => (
             <CarouselSlide key={photo.src}>
-              <img src={photo.src} alt={photo.alt} />
+              <Image src={photo.src} alt={photo.alt} ratio="16/10" />
             </CarouselSlide>
           ))}
         </CarouselViewport>

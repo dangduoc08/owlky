@@ -54,7 +54,7 @@ Triggers: button[data-ok-countdown-toggle=<id>][aria-pressed] (pause / resume),
   button[data-ok-countdown-restart=<id>] (from the start, running)
 div[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?
   [data-ok-paused]? › content
-Dialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)
+Dialog: div[data-ok-dialog-paper][data-ok-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)
 Layout group (HTML): any container [data-ok-layout-group=<id>]? › … [data-ok-motion][data-ok-layout]…
 ```
 Private properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |

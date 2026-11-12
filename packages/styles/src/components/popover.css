@@ -1,10 +1,11 @@
 /*
  * Popover — spec: specs/components/popover.md (also the paper of Menu)
  *
- * Anatomy:   div[data-ok-popover][popover=manual][role=dialog]?
+ * Anatomy:   div[data-ok-popover][data-ok-paper][popover=manual][role=dialog]?   (a Paper, ADR-0066)
  *              › span[data-ok-popover-arrow][aria-hidden]?   (with data-ok-arrow)
  *              › content
  * Modifiers: data-ok-placement = bottom (default) | top | left | right, each -start / -end
+ *            data-ok-elevation = 0 … 24 (Paper's shadow instead of the dropdown shadow)
  *            data-ok-arrow, data-ok-disable-escape-key-down (behavior)
  * States:    [data-ok-open] (written by the core popover controller, both paths);
  *            [data-ok-current-placement] (the side used after a flip); [data-ok-fallback]
@@ -13,6 +14,7 @@
  *            through CSSOM by the controller
  *
  * Translucent paper with a blur and two soft color glows (info top-right, error bottom-left).
+ * paper.css loads first: these rules restate the radius, background and shadow by source order.
  * Single :where() selectors in @layer components.
  */
 @reference "../theme.css";
@@ -57,11 +59,15 @@
     background-repeat: no-repeat;
     background-size: var(--_ok-glow-width) var(--_ok-glow-height);
     background-position: calc(-1 * var(--_ok-glow-ext)) calc(-1 * var(--_ok-glow-ext));
-    box-shadow: var(--ok-shadow-dropdown);
     color: var(--ok-text-primary);
     font-family: var(--ok-font-family);
     -webkit-backdrop-filter: var(--_ok-popover-blur);
     backdrop-filter: var(--_ok-popover-blur);
+  }
+
+  /* The dropdown shadow, unless an elevation picks one of Paper's (paper.css). */
+  :where([data-ok-popover]:not([data-ok-elevation])) {
+    box-shadow: var(--ok-shadow-dropdown);
   }
 
   /* Without an arrow, long content scrolls inside the paper (an arrow must stay unclipped). */

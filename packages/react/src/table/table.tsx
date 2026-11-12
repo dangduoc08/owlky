@@ -21,8 +21,12 @@ import {
 import {
   type ComponentPropsWithoutRef,
   createContext,
+  type ElementType,
   forwardRef,
+  type ReactElement,
   type ReactNode,
+  type Ref,
+  type RefAttributes,
   useContext,
   useId,
 } from "react";
@@ -59,20 +63,43 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(function Table(
 export interface TableContainerProps extends ComponentPropsWithoutRef<"section"> {
   /** Name of the scrollable region (or `aria-labelledby`); omit it when a `Scrollbar` inside scrolls. */
   "aria-label"?: string | undefined;
+  /**
+   * The element or component that renders the container. Default `"section"`. Pass `Paper` to
+   * put the table on a surface (`component={Paper}`, as in MUI); name the `Scrollbar` inside
+   * then, since a Paper renders a `div`.
+   */
+  component?: ElementType | undefined;
+}
+
+/**
+ * `TableContainer`'s call signatures: with `component`, the props of that component (such as
+ * Paper's `elevation`), otherwise `TableContainerProps` (a `section`).
+ */
+export interface TableContainerComponent {
+  <C extends ElementType>(
+    props: {
+      /** The element or component that renders the container, such as `Paper`. */
+      component: C;
+      ref?: Ref<HTMLElement> | undefined;
+    } & Omit<ComponentPropsWithoutRef<C>, "component">,
+  ): ReactElement | null;
+  (props: TableContainerProps & RefAttributes<HTMLElement>): ReactElement | null;
+  displayName?: string | undefined;
 }
 
 /**
  * Holds a table. Wrap the table in a `Scrollbar` (the named, focusable scroll region), or name
  * the container itself (`aria-label`) to let it scroll natively.
  */
-export const TableContainer = forwardRef<HTMLElement, TableContainerProps>(
-  function TableContainer(props, ref) {
-    const named = props["aria-label"] !== undefined || props["aria-labelledby"] !== undefined;
-    return (
-      <section ref={ref} data-ok-table-container="" tabIndex={named ? 0 : undefined} {...props} />
-    );
-  },
-);
+export const TableContainer = forwardRef<HTMLElement, TableContainerProps>(function TableContainer(
+  { component: Component = "section", ...props },
+  ref,
+) {
+  const named = props["aria-label"] !== undefined || props["aria-labelledby"] !== undefined;
+  return (
+    <Component ref={ref} data-ok-table-container="" tabIndex={named ? 0 : undefined} {...props} />
+  );
+}) as TableContainerComponent;
 
 export const TableHead = forwardRef<HTMLTableSectionElement, ComponentPropsWithoutRef<"thead">>(
   function TableHead(props, ref) {

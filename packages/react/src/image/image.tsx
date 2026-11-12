@@ -5,14 +5,16 @@ import {
   type ImageFit,
   type ImageOverlay,
   type ImagePosition,
-  type ImageRatio,
+  type ImageRatioValue,
   type ImageState,
   imageAttributes,
   imageLoadState,
   imageOverlays,
+  imageStyle,
   type PaletteColorName,
 } from "@owlky/core";
 import {
+  type CSSProperties,
   forwardRef,
   type HTMLAttributes,
   type ImgHTMLAttributes,
@@ -67,8 +69,11 @@ export interface ImageProps
   crossOrigin?: ImgHTMLAttributes<HTMLImageElement>["crossOrigin"];
   /** The `referrerpolicy` of the `img`. */
   referrerPolicy?: ImgHTMLAttributes<HTMLImageElement>["referrerPolicy"];
-  /** Aspect ratio the picture is cropped to (`"16/9"`). Default: the picture's own ratio. */
-  ratio?: ImageRatio | undefined;
+  /**
+   * Aspect ratio the picture is cropped to: a named ratio (`"16/9"`), any other `width/height`
+   * (`"16/10"`, `"4/1"`) or a number (`1.6`). Default: the picture's own ratio.
+   */
+  ratio?: ImageRatioValue | undefined;
   /** `object-fit`. Default `"cover"`. */
   fit?: ImageFit | undefined;
   /** The part that stays in view when cropped (`object-position`). Default `"center"`. */
@@ -93,8 +98,13 @@ export interface ImageProps
   onError?: ((event: ImgEvent) => void) | undefined;
   /** Ref of the `<img>` (`ref` is the root). */
   imgRef?: Ref<HTMLImageElement> | undefined;
-  /** Other attributes of the `<img>`. */
-  imgProps?: ImgHTMLAttributes<HTMLImageElement> | undefined;
+  /**
+   * Other attributes of the `<img>`, `data-*` ones included (such as
+   * `data-ok-carousel-parallax`, which marks the picture a parallax carousel moves).
+   */
+  imgProps?:
+    | (ImgHTMLAttributes<HTMLImageElement> & { [data: `data-${string}`]: string | undefined })
+    | undefined;
 }
 
 /**
@@ -128,6 +138,7 @@ export const Image = forwardRef<HTMLSpanElement, ImageProps>(function Image(
     onError,
     imgRef,
     imgProps,
+    style,
     ...props
   },
   ref,
@@ -145,6 +156,11 @@ export const Image = forwardRef<HTMLSpanElement, ImageProps>(function Image(
     if (settled !== "loading") setResult({ key, state: settled });
   }, [key]);
 
+  // A custom ratio (`16/10`) is a private property; named ratios are CSS rules.
+  const custom = imageStyle(ratio);
+  const merged =
+    Object.keys(custom).length > 0 ? ({ ...custom, ...style } as CSSProperties) : style;
+
   return (
     <span
       ref={ref}
@@ -160,6 +176,7 @@ export const Image = forwardRef<HTMLSpanElement, ImageProps>(function Image(
       })}
       data-ok-state={state}
       data-ok-runtime="off"
+      style={merged}
       {...props}
     >
       {/* Always rendered (CSS hides it with `disablePlaceholder` / `visibleByDefault`). */}

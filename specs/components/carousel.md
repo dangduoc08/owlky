@@ -40,6 +40,12 @@ section[data-ok-carousel][aria-roledescription="carousel"][aria-label][data-ok-a
   button[data-ok-button][data-ok-carousel-play]  (Button: two icons and two labels
                                                   [data-ok-carousel-play-label="play|pause"])
 ```
+Slide pictures compose Image, as on the reference (stories, docs, snippets since 2026-11-12):
+`div.sb-carousel-slide` (story layout: badge position, corners) › `span[data-ok-image][data-ok-ratio]`
+› `img` with the stories' ratios (`4/3`, `16/10`, `1/1`, `3/4`, `16/9`; Auto height `4/1` `3/1`
+`2/1` `5/2`; Y-axis none, the Image fills the slide). Parallax marks the Image's own `img`
+(`imgProps={{ "data-ok-carousel-parallax": "" }}`), which the Image clips. Thumbnails stay plain
+`img`s. Snippets: `pnpm build && node apps/storybook/scripts/carousel-snippets.mjs`.
 Every control can sit anywhere inside the root (several sets at once). React parts: `Carousel`,
 `CarouselStage`, `CarouselViewport`, `CarouselSlide`, `CarouselArrows`, `CarouselDots`,
 `CarouselProgress`, `CarouselThumbs`, `CarouselThumb`, `CarouselPlayButton`.

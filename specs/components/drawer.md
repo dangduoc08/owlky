@@ -10,7 +10,7 @@ A modal panel that slides in from an edge of the screen (navigation, filters, de
 ```
 [trigger] button[data-ok-button][aria-haspopup="dialog"]     HTML: [data-ok-drawer-open="<id>"]
 dialog[data-ok-drawer][data-ok-anchor][aria-label | aria-labelledby]   React: + data-ok-runtime="off"
-  div[data-ok-drawer-content]                                the paper; any content
+  div[data-ok-drawer-content][data-ok-paper]                                the paper; any content
     … HTML close: [data-ok-drawer-close] (inside) or [data-ok-drawer-close="<id>"]
 div[data-ok-drawer-swipe-area][aria-hidden=true]             swipeable only: right after the dialog
 States (swipeable, written by core): [data-ok-swiping], [data-ok-swipe-settling] on the dialog;
@@ -64,6 +64,10 @@ only swipes to close). Keep the trigger and a close control: a swipe is a pointe
 (WCAG 2.5.7).
 
 ## Layout and tokens
+The content is a square Paper (ADR-0066, 2026-11-12): `data-ok-paper` right after
+`data-ok-drawer-content`; `drawer.css` restates `border-radius: 0` (MUI's Drawer passes `square`),
+its own background, shadows and `transition`. `elevation` stays the Drawer's option on the root
+(`--_ok-drawer-shadow`), unchanged.
 - Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop: native `::backdrop` with `--ok-backdrop` (shared with the Backdrop component, which can't
   sit in the top layer; `hideBackdrop` matches its `invisible`); stacking `--ok-z-modal`
   (fallback path).

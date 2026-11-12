@@ -21,7 +21,7 @@ function htmlStep(
   const id = `tour-${number}`;
   const last = number === total;
   const label = continuous ? "Next" : "Close";
-  return `<div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
+  return `<div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
     ${attributes} role="dialog" aria-labelledby="${id}-title" aria-describedby="${id}-content">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>
@@ -84,7 +84,7 @@ export const walktourSections: GuideSection[] = [
   <button type="button" data-ok-walktour-beacon aria-label="Open the dialog" aria-haspopup="dialog" hidden>
     <span data-ok-walktour-beacon-inner></span>
   </button>
-  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
     data-ok-target="#inbox" role="dialog" aria-labelledby="tour-1-title" aria-describedby="tour-1-content">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>
@@ -101,7 +101,7 @@ export const walktourSections: GuideSection[] = [
       <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>
     </div>
   </div>
-  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
     data-ok-target="#compose" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>
@@ -145,7 +145,7 @@ export function Tour() {
     id: "steps",
     title: "Describe the steps",
     body: "In React, pass the steps as data. Each step has a `target`, which is a CSS selector, an element, a ref or a function that returns the element. It also has its `content` and, usually, a `title` that names the dialog. `placement` puts the step on a side of the target, such as `bottom` or `left-start`. Use `auto` to pick the side with the most room, or `center` for a step in the middle of the screen with no target. A step can override most options of the tour, such as `disableBeacon`, `spotlightClicks` or `showSkipButton`. In HTML, write one step element per step. `data-ok-target` holds the selector, and an option attribute on a step overrides the tour's. The value `false` turns a tour option off for that step.",
-    html: `<div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+    html: `<div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
   data-ok-target="#compose" data-ok-spotlight-clicks
   data-ok-show-skip-button="false" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
   <span data-ok-popover-arrow aria-hidden="true"></span>
@@ -241,7 +241,7 @@ export function ControlledTour({ steps }: { steps: WalktourStep[] }) {
   <button type="button" data-ok-walktour-beacon aria-label="Open the dialog" aria-haspopup="dialog">
     <span data-ok-walktour-beacon-inner></span>
   </button>
-  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
     data-ok-target="#inbox" role="dialog" aria-labelledby="tour-1-title" aria-describedby="tour-1-content">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>
@@ -258,7 +258,7 @@ export function ControlledTour({ steps }: { steps: WalktourStep[] }) {
       <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>
     </div>
   </div>
-  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
     data-ok-target="#compose" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>
@@ -309,7 +309,7 @@ export function WalktourBeacons() {
   <button type="button" data-ok-walktour-beacon aria-label="Open the dialog" aria-haspopup="dialog" hidden>
     <span data-ok-walktour-beacon-inner></span>
   </button>
-  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
     data-ok-target="#inbox" role="dialog" aria-labelledby="tour-1-title" aria-describedby="tour-1-content">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>
@@ -326,7 +326,7 @@ export function WalktourBeacons() {
       <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>
     </div>
   </div>
-  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
     data-ok-target="#compose" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>

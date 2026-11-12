@@ -99,7 +99,16 @@ for (const viewport of viewports) {
           const page = await context.newPage();
           await openStory(page, storyId(impl, "carousel", story));
           await page.evaluate(() => document.fonts.ready);
-          await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+          // Slide pictures are lazy Images (a ratio box, so their size doesn't wait for them):
+          // wait for each one's state to match its picture, and for the eager pictures.
+          await page.waitForFunction(() =>
+            [...document.images].every((img) => {
+              const root = img.parentElement?.closest("[data-ok-image]");
+              if (!root) return img.complete;
+              const state = !img.complete ? "loading" : img.naturalWidth > 0 ? "loaded" : "error";
+              return root.getAttribute("data-ok-state") === state;
+            }),
+          );
           const { problems, boxes } = await measure(page);
           expect(problems, `${impl} ${story}`).toEqual([]);
           results[impl] = boxes;

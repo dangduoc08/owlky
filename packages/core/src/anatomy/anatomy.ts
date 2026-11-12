@@ -2059,6 +2059,13 @@ export const popoverOptions = defineOptions("popover", "data-ok-popover", {
     "Length of the opening animation (ms). Default: the theme's shorter duration.",
     { min: 0 },
   ),
+  elevation: style(
+    "data-ok-elevation",
+    paperElevations,
+    "8",
+    "Shadow depth of the paper, `0`–`24` (`--ok-elevation-<n>`). Without it, the theme's dropdown shadow.",
+    { optional: true },
+  ),
   open: state(
     "data-ok-open",
     "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
@@ -2075,11 +2082,33 @@ export interface PopoverAnatomyOptions {
   disableEscapeKeyDown?: boolean | undefined;
   disableAutoFocus?: boolean | undefined;
   disableRestoreFocus?: boolean | undefined;
+  /** 0–24 (a number or its string); without it, the dropdown shadow. */
+  elevation?: number | string | undefined;
 }
 
-/** `data-ok-*` attributes of a popover (`div[popover]`). */
-export const popoverAttributes = (options: PopoverAnatomyOptions = {}): DataAttributes =>
-  optionAttributes(popoverOptions, { ...options });
+/**
+ * The marker of a library surface built on Paper (ADR-0066): `data-ok-paper` and, when given, a
+ * valid `data-ok-elevation` (0–24). The surface's own CSS keeps its look; an elevation wins over
+ * its default shadow.
+ */
+export const surfacePaperAttributes = (elevation?: number | string | undefined): DataAttributes => {
+  const level = elevation === undefined ? undefined : String(elevation);
+  return paperElevations.includes(level as (typeof paperElevations)[number])
+    ? { "data-ok-paper": "", "data-ok-elevation": level as string }
+    : { "data-ok-paper": "" };
+};
+
+/**
+ * `data-ok-*` attributes of a popover (`div[popover]`): a Paper (ADR-0066), `data-ok-paper` right
+ * after the root marker.
+ */
+export const popoverAttributes = ({
+  elevation,
+  ...options
+}: PopoverAnatomyOptions = {}): DataAttributes => {
+  const { "data-ok-popover": root, ...rest } = optionAttributes(popoverOptions, { ...options });
+  return { "data-ok-popover": root as string, ...surfacePaperAttributes(elevation), ...rest };
+};
 
 export const tooltipTransitions = ["grow", "fade", "zoom"] as const;
 export type TooltipTransition = (typeof tooltipTransitions)[number];
@@ -2264,6 +2293,13 @@ export const dialogOptions = defineOptions("dialog", "data-ok-dialog", {
     undefined,
     "Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations.",
     { min: 0 },
+  ),
+  elevation: style(
+    "data-ok-elevation",
+    paperElevations,
+    "24",
+    "Shadow depth of the paper, `0`–`24` (`--ok-elevation-<n>`). Without it, the theme's dialog shadow.",
+    { optional: true, children: "[data-ok-dialog-paper]" },
   ),
   open: state(
     "open",
@@ -3050,6 +3086,36 @@ export const imageOverlays = ["dark", ...paletteColorNames] as const;
 export const imageStates = ["loading", "loaded", "error"] as const;
 
 export type ImageRatio = (typeof imageRatios)[number];
+
+/** A positive decimal, `16`, `1.6` or `.5` (the parts of a custom ratio). */
+const RATIO_NUMBER = String.raw`(?:\d+(?:\.\d+)?|\.\d+)`;
+/** Any ratio Image accepts besides its named ones: `<width>/<height>` or one number. */
+const IMAGE_RATIO = `${RATIO_NUMBER}(?:/${RATIO_NUMBER})?`;
+
+/**
+ * A valid Image ratio as written in `data-ok-ratio` (spaces removed: `"16 / 10"` → `"16/10"`), or
+ * `undefined`. Named ratios (`16/9`) and custom ones (`16/10`, `4/1`, a number such as `1.6`)
+ * are valid when both terms are positive.
+ */
+export function imageRatio(value: unknown): string | undefined {
+  const text =
+    typeof value === "number" ? String(value) : typeof value === "string" ? value : undefined;
+  if (text === undefined || text.length > 32) return undefined;
+  const ratio = text.replace(/\s+/g, "");
+  if (!new RegExp(`^${IMAGE_RATIO}$`).test(ratio)) return undefined;
+  return ratio.split("/").every((term) => Number(term) > 0) ? ratio : undefined;
+}
+
+/**
+ * Private properties of an image root (React `style`, HTML CSSOM): a custom ratio becomes
+ * `--_ok-image-ratio` (`"16 / 10"`); named ratios are CSS rules on `data-ok-ratio`, so they need
+ * none.
+ */
+export function imageStyle(ratio: unknown): Record<`--_ok-${string}`, string> {
+  const value = imageRatio(ratio);
+  if (value === undefined || imageRatios.includes(value as ImageRatio)) return {};
+  return { "--_ok-image-ratio": value.replace("/", " / ") };
+}
 export type ImageFit = (typeof imageFits)[number];
 export type ImagePosition = (typeof imagePositions)[number];
 export type ImageEffect = (typeof imageEffects)[number];
@@ -3061,8 +3127,8 @@ export const imageOptions = defineOptions("image", "data-ok-image", {
     "data-ok-ratio",
     imageRatios,
     "1/1",
-    "Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio.",
-    { optional: true },
+    "Aspect ratio (width/height) the picture is cropped to: one of these, any other `width/height` such as `16/10`, or a number such as `1.6`. None: the picture's own ratio.",
+    { optional: true, pattern: IMAGE_RATIO },
   ),
   fit: style("data-ok-fit", imageFits, "cover", "How the picture fills its box (`object-fit`)."),
   position: style(
@@ -3106,8 +3172,11 @@ export const imageOptions = defineOptions("image", "data-ok-image", {
   ),
 });
 
+/** A named ratio, any other `width/height` (`"16/10"`) or a number (`1.6`). */
+export type ImageRatioValue = ImageRatio | `${number}/${number}` | number;
+
 export interface ImageAnatomyOptions {
-  ratio?: ImageRatio | undefined;
+  ratio?: ImageRatioValue | string | undefined;
   fit?: ImageFit | undefined;
   position?: ImagePosition | undefined;
   effect?: ImageEffect | undefined;
@@ -3121,6 +3190,7 @@ export interface ImageAnatomyOptions {
 export const imageAttributes = (options: ImageAnatomyOptions = {}): DataAttributes =>
   optionAttributes(imageOptions, {
     ...options,
+    ratio: imageRatio(options.ratio),
     overlayFrom: options.overlay && options.overlay !== "dark" ? options.overlayFrom : undefined,
   });
 

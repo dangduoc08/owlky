@@ -21,7 +21,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
-import { Image } from "../image/image.js";
+import { Image, type ImageProps } from "../image/image.js";
 
 export {
   type AllowElement,
@@ -103,7 +103,7 @@ function markdownImage(props: Record<string, unknown>, mode: ImageMode): ReactEl
     width: width as number | string | undefined,
     height: height as number | string | undefined,
     ratio: mode.ratio,
-    imgProps: other,
+    imgProps: other as ImageProps["imgProps"],
   });
 }
 

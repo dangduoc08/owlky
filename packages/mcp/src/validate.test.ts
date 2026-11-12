@@ -89,6 +89,15 @@ describe("rules", () => {
     expect(slider.issues[0]?.message).not.toContain("length");
   });
 
+  it("accepts style values that match an option's pattern", () => {
+    const image = (ratio: string) =>
+      rules(`<span data-ok-image data-ok-ratio="${ratio}"><img src="a.png" alt=""></span>`);
+    expect(image("16/9")).toEqual([]);
+    expect(image("16/10")).toEqual([]);
+    expect(image("1.6")).toEqual([]);
+    expect(image("wide")).toEqual(["invalid-value"]);
+  });
+
   it("checks behavior options", () => {
     const code = (value: string) =>
       rules(

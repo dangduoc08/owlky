@@ -11,7 +11,7 @@ Content next to an anchor, in the top layer. Runtime behavior: core `createPopov
 ## Anatomy
 ```
 button[data-ok-popover-open="id"][aria-haspopup][aria-expanded][aria-controls]   (HTML trigger; or data-ok-popover-hover)
-div[data-ok-popover][popover=manual][id][data-ok-placement][data-ok-arrow]?[role=dialog]?
+div[data-ok-popover][data-ok-paper][popover=manual][id][data-ok-placement][data-ok-arrow]?[role=dialog]?
   › span[data-ok-popover-arrow][aria-hidden]       (always rendered; shown with data-ok-arrow)
   › content
 ```
@@ -33,6 +33,7 @@ Root: `data-ok-popover`. Unknown values fall back to the default.
 | `anchorReference` | `data-ok-anchor-reference="…"` | style | `anchorEl` `anchorPosition` `none` | — | What positions it: `anchorEl` (the anchor), `anchorPosition` (a point, `anchorPosition` / `data-ok-anchor-position`) or `none` (your CSS). |
 | `marginThreshold` | `data-ok-margin-threshold="…"` | number | number | `16` | Minimum distance to the viewport edges (px). |
 | `transitionDuration` | `data-ok-transition-duration="…"` | number | number | — | Length of the opening animation (ms). Default: the theme's shorter duration. |
+| `elevation` | `data-ok-elevation="…"` | style | `0` `1` `2` `3` `4` `5` `6` `7` `8` `9` `10` `11` `12` `13` `14` `15` `16` `17` `18` `19` `20` `21` `22` `23` `24` | — | Shadow depth of the paper, `0`–`24` (`--ok-elevation-<n>`). Without it, the theme's dropdown shadow. |
 | `open` | `data-ok-open` · event `ok:popover:close` | state | — | — | Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`). |
 <!-- /options:popover -->
 
@@ -49,10 +50,17 @@ Kept (Phase 4.7): `anchorReference` (`anchorEl` · `anchorPosition` · `none`; H
 `anchorEl` also takes a virtual anchor (`{ getBoundingClientRect(), contextElement? }`, MUI
 `PopoverVirtualElement`); HTML: `instance.open(virtualAnchor)`. `none` writes no coordinates:
 the author's CSS positions the paper. Not applicable: `container` (top layer), `TransitionComponent`, `slots`, `slotProps`,
-`sx`, `elevation` (one dropdown shadow), `disableScrollLock` (non-modal: the page stays scrollable;
+`sx`, `disableScrollLock` (non-modal: the page stays scrollable;
 the popover follows its anchor), `disablePortal` (top layer).
 
 ## Layout and tokens
+The root is a Paper (ADR-0066, 2026-11-12): `data-ok-paper` right after `data-ok-popover` (React
+`popoverAttributes()` writes it; so does every popover root: Menu, Select, Autocomplete, pickers,
+Walktour steps, the Editor's bubble menu and mentions, Data grid panels). `paper.css` loads first,
+so `popover.css` restates the radius, translucent background and shadow; Paper adds its
+`transition: box-shadow`. `elevation` (React prop, HTML `data-ok-elevation` `0`–`24`, optional)
+replaces the dropdown shadow with `--ok-elevation-<n>`: the dropdown shadow rule is
+`:not([data-ok-elevation])`. Paper's `variant` / `square` aren't offered on popovers (backlog).
 Paper: radius `--ok-radius-md` × 1.25 (10px), padding 4px, `rgb(var(--ok-bg-paper-channel) / 0.9)`,
 blur 20px, two glows (info top-right, error bottom-left, 12%), `--ok-shadow-dropdown`, max size
 viewport − 32px, scrolls without an arrow. Gap 8px (12px with the arrow); 16px from the viewport
@@ -88,7 +96,8 @@ Audit 2026-11-09 against MUI API page Popover (inherits Modal).
 | `marginThreshold` | same (`data-ok-margin-threshold`, default 16; `0` = none) | kept (4.7) | MUI `null` → `0` |
 | `transitionDuration` | same, a number of ms for the opening animation | kept (4.18.43) | `auto` and `{ enter, exit }` not applicable: no exit animation (Phase 5.1) |
 | `action` (`updatePosition`) | controller repositions on scroll / resize | not applicable | |
-| `elevation` | `--ok-shadow-dropdown` | not applicable | one dropdown shadow |
+| `elevation` | same (`data-ok-elevation`, 0–24, optional) | kept (ADR-0066) | without it `--ok-shadow-dropdown` (Minimals' theme), not MUI's 8 |
+| `slotProps.paper` / `PaperProps` | props on `Popover` | renamed | the root is the paper |
 | `container`, Modal `disablePortal` | — | not applicable | top layer |
 | `disableScrollLock` | — | not applicable | non-modal: page stays scrollable |
 | Modal `disableEscapeKeyDown`, `disableAutoFocus`, `disableRestoreFocus` | same | kept | |

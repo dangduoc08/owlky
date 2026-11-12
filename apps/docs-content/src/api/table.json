@@ -307,7 +307,7 @@
   {
    "html": {
     "attribute": "data-ok-table-container",
-    "description": "The container around the table, with a scrollbar.",
+    "description": "The container around the table, with a scrollbar (a Paper too with `data-ok-paper`).",
     "elements": [
      "section"
     ]
@@ -321,6 +321,11 @@
       "description": "Name of the scrollable region (or `aria-labelledby`); omit it when a `Scrollbar` inside scrolls.",
       "name": "aria-label",
       "type": "string"
+     },
+     {
+      "description": "The element or component that renders the container, such as `Paper`.",
+      "name": "component",
+      "type": "C"
      }
     ]
    }

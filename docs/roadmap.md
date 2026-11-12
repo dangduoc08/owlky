@@ -298,10 +298,15 @@ outlined), `elevation` 0–24 (`--ok-elevation-<n>`, default 1), `square`; React
 Minimals' look: no dark-mode lightening gradient, outline grey 500 at 16%. `paper.css` is imported
 first among the components so surfaces built on it override it by source order (the Card
 contract in `specs/components/paper.md`). No new tokens. Closes no "Pending integrations" row on
-its own: the "Typography + Paper (card)" rows wait for Card. Candidates to compose Paper later
-(no visual change): Popover / Menu paper, Dialog paper, Drawer content, TableContainer, Map
-controls and popups, Autocomplete listbox (recorded in "Pending integrations" since 2026-11-12:
-an owner decision, it changes those roots' markup).
+its own: the "Typography + Paper (card)" rows wait for Card. The library's own surfaces compose
+it since 2026-11-12 (ADR-0066, owner decision; an anatomy change, breaking but a minor changeset before 0.1.0): every
+popover root (Popover, Menu, Select, Autocomplete, pickers, Walktour steps, Editor overlays),
+the Dialog paper, the Drawer content and the Map controls and popup contents carry
+`data-ok-paper` on their own element and keep their look (no visual change); Popover, Menu and
+Dialog take MUI's `elevation`; `TableContainer component={Paper}` (React) puts a table on a
+paper, shown on the Table docs page (the stories follow the reference, without a surface).
+Still candidates (backlog in the ADR): Paper `variant` / `square` on overlays, Autocomplete
+`slotProps.paper`, Snackbar content, Alert and Accordion.
 
 ## ✅ Components — Divider (2026-11-07)
 From MUI's Divider page (Minimals has none; its Drawer uses MUI's Divider): `hr` or, with text,
@@ -530,8 +535,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Image: arbitrary `ratio` values (Image backlog) | Carousel stories and docs page: the slides' pictures (`ImageSlide`, `CardSlide`, the Animation hero) | `div.sb-carousel-image` / `-card` / `-hero` + a plain `img`; demo CSS gives the ratio (16/10, 4/1, 3/1, 2/1, 5/2, fill), the cover fit and the placeholder color. The reference composes its Image; ours offers 11 fixed ratios, and the Parallax story marks the `img` itself (`data-ok-carousel-parallax`) |
-| Owner decision (ADR: anatomy change): Paper composed by the library's own surfaces | Popover / Menu paper, Dialog paper, Drawer content, Autocomplete listbox, Map controls and popups (MUI composes Paper there: `PaperProps`, `elevation`); `TableContainer component={Paper}` in the Table stories | each draws its surface in its own CSS (paper background, radius, a shadow token). Composing Paper adds `data-ok-paper` and its options to those roots: every overlay snippet and consumer markup changes, so it is not additive |
 
 **Sweep of 2026-11-12** (`/integrate` with no argument, roadmap-components 6.1): the table was
 empty; the discovery found waits that had never been recorded. Closed, by composition in stories,
@@ -541,7 +544,8 @@ cover as a Card; the Map "Side by side" layout switch on a Paper; the Motion gui
 example driven by a Slider and its viewport-root example scrolling in a Scrollbar; Foundations ›
 Grid items as Papers, Settings preset and font tiles as Cards, the Icons credit as a Link. The
 sweep left four rows open. Owner decision 2026-11-12: build the Image ratios, Paper in the overlay
-roots and the Data grid editors (rows above); the toast swipe stays on `createToastSwipe` (its
+roots and the Data grid editors (rows above; the Image ratios and Paper rows closed 2026-11-12,
+ADR-0066); the toast swipe stays on `createToastSwipe` (its
 Sonner-style damped pull on a refused direction and average-speed dismissal would change on
 `createSwipe`), so that row is closed with this reason. Reviewed and left as they are
 (the reference composes no component there): the Walktour steps' pictures (plain `img` in the
@@ -699,8 +703,10 @@ markup; both Markdown stories use it. Additive (minor).
 Differences: Image is fluid (its container's width) instead of the reference's fixed grid cells;
 the error state and `fit` / `position` are beyond the reference; the reference's alt texts are the
 ratios, ours describe the pictures.
-**Backlog:** arbitrary ratios and overlay gradients (consumer CSS today), a `threshold` for when
-lazy loading starts (the browser decides).
+**Backlog:** ~~arbitrary ratios~~ ✅ (2026-11-12: any `width/height` or number, written as
+`--_ok-image-ratio` by React `style` and the HTML runtime; the Carousel stories, docs page and
+snippets compose Image for their slide pictures, closing that Pending integration), overlay
+gradients (consumer CSS today), a `threshold` for when lazy loading starts (the browser decides).
 
 ## ✅ Components — Upload (ADR-0037, 2026-11-09)
 Created with `/component` from the reference "Upload" page, every section as a story: Upload

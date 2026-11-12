@@ -13,7 +13,7 @@ A modal surface. Runtime behavior: core `createModalController` (shared with Dra
 ```
 button[data-ok-dialog-open="id"][aria-haspopup=dialog]
 dialog[data-ok-dialog][id][aria-labelledby][data-ok-max-width][data-ok-scroll]…
-  › div[data-ok-dialog-paper]
+  › div[data-ok-dialog-paper][data-ok-paper]
       › h2[data-ok-dialog-title][id]
       › div[data-ok-dialog-content][data-ok-dividers]? › p[data-ok-dialog-content-text]?
       › div[data-ok-dialog-actions][data-ok-disable-spacing]? › … [data-ok-dialog-close]
@@ -35,6 +35,7 @@ Root: `data-ok-dialog`. Unknown values fall back to the default.
 | `disableScrollLock` | `data-ok-disable-scroll-lock` | flag | boolean | off | The page behind can still scroll while it is open. |
 | `transition` | `data-ok-variant="…"` on each `[data-ok-dialog-paper]` | style | `slideInUp` `slideInDown` `slideInLeft` `slideInRight` `fadeIn` `fadeInUp` `fadeInDown` `fadeInLeft` `fadeInRight` `zoomIn` `zoomInUp` `zoomInDown` `zoomInLeft` `zoomInRight` `bounceIn` `bounceInUp` `bounceInDown` `bounceInLeft` `bounceInRight` `flipInX` `flipInY` `scaleInX` `scaleInY` `rotateIn` | — | Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…); without it, a short fade and scale. |
 | `transitionDuration` | `data-ok-transition-duration="…"` | number | number | — | Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations. |
+| `elevation` | `data-ok-elevation="…"` on each `[data-ok-dialog-paper]` | style | `0` `1` `2` `3` `4` `5` `6` `7` `8` `9` `10` `11` `12` `13` `14` `15` `16` `17` `18` `19` `20` `21` `22` `23` `24` | — | Shadow depth of the paper, `0`–`24` (`--ok-elevation-<n>`). Without it, the theme's dialog shadow. |
 | `open` | `open` · event `ok:dialog:close` | state | — | — | Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`). |
 <!-- /options:dialog -->
 
@@ -54,6 +55,9 @@ CSSOM); a Motion paper gets them as `--_ok-motion-duration` / `--_ok-motion-exit
 `<dialog>` and its `::backdrop`), `disablePortal` (top layer).
 
 ## Layout and tokens
+The paper is a Paper (ADR-0066, 2026-11-12): `data-ok-paper` right after `data-ok-dialog-paper`,
+`elevation` written on it like `transition` (`children` option), the dialog shadow rule is
+`:not([data-ok-elevation])`; `dialog.css` (after `paper.css`) restates radius and background.
 Paper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16px (32px from
 600px), max height viewport − 2 × margin; widths xs 444px, sm 600px, md/lg/xl the breakpoint
 tokens. Title h6 (600) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content
@@ -96,7 +100,8 @@ Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, Dia
 | `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |
 | `maxWidth` (`false`) | `"none"` | renamed | |
 | `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |
-| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |
+| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | the paper is a Paper (`data-ok-paper`, ADR-0066) |
+| `PaperProps.elevation` (MUI 24) | `elevation` → `data-ok-elevation` on the paper | kept (ADR-0066) | default `--ok-shadow-dialog`; Paper's `variant` is not available (the attribute holds the Motion entrance) |
 | `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |
 | `transitionDuration` (number or `{ appear, enter, exit }`) | same, number or `{ enter, exit }`; HTML `data-ok-transition-duration` [+ `-exit`] | kept (4.18.44) | `appear` not applicable (the entrance plays on every opening) |
 | `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |

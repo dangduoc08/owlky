@@ -59,7 +59,16 @@ function schemaEntry(schema) {
     root: schema.root,
     options: Object.entries(schema.options).map(([name, spec]) => {
       const option = { name, kind: spec.kind, attr: spec.attr, description: spec.description };
-      for (const key of ["values", "default", "optional", "when", "children", "min", "units"])
+      for (const key of [
+        "values",
+        "pattern",
+        "default",
+        "optional",
+        "when",
+        "children",
+        "min",
+        "units",
+      ])
         if (spec[key] !== undefined) option[key] = spec[key];
       if (spec.event !== undefined) option.event = `ok:${schema.name}:${spec.event}`;
       return option;

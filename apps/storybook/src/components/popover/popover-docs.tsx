@@ -9,7 +9,7 @@ export const popoverSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: "A popover shows content next to the element that opened it, its anchor. It sits in the browser's top layer, so no container clips it, and it flips to the other side of the anchor when there is no room. A press outside or Escape asks it to close, and focus moves into it and back to the anchor.",
+    body: "A popover shows content next to the element that opened it, its anchor. It sits in the browser's top layer, so no container clips it, and it flips to the other side of the anchor when there is no room. A press outside or Escape asks it to close, and focus moves into it and back to the anchor. The popover is a **Paper** (`data-ok-paper`): it has the dropdown shadow, and `elevation` (`0` to `24`) gives it one of Paper's shadows instead.",
     html: `<!-- Load once per page: the styles and the runtime -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
@@ -18,7 +18,7 @@ export const popoverSections: GuideSection[] = [
   aria-haspopup="dialog" aria-expanded="false" aria-controls="summary" data-ok-popover-open="summary">
   <span data-ok-button-label>Show summary</span>
 </button>
-<div id="summary" popover="manual" data-ok-popover data-ok-placement="bottom" role="dialog" aria-label="Summary">
+<div id="summary" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom" role="dialog" aria-label="Summary">
   <p data-ok-typography data-ok-variant="body2">3 orders are waiting for shipping.</p>
 </div>`,
     react: `import { Button, Popover, Typography } from "@owlky/react";
@@ -57,7 +57,7 @@ export function Summary() {
   aria-expanded="false" aria-controls="info" data-ok-popover-open="info">
   <span data-ok-button-label>Info</span>
 </button>
-<div id="info" popover="manual" data-ok-popover data-ok-placement="right-start" data-ok-arrow>
+<div id="info" popover="manual" data-ok-popover data-ok-paper data-ok-placement="right-start" data-ok-arrow>
   <span data-ok-popover-arrow aria-hidden="true"></span>
   <p data-ok-typography data-ok-variant="body2">Prices include taxes.</p>
 </div>`,
@@ -92,7 +92,7 @@ export function PriceInfo() {
   aria-expanded="false" aria-controls="hint" data-ok-popover-hover="hint">
   <span data-ok-button-label>Hover me</span>
 </button>
-<div id="hint" popover="manual" data-ok-popover data-ok-placement="bottom">
+<div id="hint" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom">
   <p data-ok-typography data-ok-variant="body2">The popover follows the pointer and the focus.</p>
 </div>`,
     react: `import { Button, Popover, Typography } from "@owlky/react";
@@ -126,7 +126,7 @@ export function PopoverHover() {
   aria-haspopup="dialog" aria-expanded="false" aria-controls="point" data-ok-popover-open="point">
   <span data-ok-button-label>Open at a point</span>
 </button>
-<div id="point" popover="manual" data-ok-popover data-ok-placement="bottom-start"
+<div id="point" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start"
   data-ok-anchor-reference="anchorPosition" data-ok-anchor-position="200,400" data-ok-margin-threshold="8"
   role="dialog" aria-label="Point">
   <p data-ok-typography data-ok-variant="body2">This popover opens 200px from the top and 400px from the left.</p>
@@ -167,7 +167,7 @@ export function PopoverAtPoint() {
 <script src="${CDN}/owlky.js" defer></script>
 
 <p data-ok-typography data-ok-variant="body2" id="text">Select some words of this sentence.</p>
-<div id="selection" popover="manual" data-ok-popover data-ok-placement="top" data-ok-disable-auto-focus
+<div id="selection" popover="manual" data-ok-popover data-ok-paper data-ok-placement="top" data-ok-disable-auto-focus
   data-ok-disable-restore-focus>
   <p data-ok-typography data-ok-variant="body2">You selected some text.</p>
 </div>

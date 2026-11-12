@@ -28,7 +28,7 @@ Root: `data-ok-image`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `ratio` | `data-ok-ratio="…"` | style | `1/1` `2/3` `3/2` `3/4` `4/3` `4/6` `6/4` `9/16` `16/9` `9/21` `21/9` | — | Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio. |
+| `ratio` | `data-ok-ratio="…"` | style | `1/1` `2/3` `3/2` `3/4` `4/3` `4/6` `6/4` `9/16` `16/9` `9/21` `21/9` | — | Aspect ratio (width/height) the picture is cropped to: one of these, any other `width/height` such as `16/10`, or a number such as `1.6`. None: the picture's own ratio. |
 | `fit` | `data-ok-fit="…"` | style | `cover` `contain` `fill` `none` `scale-down` | `cover` | How the picture fills its box (`object-fit`). |
 | `position` | `data-ok-position="…"` | style | `center` `top` `bottom` `left` `right` `top-left` `top-right` `bottom-left` `bottom-right` | `center` | Which part of the picture stays in view when it is cropped (`object-position`). |
 | `effect` | `data-ok-effect="…"` | style | `blur` `opacity` `black-and-white` `none` | `blur` | How the picture appears once loaded: blurred, faded, from grayscale, or at once. |
@@ -58,8 +58,17 @@ API mapping (Minimals `Image` / react-lazy-load-image-component): kept `ratio`,
 ## Layout and tokens
 Root `display: block`, `position: relative`, `overflow: hidden`, `max-width: 100%`. The `img`
 fills the root (`width` / `height` 100%, `object-fit` / `object-position` from `fit` /
-`position`); with `ratio` the root takes `aspect-ratio` and the `img` is absolute. Without
+`position`); with a named `ratio` the root takes `aspect-ratio` and the `img` is absolute. Without
 `ratio` the picture keeps its own ratio (`width` / `height` attributes reserve it).
+Custom ratios (2026-11-12, the Image backlog): any other `width/height` (`16/10`, `4/1`) or a
+number (`1.6`) — core `imageRatio()` validates (both terms positive, spaces dropped) and the value
+is written as given in `data-ok-ratio` (schema `pattern`); CSS can't read it from the attribute,
+so core `imageStyle()` turns it into `--_ok-image-ratio` (`16 / 10`), written by React `style` and
+by the HTML runtime through CSSOM (snippets never carry `style`). The `img` of a custom ratio
+stays in the flow (`position: static`, `height: auto`, `aspect-ratio: var(--_ok-image-ratio)`) and
+sizes the root, so before the runtime writes the property (no JavaScript) the picture keeps its
+own ratio instead of collapsing. The root resets `--_ok-image-ratio: initial` (nested Images).
+The 11 named ratios keep their attribute rules (no private property).
 Placeholder: radial gradient, transparent white center → `grey-500 / 0.48` (the reference's SVG).
 Overlay: `dark` = `grey-900 / 0.48`; a color = `linear-gradient(transparent, <main> / 0.8)`; with
 `overlayFrom`: `linear-gradient(to top, <from main> / 0.24, <main> / 0.8)`. Error icon: 40% of
@@ -82,7 +91,8 @@ React: state `loading` until the `img` fires `load` / `error`; after mount (hydr
 `complete` / `naturalWidth` (core `imageLoadState`) for pictures that settled before React. A new
 `src` / `srcSet` starts at `loading` again. HTML runtime `image`: the same from `complete` at
 setup, `load` / `error` listeners on the `img`, and a MutationObserver on `src` / `srcset` /
-`sizes`. Lazy loading is the browser's (`loading="lazy"`).
+`sizes`; a second one on the root's `data-ok-ratio` keeps `--_ok-image-ratio` in step (removed on
+`destroy()`). Lazy loading is the browser's (`loading="lazy"`).
 
 ## Responsive
 The root is fluid (its container's width, `max-width: 100%`); a ratio keeps the shape at every
