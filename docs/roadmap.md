@@ -528,7 +528,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Image: arbitrary `ratio` values (Image backlog) | Carousel stories and docs page: the slides' pictures (`ImageSlide`, `CardSlide`, the Animation hero) | `div.sb-carousel-image` / `-card` / `-hero` + a plain `img`; demo CSS gives the ratio (16/10, 4/1, 3/1, 2/1, 5/2, fill), the cover fit and the placeholder color. The reference composes its Image; ours offers 11 fixed ratios, and the Parallax story marks the `img` itself (`data-ok-carousel-parallax`) |
 | Owner decision (ADR: anatomy change): Paper composed by the library's own surfaces | Popover / Menu paper, Dialog paper, Drawer content, Autocomplete listbox, Map controls and popups (MUI composes Paper there: `PaperProps`, `elevation`); `TableContainer component={Paper}` in the Table stories | each draws its surface in its own CSS (paper background, radius, a shadow token). Composing Paper adds `data-ok-paper` and its options to those roots: every overlay snippet and consumer markup changes, so it is not additive |
 | Owner decision (ADR: anatomy and keyboard change): Select, Checkbox and InputBase as the Data grid's cell editors (MUI X `GridEditSingleSelectCell`, `GridEditBooleanCell`, `GridEditInputCell`) | Data grid editing, React and the HTML runtime | native `select`, `input[type=checkbox]` and `input` marked `data-ok-data-grid-edit-input`, styled by `data-grid.css` (`accent-color` for the checkbox) |
-| Owner decision (behavior change): the toast swipe on core `createSwipe` (the shared helper roadmap-components 4.18.46 planned for the Snackbar too) | Snackbar: core `createToastSwipe` (`toast/toaster-controller.ts`) | its own pointer handling, kept because it differs from the helper: a damped pull along a direction that isn't allowed (Sonner), speed averaged over the whole gesture, a 4 px start |
 
 **Sweep of 2026-11-12** (`/integrate` with no argument, roadmap-components 6.1): the table was
 empty; the discovery found waits that had never been recorded. Closed, by composition in stories,
@@ -537,7 +536,10 @@ an outlined Paper; the Walktour step 4 settings on an outlined Paper; the Illust
 cover as a Card; the Map "Side by side" layout switch on a Paper; the Motion guide's shared-value
 example driven by a Slider and its viewport-root example scrolling in a Scrollbar; Foundations ›
 Grid items as Papers, Settings preset and font tiles as Cards, the Icons credit as a Link. The
-four rows above are what the sweep left open, each with its reason. Reviewed and left as they are
+sweep left four rows open. Owner decision 2026-11-12: build the Image ratios, Paper in the overlay
+roots and the Data grid editors (rows above); the toast swipe stays on `createToastSwipe` (its
+Sonner-style damped pull on a refused direction and average-speed dismissal would change on
+`createSwipe`), so that row is closed with this reason. Reviewed and left as they are
 (the reference composes no component there): the Walktour steps' pictures (plain `img` in the
 reference) and the Motion stories' pictures (the animation targets the `img`), the Menu "Selected" list (a List with a paper background in MUI's demo), tinted
 demo stages without a paper background or a shadow (Slider range, Autocomplete output, Carousel
