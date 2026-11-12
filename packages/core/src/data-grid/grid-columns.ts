@@ -146,7 +146,7 @@ export function printGridContent(
   target.title = title;
   for (const sheet of doc.querySelectorAll('link[rel="stylesheet"], style'))
     target.head.append(target.importNode(sheet, true));
-  for (const attribute of ["data-ok-theme", "data-ok-preset", "data-ok-font"]) {
+  for (const attribute of ["data-ok-theme"]) {
     const value = doc.documentElement.getAttribute(attribute);
     if (value !== null) target.documentElement.setAttribute(attribute, value);
   }

@@ -1,4 +1,4 @@
-import { defaultTheme, fontFamilyPresetNames, typographyVariants } from "@owlky/tokens";
+import { defaultTheme, typographyVariants } from "@owlky/tokens";
 
 const { breakpoints } = defaultTheme;
 
@@ -107,17 +107,24 @@ export function ReportHeading() {
   {
     id: "fonts",
     title: "Change the font and text size",
-    body: `To use another font, set \`data-ok-font\` to ${codeList(fontFamilyPresetNames)}. To make all text larger or smaller, change the root font size: every size is in \`rem\`. Load the fonts yourself, for example from Fontsource. The **Settings** page explains both options.`,
-    html: `<html data-ok-font="inter" style="font-size: 18px">
+    body: "To use another font, set `--ok-font-family` for text and `--ok-font-family-heading` for headings in your CSS. Load the fonts yourself, for example from Fontsource. To make all text larger or smaller, change the root font size: every size is in `rem`. The **Settings** page explains both options.",
+    html: `<html style="font-size: 18px">
+  <head>
+    <style>
+      :root {
+        --ok-font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+      }
+    </style>
+  </head>
   <body>
     <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
     <p data-ok-typography data-ok-variant="body1">Every size follows the root font size.</p>
   </body>
 </html>`,
-    react: `import "@fontsource-variable/inter";
-import { applyThemeSettings } from "@owlky/react";
+    react: `import { applyThemeSettings } from "@owlky/react";
 
-applyThemeSettings({ font: "inter", fontSize: 18 });`,
+// In your CSS: :root { --ok-font-family: "Inter", sans-serif; }
+applyThemeSettings({ fontSize: 18 });`,
   },
   {
     id: "accessibility",

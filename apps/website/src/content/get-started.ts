@@ -107,7 +107,7 @@ export function App() {
   {
     id: "theme",
     title: "Switch the theme",
-    body: "Set `data-ok-theme` to `light`, `dark` or `system` on the `<html>` element or on any container. To change the theme, the primary color preset and the font from JavaScript, call `applyThemeSettings`. It writes the same attributes, so it works the same way in every setup.",
+    body: "Set `data-ok-theme` to `light`, `dark` or `system` on the `<html>` element or on any container. To change the theme from JavaScript, call `applyThemeSettings`. It writes the same attribute, so it works the same way in every setup.",
     code: [
       {
         label: "theme.ts",
@@ -115,7 +115,7 @@ export function App() {
         code: `import { applyThemeSettings } from "@owlky/html";
 
 // Remembers the choice in localStorage
-applyThemeSettings({ mode: "dark", preset: "cyan" }, { storage: localStorage });`,
+applyThemeSettings({ mode: "dark" }, { storage: localStorage });`,
       },
     ],
   },

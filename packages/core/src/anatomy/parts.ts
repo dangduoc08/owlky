@@ -27,8 +27,6 @@ export interface CommonParts {
   "data-ok-modules": Value<string>;
   /** On the `owlky.js` script: lazy modules to load at once, separated by spaces, such as `chart data-grid`. */
   "data-ok-preload": Value<string>;
-  /** Applies a color preset to this element and everything inside it, such as `purple`. */
-  "data-ok-preset": Value<string>;
   /** `off` keeps the HTML runtime away from this element and everything inside it. React writes it on interactive roots. */
   "data-ok-runtime": Value<"off">;
   /** Applies a color scheme to this element and everything inside it. */

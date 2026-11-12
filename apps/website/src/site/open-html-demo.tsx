@@ -17,8 +17,8 @@ import { useState } from "react";
  */
 
 const sandboxSrc = (url: string) => {
-  const { mode, preset, font } = readThemeSettings();
-  return `${url}?${new URLSearchParams({ theme: mode, preset, font })}`;
+  const { mode } = readThemeSettings();
+  return `${url}?${new URLSearchParams({ theme: mode })}`;
 };
 
 export function OpenHtmlDemo({ url, title }: { url: string; title: string }) {

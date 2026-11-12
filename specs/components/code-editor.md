@@ -100,8 +100,8 @@ API mapping: see "Upstream API mapping" below.
   markers change (languages with workers: JSON, CSS, HTML, TypeScript / JavaScript).
 - Themes: `auto` → `owlky-light` / `owlky-dark` built from the scope's tokens (`--ok-bg-paper`,
   `--ok-text-*`, palette `-text` tones for syntax, `primary-main` cursor and focus); Monaco has one
-  theme per page: the editor focused, mounted or re-themed last picks it. `data-ok-theme`,
-  `data-ok-preset` and system scheme changes re-apply it. Default font `--ok-font-family-mono`.
+  theme per page: the editor focused, mounted or re-themed last picks it. `data-ok-theme` and
+  system scheme changes re-apply it. Default font `--ok-font-family-mono`.
 - Size: `width` / `height` (default 100%; at least 300px when no height) through
   `--_ok-code-editor-width|height`; Monaco follows its container (`automaticLayout`).
 

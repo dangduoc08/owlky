@@ -88,12 +88,12 @@ export function NoOrders() {
     title: "Change colors and themes",
     body: `Each shape has a \`data-ok-tone\` attribute:
 
-- **Brand tones:** \`lighter\`, \`light\`, \`main\`, \`dark\` and \`darker\` take the palette that \`color\` names. The default is \`primary\`, so they also follow the theme's preset.
+- **Brand tones:** \`lighter\`, \`light\`, \`main\`, \`dark\` and \`darker\` take the palette that \`color\` names. The default is \`primary\`, so they also follow your brand color.
 - **Accent tones:** \`accent-light\`, \`accent-main\` and \`accent-dark\` use the warning palette for stars and highlights.
 - **Neutral tones:** \`paper\`, \`neutral\`, \`outline\`, \`line\`, \`shadow\`, \`shade\` and \`ink\` follow the color scheme, so paper stays paper in dark mode.
 - **Fixed tones:** \`white\`, \`grey-300\`, \`grey-500\`, \`grey-600\` and the skin tones \`skin-light\`, \`skin-medium\` and \`skin-deep\`.
 
-To recolor one illustration, set \`color\` to \`secondary\`, \`info\`, \`success\`, \`warning\` or \`error\`. To recolor every illustration, change the palette with your theme, or set the skin tones \`--ok-illustration-skin-light\`, \`--ok-illustration-skin-medium\` and \`--ok-illustration-skin-deep\`. Inside a \`data-ok-theme\` or \`data-ok-preset\` scope, an illustration takes that scope's colors.`,
+To recolor one illustration, set \`color\` to \`secondary\`, \`info\`, \`success\`, \`warning\` or \`error\`. To recolor every illustration, change the palette with your theme, or set the skin tones \`--ok-illustration-skin-light\`, \`--ok-illustration-skin-medium\` and \`--ok-illustration-skin-deep\`. Inside a \`data-ok-theme\` scope, or an element that overrides palette tokens, an illustration takes that scope's colors.`,
     html: `<svg data-ok-illustration="sign-in" data-ok-color="info" aria-hidden="true"></svg>
 
 <!-- A dark section of a light page -->

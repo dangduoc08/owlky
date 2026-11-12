@@ -1,10 +1,5 @@
-export type {
-  ColorName,
-  FontFamilyPreset,
-  PaletteColorName,
-  PrimaryPreset,
-} from "@owlky/tokens";
-export { fontFamilyPresetNames, fontSizeRange, primaryPresetNames } from "@owlky/tokens";
+export type { ColorName, PaletteColorName } from "@owlky/tokens";
+export { fontSizeRange } from "@owlky/tokens";
 export { closeOtherDetails } from "./accordion/exclusive.js";
 export {
   type AccordionAnatomyOptions,

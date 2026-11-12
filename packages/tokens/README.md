@@ -24,7 +24,7 @@ const css = themeToCss(
 | Font sizes | `--ok-font-size-2xs\|xs\|sm\|md\|lg\|xl\|2xl\|3xl\|quote\|code` | 11 / 12 / 13 / 14 / 15 / 16 / 17 / 20 / 24px; `code` is 0.875em |
 | Component color | `[data-ok-color="primary…error\|black\|white"]` → `--ok-c-main\|channel\|hover\|contrast\|text\|shadow` | non-inheriting bindings |
 | Shadows | `--ok-elevation-1…24`, `--ok-shadow-z1\|z4\|…\|z24\|card\|dropdown\|dialog\|dialog-start`, `--ok-shadow-<color>`, `--ok-drop-shadow-z1\|z4\|z8` (`filter` values) | Tinted with `--ok-shadow-color` per theme |
-| Gradients | `--ok-gradient-<color>` (fill: `light` → `main`), `--ok-gradient-<color>-text` (text tone → `darker` / `lighter` per theme, AA at every stop), `--ok-gradient-paper` (translucent paper with info / error glows) | `background-image` values; follow presets and themes |
+| Gradients | `--ok-gradient-<color>` (fill: `light` → `main`), `--ok-gradient-<color>-text` (text tone → `darker` / `lighter` per theme, AA at every stop), `--ok-gradient-paper` (translucent paper with info / error glows) | `background-image` values; follow the palette and themes |
 | Radius | `--ok-radius-2xs\|xs\|sm\|md\|lg\|xl\|2xl\|full` (scale), `--ok-radius-control\|control-sm\|inner\|surface\|surface-md\|surface-sm\|chip` (roles) | Components read the roles |
 | Lines and focus | `--ok-border-width(-strong\|-heavy)`, `--ok-line-width-hairline\|2xs\|xs\|sm\|md\|lg\|xl\|2xl`, `--ok-focus-ring-width\|offset\|inset\|offset-tight\|color\|color-brand`, `--ok-icon-stroke` | 1 / 2 / 3px borders; SVG strokes 0.5–4px; icon stroke in user units |
 | Density | `--ok-control-height-sm\|md\|lg\|xl`, `--ok-control-padding-x-*`, `--ok-field-padding-*`, `--ok-item-*`, `--ok-chip-height(-sm)`, `--ok-tab-height`, `--ok-cell-padding-*`, `--ok-row-height(-header)`, `--ok-accordion-summary-height`, `--ok-switch-padding-*` | Control sizes |
@@ -33,17 +33,17 @@ const css = themeToCss(
 
 Themes: `data-ok-theme="light|dark|system"` (or `.dark`) on any element.
 
-Presets (ADR-0017), on any element, nesting with themes: `data-ok-preset="cyan|purple|blue|orange|red"`
-(primary palette; `default` resets) and `data-ok-font="inter|dm-sans|nunito-sans"` (`public-sans`
-resets; load the fonts yourself). Font size: the root `font-size` (12–20px), every size is in rem.
+Brand color and fonts: override the public tokens (`--ok-palette-primary-*`, `--ok-font-family`,
+`--ok-font-family-heading`) in your own CSS, or build a theme with `createTheme()`. Font size: the
+root `font-size` (12–20px), every size is in rem.
 
 ## API
 
 | Export | Purpose |
 |---|---|
 | `defaultTheme`, `createTheme(overrides)` | The default theme; deep-merge a partial theme (arrays replaced) |
-| `primaryPresets`, `primaryPresetNames`, `fontFamilyPresets`, `fontFamilyPresetNames`, `fontSizeRange`, `paletteTextFor(color, scheme, dark)` | Theme settings data (ADR-0017) and the AA text-tone chooser |
-| `themeToCss(theme, { colorBindings, presets })`, `primaryPresetVariables`, `fontPresetVariables`, `themeToCssVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme to CSS / variable maps |
+| `fontSizeRange` | The root font size setting (12–20px) |
+| `themeToCss(theme, { colorBindings })`, `themeToCssVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme to CSS / variable maps |
 | `hexToRgb`, `relativeLuminance`, `contrastRatio`, `getContrastText(background, candidates?)` | WCAG 2.2 color math for theme authors |
 | `componentColorNames`, `paletteColorNames`, `greyShades`, `typographyVariants`, `shadowNames`, `dropShadowNames`, `radiusNames`, `radiusRoleNames`, `lineWidthNames`, `densityNames`, `fontSizeNames`, `breakpointNames` | Name lists (and their types) |
 

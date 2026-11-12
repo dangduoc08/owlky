@@ -1285,7 +1285,7 @@ export function createMapController(
   themeObserver.observe(document.documentElement, {
     subtree: true,
     attributes: true,
-    attributeFilter: ["data-ok-theme", "data-ok-preset"],
+    attributeFilter: ["data-ok-theme"],
   });
 
   // --- DOM listeners: controls, popups, markers -------------------------------------------------

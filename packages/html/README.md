@@ -109,8 +109,8 @@ JavaScript; legend buttons toggle series; events `ok:chart:toggle` (cancelable) 
 `ok:chart:active`; `setHiddenSeries`, `setActive`, `setFormatters`, `refresh()`, `updateSeries(series, categories?)` and `appendData(data, { categories, limit })` for live data, which rewrite the table in place; zoom and pan (`data-ok-zoom`, `ok:chart:zoom`, `zoomRange`, `setZoomRange`), a toolbar with SVG / PNG / CSV downloads (`data-ok-toolbar`, `exportChart`), synchronized groups (`data-ok-group`), brush charts (`data-ok-brush-target`), annotations in `ul[data-ok-chart-annotations]`, animations and `setLocaleText`; stock charts with `data-ok-indicators`, panes and `data-ok-navigator`, whose indicator columns the runtime writes). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
-Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and
-set the root `font-size`; or import `applyThemeSettings` from `@owlky/html` (ESM). The CDN global
+Theme settings (ADR-0070): put `data-ok-theme` on `<html>` (or any element) and set the root
+`font-size`; or import `applyThemeSettings` from `@owlky/html` (ESM). The CDN global
 stays the runtime only (ADR-0007).
 
 ## CDN — include once per page

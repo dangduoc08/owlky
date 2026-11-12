@@ -1,31 +1,21 @@
 /*
- * Theme settings (ADR-0017): mode, primary preset, font family and root font size, applied as
- * attributes (`data-ok-theme`, `data-ok-preset`, `data-ok-font`) and the root `font-size`.
- * Framework-free, shared by React and HTML. Nothing is stored unless the app passes a storage.
+ * Theme settings (ADR-0070 § 2): the mode and the root font size, applied as `data-ok-theme` and
+ * the root `font-size`. Framework-free, shared by React and HTML. Nothing is stored unless the app
+ * passes a storage. A brand color or font is a token override or a `createTheme()` theme.
  */
-import {
-  type FontFamilyPreset,
-  fontFamilyPresetNames,
-  fontSizeRange,
-  type PrimaryPreset,
-  primaryPresetNames,
-} from "@owlky/tokens";
+import { fontSizeRange } from "@owlky/tokens";
 
 export const themeModes = ["light", "dark", "system"] as const;
 export type ThemeMode = (typeof themeModes)[number];
 
 export interface ThemeSettings {
   mode: ThemeMode;
-  preset: PrimaryPreset;
-  font: FontFamilyPreset;
   /** Root font size in px (12–20); every size is in rem, so the whole page scales. */
   fontSize: number;
 }
 
 export const defaultThemeSettings: Readonly<ThemeSettings> = Object.freeze({
   mode: "light",
-  preset: "default",
-  font: "public-sans",
   fontSize: fontSizeRange.default,
 });
 
@@ -55,8 +45,6 @@ export function normalizeThemeSettings(input: unknown): ThemeSettings {
   const size = Number(source["fontSize"]);
   return {
     mode: pick(themeModes, source["mode"], defaultThemeSettings.mode),
-    preset: pick(primaryPresetNames, source["preset"], defaultThemeSettings.preset),
-    font: pick(fontFamilyPresetNames, source["font"], defaultThemeSettings.font),
     fontSize:
       Number.isInteger(size) && size >= fontSizeRange.min && size <= fontSizeRange.max
         ? size
@@ -70,8 +58,6 @@ const root = () => document.documentElement;
 function fromDom(target: HTMLElement): ThemeSettings {
   return normalizeThemeSettings({
     mode: target.getAttribute("data-ok-theme"),
-    preset: target.getAttribute("data-ok-preset"),
-    font: target.getAttribute("data-ok-font"),
     fontSize: Number.parseFloat(root().style.fontSize) || undefined,
   });
 }
@@ -93,8 +79,8 @@ export function readThemeSettings(options: ThemeSettingsOptions = {}): ThemeSett
 
 /**
  * Applies (and stores, when a storage is given) the settings. Missing keys keep their current
- * value; invalid ones fall back to the default. Defaults remove their attribute, except the mode,
- * which is always explicit. Returns the applied settings.
+ * value; invalid ones fall back to the default. The mode is always explicit; the default font size
+ * removes the root style. Returns the applied settings.
  */
 export function applyThemeSettings(
   settings: Partial<ThemeSettings> = {},
@@ -103,10 +89,6 @@ export function applyThemeSettings(
   const target = options.target ?? root();
   const next = normalizeThemeSettings({ ...fromDom(target), ...settings });
   target.setAttribute("data-ok-theme", next.mode);
-  if (next.preset === defaultThemeSettings.preset) target.removeAttribute("data-ok-preset");
-  else target.setAttribute("data-ok-preset", next.preset);
-  if (next.font === defaultThemeSettings.font) target.removeAttribute("data-ok-font");
-  else target.setAttribute("data-ok-font", next.font);
   // CSSOM, not a style attribute string: works under a strict CSP.
   root().style.fontSize =
     next.fontSize === defaultThemeSettings.fontSize ? "" : `${next.fontSize}px`;
