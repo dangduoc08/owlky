@@ -657,11 +657,19 @@ describe("createWalktourController", () => {
       document.documentElement.scrollTop = 3040;
       // 40px above the viewport: 70px to go.
       far.style.top = "3000px";
-      scrollTo.mockImplementation(() => {});
+      // The scroll ends when it reaches its target: wait for that call instead of a fixed time,
+      // which a loaded runner can outlast mid-animation.
+      let arrived: () => void = () => {};
+      const arrival = new Promise<void>((resolve) => {
+        arrived = resolve;
+      });
+      scrollTo.mockImplementation(((options: ScrollToOptions) => {
+        if (Math.abs((options.top ?? 0) - 2970) < 0.5) arrived();
+      }) as typeof window.scrollTo);
       controller.render(state(1));
       controller.render(state(0, "beacon"));
       controller.render(state(1));
-      await new Promise((resolve) => setTimeout(resolve, 120));
+      await arrival;
       const last = (scrollTo.mock.calls.at(-1) as unknown as [ScrollToOptions])[0].top as number;
       // 3040 − 40 − padding 10 − offset 20.
       expect(last).toBeCloseTo(2970, 0);
