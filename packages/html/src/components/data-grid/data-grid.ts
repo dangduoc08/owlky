@@ -5795,7 +5795,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             : kind === "checkbox"
               ? checkboxEditor()
               : inputBaseEditor(editorId, gridEditInputType(c.type));
-        const input: EditInput | null = custom ? custom.input : (built?.input ?? null);
+        const input: EditInput | null = custom
+          ? custom.input
+          : (built as { input: HTMLInputElement }).input;
         if (input instanceof HTMLInputElement && input.type === "checkbox")
           input.checked = start === "true";
         else if (input) input.value = start;

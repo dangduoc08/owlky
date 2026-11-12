@@ -696,9 +696,8 @@ describe("data grid runtime, phase 2", () => {
     expect(document.activeElement).toBe(trigger);
     await userEvent.keyboard("{ArrowDown}");
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
-    await userEvent.click(
-      cellOf(host, "p-002", "team").querySelector('[data-ok-value="Support"]') as Element,
-    );
+    // Enter on an option picks it; the row stays in edit mode.
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{Enter}");
     expect(edits).toEqual([]);
     expect(trigger.textContent).toBe("Support");
     expect(document.activeElement).toBe(trigger);
