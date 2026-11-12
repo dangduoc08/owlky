@@ -55,7 +55,7 @@ values. Reference demo: the dashboard lab (owner review, 2026-11-12).
 ## Phases
 | Phase | Scope | Depends on |
 |---|---|---|
-| ST1 | ADR-0070, token inventory (every hard-coded radius, border, shadow, font, case, height in `packages/styles`), font check (OFL, Vietnamese subset, tabular figures) | — |
+| ST1 ✅ | ADR-0070, token inventory (every hard-coded radius, border, shadow, font, case, height in `packages/styles`), font check (OFL, Vietnamese subset, tabular figures). Done 2026-11-12: [ADR-0070](adr/0070-design-styles.md) decides attributes, resolver, token model, delivery, generator, icons; [inventory](styles-inventory.md) lists 386 hard-coded values, 114 component icons → 82 Solar names, the removal list, and the font check (3 fonts lack tabular figures: owner question) | — |
 | ST2 | Tokenize component CSS (clean names, no aliases); remove `data-ok-preset` / `data-ok-font` | ST1, S2 merged |
 | ST3 | Soft as default + the four axes + generator + AA fixes from L4; illustrations follow through tones | ST2 |
 | ST4 | The eight other styles as opt-in files | ST3 |

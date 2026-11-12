@@ -1,6 +1,8 @@
 # ADR-0069: Owlky's own visual identity (color foundation and font)
 
-**Status:** Accepted (owner's decisions 2026-11-12, track 2 "Clean IP and own identity", step L3).
+**Status:** Accepted, defaults superseded by ADR-0070 (2026-11-12: the Indigo / Zinc default, the
+presets and Be Vietnam Pro give way to the design styles; rules 1, 5, 7 and the generator stay).
+Was: owner's decisions 2026-11-12, track 2 "Clean IP and own identity", step L3.
 Supersedes ADR-0014 (brand colors follow the reference) and the reference-derived default values
 of the theme (palette, presets, dark scheme, font presets, motion timings) chosen in phases 1 and
 2'. ADR-0017's mechanism (presets and fonts as data attributes) stays.

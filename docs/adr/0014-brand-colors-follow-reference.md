@@ -1,6 +1,6 @@
 # ADR-0014: Brand colors follow the reference look
 
-**Status:** Superseded by ADR-0069 (2026-11-12); was Accepted (2026-11-04) — supersedes the contrast rules for brand colors in ADR-0002 and
+**Status:** Superseded by ADR-0069 and ADR-0070 (2026-11-12); was Accepted (2026-11-04) — supersedes the contrast rules for brand colors in ADR-0002 and
 "AA wins" in ADR-0011
 
 ## Context

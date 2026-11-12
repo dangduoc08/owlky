@@ -1,6 +1,7 @@
 # ADR-0017: Theme presets through data attributes
 
-**Status:** Accepted (2026-11-05) — extends ADR-0002's theming (light / dark / system / nested scopes)
+**Status:** Superseded by ADR-0070 (2026-11-12: styles replace presets and font presets; the root
+font size setting moves into 0070); was Accepted (2026-11-05) — extends ADR-0002's theming (light / dark / system / nested scopes)
 
 ## Context
 The reference's Settings drawer lets users pick a primary color preset (6), a font family (4) and
