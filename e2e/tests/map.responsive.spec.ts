@@ -81,16 +81,21 @@ const STORIES = [
   "export-map",
 ];
 
+// One test per story: each opens the map twice (React and HTML), and MapLibre in a software WebGL
+// context is slow on CI runners, so a single test for every story outran the 30 s timeout.
 for (const viewport of viewports) {
   test.describe(`map responsive @ ${viewport.name} ${viewport.width}×${viewport.height}`, () => {
-    test("layout checks pass and React matches HTML", async ({ browser, browserName }) => {
-      test.skip(browserName !== "chromium", "Touch emulation (isMobile) is Chromium-only.");
-      const context = await browser.newContext({
-        viewport: { width: viewport.width, height: viewport.height },
-        hasTouch: viewport.touch,
-        isMobile: viewport.touch,
-      });
-      for (const story of STORIES) {
+    for (const story of STORIES) {
+      test(`${story}: layout checks pass and React matches HTML`, async ({
+        browser,
+        browserName,
+      }) => {
+        test.skip(browserName !== "chromium", "Touch emulation (isMobile) is Chromium-only.");
+        const context = await browser.newContext({
+          viewport: { width: viewport.width, height: viewport.height },
+          hasTouch: viewport.touch,
+          isMobile: viewport.touch,
+        });
         const results: Record<string, Box[]> = {};
         for (const impl of implementations) {
           const page = await context.newPage();
@@ -108,8 +113,8 @@ for (const viewport of viewports) {
           await page.close();
         }
         expect(results["html"], story).toEqual(results["react"]);
-      }
-      await context.close();
-    });
+        await context.close();
+      });
+    }
   });
 }
