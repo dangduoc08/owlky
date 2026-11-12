@@ -60,7 +60,7 @@ values. Reference demo: the dashboard lab (owner review, 2026-11-12).
 | ST3 | Soft as default + the four axes + generator + AA fixes from L4; illustrations follow through tones | ST2 |
 | ST4 | The eight other styles as opt-in files | ST3 |
 | ST5 | Storybook toolbar menus (**Style**, **Density**, **Surface**, **Contrast**), website picker, `createTheme`, Tailwind theme, HTML runtime | ST3 |
-| ST6 | Tests: AA matrix (9 styles × light / dark × surface × high contrast, every role pair), axe on a story sample per style in e2e, `check:size`; visual baselines per style (Docker, owner) | ST4 |
+| ST6 | Tests: AA matrix (9 styles × light / dark × surface × high contrast, every role pair), axe on a story sample per style in e2e, `check:size`; visual baselines per style from a `workflow_dispatch` CI job that runs `pnpm test:visual:update` in the pinned Playwright Docker image and opens a PR with the images (owner 2026-11-12: no local Docker needed; the owner only reviews and merges the PR) | ST4 |
 | ST7 | Docs: Foundations › Styles guide, Settings guide, README, MCP manifest, changeset (minor: styles replace presets and fonts) | ST5 |
 
 ## Icons and flags (owner, 2026-11-12)
