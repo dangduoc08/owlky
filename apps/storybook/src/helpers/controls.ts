@@ -5,6 +5,8 @@ import type { ArgTypes } from "@storybook/react-vite";
  * Story Controls generated from the component option schemas (ADR-0015), identical for the React
  * and the HTML story. Every control starts at "as in the examples" (undefined), so a story matches
  * its twin until you change something; e2e/tests/options-parity.spec.ts checks each option.
+ * Descriptions come from the source schemas (Storybook aliases @owlky/core to src); the built
+ * package keeps them in @owlky/core/option-docs.json instead (ADR-0068 §4).
  */
 
 type InputType = NonNullable<ArgTypes[string]>;
@@ -17,7 +19,7 @@ function inputType(spec: OptionSpec): InputType {
       control: { type: "select" },
       options: [KEEP, ...spec.values],
       mapping: { [KEEP]: undefined },
-      description: spec.description,
+      description: spec.description ?? "",
       table: { type: { summary: spec.values.map((value) => `"${value}"`).join(" | ") } },
     };
   }
@@ -26,7 +28,7 @@ function inputType(spec: OptionSpec): InputType {
       control: { type: "number", ...(spec.min !== undefined ? { min: spec.min } : {}) },
       // `type` lets Storybook turn URL args back into numbers.
       type: { name: "number", required: false },
-      description: spec.description,
+      description: spec.description ?? "",
       table: {
         type: { summary: spec.units ? `number | ${spec.units.join(" | ")} length` : "number" },
       },
@@ -34,7 +36,7 @@ function inputType(spec: OptionSpec): InputType {
   }
   return {
     control: { type: "boolean" },
-    description: spec.description,
+    description: spec.description ?? "",
     table: { type: { summary: "boolean" } },
   };
 }

@@ -31,42 +31,44 @@ const formStates = (owner: string) => ({
   focused: flag("data-ok-focused", `Focused colors for ${owner}.`),
 });
 
-export const formControlOptions = defineOptions("form-control", "data-ok-form-control", {
-  color: style(
-    "data-ok-color",
-    selectionControlColors,
-    "default",
-    "Color of a focused label (`default` = text color, as on the reference; MUI's default is `primary`).",
-    { optional: true },
-  ),
-  size: style(
-    "data-ok-size",
-    selectionControlSizes,
-    "medium",
-    "Size shared with the composed input.",
-    { optional: true },
-  ),
-  variant: style(
-    "data-ok-variant",
-    textFieldVariants,
-    "outlined",
-    "Variant shared with the composed input; `outlined` and `filled` indent the helper text.",
-    { optional: true },
-  ),
-  margin: style(
-    "data-ok-margin",
-    textFieldMargins,
-    "none",
-    "Vertical margin: 0, 8 / 4px or 16 / 8px.",
-    { optional: true },
-  ),
-  fullWidth: flag("data-ok-full-width", "Stretch to the container width."),
-  ...formStates("the label and the helper text"),
-  hiddenLabel: flag(
-    "data-ok-hidden-label",
-    "A filled Select without a label: less padding above the value.",
-  ),
-});
+// A pure IIFE: bundlers keep the spreads of a bare call's arguments (ADR-0068 §1).
+export const formControlOptions = /* @__PURE__ */ (() =>
+  defineOptions("form-control", "data-ok-form-control", {
+    color: style(
+      "data-ok-color",
+      selectionControlColors,
+      "default",
+      "Color of a focused label (`default` = text color, as on the reference; MUI's default is `primary`).",
+      { optional: true },
+    ),
+    size: style(
+      "data-ok-size",
+      selectionControlSizes,
+      "medium",
+      "Size shared with the composed input.",
+      { optional: true },
+    ),
+    variant: style(
+      "data-ok-variant",
+      textFieldVariants,
+      "outlined",
+      "Variant shared with the composed input; `outlined` and `filled` indent the helper text.",
+      { optional: true },
+    ),
+    margin: style(
+      "data-ok-margin",
+      textFieldMargins,
+      "none",
+      "Vertical margin: 0, 8 / 4px or 16 / 8px.",
+      { optional: true },
+    ),
+    fullWidth: flag("data-ok-full-width", "Stretch to the container width."),
+    ...formStates("the label and the helper text"),
+    hiddenLabel: flag(
+      "data-ok-hidden-label",
+      "A filled Select without a label: less padding above the value.",
+    ),
+  }))();
 
 export interface FormControlAnatomyOptions {
   color?: SelectionControlColor | undefined;
@@ -85,17 +87,19 @@ export interface FormControlAnatomyOptions {
 export const formControlAttributes = (options: FormControlAnatomyOptions = {}): DataAttributes =>
   optionAttributes(formControlOptions, { ...options });
 
-export const formLabelOptions = defineOptions("form-label", "data-ok-form-label", {
-  color: style(
-    "data-ok-color",
-    selectionControlColors,
-    "default",
-    "Color when focused; default: the form control's.",
-    { optional: true },
-  ),
-  ...formStates("the label"),
-  filled: flag("data-ok-filled", "Marks the label of an input that has a value (no style)."),
-});
+// A pure IIFE: bundlers keep the spreads of a bare call's arguments (ADR-0068 §1).
+export const formLabelOptions = /* @__PURE__ */ (() =>
+  defineOptions("form-label", "data-ok-form-label", {
+    color: style(
+      "data-ok-color",
+      selectionControlColors,
+      "default",
+      "Color when focused; default: the form control's.",
+      { optional: true },
+    ),
+    ...formStates("the label"),
+    filled: flag("data-ok-filled", "Marks the label of an input that has a value (no style)."),
+  }))();
 
 export interface FormLabelAnatomyOptions {
   color?: SelectionControlColor | undefined;
@@ -121,24 +125,29 @@ export const formGroupAttributes = (options: { row?: boolean | undefined } = {})
 export const formHelperTextMargins = ["dense"] as const;
 export type FormHelperTextMargin = (typeof formHelperTextMargins)[number];
 
-export const formHelperTextOptions = defineOptions("form-helper-text", "data-ok-form-helper-text", {
-  margin: style(
-    "data-ok-margin",
-    formHelperTextMargins,
-    "dense",
-    "`dense`: 4px above instead of 6px; default: the form control's.",
-    { optional: true },
-  ),
-  variant: style(
-    "data-ok-variant",
-    textFieldVariants,
-    "outlined",
-    "`outlined` and `filled` indent the text; default: the form control's.",
-    { optional: true },
-  ),
-  ...formStates("the helper text"),
-  filled: flag("data-ok-filled", "Marks the helper text of an input that has a value (no style)."),
-});
+// A pure IIFE: bundlers keep the spreads of a bare call's arguments (ADR-0068 §1).
+export const formHelperTextOptions = /* @__PURE__ */ (() =>
+  defineOptions("form-helper-text", "data-ok-form-helper-text", {
+    margin: style(
+      "data-ok-margin",
+      formHelperTextMargins,
+      "dense",
+      "`dense`: 4px above instead of 6px; default: the form control's.",
+      { optional: true },
+    ),
+    variant: style(
+      "data-ok-variant",
+      textFieldVariants,
+      "outlined",
+      "`outlined` and `filled` indent the text; default: the form control's.",
+      { optional: true },
+    ),
+    ...formStates("the helper text"),
+    filled: flag(
+      "data-ok-filled",
+      "Marks the helper text of an input that has a value (no style).",
+    ),
+  }))();
 
 export interface FormHelperTextAnatomyOptions {
   margin?: FormHelperTextMargin | undefined;

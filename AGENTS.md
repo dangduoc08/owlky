@@ -41,7 +41,14 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    ADR-0068): the option schema `<name>Options` (`defineOptions`, ADR-0015) and
    `<name>Attributes()` built from it (`optionAttributes`); behavior → `core/src/<name>/` + tests
    (native **and** fallback paths), exported from `core/src/index.ts`. Keep module-level code
-   pure (literal value lists, no calls of unannotated helpers): bundlers keep it otherwise.
+   pure (literal value lists, no calls of unannotated helpers): bundlers keep it otherwise. A
+   schema whose options spread shared objects goes in a `/* @__PURE__ */ (() => defineOptions(…))()`
+   IIFE, and a value list joined from others uses `/* @__PURE__ */ ([] as T[]).concat(…)`: minifiers
+   keep a bare spread (Motion, FormControl). Each option's description is the factory's string or
+   template literal, never a variable: the core build (`packages/core/scripts/option-docs.mjs`)
+   moves every description into `dist/option-docs.json` (`@owlky/core/option-docs.json`) and
+   leaves `""` in `dist`, so the runtime ships no docs (ADR-0068 §4). Build scripts read schemas
+   through `scripts/option-schemas.mjs` (`describeOptions`); Storybook reads the source schemas.
    The per-component entries (`@owlky/<package>/<spec>`) are generated from the barrels:
    `pnpm entries` after changing an `index.ts` (`check:entries` in `pnpm check`). Every other `data-ok-*`
    name (parts, states, values, triggers) goes in `core/src/anatomy/parts.ts` as a

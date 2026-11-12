@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { folderSpec as sharedFolderSpec } from "./component-folders.mjs";
+import { optionSchemas } from "./option-schemas.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const app = join(root, "apps/storybook");
@@ -39,9 +40,6 @@ const slug = (text) =>
     .replace(/^-|-$/g, "");
 const ATTRIBUTE = /data-ok-[a-z0-9]+(?:-[a-z0-9]+)*/g;
 
-const { optionSchemas } = await import(
-  pathToFileURL(join(root, "packages/core/dist/index.js")).href
-);
 const { scanMarkup } = await import(pathToFileURL(join(root, "packages/mcp/dist/markup.js")).href);
 
 // ── Version (fixed group: every publishable package carries the same one) ──────────────────────

@@ -23,7 +23,7 @@ file covers project status, workflow and orientation.
 
 Full plan: `docs/roadmap.md` ("After the waves"). **Component completion is done** (2026-11-12,
 `docs/roadmap-components.md`: every row ✅ or ⏸ with a reason). **Next:** the road to 0.1.0
-(`docs/roadmap-0.1.0.md`, approved 2026-11-12): bundle size (`docs/roadmap-size.md`: S1 and S2 part 1
+(`docs/roadmap-0.1.0.md`, approved 2026-11-12): bundle size (`docs/roadmap-size.md`: S1 to S3
 done) and clean IP in parallel → design styles (`docs/roadmap-styles.md`: nine styles, Soft default,
 Solar icons) → accounts and the remote MCP (ADR-0071) → 0.1.0 → more frameworks.
 Not published

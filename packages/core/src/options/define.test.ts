@@ -3,6 +3,7 @@ import { optionSchemas } from "../anatomy/anatomy.js";
 import {
   behavior,
   defineOptions,
+  describeOptions,
   flag,
   native,
   number,
@@ -154,5 +155,31 @@ describe("component schemas", () => {
         expect(spec.attr).toMatch(/^data-ok-/);
       if (spec.kind === "number") expect(spec.attr).toMatch(/^(data-ok-|aria-value)/);
     }
+  });
+});
+
+describe("describeOptions", () => {
+  // The built schemas carry `""` (scripts/option-docs.mjs moves the text into option-docs.json).
+  const bare = defineOptions("demo", "data-ok-demo", {
+    size: style("data-ok-size", ["sm", "md"], "md", ""),
+    wide: flag("data-ok-wide", ""),
+  });
+
+  it("fills the descriptions from the docs and keeps everything else", () => {
+    const described = describeOptions(bare, {
+      demo: { size: { description: "Size." }, wide: { description: "Wide." } },
+    });
+    expect(described.options.size).toEqual({ ...bare.options.size, description: "Size." });
+    expect(described.options.wide.description).toBe("Wide.");
+    expect(described.name).toBe("demo");
+    expect(described.root).toBe("data-ok-demo");
+    expect(bare.options.size.description).toBe("");
+  });
+
+  it("keeps the schema's own description for options the docs don't list", () => {
+    const described = describeOptions(demo, { demo: { size: { description: "Other." } } });
+    expect(described.options.size.description).toBe("Other.");
+    expect(described.options.wide.description).toBe("Wide.");
+    expect(describeOptions(demo, {}).options).toEqual(demo.options);
   });
 });

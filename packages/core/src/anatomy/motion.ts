@@ -85,12 +85,14 @@ export const motionBackgroundVariants = [
  */
 export const motionEffectVariants = ["draw", "interactive"] as const;
 
-export const motionVariants = [
-  ...motionEntranceVariants,
-  ...motionBackgroundVariants,
-  ...motionEffectVariants,
-] as const;
-export type MotionVariant = (typeof motionVariants)[number];
+// `concat`, not a spread: minifiers inline a pure IIFE and then keep its spread (ADR-0068 §1).
+export type MotionVariant =
+  | (typeof motionEntranceVariants)[number]
+  | (typeof motionBackgroundVariants)[number]
+  | (typeof motionEffectVariants)[number];
+export const motionVariants: readonly MotionVariant[] = /* @__PURE__ */ (
+  [] as MotionVariant[]
+).concat(motionEntranceVariants, motionBackgroundVariants, motionEffectVariants);
 export const motionTriggers = ["inView", "mount", "manual"] as const;
 export type MotionTrigger = (typeof motionTriggers)[number];
 
@@ -142,37 +144,43 @@ const motionLookOptions = {
   ),
 };
 
-export const motionOptions = defineOptions("motion", "data-ok-motion", {
-  ...motionLookOptions,
-  ...motionTriggerOptions,
-  paused: flag(
-    "data-ok-paused",
-    "Pauses the animation (looping variants need a pause control: WCAG 2.2.2).",
-  ),
-  initial: behavior(
-    "data-ok-initial",
-    true,
-    "`false` skips the entrance: the content shows as it is; later exits and entrances play (a shared `layoutId` element).",
-  ),
-});
+// A pure IIFE: bundlers keep the spreads of a bare call's arguments (ADR-0068 §1).
+export const motionOptions = /* @__PURE__ */ (() =>
+  defineOptions("motion", "data-ok-motion", {
+    ...motionLookOptions,
+    ...motionTriggerOptions,
+    paused: flag(
+      "data-ok-paused",
+      "Pauses the animation (looping variants need a pause control: WCAG 2.2.2).",
+    ),
+    initial: behavior(
+      "data-ok-initial",
+      true,
+      "`false` skips the entrance: the content shows as it is; later exits and entrances play (a shared `layoutId` element).",
+    ),
+  }))();
 
-export const motionGroupOptions = defineOptions("motion-group", "data-ok-motion-group", {
-  ...motionTriggerOptions,
-  stagger: number(
-    "data-ok-stagger",
-    50,
-    "Milliseconds between the entrances of the direct child Motions.",
-    { min: 0 },
-  ),
-});
+// A pure IIFE: bundlers keep the spreads of a bare call's arguments (ADR-0068 §1).
+export const motionGroupOptions = /* @__PURE__ */ (() =>
+  defineOptions("motion-group", "data-ok-motion-group", {
+    ...motionTriggerOptions,
+    stagger: number(
+      "data-ok-stagger",
+      50,
+      "Milliseconds between the entrances of the direct child Motions.",
+      { min: 0 },
+    ),
+  }))();
 
-export const motionTextOptions = defineOptions("motion-text", "data-ok-motion-text", {
-  ...motionLookOptions,
-  ...motionTriggerOptions,
-  stagger: number("data-ok-stagger", 25, "Milliseconds between the entrances of the letters.", {
-    min: 0,
-  }),
-});
+// A pure IIFE: bundlers keep the spreads of a bare call's arguments (ADR-0068 §1).
+export const motionTextOptions = /* @__PURE__ */ (() =>
+  defineOptions("motion-text", "data-ok-motion-text", {
+    ...motionLookOptions,
+    ...motionTriggerOptions,
+    stagger: number("data-ok-stagger", 25, "Milliseconds between the entrances of the letters.", {
+      min: 0,
+    }),
+  }))();
 
 export interface MotionTriggerAnatomyOptions {
   trigger?: MotionTrigger | undefined;

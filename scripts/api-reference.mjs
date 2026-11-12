@@ -4,7 +4,8 @@
 //   - React props: the TypeScript compiler API (TypeScript 7's `typescript/unstable/sync`) on
 //     packages/react/src; JSDoc is the description, `@default` or "Default `x`." the default;
 //     props the option schema documents fall back to the schema's description and default;
-//   - HTML options: the option schemas (built @owlky/core, ADR-0015);
+//   - HTML options: the option schemas (built @owlky/core, ADR-0015) and their descriptions
+//     (dist/option-docs.json, ADR-0068 §4);
 //   - parts, states, values and triggers: the `<Spec>Parts` interfaces in
 //     packages/core/src/anatomy/parts.ts (type only);
 //   - events: each runtime's event map (`defineComponent<Instance, Events>`, `EventSpec`);
@@ -13,12 +14,13 @@
 // Output is deterministic (sorted). Run after `pnpm build` (reads packages/core/dist):
 //   node scripts/api-reference.mjs           write the files
 //   node scripts/api-reference.mjs --check   fail when a file is out of date or a name, prop,
-//                                            event or method has no description (CI)
+//                                            option, event or method has no description (CI)
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { API, isUnionType, SignatureKind, SymbolFlags } from "typescript/unstable/sync";
 import { folderSpec as sharedFolderSpec } from "./component-folders.mjs";
+import { optionSchemas } from "./option-schemas.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(root, "apps/docs-content/src/api");
@@ -33,10 +35,6 @@ const problem = (message) => problems.push(message);
 const ATTRIBUTE = /data-ok-[a-z0-9]+(?:-[a-z0-9]+)*/g;
 const kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 const pascal = (name) => name.replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
-
-const { optionSchemas } = await import(
-  pathToFileURL(join(root, "packages/core/dist/index.js")).href
-);
 
 // ── Specs and their schemas ────────────────────────────────────────────────────────────────────
 const specNames = readdirSync(join(root, "specs/components"))
@@ -500,7 +498,8 @@ for (const [name, where] of [...undeclared].sort(([a], [b]) => byName(a, b)))
 
 // ── Entries ────────────────────────────────────────────────────────────────────────────────────
 const optionEntry = (schema, key, spec) => {
-  const description = spec.description.replace(/\s*\(ADR-\d+\)/g, "");
+  if (!spec.description) problem(`${schema.name}.${key} (option) has no description`);
+  const description = (spec.description ?? "").replace(/\s*\(ADR-\d+\)/g, "");
   const option = { name: key, kind: spec.kind, attr: spec.attr, description };
   for (const field of ["values", "default", "optional", "when", "children", "min", "units"])
     if (spec[field] !== undefined) option[field] = spec[field];
