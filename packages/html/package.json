@@ -70,6 +70,178 @@
     "./owlky.min.css": "./dist/owlky.min.css",
     "./monaco/*": "./dist/monaco/*",
     "./snippets/*": "./dist/snippets/*",
+    "./accordion": {
+      "types": "./dist/esm/entries/accordion.d.ts",
+      "import": "./dist/esm/entries/accordion.js"
+    },
+    "./alert": {
+      "types": "./dist/esm/entries/alert.d.ts",
+      "import": "./dist/esm/entries/alert.js"
+    },
+    "./autocomplete": {
+      "types": "./dist/esm/entries/autocomplete.d.ts",
+      "import": "./dist/esm/entries/autocomplete.js"
+    },
+    "./avatar": {
+      "types": "./dist/esm/entries/avatar.d.ts",
+      "import": "./dist/esm/entries/avatar.js"
+    },
+    "./backdrop": {
+      "types": "./dist/esm/entries/backdrop.d.ts",
+      "import": "./dist/esm/entries/backdrop.js"
+    },
+    "./breadcrumbs": {
+      "types": "./dist/esm/entries/breadcrumbs.d.ts",
+      "import": "./dist/esm/entries/breadcrumbs.js"
+    },
+    "./carousel": {
+      "types": "./dist/esm/entries/carousel.d.ts",
+      "import": "./dist/esm/entries/carousel.js"
+    },
+    "./chart": {
+      "types": "./dist/esm/entries/chart.d.ts",
+      "import": "./dist/esm/entries/chart.js"
+    },
+    "./checkbox": {
+      "types": "./dist/esm/entries/checkbox.d.ts",
+      "import": "./dist/esm/entries/checkbox.js"
+    },
+    "./chip": {
+      "types": "./dist/esm/entries/chip.d.ts",
+      "import": "./dist/esm/entries/chip.js"
+    },
+    "./circular-progress": {
+      "types": "./dist/esm/entries/circular-progress.d.ts",
+      "import": "./dist/esm/entries/circular-progress.js"
+    },
+    "./collapse": {
+      "types": "./dist/esm/entries/collapse.d.ts",
+      "import": "./dist/esm/entries/collapse.js"
+    },
+    "./data-grid": {
+      "types": "./dist/esm/entries/data-grid.d.ts",
+      "import": "./dist/esm/entries/data-grid.js"
+    },
+    "./date-picker": {
+      "types": "./dist/esm/entries/date-picker.d.ts",
+      "import": "./dist/esm/entries/date-picker.js"
+    },
+    "./dialog": {
+      "types": "./dist/esm/entries/dialog.d.ts",
+      "import": "./dist/esm/entries/dialog.js"
+    },
+    "./drawer": {
+      "types": "./dist/esm/entries/drawer.d.ts",
+      "import": "./dist/esm/entries/drawer.js"
+    },
+    "./gantt": {
+      "types": "./dist/esm/entries/gantt.d.ts",
+      "import": "./dist/esm/entries/gantt.js"
+    },
+    "./image": {
+      "types": "./dist/esm/entries/image.d.ts",
+      "import": "./dist/esm/entries/image.js"
+    },
+    "./lightbox": {
+      "types": "./dist/esm/entries/lightbox.d.ts",
+      "import": "./dist/esm/entries/lightbox.js"
+    },
+    "./linear-progress": {
+      "types": "./dist/esm/entries/linear-progress.d.ts",
+      "import": "./dist/esm/entries/linear-progress.js"
+    },
+    "./list": {
+      "types": "./dist/esm/entries/list.d.ts",
+      "import": "./dist/esm/entries/list.js"
+    },
+    "./menu": {
+      "types": "./dist/esm/entries/menu.d.ts",
+      "import": "./dist/esm/entries/menu.js"
+    },
+    "./motion": {
+      "types": "./dist/esm/entries/motion.d.ts",
+      "import": "./dist/esm/entries/motion.js"
+    },
+    "./organization-chart": {
+      "types": "./dist/esm/entries/organization-chart.d.ts",
+      "import": "./dist/esm/entries/organization-chart.js"
+    },
+    "./pagination": {
+      "types": "./dist/esm/entries/pagination.d.ts",
+      "import": "./dist/esm/entries/pagination.js"
+    },
+    "./popover": {
+      "types": "./dist/esm/entries/popover.d.ts",
+      "import": "./dist/esm/entries/popover.js"
+    },
+    "./radio": {
+      "types": "./dist/esm/entries/radio.d.ts",
+      "import": "./dist/esm/entries/radio.js"
+    },
+    "./rating": {
+      "types": "./dist/esm/entries/rating.d.ts",
+      "import": "./dist/esm/entries/rating.js"
+    },
+    "./scroll-progress": {
+      "types": "./dist/esm/entries/scroll-progress.d.ts",
+      "import": "./dist/esm/entries/scroll-progress.js"
+    },
+    "./select": {
+      "types": "./dist/esm/entries/select.d.ts",
+      "import": "./dist/esm/entries/select.js"
+    },
+    "./slider": {
+      "types": "./dist/esm/entries/slider.d.ts",
+      "import": "./dist/esm/entries/slider.js"
+    },
+    "./snackbar": {
+      "types": "./dist/esm/entries/snackbar.d.ts",
+      "import": "./dist/esm/entries/snackbar.js"
+    },
+    "./sortable": {
+      "types": "./dist/esm/entries/sortable.d.ts",
+      "import": "./dist/esm/entries/sortable.js"
+    },
+    "./stepper": {
+      "types": "./dist/esm/entries/stepper.d.ts",
+      "import": "./dist/esm/entries/stepper.js"
+    },
+    "./table": {
+      "types": "./dist/esm/entries/table.d.ts",
+      "import": "./dist/esm/entries/table.js"
+    },
+    "./tabs": {
+      "types": "./dist/esm/entries/tabs.d.ts",
+      "import": "./dist/esm/entries/tabs.js"
+    },
+    "./text-field": {
+      "types": "./dist/esm/entries/text-field.d.ts",
+      "import": "./dist/esm/entries/text-field.js"
+    },
+    "./toggle-button": {
+      "types": "./dist/esm/entries/toggle-button.d.ts",
+      "import": "./dist/esm/entries/toggle-button.js"
+    },
+    "./tooltip": {
+      "types": "./dist/esm/entries/tooltip.d.ts",
+      "import": "./dist/esm/entries/tooltip.js"
+    },
+    "./transfer-list": {
+      "types": "./dist/esm/entries/transfer-list.d.ts",
+      "import": "./dist/esm/entries/transfer-list.js"
+    },
+    "./tree-view": {
+      "types": "./dist/esm/entries/tree-view.d.ts",
+      "import": "./dist/esm/entries/tree-view.js"
+    },
+    "./upload": {
+      "types": "./dist/esm/entries/upload.d.ts",
+      "import": "./dist/esm/entries/upload.js"
+    },
+    "./walktour": {
+      "types": "./dist/esm/entries/walktour.d.ts",
+      "import": "./dist/esm/entries/walktour.js"
+    },
     "./package.json": "./package.json"
   },
   "unpkg": "./dist/owlky.js",

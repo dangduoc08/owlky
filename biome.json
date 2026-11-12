@@ -16,7 +16,8 @@
       "!**/*.md",
       "!apps/storybook/src/foundations/icons/icon-data.json",
       "!packages/mcp/manifest.json",
-      "!apps/docs-content/src/api/*.json"
+      "!apps/docs-content/src/api/*.json",
+      "!packages/*/src/entries"
     ]
   },
   "formatter": {

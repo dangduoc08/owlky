@@ -37,9 +37,13 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 1. `specs/components/<name>.md` (template in `specs/README.md`). Its Options table is generated:
    add `<!-- options:<schema> -->` / `<!-- /options:<schema> -->` markers and the schema to
    `scripts/spec-options.mjs`, then `pnpm build && pnpm specs:options` (`check:specs` in CI).
-2. `core/src/anatomy/anatomy.ts`: the option schema `<name>Options` (`defineOptions`, ADR-0015) and
+2. `core/src/anatomy/<name>.ts` (one module per component, re-exported by `anatomy.ts`;
+   ADR-0068): the option schema `<name>Options` (`defineOptions`, ADR-0015) and
    `<name>Attributes()` built from it (`optionAttributes`); behavior → `core/src/<name>/` + tests
-   (native **and** fallback paths), exported from `core/src/index.ts`. Every other `data-ok-*`
+   (native **and** fallback paths), exported from `core/src/index.ts`. Keep module-level code
+   pure (literal value lists, no calls of unannotated helpers): bundlers keep it otherwise.
+   The per-component entries (`@owlky/<package>/<spec>`) are generated from the barrels:
+   `pnpm entries` after changing an `index.ts` (`check:entries` in `pnpm check`). Every other `data-ok-*`
    name (parts, states, values, triggers) goes in `core/src/anatomy/parts.ts` as a
    `<Name>Parts` interface member with a comment (ADR-0049).
 3. `styles/src/components/<name>.css` + `@import` in `styles/src/index.css`. (First component
