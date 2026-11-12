@@ -1,11 +1,11 @@
 ---
-"@owlky/core": major
-"@owlky/styles": major
-"@owlky/react": major
-"@owlky/html": major
+"@owlky/core": minor
+"@owlky/styles": minor
+"@owlky/react": minor
+"@owlky/html": minor
 ---
 
-Data grid: cells now edit with Owlky's own components instead of native fields. Text, number and date columns use an InputBase, `singleSelect` columns use a Select, and `boolean` columns use a small Checkbox. This changes the markup of a cell being edited, so it is a breaking change. Owlky hasn't published 0.1.0 yet, so it ships with the first release.
+Data grid: cells now edit with Owlky's own components instead of native fields. Text, number and date columns use an InputBase, `singleSelect` columns use a Select, and `boolean` columns use a small Checkbox. This changes the markup of a cell being edited, so it is a breaking change. Owlky is before 0.1.0, so it is versioned as a minor change and ships with the first release.
 
 - **Select editor:** in cell editing, its list opens when editing starts, and picking an option saves the cell. In row editing, the list starts closed: picking an option sets the field, and Enter saves the row. Escape cancels in both, and Enter on the closed field saves.
 - **Number columns** keep a native number input inside the InputBase.
