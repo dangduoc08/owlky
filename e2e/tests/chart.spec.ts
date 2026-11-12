@@ -258,9 +258,9 @@ for (const impl of implementations) {
 
     test("the data table is read by assistive technologies", async ({ page }) => {
       await openStory(page, storyId(impl, "chart", "bar"));
-      const table = page.getByRole("table", { name: "Net profit by country" });
+      const table = page.getByRole("table", { name: "Active stores by country" });
       await expect(table.getByRole("rowheader")).toHaveCount(10);
-      await expect(table.getByRole("cell").last()).toHaveText("1,370");
+      await expect(table.getByRole("cell").last()).toHaveText("820");
     });
   });
 }
