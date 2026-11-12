@@ -4,7 +4,15 @@
 //     shows it in an iframe, so the HTML runtime never shares a page with React;
 //   - extracts what the pages read from the MCP manifest (option schemas, spec sections) into
 //     src/generated/manifest.json, so the 6 MB manifest never reaches a bundle.
-import { copyFileSync, cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { app, loadContent, requireBuild, root } from "./content.mjs";
 

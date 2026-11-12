@@ -25,7 +25,7 @@ const moduleSources = import.meta.glob("../modules/*.ts", {
 
 describe("lazy modules (ADR-0068)", () => {
   it("cover every definition once, with the light components", () => {
-    const lazy = Object.values(LAZY_MODULES).flatMap((module) => [...module.definitions]);
+    const lazy: string[] = Object.values(LAZY_MODULES).flatMap((module) => [...module.definitions]);
     const light = lightComponents.map((definition) => definition.name);
     expect(new Set(lazy).size).toBe(lazy.length);
     expect(light.filter((name) => lazy.includes(name))).toEqual([]);
