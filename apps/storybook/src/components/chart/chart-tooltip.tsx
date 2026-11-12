@@ -2,8 +2,8 @@ import { Chart } from "@owlky/react";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const orders = [
-  { name: "Online", data: [41, 37, 35, 39, 56] },
-  { name: "In store", data: [19, 13, 11, 19, 8] },
+  { name: "Online", data: [23, 38, 52, 48, 45] },
+  { name: "In store", data: [10, 9, 13, 9, 15] },
 ];
 
 export function CustomTooltipChart() {

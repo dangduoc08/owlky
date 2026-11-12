@@ -515,7 +515,7 @@ export const chartExamples: Record<string, ChartExample> = {
       endAngle: 90,
       colors: ["secondary"],
       categories: ["Used of 24 Mb / 50 Mb"],
-      series: [{ name: "Storage", data: [91] }],
+      series: [{ name: "Storage", data: [48] }],
     },
   },
   "stroked-gauge": {

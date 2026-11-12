@@ -1862,8 +1862,8 @@ To show your own content, pass \`tooltipContent(context)\` in React. It gets the
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const orders = [
-  { name: "Online", data: [41, 37, 35, 39, 56] },
-  { name: "In store", data: [19, 13, 11, 19, 8] },
+  { name: "Online", data: [23, 38, 52, 48, 45] },
+  { name: "In store", data: [10, 9, 13, 9, 15] },
 ];
 
 export function ChartTooltip() {
@@ -1919,7 +1919,7 @@ By default, a new selection replaces the previous one. Set \`allowMultipleDataPo
 import { useState } from "react";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-const orders = [{ name: "Orders", data: [41, 37, 35, 39, 56] }];
+const orders = [{ name: "Orders", data: [23, 38, 52, 48, 45] }];
 
 export function ChartSelection() {
   const [day, setDay] = useState("none");
@@ -2662,8 +2662,8 @@ const PREVIEWS = {
         tooltipFixed="topRight"
         categories={["Mon", "Tue", "Wed", "Thu", "Fri"]}
         series={[
-          { name: "Online", data: [41, 37, 35, 39, 56] },
-          { name: "In store", data: [19, 13, 11, 19, 8] },
+          { name: "Online", data: [23, 38, 52, 48, 45] },
+          { name: "In store", data: [10, 9, 13, 9, 15] },
         ]}
       />
     </Preview>
@@ -3158,7 +3158,7 @@ const PREVIEWS = {
         colors={["info"]}
         defaultSelectedDataPoints={[{ seriesIndex: 0, dataPointIndex: 3 }]}
         categories={["Mon", "Tue", "Wed", "Thu", "Fri"]}
-        series={[{ name: "Orders", data: [41, 37, 35, 39, 56] }]}
+        series={[{ name: "Orders", data: [23, 38, 52, 48, 45] }]}
       />
     </Preview>
   ),

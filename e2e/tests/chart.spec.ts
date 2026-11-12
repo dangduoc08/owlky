@@ -151,7 +151,7 @@ for (const impl of implementations) {
       await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("Sep");
       await expect(tooltip(page).locator("[data-ok-chart-tooltip-row]")).toHaveText([
         "Series A100",
-        "Series B60",
+        "Series B45",
       ]);
       // The tooltip stays inside the plot.
       const tip = (await tooltip(page).boundingBox()) as { x: number; width: number };
@@ -252,8 +252,8 @@ for (const impl of implementations) {
       await openStory(page, storyId(impl, "chart", "semi-circle-gauge"));
       await plot(page).focus();
       await page.keyboard.press("Home");
-      await expect(tooltip(page)).toContainText("75%");
-      await expect(page.locator("[data-ok-chart-center-value]")).toHaveText("75%");
+      await expect(tooltip(page)).toContainText("48%");
+      await expect(page.locator("[data-ok-chart-center-value]")).toHaveText("48%");
     });
 
     test("the data table is read by assistive technologies", async ({ page }) => {
@@ -335,7 +335,7 @@ for (const impl of implementations) {
         "Minimum54",
         "Q166",
         "Median69",
-        "Q375",
+        "Q376",
         "Maximum88",
       ]);
       await expect(page.getByRole("table").locator("thead tr")).toHaveCount(2);
@@ -900,7 +900,7 @@ for (const impl of implementations) {
       await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Jan");
       const rows = first.locator("[data-ok-chart-tooltip-row]");
       await expect(rows).toHaveCount(6);
-      await expect(rows.last()).toHaveText("Total122k");
+      await expect(rows.last()).toHaveText("Total213k");
     });
 
     test("a legend item removes its band and the baseline follows", async ({ page }) => {
@@ -971,7 +971,7 @@ for (const impl of implementations) {
       await page.keyboard.press("Home");
       await page.keyboard.press("ArrowRight");
       await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Marketing");
-      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Budget27%");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Budget23%");
       await expect(first.locator("[data-ok-chart-active-node]")).toHaveCount(1);
     });
 
@@ -998,12 +998,12 @@ for (const impl of implementations) {
       const charts = page.locator("[data-ok-chart]");
       await expect(charts).toHaveCount(4);
       const first = charts.first();
-      await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(152);
+      await expect(first.locator("[data-ok-chart-unit-cell]")).toHaveCount(153);
       await expect(first.locator("[data-ok-chart-unit-title]")).toHaveCount(4);
       await first.locator("[data-ok-chart-plot]").focus();
       await page.keyboard.press("End");
       await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText("Can Tho");
-      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Volunteers42");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText("Volunteers21");
       await expect(first.locator("[data-ok-chart-active-node]")).toHaveCount(1);
     });
   });
