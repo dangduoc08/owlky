@@ -18,10 +18,10 @@ ADR that supersedes the old one — don't rewrite history.
 | [0011](0011-foundations-first.md)             | Foundations first; sample components removed (references in git)        | Accepted ("AA wins" superseded by 0014, Storybook layout by 0018 and 0019) |
 | [0012](0012-release-by-tag.md)                | Release only from `release/v*` tags on main                              | Accepted |
 | [0013](0013-translucent-colors-via-channels.md) | Translucent colors via RGB channel tokens (no `color-mix()` in components) | Accepted |
-| [0014](0014-brand-colors-follow-reference.md) | Brand colors follow the reference look (white on fills, `main` text) | Superseded by 0069 |
+| [0014](0014-brand-colors-follow-reference.md) | Brand colors follow the reference look (white on fills, `main` text) | Superseded by 0069 and [0070](0070-design-styles.md) |
 | [0015](0015-component-api-and-option-schema.md) | Component API from the upstream component; one option schema for React and HTML | Accepted |
 | [0016](0016-rename-to-owlky.md) | Rename the library to Owlky (`ok` namespace) | Accepted |
-| [0017](0017-theme-presets.md) | Theme presets through data attributes (color, font, root size) | Accepted |
+| [0017](0017-theme-presets.md) | Theme presets through data attributes (color, font, root size) | Superseded by [0070](0070-design-styles.md) |
 | [0018](0018-one-story-per-component.md) | One story per component, framework chosen in the toolbar | Accepted |
 | [0019](0019-component-docs-pages.md) | A usage guide page for every component | Accepted |
 | [0020](0020-data-grid.md) | Data grid: one grid engine in core, every MUI X tier, built in phases | Accepted (phase table superseded by 0021) |
@@ -72,7 +72,8 @@ ADR that supersedes the old one — don't rewrite history.
 | [0066](0066-paper-composed-by-surfaces.md) | Paper composed by the library's own surfaces: `data-ok-paper` on Popover (every popover root), Dialog paper, Drawer content, Map controls and popups; `elevation` on Popover / Menu / Dialog; `TableContainer component={Paper}` | Accepted |
 | [0067](0067-data-grid-cell-editors.md) | Data grid cell editors: InputBase (text, number, dates), a bare listbox Select (open at the start in cell mode) and a Checkbox; nested listbox keys, number columns stay a native number input | Accepted |
 | [0068](0068-bundle-size-lazy-loading.md) | Bundle size: an entry per component in every package, `owlky.js` as a loader of ESM modules and their CSS (light components stay, `data-ok-preload`, strict CSP), the opt-in bundles on that loader, schema descriptions in a JSON file, a core stylesheet, splits inside heavy components, budgets that only go down | Accepted |
-| [0069](0069-own-visual-identity.md) | Own visual identity: Tailwind v4 palette (MIT), Indigo + Zinc default, presets indigo / teal / violet / sky / rose / amber, roles chosen by an AA generator, AA everywhere (ends 0014), Be Vietnam Pro for text and headings | Accepted |
+| [0069](0069-own-visual-identity.md) | Own visual identity: Tailwind v4 palette (MIT), Indigo + Zinc default, presets indigo / teal / violet / sky / rose / amber, roles chosen by an AA generator, AA everywhere (ends 0014), Be Vietnam Pro for text and headings | Accepted (defaults superseded by [0070](0070-design-styles.md); palette, generator and AA rules kept) |
+| [0070](0070-design-styles.md) | Design styles: nine styles (Soft default) as `data-ok-style`, nestable axes `data-ok-density` / `-surface` / `-contrast`, one token resolver, a token model for shape, lines, focus, type and density, opt-in style sheets, an AA / 7:1 generator, Solar Linear icons, emoji flags with opt-in Circle Flags; supersedes 0017, 0014 and 0069's defaults | Accepted |
 | [0071](0071-accounts-and-remote-mcp.md) | Accounts and a remote MCP at owlky.com/mcp: no local stdio package, Better Auth (GitHub, Google, the MCP OAuth flow) and hashed personal tokens, Neon + Drizzle, no prompt logging, 60 calls / min, `/mcp` and pinned versions; supersedes 0046 | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).
