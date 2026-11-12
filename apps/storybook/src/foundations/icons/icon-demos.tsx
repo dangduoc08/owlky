@@ -1,3 +1,4 @@
+import { Link } from "@owlky/react";
 import { paletteColorNames } from "@owlky/tokens";
 import { CodeBlock } from "../shared/code-block.js";
 import { IconifyGlyph, type IconSetPrefix, iconSet } from "./iconify.js";
@@ -7,9 +8,9 @@ function Credit({ prefix }: { prefix: IconSetPrefix }) {
   const set = iconSet(prefix);
   return (
     <p className="m-0 text-caption text-text-secondary">
-      <a href={set.url} target="_blank" rel="noreferrer" className="text-primary-text underline">
+      <Link href={set.url} target="_blank" rel="noreferrer" underline="always">
         {set.name}
-      </a>{" "}
+      </Link>{" "}
       by {set.author} · {set.license} · <code>{prefix}:*</code>
     </p>
   );
