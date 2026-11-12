@@ -193,6 +193,42 @@ for (const name of Object.keys(optionSchemas))
 
 // ── React exports, by source folder ────────────────────────────────────────────────────────────
 const folderSpec = (folder) => sharedFolderSpec(folder, specs);
+
+// ── Imports (ADR-0068) ─────────────────────────────────────────────────────────────────────────
+// Where a component comes from: the per-component entries of each package (package.json
+// `exports`), its stylesheets in bundle order (`@owlky/styles/components/<file>.css`, the
+// component's folders mapped to the spec) and the lazy CDN module owlky.js loads for it.
+const exportKeys = (pkg) =>
+  new Set(Object.keys(JSON.parse(read(`packages/${pkg}/package.json`)).exports));
+const entryKeys = {
+  core: exportKeys("core"),
+  react: exportKeys("react"),
+  html: exportKeys("html"),
+};
+const stylesheetOrder = [
+  ...read("packages/styles/src/index.css").matchAll(/@import "\.\/components\/([\w-]+)\.css"/g),
+].map((match) => match[1]);
+const lazyModules = new Map();
+{
+  const table = read("packages/html/src/loader/modules.ts");
+  for (const [, key, body] of table.matchAll(
+    /^ {2}"?([\w-]+)"?: \{([\s\S]*?definitions: \[[^\]]*\])/gm,
+  ))
+    for (const [, definition] of body.matchAll(/"([\w-]+)"/g))
+      if (!definition.startsWith("data-ok")) lazyModules.set(definition, key);
+}
+function importsOf(name) {
+  const imports = {};
+  for (const pkg of ["react", "html", "core"])
+    if (entryKeys[pkg].has(`./${name}`)) imports[pkg] = `@owlky/${pkg}/${name}`;
+  const css = stylesheetOrder
+    .filter((file) => folderSpec(file) === name)
+    .map((file) => `@owlky/styles/components/${file}.css`);
+  if (css.length) imports.css = css;
+  const module = lazyModules.get(name);
+  if (module) imports.cdnModule = module;
+  return imports;
+}
 const reactExports = new Map([...specs.keys()].map((name) => [name, new Set()]));
 const reactIndex = read("packages/react/src/index.ts");
 for (const match of reactIndex.matchAll(
@@ -480,6 +516,7 @@ const components = [...specs.keys()].sort(byName).map((name) => {
   // variable, per React component and HTML part (scripts/api-reference.mjs writes it).
   const { entries, types, css } = apiReference(name);
   component.api = { entries, ...(types ? { types } : {}), ...(css ? { css } : {}) };
+  component.imports = importsOf(name);
   if (guideEntries.some((guide) => guide.id === name)) component.guide = name;
   const storybookTitle = titles.get(`components/${name}`);
   if (storybookTitle) component.storybookTitle = storybookTitle;

@@ -152,6 +152,19 @@ export interface ManifestComponent {
   readonly storybookTitle?: string;
   /** The API reference, per React component and HTML part (ADR-0049). */
   readonly api?: ManifestApi;
+  /** Where the component comes from (ADR-0068). */
+  readonly imports?: ManifestImports;
+}
+
+/** A component's per-component entries, stylesheets and lazy CDN module. */
+export interface ManifestImports {
+  readonly react?: string;
+  readonly html?: string;
+  readonly core?: string;
+  /** Its stylesheets, in the order to import them (after `@owlky/styles/owlky.css` or tokens.css). */
+  readonly css?: readonly string[];
+  /** The lazy module `owlky.js` loads for it (`modules/<name>.js`), for `data-ok-preload`. */
+  readonly cdnModule?: string;
 }
 
 export interface ManifestGuideSection {

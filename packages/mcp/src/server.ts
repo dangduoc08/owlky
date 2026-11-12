@@ -341,6 +341,15 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
         stories: z.array(z.object({ id: z.string(), name: z.string() })),
         api: apiShape.optional(),
         apiEntries: z.array(z.string()).optional(),
+        imports: z
+          .object({
+            react: z.string().optional(),
+            html: z.string().optional(),
+            core: z.string().optional(),
+            css: z.array(z.string()).optional(),
+            cdnModule: z.string().optional(),
+          })
+          .optional(),
       },
       annotations: READ_ONLY,
     },
@@ -405,6 +414,14 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
             }
           : {}),
         ...(api ? { apiEntries: entries.map((entry) => entry.name) } : {}),
+        ...(component.imports
+          ? {
+              imports: {
+                ...component.imports,
+                ...(component.imports.css ? { css: [...component.imports.css] } : {}),
+              },
+            }
+          : {}),
       };
       const ordered = [
         ...Object.values(NAMED_SECTIONS)
