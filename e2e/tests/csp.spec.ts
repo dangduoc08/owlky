@@ -88,7 +88,7 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   );
   await page.getByRole("textbox", { name: "Notes" }).fill("Hello");
   await page.getByRole("switch", { name: "Wi-Fi" }).click();
-  // The Editor (owlky-editor.js, Tiptap) mounts and edits without inline styles or HTML sinks.
+  // The Editor (modules/editor.js, Tiptap) mounts and edits without inline styles or HTML sinks.
   const story = page.getByRole("textbox", { name: "Story" });
   await expect(story).toHaveAttribute("contenteditable", "true");
   await story.focus();
@@ -116,15 +116,15 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
       (element as HTMLElement).style.getPropertyValue("--_ok-carousel-basis-xs"),
     ),
   ).toBe("70%");
-  // Markdown (owlky-markdown.js, unified) builds DOM with DOM methods; alignment goes through
+  // Markdown (modules/markdown.js, unified) builds DOM with DOM methods; alignment goes through
   // CSSOM; raw HTML is sanitized and unsafe URLs are removed.
-  // Illustrations (owlky-illustrations.js) draw with createElementNS and size through CSSOM.
+  // Illustrations (modules/illustration.js) draw with createElementNS and size through CSSOM.
   const illustration = page.locator("#csp-illustration");
   await expect(illustration).toHaveAttribute("viewBox", "0 0 480 360");
   await expect(illustration).toHaveAttribute("aria-hidden", "true");
   await expect(illustration.locator("[data-ok-tone]").first()).toBeAttached();
   await expect(illustration).toHaveCSS("width", "240px");
-  // Phone input (owlky-phone.js): the country list is built with DOM methods, typing is formatted.
+  // Phone input (modules/phone-input.js): the country list is built with DOM methods, typing is formatted.
   const phone = page.getByRole("textbox", { name: "Phone number" });
   await expect(phone).toHaveValue("(02) 9876 5432");
   await expect(page.locator("#csp-phone-country-listbox [role=option]").first()).toBeAttached();
@@ -166,6 +166,21 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   ).toBe("320px");
   await page.keyboard.press("Escape");
   await expect(step).toBeHidden();
+  // One script tag: owlky.js loaded every heavy component from modules/ next to it (ADR-0068).
+  expect(await page.locator("script[src]").count()).toBe(1);
+  const missing = await page.evaluate(() =>
+    [
+      "chart",
+      "date-picker",
+      "carousel",
+      "walktour",
+      "editor",
+      "markdown",
+      "phone-input",
+      "illustration",
+    ].filter((name) => !window.Owlky?.loaded(name)),
+  );
+  expect(missing).toEqual([]);
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);

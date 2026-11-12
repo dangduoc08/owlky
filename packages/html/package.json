@@ -11,6 +11,7 @@
     "./dist/esm/illustrations.js",
     "./dist/monaco/**",
     "./dist/owlky-code-editor.js",
+    "./dist/modules/**",
     "./dist/esm/map.js",
     "./dist/esm/markdown.js",
     "./dist/esm/phone.js",
@@ -69,6 +70,7 @@
     "./owlky-phone.js": "./dist/owlky-phone.js",
     "./owlky.css": "./dist/owlky.css",
     "./owlky.min.css": "./dist/owlky.min.css",
+    "./modules/*": "./dist/modules/*",
     "./monaco/*": "./dist/monaco/*",
     "./snippets/*": "./dist/snippets/*",
     "./accordion": {
@@ -248,7 +250,7 @@
   "unpkg": "./dist/owlky.js",
   "jsdelivr": "./dist/owlky.js",
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && vite build --mode code-editor && vite build --mode monaco && vite build --mode monaco-workers && vite build --mode map && vite build --mode markdown && vite build --mode phone && vite build --mode illustrations && node scripts/copy-assets.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode modules && vite build --mode editor && vite build --mode code-editor && vite build --mode monaco && vite build --mode monaco-workers && vite build --mode map && vite build --mode markdown && vite build --mode phone && vite build --mode illustrations && node scripts/copy-assets.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

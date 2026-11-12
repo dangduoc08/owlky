@@ -1,8 +1,8 @@
 /**
- * <script> / CDN entry (IIFE): `owlky-editor.js`. Load it after `owlky.js`: it registers the
- * Editor on the same page-wide runtime (ADR-0007 slot) and adds no global of its own.
+ * <script> / CDN entry (IIFE): `owlky-editor.js`, a shim since ADR-0068 (ADR-0023). `owlky.js` loads
+ * `modules/editor.js` by itself when the page holds the component; this script only loads it
+ * ahead of use, like `data-ok-preload="editor"` on `owlky.js`. Load it after `owlky.js`.
  */
-import { editor } from "./components/editor/editor.js";
-import { getRuntime } from "./runtime/global.js";
+import { loadShim } from "./loader/shim.js";
 
-getRuntime().register(editor).start();
+loadShim("editor", "owlky-editor.js");

@@ -23,6 +23,10 @@ export type Trigger<V extends string = "id"> = { readonly trigger: V };
 
 /** Attributes any component may carry. */
 export interface CommonParts {
+  /** On the `owlky.js` script: the folder of its lazy modules, when it isn't `modules/` next to the script. */
+  "data-ok-modules": Value<string>;
+  /** On the `owlky.js` script: lazy modules to load at once, separated by spaces, such as `chart data-grid`. */
+  "data-ok-preload": Value<string>;
   /** Applies a color preset to this element and everything inside it, such as `purple`. */
   "data-ok-preset": Value<string>;
   /** `off` keeps the HTML runtime away from this element and everything inside it. React writes it on interactive roots. */

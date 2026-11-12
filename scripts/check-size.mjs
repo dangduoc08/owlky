@@ -1,5 +1,5 @@
 // Gzip size budgets for what users download. Raise a budget only with a reason in the PR.
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { gzipSync } from "node:zlib";
@@ -16,125 +16,21 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
-  // 255 kB since the rest of ApexCharts v8 types (roadmap 4.18.21: streamgraph, violin with its KDE,
-  // beeswarm, waffle, unit layouts and their options): 251.6 kB. Optimization is deferred to 1.0 prep.
-  // 245 kB once the chart hierarchy types (tree, sunburst, icicle, ADR-0058) merged with the data
-  // grid's cell menu, filter groups and generated columns: 241.9 kB. Optimization is deferred to 1.0 prep.
-  // 239 kB since the tree chart type (4.18.7, ADR-0058: the hierarchy model and table, tidy /
-  // cluster / radial layouts, keyboard over the hierarchy, collapse): 235.5 kB, 238.2 kB with the
-  // sunburst and icicle partitions and their drill controls; size work is deferred to 1.0 prep.
-  // 235 kB since the ApexTree rows (4.18.3, .5, .6, ADR-0056: grouped leaves, zoom / fit / center
-  // with a toolbar and a core controller, per-node lines) on top of the range charts: 230.4 kB.
-  // 235 kB since the data grid's cell menu, filter groups (4.18.13, ADR-0057; 229.5 kB) and
-  // generated columns (4.18.14: the HTML runtime builds headers, rows and panel lists from a data
-  // table): 231.1 kB. Optimization is deferred to 1.0 prep.
-  // Phase 4 batch E's data grid range charts (4.18.12, ADR-0055: createRangeChart and
-  // Alt + F1, cross-filtering, chartsToJSON / restoreCharts, chart regions built by the runtime;
-  // about 1.9 kB): 226.1 kB.
-  // 230 kB since the batch E coulds (sortable swap, Embla v9 names, lightbox render functions,
-  // walktour offset) on top of the chart types and crossfilter: 225.7 kB.
-  // 225 kB since the sortable and data grid shoulds merged together: 221.0 kB.
-  // 221 kB since Phase 4 batch E's sortable shoulds (4.18.75-76, ADR-0053: moves between lists,
-  // one session per document, move-to triggers; auto scroll, disabled items, drag events, HTML
-  // messages; about 1.6 kB): 217.6 kB. Optimization is deferred to 1.0 prep.
-  // 221 kB since Phase 4 batch E's data grid shoulds (4.18.10 set filter, 4.18.51-54: column
-  // options, selection propagation, layout options, footer counts, Tab navigation; about 3.5 kB):
-  // 217.6 kB. Optimization is deferred to 1.0 prep.
-  // 217 kB since Phase 4 batch E's chart shoulds (4.18.61-64: 100% stacks, totals, background bars,
-  // marker shapes, patterns, color blind mode, tooltip modes and templates, legend and grid
-  // options; about 5.3 kB): 213.6 kB. Optimization is deferred to 1.0 prep.
-  // 210 kB since Phase 4 batch E (chart value axes and selection; data grid sort comparators, status
-  // bar, custom editors and edit modes, undo / redo): 206.8 kB.
-  // Batch E row 4.18.1 (Organization chart collapsible nodes: the expand / collapse controller,
-  // badges, lazy children and eight methods; about 1.4 kB) fits it: 208.3 kB.
-  // 205 kB since Phase 4 batch D: the data grid's row 4.15 (multiple grouping columns, grouping
-  // values, group footers, server-side aggregation, derived pivot fields, the pivot panel's drag and
-  // drop, several charts per grid; about 2.7 kB) on top of the Editor merge: 200.0 kB.
-  // 200 kB since Phase 4 batches B and C together (submenus, popover anchoring, tooltip cursor,
-  // stepper, tabs links on top of the Snackbar and Tree view work): 195.1 kB. Size optimization is
-  // planned for 1.0 prep (roadmap.md step 9).
-  // 196 kB since Phase 4 batch C: the Snackbar's swipe, hotkey and per-position lists (about
-  // 1.9 kB, 189.0 kB) and the Tree view's drag and keyboard reordering, label editing, lazy
-  // children, selection propagation, highlight and methods (about 3.5 kB): 192.5 kB.
-  // 190 kB since the Gantt's phases 2 and 3 (ADR-0048: drag and keyboard editing, row
-  // virtualization, SVG / PNG / CSV downloads; about 4.9 kB): 184.3 kB.
-  // 172 kB since Sankey and stock charts (ADR-0047: the Sankey layout, 13 indicators, panes, the
-  // navigator and its gestures): 164.1 kB after Sankey, 168.5 kB after stock charts.
-  // 185 kB since the Gantt (ADR-0048 phase 1: dates, model with roll-ups and the critical path,
-  // scales, the node layout with dependency routing, controller, data table, runtime; about
-  // 10.5 kB) on top of the charts: 179.4 kB.
-  // 165 kB since the Select (ADR-0045: select-only combobox controller, the runtime with chips,
-  // placeholder and checkmarks, the TablePagination listbox; about 1.5 kB): 159.1 kB.
-  // 160 kB since the Upload (ADR-0037: drop, folders, paste, picker, checks, the runtime with
-  // previews, list and rejections; about 6.4 kB): 150.2 kB.
-  // 150 kB since the Lightbox (ADR-0032: modal around the Carousel, zoom and pan gestures,
-  // rotate, fullscreen, download, share, toggles, the runtime; about 4 kB): 143.3 kB.
-  // 140 kB since the Carousel (ADR-0033: snap model, controller with loop, drag, wheel, keys,
-  // fade, tweens, auto height, autoplay and auto scroll, and the runtime; about 9.5 kB): 134.4 kB.
-  // 130 kB once the chart's phase 4 merged after the date pickers' phase 3 (120.7 kB).
-  // 120 kB since the chart's phase 4 (ADR-0031: candlestick, range bar, timeline and polar area
-  // layouts, zoom and gesture controller, linked charts, annotations, export, toolbar; about
-  // 9.2 kB): 114.6 kB.
-  // 120 kB since the date pickers' phase 3 (ADR-0028: range model, range calendar, range fields,
-  // range pickers and drag editing; about 6 kB), merged after the chart's phase 3 (111.5 kB).
-  // 110 kB once the chart's phase 3 merged on top of the data grid's phase 6 (105.4 kB).
-  // 100 kB since the chart's phase 3 (ADR-0029: box plot, heatmap, treemap, bubble, range area,
-  // funnel, slope and sparkline layouts, multi-value tables, in-place SVG and table patching,
-  // updateSeries / appendData; about 5.7 kB): 93.6 kB.
-  // 105 kB since the data grid's phase 6 (row grouping, aggregation, pivoting, Excel export with
-  // its own ZIP writer, clipboard, cell selection, header filters, charts integration; about
-  // 12 kB), merged after both phase 2 merges below (99.8 kB).
-  // 95 kB since the chart's phase 2 (pie, donut, radial bar, radar, gauges, data labels; about
-  // 3.4 kB) and the date pickers' phase 2 (ADR-0026: time fields, clocks, time pickers; about 6.9 kB),
-  // merged together (87.9 kB).
-  // 85 kB since the data grid's phase 5 (tree data, detail panels, row reordering, pinned rows,
-  // column groups, list view, column virtualization, lazy loading; about 10 kB).
-  // 75 kB since the Chart (phase 1 of ADR-0024: scales, layout, legend, tooltip, runtime; about
-  // 9.5 kB minified). CSS stays within 33 kB (the chart adds about 1.7 kB).
-  // 65 kB since the date pickers' phase 1 (ADR-0022: date engine, sectioned field, calendar,
-  // five runtimes, English and Vietnamese texts; about 13 kB).
-  // 52 kB since the data grid's phase 4 (spans, row heights, autosizing, validation, events, state,
-  // formats, print and CSV options; about 49 kB); 44 kB after its phase 2 (filters, resizing,
-  // reordering, pinning, editing, print);
-  // 40 kB after its phase 1 (grid engine, keyboard navigation, runtime; ADR-0020); 34 kB after
-  // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
-  // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
-  // (`@owlky/html`) is tree-shaken.
-  // 250 kB since the geo charts (ADR-0059: projections, hex tiles, `mapScale`): 246.84 kB.
-  // 260 kB once the geo charts merged with the ApexCharts v8 types (streamgraph, violin, beeswarm,
-  // waffle, unit, roadmap 4.18.21): 256.7 kB. Optimization is deferred to 1.0 prep.
-  // 265 kB with the data grid coulds (roadmap 4.18.55–4.18.58: events, server options, tree
-  // reordering, the fill handle): 261.4 kB.
-  // 268 kB after the chart coulds 4.18.65, .66, .67 and .20 (x axis groups, rotation and windows,
-  // forecasts, no data, text annotations, the data reducer, timeline rows, measure rulers and
-  // draggable annotations): 263.68 kB; 269 kB with drilldown and the trellis runtime (4.18.68,
-  // ADR-0060): 265.08 kB.
-  // 275 kB once the data grid and chart coulds merged together: 269.8 kB.
-  // 281 kB after Phase 4 batch F's Countdown (4.22: clock, live region cadence, runtime with
-  // toggle and restart triggers) and color swatches (4.23: sanitized swatch colors, a radio
-  // runtime, checkbox and avatar swatches): 275.75 kB.
-  // 287 kB since Motion 5.2, scroll progress (ADR-0062: offsets, scroll and view timelines, the
-  // script fallback and its runtime): 282.23 kB. Optimization is deferred to 1.0 prep.
-  // 293 kB after Phase 5.3 gestures (ADR-0062: drag with inertia and constraints, the keyboard
-  // alternative, spring hover / tap / focus / drag states, the swipe helper, the swipeable
-  // Drawer): 287.59 kB (from 280.54 kB). Optimization is deferred to 1.0 prep.
-  // 299.5 kB after Phase 5.4 layout (ADR-0062: FLIP layout nodes with nested correction, the
-  // HTML layout watcher, shared values for the scroll progress smoothing, `initial`): 294.47 kB
-  // (from 289.25 kB). Optimization is deferred to 1.0 prep.
-  // 310 kB after all 6.0 Apex gaps: the organization chart tree mode and selection, the data grid
-  // rows (row ranges, rows to export, state, chart aggregation / combo, range outline, columns tool
-  // panel, server pivoting) and the geo chart rows (pixel lattice, pattern and picture fills,
-  // generated descriptions, annotations by region): 304.69 kB. Optimization is deferred to 1.0 prep.
-  ["packages/html/dist/owlky.js", 310_000, "HTML runtime + all components (IIFE)"],
+  // owlky.js loads heavy components on demand since S2 of the size roadmap (ADR-0068; it was
+  // 310 kB with every component, 307.6 kB measured): the runtime, the loader and the 35 light
+  // components, 45.2 kB measured. Budgets only go down from here (roadmap-size.md decision 8).
+  ["packages/html/dist/owlky.js", 47_000, "HTML runtime + light components + loader (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
-  // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
-  // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
-  // (prosemirror-tables + Tiptap's table nodes, about 13 kB), mentions (Tiptap's Mention and
-  // Suggestion, about 4 kB; Floating UI is stubbed out), the bubble menu and the popover controller.
-  ["packages/html/dist/owlky-editor.js", 163_000, "Editor + Tiptap (IIFE, loaded after owlky.js)"],
-  // The Code editor is opt-in (ADR-0034): owlky-code-editor.js holds the runtimes, the controller,
-  // the Owlky themes and the loader (about 10.7 kB); Monaco loads on demand from dist/monaco/.
-  ["packages/html/dist/owlky-code-editor.js", 12_000, "Code editor runtime + loader (IIFE)"],
+  // The old opt-in scripts are shims (ADR-0068 §8): they ask owlky.js's loader for their module.
+  // Before: Editor 163 kB, Map 310 kB, Markdown 110 kB, Phone 47.5 kB, Code editor 12 kB and
+  // Illustrations 12 kB budgets; those engines are lazy modules now (below).
+  ...["editor", "map", "markdown", "phone", "illustrations", "code-editor"].map((name) => [
+    `packages/html/dist/owlky-${name}.js`,
+    500,
+    `owlky-${name}.js shim`,
+  ]),
+  // MapLibre's tile worker, loaded by the map itself.
+  ["packages/html/dist/owlky-map-worker.js", 155_000, "MapLibre tile worker (loaded by the map)"],
   // Monaco itself (0.57): the editor, its 80+ language tokenizers' registrations and its CSS are
   // about 1.15 MB gzip when the first editor mounts (tokenizers and language features load later,
   // per language). Budgets track Monaco upgrades; they are not Owlky code.
@@ -152,26 +48,6 @@ const budgets = [
     1_600_000,
     "Monaco TypeScript worker (+ shared worker chunk)",
   ],
-  // The Map is opt-in (ADR-0025): MapLibre GL JS is about 295 kB of owlky-map.js (main thread)
-  // and all of owlky-map-worker.js (its tile worker, about 147 kB, loaded by the map itself);
-  // owlky.js stays free of them.
-  ["packages/html/dist/owlky-map.js", 310_000, "Map + MapLibre (IIFE, loaded after owlky.js)"],
-  ["packages/html/dist/owlky-map-worker.js", 155_000, "MapLibre tile worker (loaded by the map)"],
-  // Markdown is opt-in (ADR-0035): unified, micromark with GFM, parse5 (raw HTML), the sanitizer
-  // and property-information are nearly all of owlky-markdown.js (about 102 kB measured);
-  // owlky.js stays free of them.
-  ["packages/html/dist/owlky-markdown.js", 110_000, "Markdown + unified (IIFE, after owlky.js)"],
-  // The phone input is opt-in (ADR-0061): libphonenumber-js with its `min` metadata is about
-  // 35.5 kB of owlky-phone.js (44.8 kB measured); owlky.js stays free of it (checked below).
-  [
-    "packages/html/dist/owlky-phone.js",
-    47_500,
-    "Phone input + libphonenumber-js (IIFE, after owlky.js)",
-  ],
-  // Illustrations are opt-in (ADR-0041): the 16 pictures' node trees are nearly all of
-  // owlky-illustrations.js (10.3 kB measured; 5.5 kB minified ESM); owlky.js stays free
-  // of them.
-  ["packages/html/dist/owlky-illustrations.js", 12_000, "Illustrations (IIFE, after owlky.js)"],
   // 42 kB once the Map, the Carousel and the Code editor merged together (about 2.1 + 2 + 0.3 kB
   // on 38 kB): 40.4 kB.
   // 36.1 kB with the Code editor (ADR-0034: frame, loading state and fallback textareas; about
@@ -243,16 +119,139 @@ const budgets = [
   ["packages/mcp/manifest.json", 1_630_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
+// The lazy modules of owlky.js (ADR-0068, roadmap-size.md decision 9), each file on its own, as
+// measured in S2 plus at most 5%; the shared chunks they import are budgeted together below (a
+// page downloads each chunk once). The old opt-in budgets cap their engines: the Editor 163 kB,
+// the Map 310 kB, Markdown 110 kB, the phone input 47.5 kB.
+const MODULE_BUDGETS = {
+  autocomplete: 6_100, // 5.89 kB measured
+  carousel: 21_900, // 20.86 kB (Carousel + Lightbox)
+  chart: 12_900, // 12.35 kB (the engine is in shared chunks: the data grid's charts use it too)
+  "code-editor": 8_300, // 7.93 kB (Monaco loads from dist/monaco/, budgeted above)
+  "data-grid": 64_300, // 61.25 kB
+  "date-picker": 32_100, // 30.58 kB (11 runtimes)
+  editor: 157_500, // 150.04 kB (Tiptap and ProseMirror, about 125 kB of it)
+  gantt: 17_300, // 16.50 kB
+  illustration: 7_000, // 6.75 kB
+  map: 310_000, // 303.98 kB (MapLibre, about 295 kB of it)
+  markdown: 105_000, // 100.15 kB (unified, micromark, parse5)
+  motion: 19_700, // 18.85 kB (6 runtimes)
+  "organization-chart": 8_800, // 8.47 kB
+  "phone-input": 43_100, // 41.13 kB (libphonenumber-js and its metadata, about 35.5 kB)
+  sortable: 5_600, // 5.40 kB
+  "transfer-list": 1_200, // 1.16 kB
+  "tree-view": 6_100, // 5.82 kB
+  upload: 7_700, // 7.34 kB
+  walktour: 5_700, // 5.43 kB
+};
+for (const [name, limit] of Object.entries(MODULE_BUDGETS))
+  budgets.push([`packages/html/dist/modules/${name}.js`, limit, `Lazy module ${name}`]);
+{
+  const chunks = (await readdir("packages/html/dist/modules/chunks"))
+    .filter((file) => file.endsWith(".js"))
+    .map((file) => `packages/html/dist/modules/chunks/${file}`);
+  // 87.35 kB measured: the chart engine (about 71 kB, shared by the chart and the data grid), the
+  // runtime and the overlay helpers the modules share.
+  budgets.push([chunks, 91_500, "Shared chunks of the lazy modules (all of them)"]);
+}
+
+// Scenarios (decision 7): what a page or an app downloads. HTML: `owlky.js`, the modules and
+// chunks the loader fetches for the page, and `owlky.min.css`. React: Vite production builds
+// from `scripts/size-report.mjs` (run first by `pnpm check:size`), React itself excluded.
+const page = async (...modules) => [
+  "packages/html/dist/owlky.js",
+  ...new Set(
+    (
+      await Promise.all(modules.map((name) => withImports(`packages/html/dist/modules/${name}.js`)))
+    ).flat(),
+  ),
+  "packages/styles/dist/owlky.min.css",
+];
+budgets.push(
+  // 107.9 kB measured (45.2 kB of JavaScript); 370 kB before S2.
+  [await page(), 113_000, "Scenario: HTML page with a Dialog (light components only)"],
+  // 246.5 kB measured; 370 kB before S2.
+  [await page("data-grid"), 258_500, "Scenario: HTML page with a Data grid"],
+  // 199.1 kB measured; 370 kB before S2.
+  [await page("chart"), 209_000, "Scenario: HTML page with a Chart"],
+);
+
 let failed = false;
 
-// Opt-in engines stay out of the main bundle: the phone metadata (ADR-0061) is in owlky-phone.js only.
+// React scenarios, from the size report's JSON.
+{
+  const REACT = {
+    Button: [8_700, "React, Button only"], // 8.32 kB measured (10.2 kB before S2)
+    "Button + Dialog + TextField": [23_200, "React, Button + Dialog + TextField"], // 22.19 kB
+    DataGrid: [216_500, "React, DataGrid"], // 206.25 kB
+    Chart: [85_000, "React, Chart"], // 81.14 kB
+  };
+  let report;
+  try {
+    report = JSON.parse(await readFile("reports/size-report.json", "utf8"));
+  } catch {
+    console.log("FAIL reports/size-report.json is missing: run `pnpm size:report` first");
+    process.exit(1);
+  }
+  for (const [label, [limit, name]] of Object.entries(REACT)) {
+    const size = report.scenarios.react.find((entry) => entry.label === label)?.barrelGzip;
+    const ok = typeof size === "number" && size <= limit;
+    failed ||= !ok;
+    console.log(
+      `${ok ? "ok  " : "FAIL"} Scenario: ${name}: ${((size ?? 0) / 1000).toFixed(2)} kB / ${limit / 1000} kB gzip`,
+    );
+  }
+
+  // Code in both owlky.js and a lazy file has two module instances (ADR-0068 §2): its bytes are
+  // budgeted (12.2 kB measured), and it must hold no module-level state, or the two copies would
+  // disagree. Files listed here hold state that only one side ever uses.
+  const STATE_ALLOWED = {
+    // `createDrag`'s nested-draggable set: only the motion module creates drags; owlky.js uses
+    // the file's pan helper (the swipeable Drawer).
+    "core/src/motion/drag.ts": true,
+    // Per-copy "reported once" warning flags (ADR-0007: each copy reports once).
+    "html/src/runtime/global.ts": true,
+    // The loader of a runtime: only owlky.js installs one.
+    "html/src/runtime/runtime.ts": true,
+  };
+  const duplicated = report.duplicated ?? { gzip: 0, sources: [] };
+  const okBytes = duplicated.gzip <= 12_800;
+  failed ||= !okBytes;
+  console.log(
+    `${okBytes ? "ok  " : "FAIL"} Code in both owlky.js and the lazy files: ${(duplicated.gzip / 1000).toFixed(2)} kB / 12.8 kB gzip (${duplicated.sources.length} files)`,
+  );
+  // Module state: a top-level `let`, or a top-level Map / Set / WeakMap / WeakSet.
+  const STATE =
+    /^(?:export\s+)?(?:let\s|const\s+\w+\s*(?::[^=\n]+)?=\s*new\s+(?:Map|Set|WeakMap|WeakSet)\b)/m;
+  for (const source of duplicated.sources) {
+    const path = source
+      .replace(/^core\/dist\/(.+)\.js$/, "core/src/$1.ts")
+      .replace(/^src\//, "html/src/")
+      .replace(/^tokens\/dist\/(.+)\.js$/, "tokens/src/$1.ts");
+    const code = await readFile(`packages/${path}`, "utf8").catch(() => "");
+    if (STATE.test(code) && !STATE_ALLOWED[path]) {
+      failed = true;
+      console.log(
+        `FAIL packages/${path} is in owlky.js and in a lazy file and holds module state: move the state onto elements or instances (ADR-0068 §2)`,
+      );
+    }
+  }
+}
+
+// Opt-in engines stay out of owlky.js: the phone metadata (ADR-0061) is in the phone module only.
 {
   const marker = "country_calling_codes";
   const main = await readFile("packages/html/dist/owlky.js", "utf8");
-  const phone = await readFile("packages/html/dist/owlky-phone.js", "utf8");
+  const phone = (
+    await Promise.all(
+      (
+        await withImports("packages/html/dist/modules/phone-input.js")
+      ).map((file) => readFile(file, "utf8")),
+    )
+  ).join("");
   const ok = !main.includes(marker) && phone.includes(marker);
   failed ||= !ok;
-  console.log(`${ok ? "ok  " : "FAIL"} Phone metadata only in owlky-phone.js, never in owlky.js`);
+  console.log(`${ok ? "ok  " : "FAIL"} Phone metadata only in the phone module, never in owlky.js`);
 }
 
 for (const [file, limit, label] of budgets) {

@@ -3,6 +3,7 @@ import type {
   ComponentDefinition,
   ComponentInstance,
   DelegatedHandler,
+  ModuleLoader,
   Runtime,
   SetupContext,
 } from "./types.js";
@@ -23,6 +24,19 @@ type ListenRoot = Document | ShadowRoot;
 const isRuntimeOff = (element: Element) => element.closest(RUNTIME_OFF_SELECTOR) !== null;
 
 const listenerKey = (event: string, capture: boolean) => `${event}|${capture ? "c" : "b"}`;
+
+/** The loader `owlky.js` installed on a runtime (ADR-0068): module-scoped, one per runtime. */
+const loaders = new WeakMap<Runtime, ModuleLoader>();
+
+/**
+ * Installs the CDN loader behind `runtime.load()` / `runtime.loaded()`. The first one wins:
+ * returns `false` when the runtime has one already (a second copy of `owlky.js`).
+ */
+export function setModuleLoader(runtime: Runtime, loader: ModuleLoader): boolean {
+  if (loaders.has(runtime)) return false;
+  loaders.set(runtime, loader);
+  return true;
+}
 
 /**
  * Creates an isolated runtime. Pages normally use the page-wide singleton from `getRuntime()`;
@@ -269,6 +283,17 @@ export function createRuntime(): Runtime {
         return undefined;
       }
       return mount(element, definition)?.instance as I | undefined;
+    },
+
+    load(name) {
+      if (definitions.has(name)) return Promise.resolve();
+      const loader = loaders.get(runtime);
+      if (loader) return loader.load(name);
+      return Promise.reject(new Error(`${LOG_PREFIX} No module loader for "${name}".`));
+    },
+
+    loaded(name) {
+      return definitions.has(name) || (loaders.get(runtime)?.loaded(name) ?? false);
     },
   };
 

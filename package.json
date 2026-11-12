@@ -29,7 +29,7 @@
     "entries": "node scripts/entries.mjs",
     "check:entries": "node scripts/entries.mjs --check",
     "check:boundaries": "node scripts/check-boundaries.mjs",
-    "check:size": "node scripts/check-size.mjs && node scripts/size-report.mjs --quiet",
+    "check:size": "node scripts/size-report.mjs --quiet && node scripts/check-size.mjs",
     "size:report": "node scripts/size-report.mjs",
     "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:entries && pnpm check:size && pnpm check:packages && pnpm check:licenses && pnpm check:specs && pnpm check:api && pnpm check:docs && pnpm check:manifest && pnpm test",
     "changeset": "changeset",

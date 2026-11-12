@@ -327,6 +327,19 @@ The steps run in this order:
 The core anatomy split of section 1 belongs in S2, because the per-component core entries need
 it, and it fixes React's anatomy leak before S3 measures.
 
+## Implementation notes (S2, 2026-11-12)
+- **Measured:** `owlky.js` 45.2 kB gzip (from 307.6 kB); the 19 modules' own files 1.2–304 kB
+  and their shared chunks 87.3 kB in all (the chart engine, about 71 kB, is one chunk that the
+  Chart and the Data grid share). Code in both `owlky.js` and a chunk: 12.2 kB gzip, 23 files
+  (the runtime, the anatomy of a few schemas, the overlay and popover helpers), none with module
+  state that both sides use (`check:size` checks it).
+- **Stylesheets:** the mechanism (attach before the code, rank order after the core sheet, skip a
+  sheet the page links) is in place, but every module has `stylesheet: false` until S4: `owlky.css`
+  still holds every component.
+- **`owlky.mjs`** (light set B as an ES module) is deferred: no page needs it before S6's guides.
+- **API reference JSON:** the `imports` field is in the MCP manifest and `get_component`; the docs
+  pages show imports with S6's guides.
+
 ## Consequences
 - A light HTML page downloads about 45 kB of JS today (about 39 kB after S3), down from 306.6 kB,
   and about 29 kB of CSS, down from 67.4 kB. A data grid page adds about 126 kB and its sheet. A

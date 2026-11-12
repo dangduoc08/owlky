@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Strict CSP + Trusted Types: the shipped CSS, runtime and snippets must work unchanged. -->
+    <!-- Strict CSP + Trusted Types: the shipped CSS, runtime and snippets must work unchanged.
+         One stylesheet and one script: owlky.js loads the lazy modules (charts, pickers, the
+         editor, Markdown, the phone input, illustrations) from modules/ next to it (ADR-0068). -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; require-trusted-types-for 'script'"
@@ -11,10 +13,6 @@
     <title>Owlky — strict CSP check</title>
     <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
     <script src="../../packages/html/dist/owlky.js" defer></script>
-    <script src="../../packages/html/dist/owlky-editor.js" defer></script>
-    <script src="../../packages/html/dist/owlky-markdown.js" defer></script>
-    <script src="../../packages/html/dist/owlky-phone.js" defer></script>
-    <script src="../../packages/html/dist/owlky-illustrations.js" defer></script>
   </head>
   <body>
     <main>

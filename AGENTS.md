@@ -960,6 +960,20 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   dependency upgrade or a new bundled dependency: `pnpm build && pnpm notices`. A copy without a
   source map must be added to `COPIES`, or the check can't see it. The manifest (`publicText` in
   `scripts/manifest.mjs`) drops `Reference URL:` lines and design-reference names from spec text.
+- CDN loader (ADR-0068): `owlky.js` registers `components/light.ts` and one stub definition per
+  lazy module (`html/src/loader/modules.ts`, `loader:<name>`, the module's root selectors); the
+  stub's setup imports `modules/<name>.js` (`src/modules/<name>.ts`, built by `vite build --mode
+  modules` with shared chunks in `modules/chunks/`). A new component with a runtime goes in
+  `light.ts` or in a module (entry file + table row): `loader/modules.test.ts` fails otherwise,
+  and checks the table's selectors against the definitions. `@owlky/html/auto`, Storybook and
+  unit tests register every component directly; the e2e loader spec (`loader.spec.ts`,
+  `examples/loader/`) and the CSP page exercise the real loader. Code in both `owlky.js` and a
+  chunk has two module instances: `check:size` lists those files and fails on module state in
+  them (`STATE_ALLOWED` names the safe ones). `new URL("…", import.meta.url)` in a module needs
+  `/* @vite-ignore */`, or Vite inlines the target as a data URL (it found `src/monaco.ts`).
+  Pages with a strict Trusted Types policy refuse `innerHTML` in e2e too: build test markup
+  with DOM methods. Firefox and WebKit hold `load` for a pending module import: `goto` with
+  `waitUntil: "domcontentloaded"` when a test holds a module request.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

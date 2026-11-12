@@ -90,4 +90,18 @@ export interface Runtime {
   get<I extends ComponentInstance>(element: Element | null, name: string): I | undefined;
   /** Like `get`, but mounts the component first when needed. */
   getOrCreate<I extends ComponentInstance>(element: Element | null, name: string): I | undefined;
+  /**
+   * Loads a lazy module of the CDN bundle by name (such as `"chart"` or `"data-grid"`), with its
+   * stylesheet first, and registers its components. Resolves at once for components that are
+   * registered already. Rejects when the module can't load or the runtime has no loader.
+   */
+  load(name: string): Promise<void>;
+  /** Whether `load(name)` has finished: the module's components are registered. */
+  loaded(name: string): boolean;
+}
+
+/** What `owlky.js` installs on the runtime it owns: loads lazy modules by name. */
+export interface ModuleLoader {
+  load(name: string): Promise<void>;
+  loaded(name: string): boolean;
 }

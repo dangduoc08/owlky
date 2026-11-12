@@ -1,16 +1,14 @@
+import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type UserConfig } from "vite";
 
-// Builds only the IIFE bundles for <script> / CDN use. The npm ESM output comes from tsc.
-// `vite build` → owlky.js (runtime + components); `vite build --mode editor` → owlky-editor.js
-// (the Editor and Tiptap, ADR-0023; loaded after owlky.js, it shares its runtime).
-// `--mode markdown` → owlky-markdown.js (Markdown and unified, ADR-0035; loaded after owlky.js).
-// `--mode phone` → owlky-phone.js (the phone input and libphonenumber-js, ADR-0061; after owlky.js).
-// `--mode illustrations` → owlky-illustrations.js (the illustration set and its runtime, ADR-0041).
-// `--mode map` → owlky-map.js (the Map and MapLibre, ADR-0025; loaded after owlky.js too).
-// The Code editor (ADR-0034): `--mode code-editor` → owlky-code-editor.js (the runtime definitions
-// and the loader, without Monaco), `--mode monaco` → monaco/monaco.js + monaco.css (the engine, an
-// ES module the loader imports on demand), `--mode monaco-workers` → monaco/*.worker.js.
+// Builds the CDN files. The npm ESM output comes from tsc.
+// `vite build` → owlky.js (IIFE: the runtime, the light components and the loader, ADR-0068);
+// `--mode modules` → modules/<name>.js (the lazy modules owlky.js loads, ES modules with shared
+// chunks in modules/chunks/); `--mode editor|markdown|phone|illustrations|map|code-editor` →
+// owlky-<name>.js, the old opt-in scripts as shims that ask owlky.js's loader for their module.
+// The Code editor (ADR-0034): `--mode monaco` → monaco/monaco.js + monaco.css (the engine, an ES
+// module the Code editor's loader imports on demand), `--mode monaco-workers` → monaco/*.worker.js.
 const TARGET = ["chrome114", "edge114", "firefox128", "safari17"];
 const local = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
@@ -25,33 +23,47 @@ const iife = (entry: string, name: string, file: string, extra: UserConfig = {})
   },
 });
 
+/** The lazy modules of `owlky.js` (ADR-0068): one ES module per `src/modules/*.ts`, shared chunks. */
+const MODULES = Object.fromEntries(
+  readdirSync(local("src/modules"))
+    .filter((file) => file.endsWith(".ts"))
+    .map((file) => [file.slice(0, -3), local(`src/modules/${file}`)]),
+);
+
 export default defineConfig(({ mode }): UserConfig => {
-  if (mode === "editor")
-    return iife("src/cdn-editor.ts", "OwlkyEditorBundle", "owlky-editor.js", {
-      // Tiptap's Suggestion only positions with Floating UI in a helper the mention list doesn't
-      // use (ADR-0050): about 6 kB gzip less.
-      resolve: {
-        alias: [{ find: /^@floating-ui\/dom$/, replacement: local("src/floating-ui-stub.ts") }],
-      },
-    });
+  // The old opt-in scripts are shims now (ADR-0068): each asks owlky.js's loader for its module.
+  if (mode === "editor") return iife("src/cdn-editor.ts", "OwlkyEditorBundle", "owlky-editor.js");
   if (mode === "markdown")
     return iife("src/cdn-markdown.ts", "OwlkyMarkdownBundle", "owlky-markdown.js");
   if (mode === "phone") return iife("src/cdn-phone.ts", "OwlkyPhoneBundle", "owlky-phone.js");
   if (mode === "illustrations")
     return iife("src/cdn-illustrations.ts", "OwlkyIllustrationsBundle", "owlky-illustrations.js");
-  if (mode === "map")
-    return iife("src/cdn-map.ts", "OwlkyMapBundle", "owlky-map.js", {
-      // MapLibre finds its worker from `import.meta.url`, which an IIFE lacks: cdn-map.ts sets the
-      // worker URL from the script's own URL instead.
-      define: { "import.meta.url": "undefined" },
-    });
+  if (mode === "map") return iife("src/cdn-map.ts", "OwlkyMapBundle", "owlky-map.js");
   if (mode === "code-editor")
-    return iife("src/cdn-code-editor.ts", "OwlkyCodeEditorBundle", "owlky-code-editor.js", {
-      // The loader imports Monaco from `paths.vs` at runtime: keep the package out of this file.
+    return iife("src/cdn-code-editor.ts", "OwlkyCodeEditorBundle", "owlky-code-editor.js");
+  if (mode === "modules")
+    return {
       resolve: {
-        alias: [{ find: /^monaco-editor(\/.*)?$/, replacement: local("src/monaco-stub.ts") }],
+        alias: [
+          // Tiptap's Suggestion only positions with Floating UI in a helper the mention list
+          // doesn't use (ADR-0050): about 6 kB gzip less.
+          { find: /^@floating-ui\/dom$/, replacement: local("src/floating-ui-stub.ts") },
+          // The Code editor's loader imports Monaco from `paths.vs` at runtime (ADR-0034).
+          { find: /^monaco-editor(\/.*)?$/, replacement: local("src/monaco-stub.ts") },
+        ],
       },
-    });
+      build: {
+        outDir: "dist/modules",
+        emptyOutDir: false,
+        sourcemap: true,
+        minify: true,
+        target: TARGET,
+        lib: { entry: MODULES, formats: ["es"], fileName: (_format, name) => `${name}.js` },
+        rollupOptions: {
+          output: { minify: true, chunkFileNames: "chunks/[name]-[hash].js" },
+        },
+      },
+    };
   if (mode === "monaco" || mode === "monaco-workers") {
     const workers = mode === "monaco-workers";
     return {

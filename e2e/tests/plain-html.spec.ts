@@ -46,6 +46,11 @@ test.describe("plain HTML page with the CDN bundle", () => {
 
 declare global {
   interface Window {
-    Owlky?: { version: string; active: boolean };
+    Owlky?: {
+      version: string;
+      active: boolean;
+      load(name: string): Promise<void>;
+      loaded(name: string): boolean;
+    };
   }
 }

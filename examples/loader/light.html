@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; require-trusted-types-for 'script'"
+    />
+    <title>Owlky — light page</title>
+    <!--
+      A page of light components only: owlky.js loads no module until a heavy root appears, except
+      the ones its data-ok-preload attribute names (the e2e loader spec checks both).
+    -->
+    <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
+    <script src="../../packages/html/dist/owlky.js" data-ok-preload="data-grid" defer></script>
+  </head>
+  <body>
+    <main>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="primary" data-ok-size="md">
+        <span data-ok-button-label>Light</span>
+      </button>
+      <div id="later"></div>
+    </main>
+  </body>
+</html>
