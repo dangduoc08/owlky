@@ -71,8 +71,9 @@ not an additive integration, hence this ADR.
 ## Consequences
 - Every snippet with one of these surfaces changes (one attribute), including the Data grid's
   and the pickers'; generators reproduce it, hand-written snippets get the same attribute.
-- Major changesets for `@owlky/core`, `@owlky/styles`, `@owlky/react` and `@owlky/html`: the
-  rendered markup changes.
+- Breaking (the rendered markup changes) for `@owlky/core`, `@owlky/styles`, `@owlky/react` and
+  `@owlky/html`, but versioned as a minor changeset: Owlky is before 0.1.0 (a major would version
+  the fixed packages as 1.0.0), so it ships with the first release.
 - MUI's `elevation` exists on Popover, Menu and Dialog, and keeps working on Drawer.
 - Follow-ups: Paper `variant` / `square` on overlays, Autocomplete `slotProps.paper`, Snackbar
   content, Alert and Accordion as Papers.

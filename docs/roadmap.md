@@ -299,7 +299,7 @@ Minimals' look: no dark-mode lightening gradient, outline grey 500 at 16%. `pape
 first among the components so surfaces built on it override it by source order (the Card
 contract in `specs/components/paper.md`). No new tokens. Closes no "Pending integrations" row on
 its own: the "Typography + Paper (card)" rows wait for Card. The library's own surfaces compose
-it since 2026-11-12 (ADR-0066, owner decision; an anatomy change, major changesets): every
+it since 2026-11-12 (ADR-0066, owner decision; an anatomy change, breaking but a minor changeset before 0.1.0): every
 popover root (Popover, Menu, Select, Autocomplete, pickers, Walktour steps, Editor overlays),
 the Dialog paper, the Drawer content and the Map controls and popup contents carry
 `data-ok-paper` on their own element and keep their look (no visual change); Popover, Menu and
