@@ -35,7 +35,6 @@
   "keywords": [
     "design-tokens",
     "css-variables",
-    "tailwindcss",
-    "minimal"
+    "tailwindcss"
   ]
 }

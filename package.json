@@ -31,7 +31,7 @@
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check:size": "node scripts/check-size.mjs && node scripts/size-report.mjs --quiet",
     "size:report": "node scripts/size-report.mjs",
-    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:entries && pnpm check:size && pnpm check:packages && pnpm check:specs && pnpm check:api && pnpm check:docs && pnpm check:manifest && pnpm test",
+    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:entries && pnpm check:size && pnpm check:packages && pnpm check:licenses && pnpm check:specs && pnpm check:api && pnpm check:docs && pnpm check:manifest && pnpm test",
     "changeset": "changeset",
     "version-packages": "changeset version && node scripts/sync-versions.mjs && pnpm install --lockfile-only",
     "release": "pnpm build && pnpm -r --filter \"./packages/*\" publish --access public --no-git-checks",
@@ -45,6 +45,8 @@
     "check:api": "node scripts/api-reference.mjs --check",
     "manifest": "node scripts/manifest.mjs",
     "check:manifest": "node scripts/manifest.mjs --check",
+    "notices": "node scripts/check-licenses.mjs --write",
+    "check:licenses": "node scripts/check-licenses.mjs",
     "smoke:mcp": "node scripts/smoke-mcp.mjs"
   },
   "devDependencies": {

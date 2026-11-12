@@ -30,4 +30,7 @@ const nls = join(root, "node_modules", "monaco-editor", "esm", "vs", "nls", "lan
 await mkdir(join(root, "dist", "monaco", "nls"), { recursive: true });
 for (const file of await readdir(nls))
   if (file.endsWith(".js")) await cp(join(nls, file), join(root, "dist", "monaco", "nls", file));
-console.log("html: copied CSS, snippets and Monaco's messages");
+// Monaco's license and third-party notices travel with the self-hosted folder (legal step L5).
+for (const file of ["LICENSE", "ThirdPartyNotices.txt"])
+  await cp(join(root, "node_modules", "monaco-editor", file), join(root, "dist", "monaco", file));
+console.log("html: copied CSS, snippets, Monaco's messages and notices");

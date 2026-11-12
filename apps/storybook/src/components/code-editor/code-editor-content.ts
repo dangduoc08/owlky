@@ -67,7 +67,7 @@ export const FILES = {
   "style.css": {
     language: "css",
     value: `h1 {
-  color: #00a76f;
+  color: #336699;
   font-family: system-ui, sans-serif;
 }
 `,

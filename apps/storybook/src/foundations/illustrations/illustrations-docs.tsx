@@ -210,7 +210,7 @@ export function Pictures() {
   {
     id: "credits",
     title: "Credits",
-    body: "The illustrations are original artwork drawn for Owlky in the flat style of the Minimal dashboard. They are released under the MIT license, like the rest of the library.",
+    body: "The illustrations are original artwork drawn for Owlky in a flat style. They are released under the MIT license, like the rest of the library.",
   },
   apiReferenceSection(illustrationApi),
 ];

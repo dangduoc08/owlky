@@ -63,8 +63,8 @@ describe("tooltip", () => {
     expect(tip.querySelector("[data-ok-chart-tooltip-state]")).toBeNull();
     const rows = [...tip.querySelectorAll("[data-ok-chart-tooltip-row]")];
     expect(rows.map((row) => row.textContent?.replace(/\s+/g, ""))).toEqual([
-      "Online44",
-      "Instore13",
+      "Online23",
+      "Instore10",
     ]);
     expect(
       rows[0]?.querySelector("[data-ok-chart-tooltip-marker]")?.getAttribute("data-ok-color"),

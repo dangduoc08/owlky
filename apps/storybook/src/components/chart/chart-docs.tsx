@@ -64,8 +64,8 @@ const firstRows = (markup: string, count: number) => {
     .join("\n");
 };
 const SALES = [
-  { name: "Online", data: [31, 40, 28, 51, 42, 69] },
-  { name: "In store", data: [11, 32, 45, 32, 34, 52] },
+  { name: "Online", data: [24, 38, 33, 47, 52, 61] },
+  { name: "In store", data: [16, 31, 36, 22, 37, 40] },
 ];
 
 /** Docs preview prices: 60 days of a smooth walk with volumes. */
@@ -131,8 +131,8 @@ export function MonthlySales() {
       label="Monthly sales"
       categories={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
       series={[
-        { name: "Online", data: [31, 40, 28, 51, 42, 69] },
-        { name: "In store", data: [11, 32, 45, 32, 34, 52] },
+        { name: "Online", data: [24, 38, 33, 47, 52, 61] },
+        { name: "In store", data: [16, 31, 36, 22, 37, 40] },
       ]}
     />
   );
@@ -180,8 +180,8 @@ export function ChartTypes() {
       yTitle="Points"
       categories={["Jan", "Feb", "Mar"]}
       series={[
-        { name: "Team A", type: "bar", data: [22, 12, 21] },
-        { name: "Team B", type: "line", data: [31, 26, 35] },
+        { name: "Team A", type: "bar", data: [20, 32, 30] },
+        { name: "Team B", type: "line", data: [26, 28, 33] },
       ]}
     />
   );
@@ -266,7 +266,7 @@ export function VisitsByDevice() {
       xLabel="Device"
       colors={["primary-dark", "warning", "info-dark"]}
       categories={["Desktop", "Mobile", "Tablet"]}
-      series={[{ name: "Visits", data: [44, 55, 13] }]}
+      series={[{ name: "Visits", data: [48, 42, 24] }]}
     />
   );
 }`,
@@ -372,7 +372,7 @@ export function BuildTimes() {
   <table data-ok-chart-data>
     <caption>Visits by page and device</caption>
     <thead>
-      <tr><th scope="col">Page</th><th scope="col">Desktops</th><th scope="col">Mobile</th></tr>
+      <tr><th scope="col">Page</th><th scope="col">Desktop</th><th scope="col">Mobile</th></tr>
     </thead>
     <tbody>
       <tr><th scope="row">Home</th><td>60</td><td></td></tr>
@@ -388,7 +388,7 @@ export function ChartCells() {
       label="Visits by page and device"
       type="treemap"
       series={[
-        { name: "Desktops", data: [{ x: "Home", y: 60 }, { x: "Pricing", y: 41 }] },
+        { name: "Desktop", data: [{ x: "Home", y: 60 }, { x: "Pricing", y: 41 }] },
         { name: "Mobile", data: [{ x: "Docs", y: 51 }, { x: "Blog", y: 30 }] },
       ]}
     />
@@ -407,7 +407,7 @@ const steps = ["Visited", "Signed up", "Activated", "Paid"];
 
 export function ChartStages() {
   return (
-    <Chart label="Sign-ups" type="funnel" dataLabels categories={steps} series={[{ name: "People", data: [1380, 990, 548, 200] }]} />
+    <Chart label="Sign-ups" type="funnel" dataLabels categories={steps} series={[{ name: "People", data: [1250, 860, 520, 150] }]} />
   );
 }`,
   },
@@ -424,7 +424,7 @@ ${snippetElement(sparklinesGroup, "data-ok-chart ")
     react: `import { Chart } from "@owlky/react";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const visits = [{ name: "Visits", data: [32, 41, 35, 51, 49, 62, 69] }];
+const visits = [{ name: "Visits", data: [8, 17, 17, 47, 42, 49, 84] }];
 
 export function ChartSparklines() {
   return (
@@ -567,8 +567,8 @@ ${snippetElement(crossfilterGroup, "data-ok-chart ", 1)}
 import { useState } from "react";
 
 const regions = ["North", "South", "East", "West", "Central"];
-const orders = [{ name: "Orders", data: [420, 310, 280, 390, 150] }];
-const revenue = [{ name: "Revenue", data: [96, 71, 64, 88, 35] }];
+const orders = [{ name: "Orders", data: [259, 289, 331, 354, 351] }];
+const revenue = [{ name: "Revenue", data: [88, 89, 63, 76, 59] }];
 
 export function RegionsCrossfilter() {
   const [filtered, setFiltered] = useState("every region");
@@ -1345,11 +1345,11 @@ export function ListeningByGenre() {
       height={320}
       categories={months}
       series={[
-        { name: "Pop", data: [42, 48, 55, 60, 52, 44, 40, 38, 45, 50, 58, 62] },
-        { name: "Rock", data: [30, 28, 26, 32, 40, 46, 50, 44, 36, 30, 26, 24] },
-        { name: "Jazz", data: [12, 14, 18, 20, 22, 26, 24, 20, 18, 16, 14, 12] },
-        { name: "Hip hop", data: [20, 24, 30, 36, 44, 52, 58, 62, 56, 48, 40, 30] },
-        { name: "Classical", data: [18, 16, 14, 12, 12, 14, 16, 18, 22, 26, 30, 34] },
+        { name: "Pop", data: [62, 60, 55, 46, 38, 42, 41, 39, 40, 53, 56, 62] },
+        { name: "Rock", data: [44, 41, 43, 40, 50, 49, 47, 34, 32, 34, 29, 24] },
+        { name: "Jazz", data: [12, 14, 16, 19, 18, 17, 23, 24, 25, 25, 25, 26] },
+        { name: "Hip hop", data: [61, 62, 57, 55, 37, 30, 42, 43, 36, 38, 20, 20] },
+        { name: "Classical", data: [34, 27, 26, 27, 31, 29, 30, 27, 25, 16, 12, 12] },
       ]}
     />
   );
@@ -1411,7 +1411,7 @@ export function SalariesByDepartment() {
       height={300}
       categories={people}
       series={[
-        { name: "Sales", data: [55, 62, 58, 71, 66, 60, 64, 58, 73, 69, 61, 57] },
+        { name: "Sales", data: [63, 72, 73, 68, 65, 67, 61, 64, 65, 56, 56, 55] },
         { name: "Design", data: [72, 80, 75, 78, 83, 90, 68, 74, null, null, null, null] },
         { name: "Support", data: [41, 44, 39, 47, 45, 42, 40, 43, 46, null, null, null] },
       ]}
@@ -1443,7 +1443,7 @@ export function BudgetShares() {
       valueSuffix="%"
       height={320}
       categories={["Engineering", "Marketing", "Support", "Operations"]}
-      series={[{ name: "Budget", data: [38, 27, 21, 14] }]}
+      series={[{ name: "Budget", data: [37, 23, 16, 16] }]}
     />
   );
 }`,
@@ -1473,7 +1473,7 @@ export function VolunteersByCity() {
       clusterLabels
       height={280}
       categories={["Hanoi", "Da Nang", "Hue", "Can Tho"]}
-      series={[{ name: "Volunteers", data: [64, 28, 18, 42] }]}
+      series={[{ name: "Volunteers", data: [51, 29, 52, 21] }]}
     />
   );
 }`,
@@ -1663,9 +1663,9 @@ export function ChartLabels() {
 
 const weeks = ["W1", "W2", "W3", "W4", "W5", "W6"];
 const orders = [
-  { name: "Store A", data: [30, 42, 28, 51, 39, 47] },
-  { name: "Store B", data: [21, 18, 26, 22, 31, 25] },
-  { name: "Target", type: "line" as const, data: [50, 55, 55, 60, 65, 65] },
+  { name: "Store A", data: [38, 33, 31, 49, 39, 31] },
+  { name: "Store B", data: [29, 29, 21, 27, 18, 23] },
+  { name: "Target", type: "line" as const, data: [53, 57, 57, 58, 59, 61] },
 ];
 
 export function ChartStackTotals() {
@@ -1698,8 +1698,8 @@ ${snippetElement(columnDataLabelsGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-const balance = [{ name: "Balance", data: [12, 18, -7, -21, 9, 27] }];
-const inflation = [{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6] }];
+const balance = [{ name: "Balance", data: [25, 6, -18, -21, 0, 5] }];
+const inflation = [{ name: "Inflation", data: [1.4, 5.6, 6.5, 3.6, 5.9, 10.1] }];
 
 export function ChartBars() {
   return (
@@ -1745,15 +1745,15 @@ ${snippetElement(colorBlindGroup, "data-ok-chart ", 1)}`,
 
 const weeks = ["W1", "W2", "W3", "W4", "W5", "W6", "W7"];
 const sessions = [
-  { name: "Search", markerShape: "circle" as const, data: [45, 52, 38, 24, 33, 26, 21] },
-  { name: "Social", markerShape: "square" as const, data: [35, 41, 62, 42, 13, 18, 29] },
-  { name: "Email", markerShape: "triangle" as const, data: [87, 57, 74, 99, 75, 38, 62] },
+  { name: "Search", markerShape: "circle" as const, data: [21, 23, 36, 50, 52, 37, 49] },
+  { name: "Social", markerShape: "square" as const, data: [50, 36, 42, 20, 13, 55, 62] },
+  { name: "Email", markerShape: "triangle" as const, data: [80, 42, 38, 70, 99, 89, 91] },
 ];
 const quarters = ["Q1", "Q2", "Q3", "Q4"];
 const revenue = [
-  { name: "Free", data: [8, 12, 15, 19] },
-  { name: "Pro", data: [21, 25, 30, 34] },
-  { name: "Team", data: [14, 18, 17, 24] },
+  { name: "Free", data: [8, 12, 13, 13] },
+  { name: "Pro", data: [25, 28, 31, 32] },
+  { name: "Team", data: [21, 16, 23, 21] },
 ];
 
 export function ChartCues() {
@@ -1816,8 +1816,8 @@ ${snippetElement(axisScalesGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-const visits = [440, 505, 414, 671, 227, 413];
-const mentions = [23, 42, 35, 27, 43, 22];
+const visits = [752, 725, 377, 201, 436, 360];
+const mentions = [23, 21, 31, 25, 37, 36];
 const downloads = [{ name: "Downloads", data: [12, 45, 180, 920, 3400, 15800] }];
 
 export function ChartAxes() {
@@ -1862,8 +1862,8 @@ To show your own content, pass \`tooltipContent(context)\` in React. It gets the
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const orders = [
-  { name: "Online", data: [44, 55, 41, 67, 22] },
-  { name: "In store", data: [13, 23, 20, 8, 13] },
+  { name: "Online", data: [23, 38, 52, 48, 45] },
+  { name: "In store", data: [10, 9, 13, 9, 15] },
 ];
 
 export function ChartTooltip() {
@@ -1919,7 +1919,7 @@ By default, a new selection replaces the previous one. Set \`allowMultipleDataPo
 import { useState } from "react";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-const orders = [{ name: "Orders", data: [44, 55, 41, 67, 22] }];
+const orders = [{ name: "Orders", data: [23, 38, 52, 48, 45] }];
 
 export function ChartSelection() {
   const [day, setDay] = useState("none");
@@ -1960,10 +1960,10 @@ ${snippetElement(gridGroup, "data-ok-chart ")}`,
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 const money = [
-  { name: "Income", data: [42, 48, 45, 51, 49, 56] },
-  { name: "Spending", data: [38, 40, 47, 44, 46, 49] },
+  { name: "Income", data: [56, 51, 63, 64, 44, 42] },
+  { name: "Spending", data: [38, 42, 43, 47, 46, 52] },
 ];
-const visits = [{ name: "Visits", data: [10, 41, 35, 51, 49, 62] }];
+const visits = [{ name: "Visits", data: [19, 35, 10, 51, 68, 78] }];
 
 export function ChartLegendGrid() {
   return (
@@ -2005,11 +2005,11 @@ ${snippetElement(xAxisWindowGroup, "data-ok-chart ")}`,
     react: `import { Chart } from "@owlky/react";
 
 const quarters = ["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"];
-const revenue = [{ name: "Revenue", data: [18, 24, 31, 27, 29, 34, 40, 38] }];
+const revenue = [{ name: "Revenue", data: [40, 38, 35, 20, 21, 30, 22, 18] }];
 const areas = ["Billing and invoices", "Account settings", "Mobile application"];
-const tickets = [{ name: "Tickets", data: [31, 22, 17] }];
+const tickets = [{ name: "Tickets", data: [15, 12, 20] }];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
-const visits = [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }];
+const visits = [{ name: "Visits", data: [94, 85, 76, 58, 27, 70, 81, 79, 100] }];
 
 export function ChartXAxis() {
   return (
@@ -2045,7 +2045,7 @@ export function ChartXAxis() {
     react: `import { Chart } from "@owlky/react";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
-const sales = [{ name: "Sales", data: [30, 41, 35, 51, 49, 62, 69, 91, 108] }];
+const sales = [{ name: "Sales", data: [46, 59, 30, 53, 39, 61, 79, 85, 108] }];
 
 export function ChartForecast() {
   return <Chart label="Monthly sales" categories={months} forecastCount={3} markerSize={4} series={sales} />;
@@ -2059,7 +2059,7 @@ export function ChartForecast() {
     react: `import { Chart } from "@owlky/react";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
-const visits = [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }];
+const visits = [{ name: "Visits", data: [94, 85, 76, 58, 27, 70, 81, 79, 100] }];
 
 export function ChartTextAnnotations() {
   return (
@@ -2113,7 +2113,7 @@ const quarters = [
 ];
 const levels = [
   { id: "q1", name: "Q1", categories: ["Jan", "Feb", "Mar"], series: [{ name: "Sales", data: [35, 40, 45] }] },
-  { id: "q2", name: "Q2", type: "line" as const, categories: ["Apr", "May", "Jun"], series: [{ name: "Sales", data: [52, 48, 50] }] },
+  { id: "q2", name: "Q2", type: "line" as const, categories: ["Apr", "May", "Jun"], series: [{ name: "Sales", data: [51, 50, 50] }] },
 ];
 
 export function ChartDrilldown() {
@@ -2134,9 +2134,9 @@ In HTML, write the panels yourself: each \`data-ok-chart-trellis-panel\` holds a
     react: `import { ChartTrellis } from "@owlky/react";
 
 const regions = [
-  { name: "North", data: [30, 41, 35, 51, 49, 62] },
-  { name: "South", data: [12, 18, 22, 19, 25, 28] },
-  { name: "East", data: [44, 39, 47, 52, 58, 61] },
+  { name: "North", data: [39, 50, 50, 37, 58, 59] },
+  { name: "South", data: [22, 16, 13, 26, 28, 17] },
+  { name: "East", data: [53, 51, 59, 61, 57, 57] },
 ];
 
 export function ChartSmallMultiples() {
@@ -2198,7 +2198,7 @@ import { Chart } from "@owlky/react";
 import { useState } from "react";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
-const visits = [{ name: "Visits", data: [30, 41, 27, 43, 63, 71, 57, 81, 100] }];
+const visits = [{ name: "Visits", data: [94, 85, 76, 58, 27, 70, 81, 79, 100] }];
 
 export function ChartMovableTarget() {
   const [annotations, setAnnotations] = useState<ChartAnnotation[]>([
@@ -2255,9 +2255,9 @@ export function ChartTimelineRows() {
     react: `import { Chart } from "@owlky/react";
 
 const series = [
-  { name: "Hats", data: [14, 0, 21, 9] },
+  { name: "Hats", data: [15, 0, 19, 7] },
   { name: "Bags", data: [0, 18, null, 12] },
-  { name: "Shoes", data: [8, 15, 11, 0] },
+  { name: "Shoes", data: [12, 4, 9, 0] },
 ];
 
 export function ChartZeroBars() {
@@ -2353,7 +2353,7 @@ const PREVIEWS = {
             id: "q2",
             name: "Q2",
             categories: ["Apr", "May", "Jun"],
-            series: [{ name: "Sales", data: [52, 48, 50] }],
+            series: [{ name: "Sales", data: [51, 50, 50] }],
           },
         ]}
       />
@@ -2368,8 +2368,8 @@ const PREVIEWS = {
         promote
         categories={MONTHS}
         series={[
-          { name: "North", data: [30, 41, 35, 51, 49, 62] },
-          { name: "South", data: [12, 18, 22, 19, 25, 28] },
+          { name: "North", data: [39, 50, 50, 37, 58, 59] },
+          { name: "South", data: [22, 16, 13, 26, 28, 17] },
         ]}
       />
     </Preview>
@@ -2392,7 +2392,7 @@ const PREVIEWS = {
         label="Weekly visits with a target"
         height={220}
         categories={MONTHS}
-        series={[{ name: "Visits", data: [30, 41, 27, 43, 63, 71] }]}
+        series={[{ name: "Visits", data: [94, 85, 76, 58, 27, 70] }]}
         annotations={[{ axis: "y", y: 50, label: "Target", color: "success", draggable: true }]}
       />
     </Preview>
@@ -2459,8 +2459,8 @@ const PREVIEWS = {
         yTitle="Points"
         categories={MONTHS}
         series={[
-          { name: "Team A", type: "bar", data: [22, 12, 21, 28, 12, 21] },
-          { name: "Team B", type: "line", data: [31, 26, 35, 31, 44, 36] },
+          { name: "Team A", type: "bar", data: [20, 32, 30, 38, 43, 30] },
+          { name: "Team B", type: "line", data: [26, 28, 33, 39, 40, 39] },
         ]}
       />
     </Preview>
@@ -2475,7 +2475,7 @@ const PREVIEWS = {
         xLabel="Device"
         colors={["primary-dark", "warning", "info-dark"]}
         categories={["Desktop", "Mobile", "Tablet"]}
-        series={[{ name: "Visits", data: [44, 55, 13] }]}
+        series={[{ name: "Visits", data: [48, 42, 24] }]}
       />
     </Preview>
   ),
@@ -2522,7 +2522,7 @@ const PREVIEWS = {
         colors={["primary", "warning"]}
         series={[
           {
-            name: "Desktops",
+            name: "Desktop",
             data: [
               { x: "Home", y: 60 },
               { x: "Pricing", y: 41 },
@@ -2547,7 +2547,7 @@ const PREVIEWS = {
         sparkline
         height={48}
         categories={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
-        series={[{ name: "Visits", data: [22, 8, 35, 50, 82, 84, 77] }]}
+        series={[{ name: "Visits", data: [8, 17, 17, 47, 42, 49, 84] }]}
       />
     </Preview>
   ),
@@ -2560,7 +2560,7 @@ const PREVIEWS = {
         dataLabels
         colors={["primary-dark", "warning", "info-dark"]}
         categories={["Desktop", "Mobile", "Tablet"]}
-        series={[{ name: "Visits", data: [44, 55, 13] }]}
+        series={[{ name: "Visits", data: [48, 42, 24] }]}
       />
     </Preview>
   ),
@@ -2598,7 +2598,7 @@ const PREVIEWS = {
           { title: "2024", cols: 4 },
           { title: "2025", cols: 4 },
         ]}
-        series={[{ name: "Revenue", data: [18, 24, 31, 27, 29, 34, 40, 38] }]}
+        series={[{ name: "Revenue", data: [40, 38, 35, 20, 21, 30, 22, 18] }]}
       />
     </Preview>
   ),
@@ -2610,7 +2610,7 @@ const PREVIEWS = {
         categories={MONTHS}
         forecastCount={2}
         markerSize={4}
-        series={[{ name: "Sales", data: [30, 41, 35, 51, 49, 62] }]}
+        series={[{ name: "Sales", data: [39, 50, 50, 37, 58, 59] }]}
       />
     </Preview>
   ),
@@ -2620,7 +2620,7 @@ const PREVIEWS = {
         label="Weekly visits with notes"
         height={240}
         categories={MONTHS}
-        series={[{ name: "Visits", data: [30, 41, 27, 43, 63, 71] }]}
+        series={[{ name: "Visits", data: [94, 85, 76, 58, 27, 70] }]}
         annotations={[{ axis: "text", x: "Mar", y: 15, label: "Campaign paused" }]}
       />
     </Preview>
@@ -2648,7 +2648,7 @@ const PREVIEWS = {
         showForSingleSeries
         legendAlign="left"
         categories={MONTHS}
-        series={[{ name: "Visits", data: [10, 41, 35, 51, 49, 62] }]}
+        series={[{ name: "Visits", data: [19, 35, 10, 51, 68, 78] }]}
       />
     </Preview>
   ),
@@ -2662,8 +2662,8 @@ const PREVIEWS = {
         tooltipFixed="topRight"
         categories={["Mon", "Tue", "Wed", "Thu", "Fri"]}
         series={[
-          { name: "Online", data: [44, 55, 41, 67, 22] },
-          { name: "In store", data: [13, 23, 20, 8, 13] },
+          { name: "Online", data: [23, 38, 52, 48, 45] },
+          { name: "In store", data: [10, 9, 13, 9, 15] },
         ]}
       />
     </Preview>
@@ -2680,9 +2680,9 @@ const PREVIEWS = {
         ]}
         categories={["W1", "W2", "W3", "W4", "W5", "W6", "W7"]}
         series={[
-          { name: "Search", markerShape: "circle", data: [45, 52, 38, 24, 33, 26, 21] },
-          { name: "Social", markerShape: "square", data: [35, 41, 62, 42, 13, 18, 29] },
-          { name: "Email", markerShape: "triangle", data: [87, 57, 74, 99, 75, 38, 62] },
+          { name: "Search", markerShape: "circle", data: [21, 23, 36, 50, 52, 37, 49] },
+          { name: "Social", markerShape: "square", data: [50, 36, 42, 20, 13, 55, 62] },
+          { name: "Email", markerShape: "triangle", data: [80, 42, 38, 70, 99, 89, 91] },
         ]}
       />
       <Chart
@@ -2692,9 +2692,9 @@ const PREVIEWS = {
         colorBlindMode
         categories={["Q1", "Q2", "Q3", "Q4"]}
         series={[
-          { name: "Free", data: [8, 12, 15, 19] },
-          { name: "Pro", data: [21, 25, 30, 34] },
-          { name: "Team", data: [14, 18, 17, 24] },
+          { name: "Free", data: [8, 12, 13, 13] },
+          { name: "Pro", data: [25, 28, 31, 32] },
+          { name: "Team", data: [21, 16, 23, 21] },
         ]}
       />
     </Preview>
@@ -2710,7 +2710,7 @@ const PREVIEWS = {
           { from: 0, to: 100, color: "success", name: "Profit" },
         ]}
         categories={MONTHS}
-        series={[{ name: "Balance", data: [12, 18, -7, -21, 9, 27] }]}
+        series={[{ name: "Balance", data: [25, 6, -18, -21, 0, 5] }]}
       />
       <Chart
         label="Monthly inflation"
@@ -2721,7 +2721,7 @@ const PREVIEWS = {
         backgroundBars
         valueSuffix="%"
         categories={MONTHS}
-        series={[{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6] }]}
+        series={[{ name: "Inflation", data: [1.4, 5.6, 6.5, 3.6, 5.9, 10.1] }]}
       />
     </Preview>
   ),
@@ -2858,7 +2858,7 @@ const PREVIEWS = {
         height={200}
         colors={["info"]}
         categories={["North", "South", "East", "West", "Central"]}
-        series={[{ name: "Orders", data: [420, 310, 280, 390, 150] }]}
+        series={[{ name: "Orders", data: [259, 289, 331, 354, 351] }]}
       />
       <Chart
         label="Revenue by region (thousands of dollars)"
@@ -2868,7 +2868,7 @@ const PREVIEWS = {
         height={200}
         colors={["warning"]}
         categories={["North", "South", "East", "West", "Central"]}
-        series={[{ name: "Revenue", data: [96, 71, 64, 88, 35] }]}
+        series={[{ name: "Revenue", data: [88, 89, 63, 76, 59] }]}
       />
     </Preview>
   ),
@@ -3143,8 +3143,8 @@ const PREVIEWS = {
         ]}
         categories={MONTHS}
         series={[
-          { name: "Blog visits", type: "bar", data: [440, 505, 414, 671, 227, 413] },
-          { name: "Social mentions", type: "line", data: [23, 42, 35, 27, 43, 22] },
+          { name: "Blog visits", type: "bar", data: [752, 725, 377, 201, 436, 360] },
+          { name: "Social mentions", type: "line", data: [23, 21, 31, 25, 37, 36] },
         ]}
       />
     </Preview>
@@ -3158,7 +3158,7 @@ const PREVIEWS = {
         colors={["info"]}
         defaultSelectedDataPoints={[{ seriesIndex: 0, dataPointIndex: 3 }]}
         categories={["Mon", "Tue", "Wed", "Thu", "Fri"]}
-        series={[{ name: "Orders", data: [44, 55, 41, 67, 22] }]}
+        series={[{ name: "Orders", data: [23, 38, 52, 48, 45] }]}
       />
     </Preview>
   ),

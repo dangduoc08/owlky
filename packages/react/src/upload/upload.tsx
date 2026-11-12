@@ -717,7 +717,7 @@ export const Upload = forwardRef<HTMLDivElement, UploadProps>(function Upload(
 
 export interface UploadAvatarProps extends Omit<UploadProps, "variant" | "multiple" | "layout"> {}
 
-/** UploadAvatar — a round photo picker (Minimals' UploadAvatar): one image, shown in the circle. */
+/** UploadAvatar — a round photo picker: one image, shown in the circle. */
 export const UploadAvatar = forwardRef<HTMLDivElement, UploadAvatarProps>(function UploadAvatar(
   { accept = "image/*", ...props },
   ref,

@@ -27,7 +27,7 @@ function fallBack(img: HTMLImageElement) {
  * Avatar — spec: specs/components/avatar.md
  *
  * Markup:  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default" data-ok-size="56">
- *            <img src="…" alt="Jayvion Simon">
+ *            <img src="…" alt="Amara Okafor">
  *          </span>
  * CSS only, except: `data-ok-size` becomes `--_ok-avatar-size` and a color dot's `data-ok-swatch`
  * becomes `--_ok-swatch` (CSSOM), and an image that fails to load is hidden and replaced by the

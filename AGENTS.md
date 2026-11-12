@@ -953,6 +953,13 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   Validation tests leave the field with Shift+Tab (Firefox keeps the focus on a last control).
   Menu / Select typeahead (`createTypeahead`) skips `aria-hidden` descendants, so a flag emoji
   before the name doesn't stop "aus" from reaching Australia.
+- Third-party notices (legal step L5): `scripts/check-licenses.mjs` (`pnpm check:licenses`, in
+  `pnpm check` and CI) reads every published `dist`'s source maps (plus the verbatim copies in its
+  `COPIES` list: MapLibre's workers, `dist/monaco/`) and fails when a bundled package has no entry
+  in that package's generated `THIRD_PARTY_NOTICES.md` or a license outside its allowlist. After a
+  dependency upgrade or a new bundled dependency: `pnpm build && pnpm notices`. A copy without a
+  source map must be added to `COPIES`, or the check can't see it. The manifest (`publicText` in
+  `scripts/manifest.mjs`) drops `Reference URL:` lines and design-reference names from spec text.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

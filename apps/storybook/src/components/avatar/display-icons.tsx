@@ -62,12 +62,12 @@ for (const [name, icon] of Object.entries({ FolderIcon, MailIcon, FaceIcon, Chec
 
 /** Demo portraits in `apps/storybook/public/avatars` (story-only assets). */
 export const PEOPLE = [
-  "Jayvion Simon",
-  "Lucian Obrien",
-  "Deja Brady",
-  "Harrison Stein",
-  "Reece Chung",
-  "Lainey Davidson",
-  "Cristopher Cardenas",
+  "Amara Okafor",
+  "Mateo Silva",
+  "Linh Tran",
+  "Jonas Berg",
+  "Priya Nair",
+  "Sofia Marino",
+  "Kenji Ito",
 ] as const;
 export const portrait = (i: number) => `avatars/avatar-${i}.svg`;

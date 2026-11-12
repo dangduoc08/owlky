@@ -17,27 +17,27 @@ export const avatarSections: GuideSection[] = [
 <script src="${CDN}/owlky.js" defer></script>
 
 <span data-ok-avatar data-ok-variant="circular" data-ok-color="default">
-  <img src="/people/jayvion.jpg" alt="Jayvion Simon">
+  <img src="/people/amara.jpg" alt="Amara Okafor">
 </span>`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Avatar } from "@owlky/react";
 
 export function Author() {
-  return <Avatar src="/people/jayvion.jpg" alt="Jayvion Simon" />;
+  return <Avatar src="/people/amara.jpg" alt="Amara Okafor" />;
 }`,
   },
   {
     id: "letters",
     title: "Show initials or an icon",
     body: 'Without a picture, put initials or an icon inside. Set `color` to tint the background: `default` is grey, the palette colors use white or dark text. Initials scale with the avatar. When the avatar is the only place that names a person, give it `role="img"` and an `aria-label`.',
-    html: `<span data-ok-avatar data-ok-variant="circular" data-ok-color="primary" role="img" aria-label="Deja Brady">DB</span>`,
+    html: `<span data-ok-avatar data-ok-variant="circular" data-ok-color="primary" role="img" aria-label="Linh Tran">LT</span>`,
     react: `import { Avatar } from "@owlky/react";
 
 export function DejaAvatar() {
   return (
-    <Avatar color="primary" role="img" aria-label="Deja Brady">
-      DB
+    <Avatar color="primary" role="img" aria-label="Linh Tran">
+      LT
     </Avatar>
   );
 }`,
@@ -47,12 +47,12 @@ export function DejaAvatar() {
     title: "Change the shape and size",
     body: "Set `variant` to `rounded` (12px corners) or `square`. The default size is 40px. Set `size` to a number of pixels, or to a length in `px`, `rem` or `em`. In HTML, the script turns `data-ok-size` into the avatar's size.",
     html: `<span data-ok-avatar data-ok-variant="rounded" data-ok-color="default" data-ok-size="56">
-  <img src="/people/lucian.jpg" alt="Lucian Obrien">
+  <img src="/people/mateo.jpg" alt="Mateo Silva">
 </span>`,
     react: `import { Avatar } from "@owlky/react";
 
 export function LargeAvatar() {
-  return <Avatar variant="rounded" size={56} src="/people/lucian.jpg" alt="Lucian Obrien" />;
+  return <Avatar variant="rounded" size={56} src="/people/mateo.jpg" alt="Mateo Silva" />;
 }`,
   },
   {
@@ -171,8 +171,8 @@ const PREVIEWS = {
   ),
   letters: () => (
     <Preview>
-      <Avatar color="primary" role="img" aria-label="Deja Brady">
-        DB
+      <Avatar color="primary" role="img" aria-label="Linh Tran">
+        LT
       </Avatar>
       <Avatar>RC</Avatar>
     </Preview>

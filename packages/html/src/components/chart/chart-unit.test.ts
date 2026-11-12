@@ -26,10 +26,10 @@ describe("unit", () => {
     start();
     const charts = [...host.querySelectorAll("[data-ok-chart]")] as HTMLElement[];
     expect(charts).toHaveLength(4);
-    expect((charts[0] as Element).querySelectorAll("[data-ok-chart-unit-cell]")).toHaveLength(152);
+    expect((charts[0] as Element).querySelectorAll("[data-ok-chart-unit-cell]")).toHaveLength(153);
     expect((charts[0] as Element).querySelectorAll("[data-ok-chart-unit-title]")).toHaveLength(4);
-    expect((charts[1] as Element).querySelectorAll("[data-ok-chart-unit-cell]")).toHaveLength(100);
-    expect((charts[3] as Element).querySelectorAll("[data-ok-chart-unit-cell]")).toHaveLength(82);
+    expect((charts[1] as Element).querySelectorAll("[data-ok-chart-unit-cell]")).toHaveLength(97);
+    expect((charts[3] as Element).querySelectorAll("[data-ok-chart-unit-cell]")).toHaveLength(60);
     await expectNoAxeViolations(host);
   });
 
