@@ -2,13 +2,14 @@
  * Dialog — spec: specs/components/dialog.md
  *
  * Anatomy:   dialog[data-ok-dialog][aria-labelledby]      transparent, full-viewport container
- *              › div[data-ok-dialog-paper]                 the visible paper
+ *              › div[data-ok-dialog-paper][data-ok-paper]   the visible paper (a Paper, ADR-0066)
  *                  › h2[data-ok-dialog-title][id]
  *                  › div[data-ok-dialog-content][data-ok-dividers]?
  *                      › p[data-ok-dialog-content-text]?
  *                  › div[data-ok-dialog-actions][data-ok-disable-spacing]?
  * Modifiers: data-ok-max-width = sm (default) | xs | md | lg | xl | none, data-ok-full-width,
- *            data-ok-full-screen, data-ok-scroll = paper (default) | body, data-ok-hide-backdrop
+ *            data-ok-full-screen, data-ok-scroll = paper (default) | body, data-ok-hide-backdrop;
+ *            paper: data-ok-elevation = 0 … 24 (Paper's shadow instead of the dialog shadow)
  * States:    [open]; [data-ok-fallback] without showModal() (ADR-0006); data-ok-state="exiting"
  *            while the exit plays (core modal controller, ADR-0062).
  * Private:   --_ok-dialog-enter | -exit (transitionDuration, React style / HTML CSSOM)
@@ -88,8 +89,12 @@
     overflow-y: auto;
     border-radius: var(--ok-radius-xl);
     background-color: var(--ok-bg-paper);
-    box-shadow: var(--ok-shadow-dialog);
     outline: none;
+  }
+
+  /* The dialog shadow, unless an elevation picks one of Paper's (paper.css loads first). */
+  :where([data-ok-dialog-paper]:not([data-ok-elevation])) {
+    box-shadow: var(--ok-shadow-dialog);
   }
 
   /* A paper that is a Motion (the `transition` option) plays that entrance instead. */

@@ -218,7 +218,9 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
     const [shown, setShown] = useState(open);
     if (open && !shown) setShown(true);
     const content = (
-      <div data-ok-drawer-content="">{keepMounted || open || shown ? children : null}</div>
+      <div data-ok-drawer-content="" data-ok-paper="">
+        {keepMounted || open || shown ? children : null}
+      </div>
     );
 
     // Effects run in declaration order: create the controller, sync options, then open/close.

@@ -29,7 +29,7 @@ Choose one or more values from a list. The field shows the value; the list opens
     svg[data-ok-select-icon][aria-hidden]
     [data-ok-text-field-adornment="end"]?   (InputAdornment, before the arrow on screen)
     fieldset[data-ok-select-outline][aria-hidden] › legend › span (label + " *")   (outlined)
-    div[data-ok-popover][popover=manual][id=<id>-menu][data-ok-placement=bottom-start][tabindex=-1]
+    div[data-ok-popover][data-ok-paper][popover=manual][id=<id>-menu][data-ok-placement=bottom-start][tabindex=-1]
       span[data-ok-popover-arrow]
       ul[data-ok-select-listbox][role=listbox][id=<id>-listbox][aria-labelledby]?[aria-multiselectable]?
         li[data-ok-menu-item][role=option][tabindex=-1][aria-selected][data-ok-selected]?[data-ok-value][aria-disabled]?

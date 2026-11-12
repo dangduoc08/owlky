@@ -763,6 +763,7 @@ export {
   TableCell,
   type TableCellProps,
   TableContainer,
+  type TableContainerComponent,
   type TableContainerProps,
   TableDetailRow,
   type TableDetailRowProps,

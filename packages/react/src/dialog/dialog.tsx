@@ -11,6 +11,7 @@ import {
   dialogStyle,
   type ModalController,
   motionAttributes,
+  surfacePaperAttributes,
 } from "@owlky/core";
 import {
   type ComponentPropsWithoutRef,
@@ -71,6 +72,11 @@ export interface DialogProps extends Omit<ComponentPropsWithoutRef<"dialog">, "o
   transitionDuration?: DialogTransitionDuration | undefined;
   /** Props of the paper (`className`, `style`, …). */
   paperProps?: HTMLAttributes<HTMLDivElement> | undefined;
+  /**
+   * Shadow depth of the paper, 0–24 (`--ok-elevation-<n>`). Default: the theme's dialog shadow.
+   * The paper is a Paper.
+   */
+  elevation?: number | undefined;
 }
 
 /**
@@ -95,6 +101,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
     transition,
     transitionDuration,
     paperProps,
+    elevation,
     children,
     style,
     ...props
@@ -172,6 +179,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
       <TitleIdContext.Provider value={titleId}>
         <div
           data-ok-dialog-paper=""
+          {...surfacePaperAttributes(elevation)}
           {...(transition
             ? {
                 ...motionAttributes({ variant: transition, trigger: "mount" }),

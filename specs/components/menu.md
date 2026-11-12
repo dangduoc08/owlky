@@ -11,14 +11,14 @@ Choices on a temporary surface: a Popover holding a WAI-ARIA menu. Keyboard logi
 ## Anatomy
 ```
 button[data-ok-popover-open="id"][aria-haspopup=menu][aria-expanded]
-div[data-ok-popover][popover=manual][id][data-ok-placement=bottom-start]
+div[data-ok-popover][data-ok-paper][popover=manual][id][data-ok-placement=bottom-start]
   › span[data-ok-popover-arrow]
   › ul[data-ok-menu][role=menu][aria-labelledby][data-ok-dense]?
       › li[data-ok-menu-item][role=menuitem][tabindex=-1][data-ok-selected]?[aria-disabled]?…
       › li[data-ok-menu-submenu][role=none]                         (a submenu, Phase 4.5)
           › div[data-ok-menu-item][role=menuitem][tabindex=-1][id][aria-haspopup=menu][aria-expanded][aria-controls]
               › label › svg[data-ok-menu-submenu-icon][aria-hidden]   (chevron, mirrored with dir=rtl)
-          › div[data-ok-popover][popover=manual][id][data-ok-placement=right-start]   (left-start right to left)
+          › div[data-ok-popover][data-ok-paper][popover=manual][id][data-ok-placement=right-start]   (left-start right to left)
               › span[data-ok-popover-arrow] › ul[data-ok-menu][role=menu][aria-labelledby=trigger id] › …
 ul[data-ok-menu][role=menu][aria-label]                              (standalone MenuList, no popover)
   › li[data-ok-menu-item][tabindex=0]   (the focus item: selected, else first; `variant="menu"`: first)
@@ -106,7 +106,8 @@ Audit 2026-11-09 against MUI API pages Menu (inherits Popover), MenuItem, MenuLi
 | `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop` `select` `tab`); HTML `ok:menu:select` + popover events | renamed | |
 | Popover `anchorOrigin` / `transformOrigin` | `placement` (default `bottom-start`) | renamed | see popover.md |
 | `MenuListProps` | props on `Menu` (to the list) | renamed | |
-| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |
+| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | the paper is a Popover, a Paper (ADR-0066) |
+| `elevation` (Popover's) | `elevation` → the Popover's `data-ok-elevation` | kept (ADR-0066) | HTML: `data-ok-elevation` on the menu's popover; default the dropdown shadow |
 | `variant="selectedMenu"`, `autoFocus` | the only behavior (focus the selected, else first item) | kept | |
 | `variant="menu"` | same (`data-ok-variant`) | kept (4.5) | |
 | nested menus | `MenuSubmenu`; HTML `li[data-ok-menu-submenu]` | kept (4.5) | no MUI API: WAI-ARIA submenus |

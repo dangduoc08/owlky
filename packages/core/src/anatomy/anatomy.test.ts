@@ -31,6 +31,7 @@ import {
   dataGridAttributes,
   dialogAttributes,
   dialogMaxWidths,
+  dialogOptions,
   diffEditorAttributes,
   dividerAttributes,
   dividerTextAligns,
@@ -91,6 +92,7 @@ import {
   stepAttributes,
   stepLabelAttributes,
   stepperAttributes,
+  surfacePaperAttributes,
   switchAttributes,
   tabAttributes,
   tableAttributes,
@@ -919,11 +921,16 @@ describe("overlay attributes", () => {
     expect(tooltipAttributes({ placement })["data-ok-placement"]).toBe(placement);
   });
   it("popover and tooltip defaults, flags, numbers; hostile values dropped", () => {
-    expect(popoverAttributes()).toEqual({ "data-ok-popover": "", "data-ok-placement": "bottom" });
+    expect(popoverAttributes()).toEqual({
+      "data-ok-popover": "",
+      "data-ok-paper": "",
+      "data-ok-placement": "bottom",
+    });
     expect(
       popoverAttributes({ arrow: true, disableEscapeKeyDown: true, placement: HOSTILE }),
     ).toEqual({
       "data-ok-popover": "",
+      "data-ok-paper": "",
       "data-ok-placement": "bottom",
       "data-ok-arrow": "",
       "data-ok-disable-escape-key-down": "",
@@ -934,6 +941,23 @@ describe("overlay attributes", () => {
       "data-ok-arrow": "",
       "data-ok-enter-delay": "500",
     });
+  });
+  it("a popover is a Paper: the marker follows the root, an elevation only when valid", () => {
+    // Snippets read `data-ok-popover data-ok-paper`: the marker comes right after the root.
+    expect(Object.keys(popoverAttributes({ arrow: true })).slice(0, 2)).toEqual([
+      "data-ok-popover",
+      "data-ok-paper",
+    ]);
+    expect(popoverAttributes({ elevation: 0 })["data-ok-elevation"]).toBe("0");
+    expect(popoverAttributes({ elevation: "24" })["data-ok-elevation"]).toBe("24");
+    for (const elevation of [25, -1, 1.5, HOSTILE])
+      expect(popoverAttributes({ elevation })).not.toHaveProperty("data-ok-elevation");
+    expect(surfacePaperAttributes()).toEqual({ "data-ok-paper": "" });
+    expect(surfacePaperAttributes(8)).toEqual({ "data-ok-paper": "", "data-ok-elevation": "8" });
+    expect(surfacePaperAttributes(HOSTILE)).toEqual({ "data-ok-paper": "" });
+    // The dialog writes its elevation on the paper (a child option), never on the dialog.
+    expect(dialogOptions.options.elevation.children).toBe("[data-ok-dialog-paper]");
+    expect(dialogAttributes({})).not.toHaveProperty("data-ok-elevation");
   });
   it("menu and menu item", () => {
     expect(menuAttributes()).toEqual({ "data-ok-menu": "" });

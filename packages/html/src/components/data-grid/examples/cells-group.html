@@ -17,7 +17,7 @@
       <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-cells-density" data-ok-popover-open="grid-cells-density"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z" /></svg></span><span data-ok-button-label>Density</span></button>
       <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-cells-export" data-ok-popover-open="grid-cells-export"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 3h2v9l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3zM5 18h14v2H5z" /></svg></span><span data-ok-button-label>Export</span></button>
     </div>
-    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-cells-columns">
+    <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-end" id="grid-cells-columns">
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <div data-ok-data-grid-panel role="group" aria-label="Columns">
         <label data-ok-form-control-label data-ok-label-placement="end">
@@ -70,7 +70,7 @@
         </label>
       </div>
     </div>
-    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-cells-filters">
+    <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-end" id="grid-cells-filters">
       <template data-ok-data-grid-date="grid-cells-filter-value">
         <div data-ok-date-picker data-ok-picker-variant="responsive" data-ok-orientation="portrait">
           <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-date-field data-ok-format-density="dense" data-ok-format="MM/DD/YYYY">
@@ -86,7 +86,7 @@
               </fieldset>
             </div>
           </div>
-          <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date" data-ok-date-picker-paper>
+          <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date" data-ok-date-picker-paper>
             <span data-ok-popover-arrow aria-hidden="true"></span>
             <div data-ok-picker-layout data-ok-orientation="portrait">
               <div data-ok-picker-toolbar hidden><span data-ok-picker-toolbar-overline id="grid-cells-filter-value-toolbar">Select date</span><span data-ok-picker-toolbar-title>––</span></div>
@@ -159,7 +159,7 @@
             </div>
           </div>
           <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select date" data-ok-date-picker-dialog>
-            <div data-ok-dialog-paper></div>
+            <div data-ok-dialog-paper data-ok-paper></div>
           </dialog>
         </div>
       </template>
@@ -178,7 +178,7 @@
               </fieldset>
             </div>
           </div>
-          <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date &amp; time" data-ok-date-picker-paper>
+          <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date &amp; time" data-ok-date-picker-paper>
             <span data-ok-popover-arrow aria-hidden="true"></span>
             <div data-ok-picker-layout data-ok-orientation="portrait">
               <div data-ok-picker-toolbar hidden>
@@ -327,7 +327,7 @@
             </div>
           </div>
           <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select date &amp; time" data-ok-date-picker-dialog>
-            <div data-ok-dialog-paper></div>
+            <div data-ok-dialog-paper data-ok-paper></div>
           </dialog>
         </div>
       </template>
@@ -345,7 +345,7 @@
               </fieldset>
             </div>
           </div>
-          <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>
+          <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>
             <span data-ok-popover-arrow aria-hidden="true"></span>
             <ul role="listbox" id="grid-cells-filter-value-listbox" aria-label="Value"></ul>
             <div data-ok-autocomplete-no-options>No options</div>
@@ -405,7 +405,7 @@
         <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" data-ok-data-grid-filter-add><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg></span><span data-ok-button-label>Add filter</span></button>
       </div>
     </div>
-    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-cells-density">
+    <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-end" id="grid-cells-density">
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <ul role="menu" data-ok-menu>
         <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="compact">Compact</li>
@@ -413,7 +413,7 @@
         <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="comfortable">Comfortable</li>
       </ul>
     </div>
-    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-cells-export">
+    <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-end" id="grid-cells-export">
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <ul role="menu" data-ok-menu>
         <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="csv">Download as CSV</li>
@@ -517,7 +517,7 @@
                 </fieldset>
               </div>
             </div>
-            <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date" data-ok-date-picker-paper>
+            <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date" data-ok-date-picker-paper>
               <span data-ok-popover-arrow aria-hidden="true"></span>
               <div data-ok-picker-layout data-ok-orientation="portrait">
                 <div data-ok-picker-toolbar hidden><span data-ok-picker-toolbar-overline id="grid-cells-header-filter-restocked-toolbar">Select date</span><span data-ok-picker-toolbar-title>––</span></div>
@@ -590,7 +590,7 @@
               </div>
             </div>
             <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select date" data-ok-date-picker-dialog>
-              <div data-ok-dialog-paper></div>
+              <div data-ok-dialog-paper data-ok-paper></div>
             </dialog>
           </div>
         </div>
@@ -609,7 +609,7 @@
                 </fieldset>
               </div>
             </div>
-            <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date &amp; time" data-ok-date-picker-paper>
+            <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date &amp; time" data-ok-date-picker-paper>
               <span data-ok-popover-arrow aria-hidden="true"></span>
               <div data-ok-picker-layout data-ok-orientation="portrait">
                 <div data-ok-picker-toolbar hidden>
@@ -758,7 +758,7 @@
               </div>
             </div>
             <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select date &amp; time" data-ok-date-picker-dialog>
-              <div data-ok-dialog-paper></div>
+              <div data-ok-dialog-paper data-ok-paper></div>
             </dialog>
           </div>
         </div>
@@ -849,7 +849,7 @@
   </div>
   <div data-ok-data-grid-loading data-ok-variant="linear-progress" role="status" aria-label="Loading" hidden><span role="progressbar" data-ok-linear-progress data-ok-variant="indeterminate" data-ok-color="primary" aria-label="Loading"><span data-ok-linear-progress-bar="1"></span><span data-ok-linear-progress-bar="2"></span></span></div>
   <div data-ok-data-grid-overlay role="status" hidden></div>
-  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="grid-cells-column-menu">
+  <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" id="grid-cells-column-menu">
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <ul role="menu" data-ok-menu>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="asc">Sort by ASC</li>

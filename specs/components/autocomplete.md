@@ -34,7 +34,7 @@ div[data-ok-autocomplete][data-ok-multiple]?[data-ok-free-solo]?[data-ok-disable
               (not freeSolo, or forcePopupIcon; hidden while read only)
       fieldset (outlined)
   template[data-ok-autocomplete-tag]                (HTML: the chip of a value; multiple, or a single value drawn as a chip)
-  div[data-ok-popover][popover=manual][data-ok-placement=bottom-start][data-ok-disable-auto-focus]
+  div[data-ok-popover][data-ok-paper][popover=manual][data-ok-placement=bottom-start][data-ok-disable-auto-focus]
      [data-ok-disable-restore-focus][data-ok-autocomplete-paper]            (--_ok-autocomplete-width)
     ul[role=listbox][id][aria-label]                        (virtualized: --_ok-autocomplete-before|after)
       li[data-ok-list-subheader][role=presentation][hidden]?   (groupBy: ListSubheader before its options)
@@ -99,6 +99,8 @@ has no hook (the runtime is the behavior).
 API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
+The listbox paper is a Popover, so a Paper (`data-ok-paper`, ADR-0066); `slotProps.paper` /
+`PaperComponent` stay backlog.
 The field is a TextField; in an autocomplete its control wraps (chips row-gap 4px, chip margin
 3px), the start adornment is `display: contents`, the input keeps 32px minimum, the end buttons
 sit absolutely at the right (28px icon buttons, 4px padding; 64px reserved, 36px free solo),

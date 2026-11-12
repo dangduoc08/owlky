@@ -2059,6 +2059,13 @@ export const popoverOptions = defineOptions("popover", "data-ok-popover", {
     "Length of the opening animation (ms). Default: the theme's shorter duration.",
     { min: 0 },
   ),
+  elevation: style(
+    "data-ok-elevation",
+    paperElevations,
+    "8",
+    "Shadow depth of the paper, `0`–`24` (`--ok-elevation-<n>`). Without it, the theme's dropdown shadow.",
+    { optional: true },
+  ),
   open: state(
     "data-ok-open",
     "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
@@ -2075,11 +2082,33 @@ export interface PopoverAnatomyOptions {
   disableEscapeKeyDown?: boolean | undefined;
   disableAutoFocus?: boolean | undefined;
   disableRestoreFocus?: boolean | undefined;
+  /** 0–24 (a number or its string); without it, the dropdown shadow. */
+  elevation?: number | string | undefined;
 }
 
-/** `data-ok-*` attributes of a popover (`div[popover]`). */
-export const popoverAttributes = (options: PopoverAnatomyOptions = {}): DataAttributes =>
-  optionAttributes(popoverOptions, { ...options });
+/**
+ * The marker of a library surface built on Paper (ADR-0066): `data-ok-paper` and, when given, a
+ * valid `data-ok-elevation` (0–24). The surface's own CSS keeps its look; an elevation wins over
+ * its default shadow.
+ */
+export const surfacePaperAttributes = (elevation?: number | string | undefined): DataAttributes => {
+  const level = elevation === undefined ? undefined : String(elevation);
+  return paperElevations.includes(level as (typeof paperElevations)[number])
+    ? { "data-ok-paper": "", "data-ok-elevation": level as string }
+    : { "data-ok-paper": "" };
+};
+
+/**
+ * `data-ok-*` attributes of a popover (`div[popover]`): a Paper (ADR-0066), `data-ok-paper` right
+ * after the root marker.
+ */
+export const popoverAttributes = ({
+  elevation,
+  ...options
+}: PopoverAnatomyOptions = {}): DataAttributes => {
+  const { "data-ok-popover": root, ...rest } = optionAttributes(popoverOptions, { ...options });
+  return { "data-ok-popover": root as string, ...surfacePaperAttributes(elevation), ...rest };
+};
 
 export const tooltipTransitions = ["grow", "fade", "zoom"] as const;
 export type TooltipTransition = (typeof tooltipTransitions)[number];
@@ -2264,6 +2293,13 @@ export const dialogOptions = defineOptions("dialog", "data-ok-dialog", {
     undefined,
     "Length of the entrance in ms (React also `{ enter, exit }`; HTML exit: `data-ok-transition-duration-exit`). Default: the theme's short durations.",
     { min: 0 },
+  ),
+  elevation: style(
+    "data-ok-elevation",
+    paperElevations,
+    "24",
+    "Shadow depth of the paper, `0`–`24` (`--ok-elevation-<n>`). Without it, the theme's dialog shadow.",
+    { optional: true, children: "[data-ok-dialog-paper]" },
   ),
   open: state(
     "open",

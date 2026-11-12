@@ -48,7 +48,7 @@ const DURATIONS = ["data-ok-transition-duration", "data-ok-transition-duration-e
  *
  * Markup:   <button data-ok-dialog-open="d1" aria-haspopup="dialog">Open</button>
  *           <dialog id="d1" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="d1-title">
- *             <div data-ok-dialog-paper>
+ *             <div data-ok-dialog-paper data-ok-paper>
  *               <h2 data-ok-dialog-title id="d1-title">…</h2>
  *               <div data-ok-dialog-content>…</div>
  *               <div data-ok-dialog-actions><button data-ok-dialog-close>Cancel</button></div>

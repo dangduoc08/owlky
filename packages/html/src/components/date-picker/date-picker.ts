@@ -124,11 +124,11 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
  *               [data-ok-value-type="time"] [data-ok-actions="cancel accept"] [data-ok-close-on-select="false"]
  *               [data-ok-desktop-mode-media-query] [data-ok-open-to]>
  *            …a date field whose end adornment holds button[data-ok-date-picker-open]…
- *            <div data-ok-popover data-ok-date-picker-paper popover="manual" role="dialog" …>   (desktop, responsive)
+ *            <div data-ok-popover data-ok-paper data-ok-date-picker-paper popover="manual" role="dialog" …>   (desktop, responsive)
  *              <div data-ok-picker-layout>…toolbar, [tabs], shortcuts, div[data-ok-picker-content] ›
  *                date calendar? digital clock? time clock?, actions…</div>
  *            </div>
- *            <dialog data-ok-dialog data-ok-date-picker-dialog …><div data-ok-dialog-paper></div></dialog>  (mobile, responsive)
+ *            <dialog data-ok-dialog data-ok-date-picker-dialog …><div data-ok-dialog-paper data-ok-paper></div></dialog>  (mobile, responsive)
  *          </div>
  * Behavior: the open button opens the layout in the popover (desktop) or moves it into the dialog
  *          (mobile, chosen by the media query); picks, actions and shortcuts follow MUI's lifecycle.

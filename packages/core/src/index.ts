@@ -500,6 +500,7 @@ export {
   stepperAttributes,
   stepperOptions,
   stepperVariants,
+  surfacePaperAttributes,
   swatchShapes,
   switchAttributes,
   switchEdges,

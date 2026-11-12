@@ -178,7 +178,7 @@ ${STYLED_STATES_CSS}</style>
 <button type="button" class="summary-button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" disabled>
   <span data-ok-button-label>Archive</span>
 </button>
-<div id="summary" class="summary" popover="manual" data-ok-popover data-ok-placement="bottom" role="dialog" aria-label="Summary">
+<div id="summary" class="summary" popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom" role="dialog" aria-label="Summary">
   <p data-ok-typography data-ok-variant="body2">3 orders are waiting for shipping.</p>
 </div>`,
     react: `import { Button, Popover, Typography } from "@owlky/react";

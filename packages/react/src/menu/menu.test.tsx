@@ -134,6 +134,7 @@ describe("Menu", () => {
         dense
         aria-label="M"
         paperProps={{ className: "paper" }}
+        elevation={12}
       >
         <MenuItem ref={item} dense divider disableGutters>
           A
@@ -142,6 +143,8 @@ describe("Menu", () => {
     );
     expect(ref.current?.dataset["okDense"]).toBe("");
     expect(ref.current?.parentElement?.className).toBe("paper");
+    // The menu's paper is a Popover, a Paper: `elevation` reaches it.
+    expect(ref.current?.parentElement?.dataset).toMatchObject({ okPaper: "", okElevation: "12" });
     expect(item.current?.dataset).toMatchObject({
       okDense: "",
       okShowDivider: "",

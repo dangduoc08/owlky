@@ -37,7 +37,7 @@ div[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoo
   div[data-ok-map-popup][role=dialog|tooltip][tabindex=-1][aria-label]?[data-ok-longitude][data-ok-latitude]
      [data-ok-anchor]?[data-ok-offset]?[data-ok-max-width]?[data-ok-close-on-click="false"]?[data-ok-close-on-move]?
      [data-ok-focus-after-open="false"]?[data-ok-current-anchor] (controller) [hidden]? (HTML: closed)
-    span[data-ok-map-popup-tip][aria-hidden] + div[data-ok-map-popup-content] + button[data-ok-map-popup-close][aria-label]?
+    span[data-ok-map-popup-tip][aria-hidden] + div[data-ok-map-popup-content][data-ok-paper] + button[data-ok-map-popup-close][aria-label]?
   div[data-ok-map-source][data-ok-id][data-ok-type][hidden] › div[data-ok-map-layer][data-ok-id][data-ok-type][hidden]   (HTML only)
   div[data-ok-map-panel][data-ok-position][data-ok-theme=dark]
   div[data-ok-map-regions][data-ok-source][data-ok-layer]?[data-ok-source-layer]?[id]?   (choropleth)
@@ -46,13 +46,13 @@ div[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoo
       div[data-ok-map-region][role=option][id][data-ok-id][aria-selected][data-ok-active]?[data-ok-hovered]?[data-ok-muted]?   (controller, from the rows)
     table › caption + thead (th[scope=col] × 2) + tbody › tr[data-ok-id] › th[scope=row] + td[data-ok-value]?
   div[data-ok-map-corner=top-left|top-right|bottom-left|bottom-right]   (always the four, in this order)
-    div[data-ok-map-control][data-ok-map-navigation][data-ok-visualize-pitch]?
+    div[data-ok-map-control][data-ok-paper][data-ok-map-navigation][data-ok-visualize-pitch]?
       button[data-ok-map-action=zoom-in|zoom-out][aria-label][aria-disabled]
       button[data-ok-map-action=compass] › svg[data-ok-map-compass-icon] › path[data-ok-map-compass-north|south]
-    div[data-ok-map-control][data-ok-map-geolocate][data-ok-track-user-location]?[data-ok-show-user-location="false"]?[data-ok-show-accuracy-circle="false"]?
+    div[data-ok-map-control][data-ok-paper][data-ok-map-geolocate][data-ok-track-user-location]?[data-ok-show-user-location="false"]?[data-ok-show-accuracy-circle="false"]?
       button[data-ok-map-action=geolocate][data-ok-state=off|waiting|active|error][aria-pressed]? (tracking)
-    div[data-ok-map-control] › button[data-ok-map-action=fullscreen][aria-pressed] › svg[data-ok-map-icon=enter] + svg[data-ok-map-icon=exit]
-    div[data-ok-map-control] › button[data-ok-map-action=globe|terrain][aria-pressed] (terrain: data-ok-source, data-ok-exaggeration)
+    div[data-ok-map-control][data-ok-paper] › button[data-ok-map-action=fullscreen][aria-pressed] › svg[data-ok-map-icon=enter] + svg[data-ok-map-icon=exit]
+    div[data-ok-map-control][data-ok-paper] › button[data-ok-map-action=globe|terrain][aria-pressed] (terrain: data-ok-source, data-ok-exaggeration)
     div[data-ok-map-scale][data-ok-unit][data-ok-max-width]?   text and width from the controller
     details[data-ok-map-attribution][data-ok-compact]?[data-ok-narrow]? (controller) › summary[aria-label] › svg + div[data-ok-map-attribution-text]
     div[data-ok-map-legend][data-ok-variant=classes|gradient][data-ok-interactive="false"]?[role=group][aria-labelledby|aria-label]
@@ -62,7 +62,7 @@ div[data-ok-map][data-ok-longitude|latitude|zoom|pitch|bearing]?[data-ok-min-zoo
       | div[data-ok-map-legend-gradient] › span[data-ok-map-legend-bar][aria-hidden] › span[data-ok-map-legend-stop][data-ok-swatch]×n
                                          + div[data-ok-map-legend-ticks] › span (min) + span (max)
       | ul[data-ok-map-legend-sizes][data-ok-radius] (variant=size, 4.18.94) › li › span[data-ok-map-legend-circle][data-ok-radius][aria-hidden] + span[data-ok-map-legend-label]
-  div[data-ok-map-control] (MapControl: author content)
+  div[data-ok-map-control][data-ok-paper] (MapControl: author content)
 ```
 Sources and layers: `data-ok-data` (URL or inline JSON), `data-ok-url`, `data-ok-tiles` (URLs
 separated by spaces), `data-ok-tile-size`, `data-ok-min-zoom`, `data-ok-max-zoom`, `data-ok-bounds`
@@ -412,6 +412,10 @@ Roadmap 4.18.16 (ApexMaps checked 2026-11-11: arc series, drilldown, breadcrumb)
   overlays in the PNG (page elements), `svg` export (the Chart's `type="geo"` does it).
 
 ## Layout and tokens
+Controls (`[data-ok-map-control]`) and popup contents (`[data-ok-map-popup-content]`) are Papers
+(ADR-0066, 2026-11-12): `data-ok-paper` right after their marker, no Paper options; `map.css`
+(after `paper.css`) restates their radius, background and shadow. The legend isn't (its `variant`
+option would clash with Paper's), nor the dark demo panel.
 Root: 480px high (`--ok-spacing` × 120), `--ok-radius-md`, `overflow: hidden`; fullscreen fallback is
 fixed and fills the window at `--ok-z-modal`. Corners: 10px from the edges, column of controls with
 8px gaps. Controls: paper, `--ok-radius-md`, `--ok-shadow-z1`, 32px buttons, 20px icons, dividers

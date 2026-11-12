@@ -120,11 +120,11 @@ const sideOf = (position: RangePosition): 0 | 1 => (position === "start" ? 0 : 1
  *               [data-ok-calendars="2"] [data-ok-actions] [data-ok-close-on-select] [data-ok-desktop-mode-media-query]>
  *            …a single input range field (`data-ok-date-field data-ok-range`) with button[data-ok-date-picker-open],
  *             or a multi input range field whose fields hold button[data-ok-date-picker-open][data-ok-range-position]…
- *            <div data-ok-popover data-ok-date-picker-paper popover="manual" role="dialog" …>   (desktop, responsive)
+ *            <div data-ok-popover data-ok-paper data-ok-date-picker-paper popover="manual" role="dialog" …>   (desktop, responsive)
  *              <div data-ok-picker-layout>…range toolbar, [range tabs], shortcuts, div[data-ok-picker-content] ›
  *                date range calendar? digital clock? time clock?, actions…</div>
  *            </div>
- *            <dialog data-ok-dialog data-ok-date-picker-dialog …><div data-ok-dialog-paper></div></dialog>  (mobile, responsive)
+ *            <dialog data-ok-dialog data-ok-date-picker-dialog …><div data-ok-dialog-paper data-ok-paper></div></dialog>  (mobile, responsive)
  *          </div>
  * Behavior: an open button opens the layout in the popover (desktop) or the dialog (mobile) on its
  *          end; picks set the start then the end; actions and shortcuts follow MUI's lifecycle.

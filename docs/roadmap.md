@@ -298,10 +298,15 @@ outlined), `elevation` 0–24 (`--ok-elevation-<n>`, default 1), `square`; React
 Minimals' look: no dark-mode lightening gradient, outline grey 500 at 16%. `paper.css` is imported
 first among the components so surfaces built on it override it by source order (the Card
 contract in `specs/components/paper.md`). No new tokens. Closes no "Pending integrations" row on
-its own: the "Typography + Paper (card)" rows wait for Card. Candidates to compose Paper later
-(no visual change): Popover / Menu paper, Dialog paper, Drawer content, TableContainer, Map
-controls and popups, Autocomplete listbox (recorded in "Pending integrations" since 2026-11-12:
-an owner decision, it changes those roots' markup).
+its own: the "Typography + Paper (card)" rows wait for Card. The library's own surfaces compose
+it since 2026-11-12 (ADR-0066, owner decision; an anatomy change, major changesets): every
+popover root (Popover, Menu, Select, Autocomplete, pickers, Walktour steps, Editor overlays),
+the Dialog paper, the Drawer content and the Map controls and popup contents carry
+`data-ok-paper` on their own element and keep their look (no visual change); Popover, Menu and
+Dialog take MUI's `elevation`; `TableContainer component={Paper}` (React) puts a table on a
+paper, shown on the Table docs page (the stories follow the reference, without a surface).
+Still candidates (backlog in the ADR): Paper `variant` / `square` on overlays, Autocomplete
+`slotProps.paper`, Snackbar content, Alert and Accordion.
 
 ## ✅ Components — Divider (2026-11-07)
 From MUI's Divider page (Minimals has none; its Drawer uses MUI's Divider): `hr` or, with text,
@@ -525,7 +530,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Owner decision (ADR: anatomy change): Paper composed by the library's own surfaces | Popover / Menu paper, Dialog paper, Drawer content, Autocomplete listbox, Map controls and popups (MUI composes Paper there: `PaperProps`, `elevation`); `TableContainer component={Paper}` in the Table stories | each draws its surface in its own CSS (paper background, radius, a shadow token). Composing Paper adds `data-ok-paper` and its options to those roots: every overlay snippet and consumer markup changes, so it is not additive |
 | Owner decision (ADR: anatomy and keyboard change): Select, Checkbox and InputBase as the Data grid's cell editors (MUI X `GridEditSingleSelectCell`, `GridEditBooleanCell`, `GridEditInputCell`) | Data grid editing, React and the HTML runtime | native `select`, `input[type=checkbox]` and `input` marked `data-ok-data-grid-edit-input`, styled by `data-grid.css` (`accent-color` for the checkbox) |
 
 **Sweep of 2026-11-12** (`/integrate` with no argument, roadmap-components 6.1): the table was
@@ -536,7 +540,8 @@ cover as a Card; the Map "Side by side" layout switch on a Paper; the Motion gui
 example driven by a Slider and its viewport-root example scrolling in a Scrollbar; Foundations ›
 Grid items as Papers, Settings preset and font tiles as Cards, the Icons credit as a Link. The
 sweep left four rows open. Owner decision 2026-11-12: build the Image ratios, Paper in the overlay
-roots and the Data grid editors (rows above); the toast swipe stays on `createToastSwipe` (its
+roots and the Data grid editors (rows above; the Image ratios and Paper rows closed 2026-11-12,
+ADR-0066); the toast swipe stays on `createToastSwipe` (its
 Sonner-style damped pull on a refused direction and average-speed dismissal would change on
 `createSwipe`), so that row is closed with this reason. Reviewed and left as they are
 (the reference composes no component there): the Walktour steps' pictures (plain `img` in the

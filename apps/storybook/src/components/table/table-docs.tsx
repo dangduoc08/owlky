@@ -2,6 +2,7 @@ import { tableOptions, tableSortLabelOptions } from "@owlky/core";
 import tableApi from "@owlky/docs-content/api/table.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
+  Paper,
   Scrollbar,
   Table,
   TableBody,
@@ -174,6 +175,57 @@ export function Countries() {
               <TableCell>JP</TableCell>
               <TableCell align="right">126,317,000</TableCell>
             </TableRow>
+          </TableBody>
+        </Table>
+      </Scrollbar>
+    </TableContainer>
+  );
+}`,
+  },
+  {
+    id: "paper",
+    title: "Put a table on a paper",
+    body: "To show a table on a surface, render its `TableContainer` as a **Paper**: pass `component={Paper}` in React, or add Paper's attributes to the container in HTML. The paper adds the background, the rounded corners and a shadow, and Paper's options work on it, such as `elevation` or `variant=\"outlined\"`. A paper is a `div`, so name the Scrollbar inside it: that is the region keyboard users scroll.",
+    html: `<div data-ok-table-container data-ok-paper data-ok-variant="elevation" data-ok-elevation="1">
+  <section data-ok-scrollbar aria-label="Desserts" tabindex="0">
+    <table data-ok-table data-ok-size="medium" data-ok-padding="normal">
+      <thead>
+        <tr><th scope="col">Dessert</th><th scope="col" data-ok-align="right">Calories</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Frozen yoghurt</td><td data-ok-align="right">159</td></tr>
+        <tr><td>Ice cream sandwich</td><td data-ok-align="right">237</td></tr>
+        <tr><td>Eclair</td><td data-ok-align="right">262</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>`,
+    react: `import { Paper, Scrollbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@owlky/react";
+
+const rows = [
+  { name: "Frozen yoghurt", calories: 159 },
+  { name: "Ice cream sandwich", calories: 237 },
+  { name: "Eclair", calories: 262 },
+];
+
+export function DessertsOnPaper() {
+  return (
+    <TableContainer component={Paper}>
+      <Scrollbar aria-label="Desserts">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Dessert</TableCell>
+              <TableCell align="right">Calories</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.name}>
+                <TableCell>{row.name}</TableCell>
+                <TableCell align="right">{row.calories}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </Scrollbar>
@@ -405,6 +457,30 @@ const PREVIEWS = {
                   <TableCell>{row.name}</TableCell>
                   <TableCell align="right">{row.calories}</TableCell>
                   <TableCell align="right">{row.protein}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Scrollbar>
+      </TableContainer>
+    </Preview>
+  ),
+  paper: () => (
+    <Preview className="block!">
+      <TableContainer component={Paper}>
+        <Scrollbar aria-label="Desserts on a paper">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Dessert</TableCell>
+                <TableCell align="right">Calories</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.desserts.slice(0, 3).map((row) => (
+                <TableRow key={row.name}>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell align="right">{row.calories}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

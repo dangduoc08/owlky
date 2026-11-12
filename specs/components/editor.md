@@ -32,15 +32,15 @@ div[data-ok-editor][data-ok-full-item]?[data-ok-error]?[data-ok-editable="false"
         (select: "auto" (value ""), a disabled "—" rule, then the highlighter's languages)
       span[style="text-transform: uppercase|lowercase|capitalize"]  (text transform mark; input also data-ok-text-transform)
   p[data-ok-editor-helper][id]?
-  Menu: div[data-ok-popover][id] › ul[data-ok-menu][role=menu][aria-labelledby=<heading>] › li[data-ok-menu-item][data-ok-editor-block=paragraph|h1…h6][data-ok-selected]?
+  Menu: div[data-ok-popover][data-ok-paper][id] › ul[data-ok-menu][role=menu][aria-labelledby=<heading>] › li[data-ok-menu-item][data-ok-editor-block=paragraph|h1…h6][data-ok-selected]?
         (each item in its block's type: Paragraph body2, Heading 1 17px … Heading 6 12px, bold)
-  Popover (link): div[data-ok-popover][role=dialog][aria-labelledby] › form[data-ok-editor-form=link][novalidate]
+  Popover (link): div[data-ok-popover][data-ok-paper][role=dialog][aria-labelledby] › form[data-ok-editor-form=link][novalidate]
     › p[data-ok-editor-form-title] + div[data-ok-editor-form-row] › TextField (input[data-ok-editor-field=href]) + Button[type=submit]
   Popover (image): same › form[data-ok-editor-form=image] › title + TextField (src) + TextField (alt) + Button[type=submit]
   -- ADR-0050 --
   (toolbar, with tables) div[data-ok-editor-group] › button[data-ok-editor-action=table][aria-label=Table][aria-haspopup=menu][aria-expanded][aria-controls=<table menu>]
                                                     (before the fullscreen group; HTML: data-ok-popover-open)
-  Menu (tables): div[data-ok-popover][id] › ul[data-ok-menu][role=menu][aria-labelledby=<table button>]
+  Menu (tables): div[data-ok-popover][data-ok-paper][id] › ul[data-ok-menu][role=menu][aria-labelledby=<table button>]
     › li[data-ok-menu-item][data-ok-editor-table-action=<action>][aria-disabled]?   (12 items, editorTableActions)
   content (tables): table › tbody › tr › th|td (colspan, rowspan, colwidth; Tiptap adds colgroup + min-width style)
   content (mentions): span[data-type=mention][data-ok-editor-mention][data-id][data-label][data-mention-suggestion-char]? "@Label"

@@ -1272,7 +1272,7 @@
   {
    "html": {
     "attribute": "data-ok-map-control",
-    "description": "One control in a corner.",
+    "description": "One control in a corner, a Paper (with `data-ok-paper`).",
     "elements": [
      "div"
     ]
@@ -1749,7 +1749,7 @@
       "name": "data-ok-map-popup-close"
      },
      {
-      "description": "The content of a popup.",
+      "description": "The content of a popup, a Paper (with `data-ok-paper`).",
       "elements": [
        "div"
       ],

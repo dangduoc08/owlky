@@ -4,6 +4,7 @@
  * Anatomy:   [data-ok-table-container] › table[data-ok-table] › thead / tbody / tfoot › tr › th / td
  *            th › [data-ok-table-sort-label] › [data-ok-table-sort-icon]
  *            tr[data-ok-table-detail] (collapsible row) · [data-ok-table-pagination]
+ *            [data-ok-table-container][data-ok-paper] (on a Paper, opt-in: React `component={Paper}`)
  * Modifiers: table: data-ok-size = medium | small, data-ok-padding = normal | checkbox | none,
  *            data-ok-sticky-header · cell: data-ok-align, data-ok-padding, data-ok-size ·
  *            row: data-ok-hover, data-ok-selected · sort label: data-ok-active, data-ok-direction,
@@ -26,6 +27,11 @@
   /* Wrapping a Scrollbar: the Scrollbar scrolls (and is the named, focusable region). */
   :where([data-ok-table-container]:has(> [data-ok-scrollbar])) {
     overflow: visible;
+  }
+
+  /* On a Paper (`component={Paper}`, ADR-0066): its rounded corners clip the header and rows. */
+  :where([data-ok-table-container][data-ok-paper]:has(> [data-ok-scrollbar])) {
+    overflow: hidden;
   }
 
   :where([data-ok-table-container]:focus-visible) {

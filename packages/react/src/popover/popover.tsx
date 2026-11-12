@@ -55,6 +55,11 @@ export interface PopoverProps extends Omit<HTMLAttributes<HTMLDivElement>, "popo
   transitionDuration?: number | undefined;
   /** Draws an arrow pointing at the anchor. */
   arrow?: boolean | undefined;
+  /**
+   * Shadow depth of the paper, 0–24 (`--ok-elevation-<n>`). Default: the theme's dropdown
+   * shadow. The popover is a Paper.
+   */
+  elevation?: number | undefined;
   /** Escape doesn't ask to close. */
   disableEscapeKeyDown?: boolean | undefined;
   /** Focus stays on the anchor when the popover opens (hover popovers). */
@@ -67,7 +72,8 @@ export interface PopoverProps extends Omit<HTMLAttributes<HTMLDivElement>, "popo
 }
 
 /**
- * Popover — spec: specs/components/popover.md. A `div[popover=manual]` in the top layer,
+ * Popover — spec: specs/components/popover.md. A `div[popover=manual]` in the top layer (a
+ * Paper: `data-ok-paper`, ADR-0066),
  * positioned next to `anchorEl` by the core popover controller. Controlled, like MUI: keep `open`
  * in state and set it from `onOpenChange`.
  */
@@ -82,6 +88,7 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
     marginThreshold,
     transitionDuration,
     arrow,
+    elevation,
     disableEscapeKeyDown,
     disableAutoFocus,
     disableRestoreFocus,
@@ -140,6 +147,7 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
         marginThreshold,
         transitionDuration,
         arrow,
+        elevation,
         disableEscapeKeyDown,
         disableAutoFocus,
         disableRestoreFocus,

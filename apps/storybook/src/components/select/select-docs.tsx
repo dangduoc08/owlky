@@ -73,7 +73,7 @@ function htmlSelect({
           `  <fieldset data-ok-select-outline aria-hidden="true">${label ? `<legend><span>${label}</span></legend>` : ""}</fieldset>`,
         ]
       : []),
-    `  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="${id}-menu" tabindex="-1">`,
+    `  <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" id="${id}-menu" tabindex="-1">`,
     `    <span data-ok-popover-arrow aria-hidden="true"></span>`,
     `    <ul data-ok-select-listbox role="listbox" id="${id}-listbox"${labelled}${multiple ? ' aria-multiselectable="true"' : ""}>`,
     ...options.map(([v, t]) => {
@@ -359,7 +359,7 @@ export function Names() {
     <input data-ok-select-input aria-hidden="true" tabindex="-1" placeholder=" " value="">
     ${ICON}
     <fieldset data-ok-select-outline aria-hidden="true"><legend><span>Grouping</span></legend></fieldset>
-    <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="grouped-menu" tabindex="-1">
+    <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" id="grouped-menu" tabindex="-1">
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <ul data-ok-select-listbox role="listbox" id="grouped-listbox" aria-labelledby="grouped-label">
         <li data-ok-list-subheader data-ok-color="default" role="presentation">Category 1</li>
@@ -426,7 +426,7 @@ export function Fruit() {
     <input data-ok-select-input aria-hidden="true" tabindex="-1" placeholder=" " value="EUR">
     <svg aria-hidden="true" viewBox="0 0 24 24" data-ok-text-field-select-icon data-ok-select-icon><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
     <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Currency</span></legend></fieldset>
-    <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="currency-menu" tabindex="-1">
+    <div popover="manual" data-ok-popover data-ok-paper data-ok-placement="bottom-start" id="currency-menu" tabindex="-1">
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <ul data-ok-select-listbox role="listbox" id="currency-listbox" aria-labelledby="currency-label">
         <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="USD">$</li>

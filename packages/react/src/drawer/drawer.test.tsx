@@ -100,7 +100,10 @@ describe("Drawer anatomy", () => {
     expect(dialog().open).toBe(false);
     expect(dialog().dataset).toMatchObject({ okDrawer: "", okAnchor: "left", okRuntime: "off" });
     expect(dialog().getAttribute("aria-label")).toBe("Menu");
-    expect(dialog().querySelector(":scope > [data-ok-drawer-content]")).not.toBeNull();
+    const content = dialog().querySelector(":scope > [data-ok-drawer-content]") as HTMLElement;
+    // The content is a square Paper: Paper's radius is restated by the drawer.
+    expect(content.dataset["okPaper"]).toBe("");
+    expect(getComputedStyle(content).borderTopRightRadius).toBe("0px");
     expect(screen.getByRole("button", { name: "Open" }).getAttribute("aria-haspopup")).toBe(
       "dialog",
     );

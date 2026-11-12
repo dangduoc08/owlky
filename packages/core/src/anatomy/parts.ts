@@ -1251,7 +1251,7 @@ export interface DialogParts {
   "data-ok-dialog-content-text": Part<"p">;
   /** Opens the dialog whose `id` it names. */
   "data-ok-dialog-open": Trigger<"id">;
-  /** The dialog's surface. */
+  /** The dialog's surface, a Paper (with `data-ok-paper`; `data-ok-elevation` sets its shadow). */
   "data-ok-dialog-paper": Part<"div">;
   /** The title. Name the dialog with it through `aria-labelledby`. */
   "data-ok-dialog-title": Part<"h2">;
@@ -1271,7 +1271,7 @@ export interface DividerParts {
 export interface DrawerParts {
   /** Closes the drawer whose `id` it names, or, without a value, the drawer it sits in. */
   "data-ok-drawer-close": Trigger<"id" | "">;
-  /** The drawer's surface and its content. */
+  /** The drawer's surface and its content, a square Paper (with `data-ok-paper`). */
   "data-ok-drawer-content": Part<"div">;
   /** Opens the drawer whose `id` it names. */
   "data-ok-drawer-open": Trigger<"id">;
@@ -1676,7 +1676,7 @@ export interface MapParts {
   "data-ok-map-compass-north": Part<"path">;
   /** The south half of the compass needle. */
   "data-ok-map-compass-south": Part;
-  /** One control in a corner. */
+  /** One control in a corner, a Paper (with `data-ok-paper`). */
   "data-ok-map-control": Part<"div">;
   /** A corner that holds controls. */
   "data-ok-map-corner": Value<"top-left" | "top-right" | "bottom-left" | "bottom-right">;
@@ -1696,7 +1696,7 @@ export interface MapParts {
   "data-ok-map-pin": Part<"svg">;
   /** The close button of a popup. */
   "data-ok-map-popup-close": Part;
-  /** The content of a popup. */
+  /** The content of a popup, a Paper (with `data-ok-paper`). */
   "data-ok-map-popup-content": Part<"div">;
   /** Opens the popup whose `id` it names. */
   "data-ok-map-popup-open": Trigger<"id">;
@@ -2224,7 +2224,7 @@ export interface SwitchParts {
 export interface TableParts {
   /** Highlights rows on hover. */
   "data-ok-hover": State;
-  /** The container around the table, with a scrollbar. */
+  /** The container around the table, with a scrollbar (a Paper too with `data-ok-paper`). */
   "data-ok-table-container": Part<"section">;
   /** A switch that makes the table whose `id` it names dense while checked. */
   "data-ok-table-dense": Trigger<"id">;

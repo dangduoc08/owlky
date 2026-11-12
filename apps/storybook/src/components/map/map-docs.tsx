@@ -127,7 +127,7 @@ export function ThemedMap() {
 <div id="paris" data-ok-map-popup data-ok-longitude="2.35" data-ok-latitude="48.86"
   data-ok-offset="28" role="dialog" tabindex="-1" aria-label="Paris" hidden>
   <span data-ok-map-popup-tip aria-hidden="true"></span>
-  <div data-ok-map-popup-content>Capital of France</div>
+  <div data-ok-map-popup-content data-ok-paper>Capital of France</div>
   <button type="button" data-ok-map-popup-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
 </div>`,
     react: `import { MapView, Marker, Popup } from "@owlky/react";

@@ -19,7 +19,7 @@ export const dialogSections: GuideSection[] = [
   <span data-ok-button-label>Discard draft</span>
 </button>
 <dialog id="discard" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="discard-title">
-  <div data-ok-dialog-paper>
+  <div data-ok-dialog-paper data-ok-paper>
     <h2 id="discard-title" data-ok-dialog-title>Discard this draft?</h2>
     <div data-ok-dialog-content>
       <p data-ok-dialog-content-text>You can't undo this.</p>
@@ -57,10 +57,10 @@ export function DiscardDraft() {
   {
     id: "size",
     title: "Size the dialog",
-    body: "The paper is as wide as its content, up to `maxWidth`: `xs` (444px), `sm` (600px, the default), `md` (900px), `lg` (1200px), `xl` (1536px) or `none`. Add `fullWidth` to always take that width. On phones the paper keeps 16px from the edges, and 32px from 600px up. `fullScreen` covers the whole viewport.",
+    body: "The paper is as wide as its content, up to `maxWidth`: `xs` (444px), `sm` (600px, the default), `md` (900px), `lg` (1200px), `xl` (1536px) or `none`. Add `fullWidth` to always take that width. On phones the paper keeps 16px from the edges, and 32px from 600px up. `fullScreen` covers the whole viewport. The paper is a **Paper** (`data-ok-paper`): set `elevation` (`0` to `24`) to replace the dialog shadow with one of Paper's shadows.",
     html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="settings" aria-haspopup="dialog"><span data-ok-button-label>Open</span></button>
 <dialog id="settings" data-ok-dialog data-ok-max-width="md" data-ok-full-width data-ok-scroll="paper" aria-labelledby="settings-title">
-  <div data-ok-dialog-paper>
+  <div data-ok-dialog-paper data-ok-paper>
     <h2 data-ok-dialog-title id="settings-title">Settings</h2>
     <div data-ok-dialog-content>
       <p data-ok-dialog-content-text>The dialog grows up to the md width and fills it.</p>
@@ -99,7 +99,7 @@ export function SettingsDialog() {
     body: 'With `scroll` set to `paper` (default), the title and actions stay in view and the content scrolls. Make the content focusable (`tabindex="0"` and a name) so keyboard users can scroll it. With `body`, the whole dialog scrolls with the page. Add `dividers` to draw lines above and below the content.',
     html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="terms" aria-haspopup="dialog"><span data-ok-button-label>Open</span></button>
 <dialog id="terms" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="terms-title">
-  <div data-ok-dialog-paper>
+  <div data-ok-dialog-paper data-ok-paper>
     <h2 data-ok-dialog-title id="terms-title">Terms of service</h2>
     <div data-ok-dialog-content data-ok-dividers tabindex="0" aria-label="Terms">
       <p>Section 1. You agree to use the service as described in these terms.</p>
@@ -154,7 +154,7 @@ With reduced motion, the dialog appears and closes at once.`,
     html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="welcome" aria-haspopup="dialog"><span data-ok-button-label>Open</span></button>
 <dialog id="welcome" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" data-ok-transition-duration="400"
   data-ok-transition-duration-exit="250" aria-labelledby="welcome-title">
-  <div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
+  <div data-ok-dialog-paper data-ok-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
     <h2 data-ok-dialog-title id="welcome-title">Welcome</h2>
     <div data-ok-dialog-content>
       <p data-ok-dialog-content-text>The dialog slides up as it opens.</p>
@@ -202,7 +202,7 @@ export function WelcomeDialog() {
     html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="notes" aria-haspopup="dialog"><span data-ok-button-label>Notes</span></button>
 <dialog id="notes" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" data-ok-disable-restore-focus
   data-ok-disable-scroll-lock aria-labelledby="notes-title">
-  <div data-ok-dialog-paper>
+  <div data-ok-dialog-paper data-ok-paper>
     <h2 data-ok-dialog-title id="notes-title">Notes</h2>
     <div data-ok-dialog-content>
       <p data-ok-dialog-content-text>The page behind keeps scrolling.</p>

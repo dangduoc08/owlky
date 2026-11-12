@@ -58,9 +58,14 @@ Colors › Gradient), so the schema stays MUI's.
 - Paper sets only `background-color`, `color`, `border-radius`, `box-shadow`, `border`
   (outlined) and `transition`: no `display`, `overflow`, padding or size, so a composer adds them
   without undoing anything. No private variables (they would inherit into nested papers).
-- Existing surfaces (Popover, Menu, Dialog, Drawer, TableContainer) paint the same tokens
-  themselves today; they can move onto `data-ok-paper` later without a visual change by keeping
-  their own shadow / radius rules after `paper.css`.
+- Library surfaces composed on Paper (ADR-0066, 2026-11-12): every popover root (Popover, Menu,
+  Select, Autocomplete, pickers, Walktour steps, Editor overlays), the Dialog paper, the Drawer
+  content, Map controls and popup contents carry `data-ok-paper` on their own element, right
+  after their marker, and keep their look by restating radius, background and shadow after
+  `paper.css`. Popover, Menu and Dialog take `elevation` (`data-ok-elevation`, written only when
+  given; their default shadow rule is `:not([data-ok-elevation])`); Drawer keeps its own
+  `elevation`. `TableContainer component={Paper}` (HTML: Paper's attributes on the container)
+  puts a table on a surface. Core `surfacePaperAttributes(elevation)` writes the marker.
 
 Stories: the labels are Typography `body2` (`textSecondary` on the Elevation levels, as in the
 reference); `sb-paper-*` classes give sizes and centering only.

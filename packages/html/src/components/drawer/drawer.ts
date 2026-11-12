@@ -79,7 +79,7 @@ const SWIPE = [
  *
  * Markup:   temporary: <dialog id="x" data-ok-drawer data-ok-anchor="left" aria-label="…">
  *           docked:    <aside id="x" data-ok-drawer data-ok-variant="persistent|permanent" … hidden?>
- *             <div data-ok-drawer-content>…</div>
+ *             <div data-ok-drawer-content data-ok-paper>…</div>
  * Triggers: [data-ok-drawer-open="x"] (opens; toggles a persistent drawer, kept in aria-expanded),
  *           [data-ok-drawer-close] (inside) or [data-ok-drawer-close="x"]
  * Options:  data-ok-variant (read at mount), data-ok-disable-escape-key-down, data-ok-hide-backdrop

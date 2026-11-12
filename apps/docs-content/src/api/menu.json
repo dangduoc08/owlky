@@ -152,6 +152,11 @@
       "type": "boolean"
      },
      {
+      "description": "Shadow depth of the paper, 0–24. Default: the theme's dropdown shadow.",
+      "name": "elevation",
+      "type": "number"
+     },
+     {
       "description": "`id` of the menu's popover (point the trigger's `aria-controls` at it).",
       "name": "id",
       "type": "string"

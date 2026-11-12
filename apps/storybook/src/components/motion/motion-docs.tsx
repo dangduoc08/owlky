@@ -224,7 +224,7 @@ export function Process() {
     title: "Animate a dialog",
     body: "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. When the dialog closes, the entrance plays backwards before the dialog goes away. Without `transition`, the paper fades and scales in briefly, and out when it closes.",
     html: `<dialog id="share" data-ok-dialog data-ok-max-width="sm" aria-labelledby="share-title">
-  <div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
+  <div data-ok-dialog-paper data-ok-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
     <h2 id="share-title" data-ok-dialog-title>Share your location?</h2>
     <div data-ok-dialog-content>
       <p data-ok-dialog-content-text>Nearby stores show up first when you share your location.</p>

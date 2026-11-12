@@ -423,6 +423,7 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
             key={index}
             popover="manual"
             data-ok-popover=""
+            data-ok-paper=""
             data-ok-arrow=""
             {...walktourStepAttributes({
               ...overrides,

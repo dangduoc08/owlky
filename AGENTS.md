@@ -815,6 +815,17 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   path disables the paper's and `dialog::backdrop`'s animations. React `keepMounted={false}`
   children stay rendered until the exit ends (`shown` state); MotionPresence waits for the Motions
   that register through its context (children without Motions leave at once).
+- Library surfaces are Papers (ADR-0066): every popover root (`popoverAttributes()` writes
+  `data-ok-paper` right after `data-ok-popover`; Walktour steps and the Editor overlays write it
+  by hand), the Dialog paper, the Drawer content and the Map controls / popup contents. Their own
+  CSS restates radius, background and shadow after `paper.css`; a default shadow rule is
+  `:not([data-ok-elevation])`, so an `elevation` (Popover, Menu, Dialog: `surfacePaperAttributes`)
+  picks Paper's shadow. Paper's `transition: box-shadow` now runs on them: tests that change an
+  elevation read the shadow after `settled(element)` (mid-transition values serialize as
+  `oklab(…)`). A new surface puts the marker right after its own (snippets read `data-ok-x
+  data-ok-paper`) and must not carry Paper's `variant` when it has a `data-ok-variant` of its
+  own. `querySelectorAll("[data-ok-paper]")` now finds overlays too: scope Paper checks to their
+  story.
 - Collapse (ADR-0044): `hidden` is the state; core `createCollapseController` watches it (a
   MutationObserver, before paint) and animates with the Web Animations API, so tests `finish()` the
   element's animations and then wait a task (the controller settles on `animation.finished`; a

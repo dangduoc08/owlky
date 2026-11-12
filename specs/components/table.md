@@ -141,6 +141,7 @@ Upstream: MUI `Table`, `TableContainer`, `TableHead` / `TableBody` / `TableFoote
 | Upstream | Owlky | Status | Note |
 |---|---|---|---|
 | Table `size`, `padding`, `stickyHeader` | same / `data-ok-size`, `-padding`, `-sticky-header` | kept | arbitrary size strings not applicable |
+| TableContainer `component` (`component={Paper}`) | same; HTML `data-ok-paper` + Paper's attributes on the container | kept (ADR-0066) | default `section`; with Paper a `div`, so the Scrollbar inside is the named region |
 | Table / TableHead / TableBody / TableFooter / TableRow / TableContainer `component` | — | not applicable | native table elements (`div` tables: Data grid); container is a `section` |
 | TableRow `hover`, `selected` | same / `data-ok-hover`, `data-ok-selected` | kept | |
 | TableCell `align`, `padding`, `size`, `sortDirection`, `scope` | same / `data-ok-align`, `-padding`, `-size`, `aria-sort`, `scope` | kept | |
