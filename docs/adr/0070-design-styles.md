@@ -24,17 +24,19 @@ freely.
 |---|---|---|---|---|---|
 | `soft` | Soft | 10 / 18px | no borders, two-layer soft shadows | Nunito 800 · Nunito · Nunito | 1.5 |
 | `swiss` | Swiss | 0 / 0 | 1px ink lines, no shadows | Inter 800, tracking −0.03em · Inter · Inter | 1.5 |
-| `bauhaus` | Bauhaus | 0 / 0, pill chips | 2px black borders, no shadows | Lexend 800 uppercase · Lexend · Lexend uppercase | 2 |
+| `bauhaus` | Bauhaus | 0 / 0, pill chips | 2px black borders, no shadows | Montserrat 800 uppercase · Montserrat · Montserrat uppercase | 2 |
 | `brutalism` | Brutalism | 0 / 0 | 1px lines, no shadows | IBM Plex Mono · IBM Plex Mono · IBM Plex Mono | 1.25 |
 | `neo-brutalism` | Neo-Brutalism | 8 / 12px | 2px borders, hard offset shadows | Space Grotesk · Space Grotesk · Space Grotesk | 2 |
-| `editorial` | Editorial | 0 / 0 | rules instead of shadows | Playfair Display 900 · Source Serif 4 · Be Vietnam Pro uppercase, tracking 0.12em | 1.25 |
+| `editorial` | Editorial | 0 / 0 | rules instead of shadows | Noto Serif Display 900 · Source Serif 4 · Archivo uppercase, tracking 0.12em | 1.25 |
 | `minimal-mono` | Minimal Mono | 8 / 14px | greys only, soft shadows | Inter · Inter · Inter | 1.5 |
 | `corporate` | Corporate | 4 / 8px | subtle shadows | IBM Plex Sans · IBM Plex Sans · IBM Plex Sans | 1.5 |
 | `nordic` | Nordic | 10 / 16px | soft shadows | Manrope 800 · Manrope · Manrope | 1.5 |
 
 A page without `data-ok-style` looks Soft. The font check (inventory § Fonts) found three fonts
-without tabular figures (Lexend, Playfair Display, Be Vietnam Pro): their replacement is an open
-question for the owner; until it is answered ST4 builds those styles with the fonts above.
+without tabular figures (Lexend, Playfair Display, Be Vietnam Pro); the owner replaced them
+(2026-11-12): Bauhaus uses Montserrat, Editorial headings Noto Serif Display, Editorial labels
+Archivo. The owner's other answers (dividers, selection controls, icons, compass, rounding, Minimal
+Mono's hues) are in the inventory, § 7, and follow this ADR as written.
 Minimal Mono's "greys only" applies to `primary` and `secondary` (from the neutral scale); status
 colors keep their hues, because they carry meaning.
 

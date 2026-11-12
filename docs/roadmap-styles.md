@@ -22,10 +22,10 @@ values. Reference demo: the dashboard lab (owner review, 2026-11-12).
 |---|---|---|---|---|
 | Soft | Nunito 800 | Nunito | Nunito | radius 10 / 18, two-layer soft shadows |
 | Swiss | Inter 800, tracking −0.03em | Inter | Inter | square, 1px ink lines instead of shadows |
-| Bauhaus | Lexend 800, uppercase | Lexend | Lexend uppercase | square, 2px black borders, pill chips |
+| Bauhaus | Montserrat 800, uppercase | Montserrat | Montserrat uppercase | square, 2px black borders, pill chips |
 | Brutalism | IBM Plex Mono | IBM Plex Mono | IBM Plex Mono | square, 1px lines |
 | Neo-Brutalism | Space Grotesk | Space Grotesk | Space Grotesk | radius 8 / 12, 2px borders, hard offset shadows |
-| Editorial | Playfair Display 900 | Source Serif 4 | Be Vietnam Pro uppercase, tracking 0.12em | square, rules instead of shadows |
+| Editorial | Noto Serif Display 900 | Source Serif 4 | Archivo uppercase, tracking 0.12em | square, rules instead of shadows |
 | Minimal Mono | Inter | Inter | Inter | radius 8 / 14, greys only |
 | Corporate | IBM Plex Sans | IBM Plex Sans | IBM Plex Sans | radius 4 / 8 |
 | Nordic | Manrope 800 | Manrope | Manrope | radius 10 / 16 |

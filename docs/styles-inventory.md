@@ -1055,7 +1055,18 @@ For ST2 (code) and ST7 (docs). Generated files (`packages/mcp/manifest.json`,
 | Library | every hand-drawn component path of § 4 (`core/src/editor/icons.ts`, `core/src/map/icons.ts`, `core/src/chart/chart-toolbar.ts`, `core/src/gantt/gantt-render.ts`, `core/src/upload/upload-model.ts`, the React and HTML files listed there) |
 | Notices | `packages/core/THIRD_PARTY_NOTICES.md` / `packages/html/THIRD_PARTY_NOTICES.md` gain Solar (CC BY 4.0) and, for the flags folder, Circle Flags (MIT); `docs/legal/*` records follow |
 
-## 7. Open questions for the owner
+## 7. Owner's answers (2026-11-12, all approved as recommended)
+1. Replace all three: Bauhaus → Montserrat, Editorial headings → Noto Serif Display, Editorial
+   labels → Archivo.
+2. Decorative dividers keep no minimum by default; 3:1 only in high contrast.
+3. Checkbox box and radio ring come from tokens; Solar draws only the marks.
+4. Approximate icons accepted (closest meaning, recorded in § 4).
+5. The Map compass stays a component graphic.
+6. The generator may round coordinates to 2 decimals if a budget breaks; the test compares
+   rounded paths.
+7. Minimal Mono keeps hues for status colors.
+
+## 7a. Questions as asked
 1. **Fonts without tabular figures:** replace Lexend (Bauhaus) with Montserrat, Playfair Display
    (Editorial headings) with Noto Serif Display, Be Vietnam Pro (Editorial labels) with Archivo,
    or keep any of them (§ 5)?
