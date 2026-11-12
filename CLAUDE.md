@@ -22,9 +22,10 @@ file covers project status, workflow and orientation.
 | Website phase 1 | ADR-0040: `apps/website` (owlky.com, Next.js static export built with Owlky: Home, Get started, Colors, Button, Pagefind search, `llms.txt` + `.md` per page, **Open HTML demo** sandboxes), `apps/docs-content` (pilot guides + guide UI, Storybook renders them through its host), `website.yml` (Vercel CLI, skips until the secrets exist) | ✅ done, awaiting review; phase 2 (migrate the other guides) next |
 
 Full plan: `docs/roadmap.md` ("After the waves"). **Component completion is done** (2026-11-12,
-`docs/roadmap-components.md`: every row ✅ or ⏸ with a reason). **Next:** the bundle-size roadmap before
-0.1.0 (`docs/roadmap-size.md`, approved 2026-11-12: per-component entries, a lazy-loading `owlky.js`, no
-more budget raises); then website phase 2 + deploy → 0.1.0 → more frameworks.
+`docs/roadmap-components.md`: every row ✅ or ⏸ with a reason). **Next:** the road to 0.1.0
+(`docs/roadmap-0.1.0.md`, approved 2026-11-12): bundle size (`docs/roadmap-size.md`: S1 and S2 part 1
+done) and clean IP in parallel → design styles (`docs/roadmap-styles.md`: nine styles, Soft default,
+Solar icons) → accounts and the remote MCP (ADR-0071) → 0.1.0 → more frameworks.
 Not published
 yet. Repository:
 `github.com/dangduoc08/owlky` (public; the GitHub org `owlky` only reserves the name).

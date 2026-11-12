@@ -1,6 +1,6 @@
 # ADR-0046: MCP server — `@owlky/mcp` over stdio, answering from a generated manifest
 
-**Status:** Accepted (2026-11-09; auto-approved under the owner's standing instruction to run the
+**Status:** Superseded by ADR-0071 (2026-11-12). Was: Accepted (2026-11-09; auto-approved under the owner's standing instruction to run the
 approved plan)
 
 ## Context

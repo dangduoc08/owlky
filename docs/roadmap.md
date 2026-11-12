@@ -978,6 +978,8 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    - ✅ **Landing page** (2026-11-09): the home page rebuilt in the layout of a SaaS template
      landing page with live Owlky components (dashboard preview, bento features, component tabs,
      principles carousel, FAQ, call to action); docs pages moved into an `app/(docs)/` route group.
+   - **Landing page v2** (owner's screenshot, branch `website/landing-redesign`): paused 2026-11-12;
+     resumes after the design styles roadmap (`roadmap-styles.md`), which changes the look.
    - **Phase 2 (after component completion):** migrate the remaining guides to `apps/docs-content` in
      batches (Foundations, then components by wave); Storybook's `*-docs.tsx` become thin
      wrappers, then disappear. Then deploy (the owner's Vercel project, secrets and DNS) and decide
@@ -1005,7 +1007,11 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    Sortable auto-scroll and Paper in the library's surfaces (ADR-0066) are built), and the flaky e2e pixel parity of `carousel / thumbs-y` (about 2 of 60 runs
    with 4 workers, already before Wave 8; waiting for image decode and scroll settle didn't fix it). Carousel bug: with `loop`, a viewport resize (also Playwright's screenshot resize) jumps a
    looping carousel to another slide (found by the landing page, which turns `loop` off for now).
-10. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
+10. **Apex features recorded as not built** (owner 2026-11-12: build after 0.1.0): log and
+   diverging scales and OkLab ramps; orthographic projection and rotation; shape ↔ hex morph; arc
+   curvature, flow and width; `drillTo` / `drillUp`; label collision and pan / zoom on Chart `geo`
+   (specs and ADR-0059 §8 record each one; roadmap-components.md 6.0).
+11. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
    repository), Navigation bar and Mega menu.
 
 **Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, npm trusted publishing for

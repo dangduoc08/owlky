@@ -49,7 +49,7 @@ ADR that supersedes the old one — don't rewrite history.
 | 0042–0043 | Not used: numbers reserved for Wave 8 agents (Typography, Paper) that needed no ADR | — |
 | [0044](0044-collapse.md) | Collapse: `hidden` is the state, a core controller animates the size | Accepted |
 | [0045](0045-select.md) | Select: a select-only combobox with roving focus; the native select stays | Accepted |
-| [0046](0046-mcp-server.md) | MCP server: `@owlky/mcp` over stdio, answering from a generated manifest | Accepted |
+| [0046](0046-mcp-server.md) | MCP server: `@owlky/mcp` over stdio, answering from a generated manifest | Superseded by [0071](0071-accounts-and-remote-mcp.md) (removal in M0) |
 | [0047](0047-chart-sankey-and-stock-charts.md) | Chart: Sankey and stock charts in the shared engine (links table, indicators, panes, navigator) | Accepted |
 | [0048](0048-gantt.md) | Gantt: one treegrid with a timeline column, laid out by core, built in three phases | Accepted |
 | [0049](0049-api-reference.md) | API reference: generated from typed sources (props, parts, event maps, instances), shown on every docs page | Accepted |
@@ -73,5 +73,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0067](0067-data-grid-cell-editors.md) | Data grid cell editors: InputBase (text, number, dates), a bare listbox Select (open at the start in cell mode) and a Checkbox; nested listbox keys, number columns stay a native number input | Accepted |
 | [0068](0068-bundle-size-lazy-loading.md) | Bundle size: an entry per component in every package, `owlky.js` as a loader of ESM modules and their CSS (light components stay, `data-ok-preload`, strict CSP), the opt-in bundles on that loader, schema descriptions in a JSON file, a core stylesheet, splits inside heavy components, budgets that only go down | Accepted |
 | [0069](0069-own-visual-identity.md) | Own visual identity: Tailwind v4 palette (MIT), Indigo + Zinc default, presets indigo / teal / violet / sky / rose / amber, roles chosen by an AA generator, AA everywhere (ends 0014), Be Vietnam Pro for text and headings | Accepted |
+| [0071](0071-accounts-and-remote-mcp.md) | Accounts and a remote MCP at owlky.com/mcp: no local stdio package, Better Auth (GitHub, Google, the MCP OAuth flow) and hashed personal tokens, Neon + Drizzle, no prompt logging, 60 calls / min, `/mcp` and pinned versions; supersedes 0046 | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).
