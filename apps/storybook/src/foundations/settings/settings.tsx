@@ -1,3 +1,4 @@
+import { Card } from "@owlky/react";
 import {
   type FontFamilyPreset,
   fontFamilyPresetNames,
@@ -25,11 +26,12 @@ export function PresetGallery({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {presets.map((preset) => (
-        <section
+        <Card
           key={preset}
+          component="section"
           data-ok-preset={preset}
           aria-label={`${label(preset)} preset`}
-          className="rounded-lg p-4 shadow-[var(--ok-shadow-card)]"
+          className="p-4"
         >
           <code className="text-caption text-[var(--ok-text-secondary)]">
             data-ok-preset="{preset}"
@@ -47,7 +49,7 @@ export function PresetGallery({
           <p className="mt-3 text-subtitle2 text-[var(--ok-palette-primary-text)]">
             {label(preset)} — primary text
           </p>
-        </section>
+        </Card>
       ))}
     </div>
   );
@@ -62,11 +64,12 @@ export function FontGallery({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {fonts.map((font) => (
-        <section
+        <Card
           key={font}
+          component="section"
           data-ok-font={font}
           aria-label={`${label(font)} font`}
-          className="rounded-lg p-4 shadow-[var(--ok-shadow-card)]"
+          className="p-4"
         >
           <code className="text-caption text-[var(--ok-text-secondary)]">
             data-ok-font="{font}"
@@ -75,7 +78,7 @@ export function FontGallery({
           <p className="mt-1 text-body2 text-[var(--ok-text-secondary)]">
             The quick brown fox jumps over the lazy dog. 0123456789
           </p>
-        </section>
+        </Card>
       ))}
     </div>
   );

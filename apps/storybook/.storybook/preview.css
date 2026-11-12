@@ -767,8 +767,8 @@
   max-width: 22.5rem;
 }
 
-/* Divider demos (story-only layout): a bordered row of words, paragraphs between dividers, the
-   outlined Card of the icon group. */
+/* Divider demos (story-only layout): the outlined Paper around a row of words, paragraphs
+   between dividers, the outlined Card of the icon group. */
 .sb-divider-row,
 .sb-divider-toolbar {
   display: flex;
@@ -780,8 +780,6 @@
 .sb-divider-row {
   gap: 1rem;
   padding: 0 1rem;
-  border: 1px solid var(--ok-divider);
-  border-radius: var(--ok-radius-md);
 }
 
 .sb-divider-toolbar {
@@ -1483,8 +1481,6 @@
   display: flex;
   flex-direction: column;
   padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
-  border: 1px solid var(--ok-divider);
-  border-radius: var(--ok-radius-lg);
 }
 
 .sb-walktour-settings > label {
@@ -1831,8 +1827,6 @@
   top: calc(var(--ok-spacing) * 2);
   right: calc(var(--ok-spacing) * 2);
   z-index: 6;
-  border-radius: var(--ok-radius-md);
-  background-color: var(--ok-bg-paper);
 }
 
 /*
@@ -2002,21 +1996,17 @@
 }
 
 /*
- * Illustrations (Foundations, story-only): a profile cover cut by the avatar shape, with the avatar
- * in the curve.
+ * Illustrations (Foundations, story-only): a profile cover (a Card) cut by the avatar shape, with
+ * the avatar in the curve. The Card gives the surface; the cover adds its size and its gradient.
  */
 .sb-illustration-cover {
-  position: relative;
   width: min(100%, calc(var(--ok-spacing) * 80));
   height: calc(var(--ok-spacing) * 40);
-  overflow: hidden;
-  border-radius: var(--ok-radius-lg);
   background: linear-gradient(
     135deg,
     var(--ok-palette-primary-light),
     var(--ok-palette-primary-dark)
   );
-  box-shadow: var(--ok-shadow-card);
 }
 
 .sb-illustration-cover > [data-ok-illustration] {

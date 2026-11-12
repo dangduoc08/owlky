@@ -1,4 +1,4 @@
-import { MapView, type MapViewState, ToggleButton, ToggleButtonGroup } from "@owlky/react";
+import { MapView, type MapViewState, Paper, ToggleButton, ToggleButtonGroup } from "@owlky/react";
 import { useState } from "react";
 import { MAP_STYLES } from "../map-data.js";
 
@@ -37,19 +37,21 @@ export function SideBySideDemo() {
         onPointerEnter={() => setActive("right")}
         onFocus={() => setActive("right")}
       />
-      <ToggleButtonGroup
-        className="sb-map-compare-mode"
-        exclusive
-        size="sm"
-        aria-label="Layout"
-        value={mode}
-        onChange={(value) => {
-          if (value) setMode(value as Mode);
-        }}
-      >
-        <ToggleButton value="side-by-side">Side by side</ToggleButton>
-        <ToggleButton value="split-screen">Split screen</ToggleButton>
-      </ToggleButtonGroup>
+      {/* The layout switch sits on a Paper, so the map doesn't show through it. */}
+      <Paper elevation={0} className="sb-map-compare-mode">
+        <ToggleButtonGroup
+          exclusive
+          size="sm"
+          aria-label="Layout"
+          value={mode}
+          onChange={(value) => {
+            if (value) setMode(value as Mode);
+          }}
+        >
+          <ToggleButton value="side-by-side">Side by side</ToggleButton>
+          <ToggleButton value="split-screen">Split screen</ToggleButton>
+        </ToggleButtonGroup>
+      </Paper>
     </div>
   );
 }

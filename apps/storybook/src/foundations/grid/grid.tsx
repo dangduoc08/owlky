@@ -1,12 +1,14 @@
+import { Paper } from "@owlky/react";
+
 const ITEMS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 function Item({ children, className = "" }: { children: number; className?: string }) {
   return (
-    <div
-      className={`rounded-md bg-paper py-6 text-center text-subtitle1 text-text-secondary shadow-z8 ${className}`.trim()}
+    <Paper
+      className={`py-6 text-center text-subtitle1 text-text-secondary shadow-z8 ${className}`.trim()}
     >
       {children}
-    </div>
+    </Paper>
   );
 }
 

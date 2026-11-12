@@ -300,7 +300,8 @@ first among the components so surfaces built on it override it by source order (
 contract in `specs/components/paper.md`). No new tokens. Closes no "Pending integrations" row on
 its own: the "Typography + Paper (card)" rows wait for Card. Candidates to compose Paper later
 (no visual change): Popover / Menu paper, Dialog paper, Drawer content, TableContainer, Map
-controls and popups, Autocomplete listbox.
+controls and popups, Autocomplete listbox (recorded in "Pending integrations" since 2026-11-12:
+an owner decision, it changes those roots' markup).
 
 ## ✅ Components — Divider (2026-11-07)
 From MUI's Divider page (Minimals has none; its Drawer uses MUI's Divider): `hr` or, with text,
@@ -524,6 +525,25 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
+| Image: arbitrary `ratio` values (Image backlog) | Carousel stories and docs page: the slides' pictures (`ImageSlide`, `CardSlide`, the Animation hero) | `div.sb-carousel-image` / `-card` / `-hero` + a plain `img`; demo CSS gives the ratio (16/10, 4/1, 3/1, 2/1, 5/2, fill), the cover fit and the placeholder color. The reference composes its Image; ours offers 11 fixed ratios, and the Parallax story marks the `img` itself (`data-ok-carousel-parallax`) |
+| Owner decision (ADR: anatomy change): Paper composed by the library's own surfaces | Popover / Menu paper, Dialog paper, Drawer content, Autocomplete listbox, Map controls and popups (MUI composes Paper there: `PaperProps`, `elevation`); `TableContainer component={Paper}` in the Table stories | each draws its surface in its own CSS (paper background, radius, a shadow token). Composing Paper adds `data-ok-paper` and its options to those roots: every overlay snippet and consumer markup changes, so it is not additive |
+| Owner decision (ADR: anatomy and keyboard change): Select, Checkbox and InputBase as the Data grid's cell editors (MUI X `GridEditSingleSelectCell`, `GridEditBooleanCell`, `GridEditInputCell`) | Data grid editing, React and the HTML runtime | native `select`, `input[type=checkbox]` and `input` marked `data-ok-data-grid-edit-input`, styled by `data-grid.css` (`accent-color` for the checkbox) |
+| Owner decision (behavior change): the toast swipe on core `createSwipe` (the shared helper roadmap-components 4.18.46 planned for the Snackbar too) | Snackbar: core `createToastSwipe` (`toast/toaster-controller.ts`) | its own pointer handling, kept because it differs from the helper: a damped pull along a direction that isn't allowed (Sonner), speed averaged over the whole gesture, a 4 px start |
+
+**Sweep of 2026-11-12** (`/integrate` with no argument, roadmap-components 6.1): the table was
+empty; the discovery found waits that had never been recorded. Closed, by composition in stories,
+examples and snippets (story CSS keeps layout only): Divider "Orientation" and "Flex item" rows on
+an outlined Paper; the Walktour step 4 settings on an outlined Paper; the Illustrations profile
+cover as a Card; the Map "Side by side" layout switch on a Paper; the Motion guide's shared-value
+example driven by a Slider and its viewport-root example scrolling in a Scrollbar; Foundations ›
+Grid items as Papers, Settings preset and font tiles as Cards, the Icons credit as a Link. The
+four rows above are what the sweep left open, each with its reason. Reviewed and left as they are
+(the reference composes no component there): the Walktour steps' pictures (plain `img` in the
+reference) and the Motion stories' pictures (the animation targets the `img`), the Menu "Selected" list (a List with a paper background in MUI's demo), tinted
+demo stages without a paper background or a shadow (Slider range, Autocomplete output, Carousel
+panel, Scrollbar layout, Tabs panels), Foundations › Shadows tiles (the token on a plain box is
+the point), scroll areas inside components (listboxes, dialog content, grids: MUI and the
+reference use no Scrollbar there), `title` on calendar and pagination buttons (as upstream).
 
 ## ✅ Components — Form control (2026-11-09)
 Wave 8 (primitives, batch B), created with `/component` from MUI's FormControl, FormLabel,

@@ -24,7 +24,7 @@ const SETUP = [
   `<script src="${CDN}/owlky.js" defer></script>`,
   '<!-- Optional: draws <svg data-ok-illustration="name"></svg> placeholders and applies data-ok-size. -->',
   `<script src="${CDN}/owlky-illustrations.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css" (or tokens.css + components/illustration.css from @owlky/styles); for the runtime, "@owlky/html/auto", then "@owlky/html/illustrations". -->',
+  '<!-- npm: import "@owlky/styles/owlky.css" (or tokens.css + components/illustration.css from @owlky/styles; the profile cover also uses paper.css, card.css and avatar.css); for the runtime, "@owlky/html/auto", then "@owlky/html/illustrations". -->',
 ].join("\n");
 
 const story = (name: string, label: string): StoryObj => ({

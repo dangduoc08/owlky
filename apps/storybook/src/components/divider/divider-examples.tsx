@@ -58,9 +58,10 @@ Paragraph.displayName = "Paragraph";
 
 /**
  * The same markup as `packages/html/src/components/divider/examples/<story>-group.html`. As in the
- * reference, the list sits on an outlined Paper and the icon group on an outlined Card; the
- * `sb-divider-*` classes are story-only layout (`.storybook/preview.css`). In a list, a divider
- * sits in its own `<li>`: a list may only hold list items.
+ * reference, the list sits on an outlined Paper and the icon group on an outlined Card; the rows
+ * of words sit on outlined Papers too. The `sb-divider-*` classes are story-only layout
+ * (`.storybook/preview.css`). In a list, a divider sits in its own `<li>`: a list may only hold
+ * list items.
  */
 export const variantGroups: ReactGroup[] = [
   {
@@ -91,13 +92,13 @@ export const orientationGroups: ReactGroup[] = [
   {
     title: "Orientation",
     content: (
-      <div className="sb-divider-row">
+      <Paper variant="outlined" className="sb-divider-row">
         <Word text="Inbox" />
         <Divider orientation="vertical" />
         <Word text="Drafts" />
         <Divider orientation="vertical" />
         <Word text="Trash" />
-      </div>
+      </Paper>
     ),
   },
 ];
@@ -106,13 +107,13 @@ export const flexItemGroups: ReactGroup[] = [
   {
     title: "Flex item",
     content: (
-      <div className="sb-divider-row">
+      <Paper variant="outlined" className="sb-divider-row">
         <Word text="Left" />
         <Divider orientation="vertical" flexItem />
         <Word text="Center" />
         <Divider variant="middle" orientation="vertical" flexItem />
         <Word text="Right" />
-      </div>
+      </Paper>
     ),
   },
 ];

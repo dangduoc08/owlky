@@ -18,6 +18,7 @@ import {
   MotionGroup,
   MotionText,
   Paper,
+  Slider,
   Typography,
   useMotionValue,
   useSpring,
@@ -107,10 +108,10 @@ export function Notice({ saved }: { saved: boolean }) {
 
 \`onViewportEnter\` runs when the content enters the view, and \`onViewportLeave\` when it leaves. In HTML, listen for the \`ok:motion:enter\` and \`ok:motion:leave\` events. MotionGroup and MotionText have the same options and events. With \`once\` on (the default), only the first entrance is reported, so set \`once\` to \`false\` to hear every one.`,
     html: `<style>
-  #feed { height: 240px; overflow: auto; }
+  #feed { height: 240px; }
 </style>
 
-<div id="feed" tabindex="0" aria-label="News feed">
+<section data-ok-scrollbar id="feed" aria-label="News feed" tabindex="0">
   <section
     id="latest"
     data-ok-motion
@@ -121,7 +122,7 @@ export function Notice({ saved }: { saved: boolean }) {
   >
     <h2>Latest news</h2>
   </section>
-</div>
+</section>
 
 <script>
   // Mark the section as read while it is in view
@@ -129,14 +130,14 @@ export function Notice({ saved }: { saved: boolean }) {
   latest.addEventListener("ok:motion:enter", () => latest.classList.add("seen"));
   latest.addEventListener("ok:motion:leave", () => latest.classList.remove("seen"));
 </script>`,
-    react: `import { Motion } from "@owlky/react";
+    react: `import { Motion, Scrollbar } from "@owlky/react";
 import { useRef, useState } from "react";
 
 export function LatestNews() {
-  const feed = useRef<HTMLDivElement>(null);
+  const feed = useRef<HTMLElement>(null);
   const [seen, setSeen] = useState(false);
   return (
-    <div ref={feed} tabIndex={0} aria-label="News feed" style={{ height: 240, overflow: "auto" }}>
+    <Scrollbar ref={feed} aria-label="News feed" style={{ height: 240 }}>
       <Motion
         component="section"
         variant="fadeInUp"
@@ -149,7 +150,7 @@ export function LatestNews() {
       >
         <h2>Latest news</h2>
       </Motion>
-    </div>
+    </Scrollbar>
   );
 }`,
   },
@@ -842,7 +843,13 @@ export function Questions() {
 - **Draw:** pass shared values in a Motion's \`style\`, such as \`style={{ x, opacity }}\`. In HTML, \`bindStyle(element, "x", value)\` does the same. \`x\` and \`y\` are pixels and \`rotate\` is degrees.
 
 With reduced motion, springs jump to their target.`,
-    html: `<input type="range" id="amount" min="0" max="100" value="0" aria-label="Amount">
+    html: `<span data-ok-slider id="amount" data-ok-color="primary" data-ok-size="medium" data-ok-orientation="horizontal" data-ok-track="normal" data-ok-value-label-display="off">
+  <span data-ok-slider-rail></span>
+  <span data-ok-slider-track></span>
+  <span data-ok-slider-thumb data-ok-index="0">
+    <input type="range" min="0" max="100" step="1" aria-label="Amount" value="0">
+  </span>
+</span>
 <div id="bar" class="bar"></div>
 
 <script type="module">
@@ -854,11 +861,12 @@ With reduced motion, springs jump to their target.`,
   const bar = document.getElementById("bar");
   bindStyle(bar, "x", smooth);
   bindStyle(bar, "opacity", opacity);
-  document.getElementById("amount").addEventListener("input", (event) => {
-    amount.set(Number(event.target.value));
+  // The slider reports its value while the thumb moves
+  document.getElementById("amount").addEventListener("ok:slider:change", (event) => {
+    amount.set(event.detail.value);
   });
 </script>`,
-    react: `import { Motion, useMotionValue, useSpring, useTransform } from "@owlky/react";
+    react: `import { Motion, Slider, useMotionValue, useSpring, useTransform } from "@owlky/react";
 
 export function Amount() {
   const amount = useMotionValue(0);
@@ -866,13 +874,10 @@ export function Amount() {
   const opacity = useTransform(smooth, [0, 100], [0.4, 1]);
   return (
     <>
-      <input
-        type="range"
-        min={0}
-        max={100}
+      <Slider
         defaultValue={0}
         aria-label="Amount"
-        onChange={(event) => amount.set(Number(event.target.value))}
+        onChange={(value) => amount.set(value as number)}
       />
       <Motion trigger="mount" className="bar" style={{ x: smooth, opacity }} />
     </>
@@ -1301,20 +1306,17 @@ const PREVIEWS = {
   ),
 };
 
-/** Shared values: a range input drives a bar through a spring. */
+/** Shared values: a Slider drives a bar through a spring. */
 function AmountPreview() {
   const amount = useMotionValue(0);
   const smooth = useSpring(amount, { stiffness: 300, damping: 30 });
   const opacity = useTransform(smooth, [0, 100], [0.4, 1]);
   return (
     <div className="sb-layout-amount">
-      <input
-        type="range"
-        min={0}
-        max={100}
+      <Slider
         defaultValue={0}
         aria-label="Amount"
-        onChange={(event) => amount.set(Number(event.target.value))}
+        onChange={(value) => amount.set(value as number)}
       />
       <Motion trigger="mount" initial={false} style={{ x: smooth, opacity }}>
         <Paper className="sb-layout-amount-bar" elevation={2} />
