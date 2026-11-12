@@ -1998,21 +1998,17 @@
 }
 
 /*
- * Illustrations (Foundations, story-only): a profile cover cut by the avatar shape, with the avatar
- * in the curve.
+ * Illustrations (Foundations, story-only): a profile cover (a Card) cut by the avatar shape, with
+ * the avatar in the curve. The Card gives the surface; the cover adds its size and its gradient.
  */
 .sb-illustration-cover {
-  position: relative;
   width: min(100%, calc(var(--ok-spacing) * 80));
   height: calc(var(--ok-spacing) * 40);
-  overflow: hidden;
-  border-radius: var(--ok-radius-lg);
   background: linear-gradient(
     135deg,
     var(--ok-palette-primary-light),
     var(--ok-palette-primary-dark)
   );
-  box-shadow: var(--ok-shadow-card);
 }
 
 .sb-illustration-cover > [data-ok-illustration] {

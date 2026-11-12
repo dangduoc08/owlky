@@ -18,7 +18,7 @@ import {
   upload,
   welcome,
 } from "@owlky/core/illustrations";
-import { Avatar, Illustration } from "@owlky/react";
+import { Avatar, Card, Illustration } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 
 /*
@@ -84,12 +84,12 @@ export const illustrationStories: Record<string, ReactGroup[]> = {
     {
       title: "Avatar shape (avatarShape)",
       content: (
-        <div className="sb-illustration-cover">
+        <Card className="sb-illustration-cover">
           <Illustration illustration={avatarShape} size={144} />
           <Avatar color="primary" size={64}>
             JS
           </Avatar>
-        </div>
+        </Card>
       ),
     },
   ],
