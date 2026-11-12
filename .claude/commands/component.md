@@ -57,7 +57,7 @@ project. Never copy the reference's source code, branding or assets.
    - **Detect the mode.** *Update* if any slice exists — `specs/components/<name>.md`,
      `packages/styles/src/components/<name>.css`, `packages/react/src/<name>/`,
      `packages/html/src/components/<name>/` or `<name>Attributes` in
-     `packages/core/src/anatomy/anatomy.ts`; otherwise *Create*. State the mode and the slices
+     `packages/core/src/anatomy/<name>.ts`; otherwise *Create*. State the mode and the slices
      found. If only some slices exist, it's an Update that also completes the missing slices.
      In Update mode compare the URL with the spec's `Reference URL:` line; if they differ, say so.
 
@@ -199,7 +199,7 @@ project. Never copy the reference's source code, branding or assets.
       `Reference:` line (and `HTML source: built from <url> | written by us` when the upstream
       has an HTML version)
    2. `packages/core` — the option schema in `src/options/` (ADR-0015) and `<name>Attributes()`
-      in `anatomy/anatomy.ts` built from it; behavior controller in
+      in `anatomy/<name>.ts` (re-exported by `anatomy/anatomy.ts`) built from it; behavior controller in
       `src/<name>/` if interactive (reports intent, owns no state; native + fallback paths)
    3. `packages/styles/src/components/<name>.css` — single `:where()` selectors in
       `@layer components`, order base → sizes → variants → hover → focus → disabled, `--ok-*`

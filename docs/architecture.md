@@ -27,7 +27,7 @@ Button is the model for how a component spans the packages:
 | Piece | Where | What |
 |---|---|---|
 | Spec | `specs/components/<name>.md` | Anatomy, options, keyboard, ARIA, events |
-| Anatomy | `core/src/anatomy/anatomy.ts` | Option schema `<name>Options` (drives React props, HTML attributes, Controls, parity; ADR-0015) + `<name>Attributes(options)` |
+| Anatomy | `core/src/anatomy/<name>.ts` (re-exported by `anatomy.ts`) | Option schema `<name>Options` (drives React props, HTML attributes, Controls, parity; ADR-0015) + `<name>Attributes(options)` |
 | Behavior | `core/src/<name>/` | Controller shared by React and HTML (reports intent, owns no state) |
 | Styles | `styles/src/components/<name>.css` | `:where([data-ok-<name>…])` in `@layer components` |
 | React | `react/src/<name>/<name>.tsx` | Component(s); state → controller |

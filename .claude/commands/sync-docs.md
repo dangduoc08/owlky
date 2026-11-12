@@ -37,7 +37,7 @@ in two places: link to the canonical one.
 # Steps: user docs
 
 1. **Read the public surface.** Package: every `exports` entry with its exact types and JSDoc.
-   Component: the option schema (`core/src/anatomy/anatomy.ts`), parts (`core/src/anatomy/parts.ts`),
+   Component: the option schema (`core/src/anatomy/<name>.ts`), parts (`core/src/anatomy/parts.ts`),
    controller, CSS header, React props, HTML snippets and runtime (options, triggers, events,
    instance API), and the generated API reference (`apps/docs-content/src/api/<name>.json`).
    Skip non-exported identifiers; no public surface → stop and say so.
