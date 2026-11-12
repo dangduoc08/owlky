@@ -1827,8 +1827,6 @@
   top: calc(var(--ok-spacing) * 2);
   right: calc(var(--ok-spacing) * 2);
   z-index: 6;
-  border-radius: var(--ok-radius-md);
-  background-color: var(--ok-bg-paper);
 }
 
 /*
