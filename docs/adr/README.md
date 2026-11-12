@@ -71,6 +71,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0065](0065-map-region-selection-linked-maps.md) | Map: multiple region selection, Shift + drag box selection by label anchor (MapLibre `boxZoom` off while it is on), linked maps by `group` with a bidirectional filter | Accepted |
 | [0066](0066-paper-composed-by-surfaces.md) | Paper composed by the library's own surfaces: `data-ok-paper` on Popover (every popover root), Dialog paper, Drawer content, Map controls and popups; `elevation` on Popover / Menu / Dialog; `TableContainer component={Paper}` | Accepted |
 | [0067](0067-data-grid-cell-editors.md) | Data grid cell editors: InputBase (text, number, dates), a bare listbox Select (open at the start in cell mode) and a Checkbox; nested listbox keys, number columns stay a native number input | Accepted |
+| [0068](0068-bundle-size-lazy-loading.md) | Bundle size: an entry per component in every package, `owlky.js` as a loader of ESM modules and their CSS (light components stay, `data-ok-preload`, strict CSP), the opt-in bundles on that loader, schema descriptions in a JSON file, a core stylesheet, splits inside heavy components, budgets that only go down | Accepted |
 | [0069](0069-own-visual-identity.md) | Own visual identity: Tailwind v4 palette (MIT), Indigo + Zinc default, presets indigo / teal / violet / sky / rose / amber, roles chosen by an AA generator, AA everywhere (ends 0014), Be Vietnam Pro for text and headings | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

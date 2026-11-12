@@ -22,3 +22,6 @@ apps/website/public/cdn/
 apps/website/public/sandbox/
 apps/website/src/generated/
 apps/website/.vercel/
+
+# Size report (scripts/size-report.mjs, `pnpm size:report`): generated, compared by later steps
+reports/

@@ -27,16 +27,58 @@ website phase 2 and 0.1.0 (`roadmap.md` → "After the waves").
 8. **No more budget raises** in `scripts/check-size.mjs`, except the MCP manifest (not a browser
    download): a change that exceeds a budget optimizes or splits instead.
 
+### Decisions from the S1 measurements (approved 2026-11-12)
+
+9. **The lazy list** (refines 3): Chart, Data grid, Date pickers, Gantt, Carousel + Lightbox,
+   Motion extras, Organization chart, Upload, Walktour, Tree view, Sortable, Autocomplete,
+   Transfer list and the six old opt-ins (Map, Editor, Code editor, Markdown, Phone input,
+   Illustrations). `owlky.js` keeps the runtime, theme settings and the rest ("light set B" of
+   ADR-0068: 44.9 kB measured, about 39 kB after S3).
+10. **The S3 target** (replaces "anatomy share of `owlky.js` reduced by at least 15 kB"): about
+    18 kB gzip of schema descriptions removed across `owlky.js` and the lazy modules, and at most
+    3 kB of anatomy left in `owlky.js`.
+11. **React per-component entries** (refines 2) are kept for clarity and for bundlers that don't
+    tree-shake; the barrel already tree-shakes as well as a direct path. React savings come from
+    S5 (static composition: DataGrid → Chart, CircularProgress → ScrollProgress → Motion).
+
 ## Steps
 
 | # | Step | Scope | Done when | Status |
 |---|---|---|---|---|
-| S1 | Measure and ADR | a script that attributes every bundle's gzip size to components (source maps), scenario measurements for React (Vite build of sample entries) and HTML (bytes a CDN page downloads); the ADR for decisions 2–8 (entries, loader protocol, CSP, preload, CSS split, budgets) | a per-component and per-scenario report in `check:size`; the ADR accepted | ⬜ |
+| S1 | Measure and ADR | a script that attributes every bundle's gzip size to components (source maps), scenario measurements for React (Vite build of sample entries) and HTML (bytes a CDN page downloads); the ADR for decisions 2–8 (entries, loader protocol, CSP, preload, CSS split, budgets) | a per-component and per-scenario report in `check:size`; the ADR accepted | ✅ 2026-11-12: `pnpm size:report` (also in `check:size`, JSON in `reports/`), ADR-0068. `owlky.js` 306.6 kB gzip: data grid 53.8, chart 73.5 (geo 6.6, tree 7.9, stock 3.9, Sankey 3.7), anatomy 28.4 (descriptions 23.3 alone), date pickers 26.7, motion 17.1, carousel + lightbox 15.5, gantt 14.1, runtime 3.7; CSS 62.7 kB; React Button 10.2 kB (barrel = direct path), DataGrid 205.7 kB; HTML light set 44.9 kB (decision 3's list only: 80.3 kB) |
 | S2 | Lazy heavy components | per-component entries in `html` and `react` (and `core` where missing); the loader in `owlky.js`; Chart, Data grid, Date pickers, Gantt, Carousel / Lightbox, Motion extras (and Map, Editor, Code editor, Markdown, Phone, Illustrations moved onto the same loader) | `owlky.js` within its new budget; every story and snippet works with the lazy path (parity, a11y, CSP pages) | ⬜ |
-| S3 | Schema metadata out of the runtime | descriptions and docs metadata into a generated JSON; runtime schemas keep names, kinds, defaults and value lists | `anatomy` share of `owlky.js` reduced by at least 15 kB; `check:api`, `check:manifest`, Controls unchanged | ⬜ |
+| S3 | Schema metadata out of the runtime | descriptions and docs metadata into a generated JSON; runtime schemas keep names, kinds, defaults and value lists | about 18 kB gzip of descriptions removed across `owlky.js` and the lazy modules, at most 3 kB of anatomy left in `owlky.js` (decision 10); `check:api`, `check:manifest`, Controls unchanged | ⬜ |
 | S4 | CSS split | core `owlky.css` and per-component files for the heavy components; the loader attaches them; documented per-component imports for bundlers | core CSS ≤ 35 kB; no visual or parity change | ⬜ |
 | S5 | Split inside heavy components | dynamic imports for rarely used features of Data grid and Chart (and others the S1 report names); `/refactor optimize` on the largest files | each change measured before / after | ⬜ |
 | S6 | Docs and verification | guides for CDN and bundler users (per-component imports, `optimizePackageImports`, preload), e2e for the loader (three engines, strict CSP, slow network), scenario budgets enforced in CI | docs and e2e green; budgets enforced | ⬜ |
 
 Each step is one review: propose → implement → verify (unit in three browsers, affected e2e,
 parity) → merge. Release notes record every markup or loading change (pre-0.1.0: minor changesets).
+
+## Notes from S1 (2026-11-12)
+
+Measured with `pnpm size:report` (ADR-0068 has the tables). The first three notes became
+decisions 9–11 (approved 2026-11-12); the rest is context for S2 and S5:
+
+- **S2, light set (decision 3, decision 7):** moving only Chart, Data grid, Date pickers, Gantt,
+  Carousel / Lightbox and Motion out of `owlky.js` leaves 80.3 kB, over twice the 25–35 kB aim.
+  Organization chart, Upload, Walktour, Tree view, Sortable, Autocomplete and Transfer list
+  become lazy modules too (light set B: 44.9 kB, about 39 kB after S3). Decision 3's list said
+  "…", so the decision holds; the S2 scope grows.
+- **S2, core anatomy split:** importing one React component pulls part of every schema (a Button
+  keeps 2.4 kB of anatomy for a 0.3 kB schema; DataGrid keeps 508 of 1,048 descriptions). The
+  cause is module-level code in the one `anatomy.ts` (spreads, `.map` value lists, unannotated
+  option factories, value lists imported from model modules). Splitting it per component belongs
+  in S2 (the `@owlky/core/<name>` entries need it).
+- **S3 target:** after S2, `owlky.js` holds only about 7 kB of anatomy, so "reduced by at least 15
+  kB" can't be measured on `owlky.js` alone. Measure it across `owlky.js` and the lazy modules (about 18 kB of
+  descriptions leave the CDN code); in `owlky.js`, the anatomy target is ≤ 3 kB.
+- **S4 target (≤ 35 kB core CSS):** decision 3's list gives 36.8 kB, and light set B gives
+  29.1 kB. The CSS split follows the JS split.
+- **Decision 2 for React:** the barrel tree-shakes exactly like direct file imports (same bytes
+  in every scenario). Per-component React entries help bundlers without tree shaking and docs
+  clarity, not bundle size. React's bytes come from static composition, so S5 adds:
+  - DataGrid → Chart (about 70 kB of its 205.7 kB): a dynamic import;
+  - CircularProgress → ScrollProgress → the Motion engine (4.9 kB in every Button).
+- **S2, the opt-in bundles:** each opt-in IIFE carries its own copy of the runtime and part of the
+  anatomy (about 5 kB each). The shared ESM chunks of the loader remove that duplication.
