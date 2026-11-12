@@ -289,6 +289,32 @@ describe("createGridNavigation", () => {
     expect(document.activeElement?.textContent).toBe("c");
   });
 
+  it("a Select editor keeps its keys; its hidden input never takes the cell's focus", () => {
+    const { grid, spies } = setup();
+    const cell = grid.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;
+    cell.setAttribute("data-ok-editing", "");
+    cell.innerHTML = `<div data-ok-select>
+      <div data-ok-select-display role="combobox" tabindex="-1" aria-label="Edit name">a</div>
+      <input data-ok-select-input aria-hidden="true" tabindex="-1">
+      <div data-ok-popover><ul role="listbox"><li role="option" tabindex="-1">a</li></ul></div>
+    </div>`;
+    const trigger = cell.querySelector<HTMLElement>('[role="combobox"]') as HTMLElement;
+    const option = cell.querySelector<HTMLElement>('[role="option"]') as HTMLElement;
+    trigger.focus();
+    expect(gridFocusTarget(cell)).toBe(cell);
+    expect(cell.querySelector("input")?.getAttribute("tabindex")).toBe("-1");
+    for (const key of ["ArrowDown", "ArrowRight", "Home", "Enter", "x"]) {
+      expect(press(trigger, key)).toBe(true);
+      expect(press(option, key)).toBe(true);
+    }
+    expect(document.activeElement).toBe(trigger);
+    // Out of the editor, the cell navigates again.
+    cell.focus();
+    press(cell, "ArrowDown");
+    expect(document.activeElement).not.toBe(cell);
+    expect(spies.onSort).not.toHaveBeenCalled();
+  });
+
   it("sync restores a tab stop after re-rendering; destroy stops listening", () => {
     const { grid, nav, spies } = setup();
     const name = grid.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;

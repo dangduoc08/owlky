@@ -311,6 +311,13 @@ describe("createGridClipboard", () => {
     const input = document.createElement("input");
     cell.append(input);
     key(input, "c");
+    // Anything inside a cell being edited (a Select editor's trigger) keeps its keys.
+    const trigger = document.createElement("div");
+    trigger.setAttribute("role", "combobox");
+    cell.append(trigger);
+    cell.setAttribute("data-ok-editing", "");
+    key(trigger, "c");
+    cell.removeAttribute("data-ok-editing");
     key(grid, "c");
     expect(document.querySelector("textarea")).toBeNull();
     expect(onPaste).not.toHaveBeenCalled();

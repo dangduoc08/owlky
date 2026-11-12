@@ -702,10 +702,11 @@ describe("DataGrid", () => {
       expect(cellOf("2", "qty").textContent).toBe("9");
       act(() => cellOf("2", "kind").focus());
       await userEvent.keyboard("{Enter}");
-      await userEvent.selectOptions(screen.getByRole("combobox", { name: "Edit Kind" }), "wood");
-      act(() => cellOf("3", "name").focus());
+      // The list editor opens at the start in cell mode; a pick saves the cell.
+      await userEvent.click(screen.getByRole("option", { name: "wood" }));
       await act(settle);
       expect(cellOf("2", "kind").textContent).toBe("wood");
+      expect(cellOf("2", "kind").hasAttribute("data-ok-editing")).toBe(false);
       await userEvent.dblClick(cellOf("3", "ok"));
       await userEvent.click(screen.getByRole("checkbox", { name: "Edit OK" }));
       await userEvent.keyboard("{Enter}");
@@ -714,6 +715,179 @@ describe("DataGrid", () => {
       // Not editable: a computed column.
       await userEvent.dblClick(cellOf("1", "label"));
       expect(screen.queryByRole("textbox", { name: "Edit Label" })).toBeNull();
+    });
+
+    it("editors are InputBase, Select and Checkbox (ADR-0067), with no axe violations", async () => {
+      render(<DataGrid aria-label="Items" rows={ITEMS} columns={EDIT} id="items" />);
+      await userEvent.dblClick(cellOf("1", "name"));
+      const input = screen.getByRole("textbox", { name: "Edit Name" });
+      const base = input.closest("[data-ok-text-field]") as HTMLElement;
+      expect(base.parentElement).toBe(cellOf("1", "name"));
+      expect(base.hasAttribute("data-ok-input-base")).toBe(true);
+      expect(base.hasAttribute("data-ok-full-width")).toBe(true);
+      expect(input.id).toBe("items-1-name-edit");
+      expect(input.hasAttribute("data-ok-data-grid-edit-input")).toBe(true);
+      expect(input.getAttribute("placeholder")).toBe(" ");
+      await expectNoAxeViolations();
+      await userEvent.keyboard("{Escape}");
+      await act(settle);
+      act(() => cellOf("1", "qty").focus());
+      await userEvent.keyboard("{Enter}");
+      const qty = screen.getByRole("spinbutton", { name: "Edit Qty" });
+      expect(qty.closest("[data-ok-input-base]")).not.toBeNull();
+      await userEvent.keyboard("{Escape}");
+      await act(settle);
+      act(() => cellOf("1", "ok").focus());
+      await userEvent.keyboard("{Enter}");
+      const box = screen.getByRole("checkbox", { name: "Edit OK" });
+      const root = box.closest("[data-ok-checkbox]") as HTMLElement;
+      expect(root.parentElement).toBe(cellOf("1", "ok"));
+      expect(root.getAttribute("data-ok-size")).toBe("small");
+      expect(box.hasAttribute("data-ok-data-grid-edit-input")).toBe(true);
+      expect(document.activeElement).toBe(box);
+      await expectNoAxeViolations();
+      await userEvent.keyboard("{Escape}");
+      await act(settle);
+      act(() => cellOf("1", "kind").focus());
+      await userEvent.keyboard("{Enter}");
+      const trigger = screen.getByRole("combobox", { name: "Edit Kind" });
+      expect(trigger.closest("[data-ok-select]")?.parentElement).toBe(cellOf("1", "kind"));
+      expect(trigger.closest("[data-ok-select]")?.hasAttribute("data-ok-variant")).toBe(false);
+      expect(trigger.id).toBe("items-1-kind-edit");
+      expect(trigger.getAttribute("tabindex")).toBe("-1");
+      expect(trigger.getAttribute("aria-expanded")).toBe("true");
+      expect(document.activeElement).toBe(screen.getByRole("option", { name: "metal" }));
+      await expectNoAxeViolations(document.body);
+    });
+
+    it("the list editor: keys stay in the list, Enter picks and saves, Escape cancels", async () => {
+      const onCellEditStop = vi.fn();
+      const processRowUpdate = vi.fn((row: Item) => row);
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          processRowUpdate={processRowUpdate}
+          onCellEditStop={onCellEditStop}
+        />,
+      );
+      act(() => cellOf("1", "kind").focus());
+      await userEvent.keyboard("{Enter}");
+      // Arrows move between options, not between cells.
+      await userEvent.keyboard("{ArrowDown}");
+      expect(document.activeElement).toBe(screen.getByRole("option", { name: "wood" }));
+      expect(cellOf("1", "kind").hasAttribute("data-ok-editing")).toBe(true);
+      await userEvent.keyboard("{Enter}");
+      await act(settle);
+      expect(processRowUpdate).toHaveBeenCalledWith({ ...ITEMS[0], kind: "wood" }, ITEMS[0]);
+      expect(cellOf("1", "kind").textContent).toBe("wood");
+      expect(document.activeElement).toBe(cellOf("1", "kind"));
+      // A pick saves like `stopCellEditMode`: no stop reason.
+      expect(onCellEditStop).not.toHaveBeenCalled();
+      // Escape in the list closes it and cancels.
+      await userEvent.keyboard("{Enter}");
+      await userEvent.keyboard("{ArrowUp}{Escape}");
+      await act(settle);
+      expect(cellOf("1", "kind").hasAttribute("data-ok-editing")).toBe(false);
+      expect(cellOf("1", "kind").textContent).toBe("wood");
+      expect(onCellEditStop).toHaveBeenLastCalledWith(
+        expect.objectContaining({ field: "kind" }),
+        "escapeKeyDown",
+      );
+      expect(screen.queryByRole("listbox")).toBeNull();
+      // Tab closes the list; Enter on the trigger saves the unchanged value.
+      await userEvent.keyboard("{Enter}");
+      await userEvent.keyboard("{Tab}");
+      const trigger = screen.getByRole("combobox", { name: "Edit Kind" });
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(trigger);
+      await userEvent.keyboard("{Enter}");
+      await act(settle);
+      expect(onCellEditStop).toHaveBeenLastCalledWith(
+        expect.objectContaining({ field: "kind" }),
+        "enterKeyDown",
+      );
+      expect(cellOf("1", "kind").hasAttribute("data-ok-editing")).toBe(false);
+      // Shortcuts of the grid ignore the editor: Ctrl + Z doesn't undo while it is open.
+      await userEvent.keyboard("{Enter}");
+      await userEvent.keyboard("{Control>}z{/Control}");
+      await act(settle);
+      expect(cellOf("1", "kind").hasAttribute("data-ok-editing")).toBe(true);
+      // Leaving the cell saves.
+      act(() => cellOf("2", "name").focus());
+      await act(settle);
+      expect(cellOf("1", "kind").hasAttribute("data-ok-editing")).toBe(false);
+    });
+
+    it("the list editor in row mode starts closed; a pick sets the field, Enter saves the row", async () => {
+      const processRowUpdate = vi.fn((row: Item) => row);
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          editMode="row"
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      act(() => cellOf("2", "kind").focus());
+      await userEvent.keyboard("{Enter}");
+      const trigger = screen.getByRole("combobox", { name: "Edit Kind" });
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(trigger);
+      await userEvent.keyboard("{ArrowDown}");
+      expect(trigger.getAttribute("aria-expanded")).toBe("true");
+      await userEvent.click(screen.getByRole("option", { name: "wood" }));
+      await act(settle);
+      expect(processRowUpdate).not.toHaveBeenCalled();
+      expect(trigger.textContent).toBe("wood");
+      expect(document.activeElement).toBe(trigger);
+      await userEvent.keyboard("{Enter}");
+      await act(settle);
+      expect(processRowUpdate).toHaveBeenCalledWith({ ...ITEMS[1], kind: "wood" }, ITEMS[1]);
+      // The saved pick is one undo step.
+      expect(document.activeElement).toBe(cellOf("2", "kind"));
+      await userEvent.keyboard("{Control>}z{/Control}");
+      await act(settle);
+      expect(cellOf("2", "kind").textContent).toBe("metal");
+    });
+
+    it("validation marks every editor; the checkbox toggles with Space", async () => {
+      const columns: GridColDef<Item>[] = EDIT.map((c) =>
+        c.field === "label"
+          ? c
+          : { ...c, preProcessEditCellProps: () => ({ error: `Bad ${c.field}` }) },
+      );
+      render(<DataGrid aria-label="Items" rows={ITEMS} columns={columns} id="v" />);
+      act(() => cellOf("1", "ok").focus());
+      await userEvent.keyboard("{Enter} ");
+      const box = screen.getByRole("checkbox", { name: "Edit OK" }) as HTMLInputElement;
+      expect(box.checked).toBe(!ITEMS[0]?.ok);
+      expect(box.getAttribute("aria-invalid")).toBe("true");
+      expect(box.getAttribute("aria-describedby")).toBe("v-1-ok-error");
+      await userEvent.keyboard("{Escape}");
+      await act(settle);
+      act(() => cellOf("1", "name").focus());
+      await userEvent.keyboard("x");
+      const input = screen.getByRole("textbox", { name: "Edit Name" });
+      expect(input.getAttribute("aria-invalid")).toBe("true");
+      expect(input.closest("[data-ok-text-field]")?.hasAttribute("data-ok-error")).toBe(true);
+      expect(input.getAttribute("aria-describedby")).toBe("v-1-name-error");
+      await userEvent.keyboard("{Escape}");
+      await act(settle);
+      act(() => cellOf("1", "kind").focus());
+      await userEvent.keyboard("{Enter}");
+      await userEvent.click(screen.getByRole("option", { name: "wood" }));
+      await act(settle);
+      // An invalid pick keeps the cell open.
+      expect(cellOf("1", "kind").hasAttribute("data-ok-editing")).toBe(true);
+      const trigger = screen.getByRole("combobox", { name: "Edit Kind" });
+      expect(trigger.getAttribute("aria-invalid")).toBe("true");
+      expect(trigger.getAttribute("aria-describedby")).toBe("v-1-kind-error");
+      await userEvent.keyboard("{Escape}");
+      await act(settle);
+      expect(cellOf("1", "kind").hasAttribute("data-ok-editing")).toBe(false);
     });
 
     it("row editing: every editable cell; refused updates keep the row; new rows drop the edits", async () => {
@@ -1863,7 +2037,8 @@ describe("DataGrid", () => {
       await userEvent.keyboard("{Escape}");
       fireEvent.doubleClick(kind);
       await act(settle);
-      expect(kind.querySelector("select")?.querySelectorAll("option")).toHaveLength(0);
+      expect(kind.querySelector('[role="combobox"]')).not.toBeNull();
+      expect(kind.querySelectorAll('[role="option"]')).toHaveLength(0);
       await userEvent.keyboard("{Escape}");
       const qty = grid().querySelector<HTMLElement>(
         '[data-ok-row-id="1"] [data-ok-field="qty"]',

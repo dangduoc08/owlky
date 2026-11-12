@@ -153,6 +153,67 @@ for (const impl of implementations) {
       await expect(page.getByLabel("Logic operator")).toBeVisible();
     });
 
+    test("editors: a Select over the grid, a Checkbox and an InputBase (ADR-0067)", async ({
+      page,
+      isMobile,
+    }) => {
+      if (isMobile) await page.setViewportSize({ width: 1024, height: 900 });
+      await openStory(page, storyId(impl, "datagrid", "advanced"));
+      const row = page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])').first();
+      const teams = ["Design", "Engineering", "Sales", "Support"];
+      const team = row.locator('[data-ok-field="team"]');
+      const before = (await team.textContent())?.trim() as string;
+      // Enter on the focused cell (the touch context can't double click): the list opens.
+      await team.focus();
+      await page.keyboard.press("Enter");
+      const listbox = page.getByRole("listbox");
+      await expect(listbox).toBeVisible();
+      await expect(page.getByRole("option", { name: before })).toBeFocused();
+      // The list is in the top layer: its options are what the pointer reaches.
+      const option = page.getByRole("option", { name: teams.at(-1) as string });
+      const box = (await option.boundingBox()) as { x: number; y: number; width: number };
+      expect(
+        await page.evaluate(
+          ({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="option"]')?.textContent,
+          { x: box.x + box.width / 2, y: box.y + 4 },
+        ),
+      ).toBe(teams.at(-1));
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Enter");
+      const next = teams[(teams.indexOf(before) + 1) % teams.length] as string;
+      await expect(team).toHaveText(next);
+      await expect(team).not.toHaveAttribute("data-ok-editing", "");
+      await expect(team).toBeFocused();
+      // Escape cancels.
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Escape");
+      await expect(team).toHaveText(next);
+      await expect(listbox).toHaveCount(0);
+      // The Checkbox: Space toggles, Enter saves.
+      const remote = row.locator('[data-ok-field="remote"]');
+      const was = (await remote.textContent())?.trim();
+      await remote.focus();
+      await page.keyboard.press("Enter");
+      const check = page.getByRole("checkbox", { name: "Edit Remote" });
+      await expect(check).toBeFocused();
+      await expect(remote.locator("[data-ok-checkbox]")).toHaveAttribute("data-ok-size", "small");
+      await page.keyboard.press("Space");
+      await page.keyboard.press("Enter");
+      await expect(remote).toHaveText(was === "true" ? "false" : "true");
+      // The InputBase: a number input in the cell.
+      const salary = row.locator('[data-ok-field="salary"]');
+      await salary.focus();
+      await page.keyboard.press("Enter");
+      const field = page.getByRole("spinbutton", { name: "Edit Salary" });
+      await expect(field).toBeFocused();
+      await expect(salary.locator("[data-ok-input-base]")).toHaveCount(1);
+      await page.keyboard.press("Control+a");
+      await page.keyboard.type("50000");
+      await page.keyboard.press("Enter");
+      await expect(salary).toHaveText("USD 50,000");
+    });
+
     test("large dataset: a bounded window of rows; more rows at the end", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "large"));
       const grid = page.getByRole("grid");

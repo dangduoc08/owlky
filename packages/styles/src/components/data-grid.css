@@ -593,18 +593,31 @@
     opacity: 0.48;
   }
 
-  /* Editing: the field fills the cell. */
+  /*
+   * Editing: the field fills the cell. Built-in editors are the InputBase, Select (bare) and
+   * Checkbox components (ADR-0067), restyled here (this file loads after theirs); a custom
+   * editor's own native field marked data-ok-data-grid-edit-input gets the same frame.
+   */
   :where([data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])[data-ok-editing]) {
     padding: 0;
   }
 
-  :where([data-ok-data-grid-edit-input]) {
+  :where(
+    [data-ok-editing]
+      > :is([data-ok-text-field], [data-ok-select], [data-ok-checkbox]):has(
+        [data-ok-data-grid-edit-input]
+      ),
+    :is(input, select, textarea)[data-ok-data-grid-edit-input]:not(
+      [data-ok-text-field-input],
+      [data-ok-checkbox-input]
+    )
+  ) {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
     margin: 0;
-    padding-inline: var(--_ok-data-grid-pad);
     border: 0;
+    border-radius: 0;
     background-color: var(--ok-bg-paper);
     color: inherit;
     font: inherit;
@@ -612,11 +625,68 @@
     outline-offset: -2px;
   }
 
-  :where([data-ok-data-grid-edit-input][type="checkbox"]) {
+  :where(
+    :is(input, select, textarea)[data-ok-data-grid-edit-input]:not(
+      [data-ok-text-field-input],
+      [data-ok-checkbox-input]
+    )
+  ) {
+    padding-inline: var(--_ok-data-grid-pad);
+  }
+
+  :where(input[data-ok-data-grid-edit-input][type="checkbox"]:not([data-ok-checkbox-input])) {
     width: calc(var(--ok-spacing) * 5);
     height: calc(var(--ok-spacing) * 5);
     margin-inline: auto;
     accent-color: var(--ok-palette-primary-main);
+  }
+
+  /* InputBase: the input takes the cell's height, padding and alignment. */
+  :where([data-ok-editing] > [data-ok-text-field] > [data-ok-text-field-control]) {
+    height: 100%;
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  :where(
+    [data-ok-editing]
+      > [data-ok-text-field]
+      > [data-ok-text-field-control]
+      > [data-ok-text-field-input]
+  ) {
+    height: 100%;
+    padding: 0 var(--_ok-data-grid-pad);
+    text-align: inherit;
+  }
+
+  /* Select: the value in the cell's padding, the arrow at its end; the listbox in the top layer. */
+  :where([data-ok-editing] > [data-ok-select]) {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  :where([data-ok-editing] > [data-ok-select] > [data-ok-select-display]) {
+    flex: 1 1 auto;
+    padding-inline: var(--_ok-data-grid-pad) calc(var(--_ok-data-grid-pad) + var(--ok-spacing) * 6);
+    text-align: start;
+  }
+
+  :where([data-ok-editing] > [data-ok-select] > [data-ok-select-icon]) {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: var(--_ok-data-grid-pad);
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+    color: var(--ok-text-secondary);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  /* Checkbox: centered, the whole cell is its target. */
+  :where([data-ok-editing] > [data-ok-checkbox]) {
+    flex: 1 1 auto;
   }
 
   :where(
@@ -633,7 +703,17 @@
     overflow: visible;
   }
 
-  :where([data-ok-data-grid-edit-input][aria-invalid="true"]) {
+  :where(
+    [data-ok-editing]
+      > :is([data-ok-text-field], [data-ok-select], [data-ok-checkbox]):has(
+        [data-ok-data-grid-edit-input][aria-invalid="true"]
+      ),
+    [data-ok-data-grid-edit-input][aria-invalid="true"]:not(
+      [data-ok-text-field-input],
+      [data-ok-checkbox-input],
+      [data-ok-select-display]
+    )
+  ) {
     outline-color: var(--ok-palette-error-main);
   }
 

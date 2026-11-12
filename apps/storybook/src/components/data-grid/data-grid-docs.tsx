@@ -257,7 +257,7 @@ export function DataGridLayout() {
   {
     id: "editing",
     title: "Edit cells and rows",
-    body: 'Set `editable` on a column to let people change its cells: double-click a cell, or press Enter or F2. The field matches the column type: text, a number, a date, a list for `singleSelect` or a checkbox for `boolean`. Enter saves, Escape cancels, and leaving the cell saves. With `editMode="row"`, every editable cell of the row opens together. In React, `processRowUpdate` receives the new row: return it, or return a changed row. Throw or reject to refuse it. In HTML, listen to `ok:data-grid:edit` and call `preventDefault()` to refuse.',
+    body: 'Set `editable` on a column to let people change its cells: double-click a cell, or press Enter or F2. The field matches the column type. Text, number and date columns edit in an InputBase, `singleSelect` columns in a Select, and `boolean` columns in a Checkbox. Enter saves, Escape cancels, and leaving the cell saves. In cell editing, the Select opens its list when editing starts, and picking an option saves the cell. In row editing, the list starts closed: picking an option sets the field, and Enter saves the row. With `editMode="row"`, every editable cell of the row opens together. In React, `processRowUpdate` receives the new row: return it, or return a changed row. Throw or reject to refuse it. In HTML, listen to `ok:data-grid:edit` and call `preventDefault()` to refuse.',
     html: `<script>
   // Refuse ages above 120
   grid.addEventListener("ok:data-grid:edit", (event) => {
@@ -2840,6 +2840,16 @@ const PREVIEWS = {
         ["Alt + Left / Alt + Right on a header", "Makes the column narrower / wider by 10 pixels"],
         ["Enter or F2 on an editable cell", "Edits the cell (Enter saves, Escape cancels)"],
         ["A character on an editable cell", "Edits the cell, starting with that character"],
+        [
+          "Arrow keys, Home / End or a character in a Select editor's list",
+          "Move between its options",
+        ],
+        [
+          "Enter or Space on an option",
+          "Picks it (cell editing saves the cell, row editing returns to the field)",
+        ],
+        ["Down / Up or Space on a closed Select editor", "Opens its list"],
+        ["Space in a Checkbox editor", "Checks or clears it"],
         ["Left / Right, right to left", "Move in the reading order"],
         [
           "Right / Left on a tree row's group cell",

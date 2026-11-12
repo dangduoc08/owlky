@@ -119,6 +119,8 @@ import {
   gridDirectedComparator,
   gridEditInputType,
   gridEditModes,
+  gridEditorId,
+  gridEditorKind,
   gridEditTarget,
   gridEditText,
   gridExpandedByDepth,
@@ -241,6 +243,7 @@ import type { AutocompleteInstance } from "../autocomplete/autocomplete.js";
 import type { ChartInstance } from "../chart/chart.js";
 import type { DatePickerInstance } from "../date-picker/date-picker.js";
 import type { PopoverInstance } from "../popover/popover.js";
+import type { SelectInstance } from "../select/select.js";
 import type { TablePaginationInstance } from "../table-pagination/table-pagination.js";
 
 /** Events whose detail is `{ model }` (the model about to be set). */
@@ -771,6 +774,197 @@ const dotsIcon = () => {
     svg.append(circle);
   }
   return svg;
+};
+
+/** An element with attributes (names and values in order). */
+const elementWith = <K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  attributes: readonly (readonly [string, string])[],
+): HTMLElementTagNameMap[K] => {
+  const element = document.createElement(tag);
+  for (const [name, value] of attributes) element.setAttribute(name, value);
+  return element;
+};
+/** A decorative SVG from its shapes (the React components' icons). */
+const shapes = (
+  attributes: readonly (readonly [string, string])[],
+  children: readonly (readonly [string, readonly (readonly [string, string])[]])[],
+) => {
+  const svg = document.createElementNS(SVG, "svg");
+  for (const [name, value] of attributes) svg.setAttribute(name, value);
+  for (const [tag, list] of children) {
+    const child = document.createElementNS(SVG, tag);
+    for (const [name, value] of list) child.setAttribute(name, value);
+    svg.append(child);
+  }
+  return svg;
+};
+const ICON_BOX = [
+  ["aria-hidden", "true"],
+  ["viewBox", "0 0 24 24"],
+] as const;
+const FILLED_BOX = [
+  ["x", "3"],
+  ["y", "3"],
+  ["width", "18"],
+  ["height", "18"],
+  ["rx", "5"],
+  ["fill", "currentColor"],
+] as const;
+
+/** An InputBase editor (ADR-0067): the TextField markup without a box, label or helper. */
+const inputBaseEditor = (id: string, type: string) => {
+  const root = elementWith("div", [
+    ["data-ok-text-field", ""],
+    ["data-ok-size", "medium"],
+    ["data-ok-color", "default"],
+    ["data-ok-full-width", ""],
+    ["data-ok-margin", "none"],
+    ["data-ok-input-base", ""],
+  ]);
+  const control = elementWith("div", [["data-ok-text-field-control", ""]]);
+  const input = elementWith("input", [
+    ["id", id],
+    ["data-ok-text-field-input", ""],
+    ["type", type],
+    ["placeholder", " "],
+  ]);
+  control.append(input);
+  root.append(control);
+  return { root, input, field: input };
+};
+
+/** A Checkbox editor (small, primary): the native input and its three icons. */
+const checkboxEditor = () => {
+  const root = elementWith("span", [
+    ["data-ok-checkbox", ""],
+    ["data-ok-color", "primary"],
+    ["data-ok-size", "small"],
+  ]);
+  const input = elementWith("input", [
+    ["type", "checkbox"],
+    ["data-ok-checkbox-input", ""],
+  ]);
+  const part = (state: string, svg: SVGSVGElement) => {
+    const span = elementWith("span", [
+      ["data-ok-checkbox-icon", state],
+      ["aria-hidden", "true"],
+    ]);
+    span.append(svg);
+    return span;
+  };
+  const mark = (d: string, join: boolean) =>
+    [
+      "path",
+      [
+        ["data-ok-checkbox-mark", ""],
+        ["d", d],
+        ["stroke-width", "2"],
+        ["stroke-linecap", "round"],
+        ...(join ? ([["stroke-linejoin", "round"]] as const) : []),
+      ],
+    ] as const;
+  root.append(
+    input,
+    part(
+      "unchecked",
+      shapes(ICON_BOX, [
+        [
+          "rect",
+          [
+            ["x", "3.75"],
+            ["y", "3.75"],
+            ["width", "16.5"],
+            ["height", "16.5"],
+            ["rx", "4.25"],
+            ["fill", "none"],
+            ["stroke", "currentColor"],
+            ["stroke-width", "1.5"],
+          ],
+        ],
+      ]),
+    ),
+    part(
+      "checked",
+      shapes(ICON_BOX, [["rect", FILLED_BOX], mark("m7.75 12.25 2.75 2.75 5.75-6", true)]),
+    ),
+    part("indeterminate", shapes(ICON_BOX, [["rect", FILLED_BOX], mark("M8 12h8", false)])),
+  );
+  return { root, input, field: input };
+};
+
+/**
+ * A bare listbox Select editor (no variant: the grid draws the field): the trigger, the hidden
+ * form input, the arrow and the listbox in a Popover, as React's Select renders them.
+ */
+const selectEditor = (id: string, choices: readonly string[], value: string) => {
+  const root = elementWith("div", [["data-ok-select", ""]]);
+  const trigger = elementWith("div", [
+    ["data-ok-select-display", ""],
+    ["role", "combobox"],
+    ["tabindex", "-1"],
+    ["id", id],
+    ["aria-haspopup", "listbox"],
+    ["aria-expanded", "false"],
+    ["aria-controls", `${id}-listbox`],
+  ]);
+  const input = elementWith("input", [
+    ["data-ok-select-input", ""],
+    ["aria-hidden", "true"],
+    ["tabindex", "-1"],
+    ["placeholder", " "],
+  ]);
+  input.value = value;
+  const paper = elementWith("div", [
+    ["popover", "manual"],
+    ["data-ok-popover", ""],
+    ["data-ok-placement", "bottom-start"],
+    ["id", `${id}-menu`],
+    ["tabindex", "-1"],
+  ]);
+  const listbox = elementWith("ul", [
+    ["data-ok-select-listbox", ""],
+    ["role", "listbox"],
+    ["id", `${id}-listbox`],
+  ]);
+  for (const choice of choices) {
+    const option = elementWith("li", [
+      ["role", "option"],
+      ["tabindex", "-1"],
+      ["data-ok-menu-item", ""],
+      ...(choice === value ? ([["data-ok-selected", ""]] as const) : []),
+      ["aria-selected", String(choice === value)],
+      ["data-ok-value", choice],
+    ]);
+    option.textContent = choice;
+    listbox.append(option);
+  }
+  if (choices.includes(value)) trigger.textContent = value;
+  paper.append(
+    elementWith("span", [
+      ["data-ok-popover-arrow", ""],
+      ["aria-hidden", "true"],
+    ]),
+    listbox,
+  );
+  const arrow = shapes(
+    [...ICON_BOX, ["data-ok-select-icon", ""]],
+    [
+      [
+        "path",
+        [
+          ["d", "m7 10 5 5 5-5"],
+          ["fill", "none"],
+          ["stroke", "currentColor"],
+          ["stroke-width", "2"],
+          ["stroke-linecap", "round"],
+          ["stroke-linejoin", "round"],
+        ],
+      ],
+    ],
+  );
+  root.append(trigger, input, arrow, paper);
+  return { root, input, field: trigger };
 };
 
 /** A switch of the columns panel (the FormControlLabel + Switch markup React renders). */
@@ -5504,6 +5698,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       column: GridColumn;
       /** The field that holds the value (a custom editor may have none: `setEditCellValue`). */
       input: EditInput | null;
+      /**
+       * The control that takes the focus and the ARIA states: the input, or a Select editor's
+       * trigger (its value is in the hidden `input`).
+       */
+      field: HTMLElement | null;
+      /** A built-in editor's component root (InputBase, Select or Checkbox). */
+      box: HTMLElement | null;
       content: Node[];
       /** A value set by `setEditCellValue`, used as it is. */
       value?: { value: unknown } | undefined;
@@ -5584,48 +5785,64 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const name = c.headerName as string;
         const start = gridEditText(value(row, c.field), c.type);
         const custom = customEditor(c.field);
-        let input: EditInput | null;
-        if (custom) input = custom.input;
-        else if (c.type === "singleSelect") {
-          const select = document.createElement("select");
-          for (const choice of c.valueOptions ?? []) {
-            const option = document.createElement("option");
-            option.value = choice;
-            option.textContent = choice;
-            select.append(option);
-          }
-          input = select;
-        } else {
-          const text = document.createElement("input");
-          text.type = gridEditInputType(c.type);
-          input = text;
-        }
+        const kind = gridEditorKind(c.type);
+        const editorId = gridEditorId(id || "grid", idOf(row), c.field);
+        // Built-in editors (ADR-0067): a bare listbox Select, a Checkbox or an InputBase.
+        const built = custom
+          ? null
+          : kind === "select"
+            ? selectEditor(editorId, c.valueOptions ?? [], start)
+            : kind === "checkbox"
+              ? checkboxEditor()
+              : inputBaseEditor(editorId, gridEditInputType(c.type));
+        const input: EditInput | null = custom ? custom.input : (built?.input ?? null);
         if (input instanceof HTMLInputElement && input.type === "checkbox")
           input.checked = start === "true";
         else if (input) input.value = start;
         // A typed character replaces the value (text-like fields only).
-        if (key !== undefined && c.field === field && input instanceof HTMLInputElement)
-          if (input.type !== "checkbox") input.value = key;
-        if (!custom && input) {
-          input.setAttribute("data-ok-data-grid-edit-input", "");
-          input.setAttribute("aria-label", `${labels.editLabel} ${name}`);
+        if (
+          key !== undefined &&
+          c.field === field &&
+          input instanceof HTMLInputElement &&
+          input.type !== "checkbox" &&
+          (custom || kind === "input")
+        )
+          input.value = key;
+        const control = built ? built.field : input;
+        if (built) {
+          control?.setAttribute("data-ok-data-grid-edit-input", "");
+          control?.setAttribute("aria-label", `${labels.editLabel} ${name}`);
         }
         const content = [...cell.childNodes];
         if (custom) cell.replaceChildren(custom.content);
-        else cell.replaceChildren(input as EditInput);
+        else cell.replaceChildren((built as { root: HTMLElement }).root);
         cell.setAttribute("data-ok-editing", "");
-        return { cell, column: c, input, content, custom: !!custom };
+        return {
+          cell,
+          column: c,
+          input,
+          field: control,
+          box: built?.root ?? null,
+          content,
+          custom: !!custom,
+        };
       });
       // The started cell is always among the edits (shown and editable).
       const first = edits.find((e) => e.column.field === field) as Edit;
-      const focus = first.input ?? first.cell.querySelector<HTMLElement>(EDIT_FOCUSABLE);
+      for (const edit of edits)
+        if (edit.box?.hasAttribute("data-ok-select"))
+          runtime.getOrCreate<SelectInstance>(edit.box, "select");
+      const focus = first.field ?? first.cell.querySelector<HTMLElement>(EDIT_FOCUSABLE);
       focus?.focus();
       if (
         key !== undefined &&
-        first.input instanceof HTMLInputElement &&
-        first.input.type === "text"
+        first.field instanceof HTMLInputElement &&
+        first.field.type === "text"
       )
-        first.input.setSelectionRange(first.input.value.length, first.input.value.length);
+        first.field.setSelectionRange(first.field.value.length, first.field.value.length);
+      // Cell mode opens a list editor at the start (MUI X `initialOpen`).
+      if (!rowMode() && first.box?.hasAttribute("data-ok-select"))
+        runtime.getOrCreate<SelectInstance>(first.box, "select")?.open();
       if (reason !== undefined)
         emit("editstart", rowMode() ? { id: idOf(row), reason } : { id: idOf(row), field, reason });
     };
@@ -5662,15 +5879,18 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const message = edit.cell.querySelector<HTMLElement>("[data-ok-data-grid-edit-error]");
       if (detail.error) {
         errors.set(edit.column.field, detail.error === true ? true : String(detail.error));
-        edit.input?.setAttribute("aria-invalid", "true");
+        edit.field?.setAttribute("aria-invalid", "true");
       } else {
         errors.delete(edit.column.field);
-        edit.input?.removeAttribute("aria-invalid");
+        edit.field?.removeAttribute("aria-invalid");
       }
+      // An InputBase shows its error colors too (TextField's `error`).
+      if (edit.box?.hasAttribute("data-ok-input-base"))
+        edit.box.toggleAttribute("data-ok-error", !!detail.error);
       const text = typeof detail.error === "string" ? detail.error : "";
       if (!text) {
         message?.remove();
-        edit.input?.removeAttribute("aria-describedby");
+        edit.field?.removeAttribute("aria-describedby");
         return;
       }
       const errorId = `${id || "grid"}-${idOf(editRow as HTMLElement)}-${edit.column.field}-error`;
@@ -5680,7 +5900,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       span.id = errorId;
       span.textContent = text;
       if (!message) edit.cell.append(span);
-      edit.input?.setAttribute("aria-describedby", errorId);
+      edit.field?.setAttribute("aria-describedby", errorId);
     };
     const stopEdit = (
       commit: boolean,
@@ -5698,6 +5918,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       edits = [];
       editRow = null;
       row.removeAttribute("data-ok-editing");
+      for (const { box } of done)
+        if (box?.hasAttribute("data-ok-select"))
+          runtime.getOrCreate<SelectInstance>(box, "select")?.close();
       if (reason !== undefined)
         emit(
           "editstop",
@@ -5780,12 +6003,38 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       (event) => {
         const edit = editAt(event.target);
         if (!edit || (event.key !== "Enter" && event.key !== "Escape")) return;
+        // Enter in a list editor's listbox picks an option (the Select).
+        if (event.key === "Enter" && (event.target as Element).closest('[role="listbox"]')) return;
         event.preventDefault();
         stopEdit(
           event.key === "Enter",
           edit.column.field,
           event.key === "Enter" ? "enterKeyDown" : "escapeKeyDown",
         );
+      },
+      { signal },
+    );
+    // Enter on a list editor's trigger saves before the Select would open its list.
+    main.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key !== "Enter") return;
+        const edit = editAt(event.target);
+        if (!edit?.box?.hasAttribute("data-ok-select") || event.target !== edit.field) return;
+        event.preventDefault();
+        stopEdit(true, edit.column.field, "enterKeyDown");
+      },
+      { signal, capture: true },
+    );
+    // A pick: checked like a change; in cell mode it saves the cell (MUI X `stopCellEditMode`).
+    main.addEventListener(
+      "ok:select:close",
+      (event) => {
+        const edit = edits.find((e) => e.box === event.target);
+        const { reason } = (event as CustomEvent<{ reason: string }>).detail;
+        if (!edit || reason !== "select") return;
+        validate(edit);
+        if (!rowMode()) stopEdit(true, edit.column.field);
       },
       { signal },
     );
@@ -6648,6 +6897,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (edit.input instanceof HTMLInputElement && edit.input.type === "checkbox")
           edit.input.checked = text === "true";
         else if (edit.input) edit.input.value = text;
+        // A list editor shows the value (its options and trigger follow).
+        if (edit.box?.hasAttribute("data-ok-select"))
+          runtime.getOrCreate<SelectInstance>(edit.box, "select")?.setValue(text);
         validate(edit);
       },
       setSortComparator(field, own) {

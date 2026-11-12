@@ -126,6 +126,8 @@ import {
   gridDisplayedRows,
   gridEditInputType,
   gridEditModes,
+  gridEditorId,
+  gridEditorKind,
   gridEditTarget,
   gridEditText,
   gridExpandedByDepth,
@@ -223,6 +225,7 @@ import {
   sanitizeGridChartModels,
   sanitizeGridChartsState,
   sanitizeGridState,
+  selectBehaviorAttributes,
   selectGridRow,
   setGridPivotRole,
   sortGridRows,
@@ -264,9 +267,10 @@ import { IconButton } from "../icon-button/icon-button.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
 import { Menu, MenuItem, MenuSubmenu } from "../menu/menu.js";
 import { Popover } from "../popover/popover.js";
+import { SelectRoot } from "../select/select.js";
 import { Switch } from "../switch/switch.js";
 import { TablePagination } from "../table/table.js";
-import { InputAdornment, TextField } from "../text-field/text-field.js";
+import { InputAdornment, InputBase, TextField } from "../text-field/text-field.js";
 import { Tooltip } from "../tooltip/tooltip.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
@@ -3062,7 +3066,10 @@ function DataGridInner<R>(
         grid.querySelector<HTMLInputElement>(`${at} [data-ok-data-grid-edit-input]`) ??
         grid.querySelector<HTMLInputElement>(`${at} :is(${EDIT_FOCUSABLE})`) ??
         grid.querySelector<HTMLInputElement>("[data-ok-data-grid-edit-input]");
-      input?.focus();
+      // A Select editor that opened its list has already moved the focus onto an option.
+      const owner = grid.querySelector<HTMLElement>(at);
+      const active = document.activeElement;
+      if (!owner || !active || active === owner || !owner.contains(active)) input?.focus();
       if (editing.typed && input?.type === "text")
         input.setSelectionRange(input.value.length, input.value.length);
     } else if (refocus.current) {
@@ -3375,6 +3382,14 @@ function DataGridInner<R>(
     endEdit(commit, field, reason);
     reportModes(editing.rowId, at, "view", !commit);
   };
+  /** Cell mode: the field whose Select pick saves the cell once the picked value is a draft. */
+  const pickSave = useRef<string | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs after a pick changed the drafts.
+  useEffect(() => {
+    const field = pickSave.current;
+    pickSave.current = null;
+    if (field !== null && editing) apiStop(editing.rowId, field, true);
+  }, [drafts]);
   // Controlled modes: the edit follows the model (one cell or row at a time).
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs when a model or the edit changes.
   useEffect(() => {
@@ -6003,42 +6018,84 @@ function DataGridInner<R>(
                   },
                 }
               : {};
+          // Built-in editors (ADR-0067): a bare listbox Select, a Checkbox or an InputBase.
+          const editorId = gridEditorId(id, rowId, column.field);
+          const editLabel = `${labels.editLabel} ${name}`;
+          const describedBy = typeof error === "string" ? { "aria-describedby": errorId } : {};
           const editor = !inEdit ? null : column.renderEditCell ? (
             customEditor
-          ) : column.type === "singleSelect" ? (
-            <select
-              data-ok-data-grid-edit-input=""
-              aria-label={`${labels.editLabel} ${name}`}
-              {...invalid}
+          ) : gridEditorKind(column.type) === "select" ? (
+            <SelectRoot
+              host="select"
+              rootProps={{
+                ...selectBehaviorAttributes(),
+                // Escape in the listbox or on the trigger cancels; focus inside the list stays in.
+                onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+                  if (event.key !== "Escape") return;
+                  event.preventDefault();
+                  stopEdit(false, column.field, "escapeKeyDown");
+                },
+                onBlur: (event: FocusEvent<HTMLDivElement>) => {
+                  if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+                  editBlur(event);
+                },
+              }}
+              rootRef={null}
+              triggerId={editorId}
+              error={!!error}
+              disabled={false}
+              required={false}
+              readOnly={false}
+              triggerAria={{ "aria-label": editLabel, ...describedBy }}
+              displayProps={
+                {
+                  "data-ok-data-grid-edit-input": "",
+                  tabIndex: -1,
+                  // Enter on the trigger saves before the Select would open its list.
+                  onKeyDownCapture: (event: KeyboardEvent<HTMLDivElement>) => {
+                    if (event.key !== "Enter") return;
+                    event.preventDefault();
+                    stopEdit(true, column.field, "enterKeyDown");
+                  },
+                } as HTMLAttributes<HTMLDivElement>
+              }
               value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              onKeyDown={editKeys}
-              onBlur={editBlur}
+              // Cell mode opens the list at the start (MUI X `initialOpen`).
+              defaultOpen={editMode !== "row"}
+              onChange={(next) => {
+                setDraft(String(next));
+                // Cell mode: a pick saves the cell, as MUI X's `stopCellEditMode` (no stop reason).
+                if (editMode !== "row") pickSave.current = column.field;
+              }}
             >
               {(column.valueOptions ?? []).map((option) => (
-                <option key={option} value={option}>
+                <MenuItem key={option} value={option}>
                   {option}
-                </option>
+                </MenuItem>
               ))}
-            </select>
-          ) : column.type === "boolean" ? (
-            <input
+            </SelectRoot>
+          ) : gridEditorKind(column.type) === "checkbox" ? (
+            <Checkbox
               data-ok-data-grid-edit-input=""
-              type="checkbox"
-              aria-label={`${labels.editLabel} ${name}`}
+              size="small"
+              aria-label={editLabel}
+              {...invalid}
               checked={draft === "true"}
-              onChange={(event) => setDraft(String(event.target.checked))}
+              onChange={(checked) => setDraft(String(checked))}
               onKeyDown={editKeys}
               onBlur={editBlur}
             />
           ) : (
-            <input
+            <InputBase
               data-ok-data-grid-edit-input=""
+              id={editorId}
+              fullWidth
               type={gridEditInputType(column.type)}
-              aria-label={`${labels.editLabel} ${name}`}
-              {...invalid}
+              aria-label={editLabel}
+              error={!!error}
+              {...describedBy}
               value={draft}
-              onChange={(event) => setDraft(event.target.value)}
+              onChange={setDraft}
               onKeyDown={editKeys}
               onBlur={editBlur}
             />

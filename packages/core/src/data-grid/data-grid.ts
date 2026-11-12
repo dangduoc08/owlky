@@ -383,6 +383,17 @@ export const gridEditInputType = (type: GridColumnType = "string"): string =>
           ? "checkbox"
           : "text";
 
+/** The component a column type edits with (ADR-0067): a Select, a Checkbox or an InputBase. */
+export type GridEditorKind = "select" | "checkbox" | "input";
+
+/** The built-in editor of a column type: `singleSelect` → Select, `boolean` → Checkbox, else InputBase. */
+export const gridEditorKind = (type: GridColumnType = "string"): GridEditorKind =>
+  type === "singleSelect" ? "select" : type === "boolean" ? "checkbox" : "input";
+
+/** The id of a built-in editor's field (an input, or a Select's trigger). */
+export const gridEditorId = (grid: string, rowId: string, field: string): string =>
+  `${grid}-${rowId}-${field}-edit`;
+
 /** Columns shown by a visibility model (absent = shown). */
 export const visibleGridColumns = <C extends GridColumn>(
   columns: readonly C[],

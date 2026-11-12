@@ -38,7 +38,9 @@ Choose one or more values from a list. The field shows the value; the list opens
 Native: div[data-ok-select][…] › select[data-ok-select-native][id] › option | optgroup, svg[data-ok-select-icon] (not multiple), fieldset
 Composed (no field box of its own): TextField's control `div[data-ok-text-field-control][data-ok-select]`
   around the same parts (trigger also `data-ok-text-field-input`, icon also
-  `data-ok-text-field-select-icon`); TablePagination's `div[data-ok-select]` (bare, styled by table.css).
+  `data-ok-text-field-select-icon`); TablePagination's `div[data-ok-select]` (bare, styled by table.css);
+  the Data grid's list editor `div[data-ok-select]` (bare, styled by data-grid.css; trigger also
+  `data-ok-data-grid-edit-input`, `tabindex=-1`; ADR-0067).
 ```
 React renders `data-ok-runtime="off"` on the field box (and the paper). The field box always
 writes its variant / size / color (resolved: own prop, else the FormControl's, else the default).
@@ -110,7 +112,8 @@ viewport and scrolls when long (Popover).
 
 ## States / Behavior
 Core `createSelectController(root, { isOpen, isInert?, autoWidth?, onOpen(focus), onClose(reason),
-onPick(option) })` reports intent; owners keep the value and the open state. Single: a pick
+onPick(option) })` reports intent; owners keep the value and the open state. A key press another
+handler already prevented is ignored (a host takes it first: the Data grid's editor saves on Enter). Single: a pick
 replaces the value and closes (`select`), focus returns to the trigger. Multiple: a pick toggles,
 the list stays open. Escape / outside press close through the popover controller. Disabled
 (`aria-disabled`) and read-only (`aria-readonly`) triggers don't open. HTML runtime `select`:

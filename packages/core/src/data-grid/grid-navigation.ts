@@ -9,9 +9,12 @@
 import { isGridGroupingField } from "./grid-premium.js";
 
 const CELL = '[role="columnheader"], [role="gridcell"], [role="rowheader"]';
-/** Controls that take focus instead of their cell (checkboxes, action buttons, links). */
+/**
+ * Controls that take focus instead of their cell (checkboxes, action buttons, links); not the
+ * hidden form input of a Select editor (`aria-hidden`).
+ */
 const INNER =
-  'input:not([type="hidden"]), select, textarea, a[href], button:not([data-ok-data-grid-menu-button])';
+  'input:not([type="hidden"]):not([aria-hidden="true"]), select, textarea, a[href], button:not([data-ok-data-grid-menu-button])';
 
 export interface GridNavigationOptions {
   /** Enter / Space on a sortable header (Shift: add to the sort). */
@@ -194,12 +197,18 @@ export function createGridNavigation(
       const target = event.target as HTMLElement;
       const cell = target.closest<HTMLElement>(CELL);
       if (!cell || !grid.contains(cell) || !ownedBy(grid, cell)) return;
-      // Typing in a field inside a cell (editing, later phases) keeps its keys.
+      // Typing in a field inside a cell (editing, later phases) keeps its keys, and so does a
+      // Select editor: its trigger (a combobox) and its listbox (nested, like a date picker's grid).
       // Header filter fields leave with Up / Down (their text needs Left / Right).
       const filterField =
         !!target.closest("[data-ok-data-grid-header-filter]") &&
         (event.key === "ArrowUp" || event.key === "ArrowDown");
-      if (target.matches("input:not([type='checkbox']), select, textarea") && !filterField) return;
+      if (
+        (target.matches("input:not([type='checkbox']), select, textarea") && !filterField) ||
+        target.matches('[role="combobox"]') ||
+        (target !== cell && cell.contains(target.closest('[role="listbox"]')))
+      )
+        return;
       const ctrl = event.ctrlKey || event.metaKey;
       const header = cell.getAttribute("role") === "columnheader";
       const field = cell.getAttribute("data-ok-field") ?? "";

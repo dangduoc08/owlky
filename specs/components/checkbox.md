@@ -10,7 +10,8 @@ Color picker (multiple): Minimal UI kit "Utilities" page, section Color pickers 
 ## Purpose
 Pick any number of options, or accept one statement, in a form. Native `<input type="checkbox">`.
 Labels come from `FormControlLabel` (specs/components/form-control-label.md). Used by Table's
-selection column.
+selection column, and by the Data grid as its `boolean` cell editor (small, primary; the grid's CSS
+makes the whole cell its target; ADR-0067).
 
 ## Anatomy
 ```

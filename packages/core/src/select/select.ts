@@ -153,6 +153,8 @@ export function createSelectController(
   root.addEventListener(
     "keydown",
     (event) => {
+      // A host took the key first (a data grid editor saves on Enter).
+      if (event.defaultPrevented) return;
       const target = event.target as Element;
       const list = listbox();
       if (target === trigger()) {
