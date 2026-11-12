@@ -767,8 +767,8 @@
   max-width: 22.5rem;
 }
 
-/* Divider demos (story-only layout): a bordered row of words, paragraphs between dividers, the
-   outlined Card of the icon group. */
+/* Divider demos (story-only layout): the outlined Paper around a row of words, paragraphs
+   between dividers, the outlined Card of the icon group. */
 .sb-divider-row,
 .sb-divider-toolbar {
   display: flex;
@@ -780,8 +780,6 @@
 .sb-divider-row {
   gap: 1rem;
   padding: 0 1rem;
-  border: 1px solid var(--ok-divider);
-  border-radius: var(--ok-radius-md);
 }
 
 .sb-divider-toolbar {

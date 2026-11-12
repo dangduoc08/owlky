@@ -20,7 +20,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const setup = htmlSetup(["typography.css", "divider.css"]);
+const setup = htmlSetup(["paper.css", "typography.css", "divider.css"]);
 const story = (
   name: string,
   title: string,
