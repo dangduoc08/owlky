@@ -54,7 +54,7 @@ export function InboxBadge() {
     title: "Show a dot or a status",
     body: 'Set `variant` to `dot` for a small dot without text. For a person\'s presence, use `online`, `always`, `busy`, `offline` or `invisible` on an avatar, with `overlap="circular"` and the bottom-right corner.',
     html: `<span data-ok-badge data-ok-variant="online" data-ok-color="default" data-ok-overlap="circular" data-ok-vertical="bottom" data-ok-horizontal="right">
-  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default"><img src="/people/deja.jpg" alt="Deja Brady"></span>
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default"><img src="/people/linh.jpg" alt="Linh Tran"></span>
   <span data-ok-badge-badge></span>
 </span>`,
     react: `import { Avatar, Badge } from "@owlky/react";
@@ -62,7 +62,7 @@ export function InboxBadge() {
 export function OnlineAvatar() {
   return (
     <Badge variant="online" overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}>
-      <Avatar src="/people/deja.jpg" alt="Deja Brady" />
+      <Avatar src="/people/linh.jpg" alt="Linh Tran" />
     </Badge>
   );
 }`,
@@ -91,7 +91,7 @@ export function OnlineAvatar() {
     id: "accessibility",
     title: "Accessibility",
     body: `- The badge's text is read with the element it decorates, which may not say what it counts. Name the element with the full meaning, such as \`aria-label="4 new messages"\`.
-- Dots and statuses are visual only. Say the status in text too, for example in the avatar's name ("Deja Brady, online").
+- Dots and statuses are visual only. Say the status in text too, for example in the avatar's name ("Linh Tran, online").
 - Grey badges use dark text; palette colors follow the design.`,
   },
   apiReferenceSection(badgeApi),

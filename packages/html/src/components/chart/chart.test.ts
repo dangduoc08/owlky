@@ -448,7 +448,7 @@ describe("chart runtime: polar charts (phase 2)", () => {
     expect(svg.querySelectorAll("[data-ok-chart-slice]")).toHaveLength(4);
     expect(
       [...svg.querySelectorAll("[data-ok-chart-data-label]")].map((label) => label.textContent),
-    ).toEqual(["28.4%", "35.5%", "8.4%", "27.7%"]);
+    ).toEqual(["28.6%", "21.4%", "24.5%", "25.5%"]);
     expect(legend.map((item) => item.textContent)).toEqual([
       "Series A",
       "Series B",
@@ -481,7 +481,7 @@ describe("chart runtime: polar charts (phase 2)", () => {
     const host = sized(`${snippet("donut")}${snippet("radial-bar")}${snippet("stroked-gauge")}`);
     start();
     const centers = [...host.querySelectorAll("[data-ok-chart-center]")].map((c) => c.textContent);
-    expect(centers).toEqual(["Total155", "Total2,324", "75%Median ratio"]);
+    expect(centers).toEqual(["Total131", "Total2,324", "51%Median ratio"]);
     const [donut, radial] = [...host.querySelectorAll<HTMLElement>("[data-ok-chart]")];
     // Changing the total label redraws.
     const redrawn = mutated(donut as HTMLElement, {

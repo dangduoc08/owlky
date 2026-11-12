@@ -50,7 +50,7 @@ describe("streamgraph", () => {
     plot.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
     await settle();
     const rows = [...root.querySelectorAll("[data-ok-chart-tooltip-row]")];
-    expect(rows.at(-1)?.textContent).toBe("Total162k");
+    expect(rows.at(-1)?.textContent).toBe("Total144k");
     expect(rows).toHaveLength(6);
   });
 });

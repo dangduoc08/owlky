@@ -97,16 +97,16 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
       title: "General",
       content: [
         <TextField key="1" {...base} label="Inactive" />,
-        <TextField key="2" {...base} label="Activated" required defaultValue="2Minimal" />,
+        <TextField key="2" {...base} label="Activated" required defaultValue="Hello world" />,
         <TextField
           key="3"
           {...base}
           label="Password"
           type="password"
-          defaultValue="2Minimal"
+          defaultValue="Hello world"
           autoComplete="current-password"
         />,
-        <TextField key="4" {...base} label="Disabled" defaultValue="2Minimal" disabled />,
+        <TextField key="4" {...base} label="Disabled" defaultValue="Hello world" disabled />,
         <TextField
           key="5"
           {...base}
@@ -189,7 +189,7 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
           key="1"
           {...base}
           label="Helper text"
-          defaultValue="2Minimal"
+          defaultValue="Hello world"
           helperText={
             <>
               <InfoIcon />
@@ -201,7 +201,7 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
           key="2"
           {...base}
           label="Error"
-          defaultValue="2Minimal"
+          defaultValue="Hello world"
           error
           helperText="Error text"
         />,

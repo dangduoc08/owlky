@@ -43,7 +43,7 @@ describe("stacks and bars", () => {
       [...(first as Element).querySelectorAll('[data-ok-chart-data-label="total"]')].map(
         (t) => t.textContent,
       ),
-    ).toEqual(["68", "95", "76", "90", "56", "84"]);
+    ).toEqual(["63", "72", "94", "99", "66", "105"]);
     const line = (second as Element).querySelector('[data-ok-type="line"] [data-ok-chart-line]');
     const before = line?.getAttribute("d");
     (second as Element).removeAttribute("data-ok-stack-only-bar");

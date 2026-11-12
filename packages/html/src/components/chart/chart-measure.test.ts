@@ -50,10 +50,10 @@ describe("chart measure", () => {
     key(plot, "Enter");
     expect(details).toHaveLength(1);
     expect(chart.querySelector("[data-ok-chart-measure-label]")?.textContent).toBe(
-      "Jan → Feb: +7 (+58.3%)",
+      "Jan → Feb: +2 (+4.2%)",
     );
     const instance = run.get(chart, "chart") as ChartInstance;
-    expect(instance.measures).toEqual([{ x1: 0, y1: 12, x2: 1, y2: 19 }]);
+    expect(instance.measures).toEqual([{ x1: 0, y1: 48, x2: 1, y2: 50 }]);
     instance.clearMeasures();
     expect(chart.querySelector("[data-ok-chart-measures]")).toBeNull();
     instance.setMeasures([{ x1: 1, y1: 19, x2: 3, y2: 25 }]);

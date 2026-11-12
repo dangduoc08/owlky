@@ -41,7 +41,7 @@ Data stays yours. In React, you sort, select and page your data in state, as wit
       </thead>
       <tbody>
         <tr>
-          <td>Jayvion Simon</td>
+          <td>Amara Okafor</td>
           <td data-ok-align="right">$83.74</td>
         </tr>
       </tbody>
