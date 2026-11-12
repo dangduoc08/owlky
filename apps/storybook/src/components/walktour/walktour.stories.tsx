@@ -13,6 +13,9 @@ const snippets = import.meta.glob(
 
 const SETUP = htmlSetup(
   [
+    "paper.css",
+    "typography.css",
+    "card.css",
     "backdrop.css",
     "popover.css",
     "button.css",

@@ -5,6 +5,7 @@ import {
   Card,
   FormControlLabel,
   Image,
+  Paper,
   Switch,
   TextField,
   Typography,
@@ -16,7 +17,7 @@ import { createRef } from "react";
 /*
  * Walktour stories. The dashboard cards are Cards with Typography (`sb-walktour-*` classes in
  * `.storybook/preview.css` lay them out); the featured card's picture is an Image, like the reference's (its
- * step pictures are plain `img`). Pictures are the original artwork of the Carousel and Avatar stories,
+ * step pictures are plain `img`); the settings of step 4 sit on an outlined Paper. Pictures are the original artwork of the Carousel and Avatar stories,
  * referenced relatively so they work under the e2e server's sub-path. People and products are
  * invented. The HTML snippets are generated from these examples
  * (`node apps/storybook/scripts/walktour-snippets.mjs`).
@@ -87,7 +88,7 @@ const BASIC_STEPS: WalktourStep[] = [
         <Typography variant="body2" className="sb-walktour-text">
           {TEXT}
         </Typography>
-        <div className="sb-walktour-settings">
+        <Paper variant="outlined" className="sb-walktour-settings">
           {SETTINGS.map((setting) => (
             <FormControlLabel
               key={setting.label}
@@ -96,7 +97,7 @@ const BASIC_STEPS: WalktourStep[] = [
               control={<Switch defaultChecked={setting.checked} />}
             />
           ))}
-        </div>
+        </Paper>
       </>
     ),
   },
