@@ -68,11 +68,11 @@ describe("font presets", () => {
     const vars = fontPresetVariables(fontFamilyPresets.inter, defaultTheme);
     expect(vars["--ok-font-family"]).toContain('"Inter Variable"');
     expect(vars["--ok-typography-body1-font-family"]).toBe("var(--ok-font-family)");
-    // h1–h3 use the secondary family in the reference: untouched.
-    const secondary = Object.entries(defaultTheme.typography.variants).filter(
-      ([, v]) => v.fontFamily === "secondary",
+    // h1–h3 use the heading family: untouched.
+    const heading = Object.entries(defaultTheme.typography.variants).filter(
+      ([, v]) => v.fontFamily === "heading",
     );
-    for (const [variant] of secondary)
+    for (const [variant] of heading)
       expect(vars[`--ok-typography-${variant}-font-family` as `--ok-${string}`]).toBeUndefined();
     expect(fontSizeRange).toEqual({ min: 12, max: 20, step: 1, default: 16 });
   });

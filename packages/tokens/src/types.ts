@@ -78,16 +78,37 @@ export interface TypographyStyle {
   responsiveFontSize?: Partial<Record<Exclude<BreakpointName, "xs">, string>>;
   lineHeight: string;
   fontWeight: number;
-  /** `secondary` = display font (headings h1–h3). Default `primary`. */
-  fontFamily?: "primary" | "secondary";
+  /** `heading` = the heading family (h1–h3 today), `label` = the label family. Default `text`. */
+  fontFamily?: "text" | "heading" | "label";
   textTransform?: "uppercase" | "none";
+  /** Default `normal`. */
+  letterSpacing?: string;
 }
 
+export const fontSizeNames = [
+  "2xs",
+  "xs",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "2xl",
+  "3xl",
+  "quote",
+  "code",
+] as const;
+export type FontSizeName = (typeof fontSizeNames)[number];
+
 export interface Typography {
+  /** Text family (`--ok-font-family`). */
   fontFamily: string;
-  /** Display font for large headings. */
-  fontFamilySecondary: string;
+  /** Heading family (`--ok-font-family-heading`). */
+  fontFamilyHeading: string;
+  /** Label family (`--ok-font-family-label`): buttons, chips, tabs, column headers. */
+  fontFamilyLabel: string;
   fontFamilyMono: string;
+  /** Case and tracking of the label role (`--ok-label-text-transform`, `--ok-label-letter-spacing`). */
+  label: { textTransform: string; letterSpacing: string };
   fontWeight: {
     regular: number;
     medium: number;
@@ -95,13 +116,67 @@ export interface Typography {
     bold: number;
     extrabold: number;
   };
-  /** Font-size scale for component text that isn't a typography variant (e.g. button sizes). */
-  fontSize: Record<"xs" | "sm" | "md" | "lg" | "xl", string>;
+  /**
+   * Font-size scale for component text that isn't a typography variant (button sizes, tooltips,
+   * quotes; `code` is relative to the surrounding text).
+   */
+  fontSize: Record<FontSizeName, string>;
+  /** Size of the decorative quote mark of block quotes (`--ok-typography-quote-mark-size`). */
+  quoteMarkSize: string;
   variants: Record<TypographyVariant, TypographyStyle>;
 }
 
-export const radiusNames = ["xs", "sm", "md", "lg", "xl", "2xl", "full"] as const;
+/** The radius scale, for authors and Tailwind. Components use the roles. */
+export const radiusNames = ["2xs", "xs", "sm", "md", "lg", "xl", "2xl", "full"] as const;
 export type RadiusName = (typeof radiusNames)[number];
+
+/** Radius roles that components read (`--ok-radius-<role>`, ADR-0070). */
+export const radiusRoleNames = [
+  "control",
+  "control-sm",
+  "inner",
+  "surface",
+  "surface-md",
+  "surface-sm",
+  "chip",
+] as const;
+export type RadiusRoleName = (typeof radiusRoleNames)[number];
+
+/** SVG strokes and thin rings (`--ok-line-width-<name>`). */
+export const lineWidthNames = ["hairline", "2xs", "xs", "sm", "md", "lg", "xl", "2xl"] as const;
+export type LineWidthName = (typeof lineWidthNames)[number];
+
+/** Control sizes that density changes (`--ok-<name>`, ADR-0070 § 4.6). */
+export const densityNames = [
+  "control-height-sm",
+  "control-height-md",
+  "control-height-lg",
+  "control-height-xl",
+  "control-padding-x-sm",
+  "control-padding-x-md",
+  "control-padding-x-lg",
+  "field-padding-y",
+  "field-padding-y-sm",
+  "field-padding-x",
+  "item-height",
+  "item-height-sm",
+  "item-padding-y",
+  "item-padding-x",
+  "chip-height",
+  "chip-height-sm",
+  "tab-height",
+  "cell-padding-y",
+  "cell-padding-y-sm",
+  "cell-padding-x",
+  "row-height",
+  "row-height-header",
+  "accordion-summary-height",
+  "switch-padding-x",
+  "switch-padding-y",
+  "switch-padding-x-sm",
+  "switch-padding-y-sm",
+] as const;
+export type DensityName = (typeof densityNames)[number];
 
 /** One shadow layer; the color is `shadowColor` (or a palette color) at `alpha`. */
 export interface ShadowLayer {
@@ -142,6 +217,25 @@ export interface Theme {
   schemes: { light: ColorScheme; dark: ColorScheme };
   typography: Typography;
   radius: Record<RadiusName, string>;
+  radiusRole: Record<RadiusRoleName, string>;
+  /** `--ok-border-width` (default), `-strong`, `-heavy`. */
+  borderWidth: { default: string; strong: string; heavy: string };
+  lineWidth: Record<LineWidthName, string>;
+  /**
+   * Focus rings (`--ok-focus-ring-*`). The colors may reference scheme tokens: they are declared
+   * in every scheme scope.
+   */
+  focusRing: {
+    width: string;
+    offset: string;
+    inset: string;
+    offsetTight: string;
+    color: string;
+    colorBrand: string;
+  };
+  density: Record<DensityName, string>;
+  /** Stroke width of component icons (`--ok-icon-stroke`, a number of user units). */
+  icon: { stroke: string };
   /** Base spacing unit. Spacing step `n` = `n × spacing`. */
   spacing: string;
   /** Breakpoint min-widths in px. */
@@ -162,6 +256,10 @@ export interface Theme {
     tooltip: number;
   };
   motion: {
+    /**
+     * UI transitions (`shortest`…`standard`), Motion entrances and exits (`enter`, `exit`) and the
+     * cycles of loaders and cursors (`spin`…`caretBlink`). Not style values.
+     */
     duration: {
       shortest: string;
       shorter: string;
@@ -169,8 +267,28 @@ export interface Theme {
       standard: string;
       exit: string;
       enter: string;
+      spin: string;
+      spinReduced: string;
+      spinSlow: string;
+      progressRotate: string;
+      progressRotateReduced: string;
+      progressBar: string;
+      progressBarDelay: string;
+      progressBarReduced: string;
+      progressBarReducedDelay: string;
+      progressBuffer: string;
+      hintDelay: string;
+      caretBlink: string;
     };
-    easing: { standard: string; decelerate: string; accelerate: string; expressive: string };
+    easing: {
+      standard: string;
+      decelerate: string;
+      accelerate: string;
+      expressive: string;
+      inOut: string;
+      progress1: string;
+      progress2: string;
+    };
   };
 }
 

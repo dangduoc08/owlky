@@ -18,7 +18,7 @@
 
 @layer components {
   :where([data-ok-sortable]) {
-    --_ok-frame: 1px dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    --_ok-frame: var(--ok-border-width) dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
 
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--ok-spacing) * 40)), 1fr));
@@ -39,7 +39,7 @@
     max-height: calc(var(--ok-spacing) * 140);
     padding: calc(var(--ok-spacing) * 5);
     border: var(--_ok-frame);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     overflow: auto;
   }
 
@@ -48,7 +48,7 @@
     flex-direction: row;
     padding: calc(var(--ok-spacing) * 5);
     border: var(--_ok-frame);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     overflow: auto;
   }
 
@@ -66,13 +66,13 @@
   :where([data-ok-scrollbar]:has(> [data-ok-sortable][data-ok-layout="vertical"])) {
     width: min(100%, calc(var(--ok-spacing) * 120));
     max-height: calc(var(--ok-spacing) * 140);
-    border: 1px dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
-    border-radius: var(--ok-radius-lg);
+    border: var(--ok-border-width) dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-surface-md);
   }
 
   :where([data-ok-scrollbar]:has(> [data-ok-sortable][data-ok-layout="horizontal"])) {
-    border: 1px dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
-    border-radius: var(--ok-radius-lg);
+    border: var(--ok-border-width) dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-surface-md);
   }
 
   :where([data-ok-scrollbar] > [data-ok-sortable]) {
@@ -98,8 +98,8 @@
     box-sizing: border-box;
     min-width: 0;
     padding: calc(var(--ok-spacing) * 10);
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
-    border-radius: var(--ok-radius-lg);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-surface-md);
     background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
     transition: box-shadow var(--ok-duration-short) var(--ok-easing-standard);
   }
@@ -151,8 +151,8 @@
   }
 
   :where([data-ok-sortable-item][data-ok-swap-target]) {
-    outline: 2px dashed var(--ok-text-secondary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) dashed var(--ok-text-secondary);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Remove buttons appear on item hover or keyboard focus; always on touch screens. */
@@ -176,8 +176,8 @@
 
   /* Grabbed with the keyboard or a tap. */
   :where([data-ok-sortable-item][data-ok-grabbed]) {
-    outline: 2px solid var(--ok-text-secondary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-text-secondary);
+    outline-offset: var(--ok-focus-ring-offset);
     box-shadow: var(--ok-shadow-z8);
   }
 

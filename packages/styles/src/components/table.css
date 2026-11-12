@@ -35,13 +35,13 @@
   }
 
   :where([data-ok-table-container]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-table]) {
-    --_ok-pad-y: calc(var(--ok-spacing) * 4);
-    --_ok-pad-x: calc(var(--ok-spacing) * 4);
+    --_ok-pad-y: var(--ok-cell-padding-y);
+    --_ok-pad-x: var(--ok-cell-padding-x);
 
     width: 100%;
     border-collapse: collapse;
@@ -55,13 +55,13 @@
 
   /* Sizes: dense = 6px block padding. */
   :where([data-ok-table][data-ok-size="small"]) {
-    --_ok-pad-y: calc(var(--ok-spacing) * 1.5);
+    --_ok-pad-y: var(--ok-cell-padding-y-sm);
   }
 
   :where([data-ok-table] > * > tr > :is(th, td)) {
     box-sizing: border-box;
     padding: var(--_ok-pad-y) var(--_ok-pad-x);
-    border-bottom: 1px dashed var(--ok-divider);
+    border-bottom: var(--ok-border-width) dashed var(--ok-divider);
     text-align: start;
     vertical-align: middle;
   }
@@ -184,7 +184,7 @@
     margin: 0;
     padding: 0;
     border: 0;
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background: none;
     color: inherit;
     font: inherit;
@@ -226,8 +226,8 @@
   }
 
   :where([data-ok-table-sort-label]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-table-sort-label]:not([data-ok-active]):focus-visible [data-ok-table-sort-icon]) {
@@ -278,7 +278,7 @@
     min-height: calc(var(--ok-spacing) * 8);
     padding: 0 calc(var(--ok-spacing) * 1);
     border: 0;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background-color: transparent;
     color: inherit;
     font: inherit;
@@ -286,7 +286,7 @@
   }
 
   :where([data-ok-table-pagination-rows] > select:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
     outline-offset: 0;
   }
 
@@ -297,7 +297,7 @@
   :where([data-ok-table-pagination-rows] > [data-ok-select]) {
     display: inline-flex;
     align-items: center;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     font-size: var(--ok-font-size-lg);
     line-height: calc(var(--ok-spacing) * 6);
   }
@@ -311,7 +311,7 @@
   :where(
     [data-ok-table-pagination-rows] > [data-ok-select] > [data-ok-select-display]:focus-visible
   ) {
-    outline: 2px solid var(--ok-text-primary);
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
     outline-offset: 0;
   }
 

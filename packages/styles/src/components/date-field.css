@@ -55,7 +55,7 @@
   }
 
   :where([data-ok-date-field-content]) {
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     outline: 0;
     caret-color: transparent;
     font-variant-numeric: tabular-nums;

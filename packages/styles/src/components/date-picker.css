@@ -44,7 +44,7 @@
   :where([data-ok-date-picker-paper]) {
     padding: 0;
     overflow: hidden;
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: var(--ok-bg-paper);
     background-image: none;
   }
@@ -143,7 +143,7 @@
       max-width: none;
       max-height: calc(var(--ok-spacing) * 84);
       overflow-y: auto;
-      border-inline-end: 1px solid var(--ok-divider);
+      border-inline-end: var(--ok-border-width) solid var(--ok-divider);
     }
 
     :where([data-ok-picker-layout][data-ok-orientation="landscape"]) {
@@ -217,7 +217,7 @@
   :where([data-ok-picker-toolbar-button]) {
     padding: 0;
     border: 0;
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background-color: transparent;
     color: var(--ok-text-secondary);
     font-family: var(--ok-typography-h3-font-family);
@@ -265,7 +265,7 @@
   :where([data-ok-picker-toolbar-meridiem]) {
     padding: 0;
     border: 0;
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background-color: transparent;
     color: var(--ok-text-secondary);
     font-family: var(--ok-typography-subtitle1-font-family);
@@ -283,15 +283,15 @@
     [data-ok-picker-toolbar-button]:focus-visible,
     [data-ok-picker-toolbar-meridiem]:focus-visible
   ) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Desktop date time: the calendar and the clock columns side by side, as tall as the calendar. */
   :where(
     [data-ok-picker-content] > [data-ok-date-calendar] + [data-ok-multi-section-digital-clock]
   ) {
-    border-inline-start: 1px solid var(--ok-divider);
+    border-inline-start: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where(
@@ -311,7 +311,7 @@
       )
       > [data-ok-picker-actions]
   ) {
-    border-block-start: 1px solid var(--ok-divider);
+    border-block-start: var(--ok-border-width) solid var(--ok-divider);
   }
 
   /* After the base rules (same zero specificity): landscape time toolbars stack the date, the

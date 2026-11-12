@@ -36,8 +36,8 @@
      inherits its owner's values. */
   :where([data-ok-organization-chart]) {
     --_ok-org-line-height: calc(var(--ok-spacing) * 10);
-    --_ok-org-line-width: 1px;
-    --_ok-org-line-radius: calc(var(--ok-spacing) * 6);
+    --_ok-org-line-width: var(--ok-border-width);
+    --_ok-org-line-radius: var(--ok-radius-2xl);
     --_ok-org-node-padding: var(--ok-spacing);
     --_ok-org-line-color: var(--ok-divider);
     --_ok-org-line-style: solid;
@@ -320,8 +320,8 @@
   }
 
   :where([data-ok-organization-chart-toggle]:focus-visible) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* The toggle's name, for assistive technology only (the count that follows stays in it). */
@@ -949,8 +949,8 @@
   :where(
     [data-ok-organization-chart-node][data-ok-highlighted] > [data-ok-organization-chart-label]
   ) {
-    border-radius: var(--ok-radius-lg);
-    outline: 2px solid var(--_ok-org-highlight-color);
+    border-radius: var(--ok-radius-surface-md);
+    outline: var(--ok-focus-ring-width) solid var(--_ok-org-highlight-color);
     outline-offset: var(--ok-spacing);
   }
 
@@ -965,14 +965,14 @@
     [data-ok-organization-chart-node][role="treeitem"]:focus-visible
       > [data-ok-organization-chart-label]
   ) {
-    border-radius: var(--ok-radius-lg);
-    outline: 2px solid var(--ok-text-primary);
+    border-radius: var(--ok-radius-surface-md);
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
     outline-offset: calc(var(--ok-spacing) * 1.5);
   }
 
   :where([data-ok-organization-chart-node][data-ok-selected] > [data-ok-organization-chart-label]) {
-    border-radius: var(--ok-radius-lg);
-    box-shadow: 0 0 0 2px var(--ok-palette-primary-main);
+    border-radius: var(--ok-radius-surface-md);
+    box-shadow: 0 0 0 var(--ok-border-width-strong) var(--ok-palette-primary-main);
   }
 
   @media (hover: hover) {

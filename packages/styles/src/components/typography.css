@@ -27,6 +27,7 @@
     font-size: var(--ok-typography-h1-font-size);
     font-weight: var(--ok-typography-h1-font-weight);
     line-height: var(--ok-typography-h1-line-height);
+    letter-spacing: var(--ok-typography-h1-letter-spacing);
     text-transform: var(--ok-typography-h1-text-transform);
   }
 
@@ -35,6 +36,7 @@
     font-size: var(--ok-typography-h2-font-size);
     font-weight: var(--ok-typography-h2-font-weight);
     line-height: var(--ok-typography-h2-line-height);
+    letter-spacing: var(--ok-typography-h2-letter-spacing);
     text-transform: var(--ok-typography-h2-text-transform);
   }
 
@@ -43,6 +45,7 @@
     font-size: var(--ok-typography-h3-font-size);
     font-weight: var(--ok-typography-h3-font-weight);
     line-height: var(--ok-typography-h3-line-height);
+    letter-spacing: var(--ok-typography-h3-letter-spacing);
     text-transform: var(--ok-typography-h3-text-transform);
   }
 
@@ -51,6 +54,7 @@
     font-size: var(--ok-typography-h4-font-size);
     font-weight: var(--ok-typography-h4-font-weight);
     line-height: var(--ok-typography-h4-line-height);
+    letter-spacing: var(--ok-typography-h4-letter-spacing);
     text-transform: var(--ok-typography-h4-text-transform);
   }
 
@@ -59,6 +63,7 @@
     font-size: var(--ok-typography-h5-font-size);
     font-weight: var(--ok-typography-h5-font-weight);
     line-height: var(--ok-typography-h5-line-height);
+    letter-spacing: var(--ok-typography-h5-letter-spacing);
     text-transform: var(--ok-typography-h5-text-transform);
   }
 
@@ -67,6 +72,7 @@
     font-size: var(--ok-typography-h6-font-size);
     font-weight: var(--ok-typography-h6-font-weight);
     line-height: var(--ok-typography-h6-line-height);
+    letter-spacing: var(--ok-typography-h6-letter-spacing);
     text-transform: var(--ok-typography-h6-text-transform);
   }
 
@@ -75,6 +81,7 @@
     font-size: var(--ok-typography-subtitle1-font-size);
     font-weight: var(--ok-typography-subtitle1-font-weight);
     line-height: var(--ok-typography-subtitle1-line-height);
+    letter-spacing: var(--ok-typography-subtitle1-letter-spacing);
     text-transform: var(--ok-typography-subtitle1-text-transform);
   }
 
@@ -83,6 +90,7 @@
     font-size: var(--ok-typography-subtitle2-font-size);
     font-weight: var(--ok-typography-subtitle2-font-weight);
     line-height: var(--ok-typography-subtitle2-line-height);
+    letter-spacing: var(--ok-typography-subtitle2-letter-spacing);
     text-transform: var(--ok-typography-subtitle2-text-transform);
   }
 
@@ -91,6 +99,7 @@
     font-size: var(--ok-typography-body1-font-size);
     font-weight: var(--ok-typography-body1-font-weight);
     line-height: var(--ok-typography-body1-line-height);
+    letter-spacing: var(--ok-typography-body1-letter-spacing);
     text-transform: var(--ok-typography-body1-text-transform);
   }
 
@@ -99,6 +108,7 @@
     font-size: var(--ok-typography-body2-font-size);
     font-weight: var(--ok-typography-body2-font-weight);
     line-height: var(--ok-typography-body2-line-height);
+    letter-spacing: var(--ok-typography-body2-letter-spacing);
     text-transform: var(--ok-typography-body2-text-transform);
   }
 
@@ -107,6 +117,7 @@
     font-size: var(--ok-typography-caption-font-size);
     font-weight: var(--ok-typography-caption-font-weight);
     line-height: var(--ok-typography-caption-line-height);
+    letter-spacing: var(--ok-typography-caption-letter-spacing);
     text-transform: var(--ok-typography-caption-text-transform);
   }
 
@@ -115,6 +126,7 @@
     font-size: var(--ok-typography-overline-font-size);
     font-weight: var(--ok-typography-overline-font-weight);
     line-height: var(--ok-typography-overline-line-height);
+    letter-spacing: var(--ok-typography-overline-letter-spacing);
     text-transform: var(--ok-typography-overline-text-transform);
   }
 
@@ -123,6 +135,7 @@
     font-size: var(--ok-typography-button-font-size);
     font-weight: var(--ok-typography-button-font-weight);
     line-height: var(--ok-typography-button-line-height);
+    letter-spacing: var(--ok-typography-button-letter-spacing);
     text-transform: var(--ok-typography-button-text-transform);
   }
 

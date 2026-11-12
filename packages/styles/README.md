@@ -8,7 +8,7 @@ Prebuilt CSS for [Owlky](../../README.md). No Tailwind needed to consume it.
 | `@owlky/styles/components/<name>.css` | one component (also load `tokens.css`), e.g. `button.css` |
 | `@owlky/styles/tokens.css`                        | `--ok-*` design tokens, light/dark                       |
 | `@owlky/styles/base.css`                          | optional page base (font, colors)                        |
-| `@owlky/styles/theme.css`                         | Tailwind v4 theme mapping (`bg-primary`, `text-h1`, `font-display`, `shadow-z8`, `shadow-elevation-<n>`, …) |
+| `@owlky/styles/theme.css`                         | Tailwind v4 theme mapping (`bg-primary`, `text-h1`, `font-heading`, `shadow-z8`, `shadow-elevation-<n>`, …) |
 
 All component rules are zero-specificity (`:where`) in `@layer components`, so your classes,
 utilities and plain CSS always win.

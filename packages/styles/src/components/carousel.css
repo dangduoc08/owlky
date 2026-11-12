@@ -105,8 +105,8 @@
   }
 
   :where([data-ok-carousel-viewport]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-carousel][data-ok-axis="y"] [data-ok-carousel-viewport]) {
@@ -296,7 +296,7 @@
     position: absolute;
     top: 50%;
     z-index: 1;
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: var(--_ok-carousel-fill);
     translate: 0 -50%;
   }
@@ -325,7 +325,7 @@
 
     gap: calc(var(--ok-spacing) * 0.5);
     padding: var(--ok-spacing);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     /* 72% (the reference uses 48%): the counter keeps 4.5:1 even over light content. */
     background-color: var(--ok-c-main, rgb(var(--ok-palette-grey-800-channel) / 0.72));
   }
@@ -335,7 +335,7 @@
     --_ok-icon-size: calc(var(--ok-spacing) * 4);
     --_ok-hover-bg: rgb(var(--ok-palette-common-white-channel) / 0.08);
 
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
   }
 
   :where([data-ok-carousel-counter]) {
@@ -397,8 +397,8 @@
   }
 
   :where([data-ok-carousel-dot]:focus-visible) {
-    outline: 2px solid var(--_ok-carousel-color);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--_ok-carousel-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where(
@@ -420,7 +420,7 @@
   :where([data-ok-carousel-dots][data-ok-variant="number"] > [data-ok-carousel-dot]) {
     width: calc(var(--ok-spacing) * 7);
     height: calc(var(--ok-spacing) * 7);
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.24);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.24);
     color: var(--ok-text-secondary);
     font-family: var(--ok-font-family);
     font-size: var(--ok-typography-subtitle2-font-size);
@@ -493,7 +493,7 @@
     flex-direction: column;
     max-height: 100%;
     padding: calc(var(--ok-spacing) * 2);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: var(--ok-bg-paper);
   }
 
@@ -512,7 +512,7 @@
     padding: 0;
     overflow: hidden;
     border: 0;
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background: var(--ok-bg-neutral);
     opacity: 0.48;
     cursor: pointer;
@@ -548,7 +548,7 @@
 
   :where([data-ok-carousel-thumb][aria-current="true"]) {
     opacity: 1;
-    box-shadow: 0 0 0 2px var(--ok-palette-primary-main);
+    box-shadow: 0 0 0 var(--ok-border-width-strong) var(--ok-palette-primary-main);
   }
 
   @media (hover: hover) {
@@ -558,8 +558,8 @@
   }
 
   :where([data-ok-carousel-thumb]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Play / pause: the label for the current state shows (the other is out of the name). */

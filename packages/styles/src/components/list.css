@@ -58,7 +58,7 @@
     align-items: center;
     box-sizing: border-box;
     width: 100%;
-    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+    padding: var(--ok-item-padding-y) var(--ok-item-padding-x);
     text-align: start;
   }
 
@@ -76,7 +76,7 @@
     box-sizing: border-box;
     min-width: 0;
     margin: 0;
-    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+    padding: var(--ok-item-padding-y) var(--ok-item-padding-x);
     border: 0;
     border-radius: 0;
     background-color: transparent;
@@ -138,7 +138,7 @@
     [data-ok-list-item][data-ok-show-divider],
     [data-ok-list-item-button][data-ok-show-divider]
   ) {
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     background-clip: padding-box;
   }
 
@@ -164,8 +164,8 @@
   }
 
   :where([data-ok-list-item-button]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
     background-color: var(--ok-action-focus);
   }
 

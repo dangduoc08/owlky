@@ -81,7 +81,7 @@
   :where([data-ok-linear-progress-dashed]) {
     position: absolute;
     inset: 0;
-    animation: ok-linear-progress-dashed 3s linear infinite;
+    animation: ok-linear-progress-dashed var(--ok-duration-progress-buffer) linear infinite;
   }
 
   :where([data-ok-linear-progress-dashed])::before {
@@ -109,14 +109,16 @@
     [data-ok-linear-progress][data-ok-variant="indeterminate"] [data-ok-linear-progress-bar="1"],
     [data-ok-linear-progress][data-ok-variant="query"] [data-ok-linear-progress-bar="1"]
   ) {
-    animation: ok-linear-progress-bar-1 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+    animation: ok-linear-progress-bar-1 var(--ok-duration-progress-bar) var(--ok-easing-progress-1)
+      infinite;
   }
 
   :where(
     [data-ok-linear-progress][data-ok-variant="indeterminate"] [data-ok-linear-progress-bar="2"],
     [data-ok-linear-progress][data-ok-variant="query"] [data-ok-linear-progress-bar="2"]
   ) {
-    animation: ok-linear-progress-bar-2 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) 1.15s infinite;
+    animation: ok-linear-progress-bar-2 var(--ok-duration-progress-bar) var(--ok-easing-progress-2)
+      var(--ok-duration-progress-bar-delay) infinite;
   }
 
   :where([data-ok-linear-progress][data-ok-variant="query"]) {
@@ -196,12 +198,12 @@
   /* Reduced motion: the bars sweep at half speed; the dots stay still; values don't ease. */
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-linear-progress-bar]) {
-      animation-duration: 4.2s;
+      animation-duration: var(--ok-duration-progress-bar-reduced);
       transition: none;
     }
 
     :where([data-ok-linear-progress-bar="2"]) {
-      animation-delay: 2.3s;
+      animation-delay: var(--ok-duration-progress-bar-reduced-delay);
     }
 
     :where([data-ok-linear-progress-dashed]) {

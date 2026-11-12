@@ -38,8 +38,8 @@
 
 @layer components {
   :where([data-ok-text-field]) {
-    --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3.5);
-    --_ok-pad-x: calc(var(--ok-spacing) * 3.5);
+    --_ok-pad: var(--ok-field-padding-y) var(--ok-field-padding-x);
+    --_ok-pad-x: var(--ok-field-padding-x);
     --_ok-label-x: calc(var(--ok-spacing) * 3.5);
     --_ok-label-rest: calc(var(--ok-spacing) * 4);
     --_ok-label-up: calc(var(--ok-spacing) * -2.25);
@@ -52,7 +52,7 @@
     --_ok-legend-max: 0.01px;
     --_ok-placeholder: 0;
     --_ok-border: rgb(var(--ok-palette-grey-500-channel) / 0.2);
-    --_ok-border-width: 1px;
+    --_ok-border-width: var(--ok-border-width);
     --_ok-tint: rgb(var(--ok-palette-grey-500-channel) / 0.08);
     --_ok-tint-hover: rgb(var(--ok-palette-grey-500-channel) / 0.16);
     --_ok-line: rgb(var(--ok-palette-grey-500-channel) / 0.32);
@@ -119,7 +119,7 @@
     align-items: center;
     box-sizing: border-box;
     min-width: 0;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     color: var(--ok-text-primary);
     font-size: var(--ok-font-size-lg);
     line-height: calc(var(--ok-spacing) * 6);
@@ -335,7 +335,7 @@
 
   /* Outlined */
   :where([data-ok-text-field][data-ok-size="small"]) {
-    --_ok-pad: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3.5);
+    --_ok-pad: var(--ok-field-padding-y-sm) var(--ok-field-padding-x);
     --_ok-label-rest: calc(var(--ok-spacing) * 2);
   }
 
@@ -478,7 +478,7 @@
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    border-bottom: 1px solid var(--_ok-line);
+    border-bottom: var(--ok-border-width) solid var(--_ok-line);
     pointer-events: none;
     transition: border-color var(--ok-duration-shorter) var(--ok-easing-standard);
   }
@@ -488,7 +488,7 @@
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    border-bottom: 2px solid var(--_ok-accent);
+    border-bottom: var(--ok-border-width-strong) solid var(--_ok-accent);
     transform: scaleX(0);
     pointer-events: none;
     transition: transform var(--ok-duration-shorter) var(--ok-easing-decelerate);
@@ -533,14 +533,14 @@
         [data-ok-text-field][data-ok-variant="standard"]
           > [data-ok-text-field-control]:hover:not(:has(> :disabled))
       )::before {
-      border-bottom-width: 2px;
+      border-bottom-width: var(--ok-border-width-strong);
     }
   }
 
   /* Focus */
   :where([data-ok-text-field]:is(:focus-within, [data-ok-focused])) {
     --_ok-border: var(--_ok-accent);
-    --_ok-border-width: 2px;
+    --_ok-border-width: var(--ok-border-width-strong);
     --_ok-tint: var(--_ok-tint-hover);
   }
 
@@ -553,7 +553,7 @@
     [data-ok-text-field][data-ok-variant="filled"]:is(:focus-within, [data-ok-focused])
       > [data-ok-text-field-control]
   ) {
-    box-shadow: inset 0 0 0 2px var(--_ok-accent);
+    box-shadow: inset 0 0 0 var(--ok-border-width-strong) var(--_ok-accent);
   }
 
   :where(

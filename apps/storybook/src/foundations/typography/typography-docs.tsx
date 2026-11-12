@@ -36,7 +36,7 @@ The stories in the sidebar show each variant in detail. To set a variant on an e
     id: "tokens",
     title: "Token reference",
     body: `- **Variants:** \`--ok-typography-<variant>-<property>\`, where the property is \`font-family\`, \`font-size\`, \`font-weight\`, \`line-height\` or \`text-transform\`. For example, \`--ok-typography-h3-font-size\`.
-- **Font families:** \`--ok-font-family\` for text, \`--ok-font-family-secondary\` for display headings and \`--ok-font-family-mono\` for code.
+- **Font families:** \`--ok-font-family\` for text, \`--ok-font-family-heading\` for headings and \`--ok-font-family-mono\` for code.
 - **Font weights:** \`--ok-font-weight-regular\`, \`--ok-font-weight-medium\`, \`--ok-font-weight-semibold\`, \`--ok-font-weight-bold\` and \`--ok-font-weight-extrabold\`.
 - **Small sizes for components:** \`--ok-font-size-xs\` to \`--ok-font-size-xl\`.`,
   },
@@ -76,14 +76,14 @@ export function PageTitle() {
   {
     id: "tailwind",
     title: "Use Tailwind CSS utilities",
-    body: "With the Owlky theme for Tailwind CSS v4, each variant from `h1` to `caption` is a `text-<variant>` utility that sets the size, weight and line height. Add `font-display` for the display font. The `overline` and `button` variants have no utility: use their CSS variables instead.",
+    body: "With the Owlky theme for Tailwind CSS v4, each variant from `h1` to `caption` is a `text-<variant>` utility that sets the size, weight and line height. Add `font-heading` for the heading font. The `overline` and `button` variants have no utility: use their CSS variables instead.",
     html: `/* In your main CSS file */
 @import "tailwindcss";
 @import "@owlky/styles/owlky.css";
 @import "@owlky/styles/theme.css";
 
 <!-- In your HTML -->
-<h1 class="font-display text-h3">Monthly report</h1>
+<h1 class="font-heading text-h3">Monthly report</h1>
 <p class="text-body2 text-text-secondary">Updated 5 minutes ago</p>`,
     react: `// Set up Tailwind once, in your main CSS file:
 //   @import "tailwindcss";
@@ -93,7 +93,7 @@ export function PageTitle() {
 export function ReportHeading() {
   return (
     <>
-      <h1 className="font-display text-h3">Monthly report</h1>
+      <h1 className="font-heading text-h3">Monthly report</h1>
       <p className="text-body2 text-text-secondary">Updated 5 minutes ago</p>
     </>
   );
@@ -159,7 +159,7 @@ function CssPreview() {
 function TailwindPreview() {
   return (
     <Preview className="flex-col items-start!">
-      <h3 className="m-0 font-display text-h3">Monthly report</h3>
+      <h3 className="m-0 font-heading text-h3">Monthly report</h3>
       <p className="m-0 text-body2 text-text-secondary">Updated 5 minutes ago</p>
     </Preview>
   );
