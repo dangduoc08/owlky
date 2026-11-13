@@ -19,6 +19,7 @@ export const FOLDER_SPEC = {
   "toggle-group": "toggle-button",
   "avatar-group": "avatar",
   "chart-trellis": "chart",
+  "chart-first-paint": "chart",
   utils: "date-picker",
   pickers: "date-picker",
   "localization-provider": "date-picker",

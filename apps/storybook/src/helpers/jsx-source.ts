@@ -83,7 +83,7 @@ export function jsxSource(groups: SourceGroup[]): string {
   const icons = [...used].filter((name) => name.endsWith("Icon")).sort();
   const library = [...used].filter((name) => !name.endsWith("Icon")).sort();
   const lines = [
-    'import "@owlky/styles/owlky.css";',
+    'import "@owlky/styles/owlky-all.css";',
     `import { ${library.join(", ")} } from "@owlky/react";`,
   ];
   if (icons.length > 0) {

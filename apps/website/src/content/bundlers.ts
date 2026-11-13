@@ -118,7 +118,7 @@ export default config;`,
       {
         label: "app/layout.tsx",
         language: "tsx",
-        code: `import "@owlky/styles/owlky.css";
+        code: `import "@owlky/styles/owlky-all.css";
 import type { ReactNode } from "react";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -141,7 +141,7 @@ To bundle less, register only the components your pages use. Each component's en
       {
         label: "main.ts",
         language: "ts",
-        code: `import "@owlky/styles/owlky.css";
+        code: `import "@owlky/styles/owlky-all.css";
 import { getRuntime } from "@owlky/html";
 import { dialog } from "@owlky/html/dialog";
 import { tabs } from "@owlky/html/tabs";
@@ -159,15 +159,30 @@ if (document.querySelector("[data-ok-data-grid]")) {
   {
     id: "styles",
     title: "Add the stylesheets",
-    body: `\`@owlky/styles/owlky.css\` holds the design tokens and every component. Import it once, in your app's entry file or root layout. Every rule has zero specificity, so your own styles always win.
+    body: `Import the stylesheet once, in your app's entry file or root layout. Every rule has zero specificity, so your own styles always win. You have three choices:
 
-To ship less CSS, import the tokens, then \`components/icon.css\`, which every component's icons use, and then the files of the components you use, from \`@owlky/styles/components/\`. Keep the order of the **Import** tables: some components restyle the components they compose, so a component's file comes after the files of the components inside it. For example, a button's loading spinner is a circular progress, so \`button.css\` comes after \`circular-progress.css\`.`,
+- **Everything:** \`@owlky/styles/owlky-all.css\` holds the design tokens and every component. It is about 63 kB gzip.
+- **The core and what you use:** \`@owlky/styles/owlky.css\` holds the tokens and the light components, such as buttons, form controls, dialogs and tables. It is about 29 kB gzip. Large components keep their styles in their own files, such as \`components/data-grid.css\` or \`components/chart.css\`, so import those after it.
+- **Only what the page uses:** import the tokens and then each component's file, from \`@owlky/styles/components/\`.
+
+Keep the order of the **Import** tables: some components restyle the components they compose, so a component's file comes after the files of the components inside it. For example, a button's loading spinner is a circular progress, so \`button.css\` comes after \`circular-progress.css\`. The data grid shows charts and date pickers, so \`chart.css\` comes before \`data-grid.css\`. The pickers' files come after it, so that a picker in a grid cell keeps its own look.`,
     code: [
       {
         label: "styles.ts",
         language: "ts",
         code: `// Everything
-import "@owlky/styles/owlky.css";`,
+import "@owlky/styles/owlky-all.css";`,
+      },
+      {
+        label: "styles.ts",
+        language: "ts",
+        code: `// The core, then the large components the app uses
+import "@owlky/styles/owlky.css";
+import "@owlky/styles/components/chart.css";
+import "@owlky/styles/components/data-grid.css";
+import "@owlky/styles/components/date-field.css";
+import "@owlky/styles/components/date-calendar.css";
+import "@owlky/styles/components/date-picker.css";`,
       },
       {
         label: "styles.ts",

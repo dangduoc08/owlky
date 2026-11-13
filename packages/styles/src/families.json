@@ -1,0 +1,30 @@
+{
+  "styles": {},
+  "chart": ["chart"],
+  "illustration": ["illustration"],
+  "data-grid": ["data-grid"],
+  "date-picker": [
+    "date-field",
+    "date-calendar",
+    "date-picker",
+    "time-clock",
+    "digital-clock",
+    "date-range-calendar",
+    "date-range-picker"
+  ],
+  "gantt": ["gantt"],
+  "carousel": ["carousel", "lightbox"],
+  "motion": ["motion", "count-up", "motion-border", "scroll-progress"],
+  "organization-chart": ["organization-chart"],
+  "upload": ["upload"],
+  "walktour": ["walktour"],
+  "tree-view": ["tree-view"],
+  "sortable": ["sortable"],
+  "autocomplete": ["autocomplete"],
+  "transfer-list": ["transfer-list"],
+  "markdown": ["markdown"],
+  "editor": ["editor"],
+  "map": ["map"],
+  "code-editor": ["code-editor"],
+  "phone-input": ["phone-input"]
+}

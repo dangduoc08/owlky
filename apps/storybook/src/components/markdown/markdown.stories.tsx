@@ -20,7 +20,7 @@ const SETUP = [
   "<!-- Once per page (CDN): owlky.js loads Markdown when the page holds it. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/markdown" (or register createMarkdown() yourself, as below). -->',
+  '<!-- npm: import "@owlky/styles/owlky-all.css" and "@owlky/html/auto", then "@owlky/html/markdown" (or register createMarkdown() yourself, as below). -->',
 ].join("\n");
 
 /** The React source of one demo: the shared imports plus that demo's function. */

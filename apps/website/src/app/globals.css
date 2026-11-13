@@ -3,7 +3,7 @@
  * Owlky stylesheet and theme from the built package, then the optional document base styles.
  */
 @import "tailwindcss";
-@import "@owlky/styles/owlky.css";
+@import "@owlky/styles/owlky-all.css";
 @import "@owlky/styles/theme.css";
 @import "@owlky/styles/base.css";
 

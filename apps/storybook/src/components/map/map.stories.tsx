@@ -65,7 +65,7 @@ const SETUP = [
   "<!-- Once per page (CDN): owlky.js loads the map, and its worker owlky-map-worker.js, when the page holds one. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css", "@owlky/html/auto", then "@owlky/html/map"; point setMapWorkerUrl() (from @owlky/core/map) at "@owlky/core/map-worker.js". -->',
+  '<!-- npm: import "@owlky/styles/owlky-all.css", "@owlky/html/auto", then "@owlky/html/map"; point setMapWorkerUrl() (from @owlky/core/map) at "@owlky/core/map-worker.js". -->',
 ].join("\n");
 
 const meta = {

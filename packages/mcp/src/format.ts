@@ -87,9 +87,11 @@ export function componentMarkdown(
           : "",
         imports.html ? `- HTML runtime (bundlers): ${code(imports.html)}` : "",
         imports.core ? `- Core: ${code(imports.core)}` : "",
-        imports.css?.length ? `- CSS: ${imports.css.map(code).join(", ")}` : "",
+        imports.css?.length
+          ? `- CSS: ${imports.css.map(code).join(", ")}${imports.cdnModule ? " (the light components' sheet `@owlky/styles/owlky.css` lacks these: import them after it, or use `@owlky/styles/owlky-all.css`)" : ""}`
+          : "",
         imports.cdnModule
-          ? `- CDN: \`owlky.js\` loads \`modules/${imports.cdnModule}.js\` when the page holds the component (\`data-ok-preload="${imports.cdnModule}"\` loads it ahead of use)`
+          ? `- CDN: \`owlky.js\` loads \`modules/${imports.cdnModule}.css\` and then \`modules/${imports.cdnModule}.js\` when the page holds the component (\`data-ok-preload="${imports.cdnModule}"\` loads them ahead of use)`
           : "",
       ].filter(Boolean)
     : [];

@@ -42,7 +42,7 @@ export const scrollProgressSections: GuideSection[] = [
 ${htmlChapters}
 </section>`,
     react: `// Load once, in your app's entry file
-import "@owlky/styles/owlky.css";
+import "@owlky/styles/owlky-all.css";
 import { LinearProgress, Scrollbar, Typography } from "@owlky/react";
 
 ${reactChapters}

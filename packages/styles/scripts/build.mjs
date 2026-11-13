@@ -1,6 +1,7 @@
 // Builds distributable, framework-free CSS. Consumers never run Tailwind over library sources.
 //
-//   dist/owlky.css(.min.css)  tokens + all components
+//   dist/owlky.css(.min.css)  tokens + core components; owlky-all.css(.min.css) tokens + all
+//   dist/modules/<name>.css   one lazy family each (the CDN loader's stylesheets, ADR-0068 §5)
 //   dist/components/<name>.css           one component (needs tokens.css)
 //   dist/tokens.css                      design tokens only
 //   dist/base.css                        optional document base styles
@@ -21,7 +22,6 @@ const dist = join(root, "dist");
 const require = createRequire(import.meta.url);
 const tailwind = join(dirname(require.resolve("@tailwindcss/cli/package.json")), "dist/index.mjs");
 const tokensCss = require.resolve("@owlky/tokens/tokens.css");
-const TOKENS_IMPORT = '@import "@owlky/tokens/tokens.css";';
 
 const LAYER_ORDER = "@layer theme, base, components, utilities;";
 const FORBIDDEN = [
@@ -71,29 +71,64 @@ await mkdir(dist, { recursive: true });
 const tokens = await readFile(tokensCss, "utf8");
 const componentFiles = (await readdir(join(src, "components"))).filter((f) => f.endsWith(".css"));
 
-// Full bundle: tokens verbatim + compiled components.
-const entry = join(src, ".bundle-components.css");
-const compiled = join(dist, ".components.css");
-const compiledMin = join(dist, ".components.min.css");
-try {
-  await writeFile(
-    entry,
-    (await readFile(join(src, "index.css"), "utf8")).replace(TOKENS_IMPORT, ""),
-  );
-  compile(entry, compiled);
-  compile(entry, compiledMin, true);
-} finally {
-  await rm(entry, { force: true });
+// Bundles: tokens verbatim + compiled components (ADR-0068 §5). `index.css` lists the core files
+// first and the lazy families after them, so these entries are prefixes and slices of it:
+//   owlky(.min).css        tokens + core components (what the CDN page links)
+//   owlky-all(.min).css    tokens + every component (one file, for bundlers and tests)
+//   modules/<name>.css     one lazy family (minified; the loader attaches it before its code)
+// `styles`: the hook for the design styles' opt-in sheets (ADR-0070 delivery, filled by ST3 /
+// ST4: name -> component files or its own source). Nothing builds from it yet.
+const { styles: _styles, ...families } = JSON.parse(
+  await readFile(join(src, "families.json"), "utf8"),
+);
+const lazyFiles = new Set(Object.values(families).flat());
+const indexCss = await readFile(join(src, "index.css"), "utf8");
+const fileOf = (line) => line.match(/^@import "\.\/components\/([\w-]+)\.css";$/)?.[1];
+const importLine = (name) => `@import "./components/${name}.css";`;
+const allFiles = indexCss.split("\n").map(fileOf).filter(Boolean);
+const coreFiles = allFiles.filter((name) => !lazyFiles.has(name));
+
+/** Compiles the given component files; returns the readable and the minified rules. */
+async function bundle(names) {
+  const entry = join(src, ".bundle-components.css");
+  const compiled = join(dist, ".components.css");
+  const compiledMin = join(dist, ".components.min.css");
+  try {
+    await writeFile(entry, names.map(importLine).join("\n"));
+    compile(entry, compiled);
+    compile(entry, compiledMin, true);
+  } finally {
+    await rm(entry, { force: true });
+  }
+  const result = {
+    css: rulesOf(await readFile(compiled, "utf8")),
+    min: rulesOf(await readFile(compiledMin, "utf8")),
+  };
+  await rm(compiled);
+  await rm(compiledMin);
+  return result;
 }
-const components = rulesOf(await readFile(compiled, "utf8"));
-const componentsMin = rulesOf(await readFile(compiledMin, "utf8"));
-await rm(compiled);
-await rm(compiledMin);
-await writeFile(join(dist, "owlky.css"), `${tokens}${components ? `\n${components}\n` : ""}`);
-await writeFile(join(dist, "owlky.min.css"), `${minifyTokens(tokens)}${componentsMin}\n`);
+
+const outputs = [];
+const writeBundle = async (name, names) => {
+  const { css, min } = await bundle(names);
+  await writeFile(join(dist, `${name}.css`), `${tokens}${css ? `\n${css}\n` : ""}`);
+  await writeFile(join(dist, `${name}.min.css`), `${minifyTokens(tokens)}${min}\n`);
+  outputs.push(join(dist, `${name}.css`), join(dist, `${name}.min.css`));
+};
+await writeBundle("owlky", coreFiles);
+await writeBundle("owlky-all", allFiles);
+
+// Lazy families: no tokens (the core sheet has them), minified, and the layer order first so a
+// sheet that loads before the core one still leaves `components` after `base`.
+await mkdir(join(dist, "modules"));
+for (const [name, names] of Object.entries(families)) {
+  const out = join(dist, "modules", `${name}.css`);
+  await writeFile(out, `${LAYER_ORDER}\n${(await bundle(names)).min}\n`);
+  outputs.push(out);
+}
 
 // Per-component files (each needs tokens.css) and the optional base styles.
-const outputs = [join(dist, "owlky.css"), join(dist, "owlky.min.css")];
 compile(join(src, "base.css"), join(dist, "base.css"));
 outputs.push(join(dist, "base.css"));
 if (componentFiles.length > 0) await mkdir(join(dist, "components"));
@@ -110,4 +145,5 @@ for (const file of componentFiles) {
 for (const file of outputs) await check(file);
 await copyFile(tokensCss, join(dist, "tokens.css"));
 await copyFile(join(src, "theme.css"), join(dist, "theme.css"));
+await copyFile(join(src, "families.json"), join(dist, "families.json"));
 console.log(`styles: built ${outputs.length + 2} CSS files`);

@@ -7,7 +7,9 @@ pnpm add @owlky/react @owlky/styles
 ```
 
 ```tsx
-import "@owlky/styles/owlky.css";
+// owlky-all.css holds every component; owlky.css holds the light ones, so add the files of
+// large components (@owlky/styles/components/data-grid.css) after it.
+import "@owlky/styles/owlky-all.css";
 import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup } from "@owlky/react";
 
 <Button variant="contained" color="primary">Save</Button>

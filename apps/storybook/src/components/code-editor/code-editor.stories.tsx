@@ -31,7 +31,7 @@ const SETUP = [
   "<!-- Once per page (CDN): owlky.js loads the code editor when the page holds one, and Monaco from the monaco/ folder next to it. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/code-editor". -->',
+  '<!-- npm: import "@owlky/styles/owlky-all.css" and "@owlky/html/auto", then "@owlky/html/code-editor". -->',
 ].join("\n");
 
 const meta = {

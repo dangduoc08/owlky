@@ -449,18 +449,34 @@ function ImportTable({ title, imports }: { title: string; imports: ApiImports })
         <ImportRow name="css" label="CSS" values={css}>
           The component's own styles. Load them after <Code>@owlky/styles/tokens.css</Code>,{" "}
           <Code>@owlky/styles/components/icon.css</Code> and the styles of the components it
-          composes. <Code>@owlky/styles/owlky.css</Code> holds every component.
+          composes.{" "}
+          {cdnModule ? (
+            <>
+              <Code>@owlky/styles/owlky.css</Code> holds only the light components: import these
+              files after it, or import <Code>@owlky/styles/owlky-all.css</Code> for every
+              component.
+            </>
+          ) : (
+            <>
+              <Code>@owlky/styles/owlky.css</Code> holds this component's styles.
+            </>
+          )}
         </ImportRow>
       ) : null}
       <ImportRow
         name="cdn"
         label="CDN"
-        values={[cdnModule ? `modules/${cdnModule}.js` : html ? "owlky.js" : "owlky.css"]}
+        values={
+          cdnModule
+            ? [`modules/${cdnModule}.css`, `modules/${cdnModule}.js`]
+            : [html ? "owlky.js" : "owlky.css"]
+        }
       >
         {cdnModule ? (
           <>
-            <Code>owlky.js</Code> loads this module when the page holds the component. To load it
-            ahead of use, add <Code>{`data-ok-preload="${cdnModule}"`}</Code> to the script.
+            <Code>owlky.js</Code> loads the stylesheet and then the module when the page holds the
+            component. To load them ahead of use, add{" "}
+            <Code>{`data-ok-preload="${cdnModule}"`}</Code> to the script.
           </>
         ) : html ? (
           <>
