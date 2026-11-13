@@ -16,7 +16,7 @@ export const shadowsSections: GuideSection[] = [
     title: "Shadow levels",
     body: `Shadows show how far a surface sits above the page. Owlky has three kinds:
 
-- **Elevation:** 24 levels, from \`--ok-elevation-1\` (almost flat) to \`--ok-elevation-24\` (floating).
+- **Elevation:** 24 levels, from \`--ok-elevation-1\` (almost flat) to \`--ok-elevation-24\` (floating). Each level uses the nearest shadow of the \`--ok-shadow-z1\` to \`--ok-shadow-z24\` scale, so levels change with the design style like every other shadow.
 - **Named shadows:** shadows for common surfaces. Use \`--ok-shadow-card\` for cards, \`--ok-shadow-dropdown\` for menus and popovers, \`--ok-shadow-dialog\` for dialogs and \`--ok-shadow-dialog-start\` for drawers. The scale \`--ok-shadow-z1\` to \`--ok-shadow-z24\` covers everything in between.
 - **Colored shadows:** one per palette color, such as \`--ok-shadow-primary\`, for filled buttons and highlighted elements.
 - **Drop shadows:** \`--ok-drop-shadow-z1\`, \`--ok-drop-shadow-z4\` and \`--ok-drop-shadow-z8\` repeat \`--ok-shadow-z1\`, \`--ok-shadow-z4\` and \`--ok-shadow-z8\` as \`filter\` values, for shapes such as map pins and icons.
