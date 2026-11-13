@@ -1,156 +1,14 @@
-import type { ShadowLayer, Theme } from "./types.js";
+import type { Theme } from "./types.js";
 
 /*
- * Values every style shares (type scale, density, elevation geometry, motion, z-index): the base
- * of `styleTheme()` (`theme.ts`), which adds a style's colors, fonts, shape and shadows. The
- * elevations follow Material's geometry (MUI, MIT, see THIRD_PARTY_NOTICES).
+ * Values every style shares (type scale, density, motion, z-index): the base of `styleTheme()`
+ * (`theme.ts`), which adds a style's colors, fonts, shape and shadows (`shadows.ts`).
  */
 
 const common = { white: "#FFFFFF", black: "#000000" };
 
 /** Skin tones of the illustrations' people (decorative, ADR-0041). */
 const illustration = { skin: { light: "#FFD8BF", medium: "#E0A47C", deep: "#8D5B3D" } };
-
-/*
- * System elevations 1–24 as [y, blur, spread] for the umbra, penumbra and ambient layers
- * (Material elevation geometry; alphas 20 % / 14 % / 12 %). x is always 0.
- */
-const ELEVATION: [number, number, number][][] = [
-  [
-    [2, 1, -1],
-    [1, 1, 0],
-    [1, 3, 0],
-  ],
-  [
-    [3, 1, -2],
-    [2, 2, 0],
-    [1, 5, 0],
-  ],
-  [
-    [3, 3, -2],
-    [3, 4, 0],
-    [1, 8, 0],
-  ],
-  [
-    [2, 4, -1],
-    [4, 5, 0],
-    [1, 10, 0],
-  ],
-  [
-    [3, 5, -1],
-    [5, 8, 0],
-    [1, 14, 0],
-  ],
-  [
-    [3, 5, -1],
-    [6, 10, 0],
-    [1, 18, 0],
-  ],
-  [
-    [4, 5, -2],
-    [7, 10, 1],
-    [2, 16, 1],
-  ],
-  [
-    [5, 5, -3],
-    [8, 10, 1],
-    [3, 14, 2],
-  ],
-  [
-    [5, 6, -3],
-    [9, 12, 1],
-    [3, 16, 2],
-  ],
-  [
-    [6, 6, -3],
-    [10, 14, 1],
-    [4, 18, 3],
-  ],
-  [
-    [6, 7, -4],
-    [11, 15, 1],
-    [4, 20, 3],
-  ],
-  [
-    [7, 8, -4],
-    [12, 17, 2],
-    [5, 22, 4],
-  ],
-  [
-    [7, 8, -4],
-    [13, 19, 2],
-    [5, 24, 4],
-  ],
-  [
-    [7, 9, -4],
-    [14, 21, 2],
-    [5, 26, 4],
-  ],
-  [
-    [8, 9, -5],
-    [15, 22, 2],
-    [6, 28, 5],
-  ],
-  [
-    [8, 10, -5],
-    [16, 24, 2],
-    [6, 30, 5],
-  ],
-  [
-    [8, 11, -5],
-    [17, 26, 2],
-    [6, 32, 5],
-  ],
-  [
-    [9, 11, -5],
-    [18, 28, 2],
-    [7, 34, 6],
-  ],
-  [
-    [9, 12, -6],
-    [19, 29, 2],
-    [7, 36, 6],
-  ],
-  [
-    [10, 13, -6],
-    [20, 31, 3],
-    [8, 38, 7],
-  ],
-  [
-    [10, 13, -6],
-    [21, 33, 3],
-    [8, 40, 7],
-  ],
-  [
-    [10, 14, -6],
-    [22, 35, 3],
-    [8, 42, 7],
-  ],
-  [
-    [11, 14, -7],
-    [23, 36, 3],
-    [9, 44, 8],
-  ],
-  [
-    [11, 15, -7],
-    [24, 38, 3],
-    [9, 46, 8],
-  ],
-];
-const ELEVATION_ALPHAS = [20, 14, 12] as const;
-
-/** Material elevations 1–24 as shadow layers (soft and subtle styles). */
-export function elevationLayers(): ShadowLayer[][] {
-  return ELEVATION.map((layers) =>
-    layers.map(([y, blur, spread], i) => ({
-      x: 0,
-      y,
-      blur,
-      spread,
-      alpha: ELEVATION_ALPHAS[i] ?? 12,
-    })),
-  );
-}
 
 /** Theme keys a style sets (`theme.ts`). */
 export type StyleKeys =
@@ -164,7 +22,8 @@ export type StyleKeys =
   | "icon"
   | "shadows"
   | "elevation"
-  | "colorShadow";
+  | "colorShadow"
+  | "shadowTreatment";
 
 /** Everything but the style's own values. */
 export const baseTheme: Omit<Theme, StyleKeys> = {

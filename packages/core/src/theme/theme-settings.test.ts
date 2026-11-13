@@ -294,6 +294,74 @@ describe("every axis nests on its own (ADR-0070 § 3)", () => {
       rgb(defaultTheme.palette.primary.main),
     );
   });
+
+  describe("shadow treatments nest like the other axes (ADR-0073)", () => {
+    const sheet = (name: "swiss" | "neo-brutalism") => {
+      const scope = `[data-ok-style="${name}"]`;
+      return themeToCss(createTheme({ style: name }), { selector: scope, reset: scope });
+    };
+    // Both opt-in sheets, in either order: the switch they share never undoes the other's.
+    const both = [themeToCss(defaultTheme), sheet("swiss"), sheet("neo-brutalism")].join("\n");
+    const reversed = [themeToCss(defaultTheme), sheet("neo-brutalism"), sheet("swiss")].join("\n");
+    const style = (name: string, inner: string) => wrap(`data-ok-style="${name}"`, inner);
+    const neo = createTheme({ style: "neo-brutalism" });
+    const shadowOf = (markup: string, sheets: string, token = "--ok-shadow-z8") =>
+      probe(markup, "box-shadow", `var(${token})`, sheets);
+    const hardInk = (scheme: { text: { primary: string } }, offset: number) =>
+      `${rgb(scheme.text.primary)} ${offset}px ${offset}px 0px 0px`;
+
+    it.each([
+      ["both sheets", both],
+      ["the sheets in the other order", reversed],
+    ])("%s: soft, flat and hard scopes, nested in every order", (_, sheets) => {
+      expect(shadowOf(P, sheets)).toMatch(/ 0px 8px 20px 0px$/);
+      expect(shadowOf(style("swiss", P), sheets)).toBe("none");
+      expect(shadowOf(style("neo-brutalism", P), sheets)).toBe(hardInk(neo.schemes.light, 4));
+      // The nearest style wins, through any number of other axis scopes.
+      expect(shadowOf(style("neo-brutalism", style("swiss", P)), sheets)).toBe("none");
+      expect(shadowOf(style("swiss", style("neo-brutalism", P)), sheets)).toBe(
+        hardInk(neo.schemes.light, 4),
+      );
+      expect(shadowOf(style("neo-brutalism", style("soft", P)), sheets)).toMatch(/ 8px 20px /);
+      expect(shadowOf(style("swiss", theme("dark", contrast("high", P))), sheets)).toBe("none");
+      // A hard shadow is ink: it follows the nearest scheme, like the text.
+      expect(shadowOf(style("neo-brutalism", theme("dark", P)), sheets)).toBe(
+        hardInk(neo.schemes.dark, 4),
+      );
+      expect(shadowOf(theme("dark", style("neo-brutalism", P)), sheets)).toBe(
+        hardInk(neo.schemes.dark, 4),
+      );
+    });
+
+    it("elevations, colored shadows and drop shadows follow the treatment", () => {
+      const inNeo = (inner: string) => style("neo-brutalism", inner);
+      expect(shadowOf(inNeo(P), both, "--ok-elevation-1")).toBe(hardInk(neo.schemes.light, 2));
+      expect(shadowOf(inNeo(P), both, "--ok-elevation-24")).toBe(hardInk(neo.schemes.light, 8));
+      expect(shadowOf(inNeo(P), both, "--ok-shadow-primary")).toBe(hardInk(neo.schemes.light, 2));
+      expect(shadowOf(style("swiss", P), both, "--ok-shadow-primary")).toBe("none");
+      expect(shadowOf(style("swiss", P), both, "--ok-elevation-8")).toBe("none");
+      expect(probe(style("swiss", P), "filter", "var(--ok-drop-shadow-z4)", both)).toBe("none");
+      expect(probe(inNeo(P), "filter", "var(--ok-drop-shadow-z1)", both)).toBe(
+        `drop-shadow(${rgb(neo.schemes.light.text.primary)} 2px 2px 0px)`,
+      );
+      expect(shadowOf(P, both, "--ok-elevation-1")).toMatch(/ 0px 1px 3px 0px$/);
+    });
+
+    it("a style's literal tokens and inputs reach its scope only", () => {
+      const swiss = createTheme({ style: "swiss" });
+      const radius = "var(--ok-radius-surface)";
+      expect(probe(style("swiss", P), "width", radius, both)).toBe("0px");
+      expect(probe(style("swiss", style("soft", P)), "width", radius, both)).toBe("18px");
+      expect(probe(style("neo-brutalism", P), "width", radius, both)).toBe("12px");
+      expect(probe(style("swiss", P), "color", "var(--ok-palette-primary-main)", both)).toBe(
+        rgb(swiss.palette.primary.main),
+      );
+      expect(
+        probe(style("swiss", theme("dark", P)), "color", "var(--ok-surface-border-color)", both),
+      ).toBe(rgb(swiss.schemes.dark.text.primary));
+      expect(probe(style("neo-brutalism", P), "--x", "var(--ok-icon-stroke)", both)).toBe("2");
+    });
+  });
 });
 
 describe("focus ring colors follow the nearest scheme", () => {

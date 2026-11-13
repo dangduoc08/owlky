@@ -154,7 +154,10 @@ describe("typography, shape and shadows", () => {
     expect(root["--ok-drop-shadow-z1"]).toMatch(/^drop-shadow\(0 1px 2px var\(--_ok-sc10\)\)/);
     expect(root["--ok-shadow-primary"]).toContain("var(--ok-palette-primary-main) 28%");
     expect(defaultTheme.elevation).toHaveLength(24);
-    expect(root["--ok-elevation-1"]?.split("var(--_ok-sc")).toHaveLength(4);
+    // Elevations alias the nearest named shadow (ADR-0073).
+    expect(root["--ok-elevation-1"]).toBe("var(--ok-shadow-z1)");
+    expect(root["--ok-elevation-6"]).toBe("var(--ok-shadow-z8)");
+    expect(root["--ok-elevation-24"]).toBe("var(--ok-shadow-z24)");
     for (const name of ["z1", "z4", "z8"] as const) {
       expect(defaultTheme.shadows[name].every((layer) => layer.spread === 0)).toBe(true);
     }
