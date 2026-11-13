@@ -120,6 +120,14 @@ stays the runtime only (ADR-0007).
 <script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js" defer></script>
 ```
 
+To use a design style other than the default Soft, link its sheet after `owlky.css`, then set
+`data-ok-style="swiss"` on `<html>` or on any element. A style sheet holds tokens only (about
+2.6 kB gzip), and styles nest like themes:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-style-swiss.min.css">
+```
+
 Then paste component snippets (Storybook HTML/* pages). Components
 inserted later (htmx, Turbo, `innerHTML`) are initialized automatically and cleaned up when
 removed. Loading the script twice is harmless.
