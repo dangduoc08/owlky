@@ -76,6 +76,26 @@ const EXPECTED: Record<StyleName, Expected> = {
     shadows: "hard",
     iconStroke: 2,
   },
+  editorial: {
+    fonts: { text: "Source Serif 4", heading: "Noto Serif Display", label: "Archivo" },
+    heading: { weight: 900, letterSpacing: "normal", textTransform: "none" },
+    label: { textTransform: "uppercase", letterSpacing: "0.12em" },
+    radius: ["0px", "0px", "0px"],
+    surfaceBorder: ["1px", true],
+    borderWidth: "1px",
+    shadows: "flat",
+    iconStroke: 1.25,
+  },
+  "minimal-mono": {
+    fonts: { text: "Inter", heading: "Inter", label: "Inter" },
+    heading: { weight: 700, letterSpacing: "-0.02em", textTransform: "none" },
+    label: { textTransform: "none", letterSpacing: "normal" },
+    radius: ["8px", "14px", "9999px"],
+    surfaceBorder: ["0px", false],
+    borderWidth: "1px",
+    shadows: "soft",
+    iconStroke: 1.5,
+  },
 };
 
 const firstFamily = (stack: string) => stack.match(/^"([^"]+?)(?: Variable)?"/)?.[1];

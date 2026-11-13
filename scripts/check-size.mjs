@@ -164,6 +164,8 @@ const STYLE_SHEET_BUDGETS = {
   brutalism: 2_720, // 2.59 kB
   "neo-brutalism": 2_750, // 2.63 kB (inputs, literals, the treatment toggles and shadow switch)
   swiss: 2_750, // 2.61 kB
+  editorial: 2_830, // 2.69 kB
+  "minimal-mono": 2_160, // 2.05 kB (a soft style: no shadow switch)
 };
 for (const file of await readdir("packages/styles/dist/styles")) {
   const name = file.match(/^(.+)\.min\.css$/)?.[1];
