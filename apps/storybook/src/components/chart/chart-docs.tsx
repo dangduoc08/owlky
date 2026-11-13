@@ -217,7 +217,7 @@ export function ChartData() {
   {
     id: "colors",
     title: "Set colors",
-    body: "Series use the theme palette in order: primary dark, warning, info, error, success and then darker shades. To pick colors, use `colors` in React or `data-ok-color` on each column header in HTML. A color is a palette name, such as `info`, or a palette name and a shade, such as `primary-dark`. To color a single value, such as negative columns, give the point a `color` (React) or the cell a `data-ok-color` (HTML). Colors follow the theme and the preset, in light and dark mode.",
+    body: "Series use the theme palette in order: primary dark, warning, info, error, success and then darker shades. To pick colors, use `colors` in React or `data-ok-color` on each column header in HTML. A color is a palette name, such as `info`, or a palette name and a shade, such as `primary-dark`. To color a single value, such as negative columns, give the point a `color` (React) or the cell a `data-ok-color` (HTML). Colors follow the theme and the style, in light and dark mode.",
     html: `<td data-ok-color="error">-41.2</td>`,
     react: `import { Chart } from "@owlky/react";
 

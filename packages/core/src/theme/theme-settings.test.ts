@@ -1,4 +1,12 @@
-import { createTheme, defaultTheme, hexToRgb, themeToCss } from "@owlky/tokens";
+import {
+  createTheme,
+  defaultTheme,
+  hexToRgb,
+  paletteColorNames,
+  styleNames,
+  styleSheetCss,
+  themeToCss,
+} from "@owlky/tokens";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   applyThemeSettings,
@@ -534,5 +542,87 @@ describe("gradient tokens follow the nearest scheme", () => {
     );
     expect(lightPaper).toMatch(/radial-gradient/);
     expect(lightPaper).not.toBe(darkPaper);
+  });
+});
+
+/**
+ * The AA matrix (`packages/tokens/src/roles.test.ts`) checks every role pair of every style's
+ * theme data. This closes the loop for the delivered CSS: the core sheet plus every opt-in sheet,
+ * nested scopes resolving each color role to exactly the tested value, for every style ×
+ * light / dark × surface default / contrast × contrast default / high (ST6).
+ */
+describe("every style's sheet serves its tested colors on every axis (ADR-0070 § 7)", () => {
+  const sheet = document.createElement("style");
+  const host = document.createElement("div");
+  afterEach(() => {
+    sheet.remove();
+    host.replaceChildren();
+    host.remove();
+  });
+
+  it("text, palette, surface and border roles match the theme data", () => {
+    const themes = new Map(styleNames.map((name) => [name, createTheme({ style: name })]));
+    sheet.textContent = [
+      themeToCss(defaultTheme),
+      ...styleNames
+        .filter((name) => name !== defaultTheme.style)
+        .map((name) => styleSheetCss(themes.get(name) as typeof defaultTheme)),
+    ].join("\n");
+    document.head.append(sheet);
+    const probes: { label: string; element: HTMLElement; expected: string }[] = [];
+    for (const [name, t] of themes) {
+      for (const level of ["default", "high"] as const) {
+        for (const dark of [false, true]) {
+          for (const surface of ["default", "contrast"] as const) {
+            const set = level === "high" ? t.highContrast : t;
+            const scheme = dark ? set.schemes.dark : set.schemes.light;
+            const palette = dark ? { ...set.palette, ...set.darkPalette } : set.palette;
+            const expected: Record<string, string> = {
+              "--ok-text-primary": scheme.text.primary,
+              "--ok-text-secondary": scheme.text.secondary,
+              "--ok-bg-paper": scheme.background.paper,
+              "--ok-bg-default":
+                surface === "contrast" ? scheme.background.contrast : scheme.background.default,
+              "--ok-control-border-color": scheme.border,
+            };
+            for (const c of paletteColorNames) {
+              expected[`--ok-palette-${c}-main`] = palette[c].main;
+              expected[`--ok-palette-${c}-dark`] = palette[c].dark;
+              expected[`--ok-palette-${c}-contrast-text`] = palette[c].contrastText;
+              expected[`--ok-palette-${c}-text`] = scheme.paletteText[c];
+            }
+            // The axis scopes inside the style scope, as a page nests them.
+            const scope = document.createElement("div");
+            scope.dataset["okStyle"] = name;
+            const mode = document.createElement("div");
+            mode.dataset["okTheme"] = dark ? "dark" : "light";
+            const axes = document.createElement("div");
+            axes.dataset["okSurface"] = surface;
+            axes.dataset["okContrast"] = level;
+            scope.append(mode);
+            mode.append(axes);
+            host.append(scope);
+            for (const [token, value] of Object.entries(expected)) {
+              const element = document.createElement("span");
+              element.style.color = `var(${token})`;
+              axes.append(element);
+              const axis = `${dark ? "dark" : "light"}, ${surface} surface, ${level} contrast`;
+              probes.push({ label: `${name} (${axis}) ${token}`, element, expected: value });
+            }
+          }
+        }
+      }
+    }
+    document.body.append(host);
+    const wrong = probes
+      .map(({ label, element, expected }) => ({
+        label,
+        actual: getComputedStyle(element).color,
+        expected: rgb(expected),
+      }))
+      .filter(({ actual, expected }) => actual !== expected)
+      .map(({ label, actual, expected }) => `${label}: ${actual}, expected ${expected}`);
+    expect(wrong).toEqual([]);
+    expect(probes).toHaveLength(styleNames.length * 8 * (5 + 4 * paletteColorNames.length));
   });
 });

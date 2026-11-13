@@ -19,19 +19,14 @@ function PreviewLink({ to, ...props }: { to: string } & ComponentProps<"a">) {
   return <a href={to} {...props} />;
 }
 
+/** Solar's letter icon (`letter-linear`): the drawing of `MAIL_SVG` and the React examples. */
 function MailIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5">
+        <path d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z" />
+        <path d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908L18 8" />
+      </g>
     </svg>
   );
 }

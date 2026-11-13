@@ -2,11 +2,11 @@ import { fabOptions } from "@owlky/core";
 import fabApi from "@owlky/docs-content/api/fab.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Fab } from "@owlky/react";
-import { DocsIcon, iconMarkup } from "../../helpers/docs-icons.js";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 
-const PLUS = iconMarkup("plus");
+const PLUS = solarMarkup("add-linear");
 
 export const fabSections: GuideSection[] = [
   {
@@ -22,12 +22,13 @@ export const fabSections: GuideSection[] = [
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Fab } from "@owlky/react";
-import { PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 
 export function AddButton() {
   return (
     <Fab color="primary" aria-label="Add">
-      <PlusIcon />
+      <Icon icon={addLinear} aria-hidden="true" />
     </Fab>
   );
 }`,
@@ -40,12 +41,13 @@ export function AddButton() {
   ${PLUS}New project
 </button>`,
     react: `import { Fab } from "@owlky/react";
-import { PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 
 export function FabExtended() {
   return (
     <Fab color="primary" extended>
-      <PlusIcon />
+      <Icon icon={addLinear} aria-hidden="true" />
       New project
     </Fab>
   );
@@ -59,12 +61,13 @@ export function FabExtended() {
   ${PLUS}
 </button>`,
     react: `import { Fab } from "@owlky/react";
-import { PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 
 export function FabVariants() {
   return (
     <Fab variant="soft" color="primary" aria-label="Add">
-      <PlusIcon />
+      <Icon icon={addLinear} aria-hidden="true" />
     </Fab>
   );
 }`,
@@ -77,12 +80,13 @@ export function FabVariants() {
   ${PLUS}
 </button>`,
     react: `import { Fab } from "@owlky/react";
-import { PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 
 export function FabSizes() {
   return (
     <Fab color="primary" size="lg" aria-label="Add">
-      <PlusIcon />
+      <Icon icon={addLinear} aria-hidden="true" />
     </Fab>
   );
 }`,
@@ -103,12 +107,13 @@ export function FabSizes() {
   ${PLUS}
 </button>`,
     react: `import { Fab } from "@owlky/react";
-import { PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 
 export function FabPosition() {
   return (
     <Fab color="primary" aria-label="Add" style={{ position: "fixed", right: 24, bottom: 24 }}>
-      <PlusIcon />
+      <Icon icon={addLinear} aria-hidden="true" />
     </Fab>
   );
 }`,
@@ -143,10 +148,10 @@ const PREVIEWS = {
   overview: () => (
     <Preview>
       <Fab color="primary" aria-label="Add">
-        <DocsIcon name="plus" />
+        <SolarIcon name="add-linear" />
       </Fab>
       <Fab color="primary" extended>
-        <DocsIcon name="plus" />
+        <SolarIcon name="add-linear" />
         New project
       </Fab>
     </Preview>
@@ -154,7 +159,7 @@ const PREVIEWS = {
   extended: () => (
     <Preview>
       <Fab color="primary" extended>
-        <DocsIcon name="plus" />
+        <SolarIcon name="add-linear" />
         New project
       </Fab>
     </Preview>
@@ -163,11 +168,11 @@ const PREVIEWS = {
     <Preview>
       {(["contained", "outlined", "soft"] as const).map((variant) => (
         <Fab key={variant} variant={variant} color="primary" aria-label={`Add, ${variant}`}>
-          <DocsIcon name="plus" />
+          <SolarIcon name="add-linear" />
         </Fab>
       ))}
       <Fab aria-label="Add, default color">
-        <DocsIcon name="plus" />
+        <SolarIcon name="add-linear" />
       </Fab>
     </Preview>
   ),
@@ -175,7 +180,7 @@ const PREVIEWS = {
     <Preview>
       {(["sm", "md", "lg"] as const).map((size) => (
         <Fab key={size} color="primary" size={size} aria-label={`Add, ${capitalize(size)}`}>
-          <DocsIcon name="plus" />
+          <SolarIcon name="add-linear" />
         </Fab>
       ))}
     </Preview>

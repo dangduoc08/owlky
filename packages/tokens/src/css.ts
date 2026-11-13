@@ -18,6 +18,7 @@
  */
 import { hexToRgb } from "./color.js";
 import { treatmentShadows } from "./shadows.js";
+import { defaultTheme } from "./theme.js";
 import {
   breakpointNames,
   type ColorScheme,
@@ -617,8 +618,8 @@ export interface ThemeCssOptions {
    */
   reset?: string;
   /**
-   * With `selector`: the core sheet's theme (`defaultTheme`). Required when the theme has ink
-   * colors (`darkPalette`): their fills switch on every scope element and fall back to its values.
+   * With `selector`: the core sheet's theme, which ink colors (`darkPalette`) fall back to on
+   * every scope element. Default `defaultTheme`: pass another only for a core sheet of your own.
    */
   base?: Theme;
 }
@@ -735,9 +736,10 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
     );
   }
   if (!core && (theme.darkPalette || theme.highContrast.darkPalette)) {
-    if (!options.base) throw new Error("themeToCss: a theme with ink colors needs `base`");
     // Wins over the core resolver by source order, like the shadow switch.
-    parts.push(block(`${SCOPE_SELECTOR}, ${selector}`, inkSwitch(tokens, options.base)));
+    parts.push(
+      block(`${SCOPE_SELECTOR}, ${selector}`, inkSwitch(tokens, options.base ?? defaultTheme)),
+    );
   }
   if (!core && options.reset) {
     // Zero specificity: another style's own scope still declares its inputs over the reset.
@@ -758,4 +760,16 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
     );
   }
   return `${parts.join("\n")}\n`;
+}
+
+/**
+ * The opt-in sheet of a theme's style (ADR-0073 § 4): its tokens and inputs on
+ * `[data-ok-style="<style>"]`, reset inside every other style scope, plus the shadow and ink
+ * switches it needs. Load it after `owlky.css`. With a `createTheme({ style, brand, fonts })`
+ * theme it replaces `@owlky/styles/styles/<style>.css` (a branded Nordic, for example); the core
+ * sheet's own style (Soft) has no sheet: serialize it with `themeToCss(theme)` instead.
+ */
+export function styleSheetCss(theme: Theme): string {
+  const scope = `[data-ok-style="${theme.style}"]`;
+  return themeToCss(theme, { selector: scope, reset: scope });
 }

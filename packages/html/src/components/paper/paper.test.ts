@@ -52,6 +52,30 @@ describe("paper snippets", () => {
     }
   });
 
+  it("a style may rule one side: in-flow papers draw a top rule, floating ones the whole edge", () => {
+    const host = mount(
+      "<div><div data-ok-paper>Card</div>" +
+        "<div data-ok-dialog-paper data-ok-paper>Dialog</div></div>",
+    );
+    const scope = host.firstElementChild as HTMLElement;
+    // Editorial's surface edge (its sheet sets these tokens).
+    scope.style.setProperty("--ok-surface-border-width", "1px");
+    scope.style.setProperty("--ok-surface-border-style", "solid none none");
+    const [card, dialog] = host.querySelectorAll<HTMLElement>("[data-ok-paper]");
+    const cardStyle = getComputedStyle(card as HTMLElement);
+    expect([
+      cardStyle.borderTopStyle,
+      cardStyle.borderLeftStyle,
+      cardStyle.borderBottomStyle,
+    ]).toEqual(["solid", "none", "none"]);
+    const dialogStyle = getComputedStyle(dialog as HTMLElement);
+    expect([
+      dialogStyle.borderTopStyle,
+      dialogStyle.borderLeftStyle,
+      dialogStyle.borderBottomStyle,
+    ]).toEqual(["solid", "solid", "solid"]);
+  });
+
   it("dark scope: the dark paper, the same shadow levels", () => {
     const host = mount(
       '<div data-ok-theme="dark"><div data-ok-paper data-ok-variant="elevation" data-ok-elevation="4">Dark</div></div>',

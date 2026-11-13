@@ -4,7 +4,7 @@ import data from "./icon-data.json" with { type: "json" };
 
 for (const collection of data.collections) addCollection(collection as IconifyJSON);
 
-export type IconSetPrefix = "solar" | "eva" | "logos" | "vscode-icons" | "circle-flags";
+export type IconSetPrefix = "solar" | "circle-flags";
 
 export function iconSet(prefix: IconSetPrefix) {
   const set = data.sets.find((entry) => entry.prefix === prefix);

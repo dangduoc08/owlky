@@ -4,12 +4,13 @@
 //   - no placeholders (`…`, or `...` that isn't a spread);
 //   - HTML: every `data-ok-*` attribute and `ok:*:*` event exists in the packages;
 //   - React: each example is a complete module (its imports included) that typechecks against
-//     the built packages. Icon components come from any icon library: `lucide-react` is
-//     declared as a stand-in.
+//     the built packages. Icons are Solar (ADR-0070 § 9): `Icon` from `@iconify/react/offline`
+//     and each icon's data from `@iconify-icons/solar/<name>`, checked against the Solar set.
 // Run after `pnpm build` (types resolve from `dist`):
 //   node apps/storybook/scripts/check-docs-code.mjs [page …]
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
@@ -18,6 +19,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const app = resolve(here, "..");
 const root = resolve(app, "../..");
 const only = process.argv.slice(2);
+const require = createRequire(import.meta.url);
 
 const docsPages = (base, pattern) =>
   ["components", "foundations"].flatMap((group) =>
@@ -118,45 +120,23 @@ for (const s of sections) {
 const out = join(app, ".docs-code");
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out);
-// Icons that exist in lucide-react (each also as `<Name>Icon`): extend the list when an example
-// needs another one, after checking https://lucide.dev/icons. Icons take lucide's `size` and
-// `absoluteStrokeWidth` besides the SVG attributes.
-const LUCIDE = [
-  "Bold",
-  "Check",
-  "ChevronLeft",
-  "ChevronDown",
-  "ChevronRight",
-  "Copy",
-  "EllipsisVertical",
-  "Eye",
-  "EyeOff",
-  "Heart",
-  "House",
-  "Image",
-  "ImageOff",
-  "Inbox",
-  "Info",
-  "Italic",
-  "Mail",
-  "MapPin",
-  "Minus",
-  "Phone",
-  "Plus",
-  "Search",
-  "Send",
-  "Settings",
-  "Star",
-  "Trash",
-  "Trash2",
-  "Underline",
-  "User",
-  "Wifi",
-  "X",
-];
+// Solar icons (`@iconify-icons/solar/<name>`, one module per icon): every name an example
+// imports must exist in the set (`@iconify-json/solar`, a dev dependency, holds the same data).
+const solar = JSON.parse(readFileSync(require.resolve("@iconify-json/solar/icons.json"), "utf8"));
+const solarNames = new Set();
+for (const s of sections)
+  for (const [, name] of (s.react ?? "").matchAll(/["']@iconify-icons\/solar\/([^"']+)["']/g)) {
+    if (solar.icons[name] || solar.aliases?.[name]) solarNames.add(name);
+    else errors.push(`${where(s, "react")}: unknown Solar icon ${name}`);
+  }
 writeFileSync(
   join(out, "icons.d.ts"),
-  `declare module "lucide-react" {\n  type Icon = import("react").FC<import("react").SVGProps<SVGSVGElement> & { size?: number | string; absoluteStrokeWidth?: boolean }>;\n${LUCIDE.map((name) => `  export const ${name}: Icon;\n  export const ${name}Icon: Icon;\n`).join("")}}\n`,
+  [...solarNames]
+    .map(
+      (name) =>
+        `declare module "@iconify-icons/solar/${name}" {\n  const data: import("@iconify/react/offline").IconifyIcon;\n  export default data;\n}\n`,
+    )
+    .join(""),
 );
 const programs = [[]];
 const owner = new Map();

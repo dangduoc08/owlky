@@ -70,15 +70,17 @@ export function TreeViewSelect() {
     title: "Change the icons and the look",
     body: "By default, items with children show a chevron that turns when they open. Pass `expandIcon` and `collapseIcon` for your own pair, and `endIcon` for items without children. Set `variant` to `lines` for dashed guides beside nested items, round tinted expand icons and compact rows.",
     react: `import { SimpleTreeView, TreeItem } from "@owlky/react";
-import { MinusIcon, PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
+import minusLinear from "@iconify-icons/solar/minus-linear";
 
 export function TreeViewIcons() {
   return (
     <SimpleTreeView
       aria-label="Outline"
       variant="lines"
-      expandIcon={<PlusIcon />}
-      collapseIcon={<MinusIcon />}
+      expandIcon={<Icon icon={addLinear} aria-hidden="true" />}
+      collapseIcon={<Icon icon={minusLinear} aria-hidden="true" />}
     >
       <TreeItem itemId="design" label="Design">
         <TreeItem itemId="mockups" label="Mockups" />

@@ -4,10 +4,11 @@
  * Exposes exactly one global, `window.Owlky`, and only when this copy owns the page runtime.
  *
  * Script attributes: `data-ok-preload="chart data-grid"` loads modules ahead of use;
- * `data-ok-modules="/path/"` serves the modules from another folder.
+ * `data-ok-modules="/path/"` serves the modules from another folder; `data-ok-styles="/path/"`
+ * serves the design style sheets from another folder, `data-ok-styles="none"` never adds them.
  */
 import { lightComponents } from "./components/light.js";
-import { installLoader, moduleBase, preloadNames } from "./loader/loader.js";
+import { installLoader, moduleBase, preloadNames, styleBase } from "./loader/loader.js";
 import { getRuntime } from "./runtime/global.js";
 import type { Runtime } from "./runtime/types.js";
 
@@ -22,6 +23,7 @@ if (runtime.active) {
   installLoader(runtime, {
     base: moduleBase(script),
     preload: preloadNames(script?.getAttribute("data-ok-preload")),
+    styles: styleBase(script),
   });
   runtime.start();
   if (globalThis.Owlky === undefined) globalThis.Owlky = runtime;

@@ -86,7 +86,7 @@ export function Badge() {
     title: "Set a component's color",
     body: `Most components have a color option. In HTML, set the \`data-ok-color\` attribute. In React, set the \`color\` prop.
 
-The available colors are ${list(["inherit", ...componentColorNames])}. A few components add their own values, such as \`default\` for Icon button. Component colors come from the palette, so they follow the active theme and preset automatically.`,
+The available colors are ${list(["inherit", ...componentColorNames])}. A few components add their own values, such as \`default\` for Icon button. Component colors come from the palette, so they follow the active theme and style automatically.`,
     html: `<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="success" data-ok-size="md">
   <span data-ok-button-label>Save</span>
 </button>
@@ -297,7 +297,7 @@ export function ColorTag() {
   // The default value (bare imports need a bundler or an import map)
   import { defaultTheme } from "@owlky/tokens";
 
-  const brand = defaultTheme.palette.primary.main; // "#00A76F"
+  const brand = defaultTheme.palette.primary.main; // "#615FFF"
 
   // The color on screen now (follows the theme)
   const styles = getComputedStyle(document.documentElement);
@@ -324,7 +324,7 @@ export function usePrimaryColor() {
 
 To change the theme from code, call \`applyThemeSettings()\`. Pass a storage, such as \`localStorage\`, to remember the user's choice.
 
-To use your brand color, override the \`--ok-palette-primary-*\` tokens in your CSS, on \`:root\` or on any element. Check the contrast of text on your colors, because overridden colors aren't adjusted for you.`,
+To use your brand colors, build a theme with \`createTheme({ style, brand: { primary } })\` from \`@owlky/tokens\`, or call \`applyThemeBrand()\` from \`@owlky/core/theme-brand\` at run time. Owlky derives every shade from your color, in light and dark mode and at both contrast levels, and keeps each pair accessible. The Styles guide shows both. You can also override a single token, such as \`--ok-palette-primary-main\`, in your CSS, but then the other shades and modes aren't adjusted for you, so check the contrast yourself.`,
     html: `<html data-ok-theme="dark">
   <body>
     <!-- A light panel inside the dark page -->
@@ -360,8 +360,8 @@ export function ThemedPage() {
   {
     id: "accessibility",
     title: "Accessibility",
-    body: `- Neutral text colors and the \`text\` tone of each palette color meet WCAG 2.2 level AA (a contrast ratio of at least 4.5:1) on the theme backgrounds, in light and dark mode.
-- Filled components use \`contrast-text\` on the \`main\` shade. Some of these brand combinations are below 4.5:1, so avoid them for long text.
+    body: `- Neutral text colors and the \`text\` tone of each palette color meet WCAG 2.2 level AA (a contrast ratio of at least 4.5:1) on the theme backgrounds, in light and dark mode, in every style.
+- Filled components use \`contrast-text\` on the \`main\` shade, which also reaches 4.5:1. With \`data-ok-contrast="high"\`, text reaches 7:1.
 - To check your own color pairs, use \`contrastRatio(foreground, background)\` from \`@owlky/tokens\`.
 - Gradient text uses \`--ok-gradient-<color>-text\`: every point of it meets AA on the theme's backgrounds. The fills of \`--ok-gradient-<color>\` start on a pale shade, so keep text off them.
 - To place text on any color, let \`getContrastText(color, ["#FFFFFF", "#000000"])\` choose between white and black. The result always has a contrast ratio of at least 4.58:1.

@@ -28,15 +28,16 @@ export const typographySections: GuideSection[] = [
     title: "Type scale",
     body: `Owlky has ${typographyVariants.length} text styles, called variants: ${codeList(typographyVariants)}. Each variant sets a font family, size, weight, line height and text transform.
 
-The headings \`h1\` to \`h6\` use the heading font, and the other variants use the text font. In the default style, Soft, both are Nunito, with weight 800 for \`h1\` to \`h3\` and 700 for \`h4\` to \`h6\`. Owlky doesn't bundle fonts: load Nunito from Google Fonts or Fontsource before \`owlky.css\`, or the text falls back to system fonts. Sizes are in \`rem\`, so text scales with the root font size.
+The headings \`h1\` to \`h6\` use the heading font, and the other variants use the text font. In the default style, Soft, both are Nunito, with weight 800 for \`h1\` to \`h3\` and 700 for \`h4\` to \`h6\`. Owlky doesn't bundle fonts: load Nunito from Google Fonts or Fontsource before \`owlky.css\`, or the text falls back to system fonts. The other styles use other fonts, such as Inter in Swiss or Manrope in Nordic: **Styles** lists them with their links. Sizes are in \`rem\`, so text scales with the root font size.
 
 The stories in the sidebar show each variant in detail. To set a variant on an element without writing CSS, use the **Typography** component, described in **Components › Typography**.`,
   },
   {
     id: "tokens",
     title: "Token reference",
-    body: `- **Variants:** \`--ok-typography-<variant>-<property>\`, where the property is \`font-family\`, \`font-size\`, \`font-weight\`, \`line-height\` or \`text-transform\`. For example, \`--ok-typography-h3-font-size\`.
-- **Font families:** \`--ok-font-family\` for text, \`--ok-font-family-heading\` for headings and \`--ok-font-family-mono\` for code.
+    body: `- **Variants:** \`--ok-typography-<variant>-<property>\`, where the property is \`font-family\`, \`font-size\`, \`font-weight\` or \`line-height\`. The \`overline\` and \`button\` variants also have \`text-transform\` and \`letter-spacing\`. For example, \`--ok-typography-h3-font-size\`.
+- **Font families:** \`--ok-font-family\` for text, \`--ok-font-family-heading\` for headings, \`--ok-font-family-label\` for labels, such as those of buttons, chips and tabs, and \`--ok-font-family-mono\` for code.
+- **Case and tracking:** \`--ok-heading-text-transform\` and \`--ok-heading-letter-spacing\` for \`h1\` to \`h6\`, \`--ok-label-text-transform\` and \`--ok-label-letter-spacing\` for labels. Styles such as Bauhaus set them to capitals.
 - **Font weights:** \`--ok-font-weight-regular\`, \`--ok-font-weight-medium\`, \`--ok-font-weight-semibold\`, \`--ok-font-weight-bold\` and \`--ok-font-weight-extrabold\`.
 - **Small sizes for components:** \`--ok-font-size-xs\` to \`--ok-font-size-xl\`.`,
   },

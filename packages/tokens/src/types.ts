@@ -262,7 +262,7 @@ export interface Theme {
     iconStroke: string;
   };
   /** The edge every surface draws (Paper and the surfaces built on it). */
-  surface: { borderWidth: string; borderStyle: "none" | "solid" };
+  surface: { borderWidth: string; borderStyle: "none" | "solid" | "solid none none" };
   typography: Typography;
   radius: Record<RadiusName, string>;
   radiusRole: Record<RadiusRoleName, string>;

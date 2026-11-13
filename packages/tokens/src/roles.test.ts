@@ -65,6 +65,23 @@ describe.each(styleNames)("style %s: every role pair (ADR-0070 § 7)", (name) =>
       }
     });
 
+    it("neutral text on hovered, selected and focused rows (action overlays)", () => {
+      // `color-mix(in srgb, <hex> N%, transparent)` over a surface is `tint(hex, N, surface)`.
+      const over = (overlay: string, surface: string) => {
+        const match = /^color-mix\(in srgb, (#[0-9A-F]{6}) (\d+)%, transparent\)$/i.exec(overlay);
+        if (!match) throw new Error(`unexpected action color ${overlay}`);
+        return tint(match[1] as string, Number(match[2]), surface);
+      };
+      const { hover, selected, focus } = scheme.action;
+      for (const surface of surfaces) {
+        for (const overlay of [hover, selected, focus]) {
+          const bg = over(overlay, surface);
+          atLeast(scheme.text.primary, bg, T);
+          atLeast(scheme.text.secondary, bg, T);
+        }
+      }
+    });
+
     it.each(paletteColorNames)(
       "%s: text tone on surfaces, the soft tint and the soft fill",
       (c) => {

@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
-import { fontSizeRange } from "@owlky/tokens";
+import type { ThemeContrast, ThemeDensity, ThemeSurface } from "@owlky/core";
+import { fontSizeRange, styleNames, styles } from "@owlky/tokens";
 // The manager provides React (classic JSX): a bundled jsx-runtime would be a second React copy.
 // biome-ignore lint/correctness/noUnusedImports: classic JSX compiles to React.createElement.
 import React from "react";
@@ -7,8 +8,9 @@ import { Select } from "storybook/internal/components";
 import { addons, types, useGlobals } from "storybook/manager-api";
 
 /*
- * Toolbar tools: Framework (ADR-0018) and the theme settings (ADR-0070: Theme, Font size), with
- * icons and explicit labels. The globals are declared in preview.tsx (`globalTypes`, no default toolbar).
+ * Toolbar tools: Framework (ADR-0018) and the theme settings (ADR-0070: Theme, Style, Density,
+ * Surface, Contrast, Font size), with icons and explicit labels. The globals are declared in
+ * preview.tsx (`globalTypes`, no default toolbar), which applies them with `applyThemeSettings`.
  */
 
 const Svg = ({ d }: { d: string }) => (
@@ -31,6 +33,11 @@ const SUN =
   "M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4";
 const MOON = "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z";
 const TEXT = "M4 7V4h16v3M9 20h6M12 4v16";
+const STYLE =
+  "M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2a2 2 0 0 0-1.5 3.3A1.6 1.6 0 0 1 12 22zM7.5 11.5h.01M10.5 7.5h.01M15.5 8.5h.01";
+const DENSITY = "M3 5h18M3 10h18M3 15h18M3 20h18";
+const SURFACE = "M12 3 2 8l10 5 10-5zM2 16l10 5 10-5";
+const CONTRAST = "M12 22a10 10 0 1 0 0-20zM12 2a10 10 0 1 1 0 20";
 
 /** Framework logos (brand colors), drawn inline. */
 const ReactLogo = () => (
@@ -69,6 +76,62 @@ const SIZES = Array.from(
   { length: fontSizeRange.max - fontSizeRange.min + 1 },
   (_, i) => fontSizeRange.min + i,
 ).map((size) => ({ value: String(size), title: `${size}px` }));
+
+type Option = { value: string; title: string };
+
+const STYLES: Option[] = styleNames.map((value) => ({ value, title: styles[value].name }));
+
+const DENSITIES = [
+  { value: "comfortable", title: "Comfortable" },
+  { value: "compact", title: "Compact" },
+] satisfies { value: ThemeDensity; title: string }[];
+
+const SURFACES = [
+  { value: "default", title: "Default" },
+  { value: "contrast", title: "Contrast" },
+] satisfies { value: ThemeSurface; title: string }[];
+
+const CONTRASTS = [
+  { value: "default", title: "Default" },
+  { value: "high", title: "High" },
+  { value: "system", title: "System" },
+] satisfies { value: ThemeContrast; title: string }[];
+
+/** A menu over one theme setting global: Storybook's own Select, labelled with its value. */
+function SettingTool({
+  name,
+  label,
+  icon,
+  options,
+}: {
+  name: string;
+  label: string;
+  icon: string;
+  options: Option[];
+}) {
+  const [globals, updateGlobals] = useGlobals();
+  const current = options.find((option) => option.value === globals[name]) ?? options[0];
+  return (
+    <Select
+      ariaLabel={label}
+      padding="small"
+      options={options}
+      defaultOptions={current?.value}
+      icon={<Svg d={icon} />}
+      showSelectedOptionTitle={false}
+      onSelect={(value) => updateGlobals({ [name]: value })}
+    >
+      {`${label}: ${current?.title ?? ""}`}
+    </Select>
+  );
+}
+
+const SETTINGS: [name: string, label: string, icon: string, options: Option[]][] = [
+  ["style", "Style", STYLE, STYLES],
+  ["density", "Density", DENSITY, DENSITIES],
+  ["surface", "Surface", SURFACE, SURFACES],
+  ["contrast", "Contrast", CONTRAST, CONTRASTS],
+];
 
 /** Which implementation component stories show (ADR-0018). */
 function FrameworkTool() {
@@ -139,6 +202,13 @@ addons.register("owlky/theme-settings", () => {
     match: inStory,
     render: ThemeTool,
   });
+  for (const [name, label, icon, options] of SETTINGS)
+    addons.add(`owlky/${name}`, {
+      type: types.TOOL,
+      title: label,
+      match: inStory,
+      render: () => <SettingTool name={name} label={label} icon={icon} options={options} />,
+    });
   addons.add("owlky/font-size", {
     type: types.TOOL,
     title: "Font size",

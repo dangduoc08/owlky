@@ -121,8 +121,9 @@ stays the runtime only (ADR-0007).
 ```
 
 To use a design style other than the default Soft, link its sheet after `owlky.css`, then set
-`data-ok-style="swiss"` on `<html>` or on any element. A style sheet holds tokens only (about
-2.6 kB gzip), and styles nest like themes:
+`data-ok-style="swiss"` on `<html>` or on any element. The ids are `swiss`, `bauhaus`,
+`brutalism`, `neo-brutalism`, `editorial`, `minimal-mono`, `corporate` and `nordic`. A style
+sheet holds tokens only (about 2 to 3 kB gzip), and styles nest like themes:
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-style-swiss.min.css">
@@ -150,6 +151,12 @@ for pages that don't use the loader.
   add `<link rel="preload" as="style" href=".../modules/chart.css">` and
   `<link rel="modulepreload" href=".../modules/chart.js">`.
 - **Another folder:** `data-ok-modules="/assets/owlky/modules/"` serves the modules from there.
+- **Design styles:** an element with `data-ok-style="nordic"`, in the markup or set later (such
+  as by `applyThemeSettings({ style })`), makes `owlky.js` add `owlky-style-nordic.css` from the
+  folder of `owlky.css`, once, right after it. To avoid a flash of the default style, link the
+  sheet yourself after `owlky.css`: the loader doesn't add it twice. `data-ok-styles` on the
+  script serves the sheets from another folder, and `data-ok-styles="none"` turns this off.
+  `Owlky.load("style:nordic")` and `data-ok-preload="style:nordic"` load a sheet ahead of use.
 - **From JavaScript:** `await Owlky.load("chart")` loads a module; `Owlky.loaded("chart")`
   tells whether it has loaded.
 - **Errors:** a module that fails to load logs an error and dispatches `ok:runtime:error` on

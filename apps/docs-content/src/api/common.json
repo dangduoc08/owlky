@@ -28,6 +28,12 @@
    ]
   },
   {
+   "description": "css`; `none` never adds them.",
+   "kind": "value",
+   "name": "data-ok-styles",
+   "value": "string"
+  },
+  {
    "description": "Applies a color scheme to this element and everything inside it.",
    "kind": "value",
    "name": "data-ok-theme",

@@ -7,6 +7,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Checkbox, FormControlLabel } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { solarMarkup } from "../../helpers/solar-icons.js";
 import { ColorPickerDemo } from "./color-picker-demo.js";
 import { IndeterminateDemo } from "./indeterminate-demo.js";
 
@@ -109,20 +110,22 @@ export function CheckboxPlacement() {
   <span data-ok-checkbox data-ok-color="primary" data-ok-size="medium">
     <input type="checkbox" data-ok-checkbox-input>
     <!-- Your icons replace the box: an outline heart, then a filled one -->
-    <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></span>
-    <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></span>
+    <span data-ok-checkbox-icon="unchecked" aria-hidden="true">${solarMarkup("heart-linear")}</span>
+    <span data-ok-checkbox-icon="checked" aria-hidden="true">${solarMarkup("heart-bold")}</span>
     <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
   </span>
   <span data-ok-form-control-label-text>Favorite</span>
 </label>`,
     react: `import { Checkbox, FormControlLabel } from "@owlky/react";
-import { Heart } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import heartLinear from "@iconify-icons/solar/heart-linear";
+import heartBold from "@iconify-icons/solar/heart-bold";
 
 export function Favorite() {
   return (
     <FormControlLabel
       label="Favorite"
-      control={<Checkbox icon={<Heart />} checkedIcon={<Heart fill="currentColor" />} />}
+      control={<Checkbox icon={<Icon icon={heartLinear} aria-hidden="true" />} checkedIcon={<Icon icon={heartBold} aria-hidden="true" />} />}
     />
   );
 }`,

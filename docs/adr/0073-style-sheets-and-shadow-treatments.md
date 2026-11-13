@@ -76,6 +76,85 @@ geometry inputs in the resolver would cost the core sheet bytes it doesn't have 
    required for such a theme). Other styles' scopes have no dark inputs (the reset block clears
    them), so they resolve exactly as the core resolver does. The core sheet and every other
    sheet are byte-identical; Minimal Mono's sheet grows by about 0.25 kB gzip (budget 2.43 kB).
+9. **ST5 (2026-11-13): toolbar, loader, `createTheme`, Tailwind.** Amends ADR-0070 § 6 where it
+   resolves the sheets "like the modules".
+   - **Storybook:** **Style**, **Density**, **Surface** and **Contrast** tools next to **Theme**
+     (Storybook's `Select` in `addons.add(types.TOOL)`, like the existing tools); globals
+     `style`, `density`, `surface`, `contrast`, applied by the decorator with
+     `applyThemeSettings`. A story's `parameters.style` still wins over the menu.
+   - **Loader entries `style:<id>`** for the eight opt-in ids (`themeStyles` minus the default):
+     CSS only, through the module loader (`runtime.load`, `loaded`, `data-ok-preload`, the
+     `ok:runtime:error` report and the `online` retry). A watcher (a definition on `:root`, so
+     `runtime.stop()` ends it) reads every `data-ok-style` at start and from a MutationObserver
+     with `attributeFilter: ["data-ok-style"]`: the runtime's observer sees added nodes only, and
+     `applyThemeSettings` / `applyThemeBrand` set the attribute on existing elements. Unknown ids,
+     `soft` and `__proto__`-style values load nothing.
+   - **Where:** the folder of the core sheet's `<link>` (`owlky(-all)(.min).css`), its variant
+     (`.min` or not; `.min` without a link), else the folder above the modules (`modules/`'s
+     parent, the layout of `dist/`). A separate script attribute, `data-ok-styles="<folder>"`,
+     overrides it and `data-ok-styles="none"` turns the entries off: `data-ok-modules` names the
+     modules folder, which isn't where the sheets live. A page that links
+     `owlky-style-<id>(.min).css` from any folder gets no second link (matched by file name).
+   - **Order:** style sheets go right after the core sheet (rank -1 in the loader's ordered
+     sheets, in arrival order among themselves), before module sheets: they only touch
+     `@layer theme`, and their switches must follow the core resolver. Two style sheets never
+     undo each other (§ 3), so their mutual order doesn't matter.
+   - **Cost:** `owlky.js` +0.40 kB gzip (41.14 of 42 kB; the loader code and the style id list;
+     `defaultThemeSettings` became `/* @__PURE__ */` so the rest of the settings module stays out).
+     The CSS sheets are unchanged.
+   - **`createTheme({ style })`:** `styleSheetCss(theme)` writes the opt-in sheet of the theme's
+     style (the build uses it), so `styleSheetCss(createTheme({ style: "nordic", brand }))` is a
+     branded Nordic that replaces the published sheet; `themeToCss`'s `base` defaults to
+     `defaultTheme` instead of throwing for ink themes. `themeToCss(createTheme({ style }))`
+     without a selector stays the whole core for that style (a replacement for `tokens.css`).
+   - **Tailwind:** `contrast-high:` also matches `data-ok-contrast="system"` under
+     `prefers-contrast: more`; `surface-contrast:` is new; `tracking-heading` / `tracking-label`
+     read the style's tracking. No per-style variants: every style difference is a token the
+     utilities already read (`rounded-control`, `font-heading`, `shadow-card`…). Variants match
+     any enclosing scope, like `dark:`, not only the nearest one.
+   - **Still open, not ST5:** chart series tokens in the sheet (no bytes left in the core sheet;
+     with the Chart defaults) and the CDN `theme` module for run-time brand colors (needs a way to
+     hand `applyThemeBrand` to pages without a new global: its own ADR).
+10. **ST6 (2026-11-13): tests and baselines.** Amends ADR-0070 § 7's steps for secondary text.
+   - **Secondary text on rows.** Secondary text sits on hovered, selected and focused rows
+     (Menu, List, Tree view, Autocomplete paint `--ok-action-hover|selected|focus`, 8 / 16 / 24 %
+     of neutral 500). The AA matrix found it under target there in 22 of 72 combinations: every
+     style in high contrast light (6.4:1 for 7:1 on a focused row) and Soft, Minimal Mono and
+     Corporate in dark (4.3:1 for 4.5:1). The generator keeps the step it picks on the surfaces
+     and moves its lightness only as far as the overlays need (`shiftToContrast`), so the look
+     barely changes (Soft dark `#9F9FA9` → `#A2A2AC`; high contrast light about one step darker).
+     Text primary already passed.
+   - **Tests.** `roles.test.ts` adds the overlay pairs; `theme-settings.test.ts` checks that the
+     core sheet plus every opt-in sheet resolves each text, palette, surface and border token to
+     the tested value in all 72 combinations; `e2e/tests/styles.spec.ts` (`@styles`) runs axe on
+     eight stories × nine styles × light / dark on Chromium. No exemption was added.
+   - **Baselines.** `.github/workflows/visual-baselines.yml` (`workflow_dispatch`) runs the
+     `@visual` tests with `--update-snapshots` in the pinned Playwright image (four shards) and
+     opens a pull request with the images through `gh` and the workflow token (no third-party
+     action); `visual.spec.ts` adds the same eight stories per opt-in style, light and dark, at
+     1280px.
+11. **ST7 (2026-11-13): docs, icons in examples, the last two leftovers.**
+   - **Editorial's rules.** Paper writes its edge as longhands (`border-width`, `border-style`,
+     `border-color` from the surface tokens), so `--ok-surface-border-style` may name each side.
+     `StyleDefinition.surfaceBorder.sides: "top"` (Editorial) makes it `solid none none`: Paper and
+     Card in the page flow draw a top rule. Floating Papers (`[data-ok-dialog-paper]`,
+     `[data-ok-drawer-content]`, map controls and popups) restate `border-style: solid`, because a
+     dialog without shadow and side edges would melt into the page. Cost: about 40 B gzip in the
+     all sheet; other styles are unchanged (a width of 0 draws nothing whatever the style keyword).
+   - **Open (found here):** popover roots (Popover, Menu, Select and Autocomplete lists, pickers,
+     Tooltip, Walktour steps) reset `border: 0` in `popover.css` after Paper, so in the flat styles
+     (Swiss, Bauhaus, Brutalism, Editorial) they draw neither a shadow nor the surface edge. Dropping
+     that reset gives them Paper's edge (and saves bytes), but changes every flat-style overlay and
+     its sizes: a post-0.1.0 backlog item with an owner look at Bauhaus tooltips first.
+   - **Walktour titles** read `--ok-heading-text-transform` / `--ok-heading-letter-spacing`, like
+     Dialog titles (36 B gzip).
+   - **Docs icons.** React examples import `Icon` from `@iconify/react/offline` and each icon
+     from `@iconify-icons/solar/<name>` (one module per icon: an app bundles only what it
+     imports, offline). HTML examples carry the same drawing inline (`solarMarkup()` in
+     `apps/storybook/src/helpers/solar-icons.tsx`, data generated by the Storybook `icons`
+     script). `check-docs-code.mjs` declares one module per imported name after checking it in
+     `@iconify-json/solar`. Story icons (`DemoIcon`, snippets) are ST7b: they need every snippet
+     family regenerated and pixel parity.
 
 ## Consequences
 - Adding a style is a definition file, its lines in `styles.ts`, a row in

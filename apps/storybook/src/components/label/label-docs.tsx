@@ -4,7 +4,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Label } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
-import { MailIcon } from "../avatar/display-icons.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 
 export const labelSections: GuideSection[] = [
   {
@@ -43,15 +43,16 @@ export function PendingLabel() {
     title: "Add an icon",
     body: "Pass `startIcon` or `endIcon`. Icons are 16px and decorative: the text says what the label means.",
     html: `<span data-ok-label data-ok-variant="filled" data-ok-color="primary">
-  <span data-ok-label-icon="start" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg></span>
+  <span data-ok-label-icon="start" aria-hidden="true">${solarMarkup("letter-linear")}</span>
   Sent
 </span>`,
     react: `import { Label } from "@owlky/react";
-import { MailIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import letterLinear from "@iconify-icons/solar/letter-linear";
 
 export function SentLabel() {
   return (
-    <Label variant="filled" color="primary" startIcon={<MailIcon />}>
+    <Label variant="filled" color="primary" startIcon={<Icon icon={letterLinear} aria-hidden="true" />}>
       Sent
     </Label>
   );
@@ -120,7 +121,7 @@ const PREVIEWS = {
   ),
   icons: () => (
     <Preview>
-      <Label variant="filled" color="primary" startIcon={<MailIcon />}>
+      <Label variant="filled" color="primary" startIcon={<SolarIcon name="letter-linear" />}>
         Sent
       </Label>
     </Preview>

@@ -4,7 +4,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Breadcrumbs, BreadcrumbsDot, Link } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 
 export const breadcrumbsSections: GuideSection[] = [
   {
@@ -46,19 +46,20 @@ export function Trail() {
     body: 'Put a decorative `svg` before the text of an item. Icons are 20px and follow the item\'s color. In React, every child of `Breadcrumbs` becomes an item and the separator goes between them. Pass `separator` to replace the slash with text, an icon or `<BreadcrumbsDot />`. In HTML, write each separator in its own `li` with `aria-hidden="true"`, and use `<span data-ok-breadcrumbs-dot></span>` for a dot.',
     html: `<nav data-ok-breadcrumbs aria-label="breadcrumb">
   <ol data-ok-breadcrumbs-list>
-    <li data-ok-breadcrumbs-item><a href="/" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z" /></svg>Home</a></li>
+    <li data-ok-breadcrumbs-item><a href="/" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover">${solarMarkup("home-angle-linear")}Home</a></li>
     <li data-ok-breadcrumbs-separator aria-hidden="true"><span data-ok-breadcrumbs-dot></span></li>
     <li data-ok-breadcrumbs-item><span aria-current="page">Desk lamp</span></li>
   </ol>
 </nav>`,
     react: `import { Breadcrumbs, BreadcrumbsDot, Link } from "@owlky/react";
-import { HouseIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import homeAngleLinear from "@iconify-icons/solar/home-angle-linear";
 
 export function Trail() {
   return (
     <Breadcrumbs separator={<BreadcrumbsDot />}>
       <Link href="/" color="inherit" underline="hover">
-        <HouseIcon aria-hidden="true" />
+        <Icon icon={homeAngleLinear} aria-hidden="true" />
         Home
       </Link>
       <span aria-current="page">Desk lamp</span>
@@ -162,11 +163,11 @@ const PREVIEWS = {
     <Preview>
       <Breadcrumbs separator={<BreadcrumbsDot />} aria-label="Breadcrumb with icons">
         <Link href="#home" color="inherit" underline="hover">
-          <DemoIcon name="home" />
+          <SolarIcon name="home-angle-linear" />
           Home
         </Link>
         <Link href="#products" color="inherit" underline="hover">
-          <DemoIcon name="cube" />
+          <SolarIcon name="box-linear" />
           Products
         </Link>
         <span aria-current="page">Desk lamp</span>

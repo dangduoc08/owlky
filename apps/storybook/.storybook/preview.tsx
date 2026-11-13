@@ -17,7 +17,7 @@ import "@fontsource-variable/nunito";
 import "@fontsource-variable/source-serif-4";
 import "@fontsource-variable/space-grotesk";
 import "./preview.css";
-import { applyThemeSettings, fontSizeRange, themeStyles } from "@owlky/core";
+import { applyThemeSettings, defaultThemeSettings, fontSizeRange, themeStyles } from "@owlky/core";
 import { components, getRuntime, illustration } from "@owlky/html";
 import type { Preview } from "@storybook/react-vite";
 import { trackFrameworkGlobal } from "../src/helpers/framework-global.js";
@@ -49,27 +49,40 @@ const isStyle = (value: unknown): value is (typeof themeStyles)[number] =>
   typeof value === "string" && (themeStyles as readonly string[]).includes(value);
 
 const preview: Preview = {
-  // Theme and theme settings (ADR-0070), applied to <html> like an app would. Toolbar: Theme and
-  // Font size are custom tools (.storybook/toolbar.tsx).
+  // Theme and theme settings (ADR-0070), applied to <html> like an app would. Toolbar: Theme,
+  // Style, Density, Surface, Contrast and Font size are custom tools (.storybook/toolbar.tsx).
+  // URLs set them too (`&globals=style:swiss;contrast:high`); a story's `parameters.style` wins
+  // over the Style menu (a story that shows one style).
   globalTypes: {
     framework: { description: "Implementation shown by component stories (ADR-0018)" },
     theme: { description: "Color scheme (data-ok-theme)" },
     fontSize: { description: "Root font size (rem scale)" },
-    // No toolbar menu until ST5: set it in the URL (`&globals=style:swiss`), or per story with
-    // `parameters: { style: "swiss" }`, which wins.
     style: { description: "Design style (data-ok-style)" },
+    density: { description: "Density (data-ok-density)" },
+    surface: { description: "Surface contrast (data-ok-surface)" },
+    contrast: { description: "Contrast (data-ok-contrast)" },
   },
   initialGlobals: {
     framework: DEFAULT_FRAMEWORK,
     theme: "light",
     fontSize: String(fontSizeRange.default),
-    style: "soft",
+    style: defaultThemeSettings.style,
+    density: defaultThemeSettings.density,
+    surface: defaultThemeSettings.surface,
+    contrast: defaultThemeSettings.contrast,
   },
   decorators: [
     (Story, { globals, parameters }) => {
       document.documentElement.dataset["okTheme"] = globals["theme"] === "dark" ? "dark" : "light";
       const style = [parameters["style"], globals["style"]].find(isStyle) ?? "soft";
-      applyThemeSettings({ fontSize: Number(globals["fontSize"]), style });
+      // Unknown values (an old URL) fall back to the defaults (`normalizeThemeSettings`).
+      applyThemeSettings({
+        fontSize: Number(globals["fontSize"]),
+        style,
+        density: globals["density"],
+        surface: globals["surface"],
+        contrast: globals["contrast"],
+      });
       return <Story />;
     },
   ],
@@ -87,7 +100,15 @@ const preview: Preview = {
       // Self-contained: Storybook serializes this function.
       storySort: (a, b) => {
         const sections = ["Introduction", "Foundations", "Components"];
-        const foundations = ["Colors", "Typography", "Shadows", "Grid", "Icons", "Settings"];
+        const foundations = [
+          "Colors",
+          "Typography",
+          "Shadows",
+          "Grid",
+          "Icons",
+          "Styles",
+          "Settings",
+        ];
         const [sectionA = "", nameA = ""] = a.title.split("/");
         const [sectionB = "", nameB = ""] = b.title.split("/");
         const bySection = sections.indexOf(sectionA) - sections.indexOf(sectionB);

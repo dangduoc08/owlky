@@ -217,7 +217,8 @@ export function neutralSurfaces(scale: ColorScale): RoleSurfaces {
 /**
  * Grey scale and neutral scheme roles from one neutral scale at one contrast level:
  * - Light: white paper and default background, `contrast` background and `neutral` 100, text
- *   primary 900, secondary the first of 500 → 950 at T, disabled 400; control borders the first
+ *   primary 900, secondary the first of 500 → 950 at T (shifted until it also reaches T on the
+ *   action overlays: hovered, selected and focused rows), disabled 400; control borders the first
  *   of 400 → 950 at the graphics target; dividers translucent 500 (decorative), or the first of
  *   300 → 950 at 3:1 in high contrast; shadows tinted with 500.
  * - Dark: paper and default background 900, `contrast` background 950, `neutral` 800, text
@@ -232,6 +233,17 @@ export function neutralRoles(
   const { text: target, graphic } = CONTRAST_TARGETS[level];
   const high = level === "high";
   const surfaces = neutralSurfaces(source);
+  // Secondary text also sits on hovered, selected and focused rows (Menu, List, Tree view,
+  // Autocomplete): the step picked on the surfaces moves only as far as the action overlays
+  // (8 / 16 / 24 % of 500 over each surface) need, so it stays near its step.
+  const secondary = (
+    order: readonly ScaleStep[],
+    list: readonly string[],
+    dir: "darker" | "lighter",
+  ) => {
+    const rows = list.flatMap((s) => [s, ...[8, 16, 24].map((p) => tint(scale[500], p, s))]);
+    return shiftToContrast(pick(scale, order, list, target), rows, target, dir);
+  };
   const action = {
     hover: mix(scale[500], 8),
     selected: mix(scale[500], 16),
@@ -242,7 +254,7 @@ export function neutralRoles(
   const light: NeutralScheme = {
     text: {
       primary: high ? scale[950] : scale[900],
-      secondary: pick(scale, [500, 600, 700, 800, 900, 950], surfaces.light, target),
+      secondary: secondary([500, 600, 700, 800, 900, 950], surfaces.light, "darker"),
       disabled: scale[400],
     },
     background: { default: WHITE, contrast: scale[100], paper: WHITE, neutral: scale[100] },
@@ -256,7 +268,7 @@ export function neutralRoles(
   const dark: NeutralScheme = {
     text: {
       primary: high ? WHITE : scale[50],
-      secondary: pick(scale, [400, 300, 200, 100, 50], surfaces.dark, target),
+      secondary: secondary([400, 300, 200, 100, 50], surfaces.dark, "lighter"),
       disabled: scale[600],
     },
     background: {

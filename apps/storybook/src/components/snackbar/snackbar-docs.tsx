@@ -201,7 +201,8 @@ export function PlacedToasts() {
 </template>
 <button type="button" data-ok-toast-open="upload-toast" data-ok-toast-toaster="uploads">Upload</button>`,
     react: `import { Button, Toaster, toast } from "@owlky/react";
-import { CheckIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import checkLinear from "@iconify-icons/solar/check-linear";
 
 export function UploadToasts() {
   return (
@@ -213,7 +214,7 @@ export function UploadToasts() {
         position="bottom-left"
         aria-label="Uploads"
         toastOptions={{ duration: 8000, closeButton: true }}
-        icons={{ success: <CheckIcon /> }}
+        icons={{ success: <Icon icon={checkLinear} aria-hidden="true" /> }}
       />
     </>
   );

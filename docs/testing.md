@@ -7,7 +7,7 @@
 | `pnpm test:node` / `pnpm test:browser`              | Only the Node projects (tokens, styles, mcp) / only the browser projects (core, react, html); `VITEST_BROWSERS` picks the engines. |
 | `pnpm storybook:build && pnpm test:e2e`             | Playwright: parity, interactions, themes, a11y, plain HTML — Chromium, Firefox, WebKit, mobile.  |
 | `pnpm test:visual`                                  | Visual regression in the Playwright Docker image (Docker required).                              |
-| `pnpm test:visual:update`                           | Regenerate baselines (Docker). Never commit baselines made outside Docker.                       |
+| `pnpm test:visual:update`                           | Regenerate baselines (Docker). Never commit baselines made outside Docker: the **Visual baselines** workflow makes them (see below). |
 | `pnpm check`                                        | Everything CI runs, in order.                                                                    |
 | `pnpm check:manifest`                               | Regenerates the MCP manifest (ADR-0046) and fails when the committed one differs.               |
 | `pnpm check:api`                                    | Regenerates the API reference (ADR-0049, `apps/docs-content/src/api/*.json`) and fails when a file differs or a prop, `data-ok-*` name, event or method is undocumented. `pnpm api` writes it. |
@@ -37,7 +37,22 @@ Also: `pnpm test:coverage` (v8 coverage, thresholds per component file in `vites
 `e2e/tests/<name>.responsive.spec.ts` runs the viewport matrix from `e2e/tests/viewports.ts`
 (375, 430, 768, 1280, 1440); `e2e/tests/csp.spec.ts` loads `examples/csp/` under a strict
 CSP + Trusted Types and fails on any violation; visual baselines cover every story × theme ×
-viewport.
+viewport, plus a sample of stories per opt-in design style.
+
+Design styles (ADR-0070 § 7, ST6):
+- **AA matrix, data:** `packages/tokens/src/roles.test.ts` checks every role pair for every style
+  × light / dark × surface default / contrast × contrast default / high: text, palette tones,
+  soft tints and fills, contrast text, gradients, inherit, borders, focus rings, chart series,
+  dividers and neutral text on the action overlays (hovered, selected, focused rows).
+- **AA matrix, CSS:** `packages/core/src/theme/theme-settings.test.ts` (browser) loads the core
+  sheet with every opt-in sheet and checks that each nested scope of those 72 combinations
+  resolves every text, palette, surface and border token to exactly the tested value.
+- **Axe per style:** `e2e/tests/styles.spec.ts` (`@styles`, Chromium only) scans a sample of
+  stories (`e2e/tests/style-sample.ts`: Button, Text field, Chip, Alert, Card, Tabs, Data grid
+  and an open Dialog) in every style, light and dark, through the `style` global
+  (`&globals=style:<id>`). It runs in CI's chromium e2e shards like any other spec. Fix a failure
+  in the generator or the style definition, never with an exemption.
+- **Size:** `check:size` has a budget per style sheet (`STYLE_SHEET_BUDGETS`).
 
 Writing tests:
 - Behavior lives in `core` → test it there in both native and fallback mode (`forceFallback`).
@@ -63,6 +78,28 @@ Writing tests:
   the validator would reject fails there.
 - Parallel worktrees: `PORT=4322 pnpm test:e2e` serves each build on its own port (default 4321).
   Never run two e2e runs in one working tree.
+
+## Visual baselines
+
+Baselines are made only in the pinned Playwright image (fonts and anti-aliasing must match CI),
+so they come from a CI workflow, never from a local run:
+
+1. On GitHub, open **Actions** › **Visual baselines** › **Run workflow** and pick the branch.
+   Leave **grep** empty to regenerate every baseline (images of removed stories go away), or
+   enter a title pattern (for example `nordic style`) to update only those tests.
+2. The workflow (`.github/workflows/visual-baselines.yml`) builds the packages and Storybook in
+   `mcr.microsoft.com/playwright:v<version>-noble` (it fails when the tag and `@playwright/test`
+   differ), runs the `@visual` tests with `--update-snapshots` on Chromium in four shards, and
+   opens a pull request `test(e2e): update visual baselines` from `visual-baselines/<run id>`.
+   No pull request is opened when nothing changed.
+3. Review the images in the pull request and merge it. A pull request opened with the
+   workflow's token does not start CI on its own: close and reopen it to run the checks. From
+   then on the `e2e` chromium job compares against the committed baselines.
+
+The workflow has `contents: write` and `pull-requests: write` in its last job only. The
+repository setting **Settings** › **Actions** › **General** › **Allow GitHub Actions to create
+and approve pull requests** must be on. Update the image tag in `ci.yml` and this workflow
+together with `@playwright/test`.
 
 ## Parallel agents and verification tiers (owner, 2026-11-13)
 
@@ -91,7 +128,8 @@ mobile viewport stay green.
   CI found Chip and Transfer list out of parity.
 - A CI failure goes back to the agent that owns the area, not to whoever merged last.
 - A failure that passes 3 out of 3 when rerun alone is a flake: record it and make the test robust.
-- Visual baselines are generated in Docker by a CI `workflow_dispatch` job, never locally.
+- Visual baselines are generated in Docker by the `workflow_dispatch` workflow **Visual
+  baselines** (see "Visual baselines" above), never locally.
 
 ## Known flaky tests
 

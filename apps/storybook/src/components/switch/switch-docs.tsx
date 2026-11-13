@@ -7,6 +7,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { FormControlLabel, Switch } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { solarMarkup } from "../../helpers/solar-icons.js";
 
 const htmlSwitch = (root: string, input: string, label: string, placement = "end") =>
   `<label data-ok-form-control-label data-ok-label-placement="${placement}">
@@ -76,15 +77,17 @@ export function SwitchPlacement() {
   <input type="checkbox" role="switch" data-ok-switch-input aria-label="Icons" checked>
   <span data-ok-switch-track aria-hidden="true"></span>
   <span data-ok-switch-thumb aria-hidden="true">
-    <span data-ok-switch-icon><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="M6 6l12 12"></path></svg></span>
-    <span data-ok-switch-checked-icon><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+    <span data-ok-switch-icon>${solarMarkup("close-linear")}</span>
+    <span data-ok-switch-checked-icon>${solarMarkup("check-linear")}</span>
   </span>
 </span>`,
     react: `import { Switch } from "@owlky/react";
-import { Check, X } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import closeLinear from "@iconify-icons/solar/close-linear";
+import checkLinear from "@iconify-icons/solar/check-linear";
 
 export function SwitchIcons() {
-  return <Switch aria-label="Icons" icon={<X />} checkedIcon={<Check />} defaultChecked />;
+  return <Switch aria-label="Icons" icon={<Icon icon={closeLinear} aria-hidden="true" />} checkedIcon={<Icon icon={checkLinear} aria-hidden="true" />} defaultChecked />;
 }`,
   },
   {

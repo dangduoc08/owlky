@@ -5,6 +5,7 @@ import {
   defaultStyleName,
   defaultTheme,
   styleNames,
+  styleSheetCss,
   styles,
   styleTheme,
   themeToCss,
@@ -22,12 +23,7 @@ await writeFile(
 await mkdir(new URL("../dist/sheets/", import.meta.url), { recursive: true });
 const sheets = styleNames.filter((name) => name !== defaultStyleName);
 for (const name of sheets) {
-  const scope = `[data-ok-style="${name}"]`;
-  const css = themeToCss(styleTheme(styles[name]), {
-    selector: scope,
-    reset: scope,
-    base: defaultTheme,
-  });
+  const css = styleSheetCss(styleTheme(styles[name]));
   const head = `/* @owlky/tokens — the ${styles[name].name} style (data-ok-style="${name}"), generated, do not edit. Load after owlky.css. */\n`;
   await writeFile(new URL(`../dist/sheets/${name}.css`, import.meta.url), head + css);
 }

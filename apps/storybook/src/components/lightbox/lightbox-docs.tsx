@@ -6,6 +6,7 @@ import inlineExample from "../../../../../packages/html/src/components/lightbox/
 import lightboxExample from "../../../../../packages/html/src/components/lightbox/examples/lightbox-example.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
+import { solarMarkup } from "../../helpers/solar-icons.js";
 
 const LIGHTBOX = snippetElement(lightboxExample, "data-ok-lightbox ");
 
@@ -161,7 +162,9 @@ export function LightboxToolbar() {
       '<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="sm" data-ok-lightbox-close><span data-ok-button-label>Close</span></button>',
     ),
     react: `import { Button, IconButton, Lightbox, type LightboxSlide } from "@owlky/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import altArrowLeftLinear from "@iconify-icons/solar/alt-arrow-left-linear";
+import altArrowRightLinear from "@iconify-icons/solar/alt-arrow-right-linear";
 
 const slides: LightboxSlide[] = [
   { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
@@ -181,12 +184,12 @@ export function LightboxButtons() {
         ),
         buttonPrev: (attributes) => (
           <IconButton {...attributes}>
-            <ChevronLeft aria-hidden="true" />
+            <Icon icon={altArrowLeftLinear} aria-hidden="true" />
           </IconButton>
         ),
         buttonNext: (attributes) => (
           <IconButton {...attributes}>
-            <ChevronRight aria-hidden="true" />
+            <Icon icon={altArrowRightLinear} aria-hidden="true" />
           </IconButton>
         ),
         buttonShare: () => null,
@@ -204,10 +207,11 @@ export function LightboxButtons() {
       /^(<dialog [^>]*>)/,
       `$1
   <template data-ok-lightbox-icon="loading"><span data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit"><svg data-ok-circular-progress-svg viewBox="22 22 44 44" aria-hidden="true"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></template>
-  <template data-ok-lightbox-icon="error"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20M10.4 5H19a2 2 0 0 1 2 2v8.6M21 19H5a2 2 0 0 1-2-2V7"></path></svg></template>`,
+  <template data-ok-lightbox-icon="error">${solarMarkup("gallery-remove-linear", { size: 48 })}</template>`,
     ),
     react: `import { CircularProgress, Lightbox, type LightboxSlide } from "@owlky/react";
-import { ImageOff } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import galleryRemoveLinear from "@iconify-icons/solar/gallery-remove-linear";
 
 const slides: LightboxSlide[] = [
   { src: "lake.jpg", alt: "Mountain lake", width: 2400, height: 1600, title: "Mountain lake" },
@@ -220,7 +224,7 @@ export function LightboxLoading() {
       slides={slides}
       render={{
         iconLoading: () => <CircularProgress color="inherit" aria-hidden="true" />,
-        iconError: () => <ImageOff size={48} aria-hidden="true" />,
+        iconError: () => <Icon icon={galleryRemoveLinear} width={48} height={48} aria-hidden="true" />,
       }}
     />
   );

@@ -1,0 +1,124 @@
+name: Visual baselines
+
+# Regenerates the visual regression baselines (`@visual` tests in e2e/tests/visual.spec.ts) in the
+# pinned Playwright image, where fonts and anti-aliasing match CI, and opens a pull request with
+# the images. Started by hand only (Actions › Visual baselines › Run workflow); the owner reviews
+# and merges the pull request. docs/testing.md › "Visual baselines".
+
+on:
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: "Only tests whose title matches this pattern (empty: every baseline, stale images removed)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-baselines-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update baselines (${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    container:
+      # Keep in sync with @playwright/test in e2e/package.json (checked below) and ci.yml.
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    env:
+      HOME: /root
+    strategy:
+      fail-fast: true
+      matrix:
+        shard: [1/4, 2/4, 3/4, 4/4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check that the image matches the repository's Playwright
+        run: |
+          version="$(node -p "require('./e2e/node_modules/@playwright/test/package.json').version")"
+          if [ "$version" != "1.64.1" ]; then
+            echo "::error::@playwright/test is $version but the image is v1.64.1: update the image tag."
+            exit 1
+          fi
+      - run: pnpm build
+      - run: pnpm storybook:build
+      # A full run writes every image afresh, so the artifact holds no image of a removed story.
+      - if: inputs.grep == ''
+        run: rm -rf e2e/tests/__screenshots__
+      # The command `pnpm test:visual:update` runs inside Docker locally, without the Docker wrapper.
+      - name: Update the baselines
+        env:
+          GREP: ${{ inputs.grep }}
+        run: |
+          # A filter may leave a shard without tests.
+          set -- --project chromium --shard "${{ matrix.shard }}" --update-snapshots --pass-with-no-tests
+          # A second --grep replaces the script's `@visual`: keep it in the pattern.
+          if [ -n "$GREP" ]; then set -- "$@" --grep "^(?=.*@visual).*(?:$GREP)"; fi
+          pnpm --filter @owlky/e2e test:visual:update "$@"
+      - name: Name the artifact
+        id: name
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: echo "suffix=${SHARD%%/*}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-${{ steps.name.outputs.suffix }}
+          path: e2e/tests/__screenshots__/
+          if-no-files-found: ignore
+          retention-days: 7
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-report-${{ steps.name.outputs.suffix }}
+          path: e2e/playwright-report
+          retention-days: 7
+
+  pull-request:
+    name: Open the pull request
+    needs: update
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      # A full run replaces the folder, so images of removed stories go away; a filtered run only
+      # adds or replaces its own images.
+      - if: inputs.grep == ''
+        run: rm -rf e2e/tests/__screenshots__
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: visual-baselines-*
+          path: e2e/tests/__screenshots__
+          merge-multiple: true
+      - name: Commit the images and open the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.ref_name }}
+          GREP: ${{ inputs.grep }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          git add -A e2e/tests/__screenshots__
+          if git diff --cached --quiet; then
+            echo "The baselines are up to date: no pull request." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          branch="visual-baselines/${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -m "test(e2e): update visual baselines"
+          git push origin "$branch"
+          changed="$(git diff --stat HEAD~1 | tail -n 1)"
+          body="$(printf 'Baselines regenerated in the Playwright image by the Visual baselines workflow.\n\n- Run: %s\n- Filter: %s\n- Changes: %s\n\nReview the images, then merge. A pull request opened by this workflow does not start CI by itself: close and reopen it to run the checks.' "$RUN_URL" "${GREP:-none (every baseline)}" "$changed")"
+          gh pr create --base "$BASE" --head "$branch" --title "test(e2e): update visual baselines" --body "$body"

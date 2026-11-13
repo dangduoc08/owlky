@@ -287,6 +287,77 @@ test.describe("CDN loader", () => {
     expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
   });
 
+  test("a data-ok-style in the page loads its style sheet once, after the core sheet", async ({
+    page,
+  }) => {
+    await record(page);
+    const styles: string[] = [];
+    page.on("request", (request) => {
+      const name = /\/dist\/owlky-style-([\w-]+)\.css$/.exec(new URL(request.url()).pathname)?.[1];
+      if (name) styles.push(name);
+    });
+    await page.goto("/examples/loader/style.html");
+    await expect.poll(() => page.evaluate(() => window.Owlky?.loaded("style:nordic"))).toBe(true);
+    // Nordic's tokens apply inside its scope (Manrope text).
+    const font = await page
+      .locator("#styled")
+      .evaluate((element) => getComputedStyle(element).getPropertyValue("--ok-font-family"));
+    expect(font).toMatch(/Manrope/);
+    const sheets = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].map((link) => ({
+        file: link.href.split("/").pop(),
+        loaded: Boolean(link.sheet),
+      })),
+    );
+    expect(sheets).toEqual([
+      { file: "owlky.css", loaded: true },
+      { file: "owlky-style-nordic.css", loaded: true },
+    ]);
+    // A style set later on the root (as `applyThemeSettings({ style })` does) loads its sheet;
+    // a section added later in a style already in doesn't request it again.
+    await page.evaluate(() => document.documentElement.setAttribute("data-ok-style", "swiss"));
+    await expect.poll(() => page.evaluate(() => window.Owlky?.loaded("style:swiss"))).toBe(true);
+    await page.locator("#later").evaluate((host) => {
+      const section = document.createElement("section");
+      section.id = "swiss-section";
+      section.setAttribute("data-ok-style", "swiss");
+      host.append(section);
+      // The default style and unknown values load nothing.
+      const soft = document.createElement("section");
+      soft.setAttribute("data-ok-style", "soft");
+      host.append(soft);
+    });
+    const swiss = await page
+      .locator("#swiss-section")
+      .evaluate((element) => getComputedStyle(element).getPropertyValue("--ok-radius-control"));
+    expect(swiss.trim()).toBe("0px");
+    expect(await page.evaluate(() => window.Owlky?.load("style:swiss").then(() => "ok"))).toBe(
+      "ok",
+    );
+    expect(styles).toEqual(["nordic", "swiss"]);
+    expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
+  });
+
+  test("a style sheet the page links itself is not added again", async ({ page }) => {
+    await record(page);
+    await page.route("**/examples/loader/style.html", async (route) => {
+      const response = await route.fetch();
+      const html = (await response.text()).replace(
+        '<script src="../../packages/html/dist/owlky.js"',
+        '<link rel="stylesheet" href="../../packages/html/dist/owlky-style-nordic.min.css" />\n    <script src="../../packages/html/dist/owlky.js"',
+      );
+      await route.fulfill({ response, body: html });
+    });
+    await page.goto("/examples/loader/style.html");
+    await expect.poll(() => page.evaluate(() => window.Owlky?.loaded("style:nordic"))).toBe(true);
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('link[href*="owlky-style-nordic"]').length,
+      ),
+    ).toBe(1);
+    expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
+  });
+
   /**
    * The layout shift (Chromium's Layout Instability API) of the loader page while the Chart's
    * module is held back for 500 ms, as on a slow network. `linked`: the page links the Chart's

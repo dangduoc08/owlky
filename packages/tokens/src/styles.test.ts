@@ -5,7 +5,8 @@
  * to `EXPECTED`.
  */
 import { describe, expect, it } from "vitest";
-import { themeToCss } from "./css.js";
+import { createTheme } from "./create-theme.js";
+import { styleSheetCss, themeToCss } from "./css.js";
 import { treatmentShadows } from "./shadows.js";
 import { defaultStyleName, type StyleName, styleNames, styles } from "./styles.js";
 import { defaultTheme, styleTheme } from "./theme.js";
@@ -18,8 +19,8 @@ interface Expected {
   label: { textTransform: string; letterSpacing: string };
   /** `--ok-radius-control` / `--ok-radius-surface` / `--ok-radius-chip`. */
   radius: [control: string, surface: string, chip: string];
-  /** `--ok-surface-border-width` and whether its color is the ink. */
-  surfaceBorder: [width: string, ink: boolean];
+  /** `--ok-surface-border-width`, whether its color is the ink, and `--ok-surface-border-style`. */
+  surfaceBorder: [width: string, ink: boolean, style?: string];
   borderWidth: string;
   shadows: ShadowTreatment;
   iconStroke: number;
@@ -81,7 +82,7 @@ const EXPECTED: Record<StyleName, Expected> = {
     heading: { weight: 900, letterSpacing: "normal", textTransform: "none" },
     label: { textTransform: "uppercase", letterSpacing: "0.12em" },
     radius: ["0px", "0px", "0px"],
-    surfaceBorder: ["1px", true],
+    surfaceBorder: ["1px", true, "solid none none"],
     borderWidth: "1px",
     shadows: "flat",
     iconStroke: 1.25,
@@ -167,6 +168,9 @@ describe.each(styleNames)("style %s", (name) => {
       expected.radius,
     );
     expect(theme.surface.borderWidth).toBe(expected.surfaceBorder[0]);
+    expect(theme.surface.borderStyle).toBe(
+      expected.surfaceBorder[2] ?? (expected.surfaceBorder[0] === "0px" ? "none" : "solid"),
+    );
     const ink = expected.surfaceBorder[1];
     expect(theme.schemes.light.surfaceBorder).toBe(
       ink ? theme.schemes.light.text.primary : "transparent",
@@ -251,7 +255,8 @@ describe.each(styleNames)("style %s", (name) => {
         expect(() => themeToCss(theme, { selector: scope, reset: scope })).not.toThrow();
         return;
       }
-      expect(() => themeToCss(theme, { selector: scope, reset: scope })).toThrow(/base/);
+      // `base` defaults to the core theme (ST5).
+      expect(themeToCss(theme, { selector: scope, reset: scope })).toBe(css);
       const scopes = `:root, [data-ok-style], [data-ok-theme], .dark, [data-ok-surface], [data-ok-contrast], ${scope}`;
       const fills = declarations(css.slice(css.lastIndexOf(`  ${scopes} {`)), scopes);
       const names = ink.flatMap((c) =>
@@ -284,4 +289,43 @@ it("every sheet with a shadow switch writes the same switch (two sheets never un
       return JSON.stringify(body);
     });
   expect(new Set(switches).size).toBeLessThanOrEqual(1);
+});
+
+describe("styleSheetCss (createTheme for an opt-in style, ST5)", () => {
+  it("writes the published sheet of a style, with the core theme as the ink fallback", () => {
+    for (const name of styleNames.filter((each) => each !== defaultStyleName)) {
+      const scope = `[data-ok-style="${name}"]`;
+      const theme = styleTheme(styles[name]);
+      expect(styleSheetCss(theme)).toBe(
+        themeToCss(theme, { selector: scope, reset: scope, base: defaultTheme }),
+      );
+    }
+  });
+
+  it("brands an opt-in style: the brand's inputs replace the style's, the rest stays", () => {
+    const scope = '[data-ok-style="nordic"]';
+    const before = declarations(styleSheetCss(createTheme({ style: "nordic" })), scope);
+    const after = declarations(
+      styleSheetCss(createTheme({ style: "nordic", brand: { primary: "#B45309" } })),
+      scope,
+    );
+    expect(after["--ok-font-family"]).toBe(before["--ok-font-family"]);
+    expect(after["--ok-radius-control"]).toBe(before["--ok-radius-control"]);
+    expect(after["--ok-palette-primary-lighter"]).not.toBe(before["--ok-palette-primary-lighter"]);
+    expect(Object.keys(after).sort()).toEqual(Object.keys(before).sort());
+  });
+
+  it("keeps an ink style's switch without `base` (Minimal Mono with another secondary)", () => {
+    const css = styleSheetCss(
+      createTheme({ style: "minimal-mono", brand: { secondary: "#0E7490" } }),
+    );
+    expect(css).toBe(
+      themeToCss(createTheme({ style: "minimal-mono", brand: { secondary: "#0E7490" } }), {
+        selector: '[data-ok-style="minimal-mono"]',
+        reset: '[data-ok-style="minimal-mono"]',
+        base: defaultTheme,
+      }),
+    );
+    expect(css).toContain("--_ok-t0-d:");
+  });
 });

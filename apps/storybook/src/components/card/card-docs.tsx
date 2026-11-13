@@ -15,9 +15,9 @@ import {
 } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 
-const MORE_ICON = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5h.01"></path><path d="M12 12h.01"></path><path d="M12 19h.01"></path></svg>`;
+const MORE_ICON = solarMarkup("menu-dots-vertical-linear");
 
 export const cardSections: GuideSection[] = [
   {
@@ -105,7 +105,8 @@ export function Surfaces() {
   </div>
 </div>`,
     react: `import { Avatar, Card, CardContent, CardHeader, IconButton, Typography } from "@owlky/react";
-import { EllipsisVertical } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import menuDotsVerticalLinear from "@iconify-icons/solar/menu-dots-vertical-linear";
 
 export function ContactCard() {
   return (
@@ -118,7 +119,7 @@ export function ContactCard() {
         }
         action={
           <IconButton aria-label="More actions">
-            <EllipsisVertical aria-hidden="true" />
+            <Icon icon={menuDotsVerticalLinear} aria-hidden="true" />
           </IconButton>
         }
         title="Ada Lane"
@@ -269,7 +270,7 @@ const PREVIEWS = {
           }
           action={
             <IconButton aria-label="More actions">
-              <DemoIcon name="moreVertical" />
+              <SolarIcon name="menu-dots-vertical-linear" />
             </IconButton>
           }
           title="Ada Lane"

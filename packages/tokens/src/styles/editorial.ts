@@ -45,7 +45,7 @@ export const editorial: StyleDefinition = {
     "surface-sm": "0px",
     chip: "0px",
   },
-  surfaceBorder: { width: "1px", ink: true },
+  surfaceBorder: { width: "1px", ink: true, sides: "top" },
   shadows: "flat",
   shadowTint: { hue: "neutral", step: 950 },
   iconStroke: 1.25,

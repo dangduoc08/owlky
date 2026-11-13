@@ -36,7 +36,8 @@ export interface ThemeSettings {
   fontSize: number;
 }
 
-export const defaultThemeSettings: Readonly<ThemeSettings> = Object.freeze({
+// Pure: bundles that only read the style names (the CDN loader) drop the rest of this module.
+export const defaultThemeSettings: Readonly<ThemeSettings> = /* @__PURE__ */ Object.freeze({
   mode: "light",
   style: "soft",
   density: "comfortable",

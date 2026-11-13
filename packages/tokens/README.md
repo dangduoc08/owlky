@@ -11,17 +11,28 @@ import { createTheme, themeToCss } from "@owlky/tokens";
 const css = themeToCss(createTheme({ style: "soft", brand: { primary: "#0E7490" } }));
 ```
 
+The eight other styles ship as opt-in sheets (`@owlky/styles/styles/<id>.css`). To brand one,
+write its sheet yourself and load it after `owlky.css` instead of the published one:
+
+```ts
+import { createTheme, styleSheetCss } from "@owlky/tokens";
+
+// The Nordic sheet with your primary color, for `data-ok-style="nordic"` scopes.
+const nordic = styleSheetCss(createTheme({ style: "nordic", brand: { primary: "#0E7490" } }));
+```
+
 ## Styles and axes
 
 A page without attributes looks **Soft**: Tailwind's indigo primary and zinc neutrals, Nunito,
 rounded shapes and soft two-layer shadows. Owlky doesn't bundle fonts: load Nunito (weights 400
-to 800) from Google Fonts or Fontsource.
+to 800) from Google Fonts or Fontsource. Each style definition lists its Google Fonts families in
+`styles[id].fontLinks`.
 
 Five attributes change the tokens on any element, and each one nests on its own:
 
 | Attribute | Values (default first) | Changes |
 |---|---|---|
-| `data-ok-style` | `soft` | every style token |
+| `data-ok-style` | `soft` · `swiss` · `bauhaus` · `brutalism` · `neo-brutalism` · `editorial` · `minimal-mono` · `corporate` · `nordic` | every style token (the eight after `soft` need their sheet) |
 | `data-ok-theme` (or `.dark`) | `light` · `dark` · `system` | scheme colors |
 | `data-ok-density` | `comfortable` · `compact` | control heights and paddings |
 | `data-ok-surface` | `default` · `contrast` | the page background behind paper |
@@ -59,7 +70,8 @@ rem.
 | `defaultTheme`, `createTheme({ style, brand, fonts, …overrides })` | The default (Soft) theme; a style's theme with brand colors and fonts, then a deep merge of other keys (arrays replaced) |
 | `styleTheme(style, { brand, fonts })`, `styles`, `styleNames`, `soft`, `StyleDefinition` | Styles as data |
 | `colorRoles`, `neutralRoles`, `graphicTone`, `shiftToContrast`, `brandScale`, `CONTRAST_TARGETS`, `tailwindPalette` | The AA generator and its inputs |
-| `themeToCss(theme, { selector, reset, colorBindings })`, `themeToCssVariables(theme)`, `themeColorVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme (the core sheet, or a style scope) to CSS / variable maps |
+| `styleSheetCss(theme)` | The opt-in sheet of the theme's style (`[data-ok-style="<id>"]`), such as a branded Nordic |
+| `themeToCss(theme, { selector, reset, base, colorBindings })`, `themeToCssVariables(theme)`, `themeColorVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme (the core sheet, or a style scope) to CSS / variable maps |
 | `fontSizeRange` | The root font size setting (12–20px) |
 | `hexToRgb`, `hexToOklch`, `oklchToHex`, `relativeLuminance`, `contrastRatio`, `getContrastText(background, candidates?)` | Color math |
 | `componentColorNames`, `paletteColorNames`, `greyShades`, `typographyVariants`, `shadowNames`, `dropShadowNames`, `radiusNames`, `radiusRoleNames`, `lineWidthNames`, `densityNames`, `fontSizeNames`, `breakpointNames` | Name lists (and their types) |
