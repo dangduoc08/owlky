@@ -1,7 +1,7 @@
 import { tabsOptions } from "@owlky/core";
 import { Tab, Tabs, type TabsColor } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const ITEMS = ["Item one", "Item two", "Item three"];
@@ -14,10 +14,11 @@ const MANY = [
   "Item six",
   "Item seven",
 ];
+/** Tab value, icon and accessible name. */
 const ICONS = [
-  ["phone", "Phone"],
-  ["heart", "Favorites"],
-  ["headphones", "Music"],
+  ["phone", "phone-linear", "Phone"],
+  ["heart", "heart-linear", "Favorites"],
+  ["headphones", "headphones-round-linear", "Music"],
 ] as const;
 
 /** Three tabs with an icon and a label; the third one is disabled (as on the reference). */
@@ -30,11 +31,11 @@ function IconTabs({
 }) {
   return (
     <Tabs aria-label={label}>
-      {ICONS.map(([icon], index) => (
+      {ICONS.map(([value, icon], index) => (
         <Tab
-          key={icon}
-          value={icon}
-          icon={<DemoIcon name={icon} />}
+          key={value}
+          value={value}
+          icon={<SolarIcon name={icon} />}
           iconPosition={position}
           label={ITEMS[index]}
           disabled={index === 2}
@@ -57,11 +58,11 @@ function IconOnlyTabs({
 }) {
   return (
     <Tabs aria-label={label} textColor={textColor} indicatorColor={indicatorColor}>
-      {ICONS.map(([icon, name], index) => (
+      {ICONS.map(([value, icon, name], index) => (
         <Tab
-          key={icon}
-          value={icon}
-          icon={<DemoIcon name={icon} />}
+          key={value}
+          value={value}
+          icon={<SolarIcon name={icon} />}
           aria-label={name}
           disabled={index === 2}
         />

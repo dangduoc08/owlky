@@ -6,7 +6,7 @@ import {
   type ToggleButtonSize,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -45,17 +45,17 @@ function Alignment({
       aria-label={label}
     >
       <ToggleButton value="left" aria-label="Left">
-        <DemoIcon name="alignLeft" />
+        <SolarIcon name="align-left-linear" />
       </ToggleButton>
       <ToggleButton value="center" aria-label="Center">
-        <DemoIcon name="alignCenter" />
+        <SolarIcon name="align-horizontal-center-linear" />
       </ToggleButton>
       <ToggleButton value="right" aria-label="Right">
-        <DemoIcon name="alignRight" />
+        <SolarIcon name="align-right-linear" />
       </ToggleButton>
       {justify && (
         <ToggleButton value="justify" aria-label="Justify" disabled>
-          <DemoIcon name="alignJustify" />
+          <SolarIcon name="align-horizontal-spacing-linear" />
         </ToggleButton>
       )}
     </ToggleButtonGroup>
@@ -80,13 +80,13 @@ function View({
       aria-label={label}
     >
       <ToggleButton value="list" aria-label="List">
-        <DemoIcon name="viewList" />
+        <SolarIcon name="list-linear" />
       </ToggleButton>
       <ToggleButton value="module" aria-label="Module">
-        <DemoIcon name="viewModule" />
+        <SolarIcon name="widget-linear" />
       </ToggleButton>
       <ToggleButton value="quilt" aria-label="Quilt">
-        <DemoIcon name="viewQuilt" />
+        <SolarIcon name="widget-4-linear" />
       </ToggleButton>
     </ToggleButtonGroup>
   );
@@ -109,13 +109,13 @@ export const toggleStories: Record<string, ReactGroup[]> = {
       content: (
         <ToggleButtonGroup defaultValue={["bold", "italic"]} aria-label="Text formatting">
           <ToggleButton value="bold" aria-label="Bold">
-            <DemoIcon name="bold" />
+            <SolarIcon name="text-bold-linear" />
           </ToggleButton>
           <ToggleButton value="italic" aria-label="Italic">
-            <DemoIcon name="italic" />
+            <SolarIcon name="text-italic-linear" />
           </ToggleButton>
           <ToggleButton value="underline" aria-label="Underline">
-            <DemoIcon name="underline" />
+            <SolarIcon name="text-underline-linear" />
           </ToggleButton>
         </ToggleButtonGroup>
       ),
@@ -126,7 +126,7 @@ export const toggleStories: Record<string, ReactGroup[]> = {
       title: "Standalone",
       content: SIZES.map(([size, label]) => (
         <ToggleButton key={size} size={size} aria-label={label}>
-          <DemoIcon name="check" />
+          <SolarIcon name="check-linear" />
         </ToggleButton>
       )),
     },
@@ -143,10 +143,10 @@ export const toggleStories: Record<string, ReactGroup[]> = {
       content: (
         <>
           <ToggleButton aria-label="Disabled" disabled>
-            <DemoIcon name="check" />
+            <SolarIcon name="check-linear" />
           </ToggleButton>
           <ToggleButton aria-label="Disabled pressed" disabled defaultSelected>
-            <DemoIcon name="check" />
+            <SolarIcon name="check-linear" />
           </ToggleButton>
           <Alignment label="Disabled alignment" disabled />
         </>
@@ -164,7 +164,7 @@ export const toggleStories: Record<string, ReactGroup[]> = {
       title: "Standalone",
       content: COLORS.map((color) => (
         <ToggleButton key={color} color={color} defaultSelected aria-label={capitalize(color)}>
-          <DemoIcon name="check" />
+          <SolarIcon name="check-linear" />
         </ToggleButton>
       )),
     },
@@ -176,7 +176,7 @@ export const toggleStories: Record<string, ReactGroup[]> = {
         <>
           <View label="View" vertical />
           <ToggleButton defaultSelected>
-            <DemoIcon name="check" />
+            <SolarIcon name="check-linear" />
             Label
           </ToggleButton>
         </>

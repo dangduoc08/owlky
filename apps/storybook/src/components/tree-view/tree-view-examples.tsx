@@ -1,7 +1,7 @@
 import { treeViewOptions } from "@owlky/core";
 import { RichTreeView, SimpleTreeView, TreeItem, type TreeViewBaseItem } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const PROJECTS: TreeViewBaseItem[] = [
@@ -75,9 +75,9 @@ export const treeViewStories: Record<string, ReactGroup[]> = {
         <SimpleTreeView
           aria-label="Outline with icons"
           defaultExpandedItems={["main", "drafts"]}
-          expandIcon={<DemoIcon name="plusSquare" />}
-          collapseIcon={<DemoIcon name="minusSquare" />}
-          endIcon={<DemoIcon name="xSquare" />}
+          expandIcon={<SolarIcon name="add-square-linear" />}
+          collapseIcon={<SolarIcon name="minus-square-linear" />}
+          endIcon={<SolarIcon name="close-square-linear" />}
         >
           <Outline />
         </SimpleTreeView>

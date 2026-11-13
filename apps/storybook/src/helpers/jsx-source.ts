@@ -1,10 +1,12 @@
 import * as library from "@owlky/react";
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
+import { SolarIcon, type SolarName, solarId } from "./solar-icons.js";
 
 /*
  * Turns the example elements of a story into the JSX users copy from the Code panel. Library
  * components and icons are printed by name; local helper components (no hooks) are expanded so
- * the code only uses public components.
+ * the code only uses public components. Solar icons (`SolarIcon`) print as the `Icon` call of
+ * `@iconify/react/offline`, with the icon's import.
  */
 
 /** Public components by identity: production builds minify function names. */
@@ -27,7 +29,10 @@ function nameOf(type: ElementType): { name: string; expand: boolean } {
   return { name, expand: !name.endsWith("Icon") };
 }
 
-function propSource(key: string, value: unknown, used: Set<string>): string | null {
+/** Component names a source uses, plus its Solar icons (`SolarIcon` elements). */
+type Used = Set<string> & { solar?: Set<SolarName> };
+
+function propSource(key: string, value: unknown, used: Used): string | null {
   if (key === "children" || key === "key" || value === undefined) return null;
   if (value === true) return key;
   if (typeof value === "string") return `${key}="${value}"`;
@@ -37,7 +42,7 @@ function propSource(key: string, value: unknown, used: Set<string>): string | nu
   return `${key}={${json?.replaceAll('"@@Infinity@@"', "Infinity")}}`;
 }
 
-function render(node: ReactNode, depth: number, used: Set<string>): string {
+function render(node: ReactNode, depth: number, used: Used): string {
   const pad = INDENT.repeat(depth);
   if (node == null || typeof node === "boolean") return "";
   if (typeof node === "string" || typeof node === "number") return `${pad}${node}`;
@@ -50,6 +55,11 @@ function render(node: ReactNode, depth: number, used: Set<string>): string {
   if (!isValidElement(node)) return "";
   const element = node as ReactElement<Record<string, unknown>>;
   if (element.type === Fragment) return render(element.props["children"] as ReactNode, depth, used);
+  if (element.type === SolarIcon) {
+    const icon = element.props["name"] as SolarName;
+    used.solar = (used.solar ?? new Set()).add(icon);
+    return `${pad}<Icon icon={${solarId(icon)}} />`;
+  }
   const { name, expand } = nameOf(element.type);
   if (expand && typeof element.type === "function") {
     const output = (element.type as (props: unknown) => ReactNode)(element.props);
@@ -76,7 +86,7 @@ export interface SourceGroup {
 
 /** Story source: the import lines, then each group's JSX under a comment with its title. */
 export function jsxSource(groups: SourceGroup[]): string {
-  const used = new Set<string>();
+  const used: Used = new Set<string>();
   const body = groups
     .map((group) => `{/* ${group.title} */}\n${render(group.content, 0, used)}`)
     .join("\n\n");
@@ -86,6 +96,12 @@ export function jsxSource(groups: SourceGroup[]): string {
     'import "@owlky/styles/owlky-all.css";',
     `import { ${library.join(", ")} } from "@owlky/react";`,
   ];
+  if (used.solar) {
+    lines.push('import { Icon } from "@iconify/react/offline";');
+    for (const icon of [...used.solar].sort()) {
+      lines.push(`import ${solarId(icon)} from "@iconify-icons/solar/${icon}";`);
+    }
+  }
   if (icons.length > 0) {
     lines.push(`// ${icons.join(", ")}: your own decorative SVG icons (aria-hidden="true").`);
   }

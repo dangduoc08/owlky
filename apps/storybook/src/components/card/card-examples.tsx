@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 /*
@@ -182,13 +182,13 @@ export const uiControlsGroups: ReactGroup[] = [
           </CardContent>
           <div className="sb-card-player-controls">
             <IconButton aria-label="Previous">
-              <DemoIcon name="skipBack" />
+              <SolarIcon name="skip-previous-linear" />
             </IconButton>
             <IconButton size="lg" aria-label="Play">
-              <DemoIcon name="play" />
+              <SolarIcon name="play-linear" />
             </IconButton>
             <IconButton aria-label="Next">
-              <DemoIcon name="skipForward" />
+              <SolarIcon name="skip-next-linear" />
             </IconButton>
           </div>
         </div>

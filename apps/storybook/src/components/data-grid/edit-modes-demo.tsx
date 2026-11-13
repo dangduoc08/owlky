@@ -1,7 +1,7 @@
 import type { GridRowModesModel } from "@owlky/core";
 import { DataGrid, type GridColDef, IconButton } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 /* Team members edited a row at a time with Edit, Save and Cancel buttons (story data). */
 interface Member {
@@ -40,7 +40,7 @@ export function EditModesDemo() {
             hidden={editing(row.id)}
             onClick={() => setModes({ [row.id]: { mode: "edit" } })}
           >
-            <DemoIcon name="pen" />
+            <SolarIcon name="pen-linear" />
           </IconButton>
           <IconButton
             size="sm"
@@ -49,7 +49,7 @@ export function EditModesDemo() {
             hidden={!editing(row.id)}
             onClick={() => setModes({ [row.id]: { mode: "view" } })}
           >
-            <DemoIcon name="check" />
+            <SolarIcon name="check-linear" />
           </IconButton>
           <IconButton
             size="sm"
@@ -58,7 +58,7 @@ export function EditModesDemo() {
             hidden={!editing(row.id)}
             onClick={() => setModes({ [row.id]: { mode: "view", ignoreModifications: true } })}
           >
-            <DemoIcon name="close" />
+            <SolarIcon name="close-linear" />
           </IconButton>
         </>
       ),

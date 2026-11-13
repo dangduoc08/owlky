@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useLayoutEffect, useRef } from "react";
 import { applyArgs } from "./apply-args.js";
 import { applyHtmlArgs, schemaControls } from "./controls.js";
 import { jsxSource } from "./jsx-source.js";
+import { solarSource } from "./solar-icons.js";
 
 /*
  * Story layout shared by React and HTML stories, so both render identical DOM (parity tests):
@@ -74,7 +75,14 @@ export function reactGroupsStory(
       />
     ),
     ...(controls ? { argTypes: schemaControls(controls.schema, controls.keys) } : {}),
-    parameters: { docs: { source: { language: "tsx", code: code ?? jsxSource(groups) } } },
+    parameters: {
+      docs: {
+        source: {
+          language: "tsx",
+          code: code === undefined ? jsxSource(groups) : solarSource(code),
+        },
+      },
+    },
   };
 }
 

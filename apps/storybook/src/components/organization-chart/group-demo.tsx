@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@owlky/react";
 import { type ReactNode, useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import {
   CEO,
   headcount,
@@ -44,7 +44,7 @@ function CardActions({ id, name, open, setOpen }: { id: string; name: string } &
         aria-controls={menu}
         onClick={(event) => setOpen(isOpen ? null : { id, anchor: event.currentTarget })}
       >
-        <DemoIcon name="moreHorizontal" />
+        <SolarIcon name="menu-dots-linear" />
       </IconButton>
       <Menu
         id={menu}
@@ -55,11 +55,11 @@ function CardActions({ id, name, open, setOpen }: { id: string; name: string } &
         onOpenChange={() => setOpen(null)}
       >
         <MenuItem>
-          <DemoIcon name="trash" />
+          <SolarIcon name="trash-bin-trash-linear" />
           Delete
         </MenuItem>
         <MenuItem>
-          <DemoIcon name="pen" />
+          <SolarIcon name="pen-linear" />
           Edit
         </MenuItem>
       </Menu>
@@ -126,7 +126,7 @@ export function GroupChartDemo() {
             person={CEO}
             actions={
               <IconButton className="sb-org-more" aria-label={`Actions for ${CEO.name}`} disabled>
-                <DemoIcon name="moreHorizontal" />
+                <SolarIcon name="menu-dots-linear" />
               </IconButton>
             }
           />

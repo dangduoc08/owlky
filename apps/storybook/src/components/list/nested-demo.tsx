@@ -10,7 +10,7 @@ import {
   ListSubheader,
 } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 /** A nested list that the Inbox button opens and closes (open at first). */
 export function NestedDemo() {
@@ -24,7 +24,7 @@ export function NestedDemo() {
         <ListItem disablePadding>
           <ListItemButton>
             <ListItemIcon>
-              <DemoIcon name="send" />
+              <SolarIcon name="plain-linear" />
             </ListItemIcon>
             <ListItemText primary="Sent mail" />
           </ListItemButton>
@@ -32,7 +32,7 @@ export function NestedDemo() {
         <ListItem disablePadding>
           <ListItemButton>
             <ListItemIcon>
-              <DemoIcon name="mail" />
+              <SolarIcon name="letter-linear" />
             </ListItemIcon>
             <ListItemText primary="Drafts" />
           </ListItemButton>
@@ -44,7 +44,7 @@ export function NestedDemo() {
             onClick={() => setOpen(!open)}
           >
             <ListItemIcon>
-              <DemoIcon name="inbox" />
+              <SolarIcon name="inbox-linear" />
             </ListItemIcon>
             <ListItemText primary="Inbox" />
             <ListItemExpandIcon />
@@ -53,7 +53,7 @@ export function NestedDemo() {
             <ListItem disablePadding>
               <ListItemButton>
                 <ListItemIcon>
-                  <DemoIcon name="star" />
+                  <SolarIcon name="star-linear" />
                 </ListItemIcon>
                 <ListItemText primary="Starred" />
               </ListItemButton>

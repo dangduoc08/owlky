@@ -15,7 +15,7 @@ import {
 } from "@owlky/react";
 import type { ReactNode } from "react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon, type DemoIconName } from "../shared/demo-icon.js";
+import { SolarIcon, type SolarName } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const COLORS: TimelineDotColor[] = [
@@ -37,7 +37,15 @@ const LABELS: Record<string, string> = {
   error: "Error",
 };
 const TIMES = ["09:30 am", "10:00 am", "10:15 am", "10:30 am", "11:00 am", "11:30 am", "12:00 pm"];
-const ICONS: DemoIconName[] = ["calendar", "mail", "star", "image", "rocket", "sun", "comment"];
+const ICONS: SolarName[] = [
+  "calendar-linear",
+  "letter-linear",
+  "star-linear",
+  "gallery-linear",
+  "rocket-linear",
+  "sun-linear",
+  "chat-round-line-linear",
+];
 const NOTES = [
   "Kickoff with the design team",
   "Brief sent to the client",
@@ -52,7 +60,7 @@ interface Event {
   label: ReactNode;
   color?: TimelineDotColor;
   opposite?: ReactNode;
-  icon?: DemoIconName;
+  icon?: SolarName;
 }
 
 /** A timeline of events; the last one has no connector. */
@@ -74,7 +82,7 @@ function Events({
           )}
           <TimelineSeparator>
             <TimelineDot variant={variant} color={event.color}>
-              {event.icon && <DemoIcon name={event.icon} />}
+              {event.icon && <SolarIcon name={event.icon} />}
             </TimelineDot>
             {index < events.length - 1 && <TimelineConnector />}
           </TimelineSeparator>
@@ -120,7 +128,7 @@ export const timelineStories: Record<string, ReactGroup[]> = {
           position="alternate"
           events={colored((color, i) => ({
             opposite: TIMES[i],
-            icon: ICONS[i] as DemoIconName,
+            icon: ICONS[i] as SolarName,
             label: (
               <Paper className="sb-timeline-card" elevation={0}>
                 <Typography variant="subtitle2">{LABELS[color]}</Typography>

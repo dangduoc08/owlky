@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import { CEO, PEOPLE, type Person, type PersonNode } from "./organization-chart-data.js";
 
 interface Actions {
@@ -35,7 +35,7 @@ function PersonCard({ person, open, setOpen }: { person: Person } & Actions) {
         aria-controls={menu}
         onClick={(event) => setOpen(isOpen ? null : { id: person.id, anchor: event.currentTarget })}
       >
-        <DemoIcon name="moreHorizontal" />
+        <SolarIcon name="menu-dots-linear" />
       </IconButton>
       <Avatar src={person.avatar} alt="" size={48} />
       <Typography className="sb-org-name" variant="subtitle2" component="span" noWrap>
@@ -53,11 +53,11 @@ function PersonCard({ person, open, setOpen }: { person: Person } & Actions) {
         onOpenChange={() => setOpen(null)}
       >
         <MenuItem>
-          <DemoIcon name="trash" />
+          <SolarIcon name="trash-bin-trash-linear" />
           Delete
         </MenuItem>
         <MenuItem>
-          <DemoIcon name="pen" />
+          <SolarIcon name="pen-linear" />
           Edit
         </MenuItem>
       </Menu>

@@ -1,7 +1,7 @@
 import { paginationOptions } from "@owlky/core";
 import { Pagination } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { ItemsDemo } from "./items-demo.js";
 import { TablePaginationDemo } from "./table-pagination-demo.js";
@@ -74,7 +74,10 @@ export const iconGroups: ReactGroup[] = [
         count={10}
         variant="soft"
         color="info"
-        icons={{ previous: <DemoIcon name="arrowLeft" />, next: <DemoIcon name="arrowRight" /> }}
+        icons={{
+          previous: <SolarIcon name="arrow-left-linear" />,
+          next: <SolarIcon name="arrow-right-linear" />,
+        }}
       />
     ),
   },

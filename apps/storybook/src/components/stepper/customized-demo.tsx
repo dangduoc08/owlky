@@ -1,11 +1,15 @@
 import { Button, Paper, Step, StepLabel, Stepper, Typography } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 const STEPS = [
-  { label: "Choose a plan", icon: "settings", text: "Pick the plan that suits your team." },
-  { label: "Add details", icon: "userPlus", text: "Invite the people who will work on it." },
-  { label: "Review and confirm", icon: "monitor", text: "Check the summary, then confirm." },
+  { label: "Choose a plan", icon: "settings-linear", text: "Pick the plan that suits your team." },
+  {
+    label: "Add details",
+    icon: "user-plus-rounded-linear",
+    text: "Invite the people who will work on it.",
+  },
+  { label: "Review and confirm", icon: "monitor-linear", text: "Check the summary, then confirm." },
 ] as const;
 
 /** Two looks of the same steps: dots, and large icon circles. */
@@ -28,7 +32,7 @@ export function CustomizedDemo() {
       >
         {STEPS.map((step) => (
           <Step key={step.label}>
-            <StepLabel icon={<DemoIcon name={step.icon} />}>{step.label}</StepLabel>
+            <StepLabel icon={<SolarIcon name={step.icon} />}>{step.label}</StepLabel>
           </Step>
         ))}
       </Stepper>

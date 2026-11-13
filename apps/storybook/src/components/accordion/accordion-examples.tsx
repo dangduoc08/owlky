@@ -9,7 +9,7 @@ import {
 } from "@owlky/react";
 import { useState } from "react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const TEXT =
@@ -151,7 +151,7 @@ export const variantGroups: ReactGroup[] = [
     title: "Soft",
     content: ["Accordion 1", "Accordion 2", "Accordion 3"].map((title) => (
       <Accordion key={title} variant="soft">
-        <AccordionSummary expandIcon={<DemoIcon name="chevronDown" />}>
+        <AccordionSummary expandIcon={<SolarIcon name="alt-arrow-down-linear" />}>
           <Typography variant="subtitle1" component="span">
             {title}
           </Typography>

@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 /** A card whose method section opens and closes with the chevron button, through a Collapse. */
 export function ComplexInteractionDemo() {
@@ -25,7 +25,7 @@ export function ComplexInteractionDemo() {
         }
         action={
           <IconButton aria-label="Settings">
-            <DemoIcon name="moreVertical" />
+            <SolarIcon name="menu-dots-vertical-linear" />
           </IconButton>
         }
         title="Golden flower bed"
@@ -40,10 +40,10 @@ export function ComplexInteractionDemo() {
       </CardContent>
       <CardActions disableSpacing>
         <IconButton aria-label="Add to favorites">
-          <DemoIcon name="heart" />
+          <SolarIcon name="heart-linear" />
         </IconButton>
         <IconButton aria-label="Share">
-          <DemoIcon name="share" />
+          <SolarIcon name="share-linear" />
         </IconButton>
         <IconButton
           className="sb-card-expand"
@@ -52,7 +52,7 @@ export function ComplexInteractionDemo() {
           aria-controls="card-garden-method"
           onClick={() => setExpanded(!expanded)}
         >
-          <DemoIcon name="chevronDown" />
+          <SolarIcon name="alt-arrow-down-linear" />
         </IconButton>
       </CardActions>
       <Collapse id="card-garden-method" in={expanded} timeout="auto">

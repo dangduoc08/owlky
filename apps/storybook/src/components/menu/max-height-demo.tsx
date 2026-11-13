@@ -1,6 +1,6 @@
 import { IconButton, Menu, MenuItem } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 const MOONS = [
   "None",
@@ -30,7 +30,7 @@ export function MaxHeightMenuDemo() {
         aria-controls="menu-long"
         onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}
       >
-        <DemoIcon name="moreVertical" />
+        <SolarIcon name="menu-dots-vertical-linear" />
       </IconButton>
       <Menu
         id="menu-long"

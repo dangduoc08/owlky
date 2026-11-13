@@ -18,7 +18,7 @@ import {
   Typography,
 } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 const CATEGORIES = ["Clothing", "Accessories", "Shoes"];
 const PRODUCTS = Array.from({ length: 50 }, (_, i) => ({
@@ -138,7 +138,7 @@ export function TableApiDemo() {
                   <TableCell>{product.category}</TableCell>
                   <TableCell align="right">
                     <IconButton size="sm" aria-label={`Actions for ${product.name}`}>
-                      <DemoIcon name="moreVertical" />
+                      <SolarIcon name="menu-dots-vertical-linear" />
                     </IconButton>
                   </TableCell>
                 </TableRow>

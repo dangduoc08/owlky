@@ -10,18 +10,10 @@ import {
   TextField,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 /** Demo icons (decorative, same SVG as the HTML snippets). */
-export function PersonIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="12" cy="7.5" r="3.5" fill="currentColor" />
-      <path d="M5 19.5c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5z" fill="currentColor" />
-    </svg>
-  );
-}
-
 export function EyeIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -47,7 +39,6 @@ export function InfoIcon() {
   );
 }
 
-PersonIcon.displayName = "PersonIcon";
 EyeIcon.displayName = "EyeIcon";
 InfoIcon.displayName = "InfoIcon";
 
@@ -124,7 +115,7 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
           label="Enabled"
           startAdornment={
             <InputAdornment position="start">
-              <PersonIcon />
+              <SolarIcon name="user-rounded-bold" />
             </InputAdornment>
           }
         />,
@@ -136,7 +127,7 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
           disabled
           startAdornment={
             <InputAdornment position="start">
-              <PersonIcon />
+              <SolarIcon name="user-rounded-bold" />
             </InputAdornment>
           }
           helperText={
@@ -176,7 +167,7 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
           endAdornment={revealButton}
           startAdornment={
             <InputAdornment position="start">
-              <PersonIcon />
+              <SolarIcon name="user-rounded-bold" />
             </InputAdornment>
           }
         />,
