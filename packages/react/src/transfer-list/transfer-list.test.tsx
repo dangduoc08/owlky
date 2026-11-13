@@ -53,7 +53,7 @@ describe("TransferList", () => {
     render(<TransferList items={ITEMS} />);
     const panel = document.querySelector("[data-ok-transfer-list-panel]") as HTMLElement;
     expect(panel.getBoundingClientRect().width).toBe(220);
-    expect(getComputedStyle(panel).borderRadius).toBe("16px");
+    expect(getComputedStyle(panel).borderRadius).toBe("18px");
     const row = document.querySelector("[data-ok-transfer-list-option]") as HTMLElement;
     expect(row.getBoundingClientRect().height).toBe(44);
     expect(getComputedStyle(row).fontWeight).toBe("600");

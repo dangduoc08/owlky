@@ -49,7 +49,7 @@ describe("typography snippets", () => {
     expect(root.scrollWidth).toBeGreaterThan(root.clientWidth);
     const probe = document.createElement("span");
     probe.style.fontSize = "var(--ok-typography-h4-font-size)";
-    probe.style.color = "var(--ok-palette-error-main)";
+    probe.style.color = "var(--ok-palette-error-text)";
     host.append(probe);
     expect(style.fontSize).toBe(getComputedStyle(probe).fontSize);
     expect(style.color).toBe(getComputedStyle(probe).color);

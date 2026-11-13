@@ -24,12 +24,12 @@ test.describe("Foundations / Typography", () => {
     });
   }
 
-  test("headings are responsive and use the display font", async ({ page }) => {
+  test("headings are responsive and use the heading font", async ({ page }) => {
     const sample = page.locator('[data-variant="h1"]');
     await page.setViewportSize({ width: 1440, height: 900 });
     await openStory(page, typographyStory("h1"));
     await expect(sample).toHaveCSS("font-size", "64px");
-    await expect(sample).toHaveCSS("font-family", /^"?Barlow/);
+    await expect(sample).toHaveCSS("font-family", /^"?Nunito Variable/);
     await expect(page.locator("#storybook-root pre")).toContainText('"@media (min-width:1200px)"');
     await page.setViewportSize({ width: 375, height: 800 });
     await expect(sample).toHaveCSS("font-size", "40px");
@@ -37,7 +37,7 @@ test.describe("Foundations / Typography", () => {
     await openStory(page, typographyStory("h4"));
     await expect(page.locator('[data-variant="h4"]')).toHaveCSS(
       "font-family",
-      /^"?Public Sans Variable/,
+      /^"?Nunito Variable/,
     );
   });
 });
@@ -55,7 +55,7 @@ test.describe("Foundations / Shadows", () => {
     await expect(page.locator("[data-shadow]")).toHaveCount(shadowNames.length);
     await expect(page.locator('[data-shadow="--ok-shadow-z8"]')).toHaveCSS(
       "box-shadow",
-      /0\.16\) 0px 8px 16px 0px$/,
+      /0\.12\) 0px 8px 20px 0px$/,
     );
     await openStory(page, "foundations-shadows--colors");
     await expect(page.locator("[data-shadow]")).toHaveCount(12);

@@ -345,7 +345,7 @@ describe("Map", () => {
     const controls = [...root.querySelectorAll<HTMLElement>("[data-ok-map-control]")];
     expect(controls).toHaveLength(6);
     for (const control of controls) expect(control.dataset["okPaper"]).toBe("");
-    expect(getComputedStyle(controls[0] as HTMLElement).borderTopLeftRadius).toBe("8px");
+    expect(getComputedStyle(controls[0] as HTMLElement).borderTopLeftRadius).toBe("10px");
     await expectNoAxeViolations(root);
     rerender(
       <MapView mapStyle={STYLE} attributionControl={false}>
@@ -607,7 +607,7 @@ describe("Marker, Popup, Source, Layer, MapPanel", () => {
     // The popup's content is a Paper (map.css keeps its large radius).
     const content = dialog.querySelector("[data-ok-map-popup-content]") as HTMLElement;
     expect(content.dataset["okPaper"]).toBe("");
-    expect(getComputedStyle(content).borderTopLeftRadius).toBe("12px");
+    expect(getComputedStyle(content).borderTopLeftRadius).toBe("14px");
     expect(screen.getByTestId("reason").textContent).toBe("open");
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "Close" }));
     const tooltip = screen.getByRole("tooltip");

@@ -38,8 +38,8 @@ const thumb = (area: Element) => {
   probe.remove();
   return color;
 };
-const GREY_500 = /145,? 158,? 171/;
-const GREY_600 = /99,? 115,? 129/;
+const GREY_500 = /113,? 113,? 123/;
+const GREY_600 = /82,? 82,? 92/;
 const TRANSPARENT = /^(transparent|rgba\(0, 0, 0, 0\))$/;
 const AREA = (attrs = "") =>
   `<section data-ok-scrollbar aria-label="a" tabindex="0" ${attrs} style="height: 40px"><p style="height: 200px">x</p></section>`;

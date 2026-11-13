@@ -77,9 +77,9 @@ describe("button CSS without JavaScript", () => {
       ].join(""),
     );
     const [contained, outlined, soft] = host.querySelectorAll("button") as unknown as HTMLElement[];
-    expect(css(contained as Element).backgroundColor).toBe("rgb(0, 167, 111)");
-    expect(css(outlined as Element).borderTopColor).toBe("rgba(255, 86, 48, 0.48)");
-    expect(css(soft as Element).backgroundColor).toBe("rgba(145, 158, 171, 0.16)");
+    expect(css(contained as Element).backgroundColor).toBe("rgb(97, 95, 255)");
+    expect(css(outlined as Element).borderTopColor).toBe("rgba(231, 0, 11, 0.48)");
+    expect(css(soft as Element).backgroundColor).toBe("rgba(113, 113, 123, 0.16)");
   });
 
   it("treats unknown or missing modifier values as the defaults", () => {
@@ -90,7 +90,7 @@ describe("button CSS without JavaScript", () => {
     for (const button of host.querySelectorAll("button")) {
       expect(css(button).backgroundColor).toBe("rgba(0, 0, 0, 0)");
       expect(button.getBoundingClientRect().height).toBe(36);
-      expect(css(button).color).toBe("rgb(28, 37, 46)");
+      expect(css(button).color).toBe("rgb(39, 39, 42)");
     }
   });
 

@@ -53,10 +53,10 @@ describe("Breadcrumbs", () => {
 
   it("looks like the reference: 14px secondary text, 16px apart, current page primary", () => {
     render(<Trail />);
-    expect(css(nav()).color).toBe("rgb(99, 115, 129)");
+    expect(css(nav()).color).toBe("rgb(82, 82, 92)");
     expect(css(nav()).fontSize).toBe("14px");
     expect(css(nav().querySelector("ol") as Element).columnGap).toBe("16px");
-    expect(css(screen.getByText("E")).color).toBe("rgb(28, 37, 46)");
+    expect(css(screen.getByText("E")).color).toBe("rgb(24, 24, 27)");
     expect(css(screen.getByRole("link", { name: "A" })).textDecorationLine).toBe("none");
   });
 

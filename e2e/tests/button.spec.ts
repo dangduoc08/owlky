@@ -56,7 +56,7 @@ for (const impl of implementations) {
       test.skip(isMobile, "No hover on touch devices.");
       const button = page.getByRole("button", { name: "Primary", exact: true }).first();
       await button.hover();
-      await expect(button).toHaveCSS("background-color", "rgb(0, 120, 103)");
+      await expect(button).toHaveCSS("background-color", "rgb(79, 57, 246)");
     });
 
     test("keyboard focus shows a visible outline", async ({ page, browserName }) => {

@@ -85,13 +85,11 @@ describe("Chart", () => {
     expect(svg.getAttribute("height")).toBe("320");
     const line = svg.querySelector("[data-ok-chart-line]") as SVGPathElement;
     expect(css(line).strokeWidth).toBe("2.5px");
-    expect(css(line).stroke).toBe("rgb(0, 120, 103)");
+    expect(css(line).stroke).toBe("rgb(79, 57, 246)");
     expect(css(svg.querySelector("[data-ok-chart-grid-line]") as Element).strokeDasharray).toBe(
       "3px",
     );
-    expect(css(svg.querySelector("[data-ok-chart-tick]") as Element).fill).toBe(
-      "rgb(99, 115, 129)",
-    );
+    expect(css(svg.querySelector("[data-ok-chart-tick]") as Element).fill).toBe("rgb(82, 82, 92)");
     expect(svg.querySelectorAll("[data-ok-chart-marker]")).toHaveLength(8);
     // The data table is visually hidden once the chart is drawn, and never wider than a glyph.
     const table = screen.getByRole("table");
@@ -286,7 +284,7 @@ describe("Chart", () => {
     expect(document.querySelector("[data-ok-chart-band]")).not.toBeNull();
     expect(document.querySelectorAll("[data-ok-chart-active-marker]")).toHaveLength(0);
     expect(css(document.querySelector("[data-ok-chart-bar]") as Element).fill).toBe(
-      "rgb(0, 120, 103)",
+      "rgb(79, 57, 246)",
     );
   });
 
@@ -427,7 +425,7 @@ describe("Chart", () => {
     });
     expect(screen.getByRole("columnheader", { name: "B" })).toHaveAttribute("data-ok-type", "line");
     expect(css(document.querySelectorAll("[data-ok-chart-bar]")[1] as Element).fill).toBe(
-      "rgb(255, 86, 48)",
+      "rgb(231, 0, 11)",
     );
     expect(document.querySelector("[data-ok-chart-axis-title]")?.textContent).toBe("Points");
   });
@@ -474,10 +472,12 @@ describe("Chart", () => {
 
   it("dark theme: paper tooltip and AA ticks", async () => {
     document.documentElement.setAttribute("data-ok-theme", "dark");
+    // The page paints the dark background, as an app does (axe reads a transparent page as white).
+    document.documentElement.style.background = "var(--ok-bg-default)";
     try {
       renderChart();
       expect(css(document.querySelector("[data-ok-chart-tick]") as Element).fill).toBe(
-        "rgb(145, 158, 171)",
+        "rgb(159, 159, 169)",
       );
       await expectNoAxeViolations();
     } finally {
@@ -502,7 +502,7 @@ describe("Chart", () => {
       const svg = plot().querySelector("svg") as SVGSVGElement;
       const slices = svg.querySelectorAll("[data-ok-chart-slice]");
       expect(slices).toHaveLength(4);
-      expect(css(slices[0] as Element).fill).toBe("rgb(0, 120, 103)");
+      expect(css(slices[0] as Element).fill).toBe("rgb(79, 57, 246)");
       const labels = [...svg.querySelectorAll("[data-ok-chart-data-label]")];
       expect(labels.map((label) => label.textContent)).toEqual(["28.4%", "35.5%", "8.4%", "27.7%"]);
       expect(css(labels[0] as Element).fill).toBe("rgb(255, 255, 255)");
@@ -583,7 +583,7 @@ describe("Chart", () => {
       const stops = [...svg.querySelectorAll("[data-ok-chart-stop]")].map(
         (stop) => css(stop).stopColor,
       );
-      expect(stops.slice(0, 2)).toEqual(["rgb(198, 132, 255)", "rgb(142, 51, 255)"]);
+      expect(stops.slice(0, 2)).toEqual(["rgb(196, 180, 255)", "rgb(127, 34, 254)"]);
       expect(plot().querySelector("[data-ok-chart-center]")?.textContent).toBe("Total2,324");
       expect(screen.getByRole("table").querySelector("tbody td")?.textContent).toBe("24%");
       await expectNoAxeViolations();
@@ -667,7 +667,7 @@ describe("Chart", () => {
       expect(root().dataset).toMatchObject({ okBoxUpperColor: "info", okBoxLowerColor: "error" });
       const svg = plot().querySelector("svg") as SVGSVGElement;
       expect(css(svg.querySelector("[data-ok-chart-box='upper']") as Element).fill).toBe(
-        "rgb(0, 184, 217)",
+        "rgb(0, 105, 168)",
       );
       const table = screen.getByRole("table");
       const heads = table.querySelectorAll("thead tr");

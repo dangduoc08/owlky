@@ -212,7 +212,7 @@ describe("Radio swatches (color picker)", () => {
           "[data-ok-radio-swatch]",
         ) as Element,
       ).backgroundColor,
-    ).toBe("rgb(0, 167, 111)");
+    ).toBe("rgb(97, 95, 255)");
     await expectNoAxeViolations(container);
   });
 

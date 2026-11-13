@@ -81,7 +81,7 @@ describe("Dialog", () => {
     expect(Object.keys(paper.dataset).slice(0, 2)).toEqual(["okDialogPaper", "okPaper"]);
     expect(dialog.hasAttribute("data-ok-elevation")).toBe(false);
     expect(getComputedStyle(paper).boxShadow).toBe(shadowOf("--ok-shadow-dialog"));
-    expect(getComputedStyle(paper).borderRadius).toBe("16px");
+    expect(getComputedStyle(paper).borderRadius).toBe("18px");
     rerender(<Demo elevation={8} />);
     expect(paper.dataset["okElevation"]).toBe("8");
     expect(dialog.hasAttribute("data-ok-elevation")).toBe(false);
@@ -106,9 +106,9 @@ describe("Dialog", () => {
     expect((dialog as HTMLDialogElement).open).toBe(true);
     expect(document.activeElement?.getAttribute("aria-label")).toBe("Name");
     const paper = dialog.querySelector("[data-ok-dialog-paper]") as HTMLElement;
-    expect(getComputedStyle(paper).borderRadius).toBe("16px");
+    expect(getComputedStyle(paper).borderRadius).toBe("18px");
     const text = dialog.querySelector("[data-ok-dialog-content-text]") as HTMLElement;
-    expect(getComputedStyle(text).color).toBe("rgb(99, 115, 129)");
+    expect(getComputedStyle(text).color).toBe("rgb(82, 82, 92)");
     const title = dialog.querySelector("[data-ok-dialog-title]") as HTMLElement;
     expect(getComputedStyle(title).padding).toBe("24px");
     await expectNoAxeViolations();

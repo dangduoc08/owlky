@@ -81,11 +81,11 @@ describe("Stepper", () => {
       (s) => s.querySelector("[data-ok-step-icon]") as HTMLElement,
     ) as [HTMLElement, HTMLElement, HTMLElement];
     expect(active.getBoundingClientRect()).toMatchObject({ width: 24, height: 24 });
-    expect(css(active).backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(css(active).backgroundColor).toBe("rgb(97, 95, 255)");
     expect(css(active).color).toBe("rgb(255, 255, 255)");
     expect(css(active).fontSize).toBe("12px");
     // Not reached: grey-600 keeps the white number at AA.
-    expect(css(idle).backgroundColor).toBe("rgb(99, 115, 129)");
+    expect(css(idle).backgroundColor).toBe("rgb(82, 82, 92)");
     // Completed: a check instead of the number.
     expect(css(done.querySelector("[data-ok-step-icon-check]") as Element).display).toBe("block");
     expect(css(done.querySelector("[data-ok-step-icon-text]") as Element).display).toBe("none");
@@ -93,8 +93,8 @@ describe("Stepper", () => {
     const title = (index: number) =>
       steps()[index]?.querySelector("[data-ok-step-label-title]") as Element;
     expect(css(title(1))).toMatchObject({ fontSize: "14px", fontWeight: "500" });
-    expect(css(title(1)).color).toBe("rgb(28, 37, 46)");
-    expect(css(title(2)).color).toBe("rgb(99, 115, 129)");
+    expect(css(title(1)).color).toBe("rgb(24, 24, 27)");
+    expect(css(title(2)).color).toBe("rgb(82, 82, 92)");
     expect(css(title(2)).fontWeight).toBe("400");
     const line = steps()[1]?.querySelector("[data-ok-step-connector-line]") as Element;
     expect(css(line).borderTopWidth).toBe("1px");
@@ -138,10 +138,10 @@ describe("Stepper", () => {
     const label = screen.getByText("Payment").closest("[data-ok-step-label]") as HTMLElement;
     expect(label.hasAttribute("data-ok-error")).toBe(true);
     const icon = label.querySelector("[data-ok-step-icon]") as HTMLElement;
-    expect(css(icon).backgroundColor).toBe("rgb(255, 86, 48)");
+    expect(css(icon).backgroundColor).toBe("rgb(231, 0, 11)");
     expect(css(icon.querySelector("[data-ok-step-icon-error]") as Element).display).toBe("block");
     expect(css(icon.querySelector("[data-ok-step-icon-check]") as Element).display).toBe("none");
-    expect(css(screen.getByText("Payment")).color).not.toBe("rgb(99, 115, 129)");
+    expect(css(screen.getByText("Payment")).color).not.toBe("rgb(82, 82, 92)");
     expect(steps()[2]?.querySelector("[data-ok-step-icon-text]")?.textContent).toBe("C");
     const custom = steps()[3]?.querySelector("[data-ok-step-icon]") as HTMLElement;
     expect(custom.hasAttribute("data-ok-custom")).toBe(true);
@@ -199,10 +199,10 @@ describe("Stepper", () => {
     const icon = (index: number) =>
       steps()[index]?.querySelector("[data-ok-step-icon]") as HTMLElement;
     expect(getComputedStyle(icon(1), "::before").width).toBe("8px");
-    expect(css(icon(1)).color).toBe("rgb(0, 167, 111)");
+    expect(css(icon(1)).color).toBe("rgb(97, 95, 255)");
     expect(
       css(steps()[1]?.querySelector("[data-ok-step-connector-line]") as Element),
-    ).toMatchObject({ borderTopWidth: "3px", borderTopColor: "rgb(0, 167, 111)" });
+    ).toMatchObject({ borderTopWidth: "3px", borderTopColor: "rgb(97, 95, 255)" });
     rerender(<Basic activeStep={1} variant="circle" />);
     expect(icon(1).getBoundingClientRect().width).toBe(50);
     expect(css(icon(1)).backgroundImage).toMatch(/linear-gradient/);
@@ -314,7 +314,7 @@ describe("MobileStepper", () => {
     const items = [...dots.children] as HTMLElement[];
     expect(items).toHaveLength(3);
     expect(items.map((dot) => dot.hasAttribute("data-ok-active"))).toEqual([false, true, false]);
-    expect(css(items[1] as Element).backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(css(items[1] as Element).backgroundColor).toBe("rgb(97, 95, 255)");
     expect((items[0] as Element).getBoundingClientRect()).toMatchObject({ width: 8, height: 8 });
     // Back, progress, Next in a row, spread across the bar.
     expect(css(root)).toMatchObject({ display: "flex", justifyContent: "space-between" });

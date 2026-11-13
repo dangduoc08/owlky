@@ -99,7 +99,7 @@ describe("dialog paper (a Paper, ADR-0066)", () => {
     await userEvent.click(host.querySelector("#open") as HTMLElement);
     const paper = host.querySelector("[data-ok-dialog-paper]") as HTMLElement;
     expect(getComputedStyle(paper).boxShadow).toBe(shadowOf("--ok-shadow-dialog"));
-    expect(getComputedStyle(paper).borderRadius).toBe("16px");
+    expect(getComputedStyle(paper).borderRadius).toBe("18px");
     paper.setAttribute("data-ok-elevation", "12");
     expect(await shadowAfterTransition(paper)).toBe(shadowOf("--ok-elevation-12"));
     await expectNoAxeViolations(host);

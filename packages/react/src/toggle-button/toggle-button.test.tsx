@@ -103,9 +103,9 @@ describe("ToggleButton (standalone)", () => {
   it("pressed colored buttons get the main color, a tint and a border", () => {
     render(<ToggleButton aria-label="x" color="primary" defaultSelected />);
     const button = screen.getByRole("button");
-    expect(css(button).color).toBe("rgb(0, 167, 111)");
-    expect(css(button).backgroundColor).toBe("rgba(0, 167, 111, 0.08)");
-    expect(css(button).borderTopColor).toBe("rgb(0, 167, 111)");
+    expect(css(button).color).toBe("rgb(79, 57, 246)");
+    expect(css(button).backgroundColor).toBe("rgba(97, 95, 255, 0.08)");
+    expect(css(button).borderTopColor).toBe("rgb(79, 57, 246)");
   });
 });
 
@@ -181,15 +181,15 @@ describe("ToggleButtonGroup", () => {
   it("styles the group frame and pressed state", () => {
     render(<Alignment exclusive defaultValue="left" />);
     const group = screen.getByRole("group");
-    expect(css(group).borderTopColor).toBe("rgba(145, 158, 171, 0.16)");
+    expect(css(group).borderTopColor).toBe("rgba(113, 113, 123, 0.16)");
     expect(css(group).padding).toBe("4px");
     const left = screen.getByRole("button", { name: "Left" });
     expect(css(left).borderTopWidth).toBe("0px");
     expect(css(left).backgroundColor).toMatch(
-      /^(rgba\(145, 158, 171|color\(srgb 0\.5686).*0\.16\)$/,
+      /^(rgba\(113, 113, 123|color\(srgb 0\.4431).*0\.16\)$/,
     );
-    expect(css(left).color).toBe("rgb(28, 37, 46)");
-    expect(css(screen.getByRole("button", { name: "Center" })).color).toBe("rgb(99, 115, 129)");
+    expect(css(left).color).toBe("rgb(24, 24, 27)");
+    expect(css(screen.getByRole("button", { name: "Center" })).color).toBe("rgb(82, 82, 92)");
   });
 
   it("renders the same markup on the server and has no axe violations", async () => {

@@ -99,16 +99,16 @@ describe("Fab", () => {
       </>,
     );
     const get = (name: string) => css(screen.getByRole("button", { name }));
-    expect(get("default").backgroundColor).toBe("rgb(223, 227, 232)");
-    expect(get("default").color).toBe("rgb(28, 37, 46)");
-    expect(get("inherit").backgroundColor).toBe("rgb(28, 37, 46)");
+    expect(get("default").backgroundColor).toBe("rgb(212, 212, 216)");
+    expect(get("default").color).toBe("rgb(39, 39, 42)");
+    expect(get("inherit").backgroundColor).toBe("rgb(39, 39, 42)");
     expect(get("inherit").color).toBe("rgb(255, 255, 255)");
-    expect(get("primary").backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(get("primary").backgroundColor).toBe("rgb(97, 95, 255)");
     expect(get("primary").color).toBe("rgb(255, 255, 255)");
-    expect(get("primary").boxShadow).toMatch(/8px 16px/);
-    expect(get("outlined").borderTopColor).toBe("rgba(0, 167, 111, 0.48)");
+    expect(get("primary").boxShadow).toMatch(/8px 20px/);
+    expect(get("outlined").borderTopColor).toBe("rgba(97, 95, 255, 0.48)");
     expect(get("outlined").boxShadow).toBe("none");
-    expect(get("soft").backgroundColor).toBe("rgba(0, 167, 111, 0.16)");
+    expect(get("soft").backgroundColor).toBe("rgba(97, 95, 255, 0.16)");
   });
 
   it("darkens and drops the shadow on hover", async () => {
@@ -116,7 +116,7 @@ describe("Fab", () => {
     const fab = screen.getByRole("button");
     await userEvent.hover(fab);
     await settled(fab);
-    expect(css(fab).backgroundColor).toBe("rgb(0, 120, 103)");
+    expect(css(fab).backgroundColor).toBe("rgb(79, 57, 246)");
     expect(css(fab).boxShadow).toBe("none");
   });
 
@@ -127,7 +127,7 @@ describe("Fab", () => {
     await userEvent.click(fab, { force: true });
     expect(onClick).not.toHaveBeenCalled();
     expect(css(fab).boxShadow).toBe("none");
-    expect(css(fab).backgroundColor).toMatch(/^(rgba\(145, 158, 171|color\(srgb 0\.5686)/);
+    expect(css(fab).backgroundColor).toMatch(/^(rgba\(113, 113, 123|color\(srgb 0\.4431)/);
   });
 
   it("renders a link with href, and an inert link when disabled", () => {

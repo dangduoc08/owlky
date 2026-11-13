@@ -68,7 +68,7 @@ describe("Timeline", () => {
       </div>,
     );
     expect(dot().getBoundingClientRect()).toMatchObject({ width: 12, height: 12 });
-    expect(css(dot()).backgroundColor).toBe("rgb(196, 205, 213)");
+    expect(css(dot()).backgroundColor).toBe("rgb(159, 159, 169)");
     const line = document.querySelector("[data-ok-timeline-connector]") as HTMLElement;
     expect(line.getBoundingClientRect().width).toBe(2);
     expect(screen.getAllByRole("listitem")[0]?.getBoundingClientRect().height).toBe(70);
@@ -120,12 +120,12 @@ describe("Timeline", () => {
 
   it("dot colors and outlined variant; icons inside", async () => {
     const { rerender } = render(<Events dot={{ color: "primary" }} />);
-    expect(css(dot()).backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(css(dot()).backgroundColor).toBe("rgb(97, 95, 255)");
     rerender(<Events dot={{ color: "error", variant: "outlined" }} />);
-    expect(css(dot()).borderTopColor).toBe("rgb(255, 86, 48)");
+    expect(css(dot()).borderTopColor).toBe("rgb(231, 0, 11)");
     expect(css(dot()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     rerender(<Events dot={{ color: "inherit" }} />);
-    expect(css(dot()).backgroundColor).toBe("rgb(28, 37, 46)");
+    expect(css(dot()).backgroundColor).toBe("rgb(24, 24, 27)");
     rerender(
       <Timeline>
         <TimelineItem>

@@ -162,14 +162,14 @@ describe("image CSS", () => {
     );
     const root = rootOf(host);
     const overlay = host.querySelector("[data-ok-image-overlay]") as Element;
-    expect(getComputedStyle(overlay).backgroundColor).toBe("rgba(20, 26, 33, 0.48)");
+    expect(getComputedStyle(overlay).backgroundColor).toBe("rgba(24, 24, 27, 0.48)");
     root.setAttribute("data-ok-overlay", "primary");
     expect(getComputedStyle(overlay).backgroundImage).toMatch(
-      /^linear-gradient\(rgba\(255, 255, 255, 0\), rgba\(0, 167, 111, 0\.8\)\)$/,
+      /^linear-gradient\(rgba\(255, 255, 255, 0\), rgba\(97, 95, 255, 0\.8\)\)$/,
     );
     root.setAttribute("data-ok-overlay-from", "secondary");
     expect(getComputedStyle(overlay).backgroundImage).toMatch(
-      /^linear-gradient\(to top, rgba\(142, 51, 255, 0\.24\), rgba\(0, 167, 111, 0\.8\)\)$/,
+      /^linear-gradient\(to top, rgba\(127, 34, 254, 0\.24\), rgba\(97, 95, 255, 0\.8\)\)$/,
     );
     root.removeAttribute("data-ok-overlay");
     expect(getComputedStyle(overlay).display).toBe("none");

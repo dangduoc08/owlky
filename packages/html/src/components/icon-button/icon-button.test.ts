@@ -46,7 +46,7 @@ describe("icon button CSS without JavaScript", () => {
       ((large as HTMLElement).querySelector("svg") as SVGElement).getBoundingClientRect().width,
     ).toBe(24);
     expect((fallback as HTMLElement).getBoundingClientRect().height).toBe(36);
-    expect(getComputedStyle(fallback as HTMLElement).color).toBe("rgb(99, 115, 129)");
+    expect(getComputedStyle(fallback as HTMLElement).color).toBe("rgb(82, 82, 92)");
   });
 
   it("styles an icon link like an icon button, and a disabled link like a disabled button", async () => {

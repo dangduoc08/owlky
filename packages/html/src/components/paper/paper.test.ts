@@ -37,7 +37,7 @@ describe("paper snippets", () => {
           ? "none"
           : shadowOf(`var(--ok-elevation-${level})`, paper.parentElement as Element);
       expect(style.boxShadow).toBe(expected);
-      expect(style.borderRadius).toBe(paper.hasAttribute("data-ok-square") ? "0px" : "8px");
+      expect(style.borderRadius).toBe(paper.hasAttribute("data-ok-square") ? "0px" : "10px");
     }
   });
 
@@ -57,7 +57,7 @@ describe("paper snippets", () => {
       '<div data-ok-theme="dark"><div data-ok-paper data-ok-variant="elevation" data-ok-elevation="4">Dark</div></div>',
     );
     const paper = host.querySelector("[data-ok-paper]") as HTMLElement;
-    expect(getComputedStyle(paper).backgroundColor).toBe("rgb(28, 37, 46)");
+    expect(getComputedStyle(paper).backgroundColor).toBe("rgb(24, 24, 27)");
     expect(getComputedStyle(paper).boxShadow).toBe(
       shadowOf("var(--ok-elevation-4)", paper.parentElement as Element),
     );

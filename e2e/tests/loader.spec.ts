@@ -221,7 +221,7 @@ test.describe("CDN loader", () => {
     // Light components work at once; the chart shows its data table until its module runs.
     await expect(page.getByRole("button", { name: "Light" })).toHaveCSS(
       "background-color",
-      "rgb(0, 167, 111)",
+      "rgb(97, 95, 255)",
     );
     await expect(page.getByRole("table", { name: "Deploys per weekday" })).toBeVisible();
     expect(await page.evaluate(() => window.Owlky?.loaded("chart"))).toBe(false);
@@ -247,7 +247,7 @@ test.describe("CDN loader", () => {
     // Light components work as with owlky.js.
     await expect(page.getByRole("button", { name: "Light" })).toHaveCSS(
       "background-color",
-      "rgb(0, 167, 111)",
+      "rgb(97, 95, 255)",
     );
     expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
   });

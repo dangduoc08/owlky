@@ -108,10 +108,10 @@ describe("pagination snippets", () => {
 
 describe("pagination styles", () => {
   it.each([
-    ["text", "primary", "background-color", "rgb(0, 167, 111)"],
-    ["text", "standard", "background-color", "rgb(28, 37, 46)"],
-    ["outlined", "error", "border-top-color", "rgb(255, 86, 48)"],
-    ["soft", "info", "color", "rgb(0, 108, 156)"],
+    ["text", "primary", "background-color", "rgb(97, 95, 255)"],
+    ["text", "standard", "background-color", "rgb(39, 39, 42)"],
+    ["outlined", "error", "border-top-color", "rgb(231, 0, 11)"],
+    ["soft", "info", "color", "rgb(0, 89, 138)"],
   ])("%s / %s: the current page uses the color (%s)", (variant, color, property, expected) => {
     const host = mount(
       `<nav aria-label="P" data-ok-pagination data-ok-variant="${variant}" data-ok-color="${color}"><ul><li><button type="button" data-ok-pagination-item data-ok-type="page" aria-current="page">1</button></li></ul></nav>`,
