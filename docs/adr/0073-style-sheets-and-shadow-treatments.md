@@ -115,6 +115,24 @@ geometry inputs in the resolver would cost the core sheet bytes it doesn't have 
    - **Still open, not ST5:** chart series tokens in the sheet (no bytes left in the core sheet;
      with the Chart defaults) and the CDN `theme` module for run-time brand colors (needs a way to
      hand `applyThemeBrand` to pages without a new global: its own ADR).
+10. **ST6 (2026-11-13): tests and baselines.** Amends ADR-0070 § 7's steps for secondary text.
+   - **Secondary text on rows.** Secondary text sits on hovered, selected and focused rows
+     (Menu, List, Tree view, Autocomplete paint `--ok-action-hover|selected|focus`, 8 / 16 / 24 %
+     of neutral 500). The AA matrix found it under target there in 22 of 72 combinations: every
+     style in high contrast light (6.4:1 for 7:1 on a focused row) and Soft, Minimal Mono and
+     Corporate in dark (4.3:1 for 4.5:1). The generator keeps the step it picks on the surfaces
+     and moves its lightness only as far as the overlays need (`shiftToContrast`), so the look
+     barely changes (Soft dark `#9F9FA9` → `#A2A2AC`; high contrast light about one step darker).
+     Text primary already passed.
+   - **Tests.** `roles.test.ts` adds the overlay pairs; `theme-settings.test.ts` checks that the
+     core sheet plus every opt-in sheet resolves each text, palette, surface and border token to
+     the tested value in all 72 combinations; `e2e/tests/styles.spec.ts` (`@styles`) runs axe on
+     eight stories × nine styles × light / dark on Chromium. No exemption was added.
+   - **Baselines.** `.github/workflows/visual-baselines.yml` (`workflow_dispatch`) runs the
+     `@visual` tests with `--update-snapshots` in the pinned Playwright image (four shards) and
+     opens a pull request with the images through `gh` and the workflow token (no third-party
+     action); `visual.spec.ts` adds the same eight stories per opt-in style, light and dark, at
+     1280px.
 
 ## Consequences
 - Adding a style is a definition file, its lines in `styles.ts`, a row in
