@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The loader's own CSP: scripts and styles from this origin only, no inline code. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; require-trusted-types-for 'script'"
+    />
+    <title>Owlky — lazy modules from owlky.mjs</title>
+    <!--
+      owlky.mjs, the ES module twin of owlky.js (ADR-0068): the same light components and loader,
+      for <script type="module"> pages. It preloads Motion and loads the Chart from modules/.
+    -->
+    <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
+    <script type="module" src="../../packages/html/dist/owlky.mjs" data-ok-preload="motion"></script>
+  </head>
+  <body>
+    <main>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md">
+        <span data-ok-button-label>Light</span>
+      </button>
+      <figure id="chart" data-ok-chart data-ok-type="bar" data-ok-x-type="category" data-ok-legend="top">
+        <table data-ok-chart-data>
+          <caption>Deploys per weekday</caption>
+          <thead>
+            <tr><th scope="col">Category</th><th scope="col" data-ok-color="primary">Deploys</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Mon</th><td>14</td></tr>
+            <tr><th scope="row">Tue</th><td>22</td></tr>
+            <tr><th scope="row">Wed</th><td>19</td></tr>
+          </tbody>
+        </table>
+      </figure>
+      <div id="later"></div>
+    </main>
+  </body>
+</html>

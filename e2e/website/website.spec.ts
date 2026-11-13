@@ -18,10 +18,7 @@ const PAGES = [
 /** Opens a page with its scripts settled (hydrated: the theme menus show the saved values). */
 async function open(page: Page, path: string, mode: "light" | "dark" = "light") {
   await page.addInitScript((theme) => {
-    localStorage.setItem(
-      "owlky:theme-settings",
-      JSON.stringify({ mode: theme, preset: "default", font: "public-sans", fontSize: 16 }),
-    );
+    localStorage.setItem("owlky:theme-settings", JSON.stringify({ mode: theme, fontSize: 16 }));
   }, mode);
   await page.emulateMedia({ reducedMotion: "reduce" });
   const response = await page.goto(path, { waitUntil: "networkidle" });
@@ -133,52 +130,29 @@ test("Open HTML demo shows the example on its own page with the CDN bundle", asy
   await expect(dialog).toBeHidden();
 });
 
-test("the theme menus switch and remember the theme", async ({ page }) => {
-  // No seeded settings: the reload must read what the menus stored.
+test("the theme menu switches and remembers the theme", async ({ page }) => {
+  // No seeded settings: the reload must read what the menu stored.
   await page.goto("/foundations/colors/", { waitUntil: "networkidle" });
   await page.getByLabel("Theme", { exact: true }).selectOption("dark");
   await expect(page.locator("html")).toHaveAttribute("data-ok-theme", "dark");
-  await page.getByLabel("Preset", { exact: true }).selectOption("cyan");
-  await expect(page.locator("html")).toHaveAttribute("data-ok-preset", "cyan");
   await page.getByRole("link", { name: "Button" }).first().click();
   await expect(page).toHaveURL(/\/components\/button\/$/);
   await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-ok-preset", "cyan");
+  await expect(page.locator("html")).toHaveAttribute("data-ok-theme", "dark");
 });
 
-test("the home page's preset swatches recolor the page and switch to dark mode", async ({
-  page,
-}) => {
+test("the home page's switch turns on dark mode", async ({ page }) => {
   await open(page, "/");
-  const primary = () =>
-    page.evaluate(() =>
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--ok-palette-primary-main")
-        .trim(),
-    );
-  const before = await primary();
-  const swatches = page.getByRole("group", { name: "Primary color" });
-  await expect(swatches.getByRole("button", { name: "Green" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await swatches.getByRole("button", { name: "Purple" }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-ok-preset", "purple");
-  await expect(swatches.getByRole("button", { name: "Purple" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  expect(await primary()).not.toBe(before);
-  // The hero's accent line follows the preset.
+  // The hero's accent line reads the palette.
   const accent = await page
     .locator("[data-landing-accent]")
     .evaluate((element) => getComputedStyle(element).color);
   expect(accent).not.toBe("");
   await page.getByRole("switch", { name: "Dark mode" }).check();
   await expect(page.locator("html")).toHaveAttribute("data-ok-theme", "dark");
-  // Saved like the docs pages' menus (the menus test covers restoring after a reload).
+  // Saved like the docs pages' menu (the menu test covers restoring after a reload).
   const saved = await page.evaluate(() => localStorage.getItem("owlky:theme-settings"));
-  expect(JSON.parse(saved ?? "{}")).toMatchObject({ mode: "dark", preset: "purple" });
+  expect(JSON.parse(saved ?? "{}")).toMatchObject({ mode: "dark" });
 });
 
 test("the home page's sections render live components", async ({ page }) => {

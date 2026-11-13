@@ -11,7 +11,7 @@ HTML source: written by us
 ## Purpose
 A theme-aware illustration set. Each illustration is data (a tree of SVG nodes) whose shapes name
 a tone instead of a color; the stylesheet maps tones to `--ok-*` tokens, so pictures follow the
-color scheme, nested themes, `data-ok-preset` and the `color` option. One export per picture in
+color scheme, nested themes, palette token overrides and the `color` option. One export per picture in
 the opt-in entry `@owlky/core/illustrations` (tree-shaken). Components that show decorative art
 compose it (Upload's drop zone).
 
@@ -61,8 +61,8 @@ SVG attributes (go to the `svg`). HTML: a `width` attribute sizes the picture wi
 `display: block`, `max-width: 100%`, `height: auto` (the viewBox keeps the ratio). Width: the
 `width` attribute, else `--_ok-illustration-size` (size option), else 480px
 (`calc(var(--ok-spacing) * 120)`). Brand tones read `--_ok-illustration-<shade>` declared on the
-root from `--ok-palette-<color>-<shade>`, so a root inside a `[data-ok-preset]` / `[data-ok-theme]`
-scope takes that scope's values. `ink` is `light-dark(grey 800, grey 600)` inside
+root from `--ok-palette-<color>-<shade>`, so a root inside a `[data-ok-theme]` scope (or one that
+overrides palette tokens) takes that scope's values. `ink` is `light-dark(grey 800, grey 600)` inside
 `@supports (color: light-dark(#000, #fff))` (grey 800 otherwise). Translucent tones use
 `rgb(var(--…-channel) / α)`.
 
@@ -71,7 +71,7 @@ scope takes that scope's values. `ink` is `light-dark(grey 800, grey 600)` insid
   tones are dropped (`illustrationNodeAttributes`, `illustrationChildren`).
 - HTML snippets: the full inline SVG (generated from React,
   `node apps/storybook/scripts/illustration-snippets.mjs`); CSS only, no JavaScript.
-- HTML runtime (opt-in: `owlky-illustrations.js`, `@owlky/html/illustrations`, or
+- HTML runtime (opt-in: the CDN's lazy module, ADR-0068, `@owlky/html/illustrations`, or
   `createIllustration([…])`): on `svg[data-ok-illustration]` without artwork, builds the named
   picture with `createElementNS` and sets `viewBox`; artwork already there (snippets, custom art)
   stays. Writes `aria-hidden="true"` unless the author named it (then `role="img"`), and

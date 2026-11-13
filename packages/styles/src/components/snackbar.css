@@ -103,8 +103,8 @@
   }
 
   :where([data-ok-toaster-list]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Bottom: the newest toast sits nearest to the edge. */
@@ -129,7 +129,7 @@
     min-height: calc(var(--ok-spacing) * 13);
     padding-block: calc(var(--ok-spacing) * 2);
     padding-inline: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: var(--_ok-toast-bg);
     box-shadow: var(--ok-shadow-z8);
     color: var(--_ok-toast-color);
@@ -218,7 +218,7 @@
     justify-content: center;
     width: calc(var(--ok-spacing) * 12);
     height: calc(var(--ok-spacing) * 12);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: rgb(var(--_ok-toast-channel, var(--ok-palette-grey-500-channel)) / 0.08);
     color: var(--_ok-toast-main, currentColor);
   }
@@ -270,8 +270,8 @@
     min-height: calc(var(--ok-spacing) * 6);
     margin: 0;
     padding: 0 calc(var(--ok-spacing) * 2);
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.32);
-    border-radius: var(--ok-radius-sm);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.32);
+    border-radius: var(--ok-radius-control-sm);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -297,7 +297,7 @@
     height: calc(var(--ok-spacing) * 6);
     margin: 0;
     padding: 0;
-    border: 1px solid var(--ok-divider);
+    border: var(--ok-border-width) solid var(--ok-divider);
     border-radius: var(--ok-radius-full);
     background-color: var(--ok-bg-paper);
     color: var(--ok-text-primary);
@@ -325,13 +325,13 @@
     [data-ok-toast-cancel]:focus-visible,
     [data-ok-toast-close]:focus-visible
   ) {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid currentColor;
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-toast]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Inverted toasts: default toasts become paper, typed toasts dark (light on dark pages). */

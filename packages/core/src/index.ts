@@ -1,10 +1,5 @@
-export type {
-  ColorName,
-  FontFamilyPreset,
-  PaletteColorName,
-  PrimaryPreset,
-} from "@owlky/tokens";
-export { fontFamilyPresetNames, fontSizeRange, primaryPresetNames } from "@owlky/tokens";
+export type { ColorName, PaletteColorName } from "@owlky/tokens";
+export { fontSizeRange } from "@owlky/tokens";
 export { closeOtherDetails } from "./accordion/exclusive.js";
 export {
   type AccordionAnatomyOptions,
@@ -1141,6 +1136,15 @@ export {
 } from "./drawer/drawer-swipe.js";
 export * from "./gantt/index.js";
 export {
+  createIcon,
+  type IconData,
+  type IconNode,
+  type IconTag,
+  iconAttributes,
+  iconTree,
+} from "./icons/icon.js";
+export * from "./icons/solar.js";
+export {
   type Illustration,
   type IllustrationAttributeName,
   type IllustrationNode,
@@ -1740,7 +1744,6 @@ export {
   evaluateUploadFiles,
   flattenUploadAccept,
   formatUploadSize,
-  UPLOAD_FILE_ICON,
   type UploadAccept,
   type UploadAcceptGroup,
   type UploadAcceptMap,

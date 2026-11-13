@@ -52,7 +52,7 @@
 
   :where([data-ok-gantt-data] :is(th, td)) {
     padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     text-align: start;
   }
 
@@ -71,8 +71,8 @@
     position: relative;
     max-height: var(--_ok-gantt-height, none);
     overflow: auto;
-    border: 1px solid var(--ok-divider);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid var(--ok-divider);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     overscroll-behavior-x: contain;
   }
@@ -107,7 +107,7 @@
     height: calc(var(--_ok-gantt-tier) * 2);
     padding-inline: calc(var(--ok-spacing) * 2);
     overflow: hidden;
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     line-height: calc(var(--_ok-gantt-tier) * 2);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -166,7 +166,7 @@
   }
 
   :where([data-ok-gantt-tier="top"]) {
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-gantt-tick]) {
@@ -177,7 +177,7 @@
     width: var(--_ok-gantt-w, 0);
     padding-inline: var(--ok-spacing);
     overflow: hidden;
-    border-inline-start: 1px solid var(--ok-divider);
+    border-inline-start: var(--ok-border-width) solid var(--ok-divider);
     font-size: var(--ok-font-size-xs);
     line-height: var(--_ok-gantt-tier);
     text-align: center;
@@ -219,26 +219,26 @@
   :where([data-ok-gantt-grid-lines]) {
     fill: none;
     stroke: var(--ok-divider);
-    stroke-width: 1;
+    stroke-width: var(--ok-line-width-xs);
   }
 
   :where([data-ok-gantt-today]) {
     fill: none;
     stroke: var(--ok-palette-info-main);
-    stroke-width: 2;
+    stroke-width: var(--ok-line-width-md);
   }
 
   :where([data-ok-gantt-boundary]) {
     fill: none;
     stroke: var(--ok-palette-secondary-main);
     stroke-dasharray: 6 4;
-    stroke-width: 1.5;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   :where([data-ok-gantt-link-line]) {
     fill: none;
     stroke: var(--ok-text-disabled);
-    stroke-width: 1.5;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   :where([data-ok-gantt-link-head]) {
@@ -267,7 +267,7 @@
     height: var(--_ok-gantt-row);
     padding-inline: calc(var(--ok-spacing) * 2);
     overflow: hidden;
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     line-height: calc(var(--_ok-gantt-row) - 1px);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -351,8 +351,8 @@
   }
 
   :where([data-ok-gantt-row]:focus-visible > [data-ok-gantt-cell="name"]) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-gantt-row]:focus-visible > [data-ok-gantt-cell="timeline"]) {
@@ -368,7 +368,7 @@
     box-sizing: border-box;
     width: var(--_ok-gantt-w, 2px);
     overflow: hidden;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background-image: linear-gradient(
       to right,
       var(--_ok-gantt-c) var(--_ok-gantt-progress, 0%),
@@ -388,7 +388,7 @@
       var(--ok-spacing) *
       1.5
     );
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
   }
 
   :where([data-ok-gantt-bar][data-ok-type="milestone"]) {
@@ -494,8 +494,8 @@
 
   :where([data-ok-gantt-bar][data-ok-dragging]) {
     cursor: grabbing;
-    outline: 2px solid var(--_ok-gantt-c);
-    outline-offset: 1px;
+    outline: var(--ok-focus-ring-width) solid var(--_ok-gantt-c);
+    outline-offset: var(--ok-focus-ring-offset-tight);
   }
 
   :where([data-ok-gantt-handle]) {
@@ -541,8 +541,8 @@
   }
 
   :where([data-ok-gantt-row][data-ok-editing] [data-ok-gantt-bar]) {
-    outline: 2px dashed var(--_ok-gantt-c);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) dashed var(--_ok-gantt-c);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Tooltip: stays while hovered; Escape hides it. */
@@ -554,7 +554,7 @@
     min-width: calc(var(--ok-spacing) * 40);
     max-width: calc(100% - var(--ok-spacing) * 2);
     overflow: hidden;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-dropdown);
     color: var(--ok-text-primary);

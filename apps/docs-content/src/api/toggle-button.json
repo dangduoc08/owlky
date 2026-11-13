@@ -17,12 +17,24 @@
    "value": "color-mix(in srgb, #919EAB 16%, transparent)"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
   {
    "description": "The main color of the element's `data-ok-color`.",
    "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-control-height-lg",
+   "value": "3rem"
+  },
+  {
+   "name": "--ok-control-height-xl",
+   "value": "3.5rem"
   },
   {
    "name": "--ok-duration-short",
@@ -33,8 +45,16 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-lg",
@@ -53,11 +73,19 @@
    "value": "600"
   },
   {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
+  },
+  {
    "name": "--ok-palette-grey-500-channel",
    "value": "145 158 171"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
   },
   {
@@ -369,6 +397,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/toggle-button",
+  "css": [
+   "@owlky/styles/components/toggle-button.css"
+  ],
+  "html": "@owlky/html/toggle-button",
+  "react": "@owlky/react/toggle-button"
+ },
  "name": "toggle-button",
  "title": "Toggle button",
  "types": [

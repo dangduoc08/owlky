@@ -17,10 +17,9 @@ const controls: StoryControls = { ...MARKDOWN_CONTROLS, target: Markdown };
 
 const CDN = "https://cdn.jsdelivr.net/npm/@owlky/html@0/dist";
 const SETUP = [
-  "<!-- Once per page (CDN): -->",
+  "<!-- Once per page (CDN): owlky.js loads Markdown when the page holds it. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  `<script src="${CDN}/owlky-markdown.js" defer></script>`,
   '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/markdown" (or register createMarkdown() yourself, as below). -->',
 ].join("\n");
 

@@ -1,7 +1,12 @@
 "use client";
 
 import {
+  altArrowLeftLinear,
+  altArrowRightLinear,
   canTransfer,
+  doubleAltArrowLeftLinear,
+  doubleAltArrowRightLinear,
+  type IconData,
   sideCheckedState,
   type TransferDirection,
   type TransferListVariant,
@@ -15,6 +20,7 @@ import { Button } from "../button/button.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 import { List, ListItem } from "../list/list.js";
 import { Scrollbar } from "../scrollbar/scrollbar.js";
+import { Icon } from "../utils/icon.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 export interface TransferListItem {
@@ -24,28 +30,16 @@ export interface TransferListItem {
   label: ReactNode;
 }
 
-const ARROWS: Record<TransferDirection, string> = {
-  "all-right": "m6 17 5-5-5-5M13 17l5-5-5-5",
-  right: "m9 18 6-6-6-6",
-  left: "m15 18-6-6 6-6",
-  "all-left": "m11 17-5-5 5-5M18 17l-5-5 5-5",
+const ARROWS: Record<TransferDirection, IconData> = {
+  "all-right": doubleAltArrowRightLinear,
+  right: altArrowRightLinear,
+  left: altArrowLeftLinear,
+  "all-left": doubleAltArrowLeftLinear,
 };
 
 /** The arrow of a move button (decorative). */
 function Arrow({ direction }: { direction: TransferDirection }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={ARROWS[direction]} />
-    </svg>
-  );
+  return <Icon icon={ARROWS[direction]} />;
 }
 
 const DEFAULT_LABELS: Record<TransferDirection, string> = {

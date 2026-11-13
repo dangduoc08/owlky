@@ -1,12 +1,8 @@
 import "@fontsource-variable/public-sans";
-import "@fontsource-variable/inter";
-import "@fontsource-variable/dm-sans";
-import "@fontsource-variable/nunito-sans";
 import "@fontsource/barlow/700.css";
 import "@fontsource/barlow/800.css";
 import "./globals.css";
 import { THEME_SETTINGS_KEY } from "@owlky/core";
-import { fontFamilyPresetNames, primaryPresetNames } from "@owlky/tokens";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { SITE } from "../content/site.js";
@@ -26,10 +22,8 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 const THEME_SCRIPT = `(function () {
   try {
     var s = JSON.parse(localStorage.getItem(${JSON.stringify(THEME_SETTINGS_KEY)}) || "{}"), d = document.documentElement;
-    var modes = ["light", "dark", "system"], presets = ${JSON.stringify(primaryPresetNames)}, fonts = ${JSON.stringify(fontFamilyPresetNames)};
+    var modes = ["light", "dark", "system"];
     if (modes.indexOf(s.mode) !== -1) d.setAttribute("data-ok-theme", s.mode);
-    if (s.preset !== "default" && presets.indexOf(s.preset) !== -1) d.setAttribute("data-ok-preset", s.preset);
-    if (s.font !== "public-sans" && fonts.indexOf(s.font) !== -1) d.setAttribute("data-ok-font", s.font);
   } catch (e) {}
 })();`;
 

@@ -21,7 +21,11 @@
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
-   "name": "--ok-radius-sm",
+   "name": "--ok-item-height",
+   "value": "2.125rem"
+  },
+  {
+   "name": "--ok-radius-control-sm",
    "value": "6px"
   },
   {
@@ -675,6 +679,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "autocomplete",
+  "core": "@owlky/core/autocomplete",
+  "css": [
+   "@owlky/styles/components/autocomplete.css"
+  ],
+  "html": "@owlky/html/autocomplete",
+  "react": "@owlky/react/autocomplete"
+ },
  "name": "autocomplete",
  "title": "Autocomplete",
  "types": [

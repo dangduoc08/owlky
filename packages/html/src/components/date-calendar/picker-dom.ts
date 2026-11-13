@@ -3,10 +3,14 @@
  * date-picker): reading locale and rules from attributes, and building nodes without HTML strings.
  */
 import {
+  altArrowLeftLinear,
+  altArrowRightLinear,
   createDateConverter,
+  createIcon,
   type DateRange,
   type DateRules,
   DEFAULT_PICKER_LOCALE,
+  type IconData,
   is12HourLocale,
   isValidDate,
   localeCalendar,
@@ -164,26 +168,11 @@ export function h(
   return element;
 }
 
-const SVG = "http://www.w3.org/2000/svg";
+/** A decorative icon, the same SVG as the React components. */
+export const pickerIcon = (icon: IconData): SVGSVGElement => createIcon(icon);
 
-/** A decorative stroked icon (`d`: the path), the same SVG as the React components. */
-export function strokeIcon(d: string): SVGSVGElement {
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", "2");
-  svg.setAttribute("stroke-linecap", "round");
-  svg.setAttribute("stroke-linejoin", "round");
-  const path = document.createElementNS(SVG, "path");
-  path.setAttribute("d", d);
-  svg.append(path);
-  return svg;
-}
-
-export const ARROW_LEFT = "m15 6-6 6 6 6";
-export const ARROW_RIGHT = "m9 6 6 6-6 6";
+export const ARROW_LEFT: IconData = altArrowLeftLinear;
+export const ARROW_RIGHT: IconData = altArrowRightLinear;
 
 /**
  * Updates `current` in place to match `next` (same tags and child counts: attributes and texts are

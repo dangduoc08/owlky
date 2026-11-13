@@ -16,14 +16,14 @@ browser keeps one checked per name and moves with the arrow keys. CSS only.
 div[role=radiogroup][data-ok-radio-group][data-ok-row]?[aria-label|aria-labelledby]
   (label[data-ok-form-control-label] ›)? span[data-ok-radio][data-ok-color][data-ok-size]
     input[type=radio][data-ok-radio-input][name][value]   (covers the target, opacity 0)
-    span[data-ok-radio-icon="unchecked"][aria-hidden="true"] › svg
-    span[data-ok-radio-icon="checked"][aria-hidden="true"]   › svg
+    span[data-ok-radio-icon="unchecked"][aria-hidden="true"] › span[data-ok-radio-ring]
+    span[data-ok-radio-icon="checked"][aria-hidden="true"]   › span[data-ok-radio-ring]
 ```
 Color swatch (`swatch`): the icons give way to one swatch.
 ```
 span[data-ok-radio][data-ok-color][data-ok-size][data-ok-swatch=<css color>][data-ok-shape]?
   input[type=radio][data-ok-radio-input][aria-label=<color name>]
-  span[data-ok-radio-swatch][aria-hidden="true"] › svg (check mark, shown while checked)
+  span[data-ok-radio-swatch][aria-hidden="true"] › svg[data-ok-icon="check-linear"] (shown while checked)
 ```
 React `ref` and the remaining props go to the input (`RadioGroup`: the group element);
 `className` / `style` to the root span. Swatch colors are user data, not tokens: they reach CSS as
@@ -71,7 +71,8 @@ visible; `circular` (radio default) `--ok-radius-full`, `rounded` (checkbox defa
 ring around the swatch (offset 2px); disabled at 0.48 opacity; forced colors keep the swatch
 color (`forced-color-adjust: none`) and draw a `CanvasText` ring on the checked one.
 
-Same as Checkbox: target 40 / 36px, icon 24 / 20px, unchecked `--ok-text-secondary`, checked
+Same as Checkbox: target 40 / 36px, icon 24 / 20px; the default ring is CSS (83% of the icon,
+`--ok-radius-full`, a border of `--ok-icon-stroke` px; checked: a dot of 56%, `::before`), unchecked `--ok-text-secondary`, checked
 `--ok-c-main` (`default` = `--ok-text-primary`), disabled `--ok-action-disabled`, hover main
 channel at 0.08, focus-visible 2px `currentColor` ring inside the target. Group: flex column;
 `row` → row, wrapping.

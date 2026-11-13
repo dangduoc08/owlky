@@ -11,7 +11,9 @@ const CDN = "https://cdn.jsdelivr.net/npm/@owlky/html@0/dist";
  * `css`: the component stylesheets for à-la-carte loading; `runtime`: needs the JS runtime.
  */
 export function htmlSetup(css: string[], runtime = false): string {
-  const files = ["tokens.css", ...css.map((file) => `components/${file}`)].join(" + ");
+  // icon.css: the stroke of component icons (`--ok-icon-stroke`), shared by every component.
+  const sheets = css.includes("icon.css") ? css : ["icon.css", ...css];
+  const files = ["tokens.css", ...sheets.map((file) => `components/${file}`)].join(" + ");
   const lines = [
     "<!-- Once per page (CDN): -->",
     `<link rel="stylesheet" href="${CDN}/owlky.css">`,

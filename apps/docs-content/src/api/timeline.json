@@ -6,6 +6,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
@@ -245,6 +249,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/timeline",
+  "css": [
+   "@owlky/styles/components/timeline.css"
+  ],
+  "react": "@owlky/react/timeline"
+ },
  "name": "timeline",
  "title": "Timeline"
 }

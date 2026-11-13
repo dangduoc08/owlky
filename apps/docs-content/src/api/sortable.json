@@ -6,6 +6,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-duration-short",
    "value": "250ms"
   },
@@ -18,11 +22,19 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
    "name": "--ok-palette-grey-500-channel",
    "value": "145 158 171"
   },
   {
-   "name": "--ok-radius-lg",
+   "name": "--ok-radius-surface-md",
    "value": "12px"
   },
   {
@@ -424,6 +436,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "sortable",
+  "core": "@owlky/core/sortable",
+  "css": [
+   "@owlky/styles/components/sortable.css"
+  ],
+  "html": "@owlky/html/sortable",
+  "react": "@owlky/react/sortable"
+ },
  "name": "sortable",
  "title": "Sortable"
 }

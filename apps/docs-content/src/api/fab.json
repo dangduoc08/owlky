@@ -9,6 +9,10 @@
    "value": "color-mix(in srgb, #919EAB 24%, transparent)"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -33,6 +37,14 @@
    "name": "--ok-c-text"
   },
   {
+   "name": "--ok-control-height-lg",
+   "value": "3rem"
+  },
+  {
+   "name": "--ok-control-height-xl",
+   "value": "3.5rem"
+  },
+  {
    "name": "--ok-duration-short",
    "value": "250ms"
   },
@@ -41,8 +53,16 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-lg",
@@ -70,6 +90,14 @@
    "dark": "#FFFFFF",
    "light": "#1C252E",
    "name": "--ok-inherit-main"
+  },
+  {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
   },
   {
    "name": "--ok-palette-grey-300",
@@ -240,6 +268,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/fab",
+  "css": [
+   "@owlky/styles/components/fab.css"
+  ],
+  "react": "@owlky/react/fab"
+ },
  "name": "fab",
  "title": "Fab"
 }

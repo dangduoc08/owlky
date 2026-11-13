@@ -17,15 +17,15 @@ makes the whole cell its target; ADR-0067).
 ```
 span[data-ok-checkbox][data-ok-color][data-ok-size][data-ok-indeterminate]?
   input[type=checkbox][data-ok-checkbox-input]   (name, value, checked, disabled, required, aria-*; covers the target, opacity 0)
-  span[data-ok-checkbox-icon="unchecked"][aria-hidden="true"] › svg
-  span[data-ok-checkbox-icon="checked"][aria-hidden="true"]   › svg (› path[data-ok-checkbox-mark])
-  span[data-ok-checkbox-icon="indeterminate"][aria-hidden="true"] › svg (› path[data-ok-checkbox-mark])
+  span[data-ok-checkbox-icon="unchecked"][aria-hidden="true"] › span[data-ok-checkbox-box]
+  span[data-ok-checkbox-icon="checked"][aria-hidden="true"]   › span[data-ok-checkbox-box] › svg[data-ok-checkbox-mark][data-ok-icon="check-linear"]
+  span[data-ok-checkbox-icon="indeterminate"][aria-hidden="true"] › span[data-ok-checkbox-box] › svg[data-ok-checkbox-mark][data-ok-icon="minus-linear"]
 ```
 Color swatch (`swatch`), in a `FormGroup row` for a multiple color picker:
 ```
 span[data-ok-checkbox][data-ok-color][data-ok-size][data-ok-swatch=<css color>][data-ok-shape]?
   input[type=checkbox][data-ok-checkbox-input][aria-label=<color name>]
-  span[data-ok-checkbox-swatch][aria-hidden="true"] › svg (check mark, shown while checked)
+  span[data-ok-checkbox-swatch][aria-hidden="true"] › svg[data-ok-icon="check-linear"] (shown while checked)
 ```
 The icon slots give way to the swatch. Swatch colors go through `--_ok-swatch` /
 `--_ok-swatch-mark` (React `style`, HTML `checkbox` runtime through CSSOM); same rules as Radio
@@ -56,6 +56,10 @@ React only: `icon`, `checkedIcon`, `indeterminateIcon` (ReactNode; HTML: your SV
 
 ## Layout and tokens
 - Target 40px (`--ok-spacing` × 10), icon 24px (× 6); `small` 36px / 20px; `--ok-radius-full`.
+- Default icons (ADR-0070 § 9): the box is CSS, 75% of the icon, `--ok-radius-control-sm`, a
+  border of `--ok-icon-stroke` px, filled with the color when checked or indeterminate; the marks
+  are Solar `check-linear` / `minus-linear` (stroke `--ok-icon-stroke` × 4/3 at the box's size).
+  Custom icons (an `svg` in the slot) replace the box.
 - Unchecked `--ok-text-secondary`; checked / mixed `--ok-c-main` (`default` = `--ok-text-primary`,
   mark `--ok-bg-default`; palette marks white); disabled `--ok-action-disabled`.
 - Hover (hover-capable): main channel at 0.08 (`default`: `--ok-action-hover`), 150ms.

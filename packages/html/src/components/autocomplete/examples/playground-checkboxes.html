@@ -3,7 +3,7 @@
     <template data-ok-autocomplete-tag>
       <span data-ok-chip data-ok-variant="soft" data-ok-color="default" data-ok-size="small">
         <span data-ok-chip-action><span data-ok-chip-label></span></span>
-        <button type="button" data-ok-chip-delete aria-label="Remove"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z" fill="currentColor" fill-rule="evenodd" /></svg></button>
+        <button type="button" data-ok-chip-delete aria-label="Remove"><svg data-ok-icon="close-circle-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><path d="M14.5 9.5L9.5 14.5M9.5 9.5L14.5 14.5" /></svg></button>
       </span>
     </template>
     <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="none">
@@ -12,13 +12,13 @@
         <span data-ok-text-field-adornment="start">
           <span data-ok-chip data-ok-variant="soft" data-ok-color="default" data-ok-size="small" data-ok-value="Apple">
             <span data-ok-chip-action><span data-ok-chip-label>Apple</span></span>
-            <button type="button" data-ok-chip-delete aria-label="Remove Apple"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8.46 7.05 12 10.59l3.54-3.54 1.41 1.41L13.41 12l3.54 3.54-1.41 1.41L12 13.41l-3.54 3.54-1.41-1.41L10.59 12 7.05 8.46z" fill="currentColor" fill-rule="evenodd" /></svg></button>
+            <button type="button" data-ok-chip-delete aria-label="Remove Apple"><svg data-ok-icon="close-circle-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><path d="M14.5 9.5L9.5 14.5M9.5 9.5L14.5 14.5" /></svg></button>
           </span>
         </span>
         <input role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-checkboxes-listbox" autocomplete="off" id="ac-checkboxes" data-ok-text-field-input placeholder="Favorites" value="">
         <span data-ok-text-field-adornment="end">
-          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-clear tabindex="-1" aria-label="Clear"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
-          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-toggle tabindex="-1" aria-label="Open" data-ok-label-open="Open" data-ok-label-close="Close"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg></button>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-clear tabindex="-1" aria-label="Clear"><svg data-ok-icon="close-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M19.01 5L5.01 19" /><path d="M19 19L5 5" /></svg></button>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-toggle tabindex="-1" aria-label="Open" data-ok-label-open="Open" data-ok-label-close="Close"><svg data-ok-icon="alt-arrow-down-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9L12 15L5 9" /></svg></button>
         </span>
         <fieldset data-ok-text-field-outline aria-hidden="true">
           <legend><span>Checkboxes</span></legend>
@@ -31,108 +31,108 @@
         <li role="option" id="ac-checkboxes-option-0" data-ok-value="Apple" aria-selected="true">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true" checked>
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Apple
         </li>
         <li role="option" id="ac-checkboxes-option-1" data-ok-value="Apricot" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Apricot
         </li>
         <li role="option" id="ac-checkboxes-option-2" data-ok-value="Banana" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Banana
         </li>
         <li role="option" id="ac-checkboxes-option-3" data-ok-value="Blueberry" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Blueberry
         </li>
         <li role="option" id="ac-checkboxes-option-4" data-ok-value="Cherry" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Cherry
         </li>
         <li role="option" id="ac-checkboxes-option-5" data-ok-value="Grape" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Grape
         </li>
         <li role="option" id="ac-checkboxes-option-6" data-ok-value="Kiwi" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Kiwi
         </li>
         <li role="option" id="ac-checkboxes-option-7" data-ok-value="Lemon" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Lemon
         </li>
         <li role="option" id="ac-checkboxes-option-8" data-ok-value="Mango" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Mango
         </li>
         <li role="option" id="ac-checkboxes-option-9" data-ok-value="Orange" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Orange
         </li>
         <li role="option" id="ac-checkboxes-option-10" data-ok-value="Peach" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Peach
         </li>
         <li role="option" id="ac-checkboxes-option-11" data-ok-value="Pear" aria-selected="false">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input readonly tabindex="-1" aria-hidden="true">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
           Pear
         </li>

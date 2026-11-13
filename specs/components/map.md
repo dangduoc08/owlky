@@ -257,7 +257,7 @@ Roadmap 4.18.15, after ApexMaps (apexcharts.com/apexmaps, docs checked 2026-11-1
   `["case", is-number, ["step", input, c0, b1, c1, …], nullColor]`, `gradient` the same with
   `interpolate` (stops evenly from min to max). `input` defaults to `["feature-state", "value"]`.
   Colors are `var(--ok-…)` strings: the controller resolves them on add and again when a
-  `data-ok-theme` / `data-ok-preset` changes or the system scheme flips.
+  `data-ok-theme` changes or the system scheme flips.
 - `mapRegionLayers({ id, source, sourceLayer?, scale, variant?, opacity = 0.8, mutedOpacity = 0.15 })`:
   a fill (`muted` → `mutedOpacity`, hover / focus / selected → +0.15) and `<id>-outline` (selected
   2.5px, hover / focus 1.5px `--ok-text-primary`, else 0.5px `--ok-bg-paper`).
@@ -500,8 +500,8 @@ pitchend|click|dblclick|contextmenu|mousemove|mouseenter|mouseleave` (detail: th
 `ok:map:legendtoggle` (on the legend, `{ classIndex, active }`). Instance: `{ controller, map, viewState, flyTo, easeTo, jumpTo,
 fitBounds, exportMap(format?, options?), setSourceData(id, data), getClusterExpansionZoom(source, clusterId), openPopup(popup),
 closePopup(popup), fullscreen, setFullscreen(on), scale, greatCircle, sizeScale, hexbin, pixelGrid }` (core `mapScale`, `greatCircle`, `mapSizeScale`, `mapHexbin`, `mapPixelGrid`, for CDN pages). Worker: `setMapWorkerUrl(url)` from
-`@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; `owlky-map.js` finds
-`owlky-map-worker.js` next to itself).
+`@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; the CDN's `modules/map.js` finds
+`owlky-map-worker.js` next to `owlky.js`).
 
 ## Security
 Style, data and tile URLs go through `safeMapUrl` (`http(s)` only, relative resolved). Declarations

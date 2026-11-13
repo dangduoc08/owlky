@@ -650,6 +650,9 @@ async function loaded(page: Page, key: string) {
     await expect(page.locator(".sb-day-dot")).toHaveCount(5);
     return;
   }
+  // The React grid's Chart loads on first use (ADR-0068 S5): wait until no chart is a stand-in.
+  if (key.startsWith("datagrid/"))
+    await expect(page.locator("figure[data-ok-chart][aria-busy]")).toHaveCount(0);
   if (!LOADS.has(key)) return;
   const grid = page.getByRole("grid");
   await expect(grid.locator('[data-ok-data-grid-body] > [role="row"]').first()).toBeVisible();

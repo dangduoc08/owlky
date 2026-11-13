@@ -9,6 +9,14 @@
    "value": "color-mix(in srgb, #919EAB 24%, transparent)"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -33,16 +41,60 @@
    "name": "--ok-c-text"
   },
   {
+   "name": "--ok-control-height-lg",
+   "value": "3rem"
+  },
+  {
+   "name": "--ok-control-height-md",
+   "value": "2.25rem"
+  },
+  {
+   "name": "--ok-control-height-sm",
+   "value": "1.875rem"
+  },
+  {
+   "name": "--ok-control-height-xl",
+   "value": "3.5rem"
+  },
+  {
+   "name": "--ok-control-padding-x-lg",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-control-padding-x-md",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-control-padding-x-sm",
+   "value": "0.5rem"
+  },
+  {
    "name": "--ok-duration-short",
    "value": "250ms"
+  },
+  {
+   "name": "--ok-duration-spin",
+   "value": "0.8s"
+  },
+  {
+   "name": "--ok-duration-spin-reduced",
+   "value": "2.4s"
   },
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-lg",
@@ -72,16 +124,28 @@
    "name": "--ok-inherit-main"
   },
   {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-line-width-2xs",
+   "value": "0.75px"
+  },
+  {
    "name": "--ok-palette-grey-500-channel",
    "value": "145 158 171"
   },
   {
-   "name": "--ok-radius-full",
-   "value": "9999px"
+   "name": "--ok-radius-control",
+   "value": "8px"
   },
   {
-   "name": "--ok-radius-md",
-   "value": "8px"
+   "name": "--ok-radius-full",
+   "value": "9999px"
   },
   {
    "name": "--ok-shadow-z8",
@@ -313,6 +377,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/button",
+  "css": [
+   "@owlky/styles/components/button.css"
+  ],
+  "react": "@owlky/react/button"
+ },
  "name": "button",
  "title": "Button",
  "types": [

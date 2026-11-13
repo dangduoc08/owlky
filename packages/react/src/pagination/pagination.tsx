@@ -1,7 +1,12 @@
 "use client";
 
 import {
+  altArrowLeftLinear,
+  altArrowRightLinear,
   defaultPaginationItemLabel,
+  doubleAltArrowLeftLinear,
+  doubleAltArrowRightLinear,
+  type IconData,
   type PaginationColor,
   type PaginationItemData,
   type PaginationItemType,
@@ -21,31 +26,20 @@ import {
   type Ref,
   type RefAttributes,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 type NavType = "first" | "previous" | "next" | "last";
 
-const ICON_PATHS: Record<NavType, string> = {
-  first: "m11 17-5-5 5-5M18 17l-5-5 5-5",
-  previous: "m15 18-6-6 6-6",
-  next: "m9 18 6-6-6-6",
-  last: "m13 17 5-5-5-5M6 17l5-5-5-5",
+const ICONS: Record<NavType, IconData> = {
+  first: doubleAltArrowLeftLinear,
+  previous: altArrowLeftLinear,
+  next: altArrowRightLinear,
+  last: doubleAltArrowRightLinear,
 };
 
 function NavIcon({ type }: { type: NavType }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={ICON_PATHS[type]} />
-    </svg>
-  );
+  return <Icon icon={ICONS[type]} />;
 }
 
 export type PaginationIcons = Partial<Record<NavType, ReactNode>>;

@@ -17,7 +17,7 @@
   :where([data-ok-icon-button]) {
     --_ok-main: var(--ok-c-main, var(--ok-text-secondary));
     --_ok-hover-bg: rgb(var(--ok-c-channel, var(--ok-palette-grey-500-channel)) / 0.08);
-    --_ok-size: calc(var(--ok-spacing) * 9);
+    --_ok-size: var(--ok-control-height-md);
     --_ok-icon-size: calc(var(--ok-spacing) * 5);
 
     position: relative;
@@ -83,7 +83,7 @@
   }
 
   :where([data-ok-icon-button][data-ok-size="lg"]) {
-    --_ok-size: calc(var(--ok-spacing) * 12);
+    --_ok-size: var(--ok-control-height-lg);
     --_ok-icon-size: calc(var(--ok-spacing) * 6);
   }
 
@@ -102,8 +102,8 @@
   }
 
   :where([data-ok-icon-button]:focus-visible) {
-    outline: 2px solid var(--_ok-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--_ok-main);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-icon-button]:is(:disabled, [aria-disabled="true"])) {

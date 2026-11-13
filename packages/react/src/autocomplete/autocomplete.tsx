@@ -4,7 +4,9 @@ import {
   AUTOCOMPLETE_LIST_HEIGHT,
   AUTOCOMPLETE_OPTION_STRIDE,
   type AutocompleteOption,
+  altArrowDownLinear,
   autocompleteAttributes,
+  closeLinear,
   defaultLimitTagsText,
   optionStride,
   type SelectionControlSize,
@@ -33,6 +35,7 @@ import { IconButton } from "../icon-button/icon-button.js";
 import { ListSubheader } from "../list/list.js";
 import { Popover } from "../popover/popover.js";
 import { InputAdornment, TextField } from "../text-field/text-field.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 import {
   type AutocompleteItemProps,
@@ -42,30 +45,14 @@ import {
   useAutocomplete,
 } from "./use-autocomplete.js";
 
-const ICON = {
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-} as const;
-
 /** Clear icon (decorative). */
 function ClearIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" {...ICON}>
-      <path d="M18 6 6 18M6 6l12 12" />
-    </svg>
-  );
+  return <Icon icon={closeLinear} />;
 }
 
 /** Open / close icon (decorative; turns when open). */
 function ToggleIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" {...ICON}>
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
+  return <Icon icon={altArrowDownLinear} />;
 }
 
 /** What `renderGroup` gets: the group's heading and its options, already drawn. */

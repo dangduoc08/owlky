@@ -2,6 +2,12 @@
  "format": 1,
  "parts": [
   {
+   "description": "On a component's icon (`svg`): its Solar name, such as `close-linear`. The stroke width follows `--ok-icon-stroke`.",
+   "kind": "value",
+   "name": "data-ok-icon",
+   "value": "string"
+  },
+  {
    "description": "js` script: the folder of its lazy modules, when it isn't `modules/` next to the script.",
    "kind": "value",
    "name": "data-ok-modules",
@@ -11,12 +17,6 @@
    "description": "js` script: lazy modules to load at once, separated by spaces, such as `chart data-grid`.",
    "kind": "value",
    "name": "data-ok-preload",
-   "value": "string"
-  },
-  {
-   "description": "Applies a color preset to this element and everything inside it, such as `purple`.",
-   "kind": "value",
-   "name": "data-ok-preset",
    "value": "string"
   },
   {

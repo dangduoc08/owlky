@@ -17,7 +17,7 @@
     display: inline-flex;
     flex-direction: row;
     vertical-align: middle;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
   }
 
   :where([data-ok-button-group][data-ok-orientation="vertical"]) {

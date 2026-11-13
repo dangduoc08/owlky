@@ -2,6 +2,8 @@
 
 import {
   checkboxAttributes,
+  checkLinear,
+  minusLinear,
   type SelectionControlColor,
   type SelectionControlSize,
   type SwatchShape,
@@ -16,64 +18,36 @@ import {
   useEffect,
   useRef,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 
-/** Default icons (decorative, same SVG as the HTML snippets). */
+/*
+ * Default icons (decorative, same markup as the HTML snippets): the box is drawn by the stylesheet
+ * from tokens (radius, stroke), the marks are Solar icons.
+ */
 function UncheckedIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <rect
-        x="3.75"
-        y="3.75"
-        width="16.5"
-        height="16.5"
-        rx="4.25"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
+  return <span data-ok-checkbox-box="" />;
 }
 
 function CheckedIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" />
-      <path
-        data-ok-checkbox-mark=""
-        d="m7.75 12.25 2.75 2.75 5.75-6"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <span data-ok-checkbox-box="">
+      <Icon icon={checkLinear} data-ok-checkbox-mark="" />
+    </span>
   );
 }
 
 function IndeterminateIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" />
-      <path data-ok-checkbox-mark="" d="M8 12h8" strokeWidth="2" strokeLinecap="round" />
-    </svg>
+    <span data-ok-checkbox-box="">
+      <Icon icon={minusLinear} data-ok-checkbox-mark="" />
+    </span>
   );
 }
 
 /** The check mark of a checked color swatch (decorative, same SVG as the HTML snippets). */
 function SwatchMark() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="m5 12.5 4.5 4.5L19 7.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  return <Icon icon={checkLinear} />;
 }
 
 export interface CheckboxProps

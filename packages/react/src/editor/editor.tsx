@@ -48,6 +48,7 @@ import { Button } from "../button/button.js";
 import { Menu, MenuItem } from "../menu/menu.js";
 import { Popover } from "../popover/popover.js";
 import { TextField } from "../text-field/text-field.js";
+import { Icon } from "../utils/icon.js";
 import { setRef, useMergedRefs } from "../utils/refs.js";
 
 export type {
@@ -210,22 +211,8 @@ const INITIAL: EditorState = {
   editable: true,
 };
 
-function Icon({ name, part }: { name: EditorIconName; part?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      data-ok-editor-icon={part}
-    >
-      <path d={editorIcons[name]} />
-    </svg>
-  );
+function ToolbarIcon({ name, part }: { name: EditorIconName; part?: string }) {
+  return <Icon icon={editorIcons[name]} data-ok-editor-icon={part} />;
 }
 
 /**
@@ -528,8 +515,8 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
           tabIndex={-1}
           onClick={() => changeFullscreen(!fullscreen)}
         >
-          <Icon name="fullscreen" part="enter" />
-          <Icon name="exitFullscreen" part="exit" />
+          <ToolbarIcon name="fullscreen" part="enter" />
+          <ToolbarIcon name="exitFullscreen" part="exit" />
         </button>
       );
     }
@@ -549,7 +536,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
         tabIndex={-1}
         onClick={(event) => (popover ? openForm(popover, event.currentTarget) : run(action))}
       >
-        <Icon name={action} />
+        <ToolbarIcon name={action} />
       </button>
     );
   };
@@ -615,7 +602,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
           onClick={(event) => setMenuAnchor(menuAnchor ? null : event.currentTarget)}
         >
           <span data-ok-editor-heading-label="">{blockLabel}</span>
-          <Icon name="chevronDown" />
+          <ToolbarIcon name="chevronDown" />
         </button>
         {groups.map(group)}
         {tables ? (
@@ -632,7 +619,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
               tabIndex={-1}
               onClick={(event) => setTableAnchor(tableAnchor ? null : event.currentTarget)}
             >
-              <Icon name="table" />
+              <ToolbarIcon name="table" />
             </button>
           </div>
         ) : null}

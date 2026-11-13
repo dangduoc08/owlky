@@ -315,6 +315,7 @@ const API_PAGES: [string, string[]][] = [
 ].filter(([id], index, all) => all.findIndex(([other]) => other === id) === index);
 
 interface ApiJson {
+  imports?: Record<string, unknown>;
   entries: {
     name: string;
     react?: { props: { name: string }[] };
@@ -335,6 +336,15 @@ function apiRows(spec: string): string[] {
     readFileSync(new URL(`../../apps/docs-content/src/api/${spec}.json`, import.meta.url), "utf8"),
   ) as ApiJson;
   return [
+    // The Import table: one row per entry and stylesheet list, and the CDN row.
+    ...(data.imports
+      ? [
+          ...Object.keys(data.imports)
+            .filter((key) => key !== "cdnModule")
+            .map((key) => `import:${key}`),
+          "import:cdn",
+        ]
+      : []),
     ...data.entries.flatMap(({ name, react, html }) => [
       ...(react?.props ?? []).map((prop) => `prop:${name}:${prop.name}`),
       ...(html?.options ?? []).map((option) => `option:${name}:${option.name}`),

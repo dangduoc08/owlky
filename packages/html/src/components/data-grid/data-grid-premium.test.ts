@@ -1,11 +1,12 @@
 import { type GridGetRowsParams, gridCrc32 } from "@owlky/core";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
 import type { Runtime } from "../../runtime/types.js";
 import { expectNoAxeViolations, mount, resetPage, settle } from "../../test-utils.js";
 import type { ChartInstance } from "../chart/chart.js";
 import { components } from "../index.js";
+import { loadGridChartKit } from "./chart-kit.js";
 import type { DataGridInstance } from "./data-grid.js";
 
 const snippets = Object.fromEntries(
@@ -65,6 +66,9 @@ const pressed = (target: Element, init: PointerEventInit = {}) => {
   target.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, ...init }));
   document.dispatchEvent(new PointerEvent("pointerup"));
 };
+
+// The chart helpers load on first use (ADR-0068 S5): load them once, so charts draw synchronously.
+beforeAll(() => loadGridChartKit());
 
 describe("data grid row grouping and aggregation (HTML)", () => {
   it("builds group rows, counts, aggregates and the footer like React", async () => {

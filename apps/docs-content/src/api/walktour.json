@@ -6,12 +6,28 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "name": "--ok-duration-standard",
    "value": "300ms"
   },
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-color-brand",
+   "value": "var(--ok-palette-primary-main)"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-palette-grey-900-channel",
@@ -30,7 +46,7 @@
    "value": "9999px"
   },
   {
-   "name": "--ok-radius-xl",
+   "name": "--ok-radius-surface",
    "value": "16px"
   },
   {
@@ -844,6 +860,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "walktour",
+  "core": "@owlky/core/walktour",
+  "css": [
+   "@owlky/styles/components/walktour.css"
+  ],
+  "html": "@owlky/html/walktour",
+  "react": "@owlky/react/walktour"
+ },
  "name": "walktour",
  "title": "Walktour",
  "types": [

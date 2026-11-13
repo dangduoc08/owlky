@@ -35,7 +35,7 @@ export const phoneScript: Script = (row) => {
   return () => controller.abort();
 };
 
-export const PHONE_SCRIPT_SOURCE = `import "@owlky/html/phone"; // or <script src="…/owlky-phone.js"> after owlky.js
+export const PHONE_SCRIPT_SOURCE = `import "@owlky/html/phone"; // on a CDN page, owlky.js loads the phone input by itself
 
 // Show the number's forms under each field.
 for (const demo of document.querySelectorAll(".sb-phone-demo")) {

@@ -34,6 +34,7 @@ jobs:
       - run: pnpm check:boundaries
       # Per-component entries (ADR-0068) are generated from the barrels and must be current.
       - run: pnpm check:entries
+      # Gzip budgets per file, lazy module and scenario (React builds and CDN pages, ADR-0068).
       - run: pnpm check:size
       - run: pnpm check:packages
       # Every third-party package bundled into a published dist has a notice and an allowed license.

@@ -28,10 +28,9 @@ const snippets = import.meta.glob(
 
 const CDN = "https://cdn.jsdelivr.net/npm/@owlky/html@0/dist";
 const SETUP = [
-  "<!-- Once per page (CDN): -->",
+  "<!-- Once per page (CDN): owlky.js loads the phone input when the page holds one. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  `<script src="${CDN}/owlky-phone.js" defer></script>`,
   '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/phone". -->',
 ].join("\n");
 

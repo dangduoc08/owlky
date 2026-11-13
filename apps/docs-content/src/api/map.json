@@ -18,6 +18,18 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-heavy",
+   "value": "3px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`.",
    "name": "--ok-c-main"
   },
@@ -30,8 +42,16 @@
    "value": "drop-shadow(0px 1px 2px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent))"
   },
   {
+   "name": "--ok-duration-hint-delay",
+   "value": "1s"
+  },
+  {
    "name": "--ok-duration-shorter",
    "value": "200ms"
+  },
+  {
+   "name": "--ok-duration-spin-slow",
+   "value": "1.2s"
   },
   {
    "name": "--ok-duration-standard",
@@ -40,6 +60,22 @@
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-weight-semibold",
@@ -102,24 +138,24 @@
    "value": "#5119B7"
   },
   {
+   "name": "--ok-radius-control",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-control-sm",
+   "value": "6px"
+  },
+  {
    "name": "--ok-radius-full",
    "value": "9999px"
   },
   {
-   "name": "--ok-radius-lg",
-   "value": "12px"
-  },
-  {
-   "name": "--ok-radius-md",
-   "value": "8px"
-  },
-  {
-   "name": "--ok-radius-sm",
-   "value": "6px"
-  },
-  {
-   "name": "--ok-radius-xs",
+   "name": "--ok-radius-inner",
    "value": "4px"
+  },
+  {
+   "name": "--ok-radius-surface-md",
+   "value": "12px"
   },
   {
    "name": "--ok-shadow-dropdown",
@@ -2419,6 +2455,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "map",
+  "core": "@owlky/core/map",
+  "css": [
+   "@owlky/styles/components/map.css"
+  ],
+  "html": "@owlky/html/map",
+  "react": "@owlky/react/map"
+ },
  "name": "map",
  "title": "Map",
  "types": [

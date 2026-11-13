@@ -17,13 +17,12 @@ const snippets = import.meta.glob(
 ) as Record<string, string>;
 
 const CDN = "https://cdn.jsdelivr.net/npm/@owlky/html@0/dist";
-/** What a page loads before pasting the snippets (the illustrations script only for `size`). */
+/** What a page loads before pasting the snippets (the script only for placeholders and `size`). */
 const SETUP = [
   "<!-- Once per page (CDN): -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
-  `<script src="${CDN}/owlky.js" defer></script>`,
   '<!-- Optional: draws <svg data-ok-illustration="name"></svg> placeholders and applies data-ok-size. -->',
-  `<script src="${CDN}/owlky-illustrations.js" defer></script>`,
+  `<script src="${CDN}/owlky.js" defer></script>`,
   '<!-- npm: import "@owlky/styles/owlky.css" (or tokens.css + components/illustration.css from @owlky/styles; the profile cover also uses paper.css, card.css and avatar.css); for the runtime, "@owlky/html/auto", then "@owlky/html/illustrations". -->',
 ].join("\n");
 

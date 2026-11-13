@@ -5,22 +5,22 @@
         <div role="columnheader" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox data-ok-width="60">
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select all rows">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
         </div>
         <div role="columnheader" aria-colindex="2" data-ok-field="__tree_data_group__" tabindex="-1" data-ok-width="200"><span data-ok-data-grid-header-title>Group</span></div>
         <div role="columnheader" aria-colindex="3" data-ok-field="name" data-ok-type="string" data-ok-align="left" data-ok-min-width="160" data-ok-flex="1" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Name</span>
-          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
-          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Name column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-selection-tree-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-sort-icon><svg data-ok-icon="arrow-up-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20L12 4M6 10L12 4L18 10" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Name column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-selection-tree-column-menu"><svg data-ok-icon="menu-dots-vertical-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="5" r="2" transform="rotate(90 12 5)" /><circle cx="12" cy="12" r="2" transform="rotate(90 12 12)" /><circle cx="12" cy="19" r="2" transform="rotate(90 12 19)" /></svg></button>
           <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="4" data-ok-field="points" data-ok-type="number" data-ok-align="right" data-ok-width="110" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Points</span>
-          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
-          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Points column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-selection-tree-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-sort-icon><svg data-ok-icon="arrow-up-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20L12 4M6 10L12 4L18 10" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Points column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-selection-tree-column-menu"><svg data-ok-icon="menu-dots-vertical-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="5" r="2" transform="rotate(90 12 5)" /><circle cx="12" cy="12" r="2" transform="rotate(90 12 12)" /><circle cx="12" cy="19" r="2" transform="rotate(90 12 19)" /></svg></button>
           <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
       </div>
@@ -30,13 +30,13 @@
         <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
         </div>
         <div role="gridcell" aria-colindex="2" data-ok-field="__tree_data_group__" tabindex="-1">
-          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="hide children" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="hide children" aria-expanded="true"><svg data-ok-icon="alt-arrow-right-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5L15 12L9 19" /></svg></button>
           <span data-ok-data-grid-tree-label>Design</span>
           <span data-ok-data-grid-tree-count>(2)</span>
         </div>
@@ -47,9 +47,9 @@
         <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
         </div>
         <div role="gridcell" aria-colindex="2" data-ok-field="__tree_data_group__" tabindex="-1"><span data-ok-data-grid-tree-spacer></span><span data-ok-data-grid-tree-label>Icons</span></div>
@@ -60,9 +60,9 @@
         <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
         </div>
         <div role="gridcell" aria-colindex="2" data-ok-field="__tree_data_group__" tabindex="-1"><span data-ok-data-grid-tree-spacer></span><span data-ok-data-grid-tree-label>Colors</span></div>
@@ -73,13 +73,13 @@
         <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
         </div>
         <div role="gridcell" aria-colindex="2" data-ok-field="__tree_data_group__" tabindex="-1">
-          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="hide children" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="hide children" aria-expanded="true"><svg data-ok-icon="alt-arrow-right-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5L15 12L9 19" /></svg></button>
           <span data-ok-data-grid-tree-label>Docs</span>
           <span data-ok-data-grid-tree-count>(2)</span>
         </div>
@@ -90,9 +90,9 @@
         <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
         </div>
         <div role="gridcell" aria-colindex="2" data-ok-field="__tree_data_group__" tabindex="-1"><span data-ok-data-grid-tree-spacer></span><span data-ok-data-grid-tree-label>Guide</span></div>
@@ -103,9 +103,9 @@
         <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
-            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
-            <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+            <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><span data-ok-checkbox-box></span></span>
+            <span data-ok-checkbox-icon="checked" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="check-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13L9 17L19 7" /></svg></span></span>
+            <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><span data-ok-checkbox-box><svg data-ok-checkbox-mark data-ok-icon="minus-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M20 12L4 12" /></svg></span></span>
           </span>
         </div>
         <div role="gridcell" aria-colindex="2" data-ok-field="__tree_data_group__" tabindex="-1"><span data-ok-data-grid-tree-spacer></span><span data-ok-data-grid-tree-label>API</span></div>

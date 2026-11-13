@@ -2,6 +2,8 @@
 
 **Status:** Accepted (2026-11-09)
 
+**Note (2026-11-13, ADR-0068 S6):** `owlky-illustrations.js` was removed before 0.1.0. On a CDN page, `owlky.js` loads this component from its lazy module (`modules/illustration.js`) when the page holds one; the text below keeps the original decision.
+
 ## Context
 The reference dashboard uses flat illustrations on error pages (403, 404, 500), maintenance and
 coming-soon pages, empty states, the upload zone, checkout, sign-in, verify / reset password and

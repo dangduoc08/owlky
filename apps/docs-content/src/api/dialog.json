@@ -11,6 +11,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-breakpoint-lg",
    "value": "1200px"
   },
@@ -51,11 +55,23 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
    "name": "--ok-font-family",
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
-   "name": "--ok-radius-xl",
+   "name": "--ok-radius-surface",
    "value": "16px"
   },
   {
@@ -500,6 +516,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/dialog",
+  "css": [
+   "@owlky/styles/components/dialog.css"
+  ],
+  "html": "@owlky/html/dialog",
+  "react": "@owlky/react/dialog"
+ },
  "name": "dialog",
  "title": "Dialog",
  "types": [

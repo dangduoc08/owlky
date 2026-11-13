@@ -3,6 +3,8 @@
 **Status:** Accepted (2026-11-09, auto-approved in `/component`; the owner chose "build from
 unified").
 
+**Note (2026-11-13, ADR-0068 S6):** `owlky-markdown.js` was removed before 0.1.0. On a CDN page, `owlky.js` loads this component from its lazy module (`modules/markdown.js`) when the page holds one; the text below keeps the original decision.
+
 ## Context
 The reference's "Markdown" page renders a Markdown document and an HTML document with
 react-markdown (MIT): GitHub Flavored Markdown (tables, task lists, strikethrough), highlighted

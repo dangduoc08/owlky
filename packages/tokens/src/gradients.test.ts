@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { contrastRatio } from "./color.js";
 import { createTheme } from "./create-theme.js";
-import { primaryPresetVariables, themeToCss, themeToCssVariables } from "./css.js";
+import { themeToCss, themeToCssVariables } from "./css.js";
 import { defaultTheme } from "./default-theme.js";
-import { paletteTextFor, primaryPresetNames, primaryPresets } from "./presets.js";
 import { type ColorScheme, paletteColorNames } from "./types.js";
 
 const AA = 4.5;
@@ -36,16 +35,9 @@ describe("gradient tokens", () => {
     // light, dark, system
     expect(css.split("--ok-gradient-paper:").length - 1).toBe(3);
     expect(css.split("--ok-gradient-success-text:").length - 1).toBe(3);
-    // the root, then each preset scope redeclares the primary gradients
-    expect(css.split("--ok-gradient-primary:").length - 1).toBe(1 + primaryPresetNames.length);
-    expect(css.split("--ok-gradient-primary-text:").length - 1).toBe(3 + primaryPresetNames.length);
-  });
-
-  it("preset scopes redeclare the primary gradients against the nearest scheme", () => {
-    const vars = primaryPresetVariables(primaryPresets.cyan, defaultTheme);
-    expect(vars["--ok-gradient-primary"]).toContain("var(--ok-palette-primary-light)");
-    expect(vars["--ok-gradient-primary-text"]).toContain("var(--ok-palette-primary-text)");
-    expect(vars["--ok-gradient-primary-text"]).toContain("calc(var(--_ok-dark) * 100%)");
+    // fills once on the root, text gradients once per scheme scope
+    expect(css.split("--ok-gradient-primary:").length - 1).toBe(1);
+    expect(css.split("--ok-gradient-primary-text:").length - 1).toBe(3);
   });
 
   it("createTheme: the gradients follow a custom palette", () => {
@@ -61,24 +53,14 @@ describe("gradient tokens", () => {
 type Stops = (scheme: ColorScheme, isDark: boolean) => string[];
 
 describe("gradient text contrast (WCAG 2.2 AA)", () => {
-  // The first stop is `--ok-palette-<color>-text`: the scheme's tone for the default palette, the
-  // computed one in preset scopes. The second is `darker` (light) or `lighter` (dark).
+  // The first stop is `--ok-palette-<color>-text`, the scheme's tone; the second is `darker`
+  // (light) or `lighter` (dark).
   const cases: [string, Stops][] = [
     ...paletteColorNames.map((name): [string, Stops] => {
       const color = defaultTheme.palette[name];
       return [
         name,
         (scheme, isDark) => [scheme.paletteText[name], isDark ? color.lighter : color.darker],
-      ];
-    }),
-    ...primaryPresetNames.map((name): [string, Stops] => {
-      const color = primaryPresets[name];
-      return [
-        `primary preset ${name}`,
-        (scheme, isDark) => [
-          paletteTextFor(color, scheme, isDark),
-          isDark ? color.lighter : color.darker,
-        ],
       ];
     }),
   ];

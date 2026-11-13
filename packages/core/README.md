@@ -46,15 +46,15 @@ Each factory takes `{ calendar }` for Jalali or Hijri builds (`"persian"`, `"isl
 Picker locale packs (`pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`,
 `pickersFaIR`, `pickersArSD`) are exported from `@owlky/core`.
 
-Theme settings (ADR-0017, re-exported by `@owlky/react` and `@owlky/html`):
+Theme settings (mode and root font size, ADR-0070; re-exported by `@owlky/react` and `@owlky/html`):
 
 ```ts
 import { applyThemeSettings, readThemeSettings } from "@owlky/core";
 
 // Validated (unknown values → default); stored only because a storage is passed.
 applyThemeSettings(readThemeSettings({ storage: localStorage }), { storage: localStorage });
-applyThemeSettings({ preset: "cyan", font: "inter", fontSize: 14, mode: "dark" }, { storage: localStorage });
+applyThemeSettings({ mode: "dark", fontSize: 14 }, { storage: localStorage });
 ```
 
 `resetThemeSettings(options)` restores the defaults; `normalizeThemeSettings(input)` validates
-untrusted input; `target` applies the attributes to a nested scope (the font size is page-wide).
+untrusted input; `target` applies the mode to a nested scope (the font size is page-wide).

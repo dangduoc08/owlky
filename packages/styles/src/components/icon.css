@@ -1,0 +1,18 @@
+/*
+ * Icon — component icons (Solar, ADR-0070 § 9), shared by every component that draws one.
+ *
+ * Anatomy:   svg[data-ok-icon="<solar name>"][viewBox="0 0 24 24"][aria-hidden="true"][focusable="false"]
+ *              › path | circle | rect   (the icon's shapes; presentation attributes on the svg)
+ *
+ * The stroke width is a token (`--ok-icon-stroke`, user units): the markup carries none, because
+ * presentation attributes can't read a custom property. Filled (Bold) icons have no stroke.
+ * Loaded before the components, so a component that sizes or restrokes its icons wins by order.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-icon]) {
+    stroke-width: var(--ok-icon-stroke);
+  }
+}

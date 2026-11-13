@@ -26,8 +26,8 @@
     height: var(--_ok-code-editor-height, 100%);
     min-width: 0;
     overflow: hidden;
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     color: var(--ok-text-primary);
     text-align: initial;
@@ -90,7 +90,7 @@
   }
 
   :where([data-ok-diff-editor-original]) {
-    border-right: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    border-right: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
   }
 
   :where(
@@ -98,8 +98,8 @@
     [data-ok-diff-editor-original]:focus-visible,
     [data-ok-diff-editor-modified]:focus-visible
   ) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where(

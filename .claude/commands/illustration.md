@@ -57,7 +57,7 @@ in English.
    - `pnpm build && node apps/storybook/scripts/illustration-snippets.mjs`: only the new snippet
      appears in `git status` (and Upload's snippets only if the `upload` picture changed).
    - Counts and lists: the docs page (`illustrations-docs.tsx`: "Owlky includes N …"),
-     `docs/roadmap.md` (Illustrations list), the `owlky-illustrations.js` comment in
+     `docs/roadmap.md` (Illustrations list), the illustration module comment in
      `scripts/check-size.mjs` if the measured size moved.
 
 6. **Rules.** `pnpm test packages/core/src/illustrations` — the style rules (`style.test.ts`), the

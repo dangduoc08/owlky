@@ -122,11 +122,55 @@ describe("typography and elevation", () => {
     expect(css.indexOf("min-width: 600px")).toBeLessThan(css.indexOf("min-width: 900px"));
   });
 
-  it("uses the display font for h1–h3 only", () => {
+  it("uses the heading family for h1–h3 and the label family for overline and button", () => {
     const { root } = themeToCssVariables(defaultTheme);
-    expect(root["--ok-typography-h1-font-family"]).toBe("var(--ok-font-family-secondary)");
-    expect(root["--ok-typography-h3-font-family"]).toBe("var(--ok-font-family-secondary)");
+    expect(root["--ok-typography-h1-font-family"]).toBe("var(--ok-font-family-heading)");
+    expect(root["--ok-typography-h3-font-family"]).toBe("var(--ok-font-family-heading)");
     expect(root["--ok-typography-h4-font-family"]).toBe("var(--ok-font-family)");
+    expect(root["--ok-typography-button-font-family"]).toBe("var(--ok-font-family-label)");
+    expect(root["--ok-typography-overline-font-family"]).toBe("var(--ok-font-family-label)");
+    expect(root["--ok-font-family-label"]).toBe("var(--ok-font-family)");
+    expect(root["--ok-typography-h1-letter-spacing"]).toBe("normal");
+    expect(root["--ok-label-text-transform"]).toBe("none");
+  });
+
+  it("declares the style tokens of ADR-0070 with the default look's values", () => {
+    const { root, light, dark } = themeToCssVariables(defaultTheme);
+    expect(root).toMatchObject({
+      "--ok-radius-2xs": "2px",
+      "--ok-radius-control": "8px",
+      "--ok-radius-control-sm": "6px",
+      "--ok-radius-inner": "4px",
+      "--ok-radius-surface": "16px",
+      "--ok-radius-surface-md": "12px",
+      "--ok-radius-surface-sm": "10px",
+      "--ok-radius-chip": "10px",
+      "--ok-border-width": "1px",
+      "--ok-border-width-strong": "2px",
+      "--ok-border-width-heavy": "3px",
+      "--ok-line-width-hairline": "0.5px",
+      "--ok-line-width-2xl": "4px",
+      "--ok-focus-ring-width": "2px",
+      "--ok-focus-ring-offset": "2px",
+      "--ok-focus-ring-inset": "-2px",
+      "--ok-focus-ring-offset-tight": "1px",
+      "--ok-control-height-md": "2.25rem",
+      "--ok-row-height": "3.25rem",
+      "--ok-icon-stroke": "1.5",
+      "--ok-font-size-2xs": "0.6875rem",
+      "--ok-font-size-code": "0.875em",
+      "--ok-typography-quote-mark-size": "4rem",
+      "--ok-duration-spin": "0.8s",
+      "--ok-duration-progress-bar-reduced-delay": "2.3s",
+      "--ok-easing-in-out": "ease-in-out",
+      "--ok-easing-progress-1": "cubic-bezier(0.65, 0.815, 0.735, 0.395)",
+    });
+    // Ring colors name scheme tokens: declared per scheme, never on the root alone.
+    for (const scheme of [light, dark]) {
+      expect(scheme["--ok-focus-ring-color"]).toBe("var(--ok-text-primary)");
+      expect(scheme["--ok-focus-ring-color-brand"]).toBe("var(--ok-palette-primary-main)");
+    }
+    expect(root["--ok-focus-ring-color"]).toBeUndefined();
   });
 
   it("mirrors the spread-free custom shadows as drop-shadow filters", () => {
@@ -189,6 +233,7 @@ describe("button foundations", () => {
     const { root } = themeToCssVariables(defaultTheme);
     expect(root["--ok-font-size-sm"]).toBe("0.8125rem");
     expect(root["--ok-font-size-lg"]).toBe("0.9375rem");
+    expect(root["--ok-font-size-3xl"]).toBe("1.25rem");
   });
 
   it("binds every component color, including black and white, with a channel", () => {

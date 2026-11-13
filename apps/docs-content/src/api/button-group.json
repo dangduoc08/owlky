@@ -41,7 +41,7 @@
    "value": "183 110 0"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
   },
   {
@@ -190,6 +190,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/button-group",
+  "css": [
+   "@owlky/styles/components/button-group.css"
+  ],
+  "react": "@owlky/react/button-group"
+ },
  "name": "button-group",
  "title": "Button group",
  "types": [

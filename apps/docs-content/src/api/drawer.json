@@ -11,6 +11,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
@@ -591,6 +595,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/drawer",
+  "css": [
+   "@owlky/styles/components/drawer.css"
+  ],
+  "html": "@owlky/html/drawer",
+  "react": "@owlky/react/drawer"
+ },
  "name": "drawer",
  "title": "Drawer",
  "types": [

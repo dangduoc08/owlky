@@ -87,9 +87,11 @@ describe("icons", () => {
   it("draws every toolbar button", () => {
     for (const group of editorToolbar)
       for (const { action } of group.buttons)
-        expect(editorIcons[action === "fullscreen" ? "fullscreen" : action]).toMatch(/^M/);
-    expect(editorIcons.exitFullscreen).toMatch(/^M/);
-    expect(editorIcons.chevronDown).toMatch(/^M/);
+        expect(
+          editorIcons[action === "fullscreen" ? "fullscreen" : action].nodes.length,
+        ).toBeGreaterThan(0);
+    expect(editorIcons.exitFullscreen.name).toBe("quit-full-screen-linear");
+    expect(editorIcons.chevronDown.name).toBe("alt-arrow-down-linear");
   });
 });
 

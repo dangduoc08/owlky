@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  altArrowLeftLinear,
+  altArrowRightLinear,
   createTabsController,
   type Orientation,
   type TabIconPosition,
@@ -31,6 +33,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -70,19 +73,7 @@ export function TabContext({ value, children }: TabContextProps) {
 
 /** Chevron of the scroll buttons (decorative; the controller flips nothing, CSS rotates it). */
 function ScrollIcon({ direction }: { direction: "start" | "end" }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={direction === "start" ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"} />
-    </svg>
-  );
+  return <Icon icon={direction === "start" ? altArrowLeftLinear : altArrowRightLinear} />;
 }
 
 export interface TabsProps

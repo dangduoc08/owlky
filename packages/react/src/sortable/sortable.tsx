@@ -3,9 +3,11 @@
 import {
   arrayMove,
   arraySwap,
+  closeLinear,
   createSortableController,
   iconButtonAttributes,
   moveBetweenLists,
+  reorderLinear,
   type SortableActivator,
   type SortableController,
   type SortableLayout,
@@ -24,34 +26,13 @@ import {
   useId,
   useRef,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 
 /** Decorative icons of the item actions (same SVG as the HTML snippets). */
-const RemoveIcon = () => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-  >
-    <path d="M7 7l10 10M17 7 7 17" />
-  </svg>
-);
+const RemoveIcon = () => <Icon icon={closeLinear} />;
 
-const HandleIcon = () => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="3"
-    strokeLinecap="round"
-  >
-    <path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" />
-  </svg>
-);
+const HandleIcon = () => <Icon icon={reorderLinear} />;
 
 /** A drag event: the item, its index and the `id` of its list (for `onDragOver`: where it goes). */
 export interface SortableDragEvent<T> {

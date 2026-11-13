@@ -58,7 +58,7 @@ export {
   mapHexbin,
   mapHexbinAggregates,
 } from "./hexbin.js";
-export { type MapIconName, type MapLabels, mapIcons, mapLabels } from "./icons.js";
+export { type MapIconName, type MapLabels, mapCompass, mapIcons, mapLabels } from "./icons.js";
 export {
   type MapPixelGridOptions,
   type MapPixelShape,

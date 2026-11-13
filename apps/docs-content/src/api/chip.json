@@ -14,6 +14,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -34,6 +38,14 @@
    "name": "--ok-c-text"
   },
   {
+   "name": "--ok-chip-height",
+   "value": "2rem"
+  },
+  {
+   "name": "--ok-chip-height-sm",
+   "value": "1.5rem"
+  },
+  {
    "name": "--ok-duration-shorter",
    "value": "200ms"
   },
@@ -42,8 +54,20 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-sm",
@@ -56,6 +80,14 @@
   {
    "name": "--ok-font-weight-medium",
    "value": "500"
+  },
+  {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
   },
   {
    "name": "--ok-palette-grey-300",
@@ -74,12 +106,16 @@
    "value": "#454F5B"
   },
   {
-   "name": "--ok-radius-full",
-   "value": "9999px"
+   "name": "--ok-radius-chip",
+   "value": "10px"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
   },
   {
    "name": "--ok-spacing",
@@ -300,6 +336,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/chip",
+  "css": [
+   "@owlky/styles/components/chip.css"
+  ],
+  "html": "@owlky/html/chip",
+  "react": "@owlky/react/chip"
+ },
  "name": "chip",
  "title": "Chip"
 }

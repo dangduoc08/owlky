@@ -22,7 +22,7 @@
     --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
     --_ok-shadow: var(--ok-c-shadow, var(--ok-shadow-z8));
     --_ok-outline-alpha: 0.48;
-    --_ok-size: calc(var(--ok-spacing) * 12);
+    --_ok-size: var(--ok-control-height-lg);
     --_ok-padding-x: calc(var(--ok-spacing) * 3);
     --_ok-font-size: var(--ok-font-size-md);
     --_ok-icon-size: calc(var(--ok-spacing) * 6);
@@ -38,12 +38,14 @@
     height: var(--_ok-size);
     margin: 0;
     padding: 0;
-    border: 1px solid transparent;
+    border: var(--ok-border-width) solid transparent;
     border-radius: var(--ok-radius-full);
     background-color: var(--_ok-main);
     box-shadow: var(--_ok-shadow);
     color: var(--_ok-contrast);
-    font-family: var(--ok-font-family);
+    font-family: var(--ok-font-family-label);
+    letter-spacing: var(--ok-label-letter-spacing);
+    text-transform: var(--ok-label-text-transform);
     font-size: var(--_ok-font-size);
     font-weight: var(--ok-typography-button-font-weight);
     line-height: var(--ok-typography-button-line-height);
@@ -84,7 +86,7 @@
   }
 
   :where([data-ok-fab][data-ok-size="lg"]) {
-    --_ok-size: calc(var(--ok-spacing) * 14);
+    --_ok-size: var(--ok-control-height-xl);
     --_ok-padding-x: calc(var(--ok-spacing) * 4);
     --_ok-font-size: var(--ok-font-size-lg);
   }
@@ -145,8 +147,8 @@
   }
 
   :where([data-ok-fab]:focus-visible) {
-    outline: 2px solid var(--_ok-outline-color);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--_ok-outline-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Disabled — after hover, so it wins. */
