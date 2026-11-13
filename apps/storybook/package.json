@@ -21,8 +21,10 @@
   },
   "devDependencies": {
     "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/montserrat": "5.3.0",
     "@fontsource-variable/nunito": "5.3.0",
     "@fontsource-variable/space-grotesk": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
     "@iconify-json/circle-flags": "1.2.12",
     "@iconify-json/eva": "1.2.3",
     "@iconify-json/logos": "1.2.17",

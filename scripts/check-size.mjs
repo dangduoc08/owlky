@@ -160,6 +160,8 @@ for (const [name, limit] of Object.entries(MODULE_SHEET_BUDGETS))
 // ADR-0070 § 6, ADR-0073), measured plus at most 5%; ADR-0070's target is 2–4 kB each. Every
 // sheet the build writes needs an entry: a new style adds its line here.
 const STYLE_SHEET_BUDGETS = {
+  bauhaus: 2_790, // 2.65 kB
+  brutalism: 2_720, // 2.59 kB
   "neo-brutalism": 2_750, // 2.63 kB (inputs, literals, the treatment toggles and shadow switch)
   swiss: 2_750, // 2.61 kB
 };

@@ -6,19 +6,21 @@
  * and Storybook pick it up from this list.
  */
 import type { StyleDefinition } from "./style-definition.js";
+import { bauhaus } from "./styles/bauhaus.js";
+import { brutalism } from "./styles/brutalism.js";
 import { neoBrutalism } from "./styles/neo-brutalism.js";
 import { soft } from "./styles/soft.js";
 import { swiss } from "./styles/swiss.js";
 
 export { fontStack, monoStack, type StyleDefinition } from "./style-definition.js";
 export type { ShadowTreatment } from "./types.js";
-export { neoBrutalism, soft, swiss };
+export { bauhaus, brutalism, neoBrutalism, soft, swiss };
 
 /**
  * Style ids (`data-ok-style`), the default first. A literal list (not `Object.keys(styles)`), so
  * code that only needs the names doesn't bundle the definitions.
  */
-export const styleNames = ["soft", "swiss", "neo-brutalism"] as const;
+export const styleNames = ["soft", "swiss", "bauhaus", "brutalism", "neo-brutalism"] as const;
 export type StyleName = (typeof styleNames)[number];
 
 /** The default style (no `data-ok-style`, the core sheet). */
@@ -27,5 +29,7 @@ export const defaultStyleName: StyleName = "soft";
 export const styles: Record<StyleName, StyleDefinition> = {
   soft,
   swiss,
+  bauhaus,
+  brutalism,
   "neo-brutalism": neoBrutalism,
 };
