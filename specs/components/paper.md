@@ -58,9 +58,9 @@ Colors › Gradient), so the schema stays MUI's.
 - Paper sets only `background-color`, `color`, `border-radius`, `box-shadow`, the border
   longhands (the style's surface edge: `--ok-surface-border-width|style|color`; `style` may name
   each side, Editorial's `solid none none` top rule, ST7) and `transition`. Floating Papers
-  (`[data-ok-dialog-paper]`, `[data-ok-drawer-content]`, map controls and popups) restate
-  `border-style: solid`, so a one-sided style keeps their whole edge (popover roots reset their
-  border in popover.css, so they draw no surface edge in any style): no `display`, `overflow`, padding or size, so a composer adds them
+  (`[data-ok-dialog-paper]`, `[data-ok-drawer-content]`, popover roots, map controls and popups)
+  restate `border-style: solid`, so a one-sided style keeps their whole edge (ST7b: popovers keep
+  Paper's edge, so flat styles still outline menus and lists): no `display`, `overflow`, padding or size, so a composer adds them
   without undoing anything. No private variables (they would inherit into nested papers).
 - Library surfaces composed on Paper (ADR-0066, 2026-11-12): every popover root (Popover, Menu,
   Select, Autocomplete, pickers, Walktour steps, Editor overlays), the Dialog paper, the Drawer

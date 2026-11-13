@@ -50,7 +50,8 @@ tooltips keep their timing). Not applicable: `disableInteractive` (always hovera
 `--ok-palette-grey-800` (dark scheme grey-700, via `light-dark()`), white text, 11px (font-size-xs −
 1px) 500 / 1.5, padding 4px 8px, radius `--ok-radius-sm`, max width 300px. Gap 8px (10px with the
 arrow); arrow 10px. Transitions: grow (scale 0.75) / fade / zoom, `--ok-duration-shortest`.
-`--ok-z-tooltip` in the fallback.
+`--ok-z-tooltip` in the fallback. Not a Paper: no shadow and no surface edge in any style (ST7b
+decision), since the inverted fill already separates it from every surface.
 
 ## Responsive behavior
 Flips and shifts to stay 16px inside the viewport.

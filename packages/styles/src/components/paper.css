@@ -30,11 +30,13 @@
 
   /*
    * Floating surfaces (all Papers, ADR-0066) keep the whole edge where a style rules only one
-   * side (Editorial). Popover roots reset their border in popover.css.
+   * side (Editorial): popovers (menus, lists, pickers, Walktour steps) too, since a flat style
+   * gives them no shadow.
    */
   :where(
     [data-ok-dialog-paper],
     [data-ok-drawer-content],
+    [data-ok-popover],
     [data-ok-map-control],
     [data-ok-map-popup-content]
   ) {

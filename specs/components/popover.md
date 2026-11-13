@@ -61,6 +61,9 @@ so `popover.css` restates the radius, translucent background and shadow; Paper a
 `transition: box-shadow`. `elevation` (React prop, HTML `data-ok-elevation` `0`–`24`, optional)
 replaces the dropdown shadow with `--ok-elevation-<n>`: the dropdown shadow rule is
 `:not([data-ok-elevation])`. Paper's `variant` / `square` aren't offered on popovers (backlog).
+The edge is Paper's (the style's surface edge, whole in Editorial; 0 in Soft): flat styles draw no
+shadow, so the edge separates the popover from the page (ST7b). The arrow is placed from the
+border box, outside the edge (it has no edge of its own).
 Paper: radius `--ok-radius-md` × 1.25 (10px), padding 4px, `rgb(var(--ok-bg-paper-channel) / 0.9)`,
 blur 20px, two glows (info top-right, error bottom-left, 12%), `--ok-shadow-dropdown`, max size
 viewport − 32px, scrolls without an arrow. Gap 8px (12px with the arrow); 16px from the viewport
