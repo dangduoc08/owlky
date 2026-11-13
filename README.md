@@ -11,8 +11,12 @@ consistent interface without locking you into one way of building it.
   package, and it looks and behaves the same.
 - **Accessible by default.** Components follow the WAI-ARIA patterns, work with the keyboard and
   meet WCAG 2.2 level AA.
-- **Easy to theme.** Every color, size and shadow is a CSS variable. Switch to dark mode, change
-  the primary color or bring your own brand with a few lines of CSS.
+- **Nine design styles.** Switch the whole look with one attribute: Soft (the default), Swiss,
+  Bauhaus, Brutalism, Neo-Brutalism, Editorial, Minimal Mono, Corporate or Nordic. Each style
+  sets the palette, fonts, shapes, lines and shadows, and stays accessible in light and dark mode.
+- **Easy to theme.** Every color, size and shadow is a CSS variable. Add density, surface and
+  high contrast settings, or build a style with your brand colors and keep every pair
+  accessible.
 - **Built on the platform.** Components use native elements, such as `<button>` and `<dialog>`,
   so browser features like form submission, find-in-page and focus handling keep working.
 - **Small.** Pages load only what they use. On a CDN page, the script is about 40 kB, gzipped,
@@ -103,25 +107,65 @@ Import the Owlky theme after Tailwind. Every Owlky token then becomes a utility 
 
 ## Make it yours
 
-Every design value is a CSS variable that starts with `--ok-`. To change one, set it in your own
-CSS, for the whole page or for one part of it. Your values always win, because Owlky's own rules
-have zero specificity.
+### Choose a style
 
-```css
-:root {
-  --ok-palette-primary-main: #2065d1;
-  --ok-palette-primary-dark: #103996;
-  --ok-palette-primary-contrast-text: #ffffff;
-  --ok-radius-md: 10px;
-}
+A style is a complete look: palette, fonts, corner radius, border widths, shadows, label case and
+heading weight. A page without one looks **Soft**. The other eight styles are opt-in stylesheets
+of about 2 to 3 kB each (gzip). Load one after `owlky.css` and set `data-ok-style` on the
+`<html>` element or on any container:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-style-nordic.css">
+
+<html lang="en" data-ok-style="nordic">
 ```
 
-For dark mode, set `data-ok-theme="dark"` on the `<html>` element or on any container. Use
-`system` to follow the operating system. To let users choose the mode, style, density, surface, contrast and
-text size, use `applyThemeSettings()`.
+With a bundler, import `@owlky/styles/styles/nordic.css` after `@owlky/styles/owlky.css`. On a
+CDN page, `owlky.js` also loads the stylesheet of any style it finds in the page.
+
+| Style | Id | Look |
+| --- | --- | --- |
+| Soft (default) | `soft` | Rounded, soft two-layer shadows, Nunito |
+| Swiss | `swiss` | Square, 1px ink lines, Inter |
+| Bauhaus | `bauhaus` | Square, 2px black borders, pill chips, capital Montserrat headings |
+| Brutalism | `brutalism` | Square, 1px lines, IBM Plex Mono |
+| Neo-Brutalism | `neo-brutalism` | Rounded, 2px borders, hard offset shadows, Space Grotesk |
+| Editorial | `editorial` | Square, rules, Noto Serif Display headings, Source Serif 4 text |
+| Minimal Mono | `minimal-mono` | Greys only, soft shadows, Inter |
+| Corporate | `corporate` | Small radii, subtle shadows, IBM Plex Sans |
+| Nordic | `nordic` | Rounded, warm grey shadows, Manrope |
+
+Four more attributes nest on any element, each on its own: `data-ok-theme` (`light`, `dark`,
+`system`), `data-ok-density` (`comfortable`, `compact`), `data-ok-surface` (`default`,
+`contrast`) and `data-ok-contrast` (`default`, `high`, `system`). To let users choose them, and
+the text size, use `applyThemeSettings()`.
+
+### Use your brand colors
+
+`createTheme({ style, brand })` from `@owlky/tokens` derives every color role from your colors,
+in light and dark mode, on both surfaces and at both contrast levels, and keeps each pair
+accessible. Write it as CSS at build time with `styleSheetCss()` (an opt-in style) or
+`themeToCss()` (Soft), or apply it at run time with `applyThemeBrand()` from
+`@owlky/core/theme-brand`:
+
+```ts
+import { createTheme, styleSheetCss } from "@owlky/tokens";
+
+// A Nordic stylesheet with your primary color: load it instead of nordic.css.
+const css = styleSheetCss(createTheme({ style: "nordic", brand: { primary: "#0E7490" } }));
+```
+
+Every design value is a CSS variable that starts with `--ok-`, and you can still set one in your
+own CSS. Your values always win, because Owlky's own rules have zero specificity. A color you set
+this way isn't derived again for dark mode or high contrast, so check its contrast yourself.
+
+### Load the fonts
 
 Owlky doesn't bundle fonts. The default style, Soft, uses Nunito (weights 400 to 800) for text,
-headings and labels. Load it before `owlky.css`, for example from Google Fonts or Fontsource:
+headings and labels. Load it before `owlky.css`, for example from Google Fonts or Fontsource. The
+Styles guide gives the font link of every style.
+
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -137,8 +181,8 @@ in light and dark mode; `data-ok-contrast="high"` raises text to 7:1 and graphic
 The Storybook site is the main documentation:
 
 - **Introduction** explains how Owlky works and how to install it.
-- **Foundations** is a guide to the design tokens: colors, typography, shadows, spacing, icons and
-  theme settings, with live examples.
+- **Foundations** is a guide to the design tokens: colors, typography, shadows, spacing, icons,
+  styles and theme settings, with live examples.
 - **Components** shows every component. Choose plain HTML or a framework with the **Framework**
   menu in the toolbar, then open a story's **Code** panel to copy its source, with the imports you
   need.
@@ -193,6 +237,6 @@ To publish, push a `release/v<version>` tag on a `main` commit; see
 MIT. Some packages bundle third-party code under their own licenses. Each of those packages lists
 it in a `THIRD_PARTY_NOTICES.md` file.
 
-The visual language is inspired by the Minimal dashboard design. Owlky copies none of its code.
-Before version 0.1.0, Owlky's own style presets replace the design values and demo content that
-came from it. Owlky isn't affiliated with Minimal UI or MUI.
+Owlky's first visual language was inspired by the Minimal dashboard design. Owlky copies none of
+its code, and its own nine styles replace the design values that came from it. Owlky isn't
+affiliated with Minimal UI or MUI.

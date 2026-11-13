@@ -100,7 +100,15 @@ const preview: Preview = {
       // Self-contained: Storybook serializes this function.
       storySort: (a, b) => {
         const sections = ["Introduction", "Foundations", "Components"];
-        const foundations = ["Colors", "Typography", "Shadows", "Grid", "Icons", "Settings"];
+        const foundations = [
+          "Colors",
+          "Typography",
+          "Shadows",
+          "Grid",
+          "Icons",
+          "Styles",
+          "Settings",
+        ];
         const [sectionA = "", nameA = ""] = a.title.split("/");
         const [sectionB = "", nameB = ""] = b.title.split("/");
         const bySection = sections.indexOf(sectionA) - sections.indexOf(sectionB);

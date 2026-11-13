@@ -25,13 +25,14 @@ const nordic = styleSheetCss(createTheme({ style: "nordic", brand: { primary: "#
 
 A page without attributes looks **Soft**: Tailwind's indigo primary and zinc neutrals, Nunito,
 rounded shapes and soft two-layer shadows. Owlky doesn't bundle fonts: load Nunito (weights 400
-to 800) from Google Fonts or Fontsource.
+to 800) from Google Fonts or Fontsource. Each style definition lists its Google Fonts families in
+`styles[id].fontLinks`.
 
 Five attributes change the tokens on any element, and each one nests on its own:
 
 | Attribute | Values (default first) | Changes |
 |---|---|---|
-| `data-ok-style` | `soft` | every style token |
+| `data-ok-style` | `soft` · `swiss` · `bauhaus` · `brutalism` · `neo-brutalism` · `editorial` · `minimal-mono` · `corporate` · `nordic` | every style token (the eight after `soft` need their sheet) |
 | `data-ok-theme` (or `.dark`) | `light` · `dark` · `system` | scheme colors |
 | `data-ok-density` | `comfortable` · `compact` | control heights and paddings |
 | `data-ok-surface` | `default` · `contrast` | the page background behind paper |

@@ -109,6 +109,7 @@ const GUIDES = [
   ["foundations-shadows--docs", "Accessibility"],
   ["foundations-grid--docs", "Accessibility"],
   ["foundations-icons--docs", "Accessibility"],
+  ["foundations-styles--docs", "Accessibility"],
   ["foundations-settings--docs", "Accessibility"],
   ["foundations-illustrations--docs", "Credits"],
   ["components-accordion--docs", "Accessibility"],

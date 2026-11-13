@@ -17,7 +17,7 @@ export const illustrationsSections: GuideSection[] = [
   {
     id: "overview",
     title: "Illustrations in Owlky",
-    body: `Owlky includes 16 flat illustrations for error pages, empty states, account flows and dashboards. Each one is inline SVG whose shapes name a color role, such as \`main\` or \`paper\`, instead of a color. The stylesheet turns those roles into theme colors, so every illustration follows light and dark mode, nested themes, the **Preset** menu in the toolbar and the \`color\` option.
+    body: `Owlky includes 16 flat illustrations for error pages, empty states, account flows and dashboards. Each one is inline SVG whose shapes name a color role, such as \`main\` or \`paper\`, instead of a color. The stylesheet turns those roles into theme colors, so every illustration follows light and dark mode, nested themes, the **Style** menu in the toolbar and the \`color\` option.
 
 - **Theme-aware:** the brand shapes use the primary palette, or another palette you choose. Neutral shapes follow the color scheme.
 - **Small and private:** the pictures are data in your bundle. They need no image requests and work under a strict Content Security Policy.

@@ -121,8 +121,9 @@ stays the runtime only (ADR-0007).
 ```
 
 To use a design style other than the default Soft, link its sheet after `owlky.css`, then set
-`data-ok-style="swiss"` on `<html>` or on any element. A style sheet holds tokens only (about
-2.6 kB gzip), and styles nest like themes:
+`data-ok-style="swiss"` on `<html>` or on any element. The ids are `swiss`, `bauhaus`,
+`brutalism`, `neo-brutalism`, `editorial`, `minimal-mono`, `corporate` and `nordic`. A style
+sheet holds tokens only (about 2 to 3 kB gzip), and styles nest like themes:
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-style-swiss.min.css">

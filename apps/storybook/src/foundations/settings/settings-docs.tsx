@@ -20,9 +20,13 @@ export const settingsSections: GuideSection[] = [
   {
     id: "overview",
     title: "Theme settings",
-    body: `Theme settings let your users personalize the interface. There are two settings:
+    body: `Theme settings let your users personalize the interface. There are six settings:
 
-- **Mode:** ${codeList(["light", "dark", "system"])}. The \`system\` mode follows the operating system.
+- **Mode:** ${codeList(["light", "dark", "system"])} (\`data-ok-theme\`). The \`system\` mode follows the operating system.
+- **Style:** one of the nine design styles (\`data-ok-style\`), such as \`soft\` (the default) or \`nordic\`. See **Styles** for the list and their stylesheets.
+- **Density:** ${codeList(["comfortable", "compact"])} (\`data-ok-density\`).
+- **Surface:** ${codeList(["default", "contrast"])} (\`data-ok-surface\`).
+- **Contrast:** ${codeList(["default", "high", "system"])} (\`data-ok-contrast\`).
 - **Font size:** the root font size, from ${fontSizeRange.min}px to ${fontSizeRange.max}px. The default is ${fontSizeRange.default}px.
 
 Each setting is an attribute or a style on an element, so it works without JavaScript. The **Theme**, **Style**, **Density**, **Surface**, **Contrast** and **Font size** menus in the toolbar change the same settings for every story.`,
@@ -30,21 +34,18 @@ Each setting is an attribute or a style on an element, so it works without JavaS
   {
     id: "brand",
     title: "Use your brand color and font",
-    body: "Override the public tokens in your own CSS: the primary palette (`--ok-palette-primary-*`), the text font (`--ok-font-family`) and the heading font (`--ok-font-family-heading`). Your rules sit outside Owlky's cascade layers, so they win. Owlky doesn't bundle fonts, so load the one you choose. Check that text on your colors keeps a contrast ratio of at least 4.5:1, because overridden colors aren't adjusted for you.",
+    body: "Build a style with your brand colors through `createTheme({ style, brand })` at build time, or `applyThemeBrand()` at run time. Owlky then derives every shade, dark mode and high contrast from your colors at an accessible contrast. **Styles** shows both.\n\nTo change a font, override the family tokens in your own CSS: the text font (`--ok-font-family`), the heading font (`--ok-font-family-heading`) and the label font (`--ok-font-family-label`). Your rules sit outside Owlky's cascade layers, so they win. Owlky doesn't bundle fonts, so load the one you choose.",
     html: `<style>
   :root {
-    --ok-palette-primary-main: #2065d1;
-    --ok-palette-primary-main-channel: 32 101 209;
-    --ok-palette-primary-dark: #103996;
-    --ok-palette-primary-text: #103996;
     --ok-font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --ok-font-family-heading: "Inter", ui-sans-serif, system-ui, sans-serif;
   }
 </style>
 
 <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Export</span></button>`,
     react: `import { Button } from "@owlky/react";
 
-// In your CSS: :root { --ok-palette-primary-main: #2065d1; --ok-font-family: "Inter", sans-serif; }
+// In your CSS: :root { --ok-font-family: "Inter", sans-serif; --ok-font-family-heading: "Inter", sans-serif; }
 export function ExportButton() {
   return (
     <Button variant="contained" color="primary">
@@ -70,7 +71,7 @@ applyThemeSettings({ fontSize: 18 });`,
   {
     id: "code",
     title: "Save the user's choice",
-    body: `\`applyThemeSettings()\` sets either setting and returns the result. Settings you leave out keep their current value, and invalid values fall back to the default.
+    body: `\`applyThemeSettings()\` sets any of the settings and returns the result. A style other than Soft also needs its stylesheet: load every style your menu offers, or let \`owlky.js\` load them. Settings you leave out keep their current value, and invalid values fall back to the default.
 
 To remember the choice, pass a storage such as \`localStorage\`. On the next visit, read it back with \`readThemeSettings()\` and apply it. Call \`resetThemeSettings()\` to go back to the defaults.`,
     html: `<script type="module">
@@ -80,7 +81,7 @@ To remember the choice, pass a storage such as \`localStorage\`. On the next vis
   applyThemeSettings(readThemeSettings({ storage: localStorage }));
 
   // In a settings menu: change and save
-  applyThemeSettings({ mode: "dark" }, { storage: localStorage });
+  applyThemeSettings({ mode: "dark", style: "nordic" }, { storage: localStorage });
 </script>`,
     react: `import { applyThemeSettings, readThemeSettings } from "@owlky/react";
 import { useEffect } from "react";
@@ -92,7 +93,7 @@ export function useSavedThemeSettings() {
 }
 
 // In a settings menu: change and save
-applyThemeSettings({ mode: "dark" }, { storage: localStorage });`,
+applyThemeSettings({ mode: "dark", style: "nordic" }, { storage: localStorage });`,
   },
   {
     id: "scope",
@@ -207,7 +208,7 @@ export function Summary() {
   {
     id: "keyframes",
     title: "Animate with keyframes",
-    body: `Write \`@keyframes\` in your CSS and time them with the motion tokens: \`--ok-duration-*\` for lengths, such as \`--ok-duration-enter\`, and \`--ok-easing-*\` for curves, such as \`--ok-easing-decelerate\`. Colors in keyframes can read tokens too, so the animation follows the theme and the preset.
+    body: `Write \`@keyframes\` in your CSS and time them with the motion tokens: \`--ok-duration-*\` for lengths, such as \`--ok-duration-enter\`, and \`--ok-easing-*\` for curves, such as \`--ok-easing-decelerate\`. Colors in keyframes can read tokens too, so the animation follows the theme and the style.
 
 Turn the animation off when the user asks for reduced motion, and don't loop it forever: an animation that runs longer than 5 seconds needs a way to pause it. For entrances, exits and scroll effects, use the Motion component instead.`,
     html: `<style>
