@@ -67,8 +67,6 @@ whose packages already carry that version (ADR-0012).
 - Goal: the fewest tokens without lowering quality. Savings come from the verifier on Haiku,
   agents that report once (no interim "waiting" messages), short prompts that point at the
   AGENTS.md sections a task needs, and heavy test runs on CI instead of in every agent.
-- Sonnet for builders is a pilot (S4 first): it becomes the builder default only if its CI
-  failures, fix rounds and diff review match Opus; otherwise builders stay on Opus.
 - A builder failure that survives two attempts goes to `owlky-architect`. A one-off model override
   on the Agent call is fine; change a default by editing the agent file.
 - Fable has its own weekly quota: use it as overflow (`/model fable` for the session, or a model
