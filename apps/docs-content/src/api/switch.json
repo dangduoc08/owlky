@@ -21,6 +21,18 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
    "name": "--ok-palette-common-white",
    "value": "#FFFFFF"
   },
@@ -50,6 +62,22 @@
   },
   {
    "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "name": "--ok-switch-padding-x",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-switch-padding-x-sm",
+   "value": "0.4375rem"
+  },
+  {
+   "name": "--ok-switch-padding-y",
+   "value": "0.5625rem"
+  },
+  {
+   "name": "--ok-switch-padding-y-sm",
    "value": "0.25rem"
   },
   {

@@ -87,7 +87,7 @@
     max-height: calc(100% - var(--_ok-dialog-margin) * 2);
     margin: var(--_ok-dialog-margin);
     overflow-y: auto;
-    border-radius: var(--ok-radius-xl);
+    border-radius: var(--ok-radius-surface);
     background-color: var(--ok-bg-paper);
     outline: none;
   }
@@ -185,7 +185,7 @@
 
   :where([data-ok-dialog-content][data-ok-dividers]) {
     padding-block: calc(var(--ok-spacing) * 4);
-    border-block: 1px solid var(--ok-divider);
+    border-block: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-dialog-title] + [data-ok-dialog-content]) {
@@ -197,8 +197,8 @@
   }
 
   :where([data-ok-dialog-content]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-dialog-content-text]) {

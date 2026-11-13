@@ -34,155 +34,128 @@ function memoryStorage(fail = false) {
 
 const html = document.documentElement;
 afterEach(() => {
-  for (const name of ["data-ok-theme", "data-ok-preset", "data-ok-font"])
-    html.removeAttribute(name);
+  html.removeAttribute("data-ok-theme");
   html.style.fontSize = "";
 });
 
 describe("normalizeThemeSettings", () => {
   it("keeps valid values and replaces anything else with the default", () => {
-    expect(
-      normalizeThemeSettings({ mode: "dark", preset: "red", font: "inter", fontSize: 14 }),
-    ).toEqual({
+    expect(normalizeThemeSettings({ mode: "dark", fontSize: 14 })).toEqual({
       mode: "dark",
-      preset: "red",
-      font: "inter",
       fontSize: 14,
     });
-    expect(normalizeThemeSettings({ mode: "x", preset: '"><img>', font: 1, fontSize: 30 })).toEqual(
-      defaultThemeSettings,
-    );
+    expect(normalizeThemeSettings({ mode: "x", fontSize: 30 })).toEqual(defaultThemeSettings);
     expect(normalizeThemeSettings({ fontSize: 13.5 }).fontSize).toBe(16);
     expect(normalizeThemeSettings("nope")).toEqual(defaultThemeSettings);
     expect(normalizeThemeSettings(null)).toEqual(defaultThemeSettings);
   });
 
-  it("ignores prototype keys (S5)", () => {
+  it("ignores prototype keys and removed settings (S5)", () => {
     const result = normalizeThemeSettings(
-      JSON.parse('{"__proto__":{"polluted":1},"preset":"blue"}'),
+      JSON.parse('{"__proto__":{"polluted":1},"mode":"system","preset":"blue","font":"inter"}'),
     );
-    expect(result.preset).toBe("blue");
+    expect(result.mode).toBe("system");
     expect(({} as Record<string, unknown>)["polluted"]).toBeUndefined();
-    expect(Object.keys(result)).toEqual(["mode", "preset", "font", "fontSize"]);
+    expect(Object.keys(result)).toEqual(["mode", "fontSize"]);
   });
 });
 
 describe("applyThemeSettings", () => {
-  it("sets attributes and the root font size; defaults remove them; returns the settings", () => {
-    const applied = applyThemeSettings({
-      mode: "dark",
-      preset: "purple",
-      font: "dm-sans",
-      fontSize: 18,
-    });
-    expect(applied).toEqual({ mode: "dark", preset: "purple", font: "dm-sans", fontSize: 18 });
-    expect(html.dataset).toMatchObject({ okTheme: "dark", okPreset: "purple", okFont: "dm-sans" });
+  it("sets the mode and the root font size; the default size removes it; returns the settings", () => {
+    const applied = applyThemeSettings({ mode: "dark", fontSize: 18 });
+    expect(applied).toEqual({ mode: "dark", fontSize: 18 });
+    expect(html.dataset["okTheme"]).toBe("dark");
     expect(html.style.fontSize).toBe("18px");
     expect(getComputedStyle(html).fontSize).toBe("18px");
     // Partial updates keep the rest.
-    expect(applyThemeSettings({ preset: "default" })).toMatchObject({
-      mode: "dark",
-      font: "dm-sans",
-    });
-    expect(html.hasAttribute("data-ok-preset")).toBe(false);
-    applyThemeSettings({ font: "public-sans", fontSize: 16, mode: "light" });
-    expect(html.hasAttribute("data-ok-font")).toBe(false);
+    expect(applyThemeSettings({ fontSize: 16 })).toEqual({ mode: "dark", fontSize: 16 });
     expect(html.style.fontSize).toBe("");
+    applyThemeSettings({ mode: "light" });
     expect(html.dataset["okTheme"]).toBe("light");
   });
 
   it("targets a nested scope; the font size always applies to the page", () => {
     const scope = document.createElement("div");
     document.body.append(scope);
-    applyThemeSettings({ preset: "orange", fontSize: 12 }, { target: scope });
-    expect(scope.dataset["okPreset"]).toBe("orange");
-    expect(html.hasAttribute("data-ok-preset")).toBe(false);
+    applyThemeSettings({ mode: "dark", fontSize: 12 }, { target: scope });
+    expect(scope.dataset["okTheme"]).toBe("dark");
+    expect(html.hasAttribute("data-ok-theme")).toBe(false);
     expect(html.style.fontSize).toBe("12px");
-    expect(readThemeSettings({ target: scope })).toMatchObject({ preset: "orange", fontSize: 12 });
+    expect(readThemeSettings({ target: scope })).toEqual({ mode: "dark", fontSize: 12 });
     scope.remove();
   });
 
   it("stores only when a storage is given; reads it back; reset forgets it", () => {
     const storage = memoryStorage();
-    applyThemeSettings({ preset: "cyan" });
+    applyThemeSettings({ mode: "dark" });
     expect(storage.data.size).toBe(0);
-    applyThemeSettings({ preset: "blue" }, { storage });
+    applyThemeSettings({ mode: "system" }, { storage });
     expect(JSON.parse(storage.data.get(THEME_SETTINGS_KEY) as string)).toMatchObject({
-      preset: "blue",
+      mode: "system",
     });
-    html.removeAttribute("data-ok-preset");
-    expect(readThemeSettings({ storage }).preset).toBe("blue");
-    applyThemeSettings({ preset: "red" }, { storage, key: "custom" });
+    html.setAttribute("data-ok-theme", "light");
+    expect(readThemeSettings({ storage }).mode).toBe("system");
+    applyThemeSettings({ fontSize: 14 }, { storage, key: "custom" });
     expect(storage.data.has("custom")).toBe(true);
     expect(resetThemeSettings({ storage })).toEqual(defaultThemeSettings);
     expect(storage.data.has(THEME_SETTINGS_KEY)).toBe(false);
-    expect(html.hasAttribute("data-ok-preset")).toBe(false);
+    expect(html.dataset["okTheme"]).toBe("light");
   });
 
   it("survives blocked storage and invalid stored JSON", () => {
     const blocked = memoryStorage(true);
-    expect(applyThemeSettings({ preset: "red" }, { storage: blocked }).preset).toBe("red");
-    expect(readThemeSettings({ storage: blocked }).preset).toBe("red"); // from the DOM
+    expect(applyThemeSettings({ mode: "dark" }, { storage: blocked }).mode).toBe("dark");
+    expect(readThemeSettings({ storage: blocked }).mode).toBe("dark"); // from the DOM
     expect(resetThemeSettings({ storage: blocked })).toEqual(defaultThemeSettings);
     const broken = memoryStorage();
     broken.data.set(THEME_SETTINGS_KEY, "{oops");
     expect(readThemeSettings({ storage: broken })).toEqual(defaultThemeSettings);
-    broken.data.set(THEME_SETTINGS_KEY, '{"preset":"nope","mode":"dark"}');
-    expect(readThemeSettings({ storage: broken })).toMatchObject({
-      preset: "default",
-      mode: "dark",
-    });
+    broken.data.set(THEME_SETTINGS_KEY, '{"mode":"dark","fontSize":"big"}');
+    expect(readThemeSettings({ storage: broken })).toEqual({ mode: "dark", fontSize: 16 });
   });
 });
 
-describe("preset scopes resolve against the nearest preset and scheme", () => {
+describe("scheme tokens resolve against the nearest scheme", () => {
   const style = document.createElement("style");
   afterEach(() => {
     style.remove();
     document.body.replaceChildren();
   });
 
-  /** Computed `color` of `var(--ok-palette-primary-text)` on the innermost element. */
-  function textColor(html: string): string {
+  /** Computed `color` of `value` on the innermost element. */
+  function color(html: string, value: string): number[] {
     style.textContent = themeToCss(defaultTheme);
     document.head.append(style);
     const host = document.createElement("div");
     host.innerHTML = html;
     document.body.append(host);
     const probe = host.querySelector("#probe") as HTMLElement;
-    probe.style.color = "var(--ok-palette-primary-text)";
-    return getComputedStyle(probe).color;
+    probe.style.color = value;
+    const computed = getComputedStyle(probe).color;
+    // color-mix() may serialize as color(srgb …): compare the channels.
+    const channels = computed.match(/[\d.]+/g)?.map(Number) ?? [];
+    const rgb = computed.startsWith("color(") ? channels.map((c) => Math.round(c * 255)) : channels;
+    return rgb.slice(0, 3);
   }
 
   it.each([
-    ["default light", '<span id="probe"></span>', "rgb(0, 120, 103)"],
-    ["preset", '<div data-ok-preset="cyan"><span id="probe"></span></div>', "rgb(3, 81, 171)"],
+    ["light", '<span id="probe"></span>', [0, 120, 103], [28, 37, 46]],
     [
-      "preset inside dark",
-      '<div data-ok-theme="dark"><div data-ok-preset="cyan"><span id="probe"></span></div></div>',
-      "rgb(104, 205, 249)",
+      "dark",
+      '<div data-ok-theme="dark"><span id="probe"></span></div>',
+      [91, 228, 155],
+      [255, 255, 255],
     ],
     [
-      "dark inside preset",
-      '<div data-ok-preset="cyan"><div data-ok-theme="dark"><span id="probe"></span></div></div>',
-      "rgb(104, 205, 249)",
+      "light inside dark",
+      '<div data-ok-theme="dark"><div data-ok-theme="light"><span id="probe"></span></div></div>',
+      [0, 120, 103],
+      [28, 37, 46],
     ],
-    [
-      "preset and dark on one element",
-      '<div data-ok-preset="red" data-ok-theme="dark"><span id="probe"></span></div>',
-      "rgb(255, 193, 172)",
-    ],
-    [
-      "default preset resets inside another",
-      '<div data-ok-preset="red"><div data-ok-preset="default"><span id="probe"></span></div></div>',
-      "rgb(0, 120, 103)",
-    ],
-  ])("%s", (_, html, expected) => {
-    const color = textColor(html);
-    // color-mix() may serialize as color(srgb …): compare the channels.
-    const channels = color.match(/[\d.]+/g)?.map(Number) ?? [];
-    const rgb = color.startsWith("color(") ? channels.map((c) => Math.round(c * 255)) : channels;
-    expect(rgb.slice(0, 3)).toEqual(expected.match(/\d+/g)?.map(Number));
+  ])("%s: primary text tone and focus ring", (_, html, text, ring) => {
+    expect(color(html, "var(--ok-palette-primary-text)")).toEqual(text);
+    expect(color(html, "var(--ok-focus-ring-color)")).toEqual(ring);
+    expect(color(html, "var(--ok-focus-ring-color-brand)")).toEqual([0, 167, 111]);
   });
 });
 
@@ -218,7 +191,7 @@ describe("drop-shadow tokens follow the scheme's shadow color", () => {
   });
 });
 
-describe("gradient tokens follow the nearest preset and scheme", () => {
+describe("gradient tokens follow the nearest scheme", () => {
   const style = document.createElement("style");
   afterEach(() => {
     style.remove();
@@ -246,20 +219,9 @@ describe("gradient tokens follow the nearest preset and scheme", () => {
   const SCOPES: [name: string, html: string, dark: boolean][] = [
     ["default light", '<span id="probe"></span>', false],
     ["dark", '<div data-ok-theme="dark"><span id="probe"></span></div>', true],
-    ["preset", '<div data-ok-preset="cyan"><span id="probe"></span></div>', false],
     [
-      "preset inside dark",
-      '<div data-ok-theme="dark"><div data-ok-preset="cyan"><span id="probe"></span></div></div>',
-      true,
-    ],
-    [
-      "dark inside preset",
-      '<div data-ok-preset="cyan"><div data-ok-theme="dark"><span id="probe"></span></div></div>',
-      true,
-    ],
-    [
-      "light inside dark preset",
-      '<div data-ok-theme="dark" data-ok-preset="red"><div data-ok-theme="light"><span id="probe"></span></div></div>',
+      "light inside dark",
+      '<div data-ok-theme="dark"><div data-ok-theme="light"><span id="probe"></span></div></div>',
       false,
     ],
   ];
@@ -283,14 +245,9 @@ describe("gradient tokens follow the nearest preset and scheme", () => {
     );
   });
 
-  it("presets change the primary gradient; the paper gradient follows the scheme", () => {
+  it("the primary gradient uses the palette; the paper gradient follows the scheme", () => {
     const plain = image('<span id="probe"></span>', "var(--ok-gradient-primary)");
-    const cyan = image(
-      '<div data-ok-preset="cyan"><span id="probe"></span></div>',
-      "var(--ok-gradient-primary)",
-    );
     expect(plain).toContain("rgb(0, 167, 111)");
-    expect(cyan).toContain("rgb(7, 141, 238)");
     const lightPaper = image('<span id="probe"></span>', "var(--ok-gradient-paper)");
     const darkPaper = image(
       '<div data-ok-theme="dark"><span id="probe"></span></div>',

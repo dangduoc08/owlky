@@ -443,7 +443,10 @@ const BINDINGS = {
   "--ok-c-shadow": "The colored shadow of the element's `data-ok-color`.",
 };
 const cssBySpec = new Map();
+/** Stylesheets every component shares (component icons, ADR-0070 § 9): no spec of their own. */
+const SHARED_CSS = new Set(["icon.css"]);
 for (const file of readdirSync(join(root, "packages/styles/src/components")).sort(byName)) {
+  if (SHARED_CSS.has(file)) continue;
   const spec = folderSpec(file.replace(/\.css$/, ""));
   if (!spec) {
     problem(`styles/src/components/${file} maps to no spec`);

@@ -1,4 +1,5 @@
 import {
+  altArrowDownLinear,
   type ListItemAlignment,
   type ListSubheaderColor,
   listAttributes,
@@ -16,6 +17,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { Icon } from "../utils/icon.js";
 
 export interface ListProps extends HTMLAttributes<HTMLUListElement> {
   /** Compact rows: 4px less padding above and below every item. */
@@ -221,18 +223,7 @@ export const ListItemExpandIcon = forwardRef<HTMLSpanElement, HTMLAttributes<HTM
   function ListItemExpandIcon({ children, ...props }, ref) {
     return (
       <span ref={ref} data-ok-list-item-expand-icon="" aria-hidden="true" {...props}>
-        {children ?? (
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path
-              d="m6 9 6 6 6-6"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-        )}
+        {children ?? <Icon icon={altArrowDownLinear} />}
       </span>
     );
   },

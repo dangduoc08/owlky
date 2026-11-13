@@ -1,27 +1,14 @@
 "use client";
 
 import { type MapPosition, type MapScaleUnit, mapControlAttributes } from "@owlky/core";
-import { type MapIconName, mapIcons } from "@owlky/core/map";
+import { type MapIconName, mapCompass, mapIcons } from "@owlky/core/map";
 import { type HTMLAttributes, type ReactNode, useContext, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "../utils/icon.js";
 import { type GeolocateHandlers, InlineCorners, useMapContext } from "./map-context.js";
 
-function Icon({ name, part }: { name: MapIconName; part?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      data-ok-map-icon={part}
-    >
-      <path d={mapIcons[name]} />
-    </svg>
-  );
+function ControlIcon({ name, part }: { name: MapIconName; part?: string }) {
+  return <Icon icon={mapIcons[name]} data-ok-map-icon={part} />;
 }
 
 /** Renders `children` in a corner of the enclosing map (after the map mounted). */
@@ -79,10 +66,10 @@ export function NavigationControl({
         {showZoom ? (
           <>
             <button type="button" data-ok-map-action="zoom-in" aria-label={labels.zoomIn}>
-              <Icon name="zoomIn" />
+              <ControlIcon name="zoomIn" />
             </button>
             <button type="button" data-ok-map-action="zoom-out" aria-label={labels.zoomOut}>
-              <Icon name="zoomOut" />
+              <ControlIcon name="zoomOut" />
             </button>
           </>
         ) : null}
@@ -94,8 +81,8 @@ export function NavigationControl({
               focusable="false"
               data-ok-map-compass-icon=""
             >
-              <path d={mapIcons.compassNorth} data-ok-map-compass-north="" />
-              <path d={mapIcons.compassSouth} data-ok-map-compass-south="" />
+              <path d={mapCompass.north} data-ok-map-compass-north="" />
+              <path d={mapCompass.south} data-ok-map-compass-south="" />
             </svg>
           </button>
         ) : null}
@@ -155,7 +142,7 @@ export function GeolocateControl({
           aria-label={labels.geolocate}
           aria-pressed={trackUserLocation ? false : undefined}
         >
-          <Icon name="geolocate" />
+          <ControlIcon name="geolocate" />
         </button>
       </div>
     </InCorner>
@@ -179,8 +166,8 @@ export function FullscreenControl({ position = "top-right" }: FullscreenControlP
           aria-label={labels.fullscreenEnter}
           aria-pressed={false}
         >
-          <Icon name="fullscreenEnter" part="enter" />
-          <Icon name="fullscreenExit" part="exit" />
+          <ControlIcon name="fullscreenEnter" part="enter" />
+          <ControlIcon name="fullscreenExit" part="exit" />
         </button>
       </div>
     </InCorner>
@@ -225,7 +212,7 @@ export function AttributionControl({
     <InCorner position={position}>
       <details {...mapControlAttributes("attribution", { compact })}>
         <summary aria-label={labels.attribution}>
-          <Icon name="info" />
+          <ControlIcon name="info" />
         </summary>
         <div data-ok-map-attribution-text="" />
       </details>
@@ -250,7 +237,7 @@ export function GlobeControl({ position = "top-right" }: GlobeControlProps) {
           aria-label={labels.globe}
           aria-pressed={false}
         >
-          <Icon name="globe" />
+          <ControlIcon name="globe" />
         </button>
       </div>
     </InCorner>
@@ -284,7 +271,7 @@ export function TerrainControl({
           aria-label={labels.terrain}
           aria-pressed={false}
         >
-          <Icon name="terrain" />
+          <ControlIcon name="terrain" />
         </button>
       </div>
     </InCorner>

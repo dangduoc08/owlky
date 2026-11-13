@@ -165,9 +165,9 @@
   }
 
   :where([data-ok-rating-icon]:has(+ [data-ok-rating-input]:focus-visible)) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 1px;
-    border-radius: var(--ok-radius-xs);
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset-tight);
+    border-radius: var(--ok-radius-inner);
   }
 
   :where([data-ok-rating][data-ok-read-only] [data-ok-rating-icon]) {

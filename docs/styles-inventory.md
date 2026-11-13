@@ -33,6 +33,17 @@ Density, since they must become density tokens. Icons: every SVG path string in
 | Files with `data-ok-preset` / `data-ok-font` / preset APIs | 52 (removal list) |
 | Fonts checked | 10: all OFL 1.1 with Vietnamese; 3 without tabular figures |
 
+## ST2 status (done 2026-11-12)
+| Section | State |
+|---|---|
+| § 1 tokens, § 3 hard-coded values | ✅ Every row tokenized with today's value (radius roles, border / line widths, focus rings, density, font roles and sizes, loader timings, `--ok-icon-stroke`). Proof: a computed-style comparison of all 712 snippets, light and dark (every element and its `::before` / `::after`, animations paused at 0): 61.9 million values, 0 differences. `--ok-font-family-secondary` → `--ok-font-family-heading` (Tailwind `font-heading`); the label role reads `--ok-font-family-label`, `--ok-label-text-transform`, `--ok-label-letter-spacing`. |
+| § 1 radius roles | ✅ As the table says; Label stays on `--ok-radius-control-sm` until ST3. Lightbox thumbs → `--ok-radius-surface-sm`, org chart lines → `--ok-radius-2xl`. |
+| § 2 density | ✅ Tokens where a value matches: Button (heights, padding), Icon button md / lg, Fab and Toggle button md / lg, Text field padding, Chip, Tabs, Menu / Autocomplete items, Tree items, List items, Table cells, Data grid default rows, Accordion summary, Switch padding. ⏸ Kept on `--ok-spacing` (no token holds the value; ST3 decides with the compact values): Icon button sm (28px), Fab and Toggle button sm (40px), Toggle button in groups (38 / 30 / 46px), Pagination items (26 / 32 / 40px), dense Menu items (32px). |
+| § 3 "keep" rows | Kept as geometry, plus Motion border `circle` (`50%`: an ellipse on non-square boxes, not `--ok-radius-full`). |
+| § 4 component icons | ✅ All 114 rows: Solar, generated into `packages/core/src/icons/solar.ts` (77 names, numbers rounded to 2 decimals, answer 6). Checkbox box and radio ring are CSS from tokens (answer 3), so `stop-linear`, `record-linear`, `check-square-bold` and `minus-square-bold` aren't used; the Map compass stays a graphic (answer 5, `mapCompass`). |
+| § 4 story and docs icons | ⏸ ST7 (`DemoIcon`, `docs-icons.tsx`, Lucide, Iconify sets, the Icons guide). |
+| § 6 removals | ✅ Presets and font presets (code, CSS, toolbar, docs, website, e2e, specs). ⏸ Lucide, other Iconify sets, hand-drawn story sets: ST7. |
+
 ## 1. Existing tokens: Soft's starting point
 ST2 keeps these values (no pixel changes); ST3 replaces them with Soft's. Source:
 `packages/tokens/src/default-theme.ts`, emitted by `css.ts`.

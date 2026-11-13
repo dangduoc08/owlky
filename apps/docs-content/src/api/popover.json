@@ -26,8 +26,8 @@
    "value": "0 184 217"
   },
   {
-   "name": "--ok-radius-md",
-   "value": "8px"
+   "name": "--ok-radius-surface-sm",
+   "value": "10px"
   },
   {
    "name": "--ok-shadow-dropdown",

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  checkLinear,
   radioAttributes,
   radioGroupAttributes,
   type SelectionControlColor,
@@ -19,43 +20,24 @@ import {
   useContext,
   useId,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
-/** Default icons (decorative, same SVG as the HTML snippets). */
+/*
+ * Default icons (decorative, same markup as the HTML snippets): the ring and the dot are drawn by
+ * the stylesheet from tokens.
+ */
 function UncheckedIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
+  return <span data-ok-radio-ring="" />;
 }
 
 function CheckedIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-    </svg>
-  );
+  return <span data-ok-radio-ring="" />;
 }
 
 /** The check mark of a checked color swatch (decorative, same SVG as the HTML snippets). */
 function SwatchMark() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="m5 12.5 4.5 4.5L19 7.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  return <Icon icon={checkLinear} />;
 }
 
 interface RadioGroupContextValue {

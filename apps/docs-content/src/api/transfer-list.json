@@ -10,6 +10,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
@@ -18,7 +22,7 @@
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
-   "name": "--ok-radius-xl",
+   "name": "--ok-radius-surface",
    "value": "16px"
   },
   {

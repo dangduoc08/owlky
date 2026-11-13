@@ -44,7 +44,7 @@
   }
 
   :where([data-ok-date-range-calendar-month]:not(:last-child)) {
-    border-inline-end: 1px solid var(--ok-divider);
+    border-inline-end: var(--ok-border-width) solid var(--ok-divider);
   }
 
   /* MUI's arrow switcher: the month centered, the arrows on the outer months only. */
@@ -158,19 +158,19 @@
 
   /* Preview (a hovered or dragged end): a dashed outline over the days it would cover. */
   :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-in-preview])::after {
-    border-block-width: 1px;
+    border-block-width: var(--ok-border-width);
   }
 
   :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-preview-start])::after {
     inset-inline-start: 0;
-    border-inline-start-width: 1px;
+    border-inline-start-width: var(--ok-border-width);
     border-start-start-radius: var(--ok-radius-full);
     border-end-start-radius: var(--ok-radius-full);
   }
 
   :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-preview-end])::after {
     inset-inline-end: 0;
-    border-inline-end-width: 1px;
+    border-inline-end-width: var(--ok-border-width);
     border-start-end-radius: var(--ok-radius-full);
     border-end-end-radius: var(--ok-radius-full);
   }

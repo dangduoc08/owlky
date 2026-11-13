@@ -32,6 +32,10 @@
    "value": "400"
   },
   {
+   "name": "--ok-typography-body1-letter-spacing",
+   "value": "normal"
+  },
+  {
    "name": "--ok-typography-body1-line-height",
    "value": "1.5"
   },
@@ -52,6 +56,10 @@
    "value": "400"
   },
   {
+   "name": "--ok-typography-body2-letter-spacing",
+   "value": "normal"
+  },
+  {
    "name": "--ok-typography-body2-line-height",
    "value": "1.5714"
   },
@@ -61,7 +69,7 @@
   },
   {
    "name": "--ok-typography-button-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-label)"
   },
   {
    "name": "--ok-typography-button-font-size",
@@ -70,6 +78,10 @@
   {
    "name": "--ok-typography-button-font-weight",
    "value": "700"
+  },
+  {
+   "name": "--ok-typography-button-letter-spacing",
+   "value": "normal"
   },
   {
    "name": "--ok-typography-button-line-height",
@@ -92,6 +104,10 @@
    "value": "400"
   },
   {
+   "name": "--ok-typography-caption-letter-spacing",
+   "value": "normal"
+  },
+  {
    "name": "--ok-typography-caption-line-height",
    "value": "1.5"
   },
@@ -101,7 +117,7 @@
   },
   {
    "name": "--ok-typography-h1-font-family",
-   "value": "var(--ok-font-family-secondary)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h1-font-size",
@@ -110,6 +126,10 @@
   {
    "name": "--ok-typography-h1-font-weight",
    "value": "800"
+  },
+  {
+   "name": "--ok-typography-h1-letter-spacing",
+   "value": "normal"
   },
   {
    "name": "--ok-typography-h1-line-height",
@@ -121,7 +141,7 @@
   },
   {
    "name": "--ok-typography-h2-font-family",
-   "value": "var(--ok-font-family-secondary)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h2-font-size",
@@ -130,6 +150,10 @@
   {
    "name": "--ok-typography-h2-font-weight",
    "value": "800"
+  },
+  {
+   "name": "--ok-typography-h2-letter-spacing",
+   "value": "normal"
   },
   {
    "name": "--ok-typography-h2-line-height",
@@ -141,7 +165,7 @@
   },
   {
    "name": "--ok-typography-h3-font-family",
-   "value": "var(--ok-font-family-secondary)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h3-font-size",
@@ -150,6 +174,10 @@
   {
    "name": "--ok-typography-h3-font-weight",
    "value": "700"
+  },
+  {
+   "name": "--ok-typography-h3-letter-spacing",
+   "value": "normal"
   },
   {
    "name": "--ok-typography-h3-line-height",
@@ -172,6 +200,10 @@
    "value": "700"
   },
   {
+   "name": "--ok-typography-h4-letter-spacing",
+   "value": "normal"
+  },
+  {
    "name": "--ok-typography-h4-line-height",
    "value": "1.5"
   },
@@ -190,6 +222,10 @@
   {
    "name": "--ok-typography-h5-font-weight",
    "value": "700"
+  },
+  {
+   "name": "--ok-typography-h5-letter-spacing",
+   "value": "normal"
   },
   {
    "name": "--ok-typography-h5-line-height",
@@ -212,6 +248,10 @@
    "value": "600"
   },
   {
+   "name": "--ok-typography-h6-letter-spacing",
+   "value": "normal"
+  },
+  {
    "name": "--ok-typography-h6-line-height",
    "value": "1.5556"
   },
@@ -221,7 +261,7 @@
   },
   {
    "name": "--ok-typography-overline-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-label)"
   },
   {
    "name": "--ok-typography-overline-font-size",
@@ -230,6 +270,10 @@
   {
    "name": "--ok-typography-overline-font-weight",
    "value": "700"
+  },
+  {
+   "name": "--ok-typography-overline-letter-spacing",
+   "value": "normal"
   },
   {
    "name": "--ok-typography-overline-line-height",
@@ -252,6 +296,10 @@
    "value": "600"
   },
   {
+   "name": "--ok-typography-subtitle1-letter-spacing",
+   "value": "normal"
+  },
+  {
    "name": "--ok-typography-subtitle1-line-height",
    "value": "1.5"
   },
@@ -270,6 +318,10 @@
   {
    "name": "--ok-typography-subtitle2-font-weight",
    "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle2-letter-spacing",
+   "value": "normal"
   },
   {
    "name": "--ok-typography-subtitle2-line-height",

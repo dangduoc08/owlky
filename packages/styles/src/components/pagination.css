@@ -40,10 +40,12 @@
     height: var(--_ok-size);
     margin: 0 calc(var(--ok-spacing) * 0.75);
     padding: 0 calc(var(--ok-spacing) * 1.5);
-    border: 1px solid transparent;
+    border: var(--ok-border-width) solid transparent;
     border-radius: var(--ok-radius-full);
     color: var(--ok-text-primary);
-    font-family: var(--ok-font-family);
+    font-family: var(--ok-font-family-label);
+    letter-spacing: var(--ok-label-letter-spacing);
+    text-transform: var(--ok-label-text-transform);
     font-size: var(--ok-typography-body2-font-size);
     font-weight: var(--ok-font-weight-regular);
     line-height: var(--ok-typography-body2-line-height);
@@ -140,7 +142,7 @@
 
   /* Shape */
   :where([data-ok-pagination][data-ok-shape="rounded"] [data-ok-pagination-item]) {
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
   }
 
   /* Current page */
@@ -206,8 +208,8 @@
 
   /* Focus */
   :where([data-ok-pagination-item]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Disabled */

@@ -28,11 +28,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Follows the toolbar's "Preset" (theme settings, ADR-0017). */
-export const Primary: Story = {
-  args: { palette: "primary" },
-  render: (args, { globals }) => <Palette {...args} preset={globals["preset"]} />,
-};
+export const Primary: Story = { args: { palette: "primary" } };
 export const Secondary: Story = { args: { palette: "secondary" } };
 export const Info: Story = { args: { palette: "info" } };
 export const Success: Story = { args: { palette: "success" } };
@@ -40,7 +36,7 @@ export const Warning: Story = { args: { palette: "warning" } };
 export const ErrorPalette: Story = { name: "Error", args: { palette: "error" } };
 export const Grey: Story = { args: { palette: "grey" } };
 
-/** Gradient tokens (`--ok-gradient-*`): text, border, background and paper. Follows Theme and Preset. */
+/** Gradient tokens (`--ok-gradient-*`): text, border, background and paper. Follows the theme. */
 export const Gradient: Story = {
   args: { palette: "primary" },
   parameters: { controls: { disable: true } },

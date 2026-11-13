@@ -15,6 +15,22 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-cell-padding-x",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-cell-padding-y",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-cell-padding-y-sm",
+   "value": "0.375rem"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
@@ -31,6 +47,22 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
    "name": "--ok-font-family",
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
@@ -43,11 +75,11 @@
    "value": "0 167 111"
   },
   {
-   "name": "--ok-radius-sm",
+   "name": "--ok-radius-control-sm",
    "value": "6px"
   },
   {
-   "name": "--ok-radius-xs",
+   "name": "--ok-radius-inner",
    "value": "4px"
   },
   {

@@ -151,7 +151,7 @@
   }
 
   :where([data-ok-picker-day][data-ok-today]:not([aria-selected="true"])) {
-    border: 1px solid var(--ok-text-secondary);
+    border: var(--ok-border-width) solid var(--ok-text-secondary);
   }
 
   :where([data-ok-picker-day][aria-selected="true"]) {
@@ -222,7 +222,7 @@
     width: calc(var(--ok-spacing) * 18);
     height: var(--_ok-cell);
     margin: 0;
-    padding: 1px calc(var(--ok-spacing) * 1.5);
+    padding: var(--ok-border-width) calc(var(--ok-spacing) * 1.5);
     border: 0;
     border-radius: var(--ok-radius-full);
     outline: 0;
@@ -271,8 +271,8 @@
     [data-ok-picker-month]:focus-visible,
     [data-ok-picker-year]:focus-visible
   ) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 1px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset-tight);
   }
 
   :where(

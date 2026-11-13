@@ -27,7 +27,7 @@
     align-self: stretch;
     max-height: none;
     padding-inline-end: calc(var(--ok-spacing) * 2);
-    border-inline-end: 1px solid var(--ok-divider);
+    border-inline-end: var(--ok-border-width) solid var(--ok-divider);
     color: var(--ok-text-primary);
     font-weight: var(--ok-font-weight-regular);
   }
@@ -35,7 +35,7 @@
   :where([data-ok-phone-input-country] > [data-ok-select]) {
     display: inline-flex;
     align-items: center;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
   }
 
   :where([data-ok-phone-input-country] > [data-ok-select] > [data-ok-select-display]) {
@@ -50,7 +50,7 @@
   :where(
     [data-ok-phone-input-country] > [data-ok-select] > [data-ok-select-display]:focus-visible
   ) {
-    outline: 2px solid var(--ok-text-primary);
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
     outline-offset: 0;
   }
 

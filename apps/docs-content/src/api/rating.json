@@ -9,6 +9,18 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-offset-tight",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
    "name": "--ok-palette-error-main",
    "value": "#FF5630"
   },
@@ -37,17 +49,12 @@
    "value": "#FFAB00"
   },
   {
-   "name": "--ok-radius-xs",
+   "name": "--ok-radius-inner",
    "value": "4px"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
-  },
-  {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
-   "name": "--ok-text-primary"
   }
  ],
  "entries": [

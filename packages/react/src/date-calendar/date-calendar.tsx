@@ -2,6 +2,9 @@
 
 import {
   addMonths,
+  altArrowDownLinear,
+  altArrowLeftLinear,
+  altArrowRightLinear,
   type CalendarController,
   type CalendarDay,
   calendarHeaderText,
@@ -55,6 +58,7 @@ import { type DateValidationProps, dateRules, ruleAttributes } from "../date-fie
 import { IconButton } from "../icon-button/icon-button.js";
 import { usePickerLocalization } from "../localization-provider/localization-provider.js";
 import { useFocusedView } from "../pickers/use-focused-view.js";
+import { Icon } from "../utils/icon.js";
 import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
@@ -65,26 +69,18 @@ import { useControllableState } from "../utils/use-controllable-state.js";
  */
 export type PickerSelectionState = "shallow" | "partial" | "finish";
 
-const ICON = {
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-} as const;
-
 /** Chevron icons (decorative). */
 export function PickerArrowIcon({ direction }: { direction: "left" | "right" | "down" }) {
-  const d =
-    direction === "left"
-      ? "m15 6-6 6 6 6"
-      : direction === "right"
-        ? "m9 6 6 6-6 6"
-        : "m6 9 6 6 6-6";
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" {...ICON}>
-      <path d={d} />
-    </svg>
+    <Icon
+      icon={
+        direction === "left"
+          ? altArrowLeftLinear
+          : direction === "right"
+            ? altArrowRightLinear
+            : altArrowDownLinear
+      }
+    />
   );
 }
 

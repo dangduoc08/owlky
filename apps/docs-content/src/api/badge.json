@@ -6,6 +6,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "description": "The text color on the main color.",
    "name": "--ok-c-contrast"
   },
@@ -22,8 +26,8 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-xs",
@@ -32,6 +36,22 @@
   {
    "name": "--ok-font-weight-medium",
    "value": "500"
+  },
+  {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-line-width-2xl",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-line-width-sm",
+   "value": "1.5px"
   },
   {
    "name": "--ok-palette-common-white",

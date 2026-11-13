@@ -1,9 +1,17 @@
 "use client";
 
 import {
+  addLinear,
+  altArrowDownLinear,
+  altArrowRightLinear,
   arrangeGridColumns,
+  arrowDownLinear,
+  arrowUpLinear,
   type ChartSelectionDetail,
+  chart2Linear,
   clampGridWidth,
+  closeLinear,
+  columns3Linear,
   createGridCellSelection,
   createGridChartRangeHandle,
   createGridClipboard,
@@ -20,7 +28,9 @@ import {
   createGridScrollWatcher,
   createGridStateWatcher,
   dataGridAttributes,
+  downloadMinimalisticLinear,
   filterGridRows,
+  filterLinear,
   formatIsoDate,
   formatIsoDateTime,
   GRID_AGGREGATION_ROOT_ID,
@@ -196,6 +206,7 @@ import {
   gridTreeRows,
   gridUnknownCountPattern,
   gridWithGroupFooters,
+  hamburgerMenuLinear,
   isGridCellSelected,
   isGridFilterable,
   isGridHideable,
@@ -203,7 +214,9 @@ import {
   isGridResizable,
   isGridSetFilter,
   isGridSortable,
+  magnifierLinear,
   measureGridColumn,
+  menuDotsVerticalLinear,
   mergeGridCellSelection,
   moveGridColumn,
   moveGridPivotField,
@@ -221,6 +234,7 @@ import {
   printGridContent,
   propagateGridSelection,
   pruneGridSelection,
+  reorderLinear,
   sanitizeGridCellSelection,
   sanitizeGridChartModels,
   sanitizeGridChartsState,
@@ -230,9 +244,12 @@ import {
   setGridPivotRole,
   sortGridRows,
   syncGridPinning,
+  tablePropertiesLinear,
   toggleGridCell,
   toggleGridRows,
   toggleGridSetFilterValues,
+  undoLeftLinear,
+  undoRightLinear,
   updateGridFilterGroup,
   visibleGridColumns,
 } from "@owlky/core";
@@ -272,6 +289,7 @@ import { Switch } from "../switch/switch.js";
 import { TablePagination } from "../table/table.js";
 import { InputAdornment, InputBase, TextField } from "../text-field/text-field.js";
 import { Tooltip } from "../tooltip/tooltip.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -1193,101 +1211,27 @@ export interface GridContextMenuItemDef<R> {
 
 export type GridEditStopReason = "enterKeyDown" | "escapeKeyDown" | "cellFocusOut";
 
-const SortIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M12 4l-6 6h4v10h4V10h4z" />
-  </svg>
-);
-const MoreIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <circle cx="12" cy="5" r="2" />
-    <circle cx="12" cy="12" r="2" />
-    <circle cx="12" cy="19" r="2" />
-  </svg>
-);
-const ColumnsIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M4 5h4v14H4zm6 0h4v14h-4zm6 0h4v14h-4z" />
-  </svg>
-);
-const FilterIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M3 5h18l-7 8v6l-4 2v-8z" />
-  </svg>
-);
-const DensityIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z" />
-  </svg>
-);
-const ExportIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M11 3h2v9l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3zM5 18h14v2H5z" />
-  </svg>
-);
-const PlusIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" />
-  </svg>
-);
-const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z" />
-  </svg>
-);
-const SearchIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M10 3a7 7 0 015.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1110 3zm0 2a5 5 0 100 10 5 5 0 000-10z" />
-  </svg>
-);
+const SortIcon = () => <Icon icon={arrowUpLinear} />;
+const MoreIcon = () => <Icon icon={menuDotsVerticalLinear} />;
+const ColumnsIcon = () => <Icon icon={columns3Linear} />;
+const FilterIcon = () => <Icon icon={filterLinear} />;
+const DensityIcon = () => <Icon icon={hamburgerMenuLinear} />;
+const ExportIcon = () => <Icon icon={downloadMinimalisticLinear} />;
+const PlusIcon = () => <Icon icon={addLinear} />;
+const CloseIcon = () => <Icon icon={closeLinear} />;
+const SearchIcon = () => <Icon icon={magnifierLinear} />;
 
-const ChevronIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" />
-  </svg>
-);
-const ExpandIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z" />
-  </svg>
-);
-const GripIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" />
-  </svg>
-);
+const ChevronIcon = () => <Icon icon={altArrowRightLinear} />;
+const ExpandIcon = () => <Icon icon={altArrowDownLinear} />;
+const GripIcon = () => <Icon icon={reorderLinear} />;
 
-const PivotIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M3 3h18v4H3zm0 6h4v12H3zm6 0h12v12H9zm2 2v8h8v-8z" />
-  </svg>
-);
+const PivotIcon = () => <Icon icon={tablePropertiesLinear} />;
 const MoveIcon = ({ down }: { down?: boolean }) => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path
-      d={
-        down
-          ? "M11 4h2v12l4.6-4.6L19 12.8l-7 7-7-7 1.4-1.4L11 16z"
-          : "M11 20h2V8l4.6 4.6L19 11.2l-7-7-7 7 1.4 1.4L11 8z"
-      }
-    />
-  </svg>
+  <Icon icon={down ? arrowDownLinear : arrowUpLinear} />
 );
-const ChartIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M4 20V10h3v10zm6.5 0V4h3v16zM17 20v-7h3v7z" />
-  </svg>
-);
-const UndoIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="M9 5 4 10l5 5v-4h6a4 4 0 0 1 0 8h-3v2h3a6 6 0 0 0 0-12H9z" />
-  </svg>
-);
-const RedoIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-    <path d="m15 5 5 5-5 5v-4H9a4 4 0 0 0 0 8h3v2H9a6 6 0 0 1 0-12h6z" />
-  </svg>
-);
+const ChartIcon = () => <Icon icon={chart2Linear} />;
+const UndoIcon = () => <Icon icon={undoLeftLinear} />;
+const RedoIcon = () => <Icon icon={undoRightLinear} />;
 
 const REORDER_FIELD = "__reorder__";
 const DETAIL_FIELD = "__detail_panel_toggle__";

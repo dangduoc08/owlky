@@ -1,10 +1,5 @@
 /** @jsxRuntime classic */
-import {
-  fontSizeRange,
-  type PrimaryPreset,
-  primaryPresetNames,
-  primaryPresets,
-} from "@owlky/tokens";
+import { fontSizeRange } from "@owlky/tokens";
 // The manager provides React (classic JSX): a bundled jsx-runtime would be a second React copy.
 // biome-ignore lint/correctness/noUnusedImports: classic JSX compiles to React.createElement.
 import React from "react";
@@ -12,8 +7,8 @@ import { Select } from "storybook/internal/components";
 import { addons, types, useGlobals } from "storybook/manager-api";
 
 /*
- * Toolbar tools: Framework (ADR-0018) and the theme settings (ADR-0017: Theme, Preset, Font size), with icons and
- * explicit labels. The globals are declared in preview.tsx (`globalTypes`, no default toolbar).
+ * Toolbar tools: Framework (ADR-0018) and the theme settings (ADR-0070: Theme, Font size), with
+ * icons and explicit labels. The globals are declared in preview.tsx (`globalTypes`, no default toolbar).
  */
 
 const Svg = ({ d }: { d: string }) => (
@@ -70,27 +65,6 @@ const THEMES = [
   { value: "dark", title: "Dark", icon: <Svg d={MOON} /> },
 ];
 
-const presetTitle = (name: PrimaryPreset) => name[0]?.toUpperCase() + name.slice(1);
-
-const Swatch = ({ color }: { color: string }) => (
-  <span
-    aria-hidden="true"
-    style={{
-      display: "inline-block",
-      width: 12,
-      height: 12,
-      borderRadius: "50%",
-      backgroundColor: color,
-    }}
-  />
-);
-
-const PRESETS = primaryPresetNames.map((name) => ({
-  value: name,
-  title: presetTitle(name),
-  icon: <Swatch color={primaryPresets[name].main} />,
-}));
-
 const SIZES = Array.from(
   { length: fontSizeRange.max - fontSizeRange.min + 1 },
   (_, i) => fontSizeRange.min + i,
@@ -131,23 +105,6 @@ function ThemeTool() {
   );
 }
 
-function PresetTool() {
-  const [globals, updateGlobals] = useGlobals();
-  const value = (globals["preset"] as PrimaryPreset | undefined) ?? "default";
-  return (
-    <Select
-      ariaLabel="Primary color preset"
-      padding="small"
-      options={PRESETS}
-      defaultOptions={value}
-      icon={<Swatch color={primaryPresets[value]?.main ?? primaryPresets.default.main} />}
-      onSelect={(preset) => updateGlobals({ preset })}
-    >
-      Preset
-    </Select>
-  );
-}
-
 function FontSizeTool() {
   const [globals, updateGlobals] = useGlobals();
   const value = String(globals["fontSize"] ?? fontSizeRange.default);
@@ -181,12 +138,6 @@ addons.register("owlky/theme-settings", () => {
     title: "Theme",
     match: inStory,
     render: ThemeTool,
-  });
-  addons.add("owlky/preset", {
-    type: types.TOOL,
-    title: "Preset",
-    match: inStory,
-    render: PresetTool,
   });
   addons.add("owlky/font-size", {
     type: types.TOOL,

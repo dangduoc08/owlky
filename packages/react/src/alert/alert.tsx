@@ -2,49 +2,31 @@ import {
   type AlertSeverity,
   type AlertVariant,
   alertAttributes,
+  checkCircleLinear,
+  closeLinear,
+  dangerCircleLinear,
+  dangerTriangleLinear,
+  type IconData,
   iconButtonAttributes,
+  infoCircleLinear,
 } from "@owlky/core";
 import { type ComponentPropsWithoutRef, forwardRef, type ReactNode } from "react";
+import { Icon } from "../utils/icon.js";
 
 /** Default severity icons (decorative, same SVG as the HTML snippets). */
-const ICON_PATHS: Record<AlertSeverity, string[]> = {
-  success: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z", "M8.5 12.5l2.5 2.5 4.5-5"],
-  info: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z", "M12 11v5", "M12 8h.01"],
-  warning: ["M12 3.5 2.5 20h19L12 3.5z", "M12 10v4", "M12 17h.01"],
-  error: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z", "M12 7.5v5.5", "M12 16.5h.01"],
+const SEVERITY_ICONS: Record<AlertSeverity, IconData> = {
+  success: checkCircleLinear,
+  info: infoCircleLinear,
+  warning: dangerTriangleLinear,
+  error: dangerCircleLinear,
 };
 
 function SeverityIcon({ severity }: { severity: AlertSeverity }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {ICON_PATHS[severity].map((d) => (
-        <path key={d} d={d} />
-      ))}
-    </svg>
-  );
+  return <Icon icon={SEVERITY_ICONS[severity]} />;
 }
 
 function CloseIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    >
-      <path d="M7 7l10 10M17 7 7 17" />
-    </svg>
-  );
+  return <Icon icon={closeLinear} />;
 }
 
 export interface AlertProps extends ComponentPropsWithoutRef<"div"> {

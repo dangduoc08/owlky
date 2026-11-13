@@ -1,12 +1,16 @@
 "use client";
 
 import {
+  altArrowDownLinear,
   centerOrganizationChartNode,
   clampOrganizationChartZoom,
   createOrganizationChartController,
   createOrganizationChartHighlight,
   createOrganizationChartTree,
   createOrganizationChartZoom,
+  magnifierZoomInLinear,
+  magnifierZoomOutLinear,
+  maximizeSquareMinimalisticLinear,
   ORGANIZATION_CHART_ZOOM_STEP,
   type OrganizationChartAction,
   type OrganizationChartController,
@@ -29,6 +33,7 @@ import {
   organizationChartSelection,
   organizationChartStyle,
   organizationChartToggle,
+  restartLinear,
   revealOrganizationChartNode,
 } from "@owlky/core";
 import {
@@ -52,6 +57,7 @@ import {
 import { CircularProgress } from "../circular-progress/circular-progress.js";
 import { Collapse } from "../collapse/collapse.js";
 import { IconButton } from "../icon-button/icon-button.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -73,21 +79,8 @@ const SelectionContext = createContext<ReadonlySet<string>>(new Set());
 const hasNodes = (children: ReactNode) => Children.toArray(children).length > 0;
 const NONE: readonly string[] = [];
 
-/** The toggle's chevron (lucide `chevron-down`); the stylesheet turns it while expanded. */
-const CHEVRON = (
-  <svg
-    data-ok-organization-chart-toggle-icon=""
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m6 9 6 6 6-6" />
-  </svg>
-);
+/** The toggle's chevron; the stylesheet turns it while expanded. */
+const CHEVRON = <Icon icon={altArrowDownLinear} data-ok-organization-chart-toggle-icon="" />;
 
 interface NodeProps {
   /** Content of the node, such as a card. */
@@ -791,52 +784,15 @@ export const OrganizationChartNode = forwardRef<HTMLLIElement, OrganizationChart
   },
 );
 
-/** lucide icons: `zoom-out`, `zoom-in`, `scan` (fit), `rotate-ccw` (reset). */
+/** Toolbar icons (Solar): zoom out, zoom in, fit, reset. */
 const ICONS = {
-  out: (
-    <>
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-      <path d="M8 11h6" />
-    </>
-  ),
-  in: (
-    <>
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-      <path d="M11 8v6" />
-      <path d="M8 11h6" />
-    </>
-  ),
-  fit: (
-    <>
-      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-    </>
-  ),
-  reset: (
-    <>
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-    </>
-  ),
+  out: magnifierZoomOutLinear,
+  in: magnifierZoomInLinear,
+  fit: maximizeSquareMinimalisticLinear,
+  reset: restartLinear,
 } as const;
 
-const icon = (name: keyof typeof ICONS) => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {ICONS[name]}
-  </svg>
-);
+const icon = (name: keyof typeof ICONS) => <Icon icon={ICONS[name]} />;
 
 export interface OrganizationChartToolbarProps extends HTMLAttributes<HTMLDivElement> {
   /** The `id` of the chart the buttons zoom (its `enableZoomPan` must be on). */

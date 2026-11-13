@@ -12,6 +12,7 @@ import {
   progressSize,
   swatchColor,
   swatchStyle,
+  userBold,
 } from "@owlky/core";
 import {
   Children,
@@ -25,15 +26,11 @@ import {
   type ReactNode,
   useState,
 } from "react";
+import { Icon } from "../utils/icon.js";
 
 /** Fallback when there is no image, text or children (decorative). */
 function PersonIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="12" cy="8" r="4" fill="currentColor" />
-      <path d="M4 20c0-4 3.6-6 8-6s8 2 8 6z" fill="currentColor" />
-    </svg>
-  );
+  return <Icon icon={userBold} />;
 }
 
 export interface AvatarProps extends Omit<HTMLAttributes<HTMLSpanElement>, "color"> {

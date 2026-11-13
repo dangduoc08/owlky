@@ -25,8 +25,8 @@
     --_ok-track-h: calc(var(--ok-spacing) * 5);
     --_ok-thumb: calc(var(--ok-spacing) * 3.5);
     --_ok-inset: calc(var(--ok-spacing) * 0.75);
-    --_ok-pad-x: calc(var(--ok-spacing) * 3);
-    --_ok-pad-y: calc(var(--ok-spacing) * 2.25);
+    --_ok-pad-x: var(--ok-switch-padding-x);
+    --_ok-pad-y: var(--ok-switch-padding-y);
     --_ok-thumb-bg: var(--ok-palette-common-white);
 
     position: relative;
@@ -114,8 +114,8 @@
     --_ok-track-w: calc(var(--ok-spacing) * 6.5);
     --_ok-track-h: calc(var(--ok-spacing) * 4);
     --_ok-thumb: calc(var(--ok-spacing) * 2.5);
-    --_ok-pad-x: calc(var(--ok-spacing) * 1.75);
-    --_ok-pad-y: var(--ok-spacing);
+    --_ok-pad-x: var(--ok-switch-padding-x-sm);
+    --_ok-pad-y: var(--ok-switch-padding-y-sm);
   }
 
   :where([data-ok-switch][data-ok-edge="start"]) {
@@ -162,8 +162,8 @@
 
   /* Focus: a ring around the track (the reference has none; WCAG 2.4.7). */
   :where([data-ok-switch]:has(> input:focus-visible) > [data-ok-switch-track]) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Disabled */

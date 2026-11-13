@@ -257,7 +257,7 @@ Roadmap 4.18.15, after ApexMaps (apexcharts.com/apexmaps, docs checked 2026-11-1
   `["case", is-number, ["step", input, c0, b1, c1, …], nullColor]`, `gradient` the same with
   `interpolate` (stops evenly from min to max). `input` defaults to `["feature-state", "value"]`.
   Colors are `var(--ok-…)` strings: the controller resolves them on add and again when a
-  `data-ok-theme` / `data-ok-preset` changes or the system scheme flips.
+  `data-ok-theme` changes or the system scheme flips.
 - `mapRegionLayers({ id, source, sourceLayer?, scale, variant?, opacity = 0.8, mutedOpacity = 0.15 })`:
   a fill (`muted` → `mutedOpacity`, hover / focus / selected → +0.15) and `<id>-outline` (selected
   2.5px, hover / focus 1.5px `--ok-text-primary`, else 0.5px `--ok-bg-paper`).

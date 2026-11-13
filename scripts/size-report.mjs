@@ -245,6 +245,13 @@ const bundleFiles = [
 const bundles = {};
 const anatomyRows = {};
 const mainSources = new Set();
+/** `source:line` of owlky.js's slices, for the data modules below. */
+const mainLines = new Set();
+/**
+ * Pure data modules (one export per line, no state): a lazy file duplicates only the lines owlky.js
+ * holds too, not the whole module (the Solar icons each bundle picks, ADR-0070 § 9).
+ */
+const DATA_MODULE = /icons\/solar\.js$/;
 const duplicated = { parts: [], sources: new Set() };
 for (const file of bundleFiles.sort((a, b) =>
   a === "owlky.js" ? -1 : b === "owlky.js" ? 1 : a.localeCompare(b),
@@ -254,10 +261,18 @@ for (const file of bundleFiles.sort((a, b) =>
   const families = group(slices, (s) => familyOf(s.source), total);
   bundles[file] = { raw: Buffer.byteLength(code), gzip: total, families };
   // Code in both owlky.js and a lazy file has two module instances (ADR-0068 §2).
-  if (file === "owlky.js") for (const slice of slices) mainSources.add(slice.source);
+  if (file === "owlky.js")
+    for (const slice of slices) {
+      mainSources.add(slice.source);
+      mainLines.add(`${slice.source}:${slice.line}`);
+    }
   else if (file.startsWith("modules/"))
     for (const slice of slices)
-      if (slice.source !== "(unmapped)" && mainSources.has(slice.source)) {
+      if (
+        slice.source !== "(unmapped)" &&
+        mainSources.has(slice.source) &&
+        (!DATA_MODULE.test(slice.source) || mainLines.has(`${slice.source}:${slice.line}`))
+      ) {
         duplicated.parts.push(slice.text);
         duplicated.sources.add(slice.source);
       }

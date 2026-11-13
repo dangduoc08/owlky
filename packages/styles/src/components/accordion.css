@@ -17,7 +17,7 @@
     --_ok-gutter: calc(var(--ok-spacing) * 4);
 
     box-sizing: border-box;
-    border-top: 1px solid var(--ok-divider);
+    border-top: var(--ok-border-width) solid var(--ok-divider);
     color: var(--ok-text-primary);
     font-family: var(--ok-font-family);
     transition-property: background-color, box-shadow, margin, border-radius;
@@ -33,7 +33,7 @@
   :where([data-ok-accordion][open]) {
     margin: var(--_ok-gutter) 0;
     border-top-color: transparent;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-z8);
   }
@@ -50,7 +50,7 @@
     display: flex;
     align-items: center;
     gap: calc(var(--ok-spacing) * 4);
-    min-height: calc(var(--ok-spacing) * 14);
+    min-height: var(--ok-accordion-summary-height);
     box-sizing: border-box;
     padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4)
       calc(var(--ok-spacing) * 4);
@@ -103,8 +103,8 @@
   }
 
   :where([data-ok-accordion-summary]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-accordion-details]) {
@@ -128,7 +128,7 @@
   /* Outlined: one bordered list. */
   :where([data-ok-accordion][data-ok-variant="outlined"]) {
     margin: 0;
-    border: 1px solid var(--ok-divider);
+    border: var(--ok-border-width) solid var(--ok-divider);
     border-radius: 0;
     background-color: transparent;
     box-shadow: none;
@@ -143,20 +143,20 @@
 
   :where([data-ok-accordion][data-ok-variant="outlined"]:first-child) {
     border-top-color: var(--ok-divider);
-    border-start-start-radius: var(--ok-radius-md);
-    border-start-end-radius: var(--ok-radius-md);
+    border-start-start-radius: var(--ok-radius-control);
+    border-start-end-radius: var(--ok-radius-control);
   }
 
   :where([data-ok-accordion][data-ok-variant="outlined"]:last-child) {
-    border-end-start-radius: var(--ok-radius-md);
-    border-end-end-radius: var(--ok-radius-md);
+    border-end-start-radius: var(--ok-radius-control);
+    border-end-end-radius: var(--ok-radius-control);
   }
 
   /* Soft: separate filled items. */
   :where([data-ok-accordion][data-ok-variant="soft"]) {
     margin: 0 0 calc(var(--ok-spacing) * 2);
     border: 0;
-    border-radius: var(--ok-radius-xl);
+    border-radius: var(--ok-radius-surface);
     background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
     box-shadow: none;
   }

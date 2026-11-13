@@ -4,7 +4,15 @@
  * markup. Rows and bars are HTML (names, focus, hit testing); the grid, non-working days, today
  * line, project boundary and dependency arrows are one `aria-hidden` SVG behind the rows.
  */
+
 import { chartTextWidth } from "../chart/chart-layout.js";
+import { type IconData, iconTree } from "../icons/icon.js";
+import {
+  altArrowRightLinear,
+  downloadMinimalisticLinear,
+  magnifierZoomInLinear,
+  magnifierZoomOutLinear,
+} from "../icons/solar.js";
 import { ganttLongDate, ganttShortDate, ganttWeekday } from "./gantt-date.js";
 import {
   type GanttDependencyType,
@@ -199,22 +207,11 @@ const el = (
   ...(extra.text !== undefined ? { text: extra.text } : {}),
 });
 
-const ICON = { viewBox: "0 0 24 24", "aria-hidden": "true", focusable: "false" };
-const icon = (d: string) =>
-  el("svg", ICON, [
-    el("path", {
-      d,
-      fill: "none",
-      stroke: "currentColor",
-      "stroke-width": "2",
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-    }),
-  ]);
-const CHEVRON = "m9 6 6 6-6 6";
-const ZOOM_IN = "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4M8 11h6M11 8v6";
-const DOWNLOAD = "M12 4v11M7 10l5 5 5-5M5 20h14";
-const ZOOM_OUT = "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4M8 11h6";
+const icon = (data: IconData): GanttNode => iconTree(data);
+const CHEVRON = altArrowRightLinear;
+const ZOOM_IN = magnifierZoomInLinear;
+const DOWNLOAD = downloadMinimalisticLinear;
+const ZOOM_OUT = magnifierZoomOutLinear;
 
 /** Widths of the visible task-list columns (the name column fills `listWidth`). */
 export function ganttColumnWidths(columns: readonly GanttColumnKey[], listWidth: number): number[] {
@@ -725,7 +722,7 @@ export function renderGantt(model: GanttModel, options: GanttRenderOptions): Gan
   return { nodes, scale, rows, active };
 }
 
-const zoomButton = (direction: "in" | "out", label: string, d: string) =>
+const zoomButton = (direction: "in" | "out", label: string, d: IconData) =>
   el(
     "button",
     {

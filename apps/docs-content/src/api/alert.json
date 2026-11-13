@@ -1,6 +1,10 @@
 {
  "css": [
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -81,7 +85,7 @@
    "value": "#FFF5CC"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
   },
   {

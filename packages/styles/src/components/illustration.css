@@ -11,8 +11,8 @@
  * Modifiers: data-ok-color = primary (default) | secondary | info | success | warning | error
  *            data-ok-size  = width (the runtime / React write --_ok-illustration-size through CSSOM)
  *
- * The palette tones are read on the root itself, so a root inside a [data-ok-preset] or
- * [data-ok-theme] scope takes that scope's colors. Single :where() selectors in @layer components.
+ * The palette tones are read on the root itself, so a root inside a [data-ok-theme] scope (or one
+ * that overrides palette tokens) takes that scope's colors. Single :where() selectors in @layer components.
  */
 @reference "../theme.css";
 

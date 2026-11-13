@@ -6,6 +6,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },

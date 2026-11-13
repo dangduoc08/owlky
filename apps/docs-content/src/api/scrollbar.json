@@ -1,6 +1,18 @@
 {
  "css": [
   {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
    "name": "--ok-palette-grey-500-channel",
    "value": "145 158 171"
   },
@@ -15,11 +27,6 @@
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
-  },
-  {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
-   "name": "--ok-text-primary"
   }
  ],
  "entries": [

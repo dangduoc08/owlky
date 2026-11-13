@@ -16,7 +16,7 @@
 @theme inline {
   --font-sans: var(--ok-font-family);
   --font-mono: var(--ok-font-family-mono);
-  --font-display: var(--ok-font-family-secondary);
+  --font-heading: var(--ok-font-family-heading);
   --spacing: var(--ok-spacing);
 
   --color-primary: var(--ok-palette-primary-main);
@@ -86,6 +86,7 @@
   --color-neutral: var(--ok-bg-neutral);
   --color-divider: var(--ok-divider);
 
+  --radius-2xs: var(--ok-radius-2xs);
   --radius-xs: var(--ok-radius-xs);
   --radius-sm: var(--ok-radius-sm);
   --radius-md: var(--ok-radius-md);

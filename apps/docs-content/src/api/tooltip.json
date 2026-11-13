@@ -13,8 +13,8 @@
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
-   "name": "--ok-font-size-xs",
-   "value": "0.75rem"
+   "name": "--ok-font-size-2xs",
+   "value": "0.6875rem"
   },
   {
    "name": "--ok-font-weight-medium",
@@ -33,7 +33,7 @@
    "value": "#1C252E"
   },
   {
-   "name": "--ok-radius-sm",
+   "name": "--ok-radius-control-sm",
    "value": "6px"
   },
   {

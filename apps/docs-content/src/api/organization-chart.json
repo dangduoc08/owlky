@@ -10,6 +10,14 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
@@ -24,6 +32,22 @@
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-color-brand",
+   "value": "var(--ok-palette-primary-main)"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-family",
@@ -62,11 +86,15 @@
    "value": "#FFD666"
   },
   {
+   "name": "--ok-radius-2xl",
+   "value": "24px"
+  },
+  {
    "name": "--ok-radius-full",
    "value": "9999px"
   },
   {
-   "name": "--ok-radius-lg",
+   "name": "--ok-radius-surface-md",
    "value": "12px"
   },
   {

@@ -22,7 +22,7 @@
     --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
     --_ok-dark: var(--ok-c-hover, var(--ok-palette-grey-700));
     --_ok-text: var(--ok-c-text, var(--ok-text-primary));
-    --_ok-height: calc(var(--ok-spacing) * 8);
+    --_ok-height: var(--ok-chip-height);
     --_ok-pad: calc(var(--ok-spacing) * 3);
     --_ok-media: calc(var(--ok-spacing) * 6);
     --_ok-media-start: calc(var(--ok-spacing) * 1.25);
@@ -35,10 +35,12 @@
     box-sizing: border-box;
     max-width: 100%;
     height: var(--_ok-height);
-    border-radius: calc(var(--ok-radius-md) * 1.25);
+    border-radius: var(--ok-radius-chip);
     background-color: var(--_ok-main);
     color: var(--_ok-contrast);
-    font-family: var(--ok-font-family);
+    font-family: var(--ok-font-family-label);
+    letter-spacing: var(--ok-label-letter-spacing);
+    text-transform: var(--ok-label-text-transform);
     font-size: var(--ok-font-size-sm);
     font-weight: var(--ok-font-weight-medium);
     line-height: 1.5;
@@ -140,21 +142,21 @@
 
   /* Sizes */
   :where([data-ok-chip][data-ok-size="small"]) {
-    --_ok-height: calc(var(--ok-spacing) * 6);
+    --_ok-height: var(--ok-chip-height-sm);
     --_ok-pad: calc(var(--ok-spacing) * 2);
     --_ok-media: calc(var(--ok-spacing) * 4.5);
     --_ok-media-start: var(--ok-spacing);
     --_ok-media-end: calc(var(--ok-spacing) * -1);
     --_ok-delete: calc(var(--ok-spacing) * 4);
 
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
   }
 
   /* Variants */
   :where([data-ok-chip][data-ok-variant="outlined"]) {
     --_ok-pad: calc(var(--ok-spacing) * 3 - 1px);
 
-    border: 1px solid var(--_ok-main);
+    border: var(--ok-border-width) solid var(--_ok-main);
     background-color: transparent;
     color: var(--_ok-main);
   }
@@ -208,12 +210,12 @@
 
   /* Focus */
   :where([data-ok-chip]:has(> :is(button, a)[data-ok-chip-action]:focus-visible)) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-chip-delete]:focus-visible) {
-    outline: 2px solid currentColor;
+    outline: var(--ok-focus-ring-width) solid currentColor;
     outline-offset: 0;
     opacity: 1;
   }

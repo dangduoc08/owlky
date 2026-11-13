@@ -1,4 +1,4 @@
-import { defaultTheme, fontFamilyPresetNames, typographyVariants } from "@owlky/tokens";
+import { defaultTheme, typographyVariants } from "@owlky/tokens";
 
 const { breakpoints } = defaultTheme;
 
@@ -36,7 +36,7 @@ The stories in the sidebar show each variant in detail. To set a variant on an e
     id: "tokens",
     title: "Token reference",
     body: `- **Variants:** \`--ok-typography-<variant>-<property>\`, where the property is \`font-family\`, \`font-size\`, \`font-weight\`, \`line-height\` or \`text-transform\`. For example, \`--ok-typography-h3-font-size\`.
-- **Font families:** \`--ok-font-family\` for text, \`--ok-font-family-secondary\` for display headings and \`--ok-font-family-mono\` for code.
+- **Font families:** \`--ok-font-family\` for text, \`--ok-font-family-heading\` for headings and \`--ok-font-family-mono\` for code.
 - **Font weights:** \`--ok-font-weight-regular\`, \`--ok-font-weight-medium\`, \`--ok-font-weight-semibold\`, \`--ok-font-weight-bold\` and \`--ok-font-weight-extrabold\`.
 - **Small sizes for components:** \`--ok-font-size-xs\` to \`--ok-font-size-xl\`.`,
   },
@@ -76,14 +76,14 @@ export function PageTitle() {
   {
     id: "tailwind",
     title: "Use Tailwind CSS utilities",
-    body: "With the Owlky theme for Tailwind CSS v4, each variant from `h1` to `caption` is a `text-<variant>` utility that sets the size, weight and line height. Add `font-display` for the display font. The `overline` and `button` variants have no utility: use their CSS variables instead.",
+    body: "With the Owlky theme for Tailwind CSS v4, each variant from `h1` to `caption` is a `text-<variant>` utility that sets the size, weight and line height. Add `font-heading` for the heading font. The `overline` and `button` variants have no utility: use their CSS variables instead.",
     html: `/* In your main CSS file */
 @import "tailwindcss";
 @import "@owlky/styles/owlky.css";
 @import "@owlky/styles/theme.css";
 
 <!-- In your HTML -->
-<h1 class="font-display text-h3">Monthly report</h1>
+<h1 class="font-heading text-h3">Monthly report</h1>
 <p class="text-body2 text-text-secondary">Updated 5 minutes ago</p>`,
     react: `// Set up Tailwind once, in your main CSS file:
 //   @import "tailwindcss";
@@ -93,7 +93,7 @@ export function PageTitle() {
 export function ReportHeading() {
   return (
     <>
-      <h1 className="font-display text-h3">Monthly report</h1>
+      <h1 className="font-heading text-h3">Monthly report</h1>
       <p className="text-body2 text-text-secondary">Updated 5 minutes ago</p>
     </>
   );
@@ -107,17 +107,24 @@ export function ReportHeading() {
   {
     id: "fonts",
     title: "Change the font and text size",
-    body: `To use another font, set \`data-ok-font\` to ${codeList(fontFamilyPresetNames)}. To make all text larger or smaller, change the root font size: every size is in \`rem\`. Load the fonts yourself, for example from Fontsource. The **Settings** page explains both options.`,
-    html: `<html data-ok-font="inter" style="font-size: 18px">
+    body: "To use another font, set `--ok-font-family` for text and `--ok-font-family-heading` for headings in your CSS. Load the fonts yourself, for example from Fontsource. To make all text larger or smaller, change the root font size: every size is in `rem`. The **Settings** page explains both options.",
+    html: `<html style="font-size: 18px">
+  <head>
+    <style>
+      :root {
+        --ok-font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+      }
+    </style>
+  </head>
   <body>
     <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
     <p data-ok-typography data-ok-variant="body1">Every size follows the root font size.</p>
   </body>
 </html>`,
-    react: `import "@fontsource-variable/inter";
-import { applyThemeSettings } from "@owlky/react";
+    react: `import { applyThemeSettings } from "@owlky/react";
 
-applyThemeSettings({ font: "inter", fontSize: 18 });`,
+// In your CSS: :root { --ok-font-family: "Inter", sans-serif; }
+applyThemeSettings({ fontSize: 18 });`,
   },
   {
     id: "accessibility",
@@ -159,7 +166,7 @@ function CssPreview() {
 function TailwindPreview() {
   return (
     <Preview className="flex-col items-start!">
-      <h3 className="m-0 font-display text-h3">Monthly report</h3>
+      <h3 className="m-0 font-heading text-h3">Monthly report</h3>
       <p className="m-0 text-body2 text-text-secondary">Updated 5 minutes ago</p>
     </Preview>
   );
