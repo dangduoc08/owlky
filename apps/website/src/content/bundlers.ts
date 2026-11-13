@@ -161,7 +161,7 @@ if (document.querySelector("[data-ok-data-grid]")) {
     title: "Add the stylesheets",
     body: `\`@owlky/styles/owlky.css\` holds the design tokens and every component. Import it once, in your app's entry file or root layout. Every rule has zero specificity, so your own styles always win.
 
-To ship less CSS, import the tokens and then the files of the components you use, from \`@owlky/styles/components/\`. Keep the order of the **Import** tables: some components restyle the components they compose, so a component's file comes after the files of the components inside it. For example, a button's loading spinner is a circular progress, so \`button.css\` comes after \`circular-progress.css\`.`,
+To ship less CSS, import the tokens, then \`components/icon.css\`, which every component's icons use, and then the files of the components you use, from \`@owlky/styles/components/\`. Keep the order of the **Import** tables: some components restyle the components they compose, so a component's file comes after the files of the components inside it. For example, a button's loading spinner is a circular progress, so \`button.css\` comes after \`circular-progress.css\`.`,
     code: [
       {
         label: "styles.ts",
@@ -176,6 +176,8 @@ import "@owlky/styles/owlky.css";`,
 import "@owlky/styles/tokens.css";
 import "@owlky/styles/components/paper.css";
 import "@owlky/styles/components/typography.css";
+// The stroke of component icons, shared by every component
+import "@owlky/styles/components/icon.css";
 import "@owlky/styles/components/circular-progress.css";
 import "@owlky/styles/components/button.css";
 import "@owlky/styles/components/dialog.css";`,

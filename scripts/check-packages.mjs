@@ -14,7 +14,7 @@ for (const name of packages) {
   // attw only understands JS/TS modules: skip asset exports (CSS, the IIFE bundle, JSON, globs).
   const { exports } = JSON.parse(readFileSync(`${dir}/package.json`, "utf8"));
   const keys = Object.keys(exports);
-  const assets = keys.filter((key) => /\.(css|js|json|html)$|\*/.test(key));
+  const assets = keys.filter((key) => /\.(css|m?js|json|html)$|\*/.test(key));
   if (assets.length === keys.length) continue;
   run("pnpm", [
     "exec",

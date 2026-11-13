@@ -447,9 +447,9 @@ function ImportTable({ title, imports }: { title: string; imports: ApiImports })
       ) : null}
       {css?.length ? (
         <ImportRow name="css" label="CSS" values={css}>
-          The component's own styles. Load them after <Code>@owlky/styles/tokens.css</Code> and the
-          styles of the components it composes. <Code>@owlky/styles/owlky.css</Code> holds every
-          component.
+          The component's own styles. Load them after <Code>@owlky/styles/tokens.css</Code>,{" "}
+          <Code>@owlky/styles/components/icon.css</Code> and the styles of the components it
+          composes. <Code>@owlky/styles/owlky.css</Code> holds every component.
         </ImportRow>
       ) : null}
       <ImportRow
