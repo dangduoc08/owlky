@@ -228,8 +228,8 @@ export function Bento() {
           id="themes"
           tag="Theming"
           icon={<PaletteIcon />}
-          title="Themes and presets"
-          text="Every color, radius and shadow is a CSS variable. Pick a primary color to recolor this page, or turn on dark mode."
+          title="Themes and tokens"
+          text="Every color, radius and shadow is a CSS variable, so your brand is a few overrides. Turn on dark mode to see this page change."
           demo={
             <div data-landing-inset="" className="p-6">
               <ThemeControls />

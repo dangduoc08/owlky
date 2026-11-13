@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  closeLinear,
   createFieldApi,
   createFieldController,
   type DateRules,
@@ -59,6 +60,7 @@ import {
 import { IconButton } from "../icon-button/icon-button.js";
 import { usePickerLocalization } from "../localization-provider/localization-provider.js";
 import { InputAdornment } from "../text-field/text-field.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -179,17 +181,7 @@ export const ruleAttributes = (props: DateValidationProps): Record<string, strin
 
 /** Clear icon (decorative). */
 function ClearIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="M18 6 6 18M6 6l12 12"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <Icon icon={closeLinear} />;
 }
 
 export interface DateFieldProps

@@ -31,7 +31,7 @@
   :where([data-ok-upload]) {
     --_ok-zone-bg: rgb(var(--ok-palette-grey-500-channel) / 0.08);
     --_ok-zone-border: rgb(var(--ok-palette-grey-500-channel) / 0.2);
-    --_ok-thumb-radius: calc(var(--ok-radius-md) * 1.25);
+    --_ok-thumb-radius: var(--ok-radius-surface-sm);
 
     display: flex;
     flex-direction: column;
@@ -52,8 +52,8 @@
     box-sizing: border-box;
     min-width: 0;
     padding: calc(var(--ok-spacing) * 6);
-    border: 1px dashed var(--_ok-zone-border);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) dashed var(--_ok-zone-border);
+    border-radius: var(--ok-radius-control);
     background-color: var(--_ok-zone-bg);
     text-align: center;
     transition: border-color var(--ok-duration-shorter) var(--ok-easing-standard);
@@ -79,8 +79,8 @@
   }
 
   :where([data-ok-upload-zone]:has(> [data-ok-upload-input]:focus-visible)) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Hover and drag strengthen the border (the reference dims the zone, which lowers text contrast). */
@@ -141,7 +141,7 @@
     justify-content: center;
     gap: var(--ok-spacing);
     overflow: hidden;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
   }
 
@@ -217,8 +217,8 @@
   :where([data-ok-upload-rejections]) {
     margin-top: calc(var(--ok-spacing) * 6);
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
-    border: 1px solid rgb(var(--ok-palette-error-main-channel) / 0.24);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-error-main-channel) / 0.24);
+    border-radius: var(--ok-radius-control);
     background-color: rgb(var(--ok-palette-error-main-channel) / 0.08);
     text-align: start;
   }
@@ -271,8 +271,8 @@
     min-width: 0;
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2)
       calc(var(--ok-spacing) * 3);
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
   }
 
@@ -387,12 +387,6 @@
     display: block;
     width: 100%;
     height: 100%;
-    fill: currentColor;
-  }
-
-  :where([data-ok-upload-file] path + path) {
-    fill: var(--ok-palette-common-white);
-    fill-opacity: 0.4;
   }
 
   :where([data-ok-upload-file-ext]) {
@@ -400,7 +394,7 @@
     right: 0;
     bottom: 18%;
     left: 0;
-    color: var(--ok-palette-common-white);
+    color: var(--_ok-file);
     font-size: calc(var(--ok-spacing) * 2);
     font-weight: var(--ok-font-weight-bold);
     line-height: 1;

@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  addLinear,
   createNumberFieldController,
   formatNumberInput,
+  minusLinear,
   type NumberFieldChangeDetails,
   numberFieldAttributes,
   numberFieldSettings,
@@ -11,21 +13,12 @@ import {
 } from "@owlky/core";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { IconButton } from "../icon-button/icon-button.js";
+import { Icon } from "../utils/icon.js";
 import { InputAdornment, type TextFieldProps, useFieldMarkup } from "./text-field.js";
 
 /** The minus and plus icons (decorative, same SVG as the HTML snippets). */
 function StepIcon({ plus }: { plus: boolean }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d={plus ? "M5 12h14M12 5v14" : "M5 12h14"}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <Icon icon={plus ? addLinear : minusLinear} />;
 }
 
 export interface NumberFieldProps

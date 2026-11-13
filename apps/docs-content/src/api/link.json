@@ -5,13 +5,20 @@
    "name": "--ok-c-channel"
   },
   {
-   "name": "--ok-radius-xs",
-   "value": "4px"
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
-   "name": "--ok-text-primary"
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-radius-inner",
+   "value": "4px"
   }
  ],
  "entries": [
@@ -186,6 +193,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/link",
+  "css": [
+   "@owlky/styles/components/link.css"
+  ],
+  "react": "@owlky/react/link"
+ },
  "name": "link",
  "title": "Link"
 }

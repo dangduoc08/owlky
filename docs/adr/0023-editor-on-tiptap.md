@@ -2,6 +2,8 @@
 
 **Status:** Accepted (2026-11-08).
 
+**Note (2026-11-13, ADR-0068 S6):** `owlky-editor.js` was removed before 0.1.0. On a CDN page, `owlky.js` loads this component from its lazy module (`modules/editor.js`) when the page holds one; the text below keeps the original decision.
+
 ## Context
 The reference's "Editor" page is a rich text editor built on Tiptap (ProseMirror). A
 contenteditable editor (schema, transactions, selection, input handling, undo history, paste

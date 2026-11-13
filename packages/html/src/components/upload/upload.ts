@@ -1,10 +1,11 @@
 import {
+  createIcon,
   createId,
   createUploadController,
+  fileLinear,
   formatUploadSize,
   readBehavior,
   readNumber,
-  UPLOAD_FILE_ICON,
   type UploadController,
   type UploadDragState,
   type UploadErrorMessage,
@@ -67,7 +68,6 @@ export interface UploadInstance extends ComponentInstance {
 }
 
 const { options: spec } = uploadOptions;
-const SVG = "http://www.w3.org/2000/svg";
 
 /**
  * Upload — spec: specs/components/upload.md (ADR-0037)
@@ -149,16 +149,7 @@ export const upload = defineComponent<UploadInstance, UploadEvents>({
       box.setAttribute("data-ok-upload-file", "");
       box.setAttribute("data-ok-kind", uploadFileKind(file));
       box.setAttribute("aria-hidden", "true");
-      const svg = doc.createElementNS(SVG, "svg");
-      svg.setAttribute("viewBox", UPLOAD_FILE_ICON.viewBox);
-      svg.setAttribute("aria-hidden", "true");
-      svg.setAttribute("focusable", "false");
-      for (const d of UPLOAD_FILE_ICON.paths) {
-        const path = doc.createElementNS(SVG, "path");
-        path.setAttribute("d", d);
-        svg.append(path);
-      }
-      box.append(svg);
+      box.append(createIcon(fileLinear, {}, doc));
       const label = uploadFileLabel(file.name);
       if (label) {
         const ext = doc.createElement("span");

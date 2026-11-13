@@ -31,6 +31,9 @@ const data = {};
 const tables = {};
 const stories = { ...phase6Stories, ...moreStories };
 const files = { ...PHASE6_FILES, ...MORE_FILES };
+// The grid's Chart loads on first use (ADR-0068 S5): a first render starts the import, so the
+// second one renders the Chart (the snippet keeps its root and data table).
+const render = () => {
 for (const [story, groups] of Object.entries(stories))
   groups.forEach((group, index) => {
     const name = story + "-" + files[story][index][1];
@@ -48,6 +51,10 @@ for (const [story, groups] of Object.entries(stories))
         }),
       );
   });
+};
+render();
+await new Promise((resolve) => setTimeout(resolve, 0));
+render();
 export { html, data, tables };
 `;
 const result = await build({

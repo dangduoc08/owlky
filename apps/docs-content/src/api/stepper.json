@@ -10,8 +10,28 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-heavy",
+   "value": "3px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-family",
@@ -71,12 +91,16 @@
    "value": "#FFAB00"
   },
   {
-   "name": "--ok-radius-full",
-   "value": "9999px"
+   "name": "--ok-radius-2xs",
+   "value": "2px"
   },
   {
-   "name": "--ok-radius-sm",
+   "name": "--ok-radius-control-sm",
    "value": "6px"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
   },
   {
    "name": "--ok-shadow-z8",
@@ -719,6 +743,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/stepper",
+  "css": [
+   "@owlky/styles/components/stepper.css"
+  ],
+  "html": "@owlky/html/stepper",
+  "react": "@owlky/react/stepper"
+ },
  "name": "stepper",
  "title": "Stepper"
 }

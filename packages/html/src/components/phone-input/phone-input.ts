@@ -1,4 +1,4 @@
-import { phoneInputOptions, readBehavior } from "@owlky/core";
+import { createIcon, globalLinear, phoneInputOptions, readBehavior } from "@owlky/core";
 import {
   createPhoneInputController,
   type PhoneCountry,
@@ -56,7 +56,6 @@ export interface CreatePhoneInputOptions {
 const CONTROL = ":scope > [data-ok-text-field-control]";
 const INPUT = `${CONTROL} > input[data-ok-text-field-input]`;
 const SELECT = `${CONTROL} > [data-ok-phone-input-country] > [data-ok-select]`;
-const SVG = "http://www.w3.org/2000/svg";
 const o = phoneInputOptions.options;
 /** Root attributes that change how digits are read: the digits are derived again. */
 const SETTINGS = [
@@ -74,26 +73,7 @@ const set = (element: Element, attributes: Record<string, string>) => {
 
 /** The globe of the International option, as React renders it. */
 function globe(document: Document): SVGSVGElement {
-  const svg = document.createElementNS(SVG, "svg");
-  set(svg, { "aria-hidden": "true", viewBox: "0 0 24 24" });
-  const circle = document.createElementNS(SVG, "circle");
-  set(circle, {
-    cx: "12",
-    cy: "12",
-    r: "9",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-width": "1.5",
-  });
-  const path = document.createElementNS(SVG, "path");
-  set(path, {
-    d: "M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-width": "1.5",
-  });
-  svg.append(circle, path);
-  return svg;
+  return createIcon(globalLinear, {}, document);
 }
 
 /** One country option: a MenuItem with a ListItemIcon (the flag) and a ListItemText. */
@@ -138,7 +118,7 @@ function option(
 
 /**
  * Phone input — spec: specs/components/phone-input.md (ADR-0061). Opt-in: import
- * `@owlky/html/phone`, or load `owlky-phone.js` after `owlky.js` (it holds the phone metadata).
+ * `@owlky/html/phone` (it holds the phone metadata); on a CDN page, `owlky.js` loads it (ADR-0068).
  * `createPhoneInput({ metadata, labels })` uses other metadata or country names.
  *
  * Markup:  <div data-ok-text-field data-ok-variant="outlined" … data-ok-phone-input data-ok-default-country="AU">

@@ -9,6 +9,10 @@
    "value": "color-mix(in srgb, #919EAB 8%, transparent)"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -23,6 +27,22 @@
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-icon-stroke",
+   "value": "1.5"
   },
   {
    "name": "--ok-palette-common-white",
@@ -45,12 +65,12 @@
    "value": "0 167 111"
   },
   {
-   "name": "--ok-radius-full",
-   "value": "9999px"
+   "name": "--ok-radius-control-sm",
+   "value": "6px"
   },
   {
-   "name": "--ok-radius-sm",
-   "value": "6px"
+   "name": "--ok-radius-full",
+   "value": "9999px"
   },
   {
    "name": "--ok-shadow-z8",
@@ -147,6 +167,14 @@
       ],
       "kind": "part",
       "name": "data-ok-radio-input"
+     },
+     {
+      "description": "The default icons' ring, drawn by the stylesheet (with a dot when checked).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-radio-ring"
      },
      {
       "description": "A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while selected.",
@@ -279,6 +307,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/radio",
+  "css": [
+   "@owlky/styles/components/radio.css"
+  ],
+  "html": "@owlky/html/radio",
+  "react": "@owlky/react/radio"
+ },
  "name": "radio",
  "title": "Radio"
 }

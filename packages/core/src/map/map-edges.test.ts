@@ -1,7 +1,7 @@
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { cleanupDom, mapFixtureStyle, mount, nextEvent, nextFrame } from "../test-utils.js";
-import { mapIcons, mapLabels, setMapWorkerUrl } from "./index.js";
+import { mapCompass, mapIcons, mapLabels, setMapWorkerUrl } from "./index.js";
 import { createMapController, type MapController } from "./map.js";
 
 beforeAll(() => setMapWorkerUrl(workerUrl));
@@ -34,8 +34,9 @@ const map = (c: MapController) => c.map as NonNullable<MapController["map"]>;
 
 describe("map controller edge cases", () => {
   it("ships icons and labels for every control", () => {
-    expect(Object.keys(mapIcons)).toContain("compassNorth");
-    for (const path of Object.values(mapIcons)) expect(path).toMatch(/^M/);
+    expect(Object.keys(mapIcons)).toContain("pin");
+    for (const icon of Object.values(mapIcons)) expect(icon.nodes.length).toBeGreaterThan(0);
+    for (const path of Object.values(mapCompass)) expect(path).toMatch(/^M/);
     expect(mapLabels.fallback).toMatch(/WebGL/);
   });
 

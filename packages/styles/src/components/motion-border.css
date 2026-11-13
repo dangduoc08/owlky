@@ -41,7 +41,7 @@
     box-sizing: border-box;
     width: fit-content;
     border: var(--_ok-motion-border-width, 2px) solid transparent;
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background:
       linear-gradient(var(--_ok-motion-border-fill, var(--ok-bg-paper)) 0 0) padding-box,
       conic-gradient(from var(--_ok-motion-border-angle), var(--_ok-motion-border-colors))

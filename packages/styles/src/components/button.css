@@ -30,8 +30,8 @@
     --_ok-shadow: var(--ok-c-shadow, var(--ok-shadow-z8));
     --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
     --_ok-outline-alpha: 0.32;
-    --_ok-height: calc(var(--ok-spacing) * 9);
-    --_ok-padding-x: calc(var(--ok-spacing) * 3);
+    --_ok-height: var(--ok-control-height-md);
+    --_ok-padding-x: var(--ok-control-padding-x-md);
     --_ok-font-size: var(--ok-font-size-md);
     --_ok-icon-size: calc(var(--ok-spacing) * 5);
 
@@ -46,11 +46,13 @@
     min-height: var(--_ok-height);
     margin: 0;
     padding: 0 var(--_ok-padding-x);
-    border: 1px solid transparent;
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid transparent;
+    border-radius: var(--ok-radius-control);
     background-color: transparent;
     color: var(--_ok-main);
-    font-family: var(--ok-font-family);
+    font-family: var(--ok-font-family-label);
+    letter-spacing: var(--ok-label-letter-spacing);
+    text-transform: var(--ok-label-text-transform);
     font-size: var(--_ok-font-size);
     font-weight: var(--ok-typography-button-font-weight);
     line-height: var(--ok-typography-button-line-height);
@@ -107,28 +109,28 @@
     box-sizing: border-box;
     width: calc(var(--ok-spacing) * 4);
     height: calc(var(--ok-spacing) * 4);
-    border: 2px solid currentColor;
+    border: var(--ok-border-width-strong) solid currentColor;
     border-inline-end-color: transparent;
     border-radius: var(--ok-radius-full);
-    animation: mt-button-spin 0.8s linear infinite;
+    animation: mt-button-spin var(--ok-duration-spin) linear infinite;
   }
 
   /* Sizes */
   :where([data-ok-button][data-ok-size="sm"]) {
-    --_ok-height: calc(var(--ok-spacing) * 7.5);
-    --_ok-padding-x: calc(var(--ok-spacing) * 2);
+    --_ok-height: var(--ok-control-height-sm);
+    --_ok-padding-x: var(--ok-control-padding-x-sm);
     --_ok-font-size: var(--ok-font-size-sm);
   }
 
   :where([data-ok-button][data-ok-size="lg"]) {
-    --_ok-height: calc(var(--ok-spacing) * 12);
-    --_ok-padding-x: calc(var(--ok-spacing) * 4);
+    --_ok-height: var(--ok-control-height-lg);
+    --_ok-padding-x: var(--ok-control-padding-x-lg);
     --_ok-font-size: var(--ok-font-size-lg);
   }
 
   :where([data-ok-button][data-ok-size="xl"]) {
-    --_ok-height: calc(var(--ok-spacing) * 14);
-    --_ok-padding-x: calc(var(--ok-spacing) * 4);
+    --_ok-height: var(--ok-control-height-xl);
+    --_ok-padding-x: var(--ok-control-padding-x-lg);
     --_ok-font-size: var(--ok-font-size-lg);
   }
 
@@ -187,7 +189,7 @@
 
     :where([data-ok-button][data-ok-variant="outlined"]:hover) {
       border-color: currentColor;
-      box-shadow: 0 0 0 0.75px currentColor;
+      box-shadow: 0 0 0 var(--ok-line-width-2xs) currentColor;
     }
 
     :where([data-ok-button][data-ok-variant="soft"]:hover) {
@@ -196,8 +198,8 @@
   }
 
   :where([data-ok-button]:focus-visible) {
-    outline: 2px solid var(--_ok-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--_ok-main);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Disabled (also used while loading) — after hover, so it wins. */
@@ -271,7 +273,7 @@
     }
 
     :where([data-ok-button-spinner]:not([data-ok-circular-progress])) {
-      animation-duration: 2.4s;
+      animation-duration: var(--ok-duration-spin-reduced);
     }
   }
 }

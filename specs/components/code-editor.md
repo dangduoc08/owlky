@@ -83,8 +83,8 @@ API mapping: see "Upstream API mapping" below.
 ## Behavior
 - Loading: `loader.init()` once per page; `beforeMount(monaco)` then the editor; `onMount(editor,
   monaco)`; status `ready`. Monaco is imported from the `monaco-editor` package (bundlers) or from
-  `paths.vs` (`owlky-code-editor.js`: the `monaco/` folder next to it, or the script's
-  `data-ok-monaco-path`).
+  `paths.vs` (the CDN's lazy `modules/code-editor.js`: the `monaco/` folder next to `owlky.js`,
+  or a script's `data-ok-monaco-path`).
 - Models (`@monaco-editor/react`'s rules): the first model is `path ?? defaultPath` (created with
   `value ?? defaultValue` and `defaultLanguage ?? language` if it doesn't exist). A new `path`
   switches to that model (created on first use), saving the old view state and restoring the
@@ -100,8 +100,8 @@ API mapping: see "Upstream API mapping" below.
   markers change (languages with workers: JSON, CSS, HTML, TypeScript / JavaScript).
 - Themes: `auto` → `owlky-light` / `owlky-dark` built from the scope's tokens (`--ok-bg-paper`,
   `--ok-text-*`, palette `-text` tones for syntax, `primary-main` cursor and focus); Monaco has one
-  theme per page: the editor focused, mounted or re-themed last picks it. `data-ok-theme`,
-  `data-ok-preset` and system scheme changes re-apply it. Default font `--ok-font-family-mono`.
+  theme per page: the editor focused, mounted or re-themed last picks it. `data-ok-theme` and
+  system scheme changes re-apply it. Default font `--ok-font-family-mono`.
 - Size: `width` / `height` (default 100%; at least 300px when no height) through
   `--_ok-code-editor-width|height`; Monaco follows its container (`automaticLayout`).
 
@@ -124,7 +124,7 @@ HTML `ok:code-editor:beforemount` (`{ monaco }`), `:mount` (`{ editor, monaco }`
 value, setValue(value), updateOptions(options), focus(), editor, monaco, controller }`. Diff
 editor: `ok:diff-editor:beforemount | mount | error`; instance `{ status, original, modified,
 setOriginal, setModified, updateOptions, editor, monaco, controller }`. Registration is opt-in:
-`@owlky/html/code-editor` (exports `loader`), `owlky-code-editor.js`, or
+`@owlky/html/code-editor` (exports `loader`), the CDN's lazy module (ADR-0068), or
 `createCodeEditor({ beforeMount, onMount, overrideServices })` / `createDiffEditor(…)`.
 React: `CodeEditor`, `DiffEditor`, `useMonaco()`, `loader`.
 

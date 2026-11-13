@@ -2,6 +2,8 @@
 
 **Status:** Accepted (2026-11-11, roadmap 4.25; auto-approved under the approved Phase 4 plan).
 
+**Note (2026-11-13, ADR-0068 S6):** `owlky-phone.js` was removed before 0.1.0. On a CDN page, `owlky.js` loads this component from its lazy module (`modules/phone-input.js`) when the page holds one; the text below keeps the original decision.
+
 ## Context
 The reference's Utilities page has a "Phone input" section: a text field with a country select
 in its start adornment (auto-detected from the typed number, a default country, a fixed country,

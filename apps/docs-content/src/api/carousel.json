@@ -11,6 +11,14 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
    "name": "--ok-c-channel"
   },
@@ -37,6 +45,22 @@
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-family",
@@ -67,16 +91,16 @@
    "value": "#00A76F"
   },
   {
+   "name": "--ok-radius-control",
+   "value": "8px"
+  },
+  {
    "name": "--ok-radius-full",
    "value": "9999px"
   },
   {
-   "name": "--ok-radius-lg",
+   "name": "--ok-radius-surface-md",
    "value": "12px"
-  },
-  {
-   "name": "--ok-radius-md",
-   "value": "8px"
   },
   {
    "name": "--ok-spacing",
@@ -1496,6 +1520,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "carousel",
+  "core": "@owlky/core/carousel",
+  "css": [
+   "@owlky/styles/components/carousel.css"
+  ],
+  "html": "@owlky/html/carousel",
+  "react": "@owlky/react/carousel"
+ },
  "name": "carousel",
  "title": "Carousel",
  "types": [

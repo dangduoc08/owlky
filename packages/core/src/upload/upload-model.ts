@@ -4,18 +4,6 @@
  * byte formatting. No DOM access except reading `File` fields.
  */
 
-/**
- * The file type icon drawn for files without a thumbnail (React renders it, the HTML runtime
- * builds the same SVG with DOM methods): a page and its folded corner.
- */
-export const UPLOAD_FILE_ICON = {
-  viewBox: "0 0 32 32",
-  paths: [
-    "M8 2h11l9 9v17a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z",
-    "M19 2v7a2 2 0 0 0 2 2h7Z",
-  ],
-} as const;
-
 /** A MIME type (`image/png`, `image/*`) mapped to file extensions (react-dropzone's `accept`). */
 export interface UploadAcceptMap {
   [mime: string]: string | readonly string[];

@@ -14,7 +14,7 @@ export async function openStory(
   theme: "light" | "dark" = "light",
   /** Storybook URL args, e.g. `size:lg;disabled:!true`. */
   args = "",
-  /** Extra Storybook globals, e.g. `preset:cyan;fontSize:20` (ADR-0017 toolbar). */
+  /** Extra Storybook globals, e.g. `fontSize:20` (the toolbar's theme settings). */
   globals = "",
 ) {
   // Components animate color changes; reduced motion (honored by the CSS) makes reads instant.

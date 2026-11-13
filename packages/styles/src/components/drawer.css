@@ -138,7 +138,7 @@
     max-height: none;
     margin: 0;
     box-shadow: none;
-    border-right: 1px solid var(--ok-divider);
+    border-right: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where(
@@ -147,7 +147,7 @@
     [data-ok-drawer][data-ok-variant="permanent"][data-ok-anchor="right"] > [data-ok-drawer-content]
   ) {
     border-right: 0;
-    border-left: 1px solid var(--ok-divider);
+    border-left: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where(
@@ -155,7 +155,7 @@
     [data-ok-drawer][data-ok-variant="permanent"][data-ok-anchor="top"] > [data-ok-drawer-content]
   ) {
     border-right: 0;
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where(
@@ -165,7 +165,7 @@
       > [data-ok-drawer-content]
   ) {
     border-right: 0;
-    border-top: 1px solid var(--ok-divider);
+    border-top: var(--ok-border-width) solid var(--ok-divider);
   }
 
   /* Enter: slide in from the anchored edge, fade the backdrop in. */

@@ -1,11 +1,8 @@
 import "@fontsource-variable/public-sans";
-import "@fontsource-variable/inter";
-import "@fontsource-variable/dm-sans";
-import "@fontsource-variable/nunito-sans";
 import "@fontsource/barlow/700.css";
 import "@fontsource/barlow/800.css";
 import "./preview.css";
-import { applyThemeSettings, fontFamilyPresetNames, fontSizeRange } from "@owlky/core";
+import { applyThemeSettings, fontSizeRange } from "@owlky/core";
 import { components, getRuntime, illustration } from "@owlky/html";
 import type { Preview } from "@storybook/react-vite";
 import { trackFrameworkGlobal } from "../src/helpers/framework-global.js";
@@ -19,45 +16,23 @@ getRuntime()
   .start();
 trackFrameworkGlobal();
 
-const label = (value: string) =>
-  value.replace(
-    /(^|-)([a-z])/g,
-    (_, dash: string, c: string) => `${dash ? " " : ""}${c.toUpperCase()}`,
-  );
-
 const preview: Preview = {
-  // Theme and theme settings (ADR-0017), applied to <html> like an app would. Toolbar: Theme,
-  // Preset and Font size are custom tools (.storybook/toolbar.tsx); Font is a default menu.
+  // Theme and theme settings (ADR-0070), applied to <html> like an app would. Toolbar: Theme and
+  // Font size are custom tools (.storybook/toolbar.tsx).
   globalTypes: {
     framework: { description: "Implementation shown by component stories (ADR-0018)" },
     theme: { description: "Color scheme (data-ok-theme)" },
-    preset: { description: "Primary color preset (data-ok-preset)" },
-    font: {
-      description: "Font family (data-ok-font)",
-      toolbar: {
-        title: "Font",
-        icon: "paragraph",
-        items: fontFamilyPresetNames.map((value) => ({ value, title: label(value) })),
-        dynamicTitle: true,
-      },
-    },
     fontSize: { description: "Root font size (rem scale)" },
   },
   initialGlobals: {
     framework: DEFAULT_FRAMEWORK,
     theme: "light",
-    preset: "default",
-    font: "public-sans",
     fontSize: String(fontSizeRange.default),
   },
   decorators: [
     (Story, { globals }) => {
       document.documentElement.dataset["okTheme"] = globals["theme"] === "dark" ? "dark" : "light";
-      applyThemeSettings({
-        preset: globals["preset"],
-        font: globals["font"],
-        fontSize: Number(globals["fontSize"]),
-      });
+      applyThemeSettings({ fontSize: Number(globals["fontSize"]) });
       return <Story />;
     },
   ],

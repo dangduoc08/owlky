@@ -205,7 +205,8 @@ editor, getJSON(), getText() }`. Tiptap events: `ok:editor:beforecreate` (no det
 Core: `EditorState.textTransform` (value at the selection), `run("textTransform", { textTransform:
 "uppercase" | "lowercase" | "capitalize" | null })`, `TextTransform` (the mark),
 `editorTextTransforms`, `readTextTransform`, `holdEditorFullscreen(root)`.
-Registration is opt-in: `@owlky/html/editor`, `owlky-editor.js`, or `createEditor({ highlighter })`.
+Registration is opt-in: `@owlky/html/editor`, the CDN's lazy module (ADR-0068), or
+`createEditor({ highlighter })`.
 React: `onChange(html)`, `onFullscreenChange(fullscreen)`, `editorRef`, `onBeforeCreate`,
 `onCreate`, `onEditorFocus`, `onEditorBlur`, `onSelectionUpdate`, `onTransaction`,
 `onEditorPaste`, `onEditorDrop`, `onDelete`, `onContentError`, `onDestroy` (Tiptap's props;

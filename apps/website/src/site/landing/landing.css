@@ -1,6 +1,6 @@
 /*
  * Home page layout (src/site/landing/). Layout only: every color, radius and shadow is an Owlky
- * token, so the Theme, Preset and Font settings restyle the page. Components keep their own CSS.
+ * token, so the Theme setting and token overrides restyle the page. Components keep their own CSS.
  */
 
 [data-landing] {
@@ -432,18 +432,6 @@
 
 [data-landing-inset] :is(td, th) {
   white-space: nowrap;
-}
-
-[data-landing-swatches] [data-ok-toggle-button] {
-  padding: calc(var(--ok-spacing) * 2);
-}
-
-[data-landing-swatch] {
-  display: block;
-  width: calc(var(--ok-spacing) * 6);
-  height: calc(var(--ok-spacing) * 6);
-  border-radius: var(--ok-radius-full);
-  background: var(--ok-palette-primary-main);
 }
 
 [data-landing-code-tabs] [data-site-code] {

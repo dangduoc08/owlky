@@ -13,6 +13,10 @@
    "value": "color-mix(in srgb, #919EAB 8%, transparent)"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-duration-shortest",
    "value": "150ms"
   },
@@ -21,8 +25,20 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-lg",
@@ -50,6 +66,14 @@
    "dark": "#FFFFFF",
    "light": "#1C252E",
    "name": "--ok-inherit-main"
+  },
+  {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
   },
   {
    "name": "--ok-palette-error-contrast-text",
@@ -114,8 +138,8 @@
    "value": "0 167 111"
   },
   {
-   "dark": "var(--_ok-primary-text-dark)",
-   "light": "var(--_ok-primary-text-light)",
+   "dark": "#5BE49B",
+   "light": "#007867",
    "name": "--ok-palette-primary-text"
   },
   {
@@ -182,12 +206,12 @@
    "name": "--ok-palette-warning-text"
   },
   {
-   "name": "--ok-radius-full",
-   "value": "9999px"
+   "name": "--ok-radius-control",
+   "value": "8px"
   },
   {
-   "name": "--ok-radius-md",
-   "value": "8px"
+   "name": "--ok-radius-full",
+   "value": "9999px"
   },
   {
    "name": "--ok-spacing",
@@ -510,6 +534,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/pagination",
+  "css": [
+   "@owlky/styles/components/pagination.css"
+  ],
+  "html": "@owlky/html/pagination",
+  "react": "@owlky/react/pagination"
+ },
  "name": "pagination",
  "title": "Pagination",
  "types": [

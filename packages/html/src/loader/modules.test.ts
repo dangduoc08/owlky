@@ -50,8 +50,12 @@ describe("lazy modules (ADR-0068)", () => {
     expect(files.sort()).toEqual(Object.keys(LAZY_MODULES).sort());
     for (const [name, module] of Object.entries(LAZY_MODULES)) {
       const source = moduleSources[`../modules/${name}.ts`] as string;
+      // The definition's file, or its factory in the same folder (the illustration module
+      // builds its definition around a lazy picture set, ADR-0068 S5).
       for (const definition of module.definitions)
-        expect(source, `${name}: ${definition}`).toContain(`/${definition}/${definition}.js"`);
+        expect(source, `${name}: ${definition}`).toMatch(
+          new RegExp(`/${definition}/(${definition}|create-${definition})\\.js"`),
+        );
       expect(source.match(/from "\.\.\/components\//g)?.length, name).toBe(
         module.definitions.length,
       );

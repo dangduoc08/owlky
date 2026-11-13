@@ -1,6 +1,6 @@
 "use client";
 
-import { phoneInputAttributes, selectBehaviorAttributes } from "@owlky/core";
+import { globalLinear, phoneInputAttributes, selectBehaviorAttributes } from "@owlky/core";
 import {
   createPhoneInputController,
   type PhoneCountry,
@@ -22,6 +22,7 @@ import { ListItemIcon, ListItemText } from "../list/list.js";
 import { MenuItem } from "../menu/menu.js";
 import { SelectRoot } from "../select/select.js";
 import { InputAdornment, type TextFieldProps, useFieldMarkup } from "../text-field/text-field.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 
 export type { PhoneCountry, PhoneInputLabels, PhoneMetadata };
@@ -30,17 +31,7 @@ export type PhoneInputChangeDetails = PhoneValueDetails;
 
 /** The International option's icon (decorative, same SVG as the HTML runtime builds). */
 function GlobeIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
+  return <Icon icon={globalLinear} />;
 }
 
 export interface PhoneInputProps

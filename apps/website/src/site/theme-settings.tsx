@@ -1,12 +1,11 @@
 "use client";
 
 import { applyThemeSettings, readThemeSettings, TextField, type ThemeSettings } from "@owlky/react";
-import { fontFamilyPresetNames, primaryPresetNames } from "@owlky/tokens";
 import { useEffect, useState } from "react";
 
 /*
- * Theme, Preset and Font menus (ADR-0017 theme settings through `applyThemeSettings`). The choice
- * is kept in localStorage; the inline script in the layout applies it before the first paint.
+ * The Theme menu (theme settings through `applyThemeSettings`, ADR-0070). The choice is kept in
+ * localStorage; the inline script in the layout applies it before the first paint.
  */
 
 const label = (value: string) =>
@@ -15,11 +14,7 @@ const label = (value: string) =>
     (_, dash: string, c: string) => `${dash ? " " : ""}${c.toUpperCase()}`,
   );
 
-const MENUS = [
-  { key: "mode", label: "Theme", values: ["light", "dark", "system"] },
-  { key: "preset", label: "Preset", values: primaryPresetNames },
-  { key: "font", label: "Font", values: fontFamilyPresetNames },
-] as const;
+const MENUS = [{ key: "mode", label: "Theme", values: ["light", "dark", "system"] }] as const;
 
 export function ThemeSettingsMenus() {
   const [settings, setSettings] = useState<ThemeSettings | null>(null);
@@ -43,7 +38,7 @@ export function ThemeSettingsMenus() {
           id={`site-${menu.key}`}
           label={menu.label}
           value={settings?.[menu.key] ?? menu.values[0]}
-          onChange={(value) => change({ [menu.key]: value })}
+          onChange={(value) => change({ [menu.key]: value as ThemeSettings["mode"] })}
           className="w-32"
         >
           {menu.values.map((value) => (

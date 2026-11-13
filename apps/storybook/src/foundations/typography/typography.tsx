@@ -15,8 +15,8 @@ export function variantDefinition(variant: TypographyVariant): string {
   const style = defaultTheme.typography.variants[variant];
   const json: Record<string, unknown> = {
     fontFamily:
-      style.fontFamily === "secondary"
-        ? "var(--ok-font-family-secondary)"
+      style.fontFamily === "heading" || style.fontFamily === "label"
+        ? `var(--ok-font-family-${style.fontFamily})`
         : "var(--ok-font-family)",
     fontWeight: style.fontWeight,
     fontSize: withPx(style.fontSize),

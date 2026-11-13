@@ -4,6 +4,8 @@ import {
   buttonSections,
 } from "@owlky/docs-content/components/button/sections";
 import { colorsDocsSections } from "@owlky/docs-content/foundations/colors/sections";
+import { bundlerSections } from "./bundlers.js";
+import { cdnSections } from "./cdn.js";
 import { getStartedSections } from "./get-started.js";
 import { HOME_TAGLINE, homeSections } from "./home.js";
 import type { SitePage } from "./types.js";
@@ -34,6 +36,24 @@ export const PAGES: readonly SitePage[] = [
       "Add Owlky to a page from a CDN, or install it from npm for HTML, React or Tailwind CSS.",
     group: "Overview",
     sections: getStartedSections,
+  },
+  {
+    path: "/get-started/cdn/",
+    markdown: "/get-started/cdn.md",
+    title: "Load from a CDN",
+    description:
+      "Add Owlky to any page with one stylesheet and one script. Larger components load only on the pages that use them.",
+    group: "Overview",
+    sections: cdnSections,
+  },
+  {
+    path: "/get-started/bundlers/",
+    markdown: "/get-started/bundlers.md",
+    title: "Use with a bundler",
+    description:
+      "Import only the components you use from npm, load large ones on demand, and add the stylesheets your app needs.",
+    group: "Overview",
+    sections: bundlerSections,
   },
   {
     path: "/foundations/colors/",

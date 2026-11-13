@@ -1,4 +1,4 @@
-import { paletteColorNames, primaryPresetNames } from "@owlky/tokens";
+import { paletteColorNames } from "@owlky/tokens";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import illustrationCss from "../../../styles/dist/components/illustration.css?raw";
 import tokensCss from "../../../tokens/dist/tokens.css?raw";
@@ -72,7 +72,7 @@ describe("illustration set", () => {
   );
 });
 
-/* Every tone resolves to a defined token color, in every scheme, preset and `color`. */
+/* Every tone resolves to a defined token color, in every scheme and `color`. */
 const SVG = "http://www.w3.org/2000/svg";
 let style: HTMLStyleElement;
 let host: HTMLDivElement;
@@ -88,7 +88,7 @@ afterAll(() => {
   host.remove();
 });
 
-/** A scope (theme, preset) holding an illustration with one shape per tone and a token probe. */
+/** A scope (theme) holding an illustration with one shape per tone and a token probe. */
 function scene(scope: Record<string, string>, color: string) {
   host.replaceChildren();
   const root = document.createElement("div");
@@ -123,37 +123,33 @@ const COLOR = /^(rgba?\(|color\()/;
 
 describe("tones", () => {
   for (const theme of ["light", "dark"] as const)
-    for (const preset of primaryPresetNames)
-      it(`resolve to tokens (${theme}, preset ${preset})`, () => {
-        for (const color of paletteColorNames) {
-          const { shapes, outline, token } = scene(
-            { "data-ok-theme": theme, "data-ok-preset": preset },
-            color,
+    it(`resolve to tokens (${theme})`, () => {
+      for (const color of paletteColorNames) {
+        const { shapes, outline, token } = scene({ "data-ok-theme": theme }, color);
+        for (const [tone, shape] of shapes) expect(fillOf(shape), tone).toMatch(COLOR);
+        for (const shade of ["lighter", "light", "main", "dark", "darker"])
+          expect(fillOf(shapes.get(shade) as Element), `${color} ${shade}`).toBe(
+            token(`var(--ok-palette-${color}-${shade})`),
           );
-          for (const [tone, shape] of shapes) expect(fillOf(shape), tone).toMatch(COLOR);
-          for (const shade of ["lighter", "light", "main", "dark", "darker"])
-            expect(fillOf(shapes.get(shade) as Element), `${color} ${shade}`).toBe(
-              token(`var(--ok-palette-${color}-${shade})`),
-            );
-          expect(fillOf(shapes.get("paper") as Element)).toBe(token("var(--ok-bg-paper)"));
-          expect(fillOf(shapes.get("neutral") as Element)).toBe(token("var(--ok-bg-neutral)"));
-          expect(fillOf(shapes.get("accent-main") as Element)).toBe(
-            token("var(--ok-palette-warning-main)"),
-          );
-          expect(fillOf(shapes.get("skin-deep") as Element)).toBe(
-            token("var(--ok-illustration-skin-deep)"),
-          );
-          // Outlines paint the stroke only.
-          expect(getComputedStyle(outline).fill).toBe("none");
-          expect(getComputedStyle(outline).stroke).toBe(token(`var(--ok-palette-${color}-main)`));
-        }
-      });
+        expect(fillOf(shapes.get("paper") as Element)).toBe(token("var(--ok-bg-paper)"));
+        expect(fillOf(shapes.get("neutral") as Element)).toBe(token("var(--ok-bg-neutral)"));
+        expect(fillOf(shapes.get("accent-main") as Element)).toBe(
+          token("var(--ok-palette-warning-main)"),
+        );
+        expect(fillOf(shapes.get("skin-deep") as Element)).toBe(
+          token("var(--ok-illustration-skin-deep)"),
+        );
+        // Outlines paint the stroke only.
+        expect(getComputedStyle(outline).fill).toBe("none");
+        expect(getComputedStyle(outline).stroke).toBe(token(`var(--ok-palette-${color}-main)`));
+      }
+    });
 
-  it("follows the preset of the nearest scope", () => {
-    const cyan = scene({ "data-ok-preset": "cyan" }, "primary");
-    const cyanMain = fillOf(cyan.shapes.get("main") as Element);
-    const red = scene({ "data-ok-preset": "red" }, "primary");
-    expect(fillOf(red.shapes.get("main") as Element)).not.toBe(cyanMain);
+  it("follows the palette of the nearest scope", () => {
+    const plain = scene({}, "primary");
+    const plainMain = fillOf(plain.shapes.get("main") as Element);
+    const brand = scene({ style: "--ok-palette-primary-main: #078DEE" }, "primary");
+    expect(fillOf(brand.shapes.get("main") as Element)).not.toBe(plainMain);
   });
 
   it("lifts ink on dark surfaces (when light-dark() is supported)", () => {
