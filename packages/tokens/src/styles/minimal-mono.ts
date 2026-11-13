@@ -2,7 +2,8 @@ import { fontStack, monoStack, type StyleDefinition } from "../style-definition.
 
 /**
  * Minimal Mono (ADR-0070 § 1): greys only. `primary` and `secondary` come from neutral scales;
- * status colors keep their hues because they carry meaning. Radius 8 / 14px, soft shadows
+ * `primary` is the ink (near-black fills in light, near-white in dark, ADR-0073 § 8); status
+ * colors keep their hues because they carry meaning. Radius 8 / 14px, soft shadows
  * tinted grey, Inter.
  */
 export const minimalMono: StyleDefinition = {
@@ -17,6 +18,7 @@ export const minimalMono: StyleDefinition = {
     error: "red",
     neutral: "zinc",
   },
+  ink: ["primary"],
   chart: ["zinc", "slate", "sky", "teal", "amber", "rose", "violet", "lime"],
   fonts: {
     text: fontStack("Inter"),

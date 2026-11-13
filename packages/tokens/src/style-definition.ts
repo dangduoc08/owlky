@@ -25,6 +25,12 @@ export interface StyleDefinition {
   name: string;
   /** Tailwind hue of each palette color, and the neutral scale (greys, text, surfaces). */
   hues: Record<PaletteColorName | "neutral", TailwindHue>;
+  /**
+   * Palette colors drawn in the ink instead of their hue's fill (a monochrome style's
+   * `primary`): near-black fills in light, near-white ones in dark (`inkRoles`). Their fills
+   * switch with the scheme; a brand color for one of them replaces its ink.
+   */
+  ink?: readonly PaletteColorName[];
   /** Hues of the default chart series 1–8, in order (`--ok-chart-series-*`). */
   chart: readonly TailwindHue[];
   fonts: { text: string; heading: string; label: string; mono: string };

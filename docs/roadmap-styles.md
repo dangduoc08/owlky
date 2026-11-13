@@ -112,7 +112,7 @@ Brutalism takes link blue with an orange secondary on `stone`, IBM Plex Mono 700
 (the font stops at 700) and Plex Mono as the monospace family too. Editorial uses a rose primary
 on warm greys (`stone` for secondary and neutral), `extrabold` 900 for its black headings, and
 the full 1px ink edge until Paper draws per-side rules. Minimal Mono uses `zinc` primary, `slate`
-secondary and a `zinc` neutral, Inter 700 headings tracked −0.02em. Corporate: blue primary with
+secondary and a `zinc` neutral, Inter 700 headings tracked −0.02em; its primary is the ink (near-black fills in light, near-white in dark: `ink`, ADR-0073 § 8). Dialog titles follow the heading case and tracking (Bauhaus capitals). Corporate: blue primary with
 a `slate` secondary on `slate` greys, IBM Plex Sans 700 / 600 headings (the font stops at 700, so
 `extrabold` is 700), 4px chips and labels, subtle shadows tinted `slate-900`. Nordic: teal
 primary, sky secondary, blue info, rose error on warm `stone` greys, Manrope 800 headings tracked

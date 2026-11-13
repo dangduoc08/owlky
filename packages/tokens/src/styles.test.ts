@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { themeToCss } from "./css.js";
 import { treatmentShadows } from "./shadows.js";
 import { defaultStyleName, type StyleName, styleNames, styles } from "./styles.js";
-import { styleTheme } from "./theme.js";
+import { defaultTheme, styleTheme } from "./theme.js";
 import { type ShadowTreatment, shadowNames } from "./types.js";
 
 interface Expected {
@@ -198,7 +198,7 @@ describe.each(styleNames)("style %s", (name) => {
 
   describe("opt-in sheet", () => {
     const scope = `[data-ok-style="${name}"]`;
-    const css = themeToCss(theme, { selector: scope, reset: scope });
+    const css = themeToCss(theme, { selector: scope, reset: scope, base: defaultTheme });
     const own = declarations(css, scope);
     const reset = declarations(css, `:where([data-ok-style]:not(${scope}))`);
 
@@ -243,6 +243,27 @@ describe.each(styleNames)("style %s", (name) => {
         expect.arrayContaining(["--ok-shadow-card", "--ok-drop-shadow-z1", "--ok-shadow-primary"]),
       );
     });
+
+    it("switches ink fills per scheme on every scope, falling back to the core values", () => {
+      const ink = styles[name].ink ?? [];
+      if (ink.length === 0) {
+        expect(css).not.toMatch(/--_ok-t0-d:/);
+        expect(() => themeToCss(theme, { selector: scope, reset: scope })).not.toThrow();
+        return;
+      }
+      expect(() => themeToCss(theme, { selector: scope, reset: scope })).toThrow(/base/);
+      const scopes = `:root, [data-ok-style], [data-ok-theme], .dark, [data-ok-surface], [data-ok-contrast], ${scope}`;
+      const fills = declarations(css.slice(css.lastIndexOf(`  ${scopes} {`)), scopes);
+      const names = ink.flatMap((c) =>
+        ["main", "main-channel", "dark", "contrast-text"].map((s) => `--ok-palette-${c}-${s}`),
+      );
+      expect(Object.keys(fills)).toEqual(names);
+      const core = defaultTheme.palette.primary.main;
+      expect(fills["--ok-palette-primary-main"]).toContain(`var(--_ok-t0-l, ${core})`);
+      expect(own["--_ok-t0-l"]).toBe(theme.palette.primary.main);
+      expect(own["--_ok-t0-d"]).toBe(theme.darkPalette?.primary?.main);
+      expect(reset["--_ok-t0-dh"]).toBe("initial");
+    });
   });
 });
 
@@ -251,7 +272,11 @@ it("every sheet with a shadow switch writes the same switch (two sheets never un
     .filter((name) => styles[name].shadows !== "soft")
     .map((name) => {
       const scope = `[data-ok-style="${name}"]`;
-      const css = themeToCss(styleTheme(styles[name]), { selector: scope, reset: scope });
+      const css = themeToCss(styleTheme(styles[name]), {
+        selector: scope,
+        reset: scope,
+        base: defaultTheme,
+      });
       const body = declarations(
         css,
         `:root, [data-ok-style], [data-ok-theme], .dark, [data-ok-surface], [data-ok-contrast], ${scope}`,

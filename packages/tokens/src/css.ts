@@ -228,14 +228,20 @@ function variantTokens(theme: Theme): VariantToken[] {
     tokens.push({ name, key: tokens.length.toString(36), axes, values });
 
   // Fills: the same in both schemes; high contrast moves them (the tints are style literals).
+  // Ink colors' fills switch with the scheme too (ADR-0073 § 8).
   for (const name of paletteColorNames) {
     const normal: PaletteColor = theme.palette[name];
     const high: PaletteColor = hc.palette[name];
+    const dark = theme.darkPalette?.[name];
+    const darkHigh = hc.darkPalette?.[name];
+    const fill = (name: `--ok-${string}`, pick: (color: PaletteColor) => string) =>
+      dark && darkHigh
+        ? add(name, "dh", { "": pick(normal), d: pick(dark), h: pick(high), dh: pick(darkHigh) })
+        : add(name, "h", { "": pick(normal), h: pick(high) });
     for (const shade of FILL_SHADES) {
       const token = `--ok-palette-${name}-${kebab(shade)}` as const;
-      add(token, "h", { "": normal[shade], h: high[shade] });
-      if (shade === "main")
-        add(`${token}-channel`, "h", { "": channel(normal[shade]), h: channel(high[shade]) });
+      fill(token, (color) => color[shade]);
+      if (shade === "main") fill(`${token}-channel`, (color) => channel(color[shade]));
     }
   }
 
@@ -497,6 +503,33 @@ function treatmentSwitch(): CssVariables {
   return vars;
 }
 
+/* Ink colors (ADR-0073 § 8) ---------------------------------------------------------------- */
+
+/**
+ * The fills of the theme's ink colors for every scope element: a dark-and-contrast formula over
+ * the inputs, where a dark input falls back to the light one and then to the core sheet's value
+ * (`base`), so every other style's scope resolves them as the core resolver does. Generated from
+ * the token keys and `base` only, so sheets that ink the same color write the same declarations.
+ */
+function inkSwitch(tokens: VariantToken[], base: Theme): CssVariables {
+  const core = variantTokens(base);
+  const vars: CssVariables = {};
+  for (const [index, token] of tokens.entries()) {
+    const own = core[index];
+    if (!own || own.axes === token.axes) continue;
+    const r = (v: "" | "h") => `var(${input(token, v)}, ${variantValue(own, v)})`;
+    const d = `var(${input(token, "d")}, ${r("")})`;
+    const dh = `var(${input(token, "dh")}, ${r("h")})`;
+    vars[token.name] = when(
+      IS.dark,
+      IS.light,
+      when(IS.high, IS.normal, dh, d),
+      when(IS.high, IS.normal, r("h"), r("")),
+    );
+  }
+  return vars;
+}
+
 /** The literal value of every scheme token for one scheme (docs, tests, `themeToCssVariables`). */
 function schemeLiterals(tokens: VariantToken[], variant: "" | "d"): CssVariables {
   const vars: CssVariables = {};
@@ -583,6 +616,11 @@ export interface ThemeCssOptions {
    * other style scope nested inside resets this style's inputs. Opt-in style sheets pass it.
    */
   reset?: string;
+  /**
+   * With `selector`: the core sheet's theme (`defaultTheme`). Required when the theme has ink
+   * colors (`darkPalette`): their fills switch on every scope element and fall back to its values.
+   */
+  base?: Theme;
 }
 
 /** `--ok-c-*` values for one component color. */
@@ -695,6 +733,11 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
       block(":where(:root)", treatmentToggles("soft")),
       block(`${SCOPE_SELECTOR}, ${selector}`, treatmentSwitch()),
     );
+  }
+  if (!core && (theme.darkPalette || theme.highContrast.darkPalette)) {
+    if (!options.base) throw new Error("themeToCss: a theme with ink colors needs `base`");
+    // Wins over the core resolver by source order, like the shadow switch.
+    parts.push(block(`${SCOPE_SELECTOR}, ${selector}`, inkSwitch(tokens, options.base)));
   }
   if (!core && options.reset) {
     // Zero specificity: another style's own scope still declares its inputs over the reset.

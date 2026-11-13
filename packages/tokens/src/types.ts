@@ -235,6 +235,11 @@ export type SkinToneName = (typeof skinToneNames)[number];
 
 export interface Theme {
   palette: Record<PaletteColorName, PaletteColor>;
+  /**
+   * Fills of the ink colors in the dark scheme (`StyleDefinition.ink`): `main`, `dark` and
+   * `contrastText` that switch with the scheme. Other colors' fills are the same in both schemes.
+   */
+  darkPalette?: Partial<Record<PaletteColorName, PaletteColor>>;
   grey: GreyScale;
   common: { white: string; black: string };
   /**
@@ -251,6 +256,7 @@ export interface Theme {
    */
   highContrast: {
     palette: Record<PaletteColorName, PaletteColor>;
+    darkPalette?: Partial<Record<PaletteColorName, PaletteColor>>;
     schemes: { light: ColorScheme; dark: ColorScheme };
     focusRingWidth: string;
     iconStroke: string;

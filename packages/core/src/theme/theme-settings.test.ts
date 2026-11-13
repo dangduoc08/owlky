@@ -362,6 +362,55 @@ describe("every axis nests on its own (ADR-0070 § 3)", () => {
       expect(probe(style("neo-brutalism", P), "--x", "var(--ok-icon-stroke)", both)).toBe("2");
     });
   });
+
+  describe("ink colors switch with the nearest scheme (ADR-0073 § 8)", () => {
+    const scope = '[data-ok-style="minimal-mono"]';
+    const mono = createTheme({ style: "minimal-mono" });
+    const swissScope = '[data-ok-style="swiss"]';
+    const swiss = createTheme({ style: "swiss" });
+    const sheets = [
+      themeToCss(defaultTheme),
+      themeToCss(mono, { selector: scope, reset: scope, base: defaultTheme }),
+      themeToCss(swiss, { selector: swissScope, reset: swissScope }),
+    ].join("\n");
+    const inMono = (inner: string) => wrap('data-ok-style="minimal-mono"', inner);
+    const main = "var(--ok-palette-primary-main)";
+    const fill = (markup: string) => probe(markup, "color", main, sheets);
+
+    it("near-black in light, near-white in dark, per contrast level", () => {
+      expect(fill(inMono(P))).toBe(rgb(mono.palette.primary.main));
+      expect(fill(inMono(theme("dark", P)))).toBe(rgb(mono.darkPalette?.primary?.main ?? ""));
+      expect(fill(theme("dark", inMono(P)))).toBe(rgb(mono.darkPalette?.primary?.main ?? ""));
+      expect(fill(inMono(theme("dark", theme("light", P))))).toBe(rgb(mono.palette.primary.main));
+      expect(fill(inMono(contrast("high", theme("dark", P))))).toBe(
+        rgb(mono.highContrast.darkPalette?.primary?.main ?? ""),
+      );
+      expect(
+        probe(inMono(theme("dark", P)), "color", "var(--ok-palette-primary-contrast-text)", sheets),
+      ).toBe(rgb(mono.darkPalette?.primary?.contrastText ?? ""));
+      expect(
+        probe(
+          inMono(theme("dark", P)),
+          "color",
+          "rgb(var(--ok-palette-primary-main-channel))",
+          sheets,
+        ),
+      ).toBe(rgb(mono.darkPalette?.primary?.main ?? ""));
+    });
+
+    it("every other scope keeps its own fills in both schemes", () => {
+      const brand = rgb(defaultTheme.palette.primary.main);
+      expect(fill(P)).toBe(brand);
+      expect(fill(theme("dark", P))).toBe(brand);
+      expect(fill(contrast("high", theme("dark", P)))).toBe(
+        rgb(defaultTheme.highContrast.palette.primary.main),
+      );
+      expect(fill(inMono(wrap('data-ok-style="soft"', theme("dark", P))))).toBe(brand);
+      expect(fill(inMono(wrap('data-ok-style="swiss"', theme("dark", P))))).toBe(
+        rgb(swiss.palette.primary.main),
+      );
+    });
+  });
 });
 
 describe("focus ring colors follow the nearest scheme", () => {

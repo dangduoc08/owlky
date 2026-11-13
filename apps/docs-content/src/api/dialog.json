@@ -72,6 +72,14 @@
    "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
+   "name": "--ok-heading-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-heading-text-transform",
+   "value": "none"
+  },
+  {
    "name": "--ok-radius-surface",
    "value": "18px"
   },

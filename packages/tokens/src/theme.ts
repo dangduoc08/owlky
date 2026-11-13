@@ -11,6 +11,7 @@ import {
   colorRoles,
   graphicTone,
   hexScale,
+  inkRoles,
   neutralRoles,
   neutralSurfaces,
 } from "./roles.js";
@@ -59,6 +60,7 @@ function scalesOf(style: StyleDefinition, brand: BrandColors = {}): Record<Scale
 
 interface ContrastColors {
   palette: Record<PaletteColorName, PaletteColor>;
+  darkPalette: Partial<Record<PaletteColorName, PaletteColor>>;
   schemes: { light: ColorScheme; dark: ColorScheme };
   grey: Theme["grey"];
 }
@@ -67,11 +69,19 @@ function colorsAt(
   style: StyleDefinition,
   scales: Record<ScaleName, ColorScale>,
   level: ContrastLevel,
+  ink: readonly PaletteColorName[],
 ): ContrastColors {
   const neutral = neutralRoles(scales.neutral, level);
   const surfaces = neutralSurfaces(scales.neutral);
   const roles = {} as Record<PaletteColorName, ColorRoles>;
-  for (const name of paletteColorNames) roles[name] = colorRoles(scales[name], surfaces, level);
+  const darkPalette: ContrastColors["darkPalette"] = {};
+  for (const name of paletteColorNames) {
+    if (ink.includes(name)) {
+      const { darkColor, ...inked } = inkRoles(scales[name], surfaces, level);
+      roles[name] = inked;
+      darkPalette[name] = darkColor;
+    } else roles[name] = colorRoles(scales[name], surfaces, level);
+  }
   // A chart hue that is a palette hue follows that color's scale (a brand color included).
   const chartScale = (hue: StyleDefinition["chart"][number]) => {
     const owner = paletteColorNames.find((name) => style.hues[name] === hue);
@@ -100,7 +110,12 @@ function colorsAt(
   };
   const palette = {} as Record<PaletteColorName, PaletteColor>;
   for (const name of paletteColorNames) palette[name] = roles[name].color;
-  return { palette, schemes: { light: scheme("light"), dark: scheme("dark") }, grey: neutral.grey };
+  return {
+    palette,
+    darkPalette,
+    schemes: { light: scheme("light"), dark: scheme("dark") },
+    grey: neutral.grey,
+  };
 }
 
 /**
@@ -110,8 +125,11 @@ function colorsAt(
  */
 export function styleTheme(style: StyleDefinition, options: StyleThemeOptions = {}): Theme {
   const scales = scalesOf(style, options.brand);
-  const normal = colorsAt(style, scales, "default");
-  const high = colorsAt(style, scales, "high");
+  // A brand color replaces its ink.
+  const ink = (style.ink ?? []).filter((name) => !options.brand?.[name as keyof BrandColors]);
+  const normal = colorsAt(style, scales, "default", ink);
+  const high = colorsAt(style, scales, "high", ink);
+  const inked = ink.length > 0;
   const fonts = { ...style.fonts, ...options.fonts };
   const treatment = treatmentShadows(style.shadows);
   const variants = { ...baseTheme.typography.variants };
@@ -129,10 +147,12 @@ export function styleTheme(style: StyleDefinition, options: StyleThemeOptions = 
     ...baseTheme,
     style: style.id,
     palette: normal.palette,
+    ...(inked ? { darkPalette: normal.darkPalette } : {}),
     grey: normal.grey,
     schemes: normal.schemes,
     highContrast: {
       palette: high.palette,
+      ...(inked ? { darkPalette: high.darkPalette } : {}),
       schemes: high.schemes,
       focusRingWidth: "3px",
       iconStroke: String(Math.max(1.75, style.iconStroke)),

@@ -61,6 +61,21 @@ geometry inputs in the resolver would cost the core sheet bytes it doesn't have 
    markup loads its sheet) move to ST5 with the HTML runtime work; until then a page links the
    sheet. Editorial's top rules need Paper to draw per-side borders (`border-style` longhand),
    which is a component change for its own step.
+8. **Ink colors** (ST4b, 2026-11-13). A monochrome style can't take its primary from the role
+   generator: the first zinc step that carries white text is 500, a mid grey lighter than the
+   Inherit fill. `StyleDefinition.ink` (Minimal Mono: `["primary"]`) lists palette colors drawn
+   in the ink instead: `inkRoles` (`roles.ts`) gives `main` 900 / 950 with white text and hover
+   700 in light, `main` 100 / 50 with 900 / 950 text and hover 300 in dark, each shifted until
+   its text reaches the level's target; the text tone is the scheme's `main`. A brand color for
+   that role replaces the ink. Fills are otherwise the same in both schemes (the core resolver
+   reads them on the contrast axis only), so an ink color's `main`, `main-channel`, `dark` and
+   `contrast-text` get `-d` / `-dh` inputs (`Theme.darkPalette`, `highContrast.darkPalette`) and
+   the sheet adds an **ink switch** on `SCOPE_SELECTOR` and its own selector, like the shadow
+   switch: each of those tokens as the light / dark × contrast formula, a dark input falling back
+   to the light one and then to the core sheet's value (`themeToCss(…, { base: defaultTheme })`,
+   required for such a theme). Other styles' scopes have no dark inputs (the reset block clears
+   them), so they resolve exactly as the core resolver does. The core sheet and every other
+   sheet are byte-identical; Minimal Mono's sheet grows by about 0.25 kB gzip (budget 2.43 kB).
 
 ## Consequences
 - Adding a style is a definition file, its lines in `styles.ts`, a row in

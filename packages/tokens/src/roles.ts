@@ -147,6 +147,45 @@ export function colorRoles(
 }
 
 /**
+ * Ink roles of one scale (`StyleDefinition.ink`, ADR-0073 § 8): fills in the neutral ink instead
+ * of the hue, per scheme. Light: `main` 900 (950 in high contrast), hover `dark` 700, white text.
+ * Dark: `main` 100 (50), hover 300, text 900 (950). Each fill is shifted until its text reaches
+ * T; the text tone is the scheme's `main`, shifted until it reaches T on the surfaces, the soft
+ * tint and the soft fill. `lighter`, `light` and `darker` stay the scale's steps.
+ */
+export function inkRoles(
+  source: ColorScale,
+  surfaces: RoleSurfaces,
+  level: ContrastLevel = "default",
+): ColorRoles & { darkColor: PaletteColor } {
+  const scale = hexScale(source);
+  const high = level === "high";
+  const { text: target } = CONTRAST_TARGETS[level];
+  const scheme = (main: ScaleStep, hover: ScaleStep, onFill: string, list: readonly string[]) => {
+    const dir = onFill === WHITE ? "darker" : "lighter";
+    const fill = shiftToContrast(scale[main], [onFill], target, dir);
+    const color: PaletteColor = {
+      lighter: scale[100],
+      light: scale[300],
+      main: fill,
+      dark: shiftToContrast(scale[hover], [onFill], target, dir),
+      darker: scale[900],
+      contrastText: onFill,
+    };
+    const soft = dir === "darker" ? scale[100] : scale[900];
+    const on = [...list, ...list.map((s) => tint(fill, SOFT_TINT, s)), soft];
+    return { color, text: shiftToContrast(fill, on, target, dir) };
+  };
+  const light = scheme(high ? 950 : 900, 700, WHITE, surfaces.light);
+  const dark = scheme(high ? 50 : 100, 300, scale[high ? 950 : 900], surfaces.dark);
+  return {
+    color: light.color,
+    darkColor: dark.color,
+    text: { light: light.text, dark: dark.text },
+  };
+}
+
+/**
  * A graphic tone (chart series, ADR-0070 § 4.8) of one scale per scheme: the first of 500 → 950
  * (light) or 400 → 50 (dark) at the graphics target on every surface of the scheme.
  */
