@@ -25,7 +25,7 @@ export const settingsSections: GuideSection[] = [
 - **Mode:** ${codeList(["light", "dark", "system"])}. The \`system\` mode follows the operating system.
 - **Font size:** the root font size, from ${fontSizeRange.min}px to ${fontSizeRange.max}px. The default is ${fontSizeRange.default}px.
 
-Each setting is an attribute or a style on an element, so it works without JavaScript. The **Theme** and **Font size** menus in the toolbar change the same settings for every story.`,
+Each setting is an attribute or a style on an element, so it works without JavaScript. The **Theme**, **Style**, **Density**, **Surface**, **Contrast** and **Font size** menus in the toolbar change the same settings for every story.`,
   },
   {
     id: "brand",
