@@ -117,7 +117,10 @@ const budgets = [
   // gestures and the swipeable Drawer: stories, docs sections and API entries): 1505.3 kB.
   // 1.63 MB after all 6.0 Apex gaps (ApexTree, ApexGrid and ApexMaps rows: stories, docs
   // sections, API entries, three ADRs): 1578.67 kB.
-  ["packages/mcp/manifest.json", 1_630_000, "MCP manifest (npm tarball, not a browser download)"],
+  // 1.69 MB after design styles ST2 (Solar component icons, whose paths are longer than the old
+  // drawings, in 2,655 snippet icons that every story's HTML carries; the style tokens in every API
+  // entry's CSS variables): 1643.5 kB. The npm tarball only; no page downloads it.
+  ["packages/mcp/manifest.json", 1_690_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 // The lazy modules of owlky.js (ADR-0068, roadmap-size.md decision 9), each file on its own, as
