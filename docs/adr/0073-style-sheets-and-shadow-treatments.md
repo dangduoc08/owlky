@@ -76,6 +76,45 @@ geometry inputs in the resolver would cost the core sheet bytes it doesn't have 
    required for such a theme). Other styles' scopes have no dark inputs (the reset block clears
    them), so they resolve exactly as the core resolver does. The core sheet and every other
    sheet are byte-identical; Minimal Mono's sheet grows by about 0.25 kB gzip (budget 2.43 kB).
+9. **ST5 (2026-11-13): toolbar, loader, `createTheme`, Tailwind.** Amends ADR-0070 § 6 where it
+   resolves the sheets "like the modules".
+   - **Storybook:** **Style**, **Density**, **Surface** and **Contrast** tools next to **Theme**
+     (Storybook's `Select` in `addons.add(types.TOOL)`, like the existing tools); globals
+     `style`, `density`, `surface`, `contrast`, applied by the decorator with
+     `applyThemeSettings`. A story's `parameters.style` still wins over the menu.
+   - **Loader entries `style:<id>`** for the eight opt-in ids (`themeStyles` minus the default):
+     CSS only, through the module loader (`runtime.load`, `loaded`, `data-ok-preload`, the
+     `ok:runtime:error` report and the `online` retry). A watcher (a definition on `:root`, so
+     `runtime.stop()` ends it) reads every `data-ok-style` at start and from a MutationObserver
+     with `attributeFilter: ["data-ok-style"]`: the runtime's observer sees added nodes only, and
+     `applyThemeSettings` / `applyThemeBrand` set the attribute on existing elements. Unknown ids,
+     `soft` and `__proto__`-style values load nothing.
+   - **Where:** the folder of the core sheet's `<link>` (`owlky(-all)(.min).css`), its variant
+     (`.min` or not; `.min` without a link), else the folder above the modules (`modules/`'s
+     parent, the layout of `dist/`). A separate script attribute, `data-ok-styles="<folder>"`,
+     overrides it and `data-ok-styles="none"` turns the entries off: `data-ok-modules` names the
+     modules folder, which isn't where the sheets live. A page that links
+     `owlky-style-<id>(.min).css` from any folder gets no second link (matched by file name).
+   - **Order:** style sheets go right after the core sheet (rank -1 in the loader's ordered
+     sheets, in arrival order among themselves), before module sheets: they only touch
+     `@layer theme`, and their switches must follow the core resolver. Two style sheets never
+     undo each other (§ 3), so their mutual order doesn't matter.
+   - **Cost:** `owlky.js` +0.40 kB gzip (41.14 of 42 kB; the loader code and the style id list;
+     `defaultThemeSettings` became `/* @__PURE__ */` so the rest of the settings module stays out).
+     The CSS sheets are unchanged.
+   - **`createTheme({ style })`:** `styleSheetCss(theme)` writes the opt-in sheet of the theme's
+     style (the build uses it), so `styleSheetCss(createTheme({ style: "nordic", brand }))` is a
+     branded Nordic that replaces the published sheet; `themeToCss`'s `base` defaults to
+     `defaultTheme` instead of throwing for ink themes. `themeToCss(createTheme({ style }))`
+     without a selector stays the whole core for that style (a replacement for `tokens.css`).
+   - **Tailwind:** `contrast-high:` also matches `data-ok-contrast="system"` under
+     `prefers-contrast: more`; `surface-contrast:` is new; `tracking-heading` / `tracking-label`
+     read the style's tracking. No per-style variants: every style difference is a token the
+     utilities already read (`rounded-control`, `font-heading`, `shadow-card`…). Variants match
+     any enclosing scope, like `dark:`, not only the nearest one.
+   - **Still open, not ST5:** chart series tokens in the sheet (no bytes left in the core sheet;
+     with the Chart defaults) and the CDN `theme` module for run-time brand colors (needs a way to
+     hand `applyThemeBrand` to pages without a new global: its own ADR).
 
 ## Consequences
 - Adding a style is a definition file, its lines in `styles.ts`, a row in

@@ -1556,6 +1556,7 @@
   "data-ok-stroke-width",
   "data-ok-style",
   "data-ok-style-diffing",
+  "data-ok-styles",
   "data-ok-sum",
   "data-ok-surface",
   "data-ok-swap-target",
@@ -1878,6 +1879,12 @@
    "value": [
     "off"
    ]
+  },
+  {
+   "description": "css`; `none` never adds them.",
+   "kind": "value",
+   "name": "data-ok-styles",
+   "value": "string"
   },
   {
    "description": "Applies a color scheme to this element and everything inside it.",
@@ -83708,7 +83715,7 @@
    "kind": "foundation",
    "sections": [
     {
-     "body": "Theme settings let your users personalize the interface. There are two settings:\n\n- **Mode:** `light`, `dark` and `system`. The `system` mode follows the operating system.\n- **Font size:** the root font size, from 12px to 20px. The default is 16px.\n\nEach setting is an attribute or a style on an element, so it works without JavaScript. The **Theme** and **Font size** menus in the toolbar change the same settings for every story.",
+     "body": "Theme settings let your users personalize the interface. There are two settings:\n\n- **Mode:** `light`, `dark` and `system`. The `system` mode follows the operating system.\n- **Font size:** the root font size, from 12px to 20px. The default is 16px.\n\nEach setting is an attribute or a style on an element, so it works without JavaScript. The **Theme**, **Style**, **Density**, **Surface**, **Contrast** and **Font size** menus in the toolbar change the same settings for every story.",
      "id": "overview",
      "title": "Theme settings"
     },
@@ -89310,6 +89317,22 @@
      "text-subtitle2"
     ],
     "value": "var(--ok-typography-subtitle2-font-size)"
+   },
+   {
+    "name": "--tracking-heading",
+    "token": "--ok-heading-letter-spacing",
+    "utilities": [
+     "tracking-heading"
+    ],
+    "value": "var(--ok-heading-letter-spacing)"
+   },
+   {
+    "name": "--tracking-label",
+    "token": "--ok-label-letter-spacing",
+    "utilities": [
+     "tracking-label"
+    ],
+    "value": "var(--ok-label-letter-spacing)"
    }
   ],
   "variables": [
