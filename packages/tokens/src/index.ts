@@ -19,6 +19,7 @@ export {
   LIGHT_SELECTOR,
   responsiveTypographyVariables,
   SCOPE_SELECTOR,
+  styleSheetCss,
   type ThemeCssOptions,
   type ThemeCssVariables,
   themeColorVariables,

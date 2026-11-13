@@ -11,6 +11,16 @@ import { createTheme, themeToCss } from "@owlky/tokens";
 const css = themeToCss(createTheme({ style: "soft", brand: { primary: "#0E7490" } }));
 ```
 
+The eight other styles ship as opt-in sheets (`@owlky/styles/styles/<id>.css`). To brand one,
+write its sheet yourself and load it after `owlky.css` instead of the published one:
+
+```ts
+import { createTheme, styleSheetCss } from "@owlky/tokens";
+
+// The Nordic sheet with your primary color, for `data-ok-style="nordic"` scopes.
+const nordic = styleSheetCss(createTheme({ style: "nordic", brand: { primary: "#0E7490" } }));
+```
+
 ## Styles and axes
 
 A page without attributes looks **Soft**: Tailwind's indigo primary and zinc neutrals, Nunito,
@@ -59,7 +69,8 @@ rem.
 | `defaultTheme`, `createTheme({ style, brand, fonts, …overrides })` | The default (Soft) theme; a style's theme with brand colors and fonts, then a deep merge of other keys (arrays replaced) |
 | `styleTheme(style, { brand, fonts })`, `styles`, `styleNames`, `soft`, `StyleDefinition` | Styles as data |
 | `colorRoles`, `neutralRoles`, `graphicTone`, `shiftToContrast`, `brandScale`, `CONTRAST_TARGETS`, `tailwindPalette` | The AA generator and its inputs |
-| `themeToCss(theme, { selector, reset, colorBindings })`, `themeToCssVariables(theme)`, `themeColorVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme (the core sheet, or a style scope) to CSS / variable maps |
+| `styleSheetCss(theme)` | The opt-in sheet of the theme's style (`[data-ok-style="<id>"]`), such as a branded Nordic |
+| `themeToCss(theme, { selector, reset, base, colorBindings })`, `themeToCssVariables(theme)`, `themeColorVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme (the core sheet, or a style scope) to CSS / variable maps |
 | `fontSizeRange` | The root font size setting (12–20px) |
 | `hexToRgb`, `hexToOklch`, `oklchToHex`, `relativeLuminance`, `contrastRatio`, `getContrastText(background, candidates?)` | Color math |
 | `componentColorNames`, `paletteColorNames`, `greyShades`, `typographyVariants`, `shadowNames`, `dropShadowNames`, `radiusNames`, `radiusRoleNames`, `lineWidthNames`, `densityNames`, `fontSizeNames`, `breakpointNames` | Name lists (and their types) |

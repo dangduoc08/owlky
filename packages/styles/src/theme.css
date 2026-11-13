@@ -12,9 +12,27 @@
  */
 
 @custom-variant dark (&:where([data-ok-theme="dark"], [data-ok-theme="dark"] *, .dark, .dark *));
-/* High contrast (ADR-0070): a `data-ok-contrast="high"` scope. Colors follow it on their own. */
-@custom-variant contrast-high (&:where([data-ok-contrast="high"], [data-ok-contrast="high"] *));
+/*
+ * Theme settings (ADR-0070 § 2) as variants: `contrast-high:` (a `data-ok-contrast="high"` scope,
+ * or `system` while the user asks for more contrast), `compact:` and `surface-contrast:`. Colors,
+ * sizes and every style token follow the scopes on their own: the variants are for your own
+ * utilities. Like `dark:`, a variant matches inside any such scope (not only the nearest one).
+ * Styles have no variant: their tokens (`rounded-control`, `font-heading`…) already change.
+ */
+@custom-variant contrast-high {
+  &:where([data-ok-contrast="high"], [data-ok-contrast="high"] *) {
+    @slot;
+  }
+  @media (prefers-contrast: more) {
+    &:where([data-ok-contrast="system"], [data-ok-contrast="system"] *) {
+      @slot;
+    }
+  }
+}
 @custom-variant compact (&:where([data-ok-density="compact"], [data-ok-density="compact"] *));
+@custom-variant surface-contrast (
+  &:where([data-ok-surface="contrast"], [data-ok-surface="contrast"] *)
+);
 
 @theme inline {
   --font-sans: var(--ok-font-family);
@@ -22,6 +40,9 @@
   --font-heading: var(--ok-font-family-heading);
   --font-label: var(--ok-font-family-label);
   --spacing: var(--ok-spacing);
+  /* The style's tracking for headings and labels: `tracking-heading`, `tracking-label`. */
+  --tracking-heading: var(--ok-heading-letter-spacing);
+  --tracking-label: var(--ok-label-letter-spacing);
 
   --color-primary: var(--ok-palette-primary-main);
   --color-primary-lighter: var(--ok-palette-primary-lighter);

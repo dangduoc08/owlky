@@ -510,6 +510,7 @@ const UTILITY_PREFIX = {
   radius: ["rounded"],
   shadow: ["shadow"],
   ease: ["ease"],
+  tracking: ["tracking"],
 };
 const theme = read("packages/styles/src/theme.css");
 const tailwind = [];
