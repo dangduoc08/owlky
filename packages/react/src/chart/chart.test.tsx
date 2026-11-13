@@ -477,7 +477,7 @@ describe("Chart", () => {
     try {
       renderChart();
       expect(css(document.querySelector("[data-ok-chart-tick]") as Element).fill).toBe(
-        "rgb(159, 159, 169)",
+        "rgb(162, 162, 172)",
       );
       await expectNoAxeViolations();
     } finally {
