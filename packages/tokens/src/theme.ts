@@ -3,7 +3,7 @@
  * at both contrast levels from its hues (or brand colors), and the style's shape, fonts and
  * shadows complete the shared base (`default-theme.ts`).
  */
-import { baseTheme, elevationLayers } from "./default-theme.js";
+import { baseTheme } from "./default-theme.js";
 import {
   brandScale,
   type ColorRoles,
@@ -11,19 +11,19 @@ import {
   colorRoles,
   graphicTone,
   hexScale,
+  inkRoles,
   neutralRoles,
   neutralSurfaces,
 } from "./roles.js";
-import { type StyleDefinition, soft } from "./styles.js";
+import { elevationShadows, treatmentShadows } from "./shadows.js";
+import type { StyleDefinition } from "./style-definition.js";
+import { soft } from "./styles/soft.js";
 import { type ColorScale, tailwindPalette } from "./tailwind-palette.js";
 import {
   type ColorScheme,
   type PaletteColor,
   type PaletteColorName,
   paletteColorNames,
-  type ShadowLayer,
-  type ShadowName,
-  shadowNames,
   type Theme,
 } from "./types.js";
 
@@ -60,6 +60,7 @@ function scalesOf(style: StyleDefinition, brand: BrandColors = {}): Record<Scale
 
 interface ContrastColors {
   palette: Record<PaletteColorName, PaletteColor>;
+  darkPalette: Partial<Record<PaletteColorName, PaletteColor>>;
   schemes: { light: ColorScheme; dark: ColorScheme };
   grey: Theme["grey"];
 }
@@ -68,11 +69,19 @@ function colorsAt(
   style: StyleDefinition,
   scales: Record<ScaleName, ColorScale>,
   level: ContrastLevel,
+  ink: readonly PaletteColorName[],
 ): ContrastColors {
   const neutral = neutralRoles(scales.neutral, level);
   const surfaces = neutralSurfaces(scales.neutral);
   const roles = {} as Record<PaletteColorName, ColorRoles>;
-  for (const name of paletteColorNames) roles[name] = colorRoles(scales[name], surfaces, level);
+  const darkPalette: ContrastColors["darkPalette"] = {};
+  for (const name of paletteColorNames) {
+    if (ink.includes(name)) {
+      const { darkColor, ...inked } = inkRoles(scales[name], surfaces, level);
+      roles[name] = inked;
+      darkPalette[name] = darkColor;
+    } else roles[name] = colorRoles(scales[name], surfaces, level);
+  }
   // A chart hue that is a palette hue follows that color's scale (a brand color included).
   const chartScale = (hue: StyleDefinition["chart"][number]) => {
     const owner = paletteColorNames.find((name) => style.hues[name] === hue);
@@ -89,76 +98,40 @@ function colorsAt(
       ...base,
       paletteText,
       chart: chart.map((tone) => tone[mode]),
-      shadowColor: mode === "light" ? tintScale[style.shadowTint.step] : base.shadowColor,
+      // Hard shadows are ink, like the surface edge, in both schemes.
+      shadowColor:
+        style.shadows === "hard"
+          ? base.text.primary
+          : mode === "light"
+            ? tintScale[style.shadowTint.step]
+            : base.shadowColor,
       surfaceBorder: style.surfaceBorder.ink ? base.text.primary : "transparent",
     };
   };
   const palette = {} as Record<PaletteColorName, PaletteColor>;
   for (const name of paletteColorNames) palette[name] = roles[name].color;
-  return { palette, schemes: { light: scheme("light"), dark: scheme("dark") }, grey: neutral.grey };
-}
-
-/** Shadows by treatment (ADR-0070 § 4.4). */
-function shadowsOf(style: StyleDefinition): {
-  shadows: Record<ShadowName, ShadowLayer[]>;
-  elevation: ShadowLayer[][];
-  colorShadow: ShadowLayer;
-} {
-  const shadows = {} as Record<ShadowName, ShadowLayer[]>;
-  const material = elevationLayers();
-  if (style.shadows === "flat") {
-    for (const name of shadowNames) shadows[name] = [];
-    return {
-      shadows,
-      elevation: material.map(() => []),
-      colorShadow: { x: 0, y: 0, blur: 0, spread: 0, alpha: 0 },
-    };
-  }
-  if (style.shadows === "hard") {
-    // Offsets of 2 / 4 / 6 / 8px without blur, in the ink color (elevation n → n steps).
-    const hard = (step: number): ShadowLayer[] => [
-      { x: step * 2, y: step * 2, blur: 0, spread: 0, alpha: 100 },
-    ];
-    const steps: Record<ShadowName, number> = {
-      z1: 1,
-      z4: 2,
-      z8: 2,
-      z12: 3,
-      z16: 3,
-      z20: 4,
-      z24: 4,
-      card: 2,
-      dropdown: 2,
-      dialog: 4,
-      dialogStart: 4,
-    };
-    for (const name of shadowNames) shadows[name] = hard(steps[name]);
-    return {
-      shadows,
-      elevation: material.map((_, i) => hard(Math.min(4, Math.ceil((i + 1) / 6)))),
-      colorShadow: { x: 2, y: 2, blur: 0, spread: 0, alpha: 100 },
-    };
-  }
-  for (const name of shadowNames) shadows[name] = style.shadowLayers?.[name] ?? [];
   return {
-    shadows,
-    elevation: material,
-    colorShadow:
-      style.shadows === "subtle"
-        ? { x: 0, y: 2, blur: 6, spread: 0, alpha: 20 }
-        : { x: 0, y: 8, blur: 20, spread: -2, alpha: 28 },
+    palette,
+    darkPalette,
+    schemes: { light: scheme("light"), dark: scheme("dark") },
+    grey: neutral.grey,
   };
 }
 
 /**
  * The theme of a style: every color role at both contrast levels (from its hues or `brand`),
- * its fonts (or `fonts`), radius roles, surface edge, shadows and icon stroke on the shared base.
+ * its fonts (or `fonts`), weights, radius roles, borders, surface edge, shadow treatment and icon
+ * stroke on the shared base.
  */
 export function styleTheme(style: StyleDefinition, options: StyleThemeOptions = {}): Theme {
   const scales = scalesOf(style, options.brand);
-  const normal = colorsAt(style, scales, "default");
-  const high = colorsAt(style, scales, "high");
+  // A brand color replaces its ink.
+  const ink = (style.ink ?? []).filter((name) => !options.brand?.[name as keyof BrandColors]);
+  const normal = colorsAt(style, scales, "default", ink);
+  const high = colorsAt(style, scales, "high", ink);
+  const inked = ink.length > 0;
   const fonts = { ...style.fonts, ...options.fonts };
+  const treatment = treatmentShadows(style.shadows);
   const variants = { ...baseTheme.typography.variants };
   for (const name of ["h1", "h2", "h3", "h4", "h5", "h6"] as const) {
     const small = name === "h4" || name === "h5" || name === "h6";
@@ -174,10 +147,12 @@ export function styleTheme(style: StyleDefinition, options: StyleThemeOptions = 
     ...baseTheme,
     style: style.id,
     palette: normal.palette,
+    ...(inked ? { darkPalette: normal.darkPalette } : {}),
     grey: normal.grey,
     schemes: normal.schemes,
     highContrast: {
       palette: high.palette,
+      ...(inked ? { darkPalette: high.darkPalette } : {}),
       schemes: high.schemes,
       focusRingWidth: "3px",
       iconStroke: String(Math.max(1.75, style.iconStroke)),
@@ -192,6 +167,7 @@ export function styleTheme(style: StyleDefinition, options: StyleThemeOptions = 
       fontFamilyHeading: fonts.heading,
       fontFamilyLabel: fonts.label,
       fontFamilyMono: fonts.mono,
+      fontWeight: { ...baseTheme.typography.fontWeight, ...style.fontWeight },
       label: { ...style.label },
       heading: {
         textTransform: style.heading.textTransform,
@@ -200,8 +176,12 @@ export function styleTheme(style: StyleDefinition, options: StyleThemeOptions = 
       variants,
     },
     radiusRole: { ...style.radius },
+    borderWidth: { ...(style.borderWidth ?? baseTheme.borderWidth) },
     icon: { stroke: String(style.iconStroke) },
-    ...shadowsOf(style),
+    shadowTreatment: style.shadows,
+    shadows: { ...treatment.shadows },
+    elevation: [...elevationShadows],
+    colorShadow: [...treatment.colorShadow],
   };
 }
 

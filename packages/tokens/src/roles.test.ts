@@ -39,7 +39,8 @@ function matrix(theme: Theme) {
           level,
           dark,
           scheme,
-          palette: set.palette,
+          // Ink colors' fills switch with the scheme (ADR-0073 § 8).
+          palette: dark ? { ...set.palette, ...set.darkPalette } : set.palette,
           // Text and graphics sit on paper, on the page background and on `neutral` fills.
           surfaces: [scheme.background.paper, page, scheme.background.neutral],
         });
@@ -162,6 +163,42 @@ describe("Soft (the default style)", () => {
     expect(theme.surface.borderWidth).toBe("0px");
     expect(theme.schemes.light.surfaceBorder).toBe("transparent");
     expect(theme.icon.stroke).toBe("1.5");
+  });
+});
+
+describe("ink colors (Minimal Mono's primary, ADR-0073 § 8)", () => {
+  const theme = styleTheme(styles["minimal-mono"]);
+  const zinc = hexScale(tailwindPalette.zinc);
+  const lightness = (hex: string) => hexToOklch(hex).l;
+
+  it("fills near-black in light and near-white in dark, at every contrast level", () => {
+    expect(theme.palette.primary.main).toBe(zinc[900]);
+    expect(theme.palette.primary.contrastText).toBe("#FFFFFF");
+    expect(theme.darkPalette?.primary?.main).toBe(zinc[100]);
+    expect(theme.darkPalette?.primary?.contrastText).toBe(zinc[900]);
+    expect(theme.highContrast.palette.primary.main).toBe(zinc[950]);
+    expect(theme.highContrast.darkPalette?.primary?.main).toBe(zinc[50]);
+    // At least as dark as Inherit's fill in light (never the mid grey), near-white in dark.
+    expect(lightness(theme.palette.primary.main)).toBeLessThanOrEqual(
+      lightness(theme.schemes.light.inherit.main),
+    );
+    expect(lightness(theme.darkPalette?.primary?.main ?? "")).toBeGreaterThan(0.9);
+    expect(Object.keys(theme.darkPalette ?? {})).toEqual(["primary"]);
+  });
+
+  it("text tones follow the ink; the other colors keep their hue's fills", () => {
+    expect(theme.schemes.light.paletteText.primary).toBe(zinc[900]);
+    expect(theme.schemes.dark.paletteText.primary).toBe(zinc[100]);
+    expect(theme.darkPalette?.secondary).toBeUndefined();
+  });
+
+  it("a brand color replaces the ink; no other style has ink colors", () => {
+    const brand = createTheme({ style: "minimal-mono", brand: { primary: "#0E7490" } });
+    expect(brand.darkPalette).toBeUndefined();
+    for (const name of styleNames.filter((n) => n !== "minimal-mono")) {
+      expect(styleTheme(styles[name]).darkPalette).toBeUndefined();
+      expect(styleTheme(styles[name]).highContrast.darkPalette).toBeUndefined();
+    }
   });
 });
 

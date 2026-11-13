@@ -223,11 +223,23 @@ export const shadowNames = [
 ] as const;
 export type ShadowName = (typeof shadowNames)[number];
 
+/**
+ * How a style draws depth (ADR-0070 § 4.4): `soft` (two tinted layers), `subtle` (one short
+ * layer), `flat` (no shadows: the surface border draws the edge), `hard` (offset, no blur, ink).
+ */
+export const shadowTreatments = ["soft", "subtle", "flat", "hard"] as const;
+export type ShadowTreatment = (typeof shadowTreatments)[number];
+
 export const skinToneNames = ["light", "medium", "deep"] as const;
 export type SkinToneName = (typeof skinToneNames)[number];
 
 export interface Theme {
   palette: Record<PaletteColorName, PaletteColor>;
+  /**
+   * Fills of the ink colors in the dark scheme (`StyleDefinition.ink`): `main`, `dark` and
+   * `contrastText` that switch with the scheme. Other colors' fills are the same in both schemes.
+   */
+  darkPalette?: Partial<Record<PaletteColorName, PaletteColor>>;
   grey: GreyScale;
   common: { white: string; black: string };
   /**
@@ -244,6 +256,7 @@ export interface Theme {
    */
   highContrast: {
     palette: Record<PaletteColorName, PaletteColor>;
+    darkPalette?: Partial<Record<PaletteColorName, PaletteColor>>;
     schemes: { light: ColorScheme; dark: ColorScheme };
     focusRingWidth: string;
     iconStroke: string;
@@ -278,14 +291,19 @@ export interface Theme {
   spacing: string;
   /** Breakpoint min-widths in px. */
   breakpoints: Record<BreakpointName, number>;
+  /** How the style draws depth (ADR-0070 § 4.4, ADR-0073): the treatment of `shadows`. */
+  shadowTreatment: ShadowTreatment;
   shadows: Record<ShadowName, ShadowLayer[]>;
   /**
-   * System elevations 1–24 (index 0 = elevation 1): umbra, penumbra and ambient layers, tinted
-   * with the scheme's shadow color.
+   * Elevations 1–24 (index 0 = elevation 1): the named shadow each level aliases
+   * (`--ok-elevation-<n>: var(--ok-shadow-<name>)`), so every treatment reaches them.
    */
-  elevation: ShadowLayer[][];
-  /** Shadow under filled (contained) components, tinted with their palette color. */
-  colorShadow: ShadowLayer;
+  elevation: ShadowName[];
+  /**
+   * Shadow under filled (contained) components: tinted with their palette color, or the scheme's
+   * shadow color in the `hard` treatment. Empty = none.
+   */
+  colorShadow: ShadowLayer[];
   zIndex: {
     mobileStepper: number;
     dropdown: number;

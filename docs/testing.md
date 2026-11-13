@@ -105,6 +105,7 @@ fixed by making the test robust (wait for the right event, never a fixed delay),
 | e2e `foundations` › chart docs fits a phone | WebKit | 2026-11-13, PR #1 and PR #2 | passed on retry |
 | e2e `carousel.spec.ts` › html › scrolling the viewport (a swipe) selects the nearest slide | WebKit | 2026-11-13, PR #2 | 3/3 alone |
 | unit `carousel-controller.test.ts` › goTo takes a direction around a loop | Chromium | 2026-11-12 | under parallel builds |
+| unit `carousel-controller.test.ts` › ignores keys from inside slides | Chromium | 2026-11-13 (ST4a `pnpm check`) | full suite under load; 3/3 alone |
 | unit `data-grid-menu.test.tsx` | Chromium | 2026-11-12 | under load |
 | unit toaster hover test (`snackbar.test.tsx` › auto-closes after the duration) | Chromium | 2026-11-13 (twice: also ST3 `pnpm check`) | under load; 3/3 alone |
 | unit `drawer.test.tsx`, `walktour.test.ts`, `tooltip.test.ts` | Chromium / WebKit | 2026-11-12 (S2) | under load |

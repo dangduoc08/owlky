@@ -45,7 +45,8 @@ and lengths with `calc()`. Two problems showed up while building ST3:
    `var(--ok-shadow-color)` (one private `--_ok-sc<alpha>` per alpha) and colored shadows over
    the scope's `main`; their geometry is the core style's. **ST4 hook:** a style with another
    geometry (flat, hard) needs per-layer geometry inputs in the resolver or its own shadow block;
-   ST4 decides, measured against the budgets.
+   ST4 decides, measured against the budgets. Decided in ADR-0073: geometry per treatment, a
+   shared shadow switch in the opt-in sheets that need it, elevations as aliases.
 5. **Token trims (pre-release, no aliases).**
    - Channels exist only for colors components tint: each palette color's `main`, greys 500–900,
      black, white and paper. `-lighter-channel`, `-light-channel`, `-dark-channel`,

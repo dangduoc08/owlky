@@ -17,6 +17,7 @@
  * Everything sits in `@layer theme`: unlayered author CSS overrides any token.
  */
 import { hexToRgb } from "./color.js";
+import { treatmentShadows } from "./shadows.js";
 import {
   breakpointNames,
   type ColorScheme,
@@ -30,7 +31,10 @@ import {
   radiusNames,
   radiusRoleNames,
   type ShadowLayer,
+  type ShadowName,
+  type ShadowTreatment,
   shadowNames,
+  shadowTreatments,
   skinToneNames,
   type Theme,
   typographyVariants,
@@ -224,14 +228,20 @@ function variantTokens(theme: Theme): VariantToken[] {
     tokens.push({ name, key: tokens.length.toString(36), axes, values });
 
   // Fills: the same in both schemes; high contrast moves them (the tints are style literals).
+  // Ink colors' fills switch with the scheme too (ADR-0073 § 8).
   for (const name of paletteColorNames) {
     const normal: PaletteColor = theme.palette[name];
     const high: PaletteColor = hc.palette[name];
+    const dark = theme.darkPalette?.[name];
+    const darkHigh = hc.darkPalette?.[name];
+    const fill = (name: `--ok-${string}`, pick: (color: PaletteColor) => string) =>
+      dark && darkHigh
+        ? add(name, "dh", { "": pick(normal), d: pick(dark), h: pick(high), dh: pick(darkHigh) })
+        : add(name, "h", { "": pick(normal), h: pick(high) });
     for (const shade of FILL_SHADES) {
       const token = `--ok-palette-${name}-${kebab(shade)}` as const;
-      add(token, "h", { "": normal[shade], h: high[shade] });
-      if (shade === "main")
-        add(`${token}-channel`, "h", { "": channel(normal[shade]), h: channel(high[shade]) });
+      fill(token, (color) => color[shade]);
+      if (shade === "main") fill(`${token}-channel`, (color) => channel(color[shade]));
     }
   }
 
@@ -407,24 +417,116 @@ function formulaVariables(theme: Theme): CssVariables {
   vars["--ok-gradient-paper"] = GRADIENT_PAPER;
   // Shadows read the nearest scope's shadow color (and colored ones the scope's `main`), through
   // one private token per alpha.
-  const color = SHADOW_COLOR;
-  const alphas = new Set(
-    [...shadowNames.flatMap((n) => theme.shadows[n]), ...theme.elevation.flat()].map(
-      (l) => l.alpha,
-    ),
-  );
-  for (const alpha of [...alphas].sort((a, b) => a - b))
-    if (alpha < 100)
-      vars[shadowAlpha(alpha)] = `color-mix(in srgb, ${SHADOW_COLOR} ${alpha}%, transparent)`;
-  for (const name of shadowNames)
-    vars[`--ok-shadow-${kebab(name)}`] = shadow(theme.shadows[name], color);
-  for (const name of dropShadowNames)
-    vars[`--ok-drop-shadow-${name}`] = dropShadow(theme.shadows[name], color);
-  theme.elevation.forEach((layers, index) => {
-    vars[`--ok-elevation-${index + 1}`] = shadow(layers, color);
+  Object.assign(vars, alphaVariables(shadowAlphas(theme.shadows)));
+  Object.assign(vars, shadowVariables(theme.shadows, theme.colorShadow, theme.shadowTreatment));
+  // Elevations alias the nearest named shadow, so they follow every treatment (ADR-0073).
+  theme.elevation.forEach((name, index) => {
+    vars[`--ok-elevation-${index + 1}`] = `var(--ok-shadow-${kebab(name)})`;
   });
+  return vars;
+}
+
+/** Every alpha the layers use below 100 %. */
+const shadowAlphas = (shadows: Record<ShadowName, ShadowLayer[]>) =>
+  new Set(
+    shadowNames.flatMap((n) => shadows[n].map((l) => l.alpha)).filter((alpha) => alpha < 100),
+  );
+
+/** `--_ok-sc<alpha>`: the scope's shadow color at each alpha. */
+function alphaVariables(alphas: Set<number>): CssVariables {
+  const vars: CssVariables = {};
+  for (const alpha of [...alphas].sort((a, b) => a - b))
+    vars[shadowAlpha(alpha)] = `color-mix(in srgb, ${SHADOW_COLOR} ${alpha}%, transparent)`;
+  return vars;
+}
+
+/** The shadow tokens of one geometry: named, drop-shadow filters and colored. */
+function shadowVariables(
+  shadows: Record<ShadowName, ShadowLayer[]>,
+  colorShadow: ShadowLayer[],
+  treatment: ShadowTreatment,
+): CssVariables {
+  const vars: CssVariables = {};
+  for (const name of shadowNames)
+    vars[`--ok-shadow-${kebab(name)}`] = shadow(shadows[name], SHADOW_COLOR);
+  for (const name of dropShadowNames)
+    vars[`--ok-drop-shadow-${name}`] = dropShadow(shadows[name], SHADOW_COLOR);
+  const ink = treatmentShadows(treatment).colorInk;
   for (const name of paletteColorNames)
-    vars[`--ok-shadow-${name}`] = shadow([theme.colorShadow], `var(--ok-palette-${name}-main)`);
+    vars[`--ok-shadow-${name}`] = shadow(
+      colorShadow,
+      ink ? SHADOW_COLOR : `var(--ok-palette-${name}-main)`,
+    );
+  return vars;
+}
+
+/* Shadow treatments (ADR-0073) ------------------------------------------------------------ */
+
+/**
+ * One toggle per treatment: `initial` for the scope's treatment, a space for the others. Only
+ * opt-in sheets of a treatment other than soft declare them, with their shadow switch below.
+ */
+const TREATMENT_TOGGLE: Record<ShadowTreatment, `--_ok-${string}`> = {
+  soft: "--_ok-ws",
+  subtle: "--_ok-wu",
+  flat: "--_ok-wf",
+  hard: "--_ok-wh",
+};
+
+const treatmentToggles = (active: ShadowTreatment): CssVariables => {
+  const vars: CssVariables = {};
+  for (const t of shadowTreatments) vars[TREATMENT_TOGGLE[t]] = t === active ? ON : OFF;
+  return vars;
+};
+
+/**
+ * The shadow tokens as a switch over every treatment, for every scope element. Identical in each
+ * sheet that carries it (generated from the treatments, not from the sheet's style), so two such
+ * sheets never undo each other; the nearest style scope's toggles pick the branch.
+ */
+function treatmentSwitch(): CssVariables {
+  const branches = shadowTreatments.map((t) => {
+    const { shadows, colorShadow } = treatmentShadows(t);
+    return { t, vars: shadowVariables(shadows, colorShadow, t) };
+  });
+  const core = shadowAlphas(treatmentShadows("soft").shadows);
+  const extra = new Set<number>();
+  for (const t of shadowTreatments)
+    for (const alpha of shadowAlphas(treatmentShadows(t).shadows))
+      if (!core.has(alpha)) extra.add(alpha);
+  const vars: CssVariables = alphaVariables(extra);
+  for (const name of Object.keys(branches[0]?.vars ?? {}) as `--ok-${string}`[]) {
+    vars[name] = branches
+      .map(({ t, vars: values }) => `var(${TREATMENT_TOGGLE[t]}, ${values[name]})`)
+      .join(" ");
+  }
+  return vars;
+}
+
+/* Ink colors (ADR-0073 § 8) ---------------------------------------------------------------- */
+
+/**
+ * The fills of the theme's ink colors for every scope element: a dark-and-contrast formula over
+ * the inputs, where a dark input falls back to the light one and then to the core sheet's value
+ * (`base`), so every other style's scope resolves them as the core resolver does. Generated from
+ * the token keys and `base` only, so sheets that ink the same color write the same declarations.
+ */
+function inkSwitch(tokens: VariantToken[], base: Theme): CssVariables {
+  const core = variantTokens(base);
+  const vars: CssVariables = {};
+  for (const [index, token] of tokens.entries()) {
+    const own = core[index];
+    if (!own || own.axes === token.axes) continue;
+    const r = (v: "" | "h") => `var(${input(token, v)}, ${variantValue(own, v)})`;
+    const d = `var(${input(token, "d")}, ${r("")})`;
+    const dh = `var(${input(token, "dh")}, ${r("h")})`;
+    vars[token.name] = when(
+      IS.dark,
+      IS.light,
+      when(IS.high, IS.normal, dh, d),
+      when(IS.high, IS.normal, r("h"), r("")),
+    );
+  }
   return vars;
 }
 
@@ -502,7 +604,9 @@ export interface ThemeCssOptions {
   /**
    * Where the theme's style tokens and inputs go. Default `:where(:root), [data-ok-style="<id>"]`
    * with the whole core (switches, resolver, density, base tokens, color bindings). Any other
-   * selector writes only the style scope: an opt-in style sheet, or a theme for one subtree.
+   * selector writes only the style scope: an opt-in style sheet, or a theme for one subtree. A
+   * theme whose shadow treatment isn't `soft` also writes the treatment toggles and the shared
+   * shadow switch (ADR-0073); the switch must load after the core sheet.
    */
   selector?: string;
   /** Emit the `[data-ok-color]` bindings and their `@property` registrations. Default `true`. */
@@ -512,6 +616,11 @@ export interface ThemeCssOptions {
    * other style scope nested inside resets this style's inputs. Opt-in style sheets pass it.
    */
   reset?: string;
+  /**
+   * With `selector`: the core sheet's theme (`defaultTheme`). Required when the theme has ink
+   * colors (`darkPalette`): their fills switch on every scope element and fall back to its values.
+   */
+  base?: Theme;
 }
 
 /** `--ok-c-*` values for one component color. */
@@ -574,12 +683,12 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
   const tokens = variantTokens(theme);
   const core = options.selector === undefined;
   const selector = options.selector ?? `:where(:root), [data-ok-style="${theme.style}"]`;
-  const parts = [
-    LAYER_ORDER,
-    "",
-    "@layer theme {",
-    block(selector, styleScope(theme, tokens, core)),
-  ];
+  // A treatment other than the core's: the style scope sets its toggle, the root and every other
+  // style scope the soft one, and every scope element recomputes the shadows (ADR-0073).
+  const treatment = !core && theme.shadowTreatment !== "soft";
+  const scope = styleScope(theme, tokens, core);
+  if (treatment) Object.assign(scope, treatmentToggles(theme.shadowTreatment));
+  const parts = [LAYER_ORDER, "", "@layer theme {", block(selector, scope)];
   if (core) {
     const dark = { "--_ok-dark": "1", [IS.dark]: ON, [IS.light]: OFF };
     const light = { "--_ok-dark": "0", [IS.dark]: OFF, [IS.light]: ON };
@@ -619,9 +728,25 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
       }
     }
   }
+  if (treatment) {
+    parts.push(
+      block(":where(:root)", treatmentToggles("soft")),
+      block(`${SCOPE_SELECTOR}, ${selector}`, treatmentSwitch()),
+    );
+  }
+  if (!core && (theme.darkPalette || theme.highContrast.darkPalette)) {
+    if (!options.base) throw new Error("themeToCss: a theme with ink colors needs `base`");
+    // Wins over the core resolver by source order, like the shadow switch.
+    parts.push(block(`${SCOPE_SELECTOR}, ${selector}`, inkSwitch(tokens, options.base)));
+  }
   if (!core && options.reset) {
     // Zero specificity: another style's own scope still declares its inputs over the reset.
-    parts.push(block(`:where([data-ok-style]:not(${options.reset}))`, resetInputs(tokens)));
+    parts.push(
+      block(`:where([data-ok-style]:not(${options.reset}))`, {
+        ...resetInputs(tokens),
+        ...(treatment ? treatmentToggles("soft") : {}),
+      }),
+    );
   }
   parts.push("}");
   if (core && options.colorBindings !== false) {

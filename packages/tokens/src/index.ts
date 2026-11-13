@@ -25,7 +25,7 @@ export {
   themeToCss,
   themeToCssVariables,
 } from "./css.js";
-export { baseTheme, elevationLayers } from "./default-theme.js";
+export { baseTheme } from "./default-theme.js";
 export { fontSizeRange } from "./font-size.js";
 export {
   brandScale,
@@ -43,14 +43,18 @@ export {
   shiftToContrast,
   tint,
 } from "./roles.js";
+export { elevationShadows, type TreatmentShadows, treatmentShadows } from "./shadows.js";
 export {
+  defaultStyleName,
   fontStack,
-  type ShadowTreatment,
+  monoStack,
+  neoBrutalism,
   type StyleDefinition,
   type StyleName,
   soft,
   styleNames,
   styles,
+  swiss,
 } from "./styles.js";
 export {
   type ColorScale,

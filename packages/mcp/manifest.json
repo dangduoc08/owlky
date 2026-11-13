@@ -6488,7 +6488,7 @@
      },
      {
       "name": "--ok-elevation-8",
-      "value": "0 5px 5px -3px var(--_ok-sc20), 0 8px 10px 1px var(--_ok-sc14), 0 3px 14px 2px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z8)"
      },
      {
       "name": "--ok-focus-ring-color",
@@ -41087,6 +41087,14 @@
       "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
      },
      {
+      "name": "--ok-heading-letter-spacing",
+      "value": "normal"
+     },
+     {
+      "name": "--ok-heading-text-transform",
+      "value": "none"
+     },
+     {
       "name": "--ok-radius-surface",
       "value": "18px"
      },
@@ -41757,7 +41765,7 @@
      "title": "Options"
     },
     {
-     "body": "The paper is a Paper (ADR-0066, 2026-11-12): `data-ok-paper` right after `data-ok-dialog-paper`,\n`elevation` written on it like `transition` (`children` option), the dialog shadow rule is\n`:not([data-ok-elevation])`; `dialog.css` (after `paper.css`) restates radius and background.\nPaper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16px (32px from\n600px), max height viewport − 2 × margin; widths xs 444px, sm 600px, md/lg/xl the breakpoint\ntokens. Title h6 (600) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content\ntext `--ok-text-secondary` body1; actions padding 24px, gap 12px. Full screen: no margin, radius,\nshadow. Backdrop `--ok-backdrop`. Opening: paper fade + scale 0.96 (`--ok-duration-short`,\ndecelerate), backdrop fade. Closing (`data-ok-state=\"exiting\"`): the same backwards\n(`ok-dialog-out`, `--ok-duration-shorter`, accelerate; a Motion paper: its exit, `--ok-duration-exit`,\nand the backdrop with it). Reduced motion: none.",
+     "body": "The paper is a Paper (ADR-0066, 2026-11-12): `data-ok-paper` right after `data-ok-dialog-paper`,\n`elevation` written on it like `transition` (`children` option), the dialog shadow rule is\n`:not([data-ok-elevation])`; `dialog.css` (after `paper.css`) restates radius and background.\nPaper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16px (32px from\n600px), max height viewport − 2 × margin; widths xs 444px, sm 600px, md/lg/xl the breakpoint\ntokens. Title h6 (600; the style's heading case and tracking: `--ok-heading-text-transform`, `--ok-heading-letter-spacing`) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content\ntext `--ok-text-secondary` body1; actions padding 24px, gap 12px. Full screen: no margin, radius,\nshadow. Backdrop `--ok-backdrop`. Opening: paper fade + scale 0.96 (`--ok-duration-short`,\ndecelerate), backdrop fade. Closing (`data-ok-state=\"exiting\"`): the same backwards\n(`ok-dialog-out`, `--ok-duration-shorter`, accelerate; a Motion paper: its exit, `--ok-duration-exit`,\nand the backdrop with it). Reduced motion: none.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -62375,99 +62383,99 @@
      },
      {
       "name": "--ok-elevation-1",
-      "value": "0 2px 1px -1px var(--_ok-sc20), 0 1px 1px 0 var(--_ok-sc14), 0 1px 3px 0 var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z1)"
      },
      {
       "name": "--ok-elevation-10",
-      "value": "0 6px 6px -3px var(--_ok-sc20), 0 10px 14px 1px var(--_ok-sc14), 0 4px 18px 3px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z12)"
      },
      {
       "name": "--ok-elevation-11",
-      "value": "0 6px 7px -4px var(--_ok-sc20), 0 11px 15px 1px var(--_ok-sc14), 0 4px 20px 3px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z12)"
      },
      {
       "name": "--ok-elevation-12",
-      "value": "0 7px 8px -4px var(--_ok-sc20), 0 12px 17px 2px var(--_ok-sc14), 0 5px 22px 4px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z12)"
      },
      {
       "name": "--ok-elevation-13",
-      "value": "0 7px 8px -4px var(--_ok-sc20), 0 13px 19px 2px var(--_ok-sc14), 0 5px 24px 4px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z16)"
      },
      {
       "name": "--ok-elevation-14",
-      "value": "0 7px 9px -4px var(--_ok-sc20), 0 14px 21px 2px var(--_ok-sc14), 0 5px 26px 4px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z16)"
      },
      {
       "name": "--ok-elevation-15",
-      "value": "0 8px 9px -5px var(--_ok-sc20), 0 15px 22px 2px var(--_ok-sc14), 0 6px 28px 5px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z16)"
      },
      {
       "name": "--ok-elevation-16",
-      "value": "0 8px 10px -5px var(--_ok-sc20), 0 16px 24px 2px var(--_ok-sc14), 0 6px 30px 5px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z16)"
      },
      {
       "name": "--ok-elevation-17",
-      "value": "0 8px 11px -5px var(--_ok-sc20), 0 17px 26px 2px var(--_ok-sc14), 0 6px 32px 5px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z20)"
      },
      {
       "name": "--ok-elevation-18",
-      "value": "0 9px 11px -5px var(--_ok-sc20), 0 18px 28px 2px var(--_ok-sc14), 0 7px 34px 6px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z20)"
      },
      {
       "name": "--ok-elevation-19",
-      "value": "0 9px 12px -6px var(--_ok-sc20), 0 19px 29px 2px var(--_ok-sc14), 0 7px 36px 6px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z20)"
      },
      {
       "name": "--ok-elevation-2",
-      "value": "0 3px 1px -2px var(--_ok-sc20), 0 2px 2px 0 var(--_ok-sc14), 0 1px 5px 0 var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z4)"
      },
      {
       "name": "--ok-elevation-20",
-      "value": "0 10px 13px -6px var(--_ok-sc20), 0 20px 31px 3px var(--_ok-sc14), 0 8px 38px 7px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z20)"
      },
      {
       "name": "--ok-elevation-21",
-      "value": "0 10px 13px -6px var(--_ok-sc20), 0 21px 33px 3px var(--_ok-sc14), 0 8px 40px 7px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z24)"
      },
      {
       "name": "--ok-elevation-22",
-      "value": "0 10px 14px -6px var(--_ok-sc20), 0 22px 35px 3px var(--_ok-sc14), 0 8px 42px 7px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z24)"
      },
      {
       "name": "--ok-elevation-23",
-      "value": "0 11px 14px -7px var(--_ok-sc20), 0 23px 36px 3px var(--_ok-sc14), 0 9px 44px 8px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z24)"
      },
      {
       "name": "--ok-elevation-24",
-      "value": "0 11px 15px -7px var(--_ok-sc20), 0 24px 38px 3px var(--_ok-sc14), 0 9px 46px 8px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z24)"
      },
      {
       "name": "--ok-elevation-3",
-      "value": "0 3px 3px -2px var(--_ok-sc20), 0 3px 4px 0 var(--_ok-sc14), 0 1px 8px 0 var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z4)"
      },
      {
       "name": "--ok-elevation-4",
-      "value": "0 2px 4px -1px var(--_ok-sc20), 0 4px 5px 0 var(--_ok-sc14), 0 1px 10px 0 var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z4)"
      },
      {
       "name": "--ok-elevation-5",
-      "value": "0 3px 5px -1px var(--_ok-sc20), 0 5px 8px 0 var(--_ok-sc14), 0 1px 14px 0 var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z8)"
      },
      {
       "name": "--ok-elevation-6",
-      "value": "0 3px 5px -1px var(--_ok-sc20), 0 6px 10px 0 var(--_ok-sc14), 0 1px 18px 0 var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z8)"
      },
      {
       "name": "--ok-elevation-7",
-      "value": "0 4px 5px -2px var(--_ok-sc20), 0 7px 10px 1px var(--_ok-sc14), 0 2px 16px 1px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z8)"
      },
      {
       "name": "--ok-elevation-8",
-      "value": "0 5px 5px -3px var(--_ok-sc20), 0 8px 10px 1px var(--_ok-sc14), 0 3px 14px 2px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z8)"
      },
      {
       "name": "--ok-elevation-9",
-      "value": "0 5px 6px -3px var(--_ok-sc20), 0 9px 12px 1px var(--_ok-sc14), 0 3px 16px 2px var(--_ok-sc12)"
+      "value": "var(--ok-shadow-z12)"
      },
      {
       "name": "--ok-palette-grey-500-channel",
@@ -83773,7 +83781,7 @@
    "kind": "foundation",
    "sections": [
     {
-     "body": "Shadows show how far a surface sits above the page. Owlky has three kinds:\n\n- **Elevation:** 24 levels, from `--ok-elevation-1` (almost flat) to `--ok-elevation-24` (floating).\n- **Named shadows:** shadows for common surfaces. Use `--ok-shadow-card` for cards, `--ok-shadow-dropdown` for menus and popovers, `--ok-shadow-dialog` for dialogs and `--ok-shadow-dialog-start` for drawers. The scale `--ok-shadow-z1` to `--ok-shadow-z24` covers everything in between.\n- **Colored shadows:** one per palette color, such as `--ok-shadow-primary`, for filled buttons and highlighted elements.\n- **Drop shadows:** `--ok-drop-shadow-z1`, `--ok-drop-shadow-z4` and `--ok-drop-shadow-z8` repeat `--ok-shadow-z1`, `--ok-shadow-z4` and `--ok-shadow-z8` as `filter` values, for shapes such as map pins and icons.\n\nThe stories in the sidebar show every shadow.",
+     "body": "Shadows show how far a surface sits above the page. Owlky has three kinds:\n\n- **Elevation:** 24 levels, from `--ok-elevation-1` (almost flat) to `--ok-elevation-24` (floating). Each level uses the nearest shadow of the `--ok-shadow-z1` to `--ok-shadow-z24` scale, so levels change with the design style like every other shadow.\n- **Named shadows:** shadows for common surfaces. Use `--ok-shadow-card` for cards, `--ok-shadow-dropdown` for menus and popovers, `--ok-shadow-dialog` for dialogs and `--ok-shadow-dialog-start` for drawers. The scale `--ok-shadow-z1` to `--ok-shadow-z24` covers everything in between.\n- **Colored shadows:** one per palette color, such as `--ok-shadow-primary`, for filled buttons and highlighted elements.\n- **Drop shadows:** `--ok-drop-shadow-z1`, `--ok-drop-shadow-z4` and `--ok-drop-shadow-z8` repeat `--ok-shadow-z1`, `--ok-shadow-z4` and `--ok-shadow-z8` as `filter` values, for shapes such as map pins and icons.\n\nThe stories in the sidebar show every shadow.",
      "id": "levels",
      "title": "Shadow levels"
     },
@@ -89625,122 +89633,122 @@
    {
     "group": "elevation",
     "name": "--ok-elevation-1",
-    "value": "0 2px 1px -1px var(--_ok-sc20), 0 1px 1px 0 var(--_ok-sc14), 0 1px 3px 0 var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z1)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-10",
-    "value": "0 6px 6px -3px var(--_ok-sc20), 0 10px 14px 1px var(--_ok-sc14), 0 4px 18px 3px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z12)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-11",
-    "value": "0 6px 7px -4px var(--_ok-sc20), 0 11px 15px 1px var(--_ok-sc14), 0 4px 20px 3px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z12)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-12",
-    "value": "0 7px 8px -4px var(--_ok-sc20), 0 12px 17px 2px var(--_ok-sc14), 0 5px 22px 4px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z12)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-13",
-    "value": "0 7px 8px -4px var(--_ok-sc20), 0 13px 19px 2px var(--_ok-sc14), 0 5px 24px 4px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z16)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-14",
-    "value": "0 7px 9px -4px var(--_ok-sc20), 0 14px 21px 2px var(--_ok-sc14), 0 5px 26px 4px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z16)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-15",
-    "value": "0 8px 9px -5px var(--_ok-sc20), 0 15px 22px 2px var(--_ok-sc14), 0 6px 28px 5px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z16)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-16",
-    "value": "0 8px 10px -5px var(--_ok-sc20), 0 16px 24px 2px var(--_ok-sc14), 0 6px 30px 5px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z16)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-17",
-    "value": "0 8px 11px -5px var(--_ok-sc20), 0 17px 26px 2px var(--_ok-sc14), 0 6px 32px 5px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z20)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-18",
-    "value": "0 9px 11px -5px var(--_ok-sc20), 0 18px 28px 2px var(--_ok-sc14), 0 7px 34px 6px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z20)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-19",
-    "value": "0 9px 12px -6px var(--_ok-sc20), 0 19px 29px 2px var(--_ok-sc14), 0 7px 36px 6px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z20)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-2",
-    "value": "0 3px 1px -2px var(--_ok-sc20), 0 2px 2px 0 var(--_ok-sc14), 0 1px 5px 0 var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z4)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-20",
-    "value": "0 10px 13px -6px var(--_ok-sc20), 0 20px 31px 3px var(--_ok-sc14), 0 8px 38px 7px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z20)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-21",
-    "value": "0 10px 13px -6px var(--_ok-sc20), 0 21px 33px 3px var(--_ok-sc14), 0 8px 40px 7px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z24)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-22",
-    "value": "0 10px 14px -6px var(--_ok-sc20), 0 22px 35px 3px var(--_ok-sc14), 0 8px 42px 7px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z24)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-23",
-    "value": "0 11px 14px -7px var(--_ok-sc20), 0 23px 36px 3px var(--_ok-sc14), 0 9px 44px 8px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z24)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-24",
-    "value": "0 11px 15px -7px var(--_ok-sc20), 0 24px 38px 3px var(--_ok-sc14), 0 9px 46px 8px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z24)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-3",
-    "value": "0 3px 3px -2px var(--_ok-sc20), 0 3px 4px 0 var(--_ok-sc14), 0 1px 8px 0 var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z4)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-4",
-    "value": "0 2px 4px -1px var(--_ok-sc20), 0 4px 5px 0 var(--_ok-sc14), 0 1px 10px 0 var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z4)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-5",
-    "value": "0 3px 5px -1px var(--_ok-sc20), 0 5px 8px 0 var(--_ok-sc14), 0 1px 14px 0 var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z8)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-6",
-    "value": "0 3px 5px -1px var(--_ok-sc20), 0 6px 10px 0 var(--_ok-sc14), 0 1px 18px 0 var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z8)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-7",
-    "value": "0 4px 5px -2px var(--_ok-sc20), 0 7px 10px 1px var(--_ok-sc14), 0 2px 16px 1px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z8)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-8",
-    "value": "0 5px 5px -3px var(--_ok-sc20), 0 8px 10px 1px var(--_ok-sc14), 0 3px 14px 2px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z8)"
    },
    {
     "group": "elevation",
     "name": "--ok-elevation-9",
-    "value": "0 5px 6px -3px var(--_ok-sc20), 0 9px 12px 1px var(--_ok-sc14), 0 3px 16px 2px var(--_ok-sc12)"
+    "value": "var(--ok-shadow-z12)"
    },
    {
     "group": "fab",

@@ -99,8 +99,9 @@ const componentFiles = (await readdir(join(src, "components"))).filter((f) => f.
 //   owlky(.min).css        tokens + core components (what the CDN page links)
 //   owlky-all(.min).css    tokens + every component (one file, for bundlers and tests)
 //   modules/<name>.css     one lazy family (minified; the loader attaches it before its code)
-// `styles`: the hook for the design styles' opt-in sheets (ADR-0070 delivery, filled by ST3 /
-// ST4: name -> component files or its own source). Nothing builds from it yet.
+// `styles`: the design styles' opt-in sheets (ADR-0070 § 6, ADR-0073), id -> sheet path in dist.
+// The source keeps it empty: the build fills it from the sheets @owlky/tokens generates (below),
+// so a new style touches no file here.
 const { styles: _styles, ...families } = JSON.parse(
   await readFile(join(src, "families.json"), "utf8"),
 );
@@ -165,8 +166,26 @@ for (const file of componentFiles) {
   outputs.push(out);
 }
 
+// Design styles (ADR-0073): each opt-in sheet that @owlky/tokens generates (dist/sheets/<id>.css,
+// inputs only, in @layer theme), readable and minified like the tokens.
+const sheetsDir = join(dirname(tokensCss), "sheets");
+const styleSheets = {};
+await mkdir(join(dist, "styles"));
+for (const file of (await readdir(sheetsDir)).filter((f) => f.endsWith(".css")).sort()) {
+  const name = basename(file, ".css");
+  const css = await readFile(join(sheetsDir, file), "utf8");
+  await writeFile(join(dist, "styles", `${name}.css`), css);
+  await writeFile(join(dist, "styles", `${name}.min.css`), `${minifyTokens(css)}\n`);
+  outputs.push(join(dist, "styles", `${name}.css`), join(dist, "styles", `${name}.min.css`));
+  styleSheets[name] = `styles/${name}.css`;
+}
+
 for (const file of outputs) await check(file);
 await copyFile(tokensCss, join(dist, "tokens.css"));
 await copyFile(join(src, "theme.css"), join(dist, "theme.css"));
-await copyFile(join(src, "families.json"), join(dist, "families.json"));
+const familiesSource = JSON.parse(await readFile(join(src, "families.json"), "utf8"));
+await writeFile(
+  join(dist, "families.json"),
+  `${JSON.stringify({ ...familiesSource, styles: styleSheets }, null, 2)}\n`,
+);
 console.log(`styles: built ${outputs.length + 2} CSS files`);

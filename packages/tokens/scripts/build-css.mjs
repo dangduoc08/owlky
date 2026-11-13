@@ -1,6 +1,15 @@
-// Generates dist/tokens.css and dist/tokens.json from the compiled TypeScript tokens.
-import { writeFile } from "node:fs/promises";
-import { defaultTheme, themeToCss, themeToCssVariables } from "../dist/index.js";
+// Generates dist/tokens.css and dist/tokens.json from the compiled TypeScript tokens, and one
+// opt-in sheet per style besides the default, dist/sheets/<id>.css (ADR-0070 § 6, ADR-0073).
+import { mkdir, writeFile } from "node:fs/promises";
+import {
+  defaultStyleName,
+  defaultTheme,
+  styleNames,
+  styles,
+  styleTheme,
+  themeToCss,
+  themeToCssVariables,
+} from "../dist/index.js";
 
 const banner = "/* @owlky/tokens — generated, do not edit. */\n";
 
@@ -9,4 +18,17 @@ await writeFile(
   new URL("../dist/tokens.json", import.meta.url),
   `${JSON.stringify({ theme: defaultTheme, cssVariables: themeToCssVariables(defaultTheme) }, null, 2)}\n`,
 );
-console.log("tokens: wrote dist/tokens.css, dist/tokens.json");
+
+await mkdir(new URL("../dist/sheets/", import.meta.url), { recursive: true });
+const sheets = styleNames.filter((name) => name !== defaultStyleName);
+for (const name of sheets) {
+  const scope = `[data-ok-style="${name}"]`;
+  const css = themeToCss(styleTheme(styles[name]), {
+    selector: scope,
+    reset: scope,
+    base: defaultTheme,
+  });
+  const head = `/* @owlky/tokens — the ${styles[name].name} style (data-ok-style="${name}"), generated, do not edit. Load after owlky.css. */\n`;
+  await writeFile(new URL(`../dist/sheets/${name}.css`, import.meta.url), head + css);
+}
+console.log(`tokens: wrote dist/tokens.css, dist/tokens.json and ${sheets.length} style sheets`);

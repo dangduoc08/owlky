@@ -92,6 +92,8 @@ const budgets = [
   // component in one file: bundlers, tests, Storybook); each lazy module has its own sheet,
   // budgeted below. The history above is the all-in-one file's.
   // Core 29.43 kB measured (62.7 kB for the whole bundle before the split; the target was 35 kB).
+  // ST4 (ADR-0073): elevations alias the named shadows instead of 24 three-layer Material
+  // shadows, about 0.3 kB less in both: core 29.41 kB, all 63.17 kB (29.70 / 63.45 kB after ST3).
   ["packages/styles/dist/owlky.min.css", 30_900, "Core CSS (tokens + light components)"],
   ["packages/styles/dist/owlky-all.min.css", 63_500, "All CSS (tokens + components)"], // 63.50 kB
   // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
@@ -153,6 +155,27 @@ for (const [name, limit] of Object.entries(MODULE_SHEET_BUDGETS))
     limit,
     `Lazy module stylesheet ${name}`,
   ]);
+
+// The design styles' opt-in sheets (`styles/<id>.min.css`, CDN `owlky-style-<id>.min.css`,
+// ADR-0070 § 6, ADR-0073), measured plus at most 5%; ADR-0070's target is 2–4 kB each. Every
+// sheet the build writes needs an entry: a new style adds its line here.
+const STYLE_SHEET_BUDGETS = {
+  bauhaus: 2_790, // 2.65 kB
+  brutalism: 2_720, // 2.59 kB
+  "neo-brutalism": 2_750, // 2.63 kB (inputs, literals, the treatment toggles and shadow switch)
+  swiss: 2_750, // 2.61 kB
+  editorial: 2_830, // 2.69 kB
+  "minimal-mono": 2_430, // 2.32 kB (a soft style: no shadow switch; the ink switch, ADR-0073 § 8)
+  corporate: 2_760, // 2.63 kB
+  nordic: 2_180, // 2.07 kB (a soft style: no shadow switch)
+};
+for (const file of await readdir("packages/styles/dist/styles")) {
+  const name = file.match(/^(.+)\.min\.css$/)?.[1];
+  if (name && !(name in STYLE_SHEET_BUDGETS))
+    throw new Error(`check-size: no budget for the style sheet ${file} (STYLE_SHEET_BUDGETS)`);
+}
+for (const [name, limit] of Object.entries(STYLE_SHEET_BUDGETS))
+  budgets.push([`packages/styles/dist/styles/${name}.min.css`, limit, `Style sheet ${name}`]);
 
 // The lazy modules of owlky.js (ADR-0068, roadmap-size.md decision 9), each file on its own, as
 // measured in S2 plus at most 5%; the shared chunks they import are budgeted together below (a

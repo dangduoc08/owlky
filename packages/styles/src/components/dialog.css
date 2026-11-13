@@ -170,6 +170,8 @@
     font-size: var(--ok-typography-h6-font-size);
     font-weight: var(--ok-typography-h6-font-weight);
     line-height: var(--ok-typography-h6-line-height);
+    letter-spacing: var(--ok-heading-letter-spacing);
+    text-transform: var(--ok-heading-text-transform);
   }
 
   :where([data-ok-dialog-content]) {

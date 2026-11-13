@@ -49,7 +49,8 @@ test.describe("Foundations / Shadows", () => {
     // Engines serialize color-mix() differently (rgba() or color(srgb …)): check alpha + geometry.
     await expect(page.locator('[data-shadow="--ok-elevation-1"]')).toHaveCSS(
       "box-shadow",
-      /0\.2\) 0px 2px 1px -1px, .*0\.14\) 0px 1px 1px 0px, .*0\.12\) 0px 1px 3px 0px$/,
+      // Elevation 1 aliases --ok-shadow-z1 (ADR-0073): Soft's two layers.
+      /0\.1\) 0px 1px 2px 0px, .*0\.08\) 0px 1px 3px 0px$/,
     );
     await openStory(page, "foundations-shadows--custom");
     await expect(page.locator("[data-shadow]")).toHaveCount(shadowNames.length);

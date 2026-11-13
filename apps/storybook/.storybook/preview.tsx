@@ -1,7 +1,23 @@
-// Soft, the default style, uses Nunito (ADR-0070); Owlky itself doesn't bundle fonts.
+// Each style's fonts (ADR-0070 § 1; Owlky itself doesn't bundle fonts): Soft, the default, uses
+// Nunito, Swiss Inter, Bauhaus Montserrat, Brutalism IBM Plex Mono (no variable build: one file
+// per weight), Neo-Brutalism Space Grotesk, Editorial Noto Serif Display / Source Serif 4 / Archivo,
+// Minimal Mono Inter, Corporate IBM Plex Sans, Nordic Manrope. A browser only downloads the fonts a
+// page renders.
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
+import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource/ibm-plex-mono/700.css";
+import "@fontsource-variable/archivo";
+import "@fontsource-variable/ibm-plex-sans";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/manrope";
+import "@fontsource-variable/montserrat";
+import "@fontsource-variable/noto-serif-display";
 import "@fontsource-variable/nunito";
+import "@fontsource-variable/source-serif-4";
+import "@fontsource-variable/space-grotesk";
 import "./preview.css";
-import { applyThemeSettings, fontSizeRange } from "@owlky/core";
+import { applyThemeSettings, fontSizeRange, themeStyles } from "@owlky/core";
 import { components, getRuntime, illustration } from "@owlky/html";
 import type { Preview } from "@storybook/react-vite";
 import { trackFrameworkGlobal } from "../src/helpers/framework-global.js";
@@ -15,6 +31,23 @@ getRuntime()
   .start();
 trackFrameworkGlobal();
 
+// The opt-in style sheets (ADR-0073) must come after the core tokens of preview.css, as an app
+// links them after owlky.css: their shadow switch wins by source order. A bundled CSS import may
+// land before preview.css in the build, so they are appended to <head> as <style> elements.
+// Built by `pnpm build`; a new style needs no change here.
+const styleSheets = import.meta.glob<string>(
+  ["../../../packages/styles/dist/styles/*.css", "!../../../packages/styles/dist/styles/*.min.css"],
+  { eager: true, query: "?inline", import: "default" },
+);
+for (const css of Object.values(styleSheets)) {
+  const element = document.createElement("style");
+  element.textContent = css;
+  document.head.append(element);
+}
+
+const isStyle = (value: unknown): value is (typeof themeStyles)[number] =>
+  typeof value === "string" && (themeStyles as readonly string[]).includes(value);
+
 const preview: Preview = {
   // Theme and theme settings (ADR-0070), applied to <html> like an app would. Toolbar: Theme and
   // Font size are custom tools (.storybook/toolbar.tsx).
@@ -22,16 +55,21 @@ const preview: Preview = {
     framework: { description: "Implementation shown by component stories (ADR-0018)" },
     theme: { description: "Color scheme (data-ok-theme)" },
     fontSize: { description: "Root font size (rem scale)" },
+    // No toolbar menu until ST5: set it in the URL (`&globals=style:swiss`), or per story with
+    // `parameters: { style: "swiss" }`, which wins.
+    style: { description: "Design style (data-ok-style)" },
   },
   initialGlobals: {
     framework: DEFAULT_FRAMEWORK,
     theme: "light",
     fontSize: String(fontSizeRange.default),
+    style: "soft",
   },
   decorators: [
-    (Story, { globals }) => {
+    (Story, { globals, parameters }) => {
       document.documentElement.dataset["okTheme"] = globals["theme"] === "dark" ? "dark" : "light";
-      applyThemeSettings({ fontSize: Number(globals["fontSize"]) });
+      const style = [parameters["style"], globals["style"]].find(isStyle) ?? "soft";
+      applyThemeSettings({ fontSize: Number(globals["fontSize"]), style });
       return <Story />;
     },
   ],

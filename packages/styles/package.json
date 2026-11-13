@@ -28,6 +28,7 @@
     "./base.css": "./dist/base.css",
     "./theme.css": "./dist/theme.css",
     "./components/*": "./dist/components/*",
+    "./styles/*": "./dist/styles/*",
     "./package.json": "./package.json"
   },
   "scripts": {

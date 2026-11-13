@@ -130,6 +130,23 @@ describe("Dialog", () => {
     expect(document.querySelector("dialog")?.dataset["okMaxWidth"]).toBe(maxWidth);
   });
 
+  it("the title follows the style's heading case and tracking", () => {
+    const { container } = render(
+      <Dialog open={false}>
+        <DialogTitle>Delete the file?</DialogTitle>
+      </Dialog>,
+    );
+    const title = container.querySelector("[data-ok-dialog-title]") as HTMLElement;
+    // The default style: no case or tracking.
+    expect(getComputedStyle(title).textTransform).toBe("none");
+    expect(getComputedStyle(title).letterSpacing).toBe("normal");
+    const scope = container.firstElementChild as HTMLElement;
+    scope.style.setProperty("--ok-heading-text-transform", "uppercase");
+    scope.style.setProperty("--ok-heading-letter-spacing", "2px");
+    expect(getComputedStyle(title).textTransform).toBe("uppercase");
+    expect(getComputedStyle(title).letterSpacing).toBe("2px");
+  });
+
   it("flags, disableEscapeKeyDown, a native close, aria-label instead of a title", async () => {
     const onChange = vi.fn();
     render(

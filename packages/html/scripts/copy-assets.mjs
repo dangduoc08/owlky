@@ -14,6 +14,11 @@ const stylesDist = dirname(require.resolve("@owlky/styles/owlky.css"));
 for (const file of ["owlky.css", "owlky.min.css", "owlky-all.css", "owlky-all.min.css"]) {
   await cp(join(stylesDist, file), join(root, "dist", file));
 }
+// The design styles' opt-in sheets (ADR-0070 § 6): `owlky-style-<id>(.min).css` next to owlky.css.
+for (const file of await readdir(join(stylesDist, "styles"))) {
+  if (file.endsWith(".css"))
+    await cp(join(stylesDist, "styles", file), join(root, "dist", `owlky-style-${file}`));
+}
 await mkdir(join(root, "dist", "modules"), { recursive: true });
 await cp(join(stylesDist, "modules"), join(root, "dist", "modules"), { recursive: true });
 // MapLibre's worker (ADR-0025): modules/map.js finds it in the folder above itself.

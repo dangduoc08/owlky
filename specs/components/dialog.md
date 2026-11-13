@@ -60,7 +60,7 @@ The paper is a Paper (ADR-0066, 2026-11-12): `data-ok-paper` right after `data-o
 `:not([data-ok-elevation])`; `dialog.css` (after `paper.css`) restates radius and background.
 Paper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16px (32px from
 600px), max height viewport − 2 × margin; widths xs 444px, sm 600px, md/lg/xl the breakpoint
-tokens. Title h6 (600) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content
+tokens. Title h6 (600; the style's heading case and tracking: `--ok-heading-text-transform`, `--ok-heading-letter-spacing`) padding 24px; content padding 0 24px (dividers: 16px + 1px lines); content
 text `--ok-text-secondary` body1; actions padding 24px, gap 12px. Full screen: no margin, radius,
 shadow. Backdrop `--ok-backdrop`. Opening: paper fade + scale 0.96 (`--ok-duration-short`,
 decelerate), backdrop fade. Closing (`data-ok-state="exiting"`): the same backwards
