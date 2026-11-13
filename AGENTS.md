@@ -216,12 +216,33 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   from state; toggles the browser makes itself (find-in-page, `<details name>`) are reported via
   `onToggle` and reverted after render when refused. `toggle` events fire on a later task — tests
   wait (`settle()` / a `toggle` listener) before asserting.
-- A custom property that references another one is resolved where it is declared: a token that
-  names a scheme token (shadows, `--ok-gradient-*-text`, `--ok-focus-ring-color` →
-  `--ok-text-primary`) is declared in every scheme scope (`schemeVariables` in `tokens/src/css.ts`),
-  never only on `:root`. ADR-0070 § 3's resolver (ST3) applies the same rule to every style axis.
-  Presets and font presets are gone (ADR-0070): a brand color or font is a token override or a
-  `createTheme()` theme, so nothing else redeclares the palette per scope.
+- A custom property that references another one is resolved where it is declared. Theme axes
+  (ADR-0070, switch technique ADR-0072): every token an axis changes, and every token defined from
+  another (shadows, gradients, typography families, focus ring colors), is declared once in the
+  resolver on `SCOPE_SELECTOR` (`:root, [data-ok-style], [data-ok-theme], .dark,
+  [data-ok-surface], [data-ok-contrast]`) as space toggles over its variants (`var(--_ok-d1, A)
+  var(--_ok-d0, B)`: `initial` = active, a single space = inactive), each variant
+  `var(--_ok-t<key>-<v>, <Soft's literal>)`. Never write an input name by hand (generated keys);
+  never read a theme input in component CSS. Computed colors stay `rgb()` (no `color-mix()`
+  switching). An author override of a color token on `:root` stops at the next axis scope:
+  declare it on the scopes too, or use `createTheme({ brand })` / `applyThemeBrand()`
+  (`@owlky/core/theme-brand`). Density scopes declare literal sizes (no resolver). The minifier
+  keeps the single space of an empty toggle (`--_ok-d0: ;`).
+- Soft is the default style (ST3): Tailwind indigo primary, zinc neutrals, Nunito (load it: Owlky
+  doesn't bundle fonts; Storybook and the website use `@fontsource-variable/nunito`), radius
+  10 / 18px, chips and labels pill-shaped, two-layer shadows tinted with indigo 950. Every color
+  role comes from the generator (`tokens/src/roles.ts`, `theme.ts`); `roles.test.ts` asserts every
+  pair in light / dark × surface × contrast. Palette-colored text (text and outlined variants,
+  Typography, Link, selected Tabs, Markdown links…) uses the `-text` tone, never `main`.
+  `CONTRAST_EXEMPT` lists only disabled parts. Field outlines use `--ok-control-border-color`
+  (3:1). Tests that read a dark page with axe give the page its background
+  (`documentElement.style.background = "var(--ok-bg-default)"`): axe reads a transparent page as
+  white.
+- Colored components read their color from the `[data-ok-color]` binding (`--ok-c-main`,
+  `-channel`, `-lighter`, `-light`, `-hover` (= dark), `-darker`, `-contrast`, `-text`) with a
+  default as fallback, not one rule per palette color (size, ADR-0072). Bindings don't inherit:
+  a group that colors its items copies them into private properties on its root (Pagination's
+  `--_ok-pg-*`).
 - Component CSS never writes a design value (ST2, `docs/styles-inventory.md`): radii are roles
   (`--ok-radius-control|control-sm|inner|surface|surface-md|surface-sm|chip`, `-full`), borders
   `--ok-border-width(-strong|-heavy)`, SVG strokes `--ok-line-width-*`, focus rings

@@ -1,6 +1,7 @@
 # ADR-0070: Design styles
 
-**Status:** Accepted (owner's decisions 2026-11-12, `docs/roadmap-styles.md`, step ST1). Supersedes
+**Status:** Accepted (owner's decisions 2026-11-12, `docs/roadmap-styles.md`, step ST1); § 3's
+`color-mix()` switches and parts of §§ 4 and 6 are superseded by ADR-0072 (ST3). Supersedes
 ADR-0017 (presets, fonts and root size as attributes) and ADR-0014. Supersedes the default values
 of ADR-0069 (Indigo / Zinc, the preset list, Be Vietnam Pro) and keeps its rules: palettes from
 Tailwind CSS v4's MIT palette, roles chosen by a generator, AA everywhere with no brand-text

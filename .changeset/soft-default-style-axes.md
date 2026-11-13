@@ -1,0 +1,9 @@
+---
+"@owlky/tokens": minor
+"@owlky/styles": minor
+"@owlky/core": minor
+"@owlky/react": minor
+"@owlky/html": minor
+---
+
+Soft is the default design style, and the theme has four nestable axes (ADR-0070, ADR-0072). Colors come from Tailwind's indigo and zinc scales through an AA role generator; the fonts are Nunito (load it yourself: Owlky doesn't bundle fonts), controls have a 10px radius, surfaces 18px, chips and labels are pill-shaped, shadows are two soft layers. `data-ok-style`, `data-ok-density` (`comfortable` / `compact`), `data-ok-surface` (`default` / `contrast`) and `data-ok-contrast` (`default` / `high` / `system`) nest on any element like `data-ok-theme`; `applyThemeSettings` takes `{ mode, style, density, surface, contrast, fontSize }`. `createTheme({ style, brand, fonts })` derives every role from brand colors at AA, and `applyThemeBrand()` (`@owlky/core/theme-brand`) does the same at run time. Every color pair meets WCAG AA (text 4.5:1, graphics 3:1; 7:1 / 4.5:1 in high contrast): colored text uses the `-text` tone and field outlines use the new `--ok-control-border-color`. New tokens: `--ok-control-border-color`, `--ok-surface-border-color|width|style`, `--ok-heading-text-transform|letter-spacing`, `--ok-palette-grey-950`, `--ok-c-lighter|light|darker` bindings, and density sizes (`--ok-control-height-xs`, `--ok-fab-height-sm`, `--ok-toggle-group-height-*`, `--ok-pagination-size-*`, `--ok-item-height-dense`). Removed: channels other than `main`, greys 500–900, black, white and paper; the per-variant case and tracking tokens of headings and body text (headings share `--ok-heading-*`); `createTheme(overrides, base)`'s second argument. Tailwind: `rounded-control` and the other radius roles, `font-label`, `border-control-border`, `contrast-high:` and `compact:` variants.

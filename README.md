@@ -117,11 +117,20 @@ have zero specificity.
 ```
 
 For dark mode, set `data-ok-theme="dark"` on the `<html>` element or on any container. Use
-`system` to follow the operating system. To let users choose the theme, primary color, font and
+`system` to follow the operating system. To let users choose the mode, style, density, surface, contrast and
 text size, use `applyThemeSettings()`.
 
-Owlky doesn't bundle fonts. Load Public Sans for text and Barlow (weights 700 and 800) for display
-headings, for example from Fontsource. Without them, the text falls back to system fonts.
+Owlky doesn't bundle fonts. The default style, Soft, uses Nunito (weights 400 to 800) for text,
+headings and labels. Load it before `owlky.css`, for example from Google Fonts or Fontsource:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400..800&display=swap">
+```
+
+Without it, the text falls back to system fonts. Text tones, borders and focus rings meet WCAG AA
+in light and dark mode; `data-ok-contrast="high"` raises text to 7:1 and graphics to 4.5:1.
 
 ## Documentation
 

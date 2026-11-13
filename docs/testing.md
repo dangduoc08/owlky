@@ -105,6 +105,6 @@ fixed by making the test robust (wait for the right event, never a fixed delay),
 | e2e `foundations` › chart docs fits a phone | WebKit | 2026-11-13, PR #1 | passed on retry |
 | unit `carousel-controller.test.ts` › goTo takes a direction around a loop | Chromium | 2026-11-12 | under parallel builds |
 | unit `data-grid-menu.test.tsx` | Chromium | 2026-11-12 | under load |
-| unit toaster hover test | Chromium | 2026-11-13 | under load |
+| unit toaster hover test (`snackbar.test.tsx` › auto-closes after the duration) | Chromium | 2026-11-13 (twice: also ST3 `pnpm check`) | under load; 3/3 alone |
 | unit `drawer.test.tsx`, `walktour.test.ts`, `tooltip.test.ts` | Chromium / WebKit | 2026-11-12 (S2) | under load |
 
