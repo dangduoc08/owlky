@@ -988,12 +988,12 @@
 
 .sb-motion-logo-ring-outer {
   inset: 0;
-  border: calc(var(--ok-spacing) * 2) solid rgb(var(--ok-palette-primary-dark-channel) / 0.24);
+  border: calc(var(--ok-spacing) * 2) solid rgb(var(--ok-palette-primary-main-channel) / 0.32);
 }
 
 .sb-motion-logo-ring-inner {
   inset: calc(var(--ok-spacing) * 2.5);
-  border: 3px solid rgb(var(--ok-palette-primary-dark-channel) / 0.24);
+  border: 3px solid rgb(var(--ok-palette-primary-main-channel) / 0.32);
 }
 
 /* The docs page's keyframes preview: one ring in the page flow. */

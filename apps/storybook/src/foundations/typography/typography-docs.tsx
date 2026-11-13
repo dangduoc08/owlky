@@ -28,7 +28,7 @@ export const typographySections: GuideSection[] = [
     title: "Type scale",
     body: `Owlky has ${typographyVariants.length} text styles, called variants: ${codeList(typographyVariants)}. Each variant sets a font family, size, weight, line height and text transform.
 
-The \`h1\`, \`h2\` and \`h3\` headings use the display font, Barlow. All other variants use the main font, Public Sans by default. Sizes are in \`rem\`, so text scales with the root font size.
+The headings \`h1\` to \`h6\` use the heading font, and the other variants use the text font. In the default style, Soft, both are Nunito, with weight 800 for \`h1\` to \`h3\` and 700 for \`h4\` to \`h6\`. Owlky doesn't bundle fonts: load Nunito from Google Fonts or Fontsource before \`owlky.css\`, or the text falls back to system fonts. Sizes are in \`rem\`, so text scales with the root font size.
 
 The stories in the sidebar show each variant in detail. To set a variant on an element without writing CSS, use the **Typography** component, described in **Components › Typography**.`,
   },
