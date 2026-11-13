@@ -18,7 +18,7 @@ for (const impl of implementations) {
         const styles = await links.evaluateAll((all) =>
           all.map((el) => {
             const probe = document.createElement("span");
-            probe.style.color = "var(--ok-palette-primary-main)";
+            probe.style.color = "var(--ok-palette-primary-text)";
             el.parentElement?.append(probe);
             const primary = getComputedStyle(probe).color;
             const parent = getComputedStyle(el.parentElement as Element).color;

@@ -20,7 +20,8 @@ for (const impl of implementations) {
       await expect
         .poll(async () => {
           const [a, b] = await Promise.all([line.boundingBox(), two.boundingBox()]);
-          return Math.round((a?.x ?? 0) - (b?.x ?? 0));
+          // `|| 0`: a sub-pixel offset below zero rounds to -0, which `toBe(0)` refuses.
+          return Math.round((a?.x ?? 0) - (b?.x ?? 0)) || 0;
         })
         .toBe(0);
     });

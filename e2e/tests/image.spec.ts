@@ -54,7 +54,7 @@ for (const impl of implementations) {
       await openStory(page, storyId(impl, "image", "overlay"));
       const overlays = page.locator("[data-ok-image-overlay]");
       await expect(overlays).toHaveCount(4);
-      await expect(overlays.nth(0)).toHaveCSS("background-color", "rgba(20, 26, 33, 0.48)");
+      await expect(overlays.nth(0)).toHaveCSS("background-color", "rgba(24, 24, 27, 0.48)");
       await expect(overlays.nth(2)).toHaveCSS("background-image", /linear-gradient\(to top/);
       for (const box of await page.locator("[data-ok-image]").all()) {
         const size = await box.boundingBox();

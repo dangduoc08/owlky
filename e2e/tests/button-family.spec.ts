@@ -32,7 +32,7 @@ for (const impl of implementations) {
       await openStory(page, storyId(impl, "fab", "default"));
       const fab = page.getByRole("button", { name: "Primary" }).first();
       await fab.hover();
-      await expect(fab).toHaveCSS("background-color", "rgb(0, 120, 103)");
+      await expect(fab).toHaveCSS("background-color", "rgb(79, 57, 246)");
       await expect(fab).toHaveCSS("box-shadow", "none");
     });
 

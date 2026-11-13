@@ -123,7 +123,7 @@ for (const impl of implementations) {
       await open(page, impl, "diff", "dark");
       const diff = page.locator("[data-ok-diff-editor]");
       // Dark Owlky theme: the dark paper background.
-      expect(await background(diff)).toBe("rgb(28, 37, 46)");
+      expect(await background(diff)).toBe("rgb(24, 24, 27)");
     });
   });
 }

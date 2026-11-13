@@ -452,9 +452,12 @@ export interface ChartLayout {
 }
 
 export const FONT = 12;
-/** Glyph widths of the UI font in em, by class (narrow, wide and currency signs, minus, digits, capitals, others). */
+/**
+ * Glyph widths of the UI font in em, by class (narrow, wide and currency signs, minus, digits,
+ * capitals, others). Digits are tabular (one width, `1` included), as in every style font.
+ */
 const glyph = (c: string): number =>
-  /[ .,:;'!|il1jtfI()[\]]/.test(c)
+  /[ .,:;'!|iljtfI()[\]]/.test(c)
     ? 0.32
     : /[%MWmw@$€£¥]/.test(c)
       ? 0.9

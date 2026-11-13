@@ -102,7 +102,8 @@ fixed by making the test robust (wait for the right event, never a fixed delay),
 |---|---|---|---|
 | e2e `parity` › `carousel / thumbs-y` pixels | all, under load | before Wave 8 (c18065b) | raster history of the selected thumbnail ring; `repaintFromScratch` helped, not fully |
 | e2e `data-grid.spec.ts` › range charts and cross-filtering | WebKit | 2026-11-13, PR #1 | passed on retry |
-| e2e `foundations` › chart docs fits a phone | WebKit | 2026-11-13, PR #1 | passed on retry |
+| e2e `foundations` › chart docs fits a phone | WebKit | 2026-11-13, PR #1 and PR #2 | passed on retry |
+| e2e `carousel.spec.ts` › html › scrolling the viewport (a swipe) selects the nearest slide | WebKit | 2026-11-13, PR #2 | 3/3 alone |
 | unit `carousel-controller.test.ts` › goTo takes a direction around a loop | Chromium | 2026-11-12 | under parallel builds |
 | unit `carousel-controller.test.ts` › ignores keys from inside slides | Chromium | 2026-11-13 (ST4a `pnpm check`) | full suite under load; 3/3 alone |
 | unit `data-grid-menu.test.tsx` | Chromium | 2026-11-12 | under load |
