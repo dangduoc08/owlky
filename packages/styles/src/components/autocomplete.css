@@ -131,10 +131,10 @@
     align-items: center;
     gap: calc(var(--ok-spacing) * 2);
     box-sizing: border-box;
-    min-height: calc(var(--ok-spacing) * 8.5);
+    min-height: var(--ok-item-height);
     margin-bottom: var(--ok-spacing);
     padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 2);
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     color: var(--ok-text-primary);
     font-size: var(--ok-typography-body2-font-size);
     line-height: var(--ok-typography-body2-line-height);

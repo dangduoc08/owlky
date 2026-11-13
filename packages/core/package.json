@@ -303,8 +303,9 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && node scripts/option-docs.mjs && node scripts/copy-map-worker.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "rm -rf dist && node scripts/icons.mjs && tsc -p tsconfig.build.json && node scripts/option-docs.mjs && node scripts/copy-map-worker.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "@floating-ui/dom": "1.8.0",
@@ -377,6 +378,7 @@
   ],
   "devDependencies": {
     "@date-fns/tz": "1.5.0",
+    "@iconify-json/solar": "1.2.13",
     "@types/luxon": "3.7.6",
     "acorn": "8.19.0",
     "date-fns": "4.4.0",

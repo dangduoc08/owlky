@@ -17,7 +17,8 @@
       "!apps/storybook/src/foundations/icons/icon-data.json",
       "!packages/mcp/manifest.json",
       "!apps/docs-content/src/api/*.json",
-      "!packages/*/src/entries"
+      "!packages/*/src/entries",
+      "!packages/core/src/icons/solar.ts"
     ]
   },
   "formatter": {

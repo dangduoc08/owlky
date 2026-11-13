@@ -15,6 +15,14 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
@@ -29,6 +37,18 @@
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-color-brand",
+   "value": "var(--ok-palette-primary-main)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-family",
@@ -79,12 +99,20 @@
    "value": "34 197 94"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
   },
   {
-   "name": "--ok-radius-sm",
+   "name": "--ok-radius-control-sm",
    "value": "6px"
+  },
+  {
+   "name": "--ok-row-height",
+   "value": "3.25rem"
+  },
+  {
+   "name": "--ok-row-height-header",
+   "value": "3.5rem"
   },
   {
    "name": "--ok-shadow-z8",
@@ -3623,6 +3651,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "data-grid",
+  "core": "@owlky/core/data-grid",
+  "css": [
+   "@owlky/styles/components/data-grid.css"
+  ],
+  "html": "@owlky/html/data-grid",
+  "react": "@owlky/react/data-grid"
+ },
  "name": "data-grid",
  "title": "Data grid",
  "types": [

@@ -294,7 +294,7 @@
     margin: 0;
     padding: 0 var(--ok-spacing);
     border: 0;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background: none;
     color: var(--ok-text-primary);
     font: inherit;
@@ -311,7 +311,7 @@
     box-sizing: border-box;
     width: calc(var(--ok-spacing) * 3);
     height: calc(var(--ok-spacing) * 3);
-    border: 2px solid var(--_ok-chart-c);
+    border: var(--ok-border-width-strong) solid var(--_ok-chart-c);
     border-radius: var(--ok-radius-full);
     background-color: var(--_ok-chart-c);
   }
@@ -322,7 +322,7 @@
     [data-ok-chart-legend-marker][data-ok-shape="square"],
     [data-ok-chart-tooltip-marker][data-ok-shape="square"]
   ) {
-    border-radius: 2px;
+    border-radius: var(--ok-radius-2xs);
   }
 
   :where(
@@ -407,8 +407,8 @@
     [data-ok-chart-tooltip-marker][data-ok-pattern]
   ) {
     box-sizing: border-box;
-    border: 2px solid var(--_ok-chart-c);
-    border-radius: 2px;
+    border: var(--ok-border-width-strong) solid var(--_ok-chart-c);
+    border-radius: var(--ok-radius-2xs);
     background-color: transparent;
   }
 
@@ -478,15 +478,15 @@
   }
 
   :where([data-ok-chart-legend-item]:focus-visible, [data-ok-chart-plot]:focus-visible) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Plot: the SVG fills the width; the tooltip is placed inside it. */
   :where([data-ok-chart-plot]) {
     position: relative;
     min-width: 0;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     touch-action: pan-y;
   }
 
@@ -521,7 +521,7 @@
 
   /* A series' own line width (4.18.62) is an attribute from the layout. */
   :where([data-ok-chart-line]:not([stroke-width])) {
-    stroke-width: 2.5px;
+    stroke-width: var(--ok-line-width-lg);
   }
 
   :where([data-ok-chart-area]) {
@@ -550,15 +550,15 @@
   :where([data-ok-chart-marker], [data-ok-chart-active-marker]) {
     fill: var(--_ok-chart-c);
     stroke: var(--ok-bg-paper);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
   }
 
   :where([data-ok-chart-series][data-ok-type="scatter"] > [data-ok-chart-marker]) {
-    stroke-width: 1px;
+    stroke-width: var(--ok-line-width-xs);
   }
 
   :where([data-ok-chart-active-marker]) {
-    stroke-width: 3px;
+    stroke-width: var(--ok-line-width-xl);
   }
 
   /* Marker shapes (4.18.62): crosses and pluses are strokes of the series color. */
@@ -568,7 +568,7 @@
   ) {
     fill: none;
     stroke: var(--_ok-chart-c);
-    stroke-width: 2.5px;
+    stroke-width: var(--ok-line-width-lg);
     stroke-linecap: round;
   }
 
@@ -578,7 +578,7 @@
   ) {
     fill: none;
     stroke: var(--_ok-chart-c);
-    stroke-width: 4px;
+    stroke-width: var(--ok-line-width-2xl);
     stroke-linecap: round;
   }
 
@@ -591,7 +591,7 @@
   :where([data-ok-chart-pattern-mark]) {
     fill: none;
     stroke: var(--_ok-chart-c);
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
     stroke-linecap: square;
   }
 
@@ -662,7 +662,7 @@
   }
 
   :where([data-ok-chart-series][data-ok-type="radar"] > [data-ok-chart-line]) {
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
   }
 
   /* Values printed on the chart: white inside shapes, primary text above points. */
@@ -686,7 +686,7 @@
 
   :where([data-ok-chart-center-value]) {
     fill: var(--ok-text-primary);
-    font-size: calc(var(--ok-font-size-xl) * 1.25);
+    font-size: var(--ok-font-size-3xl);
     font-weight: var(--ok-font-weight-bold);
   }
 
@@ -697,12 +697,12 @@
 
   :where([data-ok-chart-whisker]) {
     stroke: var(--ok-text-disabled);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
   }
 
   /* Range areas: a solid band with thin edges. */
   :where([data-ok-chart-series][data-ok-type="rangeArea"] > [data-ok-chart-line]) {
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   /* Bubbles: translucent, so overlaps stay readable. */
@@ -710,7 +710,7 @@
     fill: var(--_ok-chart-c);
     fill-opacity: 0.72;
     stroke: var(--ok-bg-paper);
-    stroke-width: 1px;
+    stroke-width: var(--ok-line-width-xs);
   }
 
   /* Heatmap and treemap cells: the shade comes from the drawing (fill-opacity). */
@@ -721,7 +721,7 @@
   :where([data-ok-chart-active-cell]) {
     fill: none;
     stroke: var(--ok-text-primary);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
     pointer-events: none;
   }
 
@@ -729,7 +729,7 @@
   :where([data-ok-chart-selected-mark]) {
     fill: none;
     stroke: var(--ok-text-primary);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
     pointer-events: none;
   }
 
@@ -780,7 +780,7 @@
     font-size: var(--ok-font-size-xs);
     font-weight: var(--ok-font-weight-semibold);
     stroke: var(--ok-bg-paper);
-    stroke-width: 3px;
+    stroke-width: var(--ok-line-width-xl);
     stroke-linejoin: round;
     paint-order: stroke;
     pointer-events: none;
@@ -799,7 +799,7 @@
     font-size: var(--ok-font-size-xs);
     font-weight: var(--ok-font-weight-semibold);
     stroke: var(--ok-bg-paper);
-    stroke-width: 3px;
+    stroke-width: var(--ok-line-width-xl);
     stroke-linejoin: round;
     paint-order: stroke;
     pointer-events: none;
@@ -811,7 +811,7 @@
   }
 
   :where([data-ok-chart-navigator] [data-ok-chart-line]) {
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   :where([data-ok-chart-navigator-frame]) {
@@ -860,7 +860,7 @@
     z-index: 1;
     min-width: calc(var(--ok-spacing) * 30);
     overflow: hidden;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-dropdown);
     color: var(--ok-text-primary);
@@ -938,7 +938,7 @@
 
   :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(th, td)) {
     padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     text-align: end;
   }
 
@@ -1017,8 +1017,8 @@
     min-height: calc(var(--ok-spacing) * 8);
     margin: 0;
     padding: 0 var(--ok-spacing);
-    border: 1px solid var(--ok-divider);
-    border-radius: var(--ok-radius-sm);
+    border: var(--ok-border-width) solid var(--ok-divider);
+    border-radius: var(--ok-radius-control-sm);
     background: none;
     color: var(--ok-text-primary);
     font: inherit;
@@ -1044,8 +1044,8 @@
   }
 
   :where([data-ok-chart-tool]:focus-visible) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Crossfilter (4.18.19): tints behind the filtered categories, a Clear button under the plot. */
@@ -1073,8 +1073,8 @@
     min-height: calc(var(--ok-spacing) * 8);
     margin: 0;
     padding: 0 calc(var(--ok-spacing) * 2);
-    border: 1px solid var(--ok-divider);
-    border-radius: var(--ok-radius-sm);
+    border: var(--ok-border-width) solid var(--ok-divider);
+    border-radius: var(--ok-radius-control-sm);
     background: none;
     color: var(--ok-text-primary);
     font: inherit;
@@ -1094,8 +1094,8 @@
   }
 
   :where([data-ok-chart-filter-clear]:focus-visible) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-chart-filter-status]) {
@@ -1125,8 +1125,8 @@
     min-height: calc(var(--ok-spacing) * 8);
     margin: 0;
     padding: 0 calc(var(--ok-spacing) * 2);
-    border: 1px solid var(--ok-divider);
-    border-radius: var(--ok-radius-sm);
+    border: var(--ok-border-width) solid var(--ok-divider);
+    border-radius: var(--ok-radius-control-sm);
     background: none;
     color: var(--ok-text-primary);
     font: inherit;
@@ -1146,8 +1146,8 @@
   }
 
   :where([data-ok-chart-drill-up]:focus-visible) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-chart-drill-path]) {
@@ -1156,14 +1156,6 @@
     font-size: var(--ok-font-size-xs);
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  :where([data-ok-chart-tool-icon]) {
-    fill: none;
-    stroke: currentcolor;
-    stroke-width: 2px;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   :where([data-ok-chart-legend-value]) {
@@ -1178,27 +1170,27 @@
 
   :where([data-ok-chart-wick]) {
     stroke: var(--_ok-chart-c);
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   /* Dumbbells (4.18.21): a faint line between a ring (the start) and a disc (the end). */
   :where([data-ok-chart-dumbbell-line]) {
     stroke: var(--_ok-chart-c);
     stroke-opacity: 0.48;
-    stroke-width: 4px;
+    stroke-width: var(--ok-line-width-2xl);
     stroke-linecap: round;
   }
 
   :where([data-ok-chart-dumbbell]) {
     fill: var(--_ok-chart-c);
     stroke: var(--ok-bg-paper);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
   }
 
   :where([data-ok-chart-dumbbell="start"]) {
     fill: var(--ok-bg-paper);
     stroke: var(--_ok-chart-c);
-    stroke-width: 3px;
+    stroke-width: var(--ok-line-width-xl);
   }
 
   /* Tree charts (ADR-0058): grey links, nodes in their branch color (collapsed nodes hollow),
@@ -1206,32 +1198,32 @@
   :where([data-ok-chart-tree-link]) {
     fill: none;
     stroke: var(--ok-text-disabled);
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   :where([data-ok-chart-tree-node]) {
     fill: var(--_ok-chart-c);
     stroke: var(--ok-bg-paper);
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   :where([data-ok-chart-tree-node][data-ok-collapsed]) {
     fill: var(--ok-bg-paper);
     stroke: var(--_ok-chart-c);
-    stroke-width: 2.5px;
+    stroke-width: var(--ok-line-width-lg);
   }
 
   :where([data-ok-chart-active-path]) {
     fill: none;
     stroke: var(--_ok-chart-c);
-    stroke-width: 2.5px;
+    stroke-width: var(--ok-line-width-lg);
     pointer-events: none;
   }
 
   :where([data-ok-chart-active-node]) {
     fill: none;
     stroke: var(--ok-text-primary);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
     pointer-events: none;
   }
 
@@ -1247,7 +1239,7 @@
      attribute (CSS never sets fill-opacity here). Regions without a value use the page's neutral. */
   :where([data-ok-chart-region]) {
     stroke: var(--ok-bg-paper);
-    stroke-width: 0.75;
+    stroke-width: var(--ok-line-width-2xs);
     stroke-linejoin: round;
   }
 
@@ -1273,7 +1265,7 @@
   :where([data-ok-chart-graticule]) {
     fill: none;
     stroke: var(--ok-divider);
-    stroke-width: 0.5;
+    stroke-width: var(--ok-line-width-hairline);
   }
 
   :where([data-ok-chart-partition-label]) {
@@ -1298,7 +1290,7 @@
   ) {
     fill: none;
     stroke: var(--_ok-chart-c);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
   }
 
   :where([data-ok-chart-unit-track]) {
@@ -1322,14 +1314,14 @@
     fill: var(--_ok-chart-c);
     fill-opacity: 0.9;
     stroke: var(--ok-bg-paper);
-    stroke-width: 1px;
+    stroke-width: var(--ok-line-width-xs);
   }
 
   /* Violins (4.18.21): the density outline, the box beside it and the observations. */
   :where([data-ok-chart-violin]) {
     fill-opacity: 0.32;
     stroke: var(--_ok-chart-c);
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
   }
 
   :where([data-ok-chart-violin]:not([fill])) {
@@ -1339,19 +1331,19 @@
   :where([data-ok-chart-violin-box]) {
     fill: var(--ok-bg-paper);
     stroke: var(--ok-text-primary);
-    stroke-width: 1px;
+    stroke-width: var(--ok-line-width-xs);
   }
 
   :where([data-ok-chart-violin-whisker], [data-ok-chart-violin-median]) {
     stroke: var(--ok-text-primary);
-    stroke-width: 1px;
+    stroke-width: var(--ok-line-width-xs);
   }
 
   :where([data-ok-chart-violin-point]) {
     fill: var(--_ok-chart-c);
     fill-opacity: 0.9;
     stroke: var(--ok-bg-paper);
-    stroke-width: 1px;
+    stroke-width: var(--ok-line-width-xs);
   }
 
   /* Streamgraph bands (4.18.21): meet without a seam; a pattern fills them through `fill`. */
@@ -1370,7 +1362,7 @@
   /* Waterfall connectors (4.18.21): a dashed line from each bar's end to the next bar. */
   :where([data-ok-chart-connector]) {
     stroke: var(--ok-text-secondary);
-    stroke-width: 1px;
+    stroke-width: var(--ok-line-width-xs);
     stroke-dasharray: 3;
     shape-rendering: crispEdges;
   }
@@ -1378,7 +1370,7 @@
   :where([data-ok-chart-series][data-ok-type="polarArea"] > [data-ok-chart-slice]) {
     fill-opacity: 0.8;
     stroke: var(--ok-bg-paper);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
   }
 
   :where([data-ok-chart-data-label-badge]) {
@@ -1389,7 +1381,7 @@
   /* Annotations: a dashed line or a faint band, a tag with the label. */
   :where([data-ok-chart-annotation-line]) {
     stroke: var(--_ok-chart-c);
-    stroke-width: 1.5px;
+    stroke-width: var(--ok-line-width-sm);
     stroke-dasharray: 4;
   }
 
@@ -1404,14 +1396,14 @@
 
   :where([data-ok-chart-annotation-marker]) {
     stroke: var(--ok-bg-paper);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
   }
 
   /* Geo charts (4.18.100): a point annotation on a region outlines the region. */
   :where([data-ok-chart-annotation-outline]) {
     fill: none;
     stroke: var(--_ok-chart-c);
-    stroke-width: 2px;
+    stroke-width: var(--ok-line-width-md);
     stroke-linejoin: round;
     pointer-events: none;
   }
@@ -1479,7 +1471,7 @@
 
   :where(button[data-ok-chart-trellis-header]) {
     padding: 0 var(--ok-spacing);
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     cursor: pointer;
   }
 
@@ -1489,8 +1481,8 @@
     min-height: calc(var(--ok-spacing) * 8);
     margin: 0;
     padding: 0 calc(var(--ok-spacing) * 2);
-    border: 1px solid var(--ok-divider);
-    border-radius: var(--ok-radius-sm);
+    border: var(--ok-border-width) solid var(--ok-divider);
+    border-radius: var(--ok-radius-control-sm);
     background: none;
     color: var(--ok-text-primary);
     font: inherit;
@@ -1509,8 +1501,8 @@
     button[data-ok-chart-trellis-header]:focus-visible,
     [data-ok-chart-trellis-back]:focus-visible
   ) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Measure rulers (4.18.20): a band or a line, two ends and a tag with the change. */
@@ -1523,14 +1515,14 @@
 
   :where([data-ok-chart-measure-line]) {
     stroke: var(--ok-text-primary);
-    stroke-width: 1.5;
+    stroke-width: var(--ok-line-width-sm);
     stroke-dasharray: 4 3;
   }
 
   :where([data-ok-chart-measure-end]) {
     fill: var(--ok-bg-paper);
     stroke: var(--ok-text-primary);
-    stroke-width: 2;
+    stroke-width: var(--ok-line-width-md);
   }
 
   :where([data-ok-chart-measure-tag]) {
@@ -1554,8 +1546,8 @@
   }
 
   :where([data-ok-chart-annotation][data-ok-picked]) {
-    outline: 2px dashed var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) dashed var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* X axis groups (4.18.65): a second row of labels and the ticks between the groups. */

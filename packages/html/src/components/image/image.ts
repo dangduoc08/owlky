@@ -1,39 +1,18 @@
-import { type ImageState, imageLoadState, imageOptions, imageStyle } from "@owlky/core";
+import {
+  createIcon,
+  galleryRemoveLinear,
+  type ImageState,
+  imageLoadState,
+  imageOptions,
+  imageStyle,
+} from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
-const SVG = "http://www.w3.org/2000/svg";
-
 /** The broken-image icon, the same markup as React's `ImageErrorIcon` (built with DOM methods). */
 function errorIcon(): SVGSVGElement {
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("data-ok-image-icon", "");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  const shapes: [string, Record<string, string>][] = [
-    [
-      "path",
-      {
-        d: "M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z",
-        stroke: "currentColor",
-        "stroke-width": "1.5",
-      },
-    ],
-    ["path", { d: "m4 16 4.5-4.5 3 3L15 11l5 5", stroke: "currentColor", "stroke-width": "1.5" }],
-    ["circle", { cx: "9", cy: "8.5", r: "1.5", fill: "currentColor" }],
-    [
-      "path",
-      { d: "m3 3 18 18", stroke: "currentColor", "stroke-width": "1.5", "stroke-linecap": "round" },
-    ],
-  ];
-  for (const [tag, attributes] of shapes) {
-    const shape = document.createElementNS(SVG, tag);
-    for (const [name, value] of Object.entries(attributes)) shape.setAttribute(name, value);
-    svg.append(shape);
-  }
-  return svg;
+  return createIcon(galleryRemoveLinear, { "data-ok-image-icon": "" });
 }
 
 export interface ImageInstance extends ComponentInstance {

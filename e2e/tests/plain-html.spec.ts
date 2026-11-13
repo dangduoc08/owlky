@@ -51,6 +51,7 @@ declare global {
       active: boolean;
       load(name: string): Promise<void>;
       loaded(name: string): boolean;
+      get(element: Element | null, name: string): object | undefined;
     };
   }
 }

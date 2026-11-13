@@ -55,8 +55,8 @@ describe("Owlky themes", () => {
     expect(host.querySelector("[data-ok-theme='light']")).toBeNull();
   });
 
-  it("follow presets", () => {
-    const host = mount('<div data-ok-preset="cyan"><div id="a"></div></div>');
+  it("follow token overrides of the scope", () => {
+    const host = mount('<div style="--ok-palette-primary-main: #078DEE"><div id="a"></div></div>');
     const theme = owlkyTheme(host.querySelector("#a") as Element, "light");
     expect(theme.colors["editorCursor.foreground"]).not.toBe("#00a76f");
   });
@@ -104,12 +104,9 @@ describe("themeClient", () => {
     // A scope change re-applies the current (last used) editor's theme once.
     setTheme.mockClear();
     (host.querySelector("#b") as Element).setAttribute("data-ok-theme", "light");
-    document.documentElement.setAttribute("data-ok-preset", "cyan");
     await flush();
     expect(setTheme).toHaveBeenCalledTimes(1);
     expect(setTheme).toHaveBeenLastCalledWith("owlky-light");
-    document.documentElement.removeAttribute("data-ok-preset");
-    await flush();
 
     // Releasing the current editor hands the theme to the remaining one.
     b.release();

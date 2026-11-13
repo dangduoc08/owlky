@@ -1,10 +1,11 @@
 import {
+  altArrowDownLinear,
+  altArrowRightLinear,
   arrangeGridColumns,
+  arrowUpLinear,
   type ChartDataPoint,
   type ChartSelectionDetail,
-  chartAttributes,
-  chartOptions,
-  chartTextAttributes,
+  checkLinear,
   clampGridWidth,
   createGridCellSelection,
   createGridChartRangeHandle,
@@ -21,6 +22,7 @@ import {
   createGridRowReorder,
   createGridScrollWatcher,
   createGridStateWatcher,
+  createIcon,
   dataGridOptions,
   filterGridRows,
   GRID_AGGREGATION_ROOT_ID,
@@ -187,6 +189,7 @@ import {
   gridTreeRows,
   gridUnknownCountPattern,
   gridWithGroupFooters,
+  type IconData,
   isGridCellSelected,
   isGridGroupingField,
   isGridHideable,
@@ -195,7 +198,9 @@ import {
   isGridSetFilter,
   isGridSortable,
   measureGridColumn,
+  menuDotsVerticalLinear,
   mergeGridCellSelection,
+  minusLinear,
   moveGridColumn,
   moveGridPivotField,
   moveGridRow,
@@ -218,7 +223,6 @@ import {
   readBehavior,
   readNumber,
   readStyle,
-  renderChart,
   sanitizeGridCellModes,
   sanitizeGridCellSelection,
   sanitizeGridChartModel,
@@ -245,6 +249,7 @@ import type { DatePickerInstance } from "../date-picker/date-picker.js";
 import type { PopoverInstance } from "../popover/popover.js";
 import type { SelectInstance } from "../select/select.js";
 import type { TablePaginationInstance } from "../table-pagination/table-pagination.js";
+import { gridChartKit, loadGridChartKit } from "./chart-kit.js";
 
 /** Events whose detail is `{ model }` (the model about to be set). */
 type GridModelEvent =
@@ -735,20 +740,7 @@ function download(name: string, data: BlobPart, type = "text/csv;charset=utf-8")
   URL.revokeObjectURL(url);
 }
 
-const SVG = "http://www.w3.org/2000/svg";
 /** A decorative 24px icon (the React components' paths). */
-const icon = (d: string) => {
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("fill", "currentColor");
-  const path = document.createElementNS(SVG, "path");
-  path.setAttribute("d", d);
-  svg.append(path);
-  return svg;
-};
-const CHEVRON = "M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z";
-const SORT_ARROW = "M12 4l-6 6h4v10h4V10h4z";
 /** A JSON list of strings from an attribute (untrusted). */
 const fieldList = (json: string | null): string[] =>
   (stringList(json) ?? []).filter((f) => !["__proto__", "constructor", "prototype"].includes(f));
@@ -761,20 +753,7 @@ const parseJson = (json: string | null): unknown => {
 };
 
 /** The column menu button's three dots (the React icon). */
-const dotsIcon = () => {
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("fill", "currentColor");
-  for (const cy of ["5", "12", "19"]) {
-    const circle = document.createElementNS(SVG, "circle");
-    circle.setAttribute("cx", "12");
-    circle.setAttribute("cy", cy);
-    circle.setAttribute("r", "2");
-    svg.append(circle);
-  }
-  return svg;
-};
+const dotsIcon = () => createIcon(menuDotsVerticalLinear);
 
 /** An element with attributes (names and values in order). */
 const elementWith = <K extends keyof HTMLElementTagNameMap>(
@@ -785,32 +764,6 @@ const elementWith = <K extends keyof HTMLElementTagNameMap>(
   for (const [name, value] of attributes) element.setAttribute(name, value);
   return element;
 };
-/** A decorative SVG from its shapes (the React components' icons). */
-const shapes = (
-  attributes: readonly (readonly [string, string])[],
-  children: readonly (readonly [string, readonly (readonly [string, string])[]])[],
-) => {
-  const svg = document.createElementNS(SVG, "svg");
-  for (const [name, value] of attributes) svg.setAttribute(name, value);
-  for (const [tag, list] of children) {
-    const child = document.createElementNS(SVG, tag);
-    for (const [name, value] of list) child.setAttribute(name, value);
-    svg.append(child);
-  }
-  return svg;
-};
-const ICON_BOX = [
-  ["aria-hidden", "true"],
-  ["viewBox", "0 0 24 24"],
-] as const;
-const FILLED_BOX = [
-  ["x", "3"],
-  ["y", "3"],
-  ["width", "18"],
-  ["height", "18"],
-  ["rx", "5"],
-  ["fill", "currentColor"],
-] as const;
 
 /** An InputBase editor (ADR-0067): the TextField markup without a box, label or helper. */
 const inputBaseEditor = (id: string, type: string) => {
@@ -845,50 +798,22 @@ const checkboxEditor = () => {
     ["type", "checkbox"],
     ["data-ok-checkbox-input", ""],
   ]);
-  const part = (state: string, svg: SVGSVGElement) => {
+  // The box is drawn by the stylesheet, the marks are Solar icons (as React renders them).
+  const part = (state: string, mark?: IconData) => {
     const span = elementWith("span", [
       ["data-ok-checkbox-icon", state],
       ["aria-hidden", "true"],
     ]);
-    span.append(svg);
+    const box = elementWith("span", [["data-ok-checkbox-box", ""]]);
+    if (mark) box.append(createIcon(mark, { "data-ok-checkbox-mark": "" }));
+    span.append(box);
     return span;
   };
-  const mark = (d: string, join: boolean) =>
-    [
-      "path",
-      [
-        ["data-ok-checkbox-mark", ""],
-        ["d", d],
-        ["stroke-width", "2"],
-        ["stroke-linecap", "round"],
-        ...(join ? ([["stroke-linejoin", "round"]] as const) : []),
-      ],
-    ] as const;
   root.append(
     input,
-    part(
-      "unchecked",
-      shapes(ICON_BOX, [
-        [
-          "rect",
-          [
-            ["x", "3.75"],
-            ["y", "3.75"],
-            ["width", "16.5"],
-            ["height", "16.5"],
-            ["rx", "4.25"],
-            ["fill", "none"],
-            ["stroke", "currentColor"],
-            ["stroke-width", "1.5"],
-          ],
-        ],
-      ]),
-    ),
-    part(
-      "checked",
-      shapes(ICON_BOX, [["rect", FILLED_BOX], mark("m7.75 12.25 2.75 2.75 5.75-6", true)]),
-    ),
-    part("indeterminate", shapes(ICON_BOX, [["rect", FILLED_BOX], mark("M8 12h8", false)])),
+    part("unchecked"),
+    part("checked", checkLinear),
+    part("indeterminate", minusLinear),
   );
   return { root, input, field: input };
 };
@@ -947,22 +872,7 @@ const selectEditor = (id: string, choices: readonly string[], value: string) => 
     ]),
     listbox,
   );
-  const arrow = shapes(
-    [...ICON_BOX, ["data-ok-select-icon", ""]],
-    [
-      [
-        "path",
-        [
-          ["d", "m7 10 5 5 5-5"],
-          ["fill", "none"],
-          ["stroke", "currentColor"],
-          ["stroke-width", "2"],
-          ["stroke-linecap", "round"],
-          ["stroke-linejoin", "round"],
-        ],
-      ],
-    ],
-  );
+  const arrow = createIcon(altArrowDownLinear, { "data-ok-select-icon": "" });
   root.append(trigger, input, arrow, paper);
   return { root, input, field: trigger };
 };
@@ -1053,7 +963,7 @@ function generateColumns(element: HTMLElement, main: HTMLElement, headerRow: HTM
     title.textContent = column.headerName ?? column.field;
     const sortIcon = document.createElement("span");
     sortIcon.setAttribute("data-ok-data-grid-sort-icon", "");
-    sortIcon.append(icon(SORT_ARROW));
+    sortIcon.append(createIcon(arrowUpLinear));
     header.append(title, sortIcon);
     if (!noMenu) {
       const button = document.createElement("button");
@@ -1616,7 +1526,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         button.setAttribute("data-ok-size", "sm");
         button.tabIndex = -1;
         button.setAttribute("data-ok-data-grid-tree-toggle", "");
-        button.append(icon(CHEVRON));
+        button.append(createIcon(altArrowRightLinear));
         parts.push(button);
       }
       const name = document.createElement("span");
@@ -3759,7 +3669,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           if (path?.length) cell.setAttribute("data-ok-group-path", JSON.stringify(path));
           const arrow = document.createElement("span");
           arrow.setAttribute("data-ok-data-grid-sort-icon", "");
-          arrow.append(icon(SORT_ARROW));
+          arrow.append(createIcon(arrowUpLinear));
           cell.append(arrow);
           if (!element.hasAttribute(disableColumnResize.attr)) {
             const handle = document.createElement("span");
@@ -4642,6 +4552,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (cross) chartCross.set(chartRegion, cross);
       else chartCross.delete(chartRegion);
       if (active) chartSeriesCount = data?.series.length ?? 0;
+      // The Chart's helpers load with the first chart (ADR-0068 S5); draw again once they're in.
+      const kit = gridChartKit();
+      if (!kit) {
+        void loadGridChartKit().then(() => {
+          if (element.isConnected) syncChart();
+        });
+        return;
+      }
+      const { chartAttributes, chartOptions, chartTextAttributes, renderChart } = kit;
       const { yTitle, yaxis, ...options } = gridChartOptions(chartModel, data);
       const attributes: Record<string, string> = {
         ...chartAttributes(options),

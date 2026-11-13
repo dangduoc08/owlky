@@ -1,3 +1,12 @@
+import { type IconData, iconTree } from "../icons/icon.js";
+import {
+  closeLinear,
+  magnifierZoomInLinear,
+  magnifierZoomOutLinear,
+  moveLinear,
+  restartLinear,
+  rulerLinear,
+} from "../icons/solar.js";
 import type { ChartNode } from "./chart-layout.js";
 import type { ChartPart } from "./chart-model.js";
 
@@ -93,28 +102,17 @@ export interface ChartToolItem {
   readonly disabled?: boolean | undefined;
 }
 
-const MAGNIFIER = "M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14ZM20 20l-4-4";
-const PATHS: Partial<Record<ChartTool, string>> = {
-  zoomIn: `${MAGNIFIER}M8 11h6M11 8v6`,
-  zoomOut: `${MAGNIFIER}M8 11h6`,
-  reset: "M4 12a8 8 0 1 0 2.34-5.66M4 4v4h4",
-  pan: "M12 3v18M3 12h18M9 6l3-3l3 3M9 18l3 3l3-3M6 9l-3 3l3 3M18 9l3 3l-3 3",
-  measure: "M3 17L17 3l4 4L7 21ZM7 13l2 2M10 10l2 2M13 7l2 2",
-  clearMeasures: "M6 6l12 12M18 6L6 18",
+const ICONS: Partial<Record<ChartTool, IconData>> = {
+  zoomIn: magnifierZoomInLinear,
+  zoomOut: magnifierZoomOutLinear,
+  reset: restartLinear,
+  pan: moveLinear,
+  measure: rulerLinear,
+  clearMeasures: closeLinear,
 };
 
-const icon = (d: string): ChartNode => ({
-  tag: "svg",
-  attrs: {
-    viewBox: "0 0 24 24",
-    width: "20",
-    height: "20",
-    "aria-hidden": "true",
-    focusable: "false",
-    "data-ok-chart-tool-icon": "",
-  },
-  children: [{ tag: "path", attrs: { d } }],
-});
+const icon = (data: IconData): ChartNode =>
+  iconTree(data, { width: "20", height: "20", "data-ok-chart-tool-icon": "" });
 
 /** The toolbar's buttons in order. */
 export function chartToolbar(state: {
@@ -133,20 +131,20 @@ export function chartToolbar(state: {
   const label = (tool: ChartTool) => state.text?.[tool] ?? chartToolLabels[tool];
   const zoomTools: ChartToolItem[] = state.zoom
     ? [
-        { tool: "zoomIn", label: label("zoomIn"), icon: icon(PATHS.zoomIn as string) },
+        { tool: "zoomIn", label: label("zoomIn"), icon: icon(ICONS.zoomIn as IconData) },
         {
           tool: "zoomOut",
           label: label("zoomOut"),
-          icon: icon(PATHS.zoomOut as string),
+          icon: icon(ICONS.zoomOut as IconData),
           disabled: !state.zoomed,
         },
         {
           tool: "reset",
           label: label("reset"),
-          icon: icon(PATHS.reset as string),
+          icon: icon(ICONS.reset as IconData),
           disabled: !state.zoomed,
         },
-        { tool: "pan", label: label("pan"), icon: icon(PATHS.pan as string), pressed: state.pan },
+        { tool: "pan", label: label("pan"), icon: icon(ICONS.pan as IconData), pressed: state.pan },
       ]
     : [];
   const measureTools: ChartToolItem[] = state.measure
@@ -154,13 +152,13 @@ export function chartToolbar(state: {
         {
           tool: "measure",
           label: label("measure"),
-          icon: icon(PATHS.measure as string),
+          icon: icon(ICONS.measure as IconData),
           pressed: state.measuring === true,
         },
         {
           tool: "clearMeasures",
           label: label("clearMeasures"),
-          icon: icon(PATHS.clearMeasures as string),
+          icon: icon(ICONS.clearMeasures as IconData),
           disabled: !state.measured,
         },
       ]

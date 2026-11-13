@@ -5,12 +5,40 @@
    "name": "--ok-c-main"
   },
   {
+   "name": "--ok-duration-progress-bar",
+   "value": "2.1s"
+  },
+  {
+   "name": "--ok-duration-progress-bar-delay",
+   "value": "1.15s"
+  },
+  {
+   "name": "--ok-duration-progress-bar-reduced",
+   "value": "4.2s"
+  },
+  {
+   "name": "--ok-duration-progress-bar-reduced-delay",
+   "value": "2.3s"
+  },
+  {
+   "name": "--ok-duration-progress-buffer",
+   "value": "3s"
+  },
+  {
    "name": "--ok-duration-shorter",
    "value": "200ms"
   },
   {
    "name": "--ok-duration-standard",
    "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-progress-1",
+   "value": "cubic-bezier(0.65, 0.815, 0.735, 0.395)"
+  },
+  {
+   "name": "--ok-easing-progress-2",
+   "value": "cubic-bezier(0.165, 0.84, 0.44, 1)"
   },
   {
    "name": "--ok-palette-primary-main",
@@ -157,6 +185,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/linear-progress",
+  "css": [
+   "@owlky/styles/components/linear-progress.css"
+  ],
+  "html": "@owlky/html/linear-progress",
+  "react": "@owlky/react/linear-progress"
+ },
  "name": "linear-progress",
  "title": "Linear progress"
 }

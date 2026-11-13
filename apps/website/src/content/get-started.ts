@@ -17,7 +17,7 @@ export const getStartedSections: PageSection[] = [
   {
     id: "cdn",
     title: "Load Owlky from a CDN",
-    body: "Add the stylesheet and the script to the `<head>` of every page. The script adds behavior to interactive components, such as dialogs and tabs. It also sets up components that you add to the page later. Components that only need CSS, such as buttons, work without it.",
+    body: "Add the stylesheet and the script to the `<head>` of every page. The script adds behavior to interactive components, such as dialogs and tabs. It also sets up components that you add to the page later. Components that only need CSS, such as buttons, work without it.\n\nLarger components, such as the data grid and the chart, load only on the pages that use them. [Load from a CDN](/get-started/cdn/) explains how, and how to host the files yourself.",
     code: [
       {
         label: "index.html",
@@ -43,7 +43,7 @@ export const getStartedSections: PageSection[] = [
   {
     id: "npm-html",
     title: "Install the HTML packages with npm",
-    body: "If your project uses a bundler, install the stylesheet and the HTML runtime from npm. Import both once, in your entry file. Then write the same markup as with the CDN.",
+    body: "If your project uses a bundler, install the stylesheet and the HTML runtime from npm. Import both once, in your entry file. Then write the same markup as with the CDN. To bundle only the components you use, register them one by one, as [Use with a bundler](/get-started/bundlers/) shows.",
     code: [
       {
         label: "Terminal",
@@ -62,7 +62,7 @@ import "@owlky/html/auto";`,
   {
     id: "react",
     title: "Use the React package",
-    body: "Install the React package and the stylesheet. Import the stylesheet once, in your app's entry file, and import components where you use them. Components that need state in the browser are client components, so they work in server-rendered apps too.",
+    body: "Install the React package and the stylesheet. Import the stylesheet once, in your app's entry file, and import components where you use them. Your bundler keeps only the components you import. Components that need state in the browser are client components, so they work in server-rendered apps too. For Next.js and for loading large components on demand, read [Use with a bundler](/get-started/bundlers/).",
     code: [
       {
         label: "Terminal",
@@ -107,7 +107,7 @@ export function App() {
   {
     id: "theme",
     title: "Switch the theme",
-    body: "Set `data-ok-theme` to `light`, `dark` or `system` on the `<html>` element or on any container. To change the theme, the primary color preset and the font from JavaScript, call `applyThemeSettings`. It writes the same attributes, so it works the same way in every setup.",
+    body: "Set `data-ok-theme` to `light`, `dark` or `system` on the `<html>` element or on any container. To change the theme from JavaScript, call `applyThemeSettings`. It writes the same attribute, so it works the same way in every setup.",
     code: [
       {
         label: "theme.ts",
@@ -115,14 +115,15 @@ export function App() {
         code: `import { applyThemeSettings } from "@owlky/html";
 
 // Remembers the choice in localStorage
-applyThemeSettings({ mode: "dark", preset: "cyan" }, { storage: localStorage });`,
+applyThemeSettings({ mode: "dark" }, { storage: localStorage });`,
       },
     ],
   },
   {
     id: "next",
     title: "Next steps",
-    body: `- Read [Colors](/foundations/colors/) to use the palette and the theme colors in your own styles.
+    body: `- Read [Load from a CDN](/get-started/cdn/) or [Use with a bundler](/get-started/bundlers/) to load only what your pages use.
+- Read [Colors](/foundations/colors/) to use the palette and the theme colors in your own styles.
 - Open [Button](/components/button/) for a complete component guide: examples, options, keyboard and accessibility.
 - Coding agents can look up the exact components, options and tokens of your version with the \`@owlky/mcp\` server.`,
   },

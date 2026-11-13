@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  altArrowRightLinear,
   applyTreeHighlight,
   childTreeItems,
   createTreeController,
+  dangerCircleLinear,
   hasLazyChildren,
   nextTreeSelection,
   propagateTreeSelection,
@@ -41,6 +43,7 @@ import {
 import { Checkbox } from "../checkbox/checkbox.js";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
 import { Collapse } from "../collapse/collapse.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -65,32 +68,12 @@ const TreeContext = createContext<TreeContextValue | null>(null);
 
 /** The default expand icon: a chevron that turns when the item opens (decorative). */
 function Chevron() {
-  return (
-    <svg
-      data-ok-tree-chevron=""
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
+  return <Icon icon={altArrowRightLinear} data-ok-tree-chevron="" />;
 }
 
 /** The icon of an item whose children failed to load (decorative). */
 function ErrorIcon() {
-  return (
-    <svg data-ok-tree-error-icon="" aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-2h2zm0-4h-2V7h2z"
-        fill="currentColor"
-      />
-    </svg>
-  );
+  return <Icon icon={dangerCircleLinear} data-ok-tree-error-icon="" />;
 }
 
 const toList = (value: Selection | undefined): string[] =>

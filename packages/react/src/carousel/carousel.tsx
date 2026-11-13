@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  altArrowLeftLinear,
+  altArrowRightLinear,
   type CarouselAlign,
   type CarouselAnatomyOptions,
   type CarouselApi,
@@ -20,6 +22,8 @@ import {
   estimateSnapCount,
   type Orientation,
   parseSlidesToScroll,
+  pauseCircleLinear,
+  playCircleLinear,
   responsiveValues,
 } from "@owlky/core";
 import {
@@ -41,6 +45,7 @@ import {
 } from "react";
 import { Button, type ButtonAsButtonProps } from "../button/button.js";
 import { IconButton } from "../icon-button/icon-button.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 
 export type { CarouselApi, CarouselDirection } from "@owlky/core";
@@ -381,19 +386,7 @@ export const CarouselSlide = forwardRef<HTMLDivElement, CarouselSlideProps>(func
 });
 
 function Chevron({ direction }: { direction: "prev" | "next" }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={direction === "prev" ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"} />
-    </svg>
-  );
+  return <Icon icon={direction === "prev" ? altArrowLeftLinear : altArrowRightLinear} />;
 }
 
 export interface CarouselArrowsProps extends HTMLAttributes<HTMLDivElement> {
@@ -567,17 +560,10 @@ export const CarouselThumb = forwardRef<HTMLButtonElement, CarouselThumbProps>(
 
 function PlayIcon({ state }: { state: "play" | "pause" }) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" data-ok-carousel-play-label={state}>
-      <path
-        fill="currentColor"
-        fillRule="evenodd"
-        d={
-          state === "play"
-            ? "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.6 6.1 5.1 3.1c.6.4.6 1.2 0 1.6l-5.1 3.1c-.6.4-1.4 0-1.4-.8V8.9c0-.8.8-1.2 1.4-.8Z"
-            : "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM9 8h2v8H9Zm4 0h2v8h-2Z"
-        }
-      />
-    </svg>
+    <Icon
+      icon={state === "play" ? playCircleLinear : pauseCircleLinear}
+      data-ok-carousel-play-label={state}
+    />
   );
 }
 

@@ -70,12 +70,12 @@ for (const viewport of viewports) {
 }
 
 test.describe("illustrations follow the theme", () => {
-  test("brand tones follow the preset and color; neutral tones the scheme (both frameworks)", async ({
+  test("brand tones follow the palette and color; neutral tones the scheme (both frameworks)", async ({
     page,
   }) => {
     for (const impl of implementations) {
       for (const theme of ["light", "dark"] as const) {
-        await openStory(page, storyId(impl, "illustrations", "errors"), theme, "", "preset:purple");
+        await openStory(page, storyId(impl, "illustrations", "errors"), theme);
         const colors = await page.evaluate(() => {
           const svg = document.querySelector("svg[data-ok-illustration]") as SVGSVGElement;
           const probe = document.createElement("span");

@@ -5,8 +5,20 @@
    "name": "--ok-c-main"
   },
   {
+   "name": "--ok-duration-progress-rotate",
+   "value": "1.4s"
+  },
+  {
+   "name": "--ok-duration-progress-rotate-reduced",
+   "value": "2.8s"
+  },
+  {
    "name": "--ok-duration-standard",
    "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-in-out",
+   "value": "ease-in-out"
   },
   {
    "name": "--ok-easing-standard",
@@ -198,6 +210,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/circular-progress",
+  "css": [
+   "@owlky/styles/components/circular-progress.css"
+  ],
+  "html": "@owlky/html/circular-progress",
+  "react": "@owlky/react/circular-progress"
+ },
  "name": "circular-progress",
  "title": "Circular progress"
 }

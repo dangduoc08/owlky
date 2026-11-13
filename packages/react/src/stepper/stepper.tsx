@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  checkLinear,
+  dangerLinear,
   type MobileStepperPosition,
   type MobileStepperVariant,
   mobileStepperAttributes,
@@ -26,6 +28,7 @@ import {
 } from "react";
 import { Collapse } from "../collapse/collapse.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
+import { Icon } from "../utils/icon.js";
 
 interface StepperContextValue {
   activeStep: number;
@@ -154,36 +157,11 @@ export const Step = forwardRef<HTMLLIElement, StepProps>(function Step(
 });
 
 function CheckIcon() {
-  return (
-    <svg
-      data-ok-step-icon-check=""
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  );
+  return <Icon icon={checkLinear} data-ok-step-icon-check="" />;
 }
 
 function ErrorIcon() {
-  return (
-    <svg
-      data-ok-step-icon-error=""
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-    >
-      <path d="M12 6v7M12 18h.01" />
-    </svg>
-  );
+  return <Icon icon={dangerLinear} data-ok-step-icon-error="" />;
 }
 
 export interface StepLabelProps extends HTMLAttributes<HTMLSpanElement> {

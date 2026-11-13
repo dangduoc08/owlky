@@ -11,7 +11,7 @@ export const introductionSections: GuideSection[] = [
 - **Accessible by default.** Components follow the WAI-ARIA patterns, work with the keyboard and meet WCAG 2.2 level AA.
 - **Easy to theme.** Every color, size and shadow is a CSS variable. Switch to dark mode, change the primary color or bring your own brand with a few lines of CSS.
 - **Built on the platform.** Components use native elements, such as \`<button>\` and \`<dialog>\`, so browser features like form submission, find-in-page and focus handling keep working.
-- **Small.** The complete stylesheet is about 46 kB, gzipped. The script for every interactive component is about 155 kB, and the npm packages let you load only what you use.`,
+- **Small.** Pages load only what they use. On a CDN page, the script is about 40 kB, gzipped, and larger components, such as the data grid, load only on the pages that show them. With a bundler, your app includes only the components it imports. The complete stylesheet is about 63 kB.`,
   },
   {
     id: "how",
@@ -61,6 +61,36 @@ export function GetStarted() {
     <Button variant="contained" color="primary">
       Get started
     </Button>
+  );
+}`,
+  },
+  {
+    id: "load",
+    title: "Load only what you use",
+    body: `Larger components, such as the chart, the data grid and the editor, load only where you use them.
+
+- **On a CDN page,** the script holds the common components. When the page holds a larger one, the script loads its module from the \`modules/\` folder next to it. To start loading a module with the page, for example for a chart at the top, name it in \`data-ok-preload\`. To host Owlky yourself, copy the whole \`dist\` folder of \`@owlky/html\`.
+- **With a bundler,** your app includes only the components it imports. Each component also has its own entry, such as \`@owlky/react/data-grid\`, which you can load on demand with a dynamic \`import()\`. With Next.js, add \`@owlky/react\` and \`@owlky/core\` to \`optimizePackageImports\`.
+
+The **Import** table in each component's API reference lists its entries, its stylesheets and its CDN module.`,
+    html: `<!-- Loads the chart module with the page, before the chart appears -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" data-ok-preload="chart" defer></script>`,
+    react: `import { CircularProgress } from "@owlky/react";
+import { lazy, Suspense } from "react";
+
+// The data grid becomes its own file, downloaded on first render
+const DataGrid = lazy(() =>
+  import("@owlky/react/data-grid").then((module) => ({ default: module.DataGrid })),
+);
+
+const rows = [{ id: 1, name: "Ana Lima" }];
+
+export function People() {
+  return (
+    <Suspense fallback={<CircularProgress aria-label="Loading people" />}>
+      <DataGrid aria-label="People" rows={rows} columns={[{ field: "name", headerName: "Name" }]} />
+    </Suspense>
   );
 }`,
   },

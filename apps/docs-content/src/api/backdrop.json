@@ -154,6 +154,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/backdrop",
+  "css": [
+   "@owlky/styles/components/backdrop.css"
+  ],
+  "html": "@owlky/html/backdrop",
+  "react": "@owlky/react/backdrop"
+ },
  "name": "backdrop",
  "title": "Backdrop",
  "types": [

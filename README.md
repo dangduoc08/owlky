@@ -15,8 +15,10 @@ consistent interface without locking you into one way of building it.
   the primary color or bring your own brand with a few lines of CSS.
 - **Built on the platform.** Components use native elements, such as `<button>` and `<dialog>`,
   so browser features like form submission, find-in-page and focus handling keep working.
-- **Small.** The complete stylesheet is about 46 kB, gzipped. The script for every interactive
-  component is about 155 kB, and the npm packages let you load only what you use.
+- **Small.** Pages load only what they use. On a CDN page, the script is about 40 kB, gzipped,
+  and larger components, such as the data grid, load only on the pages that show them. With a
+  bundler, your app includes only the components it imports. The complete stylesheet is about
+  63 kB.
 
 > **Status:** Owlky is in pre-release (`0.x`) and not published to npm yet. The design tokens,
 > theming and about 40 components are ready, from buttons and form controls to overlays,
@@ -52,6 +54,11 @@ Add the stylesheet and the script to the `<head>` of every page, then copy a com
 </button>
 ```
 
+The script holds the common components. Larger ones, such as the chart or the data grid, load
+from the `modules/` folder next to it when a page holds one. To load them ahead of use, list them
+in `data-ok-preload`, for example `data-ok-preload="chart"`. To host Owlky yourself, copy the
+whole `dist` folder of `@owlky/html`.
+
 ### With a framework
 
 Install the framework package and the stylesheet. For example, with React:
@@ -75,6 +82,10 @@ export function GetStarted() {
   );
 }
 ```
+
+Bundlers keep only the components you import. Each component also has its own entry, such as
+`@owlky/react/data-grid`, which you can load on demand with a dynamic `import()`. With Next.js,
+add `@owlky/react` and `@owlky/core` to `experimental.optimizePackageImports`.
 
 ### With Tailwind CSS v4
 

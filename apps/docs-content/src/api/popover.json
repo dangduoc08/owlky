@@ -26,8 +26,8 @@
    "value": "0 184 217"
   },
   {
-   "name": "--ok-radius-md",
-   "value": "8px"
+   "name": "--ok-radius-surface-sm",
+   "value": "10px"
   },
   {
    "name": "--ok-shadow-dropdown",
@@ -353,6 +353,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/popover",
+  "css": [
+   "@owlky/styles/components/popover.css"
+  ],
+  "html": "@owlky/html/popover",
+  "react": "@owlky/react/popover"
+ },
  "name": "popover",
  "title": "Popover",
  "types": [

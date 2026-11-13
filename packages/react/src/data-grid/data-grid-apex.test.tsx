@@ -1,9 +1,10 @@
 import type { GridDataSource, GridGetRowsParams, GridGetRowsToExportParams } from "@owlky/core";
 import { act, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
 import { DataGrid, type GridApi, type GridColDef } from "./data-grid.js";
+import { preloadGridChart } from "./grid-chart.js";
 
 // Roadmap batch E (4.18.87–4.18.93, the ApexGrid audit).
 
@@ -41,6 +42,9 @@ const selected = () =>
   bodyRows()
     .filter((row) => row.getAttribute("aria-selected") === "true")
     .map((row) => row.getAttribute("data-ok-row-id"));
+
+// The Chart loads on first use (ADR-0068 S5): load it once, so charts render synchronously.
+beforeAll(() => preloadGridChart());
 
 describe("DataGrid row range selection (4.18.87)", () => {
   it("Shift + click on rows and checkboxes selects the range from the last toggled row", async () => {

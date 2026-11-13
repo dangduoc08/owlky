@@ -1,7 +1,14 @@
 import {
+  checkCircleLinear,
+  closeLinear,
+  createIcon,
   createToasterHotkey,
   createToastSwipe,
   createToastTimer,
+  dangerCircleLinear,
+  dangerTriangleLinear,
+  type IconData,
+  infoCircleLinear,
   parseHotkey,
   parseSwipeDirections,
   readNumber,
@@ -78,31 +85,15 @@ export interface ToasterInstance extends ComponentInstance {
   getHistory(): HTMLElement[];
 }
 
-const ICONS: Record<"info" | "success" | "warning" | "error", string> = {
-  info: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-6h2zm0-8h-2V7h2z",
-  success: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z",
-  warning: "M12 2.5 1.5 21h21zM13 18h-2v-2h2zm0-4h-2V9h2z",
-  error: "M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z",
+const ICONS: Record<"info" | "success" | "warning" | "error", IconData> = {
+  info: infoCircleLinear,
+  success: checkCircleLinear,
+  warning: dangerTriangleLinear,
+  error: dangerCircleLinear,
 };
 
 const SVG = "http://www.w3.org/2000/svg";
 const { position, duration, visibleToasts, closeButton } = toasterOptions.options;
-
-function svg(d: string, stroke = false): SVGSVGElement {
-  const root = document.createElementNS(SVG, "svg");
-  root.setAttribute("aria-hidden", "true");
-  root.setAttribute("viewBox", "0 0 24 24");
-  const path = document.createElementNS(SVG, "path");
-  path.setAttribute("d", d);
-  if (stroke) {
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "currentColor");
-    path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("stroke-width", "2");
-  } else path.setAttribute("fill", "currentColor");
-  root.append(path);
-  return root;
-}
 
 /** An indeterminate CircularProgress (same anatomy as circular-progress.css), inherit color. */
 function spinner(): HTMLElement {
@@ -135,7 +126,7 @@ function closeButtonElement(): HTMLButtonElement {
   button.type = "button";
   button.setAttribute("data-ok-toast-close", "");
   button.setAttribute("aria-label", "Close");
-  button.append(svg("M18 6 6 18M6 6l12 12", true));
+  button.append(createIcon(closeLinear));
   return button;
 }
 
@@ -159,7 +150,7 @@ function buildToast(options: ToastShowOptions, toasterClose: boolean): HTMLLIEle
     const icon = document.createElement("span");
     icon.setAttribute("data-ok-toast-icon", "");
     icon.setAttribute("aria-hidden", "true");
-    icon.append(type === "loading" ? spinner() : svg(ICONS[type]));
+    icon.append(type === "loading" ? spinner() : createIcon(ICONS[type]));
     li.append(icon);
   }
   const content = document.createElement("div");

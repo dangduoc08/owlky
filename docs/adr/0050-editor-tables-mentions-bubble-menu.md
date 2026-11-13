@@ -3,6 +3,8 @@
 **Status:** Accepted (2026-11-10; auto-approved under the owner's standing instruction to run the
 approved plan). Extends ADR-0023.
 
+**Note (2026-11-13, ADR-0068 S6):** `owlky-editor.js` was removed before 0.1.0. On a CDN page, `owlky.js` loads this component from its lazy module (`modules/editor.js`) when the page holds one; the text below keeps the original decision.
+
 ## Context
 Roadmap row 4.16 (with 4.18.34 / 4.18.35): the Editor keeps a fixed Tiptap extension set
 (ADR-0023), so tables, mentions, a menu on the selection, custom extensions, editor settings and

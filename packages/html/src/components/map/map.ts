@@ -236,7 +236,7 @@ function readFlyTarget(trigger: Element) {
 
 /**
  * Map — spec: specs/components/map.md (ADR-0025). Not in the default `components` list (it loads
- * MapLibre): import `@owlky/html/map`, or load `owlky-map.js` after `owlky.js`.
+ * MapLibre): import `@owlky/html/map`; on a CDN page, `owlky.js` loads it (ADR-0068).
  *
  * Markup:  <div data-ok-map data-ok-map-style="…/style.json" data-ok-longitude data-ok-latitude data-ok-zoom>
  *            <div data-ok-map-view></div> <div data-ok-map-fallback></div>

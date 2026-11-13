@@ -31,11 +31,11 @@
     padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
     overflow: visible;
     border: 0;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background-color: var(--_ok-tooltip-bg);
     color: var(--ok-palette-common-white);
     font-family: var(--ok-font-family);
-    font-size: calc(var(--ok-font-size-xs) - 0.0625rem);
+    font-size: var(--ok-font-size-2xs);
     font-weight: var(--ok-font-weight-medium);
     line-height: 1.5;
     overflow-wrap: break-word;

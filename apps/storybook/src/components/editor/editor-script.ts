@@ -36,7 +36,7 @@ export function plainEditorScript(row: HTMLElement): undefined {
 export const PLAIN_EDITOR_SCRIPT_SOURCE = `import { editor, getRuntime } from "@owlky/html";
 
 // The editor isn't in the default components (it loads Tiptap): register it
-// (or import "@owlky/html/editor", or load owlky-editor.js after owlky.js).
+// (or import "@owlky/html/editor"; on a CDN page, owlky.js loads the editor by itself).
 getRuntime().register(editor).start();`;
 
 export const EDITOR_SCRIPT_SOURCE = `import { createEditor, createMarkdown, getRuntime } from "@owlky/html";

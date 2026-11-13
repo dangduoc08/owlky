@@ -26,8 +26,8 @@
     gap: calc(var(--ok-spacing) * 3);
     box-sizing: border-box;
     padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 4);
-    border: 1px solid transparent;
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid transparent;
+    border-radius: var(--ok-radius-control);
     /* Fallback (no light-dark(), ADR-0006): the light tones in every theme. */
     background-color: var(--_ok-lighter);
     color: var(--_ok-darker);

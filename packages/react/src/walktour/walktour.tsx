@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  closeLinear,
   createWalktourController,
   createWalktourFlow,
   defaultWalktourLocale,
@@ -42,6 +43,7 @@ import { Backdrop } from "../backdrop/backdrop.js";
 import { Button } from "../button/button.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
+import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 
 /** A CSS selector, an element, a ref, or a function returning the element (read when shown). */
@@ -139,14 +141,7 @@ export interface WalktourProps
   after?: ((data: WalktourEventData) => void) | undefined;
 }
 
-const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
-    <path
-      fill="currentColor"
-      d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"
-    />
-  </svg>
-);
+const CloseIcon = () => <Icon icon={closeLinear} width="16" height="16" />;
 
 function resolveTarget(target: WalktourTarget): Element | null | undefined {
   if (typeof target === "string") return undefined;

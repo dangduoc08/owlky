@@ -115,7 +115,7 @@
   :where([data-ok-select][data-ok-variant]) {
     --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3.5);
     --_ok-border: rgb(var(--ok-palette-grey-500-channel) / 0.2);
-    --_ok-border-width: 1px;
+    --_ok-border-width: var(--ok-border-width);
     --_ok-tint: rgb(var(--ok-palette-grey-500-channel) / 0.08);
     --_ok-tint-hover: rgb(var(--ok-palette-grey-500-channel) / 0.16);
     --_ok-line: rgb(var(--ok-palette-grey-500-channel) / 0.32);
@@ -125,7 +125,7 @@
     align-items: center;
     box-sizing: border-box;
     min-width: 0;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     color: var(--ok-text-primary);
     font-family: var(--ok-font-family);
     font-size: var(--ok-font-size-lg);
@@ -350,7 +350,7 @@
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    border-bottom: 1px solid var(--_ok-line);
+    border-bottom: var(--ok-border-width) solid var(--_ok-line);
     pointer-events: none;
     transition: border-color var(--ok-duration-shorter) var(--ok-easing-standard);
   }
@@ -360,7 +360,7 @@
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    border-bottom: 2px solid var(--_ok-accent);
+    border-bottom: var(--ok-border-width-strong) solid var(--_ok-accent);
     transform: scaleX(0);
     pointer-events: none;
     transition: transform var(--ok-duration-shorter) var(--ok-easing-decelerate);
@@ -383,20 +383,20 @@
           :has(> [data-ok-select-input]:disabled, > select:disabled)
         )
       )::before {
-      border-bottom-width: 2px;
+      border-bottom-width: var(--ok-border-width-strong);
     }
   }
 
   /* Focus */
   :where([data-ok-select][data-ok-variant]:focus-within) {
     --_ok-border: var(--_ok-accent);
-    --_ok-border-width: 2px;
+    --_ok-border-width: var(--ok-border-width-strong);
     --_ok-tint: var(--_ok-tint-hover);
   }
 
   /* Filled shows focus with a ring too, like TextField (WCAG 2.4.7). */
   :where([data-ok-select][data-ok-variant="filled"]:focus-within) {
-    box-shadow: inset 0 0 0 2px var(--_ok-accent);
+    box-shadow: inset 0 0 0 var(--ok-border-width-strong) var(--_ok-accent);
   }
 
   :where([data-ok-select][data-ok-variant="standard"]:focus-within)::after {

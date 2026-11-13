@@ -83,7 +83,11 @@ function decodeMappings(mappings) {
 /** Splits a bundle into slices per (source, original line) through its map. */
 async function attribute(file) {
   const code = await readFile(file, "utf8");
-  return attributeCode(code, JSON.parse(await readFile(`${file}.map`, "utf8")));
+  // A facade (an entry whose code the bundler moved into a chunk: `import"./chunks/…"`) has no map.
+  const map = existsSync(`${file}.map`)
+    ? JSON.parse(await readFile(`${file}.map`, "utf8"))
+    : { mappings: "", sources: [] };
+  return attributeCode(code, map);
 }
 
 function attributeCode(code, map) {
@@ -230,21 +234,27 @@ function group(slices, keyOf, total) {
 // --- 1. Bundles ----------------------------------------------------------------------------
 
 const dist = at("packages/html/dist");
-// `owlky.js`, the opt-in shims, and since S2 the lazy modules and their shared chunks (ADR-0068).
+// `owlky.js`, `owlky.mjs` (its ES module twin), the lazy modules and their shared chunks (ADR-0068).
 const listJs = async (dir) =>
   (await readdir(join(dist, dir)).catch(() => []))
     .filter((f) => f.endsWith(".js"))
     .map((f) => (dir ? `${dir}/${f}` : f));
 const bundleFiles = [
-  ...(await listJs("")).filter(
-    (f) => /^owlky(-[\w-]+)?\.js$/.test(f) && f !== "owlky-map-worker.js",
-  ),
+  "owlky.js",
+  ...(existsSync(join(dist, "owlky.mjs")) ? ["owlky.mjs"] : []),
   ...(await listJs("modules")),
   ...(await listJs("modules/chunks")),
 ];
 const bundles = {};
 const anatomyRows = {};
 const mainSources = new Set();
+/** `source:line` of owlky.js's slices, for the data modules below. */
+const mainLines = new Set();
+/**
+ * Pure data modules (one export per line, no state): a lazy file duplicates only the lines owlky.js
+ * holds too, not the whole module (the Solar icons each bundle picks, ADR-0070 § 9).
+ */
+const DATA_MODULE = /icons\/solar\.js$/;
 const duplicated = { parts: [], sources: new Set() };
 for (const file of bundleFiles.sort((a, b) =>
   a === "owlky.js" ? -1 : b === "owlky.js" ? 1 : a.localeCompare(b),
@@ -254,10 +264,18 @@ for (const file of bundleFiles.sort((a, b) =>
   const families = group(slices, (s) => familyOf(s.source), total);
   bundles[file] = { raw: Buffer.byteLength(code), gzip: total, families };
   // Code in both owlky.js and a lazy file has two module instances (ADR-0068 §2).
-  if (file === "owlky.js") for (const slice of slices) mainSources.add(slice.source);
+  if (file === "owlky.js")
+    for (const slice of slices) {
+      mainSources.add(slice.source);
+      mainLines.add(`${slice.source}:${slice.line}`);
+    }
   else if (file.startsWith("modules/"))
     for (const slice of slices)
-      if (slice.source !== "(unmapped)" && mainSources.has(slice.source)) {
+      if (
+        slice.source !== "(unmapped)" &&
+        mainSources.has(slice.source) &&
+        (!DATA_MODULE.test(slice.source) || mainLines.has(`${slice.source}:${slice.line}`))
+      ) {
         duplicated.parts.push(slice.text);
         duplicated.sources.add(slice.source);
       }
@@ -402,15 +420,31 @@ async function bundle(name, source) {
     },
   });
   const chunks = (Array.isArray(output) ? output : [output]).flatMap((o) => o.output);
-  const main = chunks.find((c) => c.type === "chunk" && c.isEntry);
-  const lazy = chunks.filter((c) => c.type === "chunk" && !c.isEntry);
+  const byName = new Map(chunks.map((c) => [c.fileName, c]));
+  const first = chunks.find((c) => c.type === "chunk" && c.isEntry);
+  // What the app loads up front: the entry and the chunks it imports statically (an entry may be
+  // a facade of a chunk the bundler shares with a lazy import, ADR-0068 S5); the rest is lazy.
+  const eager = new Set();
+  const visit = (chunk) => {
+    if (!chunk || eager.has(chunk)) return;
+    eager.add(chunk);
+    for (const name of chunk.imports ?? []) visit(byName.get(name));
+  };
+  visit(first);
+  const main = {
+    code: [...eager].map((c) => c.code).join("\n"),
+    parts: [...eager],
+  };
+  const lazy = chunks.filter((c) => c.type === "chunk" && !eager.has(c));
   return {
     gzip: gz(main.code),
     raw: Buffer.byteLength(main.code),
     lazyGzip: lazy.reduce((n, c) => n + gz(c.code), 0),
     code: main.code,
     ...(() => {
-      const { slices } = attributeCode(main.code, main.map);
+      const slices = main.parts.flatMap(
+        (c) => attributeCode(c.code, c.map ?? { mappings: "", sources: [] }).slices,
+      );
       const total = gz(main.code);
       const families = group(slices, (s) => familyOf(s.source), total);
       const files = group(slices, (s) => s.source, total).slice(0, 25);
@@ -488,33 +522,21 @@ async function moduleFiles(name, seen = new Set()) {
   );
   return [file, ...(await Promise.all(imports.map((each) => moduleFiles(each, seen)))).flat()];
 }
-const lazy = existsSync(join(dist, "modules"));
 const page = async (...modules) => [
   "owlky.js",
   ...new Set((await Promise.all(modules.map((m) => moduleFiles(m)))).flat()),
 ];
-const HTML_CDN = lazy
-  ? [
-      ["Light page (Button, Dialog)", await page()],
-      ["Data grid page", await page("data-grid")],
-      ["Chart page", await page("chart")],
-      ["Date picker page", await page("date-picker")],
-      ["Editor page", await page("editor")],
-      ["Markdown page", await page("markdown")],
-      ["Phone input page", await page("phone-input")],
-      ["Map page", [...(await page("map")), "owlky-map-worker.js"]],
-      ["Code editor page (Monaco loads on mount)", await page("code-editor")],
-    ]
-  : [
-      ["Light page (Button, Dialog)", ["owlky.js"]],
-      ["Data grid page", ["owlky.js"]],
-      ["Chart page", ["owlky.js"]],
-      ["Editor page", ["owlky.js", "owlky-editor.js"]],
-      ["Markdown page", ["owlky.js", "owlky-markdown.js"]],
-      ["Phone input page", ["owlky.js", "owlky-phone.js"]],
-      ["Map page", ["owlky.js", "owlky-map.js", "owlky-map-worker.js"]],
-      ["Code editor page (Monaco loads on mount)", ["owlky.js", "owlky-code-editor.js"]],
-    ];
+const HTML_CDN = [
+  ["Light page (Button, Dialog)", await page()],
+  ["Data grid page", await page("data-grid")],
+  ["Chart page", await page("chart")],
+  ["Date picker page", await page("date-picker")],
+  ["Editor page", await page("editor")],
+  ["Markdown page", await page("markdown")],
+  ["Phone input page", await page("phone-input")],
+  ["Map page", [...(await page("map")), "owlky-map-worker.js"]],
+  ["Code editor page (Monaco loads on mount)", await page("code-editor")],
+];
 // Each lazy module with the chunks it imports statically: what loading it downloads.
 const lazyModules = {};
 for (const file of await listJs("modules")) {

@@ -158,7 +158,7 @@
     width: calc(var(--ok-spacing) * 4);
     height: calc(var(--ok-spacing) * 4);
     margin: 0 calc(var(--ok-spacing) * 1.5) 0 0;
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background-color: rgb(var(--ok-palette-grey-500-channel) / 0.24);
     vertical-align: -0.125em;
   }
@@ -191,7 +191,7 @@
       calc(var(--ok-spacing) * 16);
     border-left: calc(var(--ok-spacing) * 2) solid rgb(var(--ok-palette-grey-500-channel) / 0.08);
     color: var(--ok-text-secondary);
-    font-size: calc(var(--ok-spacing) * 6);
+    font-size: var(--ok-font-size-quote);
     line-height: 1.5;
   }
 
@@ -201,7 +201,7 @@
     top: calc(var(--ok-spacing) * -2);
     left: calc(var(--ok-spacing) * 4);
     color: var(--ok-text-disabled);
-    font-size: calc(var(--ok-spacing) * 18);
+    font-size: calc(var(--ok-typography-quote-mark-size) * 1.125);
     line-height: 1.5;
   }
 
@@ -213,37 +213,37 @@
     height: 0;
     margin: calc(var(--ok-spacing) * 8) 0;
     border: 0;
-    border-top: 1px solid var(--ok-divider);
+    border-top: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-markdown] img:not([data-ok-image] > img)) {
     max-width: 100%;
     height: auto;
-    border-radius: var(--ok-radius-xl);
+    border-radius: var(--ok-radius-surface);
     vertical-align: middle;
   }
 
   /* Pictures composed as Image (`data-ok-images="image"`): the Image sizes them. */
   :where([data-ok-markdown] [data-ok-image]) {
-    border-radius: var(--ok-radius-xl);
+    border-radius: var(--ok-radius-surface);
   }
 
   /* --- Code ------------------------------------------------------------------------------- */
 
   :where([data-ok-markdown] :not(pre) > code) {
     padding: calc(var(--ok-spacing) * 0.5) var(--ok-spacing);
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background-color: rgb(var(--ok-palette-grey-500-channel) / 0.2);
     /* The reference's secondary grey is below 4.5:1 on this tint: primary text instead. */
     color: var(--ok-text-primary);
     font-family: var(--ok-font-family-mono);
-    font-size: 0.875em;
+    font-size: var(--ok-font-size-code);
   }
 
   :where([data-ok-markdown] pre:not([data-ok-markdown-source])) {
     margin: calc(var(--ok-spacing) * 4) 0;
     padding: calc(var(--ok-spacing) * 6);
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-palette-grey-900);
     color: var(--ok-palette-common-white);
     font-family: var(--ok-font-family-mono);
@@ -320,7 +320,7 @@
   :where([data-ok-markdown] table) {
     width: 100%;
     margin: 0 0 calc(var(--ok-spacing) * 5);
-    border: 1px solid var(--ok-divider);
+    border: var(--ok-border-width) solid var(--ok-divider);
     border-collapse: collapse;
     font-size: var(--ok-typography-body2-font-size);
     line-height: var(--ok-typography-body2-line-height);
@@ -328,7 +328,7 @@
 
   :where([data-ok-markdown] :is(th, td)) {
     padding: calc(var(--ok-spacing) * 2);
-    border: 1px solid var(--ok-divider);
+    border: var(--ok-border-width) solid var(--ok-divider);
     text-align: start;
   }
 
@@ -345,7 +345,7 @@
   :where([data-ok-markdown] section[data-footnotes]) {
     margin-top: calc(var(--ok-spacing) * 8);
     padding-top: calc(var(--ok-spacing) * 4);
-    border-top: 1px solid var(--ok-divider);
+    border-top: var(--ok-border-width) solid var(--ok-divider);
     color: var(--ok-text-secondary);
     font-size: var(--ok-typography-body2-font-size);
     line-height: var(--ok-typography-body2-line-height);

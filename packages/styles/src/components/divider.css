@@ -19,7 +19,7 @@
     height: 0;
     margin: 0;
     border: 0;
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     background: none;
   }
 
@@ -36,7 +36,7 @@
     width: 0;
     height: 100%;
     border-bottom: 0;
-    border-inline-end: 1px solid var(--ok-divider);
+    border-inline-end: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-divider][data-ok-orientation="vertical"][data-ok-variant="middle"]) {
@@ -75,7 +75,7 @@
     content: "";
     flex: 1 1 0;
     min-width: 0;
-    border-top: 1px solid var(--ok-divider);
+    border-top: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-divider-text]) {
@@ -100,7 +100,7 @@
   :where([data-ok-divider][data-ok-orientation="vertical"]:has(> [data-ok-divider-text]))::before,
   :where([data-ok-divider][data-ok-orientation="vertical"]:has(> [data-ok-divider-text]))::after {
     border-top: 0;
-    border-inline-start: 1px solid var(--ok-divider);
+    border-inline-start: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-divider][data-ok-orientation="vertical"] > [data-ok-divider-text]) {

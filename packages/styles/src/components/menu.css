@@ -31,9 +31,9 @@
     align-items: center;
     gap: calc(var(--ok-spacing) * 4);
     box-sizing: border-box;
-    min-height: calc(var(--ok-spacing) * 8.5);
+    min-height: var(--ok-item-height);
     padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 2);
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     color: var(--ok-text-primary);
     font-size: var(--ok-typography-body2-font-size);
     line-height: var(--ok-typography-body2-line-height);
@@ -77,7 +77,7 @@
 
   :where([data-ok-menu-item][data-ok-show-divider]) {
     margin-bottom: calc(var(--ok-spacing) * 2);
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }
@@ -98,8 +98,8 @@
   }
 
   :where([data-ok-menu-item]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-menu-item][aria-disabled="true"]) {

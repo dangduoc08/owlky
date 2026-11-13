@@ -110,7 +110,7 @@
       > [data-ok-date-range-calendar]
       + :is([data-ok-multi-section-digital-clock], [data-ok-digital-clock])
   ) {
-    border-inline-start: 1px solid var(--ok-divider);
+    border-inline-start: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where(

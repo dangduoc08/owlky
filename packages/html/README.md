@@ -109,8 +109,8 @@ JavaScript; legend buttons toggle series; events `ok:chart:toggle` (cancelable) 
 `ok:chart:active`; `setHiddenSeries`, `setActive`, `setFormatters`, `refresh()`, `updateSeries(series, categories?)` and `appendData(data, { categories, limit })` for live data, which rewrite the table in place; zoom and pan (`data-ok-zoom`, `ok:chart:zoom`, `zoomRange`, `setZoomRange`), a toolbar with SVG / PNG / CSV downloads (`data-ok-toolbar`, `exportChart`), synchronized groups (`data-ok-group`), brush charts (`data-ok-brush-target`), annotations in `ul[data-ok-chart-annotations]`, animations and `setLocaleText`; stock charts with `data-ok-indicators`, panes and `data-ok-navigator`, whose indicator columns the runtime writes). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
-Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and
-set the root `font-size`; or import `applyThemeSettings` from `@owlky/html` (ESM). The CDN global
+Theme settings (ADR-0070): put `data-ok-theme` on `<html>` (or any element) and set the root
+`font-size`; or import `applyThemeSettings` from `@owlky/html` (ESM). The CDN global
 stays the runtime only (ADR-0007).
 
 ## CDN — include once per page
@@ -125,7 +125,7 @@ inserted later (htmx, Turbo, `innerHTML`) are initialized automatically and clea
 removed. Loading the script twice is harmless.
 
 **`owlky.js` loads what the page uses.** It holds the runtime and the common components (about
-45 kB gzip). Larger components, such as the Chart, the Data grid, the date pickers, the Editor,
+40 kB gzip). Larger components, such as the Chart, the Data grid, the date pickers, the Editor,
 the Map, Markdown and the Phone input, are modules in the `modules/` folder next to `owlky.js`.
 When the page holds one, `owlky.js` loads its module and the component starts. Until then, the
 markup works as it does without JavaScript: a chart shows its data table, for example. Host the
@@ -144,16 +144,20 @@ whole `dist/` folder, so `modules/`, `monaco/` and `owlky-map-worker.js` sit nex
   back online loads it again.
 - **Strict CSP:** modules are same-origin ES modules with no inline code, so
   `script-src 'self'` and Trusted Types (`require-trusted-types-for 'script'`) work unchanged.
+- **ES module pages:** `<script type="module" src=".../owlky.mjs">` is the same script as an ES
+  module, with the same attributes. Load one of the two per page.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js" data-ok-preload="chart" defer></script>
 ```
 
-The older scripts (`owlky-editor.js`, `owlky-map.js`, `owlky-markdown.js`, `owlky-phone.js`,
-`owlky-illustrations.js`, `owlky-code-editor.js`) still work: each one only preloads its module.
+The separate opt-in scripts of earlier versions (`owlky-editor.js`, `owlky-map.js`,
+`owlky-markdown.js`, `owlky-phone.js`, `owlky-illustrations.js`, `owlky-code-editor.js`) are
+gone: remove their `<script>` tags. `owlky.js` loads those components by itself, and
+`data-ok-preload` loads them ahead of use.
 
 - **Code editor:** Monaco loads only when an editor appears, from the `monaco/` folder (about
-  1.15 MB gzip for the first editor). Point `data-ok-monaco-path` (on a script tag) at your own
+  1.15 MB gzip for the first editor). Point `data-ok-monaco-path` (on the `owlky.js` script) at your own
   copy of `dist/monaco/`: Monaco's workers must come from the page's origin. Monaco needs
   `style-src 'unsafe-inline'` and a few Trusted Types policies; see the Code editor docs page.
 - **Map:** MapLibre GL JS loads its worker, `owlky-map-worker.js`, from `dist/`. Owlky includes
@@ -175,6 +179,14 @@ import "@owlky/html/auto"; // everything, started
 // or à la carte, side-effect free:
 import { components, getRuntime } from "@owlky/html";
 getRuntime().register(...components).start();
+
+// or one entry per component (`@owlky/html/<name>`, named after its docs page): only what you use.
+import { dialog } from "@owlky/html/dialog";
+import { tabs } from "@owlky/html/tabs";
+getRuntime().register(dialog, tabs).start();
+// Definitions registered later set up the components already on the page.
+if (document.querySelector("[data-ok-data-grid]"))
+  getRuntime().register((await import("@owlky/html/data-grid")).dataGrid);
 
 // The Editor is opt-in: import "@owlky/html/editor", or register it with a code highlighter.
 import { createEditor } from "@owlky/html";

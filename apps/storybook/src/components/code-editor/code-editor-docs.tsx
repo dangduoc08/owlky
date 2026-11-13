@@ -10,11 +10,10 @@ export const codeEditorSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: "The code editor lets people write and read source code with syntax highlighting, completion, error markers, find and replace, and a diff view. It is built on Monaco, the editor of Visual Studio Code, so both versions share the same engine and markup. A frame holds the editor, a loading message and a text area with the value.\n\nMonaco is large, so the code editor is a separate script and Monaco itself loads only when an editor appears. Load `owlky-code-editor.js` after `owlky.js`: it loads Monaco from the `monaco/` folder next to it. With a bundler, import `@owlky/html/code-editor` or use the React components, and Monaco becomes a separate chunk of your app.",
-    html: `<!-- Load once per page: the styles, the runtime, then the code editor -->
+    body: "The code editor lets people write and read source code with syntax highlighting, completion, error markers, find and replace, and a diff view. It is built on Monaco, the editor of Visual Studio Code, so both versions share the same engine and markup. A frame holds the editor, a loading message and a text area with the value.\n\nMonaco is large, so it loads only when an editor appears. On a CDN page, `owlky.js` loads the code editor when the page holds one, and the code editor loads Monaco from the `monaco/` folder next to `owlky.js`. With a bundler, import `@owlky/html/code-editor` or use the React components, and Monaco becomes a separate chunk of your app.",
+    html: `<!-- Load once per page: owlky.js loads the code editor when the page holds one -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
-<script src="${CDN}/owlky-code-editor.js" defer></script>
 
 <div data-ok-code-editor data-ok-language="javascript" data-ok-height="240">
   <textarea data-ok-code-editor-value aria-label="Script" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">console.log("Hello");</textarea>
@@ -225,9 +224,9 @@ export function CodeEditorThemes() {
   {
     id: "loading",
     title: "Host Monaco and set up loading",
-    body: "Owlky never loads Monaco from another site. `owlky-code-editor.js` loads it from the `monaco/` folder next to itself. To serve that folder somewhere else, copy `@owlky/html/dist/monaco/` to your server and set `data-ok-monaco-path` on the script. The folder must be on the same origin as the page, because browsers run web workers only from there.\n\nWith a bundler, Monaco is imported from the `monaco-editor` package. If your bundler doesn't find Monaco's workers by itself, pass them to `loader.config({ getWorker })`. `loader.config()` also takes `paths.vs` for your own copy of the `monaco/` folder, a `monaco` instance you already imported, and the UI language. Call it before the first editor appears.\n\nUntil Monaco is ready, the frame shows `loading` (default \"Loading...\"). If Monaco can't load, the text area comes back so that people can still edit the value, and `onError` or `ok:code-editor:error` reports the reason.",
+    body: "Owlky never loads Monaco from another site. On a CDN page, the code editor loads it from the `monaco/` folder next to `owlky.js`. To serve that folder somewhere else, copy `@owlky/html/dist/monaco/` to your server and set `data-ok-monaco-path` on the `owlky.js` script. The folder must be on the same origin as the page, because browsers run web workers only from there.\n\nWith a bundler, Monaco is imported from the `monaco-editor` package. If your bundler doesn't find Monaco's workers by itself, pass them to `loader.config({ getWorker })`. `loader.config()` also takes `paths.vs` for your own copy of the `monaco/` folder, a `monaco` instance you already imported, and the UI language. Call it before the first editor appears.\n\nUntil Monaco is ready, the frame shows `loading` (default \"Loading...\"). If Monaco can't load, the text area comes back so that people can still edit the value, and `onError` or `ok:code-editor:error` reports the reason.",
     html: `<!-- Your own copy of the monaco/ folder, in German -->
-<script src="/assets/owlky-code-editor.js" data-ok-monaco-path="/assets/monaco/" defer></script>
+<script src="/assets/owlky.js" data-ok-monaco-path="/assets/monaco/" defer></script>
 
 <script type="module">
   // With a bundler: import "@owlky/html/code-editor" instead

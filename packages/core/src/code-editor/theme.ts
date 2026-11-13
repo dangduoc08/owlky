@@ -68,7 +68,7 @@ const alpha = (hex: string, amount: number) => `${hex.slice(0, 7)}${hex2(amount 
 
 /**
  * Reads the palette of `element`'s scope for one scheme: a probe child with `data-ok-theme`
- * resolves the tokens there (presets and nested scopes included), through CSSOM only.
+ * resolves the tokens there (token overrides and nested scopes included), through CSSOM only.
  */
 function readPalette(element: Element, scheme: CodeEditorScheme): Palette {
   const probe = document.createElement("span");
@@ -204,7 +204,7 @@ interface ThemeClient {
 
 /*
  * Monaco has one theme per page. The editor used last (focused, mounted or given a new theme)
- * picks it; a change of `data-ok-theme` / `data-ok-preset` / the system scheme re-applies it.
+ * picks it; a change of `data-ok-theme` / the system scheme re-applies it.
  */
 const clients = new Set<ThemeClient>();
 let current: ThemeClient | null = null;
@@ -227,7 +227,7 @@ function watch() {
   scopes.observe(document.documentElement, {
     attributes: true,
     subtree: true,
-    attributeFilter: ["data-ok-theme", "data-ok-preset"],
+    attributeFilter: ["data-ok-theme"],
   });
   // `.dark` (Tailwind's convention) is read on the root elements only: classes change constantly.
   const classes = new MutationObserver(schedule);

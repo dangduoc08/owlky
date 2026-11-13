@@ -29,10 +29,12 @@
     min-width: calc(var(--ok-spacing) * 6);
     height: calc(var(--ok-spacing) * 6);
     padding: 0 calc(var(--ok-spacing) * 1.5);
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background-color: rgb(var(--_ok-channel) / 0.16);
     color: var(--_ok-text);
-    font-family: var(--ok-font-family);
+    font-family: var(--ok-font-family-label);
+    letter-spacing: var(--ok-label-letter-spacing);
+    text-transform: var(--ok-label-text-transform);
     font-size: var(--ok-font-size-xs);
     font-weight: var(--ok-font-weight-bold);
     line-height: 1.5;
@@ -47,7 +49,7 @@
   }
 
   :where([data-ok-label][data-ok-variant="outlined"]) {
-    border: 2px solid var(--_ok-main);
+    border: var(--ok-border-width-strong) solid var(--_ok-main);
     background-color: transparent;
     color: var(--_ok-main);
   }

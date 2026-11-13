@@ -18,7 +18,7 @@
     --_ok-main: var(--ok-c-main, var(--ok-text-primary));
     --_ok-selected-bg: rgb(var(--ok-c-channel, var(--ok-palette-grey-500-channel)) / 0.08);
     --_ok-hover-bg: rgb(var(--ok-c-channel, var(--ok-palette-grey-500-channel)) / 0.08);
-    --_ok-size: calc(var(--ok-spacing) * 12);
+    --_ok-size: var(--ok-control-height-lg);
     --_ok-font-size: var(--ok-font-size-md);
 
     display: inline-flex;
@@ -31,11 +31,13 @@
     height: var(--_ok-size);
     margin: 0;
     padding: 0 calc(var(--ok-spacing) * 2.5);
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    border-radius: var(--ok-radius-control);
     background-color: transparent;
     color: var(--ok-text-secondary);
-    font-family: var(--ok-font-family);
+    font-family: var(--ok-font-family-label);
+    letter-spacing: var(--ok-label-letter-spacing);
+    text-transform: var(--ok-label-text-transform);
     font-size: var(--_ok-font-size);
     font-weight: var(--ok-font-weight-semibold);
     line-height: var(--ok-typography-button-line-height);
@@ -67,7 +69,7 @@
   }
 
   :where([data-ok-toggle-button][data-ok-size="lg"]) {
-    --_ok-size: calc(var(--ok-spacing) * 14);
+    --_ok-size: var(--ok-control-height-xl);
     --_ok-font-size: var(--ok-font-size-lg);
   }
 
@@ -78,8 +80,8 @@
     gap: var(--ok-spacing);
     box-sizing: border-box;
     padding: var(--ok-spacing);
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-control);
     vertical-align: middle;
   }
 
@@ -133,8 +135,8 @@
   }
 
   :where([data-ok-toggle-button]:focus-visible) {
-    outline: 2px solid var(--_ok-main);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--_ok-main);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Disabled — after hover, so it wins. */

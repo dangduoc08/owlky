@@ -100,12 +100,16 @@ const editorSnippet =
     return html;
   };
 
-const CLOSE_ICON =
-  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" /></svg>';
+/** Toast icons (Solar, as React's `TOAST_ICONS` and `CLOSE_ICON` render them). */
+const SOLAR =
+  'viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"';
+const CLOSE_ICON = `<svg data-ok-icon="close-linear" ${SOLAR}><path d="M19.01 5L5.01 19" /><path d="M19 19L5 5" /></svg>`;
+const SUCCESS_ICON = `<svg data-ok-icon="check-circle-linear" ${SOLAR}><circle cx="12" cy="12" r="10" /><path stroke-linejoin="round" d="M8.5 12.5L10.5 14.5L15.5 9.5" /></svg>`;
+const ERROR_ICON = `<svg data-ok-icon="danger-circle-linear" ${SOLAR}><circle cx="12" cy="12" r="10" /><path d="M12 7V13" /><path stroke-linejoin="round" d="M12 16H12" /></svg>`;
 /** The copy demos' toasts, as the React `toast.success` / `toast.error` calls render them. */
 const COPY_TOASTS = `<template id="copy-done">
   <li data-ok-toast data-ok-type="success">
-    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z" fill="currentColor" /></svg></span>
+    <span data-ok-toast-icon aria-hidden="true">${SUCCESS_ICON}</span>
     <div data-ok-toast-content>
       <div data-ok-toast-title>Copied!</div>
     </div>
@@ -114,7 +118,7 @@ const COPY_TOASTS = `<template id="copy-done">
 </template>
 <template id="copy-failed">
   <li data-ok-toast data-ok-type="error">
-    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z" fill="currentColor" /></svg></span>
+    <span data-ok-toast-icon aria-hidden="true">${ERROR_ICON}</span>
     <div data-ok-toast-content>
       <div data-ok-toast-title>Couldn't copy. Select the text and copy it yourself.</div>
     </div>

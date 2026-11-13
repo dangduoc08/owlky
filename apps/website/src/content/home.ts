@@ -15,7 +15,7 @@ export const homeSections: PageSection[] = [
     title: "Why Owlky",
     body: `- **One design system everywhere.** Every component has a single markup structure, a single stylesheet and a single set of design tokens. Use it in plain HTML or through a framework package, and it looks and behaves the same.
 - **Accessible by default.** Components follow the WAI-ARIA patterns, work with the keyboard and meet WCAG 2.2 level AA.
-- **Themes and presets.** Every color, radius and shadow is a CSS variable. Switch to dark mode, pick a primary color preset and a font, or bring your own brand.
+- **Themes and tokens.** Every color, radius and shadow is a CSS variable. Switch to dark mode, or bring your own brand color and font.
 - **Large components included.** A data grid, charts, date and time pickers, a rich text editor, a code editor and maps use the same tokens as the buttons.
 - **Ready for AI coding agents.** The Owlky MCP server (\`npx -y @owlky/mcp\`) gives agents the exact options, examples and tokens, and checks their markup.
 - **Built on the platform.** Components use native elements, such as \`<button>\` and \`<dialog>\`, so browser features like form submission, find-in-page and focus handling keep working.`,
@@ -25,7 +25,7 @@ export const homeSections: PageSection[] = [
     title: "How it works",
     body: `Each component is HTML with \`data-ok-*\` attributes, styled by one prebuilt stylesheet. Interactive components share one behavior core: on a plain HTML page, a small script connects it to your markup, and framework packages render the same markup with the API you expect from your framework.
 
-This website is built with Owlky too. Use the **Theme**, **Preset** and **Font** menus in the header of the docs pages to see every page change.`,
+This website is built with Owlky too. Use the **Theme** menu in the header of the docs pages to see every page change.`,
   },
   {
     id: "start",
@@ -134,7 +134,7 @@ export const FAQ = [
   {
     question: "How do I change colors and fonts?",
     answer:
-      "Set a theme (light, dark or system), a primary color preset and a font with data attributes on any element, or with one function call. For your own brand, override the CSS variables or create a theme from your palette.",
+      "Set a theme (light, dark or system) with a data attribute on any element, or with one function call. For your own brand color and font, override the CSS variables or create a theme from your palette.",
   },
   {
     question: "How does Owlky work with AI coding agents?",

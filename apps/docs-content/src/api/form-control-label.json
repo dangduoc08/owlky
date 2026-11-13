@@ -128,6 +128,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/form-control-label",
+  "css": [
+   "@owlky/styles/components/form-control-label.css"
+  ],
+  "react": "@owlky/react/form-control-label"
+ },
  "name": "form-control-label",
  "title": "Form control label"
 }

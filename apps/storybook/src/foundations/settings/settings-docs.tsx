@@ -1,14 +1,8 @@
 import { Button, Label, Popover, Typography } from "@owlky/react";
-import {
-  fontFamilyPresetNames,
-  fontSizeRange,
-  primaryPresetNames,
-  primaryPresets,
-} from "@owlky/tokens";
+import { fontSizeRange } from "@owlky/tokens";
 import { useState } from "react";
 import {
   Caption,
-  capitalize,
   codeList,
   Dot,
   GuideDocs,
@@ -22,51 +16,42 @@ import {
   STYLED_UPGRADE,
 } from "./styled.js";
 
-const fontLabel = (name: string) => name.split("-").map(capitalize).join(" ");
-
 export const settingsSections: GuideSection[] = [
   {
     id: "overview",
     title: "Theme settings",
-    body: `Theme settings let your users personalize the interface. There are four settings:
+    body: `Theme settings let your users personalize the interface. There are two settings:
 
 - **Mode:** ${codeList(["light", "dark", "system"])}. The \`system\` mode follows the operating system.
-- **Primary color preset:** ${codeList(primaryPresetNames)}.
-- **Font family:** ${codeList(fontFamilyPresetNames)}.
 - **Font size:** the root font size, from ${fontSizeRange.min}px to ${fontSizeRange.max}px. The default is ${fontSizeRange.default}px.
 
-Each setting is an attribute or a style on an element, so it works without JavaScript. The **Theme**, **Preset**, **Font** and **Font size** menus in the toolbar change the same settings for every story.`,
+Each setting is an attribute or a style on an element, so it works without JavaScript. The **Theme** and **Font size** menus in the toolbar change the same settings for every story.`,
   },
   {
-    id: "presets",
-    title: "Change the primary color",
-    body: "Set `data-ok-preset` to replace the primary color everywhere it's used, such as filled buttons, selected states and colored shadows. The other palette colors don't change.",
-    html: `<html data-ok-preset="purple">
-  <body>
-    <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
-    <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Export</span></button>
-  </body>
-</html>`,
-    react: `import { applyThemeSettings } from "@owlky/react";
+    id: "brand",
+    title: "Use your brand color and font",
+    body: "Override the public tokens in your own CSS: the primary palette (`--ok-palette-primary-*`), the text font (`--ok-font-family`) and the heading font (`--ok-font-family-heading`). Your rules sit outside Owlky's cascade layers, so they win. Owlky doesn't bundle fonts, so load the one you choose. Check that text on your colors keeps a contrast ratio of at least 4.5:1, because overridden colors aren't adjusted for you.",
+    html: `<style>
+  :root {
+    --ok-palette-primary-main: #2065d1;
+    --ok-palette-primary-main-channel: 32 101 209;
+    --ok-palette-primary-dark: #103996;
+    --ok-palette-primary-text: #103996;
+    --ok-font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  }
+</style>
 
-applyThemeSettings({ preset: "purple" });`,
-  },
-  {
-    id: "fonts",
-    title: "Change the font family",
-    body: "Set `data-ok-font` to switch the main font. Owlky doesn't bundle fonts, so load the one you choose. Fontsource packages work well: for example, `@fontsource-variable/inter` for Inter. Display headings keep the Barlow font.",
-    html: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter/index.css">
+<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Export</span></button>`,
+    react: `import { Button } from "@owlky/react";
 
-<html data-ok-font="inter">
-  <body>
-    <h1 data-ok-typography data-ok-variant="h3">Monthly report</h1>
-    <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Export</span></button>
-  </body>
-</html>`,
-    react: `import "@fontsource-variable/inter";
-import { applyThemeSettings } from "@owlky/react";
-
-applyThemeSettings({ font: "inter" });`,
+// In your CSS: :root { --ok-palette-primary-main: #2065d1; --ok-font-family: "Inter", sans-serif; }
+export function ExportButton() {
+  return (
+    <Button variant="contained" color="primary">
+      Export
+    </Button>
+  );
+}`,
   },
   {
     id: "size",
@@ -85,7 +70,7 @@ applyThemeSettings({ fontSize: 18 });`,
   {
     id: "code",
     title: "Save the user's choice",
-    body: `\`applyThemeSettings()\` sets any of the four settings and returns the result. Settings you leave out keep their current value, and invalid values fall back to the default.
+    body: `\`applyThemeSettings()\` sets either setting and returns the result. Settings you leave out keep their current value, and invalid values fall back to the default.
 
 To remember the choice, pass a storage such as \`localStorage\`. On the next visit, read it back with \`readThemeSettings()\` and apply it. Call \`resetThemeSettings()\` to go back to the defaults.`,
     html: `<script type="module">
@@ -95,7 +80,7 @@ To remember the choice, pass a storage such as \`localStorage\`. On the next vis
   applyThemeSettings(readThemeSettings({ storage: localStorage }));
 
   // In a settings menu: change and save
-  applyThemeSettings({ mode: "dark", preset: "blue" }, { storage: localStorage });
+  applyThemeSettings({ mode: "dark" }, { storage: localStorage });
 </script>`,
     react: `import { applyThemeSettings, readThemeSettings } from "@owlky/react";
 import { useEffect } from "react";
@@ -107,20 +92,20 @@ export function useSavedThemeSettings() {
 }
 
 // In a settings menu: change and save
-applyThemeSettings({ mode: "dark", preset: "blue" }, { storage: localStorage });`,
+applyThemeSettings({ mode: "dark" }, { storage: localStorage });`,
   },
   {
     id: "scope",
     title: "Apply settings to part of a page",
     body: "The attributes work on any element, not only `<html>`, and they nest. Use this to preview a theme inside a settings panel, or to give one section of a page its own look. With `applyThemeSettings()`, pass the element as the `target` option.",
-    html: `<section data-ok-theme="dark" data-ok-preset="orange" data-ok-font="dm-sans">
+    html: `<section data-ok-theme="dark">
   <!-- This section uses its own settings -->
 </section>`,
     react: `import type { ReactNode } from "react";
 
 export function ThemePreview({ children }: { children: ReactNode }) {
   return (
-    <section data-ok-theme="dark" data-ok-preset="orange" data-ok-font="dm-sans">
+    <section data-ok-theme="dark">
       {children}
     </section>
   );
@@ -131,7 +116,7 @@ export function ThemePreview({ children }: { children: ReactNode }) {
     title: "Style components",
     body: `Owlky's component styles live in a cascade layer, \`@layer components\`, and their selectors have zero specificity. Any rule that you write outside a layer wins over them, whatever its selector, so you never need \`!important\`. Add a class to one component, or select a root attribute, such as \`[data-ok-button]\`, to restyle every instance.
 
-Read the tokens (the \`--ok-*\` variables) in your rules instead of fixed values. Your styles then follow the theme, the preset and dark mode, like the components do. In React, pass the same declarations through the \`style\` prop, or a class through \`className\`.`,
+Read the tokens (the \`--ok-*\` variables) in your rules instead of fixed values. Your styles then follow the theme and dark mode, like the components do. In React, pass the same declarations through the \`style\` prop, or a class through \`className\`.`,
     html: `<style>
   .upgrade-button {
     padding-inline: calc(var(--ok-spacing) * 6);
@@ -281,43 +266,12 @@ export function UpgradeButton() {
     title: "Accessibility",
     body: `- Offer the \`system\` mode, so people who set a dark theme in their operating system get it automatically.
 - Larger text sizes help people with low vision. Because everything is in \`rem\`, the browser's own font size setting works too.
-- Every preset keeps neutral text at WCAG 2.2 AA contrast. Colored text uses each preset's accessible \`text\` tone.
+- Neutral text meets WCAG 2.2 AA contrast in every theme. Colored text uses each palette's accessible \`text\` tone.
 - Save the user's choice, so they don't have to set it again on every visit.
-- When you restyle a component, keep a visible focus indicator and a contrast ratio of at least 4.5:1 for text. Read the text tones, such as \`--ok-text-primary\` and \`--ok-palette-<color>-text\`, which meet it in every theme and preset.
+- When you restyle a component, keep a visible focus indicator and a contrast ratio of at least 4.5:1 for text. Read the text tones, such as \`--ok-text-primary\` and \`--ok-palette-<color>-text\`, which meet it in every theme.
 - Keep your animations short, and turn them off with \`prefers-reduced-motion: reduce\`.`,
   },
 ];
-
-function PresetsPreview() {
-  return (
-    <Preview>
-      {primaryPresetNames.map((preset) => (
-        <span key={preset} data-ok-preset={preset} className="flex items-center gap-2">
-          <Button variant="contained" color="primary" size="sm">
-            {capitalize(preset)}
-          </Button>
-        </span>
-      ))}
-    </Preview>
-  );
-}
-
-function FontsPreview() {
-  return (
-    <Preview className="flex-col items-start! gap-2!">
-      {fontFamilyPresetNames.map((font) => (
-        <p
-          key={font}
-          data-ok-font={font}
-          className="m-0"
-          style={{ fontFamily: "var(--ok-font-family)" }}
-        >
-          <Caption>{fontLabel(font)}:</Caption> The quick brown fox jumps over the lazy dog
-        </p>
-      ))}
-    </Preview>
-  );
-}
 
 function SizePreview() {
   return (
@@ -337,8 +291,6 @@ function ScopePreview() {
     <Preview className="items-stretch!">
       <section
         data-ok-theme="dark"
-        data-ok-preset="orange"
-        data-ok-font="dm-sans"
         className="flex min-w-[14rem] flex-1 flex-col items-start gap-3 rounded-2xl p-6"
         style={{
           backgroundColor: "var(--ok-bg-default)",
@@ -347,8 +299,8 @@ function ScopePreview() {
         }}
       >
         <span className="flex items-center gap-2">
-          <Dot color={primaryPresets.orange.main} size={12} />
-          Dark, orange, DM Sans
+          <Dot color="var(--ok-palette-primary-main)" size={12} />
+          Dark
         </span>
         <Button variant="contained" color="primary">
           Primary action
@@ -422,8 +374,6 @@ function TailwindStylePreview() {
 }
 
 const PREVIEWS = {
-  presets: PresetsPreview,
-  fonts: FontsPreview,
   size: SizePreview,
   scope: ScopePreview,
   style: StylePreview,

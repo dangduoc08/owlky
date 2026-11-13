@@ -1,9 +1,10 @@
 import type { GridDataSource, GridGetRowsParams } from "@owlky/core";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { createRuntime } from "../../runtime/runtime.js";
 import type { Runtime } from "../../runtime/types.js";
 import { expectNoAxeViolations, mount, resetPage } from "../../test-utils.js";
 import { components } from "../index.js";
+import { loadGridChartKit } from "./chart-kit.js";
 import type { DataGridInstance } from "./data-grid.js";
 
 // Roadmap batch E (4.18.87–4.18.93, the ApexGrid audit) in the HTML runtime.
@@ -54,6 +55,9 @@ const boxAt = (root: Element, index: number) =>
   ) as HTMLInputElement;
 /** A checkbox click: a dispatched click toggles it and fires its change, as a real one. */
 const clickBox = (input: HTMLInputElement, init: MouseEventInit = {}) => click(input, init);
+
+// The chart helpers load on first use (ADR-0068 S5): load them once, so charts draw synchronously.
+beforeAll(() => loadGridChartKit());
 
 describe("HTML data grid row range selection (4.18.87)", () => {
   it("Shift + click on rows and checkboxes selects the range from the last toggled row", async () => {

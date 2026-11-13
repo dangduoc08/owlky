@@ -24,8 +24,8 @@
 
 @layer components {
   :where([data-ok-data-grid]) {
-    --_ok-data-grid-row-height: calc(var(--ok-spacing) * 13);
-    --_ok-data-grid-header-height: calc(var(--ok-spacing) * 14);
+    --_ok-data-grid-row-height: var(--ok-row-height);
+    --_ok-data-grid-header-height: var(--ok-row-height-header);
     --_ok-data-grid-pad: calc(var(--ok-spacing) * 2.5);
     display: flex;
     flex-direction: column;
@@ -116,7 +116,7 @@
   }
 
   :where([data-ok-data-grid-body] > [role="row"]) {
-    border-bottom: 1px dashed var(--ok-divider);
+    border-bottom: var(--ok-border-width) dashed var(--ok-divider);
     transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
   }
 
@@ -311,8 +311,8 @@
     [data-ok-data-grid-main]
       :is([role="columnheader"], [role="gridcell"], [role="rowheader"]):focus-visible
   ) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-data-grid-overlay]) {
@@ -332,7 +332,7 @@
     align-items: center;
     justify-content: flex-end;
     min-height: calc(var(--ok-spacing) * 13);
-    border-top: 1px dashed var(--ok-divider);
+    border-top: var(--ok-border-width) dashed var(--ok-divider);
   }
 
   /* Footer counts: the selected rows at the start, the row count before the pagination. */
@@ -359,7 +359,7 @@
     min-height: calc(var(--ok-spacing) * 10);
     box-sizing: border-box;
     padding: calc(var(--ok-spacing) * 2.5) calc(var(--ok-spacing) * 4);
-    border-top: 1px dashed var(--ok-divider);
+    border-top: var(--ok-border-width) dashed var(--ok-divider);
     color: var(--ok-text-secondary);
     font-size: var(--ok-typography-body2-font-size);
     line-height: var(--ok-typography-body2-line-height);
@@ -399,8 +399,8 @@
     flex-direction: column;
     gap: calc(var(--ok-spacing) * 2);
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
-    border: 1px solid var(--ok-divider);
-    border-radius: var(--ok-radius-md);
+    border: var(--ok-border-width) solid var(--ok-divider);
+    border-radius: var(--ok-radius-control);
   }
 
   :where([data-ok-data-grid-filter-group] > [data-ok-data-grid-filter]) {
@@ -451,11 +451,11 @@
 
   /* The edge between pinned and scrolling columns. */
   :where([data-ok-data-grid-main] [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"]))) {
-    box-shadow: 1px 0 0 var(--ok-divider);
+    box-shadow: var(--ok-border-width) 0 0 var(--ok-divider);
   }
 
   :where([data-ok-data-grid-main] :not([data-ok-pinned="right"]) + [data-ok-pinned="right"]) {
-    box-shadow: -1px 0 0 var(--ok-divider);
+    box-shadow: calc(var(--ok-border-width) * -1) 0 0 var(--ok-divider);
   }
 
   :where(
@@ -463,13 +463,13 @@
       [data-ok-data-grid-main]
       [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"]))
   ) {
-    box-shadow: -1px 0 0 var(--ok-divider);
+    box-shadow: calc(var(--ok-border-width) * -1) 0 0 var(--ok-divider);
   }
 
   :where(
     [dir="rtl"] [data-ok-data-grid-main] :not([data-ok-pinned="right"]) + [data-ok-pinned="right"]
   ) {
-    box-shadow: 1px 0 0 var(--ok-divider);
+    box-shadow: var(--ok-border-width) 0 0 var(--ok-divider);
   }
 
   /*
@@ -492,7 +492,7 @@
       [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
   ) {
     box-shadow:
-      1px 0 0 var(--ok-divider),
+      var(--ok-border-width) 0 0 var(--ok-divider),
       var(--ok-shadow-z8);
     clip-path: inset(0 calc(var(--ok-spacing) * -6) 0 0);
   }
@@ -514,7 +514,7 @@
       + [data-ok-pinned="right"]:not([data-ok-editing])
   ) {
     box-shadow:
-      -1px 0 0 var(--ok-divider),
+      calc(var(--ok-border-width) * -1) 0 0 var(--ok-divider),
       var(--ok-shadow-z8);
     clip-path: inset(0 0 0 calc(var(--ok-spacing) * -6));
   }
@@ -546,7 +546,7 @@
       [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"])):not([data-ok-editing])
   ) {
     box-shadow:
-      -1px 0 0 var(--ok-divider),
+      calc(var(--ok-border-width) * -1) 0 0 var(--ok-divider),
       var(--ok-shadow-z8);
   }
 
@@ -558,7 +558,7 @@
       + [data-ok-pinned="right"]:not([data-ok-editing])
   ) {
     box-shadow:
-      1px 0 0 var(--ok-divider),
+      var(--ok-border-width) 0 0 var(--ok-divider),
       var(--ok-shadow-z8);
   }
 
@@ -621,8 +621,8 @@
     background-color: var(--ok-bg-paper);
     color: inherit;
     font: inherit;
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where(
@@ -725,7 +725,7 @@
     width: max-content;
     max-width: calc(var(--ok-spacing) * 75);
     padding: calc(var(--ok-spacing) * 1) calc(var(--ok-spacing) * 2);
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background-color: var(--ok-palette-error-dark);
     color: var(--ok-palette-error-contrast-text);
     font-size: var(--ok-typography-caption-font-size);
@@ -856,7 +856,7 @@
 
   :where([data-ok-data-grid-skeleton]) {
     height: calc(var(--ok-spacing) * 4);
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background-color: var(--ok-action-hover);
     animation: ok-data-grid-pulse calc(var(--ok-duration-enter) * 2) var(--ok-easing-standard)
       infinite alternate;
@@ -947,11 +947,11 @@
   }
 
   :where([data-ok-data-grid-body] > [role="row"][data-ok-drop="before"]) {
-    box-shadow: inset 0 2px 0 var(--ok-palette-primary-main);
+    box-shadow: inset 0 var(--ok-border-width-strong) 0 var(--ok-palette-primary-main);
   }
 
   :where([data-ok-data-grid-body] > [role="row"][data-ok-drop="after"]) {
-    box-shadow: inset 0 -2px 0 var(--ok-palette-primary-main);
+    box-shadow: inset 0 calc(var(--ok-border-width-strong) * -1) 0 var(--ok-palette-primary-main);
   }
 
   /* Pinned rows stay under the header or at the bottom while the others scroll. */
@@ -964,12 +964,12 @@
 
   :where([data-ok-data-grid-pinned-rows="top"]) {
     top: var(--_ok-data-grid-header-offset, 0px);
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-data-grid-pinned-rows="bottom"]) {
     bottom: 0;
-    border-top: 1px solid var(--ok-divider);
+    border-top: var(--ok-border-width) solid var(--ok-divider);
   }
 
   /* pinnedRowsSectionSeparator="border-and-shadow": a shadow over the scrolling rows too. */
@@ -991,7 +991,7 @@
 
   /* Column groups: header rows above the column headers. */
   :where([data-ok-data-grid-header] > [role="row"]:not(:last-child)) {
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
   }
 
   /* List view: one card-like cell per row, no column headers. */
@@ -1096,7 +1096,8 @@
   }
 
   :where([data-ok-chart-range-edge~="top"]) {
-    --_ok-data-grid-chart-top: inset 0 2px 0 var(--_ok-data-grid-chart-edge);
+    --_ok-data-grid-chart-top: inset 0 var(--ok-border-width-strong) 0
+      var(--_ok-data-grid-chart-edge);
   }
 
   :where([data-ok-chart-range-edge~="right"]) {
@@ -1104,7 +1105,8 @@
   }
 
   :where([data-ok-chart-range-edge~="bottom"]) {
-    --_ok-data-grid-chart-bottom: inset 0 -2px 0 var(--_ok-data-grid-chart-edge);
+    --_ok-data-grid-chart-bottom: inset 0 calc(var(--ok-border-width-strong) * -1) 0
+      var(--_ok-data-grid-chart-edge);
   }
 
   :where([data-ok-chart-range-edge~="left"]) {
@@ -1123,7 +1125,7 @@
     z-index: 1;
     inline-size: calc(var(--ok-spacing) * 2);
     block-size: calc(var(--ok-spacing) * 2);
-    border: 1px solid var(--ok-bg-paper);
+    border: var(--ok-border-width) solid var(--ok-bg-paper);
     background-color: var(--ok-palette-success-main);
     cursor: nwse-resize;
     touch-action: none;
@@ -1170,7 +1172,7 @@
     z-index: 1;
     inline-size: calc(var(--ok-spacing) * 2);
     block-size: calc(var(--ok-spacing) * 2);
-    border: 1px solid var(--ok-bg-paper);
+    border: var(--ok-border-width) solid var(--ok-bg-paper);
     background-color: var(--ok-palette-primary-main);
     cursor: crosshair;
     touch-action: none;
@@ -1178,7 +1180,7 @@
 
   /* The cells a drag of the handle would fill. */
   :where([data-ok-data-grid-body] [data-ok-fill-target]) {
-    box-shadow: inset 0 0 0 1px var(--ok-palette-primary-main);
+    box-shadow: inset 0 0 0 var(--ok-border-width) var(--ok-palette-primary-main);
     background-color: rgb(var(--ok-palette-primary-main-channel) / 0.04);
   }
 
@@ -1201,7 +1203,7 @@
       [data-ok-data-grid-main]
       :is([role="gridcell"], [role="rowheader"])
   ) {
-    border-inline-end: 1px solid var(--ok-divider);
+    border-inline-end: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where(
@@ -1209,7 +1211,7 @@
       [data-ok-data-grid-header]
       [role="columnheader"]
   ) {
-    border-inline-end: 1px solid var(--ok-divider);
+    border-inline-end: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where(
@@ -1297,8 +1299,8 @@
     flex-direction: column;
     gap: calc(var(--ok-spacing) * 2);
     padding: calc(var(--ok-spacing) * 2);
-    border: 1px dashed var(--ok-divider);
-    border-radius: var(--ok-radius-sm);
+    border: var(--ok-border-width) dashed var(--ok-divider);
+    border-radius: var(--ok-radius-control-sm);
   }
 
   :where([data-ok-data-grid-pivot-section][data-ok-drop-target]) {
@@ -1335,7 +1337,7 @@
 
   :where([data-ok-data-grid-columns-section]) {
     padding-block-start: calc(var(--ok-spacing) * 2);
-    border-block-start: 1px dashed var(--ok-divider);
+    border-block-start: var(--ok-border-width) dashed var(--ok-divider);
   }
 
   :where([data-ok-data-grid-columns-section-title]) {
@@ -1381,17 +1383,17 @@
   }
 
   :where([data-ok-data-grid-pivot-field][data-ok-drop="before"]) {
-    box-shadow: 0 -2px 0 var(--ok-palette-primary-main);
+    box-shadow: 0 calc(var(--ok-border-width-strong) * -1) 0 var(--ok-palette-primary-main);
   }
 
   :where([data-ok-data-grid-pivot-field][data-ok-drop="after"]) {
-    box-shadow: 0 2px 0 var(--ok-palette-primary-main);
+    box-shadow: 0 var(--ok-border-width-strong) 0 var(--ok-palette-primary-main);
   }
 
   /* Charts integration: the chart under the rows. */
   :where([data-ok-data-grid-chart]) {
     padding: calc(var(--ok-spacing) * 4);
-    border-top: 1px dashed var(--ok-divider);
+    border-top: var(--ok-border-width) dashed var(--ok-divider);
   }
 
   :where([data-ok-data-grid-chart][hidden]) {

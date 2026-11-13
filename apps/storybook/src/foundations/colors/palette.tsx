@@ -4,8 +4,6 @@ import {
   greyShades,
   hexToRgb,
   type PaletteColorName,
-  type PrimaryPreset,
-  primaryPresets,
 } from "@owlky/tokens";
 import { useEffect, useRef, useState } from "react";
 
@@ -27,7 +25,7 @@ const swatchText = (hex: string) =>
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
-function swatches(palette: PaletteName, preset: PrimaryPreset): Swatch[] {
+function swatches(palette: PaletteName): Swatch[] {
   if (palette === "grey") {
     return greyShades.map((shade) => ({
       name: String(shade),
@@ -37,7 +35,7 @@ function swatches(palette: PaletteName, preset: PrimaryPreset): Swatch[] {
   }
   return SHADES.map((shade) => ({
     name: capitalize(shade),
-    hex: (palette === "primary" ? primaryPresets[preset] : defaultTheme.palette[palette])[shade],
+    hex: defaultTheme.palette[palette][shade],
     variable: `--ok-palette-${palette}-${shade}`,
   }));
 }
@@ -45,12 +43,10 @@ function swatches(palette: PaletteName, preset: PrimaryPreset): Swatch[] {
 export interface PaletteProps {
   /** Palette to show. Values come from `@owlky/tokens`. */
   palette: PaletteName;
-  /** Primary preset (the Storybook toolbar's "Preset"). Default `"default"`. */
-  preset?: PrimaryPreset | undefined;
 }
 
 /** The shades of one palette with Hex / Rgb / CSS variable. Click a swatch to copy its hex. */
-export function Palette({ palette, preset = "default" }: PaletteProps) {
+export function Palette({ palette }: PaletteProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -75,7 +71,7 @@ export function Palette({ palette, preset = "default" }: PaletteProps) {
   return (
     <div>
       <div className="grid grid-cols-1 overflow-hidden rounded-lg sm:grid-cols-2 lg:grid-cols-3">
-        {swatches(palette, preset).map((swatch) => {
+        {swatches(palette).map((swatch) => {
           const [r, g, b] = hexToRgb(swatch.hex);
           const rows: [value: string, label: string][] = [
             [swatch.hex, "Hex"],

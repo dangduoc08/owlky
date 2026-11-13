@@ -47,14 +47,14 @@
   }
 
   :where([data-ok-digital-clock-section] + [data-ok-digital-clock-section]) {
-    border-inline-start: 1px solid var(--ok-divider);
+    border-inline-start: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-digital-clock-item]) {
     box-sizing: border-box;
     margin: calc(var(--ok-spacing) * 0.5) calc(var(--ok-spacing) * 1);
     padding: calc(var(--ok-spacing) * 2);
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     outline: 0;
     font-size: var(--ok-typography-body2-font-size);
     line-height: var(--ok-typography-body2-line-height);
@@ -86,8 +86,8 @@
   }
 
   :where([data-ok-digital-clock-item]:focus-visible) {
-    outline: 2px solid var(--ok-palette-primary-main);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-digital-clock-item][aria-selected="true"]:focus-visible) {

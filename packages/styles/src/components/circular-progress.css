@@ -30,7 +30,7 @@
     color: var(--_ok-main);
     line-height: 1;
     vertical-align: middle;
-    animation: ok-circular-progress-rotate 1.4s linear infinite;
+    animation: ok-circular-progress-rotate var(--ok-duration-progress-rotate) linear infinite;
   }
 
   :where([data-ok-circular-progress][data-ok-color="inherit"]) {
@@ -48,7 +48,8 @@
     stroke: currentColor;
     stroke-dasharray: 80px, 200px;
     stroke-dashoffset: 0;
-    animation: ok-circular-progress-dash 1.4s ease-in-out infinite;
+    animation: ok-circular-progress-dash var(--ok-duration-progress-rotate) var(--ok-easing-in-out)
+      infinite;
   }
 
   /* Track: a ring as wide as the stroke (thickness / 44 of the size). */
@@ -112,7 +113,7 @@
   /* Reduced motion: a fixed arc that spins slowly (activity stays visible); no value easing. */
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-circular-progress]) {
-      animation-duration: 2.8s;
+      animation-duration: var(--ok-duration-progress-rotate-reduced);
     }
 
     :where([data-ok-circular-progress-circle]) {

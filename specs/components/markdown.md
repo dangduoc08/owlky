@@ -114,7 +114,7 @@ reflow). Footnote label `h2.sr-only` is read but hidden. Brand-colored links exe
 ## Events / API
 HTML `ok:markdown:render` (`{ value }`), `ok:markdown:error` (`{ error }`). Instance
 `{ value, setValue(markdown), render() }`. Registration is opt-in: `@owlky/html/markdown`,
-`owlky-markdown.js`, or `createMarkdown({ … })`. React `MarkdownHooks` `onError(error)`.
+the CDN's lazy module (ADR-0068), or `createMarkdown({ … })`. React `MarkdownHooks` `onError(error)`.
 
 ## Responsive
 Content flows at every width: images and tables are 100% wide at most, cells and code wrap
