@@ -1,7 +1,9 @@
 // Each style's fonts (ADR-0070 § 1; Owlky itself doesn't bundle fonts): Soft, the default, uses
 // Nunito, Swiss Inter, Neo-Brutalism Space Grotesk. A browser only downloads the fonts a page
 // renders.
+import "@fontsource-variable/ibm-plex-sans";
 import "@fontsource-variable/inter";
+import "@fontsource-variable/manrope";
 import "@fontsource-variable/nunito";
 import "@fontsource-variable/space-grotesk";
 import "./preview.css";

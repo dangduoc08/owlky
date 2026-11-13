@@ -162,6 +162,8 @@ for (const [name, limit] of Object.entries(MODULE_SHEET_BUDGETS))
 const STYLE_SHEET_BUDGETS = {
   "neo-brutalism": 2_750, // 2.63 kB (inputs, literals, the treatment toggles and shadow switch)
   swiss: 2_750, // 2.61 kB
+  corporate: 2_760, // 2.63 kB
+  nordic: 2_180, // 2.07 kB (a soft style: no shadow switch)
 };
 for (const file of await readdir("packages/styles/dist/styles")) {
   const name = file.match(/^(.+)\.min\.css$/)?.[1];

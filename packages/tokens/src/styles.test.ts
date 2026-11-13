@@ -56,6 +56,26 @@ const EXPECTED: Record<StyleName, Expected> = {
     shadows: "hard",
     iconStroke: 2,
   },
+  corporate: {
+    fonts: { text: "IBM Plex Sans", heading: "IBM Plex Sans", label: "IBM Plex Sans" },
+    heading: { weight: 700, letterSpacing: "normal", textTransform: "none" },
+    label: { textTransform: "none", letterSpacing: "normal" },
+    radius: ["4px", "8px", "4px"],
+    surfaceBorder: ["0px", false],
+    borderWidth: "1px",
+    shadows: "subtle",
+    iconStroke: 1.5,
+  },
+  nordic: {
+    fonts: { text: "Manrope", heading: "Manrope", label: "Manrope" },
+    heading: { weight: 800, letterSpacing: "-0.01em", textTransform: "none" },
+    label: { textTransform: "none", letterSpacing: "normal" },
+    radius: ["10px", "16px", "9999px"],
+    surfaceBorder: ["0px", false],
+    borderWidth: "1px",
+    shadows: "soft",
+    iconStroke: 1.5,
+  },
 };
 
 const firstFamily = (stack: string) => stack.match(/^"([^"]+?)(?: Variable)?"/)?.[1];

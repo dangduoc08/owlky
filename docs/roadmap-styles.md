@@ -107,6 +107,11 @@ color) on pure greys (`neutral`); Neo-Brutalism violet / pink on `neutral`, Spac
 headings tracked −0.01em, 2 / 3 / 4px lines, pill chips, ink shadows (dark text color in
 light, light text color in dark). Left for ST5: the CDN loader's `style:<id>` entries (a style
 set later by markup loads its sheet) and the Storybook **Style** menu.
+Corporate (ST4b): blue primary with a `slate` secondary on `slate` greys, IBM Plex Sans 700 / 600
+headings (the font stops at 700, so `extrabold` is 700), 4px chips and labels, subtle shadows
+tinted `slate-900`.
+Nordic (ST4b): teal primary, sky secondary, blue info, rose error on warm `stone` greys, Manrope
+800 headings tracked −0.01em, soft shadows tinted `stone-900` instead of Soft's primary tint.
 
 ## Icons and flags (owner, 2026-11-12)
 - **One icon set: Solar** (480 Design, CC BY 4.0; credit in `THIRD_PARTY_NOTICES` and the Icons
