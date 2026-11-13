@@ -12,6 +12,7 @@ import {
   phoneCountryOfValue,
   phoneCountryOptions,
   phoneDigitsFromValue,
+  phoneFlagSource,
   phoneInputChange,
   phoneInputSettings,
   phoneInputView,
@@ -86,6 +87,10 @@ export interface PhoneInputProps
   labels?: PhoneInputLabels | undefined;
   /** Language of the country names (`Intl.DisplayNames`), such as `"fr"`. Default `"en"`. */
   locale?: string | undefined;
+  /** How the flags are drawn: `"emoji"` (default, no files) or `"image"` (a Circle Flags SVG per country from `flagsPath`). */
+  flags?: "emoji" | "image" | undefined;
+  /** The folder of the flag images, such as `"/flags/"` (copy `@owlky/html/dist/flags`). Needed with `flags="image"`: without a folder the flags stay emoji. */
+  flagsPath?: string | undefined;
   /** Phone metadata from libphonenumber-js (`min`, `mobile` or `max`). Default: `min`. */
   metadata?: PhoneMetadata | undefined;
   /** After the person leaves the field, an invalid number shows the error state and `invalidText`. */
@@ -143,6 +148,8 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(function
     focusInputOnCountrySelection = true,
     labels,
     locale,
+    flags,
+    flagsPath,
     metadata,
     validate,
     invalidText,
@@ -281,6 +288,12 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(function
         : (helperText ?? "")
       : helperText;
   const inert = disabled === true || readOnly === true || settings.country !== undefined;
+  const flagImage = (code: string) => {
+    const src = flags === "image" ? phoneFlagSource(flagsPath, code) : undefined;
+    return src === undefined ? undefined : (
+      <img data-ok-phone-input-flag-image="" src={src} alt="" loading="lazy" decoding="async" />
+    );
+  };
   const select = hideSelect ? undefined : (
     <InputAdornment position="start" component="div" data-ok-phone-input-country="">
       <SelectRoot
@@ -308,7 +321,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(function
         {options.map((option) => (
           <MenuItem key={option.code} value={option.code}>
             <ListItemIcon data-ok-phone-input-flag="" aria-hidden="true">
-              {option.flag}
+              {flagImage(option.code) ?? option.flag}
             </ListItemIcon>
             <ListItemText
               primary={option.name}
@@ -355,6 +368,8 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(function
         limitMaxLength,
         focusInputOnCountrySelection,
         locale,
+        flags,
+        flagsPath,
         validate,
         invalidText,
       }),

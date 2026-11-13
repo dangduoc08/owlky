@@ -6,6 +6,7 @@ import {
   native,
   optionAttributes,
   state,
+  style,
 } from "../options/define.js";
 
 // --- Phone input (a text field with a country select, roadmap 4.25, ADR-0061) ------------------
@@ -57,6 +58,17 @@ export const phoneInputOptions = defineOptions("phone-input", "data-ok-phone-inp
     "Picking a country moves the focus to the input (`false` keeps it on the select).",
   ),
   locale: state("data-ok-locale", "Language of the country names, such as `fr` (default `en`)."),
+  flags: style(
+    "data-ok-flags",
+    ["emoji", "image"],
+    "emoji",
+    "How the country flags are drawn: `emoji` (no files) or `image` (one Circle Flags SVG per country, loaded from `flagsPath`).",
+    { optional: true },
+  ),
+  flagsPath: state(
+    "data-ok-flags-path",
+    "The folder of the flag images, such as `/flags/` (`@owlky/html/dist/flags`). HTML pages that load the CDN bundle find it next to it; elsewhere `image` flags need it.",
+  ),
   validate: flag(
     "data-ok-validate",
     "After the person leaves the field, an invalid number shows the error state and `invalidText`.",
@@ -91,6 +103,8 @@ export interface PhoneInputAnatomyOptions {
   limitMaxLength?: boolean | undefined;
   focusInputOnCountrySelection?: boolean | undefined;
   locale?: string | undefined;
+  flags?: "emoji" | "image" | undefined;
+  flagsPath?: string | undefined;
   validate?: boolean | undefined;
   invalidText?: string | undefined;
 }
@@ -127,9 +141,27 @@ export function phoneInputAttributes(options: PhoneInputAnatomyOptions = {}): Da
   ] as const)
     if (options[key] === false) attributes[o[key].attr] = "false";
   text(o.locale.attr as `data-ok-${string}`, options.locale);
+  if (options.flags === "image")
+    text(o.flagsPath.attr as `data-ok-${string}`, phoneFlagFolder(options.flagsPath));
   text(
     o.invalidText.attr as `data-ok-${string}`,
     options.validate ? options.invalidText : undefined,
   );
   return attributes;
 }
+
+/**
+ * A flag folder as a URL prefix ending with `/`: relative, root-relative or `http(s)`, made of
+ * URL-safe characters only. Anything else (`javascript:`, `data:`, whitespace, quotes, angle
+ * brackets) gives `undefined` (the flags stay emoji).
+ */
+export const phoneFlagFolder = (path: unknown): string | undefined =>
+  typeof path === "string" && /^(?:https?:\/\/[\w.-]+(?::\d+)?)?[\w./%-]+$/.test(path)
+    ? path.replace(/\/?$/, "/")
+    : undefined;
+
+/** The image of a country's flag: the folder (checked by `phoneFlagFolder`) + `<code>.svg`. */
+export const phoneFlagSource = (folder: string | undefined, code: string): string | undefined => {
+  const safe = phoneFlagFolder(folder);
+  return safe && /^[a-z]{2}$/i.test(code) ? `${safe}${code.toLowerCase()}.svg` : undefined;
+};

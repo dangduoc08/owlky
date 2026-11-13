@@ -121,3 +121,16 @@ export function PhoneCountriesDemo() {
     />
   );
 }
+
+/** Image flags: a Circle Flags picture per country, loaded lazily from the folder you host. */
+export function PhoneImageFlagsDemo() {
+  return (
+    <PhoneDemo
+      id="phone-image-flags"
+      defaultCountry="AU"
+      flags="image"
+      flagsPath="flags/"
+      defaultValue="+61298765432"
+    />
+  );
+}

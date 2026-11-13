@@ -46,6 +46,7 @@ const COPIES = {
   html: [
     { path: "dist/owlky-map-worker.js", name: "maplibre-gl", from: "packages/core" },
     { path: "dist/monaco", name: "monaco-editor", from: "packages/html", dependencies: true },
+    { path: "dist/flags", name: "circle-flags", from: "packages/html" },
   ],
 };
 
@@ -99,6 +100,8 @@ const NOTES = {
   dompurify:
     "Monaco Editor vendors DOMPurify in its build. DOMPurify is dual licensed `(MPL-2.0 OR Apache-2.0)`. Owlky redistributes it under the Apache License 2.0.",
   marked: "Monaco Editor vendors marked in its build.",
+  "circle-flags":
+    "Circle Flags by HatScripts (https://github.com/HatScripts/circle-flags): the country flag images in `dist/flags/` (one SVG per two-letter code), loaded by the phone input's image flags. The license is also copied into `dist/flags/LICENSE.md`.",
   "maplibre-gl":
     "MapLibre GL JS's prebuilt bundle includes other packages (such as `@mapbox/*`, `earcut`, `kdbush`, `pbf`, `potpack`, `quickselect`, `tinyqueue`, `gl-matrix` and `murmurhash-js`), whose notices are part of its `LICENSE.txt` below.",
   "monaco-editor":
@@ -337,6 +340,14 @@ for (const pkg of published) {
           `${manifest.name}: dist/monaco/${name} must be Monaco's ${name}, copied verbatim`,
         );
     }
+  }
+  if (pkg === "html" && existsSync(join(pkgDir, "dist/flags"))) {
+    const copy = join(pkgDir, "dist/flags/LICENSE.md");
+    const original = join(resolvePackage("circle-flags", pkgDir), "LICENSE.md");
+    if (!existsSync(copy) || readFileSync(copy, "utf8") !== readFileSync(original, "utf8"))
+      problems.push(
+        `${manifest.name}: dist/flags/LICENSE.md must be Circle Flags' LICENSE.md, copied verbatim`,
+      );
   }
   report.push(`${manifest.name}: ${entries.length} third-party package(s)`);
   if (!entries.length) {

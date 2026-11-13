@@ -421,6 +421,8 @@ export {
   paperVariants,
   parseAvatarGroupSpacing,
   parseCollapseEasing,
+  phoneFlagFolder,
+  phoneFlagSource,
   phoneInputAttributes,
   phoneInputOptions,
   pickerButtonPositions,

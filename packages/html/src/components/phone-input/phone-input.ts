@@ -10,6 +10,7 @@ import {
   phoneCountryOfValue,
   phoneCountryOptions,
   phoneDigitsFromValue,
+  phoneFlagSource,
   phoneInputChange,
   phoneInputView,
   phoneMetadata,
@@ -74,6 +75,30 @@ const set = (element: Element, attributes: Record<string, string>) => {
 /** The globe of the International option, as React renders it. */
 function globe(document: Document): SVGSVGElement {
   return createIcon(globalLinear, {}, document);
+}
+
+let defaultFlags: string | undefined;
+
+/** The folder of the flag images for roots that name none (the CDN module sets it). */
+export const setPhoneFlagsPath = (folder: string | undefined) => {
+  defaultFlags = folder;
+};
+
+/** A flag: the image of image mode (decorative, lazy), else the emoji. */
+function flagNode(document: Document, code: string, emoji: string, root: Element): Node {
+  const src =
+    root.getAttribute("data-ok-flags") === "image" &&
+    phoneFlagSource(root.getAttribute("data-ok-flags-path") ?? defaultFlags, code);
+  if (!src) return document.createTextNode(emoji);
+  const image = document.createElement("img");
+  set(image, {
+    "data-ok-phone-input-flag-image": "",
+    src,
+    alt: "",
+    loading: "lazy",
+    decoding: "async",
+  });
+  return image;
 }
 
 /** One country option: a MenuItem with a ListItemIcon (the flag) and a ListItemText. */
@@ -180,7 +205,7 @@ export const createPhoneInput = (setup: CreatePhoneInputOptions = {}) =>
             option(
               document,
               country.code,
-              document.createTextNode(country.flag),
+              flagNode(document, country.code, country.flag, element),
               country.name,
               `${country.code} (+${country.callingCode})`,
             ),
