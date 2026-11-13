@@ -1,7 +1,7 @@
 import type { OptionSchema, OptionSpec } from "@owlky/core";
 
 /*
- * The MCP manifest's option schemas (`@owlky/mcp/manifest.json`, ADR-0046) in the shape
+ * The MCP manifest's option schemas (`@owlky/mcp-server/manifest.json`, ADR-0071) in the shape
  * `OptionsTable` reads. The manifest is built from the same `@owlky/core` schemas, so both
  * hosts show the same table.
  */

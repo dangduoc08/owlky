@@ -48,8 +48,7 @@
     "manifest": "node scripts/manifest.mjs",
     "check:manifest": "node scripts/manifest.mjs --check",
     "notices": "node scripts/check-licenses.mjs --write",
-    "check:licenses": "node scripts/check-licenses.mjs",
-    "smoke:mcp": "node scripts/smoke-mcp.mjs"
+    "check:licenses": "node scripts/check-licenses.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

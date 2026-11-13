@@ -380,7 +380,7 @@ importers:
       '@owlky/html':
         specifier: workspace:*
         version: link:../../packages/html
-      '@owlky/mcp':
+      '@owlky/mcp-server':
         specifier: workspace:*
         version: link:../../packages/mcp
       '@owlky/react':

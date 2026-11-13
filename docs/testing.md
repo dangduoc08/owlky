@@ -9,11 +9,10 @@
 | `pnpm test:visual`                                  | Visual regression in the Playwright Docker image (Docker required).                              |
 | `pnpm test:visual:update`                           | Regenerate baselines (Docker). Never commit baselines made outside Docker: the **Visual baselines** workflow makes them (see below). |
 | `pnpm check`                                        | Everything CI runs, in order.                                                                    |
-| `pnpm check:manifest`                               | Regenerates the MCP manifest (ADR-0046) and fails when the committed one differs.               |
+| `pnpm check:manifest`                               | Regenerates the MCP manifest (ADR-0071) and fails when the committed one differs.               |
 | `pnpm check:api`                                    | Regenerates the API reference (ADR-0049, `apps/docs-content/src/api/*.json`) and fails when a file differs or a prop, `data-ok-*` name, event or method is undocumented. `pnpm api` writes it. |
 | `pnpm website:build` then `pnpm --filter @owlky/e2e test:website` | The website's static build (ADR-0040): every page renders, axe light + dark, phone width, internal links and `.md` copies, the Copy button, search (Pagefind), **Open HTML demo**, theme menus — `e2e/website/`, config `e2e/website.config.ts` (port 4400; `PORT` for worktrees). CI job `website`. |
 | `pnpm check:docs` | Checks the code of every guide section (Storybook, `apps/docs-content`, the website's `src/content`): placeholders, unknown `data-ok-*` names, React examples typecheck. In `pnpm check` and the CI `check` job; pass page names to check a few. |
-| `pnpm smoke:mcp`                                    | Packs `@owlky/mcp`, starts its bin from the tarball with `npx -y` (needs the registry), and runs `initialize`, `tools/list`, `tools/call` over stdio (CI only, not in `pnpm check`). |
 
 First run: `pnpm exec playwright install chromium firefox webkit`.
 
@@ -21,7 +20,7 @@ CI (`.github/workflows/ci.yml`, also reused by `release.yml` through `workflow_c
 jobs in parallel:
 
 - **Lint, types, build, checks** (`check`): lint, build, typecheck, `check:boundaries`,
-  `check:size`, `check:packages`, `check:specs`, `check:api`, `check:docs`, `check:manifest`, `smoke:mcp`, then
+  `check:size`, `check:packages`, `check:specs`, `check:api`, `check:docs`, `check:manifest`, then
   `pnpm test:node`. No browser is installed.
 - **Unit (chromium | firefox | webkit)** (`unit`): one runner per engine builds, installs only that
   browser and runs `xvfb-run -a pnpm test:browser` with `VITEST_BROWSERS=<engine>` (Xvfb gives
@@ -70,7 +69,7 @@ Writing tests:
 - API reference (ADR-0049, Node): `packages/mcp/src/api-reference.test.ts` checks, from the
   manifest, that the reference lists every schema option, every `data-ok-*` name of every snippet,
   every literal event a runtime emits and every exported React component, all described.
-- MCP server (`packages/mcp`, Node): `generator.test.ts` runs `scripts/manifest.mjs` twice (same
+- MCP server (`packages/mcp`, private `@owlky/mcp-server`, Node): `generator.test.ts` runs `scripts/manifest.mjs` twice (same
   bytes, sorted keys) and checks that every option schema, spec, snippet, guide, token and story
   (HTML and React code) is in it; `server.test.ts` drives every tool, resource and prompt through the
   SDK's in-memory transport (unknown names, invalid input, the markup size limit);

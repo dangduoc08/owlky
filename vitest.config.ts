@@ -18,8 +18,6 @@ export default defineConfig({
         "packages/html/src/cdn-module.ts",
         "packages/html/src/monaco.ts",
         "packages/html/src/monaco-stub.ts",
-        // The stdio entry: covered by the packed smoke test (pnpm smoke:mcp).
-        "packages/mcp/src/cli.ts",
       ],
       reporter: ["text-summary", "text"],
       // Component floor (see .claude/commands/component.md → Coverage matrix). Add each new

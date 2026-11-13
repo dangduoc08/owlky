@@ -17,7 +17,7 @@ export const homeSections: PageSection[] = [
 - **Accessible by default.** Components follow the WAI-ARIA patterns, work with the keyboard and meet WCAG 2.2 level AA.
 - **Themes and tokens.** Every color, radius and shadow is a CSS variable. Switch to dark mode, or bring your own brand color and font.
 - **Large components included.** A data grid, charts, date and time pickers, a rich text editor, a code editor and maps use the same tokens as the buttons.
-- **Ready for AI coding agents.** The Owlky MCP server (\`npx -y @owlky/mcp\`) gives agents the exact options, examples and tokens, and checks their markup.
+- **Ready for AI coding agents.** The hosted Owlky MCP server at \`owlky.com/mcp\` gives agents the exact options, examples and tokens, and checks their markup. Every page is also available as Markdown.
 - **Built on the platform.** Components use native elements, such as \`<button>\` and \`<dialog>\`, so browser features like form submission, find-in-page and focus handling keep working.`,
   },
   {
@@ -47,7 +47,6 @@ export const LINKS = {
   issues: "https://github.com/dangduoc08/owlky/issues",
   roadmap: "https://github.com/dangduoc08/owlky/blob/main/docs/roadmap.md",
   license: "https://github.com/dangduoc08/owlky/blob/main/LICENSE",
-  mcp: "https://github.com/dangduoc08/owlky/tree/main/packages/mcp",
   /** A component's spec (the docs pages of most components are still in Storybook). */
   spec: (name: string) =>
     `https://github.com/dangduoc08/owlky/blob/main/specs/components/${name}.md`,
@@ -139,7 +138,7 @@ export const FAQ = [
   {
     question: "How does Owlky work with AI coding agents?",
     answer:
-      "Add the Owlky MCP server to your editor with `npx -y @owlky/mcp`. It answers with the exact options, examples and design tokens, and it checks the markup that your agent writes. The docs are also available as Markdown in `llms.txt`.",
+      "Connect your editor to the hosted Owlky MCP server at `https://owlky.com/mcp` and sign in with GitHub or Google. It answers with the exact options, examples and design tokens, and it checks the markup that your agent writes. The docs are also available as Markdown in `llms.txt`.",
   },
   {
     question: "What's next on the roadmap?",

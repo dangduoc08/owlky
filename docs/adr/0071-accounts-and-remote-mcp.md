@@ -14,7 +14,11 @@ packages stay MIT and the repository public: the sign-in gates the hosted servic
 1. **No local MCP.** `@owlky/mcp` stops being a published package: its CLI, `npx` docs,
    `smoke:mcp` and the `owlky` entry in `.mcp.json` go. The shared code (manifest generation,
    tools, resources, prompts, search, `validate_markup`) becomes a private workspace package that
-   the website imports; `check:manifest` keeps guarding the data.
+   the website imports; `check:manifest` keeps guarding the data. Done in M0 (2026-11-13): the
+   folder stays `packages/mcp` (so `scripts/manifest.mjs`, the size budget, Biome and the API
+   reference test keep their paths), renamed `@owlky/mcp-server` with `"private": true`, no `bin`
+   and no README; it is out of `check:packages` and `check-release` (the manifest's `version` is
+   still checked and synced), and its changeset entries were dropped.
 2. **Hosting:** the website leaves `output: "export"`; pages stay statically rendered and
    `app/mcp/route.ts` serves the MCP over Streamable HTTP, stateless. Vercel's free plan for the
    free release; a paid plan (or another host such as AWS) when premium starts. The server code

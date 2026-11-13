@@ -1,7 +1,6 @@
 ---
 "@owlky/core": patch
 "@owlky/html": patch
-"@owlky/mcp": patch
 "@owlky/react": patch
 "@owlky/styles": patch
 "@owlky/tokens": patch

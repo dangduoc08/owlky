@@ -84247,7 +84247,7 @@
      "title": "How it works"
     },
     {
-     "body": "- **`@owlky/styles`:** the prebuilt stylesheet, which needs no build step, and a theme for Tailwind CSS v4.\n- **`@owlky/tokens`:** the design tokens, as CSS variables and as JavaScript values.\n- **`@owlky/html`:** HTML snippets and the script that adds behavior to them. Also available from a CDN.\n- **Framework packages:** components for a specific framework, such as `@owlky/react`. Support for more frameworks will follow.\n- **`@owlky/core`:** the shared behavior core. Framework packages include it, so you rarely install it yourself.\n- **`@owlky/mcp`:** a Model Context Protocol server for coding agents. It answers with the exact components, options, examples and tokens of your Owlky version, without a network connection.",
+     "body": "- **`@owlky/styles`:** the prebuilt stylesheet, which needs no build step, and a theme for Tailwind CSS v4.\n- **`@owlky/tokens`:** the design tokens, as CSS variables and as JavaScript values.\n- **`@owlky/html`:** HTML snippets and the script that adds behavior to them. Also available from a CDN.\n- **Framework packages:** components for a specific framework, such as `@owlky/react`. Support for more frameworks will follow.\n- **`@owlky/core`:** the shared behavior core. Framework packages include it, so you rarely install it yourself.",
      "id": "packages",
      "title": "Packages"
     },

@@ -182,7 +182,8 @@ function AgentDemo() {
       </div>
       <div className="flex flex-col gap-3 p-4">
         <code data-landing-command="">
-          <span aria-hidden="true">$ </span>npx -y @owlky/mcp
+          <span aria-hidden="true">$ </span>claude mcp add --transport http owlky
+          https://owlky.com/mcp
         </code>
         <Typography variant="caption" color="textSecondary" component="p" className="m-0">
           Tools your agent can call:
@@ -242,7 +243,7 @@ export function Bento() {
           tag="AI-ready"
           icon={<TerminalIcon />}
           title="Made for AI coding agents"
-          text="The Owlky MCP server gives agents the exact options, examples and tokens, and checks their markup. It runs offline."
+          text="The Owlky MCP server gives agents the exact options, examples and tokens, and checks their markup. Connect by URL and sign in with GitHub or Google."
           demo={<AgentDemo />}
           className="lg:col-span-5"
         />

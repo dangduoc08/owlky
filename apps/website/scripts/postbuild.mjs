@@ -98,7 +98,7 @@ const groups = [...new Set(PAGES.map((page) => page.group))];
 const index = [
   `# ${SITE.name}`,
   `> ${SITE.description}`,
-  `Owlky ${manifest.version === "0.0.0" ? "isn't published yet" : `${manifest.version}`}. Every page is also available as Markdown at the URLs below. Coding agents can query the exact components, options, examples and tokens offline with the \`@owlky/mcp\` server (\`npx -y @owlky/mcp\`).`,
+  `Owlky ${manifest.version === "0.0.0" ? "isn't published yet" : `${manifest.version}`}. Every page is also available as Markdown at the URLs below. Coding agents can query the exact components, options, examples and tokens with the hosted Owlky MCP server at ${url("/mcp")}.`,
   ...groups.map(
     (group) =>
       `## ${group}\n\n${PAGES.filter((page) => page.group === group)

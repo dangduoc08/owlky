@@ -96,7 +96,7 @@ const budgets = [
   // shadows, about 0.3 kB less in both: core 29.41 kB, all 63.17 kB (29.70 / 63.45 kB after ST3).
   ["packages/styles/dist/owlky.min.css", 30_900, "Core CSS (tokens + light components)"],
   ["packages/styles/dist/owlky-all.min.css", 63_500, "All CSS (tokens + components)"], // 63.50 kB
-  // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
+  // The MCP server's data (ADR-0046, served by owlky.com/mcp since ADR-0071; was downloaded by npx): 0.69 MB gzip (6 MB raw)
   // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
   // reference (ADR-0049: every prop, attribute, part, event, method, type and CSS variable per
   // component; about 145 kB gzip, 0.77 → 0.92 MB): gzip's 32 kB window can't share the props
@@ -123,8 +123,8 @@ const budgets = [
   // sections, API entries, three ADRs): 1578.67 kB.
   // 1.69 MB after design styles ST2 (Solar component icons, whose paths are longer than the old
   // drawings, in 2,655 snippet icons that every story's HTML carries; the style tokens in every API
-  // entry's CSS variables): 1643.5 kB. The npm tarball only; no page downloads it.
-  ["packages/mcp/manifest.json", 1_690_000, "MCP manifest (npm tarball, not a browser download)"],
+  // entry's CSS variables): 1643.5 kB. Server-side data; no page downloads it.
+  ["packages/mcp/manifest.json", 1_690_000, "MCP manifest (server data, not a browser download)"],
 ];
 
 // The lazy modules' stylesheets (`modules/<name>.css`, S4), measured plus at most 5%.

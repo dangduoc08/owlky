@@ -940,7 +940,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   trigger's id (Biome `noLabelWithoutControl`; a `div` isn't labelable, `labelId` names it).
   Checkboxes inside options are `inert` (axe `nested-interactive`). `check-docs-code.mjs` greps
   **tracked** files for known `data-ok-*` names: `git add` new runtime files before running it.
-- MCP manifest (ADR-0046): `scripts/manifest.mjs` loads every `*.stories.tsx` and every file that
+- MCP manifest (ADR-0046, now the private `@owlky/mcp-server`, ADR-0071): `scripts/manifest.mjs` loads every `*.stories.tsx` and every file that
   exports `*Sections: GuideSection[]` with Vite's SSR loader in Node (Storybook, CSS, `?worker` and
   `?url` imports stubbed): story and docs modules must not touch `document` / `window` at import
   time. A story's React code is its Code panel (`transform` of `frameworkStory` with
@@ -950,8 +950,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   root (no `?`, no "(omit / when / with / only …)" comment) that **every** snippet instance
   contains, so a snippet without a part drops the requirement. `validate.test.ts` validates every
   story's HTML with zero issues: a number option that takes a keyword (`auto`) must name it in
-  backticks in its description, or `validate_markup` reports it. The repo's pnpm overrides for the
-  SDK's young transitive dependencies don't reach `npx` users (npm resolves the SDK's own ranges).
+  backticks in its description, or `validate_markup` reports it.
   Coverage of `packages/mcp` runs from the root: `pnpm vitest run --coverage packages/mcp`.
 - Docs content (ADR-0040): the guide UI (`GuideSections`, tables, code tabs, Copy button) lives in
   `apps/docs-content/src/guide/` and takes its prose, code block and preview frame from

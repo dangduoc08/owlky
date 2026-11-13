@@ -28,7 +28,7 @@ Biggest risks first:
    a selection of values, trade dress, unfair competition, the minimals.cc site terms) is a
    question for the lawyer.
 2. **Paid-kit demo content ships on npm.** Minimals mock names (C1) and the `2Minimal` value (C2)
-   are in `@owlky/html/dist/snippets` and in `@owlky/mcp`'s `manifest.json`. ApexCharts demo
+   are in `@owlky/html/dist/snippets` and in the MCP `manifest.json` that owlky.com/mcp serves (ADR-0071). ApexCharts demo
    series, some changed by a few units (C5), are in the chart snippets and the manifest.
 3. **Third-party code ships with no notice file.** `@owlky/html/dist` (editor, markdown, phone,
    map bundles and the 16 MB `monaco/` folder) and `@owlky/core/dist/map/worker.js` contain MIT,
@@ -75,7 +75,7 @@ attributed at run time; fonts are OFL and the library ships only font *names*.
 | R14 Codicon font in `monaco.css` | Permissive, attribution (to confirm) | upstream says icons are CC BY 4.0. If so, credit "Codicons by Microsoft, CC BY 4.0" with a link. Confirm against the `@vscode/codicons` version Monaco 0.57 embeds |
 | R15 Floating UI | Permissive, no notice from us | npm dependency, stubbed out of the bundle |
 | R16 Date adapters | Permissive, no notice from us | peer dependencies, never bundled |
-| R17 MCP SDK, zod and tree | Permissive, no notice from us | npm dependencies of `@owlky/mcp`, not bundled |
+| R17 MCP SDK, zod and tree | Permissive, no notice from us | dependencies of the private `@owlky/mcp-server` (the website's server), not shipped on npm |
 | R18 React | Permissive, no notice from us | peer dependency; website covered in D7 |
 | R19 Our bundles and npm builds | Own work | MIT `LICENSE` present in every package |
 | R20 lowlight / highlight.js | Permissive, no duty | not shipped; users install them |
@@ -146,7 +146,7 @@ attributed at run time; fonts are OFL and the library ships only font *names*.
 
 | Id | Class | Reason |
 |---|---|---|
-| C1 Minimals mock names | **Must not ship** | paid-kit demo data (not in the free kit), shipped in `@owlky/html/dist/snippets` and `@owlky/mcp` |
+| C1 Minimals mock names | **Must not ship** | paid-kit demo data (not in the free kit), shipped in `@owlky/html/dist/snippets` and the MCP manifest |
 | C2 `2Minimal` demo value | **Must not ship** | reference demo text and the reference's name, shipped in snippets and the manifest |
 | C3 MUI desserts table | Permissive, attribution | MUI docs are MIT. Replacing them is cheap and removes the attribution need. Recommended |
 | C4 Movie titles | Permissive, no duty | titles are facts; the list shape follows MUI's docs (MIT). Replace for distinctiveness |
@@ -216,7 +216,7 @@ some upstream headers. Each item below needs an entry with the license text and 
 | `@owlky/tokens`, `@owlky/styles`, `owlky.css` (only if T1 / T2 / T5 / T7 / T9 are kept) | Minimal UI free kit (MIT, "Copyright (c) 2021 Minimal UI (https://minimals.cc/)"); MUI (MIT, "Copyright (c) 2014 Call-Em-All") for T8 / T11 |
 | `@owlky/core` | MUI (MIT) for A1, Framer Motion (MIT) for A2 if the owner wants to credit values (conservative); MapLibre (above); MUI X (MIT) if C11 came from it |
 | `@owlky/react`, `@owlky/html` | Lucide (ISC) if I5 confirms copied paths |
-| `@owlky/mcp` (`manifest.json`) | MUI (MIT) while C3 / C7 content stays in it |
+| The remote MCP (`manifest.json`) | MUI (MIT) while C3 / C7 content stays in it |
 | Website (owlky.com) | Next.js, React (MIT); Pagefind (MIT); the fonts it serves (OFL-1.1 text per family); the Owlky CDN copy's notices (above); Solar (CC BY 4.0) and the other icon sets once Foundations › Icons moves there; OpenFreeMap / OpenMapTiles / OSM on map pages |
 | Repository (public on GitHub) | `icon-data.json`: Solar (CC BY 4.0), Eva (MIT), VSCode Icons (MIT), Circle Flags (MIT), SVG Logos (CC0); Natural Earth, USGS and Census credits for the data in `apps/storybook/public/maps` |
 
@@ -238,7 +238,7 @@ entry.
    examples, or use neutral glyphs?
 4. **Provenance.** Can you confirm that the illustrations (I1), the pictures (I3) and the video (I4)
    were made in this repository, and how the video was produced?
-5. **Reference links in shipped artifacts** (C6, N3): may `@owlky/mcp` and the website keep
+5. **Reference links in shipped artifacts** (C6, N3): may the remote MCP and the website keep
    linking minimals.cc and naming "Minimals", or should the shipped manifest drop `referenceUrl`
    and the audit notes (the repository can keep them)?
 6. **Copyright holder.** "Owlky contributors" in `LICENSE`: is that the intended holder, or should

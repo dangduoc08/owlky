@@ -1,7 +1,6 @@
 ---
 "@owlky/html": minor
 "@owlky/core": patch
-"@owlky/mcp": minor
 ---
 
 The CDN `owlky.js` loads what a page uses. It now holds the runtime and the common components (45 kB gzip, down from 307 kB). The Chart, Data grid, date pickers, Gantt, Carousel and Lightbox, Motion, Organization chart, Upload, Walktour, Tree view, Sortable, Autocomplete, Transfer list, Editor, Map, Markdown, Code editor, Phone input and Illustrations are ES modules in `dist/modules/`, next to `owlky.js`: when the page holds one of them, `owlky.js` loads its module, and until then the markup works as it does without JavaScript. A page keeps one stylesheet and one script, also under a strict CSP with Trusted Types.
