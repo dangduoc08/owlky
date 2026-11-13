@@ -1,7 +1,10 @@
 import {
+  altArrowRightLinear,
   applyTreeHighlight,
   childTreeItems,
+  createIcon,
   createTreeController,
+  dangerCircleLinear,
   hasLazyChildren,
   nextTreeSelection,
   parentTreeItem,
@@ -98,22 +101,7 @@ const SVG = "http://www.w3.org/2000/svg";
 const { itemChildrenIndentation } = treeViewOptions.options;
 
 function chevron(): SVGSVGElement {
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("data-ok-tree-chevron", "");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  for (const [name, value] of [
-    ["fill", "none"],
-    ["stroke", "currentColor"],
-    ["stroke-width", "2"],
-    ["stroke-linecap", "round"],
-    ["stroke-linejoin", "round"],
-  ])
-    svg.setAttribute(name as string, value as string);
-  const path = document.createElementNS(SVG, "path");
-  path.setAttribute("d", "m9 18 6-6-6-6");
-  svg.append(path);
-  return svg;
+  return createIcon(altArrowRightLinear, { "data-ok-tree-chevron": "" });
 }
 
 /** An indeterminate CircularProgress (same anatomy as circular-progress.css). */
@@ -146,15 +134,7 @@ function spinner(): HTMLElement {
 }
 
 function errorIcon(): SVGSVGElement {
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("data-ok-tree-error-icon", "");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  const path = document.createElementNS(SVG, "path");
-  path.setAttribute("d", "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-2h2zm0-4h-2V7h2z");
-  path.setAttribute("fill", "currentColor");
-  svg.append(path);
-  return svg;
+  return createIcon(dangerCircleLinear, { "data-ok-tree-error-icon": "" });
 }
 
 const group = (item: Element) => item.querySelector<HTMLElement>(':scope > [role="group"]');

@@ -14,12 +14,36 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "name": "--ok-duration-shortest",
    "value": "150ms"
   },
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-color-brand",
+   "value": "var(--ok-palette-primary-main)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-family",
@@ -36,6 +60,10 @@
   {
    "name": "--ok-font-weight-semibold",
    "value": "600"
+  },
+  {
+   "name": "--ok-item-height-sm",
+   "value": "1.875rem"
   },
   {
    "name": "--ok-palette-error-main",
@@ -59,8 +87,8 @@
    "value": "0 167 111"
   },
   {
-   "dark": "var(--_ok-primary-text-dark)",
-   "light": "var(--_ok-primary-text-light)",
+   "dark": "#5BE49B",
+   "light": "#007867",
    "name": "--ok-palette-primary-text"
   },
   {
@@ -68,19 +96,19 @@
    "value": "255 171 0"
   },
   {
+   "name": "--ok-radius-control",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-control-sm",
+   "value": "6px"
+  },
+  {
    "name": "--ok-radius-full",
    "value": "9999px"
   },
   {
-   "name": "--ok-radius-md",
-   "value": "8px"
-  },
-  {
-   "name": "--ok-radius-sm",
-   "value": "6px"
-  },
-  {
-   "name": "--ok-radius-xs",
+   "name": "--ok-radius-inner",
    "value": "4px"
   },
   {
@@ -861,6 +889,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "tree-view",
+  "core": "@owlky/core/tree-view",
+  "css": [
+   "@owlky/styles/components/tree-view.css"
+  ],
+  "html": "@owlky/html/tree-view",
+  "react": "@owlky/react/tree-view"
+ },
  "name": "tree-view",
  "title": "Tree view"
 }

@@ -306,7 +306,7 @@ for (const impl of implementations) {
   });
 }
 
-/** S6: the map (owlky-map.js and its worker) runs under a strict CSP without inline code or styles. */
+/** S6: the map (modules/map.js and its worker) runs under a strict CSP without inline code or styles. */
 test("map under a strict CSP: no violations", async ({ page }) => {
   await routeMapTiles(page);
   await page.addInitScript(() => {

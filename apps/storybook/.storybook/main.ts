@@ -38,6 +38,9 @@ const config: StorybookConfig = {
             find: /^@owlky\/core\/adapters\/(dayjs|date-fns|luxon|moment)$/,
             replacement: `${pkg("core/src/adapters")}/$1.ts`,
           },
+          // Per-component entries, which lazy imports inside components use (ADR-0068 S5):
+          // the same source modules as the barrel, so they share one instance.
+          { find: /^@owlky\/core\/([a-z-]+)$/, replacement: `${pkg("core/src/entries")}/$1.ts` },
           { find: /^@owlky\/react$/, replacement: pkg("react/src/index.ts") },
           { find: /^@owlky\/html$/, replacement: pkg("html/src/index.ts") },
           { find: /^@owlky\/html\/auto$/, replacement: pkg("html/src/auto.ts") },

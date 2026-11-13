@@ -51,7 +51,7 @@
   }
 
   :where([data-ok-breadcrumbs-item] > a) {
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
   }
 
   :where([data-ok-breadcrumbs-item] svg) {
@@ -71,8 +71,8 @@
   }
 
   :where([data-ok-breadcrumbs-item] > a:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-breadcrumbs-separator]) {
@@ -104,7 +104,7 @@
     margin: 0;
     padding: 0 var(--ok-spacing);
     border: 0;
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background-color: var(--ok-action-hover);
     color: var(--ok-text-primary);
     cursor: pointer;
@@ -124,8 +124,8 @@
   }
 
   :where([data-ok-breadcrumbs-expand]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -20,6 +20,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { API, isUnionType, SignatureKind, SymbolFlags } from "typescript/unstable/sync";
 import { folderSpec as sharedFolderSpec } from "./component-folders.mjs";
+import { componentImports } from "./component-imports.mjs";
 import { optionSchemas } from "./option-schemas.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -51,6 +52,7 @@ for (const name of specNames) {
   });
 }
 const folderSpec = (folder) => sharedFolderSpec(folder, specs);
+const importsOf = componentImports(root, specs);
 const optionAttrs = new Set();
 const schemaRoots = new Map(); // root → schema name
 for (const schema of Object.values(optionSchemas)) {
@@ -443,7 +445,10 @@ const BINDINGS = {
   "--ok-c-shadow": "The colored shadow of the element's `data-ok-color`.",
 };
 const cssBySpec = new Map();
+/** Stylesheets every component shares (component icons, ADR-0070 § 9): no spec of their own. */
+const SHARED_CSS = new Set(["icon.css"]);
 for (const file of readdirSync(join(root, "packages/styles/src/components")).sort(byName)) {
+  if (SHARED_CSS.has(file)) continue;
   const spec = folderSpec(file.replace(/\.css$/, ""));
   if (!spec) {
     problem(`styles/src/components/${file} maps to no spec`);
@@ -629,6 +634,9 @@ for (const [name, spec] of specs) {
       }),
     );
   const reference = { format: FORMAT, name, title: spec.title, entries: list };
+  // Where the component comes from (ADR-0068): the "Import" table of the docs page.
+  const imports = importsOf(name);
+  if (Object.keys(imports).length) reference.imports = imports;
   if (css.length) reference.css = css;
   if (types.length) reference.types = types;
   references.set(name, reference);

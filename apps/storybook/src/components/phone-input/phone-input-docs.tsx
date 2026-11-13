@@ -19,11 +19,10 @@ export const phoneInputSections: GuideSection[] = [
     title: "Overview",
     body: `A phone input is a text field for phone numbers. A country select with flags sits at its start, the number is formatted as people type it, and the value is the number in international E.164 form, such as \`+61298765432\`. Typing a number that starts with \`+\` selects its country.
 
-The phone input is a separate script so that pages without one don't download the phone numbering data (about 35 kB compressed). Load \`owlky-phone.js\` after \`owlky.js\`, or import \`@owlky/html/phone\` after \`@owlky/html/auto\`. In HTML, leave the country list empty: the script fills it. Without JavaScript, the field still works as a plain telephone input.`,
-    html: `<!-- Load once per page: the styles, the runtime, then the phone input -->
+Pages without a phone input don't download the phone numbering data (about 35 kB compressed). On a CDN page, \`owlky.js\` loads the phone input when the page holds one. With a bundler, import \`@owlky/html/phone\` after \`@owlky/html/auto\`. In HTML, leave the country list empty: the script fills it. Without JavaScript, the field still works as a plain telephone input.`,
+    html: `<!-- Load once per page: owlky.js loads the phone input when the page holds one -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
-<script src="${CDN}/owlky-phone.js" defer></script>
 
 ${field(autoGroup)}`,
     react: `import { PhoneInput } from "@owlky/react";
@@ -150,7 +149,7 @@ export function Callback() {
 - **\`ok:phone-input:countrychange\`** fires after the selected country changed, with \`detail.country\` (\`undefined\` for International).
 - **Instance:** \`runtime.get(element, "phone-input")\` returns \`{ value, setValue(value), country, setCountry(country), details }\`. The setters fire no events.
 - **React:** \`onChange(value, details)\` and \`onCountryChange(country)\`. Use \`value\` to control the field, or \`defaultValue\` to let it keep its own state. The \`ref\` and every other prop, such as \`name\` or \`onBlur\`, go to the input.
-- **HTML with other data:** \`createPhoneInput({ metadata, labels })\` returns a definition to register instead of loading \`owlky-phone.js\`, for example with the libphonenumber-js \`max\` data for strict validation.`,
+- **HTML with other data:** \`createPhoneInput({ metadata, labels })\` returns a definition to register in a bundled app instead of importing \`@owlky/html/phone\`, for example with the libphonenumber-js \`max\` data for strict validation.`,
   },
   {
     id: "keyboard",

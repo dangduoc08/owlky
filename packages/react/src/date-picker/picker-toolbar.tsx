@@ -1,4 +1,5 @@
 import {
+  clockCircleLinear,
   formatDate,
   hourUnit,
   isTimeView,
@@ -9,6 +10,7 @@ import {
   setTimeUnit,
   type TimeView,
 } from "@owlky/core";
+import { Icon } from "../utils/icon.js";
 
 const pad2 = (value: number) => String(value).padStart(2, "0");
 
@@ -136,12 +138,5 @@ export function TimeToolbar({
 
 /** Clock icon of a time picker's open button (decorative). */
 export function ClockIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        fill="currentColor"
-        d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z"
-      />
-    </svg>
-  );
+  return <Icon icon={clockCircleLinear} />;
 }

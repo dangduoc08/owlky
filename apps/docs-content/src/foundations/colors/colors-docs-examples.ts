@@ -23,11 +23,9 @@ export const colorsDocsSections: GuideSection[] = [
     title: "Palette",
     body: `${PALETTE_BODY}
 
-The stories in the sidebar show each palette in detail. Select a swatch to copy its hex value. The \`primary\` color follows the **Preset** menu in the toolbar.`,
+The stories in the sidebar show each palette in detail. Select a swatch to copy its hex value.`,
     bodyByHost: {
-      website: `${PALETTE_BODY}
-
-The \`primary\` color follows the **Preset** menu in the header.`,
+      website: PALETTE_BODY,
     },
   },
   {
@@ -155,7 +153,7 @@ export function StorageCard() {
 - **Text:** \`--ok-gradient-<color>-text\` runs from the color's \`text\` tone to a deeper shade: \`darker\` in the light theme and \`lighter\` in the dark theme. Every point of it reaches a contrast ratio of at least 4.5:1 on the theme's backgrounds. Clip it to the text with \`background-clip: text\` and make the text color transparent.
 - **Fill:** \`--ok-gradient-<color>\` runs from the \`light\` shade to the \`main\` shade. For a gradient border, paint the paper color on the padding box and the gradient on the border box, under a transparent border.
 
-The \`primary\` gradients follow the preset, and the text gradients follow the theme, like the palette colors they come from.`,
+The gradients follow the palette, and the text gradients follow the theme, like the palette colors they come from.`,
     html: `<style>
   .gradient-title {
     color: transparent;
@@ -293,15 +291,15 @@ export function ColorTag() {
     title: "Read colors in JavaScript",
     body: `Some code needs color values directly, for example to draw a chart on a canvas. You have two options:
 
-- **Read the CSS variable** to get the color that is on screen now. This value follows the active theme and preset.
-- **Import the default values** from \`@owlky/tokens\`. These values are fixed: they don't change with the theme or preset.`,
+- **Read the CSS variable** to get the color that is on screen now. This value follows the active theme and your token overrides.
+- **Import the default values** from \`@owlky/tokens\`. These values are fixed: they don't change with the theme.`,
     html: `<script type="module">
   // The default value (bare imports need a bundler or an import map)
   import { defaultTheme } from "@owlky/tokens";
 
   const brand = defaultTheme.palette.primary.main; // "#00A76F"
 
-  // The color on screen now (follows the theme and preset)
+  // The color on screen now (follows the theme)
   const styles = getComputedStyle(document.documentElement);
   const primary = styles.getPropertyValue("--ok-palette-primary-main").trim();
 </script>`,
@@ -312,7 +310,7 @@ export function usePrimaryColor() {
   // The default value, until the page is rendered
   const [color, setColor] = useState(defaultTheme.palette.primary.main);
   useEffect(() => {
-    // The color on screen now (follows the theme and preset)
+    // The color on screen now (follows the theme)
     const styles = getComputedStyle(document.documentElement);
     setColor(styles.getPropertyValue("--ok-palette-primary-main").trim());
   }, []);
@@ -321,16 +319,13 @@ export function usePrimaryColor() {
   },
   {
     id: "themes",
-    title: "Switch themes and presets",
-    body: `Two attributes control the colors of a page or a part of it:
+    title: "Switch themes and brand colors",
+    body: `\`data-ok-theme\` sets the theme of a page or a part of it: \`light\` or \`dark\`. Put it on the \`<html>\` element to style the whole page, or on any element to style only its content. You can nest it, for example to show a light panel inside a dark page.
 
-- \`data-ok-theme\` sets the theme: \`light\` or \`dark\`.
-- \`data-ok-preset\` changes the primary color, for example to \`cyan\`.
+To change the theme from code, call \`applyThemeSettings()\`. Pass a storage, such as \`localStorage\`, to remember the user's choice.
 
-Put them on the \`<html>\` element to style the whole page, or on any element to style only its content. You can nest them, for example to show a light panel inside a dark page.
-
-To change them from code, call \`applyThemeSettings()\`. Pass a storage, such as \`localStorage\`, to remember the user's choice.`,
-    html: `<html data-ok-theme="dark" data-ok-preset="cyan">
+To use your brand color, override the \`--ok-palette-primary-*\` tokens in your CSS, on \`:root\` or on any element. Check the contrast of text on your colors, because overridden colors aren't adjusted for you.`,
+    html: `<html data-ok-theme="dark">
   <body>
     <!-- A light panel inside the dark page -->
     <section data-ok-theme="light">
@@ -343,20 +338,20 @@ To change them from code, call \`applyThemeSettings()\`. Pass a storage, such as
 <script type="module">
   import { applyThemeSettings } from "@owlky/html";
 
-  applyThemeSettings({ mode: "dark", preset: "cyan" }, { storage: localStorage });
+  applyThemeSettings({ mode: "dark" }, { storage: localStorage });
 </script>`,
     react: `import { applyThemeSettings, Button } from "@owlky/react";
 
-// A switch to the dark theme, and a light panel with its own primary color
+// A switch to the dark theme, and a light panel
 export function ThemedPage() {
   return (
     <>
-      <Button onClick={() => applyThemeSettings({ mode: "dark", preset: "cyan" }, { storage: localStorage })}>
+      <Button onClick={() => applyThemeSettings({ mode: "dark" }, { storage: localStorage })}>
         Use the dark theme
       </Button>
-      <section data-ok-theme="light" data-ok-preset="purple">
+      <section data-ok-theme="light">
         <h2>Light panel</h2>
-        <p>This panel keeps the light colors and a purple primary color.</p>
+        <p>This panel keeps the light colors on a dark page.</p>
       </section>
     </>
   );

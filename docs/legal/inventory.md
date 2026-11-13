@@ -33,6 +33,10 @@ libphonenumber-js, `dist/monaco/` Monaco and its own bundled dependencies. The n
 (`tsc` output of core, react, html, mcp) import their dependencies and bundle none, with one
 exception: `@owlky/core` copies MapLibre's worker into `dist/map/worker.js` (R10).
 
+**Note (2026-11-13):** the opt-in IIFE scripts named here were replaced by the lazy ES modules of
+`owlky.js` (`dist/modules/<name>.js` and `dist/modules/chunks/`, ADR-0068) and removed in S6. The
+same packages ship in those modules; the generated `THIRD_PARTY_NOTICES.md` lists the current files.
+
 | Id | Item | Where | Source | License | Use | Notice duty |
 |---|---|---|---|---|---|---|
 | R1 | Tiptap 3.32.0: `@tiptap/core`, `pm`, `starter-kit`, `extensions`, `suggestion` and 19 extension packages (blockquote, bold, code, code-block, document, hard-break, heading, horizontal-rule, image, italic, link, list, mention, paragraph, strike, table, text, text-align, underline…) | `packages/core/src/editor`, `owlky-editor.js` | tiptap.dev, © 2025 Tiptap GmbH | MIT | bundle (`owlky-editor.js`) + npm dep of core | keep the copyright and MIT text with the bundle |

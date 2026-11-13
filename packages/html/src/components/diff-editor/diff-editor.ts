@@ -75,7 +75,7 @@ const WATCHED = [
 
 /**
  * Diff editor — spec: specs/components/code-editor.md (ADR-0034). Registered with the code editor
- * (`@owlky/html/code-editor`, `owlky-code-editor.js`).
+ * (`@owlky/html/code-editor`, or the CDN's lazy `modules/code-editor.js`).
  *
  * Markup:  <div data-ok-diff-editor data-ok-language="markdown" data-ok-height="400">
  *            <textarea data-ok-diff-editor-original aria-label="Original">…</textarea>

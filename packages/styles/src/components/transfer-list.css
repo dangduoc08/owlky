@@ -32,7 +32,7 @@
     width: calc(var(--ok-spacing) * 55);
     max-width: 100%;
     overflow: hidden;
-    border-radius: var(--ok-radius-xl);
+    border-radius: var(--ok-radius-surface);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-card);
   }
@@ -79,7 +79,7 @@
     column-gap: var(--ok-spacing);
     align-items: center;
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2);
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-transfer-list-header] > [data-ok-checkbox]) {

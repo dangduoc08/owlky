@@ -14,7 +14,7 @@
 
 @layer components {
   :where([data-ok-paper]) {
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-elevation-1);
     color: var(--ok-text-primary);
@@ -120,7 +120,7 @@
 
   /* Outlined: a flat surface with a 1px outline (Minimals' theme: grey 500 at 16%). */
   :where([data-ok-paper][data-ok-variant="outlined"]) {
-    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
     box-shadow: none;
   }
 

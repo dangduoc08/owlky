@@ -36,7 +36,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 /**
  * The gradient tokens (`--ok-gradient-*`) as the reference's Utilities › Gradient sections: text,
- * border, background and paper. They follow the toolbar's Theme and Preset.
+ * border, background and paper. They follow the toolbar's Theme.
  */
 export function Gradients() {
   return (

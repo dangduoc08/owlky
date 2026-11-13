@@ -191,6 +191,36 @@ describe("illustration runtime", () => {
     expect(first?.children).toHaveLength(0);
     expect(second?.children.length).toBe(error500.nodes.length);
   });
+
+  it("sizes authored artwork without its set and loads a lazy set once (ADR-0068 S5)", async () => {
+    let loads = 0;
+    let resolve: (set: typeof illustrations) => void = () => {};
+    const lazy = createIllustration(() => {
+      loads++;
+      return new Promise((done) => {
+        resolve = done;
+      });
+    });
+    const host = wide(
+      '<svg data-ok-illustration="error-404" data-ok-size="120" aria-hidden="true"><rect width="1" height="1"/></svg><svg data-ok-illustration="error-500" aria-hidden="true"></svg>',
+    );
+    start(lazy);
+    const [authored, empty] = [...host.querySelectorAll("svg")] as [SVGSVGElement, SVGSVGElement];
+    expect(authored.style.getPropertyValue("--_ok-illustration-size")).toBe("120px");
+    await settle();
+    const instance = runtime?.get<IllustrationInstance>(empty, "illustration");
+    expect(loads).toBe(1);
+    expect(empty.getAttribute("focusable")).toBe("false");
+    expect(empty.children).toHaveLength(0);
+    expect(instance?.illustration).toBeUndefined();
+    resolve(illustrations);
+    await settle();
+    expect(loads).toBe(1);
+    expect(instance?.illustration).toBe(error500);
+    expect(empty.getAttribute("viewBox")).toBe(error500.viewBox);
+    expect(empty.children.length).toBe(error500.nodes.length);
+    expect(authored.querySelectorAll("rect")).toHaveLength(1);
+  });
 });
 
 describe("@owlky/html/illustrations", () => {

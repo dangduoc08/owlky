@@ -95,10 +95,6 @@ test.describe("Foundations / Colors", () => {
     const dark = await read();
     expect(dark.title).toBe("linear-gradient(90deg, rgb(91, 228, 155), rgb(200, 250, 214))");
     expect(dark.paper).not.toBe(light.paper);
-    await openStory(page, "foundations-colors--gradient", "light", "", "preset:cyan");
-    expect((await read()).fill).toBe(
-      "linear-gradient(135deg, rgb(104, 205, 249), rgb(7, 141, 238))",
-    );
   });
 
   test("uses one column on small screens", async ({ page }) => {

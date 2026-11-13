@@ -14,7 +14,8 @@ HTML source: written by us (react-phone-number-input is React only)
 Enter a phone number of any country: a country select with flags in the field, formatting as you
 type, an E.164 value (`+61298765432`) with its national and international forms, and an optional
 validation state for the helper text. Opt-in: the phone metadata (libphonenumber-js `min`, about
-35 kB gzip) loads only with `@owlky/core/phone` (`@owlky/html/phone`, `owlky-phone.js`).
+35 kB gzip) loads only with `@owlky/core/phone` (`@owlky/html/phone`, the CDN's lazy
+`modules/phone-input.js`, ADR-0068).
 
 ## Anatomy
 ```

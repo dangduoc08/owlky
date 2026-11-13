@@ -26,7 +26,7 @@
     min-width: 0;
     height: calc(var(--ok-spacing) * 120);
     overflow: hidden;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-palette-grey-200);
     color: var(--ok-text-primary);
     font-family: var(--ok-typography-body2-font-family);
@@ -70,8 +70,8 @@
   }
 
   :where([data-ok-map-view] .maplibregl-canvas:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-map-view] .maplibregl-canvas-container.maplibregl-interactive) {
@@ -116,7 +116,7 @@
     left: 0;
     width: 0;
     height: 0;
-    border: 2px dashed var(--ok-palette-primary-main);
+    border: var(--ok-border-width-strong) dashed var(--ok-palette-primary-main);
     background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
   }
 
@@ -134,7 +134,8 @@
     text-align: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--ok-duration-standard) var(--ok-easing-standard) 1s;
+    transition: opacity var(--ok-duration-standard) var(--ok-easing-standard)
+      var(--ok-duration-hint-delay);
   }
 
   :where([data-ok-map-view] .maplibregl-cooperative-gesture-screen.maplibregl-show) {
@@ -271,9 +272,9 @@
   }
 
   :where([data-ok-map-marker]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
-    border-radius: var(--ok-radius-sm);
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
+    border-radius: var(--ok-radius-control-sm);
   }
 
   /* The marker's `scale` (CSSOM: --_ok-map-pin-scale) sizes the default pin. */
@@ -356,7 +357,7 @@
     box-sizing: border-box;
     min-width: 0;
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2.5);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-dropdown);
     color: var(--ok-text-primary);
@@ -369,7 +370,7 @@
   }
 
   :where([data-ok-map-popup]:focus-visible > [data-ok-map-popup-content]) {
-    outline: 2px solid var(--ok-text-primary);
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
   }
 
   :where([data-ok-map-popup]:focus) {
@@ -468,8 +469,8 @@
   }
 
   :where([data-ok-map-popup-close]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   /* --- Panels (demo controls laid over the map) ------------------------------------------------ */
@@ -482,7 +483,7 @@
     max-height: calc(100% - var(--ok-spacing) * 4);
     overflow: auto;
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: rgb(var(--ok-palette-grey-900-channel) / 0.8);
     color: var(--ok-palette-common-white);
     -webkit-backdrop-filter: blur(calc(var(--ok-spacing) * 1.5));
@@ -563,7 +564,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-z1);
     pointer-events: auto;
@@ -585,7 +586,7 @@
   }
 
   :where([data-ok-map-action] + [data-ok-map-action]) {
-    border-top: 1px solid var(--ok-divider);
+    border-top: var(--ok-border-width) solid var(--ok-divider);
   }
 
   :where([data-ok-map-action] svg) {
@@ -601,8 +602,8 @@
   }
 
   :where([data-ok-map-action]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-map-action][aria-disabled="true"]) {
@@ -642,7 +643,7 @@
   }
 
   :where([data-ok-map-action="geolocate"][data-ok-state="waiting"] svg) {
-    animation: ok-map-spin 1.2s linear infinite;
+    animation: ok-map-spin var(--ok-duration-spin-slow) linear infinite;
   }
 
   @keyframes ok-map-spin {
@@ -674,7 +675,7 @@
     box-sizing: border-box;
     width: calc(var(--ok-spacing) * 4.5);
     height: calc(var(--ok-spacing) * 4.5);
-    border: 3px solid var(--ok-palette-common-white);
+    border: var(--ok-border-width-heavy) solid var(--ok-palette-common-white);
     border-radius: var(--ok-radius-full);
     background-color: var(--ok-palette-info-main);
     box-shadow: var(--ok-shadow-z4);
@@ -688,7 +689,7 @@
     left: 50%;
     width: var(--_ok-map-accuracy, 0);
     height: var(--_ok-map-accuracy, 0);
-    border: 1px solid rgb(var(--ok-palette-info-main-channel) / 0.4);
+    border: var(--ok-border-width) solid rgb(var(--ok-palette-info-main-channel) / 0.4);
     border-radius: var(--ok-radius-full);
     background-color: rgb(var(--ok-palette-info-main-channel) / 0.12);
     content: "";
@@ -702,7 +703,7 @@
     width: var(--_ok-map-scale-width, auto);
     min-width: max-content;
     padding: 0 var(--ok-spacing);
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background-image: linear-gradient(
       to right,
       var(--ok-palette-secondary-dark),
@@ -729,7 +730,7 @@
     box-sizing: border-box;
     max-width: 100%;
     padding: calc(var(--ok-spacing) * 0.5) calc(var(--ok-spacing) * 2);
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
     background-color: rgb(var(--ok-palette-common-white-channel) / 0.84);
     color: var(--ok-palette-grey-800);
     font-size: var(--ok-typography-caption-font-size);
@@ -748,7 +749,7 @@
 
   :where([data-ok-map-attribution][data-ok-narrow][open]) {
     padding: 0 calc(var(--ok-spacing) * 2) 0 0;
-    border-radius: var(--ok-radius-lg);
+    border-radius: var(--ok-radius-surface-md);
   }
 
   :where([data-ok-map-attribution] > summary) {
@@ -773,8 +774,8 @@
   }
 
   :where([data-ok-map-attribution] > summary:focus-visible) {
-    outline: 2px solid var(--ok-palette-grey-800);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-palette-grey-800);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-map-attribution-text]) {
@@ -797,7 +798,7 @@
     box-sizing: border-box;
     max-width: calc(var(--ok-spacing) * 60);
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-z1);
     color: var(--ok-text-primary);
@@ -837,7 +838,7 @@
     min-height: calc(var(--ok-spacing) * 6);
     padding: 0 calc(var(--ok-spacing) * 1);
     border: 0;
-    border-radius: var(--ok-radius-sm);
+    border-radius: var(--ok-radius-control-sm);
     background: transparent;
     color: var(--ok-text-secondary);
     font: inherit;
@@ -856,8 +857,8 @@
   }
 
   :where(button[data-ok-map-legend-class]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where(button[data-ok-map-legend-class][aria-pressed="true"]) {
@@ -879,9 +880,9 @@
     flex: none;
     width: calc(var(--ok-spacing) * 3);
     height: calc(var(--ok-spacing) * 3);
-    border-radius: var(--ok-radius-xs);
+    border-radius: var(--ok-radius-inner);
     background-color: var(--_ok-map-swatch, transparent);
-    box-shadow: inset 0 0 0 1px var(--ok-divider);
+    box-shadow: inset 0 0 0 var(--ok-border-width) var(--ok-divider);
   }
 
   /* Pattern fills (4.18.97): the class's texture over its color, in a translucent black ink. */
@@ -984,7 +985,7 @@
     box-sizing: border-box;
     width: calc(var(--_ok-map-radius, 0px) * 2);
     height: calc(var(--_ok-map-radius, 0px) * 2);
-    border: 1px solid var(--ok-text-secondary);
+    border: var(--ok-border-width) solid var(--ok-text-secondary);
     border-radius: var(--ok-radius-full);
     background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
   }
@@ -1032,15 +1033,15 @@
     padding: calc(var(--ok-spacing) * 1) calc(var(--ok-spacing) * 2.5);
     overflow: visible;
     clip-path: none;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-dropdown);
     color: var(--ok-text-primary);
   }
 
   :where([data-ok-map-regions-list]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-map-region]) {
@@ -1100,7 +1101,7 @@
     [data-ok-map][data-ok-fallback] > [data-ok-map-regions] td
   ) {
     padding: calc(var(--ok-spacing) * 1) calc(var(--ok-spacing) * 2);
-    border-bottom: 1px solid var(--ok-divider);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
     text-align: start;
   }
 
@@ -1128,8 +1129,8 @@
     box-sizing: border-box;
     width: var(--_ok-map-box-width, 0);
     height: var(--_ok-map-box-height, 0);
-    border: 2px dashed var(--ok-text-primary);
-    border-radius: var(--ok-radius-xs);
+    border: var(--ok-border-width-strong) dashed var(--ok-text-primary);
+    border-radius: var(--ok-radius-inner);
     background-color: rgb(var(--ok-palette-primary-main-channel) / 0.12);
     pointer-events: none;
   }

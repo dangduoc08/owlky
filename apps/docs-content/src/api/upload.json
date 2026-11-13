@@ -6,12 +6,28 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-duration-shorter",
    "value": "200ms"
   },
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
   },
   {
    "name": "--ok-font-family",
@@ -75,8 +91,8 @@
    "value": "#00A76F"
   },
   {
-   "dark": "var(--_ok-primary-text-dark)",
-   "light": "var(--_ok-primary-text-light)",
+   "dark": "#5BE49B",
+   "light": "#007867",
    "name": "--ok-palette-primary-text"
   },
   {
@@ -100,12 +116,16 @@
    "value": "#FFAB00"
   },
   {
+   "name": "--ok-radius-control",
+   "value": "8px"
+  },
+  {
    "name": "--ok-radius-full",
    "value": "9999px"
   },
   {
-   "name": "--ok-radius-md",
-   "value": "8px"
+   "name": "--ok-radius-surface-sm",
+   "value": "10px"
   },
   {
    "name": "--ok-spacing",
@@ -1543,6 +1563,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "upload",
+  "core": "@owlky/core/upload",
+  "css": [
+   "@owlky/styles/components/upload.css"
+  ],
+  "html": "@owlky/html/upload",
+  "react": "@owlky/react/upload"
+ },
  "name": "upload",
  "title": "Upload",
  "types": [

@@ -5,12 +5,14 @@
  *              › (label[data-ok-form-control-label] ›)? span[data-ok-radio]
  *                › input[type=radio][data-ok-radio-input]               (the control; covers the target)
  *                › span[data-ok-radio-icon="unchecked" | "checked"][aria-hidden]
+ *                  › span[data-ok-radio-ring]                         (default icons; custom icons: an svg)
  * Modifiers: data-ok-color = primary (default) | default | secondary | info | success | warning | error
  *            data-ok-size  = medium (default) | small
  * States:    read from the input with :has(): :checked, :disabled, :focus-visible
  * Swatches:  data-ok-swatch (a color → --_ok-swatch), data-ok-shape = circular | rounded
  *
- * Native radios: the browser keeps one per name checked and moves with the arrow keys.
+ * Native radios: the browser keeps one per name checked and moves with the arrow keys. The default
+ * ring and dot are drawn here from tokens (radius, the icon stroke), not by an icon.
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
  * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
  */
@@ -73,6 +75,26 @@
     height: 100%;
   }
 
+  /* The default ring: 20 / 24 of the icon box, the dot (checked) half of the ring. */
+  :where([data-ok-radio-ring]) {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    width: 83.333%;
+    height: 83.333%;
+    margin: 8.333%;
+    border: calc(var(--ok-icon-stroke) * 1px) solid currentColor;
+    border-radius: var(--ok-radius-full);
+  }
+
+  :where([data-ok-radio-icon="checked"] > [data-ok-radio-ring])::before {
+    content: "";
+    position: absolute;
+    inset: 22%;
+    border-radius: inherit;
+    background-color: currentColor;
+  }
+
   :where([data-ok-radio-icon="unchecked"]) {
     display: block;
   }
@@ -112,8 +134,8 @@
 
   /* Focus: a ring inside the target (the reference has none; WCAG 2.4.7). */
   :where([data-ok-radio]:has(> input:focus-visible)) {
-    outline: 2px solid currentColor;
-    outline-offset: -2px;
+    outline: var(--ok-focus-ring-width) solid currentColor;
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   /* Disabled */
@@ -152,7 +174,7 @@
   }
 
   :where([data-ok-radio][data-ok-swatch][data-ok-shape="rounded"]) {
-    --_ok-swatch-radius: var(--ok-radius-sm);
+    --_ok-swatch-radius: var(--ok-radius-control-sm);
   }
 
   :where([data-ok-radio-swatch]) {
@@ -164,7 +186,7 @@
     height: var(--_ok-swatch-size);
     border-radius: var(--_ok-swatch-radius);
     background-color: var(--_ok-swatch, var(--ok-palette-grey-500));
-    box-shadow: inset 0 0 0 1px rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    box-shadow: inset 0 0 0 var(--ok-border-width) rgb(var(--ok-palette-grey-500-channel) / 0.16);
     color: var(--_ok-swatch-mark, var(--ok-palette-common-white));
     forced-color-adjust: none;
     transition-duration: var(--ok-duration-shortest);
@@ -182,7 +204,7 @@
     width: var(--_ok-swatch-checked);
     height: var(--_ok-swatch-checked);
     box-shadow:
-      inset 0 0 0 1px rgb(var(--ok-palette-grey-500-channel) / 0.16),
+      inset 0 0 0 var(--ok-border-width) rgb(var(--ok-palette-grey-500-channel) / 0.16),
       var(--ok-shadow-z8);
   }
 
@@ -196,8 +218,8 @@
 
   @media (forced-colors: active) {
     :where([data-ok-radio]:has(> input:checked) > [data-ok-radio-swatch]) {
-      outline: 2px solid CanvasText;
-      outline-offset: 2px;
+      outline: var(--ok-focus-ring-width) solid CanvasText;
+      outline-offset: var(--ok-focus-ring-offset);
     }
   }
 

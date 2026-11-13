@@ -1,11 +1,16 @@
 "use client";
 
 import {
+  checkCircleLinear,
+  closeLinear,
   createToastApi,
   createToasterHotkey,
   createToastStore,
   createToastSwipe,
   createToastTimer,
+  dangerCircleLinear,
+  dangerTriangleLinear,
+  infoCircleLinear,
   isToastButton,
   type SwipeDirection,
   TOASTER_HOTKEY,
@@ -33,6 +38,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
+import { Icon } from "../utils/icon.js";
 
 /** The page's toast queue (module-scoped, ADR-0007). `<Toaster>` shows it. */
 export const toastStore: ToastStore<ReactNode> = createToastStore<ReactNode>();
@@ -44,45 +50,15 @@ export const toastStore: ToastStore<ReactNode> = createToastStore<ReactNode>();
  */
 export const toast: ToastApi<ReactNode> = createToastApi(toastStore);
 
-const path = (d: string) => <path d={d} fill="currentColor" />;
-
-/** Decorative type icons (filled, 24px). */
+/** Decorative type icons (24px). */
 export const TOAST_ICONS: Record<"info" | "success" | "warning" | "error", ReactNode> = {
-  info: (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      {path("M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-6h2zm0-8h-2V7h2z")}
-    </svg>
-  ),
-  success: (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      {path(
-        "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z",
-      )}
-    </svg>
-  ),
-  warning: (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      {path("M12 2.5 1.5 21h21zM13 18h-2v-2h2zm0-4h-2V9h2z")}
-    </svg>
-  ),
-  error: (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      {path("M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z")}
-    </svg>
-  ),
+  info: <Icon icon={infoCircleLinear} />,
+  success: <Icon icon={checkCircleLinear} />,
+  warning: <Icon icon={dangerTriangleLinear} />,
+  error: <Icon icon={dangerCircleLinear} />,
 };
 
-const CLOSE_ICON = (
-  <svg aria-hidden="true" viewBox="0 0 24 24">
-    <path
-      d="M18 6 6 18M6 6l12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeWidth="2"
-    />
-  </svg>
-);
+const CLOSE_ICON = <Icon icon={closeLinear} />;
 
 /** Defaults for every toast of a toaster (Sonner `toastOptions`); a toast's own options win. */
 export interface ToasterToastOptions {

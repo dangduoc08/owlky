@@ -12,7 +12,7 @@ const stylesDist = dirname(require.resolve("@owlky/styles/owlky.css"));
 for (const file of ["owlky.css", "owlky.min.css"]) {
   await cp(join(stylesDist, file), join(root, "dist", file));
 }
-// MapLibre's worker (ADR-0025): owlky-map.js finds it next to itself.
+// MapLibre's worker (ADR-0025): modules/map.js finds it in the folder above itself.
 await cp(require.resolve("@owlky/core/map-worker.js"), join(root, "dist", "owlky-map-worker.js"));
 
 const components = join(root, "src", "components");

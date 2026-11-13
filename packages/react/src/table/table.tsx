@@ -1,9 +1,16 @@
 "use client";
 
 import {
+  altArrowDownLinear,
+  altArrowLeftLinear,
+  altArrowRightLinear,
   ariaSort,
+  arrowDownLinear,
   defaultLabelDisplayedRows,
   defaultPaginationLabel,
+  doubleAltArrowLeftLinear,
+  doubleAltArrowRightLinear,
+  type IconData,
   iconButtonAttributes,
   lastPage,
   type PageRange,
@@ -32,6 +39,7 @@ import {
 } from "react";
 import { MenuItem } from "../menu/menu.js";
 import { type SelectMenuProps, SelectRoot } from "../select/select.js";
+import { Icon } from "../utils/icon.js";
 
 /** `thead` / `tbody` / `tfoot`: tells cells which element to render. */
 const SectionContext = createContext<"head" | "body" | "footer">("body");
@@ -186,19 +194,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, TableCellProps>(functi
 
 /** Arrow down; CSS turns it up for ascending. */
 function ArrowIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 5v14M6 13l6 6 6-6" />
-    </svg>
-  );
+  return <Icon icon={arrowDownLinear} />;
 }
 
 export interface TableSortLabelProps extends ComponentPropsWithoutRef<"button"> {
@@ -231,28 +227,16 @@ export const TableSortLabel = forwardRef<HTMLButtonElement, TableSortLabelProps>
   },
 );
 
-function ChevronIcon({ d }: { d: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={d} />
-    </svg>
-  );
+function ChevronIcon({ icon }: { icon: IconData }) {
+  return <Icon icon={icon} />;
 }
 
-const CHEVRONS: Record<PaginationAction | "down", string> = {
-  down: "m6 9 6 6 6-6",
-  first: "m11 17-5-5 5-5M18 17l-5-5 5-5",
-  previous: "m15 18-6-6 6-6",
-  next: "m9 18 6-6-6-6",
-  last: "m13 17 5-5-5-5M6 17l5-5-5-5",
+const CHEVRONS: Record<PaginationAction | "down", IconData> = {
+  down: altArrowDownLinear,
+  first: doubleAltArrowLeftLinear,
+  previous: altArrowLeftLinear,
+  next: altArrowRightLinear,
+  last: doubleAltArrowRightLinear,
 };
 
 export interface TableExpandButtonProps extends ComponentPropsWithoutRef<"button"> {
@@ -277,7 +261,7 @@ export const TableExpandButton = forwardRef<HTMLButtonElement, TableExpandButton
         aria-expanded={expanded}
         {...props}
       >
-        <ChevronIcon d={CHEVRONS.down} />
+        <ChevronIcon icon={CHEVRONS.down} />
       </button>
     );
   },
@@ -441,7 +425,7 @@ export const TablePagination = forwardRef<HTMLDivElement, TablePaginationProps>(
                 disabled={disabled || (backward ? atStart : atEnd)}
                 onClick={() => onPageChange(targets[action])}
               >
-                <ChevronIcon d={CHEVRONS[action]} />
+                <ChevronIcon icon={CHEVRONS[action]} />
               </button>
             );
           })}

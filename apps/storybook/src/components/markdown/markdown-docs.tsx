@@ -9,11 +9,10 @@ export const markdownSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: "Markdown turns Markdown text into styled content: headings, paragraphs, links, lists, task lists, tables, code, images and quotes. It reads GitHub Flavored Markdown by default. Both versions run the same parser, built on unified, and build the content with DOM methods or React elements, never from an HTML string.\n\nMarkdown is a separate script so that pages without it don't download the parser. Load `owlky-markdown.js` after `owlky.js`, or import `@owlky/html/markdown` after `@owlky/html/auto`. In HTML, write the Markdown inside a `pre[data-ok-markdown-source]` element. Escape `&` and `<` as `&amp;` and `&lt;`, as for any text in HTML. Without JavaScript, the page shows the Markdown text itself.",
-    html: `<!-- Load once per page: the styles, the runtime, then Markdown -->
+    body: "Markdown turns Markdown text into styled content: headings, paragraphs, links, lists, task lists, tables, code, images and quotes. It reads GitHub Flavored Markdown by default. Both versions run the same parser, built on unified, and build the content with DOM methods or React elements, never from an HTML string.\n\nPages without Markdown don't download the parser. On a CDN page, `owlky.js` loads Markdown when the page holds it. With a bundler, import `@owlky/html/markdown` after `@owlky/html/auto`. In HTML, write the Markdown inside a `pre[data-ok-markdown-source]` element. Escape `&` and `<` as `&amp;` and `&lt;`, as for any text in HTML. Without JavaScript, the page shows the Markdown text itself.",
+    html: `<!-- Load once per page: owlky.js loads Markdown when the page holds it -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
-<script src="${CDN}/owlky-markdown.js" defer></script>
 
 <div data-ok-markdown>
 <pre data-ok-markdown-source>## Release notes
@@ -117,7 +116,7 @@ export function Article({ text }: { text: string }) {
   import { createMarkdown, getRuntime } from "@owlky/html";
   import remarkMath from "remark-math";
 
-  // Register this definition instead of loading owlky-markdown.js
+  // In a bundled app, register this definition instead of importing "@owlky/html/markdown"
   getRuntime().register(createMarkdown({ remarkPlugins: [remarkMath] })).start();
 </script>`,
     react: `import { Markdown, type MarkdownComponents } from "@owlky/react";

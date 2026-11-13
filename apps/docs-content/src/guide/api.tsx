@@ -6,6 +6,7 @@ import type {
   ApiCssVariable,
   ApiEntry,
   ApiEvent,
+  ApiImports,
   ApiMethod,
   ApiOption,
   ApiPart,
@@ -391,11 +392,101 @@ function CssTable({ variables }: { variables: readonly ApiCssVariable[] }) {
   );
 }
 
+/** One row of the Import table: a code list and what it is for. */
+function ImportRow({
+  name,
+  label,
+  values,
+  children,
+}: {
+  name: string;
+  label: string;
+  values: readonly string[];
+  children: ReactNode;
+}) {
+  return (
+    <tr data-docs-api-row={`import:${name}`}>
+      <td className={first}>{label}</td>
+      <td className={td}>
+        {values.map((value, i) => (
+          <span key={value}>
+            {i > 0 ? <br /> : null}
+            <Code>{value}</Code>
+          </span>
+        ))}
+      </td>
+      <td className={td}>{children}</td>
+    </tr>
+  );
+}
+
+/**
+ * Where the component comes from (ADR-0068): the per-component entries, the stylesheets and the
+ * CDN module, from the reference's `imports` (the same data as the MCP server's `imports`).
+ */
+function ImportTable({ title, imports }: { title: string; imports: ApiImports }) {
+  const { react, html, core, css, cdnModule } = imports;
+  return (
+    <Table label={`${title} imports`} columns={["Use", "Import", "Description"]}>
+      {react ? (
+        <ImportRow name="react" label="React" values={[react]}>
+          The React components. The <Code>@owlky/react</Code> barrel exports them too, and bundles
+          the same code.
+        </ImportRow>
+      ) : null}
+      {html ? (
+        <ImportRow name="html" label="HTML" values={[html]}>
+          The runtime definitions, without side effects. Register them on the runtime, or import{" "}
+          <Code>@owlky/html/auto</Code> to register every component.
+        </ImportRow>
+      ) : null}
+      {core ? (
+        <ImportRow name="core" label="Core" values={[core]}>
+          The option schema, the attribute helpers and the behavior that both versions share.
+        </ImportRow>
+      ) : null}
+      {css?.length ? (
+        <ImportRow name="css" label="CSS" values={css}>
+          The component's own styles. Load them after <Code>@owlky/styles/tokens.css</Code>,{" "}
+          <Code>@owlky/styles/components/icon.css</Code> and the styles of the components it
+          composes. <Code>@owlky/styles/owlky.css</Code> holds every component.
+        </ImportRow>
+      ) : null}
+      <ImportRow
+        name="cdn"
+        label="CDN"
+        values={[cdnModule ? `modules/${cdnModule}.js` : html ? "owlky.js" : "owlky.css"]}
+      >
+        {cdnModule ? (
+          <>
+            <Code>owlky.js</Code> loads this module when the page holds the component. To load it
+            ahead of use, add <Code>{`data-ok-preload="${cdnModule}"`}</Code> to the script.
+          </>
+        ) : html ? (
+          <>
+            Included in <Code>owlky.js</Code>.
+          </>
+        ) : (
+          "CSS only: the component needs no script."
+        )}
+      </ImportRow>
+    </Table>
+  );
+}
+
 /** The generated API reference of a component and each of its parts. */
 export function ApiReference({ data }: { data: ApiReferenceData }) {
   const { unstyledClassName } = useGuideHost();
   return (
     <div className={unstyledClassName} data-docs-api={data.name}>
+      {data.imports ? (
+        <>
+          <Typography variant="h6" component="h3" className="mt-8 mb-2">
+            Import
+          </Typography>
+          <ImportTable title={data.title} imports={data.imports} />
+        </>
+      ) : null}
       {data.entries.map((entry) => (
         <Entry key={entry.name} entry={entry} />
       ))}

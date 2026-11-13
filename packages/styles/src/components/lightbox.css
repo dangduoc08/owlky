@@ -41,7 +41,7 @@
     padding: 0;
     overflow: hidden;
     border: 0;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
     background: none;
     color: inherit;
     font: inherit;
@@ -56,8 +56,8 @@
   }
 
   :where([data-ok-lightbox-trigger]:focus-visible) {
-    outline: 2px solid var(--ok-text-primary);
-    outline-offset: 2px;
+    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color);
+    outline-offset: var(--ok-focus-ring-offset);
   }
 
   /* Root -------------------------------------------------------------------------------------- */
@@ -101,7 +101,7 @@
     display: block;
     height: auto;
     aspect-ratio: 3 / 2;
-    border-radius: var(--ok-radius-md);
+    border-radius: var(--ok-radius-control);
   }
 
   @keyframes ok-lightbox-fade {
@@ -148,7 +148,7 @@
   }
 
   :where([data-ok-lightbox-carousel] [data-ok-carousel-viewport]:focus-visible) {
-    outline-offset: -2px;
+    outline-offset: var(--ok-focus-ring-inset);
   }
 
   :where([data-ok-lightbox-carousel] [data-ok-carousel-container]) {
@@ -516,7 +516,7 @@
     height: var(--_ok-lightbox-thumb-height, calc(var(--ok-spacing) * 20));
     padding: var(--_ok-lightbox-thumb-padding, 0px);
     border: var(--_ok-lightbox-thumb-border, calc(var(--ok-spacing) * 0.75)) solid transparent;
-    border-radius: var(--_ok-lightbox-thumb-radius, calc(var(--ok-spacing) * 2.5));
+    border-radius: var(--_ok-lightbox-thumb-radius, var(--ok-radius-surface-sm));
     background-color: var(--ok-palette-common-black);
   }
 

@@ -23,12 +23,12 @@ export type Trigger<V extends string = "id"> = { readonly trigger: V };
 
 /** Attributes any component may carry. */
 export interface CommonParts {
+  /** On a component's icon (`svg`): its Solar name, such as `close-linear`. The stroke width follows `--ok-icon-stroke`. */
+  "data-ok-icon": Value<string>;
   /** On the `owlky.js` script: the folder of its lazy modules, when it isn't `modules/` next to the script. */
   "data-ok-modules": Value<string>;
   /** On the `owlky.js` script: lazy modules to load at once, separated by spaces, such as `chart data-grid`. */
   "data-ok-preload": Value<string>;
-  /** Applies a color preset to this element and everything inside it, such as `purple`. */
-  "data-ok-preset": Value<string>;
   /** `off` keeps the HTML runtime away from this element and everything inside it. React writes it on interactive roots. */
   "data-ok-runtime": Value<"off">;
   /** Applies a color scheme to this element and everything inside it. */
@@ -664,12 +664,14 @@ export interface ChartParts {
 
 /** Checkbox: parts, states, values and triggers. */
 export interface CheckboxParts {
+  /** The default icons' box, drawn by the stylesheet (filled when checked or indeterminate). */
+  "data-ok-checkbox-box": Part<"span">;
   /** The icon of one state. The checkbox shows the one that matches. */
   "data-ok-checkbox-icon": Value<"unchecked" | "checked" | "indeterminate">;
   /** The native checkbox. It covers the control, invisible, and takes `name`, `value`, `checked`, `disabled` and `required`. */
   "data-ok-checkbox-input": Part<"input">;
-  /** The check mark inside the checked icon. */
-  "data-ok-checkbox-mark": Part<"path">;
+  /** The mark inside the box of the checked and indeterminate icons: a check or a dash. */
+  "data-ok-checkbox-mark": Part<"svg">;
   /** A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while checked. */
   "data-ok-checkbox-swatch": Part<"span">;
   /** A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey). */
@@ -1991,6 +1993,8 @@ export interface RadioParts {
   "data-ok-radio-icon": Value<"unchecked" | "checked">;
   /** The native radio. It covers the control, invisible. */
   "data-ok-radio-input": Part<"input">;
+  /** The default icons' ring, drawn by the stylesheet (with a dot when checked). */
+  "data-ok-radio-ring": Part<"span">;
   /** A color swatch, instead of the icons (with `data-ok-swatch`). It holds the check mark shown while selected. */
   "data-ok-radio-swatch": Part<"span">;
   /** A color swatch's color: a CSS color, such as `#FF9800`, or a `var(--ok-…)` token. Other values are ignored (the swatch stays grey). */

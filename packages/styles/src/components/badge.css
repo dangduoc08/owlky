@@ -84,7 +84,9 @@
     border-radius: var(--ok-radius-full);
     background-color: var(--_ok-main);
     color: var(--_ok-fg);
-    font-family: var(--ok-font-family);
+    font-family: var(--ok-font-family-label);
+    letter-spacing: var(--ok-label-letter-spacing);
+    text-transform: var(--ok-label-text-transform);
     font-size: var(--ok-font-size-xs);
     font-weight: var(--ok-font-weight-medium);
     line-height: 1;
@@ -103,7 +105,7 @@
   }
 
   :where([data-ok-badge-badge] > [data-ok-avatar]) {
-    border: 2px solid var(--ok-bg-paper);
+    border: var(--ok-border-width-strong) solid var(--ok-bg-paper);
   }
 
   /* Dot and presence statuses: no content. */
@@ -122,7 +124,7 @@
     min-width: calc(var(--ok-spacing) * 2.5);
     height: calc(var(--ok-spacing) * 2.5);
     padding: 0;
-    box-shadow: 0 0 0 2px var(--ok-bg-paper);
+    box-shadow: 0 0 0 var(--ok-border-width-strong) var(--ok-bg-paper);
   }
 
   :where([data-ok-badge][data-ok-variant="online"] > [data-ok-badge-badge]) {
@@ -140,15 +142,15 @@
   :where([data-ok-badge][data-ok-variant="offline"] > [data-ok-badge-badge]) {
     background-color: var(--ok-bg-paper);
     box-shadow:
-      0 0 0 2px var(--ok-bg-paper),
-      inset 0 0 0 2px var(--ok-text-disabled);
+      0 0 0 var(--ok-border-width-strong) var(--ok-bg-paper),
+      inset 0 0 0 var(--ok-border-width-strong) var(--ok-text-disabled);
   }
 
   /* Busy: a bar; always: a clock hand. */
   :where([data-ok-badge][data-ok-variant="busy"] > [data-ok-badge-badge])::before {
     content: "";
     width: calc(var(--ok-spacing) * 1.5);
-    height: 2px;
+    height: var(--ok-border-width-strong);
     border-radius: var(--ok-radius-full);
     background-color: var(--ok-palette-common-white);
   }
@@ -156,11 +158,11 @@
   :where([data-ok-badge][data-ok-variant="always"] > [data-ok-badge-badge])::before {
     content: "";
     box-sizing: border-box;
-    width: 4px;
-    height: 4px;
+    width: var(--ok-line-width-2xl);
+    height: var(--ok-line-width-2xl);
     margin: -2px 0 0 1px;
-    border-bottom: 1.5px solid var(--ok-palette-common-white);
-    border-left: 1.5px solid var(--ok-palette-common-white);
+    border-bottom: var(--ok-line-width-sm) solid var(--ok-palette-common-white);
+    border-left: var(--ok-line-width-sm) solid var(--ok-palette-common-white);
   }
 
   :where([data-ok-badge][data-ok-variant="invisible"] > [data-ok-badge-badge]) {

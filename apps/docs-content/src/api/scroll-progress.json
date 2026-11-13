@@ -74,6 +74,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "motion",
+  "core": "@owlky/core/scroll-progress",
+  "css": [
+   "@owlky/styles/components/scroll-progress.css"
+  ],
+  "html": "@owlky/html/scroll-progress",
+  "react": "@owlky/react/scroll-progress"
+ },
  "name": "scroll-progress",
  "title": "Scroll progress",
  "types": [

@@ -1,9 +1,10 @@
 import type { GridGetRowsParams } from "@owlky/core";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { createRuntime } from "../../runtime/runtime.js";
 import type { Runtime } from "../../runtime/types.js";
 import { mount, resetPage, settle } from "../../test-utils.js";
 import { components } from "../index.js";
+import { loadGridChartKit } from "./chart-kit.js";
 import type { DataGridInstance } from "./data-grid.js";
 
 // Edge paths of the HTML data grid: data source saves through the history, revalidation,
@@ -64,6 +65,9 @@ const ITEMS = [
   { id: "i-1", name: "Kettle", category: "Brewing", stock: 4 },
   { id: "i-2", name: "Cup", category: "Serving", stock: 9 },
 ];
+
+// The chart helpers load on first use (ADR-0068 S5): load them once, so charts draw synchronously.
+beforeAll(() => loadGridChartKit());
 
 describe("undo and redo through a data source", () => {
   it("saves each step with updateRow; a failed save puts the cells back and reports it", async () => {

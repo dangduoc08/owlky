@@ -6,11 +6,9 @@ import {
   defaultTheme,
   getContrastText,
   greyShades,
-  type PrimaryPreset,
   paletteColorNames,
-  primaryPresetNames,
 } from "@owlky/tokens";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import { Dot, GuideSections, Preview } from "../../guide/guide.js";
 import { capitalize } from "../../guide/text.js";
 import { colorsDocsSections, SHADES } from "./colors-docs-examples.js";
@@ -279,7 +277,7 @@ function TailwindPreview() {
   );
 }
 
-/** Reads the active primary from the CSS variable (follows Preset and Theme). */
+/** Reads the active primary from the CSS variable (follows the theme and token overrides). */
 function JavaScriptPreview() {
   const ref = useRef<HTMLDivElement>(null);
   const [value, setValue] = useState("");
@@ -325,17 +323,22 @@ function JavaScriptPreview() {
   );
 }
 
+/** A brand color through the public tokens (the primary palette, overridden on one element). */
+const BRAND = {
+  "--ok-palette-primary-main": "#2065D1",
+  "--ok-palette-primary-main-channel": "32 101 209",
+  "--ok-palette-primary-dark": "#103996",
+} as CSSProperties;
+
 function ThemesPreview() {
-  const presets = primaryPresetNames.filter((name): name is PrimaryPreset => name !== "default");
   return (
     <Preview className="items-stretch!">
       <div
         data-ok-theme="dark"
-        data-ok-preset="cyan"
         className="flex min-w-[14rem] flex-1 flex-col gap-3 rounded-2xl p-5"
         style={{ backgroundColor: "var(--ok-bg-default)", color: "var(--ok-text-primary)" }}
       >
-        <span className="text-[0.8125rem]">Dark theme, cyan preset</span>
+        <span className="text-[0.8125rem]">Dark theme</span>
         <Button variant="contained" color="primary">
           Primary
         </Button>
@@ -350,14 +353,10 @@ function ThemesPreview() {
           </Button>
         </div>
       </div>
-      <div className="flex min-w-[12rem] flex-1 flex-wrap content-start gap-2">
-        {presets.map((preset) => (
-          <span key={preset} data-ok-preset={preset}>
-            <Button variant="contained" color="primary" size="sm">
-              {capitalize(preset)}
-            </Button>
-          </span>
-        ))}
+      <div className="flex min-w-[12rem] flex-1 flex-wrap content-start gap-2" style={BRAND}>
+        <Button variant="contained" color="primary" size="sm">
+          Brand color
+        </Button>
       </div>
     </Preview>
   );

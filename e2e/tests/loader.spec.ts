@@ -165,4 +165,101 @@ test.describe("CDN loader", () => {
     await expect(page.locator("#chart")).toHaveAttribute("data-ok-ready", "");
     expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
   });
+
+  test("owlky.mjs loads the same modules from a module script", async ({ page }) => {
+    await record(page);
+    const requested = moduleRequests(page);
+    const scripts: string[] = [];
+    page.on("request", (request) => {
+      const name = /\/dist\/(owlky\.m?js)$/.exec(new URL(request.url()).pathname)?.[1];
+      if (name) scripts.push(name);
+    });
+    await page.goto("/examples/loader/module.html");
+    await expect(page.locator("#chart")).toHaveAttribute("data-ok-ready", "");
+    // `data-ok-preload` on the module script loaded Motion before any Motion root appeared.
+    await expect.poll(() => page.evaluate(() => window.Owlky?.loaded("motion"))).toBe(true);
+    expect(requested.sort()).toEqual(["chart", "motion"]);
+    expect(scripts).toEqual(["owlky.mjs"]);
+    // Light components work as with owlky.js.
+    await expect(page.getByRole("button", { name: "Light" })).toHaveCSS(
+      "background-color",
+      "rgb(0, 167, 111)",
+    );
+    expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
+  });
+
+  test("every module of the strict-CSP page loads without a violation", async ({ page }) => {
+    await record(page);
+    const requested = moduleRequests(page);
+    await page.goto("/examples/csp/index.html");
+    const modules = [
+      "carousel",
+      "chart",
+      "data-grid",
+      "date-picker",
+      "editor",
+      "gantt",
+      "illustration",
+      "markdown",
+      "phone-input",
+      "walktour",
+    ];
+    await expect
+      .poll(() => page.evaluate((names) => names.filter((n) => !window.Owlky?.loaded(n)), modules))
+      .toEqual([]);
+    expect([...new Set(requested)].sort()).toEqual(modules);
+    // Each module set its components up: one instance per component checked here.
+    const mounted = await page.evaluate(() =>
+      (
+        [
+          ["#csp-grid", "data-grid"],
+          ["#csp-gantt", "gantt"],
+          ["#dc-basic", "date-calendar"],
+          ["#csp-markdown", "markdown"],
+        ] as const
+      ).filter(([selector, name]) => !window.Owlky?.get(document.querySelector(selector), name)),
+    );
+    expect(mounted).toEqual([]);
+    expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
+  });
+
+  test("a chart that loads late shifts the content below it by little", async ({
+    page,
+    browserName,
+  }) => {
+    // The Layout Instability API (layout-shift entries) exists in Chromium only.
+    test.skip(browserName !== "chromium", "layout-shift entries are Chromium-only");
+    await page.addInitScript(() => {
+      const scope = window as unknown as { shift: number };
+      scope.shift = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as (PerformanceEntry & {
+          value: number;
+          hadRecentInput: boolean;
+        })[])
+          if (!entry.hadRecentInput) scope.shift += entry.value;
+      }).observe({ type: "layout-shift", buffered: true });
+    });
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/packages/html/dist/modules/chart.js", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto("/examples/loader/index.html", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("table", { name: "Deploys per weekday" })).toBeVisible();
+    // A slow network: the table is on screen for a while before the module arrives.
+    await page.waitForTimeout(500);
+    release();
+    await expect(page.locator("#chart")).toHaveAttribute("data-ok-ready", "");
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    const shift = await page.evaluate(() => (window as unknown as { shift: number }).shift);
+    test.info().annotations.push({ type: "cumulative layout shift", description: String(shift) });
+    // Google's "good" threshold: the docs recommend data-ok-preload for charts above the fold.
+    expect(shift).toBeLessThan(0.1);
+  });
 });

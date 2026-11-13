@@ -11,6 +11,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "name": "--ok-duration-short",
    "value": "250ms"
   },
@@ -23,8 +27,24 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
-   "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "name": "--ok-focus-ring-color",
+   "value": "var(--ok-text-primary)"
+  },
+  {
+   "name": "--ok-focus-ring-inset",
+   "value": "-2px"
+  },
+  {
+   "name": "--ok-focus-ring-offset",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-focus-ring-width",
+   "value": "2px"
+  },
+  {
+   "name": "--ok-font-family-label",
+   "value": "var(--ok-font-family)"
   },
   {
    "name": "--ok-font-size-sm",
@@ -39,6 +59,14 @@
    "value": "600"
   },
   {
+   "name": "--ok-label-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-label-text-transform",
+   "value": "none"
+  },
+  {
    "name": "--ok-palette-primary-main",
    "value": "#00A76F"
   },
@@ -47,11 +75,11 @@
    "value": "#8E33FF"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
   },
   {
-   "name": "--ok-radius-xs",
+   "name": "--ok-radius-inner",
    "value": "4px"
   },
   {
@@ -61,6 +89,10 @@
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
+  },
+  {
+   "name": "--ok-tab-height",
+   "value": "3rem"
   },
   {
    "dark": "#FFFFFF",
@@ -484,6 +516,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/tabs",
+  "css": [
+   "@owlky/styles/components/tabs.css"
+  ],
+  "html": "@owlky/html/tabs",
+  "react": "@owlky/react/tabs"
+ },
  "name": "tabs",
  "title": "Tabs"
 }

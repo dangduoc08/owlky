@@ -254,6 +254,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/collapse",
+  "css": [
+   "@owlky/styles/components/collapse.css"
+  ],
+  "html": "@owlky/html/collapse",
+  "react": "@owlky/react/collapse"
+ },
  "name": "collapse",
  "title": "Collapse",
  "types": [

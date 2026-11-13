@@ -6,6 +6,14 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
+   "name": "--ok-border-width-strong",
+   "value": "2px"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`.",
    "name": "--ok-c-main"
   },
@@ -28,6 +36,18 @@
   {
    "name": "--ok-easing-standard",
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-field-padding-x",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-field-padding-y",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-field-padding-y-sm",
+   "value": "0.5rem"
   },
   {
    "name": "--ok-font-family",
@@ -79,7 +99,7 @@
    "value": "#454F5B"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
   },
   {
@@ -1258,6 +1278,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/text-field",
+  "css": [
+   "@owlky/styles/components/text-field.css"
+  ],
+  "html": "@owlky/html/text-field",
+  "react": "@owlky/react/text-field"
+ },
  "name": "text-field",
  "title": "Text field",
  "types": [

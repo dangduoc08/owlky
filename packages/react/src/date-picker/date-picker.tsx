@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  calendarLinear,
   type DateValidationError,
   type DateView,
   datePickerAttributes,
@@ -77,6 +78,7 @@ import { MultiSectionDigitalClock } from "../multi-section-digital-clock/multi-s
 import { Popover } from "../popover/popover.js";
 import { Tab, Tabs } from "../tabs/tabs.js";
 import { TimeClock } from "../time-clock/time-clock.js";
+import { Icon } from "../utils/icon.js";
 import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 import {
@@ -99,14 +101,7 @@ import {
 
 /** Calendar icon of the open button (decorative). */
 function CalendarIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        fill="currentColor"
-        d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Zm-4 5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1Z"
-      />
-    </svg>
-  );
+  return <Icon icon={calendarLinear} />;
 }
 
 export interface DatePickerProps

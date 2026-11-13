@@ -27,6 +27,7 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { SourceContext, useMapContext } from "./map-context.js";
 
 /** `[x, y]` px, or one distance (px away from the point, popups only). */
@@ -42,11 +43,7 @@ export interface MarkerDragEvent {
 
 /** The default marker shape: a pin in the marker's color. */
 export function MapPin(props: HTMLAttributes<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-pin="" {...props}>
-      <path d={mapIcons.pin} fill="currentColor" />
-    </svg>
-  );
+  return <Icon data-ok-map-pin="" {...props} icon={mapIcons.pin} />;
 }
 
 // --- Marker ---------------------------------------------------------------------------------------
@@ -241,17 +238,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       </div>
       {closeButton ? (
         <button type="button" data-ok-map-popup-close="" aria-label={context.labels.close}>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path d={mapIcons.close} />
-          </svg>
+          <Icon icon={mapIcons.close} />
         </button>
       ) : null}
     </div>

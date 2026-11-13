@@ -1,5 +1,4 @@
 import { CDN, type GuideSection } from "@owlky/docs-content/guide/text";
-import { fontFamilyPresetNames, primaryPresetNames } from "@owlky/tokens";
 import type { SitePage } from "./types.js";
 
 /*
@@ -27,8 +26,8 @@ const escapeHtml = (text: string) =>
 // known values are written (an allowlist), so the query can't inject anything.
 const THEME_SCRIPT = `(function () {
   var q = new URLSearchParams(location.search), d = document.documentElement;
-  var allow = ${JSON.stringify({ theme: ["light", "dark", "system"], preset: primaryPresetNames, font: fontFamilyPresetNames })};
-  var attr = { theme: "data-ok-theme", preset: "data-ok-preset", font: "data-ok-font" };
+  var allow = ${JSON.stringify({ theme: ["light", "dark", "system"] })};
+  var attr = { theme: "data-ok-theme" };
   for (var key in allow) { var v = q.get(key); if (allow[key].indexOf(v) !== -1) d.setAttribute(attr[key], v); }
 })();`;
 

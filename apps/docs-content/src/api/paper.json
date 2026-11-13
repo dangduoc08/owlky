@@ -6,6 +6,10 @@
    "name": "--ok-bg-paper"
   },
   {
+   "name": "--ok-border-width",
+   "value": "1px"
+  },
+  {
    "name": "--ok-duration-standard",
    "value": "300ms"
   },
@@ -114,7 +118,7 @@
    "value": "145 158 171"
   },
   {
-   "name": "--ok-radius-md",
+   "name": "--ok-radius-control",
    "value": "8px"
   },
   {
@@ -219,6 +223,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/paper",
+  "css": [
+   "@owlky/styles/components/paper.css"
+  ],
+  "react": "@owlky/react/paper"
+ },
  "name": "paper",
  "title": "Paper"
 }

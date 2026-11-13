@@ -53,7 +53,7 @@
     padding: var(--ok-spacing);
     overflow: visible;
     border: 0;
-    border-radius: calc(var(--ok-radius-md) * 1.25);
+    border-radius: var(--ok-radius-surface-sm);
     background-color: var(--_ok-popover-bg);
     background-image: var(--_ok-popover-glow);
     background-repeat: no-repeat;

@@ -8,6 +8,7 @@ import {
   ratingAttributes,
   ratingValues,
   roundRating,
+  starBold,
 } from "@owlky/core";
 import {
   forwardRef,
@@ -18,15 +19,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { Icon } from "../utils/icon.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 /** The default icon: a star (decorative). */
 export function StarIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M12 2.5 14.9 8.4l6.5.9-4.7 4.6 1.1 6.5L12 17.3l-5.8 3.1 1.1-6.5L2.6 9.3l6.5-.9Z" />
-    </svg>
-  );
+  return <Icon icon={starBold} />;
 }
 
 export interface RatingProps

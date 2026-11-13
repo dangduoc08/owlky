@@ -90,7 +90,7 @@
    "value": "255 171 0"
   },
   {
-   "name": "--ok-radius-lg",
+   "name": "--ok-radius-surface-md",
    "value": "12px"
   },
   {
@@ -1742,6 +1742,18 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "motion",
+  "core": "@owlky/core/motion",
+  "css": [
+   "@owlky/styles/components/motion.css",
+   "@owlky/styles/components/count-up.css",
+   "@owlky/styles/components/countdown.css",
+   "@owlky/styles/components/motion-border.css"
+  ],
+  "html": "@owlky/html/motion",
+  "react": "@owlky/react/motion"
+ },
  "name": "motion",
  "title": "Motion",
  "types": [

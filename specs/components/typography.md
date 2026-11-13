@@ -47,8 +47,8 @@ Not applicable: `sx`, `classes`, `paragraph` (deprecated upstream: `component="p
 
 ## Layout and tokens
 `margin: 0`. Each variant: `font-family`, `font-size`, `font-weight`, `line-height`,
-`text-transform` from `--ok-typography-<variant>-*` (h1–h3 use the secondary font family through
-the tokens; font presets apply). `inherit`: `font: inherit; text-transform: inherit`. Colors:
+`text-transform` from `--ok-typography-<variant>-*` (h1–h3 use the heading font family through
+the tokens; overline and button the label family). `inherit`: `font: inherit; text-transform: inherit`. Colors:
 palette `--ok-c-main` (the `[data-ok-color]` binding), `--ok-text-primary|secondary|disabled`.
 `gutterBottom`: `margin-block-end: 0.35em`. `noWrap`: `overflow: hidden; text-overflow: ellipsis;
 white-space: nowrap`. `maxLines` (1–10, a closed list because CSS reads the count from the

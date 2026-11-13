@@ -49,6 +49,10 @@ code copied (only API names and behavior mapped, ADR-0015); illustrations, pictu
 landing page, docs prose and most sample data are original; map data is public domain or
 attributed at run time; fonts are OFL and the library ships only font *names*.
 
+**Note (2026-11-13):** the opt-in scripts named below (`owlky-editor.js`, `owlky-markdown.js`,
+`owlky-phone.js`, `owlky-map.js`) were replaced by the lazy ES modules of `owlky.js`
+(`dist/modules/`, ADR-0068) and removed before 0.1.0. The same packages ship in those modules.
+
 ## Classification
 
 ### 1. Runtime dependencies

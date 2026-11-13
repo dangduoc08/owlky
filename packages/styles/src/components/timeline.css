@@ -94,7 +94,7 @@
     box-sizing: border-box;
     margin: calc(var(--ok-spacing) * 2.875) 0;
     padding: var(--ok-spacing);
-    border: 2px solid transparent;
+    border: var(--ok-border-width-strong) solid transparent;
     border-radius: var(--ok-radius-full);
     background-color: var(--_ok-dot);
     color: var(--ok-palette-common-white);

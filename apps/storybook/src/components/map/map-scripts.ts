@@ -23,7 +23,7 @@ import {
 
 type Script = NonNullable<HtmlGroup["script"]>;
 
-const REGISTER = `import "@owlky/html/map"; // or <script src="…/owlky-map.js"> after owlky.js`;
+const REGISTER = `import "@owlky/html/map"; // on a CDN page, owlky.js loads the map by itself`;
 
 /** Mounts the map(s) of a story row and returns them with their instances. */
 function mount(row: HTMLElement) {

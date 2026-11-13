@@ -12,11 +12,10 @@ import { snippetElement } from "../../helpers/snippet-markup.js";
 
 const EDITOR = snippetElement(editorGroup, "data-ok-editor data-ok-full-item");
 
-/** The editor bundle, loaded after the components. */
-const CDN_EDITOR = `<!-- Load once per page: the styles, the runtime and the editor -->
+/** The CDN setup: owlky.js loads the editor's module when the page holds one. */
+const CDN_EDITOR = `<!-- Load once per page: owlky.js loads the editor when the page holds one -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
-<script src="${CDN}/owlky.js" defer></script>
-<script src="${CDN}/owlky-editor.js" defer></script>`;
+<script src="${CDN}/owlky.js" defer></script>`;
 
 /** `editor` with the hidden form input as its last child. */
 function withInput(editor: string, name: string) {
@@ -64,11 +63,10 @@ export const editorSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: "The editor lets people write formatted text: headings, bold and italic text, lists, alignment, quotes, code, links and images. It is built on Tiptap, a framework-free editing engine, so both versions share the same behavior and markup. A toolbar sits above a text box that people type in, and the content is HTML.\n\nThe editor is a separate script so that pages without one don't download the editing engine. Load `owlky-editor.js` after `owlky.js`, or import `@owlky/html/editor` after `@owlky/html/auto`.",
-    html: `<!-- Load once per page: the styles, the runtime, then the editor -->
+    body: "The editor lets people write formatted text: headings, bold and italic text, lists, alignment, quotes, code, links and images. It is built on Tiptap, a framework-free editing engine, so both versions share the same behavior and markup. A toolbar sits above a text box that people type in, and the content is HTML.\n\nPages without an editor don't download the editing engine. On a CDN page, `owlky.js` loads the editor when the page holds one. With a bundler, import `@owlky/html/editor` after `@owlky/html/auto`.",
+    html: `<!-- Load once per page: owlky.js loads the editor when the page holds one -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
-<script src="${CDN}/owlky-editor.js" defer></script>
 
 <div data-ok-editor data-ok-full-item>
   <!-- Dims the page while the editor is fullscreen -->
@@ -158,7 +156,7 @@ export function Notes() {
   import { createEditor, getRuntime } from "@owlky/html";
   import { common, createLowlight } from "lowlight";
 
-  // Register this editor instead of loading owlky-editor.js
+  // In a bundled app, register this editor instead of importing "@owlky/html/editor"
   getRuntime().register(createEditor({ highlighter: createLowlight(common) })).start();
 </script>`,
     react: `import { Editor } from "@owlky/react";
