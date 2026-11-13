@@ -9,7 +9,8 @@ import { CDN, capitalize, type GuideSection } from "../../guide/text.js";
  * Writing style: AGENTS.md → "Writing documentation".
  */
 
-export const MAIL_SVG = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>`;
+/** Solar's letter icon (`letter-linear`), the drawing the React examples import through Iconify. */
+export const MAIL_SVG = `<svg aria-hidden="true" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z"/><path d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908L18 8"/></g></svg>`;
 
 export const VARIANTS = ["contained", "outlined", "text", "soft"] as const;
 export const COLORS = ["primary", "secondary", "info", "success", "warning", "error"] as const;
@@ -120,11 +121,12 @@ export function ButtonSizes() {
       `  <span data-ok-button-icon="start" aria-hidden="true">${MAIL_SVG}</span>\n`,
     ),
     react: `import { Button } from "@owlky/react";
-import { MailIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import letterLinear from "@iconify-icons/solar/letter-linear";
 
 export function ButtonIcons() {
   return (
-    <Button variant="contained" color="primary" startIcon={<MailIcon />}>
+    <Button variant="contained" color="primary" startIcon={<Icon icon={letterLinear} aria-hidden="true" />}>
       Send
     </Button>
   );
@@ -140,7 +142,8 @@ export function ButtonIcons() {
   <span data-ok-button-label>Sending</span>
 </button>`,
     react: `import { Button } from "@owlky/react";
-import { MailIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import letterLinear from "@iconify-icons/solar/letter-linear";
 
 export function ButtonLoading() {
   return (
@@ -149,7 +152,7 @@ export function ButtonLoading() {
       color="primary"
       loading
       loadingPosition="start"
-      startIcon={<MailIcon />}
+      startIcon={<Icon icon={letterLinear} aria-hidden="true" />}
     >
       Sending
     </Button>

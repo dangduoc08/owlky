@@ -1,110 +1,92 @@
 /**
- * Writes src/foundations/icons/icon-data.json: the subset of Iconify collections used by the
- * Icons foundation page. The full collections are megabytes each, so stories load only this
- * file (offline — no request to the Iconify API). Edit SETS, then run `pnpm --filter
- * @owlky/storybook icons`.
+ * Writes the Iconify subsets that Storybook uses (offline, no request to the Iconify API; the
+ * full collections are megabytes each):
+ *   - src/foundations/icons/icon-data.json: the Icons foundation galleries (Solar variants, a
+ *     few Circle Flags);
+ *   - src/helpers/solar-icons.json: the Solar icons of the docs examples (`SolarIcon`,
+ *     `solarMarkup`). Add a name to DOCS when an example needs another icon.
+ * Edit the lists, then run `pnpm --filter @owlky/storybook icons`.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
+/** Solar variants, in the order the Icons page shows them. */
+export const VARIANTS = ["linear", "bold", "bold-duotone", "line-duotone", "broken", "outline"];
+const GALLERY = [
+  "home-angle",
+  "letter",
+  "bell-bing",
+  "settings",
+  "user-rounded",
+  "magnifier",
+  "calendar",
+  "chat-round-dots",
+  "cart-large-2",
+  "heart",
+  "star",
+  "trash-bin-trash",
+];
+
+/** Icons of the docs examples (Solar names with their variant). */
+const DOCS = [
+  "add-linear",
+  "alt-arrow-left-linear",
+  "alt-arrow-right-linear",
+  "box-linear",
+  "check-linear",
+  "close-linear",
+  "copy-linear",
+  "eye-linear",
+  "eye-closed-linear",
+  "gallery-linear",
+  "gallery-remove-linear",
+  "heart-bold",
+  "heart-linear",
+  "home-angle-linear",
+  "inbox-linear",
+  "letter-linear",
+  "magnifier-linear",
+  "map-point-bold",
+  "map-point-linear",
+  "menu-dots-vertical-linear",
+  "minus-linear",
+  "phone-linear",
+  "settings-linear",
+  "star-bold",
+  "star-linear",
+  "text-bold-linear",
+  "text-italic-linear",
+  "text-underline-linear",
+  "trash-bin-trash-linear",
+  "wi-fi-router-linear",
+];
+
 const SETS = {
-  solar: [
-    "home-angle-bold-duotone",
-    "user-rounded-bold-duotone",
-    "bell-bing-bold-duotone",
-    "settings-bold-duotone",
-    "shield-keyhole-bold-duotone",
-    "bill-list-bold-duotone",
-    "chat-round-dots-bold",
-    "cart-3-bold",
-    "calendar-date-bold",
-    "letter-bold",
-    "gallery-wide-bold",
-    "trash-bin-trash-bold",
-    "pen-bold",
-    "eye-bold",
-    "eye-closed-bold",
-    "star-bold",
-    "heart-bold",
-    "share-bold",
-    "copy-bold",
-    "download-minimalistic-bold",
-    "upload-minimalistic-bold",
-    "filter-bold",
-    "magnifer-linear",
-    "lock-password-outline",
-  ],
-  eva: [
-    "arrow-ios-back-fill",
-    "arrow-ios-forward-fill",
-    "arrow-ios-upward-fill",
-    "arrow-ios-downward-fill",
-    "checkmark-fill",
-    "close-fill",
-    "plus-fill",
-    "minus-fill",
-    "more-horizontal-fill",
-    "more-vertical-fill",
-    "search-fill",
-    "menu-2-fill",
-  ],
-  logos: ["google-icon", "facebook", "instagram-icon", "linkedin-icon", "x", "github-icon"],
-  "vscode-icons": [
-    "file-type-pdf2",
-    "file-type-word",
-    "file-type-excel",
-    "file-type-powerpoint",
-    "file-type-text",
-    "file-type-zip",
-    "file-type-image",
-    "file-type-video",
-    "file-type-audio",
-    "file-type-ai2",
-    "file-type-photoshop2",
-    "file-type-js-official",
-    "file-type-typescript-official",
-    "default-folder",
-  ],
-  // Every two-letter country code in the set (`xx` is the "unknown" placeholder).
-  "circle-flags": /^(?!xx)[a-z]{2}$/,
+  solar: GALLERY.flatMap((name) => VARIANTS.map((variant) => `${name}-${variant}`)),
+  // Phone input's image flags (ADR-0070 § 9): a sample, not every country.
+  "circle-flags": ["br", "ca", "de", "fr", "gb", "in", "jp", "kr", "mx", "us", "vn", "za"],
 };
 
-/** Monochrome brand marks drawn in black become currentColor, so they stay visible in dark mode. */
-const CURRENT_COLOR = { logos: ["x", "github-icon", "instagram-icon"] };
-
 const ROOT_KEYS = ["prefix", "width", "height", "left", "top"];
+const load = (prefix, file) =>
+  JSON.parse(readFileSync(require.resolve(`@iconify-json/${prefix}/${file}`), "utf8"));
+
+/** Resolves an icon or an alias to its data (aliases of Solar only rename). */
+function iconData(source, name, prefix) {
+  if (source.icons[name]) return source.icons[name];
+  const alias = source.aliases?.[name];
+  if (alias) return { ...iconData(source, alias.parent, prefix), ...alias, parent: undefined };
+  throw new Error(`Unknown icon ${prefix}:${name}`);
+}
 
 const collections = Object.entries(SETS).map(([prefix, names]) => {
-  const source = JSON.parse(
-    readFileSync(require.resolve(`@iconify-json/${prefix}/icons.json`), "utf8"),
-  );
-  const list =
-    names instanceof RegExp ? Object.keys(source.icons).filter((n) => names.test(n)) : names;
+  const source = load(prefix, "icons.json");
   const out = Object.fromEntries(ROOT_KEYS.filter((k) => k in source).map((k) => [k, source[k]]));
-  out.icons = {};
-  out.aliases = {};
-  const add = (name) => {
-    if (source.icons[name]) {
-      out.icons[name] = { ...source.icons[name] };
-      if (CURRENT_COLOR[prefix]?.includes(name)) {
-        const body = out.icons[name].body.replace(/fill="#[0-9a-f]{3,6}"/gi, 'fill="currentColor"');
-        out.icons[name].body = body.includes("currentColor")
-          ? body
-          : body.replace(/<path /g, '<path fill="currentColor" ');
-      }
-    } else if (source.aliases?.[name]) {
-      out.aliases[name] = source.aliases[name];
-      add(source.aliases[name].parent);
-    } else throw new Error(`Unknown icon ${prefix}:${name}`);
-  };
-  for (const name of list) add(name);
-  if (Object.keys(out.aliases).length === 0) delete out.aliases;
-  const info = JSON.parse(
-    readFileSync(require.resolve(`@iconify-json/${prefix}/info.json`), "utf8"),
-  );
-  return { collection: out, names: list, info };
+  out.icons = Object.fromEntries(names.map((name) => [name, iconData(source, name, prefix)]));
+  const info = load(prefix, "info.json");
+  return { collection: out, names, info };
 });
 
 const data = {
@@ -123,6 +105,22 @@ writeFileSync(
   new URL("../src/foundations/icons/icon-data.json", import.meta.url),
   `${JSON.stringify(data)}\n`,
 );
+
+const solar = load("solar", "icons.json");
+const docs = Object.fromEntries(
+  DOCS.map((name) => {
+    const {
+      body,
+      width = solar.width ?? 24,
+      height = solar.height ?? 24,
+    } = iconData(solar, name, "solar");
+    return [name, { body, width, height }];
+  }),
+);
+writeFileSync(
+  new URL("../src/helpers/solar-icons.json", import.meta.url),
+  `${JSON.stringify(docs, null, 2)}\n`,
+);
 console.log(
-  collections.map(({ collection, names }) => `${collection.prefix}: ${names.length}`).join(", "),
+  `${collections.map(({ collection, names }) => `${collection.prefix}: ${names.length}`).join(", ")}, docs: ${DOCS.length}`,
 );

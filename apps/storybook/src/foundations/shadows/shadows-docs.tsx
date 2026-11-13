@@ -9,6 +9,7 @@ import {
   type GuideSection,
   Preview,
 } from "../../helpers/guide.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 
 export const shadowsSections: GuideSection[] = [
   {
@@ -118,16 +119,17 @@ export function WeeklySales() {
   }
 </style>
 
-<svg class="pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-  <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z" />
-</svg>`,
-    react: `import { MapPin } from "lucide-react";
+${solarMarkup("map-point-bold").replace("<svg ", '<svg class="pin" ')}`,
+    react: `import { Icon } from "@iconify/react/offline";
+import mapPointBold from "@iconify-icons/solar/map-point-bold";
 
 export function Pin() {
   return (
-    <MapPin
+    <Icon
+      icon={mapPointBold}
       aria-hidden="true"
-      size={26}
+      width={26}
+      height={26}
       style={{ color: "var(--ok-palette-primary-main)", filter: "var(--ok-drop-shadow-z4)" }}
     />
   );
@@ -135,8 +137,8 @@ export function Pin() {
   },
   {
     id: "themes",
-    title: "Shadows in dark mode",
-    body: "Shadows follow the theme. In the light theme they use a soft grey; in the dark theme they use black, so surfaces still stand out from a dark page. `--ok-shadow-primary` follows the active preset. You don't need any extra code.",
+    title: "Shadows in dark mode and other styles",
+    body: "Shadows follow the theme. In the light theme they use a soft tint; in the dark theme they use black, so surfaces still stand out from a dark page. They also follow the style: Soft, Minimal Mono and Nordic draw two soft layers, Corporate one short layer, Neo-Brutalism hard offset shadows without blur, and the flat styles (Swiss, Bauhaus, Brutalism and Editorial) draw no shadow and edge surfaces with a border instead. `--ok-shadow-primary` follows the primary color of the style. You don't need any extra code.",
   },
   {
     id: "accessibility",
@@ -214,16 +216,12 @@ function ShapesPreview() {
     <Preview className="gap-8!">
       {["--ok-drop-shadow-z1", "--ok-drop-shadow-z4", "--ok-drop-shadow-z8"].map((token) => (
         <div key={token} className="flex flex-col items-center gap-2">
-          <svg
-            viewBox="0 0 24 24"
-            width="40"
-            height="40"
-            fill="currentColor"
-            aria-hidden="true"
+          <span
+            className="flex"
             style={{ color: "var(--ok-palette-primary-main)", filter: `var(${token})` }}
           >
-            <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z" />
-          </svg>
+            <SolarIcon name="map-point-bold" size={40} />
+          </span>
           <Caption>{token.replace("--ok-", "")}</Caption>
         </div>
       ))}

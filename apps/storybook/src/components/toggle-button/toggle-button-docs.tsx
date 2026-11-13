@@ -2,14 +2,16 @@ import { toggleButtonOptions, toggleGroupOptions } from "@owlky/core";
 import toggleButtonApi from "@owlky/docs-content/api/toggle-button.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
-import { DocsIcon, type DocsIconName, iconMarkup } from "../../helpers/docs-icons.js";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 
-const FORMATS: DocsIconName[] = ["bold", "italic", "underline"];
+const FORMATS = ["bold", "italic", "underline"] as const;
+type Format = (typeof FORMATS)[number];
+const textIcon = (format: Format) => `text-${format}-linear` as const;
 
-const htmlToggle = (value: string, pressed: boolean, extra = "") =>
-  `  <button type="button" data-ok-toggle-button data-ok-color="standard" data-ok-size="md" value="${value}" aria-pressed="${pressed}" aria-label="${capitalize(value)}"${extra}>\n    ${iconMarkup(value as DocsIconName)}\n  </button>`;
+const htmlToggle = (value: Format, pressed: boolean, extra = "") =>
+  `  <button type="button" data-ok-toggle-button data-ok-color="standard" data-ok-size="md" value="${value}" aria-pressed="${pressed}" aria-label="${capitalize(value)}"${extra}>\n    ${solarMarkup(textIcon(value))}\n  </button>`;
 
 export const toggleButtonSections: GuideSection[] = [
   {
@@ -21,17 +23,18 @@ export const toggleButtonSections: GuideSection[] = [
 <script src="${CDN}/owlky.js" defer></script>
 
 <button type="button" data-ok-toggle-button data-ok-color="standard" data-ok-size="md" aria-pressed="false" aria-label="Bold">
-  ${iconMarkup("bold")}
+  ${solarMarkup("text-bold-linear")}
 </button>`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { ToggleButton } from "@owlky/react";
-import { BoldIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import textBoldLinear from "@iconify-icons/solar/text-bold-linear";
 
 export function BoldToggle() {
   return (
     <ToggleButton aria-label="Bold">
-      <BoldIcon />
+      <Icon icon={textBoldLinear} aria-hidden="true" />
     </ToggleButton>
   );
 }`,
@@ -46,7 +49,10 @@ ${htmlToggle("italic", false)}
 ${htmlToggle("underline", false)}
 </div>`,
     react: `import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import textBoldLinear from "@iconify-icons/solar/text-bold-linear";
+import textItalicLinear from "@iconify-icons/solar/text-italic-linear";
+import textUnderlineLinear from "@iconify-icons/solar/text-underline-linear";
 import { useState } from "react";
 
 export function FormatPicker() {
@@ -59,13 +65,13 @@ export function FormatPicker() {
       aria-label="Text format"
     >
       <ToggleButton value="bold" aria-label="Bold">
-        <BoldIcon />
+        <Icon icon={textBoldLinear} aria-hidden="true" />
       </ToggleButton>
       <ToggleButton value="italic" aria-label="Italic">
-        <ItalicIcon />
+        <Icon icon={textItalicLinear} aria-hidden="true" />
       </ToggleButton>
       <ToggleButton value="underline" aria-label="Underline">
-        <UnderlineIcon />
+        <Icon icon={textUnderlineLinear} aria-hidden="true" />
       </ToggleButton>
     </ToggleButtonGroup>
   );
@@ -81,19 +87,22 @@ ${htmlToggle("italic", true)}
 ${htmlToggle("underline", false)}
 </div>`,
     react: `import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import textBoldLinear from "@iconify-icons/solar/text-bold-linear";
+import textItalicLinear from "@iconify-icons/solar/text-italic-linear";
+import textUnderlineLinear from "@iconify-icons/solar/text-underline-linear";
 
 export function FormatToggles() {
   return (
     <ToggleButtonGroup defaultValue={["bold", "italic"]} aria-label="Text formats">
       <ToggleButton value="bold" aria-label="Bold">
-        <BoldIcon />
+        <Icon icon={textBoldLinear} aria-hidden="true" />
       </ToggleButton>
       <ToggleButton value="italic" aria-label="Italic">
-        <ItalicIcon />
+        <Icon icon={textItalicLinear} aria-hidden="true" />
       </ToggleButton>
       <ToggleButton value="underline" aria-label="Underline">
-        <UnderlineIcon />
+        <Icon icon={textUnderlineLinear} aria-hidden="true" />
       </ToggleButton>
     </ToggleButtonGroup>
   );
@@ -116,7 +125,10 @@ ${htmlToggle("underline", false)}
   });
 </script>`,
     react: `import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import textBoldLinear from "@iconify-icons/solar/text-bold-linear";
+import textItalicLinear from "@iconify-icons/solar/text-italic-linear";
+import textUnderlineLinear from "@iconify-icons/solar/text-underline-linear";
 import { useState } from "react";
 
 export function FormatPicker() {
@@ -132,13 +144,13 @@ export function FormatPicker() {
       aria-label="Text format"
     >
       <ToggleButton value="bold" aria-label="Bold">
-        <BoldIcon />
+        <Icon icon={textBoldLinear} aria-hidden="true" />
       </ToggleButton>
       <ToggleButton value="italic" aria-label="Italic">
-        <ItalicIcon />
+        <Icon icon={textItalicLinear} aria-hidden="true" />
       </ToggleButton>
       <ToggleButton value="underline" aria-label="Underline">
-        <UnderlineIcon />
+        <Icon icon={textUnderlineLinear} aria-hidden="true" />
       </ToggleButton>
     </ToggleButtonGroup>
   );
@@ -184,7 +196,7 @@ const PREVIEWS = {
   overview: () => (
     <Preview>
       <ToggleButton aria-label="Bold" defaultSelected>
-        <DocsIcon name="bold" />
+        <SolarIcon name="text-bold-linear" />
       </ToggleButton>
     </Preview>
   ),
@@ -193,7 +205,7 @@ const PREVIEWS = {
       <ToggleButtonGroup exclusive defaultValue="bold" aria-label="Text format">
         {FORMATS.map((format) => (
           <ToggleButton key={format} value={format} aria-label={capitalize(format)}>
-            <DocsIcon name={format} />
+            <SolarIcon name={textIcon(format)} />
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
@@ -204,7 +216,7 @@ const PREVIEWS = {
       <ToggleButtonGroup defaultValue={["bold", "italic"]} aria-label="Text formats">
         {FORMATS.map((format) => (
           <ToggleButton key={format} value={format} aria-label={capitalize(format)}>
-            <DocsIcon name={format} />
+            <SolarIcon name={textIcon(format)} />
           </ToggleButton>
         ))}
       </ToggleButtonGroup>

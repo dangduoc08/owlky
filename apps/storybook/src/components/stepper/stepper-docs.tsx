@@ -84,13 +84,14 @@ export function StepperState() {
     title: "Write step labels",
     body: 'Keep titles short, two or three words. `optional` adds a second line, such as "Optional". Set `error` on a `StepLabel` to show that a step failed: the icon turns into an exclamation mark and the text takes the error color. `icon` replaces the number with other text, or with any node such as an `svg`.',
     react: `import { Step, StepLabel, Stepper } from "@owlky/react";
-import { SettingsIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import settingsLinear from "@iconify-icons/solar/settings-linear";
 
 export function StepperLabels() {
   return (
     <Stepper activeStep={2}>
       <Step>
-        <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
+        <StepLabel icon={<Icon icon={settingsLinear} aria-hidden="true" />}>Choose a plan</StepLabel>
       </Step>
       <Step>
         <StepLabel optional="Optional">Add details</StepLabel>
@@ -153,13 +154,14 @@ export function VerticalSetup() {
 
 ${snippetElement(alternativeGroup, "data-ok-stepper ")}`,
     react: `import { Step, StepLabel, Stepper } from "@owlky/react";
-import { SettingsIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import settingsLinear from "@iconify-icons/solar/settings-linear";
 
 export function StepperVariants() {
   return (
     <Stepper activeStep={0} alternativeLabel variant="circle">
       <Step>
-        <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
+        <StepLabel icon={<Icon icon={settingsLinear} aria-hidden="true" />}>Choose a plan</StepLabel>
       </Step>
       <Step>
         <StepLabel>Create the project</StepLabel>

@@ -1,15 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import {
-  FileIcons,
-  FlagIcons,
-  IconColors,
-  IconifyIcons,
-  IconSizes,
-  IconUsage,
-  LocalIcons,
-  MaterialIcons,
-  SocialIcons,
-} from "./icon-demos.js";
+import { FlagIcons, IconColors, IconSizes, IconUsage, SolarIcons } from "./icon-demos.js";
 import { IconsDocs } from "./icons-docs.js";
 
 const meta = {
@@ -21,7 +11,7 @@ const meta = {
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Owlky works with any SVG icon. Learn how to add icons to components, choose their size and color, and make them accessible, in both HTML and React.",
+          "Owlky's components draw Solar icons, and your own icons can be Solar too, or any other SVG. Learn which Solar variant suits each style, how to add icons to components, choose their size and color, and make them accessible, in both HTML and React.",
       },
     },
   },
@@ -30,22 +20,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Material Symbols (not bundled). */
-export const Material: Story = { name: "Material icons", render: () => <MaterialIcons /> };
+/** Solar's variants, one row each, with the styles they suit. */
+export const Solar: Story = { name: "Solar icons", render: () => <SolarIcons /> };
 
-/** Solar and Eva, from Iconify. */
-export const Iconify: Story = { name: "Iconify icons", render: () => <IconifyIcons /> };
-
-/** Stroke icons drawn for these docs. */
-export const Local: Story = { name: "Local icons", render: () => <LocalIcons /> };
-
-/** Social brand marks (SVG Logos). */
-export const Social: Story = { name: "Social icons", render: () => <SocialIcons /> };
-
-/** File-type icons (VSCode Icons). */
-export const Files: Story = { name: "File icons", render: () => <FileIcons /> };
-
-/** Country flags (Circle Flags). */
+/** Country flags (Circle Flags), the Phone input's optional image flags. */
 export const Flags: Story = { name: "Flag icons", render: () => <FlagIcons /> };
 
 /** Recommended sizes. */

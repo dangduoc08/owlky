@@ -16,10 +16,11 @@ import copyButtonGroup from "../../../../../packages/html/src/components/text-fi
 import numberHelperGroup from "../../../../../packages/html/src/components/text-field/examples/number-input-helper.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 import { CopyButtonDemo, CopyDoubleClickDemo } from "./copy-demo.js";
-import { EyeIcon, PersonIcon } from "./text-field-examples.js";
+import { PersonIcon } from "./text-field-examples.js";
 
-const SEARCH_SVG = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>`;
+const SEARCH_SVG = solarMarkup("magnifier-linear");
 
 const outline = (label: string) =>
   `<fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>${label}</span></legend></fieldset>`;
@@ -103,13 +104,14 @@ export function TextFieldHelper() {
     <input id="password" data-ok-text-field-input type="password" autocomplete="current-password" placeholder=" ">
     <span data-ok-text-field-adornment="end">
       <!-- The script switches the input's type and aria-pressed -->
-      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-text-field-reveal aria-label="Show password" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></button>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-text-field-reveal aria-label="Show password" aria-pressed="false">${solarMarkup("eye-linear")}</button>
     </span>
     <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Password</span></legend></fieldset>
   </div>
 </div>`,
     react: `import { IconButton, InputAdornment, TextField } from "@owlky/react";
-import { EyeIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import eyeLinear from "@iconify-icons/solar/eye-linear";
 import { useState } from "react";
 
 export function Password() {
@@ -123,7 +125,7 @@ export function Password() {
       endAdornment={
         <InputAdornment position="end">
           <IconButton edge="end" aria-label="Show password" aria-pressed={shown} onClick={() => setShown(!shown)}>
-            <EyeIcon />
+            <Icon icon={eyeLinear} aria-hidden="true" />
           </IconButton>
         </InputAdornment>
       }
@@ -143,7 +145,8 @@ export function Password() {
   </div>
 </div>`,
     react: `import { InputAdornment, TextField } from "@owlky/react";
-import { SearchIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import magnifierLinear from "@iconify-icons/solar/magnifier-linear";
 
 export function SearchField() {
   return (
@@ -157,7 +160,7 @@ export function SearchField() {
       placeholder="Search orders"
       startAdornment={
         <InputAdornment position="start" disablePointerEvents>
-          <SearchIcon />
+          <Icon icon={magnifierLinear} aria-hidden="true" />
         </InputAdornment>
       }
     />
@@ -181,7 +184,8 @@ export function SearchField() {
   </div>
 </div>`,
     react: `import { InputAdornment, InputBase, OutlinedInput } from "@owlky/react";
-import { SearchIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import magnifierLinear from "@iconify-icons/solar/magnifier-linear";
 
 export function StandaloneInputs() {
   return (
@@ -193,7 +197,7 @@ export function StandaloneInputs() {
         placeholder="Search orders"
         startAdornment={
           <InputAdornment position="start" disablePointerEvents>
-            <SearchIcon />
+            <Icon icon={magnifierLinear} aria-hidden="true" />
           </InputAdornment>
         }
       />
@@ -256,7 +260,8 @@ To copy other text, set the trigger's value to the \`id\` of the element to copy
 
 ${copyButtonGroup.trimEnd()}`,
     react: `import { IconButton, InputAdornment, TextField, Toaster, toast, useCopyToClipboard } from "@owlky/react";
-import { CopyIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import copyLinear from "@iconify-icons/solar/copy-linear";
 import { useState } from "react";
 
 export function CopyLink() {
@@ -279,7 +284,7 @@ export function CopyLink() {
         endAdornment={
           <InputAdornment position="end">
             <IconButton edge="end" aria-label="Copy" onClick={onCopy}>
-              <CopyIcon />
+              <Icon icon={copyLinear} aria-hidden="true" />
             </IconButton>
           </InputAdornment>
         }
@@ -356,22 +361,6 @@ export function Bedrooms() {
   apiReferenceSection(textFieldApi),
 ];
 
-function SearchPreviewIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
-    </svg>
-  );
-}
-
 function PasswordPreview() {
   const [shown, setShown] = useState(false);
   return (
@@ -392,7 +381,7 @@ function PasswordPreview() {
             aria-pressed={shown}
             onClick={() => setShown(!shown)}
           >
-            <EyeIcon />
+            <SolarIcon name="eye-linear" />
           </IconButton>
         </InputAdornment>
       }
@@ -442,7 +431,7 @@ const PREVIEWS = {
         placeholder="Search orders"
         startAdornment={
           <InputAdornment position="start" disablePointerEvents>
-            <SearchPreviewIcon />
+            <SolarIcon name="magnifier-linear" />
           </InputAdornment>
         }
       />
@@ -457,7 +446,7 @@ const PREVIEWS = {
         placeholder="Search orders"
         startAdornment={
           <InputAdornment position="start" disablePointerEvents>
-            <SearchPreviewIcon />
+            <SolarIcon name="magnifier-linear" />
           </InputAdornment>
         }
       />

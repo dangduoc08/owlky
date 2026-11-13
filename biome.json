@@ -15,6 +15,7 @@
       "!**/*.snap",
       "!**/*.md",
       "!apps/storybook/src/foundations/icons/icon-data.json",
+      "!apps/storybook/src/helpers/solar-icons.json",
       "!packages/mcp/manifest.json",
       "!apps/docs-content/src/api/*.json",
       "!packages/*/src/entries",

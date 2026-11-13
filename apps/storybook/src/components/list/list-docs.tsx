@@ -17,10 +17,10 @@ import {
 } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 import { NestedDemo } from "./nested-demo.js";
 
-const INBOX = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>`;
+const INBOX = solarMarkup("inbox-linear");
 const CHEVRON = `<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" /></svg>`;
 
 export const listSections: GuideSection[] = [
@@ -46,7 +46,8 @@ export const listSections: GuideSection[] = [
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@owlky/react";
-import { InboxIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import inboxLinear from "@iconify-icons/solar/inbox-linear";
 
 export function Mailbox() {
   return (
@@ -55,7 +56,7 @@ export function Mailbox() {
         <ListItem disablePadding>
           <ListItemButton>
             <ListItemIcon>
-              <InboxIcon />
+              <Icon icon={inboxLinear} aria-hidden="true" />
             </ListItemIcon>
             <ListItemText primary="Inbox" />
           </ListItemButton>
@@ -86,14 +87,15 @@ Set \`alignItems\` to \`flex-start\` when the text wraps to several lines, so th
   </li>
 </ul>`,
     react: `import { Avatar, ListItem, ListItemAvatar, ListItemText } from "@owlky/react";
-import { ImageIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import galleryLinear from "@iconify-icons/solar/gallery-linear";
 
 export function ListRows() {
   return (
     <ListItem>
       <ListItemAvatar>
         <Avatar>
-          <ImageIcon />
+          <Icon icon={galleryLinear} aria-hidden="true" />
         </Avatar>
       </ListItemAvatar>
       <ListItemText primary="Photos" secondary="Jan 9, 2014" />
@@ -224,7 +226,7 @@ export function Inbox() {
     title: "Add controls to rows",
     body: "A row can hold a checkbox or a switch. Don't put a control inside a `ListItemButton`: a control inside a button can't be reached or announced reliably. Instead, label the control with the row's text: a `<label>` around the text for a checkbox at the start, or `aria-labelledby` with the text's `id` for a switch at the end.",
     html: `<li data-ok-list-item>
-  <span data-ok-list-item-icon><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0" /><path d="M1.42 9a16 16 0 0 1 21.16 0" /><path d="M8.53 16.11a6 6 0 0 1 6.95 0" /><path d="M12 20h.01" /></svg></span>
+  <span data-ok-list-item-icon>${solarMarkup("wi-fi-router-linear")}</span>
   <span data-ok-list-item-text id="wifi-label">
     <span data-ok-list-item-text-primary>Wi-Fi</span>
   </span>
@@ -235,13 +237,14 @@ export function Inbox() {
   </span>
 </li>`,
     react: `import { ListItem, ListItemIcon, ListItemText, Switch } from "@owlky/react";
-import { WifiIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import wiFiRouterLinear from "@iconify-icons/solar/wi-fi-router-linear";
 
 export function ListControls() {
   return (
     <ListItem>
       <ListItemIcon>
-        <WifiIcon />
+        <Icon icon={wiFiRouterLinear} aria-hidden="true" />
       </ListItemIcon>
       <ListItemText id="wifi-label" primary="Wi-Fi" />
       <Switch edge="end" aria-labelledby="wifi-label" defaultChecked />
@@ -290,7 +293,7 @@ const PREVIEWS = {
           <ListItem disablePadding>
             <ListItemButton>
               <ListItemIcon>
-                <DemoIcon name="inbox" />
+                <SolarIcon name="inbox-linear" />
               </ListItemIcon>
               <ListItemText primary="Inbox" />
             </ListItemButton>
@@ -298,7 +301,7 @@ const PREVIEWS = {
           <ListItem disablePadding>
             <ListItemButton selected aria-current="true">
               <ListItemIcon>
-                <DemoIcon name="mail" />
+                <SolarIcon name="letter-linear" />
               </ListItemIcon>
               <ListItemText primary="Drafts" secondary="2 messages" />
             </ListItemButton>

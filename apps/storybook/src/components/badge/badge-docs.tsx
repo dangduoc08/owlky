@@ -4,7 +4,8 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Avatar, Badge } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
-import { MailIcon, PEOPLE, portrait } from "../avatar/display-icons.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
+import { PEOPLE, portrait } from "../avatar/display-icons.js";
 
 export const badgeSections: GuideSection[] = [
   {
@@ -15,19 +16,20 @@ export const badgeSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 
 <span data-ok-badge data-ok-variant="standard" data-ok-color="error" data-ok-overlap="rectangular" data-ok-vertical="top" data-ok-horizontal="right">
-  <span role="img" aria-label="4 new messages"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg></span>
+  <span role="img" aria-label="4 new messages">${solarMarkup("letter-linear")}</span>
   <span data-ok-badge-badge>4</span>
 </span>`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Badge } from "@owlky/react";
-import { MailIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import letterLinear from "@iconify-icons/solar/letter-linear";
 
 export function Inbox() {
   return (
     <Badge color="error" badgeContent={4}>
       <span role="img" aria-label="4 new messages">
-        <MailIcon />
+        <Icon icon={letterLinear} aria-hidden="true" />
       </span>
     </Badge>
   );
@@ -39,12 +41,15 @@ export function Inbox() {
     body: 'In React, pass a number as `badgeContent`. A count of 0 hides the badge unless you set `showZero`, and counts above `max` (default 99) show as "99+". In HTML, write the text you want in the badge part, and add `data-ok-invisible` to hide it.',
     html: `<span data-ok-badge-badge>99+</span>`,
     react: `import { Badge } from "@owlky/react";
-import { MailIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import letterLinear from "@iconify-icons/solar/letter-linear";
 
 export function InboxBadge() {
   return (
     <Badge color="error" badgeContent={120} max={99}>
-      <MailIcon role="img" aria-label="120 new messages" />
+      <span role="img" aria-label="120 new messages">
+        <Icon icon={letterLinear} aria-hidden="true" />
+      </span>
     </Badge>
   );
 }`,
@@ -102,7 +107,7 @@ const PREVIEWS = {
     <Preview>
       <Badge color="error" badgeContent={4}>
         <span role="img" aria-label="4 new messages">
-          <MailIcon />
+          <SolarIcon name="letter-linear" />
         </span>
       </Badge>
     </Preview>
@@ -111,7 +116,7 @@ const PREVIEWS = {
     <Preview>
       <Badge color="error" badgeContent={120}>
         <span role="img" aria-label="120 new messages">
-          <MailIcon />
+          <SolarIcon name="letter-linear" />
         </span>
       </Badge>
     </Preview>

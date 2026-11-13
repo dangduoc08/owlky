@@ -193,7 +193,7 @@ export function Notes() {
   {
     id: "themes",
     title: "Match the theme",
-    body: "With the default `theme` of `auto`, the editor uses Owlky's light or dark theme, whichever its scope uses through `data-ok-theme`. The colors come from your tokens and presets: the paper background, the text colors, and syntax colors that keep a contrast ratio of at least 4.5:1. The editor follows when the theme or preset changes.\n\nMonaco shows one theme on a page at a time. When editors sit in scopes with different themes, the editor that people used last decides. Set `theme` to a Monaco theme such as `vs-dark` or `hc-black`, or to a theme you define in `beforeMount`, to use it instead.",
+    body: "With the default `theme` of `auto`, the editor uses Owlky's light or dark theme, whichever its scope uses through `data-ok-theme`. The colors come from your tokens and style: the paper background, the text colors, and syntax colors that keep a contrast ratio of at least 4.5:1. The editor follows when the theme or style changes.\n\nMonaco shows one theme on a page at a time. When editors sit in scopes with different themes, the editor that people used last decides. Set `theme` to a Monaco theme such as `vs-dark` or `hc-black`, or to a theme you define in `beforeMount`, to use it instead.",
     html: `<div data-ok-theme="dark">
   <div data-ok-code-editor data-ok-language="javascript" data-ok-height="160">
     <textarea data-ok-code-editor-value aria-label="Dark script" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">console.log("dark");</textarea>

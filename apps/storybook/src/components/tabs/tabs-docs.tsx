@@ -11,7 +11,7 @@ import verticalGroup from "../../../../../packages/html/src/components/tabs/exam
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import { TextDemo } from "./text-demo.js";
 import { VerticalDemo } from "./vertical-demo.js";
 
@@ -132,13 +132,15 @@ export function ProjectNav() {
 <!-- Icon only: name each tab -->
 ${snippetElement(iconOnly, "data-ok-tabs ")}`,
     react: `import { Tab, Tabs } from "@owlky/react";
-import { HeartIcon, PhoneIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import phoneLinear from "@iconify-icons/solar/phone-linear";
+import heartLinear from "@iconify-icons/solar/heart-linear";
 
 export function TabsIcons() {
   return (
     <Tabs aria-label="Contacts">
-      <Tab icon={<PhoneIcon />} iconPosition="start" label="Calls" />
-      <Tab icon={<HeartIcon />} aria-label="Favorites" />
+      <Tab icon={<Icon icon={phoneLinear} aria-hidden="true" />} iconPosition="start" label="Calls" />
+      <Tab icon={<Icon icon={heartLinear} aria-hidden="true" />} aria-label="Favorites" />
     </Tabs>
   );
 }`,
@@ -260,12 +262,12 @@ const PREVIEWS = {
   icons: () => (
     <Preview>
       <Tabs aria-label="Contacts with icons">
-        <Tab icon={<DemoIcon name="phone" />} iconPosition="start" label="Calls" />
-        <Tab icon={<DemoIcon name="heart" />} iconPosition="start" label="Favorites" />
+        <Tab icon={<SolarIcon name="phone-linear" />} iconPosition="start" label="Calls" />
+        <Tab icon={<SolarIcon name="heart-linear" />} iconPosition="start" label="Favorites" />
       </Tabs>
       <Tabs aria-label="Contacts with icons only">
-        <Tab icon={<DemoIcon name="phone" />} aria-label="Calls" />
-        <Tab icon={<DemoIcon name="heart" />} aria-label="Favorites" />
+        <Tab icon={<SolarIcon name="phone-linear" />} aria-label="Calls" />
+        <Tab icon={<SolarIcon name="heart-linear" />} aria-label="Favorites" />
       </Tabs>
     </Preview>
   ),

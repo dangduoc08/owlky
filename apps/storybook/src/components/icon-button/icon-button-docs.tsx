@@ -2,14 +2,14 @@ import { iconButtonOptions } from "@owlky/core";
 import iconButtonApi from "@owlky/docs-content/api/icon-button.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { IconButton } from "@owlky/react";
-import { DocsIcon, type DocsIconName, iconMarkup } from "../../helpers/docs-icons.js";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { SolarIcon, type SolarName, solarMarkup } from "../../helpers/solar-icons.js";
 
 const COLORS = ["default", "primary", "secondary", "info", "success", "warning", "error"] as const;
 
-const html = (attrs: string, label: string, icon: DocsIconName = "trash") =>
-  `<button type="button" data-ok-icon-button ${attrs} aria-label="${label}">\n  ${iconMarkup(icon)}\n</button>`;
+const html = (attrs: string, label: string, icon: SolarName = "trash-bin-trash-linear") =>
+  `<button type="button" data-ok-icon-button ${attrs} aria-label="${label}">\n  ${solarMarkup(icon)}\n</button>`;
 
 export const iconButtonSections: GuideSection[] = [
   {
@@ -23,12 +23,13 @@ ${html('data-ok-color="default" data-ok-size="md"', "Delete")}`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { IconButton } from "@owlky/react";
-import { TrashIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import trashBinTrashLinear from "@iconify-icons/solar/trash-bin-trash-linear";
 
 export function DeleteAction() {
   return (
     <IconButton aria-label="Delete">
-      <TrashIcon />
+      <Icon icon={trashBinTrashLinear} aria-hidden="true" />
     </IconButton>
   );
 }`,
@@ -39,12 +40,13 @@ export function DeleteAction() {
     body: "The default color is a soft grey that suits most toolbars. Use `inherit` to take the surrounding text color, or a palette color to give the action meaning, such as `error` for a destructive one.",
     html: html('data-ok-color="error" data-ok-size="md"', "Delete"),
     react: `import { IconButton } from "@owlky/react";
-import { TrashIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import trashBinTrashLinear from "@iconify-icons/solar/trash-bin-trash-linear";
 
 export function IconButtonColors() {
   return (
     <IconButton color="error" aria-label="Delete">
-      <TrashIcon />
+      <Icon icon={trashBinTrashLinear} aria-hidden="true" />
     </IconButton>
   );
 }`,
@@ -55,12 +57,13 @@ export function IconButtonColors() {
     body: "Three sizes are available: `sm`, `md` (the default) and `lg`. Every size keeps a touch target of at least 24 × 24px. Inside a row of content, set `edge` to `start` or `end` so the icon lines up with the content edge instead of the button's padding.",
     html: html('data-ok-color="default" data-ok-size="sm" data-ok-edge="end"', "Delete"),
     react: `import { IconButton } from "@owlky/react";
-import { TrashIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import trashBinTrashLinear from "@iconify-icons/solar/trash-bin-trash-linear";
 
 export function IconButtonSizes() {
   return (
     <IconButton size="sm" edge="end" aria-label="Delete">
-      <TrashIcon />
+      <Icon icon={trashBinTrashLinear} aria-hidden="true" />
     </IconButton>
   );
 }`,
@@ -71,15 +74,16 @@ export function IconButtonSizes() {
     body: "Set `loading` while the action runs. The icon is replaced by a spinner, the button is disabled and it tells assistive technology that it's busy.",
     html: `<button type="button" data-ok-icon-button data-ok-color="primary" data-ok-size="md" data-ok-loading aria-busy="true" disabled aria-label="Send">
   <span data-ok-icon-button-loader aria-hidden="true"><span role="progressbar" data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit" data-ok-button-spinner><svg data-ok-circular-progress-svg aria-hidden="true" viewBox="22 22 44 44"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></span>
-  ${iconMarkup("mail")}
+  ${solarMarkup("letter-linear")}
 </button>`,
     react: `import { IconButton } from "@owlky/react";
-import { MailIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import letterLinear from "@iconify-icons/solar/letter-linear";
 
 export function IconButtonLoading() {
   return (
     <IconButton color="primary" loading aria-label="Send">
-      <MailIcon />
+      <Icon icon={letterLinear} aria-hidden="true" />
     </IconButton>
   );
 }`,
@@ -88,14 +92,15 @@ export function IconButtonLoading() {
     id: "animate",
     title: "Add a press animation",
     body: "Set `animate` to scale the button slightly when it's pressed. The animation is plain CSS and turns off when the user prefers reduced motion.",
-    html: html('data-ok-color="primary" data-ok-size="md" data-ok-animate', "Add", "plus"),
+    html: html('data-ok-color="primary" data-ok-size="md" data-ok-animate', "Add", "add-linear"),
     react: `import { IconButton } from "@owlky/react";
-import { PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 
 export function IconButtonAnimate() {
   return (
     <IconButton color="primary" animate aria-label="Add">
-      <PlusIcon />
+      <Icon icon={addLinear} aria-hidden="true" />
     </IconButton>
   );
 }`,
@@ -105,15 +110,16 @@ export function IconButtonAnimate() {
     title: "Use an icon button as a link",
     body: "When an icon button navigates, render it as a link. In React, pass `href`; in HTML, use an `<a>` element with the same attributes. A disabled link loses its `href` and gets `aria-disabled`, so it can't be followed. To navigate with a routing library, pass your router's link component in `component` (with the props it needs, such as `to`) or in `LinkComponent` (with `href`). A disabled router link keeps its URL, leaves the tab order and ignores pointer clicks.",
     html: `<a href="/messages" data-ok-icon-button data-ok-color="default" data-ok-size="md" aria-label="Messages">
-  ${iconMarkup("mail")}
+  ${solarMarkup("letter-linear")}
 </a>`,
     react: `import { IconButton } from "@owlky/react";
-import { MailIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import letterLinear from "@iconify-icons/solar/letter-linear";
 
 export function MessagesLink() {
   return (
     <IconButton href="/messages" aria-label="Messages">
-      <MailIcon />
+      <Icon icon={letterLinear} aria-hidden="true" />
     </IconButton>
   );
 }`,
@@ -147,9 +153,15 @@ export function MessagesLink() {
 const PREVIEWS = {
   overview: () => (
     <Preview>
-      {(["mail", "plus", "trash"] as const).map((icon) => (
-        <IconButton key={icon} aria-label={capitalize(icon)}>
-          <DocsIcon name={icon} />
+      {(
+        [
+          ["Mail", "letter-linear"],
+          ["Add", "add-linear"],
+          ["Delete", "trash-bin-trash-linear"],
+        ] as const
+      ).map(([label, icon]) => (
+        <IconButton key={icon} aria-label={label}>
+          <SolarIcon name={icon} />
         </IconButton>
       ))}
     </Preview>
@@ -158,7 +170,7 @@ const PREVIEWS = {
     <Preview>
       {COLORS.map((color) => (
         <IconButton key={color} color={color} aria-label={`${capitalize(color)} delete`}>
-          <DocsIcon name="trash" />
+          <SolarIcon name="trash-bin-trash-linear" />
         </IconButton>
       ))}
     </Preview>
@@ -167,7 +179,7 @@ const PREVIEWS = {
     <Preview>
       {(["sm", "md", "lg"] as const).map((size) => (
         <IconButton key={size} size={size} aria-label={`Delete, ${size}`}>
-          <DocsIcon name="trash" />
+          <SolarIcon name="trash-bin-trash-linear" />
         </IconButton>
       ))}
     </Preview>
@@ -175,21 +187,21 @@ const PREVIEWS = {
   loading: () => (
     <Preview>
       <IconButton color="primary" loading aria-label="Send">
-        <DocsIcon name="mail" />
+        <SolarIcon name="letter-linear" />
       </IconButton>
     </Preview>
   ),
   animate: () => (
     <Preview>
       <IconButton color="primary" animate aria-label="Add">
-        <DocsIcon name="plus" />
+        <SolarIcon name="add-linear" />
       </IconButton>
     </Preview>
   ),
   link: () => (
     <Preview>
       <IconButton href="#docs-messages" aria-label="Messages">
-        <DocsIcon name="mail" />
+        <SolarIcon name="letter-linear" />
       </IconButton>
     </Preview>
   ),

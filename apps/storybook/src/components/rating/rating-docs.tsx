@@ -4,11 +4,11 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Rating } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 import { HoverDemo } from "./hover-demo.js";
-import { HeartIcon } from "./rating-examples.js";
 
 const STAR = `<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.5 14.9 8.4l6.5.9-4.7 4.6 1.1 6.5L12 17.3l-5.8 3.1 1.1-6.5L2.6 9.3l6.5-.9Z" /></svg>`;
-const HEART = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>`;
+const HEART = solarMarkup("heart-bold");
 
 const stars = (value: number) => `${value} Star${value === 1 ? "" : "s"}`;
 
@@ -98,14 +98,15 @@ export function RatingReadOnly() {
       label: (value) => `${value} Heart${value === 1 ? "" : "s"}`,
     }),
     react: `import { Rating } from "@owlky/react";
-import { Heart } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import heartBold from "@iconify-icons/solar/heart-bold";
 
 export function Likes() {
   return (
     <Rating
       name="likes"
       color="info"
-      icon={<Heart />}
+      icon={<Icon icon={heartBold} aria-hidden="true" />}
       getLabelText={(value) => \`\${value} Heart\${value === 1 ? "" : "s"}\`}
     />
   );
@@ -174,7 +175,12 @@ const PREVIEWS = {
   ),
   icons: () => (
     <Preview>
-      <Rating name="docs-hearts" defaultValue={3} color="info" icon={<HeartIcon />} />
+      <Rating
+        name="docs-hearts"
+        defaultValue={3}
+        color="info"
+        icon={<SolarIcon name="heart-bold" />}
+      />
     </Preview>
   ),
   hover: () => (

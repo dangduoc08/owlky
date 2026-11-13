@@ -4,7 +4,7 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Fab, IconButton, Tooltip } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 
 export const tooltipSections: GuideSection[] = [
   {
@@ -16,17 +16,18 @@ export const tooltipSections: GuideSection[] = [
 <script src="${CDN}/owlky.js" defer></script>
 
 <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" aria-labelledby="delete-tip">
-  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M6 7l1 13h10l1-13" /><path d="M9 7V4h6v3" /></svg>
+  ${solarMarkup("trash-bin-trash-linear")}
 </button>
 <div id="delete-tip" role="tooltip" popover="manual" data-ok-tooltip data-ok-placement="bottom">Delete</div>`,
     react: `import { IconButton, Tooltip } from "@owlky/react";
-import { Trash2Icon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import trashBinTrashLinear from "@iconify-icons/solar/trash-bin-trash-linear";
 
 export function DeleteButton() {
   return (
     <Tooltip title="Delete">
       <IconButton>
-        <Trash2Icon aria-hidden="true" />
+        <Icon icon={trashBinTrashLinear} aria-hidden="true" />
       </IconButton>
     </Tooltip>
   );
@@ -60,13 +61,14 @@ export function TooltipName() {
   Add
 </div>`,
     react: `import { Fab, Tooltip } from "@owlky/react";
-import { PlusIcon } from "lucide-react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 
 export function TooltipPlacement() {
   return (
     <Tooltip title="Add" placement="top" arrow transition="fade">
       <Fab color="primary">
-        <PlusIcon aria-hidden="true" />
+        <Icon icon={addLinear} aria-hidden="true" />
       </Fab>
     </Tooltip>
   );
@@ -170,12 +172,12 @@ const PREVIEWS = {
     <Preview>
       <Tooltip title="Delete">
         <IconButton>
-          <DemoIcon name="trash" />
+          <SolarIcon name="trash-bin-trash-linear" />
         </IconButton>
       </Tooltip>
       <Tooltip title="Add" arrow>
         <Fab color="primary">
-          <DemoIcon name="plus" />
+          <SolarIcon name="add-linear" />
         </Fab>
       </Tooltip>
     </Preview>
