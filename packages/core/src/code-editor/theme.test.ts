@@ -29,8 +29,8 @@ const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 describe("toHex", () => {
   it("converts computed colors", () => {
-    expect(toHex("rgb(0, 167, 111)")).toBe("#00a76f");
-    expect(toHex("rgba(0, 167, 111, 0.5)")).toBe("#00a76f80");
+    expect(toHex("rgb(97, 95, 255)")).toBe("#615fff");
+    expect(toHex("rgba(97, 95, 255, 0.5)")).toBe("#615fff80");
     expect(toHex("rgb(0 167 111 / 50%)")).toBe("#00a76f80");
     expect(toHex("color(srgb 1 0 0.5 / 0.2)")).toBe("#ff008033");
     expect(toHex("color(srgb 0 0 0)")).toBe("#000000");
@@ -47,18 +47,22 @@ describe("Owlky themes", () => {
     expect(light.base).toBe("vs");
     expect(dark.base).toBe("vs-dark");
     expect(light.colors["editor.background"]).toBe("#ffffff");
-    expect(dark.colors["editor.background"]).toBe("#1c252e");
+    expect(dark.colors["editor.background"]).toBe("#18181b");
     // Syntax colors are the AA `-text` tones of each scheme.
-    expect(light.rules.find((rule) => rule.token === "keyword")?.foreground).toBe("5119b7");
-    expect(dark.rules.find((rule) => rule.token === "keyword")?.foreground).toBe("c684ff");
+    expect(light.rules.find((rule) => rule.token === "keyword")?.foreground).toBe("7008e7");
+    expect(dark.rules.find((rule) => rule.token === "keyword")?.foreground).toBe("c4b4ff");
     // The probe is removed.
     expect(host.querySelector("[data-ok-theme='light']")).toBeNull();
   });
 
   it("follow token overrides of the scope", () => {
-    const host = mount('<div style="--ok-palette-primary-main: #078DEE"><div id="a"></div></div>');
+    // A color override reaches nested scopes when it is declared on them too (ADR-0072): the
+    // theme's probe is a `data-ok-theme` scope inside the element.
+    const host = mount(
+      '<style>#o, #o [data-ok-theme] { --ok-palette-primary-main: #078DEE; }</style><div id="o"><div id="a"></div></div>',
+    );
     const theme = owlkyTheme(host.querySelector("#a") as Element, "light");
-    expect(theme.colors["editorCursor.foreground"]).not.toBe("#00a76f");
+    expect(theme.colors["editorCursor.foreground"]).not.toBe("#615fff");
   });
 
   it("reads the scheme of nested scopes", () => {

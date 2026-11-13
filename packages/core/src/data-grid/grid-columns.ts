@@ -3,6 +3,7 @@
  * resize handle (`[data-ok-data-grid-resize]`) and dragging a header onto another to reorder.
  * Reports intent; the owner keeps widths and order.
  */
+import { THEME_ATTRIBUTES } from "../theme/attributes.js";
 
 export interface GridColumnControlsOptions {
   /** A new width while dragging (`done` on release). */
@@ -146,7 +147,7 @@ export function printGridContent(
   target.title = title;
   for (const sheet of doc.querySelectorAll('link[rel="stylesheet"], style'))
     target.head.append(target.importNode(sheet, true));
-  for (const attribute of ["data-ok-theme"]) {
+  for (const attribute of THEME_ATTRIBUTES) {
     const value = doc.documentElement.getAttribute(attribute);
     if (value !== null) target.documentElement.setAttribute(attribute, value);
   }

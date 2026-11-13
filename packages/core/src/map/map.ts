@@ -20,6 +20,7 @@ import {
   mapScaleUnits,
 } from "../anatomy/anatomy.js";
 import { chartFileName, gesture, save } from "../chart/chart-export.js";
+import { THEME_ATTRIBUTES } from "../theme/attributes.js";
 import type { GeoDescriptionStrings } from "./describe.js";
 import {
   autoAnchor,
@@ -1280,12 +1281,12 @@ export function createMapController(
     media?.addEventListener("change", schemeChanged, { signal });
   }
 
-  // The color scheme can change on any ancestor (`data-ok-theme` scopes, ADR-0017).
+  // Tokens can change on any ancestor (theme axis scopes, ADR-0070).
   const themeObserver = new MutationObserver(schemeChanged);
   themeObserver.observe(document.documentElement, {
     subtree: true,
     attributes: true,
-    attributeFilter: ["data-ok-theme"],
+    attributeFilter: [...THEME_ATTRIBUTES],
   });
 
   // --- DOM listeners: controls, popups, markers -------------------------------------------------

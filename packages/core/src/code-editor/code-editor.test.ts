@@ -207,7 +207,7 @@ describe("createCodeEditorController", () => {
     // `auto` follows the scope's data-ok-theme.
     root.setAttribute("data-ok-theme", "dark");
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(background()).toBe("rgb(28, 37, 46)");
+    expect(background()).toBe("rgb(24, 24, 27)");
     controller.update({ theme: "auto" });
   });
 

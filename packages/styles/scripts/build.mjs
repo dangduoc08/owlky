@@ -46,6 +46,28 @@ const rulesOf = (css) =>
  * Minifies the generated tokens CSS. Its format is fixed (one rule head or declaration per
  * line), so whitespace is only removed around syntax, never inside values such as font names.
  */
+/**
+ * Drops the space after commas (lists, `var()` fallbacks) and shortens hex colors, never inside
+ * quoted strings.
+ */
+const compactValue = (line) =>
+  line
+    .split(/("[^"]*")/)
+    .map((part, i) =>
+      i % 2
+        ? part
+        : part
+            .replace(/,\s+/g, ",")
+            // `#AABBCC` → `#abc`, other hex colors lowercase (they compress better).
+            .replace(/#([0-9a-f]{6})\b/gi, (_, hex) => {
+              const h = hex.toLowerCase();
+              return h[0] === h[1] && h[2] === h[3] && h[4] === h[5]
+                ? `#${h[0]}${h[2]}${h[4]}`
+                : `#${h}`;
+            }),
+    )
+    .join("");
+
 const minifyTokens = (css) =>
   css
     .split("\n")
@@ -54,7 +76,8 @@ const minifyTokens = (css) =>
     .map((line) =>
       line.endsWith("{")
         ? line.replace(/,\s+/g, ",").replace(/\s*\{$/, "{")
-        : line.replace(/^([\w-]+):\s+/, "$1:"),
+        : // Keep one space in an empty value (`--_ok-d0: ;`, a space toggle, ADR-0072).
+          compactValue(line.replace(/^([\w-]+):\s+(?!;)/, "$1:")),
     )
     .join("");
 
