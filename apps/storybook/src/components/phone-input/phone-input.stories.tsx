@@ -33,7 +33,7 @@ const SETUP = [
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
   "<!-- Image flags: with the CDN bundle the images load from flags/ next to owlky.js; elsewhere host @owlky/html/dist/flags and set data-ok-flags-path. -->",
-  '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/phone". -->',
+  '<!-- npm: import "@owlky/styles/owlky-all.css" and "@owlky/html/auto", then "@owlky/html/phone". -->',
 ].join("\n");
 
 const meta = {

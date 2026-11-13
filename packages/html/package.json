@@ -60,6 +60,8 @@
     "./owlky-map-worker.js": "./dist/owlky-map-worker.js",
     "./owlky.css": "./dist/owlky.css",
     "./owlky.min.css": "./dist/owlky.min.css",
+    "./owlky-all.css": "./dist/owlky-all.css",
+    "./owlky-all.min.css": "./dist/owlky-all.min.css",
     "./modules/*": "./dist/modules/*",
     "./monaco/*": "./dist/monaco/*",
     "./snippets/*": "./dist/snippets/*",

@@ -21,6 +21,9 @@
   "exports": {
     "./owlky.css": "./dist/owlky.css",
     "./owlky.min.css": "./dist/owlky.min.css",
+    "./owlky-all.css": "./dist/owlky-all.css",
+    "./owlky-all.min.css": "./dist/owlky-all.min.css",
+    "./families.json": "./dist/families.json",
     "./tokens.css": "./dist/tokens.css",
     "./base.css": "./dist/base.css",
     "./theme.css": "./dist/theme.css",

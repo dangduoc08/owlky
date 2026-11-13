@@ -1012,6 +1012,16 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   Pages with a strict Trusted Types policy refuse `innerHTML` in e2e too: build test markup
   with DOM methods. Firefox and WebKit hold `load` for a pending module import: `goto` with
   `waitUntil: "domcontentloaded"` when a test holds a module request.
+- CSS split (ADR-0068 S4): `owlky.css` is the core sheet (tokens + light components); every lazy
+  family is listed once in `packages/styles/src/families.json` (module → files, rank order) and
+  becomes `modules/<name>.css`; `owlky-all.css` is everything. `index.css` must list the core
+  files first and the families after them in that order, the loader's `LAZY_MODULES` keys follow
+  the file's key order, and no core file may name a lazy root (`styles.test.ts`). A new lazy
+  component: add its CSS file to a family (usually after the lazy components it composes; a
+  lazy file now follows every core file, so repeat a core `[hidden]` rule it overrides), its module
+  to the table, then `pnpm build`. Tests, Storybook and the website import `owlky-all.css` /
+  `src/index.css`: `owlky.css` alone styles no large component. A lazy module that needs another
+  module's sheet waits through `runtime.load()` (the data grid's chart kit).
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

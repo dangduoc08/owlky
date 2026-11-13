@@ -50,7 +50,7 @@ ${TASKS.slice(0, 2)
   </ul>
 </section>`,
     react: `// Load once, in your app's entry file
-import "@owlky/styles/owlky.css";
+import "@owlky/styles/owlky-all.css";
 import { Scrollbar, Sortable } from "@owlky/react";
 import { useState } from "react";
 
