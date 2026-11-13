@@ -135,7 +135,7 @@ describe("Sortable behavior", () => {
     expect(getComputedStyle(horizontal as Element).overflowX).toBe("auto");
     expect(
       getComputedStyle(screen.getAllByRole("listitem")[0] as Element).borderTopLeftRadius,
-    ).toBe("12px");
+    ).toBe("14px");
     await expectNoAxeViolations();
   });
 });

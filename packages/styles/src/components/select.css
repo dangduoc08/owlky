@@ -114,7 +114,8 @@
   /* The field box (a standalone select) */
   :where([data-ok-select][data-ok-variant]) {
     --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3.5);
-    --_ok-border: rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    /* The field boundary identifies the control: 3:1 on the surfaces (WCAG 1.4.11, ADR-0070). */
+    --_ok-border: var(--ok-control-border-color);
     --_ok-border-width: var(--ok-border-width);
     --_ok-tint: rgb(var(--ok-palette-grey-500-channel) / 0.08);
     --_ok-tint-hover: rgb(var(--ok-palette-grey-500-channel) / 0.16);

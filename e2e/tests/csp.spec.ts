@@ -15,7 +15,7 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   await page.waitForFunction(() => Boolean((window as unknown as { Owlky?: unknown }).Owlky));
   await expect(page.getByRole("button", { name: "Primary" })).toHaveCSS(
     "background-color",
-    "rgb(0, 167, 111)",
+    "rgb(97, 95, 255)",
   );
   // The progress runtime writes its custom properties through CSSOM, which the CSP allows.
   await expect(page.getByRole("progressbar", { name: "Upload" })).toHaveCSS("width", "48px");

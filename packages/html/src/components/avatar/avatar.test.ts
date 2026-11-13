@@ -70,7 +70,7 @@ describe("avatar runtime", () => {
     ) as unknown as [HTMLElement, HTMLElement, HTMLElement];
     expect(getComputedStyle(dot).backgroundColor).toBe("rgb(255, 152, 0)");
     expect(getComputedStyle(dot).width).toBe("16px");
-    expect(getComputedStyle(bad).backgroundColor).toBe("rgb(145, 158, 171)");
+    expect(getComputedStyle(bad).backgroundColor).toBe("rgb(113, 113, 123)");
     expect(getComputedStyle(surplus).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     expect(getComputedStyle(surplus).fontSize).toBe("14px");
     expect(getComputedStyle(surplus).width).not.toBe("16px");

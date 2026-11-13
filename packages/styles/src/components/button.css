@@ -49,7 +49,8 @@
     border: var(--ok-border-width) solid transparent;
     border-radius: var(--ok-radius-control);
     background-color: transparent;
-    color: var(--_ok-main);
+    /* Text and outlined buttons: the color's text tone (AA on the surface, ADR-0069). */
+    color: var(--ok-c-text, var(--ok-inherit-main));
     font-family: var(--ok-font-family-label);
     letter-spacing: var(--ok-label-letter-spacing);
     text-transform: var(--ok-label-text-transform);

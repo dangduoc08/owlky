@@ -1,7 +1,7 @@
 {
  "css": [
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -39,67 +39,67 @@
   },
   {
    "name": "--ok-palette-error-main",
-   "value": "#FF5630"
+   "value": "#E7000B"
   },
   {
    "name": "--ok-palette-error-main-channel",
-   "value": "255 86 48"
+   "value": "231 0 11"
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-info-main",
-   "value": "#00B8D9"
+   "value": "#0069A8"
   },
   {
    "name": "--ok-palette-info-main-channel",
-   "value": "0 184 217"
+   "value": "0 105 168"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
+   "value": "97 95 255"
   },
   {
    "name": "--ok-palette-secondary-main",
-   "value": "#8E33FF"
+   "value": "#7F22FE"
   },
   {
    "name": "--ok-palette-secondary-main-channel",
-   "value": "142 51 255"
+   "value": "127 34 254"
   },
   {
    "name": "--ok-palette-success-main",
-   "value": "#22C55E"
+   "value": "#008236"
   },
   {
    "name": "--ok-palette-success-main-channel",
-   "value": "34 197 94"
+   "value": "0 130 54"
   },
   {
    "name": "--ok-palette-warning-main",
-   "value": "#FFAB00"
+   "value": "#BB4D00"
   },
   {
    "name": "--ok-palette-warning-main-channel",
-   "value": "255 171 0"
+   "value": "187 77 0"
   },
   {
    "name": "--ok-radius-surface-md",
-   "value": "12px"
+   "value": "14px"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {
@@ -120,7 +120,7 @@
   },
   {
    "name": "--ok-typography-h5-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h5-font-size",
@@ -1746,9 +1746,9 @@
   "cdnModule": "motion",
   "core": "@owlky/core/motion",
   "css": [
+   "@owlky/styles/components/countdown.css",
    "@owlky/styles/components/motion.css",
    "@owlky/styles/components/count-up.css",
-   "@owlky/styles/components/countdown.css",
    "@owlky/styles/components/motion-border.css"
   ],
   "html": "@owlky/html/motion",

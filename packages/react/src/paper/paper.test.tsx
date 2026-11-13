@@ -31,7 +31,7 @@ describe("Paper", () => {
       okElevation: "1",
     });
     expect(paper.hasAttribute("role")).toBe(false);
-    expect(css(paper).borderRadius).toBe("8px");
+    expect(css(paper).borderRadius).toBe("10px");
     expect(css(paper).backgroundColor).toBe("rgb(255, 255, 255)");
     expect(css(paper).boxShadow).toBe(shadowOf("var(--ok-elevation-1)"));
     expect(css(paper).borderStyle).toBe("none");
@@ -108,8 +108,8 @@ describe("Paper", () => {
       </div>,
     );
     const style = css(screen.getByTestId("p"));
-    expect(style.backgroundColor).toBe("rgb(28, 37, 46)");
-    expect(style.color).toBe("rgb(255, 255, 255)");
+    expect(style.backgroundColor).toBe("rgb(24, 24, 27)");
+    expect(style.color).toBe("rgb(250, 250, 250)");
   });
 
   it("composes: a surface marker on the same element keeps the paper (Card contract)", () => {

@@ -2,10 +2,10 @@
  "css": [
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -18,8 +18,9 @@
    "value": "3px"
   },
   {
-   "name": "--ok-divider",
-   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+   "dark": "color-mix(in srgb, #71717B 24%, transparent)",
+   "light": "color-mix(in srgb, #71717B 20%, transparent)",
+   "name": "--ok-divider"
   },
   {
    "name": "--ok-focus-ring-color",
@@ -35,7 +36,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-md",
@@ -63,20 +64,20 @@
   },
   {
    "name": "--ok-palette-error-main",
-   "value": "#FF5630"
+   "value": "#E7000B"
   },
   {
-   "dark": "#FFAC82",
-   "light": "#B71D18",
+   "dark": "#FFA2A2",
+   "light": "#9F0712",
    "name": "--ok-palette-error-text"
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-grey-600",
-   "value": "#637381"
+   "value": "#52525C"
   },
   {
    "name": "--ok-palette-primary-contrast-text",
@@ -84,11 +85,11 @@
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-warning-main",
-   "value": "#FFAB00"
+   "value": "#BB4D00"
   },
   {
    "name": "--ok-radius-2xs",
@@ -104,20 +105,20 @@
   },
   {
    "name": "--ok-shadow-z8",
-   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+   "value": "0 1px 3px 0 var(--_ok-sc10), 0 8px 20px 0 var(--_ok-sc12)"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {

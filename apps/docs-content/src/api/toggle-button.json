@@ -2,19 +2,19 @@
  "css": [
   {
    "name": "--ok-action-disabled",
-   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+   "value": "color-mix(in srgb, #71717B 80%, transparent)"
   },
   {
    "name": "--ok-action-disabled-bg",
-   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+   "value": "color-mix(in srgb, #71717B 24%, transparent)"
   },
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
    "name": "--ok-action-selected",
-   "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+   "value": "color-mix(in srgb, #71717B 16%, transparent)"
   },
   {
    "name": "--ok-border-width",
@@ -27,6 +27,10 @@
   {
    "description": "The main color of the element's `data-ok-color`.",
    "name": "--ok-c-main"
+  },
+  {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
   },
   {
    "name": "--ok-control-height-lg",
@@ -45,6 +49,10 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-fab-height-sm",
+   "value": "2.5rem"
+  },
+  {
    "name": "--ok-focus-ring-offset",
    "value": "2px"
   },
@@ -54,7 +62,7 @@
   },
   {
    "name": "--ok-font-family-label",
-   "value": "var(--ok-font-family)"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-lg",
@@ -82,25 +90,37 @@
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-radius-control",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-toggle-group-height-lg",
+   "value": "2.875rem"
+  },
+  {
+   "name": "--ok-toggle-group-height-md",
+   "value": "2.375rem"
+  },
+  {
+   "name": "--ok-toggle-group-height-sm",
+   "value": "1.875rem"
   },
   {
    "name": "--ok-typography-button-line-height",

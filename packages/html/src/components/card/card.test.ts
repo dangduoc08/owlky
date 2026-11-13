@@ -45,7 +45,7 @@ describe("card snippets", () => {
       expect(paperElevations).toContain(card.dataset["okElevation"]);
       const style = getComputedStyle(card);
       expect(style.boxShadow).toBe(expectedShadow(card));
-      expect(style.borderRadius).toBe("16px");
+      expect(style.borderRadius).toBe("18px");
       expect(style.overflow).toBe("hidden");
     }
     for (const part of host.querySelectorAll("[data-ok-card-content]"))
@@ -114,7 +114,7 @@ describe("card snippets", () => {
       '<div data-ok-theme="dark"><div data-ok-paper data-ok-card data-ok-variant="elevation" data-ok-elevation="1">Dark</div></div>',
     );
     expect(getComputedStyle(host.querySelector("[data-ok-card]") as Element).backgroundColor).toBe(
-      "rgb(28, 37, 46)",
+      "rgb(24, 24, 27)",
     );
   });
 

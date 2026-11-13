@@ -1,23 +1,51 @@
 /*
- * Theme settings (ADR-0070 § 2): the mode and the root font size, applied as `data-ok-theme` and
- * the root `font-size`. Framework-free, shared by React and HTML. Nothing is stored unless the app
- * passes a storage. A brand color or font is a token override or a `createTheme()` theme.
+ * Theme settings (ADR-0070 § 2): the mode, the design style, density, surface contrast, high
+ * contrast and the root font size, applied as `data-ok-theme`, `data-ok-style`,
+ * `data-ok-density`, `data-ok-surface`, `data-ok-contrast` and the root `font-size`.
+ * Framework-free, shared by React and HTML. Nothing is stored unless the app passes a storage.
+ * Brand colors: `applyThemeBrand()` (`@owlky/core/theme-brand`) or a `createTheme()` theme.
  */
-import { fontSizeRange } from "@owlky/tokens";
+import { fontSizeRange, styleNames } from "@owlky/tokens";
+import { THEME_ATTRIBUTES, themeSettingAttributes } from "./attributes.js";
 
 export const themeModes = ["light", "dark", "system"] as const;
 export type ThemeMode = (typeof themeModes)[number];
 
+/** Design styles (`data-ok-style`). Soft is the default. */
+export const themeStyles = styleNames;
+export type ThemeStyle = (typeof themeStyles)[number];
+
+export const themeDensities = ["comfortable", "compact"] as const;
+export type ThemeDensity = (typeof themeDensities)[number];
+
+/** `contrast`: the page background one step away from paper. */
+export const themeSurfaces = ["default", "contrast"] as const;
+export type ThemeSurface = (typeof themeSurfaces)[number];
+
+/** `high`: text 7:1, graphics 4.5:1; `system` follows `prefers-contrast: more`. */
+export const themeContrasts = ["default", "high", "system"] as const;
+export type ThemeContrast = (typeof themeContrasts)[number];
+
 export interface ThemeSettings {
   mode: ThemeMode;
+  style: ThemeStyle;
+  density: ThemeDensity;
+  surface: ThemeSurface;
+  contrast: ThemeContrast;
   /** Root font size in px (12–20); every size is in rem, so the whole page scales. */
   fontSize: number;
 }
 
 export const defaultThemeSettings: Readonly<ThemeSettings> = Object.freeze({
   mode: "light",
+  style: "soft",
+  density: "comfortable",
+  surface: "default",
+  contrast: "default",
   fontSize: fontSizeRange.default,
 });
+
+export { THEME_ATTRIBUTES, themeSettingAttributes };
 
 /** Storage key used when the app passes a storage. */
 export const THEME_SETTINGS_KEY = "owlky:theme-settings";
@@ -43,12 +71,17 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 export function normalizeThemeSettings(input: unknown): ThemeSettings {
   const source = isRecord(input) ? input : {};
   const size = Number(source["fontSize"]);
+  const d = defaultThemeSettings;
   return {
-    mode: pick(themeModes, source["mode"], defaultThemeSettings.mode),
+    mode: pick(themeModes, source["mode"], d.mode),
+    style: pick(themeStyles, source["style"], d.style),
+    density: pick(themeDensities, source["density"], d.density),
+    surface: pick(themeSurfaces, source["surface"], d.surface),
+    contrast: pick(themeContrasts, source["contrast"], d.contrast),
     fontSize:
       Number.isInteger(size) && size >= fontSizeRange.min && size <= fontSizeRange.max
         ? size
-        : defaultThemeSettings.fontSize,
+        : d.fontSize,
   };
 }
 
@@ -56,10 +89,12 @@ const root = () => document.documentElement;
 
 /** The settings currently applied to `target` (attributes) and the page (font size). */
 function fromDom(target: HTMLElement): ThemeSettings {
-  return normalizeThemeSettings({
-    mode: target.getAttribute("data-ok-theme"),
+  const read: Record<string, unknown> = {
     fontSize: Number.parseFloat(root().style.fontSize) || undefined,
-  });
+  };
+  for (const [key, attribute] of Object.entries(themeSettingAttributes))
+    read[key] = target.getAttribute(attribute);
+  return normalizeThemeSettings(read);
 }
 
 function stored(options: ThemeSettingsOptions): unknown {
@@ -79,8 +114,9 @@ export function readThemeSettings(options: ThemeSettingsOptions = {}): ThemeSett
 
 /**
  * Applies (and stores, when a storage is given) the settings. Missing keys keep their current
- * value; invalid ones fall back to the default. The mode is always explicit; the default font size
- * removes the root style. Returns the applied settings.
+ * value; invalid ones fall back to the default. Every axis is written explicitly (a nested target
+ * resets what an outer scope sets); the default font size removes the root style. Returns the
+ * applied settings.
  */
 export function applyThemeSettings(
   settings: Partial<ThemeSettings> = {},
@@ -88,7 +124,8 @@ export function applyThemeSettings(
 ): ThemeSettings {
   const target = options.target ?? root();
   const next = normalizeThemeSettings({ ...fromDom(target), ...settings });
-  target.setAttribute("data-ok-theme", next.mode);
+  for (const [key, attribute] of Object.entries(themeSettingAttributes))
+    target.setAttribute(attribute, next[key as keyof typeof themeSettingAttributes]);
   // CSSOM, not a style attribute string: works under a strict CSP.
   root().style.fontSize =
     next.fontSize === defaultThemeSettings.fontSize ? "" : `${next.fontSize}px`;

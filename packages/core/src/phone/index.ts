@@ -4,6 +4,7 @@
  * React's `PhoneInput` and the HTML `phone-input` runtime. Not re-exported from `@owlky/core`:
  * pages without a phone input don't load the phone metadata.
  */
+export { phoneFlagFolder, phoneFlagSource } from "../anatomy/anatomy.js";
 export {
   createPhoneInputController,
   type PhoneInputController,

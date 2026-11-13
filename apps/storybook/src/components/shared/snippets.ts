@@ -20,7 +20,7 @@ export function htmlSetup(css: string[], runtime = false): string {
   ];
   if (runtime) lines.push(`<script src="${CDN}/owlky.js" defer></script>`);
   lines.push(
-    `<!-- npm: import "@owlky/styles/owlky.css" (or ${files} from @owlky/styles)${
+    `<!-- npm: import "@owlky/styles/owlky-all.css" (or ${files} from @owlky/styles)${
       runtime ? ' and import "@owlky/html/auto"' : "; no JavaScript needed"
     }. -->`,
   );

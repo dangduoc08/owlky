@@ -100,16 +100,14 @@ describe("MotionBorder", () => {
     );
     const background = (id: string) => css(screen.getByTestId(id)).backgroundImage;
     // Lights: the conic layer; track: a 135deg gradient of the light colors at 8% and 24%.
-    expect(background("one")).toMatch(/conic-gradient\(.*rgb\(0, 167, 111\)/);
-    expect(background("one")).toMatch(/rgba\(0, 167, 111, 0\.08\).*rgba\(0, 167, 111, 0\.24\)/);
-    expect(background("two")).toMatch(
-      /rgb\(255, 171, 0\).*rgb\(142, 51, 255\).*rgb\(255, 171, 0\)/,
-    );
-    expect(background("two")).toMatch(/rgba\(142, 51, 255, 0\.08\).*rgba\(255, 171, 0, 0\.24\)/);
+    expect(background("one")).toMatch(/conic-gradient\(.*rgb\(97, 95, 255\)/);
+    expect(background("one")).toMatch(/rgba\(97, 95, 255, 0\.08\).*rgba\(97, 95, 255, 0\.24\)/);
+    expect(background("two")).toMatch(/rgb\(187, 77, 0\).*rgb\(127, 34, 254\).*rgb\(187, 77, 0\)/);
+    expect(background("two")).toMatch(/rgba\(127, 34, 254, 0\.08\).*rgba\(187, 77, 0, 0\.24\)/);
     expect(screen.getByTestId("two").getAttribute("data-ok-secondary-color")).toBe("warning");
     // The text color lights; its track is the neutral grey.
     expect(background("text")).toMatch(/conic-gradient\(.*rgb\(255, 0, 0\)/);
-    expect(background("text")).toMatch(/rgba\(145, 158, 171, 0\.08\)/);
+    expect(background("text")).toMatch(/rgba\(113, 113, 123, 0\.08\)/);
     // multi ignores the second light; an unknown one is never written.
     expect(background("multi")).toBe(background("plain"));
     expect(screen.getByTestId("hostile").hasAttribute("data-ok-secondary-color")).toBe(false);
@@ -128,6 +126,6 @@ describe("MotionBorder", () => {
         </MotionBorder>
       </MotionBorder>,
     );
-    expect(css(screen.getByTestId("inner")).backgroundImage).not.toContain("rgb(255, 171, 0)");
+    expect(css(screen.getByTestId("inner")).backgroundImage).not.toContain("rgb(187, 77, 0)");
   });
 });

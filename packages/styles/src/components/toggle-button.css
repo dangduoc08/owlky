@@ -64,7 +64,7 @@
 
   /* Sizes (standalone) */
   :where([data-ok-toggle-button][data-ok-size="sm"]) {
-    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-size: var(--ok-fab-height-sm);
     --_ok-font-size: var(--ok-font-size-sm);
   }
 
@@ -103,20 +103,20 @@
   }
 
   :where([data-ok-toggle-group] > [data-ok-toggle-button]) {
-    --_ok-size: calc(var(--ok-spacing) * 9.5);
+    --_ok-size: var(--ok-toggle-group-height-md);
 
     padding: 0 calc(var(--ok-spacing) * 1.75);
     border: 0;
   }
 
   :where([data-ok-toggle-group] > [data-ok-toggle-button][data-ok-size="sm"]) {
-    --_ok-size: calc(var(--ok-spacing) * 7.5);
+    --_ok-size: var(--ok-toggle-group-height-sm);
 
     padding: 0 calc(var(--ok-spacing) * 0.75);
   }
 
   :where([data-ok-toggle-group] > [data-ok-toggle-button][data-ok-size="lg"]) {
-    --_ok-size: calc(var(--ok-spacing) * 11.5);
+    --_ok-size: var(--ok-toggle-group-height-lg);
 
     padding: 0 calc(var(--ok-spacing) * 2.75);
   }
@@ -125,7 +125,7 @@
   :where([data-ok-toggle-button][aria-pressed="true"]) {
     border-color: currentColor;
     background-color: var(--_ok-selected-bg);
-    color: var(--_ok-main);
+    color: var(--ok-c-text, var(--ok-text-primary));
   }
 
   @media (hover: hover) {

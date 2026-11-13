@@ -1,6 +1,10 @@
 {
  "css": [
   {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
    "name": "--ok-duration-shortest",
    "value": "150ms"
   },
@@ -21,32 +25,12 @@
    "value": "2px"
   },
   {
-   "name": "--ok-palette-error-main",
-   "value": "#FF5630"
-  },
-  {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
-  },
-  {
-   "name": "--ok-palette-info-main",
-   "value": "#00B8D9"
-  },
-  {
-   "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
-  },
-  {
-   "name": "--ok-palette-secondary-main",
-   "value": "#8E33FF"
-  },
-  {
-   "name": "--ok-palette-success-main",
-   "value": "#22C55E"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-warning-main",
-   "value": "#FFAB00"
+   "value": "#BB4D00"
   },
   {
    "name": "--ok-radius-inner",

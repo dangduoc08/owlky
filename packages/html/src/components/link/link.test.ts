@@ -54,7 +54,7 @@ describe("link snippets", () => {
     const [error, inherit] = host.querySelectorAll("a") as unknown as [HTMLElement, HTMLElement];
     const style = getComputedStyle(error);
     expect(style.fontSize).toBe("30px");
-    expect(style.color).toBe(resolve("color", "var(--ok-palette-error-main)"));
+    expect(style.color).toBe(resolve("color", "var(--ok-palette-error-text)"));
     expect(style.textDecorationLine).toBe("underline");
     expect(style.textDecorationColor).toBe(
       resolve("textDecorationColor", "rgb(var(--ok-palette-error-main-channel) / 0.4)"),

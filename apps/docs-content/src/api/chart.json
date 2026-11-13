@@ -2,19 +2,19 @@
  "css": [
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
    "name": "--ok-action-selected",
-   "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+   "value": "color-mix(in srgb, #71717B 16%, transparent)"
   },
   {
-   "dark": "#28323D",
-   "light": "#F4F6F8",
+   "dark": "#27272A",
+   "light": "#F4F4F5",
    "name": "--ok-bg-neutral"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -27,8 +27,13 @@
    "value": "2px"
   },
   {
-   "name": "--ok-divider",
-   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "dark": "color-mix(in srgb, #71717B 24%, transparent)",
+   "light": "color-mix(in srgb, #71717B 20%, transparent)",
+   "name": "--ok-divider"
   },
   {
    "name": "--ok-duration-enter",
@@ -52,7 +57,7 @@
   },
   {
    "name": "--ok-focus-ring-color-brand",
-   "value": "var(--ok-palette-primary-main)"
+   "value": "var(--ok-palette-primary-text)"
   },
   {
    "name": "--ok-focus-ring-offset",
@@ -64,7 +69,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-3xl",
@@ -132,135 +137,135 @@
   },
   {
    "name": "--ok-palette-error-dark",
-   "value": "#B71D18"
+   "value": "#C10007"
   },
   {
    "name": "--ok-palette-error-darker",
-   "value": "#7A0916"
+   "value": "#82181A"
   },
   {
    "name": "--ok-palette-error-light",
-   "value": "#FFAC82"
+   "value": "#FFA2A2"
   },
   {
    "name": "--ok-palette-error-lighter",
-   "value": "#FFE9D5"
+   "value": "#FFE2E2"
   },
   {
    "name": "--ok-palette-error-main",
-   "value": "#FF5630"
+   "value": "#E7000B"
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-grey-800-channel",
-   "value": "28 37 46"
+   "value": "39 39 42"
   },
   {
    "name": "--ok-palette-info-dark",
-   "value": "#006C9C"
+   "value": "#00598A"
   },
   {
    "name": "--ok-palette-info-darker",
-   "value": "#003768"
+   "value": "#024A70"
   },
   {
    "name": "--ok-palette-info-light",
-   "value": "#61F3F3"
+   "value": "#74D4FF"
   },
   {
    "name": "--ok-palette-info-lighter",
-   "value": "#CAFDF5"
+   "value": "#DFF2FE"
   },
   {
    "name": "--ok-palette-info-main",
-   "value": "#00B8D9"
+   "value": "#0069A8"
   },
   {
    "name": "--ok-palette-primary-dark",
-   "value": "#007867"
+   "value": "#4F39F6"
   },
   {
    "name": "--ok-palette-primary-darker",
-   "value": "#004B50"
+   "value": "#312C85"
   },
   {
    "name": "--ok-palette-primary-light",
-   "value": "#5BE49B"
+   "value": "#A3B3FF"
   },
   {
    "name": "--ok-palette-primary-lighter",
-   "value": "#C8FAD6"
+   "value": "#E0E7FF"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
+   "value": "97 95 255"
   },
   {
    "name": "--ok-palette-secondary-dark",
-   "value": "#5119B7"
+   "value": "#7008E7"
   },
   {
    "name": "--ok-palette-secondary-darker",
-   "value": "#27097A"
+   "value": "#4D179A"
   },
   {
    "name": "--ok-palette-secondary-light",
-   "value": "#C684FF"
+   "value": "#C4B4FF"
   },
   {
    "name": "--ok-palette-secondary-lighter",
-   "value": "#EFD6FF"
+   "value": "#EDE9FE"
   },
   {
    "name": "--ok-palette-secondary-main",
-   "value": "#8E33FF"
+   "value": "#7F22FE"
   },
   {
    "name": "--ok-palette-success-dark",
-   "value": "#118D57"
+   "value": "#016630"
   },
   {
    "name": "--ok-palette-success-darker",
-   "value": "#065E49"
+   "value": "#0D542B"
   },
   {
    "name": "--ok-palette-success-light",
-   "value": "#77ED8B"
+   "value": "#7BF1A8"
   },
   {
    "name": "--ok-palette-success-lighter",
-   "value": "#D3FCD2"
+   "value": "#DCFCE7"
   },
   {
    "name": "--ok-palette-success-main",
-   "value": "#22C55E"
+   "value": "#008236"
   },
   {
    "name": "--ok-palette-warning-dark",
-   "value": "#B76E00"
+   "value": "#973C00"
   },
   {
    "name": "--ok-palette-warning-darker",
-   "value": "#7A4100"
+   "value": "#7B3306"
   },
   {
    "name": "--ok-palette-warning-light",
-   "value": "#FFD666"
+   "value": "#FFD230"
   },
   {
    "name": "--ok-palette-warning-lighter",
-   "value": "#FFF5CC"
+   "value": "#FEF3C6"
   },
   {
    "name": "--ok-palette-warning-main",
-   "value": "#FFAB00"
+   "value": "#BB4D00"
   },
   {
    "name": "--ok-radius-2xs",
@@ -268,7 +273,7 @@
   },
   {
    "name": "--ok-radius-control",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "name": "--ok-radius-control-sm",
@@ -280,25 +285,25 @@
   },
   {
    "name": "--ok-shadow-dropdown",
-   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent), -20px 20px 40px -4px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+   "value": "0 0 2px 0 var(--_ok-sc18), -16px 16px 40px -4px var(--_ok-sc18)"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#637381",
-   "light": "#919EAB",
+   "dark": "#52525C",
+   "light": "#9F9FA9",
    "name": "--ok-text-disabled"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   }
  ],
@@ -5880,6 +5885,7 @@
   "cdnModule": "chart",
   "core": "@owlky/core/chart",
   "css": [
+   "@owlky/styles/components/chart-first-paint.css",
    "@owlky/styles/components/chart.css"
   ],
   "html": "@owlky/html/chart",

@@ -127,7 +127,7 @@ describe("List", () => {
     expect(css(list).paddingTop).toBe("0px");
     expect(sub.dataset).toMatchObject({ okListSubheader: "", okColor: "default" });
     expect(css(sub)).toMatchObject({ position: "sticky", lineHeight: "48px", fontWeight: "500" });
-    expect(css(sub).color).toBe("rgb(99, 115, 129)");
+    expect(css(sub).color).toBe("rgb(82, 82, 92)");
   });
 
   it.each(listSubheaderColors)("subheader color %s", (color) => {
@@ -144,7 +144,7 @@ describe("List", () => {
     expect(css(sub).paddingLeft).toBe("56px");
     expect(css(sub).paddingRight).toBe("0px");
     if (color === "inherit") expect(css(sub).color).toBe("rgb(1, 2, 3)");
-    if (color === "primary") expect(css(sub).color).toBe("rgb(0, 167, 111)");
+    if (color === "primary") expect(css(sub).color).toBe("rgb(79, 57, 246)");
   });
 
   it("two-line text with an avatar; alignItems flex-start moves the avatar down", () => {
@@ -166,7 +166,7 @@ describe("List", () => {
     const secondary = screen.getByText("Jan 9, 2014");
     expect(secondary.hasAttribute("data-ok-list-item-text-secondary")).toBe(true);
     expect(css(secondary)).toMatchObject({ fontSize: "14px", fontWeight: "400" });
-    expect(css(secondary).color).toBe("rgb(99, 115, 129)");
+    expect(css(secondary).color).toBe("rgb(82, 82, 92)");
   });
 
   it("text: children as primary, inset, disableTypography", () => {
@@ -212,11 +212,11 @@ describe("List", () => {
     );
     const [inbox, drafts] = screen.getAllByRole("button") as [HTMLElement, HTMLElement];
     expect(drafts.dataset["okSelected"]).toBe("");
-    expect(css(drafts).backgroundColor).toBe("rgba(0, 167, 111, 0.08)");
+    expect(css(drafts).backgroundColor).toBe("rgba(97, 95, 255, 0.08)");
     expect(css(inbox).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     await userEvent.hover(drafts);
     await settled(drafts);
-    expect(css(drafts).backgroundColor).toBe("rgba(0, 167, 111, 0.16)");
+    expect(css(drafts).backgroundColor).toBe("rgba(97, 95, 255, 0.16)");
     await userEvent.unhover(drafts);
     (screen.getAllByRole("button")[0] as HTMLElement).focus();
     await userEvent.keyboard("{Tab}");

@@ -1,7 +1,7 @@
 {
  "css": [
   {
-   "dark": "28 37 46",
+   "dark": "24 24 27",
    "light": "255 255 255",
    "name": "--ok-bg-paper-channel"
   },
@@ -15,15 +15,15 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-palette-error-main-channel",
-   "value": "255 86 48"
+   "value": "231 0 11"
   },
   {
    "name": "--ok-palette-info-main-channel",
-   "value": "0 184 217"
+   "value": "0 105 168"
   },
   {
    "name": "--ok-radius-surface-sm",
@@ -31,15 +31,15 @@
   },
   {
    "name": "--ok-shadow-dropdown",
-   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent), -20px 20px 40px -4px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+   "value": "0 0 2px 0 var(--_ok-sc18), -16px 16px 40px -4px var(--_ok-sc18)"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {

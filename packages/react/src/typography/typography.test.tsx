@@ -55,7 +55,8 @@ describe("Typography", () => {
       resolve("fontWeight", `var(--ok-typography-${variant}-font-weight)`),
     );
     expect(style.textTransform).toBe(variant === "overline" ? "uppercase" : "none");
-    expect(style.fontFamily).toMatch(variant.match(/^h[1-3]$/) ? /Barlow/ : /Public Sans/);
+    // Soft (the default style) uses Nunito for headings and text alike.
+    expect(style.fontFamily).toMatch(/Nunito/);
   });
 
   it("variant inherit takes the parent's font", () => {
@@ -80,7 +81,7 @@ describe("Typography", () => {
     const root = screen.getByText("Text");
     const token = color.startsWith("text")
       ? `--ok-text-${color.slice(4).toLowerCase()}`
-      : `--ok-palette-${color}-main`;
+      : `--ok-palette-${color}-text`;
     expect(css(root).color).toBe(resolve("color", `var(${token})`));
   });
 

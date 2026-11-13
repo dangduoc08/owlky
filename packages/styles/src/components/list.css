@@ -294,7 +294,7 @@
   }
 
   :where([data-ok-list-subheader][data-ok-color="primary"]) {
-    color: var(--ok-palette-primary-main);
+    color: var(--ok-palette-primary-text);
   }
 
   :where([data-ok-list-subheader][data-ok-color="inherit"]) {

@@ -2,15 +2,15 @@
  "css": [
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
-   "dark": "#28323D",
-   "light": "#F4F6F8",
+   "dark": "#27272A",
+   "light": "#F4F4F5",
    "name": "--ok-bg-neutral"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -23,8 +23,9 @@
    "value": "2px"
   },
   {
-   "name": "--ok-divider",
-   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+   "dark": "color-mix(in srgb, #71717B 24%, transparent)",
+   "light": "color-mix(in srgb, #71717B 20%, transparent)",
+   "name": "--ok-divider"
   },
   {
    "name": "--ok-duration-short",
@@ -48,7 +49,7 @@
   },
   {
    "name": "--ok-focus-ring-color-brand",
-   "value": "var(--ok-palette-primary-main)"
+   "value": "var(--ok-palette-primary-text)"
   },
   {
    "name": "--ok-focus-ring-inset",
@@ -68,7 +69,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-xl",
@@ -92,15 +93,15 @@
   },
   {
    "name": "--ok-palette-primary-dark",
-   "value": "#007867"
+   "value": "#4F39F6"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
+   "value": "97 95 255"
   },
   {
    "name": "--ok-radius-control-sm",
@@ -116,25 +117,25 @@
   },
   {
    "name": "--ok-radius-surface-md",
-   "value": "12px"
+   "value": "14px"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#637381",
-   "light": "#919EAB",
+   "dark": "#52525C",
+   "light": "#9F9FA9",
    "name": "--ok-text-disabled"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {
@@ -171,7 +172,7 @@
   },
   {
    "name": "--ok-typography-h3-font-weight",
-   "value": "700"
+   "value": "800"
   },
   {
    "name": "--ok-typography-h3-line-height",
@@ -179,7 +180,7 @@
   },
   {
    "name": "--ok-typography-h4-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h4-font-size",
@@ -195,7 +196,7 @@
   },
   {
    "name": "--ok-typography-h5-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h5-font-size",

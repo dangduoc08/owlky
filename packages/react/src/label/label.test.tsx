@@ -16,7 +16,7 @@ describe("Label", () => {
     expect(root.dataset).toMatchObject({ okLabel: "", okVariant: "soft", okColor: "default" });
     expect(css(root).height).toBe("24px");
     expect(css(root).fontWeight).toBe("700");
-    expect(css(root).borderRadius).toBe("6px");
+    expect(css(root).borderRadius).toBe("9999px");
   });
 
   it.each(labelVariants)("variant %s", (variant) => {
@@ -27,10 +27,10 @@ describe("Label", () => {
     );
     const root = screen.getByText("A");
     const style = css(root);
-    if (variant === "filled") expect(style.backgroundColor).toBe("rgb(0, 167, 111)");
+    if (variant === "filled") expect(style.backgroundColor).toBe("rgb(97, 95, 255)");
     if (variant === "outlined") expect(style.borderTopWidth).toBe("2px");
     if (variant === "soft") expect(style.backgroundColor).toMatch(/0\.16\)$/);
-    if (variant === "inverted") expect(style.backgroundColor).toBe("rgb(200, 250, 214)");
+    if (variant === "inverted") expect(style.backgroundColor).toBe("rgb(224, 231, 255)");
   });
 
   it.each(chipColors)("color %s", (color) => {

@@ -39,7 +39,8 @@ describe("chartTextWidth", () => {
   it("estimates by glyph class, wide enough for percent and minus signs", () => {
     expect(chartTextWidth("-60%")).toBe(Math.ceil((0.45 + 0.6 + 0.6 + 0.9) * 12));
     expect(chartTextWidth("Jul '11")).toBe(
-      Math.ceil((0.66 + 0.56 + 0.32 + 0.32 + 0.32 + 0.32 + 0.32) * 12),
+      // Digits are tabular: `1` is as wide as any digit.
+      Math.ceil((0.66 + 0.56 + 0.32 + 0.32 + 0.32 + 0.6 + 0.6) * 12),
     );
     expect(chartTextWidth("ab", 10)).toBe(12);
   });

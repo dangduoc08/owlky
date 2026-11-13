@@ -78,9 +78,9 @@ describe("IconButton", () => {
         <IconButton aria-label="primary" color="primary" />
       </>,
     );
-    expect(css(screen.getByRole("button", { name: "default" })).color).toBe("rgb(99, 115, 129)");
-    expect(css(screen.getByRole("button", { name: "inherit" })).color).toBe("rgb(28, 37, 46)");
-    expect(css(screen.getByRole("button", { name: "primary" })).color).toBe("rgb(0, 167, 111)");
+    expect(css(screen.getByRole("button", { name: "default" })).color).toBe("rgb(82, 82, 92)");
+    expect(css(screen.getByRole("button", { name: "inherit" })).color).toBe("rgb(24, 24, 27)");
+    expect(css(screen.getByRole("button", { name: "primary" })).color).toBe("rgb(97, 95, 255)");
   });
 
   it("tints the background on hover and scales when animated", async () => {
@@ -88,7 +88,7 @@ describe("IconButton", () => {
     const button = screen.getByRole("button");
     await userEvent.hover(button);
     await settled(button);
-    expect(css(button).backgroundColor).toBe("rgba(0, 167, 111, 0.08)");
+    expect(css(button).backgroundColor).toBe("rgba(97, 95, 255, 0.08)");
     expect(css(button).transform).not.toBe("none");
   });
 
@@ -104,7 +104,7 @@ describe("IconButton", () => {
     await userEvent.click(screen.getByRole("button", { name: "off" }), { force: true });
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(css(screen.getByRole("button", { name: "off" })).color).toMatch(
-      /^(rgba\(145, 158, 171|color\(srgb 0\.5686)/,
+      /^(rgba\(113, 113, 123|color\(srgb 0\.4431)/,
     );
   });
 

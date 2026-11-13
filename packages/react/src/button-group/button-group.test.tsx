@@ -75,11 +75,11 @@ describe("ButtonGroup", () => {
       </ButtonGroup>,
     );
     const [first, middle, last] = screen.getAllByRole("button");
-    expect(css(first as Element).borderTopLeftRadius).toBe("8px");
+    expect(css(first as Element).borderTopLeftRadius).toBe("10px");
     expect(css(first as Element).borderTopRightRadius).toBe("0px");
     expect(css(middle as Element).borderTopLeftRadius).toBe("0px");
-    expect(css(last as Element).borderTopRightRadius).toBe("8px");
-    expect(css(first as Element).borderRightColor).toBe("rgba(0, 120, 103, 0.48)");
+    expect(css(last as Element).borderTopRightRadius).toBe("10px");
+    expect(css(first as Element).borderRightColor).toBe("rgba(97, 95, 255, 0.48)");
     expect(css(last as Element).borderRightColor).toBe("rgba(0, 0, 0, 0)");
     const a = (first as Element).getBoundingClientRect();
     const b = (middle as Element).getBoundingClientRect();
@@ -145,16 +145,16 @@ describe("ButtonGroup", () => {
       </>,
     );
     const right = (name: string) => css(screen.getByRole("button", { name })).borderRightColor;
-    expect(right("Soft")).toBe("rgba(183, 29, 24, 0.24)");
+    expect(right("Soft")).toBe("rgba(231, 0, 11, 0.24)");
     expect(right("Text")).toBe("rgba(0, 0, 0, 0.48)");
-    expect(right("Neutral")).toBe("rgba(145, 158, 171, 0.32)");
+    expect(right("Neutral")).toBe("rgba(113, 113, 123, 0.32)");
     expect(right("White")).toBe("rgba(255, 255, 255, 0.24)");
     // Disabled tokens are color-mix(): engines serialize them as rgba() or color(srgb …).
-    expect(right("Off")).toMatch(/^(rgba\(145, 158, 171|color\(srgb 0\.5686)/);
+    expect(right("Off")).toMatch(/^(rgba\(113, 113, 123|color\(srgb 0\.4431)/);
     const neutral = screen.getByRole("button", { name: "Neutral" });
     await userEvent.hover(neutral);
     await settled(neutral);
-    expect(css(neutral).backgroundColor).toBe("rgb(69, 79, 91)");
+    expect(css(neutral).backgroundColor).toBe("rgb(63, 63, 70)");
     expect(css(neutral).boxShadow).toBe("none");
   });
 

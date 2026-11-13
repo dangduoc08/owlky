@@ -25,7 +25,7 @@ for (const impl of implementations) {
       await expect(area).toBeFocused();
       await page.keyboard.press("PageDown");
       await expect.poll(() => area.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
-      expect(await thumb(page)).toMatch(/145,? 158,? 171/);
+      expect(await thumb(page)).toMatch(/113,? 113,? 123/);
     });
 
     test("horizontal content scrolls sideways", async ({ page, isMobile }) => {
@@ -48,7 +48,7 @@ for (const impl of implementations) {
 
     test("the dark theme uses the dark thumb tone", async ({ page }) => {
       await openStory(page, storyId(impl, "scrollbar", "vertical"), "dark", "autoHide:!false");
-      expect(await thumb(page)).toMatch(/99,? 115,? 129/);
+      expect(await thumb(page)).toMatch(/82,? 82,? 92/);
     });
   });
 

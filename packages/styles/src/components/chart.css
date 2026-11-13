@@ -55,22 +55,25 @@
 @reference "../theme.css";
 
 @layer components {
+  /* The root's box and the data table are in chart-first-paint.css (core: the page shows them
+     before this sheet arrives). */
   :where([data-ok-chart]) {
     --_ok-chart-c: var(--ok-palette-primary-dark);
-
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: calc(var(--ok-spacing) * 2);
-    min-width: 0;
-    margin: 0;
-    color: var(--ok-text-primary);
-    font-family: var(--ok-font-family);
-    font-size: var(--ok-font-size-xs);
   }
 
-  :where([data-ok-chart] [data-ok-color="primary"]) {
-    --_ok-chart-c: var(--ok-palette-primary-main);
+  /* Palette names through the [data-ok-color] binding; shades below. */
+  :where(
+    [data-ok-chart]
+      :is(
+        [data-ok-color="primary"],
+        [data-ok-color="secondary"],
+        [data-ok-color="info"],
+        [data-ok-color="success"],
+        [data-ok-color="warning"],
+        [data-ok-color="error"]
+      )
+  ) {
+    --_ok-chart-c: var(--ok-c-main);
   }
 
   :where([data-ok-chart] [data-ok-color="primary-lighter"]) {
@@ -93,10 +96,6 @@
     --_ok-chart-c: var(--ok-palette-primary-darker);
   }
 
-  :where([data-ok-chart] [data-ok-color="secondary"]) {
-    --_ok-chart-c: var(--ok-palette-secondary-main);
-  }
-
   :where([data-ok-chart] [data-ok-color="secondary-lighter"]) {
     --_ok-chart-c: var(--ok-palette-secondary-lighter);
   }
@@ -115,10 +114,6 @@
 
   :where([data-ok-chart] [data-ok-color="secondary-darker"]) {
     --_ok-chart-c: var(--ok-palette-secondary-darker);
-  }
-
-  :where([data-ok-chart] [data-ok-color="info"]) {
-    --_ok-chart-c: var(--ok-palette-info-main);
   }
 
   :where([data-ok-chart] [data-ok-color="info-lighter"]) {
@@ -141,10 +136,6 @@
     --_ok-chart-c: var(--ok-palette-info-darker);
   }
 
-  :where([data-ok-chart] [data-ok-color="success"]) {
-    --_ok-chart-c: var(--ok-palette-success-main);
-  }
-
   :where([data-ok-chart] [data-ok-color="success-lighter"]) {
     --_ok-chart-c: var(--ok-palette-success-lighter);
   }
@@ -165,10 +156,6 @@
     --_ok-chart-c: var(--ok-palette-success-darker);
   }
 
-  :where([data-ok-chart] [data-ok-color="warning"]) {
-    --_ok-chart-c: var(--ok-palette-warning-main);
-  }
-
   :where([data-ok-chart] [data-ok-color="warning-lighter"]) {
     --_ok-chart-c: var(--ok-palette-warning-lighter);
   }
@@ -187,10 +174,6 @@
 
   :where([data-ok-chart] [data-ok-color="warning-darker"]) {
     --_ok-chart-c: var(--ok-palette-warning-darker);
-  }
-
-  :where([data-ok-chart] [data-ok-color="error"]) {
-    --_ok-chart-c: var(--ok-palette-error-main);
   }
 
   :where([data-ok-chart] [data-ok-color="error-lighter"]) {
@@ -929,29 +912,6 @@
     font-weight: var(--ok-font-weight-semibold);
   }
 
-  /* Data table (and drilldown levels' tables, 4.18.68): readable without JavaScript, visually
-     hidden once the chart is drawn. */
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown])) {
-    border-collapse: collapse;
-    font-size: var(--ok-font-size-sm);
-  }
-
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(th, td)) {
-    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
-    border-bottom: var(--ok-border-width) solid var(--ok-divider);
-    text-align: end;
-  }
-
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(thead th, tbody th)) {
-    text-align: start;
-  }
-
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) caption) {
-    padding-block-end: var(--ok-spacing);
-    font-weight: var(--ok-font-weight-semibold);
-    text-align: start;
-  }
-
   /* Tables grow to their content: a fixed layout keeps the hidden table 1px wide, and anchored
      at the bottom it grows upward, so a long table never makes the page scroll. */
   :where(
@@ -1069,7 +1029,8 @@
     clip-path: inset(50%);
   }
 
-  :where([data-ok-chart-filter-clear]) {
+  /* The filter's Clear and the drill controls' Back button (ADR-0058, below) look alike. */
+  :where([data-ok-chart-filter-clear], [data-ok-chart-drill-up]) {
     min-height: calc(var(--ok-spacing) * 8);
     margin: 0;
     padding: 0 calc(var(--ok-spacing) * 2);
@@ -1083,17 +1044,17 @@
     cursor: pointer;
   }
 
-  :where([data-ok-chart-filter-clear][hidden]) {
+  :where([data-ok-chart-filter-clear][hidden], [data-ok-chart-drill-up][hidden]) {
     display: none;
   }
 
   @media (hover: hover) {
-    :where([data-ok-chart-filter-clear]:hover) {
+    :where([data-ok-chart-filter-clear]:hover, [data-ok-chart-drill-up]:hover) {
       background-color: var(--ok-action-hover);
     }
   }
 
-  :where([data-ok-chart-filter-clear]:focus-visible) {
+  :where([data-ok-chart-filter-clear]:focus-visible, [data-ok-chart-drill-up]:focus-visible) {
     outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
     outline-offset: var(--ok-focus-ring-offset);
   }
@@ -1119,35 +1080,6 @@
     gap: calc(var(--ok-spacing) * 2);
     min-width: 0;
     min-height: calc(var(--ok-spacing) * 8);
-  }
-
-  :where([data-ok-chart-drill-up]) {
-    min-height: calc(var(--ok-spacing) * 8);
-    margin: 0;
-    padding: 0 calc(var(--ok-spacing) * 2);
-    border: var(--ok-border-width) solid var(--ok-divider);
-    border-radius: var(--ok-radius-control-sm);
-    background: none;
-    color: var(--ok-text-primary);
-    font: inherit;
-    font-size: var(--ok-font-size-xs);
-    font-weight: var(--ok-font-weight-semibold);
-    cursor: pointer;
-  }
-
-  :where([data-ok-chart-drill-up][hidden]) {
-    display: none;
-  }
-
-  @media (hover: hover) {
-    :where([data-ok-chart-drill-up]:hover) {
-      background-color: var(--ok-action-hover);
-    }
-  }
-
-  :where([data-ok-chart-drill-up]:focus-visible) {
-    outline: var(--ok-focus-ring-width) solid var(--ok-focus-ring-color-brand);
-    outline-offset: var(--ok-focus-ring-offset);
   }
 
   :where([data-ok-chart-drill-path]) {

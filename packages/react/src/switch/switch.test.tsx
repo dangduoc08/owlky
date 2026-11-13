@@ -34,7 +34,7 @@ describe("Switch", () => {
     expect(track.getBoundingClientRect()).toMatchObject({ width: 34, height: 20 });
     expect(css(part(root, "thumb")).width).toBe("14px");
     expect(track.getAttribute("aria-hidden")).toBe("true");
-    expect(css(track).backgroundColor).toMatch(/145, 158, 171|0\.5686/);
+    expect(css(track).backgroundColor).toMatch(/113, 113, 123|0\.4431/);
   });
 
   it("toggles on click and Space; the thumb slides and the track fills", async () => {

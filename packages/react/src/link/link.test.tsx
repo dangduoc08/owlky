@@ -46,7 +46,7 @@ describe("Link", () => {
     expect(style.margin).toBe("0px");
     expect(style.fontSize).toBe("30px");
     expect(style.lineHeight).toBe("40px");
-    expect(style.color).toBe(resolve("color", "var(--ok-palette-primary-main)"));
+    expect(style.color).toBe(resolve("color", "var(--ok-palette-primary-text)"));
     expect(style.textDecorationLine).toBe("underline");
     expect(style.textDecorationColor).toBe(
       resolve("textDecorationColor", "rgb(var(--ok-palette-primary-main-channel) / 0.4)"),
@@ -99,7 +99,7 @@ describe("Link", () => {
             "color",
             color.startsWith("text")
               ? `var(--ok-text-${color.slice(4).toLowerCase()})`
-              : `var(--ok-palette-${color}-main)`,
+              : `var(--ok-palette-${color}-text)`,
           );
     expect(css(link).color).toBe(expected);
     // Palette colors draw the underline at 40 %; text tones and `inherit` in the text color.
@@ -180,7 +180,7 @@ describe("Link", () => {
       textDecorationLine: "underline",
       verticalAlign: "middle",
     });
-    expect(style.color).toBe(resolve("color", "var(--ok-palette-primary-main)"));
+    expect(style.color).toBe(resolve("color", "var(--ok-palette-primary-text)"));
     expect(screen.getByRole("button", { name: "Send" }).getAttribute("type")).toBe("submit");
     screen.getByRole("textbox", { name: "Before" }).focus();
     await userEvent.keyboard("{Tab}");

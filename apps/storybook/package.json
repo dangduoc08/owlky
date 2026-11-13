@@ -20,8 +20,7 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
-    "@fontsource-variable/public-sans": "5.3.0",
-    "@fontsource/barlow": "5.3.0",
+    "@fontsource-variable/nunito": "5.3.0",
     "@iconify-json/circle-flags": "1.2.12",
     "@iconify-json/eva": "1.2.3",
     "@iconify-json/logos": "1.2.17",

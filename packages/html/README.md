@@ -127,15 +127,20 @@ removed. Loading the script twice is harmless.
 **`owlky.js` loads what the page uses.** It holds the runtime and the common components (about
 40 kB gzip). Larger components, such as the Chart, the Data grid, the date pickers, the Editor,
 the Map, Markdown and the Phone input, are modules in the `modules/` folder next to `owlky.js`.
-When the page holds one, `owlky.js` loads its module and the component starts. Until then, the
-markup works as it does without JavaScript: a chart shows its data table, for example. Host the
-whole `dist/` folder, so `modules/`, `monaco/` and `owlky-map-worker.js` sit next to `owlky.js`.
+When the page holds one, `owlky.js` loads its stylesheet (`modules/<name>.css`) and then its
+module, and the component starts. `owlky.css` holds the tokens and the light components only
+(about 29 kB gzip). Until the module runs, the markup works as it does without JavaScript: a chart
+shows its data table, for example. Host the whole `dist/` folder, so `modules/`, `monaco/` and
+`owlky-map-worker.js` sit next to `owlky.js`. `owlky-all.css` holds every component in one file,
+for pages that don't use the loader.
 
 - **Preload:** list modules in `data-ok-preload` to load them before the page needs them, such
   as a chart at the top of the page. The modules are `chart`, `data-grid`, `date-picker`,
   `gantt`, `carousel` (Carousel and Lightbox), `motion`, `organization-chart`, `upload`,
   `walktour`, `tree-view`, `sortable`, `autocomplete`, `transfer-list`, `editor`, `map`,
-  `markdown`, `code-editor`, `phone-input` and `illustration`.
+  `markdown`, `code-editor`, `phone-input` and `illustration`. To fetch the files earlier, also
+  add `<link rel="preload" as="style" href=".../modules/chart.css">` and
+  `<link rel="modulepreload" href=".../modules/chart.js">`.
 - **Another folder:** `data-ok-modules="/assets/owlky/modules/"` serves the modules from there.
 - **From JavaScript:** `await Owlky.load("chart")` loads a module; `Owlky.loaded("chart")`
   tells whether it has loaded.
@@ -173,7 +178,7 @@ gone: remove their `<script>` tags. `owlky.js` loads those components by itself,
 ## npm
 
 ```ts
-import "@owlky/styles/owlky.css";
+import "@owlky/styles/owlky-all.css"; // every component; or owlky.css + components/<name>.css
 import "@owlky/html/auto"; // everything, started
 
 // or à la carte, side-effect free:

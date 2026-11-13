@@ -66,7 +66,7 @@ export const sortableGroups = (layout: SortableLayout, title: string): ReactGrou
 export const sortableCode = (
   layout: SortableLayout,
   title: string,
-) => `import "@owlky/styles/owlky.css";
+) => `import "@owlky/styles/owlky-all.css";
 import { Button, Scrollbar, Sortable, Typography } from "@owlky/react";
 import { useState } from "react";
 // PlusIcon: your own decorative SVG icon (aria-hidden="true").

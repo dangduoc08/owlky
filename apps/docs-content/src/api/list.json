@@ -2,14 +2,14 @@
  "css": [
   {
    "name": "--ok-action-focus",
-   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+   "value": "color-mix(in srgb, #71717B 24%, transparent)"
   },
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -18,8 +18,9 @@
    "value": "1px"
   },
   {
-   "name": "--ok-divider",
-   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+   "dark": "color-mix(in srgb, #71717B 24%, transparent)",
+   "light": "color-mix(in srgb, #71717B 20%, transparent)",
+   "name": "--ok-divider"
   },
   {
    "name": "--ok-duration-shorter",
@@ -47,7 +48,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-weight-medium",
@@ -63,28 +64,29 @@
   },
   {
    "name": "--ok-palette-grey-700",
-   "value": "#454F5B"
-  },
-  {
-   "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#3F3F46"
   },
   {
    "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
+   "value": "97 95 255"
+  },
+  {
+   "dark": "#A3B3FF",
+   "light": "#4F39F6",
+   "name": "--ok-palette-primary-text"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {

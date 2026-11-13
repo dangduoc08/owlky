@@ -107,7 +107,7 @@ describe("Badge", () => {
     );
     const [a, b] = container.children as unknown as HTMLElement[];
     expect(ref.current).toBe(a);
-    expect(css(part(a as Element)).backgroundColor).toBe("rgb(255, 86, 48)");
+    expect(css(part(a as Element)).backgroundColor).toBe("rgb(231, 0, 11)");
     expect((b as HTMLElement).dataset).toMatchObject({
       okColor: "default",
       okVariant: "standard",

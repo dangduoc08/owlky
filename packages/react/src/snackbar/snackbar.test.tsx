@@ -64,7 +64,7 @@ describe("Toaster", () => {
     ).not.toBeNull();
     expect(document.querySelector("[data-ok-type='loading'] [data-ok-toast-close]")).toBeNull();
     const saved = document.querySelector("[data-ok-type='default']") as HTMLElement;
-    expect(getComputedStyle(saved).backgroundColor).toBe("rgb(28, 37, 46)");
+    expect(getComputedStyle(saved).backgroundColor).toBe("rgb(39, 39, 42)");
     expect(getComputedStyle(created).backgroundColor).toBe("rgb(255, 255, 255)");
     await expectNoAxeViolations();
     await userEvent.click(saved.querySelector("[data-ok-toast-close]") as HTMLElement, {
@@ -231,7 +231,7 @@ describe("Toaster", () => {
     const rich = screen.getByText("Rich").closest("li") as HTMLElement;
     expect(rich.querySelector("[data-testid='ok-icon']")).not.toBeNull();
     expect(rich.querySelector("[data-testid='x-icon']")).not.toBeNull();
-    expect(getComputedStyle(rich).backgroundColor).toBe("rgb(211, 252, 210)");
+    expect(getComputedStyle(rich).backgroundColor).toBe("rgb(220, 252, 231)");
     const plain = screen.getByText("Plain").closest("li") as HTMLElement;
     expect(plain.dataset["okRichColors"]).toBe("false");
     expect(getComputedStyle(plain).backgroundColor).not.toBe(

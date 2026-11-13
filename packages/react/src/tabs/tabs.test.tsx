@@ -90,15 +90,15 @@ describe("Tabs", () => {
     expect([css(one).fontWeight, css(one).fontSize]).toEqual(["600", "14px"]);
     expect(Number.parseFloat(css(one).lineHeight)).toBeCloseTo(22, 1);
     expect(css(two).fontWeight).toBe("500");
-    expect(css(two).color).toBe("rgb(99, 115, 129)");
-    expect(css(one).color).toBe("rgb(28, 37, 46)");
+    expect(css(two).color).toBe("rgb(82, 82, 92)");
+    expect(css(one).color).toBe("rgb(24, 24, 27)");
     const line = indicator().getBoundingClientRect();
     const box = one.getBoundingClientRect();
     expect(line.height).toBe(2);
     expect(line.left).toBeCloseTo(box.left, 0);
     expect(line.width).toBeCloseTo(box.width, 0);
     expect(line.bottom).toBeCloseTo(box.bottom, 0);
-    expect(css(indicator()).backgroundColor).toBe("rgb(28, 37, 46)");
+    expect(css(indicator()).backgroundColor).toBe("rgb(24, 24, 27)");
   });
 
   it("selects on click and Enter; arrows only move focus; panels follow", async () => {
@@ -217,8 +217,8 @@ describe("Tabs", () => {
         <Tab label="A" />
       </Tabs>,
     );
-    expect(css(tab("A")).color).toBe("rgb(0, 167, 111)");
-    expect(css(indicator()).backgroundColor).toBe("rgb(142, 51, 255)");
+    expect(css(tab("A")).color).toBe("rgb(79, 57, 246)");
+    expect(css(indicator()).backgroundColor).toBe("rgb(127, 34, 254)");
   });
 
   it("icons: position values, 72px tall with a label, icon-only tabs named by aria-label", async () => {
@@ -345,8 +345,8 @@ describe("Tabs", () => {
         <Tab label="B" />
       </Tabs>,
     );
-    expect(css(root()).backgroundColor).toBe("rgb(244, 246, 248)");
-    expect(css(root()).borderRadius).toBe("8px");
+    expect(css(root()).backgroundColor).toBe("rgb(244, 244, 245)");
+    expect(css(root()).borderRadius).toBe("10px");
     expect(tab("A").getBoundingClientRect().height).toBe(52);
     const pill = getComputedStyle(indicator(), "::after");
     expect(pill.backgroundColor).toBe("rgb(255, 255, 255)");

@@ -317,7 +317,9 @@ const cssOrder = [
   ),
 ].map((m) => m[1]);
 const cssMinByName = {};
-const minCss = await readFile(join(stylesDist, "owlky.min.css"), "utf8");
+// The full bundle (every component) is what the families are attributed against; the core
+// sheet and the modules' sheets (ADR-0068 S4) are measured below.
+const minCss = await readFile(join(stylesDist, "owlky-all.min.css"), "utf8");
 const tokensMin = await minifyCss(await readFile(join(stylesDist, "tokens.css"), "utf8"));
 cssMinByName.tokens = tokensMin;
 for (const name of cssOrder) {
@@ -375,8 +377,21 @@ const coreCss = (keep) => {
   };
 };
 const css = {
-  "owlky.min.css": { raw: Buffer.byteLength(minCss), gzip: cssTotal, families: cssRows },
+  "owlky-all.min.css": { raw: Buffer.byteLength(minCss), gzip: cssTotal, families: cssRows },
+  "owlky-all.css": { gzip: gz(await readFile(join(stylesDist, "owlky-all.css"))) },
+  // The core sheet the CDN page links, and each lazy module's sheet (loaded with the module).
+  "owlky.min.css": { gzip: gz(await readFile(join(stylesDist, "owlky.min.css"))) },
   "owlky.css": { gzip: gz(await readFile(join(stylesDist, "owlky.css"))) },
+  modules: Object.fromEntries(
+    await Promise.all(
+      (await readdir(join(stylesDist, "modules")))
+        .filter((file) => file.endsWith(".css"))
+        .map(async (file) => [
+          file.slice(0, -4),
+          gz(await readFile(join(stylesDist, "modules", file))),
+        ]),
+    ),
+  ),
   // The same method on every file, to compare with the real bundle.
   allFilesEstimate: coreCss(() => true),
   coreEstimate: coreCss((name) => !HEAVY_CSS.test(name)),
@@ -526,16 +541,18 @@ const page = async (...modules) => [
   "owlky.js",
   ...new Set((await Promise.all(modules.map((m) => moduleFiles(m)))).flat()),
 ];
+// [label, files, stylesheets]: the page's core sheet plus the sheet of each module it loads (the
+// data grid's chart loads the Chart's sheet too).
 const HTML_CDN = [
-  ["Light page (Button, Dialog)", await page()],
-  ["Data grid page", await page("data-grid")],
-  ["Chart page", await page("chart")],
-  ["Date picker page", await page("date-picker")],
-  ["Editor page", await page("editor")],
-  ["Markdown page", await page("markdown")],
-  ["Phone input page", await page("phone-input")],
-  ["Map page", [...(await page("map")), "owlky-map-worker.js"]],
-  ["Code editor page (Monaco loads on mount)", await page("code-editor")],
+  ["Light page (Button, Dialog)", await page(), []],
+  ["Data grid page", await page("data-grid"), ["data-grid", "chart"]],
+  ["Chart page", await page("chart"), ["chart"]],
+  ["Date picker page", await page("date-picker"), ["date-picker"]],
+  ["Editor page", await page("editor"), ["editor"]],
+  ["Markdown page", await page("markdown"), ["markdown"]],
+  ["Phone input page", await page("phone-input"), ["phone-input"]],
+  ["Map page", [...(await page("map")), "owlky-map-worker.js"], ["map"]],
+  ["Code editor page (Monaco loads on mount)", await page("code-editor"), ["code-editor"]],
 ];
 // Each lazy module with the chunks it imports statically: what loading it downloads.
 const lazyModules = {};
@@ -548,13 +565,17 @@ for (const file of await listJs("modules")) {
     files,
   };
 }
-const htmlCdn = HTML_CDN.map(([label, files]) => ({
-  label,
-  files,
-  jsGzip: files.reduce((n, f) => n + cdn(f), 0),
-  cssGzip: css["owlky.css"].gzip,
-  cssMinGzip: cssTotal,
-}));
+const htmlCdn = HTML_CDN.map(([label, files, sheets]) => {
+  const modulesCss = sheets.reduce((n, name) => n + (css.modules[name] ?? 0), 0);
+  return {
+    label,
+    files,
+    sheets,
+    jsGzip: files.reduce((n, f) => n + cdn(f), 0),
+    cssGzip: css["owlky.css"].gzip + modulesCss,
+    cssMinGzip: css["owlky.min.css"].gzip + modulesCss,
+  };
+});
 
 // HTML: one definition from the npm ESM build (`@owlky/html`), plus the runtime: what a lazy
 // module of that component (with its core) would weigh, the runtime counted once.
@@ -738,7 +759,11 @@ for (const [file, info] of Object.entries(bundles)) {
 log(`\nowlky.js anatomy by section (share of its ${kB(anatomyInOwlky?.gzipShare ?? 0)} kB):`);
 table(anatomy.sections.slice(0, 15), FAMILY_COLUMNS);
 log(
-  `\nowlky.min.css: ${kB(css["owlky.min.css"].raw)} kB raw, ${kB(cssTotal)} kB gzip (owlky.css ${kB(css["owlky.css"].gzip)} kB gzip)`,
+  `\nowlky-all.min.css: ${kB(css["owlky-all.min.css"].raw)} kB raw, ${kB(cssTotal)} kB gzip (owlky-all.css ${kB(css["owlky-all.css"].gzip)} kB gzip); core owlky.min.css ${kB(css["owlky.min.css"].gzip)} kB gzip (owlky.css ${kB(css["owlky.css"].gzip)} kB); modules: ${Object.entries(
+    css.modules,
+  )
+    .map(([name, size]) => `${name} ${kB(size)}`)
+    .join(", ")}`,
 );
 table(cssRows.slice(0, 25), FAMILY_COLUMNS);
 log(`… ${Math.max(0, cssRows.length - 25)} more rows in the JSON`);
@@ -773,11 +798,11 @@ if (duplicated.sources.size)
   log(
     `Code in both owlky.js and the lazy files: ${duplicated.sources.size} source files, ${kB(gz(duplicated.parts.join("")))} kB gzip (in the lazy files).`,
   );
-log("\nHTML scenarios, CDN (owlky.css + the scripts the page downloads):");
+log("\nHTML scenarios, CDN (owlky.css, the modules' sheets and the scripts the page downloads):");
 table(htmlCdn, [
   ["page", (r) => r.label],
   ["JS gzip", (r) => kB(r.jsGzip)],
-  ["owlky.css", (r) => kB(r.cssGzip)],
+  ["CSS gzip", (r) => kB(r.cssGzip)],
   ["(min.css)", (r) => kB(r.cssMinGzip)],
   ["total", (r) => kB(r.jsGzip + r.cssGzip)],
 ]);
@@ -819,5 +844,5 @@ const json = {
 };
 await writeFile(jsonFile, `${JSON.stringify(json, null, 2)}\n`);
 console.log(
-  `Size report: owlky.js ${kB(owlkyJs.gzip)} kB gzip (anatomy ${kB(anatomy.owlkyJsShare ?? 0)} kB), owlky.min.css ${kB(cssTotal)} kB, React Button ${kB(react[0].barrelGzip)} kB, HTML light sets A ${kB(htmlEsm.at(-2).gzip)} / B ${kB(htmlEsm.at(-1).gzip)} kB → ${relative(root, jsonFile)}${quiet ? " (pnpm size:report for the tables)" : ""}`,
+  `Size report: owlky.js ${kB(owlkyJs.gzip)} kB gzip (anatomy ${kB(anatomy.owlkyJsShare ?? 0)} kB), owlky.min.css ${kB(css["owlky.min.css"].gzip)} kB (all ${kB(cssTotal)} kB), React Button ${kB(react[0].barrelGzip)} kB, HTML light sets A ${kB(htmlEsm.at(-2).gzip)} / B ${kB(htmlEsm.at(-1).gzip)} kB → ${relative(root, jsonFile)}${quiet ? " (pnpm size:report for the tables)" : ""}`,
 );

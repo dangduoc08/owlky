@@ -30,7 +30,7 @@ describe("Chip", () => {
     expect(root.querySelector("[data-ok-chip-action]")?.localName).toBe("span");
     expect(screen.queryByRole("button")).toBeNull();
     expect(css(root).height).toBe("32px");
-    expect(css(root).borderRadius).toBe("10px");
+    expect(css(root).borderRadius).toBe("9999px");
   });
 
   it("clickable: a button that reports clicks; hover darkens", async () => {
@@ -41,7 +41,7 @@ describe("Chip", () => {
     expect(onClick).toHaveBeenCalledTimes(1);
     const root = rootOf(button);
     await settled(root);
-    expect(css(root).backgroundColor).toBe("rgb(0, 120, 103)");
+    expect(css(root).backgroundColor).toBe("rgb(79, 57, 246)");
     render(<Chip label="Clickable" clickable />);
     expect(screen.getByRole("button", { name: "Clickable" })).toBeDefined();
   });
@@ -90,8 +90,8 @@ describe("Chip", () => {
     render(<Chip label="x" variant={variant} color="info" />);
     const root = rootOf(screen.getByText("x"));
     const style = css(root);
-    if (variant === "filled") expect(style.backgroundColor).toBe("rgb(0, 184, 217)");
-    if (variant === "outlined") expect(style.borderTopColor).toBe("rgb(0, 184, 217)");
+    if (variant === "filled") expect(style.backgroundColor).toBe("rgb(0, 105, 168)");
+    if (variant === "outlined") expect(style.borderTopColor).toBe("rgb(0, 105, 168)");
     if (variant === "soft") expect(style.backgroundColor).toMatch(/0\.16\)$/);
   });
 
@@ -145,7 +145,7 @@ describe("Chip", () => {
     expect(onClick).toHaveBeenCalledTimes(1);
     const root = rootOf(link);
     await settled(root);
-    expect(css(root).backgroundColor).toBe("rgb(0, 120, 103)");
+    expect(css(root).backgroundColor).toBe("rgb(79, 57, 246)");
     link.focus();
     await userEvent.keyboard("{Delete}");
     expect(onDelete).toHaveBeenCalledTimes(1);

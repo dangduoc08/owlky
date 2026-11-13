@@ -48,7 +48,7 @@ describe("switch CSS without JavaScript", () => {
     const track = host.querySelector("[data-ok-switch-track]") as Element;
     getComputedStyle(track).backgroundColor;
     await Promise.all(track.getAnimations().map((a) => a.finished));
-    expect(getComputedStyle(track).backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(getComputedStyle(track).backgroundColor).toBe("rgb(97, 95, 255)");
   });
 });
 

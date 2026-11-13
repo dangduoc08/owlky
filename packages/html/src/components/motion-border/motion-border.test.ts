@@ -42,13 +42,13 @@ describe("motion-border runtime", () => {
       .start();
     const [a, b] = host.querySelectorAll<HTMLElement>("[data-ok-motion-border]");
     expect(getComputedStyle(a as Element).backgroundImage).toMatch(
-      /rgb\(255, 171, 0\).*rgb\(142, 51, 255\)/,
+      /rgb\(187, 77, 0\).*rgb\(127, 34, 254\)/,
     );
     const hostile = getComputedStyle(b as Element).backgroundImage;
-    expect(hostile).toMatch(/conic-gradient\(.*rgb\(0, 184, 217\)/);
+    expect(hostile).toMatch(/conic-gradient\(.*rgb\(0, 105, 168\)/);
     expect(hostile).not.toContain("onerror");
     (a as HTMLElement).removeAttribute("data-ok-secondary-color");
     await settle();
-    expect(getComputedStyle(a as Element).backgroundImage).not.toContain("rgb(255, 171, 0)");
+    expect(getComputedStyle(a as Element).backgroundImage).not.toContain("rgb(187, 77, 0)");
   });
 });

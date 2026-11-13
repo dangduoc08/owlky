@@ -12,11 +12,15 @@
  */
 
 @custom-variant dark (&:where([data-ok-theme="dark"], [data-ok-theme="dark"] *, .dark, .dark *));
+/* High contrast (ADR-0070): a `data-ok-contrast="high"` scope. Colors follow it on their own. */
+@custom-variant contrast-high (&:where([data-ok-contrast="high"], [data-ok-contrast="high"] *));
+@custom-variant compact (&:where([data-ok-density="compact"], [data-ok-density="compact"] *));
 
 @theme inline {
   --font-sans: var(--ok-font-family);
   --font-mono: var(--ok-font-family-mono);
   --font-heading: var(--ok-font-family-heading);
+  --font-label: var(--ok-font-family-label);
   --spacing: var(--ok-spacing);
 
   --color-primary: var(--ok-palette-primary-main);
@@ -77,6 +81,7 @@
   --color-grey-700: var(--ok-palette-grey-700);
   --color-grey-800: var(--ok-palette-grey-800);
   --color-grey-900: var(--ok-palette-grey-900);
+  --color-grey-950: var(--ok-palette-grey-950);
 
   --color-text-primary: var(--ok-text-primary);
   --color-text-secondary: var(--ok-text-secondary);
@@ -85,6 +90,8 @@
   --color-paper: var(--ok-bg-paper);
   --color-neutral: var(--ok-bg-neutral);
   --color-divider: var(--ok-divider);
+  --color-control-border: var(--ok-control-border-color);
+  --color-surface-border: var(--ok-surface-border-color);
 
   --radius-2xs: var(--ok-radius-2xs);
   --radius-xs: var(--ok-radius-xs);
@@ -93,6 +100,14 @@
   --radius-lg: var(--ok-radius-lg);
   --radius-xl: var(--ok-radius-xl);
   --radius-2xl: var(--ok-radius-2xl);
+  /* Radius roles of the style (ADR-0070 § 4.1): `rounded-control`, `rounded-surface`… */
+  --radius-control: var(--ok-radius-control);
+  --radius-control-sm: var(--ok-radius-control-sm);
+  --radius-inner: var(--ok-radius-inner);
+  --radius-surface: var(--ok-radius-surface);
+  --radius-surface-md: var(--ok-radius-surface-md);
+  --radius-surface-sm: var(--ok-radius-surface-sm);
+  --radius-chip: var(--ok-radius-chip);
 
   --shadow-z1: var(--ok-shadow-z1);
   --shadow-z4: var(--ok-shadow-z4);

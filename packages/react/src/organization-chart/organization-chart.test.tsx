@@ -235,7 +235,7 @@ describe("OrganizationChart", () => {
     expect(after.height).toBe("16px");
     expect(after.borderTopWidth).toBe("3px");
     expect(after.borderTopStyle).toBe("dotted");
-    expect(after.borderTopColor).toBe("rgb(255, 214, 102)");
+    expect(after.borderTopColor).toBe("rgb(255, 210, 48)");
     expect(after.borderTopLeftRadius).toBe("0px");
     expect(getComputedStyle(nodeOf("First")).paddingLeft).toBe("10px");
   });
@@ -249,11 +249,11 @@ describe("OrganizationChart", () => {
 
   it("palette colors use their light tone", () => {
     const expected = {
-      primary: "rgb(91, 228, 155)",
-      secondary: "rgb(198, 132, 255)",
-      info: "rgb(97, 243, 243)",
-      success: "rgb(119, 237, 139)",
-      error: "rgb(255, 172, 130)",
+      primary: "rgb(163, 179, 255)",
+      secondary: "rgb(196, 180, 255)",
+      info: "rgb(116, 212, 255)",
+      success: "rgb(123, 241, 168)",
+      error: "rgb(255, 162, 162)",
     } as const;
     for (const [color, rgb] of Object.entries(expected)) {
       const { unmount } = render(<Team lineColor={color as never} />);

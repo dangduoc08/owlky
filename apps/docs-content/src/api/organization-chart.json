@@ -2,10 +2,10 @@
  "css": [
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -18,8 +18,9 @@
    "value": "2px"
   },
   {
-   "name": "--ok-divider",
-   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+   "dark": "color-mix(in srgb, #71717B 24%, transparent)",
+   "light": "color-mix(in srgb, #71717B 20%, transparent)",
+   "name": "--ok-divider"
   },
   {
    "name": "--ok-duration-shorter",
@@ -39,7 +40,7 @@
   },
   {
    "name": "--ok-focus-ring-color-brand",
-   "value": "var(--ok-palette-primary-main)"
+   "value": "var(--ok-palette-primary-text)"
   },
   {
    "name": "--ok-focus-ring-offset",
@@ -51,7 +52,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-weight-semibold",
@@ -59,31 +60,31 @@
   },
   {
    "name": "--ok-palette-error-light",
-   "value": "#FFAC82"
+   "value": "#FFA2A2"
   },
   {
    "name": "--ok-palette-info-light",
-   "value": "#61F3F3"
+   "value": "#74D4FF"
   },
   {
    "name": "--ok-palette-primary-light",
-   "value": "#5BE49B"
+   "value": "#A3B3FF"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-secondary-light",
-   "value": "#C684FF"
+   "value": "#C4B4FF"
   },
   {
    "name": "--ok-palette-success-light",
-   "value": "#77ED8B"
+   "value": "#7BF1A8"
   },
   {
    "name": "--ok-palette-warning-light",
-   "value": "#FFD666"
+   "value": "#FFD230"
   },
   {
    "name": "--ok-radius-2xl",
@@ -95,20 +96,20 @@
   },
   {
    "name": "--ok-radius-surface-md",
-   "value": "12px"
+   "value": "14px"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {

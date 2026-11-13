@@ -21,7 +21,8 @@
 @layer components {
   :where([data-ok-rating]) {
     --_ok-rating-size: calc(var(--ok-spacing) * 6);
-    --_ok-rating-color: var(--ok-palette-warning-main);
+    /* The [data-ok-color] binding; warning by default. */
+    --_ok-rating-color: var(--ok-c-main, var(--ok-palette-warning-main));
 
     position: relative;
     display: inline-flex;
@@ -46,26 +47,6 @@
 
   :where([data-ok-rating][data-ok-size="large"]) {
     --_ok-rating-size: calc(var(--ok-spacing) * 7);
-  }
-
-  :where([data-ok-rating][data-ok-color="primary"]) {
-    --_ok-rating-color: var(--ok-palette-primary-main);
-  }
-
-  :where([data-ok-rating][data-ok-color="secondary"]) {
-    --_ok-rating-color: var(--ok-palette-secondary-main);
-  }
-
-  :where([data-ok-rating][data-ok-color="info"]) {
-    --_ok-rating-color: var(--ok-palette-info-main);
-  }
-
-  :where([data-ok-rating][data-ok-color="success"]) {
-    --_ok-rating-color: var(--ok-palette-success-main);
-  }
-
-  :where([data-ok-rating][data-ok-color="error"]) {
-    --_ok-rating-color: var(--ok-palette-error-main);
   }
 
   :where([data-ok-rating-item]) {

@@ -1969,6 +1969,8 @@ export interface PhoneInputParts {
   "data-ok-phone-input-country": Part<"div">;
   /** The flag of a country option (an emoji, or a globe for International); hidden from screen readers. */
   "data-ok-phone-input-flag": Part<"span">;
+  /** The picture of a flag in image mode (`flags="image"`): a decorative lazy `img` of one Circle Flags SVG. */
+  "data-ok-phone-input-flag-image": Part<"img">;
 }
 
 /** Popover: parts, states, values and triggers. */

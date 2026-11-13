@@ -279,7 +279,7 @@ describe("Drawer behavior", () => {
   it.each([
     ["left", / 40px 40px 80px -8px/],
     ["right", / -40px 40px 80px -8px/],
-    ["top", / 0px 16px 32px -4px/],
+    ["top", / 0px 16px 40px -6px/],
   ] as const)("%s drawers use their shadow token", (anchor, shadow) => {
     render(<Example defaultOpen anchor={anchor} />);
     const content = dialog().querySelector("[data-ok-drawer-content]") as HTMLElement;

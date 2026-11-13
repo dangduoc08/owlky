@@ -90,7 +90,7 @@ describe("radio runtime (color swatches)", () => {
     expect(root.style.getPropertyValue("--_ok-swatch")).toBe("");
     root.setAttribute("data-ok-swatch", "var(--ok-palette-primary-main)");
     await settle();
-    expect(getComputedStyle(swatch).backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(getComputedStyle(swatch).backgroundColor).toBe("rgb(97, 95, 255)");
     runtime?.stop();
     expect(root.style.getPropertyValue("--_ok-swatch")).toBe("");
   });
@@ -105,7 +105,7 @@ describe("radio runtime (color swatches)", () => {
       getComputedStyle(root?.querySelector("[data-ok-radio-swatch]") as Element);
     expect(swatch(rounded).width).toBe("20px");
     expect(swatch(rounded).borderRadius).toBe("6px");
-    expect(swatch(rounded).backgroundColor).toBe("rgb(145, 158, 171)");
+    expect(swatch(rounded).backgroundColor).toBe("rgb(113, 113, 123)");
     expect(getComputedStyle(small as Element).width).toBe("28px");
     expect(swatch(small).width).toBe("16px");
     await userEvent.click(small?.querySelector("input") as HTMLInputElement);
@@ -124,6 +124,6 @@ describe("radio CSS without JavaScript", () => {
     await userEvent.click(b as HTMLInputElement);
     expect(a?.checked).toBe(false);
     const root = b?.closest("[data-ok-radio]") as HTMLElement;
-    expect(getComputedStyle(root).color).toBe("rgb(0, 167, 111)");
+    expect(getComputedStyle(root).color).toBe("rgb(97, 95, 255)");
   });
 });

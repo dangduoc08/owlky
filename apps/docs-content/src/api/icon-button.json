@@ -2,7 +2,7 @@
  "css": [
   {
    "name": "--ok-action-disabled",
-   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+   "value": "color-mix(in srgb, #71717B 80%, transparent)"
   },
   {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
@@ -19,6 +19,10 @@
   {
    "name": "--ok-control-height-md",
    "value": "2.25rem"
+  },
+  {
+   "name": "--ok-control-height-xs",
+   "value": "1.75rem"
   },
   {
    "name": "--ok-duration-short",
@@ -38,7 +42,7 @@
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-radius-full",
@@ -49,13 +53,13 @@
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   }
  ],

@@ -56,7 +56,7 @@ describe("Tooltip", () => {
     await wait(50);
     const tooltip = screen.getByRole("tooltip");
     expect(tooltip.hasAttribute("data-ok-open")).toBe(true);
-    expect(getComputedStyle(tooltip).backgroundColor).toBe("rgb(28, 37, 46)");
+    expect(getComputedStyle(tooltip).backgroundColor).toBe("rgb(39, 39, 42)");
     expect(getComputedStyle(tooltip).color).toBe("rgb(255, 255, 255)");
     expect(onOpenChange).toHaveBeenLastCalledWith(true);
     await userEvent.hover(tooltip);

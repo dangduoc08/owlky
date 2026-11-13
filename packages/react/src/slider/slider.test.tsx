@@ -73,7 +73,7 @@ describe("Slider", () => {
     expect(rail.getBoundingClientRect().height).toBe(10);
     expect(thumbs()[0]?.getBoundingClientRect().width).toBe(20);
     expect(track.getBoundingClientRect().width).toBeCloseTo(200, 0);
-    expect(css(track).backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(css(track).backgroundColor).toBe("rgb(97, 95, 255)");
     rerender(
       <div style={{ width: 400 }}>
         <Slider aria-label="S" defaultValue={50} size="small" color="error" />
@@ -81,7 +81,7 @@ describe("Slider", () => {
     );
     expect(rail.getBoundingClientRect().height).toBe(6);
     expect(thumbs()[0]?.getBoundingClientRect().width).toBe(16);
-    expect(css(track).backgroundColor).toBe("rgb(255, 86, 48)");
+    expect(css(track).backgroundColor).toBe("rgb(231, 0, 11)");
   });
 
   it("pointer: press the rail, drag, commit once", () => {
@@ -145,7 +145,7 @@ describe("Slider", () => {
     expect(marks.map((m) => m.hasAttribute("data-ok-active"))).toEqual([true, true, false]);
     const label = screen.getByText("100°C");
     expect(label.getAttribute("aria-hidden")).toBe("true");
-    expect(css(label).color).toBe("rgb(99, 115, 129)");
+    expect(css(label).color).toBe("rgb(82, 82, 92)");
     press(0.7);
     expect(onChange).toHaveBeenLastCalledWith(100, 0);
     screen.getByRole("slider").focus();
@@ -218,7 +218,7 @@ describe("Slider", () => {
     );
     expect(
       css(document.querySelector("[data-ok-slider-value-label]") as Element).backgroundColor,
-    ).toBe("rgb(28, 37, 46)");
+    ).toBe("rgb(39, 39, 42)");
   });
 
   it("vertical: aria-orientation, positions bottom-up, pointer upward", () => {
@@ -252,7 +252,7 @@ describe("Slider", () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(
       css(document.querySelector("[data-ok-slider-track]") as Element).backgroundColor,
-    ).not.toBe("rgb(0, 167, 111)");
+    ).not.toBe("rgb(97, 95, 255)");
   });
 
   it("native input changes (assistive technologies) go through onChange", () => {

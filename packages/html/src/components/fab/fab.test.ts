@@ -46,13 +46,13 @@ describe("fab CSS without JavaScript", () => {
     const [round, extended, fallback] = host.querySelectorAll("button") as unknown as HTMLElement[];
     const box = (el: HTMLElement | undefined) => (el as HTMLElement).getBoundingClientRect();
     expect([box(round).width, box(round).height]).toEqual([56, 56]);
-    expect(getComputedStyle(round as HTMLElement).backgroundColor).toBe("rgb(0, 167, 111)");
+    expect(getComputedStyle(round as HTMLElement).backgroundColor).toBe("rgb(97, 95, 255)");
     expect(box(extended).height).toBe(36);
     expect(getComputedStyle(extended as HTMLElement).backgroundColor).toBe(
-      "rgba(0, 184, 217, 0.16)",
+      "rgba(0, 105, 168, 0.16)",
     );
     expect(box(fallback).height).toBe(48);
-    expect(getComputedStyle(fallback as HTMLElement).backgroundColor).toBe("rgb(223, 227, 232)");
+    expect(getComputedStyle(fallback as HTMLElement).backgroundColor).toBe("rgb(212, 212, 216)");
   });
 
   it("a disabled router link that keeps its href gets no pointer events", () => {

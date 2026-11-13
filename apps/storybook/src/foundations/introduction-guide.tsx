@@ -45,7 +45,7 @@ Because every layer is shared, you can move between environments, or mix them on
 npm install @owlky/react @owlky/styles
 
 // In your app's entry file
-import "@owlky/styles/owlky.css";`,
+import "@owlky/styles/owlky-all.css";`,
   },
   {
     id: "first",

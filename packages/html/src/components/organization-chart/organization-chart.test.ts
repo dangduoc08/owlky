@@ -463,7 +463,7 @@ describe("organization chart runtime", () => {
     root.setAttribute("data-ok-line-color", "primary");
     await settle();
     expect(lengths(root)).toEqual(["3em", "", "0.5rem", "8px"]);
-    expect(firstAfter(host).borderTopColor).toBe("rgb(91, 228, 155)");
+    expect(firstAfter(host).borderTopColor).toBe("rgb(163, 179, 255)");
   });
 
   it.each([

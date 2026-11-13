@@ -510,6 +510,7 @@ const pairs: [component: string, story: string][] = [
   ["markdown", "markdown-content"],
   ["phone-input", "phone-input"],
   ["phone-input", "validation"],
+  ["phone-input", "image-flags"],
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
@@ -627,6 +628,12 @@ async function loaded(page: Page, key: string) {
     // The HTML runtime builds the country lists (React renders them).
     for (const list of await page.locator("[data-ok-phone-input-country] [role=listbox]").all())
       await expect(list.locator("[role=option]").first()).toBeAttached();
+    // Image flags: the visible one has loaded before the pixels are compared.
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll("[data-ok-phone-input-country] [role=combobox] img")].every(
+        (image) => (image as HTMLImageElement).complete,
+      ),
+    );
     return;
   }
   if (key.startsWith("code-editor/")) {

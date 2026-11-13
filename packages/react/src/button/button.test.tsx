@@ -230,13 +230,13 @@ describe("Button styles (shipped CSS)", () => {
       </>,
     );
     expect(css(screen.getByRole("button", { name: "contained" })).backgroundColor).toBe(
-      "rgb(0, 167, 111)",
+      "rgb(97, 95, 255)",
     );
     expect(css(screen.getByRole("button", { name: "outlined" })).borderTopColor).toBe(
-      "rgba(0, 167, 111, 0.48)",
+      "rgba(97, 95, 255, 0.48)",
     );
     expect(css(screen.getByRole("button", { name: "soft" })).backgroundColor).toBe(
-      "rgba(0, 167, 111, 0.16)",
+      "rgba(97, 95, 255, 0.16)",
     );
     expect(css(screen.getByRole("button", { name: "black" })).backgroundColor).toBe("rgb(0, 0, 0)");
   });
@@ -260,7 +260,7 @@ describe("Button styles (shipped CSS)", () => {
     const button = screen.getByRole("button");
     await userEvent.hover(button);
     await settled(button);
-    expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)");
+    expect(css(button).backgroundColor).toBe("rgb(79, 57, 246)");
   });
 
   it("disableElevation drops the hover shadow of contained buttons", async () => {
@@ -273,7 +273,7 @@ describe("Button styles (shipped CSS)", () => {
     expect(button.dataset["okDisableElevation"]).toBe("");
     await userEvent.hover(button);
     await settled(button);
-    expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)");
+    expect(css(button).backgroundColor).toBe("rgb(79, 57, 246)");
     expect(css(button).boxShadow).toBe("none");
   });
 

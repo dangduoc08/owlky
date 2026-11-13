@@ -241,7 +241,7 @@ describe("toaster runtime", () => {
     expect(other?.textContent).toContain("Away");
     expect(titles(host)).toEqual(["Plain", "Here too", "Rich"]);
     const rich = list(host).lastElementChild as HTMLElement;
-    expect(getComputedStyle(rich).backgroundColor).toBe("rgb(211, 252, 210)");
+    expect(getComputedStyle(rich).backgroundColor).toBe("rgb(220, 252, 231)");
     expect(rich.querySelector("[data-ok-toast-close]")).not.toBeNull();
     expect((list(host).firstElementChild as HTMLElement).dataset["okRichColors"]).toBe("false");
     expect(((other as HTMLElement).firstElementChild as HTMLElement).dataset["okInvert"]).toBe("");

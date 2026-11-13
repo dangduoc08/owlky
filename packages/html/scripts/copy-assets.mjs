@@ -9,9 +9,13 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const require = createRequire(import.meta.url);
 const stylesDist = dirname(require.resolve("@owlky/styles/owlky.css"));
 
-for (const file of ["owlky.css", "owlky.min.css"]) {
+// The core sheet, the one-file sheet and the lazy modules' sheets (modules/<name>.css, which the
+// loader attaches before each module, ADR-0068 section 5).
+for (const file of ["owlky.css", "owlky.min.css", "owlky-all.css", "owlky-all.min.css"]) {
   await cp(join(stylesDist, file), join(root, "dist", file));
 }
+await mkdir(join(root, "dist", "modules"), { recursive: true });
+await cp(join(stylesDist, "modules"), join(root, "dist", "modules"), { recursive: true });
 // MapLibre's worker (ADR-0025): modules/map.js finds it in the folder above itself.
 await cp(require.resolve("@owlky/core/map-worker.js"), join(root, "dist", "owlky-map-worker.js"));
 
@@ -33,4 +37,13 @@ for (const file of await readdir(nls))
 // Monaco's license and third-party notices travel with the self-hosted folder (legal step L5).
 for (const file of ["LICENSE", "ThirdPartyNotices.txt"])
   await cp(join(root, "node_modules", "monaco-editor", file), join(root, "dist", "monaco", file));
-console.log("html: copied CSS, snippets, Monaco's messages and notices");
+// Flag images for the phone input (ADR-0070 section 9): one Circle Flags SVG per two-letter code
+// (plus `xx.svg`, the set's unknown-country flag), with the set's license. Separate files, never a
+// bundle: `data-ok-flags="image"` loads them lazily from `flags/` next to `owlky.js`.
+const flags = join(root, "node_modules", "circle-flags");
+await mkdir(join(root, "dist", "flags"), { recursive: true });
+for (const file of await readdir(join(flags, "flags")))
+  if (/^(?:[a-z]{2})\.svg$/.test(file))
+    await cp(join(flags, "flags", file), join(root, "dist", "flags", file));
+await cp(join(flags, "LICENSE.md"), join(root, "dist", "flags", "LICENSE.md"));
+console.log("html: copied CSS, snippets, Monaco's messages, flags and notices");

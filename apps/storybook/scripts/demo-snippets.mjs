@@ -268,6 +268,7 @@ const DEMOS = [
     ["PhoneHideSelectDemo", "phone-input-hide-select"],
     ["PhoneValidationDemo", "validation-invalid"],
     ["PhoneCountriesDemo", "validation-countries"],
+    ["PhoneImageFlagsDemo", "phone-input-image-flags"],
   ].map(([name, snippet]) => ["phone-input", "phone-input-demos.tsx", name, snippet, phoneSnippet]),
 ];
 

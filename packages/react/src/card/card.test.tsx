@@ -39,7 +39,7 @@ describe("Card", () => {
       okCard: "",
     });
     const style = css(card);
-    expect(style.borderRadius).toBe("16px");
+    expect(style.borderRadius).toBe("18px");
     expect(style.boxShadow).toBe(computed("boxShadow", "var(--ok-shadow-card)"));
     expect(style.overflow).toBe("hidden");
     expect(style.position).toBe("relative");
@@ -107,8 +107,8 @@ describe("Card", () => {
         <Card data-testid="c">Dark</Card>
       </div>,
     );
-    expect(css(screen.getByTestId("c")).backgroundColor).toBe("rgb(28, 37, 46)");
-    expect(css(screen.getByTestId("c")).color).toBe("rgb(255, 255, 255)");
+    expect(css(screen.getByTestId("c")).backgroundColor).toBe("rgb(24, 24, 27)");
+    expect(css(screen.getByTestId("c")).color).toBe("rgb(250, 250, 250)");
   });
 });
 
@@ -158,7 +158,7 @@ describe("CardHeader", () => {
     expect(css(title).fontSize).toBe(computedFont("h6"));
     expect(css(subheader).display).toBe("block");
     expect(css(subheader).marginTop).toBe("4px");
-    expect(css(subheader).color).toBe("rgb(99, 115, 129)");
+    expect(css(subheader).color).toBe("rgb(82, 82, 92)");
     const avatar = header.children[0] as HTMLElement;
     const action = header.children[2] as HTMLElement;
     expect(css(avatar).marginInlineEnd).toBe("16px");

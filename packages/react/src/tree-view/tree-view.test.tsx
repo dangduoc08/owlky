@@ -81,7 +81,7 @@ describe("Tree view", () => {
     expect(item("Apples").getAttribute("aria-expanded")).toBe("true");
     expect(item("Apples").getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("group")).toBeTruthy();
-    expect(getComputedStyle(content("Apples")).backgroundColor).toBe("rgba(0, 167, 111, 0.08)");
+    expect(getComputedStyle(content("Apples")).backgroundColor).toBe("rgba(97, 95, 255, 0.08)");
     await userEvent.click(content("Apples"));
     expect(item("Apples").getAttribute("aria-expanded")).toBe("false");
   });

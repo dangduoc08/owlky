@@ -183,7 +183,7 @@ for (const impl of implementations) {
       await expect(tiles).toHaveCount(12);
       // Secondary (purple) and error (red-orange) lights, and the track's translucent stops.
       const twoLights = await tiles.nth(2).evaluate((el) => getComputedStyle(el).backgroundImage);
-      expect(twoLights).toMatch(/rgb\(255, 86, 48\).*rgb\(142, 51, 255\)/);
+      expect(twoLights).toMatch(/rgb\(231, 0, 11\).*rgb\(127, 34, 254\)/);
       expect(twoLights).toMatch(/0\.08\).*0\.24\)/);
       const corner = tiles.nth(4);
       await expect(corner).toHaveCSS("border-right-width", "0px");

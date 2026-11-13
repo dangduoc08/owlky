@@ -32,7 +32,7 @@ for (const impl of implementations) {
       await openStory(page, storyId(impl, "list", "selected"));
       const drafts = page.getByRole("button", { name: "Drafts" });
       await expect(drafts).toHaveAttribute("aria-current", "true");
-      await expect(drafts).toHaveCSS("background-color", "rgba(0, 167, 111, 0.08)");
+      await expect(drafts).toHaveCSS("background-color", "rgba(97, 95, 255, 0.08)");
     });
 
     test("controls: the row text labels the checkbox; the switch is labelled by its row", async ({

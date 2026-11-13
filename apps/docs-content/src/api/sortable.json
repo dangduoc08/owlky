@@ -1,7 +1,7 @@
 {
  "css": [
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -31,27 +31,27 @@
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-radius-surface-md",
-   "value": "12px"
+   "value": "14px"
   },
   {
    "name": "--ok-shadow-z16",
-   "value": "0px 16px 32px -4px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+   "value": "0 2px 6px 0 var(--_ok-sc10), 0 16px 40px -6px var(--_ok-sc14)"
   },
   {
    "name": "--ok-shadow-z8",
-   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+   "value": "0 1px 3px 0 var(--_ok-sc10), 0 8px 20px 0 var(--_ok-sc12)"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   }
  ],

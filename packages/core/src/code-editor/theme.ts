@@ -1,4 +1,5 @@
 import type * as MonacoApi from "monaco-editor";
+import { THEME_ATTRIBUTES } from "../theme/attributes.js";
 import type { Monaco } from "./loader.js";
 
 type ThemeData = MonacoApi.editor.IStandaloneThemeData;
@@ -227,7 +228,7 @@ function watch() {
   scopes.observe(document.documentElement, {
     attributes: true,
     subtree: true,
-    attributeFilter: ["data-ok-theme"],
+    attributeFilter: [...THEME_ATTRIBUTES],
   });
   // `.dark` (Tailwind's convention) is read on the root elements only: classes change constantly.
   const classes = new MutationObserver(schedule);

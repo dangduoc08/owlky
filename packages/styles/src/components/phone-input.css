@@ -88,6 +88,14 @@
     line-height: 1;
   }
 
+  /* Image flags (Circle Flags, round): a square at the emoji's visual size. */
+  :where([data-ok-phone-input-flag-image]) {
+    display: block;
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+    object-fit: cover;
+  }
+
   :where([data-ok-phone-input-flag] > svg) {
     width: calc(var(--ok-spacing) * 5);
     height: calc(var(--ok-spacing) * 5);

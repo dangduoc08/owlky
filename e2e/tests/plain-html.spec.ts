@@ -8,7 +8,7 @@ test.describe("plain HTML page with the CDN bundle", () => {
   });
 
   test("applies the design tokens and exposes exactly one global", async ({ page }) => {
-    await expect(page.locator("#primary-main")).toHaveCSS("background-color", "rgb(0, 167, 111)");
+    await expect(page.locator("#primary-main")).toHaveCSS("background-color", "rgb(97, 95, 255)");
     const globals = await page.evaluate(() =>
       Object.keys(window).filter((key) => /owlky/i.test(key)),
     );
@@ -40,7 +40,7 @@ test.describe("plain HTML page with the CDN bundle", () => {
   test("dark mode switches the token values", async ({ page }) => {
     await page.getByRole("button", { name: "Dark mode" }).click();
     expect(await page.evaluate(() => document.documentElement.dataset["okTheme"])).toBe("dark");
-    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(20, 26, 33)");
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(24, 24, 27)");
   });
 });
 

@@ -48,11 +48,11 @@ test.describe("Foundations / Colors", () => {
       await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     }
     await openStory(page, "foundations-colors--primary");
-    await page.getByRole("button", { name: /^Main\s*#00A76F/ }).click();
-    await expect(page.getByRole("status")).toHaveText("Copied #00A76F");
+    await page.getByRole("button", { name: /^Main\s*#615FFF/ }).click();
+    await expect(page.getByRole("status")).toHaveText("Copied #615FFF");
     await expect(page.getByRole("button", { name: /^Copied!/ })).toBeVisible();
     if (browserName === "chromium") {
-      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("#00A76F");
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("#615FFF");
     }
   });
 
@@ -62,11 +62,11 @@ test.describe("Foundations / Colors", () => {
       await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     }
     await openStory(page, "foundations-colors--primary");
-    await page.getByRole("button", { name: /^Lighter\s*#C8FAD6/ }).focus();
+    await page.getByRole("button", { name: /^Lighter\s*#E0E7FF/ }).focus();
     await page.keyboard.press("Tab");
-    await expect(page.getByRole("button", { name: /^Light\s*#5BE49B/ })).toBeFocused();
+    await expect(page.getByRole("button", { name: /^Light\s*#A3B3FF/ })).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("status")).toHaveText(/#5BE49B/);
+    await expect(page.getByRole("status")).toHaveText(/#A3B3FF/);
   });
 
   test("Gradient: tokens paint text, borders, fills and paper; presets and themes change them", async ({
@@ -88,12 +88,12 @@ test.describe("Foundations / Colors", () => {
     await openStory(page, "foundations-colors--gradient");
     const light = await read();
     expect(light.clip).toBe("text");
-    expect(light.title).toBe("linear-gradient(90deg, rgb(0, 120, 103), rgb(0, 75, 80))");
-    expect(light.fill).toBe("linear-gradient(135deg, rgb(91, 228, 155), rgb(0, 167, 111))");
+    expect(light.title).toBe("linear-gradient(90deg, rgb(79, 57, 246), rgb(49, 44, 133))");
+    expect(light.fill).toBe("linear-gradient(135deg, rgb(163, 179, 255), rgb(97, 95, 255))");
     expect(light.paper).toMatch(/radial-gradient/);
     await openStory(page, "foundations-colors--gradient", "dark");
     const dark = await read();
-    expect(dark.title).toBe("linear-gradient(90deg, rgb(91, 228, 155), rgb(200, 250, 214))");
+    expect(dark.title).toBe("linear-gradient(90deg, rgb(163, 179, 255), rgb(224, 231, 255))");
     expect(dark.paper).not.toBe(light.paper);
   });
 

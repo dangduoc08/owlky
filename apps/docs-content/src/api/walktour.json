@@ -1,7 +1,7 @@
 {
  "css": [
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -19,7 +19,7 @@
   },
   {
    "name": "--ok-focus-ring-color-brand",
-   "value": "var(--ok-palette-primary-main)"
+   "value": "var(--ok-palette-primary-text)"
   },
   {
    "name": "--ok-focus-ring-offset",
@@ -31,15 +31,15 @@
   },
   {
    "name": "--ok-palette-grey-900-channel",
-   "value": "20 26 33"
+   "value": "24 24 27"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
+   "value": "97 95 255"
   },
   {
    "name": "--ok-radius-full",
@@ -47,24 +47,24 @@
   },
   {
    "name": "--ok-radius-surface",
-   "value": "16px"
+   "value": "18px"
   },
   {
    "name": "--ok-shadow-dialog",
-   "value": "-40px 40px 80px -8px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+   "value": "0 0 2px 0 var(--_ok-sc12), -40px 40px 80px -8px var(--_ok-sc20)"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {
@@ -85,7 +85,7 @@
   },
   {
    "name": "--ok-typography-h6-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h6-font-size",
@@ -93,7 +93,7 @@
   },
   {
    "name": "--ok-typography-h6-font-weight",
-   "value": "600"
+   "value": "700"
   },
   {
    "name": "--ok-typography-h6-line-height",

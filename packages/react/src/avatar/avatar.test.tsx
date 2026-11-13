@@ -65,7 +65,7 @@ describe("Avatar", () => {
     const root = screen.getByText("A");
     expect(root.dataset["okVariant"]).toBe(variant);
     expect(css(root).borderRadius).toBe(
-      { circular: "9999px", rounded: "12px", square: "0px" }[variant],
+      { circular: "9999px", rounded: "14px", square: "0px" }[variant],
     );
   });
 

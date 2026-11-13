@@ -255,7 +255,7 @@
 
   /* Arrows ------------------------------------------------------------------------------------ */
   :where([data-ok-carousel-arrows]) {
-    --_ok-carousel-color: var(--ok-c-main, var(--ok-text-secondary));
+    --_ok-carousel-color: var(--ok-c-text, var(--ok-text-secondary));
     --_ok-carousel-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
     --_ok-carousel-contrast: var(--ok-c-contrast, var(--ok-bg-paper));
 

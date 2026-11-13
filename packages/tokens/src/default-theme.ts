@@ -1,23 +1,10 @@
-import type { ColorScheme, GreyScale, Theme } from "./types.js";
+import type { ShadowLayer, Theme } from "./types.js";
 
 /*
- * Default theme: soft greys, green primary, generous radius, soft tinted shadows. `contrastText`
- * is white on fills and dark on warning (ADR-0014); neutral text and `paletteText` (soft
- * variants) meet WCAG 2.2 AA.
+ * Values every style shares (type scale, density, elevation geometry, motion, z-index): the base
+ * of `styleTheme()` (`theme.ts`), which adds a style's colors, fonts, shape and shadows. The
+ * elevations follow Material's geometry (MUI, MIT, see THIRD_PARTY_NOTICES).
  */
-
-const grey: GreyScale = {
-  50: "#FCFDFD",
-  100: "#F9FAFB",
-  200: "#F4F6F8",
-  300: "#DFE3E8",
-  400: "#C4CDD5",
-  500: "#919EAB",
-  600: "#637381",
-  700: "#454F5B",
-  800: "#1C252E",
-  900: "#141A21",
-};
 
 const common = { white: "#FFFFFF", black: "#000000" };
 
@@ -152,7 +139,8 @@ const ELEVATION: [number, number, number][][] = [
 ];
 const ELEVATION_ALPHAS = [20, 14, 12] as const;
 
-function elevationLayers() {
+/** Material elevations 1–24 as shadow layers (soft and subtle styles). */
+export function elevationLayers(): ShadowLayer[][] {
   return ELEVATION.map((layers) =>
     layers.map(([y, blur, spread], i) => ({
       x: 0,
@@ -164,120 +152,31 @@ function elevationLayers() {
   );
 }
 
-const mix = (color: string, percent: number) =>
-  `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+/** Theme keys a style sets (`theme.ts`). */
+export type StyleKeys =
+  | "palette"
+  | "grey"
+  | "schemes"
+  | "style"
+  | "highContrast"
+  | "surface"
+  | "radiusRole"
+  | "icon"
+  | "shadows"
+  | "elevation"
+  | "colorShadow";
 
-const light: ColorScheme = {
-  paletteText: {
-    primary: "#007867",
-    secondary: "#5119B7",
-    info: "#006C9C",
-    success: "#065E49",
-    warning: "#7A4100",
-    error: "#B71D18",
-  },
-  text: { primary: grey[800], secondary: grey[600], disabled: grey[500] },
-  background: { default: common.white, paper: common.white, neutral: grey[200] },
-  inherit: { main: grey[800], hover: grey[700], contrast: common.white },
-  divider: mix(grey[500], 20),
-  action: {
-    hover: mix(grey[500], 8),
-    selected: mix(grey[500], 16),
-    focus: mix(grey[500], 24),
-    disabled: mix(grey[500], 80),
-    disabledBackground: mix(grey[500], 24),
-  },
-  shadowColor: grey[500],
-  backdrop: mix(grey[800], 48),
-};
-
-const dark: ColorScheme = {
-  paletteText: {
-    primary: "#5BE49B",
-    secondary: "#C684FF",
-    info: "#61F3F3",
-    success: "#77ED8B",
-    warning: "#FFD666",
-    error: "#FFAC82",
-  },
-  text: { primary: common.white, secondary: grey[500], disabled: grey[600] },
-  background: { default: grey[900], paper: grey[800], neutral: "#28323D" },
-  inherit: { main: common.white, hover: grey[400], contrast: grey[800] },
-  divider: mix(grey[500], 20),
-  action: {
-    hover: mix(grey[500], 8),
-    selected: mix(grey[500], 16),
-    focus: mix(grey[500], 24),
-    disabled: mix(grey[500], 80),
-    disabledBackground: mix(grey[500], 24),
-  },
-  shadowColor: common.black,
-  backdrop: mix(grey[900], 64),
-};
-
-export const defaultTheme: Theme = {
-  palette: {
-    primary: {
-      lighter: "#C8FAD6",
-      light: "#5BE49B",
-      main: "#00A76F",
-      dark: "#007867",
-      darker: "#004B50",
-      contrastText: common.white,
-    },
-    secondary: {
-      lighter: "#EFD6FF",
-      light: "#C684FF",
-      main: "#8E33FF",
-      dark: "#5119B7",
-      darker: "#27097A",
-      contrastText: common.white,
-    },
-    info: {
-      lighter: "#CAFDF5",
-      light: "#61F3F3",
-      main: "#00B8D9",
-      dark: "#006C9C",
-      darker: "#003768",
-      contrastText: common.white,
-    },
-    success: {
-      lighter: "#D3FCD2",
-      light: "#77ED8B",
-      main: "#22C55E",
-      dark: "#118D57",
-      darker: "#065E49",
-      contrastText: common.white,
-    },
-    warning: {
-      lighter: "#FFF5CC",
-      light: "#FFD666",
-      main: "#FFAB00",
-      dark: "#B76E00",
-      darker: "#7A4100",
-      contrastText: grey[800],
-    },
-    error: {
-      lighter: "#FFE9D5",
-      light: "#FFAC82",
-      main: "#FF5630",
-      dark: "#B71D18",
-      darker: "#7A0916",
-      contrastText: common.white,
-    },
-  },
-  grey,
+/** Everything but the style's own values. */
+export const baseTheme: Omit<Theme, StyleKeys> = {
   common,
   illustration,
-  schemes: { light, dark },
   typography: {
-    fontFamily:
-      '"Public Sans Variable", "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    fontFamilyHeading:
-      '"Barlow", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    fontFamilyLabel: "var(--ok-font-family)",
-    fontFamilyMono:
-      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    // Families, heading weights and the label role come from the style (`styleTheme`).
+    fontFamily: "ui-sans-serif, system-ui, sans-serif",
+    fontFamilyHeading: "ui-sans-serif, system-ui, sans-serif",
+    fontFamilyLabel: "ui-sans-serif, system-ui, sans-serif",
+    fontFamilyMono: "ui-monospace, monospace",
+    heading: { textTransform: "none", letterSpacing: "normal" },
     label: { textTransform: "none", letterSpacing: "normal" },
     fontWeight: { regular: 400, medium: 500, semibold: 600, bold: 700, extrabold: 800 },
     fontSize: {
@@ -358,15 +257,6 @@ export const defaultTheme: Theme = {
     "2xl": "24px",
     full: "9999px",
   },
-  radiusRole: {
-    control: "8px",
-    "control-sm": "6px",
-    inner: "4px",
-    surface: "16px",
-    "surface-md": "12px",
-    "surface-sm": "10px",
-    chip: "10px",
-  },
   borderWidth: { default: "1px", strong: "2px", heavy: "3px" },
   lineWidth: {
     hairline: "0.5px",
@@ -384,14 +274,23 @@ export const defaultTheme: Theme = {
     inset: "-2px",
     offsetTight: "1px",
     color: "var(--ok-text-primary)",
-    colorBrand: "var(--ok-palette-primary-main)",
+    // The primary text tone: 3:1 on every surface in both schemes (main may not be, in dark).
+    colorBrand: "var(--ok-palette-primary-text)",
   },
   // Comfortable sizes (rem: they follow the root font size like the spacing they replace).
   density: {
+    "control-height-xs": "1.75rem",
     "control-height-sm": "1.875rem",
     "control-height-md": "2.25rem",
     "control-height-lg": "3rem",
     "control-height-xl": "3.5rem",
+    "fab-height-sm": "2.5rem",
+    "toggle-group-height-sm": "1.875rem",
+    "toggle-group-height-md": "2.375rem",
+    "toggle-group-height-lg": "2.875rem",
+    "pagination-size-sm": "1.625rem",
+    "pagination-size-md": "2rem",
+    "pagination-size-lg": "2.5rem",
     "control-padding-x-sm": "0.5rem",
     "control-padding-x-md": "0.75rem",
     "control-padding-x-lg": "1rem",
@@ -400,6 +299,7 @@ export const defaultTheme: Theme = {
     "field-padding-x": "0.875rem",
     "item-height": "2.125rem",
     "item-height-sm": "1.875rem",
+    "item-height-dense": "2rem",
     "item-padding-y": "0.5rem",
     "item-padding-x": "1rem",
     "chip-height": "2rem",
@@ -416,31 +316,47 @@ export const defaultTheme: Theme = {
     "switch-padding-x-sm": "0.4375rem",
     "switch-padding-y-sm": "0.25rem",
   },
-  icon: { stroke: "1.5" },
+  // Compact sizes (ADR-0070 § 4.6): spacing (`--ok-spacing`) stays the same.
+  densityCompact: {
+    "control-height-xs": "1.5rem",
+    "control-height-sm": "1.75rem",
+    "control-height-md": "2rem",
+    "control-height-lg": "2.5rem",
+    "control-height-xl": "3rem",
+    "fab-height-sm": "2rem",
+    "toggle-group-height-sm": "1.625rem",
+    "toggle-group-height-md": "2rem",
+    "toggle-group-height-lg": "2.375rem",
+    "pagination-size-sm": "1.5rem",
+    "pagination-size-md": "1.75rem",
+    "pagination-size-lg": "2rem",
+    "control-padding-x-sm": "0.375rem",
+    "control-padding-x-md": "0.625rem",
+    "control-padding-x-lg": "0.75rem",
+    "field-padding-y": "0.5rem",
+    "field-padding-y-sm": "0.25rem",
+    "field-padding-x": "0.75rem",
+    "item-height": "1.75rem",
+    "item-height-sm": "1.625rem",
+    "item-height-dense": "1.625rem",
+    "item-padding-y": "0.25rem",
+    "item-padding-x": "1rem",
+    "chip-height": "1.5rem",
+    "chip-height-sm": "1.25rem",
+    "tab-height": "2.5rem",
+    "cell-padding-y": "0.375rem",
+    "cell-padding-y-sm": "0.25rem",
+    "cell-padding-x": "0.75rem",
+    "row-height": "2.25rem",
+    "row-height-header": "2.5rem",
+    "accordion-summary-height": "3rem",
+    "switch-padding-x": "0.4375rem",
+    "switch-padding-y": "0.25rem",
+    "switch-padding-x-sm": "0.3125rem",
+    "switch-padding-y-sm": "0.125rem",
+  },
   spacing: "0.25rem",
   breakpoints: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 },
-  shadows: {
-    z1: [{ x: 0, y: 1, blur: 2, spread: 0, alpha: 16 }],
-    z4: [{ x: 0, y: 4, blur: 8, spread: 0, alpha: 16 }],
-    z8: [{ x: 0, y: 8, blur: 16, spread: 0, alpha: 16 }],
-    z12: [{ x: 0, y: 12, blur: 24, spread: -4, alpha: 16 }],
-    z16: [{ x: 0, y: 16, blur: 32, spread: -4, alpha: 16 }],
-    z20: [{ x: 0, y: 20, blur: 40, spread: -4, alpha: 16 }],
-    z24: [{ x: 0, y: 24, blur: 48, spread: 0, alpha: 16 }],
-    card: [
-      { x: 0, y: 0, blur: 2, spread: 0, alpha: 20 },
-      { x: 0, y: 12, blur: 24, spread: -4, alpha: 12 },
-    ],
-    dropdown: [
-      { x: 0, y: 0, blur: 2, spread: 0, alpha: 24 },
-      { x: -20, y: 20, blur: 40, spread: -4, alpha: 24 },
-    ],
-    dialog: [{ x: -40, y: 40, blur: 80, spread: -8, alpha: 24 }],
-    // Mirror of `dialog` for surfaces attached to the inline start (left drawers).
-    dialogStart: [{ x: 40, y: 40, blur: 80, spread: -8, alpha: 24 }],
-  },
-  elevation: elevationLayers(),
-  colorShadow: { x: 0, y: 8, blur: 16, spread: 0, alpha: 24 },
   zIndex: { mobileStepper: 1000, dropdown: 1200, modal: 1300, toast: 1400, tooltip: 1500 },
   motion: {
     // `enter` / `exit`: entrance and exit animations (Motion); the others: UI transitions.

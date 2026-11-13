@@ -9,7 +9,8 @@ const config: StorybookConfig = {
   // Storybook MCP (dev server, http://localhost:6006/mcp): the manifest feeds its docs tools.
   features: { componentsManifest: true },
   // Story-only assets (Avatar demo portraits), referenced relatively: `avatars/avatar-1.svg`.
-  staticDirs: ["../public"],
+  // The flag images of the Phone input's image mode (copied by the html build).
+  staticDirs: ["../public", { from: "../../../packages/html/dist/flags", to: "/flags" }],
   framework: { name: "@storybook/react-vite", options: {} },
   core: { disableTelemetry: true },
   async viteFinal(viteConfig) {

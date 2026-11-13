@@ -146,7 +146,7 @@ describe("toggle button CSS without JavaScript", () => {
     );
     const button = host.querySelector("button") as HTMLElement;
     expect(button.getBoundingClientRect().height).toBe(56);
-    expect(getComputedStyle(button).color).toBe("rgb(0, 167, 111)");
-    expect(getComputedStyle(button).borderTopColor).toBe("rgb(0, 167, 111)");
+    expect(getComputedStyle(button).color).toBe("rgb(79, 57, 246)");
+    expect(getComputedStyle(button).borderTopColor).toBe("rgb(79, 57, 246)");
   });
 });

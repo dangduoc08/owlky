@@ -33,6 +33,14 @@ Density, since they must become density tokens. Icons: every SVG path string in
 | Files with `data-ok-preset` / `data-ok-font` / preset APIs | 52 (removal list) |
 | Fonts checked | 10: all OFL 1.1 with Vietnamese; 3 without tabular figures |
 
+## ST3 status (done 2026-11-13)
+Soft's values are the default (ADR-0070 § 1, ADR-0072). § 2's six spacing-based sizes became
+density tokens (`--ok-control-height-xs`, `--ok-fab-height-sm`, `--ok-toggle-group-height-sm|md|lg`,
+`--ok-pagination-size-sm|md|lg`, `--ok-item-height-dense`, plus extended Fab sizes on control
+heights); every density token has its compact value (`densityCompact` in `default-theme.ts`).
+Label moved to `--ok-radius-chip`, Tooltip to `--ok-radius-surface-sm`. Paper draws
+`--ok-surface-border-*` (0 / none in Soft).
+
 ## ST2 status (done 2026-11-12)
 | Section | State |
 |---|---|

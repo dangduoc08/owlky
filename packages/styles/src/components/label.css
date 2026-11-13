@@ -17,8 +17,8 @@
     --_ok-contrast: var(--ok-c-contrast, var(--ok-bg-paper));
     --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
     --_ok-text: var(--ok-c-text, var(--ok-text-primary));
-    --_ok-lighter: rgb(var(--_ok-channel) / 0.24);
-    --_ok-darker: var(--_ok-text);
+    --_ok-lighter: var(--ok-c-lighter, rgb(var(--_ok-channel) / 0.24));
+    --_ok-darker: var(--ok-c-darker, var(--_ok-text));
 
     display: inline-flex;
     flex-shrink: 0;
@@ -29,7 +29,7 @@
     min-width: calc(var(--ok-spacing) * 6);
     height: calc(var(--ok-spacing) * 6);
     padding: 0 calc(var(--ok-spacing) * 1.5);
-    border-radius: var(--ok-radius-control-sm);
+    border-radius: var(--ok-radius-chip);
     background-color: rgb(var(--_ok-channel) / 0.16);
     color: var(--_ok-text);
     font-family: var(--ok-font-family-label);
@@ -51,7 +51,7 @@
   :where([data-ok-label][data-ok-variant="outlined"]) {
     border: var(--ok-border-width-strong) solid var(--_ok-main);
     background-color: transparent;
-    color: var(--_ok-main);
+    color: var(--_ok-text);
   }
 
   :where([data-ok-label][data-ok-variant="inverted"]) {
@@ -67,36 +67,6 @@
     :where([data-ok-label][data-ok-color="default"]) {
       --_ok-lighter: light-dark(var(--ok-palette-grey-300), var(--ok-palette-grey-700));
     }
-  }
-
-  :where([data-ok-label][data-ok-color="primary"]) {
-    --_ok-lighter: var(--ok-palette-primary-lighter);
-    --_ok-darker: var(--ok-palette-primary-darker);
-  }
-
-  :where([data-ok-label][data-ok-color="secondary"]) {
-    --_ok-lighter: var(--ok-palette-secondary-lighter);
-    --_ok-darker: var(--ok-palette-secondary-darker);
-  }
-
-  :where([data-ok-label][data-ok-color="info"]) {
-    --_ok-lighter: var(--ok-palette-info-lighter);
-    --_ok-darker: var(--ok-palette-info-darker);
-  }
-
-  :where([data-ok-label][data-ok-color="success"]) {
-    --_ok-lighter: var(--ok-palette-success-lighter);
-    --_ok-darker: var(--ok-palette-success-darker);
-  }
-
-  :where([data-ok-label][data-ok-color="warning"]) {
-    --_ok-lighter: var(--ok-palette-warning-lighter);
-    --_ok-darker: var(--ok-palette-warning-darker);
-  }
-
-  :where([data-ok-label][data-ok-color="error"]) {
-    --_ok-lighter: var(--ok-palette-error-lighter);
-    --_ok-darker: var(--ok-palette-error-darker);
   }
 
   :where([data-ok-label-icon]) {

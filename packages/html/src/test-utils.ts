@@ -32,42 +32,18 @@ export function resetPage(): void {
   delete (globalThis as { Owlky?: unknown }).Owlky;
 }
 
-/** Brand-colored text follows the reference look (ADR-0014): exempt from `color-contrast` only. */
+/**
+ * Parts exempt from axe `color-contrast`: only inactive (disabled) ones, as WCAG 1.4.3 allows.
+ * Every other color pair, brand colors included, meets AA (ADR-0070 § 7).
+ */
 const CONTRAST_EXEMPT = [
-  '[data-ok-button][data-ok-color]:not([data-ok-color="inherit"]):not([data-ok-variant="soft"])',
-  '[data-ok-fab]:not([data-ok-variant="soft"])',
-  '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
-  '[data-ok-alert]:not([data-ok-variant="standard"])',
-  '[data-ok-pagination]:not([data-ok-color="standard"]):not([data-ok-variant="soft"]) [aria-current="page"]',
-  '[data-ok-avatar]:not([data-ok-color="default"])',
-  '[data-ok-badge]:not([data-ok-color="default"]) > [data-ok-badge-badge]',
-  '[data-ok-chip]:not([data-ok-color="default"]):not([data-ok-variant="soft"])',
-  '[data-ok-chip][data-ok-color="white"]',
-  '[data-ok-label][data-ok-variant="filled"]:not([data-ok-color="default"])',
-  '[data-ok-label][data-ok-variant="outlined"]:not([data-ok-color="default"])',
-  '[data-ok-label][data-ok-color="white"]',
-  '[data-ok-chip][data-ok-color="black"]',
-  '[data-ok-label][data-ok-color="black"]',
-  // A disabled label is inactive, dimmed like the reference.
+  // Only inactive parts (WCAG 1.4.3 exception): every other color pair meets AA (ADR-0070 § 7).
   "[data-ok-label][data-ok-disabled]",
-  '[data-ok-list-subheader][data-ok-color="primary"]',
-  // Typography (and Link) in a palette's main tone follows the reference (ADR-0014); disabled text
-  // is inactive; inherited colors (Link `inherit`) are checked.
-  '[data-ok-typography][data-ok-color]:not([data-ok-color="textPrimary"]):not([data-ok-color="textSecondary"]):not([data-ok-color="inherit"])',
-  '[data-ok-tabs]:not([data-ok-text-color="inherit"]) [role="tab"][aria-selected="true"]',
-  '[data-ok-picker-day][aria-selected="true"]',
-  '[data-ok-picker-month][aria-checked="true"]',
-  '[data-ok-picker-year][aria-checked="true"]',
-  '[data-ok-digital-clock-item][aria-selected="true"]',
-  '[data-ok-time-clock-number][aria-selected="true"]',
-  '[data-ok-time-clock-meridiem][aria-pressed="true"]',
-  "[data-ok-editor-content] a",
-  "[data-ok-markdown] a",
-  '[data-ok-carousel-arrows]:not([data-ok-color="inherit"]) [data-ok-carousel-counter]',
-  '[data-ok-carousel-dots]:not([data-ok-color="inherit"]) [data-ok-carousel-dot][aria-current="true"]',
-  // A disabled upload zone is an inactive component (WCAG 1.4.3 exception), dimmed like the reference.
+  // Disabled text (Typography and Link `textDisabled`) marks inactive content.
+  '[data-ok-typography][data-ok-color="textDisabled"]',
+  // A disabled upload zone is an inactive component.
   "[data-ok-upload-zone]:has(> [data-ok-upload-input]:disabled)",
-  // The label of a disabled Select is inactive (WCAG 1.4.3 exception), like TextField's.
+  // The label of a disabled Select is inactive, like TextField's.
   "[data-ok-form-control]:has(> [data-ok-select] > [data-ok-select-input]:disabled) > [data-ok-input-label]",
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];

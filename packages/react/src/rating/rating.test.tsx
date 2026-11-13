@@ -47,9 +47,9 @@ describe("Rating", () => {
     render(<Rating name="r" defaultValue={1} />);
     const [on, off] = icons() as [HTMLElement, HTMLElement];
     expect(on.getBoundingClientRect()).toMatchObject({ width: 24, height: 24 });
-    expect(css(on).color).toBe("rgb(255, 171, 0)");
-    expect(css(off).color).toBe("rgba(145, 158, 171, 0.48)");
-    expect(css(on.querySelector("svg") as Element).fill).toBe("rgb(255, 171, 0)");
+    expect(css(on).color).toBe("rgb(187, 77, 0)");
+    expect(css(off).color).toBe("rgba(113, 113, 123, 0.48)");
+    expect(css(on.querySelector("svg") as Element).fill).toBe("rgb(187, 77, 0)");
   });
 
   it("click chooses, clicking the chosen icon clears; onChange once per change", async () => {

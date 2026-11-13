@@ -4,8 +4,8 @@ import { expect, type Page, test } from "@playwright/test";
  * Theme scoping of the shipped CSS (dist), independent of components. Guards the token
  * serialization: light/dark/system scopes, nesting, `.dark`, and per-scope shadow colors.
  */
-const LIGHT = { text: "#1C252E", paper: "#FFFFFF", shadow: "#919EAB" };
-const DARK = { text: "#FFFFFF", paper: "#1C252E", shadow: "#000000" };
+const LIGHT = { text: "#18181B", paper: "#FFFFFF", shadow: "#1E1A4D" };
+const DARK = { text: "#FAFAFA", paper: "#18181B", shadow: "#000000" };
 
 async function tokensOf(page: Page, setup: string) {
   return page.evaluate((html) => {
@@ -31,7 +31,8 @@ function expectScheme(tokens: Awaited<ReturnType<typeof tokensOf>>, scheme: type
   expect(tokens.text).toBe(scheme.text);
   expect(tokens.paper).toBe(scheme.paper);
   for (const shadow of [tokens.z8, tokens.elevation, tokens.card]) {
-    expect(shadow).toContain(`COLOR-MIX(IN SRGB, ${scheme.shadow}`);
+    // Space toggles (ADR-0072) leave extra whitespace in substituted values.
+    expect(shadow.replace(/\s+/g, " ")).toContain(`COLOR-MIX(IN SRGB, ${scheme.shadow}`);
   }
 }
 
@@ -115,6 +116,6 @@ test.describe("theme scopes (shipped CSS)", () => {
     );
     expect(
       (await read("--ok-c-main", '<div id="probe" data-ok-color="primary"></div>')).toUpperCase(),
-    ).toBe("#00A76F");
+    ).toBe("#615FFF");
   });
 });

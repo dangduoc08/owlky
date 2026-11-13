@@ -158,7 +158,7 @@
 
     border: var(--ok-border-width) solid var(--_ok-main);
     background-color: transparent;
-    color: var(--_ok-main);
+    color: var(--_ok-text);
   }
 
   :where([data-ok-chip][data-ok-variant="outlined"][data-ok-size="small"]) {

@@ -23,13 +23,13 @@
 
   :where([data-ok-pagination-item]),
   :where([data-ok-pagination-ellipsis]) {
-    /* standard (neutral); colors below */
-    --_ok-main: var(--ok-inherit-main);
-    --_ok-channel: var(--ok-palette-grey-500-channel);
-    --_ok-hover: var(--ok-inherit-hover);
-    --_ok-contrast: var(--ok-inherit-contrast);
-    --_ok-text: var(--ok-text-primary);
-    --_ok-size: calc(var(--ok-spacing) * 8);
+    /* The pagination's color (below), neutral without a pagination root. */
+    --_ok-main: var(--_ok-pg-main, var(--ok-inherit-main));
+    --_ok-channel: var(--_ok-pg-channel, var(--ok-palette-grey-500-channel));
+    --_ok-hover: var(--_ok-pg-hover, var(--ok-inherit-hover));
+    --_ok-contrast: var(--_ok-pg-contrast, var(--ok-inherit-contrast));
+    --_ok-text: var(--_ok-pg-text, var(--ok-text-primary));
+    --_ok-size: var(--ok-pagination-size-md);
     --_ok-icon: calc(var(--ok-spacing) * 5);
 
     display: inline-flex;
@@ -67,55 +67,15 @@
   }
 
   /*
-   * Colors: read on the items from the palette. The `--ok-c-*` bindings don't inherit, and
-   * WebKit ignores `inherit` on registered non-inheriting properties (AGENTS.md).
+   * Colors: the root's [data-ok-color] binding, copied into private properties that inherit (the
+   * `--ok-c-*` bindings don't, and WebKit ignores `inherit` on them: AGENTS.md); standard is neutral.
    */
-  :where([data-ok-pagination][data-ok-color="primary"] [data-ok-pagination-item]) {
-    --_ok-main: var(--ok-palette-primary-main);
-    --_ok-channel: var(--ok-palette-primary-main-channel);
-    --_ok-hover: var(--ok-palette-primary-dark);
-    --_ok-contrast: var(--ok-palette-primary-contrast-text);
-    --_ok-text: var(--ok-palette-primary-text);
-  }
-
-  :where([data-ok-pagination][data-ok-color="secondary"] [data-ok-pagination-item]) {
-    --_ok-main: var(--ok-palette-secondary-main);
-    --_ok-channel: var(--ok-palette-secondary-main-channel);
-    --_ok-hover: var(--ok-palette-secondary-dark);
-    --_ok-contrast: var(--ok-palette-secondary-contrast-text);
-    --_ok-text: var(--ok-palette-secondary-text);
-  }
-
-  :where([data-ok-pagination][data-ok-color="info"] [data-ok-pagination-item]) {
-    --_ok-main: var(--ok-palette-info-main);
-    --_ok-channel: var(--ok-palette-info-main-channel);
-    --_ok-hover: var(--ok-palette-info-dark);
-    --_ok-contrast: var(--ok-palette-info-contrast-text);
-    --_ok-text: var(--ok-palette-info-text);
-  }
-
-  :where([data-ok-pagination][data-ok-color="success"] [data-ok-pagination-item]) {
-    --_ok-main: var(--ok-palette-success-main);
-    --_ok-channel: var(--ok-palette-success-main-channel);
-    --_ok-hover: var(--ok-palette-success-dark);
-    --_ok-contrast: var(--ok-palette-success-contrast-text);
-    --_ok-text: var(--ok-palette-success-text);
-  }
-
-  :where([data-ok-pagination][data-ok-color="warning"] [data-ok-pagination-item]) {
-    --_ok-main: var(--ok-palette-warning-main);
-    --_ok-channel: var(--ok-palette-warning-main-channel);
-    --_ok-hover: var(--ok-palette-warning-dark);
-    --_ok-contrast: var(--ok-palette-warning-contrast-text);
-    --_ok-text: var(--ok-palette-warning-text);
-  }
-
-  :where([data-ok-pagination][data-ok-color="error"] [data-ok-pagination-item]) {
-    --_ok-main: var(--ok-palette-error-main);
-    --_ok-channel: var(--ok-palette-error-main-channel);
-    --_ok-hover: var(--ok-palette-error-dark);
-    --_ok-contrast: var(--ok-palette-error-contrast-text);
-    --_ok-text: var(--ok-palette-error-text);
+  :where([data-ok-pagination]) {
+    --_ok-pg-main: var(--ok-c-main, var(--ok-inherit-main));
+    --_ok-pg-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
+    --_ok-pg-hover: var(--ok-c-hover, var(--ok-inherit-hover));
+    --_ok-pg-contrast: var(--ok-c-contrast, var(--ok-inherit-contrast));
+    --_ok-pg-text: var(--ok-c-text, var(--ok-text-primary));
   }
 
   /* Sizes */
@@ -123,7 +83,7 @@
     [data-ok-pagination][data-ok-size="sm"]
       :is([data-ok-pagination-item], [data-ok-pagination-ellipsis])
   ) {
-    --_ok-size: calc(var(--ok-spacing) * 6.5);
+    --_ok-size: var(--ok-pagination-size-sm);
     --_ok-icon: calc(var(--ok-spacing) * 4.5);
 
     padding: 0 calc(var(--ok-spacing) * 1);
@@ -133,7 +93,7 @@
     [data-ok-pagination][data-ok-size="lg"]
       :is([data-ok-pagination-item], [data-ok-pagination-ellipsis])
   ) {
-    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-size: var(--ok-pagination-size-lg);
     --_ok-icon: calc(var(--ok-spacing) * 5.5);
 
     padding: 0 calc(var(--ok-spacing) * 2.5);
@@ -168,7 +128,7 @@
   ) {
     border-color: var(--_ok-main);
     background-color: rgb(var(--_ok-channel) / 0.08);
-    color: var(--_ok-main);
+    color: var(--_ok-text);
   }
 
   /* Variants: soft */

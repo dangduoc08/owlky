@@ -279,7 +279,7 @@
   }
 
   :where([data-ok-editor-content] a) {
-    color: var(--ok-palette-primary-main);
+    color: var(--ok-palette-primary-text);
     text-decoration: underline;
   }
 
@@ -606,7 +606,7 @@
     border-radius: var(--ok-radius-inner);
     background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
     /* Brand text on a tint, as the reference's links (ADR-0014). */
-    color: var(--ok-palette-primary-main);
+    color: var(--ok-palette-primary-text);
     font-weight: var(--ok-font-weight-semibold);
   }
 

@@ -402,32 +402,22 @@
     translate: -50% 0;
   }
 
-  :where([data-ok-gantt-bar][data-ok-color="primary"]) {
-    --_ok-gantt-c: var(--ok-palette-primary-main);
-    --_ok-gantt-c-soft: rgb(var(--ok-palette-primary-main-channel) / 0.32);
+  /* Palette colors through the [data-ok-color] binding; critical tasks are error. */
+  :where(
+    [data-ok-gantt-bar]:is(
+      [data-ok-color="primary"],
+      [data-ok-color="secondary"],
+      [data-ok-color="info"],
+      [data-ok-color="success"],
+      [data-ok-color="warning"],
+      [data-ok-color="error"]
+    )
+  ) {
+    --_ok-gantt-c: var(--ok-c-main);
+    --_ok-gantt-c-soft: rgb(var(--ok-c-channel) / 0.32);
   }
 
-  :where([data-ok-gantt-bar][data-ok-color="secondary"]) {
-    --_ok-gantt-c: var(--ok-palette-secondary-main);
-    --_ok-gantt-c-soft: rgb(var(--ok-palette-secondary-main-channel) / 0.32);
-  }
-
-  :where([data-ok-gantt-bar][data-ok-color="info"]) {
-    --_ok-gantt-c: var(--ok-palette-info-main);
-    --_ok-gantt-c-soft: rgb(var(--ok-palette-info-main-channel) / 0.32);
-  }
-
-  :where([data-ok-gantt-bar][data-ok-color="success"]) {
-    --_ok-gantt-c: var(--ok-palette-success-main);
-    --_ok-gantt-c-soft: rgb(var(--ok-palette-success-main-channel) / 0.32);
-  }
-
-  :where([data-ok-gantt-bar][data-ok-color="warning"]) {
-    --_ok-gantt-c: var(--ok-palette-warning-main);
-    --_ok-gantt-c-soft: rgb(var(--ok-palette-warning-main-channel) / 0.32);
-  }
-
-  :where([data-ok-gantt-bar][data-ok-color="error"], [data-ok-gantt-bar][data-ok-critical]) {
+  :where([data-ok-gantt-bar][data-ok-critical]) {
     --_ok-gantt-c: var(--ok-palette-error-main);
     --_ok-gantt-c-soft: rgb(var(--ok-palette-error-main-channel) / 0.32);
   }

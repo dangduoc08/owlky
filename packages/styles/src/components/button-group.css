@@ -34,36 +34,16 @@
   }
 
   :where([data-ok-button-group] > [data-ok-button]) {
-    /* Separator: palette `dark` for colored buttons, neutral grey otherwise. */
-    --_ok-group-channel: var(--ok-palette-grey-500-channel);
+    /* Separator: the button's color (the [data-ok-color] binding), neutral grey otherwise. */
+    --_ok-group-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
     --_ok-separator-alpha: 0.32;
     --_ok-separator: rgb(var(--_ok-group-channel) / var(--_ok-separator-alpha));
 
     min-width: calc(var(--ok-spacing) * 10);
   }
 
-  :where([data-ok-button-group] > [data-ok-color="primary"]) {
-    --_ok-group-channel: var(--ok-palette-primary-dark-channel);
-  }
-
-  :where([data-ok-button-group] > [data-ok-color="secondary"]) {
-    --_ok-group-channel: var(--ok-palette-secondary-dark-channel);
-  }
-
-  :where([data-ok-button-group] > [data-ok-color="info"]) {
-    --_ok-group-channel: var(--ok-palette-info-dark-channel);
-  }
-
-  :where([data-ok-button-group] > [data-ok-color="success"]) {
-    --_ok-group-channel: var(--ok-palette-success-dark-channel);
-  }
-
-  :where([data-ok-button-group] > [data-ok-color="warning"]) {
-    --_ok-group-channel: var(--ok-palette-warning-dark-channel);
-  }
-
-  :where([data-ok-button-group] > [data-ok-color="error"]) {
-    --_ok-group-channel: var(--ok-palette-error-dark-channel);
+  :where([data-ok-button-group] > :is([data-ok-color="black"], [data-ok-color="white"])) {
+    --_ok-group-channel: var(--ok-palette-grey-500-channel);
   }
 
   :where(

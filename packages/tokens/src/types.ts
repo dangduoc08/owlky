@@ -26,7 +26,7 @@ export interface PaletteColor {
   contrastText: string;
 }
 
-export const greyShades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900] as const;
+export const greyShades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
 export type GreyShade = (typeof greyShades)[number];
 export type GreyScale = Record<GreyShade, string>;
 
@@ -35,10 +35,18 @@ export interface ColorScheme {
   /** Text tone of each palette color on this scheme's surfaces (outlined/soft/text variants). AA on paper. */
   paletteText: Record<PaletteColorName, string>;
   text: { primary: string; secondary: string; disabled: string };
-  background: { default: string; paper: string; neutral: string };
+  /**
+   * `default`: the page background (`--ok-bg-default`); `contrast`: the page background with
+   * `data-ok-surface="contrast"` (one neutral step away from paper).
+   */
+  background: { default: string; contrast: string; paper: string; neutral: string };
   /** The neutral `inherit` component color. */
   inherit: { main: string; hover: string; contrast: string };
   divider: string;
+  /** Control borders (fields, outlined controls): 3:1 on the surfaces, 4.5:1 in high contrast. */
+  border: string;
+  /** Edge color of surfaces (`--ok-surface-border-color`), `transparent` in shadow styles. */
+  surfaceBorder: string;
   action: {
     hover: string;
     selected: string;
@@ -49,6 +57,8 @@ export interface ColorScheme {
   /** Base color all elevation shadows are tinted with. */
   shadowColor: string;
   backdrop: string;
+  /** Default categorical chart colors (`--ok-chart-series-1…8`): 3:1 on the surfaces. */
+  chart: string[];
 }
 
 export const typographyVariants = [
@@ -109,6 +119,8 @@ export interface Typography {
   fontFamilyMono: string;
   /** Case and tracking of the label role (`--ok-label-text-transform`, `--ok-label-letter-spacing`). */
   label: { textTransform: string; letterSpacing: string };
+  /** Case and tracking of h1–h6 (`--ok-heading-text-transform`, `--ok-heading-letter-spacing`). */
+  heading: { textTransform: string; letterSpacing: string };
   fontWeight: {
     regular: number;
     medium: number;
@@ -148,10 +160,18 @@ export type LineWidthName = (typeof lineWidthNames)[number];
 
 /** Control sizes that density changes (`--ok-<name>`, ADR-0070 § 4.6). */
 export const densityNames = [
+  "control-height-xs",
   "control-height-sm",
   "control-height-md",
   "control-height-lg",
   "control-height-xl",
+  "fab-height-sm",
+  "toggle-group-height-sm",
+  "toggle-group-height-md",
+  "toggle-group-height-lg",
+  "pagination-size-sm",
+  "pagination-size-md",
+  "pagination-size-lg",
   "control-padding-x-sm",
   "control-padding-x-md",
   "control-padding-x-lg",
@@ -160,6 +180,7 @@ export const densityNames = [
   "field-padding-x",
   "item-height",
   "item-height-sm",
+  "item-height-dense",
   "item-padding-y",
   "item-padding-x",
   "chip-height",
@@ -215,6 +236,20 @@ export interface Theme {
    */
   illustration: { skin: Record<SkinToneName, string> };
   schemes: { light: ColorScheme; dark: ColorScheme };
+  /** The style this theme was built from (`data-ok-style`, ADR-0070). */
+  style: string;
+  /**
+   * Colors and line widths with `data-ok-contrast="high"`: text 7:1, graphics 4.5:1, the same
+   * hues with only their lightness moved (ADR-0070 § 7).
+   */
+  highContrast: {
+    palette: Record<PaletteColorName, PaletteColor>;
+    schemes: { light: ColorScheme; dark: ColorScheme };
+    focusRingWidth: string;
+    iconStroke: string;
+  };
+  /** The edge every surface draws (Paper and the surfaces built on it). */
+  surface: { borderWidth: string; borderStyle: "none" | "solid" };
   typography: Typography;
   radius: Record<RadiusName, string>;
   radiusRole: Record<RadiusRoleName, string>;
@@ -233,7 +268,10 @@ export interface Theme {
     color: string;
     colorBrand: string;
   };
+  /** Control sizes with `data-ok-density="comfortable"` (the default). */
   density: Record<DensityName, string>;
+  /** Control sizes with `data-ok-density="compact"`. */
+  densityCompact: Record<DensityName, string>;
   /** Stroke width of component icons (`--ok-icon-stroke`, a number of user units). */
   icon: { stroke: string };
   /** Base spacing unit. Spacing step `n` = `n × spacing`. */

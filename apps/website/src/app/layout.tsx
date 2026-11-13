@@ -1,6 +1,5 @@
-import "@fontsource-variable/public-sans";
-import "@fontsource/barlow/700.css";
-import "@fontsource/barlow/800.css";
+// Soft, the default style, uses Nunito (ADR-0070); Owlky itself doesn't bundle fonts.
+import "@fontsource-variable/nunito";
 import "./globals.css";
 import { THEME_SETTINGS_KEY } from "@owlky/core";
 import type { Metadata, Viewport } from "next";

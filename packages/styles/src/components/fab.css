@@ -17,7 +17,8 @@
     --_ok-main: var(--ok-c-main, var(--ok-palette-grey-300));
     --_ok-hover: var(--ok-c-hover, var(--ok-palette-grey-400));
     --_ok-contrast: var(--ok-c-contrast, var(--ok-palette-grey-800));
-    --_ok-outline-color: var(--ok-c-main, var(--ok-text-secondary));
+    /* Outlined text and focus ring: the color's text tone (AA on the surface, ADR-0070). */
+    --_ok-outline-color: var(--ok-c-text, var(--ok-text-secondary));
     --_ok-text: var(--ok-c-text, var(--ok-text-primary));
     --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
     --_ok-shadow: var(--ok-c-shadow, var(--ok-shadow-z8));
@@ -79,7 +80,7 @@
 
   /* Sizes */
   :where([data-ok-fab][data-ok-size="sm"]) {
-    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-size: var(--ok-fab-height-sm);
     --_ok-padding-x: calc(var(--ok-spacing) * 2);
     --_ok-font-size: var(--ok-font-size-sm);
     --_ok-icon-size: calc(var(--ok-spacing) * 5);
@@ -93,7 +94,7 @@
 
   /* Extended: pill with icon + label, a step lower than the round fab. */
   :where([data-ok-fab][data-ok-extended]) {
-    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-size: var(--ok-fab-height-sm);
     --_ok-icon-size: calc(var(--ok-spacing) * 5);
 
     width: auto;
@@ -101,11 +102,11 @@
   }
 
   :where([data-ok-fab][data-ok-extended][data-ok-size="sm"]) {
-    --_ok-size: calc(var(--ok-spacing) * 9);
+    --_ok-size: var(--ok-control-height-md);
   }
 
   :where([data-ok-fab][data-ok-extended][data-ok-size="lg"]) {
-    --_ok-size: calc(var(--ok-spacing) * 12);
+    --_ok-size: var(--ok-control-height-lg);
   }
 
   /* Variants */

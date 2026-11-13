@@ -48,7 +48,7 @@ for (const impl of implementations) {
                 getComputedStyle(scope.querySelector("[data-ok-paper]") as Element).backgroundColor,
             ),
           );
-        expect(backgrounds).toEqual(["rgb(255, 255, 255)", "rgb(28, 37, 46)"]);
+        expect(backgrounds).toEqual(["rgb(255, 255, 255)", "rgb(24, 24, 27)"]);
       });
     }
 
@@ -63,12 +63,12 @@ for (const impl of implementations) {
       expect(await shadows(page)).toEqual([true, true]);
     });
 
-    test("corners: rounded 8px, square 0", async ({ page }) => {
+    test("corners: rounded 10px, square 0", async ({ page }) => {
       await openStory(page, storyId(impl, "paper", "corners"));
       const radii = await page
         .locator("[data-ok-paper]")
         .evaluateAll((all) => all.map((p) => getComputedStyle(p).borderTopLeftRadius));
-      expect(radii).toEqual(["8px", "0px"]);
+      expect(radii).toEqual(["10px", "0px"]);
     });
 
     test("the Controls' variant and square reach every example", async ({ page }) => {

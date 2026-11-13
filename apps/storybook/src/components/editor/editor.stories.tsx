@@ -27,7 +27,7 @@ const SETUP = [
   "<!-- Once per page (CDN): owlky.js loads the editor and Markdown when the page holds them. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/editor" and "@owlky/html/markdown" (or register createEditor() and createMarkdown() yourself, as below). -->',
+  '<!-- npm: import "@owlky/styles/owlky-all.css" and "@owlky/html/auto", then "@owlky/html/editor" and "@owlky/html/markdown" (or register createEditor() and createMarkdown() yourself, as below). -->',
 ].join("\n");
 
 const meta = {
@@ -60,7 +60,7 @@ const PLAIN_SETUP = [
   "<!-- Once per page (CDN): owlky.js loads the editor when the page holds one. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css", "@owlky/html/auto" and "@owlky/html/editor" (or register the editor yourself, as below). -->',
+  '<!-- npm: import "@owlky/styles/owlky-all.css", "@owlky/html/auto" and "@owlky/html/editor" (or register the editor yourself, as below). -->',
 ].join("\n");
 
 /** A story of one Tiptap feature (Tiptap's demos): one editor, no Controls. */

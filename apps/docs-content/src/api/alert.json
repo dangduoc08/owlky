@@ -13,12 +13,28 @@
    "name": "--ok-c-contrast"
   },
   {
+   "description": "The darker shade of the element's `data-ok-color` (palette colors only).",
+   "name": "--ok-c-darker"
+  },
+  {
+   "description": "The hover color of the element's `data-ok-color` (its dark shade).",
+   "name": "--ok-c-hover"
+  },
+  {
+   "description": "The lighter tint of the element's `data-ok-color` (palette colors only).",
+   "name": "--ok-c-lighter"
+  },
+  {
    "description": "The main color of the element's `data-ok-color`.",
    "name": "--ok-c-main"
   },
   {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
+  },
+  {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-weight-medium",
@@ -29,64 +45,33 @@
    "value": "#FFFFFF"
   },
   {
-   "name": "--ok-palette-error-dark",
-   "value": "#B71D18"
-  },
-  {
-   "name": "--ok-palette-error-darker",
-   "value": "#7A0916"
-  },
-  {
-   "name": "--ok-palette-error-lighter",
-   "value": "#FFE9D5"
-  },
-  {
-   "name": "--ok-palette-info-dark",
-   "value": "#006C9C"
-  },
-  {
-   "name": "--ok-palette-info-darker",
-   "value": "#003768"
-  },
-  {
-   "name": "--ok-palette-info-lighter",
-   "value": "#CAFDF5"
-  },
-  {
    "name": "--ok-palette-success-dark",
-   "value": "#118D57"
+   "value": "#016630"
   },
   {
    "name": "--ok-palette-success-darker",
-   "value": "#065E49"
+   "value": "#0D542B"
   },
   {
    "name": "--ok-palette-success-lighter",
-   "value": "#D3FCD2"
+   "value": "#DCFCE7"
   },
   {
    "name": "--ok-palette-success-main",
-   "value": "#22C55E"
+   "value": "#008236"
   },
   {
    "name": "--ok-palette-success-main-channel",
-   "value": "34 197 94"
+   "value": "0 130 54"
   },
   {
-   "name": "--ok-palette-warning-dark",
-   "value": "#B76E00"
-  },
-  {
-   "name": "--ok-palette-warning-darker",
-   "value": "#7A4100"
-  },
-  {
-   "name": "--ok-palette-warning-lighter",
-   "value": "#FFF5CC"
+   "dark": "#05DF72",
+   "light": "#016630",
+   "name": "--ok-palette-success-text"
   },
   {
    "name": "--ok-radius-control",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "name": "--ok-spacing",

@@ -87,7 +87,13 @@ const budgets = [
   // swatches (4.23; sizes, shapes, checked states, forced colors; about 0.6 kB) and the phone input
   // (4.25, ADR-0061: the bare country select, flags, the visually hidden name; about 0.25 kB):
   // 60.49 kB before the phone input. Optimization is deferred to 1.0 prep.
-  ["packages/styles/dist/owlky.min.css", 63_500, "All CSS (tokens + components)"],
+  // S4 (ADR-0068 section 5): `owlky.min.css` is the core sheet (tokens + the light components,
+  // the CDN page's one link) and `owlky-all.min.css` keeps the 63.5 kB bundle's role (every
+  // component in one file: bundlers, tests, Storybook); each lazy module has its own sheet,
+  // budgeted below. The history above is the all-in-one file's.
+  // Core 29.43 kB measured (62.7 kB for the whole bundle before the split; the target was 35 kB).
+  ["packages/styles/dist/owlky.min.css", 30_900, "Core CSS (tokens + light components)"],
+  ["packages/styles/dist/owlky-all.min.css", 63_500, "All CSS (tokens + components)"], // 63.50 kB
   // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
   // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
   // reference (ADR-0049: every prop, attribute, part, event, method, type and CSS variable per
@@ -118,6 +124,35 @@ const budgets = [
   // entry's CSS variables): 1643.5 kB. The npm tarball only; no page downloads it.
   ["packages/mcp/manifest.json", 1_690_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
+
+// The lazy modules' stylesheets (`modules/<name>.css`, S4), measured plus at most 5%.
+const MODULE_SHEET_BUDGETS = {
+  autocomplete: 1_150, // 1.06 kB
+  carousel: 4_800, // 4.57 kB
+  chart: 4_700, // 4.44 kB
+  "code-editor": 800, // 0.76 kB
+  "data-grid": 4_800, // 4.55 kB
+  "date-picker": 4_800, // 4.53 kB
+  editor: 2_950, // 2.77 kB
+  gantt: 2_800, // 2.64 kB
+  illustration: 800, // 0.73 kB
+  map: 4_300, // 4.06 kB
+  markdown: 1_700, // 1.60 kB
+  motion: 3_050, // 2.87 kB
+  "organization-chart": 3_950, // 3.76 kB
+  "phone-input": 750, // 0.69 kB
+  sortable: 1_200, // 1.11 kB
+  "transfer-list": 850, // 0.76 kB
+  "tree-view": 1_450, // 1.34 kB
+  upload: 2_200, // 2.09 kB
+  walktour: 1_300, // 1.20 kB
+};
+for (const [name, limit] of Object.entries(MODULE_SHEET_BUDGETS))
+  budgets.push([
+    `packages/styles/dist/modules/${name}.css`,
+    limit,
+    `Lazy module stylesheet ${name}`,
+  ]);
 
 // The lazy modules of owlky.js (ADR-0068, roadmap-size.md decision 9), each file on its own, as
 // measured in S2 plus at most 5%; the shared chunks they import are budgeted together below (a
@@ -193,7 +228,8 @@ for (const [name, limit] of Object.entries(MODULE_PAGE_BUDGETS))
 // Scenarios (decision 7): what a page or an app downloads. HTML: `owlky.js`, the modules and
 // chunks the loader fetches for the page, and `owlky.min.css`. React: Vite production builds
 // from `scripts/size-report.mjs` (run first by `pnpm check:size`), React itself excluded.
-const page = async (...modules) => [
+// `sheets`: the modules whose stylesheet the page loads (the data grid's chart loads the Chart's).
+const page = async (modules, sheets = modules) => [
   "packages/html/dist/owlky.js",
   ...new Set(
     (
@@ -201,15 +237,21 @@ const page = async (...modules) => [
     ).flat(),
   ),
   "packages/styles/dist/owlky.min.css",
+  ...sheets.map((name) => `packages/styles/dist/modules/${name}.css`),
 ];
 budgets.push(
-  // 103.15 kB measured since S3 (40.45 kB of JavaScript); 107.9 kB in S2, 370 kB before S2.
-  [await page(), 108_000, "Scenario: HTML page with a Dialog (light components only)"],
-  // 173.23 kB measured since S5 (the chart engine loads with the first chart); 233.69 kB in S3,
-  // 246.5 kB in S2, 370 kB before S2.
-  [await page("data-grid"), 179_000, "Scenario: HTML page with a Data grid"],
-  // 188.52 kB measured since S3; 199.1 kB in S2, 370 kB before S2.
-  [await page("chart"), 197_500, "Scenario: HTML page with a Chart"],
+  // 70.28 kB measured since S4 (the core sheet, 29.43 kB, instead of every component: 103.15 kB
+  // in S3, 107.9 kB in S2, 370 kB before S2).
+  [await page([]), 73_800, "Scenario: HTML page with a Dialog (light components only)"],
+  // 148.32 kB measured since S4 (the core sheet, the data grid's and the Chart's: the grid waits
+  // for the Chart's sheet); 173.23 kB in S5, 233.69 kB in S3, 246.5 kB in S2, 370 kB before S2.
+  [
+    await page(["data-grid"], ["data-grid", "chart"]),
+    155_700,
+    "Scenario: HTML page with a Data grid",
+  ],
+  // 161.86 kB measured since S4; 188.52 kB in S3, 199.1 kB in S2, 370 kB before S2.
+  [await page(["chart"]), 170_000, "Scenario: HTML page with a Chart"],
 );
 
 let failed = false;

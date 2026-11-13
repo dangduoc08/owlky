@@ -5,7 +5,12 @@ import { createRuntime } from "../../runtime/runtime.js";
 import type { Runtime } from "../../runtime/types.js";
 import { expectNoAxeViolations, mount, resetPage, settle } from "../../test-utils.js";
 import { components } from "../index.js";
-import { createPhoneInput, type PhoneInputInstance, phoneInput } from "./phone-input.js";
+import {
+  createPhoneInput,
+  type PhoneInputInstance,
+  phoneInput,
+  setPhoneFlagsPath,
+} from "./phone-input.js";
 
 const snippets = import.meta.glob("./examples/*.html", {
   query: "?raw",
@@ -58,8 +63,8 @@ async function pick(trigger: HTMLElement, code: string) {
 }
 
 describe("phone input runtime", () => {
-  it("has eight story snippets, each without axe violations once mounted", async () => {
-    expect(Object.keys(snippets)).toHaveLength(8);
+  it("has nine story snippets, each without axe violations once mounted", async () => {
+    expect(Object.keys(snippets)).toHaveLength(9);
     for (const path of Object.keys(snippets)) {
       const host = mount(snippets[path] as string);
       start();
@@ -297,5 +302,57 @@ describe("phone input runtime", () => {
     start();
     await settle();
     expect(parts(host).options()).toHaveLength(1);
+  });
+
+  it("draws image flags from the root's folder, and from the default folder", async () => {
+    const host = mount(snippet("phone-input-image-flags"));
+    start();
+    await settle();
+    const { options, root } = parts(host);
+    const images = () =>
+      root.querySelectorAll<HTMLImageElement>("img[data-ok-phone-input-flag-image]");
+    // The trigger and every country (the International option keeps its globe).
+    expect(images().length).toBe(options().length);
+    const au = root.querySelector<HTMLImageElement>('[data-ok-value="AU"] img');
+    expect(au?.getAttribute("src")).toBe("flags/au.svg");
+    expect(au?.getAttribute("alt")).toBe("");
+    expect(au?.getAttribute("loading")).toBe("lazy");
+    expect(au?.getAttribute("decoding")).toBe("async");
+    expect(root.querySelector('[data-ok-value=""] img')).toBeNull();
+    expect(root.querySelector('[data-ok-value=""] svg')).not.toBeNull();
+    await expectNoAxeViolations(host);
+    runtime?.stop();
+    resetPage();
+
+    setPhoneFlagsPath("https://example.test/f");
+    try {
+      const other = mount(
+        snippet("phone-input-image-flags").replace(' data-ok-flags-path="flags/"', ""),
+      );
+      start();
+      await settle();
+      expect(other.querySelector('[data-ok-value="VN"] img')?.getAttribute("src")).toBe(
+        "https://example.test/f/vn.svg",
+      );
+    } finally {
+      setPhoneFlagsPath(undefined);
+    }
+  });
+
+  it("keeps emoji flags without a safe folder", async () => {
+    const markup = snippet("phone-input-image-flags").replace(' data-ok-flags-path="flags/"', "");
+    for (const path of [null, "javascript:alert(1)"]) {
+      const host = mount(
+        path === null
+          ? markup
+          : markup.replace("data-ok-flags=", `data-ok-flags-path="${path}" data-ok-flags=`),
+      );
+      start();
+      await settle();
+      expect(host.querySelector("img")).toBeNull();
+      expect(parts(host).options()[1]?.textContent).toMatch(/\p{Regional_Indicator}/u);
+      runtime?.stop();
+      resetPage();
+    }
   });
 });

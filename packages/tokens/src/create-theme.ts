@@ -1,4 +1,5 @@
-import { defaultTheme } from "./default-theme.js";
+import { type StyleDefinition, type StyleName, soft, styles } from "./styles.js";
+import { type BrandColors, styleTheme, type ThemeFonts } from "./theme.js";
 import type { DeepPartial, Theme } from "./types.js";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
@@ -18,10 +19,22 @@ function merge<T>(base: T, overrides: DeepPartial<T> | undefined): T {
   return result as T;
 }
 
+export type ThemeOptions = Omit<DeepPartial<Theme>, "style"> & {
+  /** The style to start from (ADR-0070): a style id or a definition. Default `"soft"`. */
+  style?: StyleName | StyleDefinition;
+  /** Brand colors: each becomes a scale and every role is derived from it at AA (ADR-0070 § 8). */
+  brand?: BrandColors;
+  /** Font stacks that replace the style's families. */
+  fonts?: ThemeFonts;
+};
+
 /**
- * Creates a theme by deep-merging overrides into the default theme. Arrays (shadow layers) are
- * replaced, not merged. Serialize the result with `themeToCss()`.
+ * Creates a theme: the style's theme (with `brand` colors and `fonts`), then any other key
+ * deep-merged on top. Arrays (shadow layers) are replaced, not merged. Overridden colors are not
+ * re-derived for the other axes: use `brand` for that. Serialize the result with `themeToCss()`.
  */
-export function createTheme(overrides: DeepPartial<Theme> = {}, base: Theme = defaultTheme): Theme {
-  return merge(base, overrides);
+export function createTheme(options: ThemeOptions = {}): Theme {
+  const { style = "soft", brand, fonts, ...overrides } = options;
+  const definition = typeof style === "string" ? (styles[style as StyleName] ?? soft) : style;
+  return merge(styleTheme(definition, { brand, fonts }), overrides as DeepPartial<Theme>);
 }

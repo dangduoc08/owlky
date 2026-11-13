@@ -34,9 +34,9 @@ for (const impl of implementations) {
         await expect(card).toHaveCount(1);
         await expect(card).toHaveAttribute("data-ok-paper", "");
         expect(await shadows(page)).toEqual([true]);
-        expect(await card.evaluate((c) => getComputedStyle(c).borderTopLeftRadius)).toBe("16px");
+        expect(await card.evaluate((c) => getComputedStyle(c).borderTopLeftRadius)).toBe("18px");
         expect(await card.evaluate((c) => getComputedStyle(c).backgroundColor)).toBe(
-          theme === "light" ? "rgb(255, 255, 255)" : "rgb(28, 37, 46)",
+          theme === "light" ? "rgb(255, 255, 255)" : "rgb(24, 24, 27)",
         );
       });
     }
