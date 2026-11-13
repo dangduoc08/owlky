@@ -8,9 +8,9 @@
 import type { StyleDefinition } from "./style-definition.js";
 import { bauhaus } from "./styles/bauhaus.js";
 import { brutalism } from "./styles/brutalism.js";
+import { corporate } from "./styles/corporate.js";
 import { editorial } from "./styles/editorial.js";
 import { minimalMono } from "./styles/minimal-mono.js";
-import { corporate } from "./styles/corporate.js";
 import { neoBrutalism } from "./styles/neo-brutalism.js";
 import { nordic } from "./styles/nordic.js";
 import { soft } from "./styles/soft.js";
