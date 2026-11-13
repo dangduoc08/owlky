@@ -379,13 +379,13 @@ Measured with `pnpm size:report` against S3 (gzip). Done:
   series columns, one row per category). Server renders start the import, so a second render
   (the snippet generator renders twice) and every later client render get the Chart: snippets and
   story markup do not change. Parity waits until no `figure[data-ok-chart][aria-busy]` is left.
-  DataGrid 193.30 → **118.34 kB** (76.1 kB in lazy chunks).
+  DataGrid 193.30 → **119.75 kB** (75.8 kB in lazy chunks).
 - **HTML data grid (§6.1):** the chart helpers (`chartAttributes`, `chartOptions`,
   `chartTextAttributes`, `renderChart`) come from `import("@owlky/core/chart")`
   (`components/data-grid/chart-kit.ts`). The first draw starts the import and draws again when it
   is in; later draws are synchronous. The grid keeps only `chart-model` statically (its
-  sanitizers use the value lists). Data grid module with its imports 130.5 → **67.6 kB**; the HTML
-  data grid page 233.69 → **170.79 kB** with `owlky.min.css` (238.4 → 175.5 kB with `owlky.css`). Rolldown merges the core chart
+  sanitizers use the value lists). Data grid module with its imports 130.5 → **69.0 kB**; the HTML
+  data grid page 233.69 → **173.23 kB** with `owlky.min.css` (238.4 → 177.9 kB with `owlky.css`). Rolldown merges the core chart
   code that the Chart module and the dynamic entry share into the Chart module's chunk (and makes
   `modules/chart.js` a facade of it), so loading the helpers also registers the Chart. That is
   harmless, because the grid's chart region holds a `[data-ok-chart]` root that the loader loads
@@ -395,7 +395,7 @@ Measured with `pnpm size:report` against S3 (gzip). Done:
 - **CircularProgress → ScrollProgress → Motion (§6.4):** `useScrollProgress` imports
   `@owlky/core/motion` in its effect, only when `scroll` is set. `useScroll()` stays static
   (calling it is the opt-in). React Button 7.86 → **3.02 kB**; Button + Dialog + TextField 19.65 →
-  **15.09 kB**; DatePicker 57.7 → **53.2 kB**. Storybook aliases every `@owlky/core/<entry>` to
+  **15.24 kB**; DatePicker 57.7 → **53.2 kB**. Storybook aliases every `@owlky/core/<entry>` to
   `core/src/entries/<entry>.ts`, so lazy and static imports share one module instance.
 - **Illustrations (§2):** the CDN module builds its definition with `createIllustration(() =>
   import("@owlky/core/illustrations"))` (the factory moved to `create-illustration.ts`, so the
@@ -405,16 +405,15 @@ Measured with `pnpm size:report` against S3 (gzip). Done:
   definition keep the static set.
 - **Duplicated code (§2):** the modules build aliases `runtime/global.js` to `global-module.ts`,
   which joins the slot's runtime and never creates one (no second `createRuntime`): a module
-  imported without `owlky.js` logs an error and gets the inactive runtime. 11.1 → **9.9 kB** in
+  imported without `owlky.js` logs an error and gets the inactive runtime. 11.1 → **10.3 kB** in
   both `owlky.js` and the lazy files. The rest is code both sides run (overlays, popover, modal,
   focus, anatomy of shared parts); sharing it would need `owlky.js` to expose modules to the
   chunks, which ADR-0007 forbids without a new slot.
 - **Budgets:** lowered to measurement + ≤ 5% (React Button 3.15, Button + Dialog + TextField 15.8,
   DataGrid 124 kB; HTML data grid page 179 kB; duplicated 10.4 kB; illustration module 1.45 kB;
   Chart module file 0.2 kB, a facade). The S3 "shared chunks, all" total (84.7 kB) can't hold:
-  code moved from modules into chunks (98.77 kB of chunks; all lazy files together 878.5 → 879.2
-  kB), so it is replaced by one budget per module **with its static imports**, which is what a
-  page downloads (the data grid's 70.9 kB, for example).
+  code moved from modules into chunks (98.77 kB of chunks before the ST2 rebase; all lazy files together 878.5 → 879.2 kB), so it is replaced by one budget per module **with its static imports**, which is what a
+  page downloads (the data grid's 70.9 kB, for example; measured after the ST2 icons, which grew the tree view, upload and date picker modules).
 
 Deferred, with the reason:
 - **Chart types (§6.2):** a lazy layout family needs a pending render in core, in the React Chart

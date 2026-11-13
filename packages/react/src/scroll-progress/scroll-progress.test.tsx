@@ -10,11 +10,18 @@ import { scrollProgressProps, type UseScrollOptions, useScroll } from "./scroll-
 // The scroll controller loads on first use (ADR-0068 S5): load it once, so it starts at mount.
 beforeAll(() => import("@owlky/core/motion").then(() => undefined));
 
-/** Scroll events and timelines update on the next frames. */
-const frames = () =>
-  new Promise<void>((resolve) =>
+/**
+ * Scroll events and timelines update on the next frames. The controller itself starts once the
+ * hook's import resolves: an import of the same module resolves after it.
+ */
+const frames = async () => {
+  await act(async () => {
+    await import("@owlky/core/motion");
+  });
+  await new Promise<void>((resolve) =>
     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
   );
+};
 
 const shown = (element: Element) =>
   Number(getComputedStyle(element).getPropertyValue("--_ok-scroll-progress"));
@@ -133,6 +140,7 @@ describe("LinearProgress scroll", () => {
     );
     const root = document.querySelector("[data-ok-linear-progress]") as HTMLElement;
     expect(root.getAttribute("data-ok-scroll-smooth")).toBe('{"stiffness":300,"damping":30}');
+    await frames();
     expect(root.hasAttribute("data-ok-fallback")).toBe(true);
     const box = document.getElementById("box") as HTMLElement;
     box.scrollTop = 200;

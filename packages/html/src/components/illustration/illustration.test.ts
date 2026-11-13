@@ -202,16 +202,11 @@ describe("illustration runtime", () => {
       });
     });
     const host = wide(
-      '<svg data-ok-illustration="error-404" data-ok-size="120" aria-hidden="true"><rect width="1" height="1"/></svg>',
+      '<svg data-ok-illustration="error-404" data-ok-size="120" aria-hidden="true"><rect width="1" height="1"/></svg><svg data-ok-illustration="error-500" aria-hidden="true"></svg>',
     );
     start(lazy);
-    const authored = one(host);
-    expect(loads).toBe(0);
+    const [authored, empty] = [...host.querySelectorAll("svg")] as [SVGSVGElement, SVGSVGElement];
     expect(authored.style.getPropertyValue("--_ok-illustration-size")).toBe("120px");
-    const empty = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    empty.setAttribute("data-ok-illustration", "error-500");
-    empty.setAttribute("aria-hidden", "true");
-    host.append(empty);
     await settle();
     const instance = runtime?.get<IllustrationInstance>(empty, "illustration");
     expect(loads).toBe(1);

@@ -165,26 +165,26 @@ for (const [name, limit] of Object.entries(MODULE_BUDGETS))
   void chunks;
 }
 // Each lazy module with the files it imports statically (roadmap-size.md S5: measured plus at
-// most 5%). S3 measurements: data grid 130.5 kB (the chart engine, now lazy), illustration 12.9 kB.
+// most 5%), measured after the ST2 icons. S3 measurements: data grid 130.5 kB (the chart engine, now lazy), illustration 12.9 kB.
 const MODULE_PAGE_BUDGETS = {
   autocomplete: 7_100, // 6.81 kB
   carousel: 24_600, // 23.51 kB
-  chart: 89_700, // 85.45 kB
+  chart: 89_700, // 87.14 kB
   "code-editor": 9_300, // 8.88 kB
-  "data-grid": 70_900, // 67.60 kB (the charts integration loads the chart chunks on first use)
-  "date-picker": 32_800, // 31.29 kB
+  "data-grid": 70_900, // 69.02 kB (the charts integration loads the chart chunks on first use)
+  "date-picker": 34_600, // 33.04 kB
   editor: 162_200, // 154.53 kB
-  gantt: 40_500, // 38.60 kB
+  gantt: 40_500, // 40.36 kB
   illustration: 6_400, // 6.17 kB (the pictures' chunk, 5.5 kB, loads when an SVG needs it)
   map: 325_300, // 309.89 kB
   markdown: 106_400, // 101.37 kB
   motion: 21_900, // 20.91 kB
   "organization-chart": 10_600, // 10.12 kB
-  "phone-input": 44_300, // 42.26 kB
+  "phone-input": 44_300, // 43.95 kB
   sortable: 6_400, // 6.16 kB
   "transfer-list": 2_000, // 1.92 kB
-  "tree-view": 8_200, // 7.88 kB
-  upload: 8_800, // 8.47 kB
+  "tree-view": 10_100, // 9.66 kB
+  upload: 10_700, // 10.21 kB
   walktour: 13_300, // 12.76 kB
 };
 for (const [name, limit] of Object.entries(MODULE_PAGE_BUDGETS))
@@ -209,7 +209,7 @@ const page = async (...modules) => [
 budgets.push(
   // 103.15 kB measured since S3 (40.45 kB of JavaScript); 107.9 kB in S2, 370 kB before S2.
   [await page(), 108_000, "Scenario: HTML page with a Dialog (light components only)"],
-  // 170.79 kB measured since S5 (the chart engine loads with the first chart); 233.69 kB in S3,
+  // 173.23 kB measured since S5 (the chart engine loads with the first chart); 233.69 kB in S3,
   // 246.5 kB in S2, 370 kB before S2.
   [await page("data-grid"), 179_000, "Scenario: HTML page with a Data grid"],
   // 188.52 kB measured since S3; 199.1 kB in S2, 370 kB before S2.
@@ -223,10 +223,10 @@ let failed = false;
   const REACT = {
     // S3 measurements (descriptions out of the schemas); S2: 8.32, 22.19, 206.25 and 81.14 kB.
     // S5: the scroll controller and the Motion engine (CircularProgress) and the grid's Chart
-    // load on first use: 3.02, 15.09 and 118.34 kB (S3: 7.86, 19.65 and 193.30 kB).
+    // load on first use: 3.02, 15.24 and 119.75 kB (S3: 7.86, 19.65 and 193.30 kB).
     Button: [3_150, "React, Button only"], // 3.02 kB measured (10.2 kB before S2)
-    "Button + Dialog + TextField": [15_800, "React, Button + Dialog + TextField"], // 15.09 kB
-    DataGrid: [124_000, "React, DataGrid"], // 118.34 kB
+    "Button + Dialog + TextField": [15_800, "React, Button + Dialog + TextField"], // 15.24 kB
+    DataGrid: [124_000, "React, DataGrid"], // 119.75 kB
     Chart: [78_500, "React, Chart"], // 75.27 kB
   };
   let report;
@@ -246,7 +246,7 @@ let failed = false;
   }
 
   // Code in both owlky.js and a lazy file has two module instances (ADR-0068 §2): its bytes are
-  // budgeted (12.2 kB measured in S2, 9.93 kB in S5), and it must hold no module-level state, or the two copies would
+  // budgeted (12.2 kB measured in S2, 10.29 kB in S5), and it must hold no module-level state, or the two copies would
   // disagree. Files listed here hold state that only one side ever uses.
   const STATE_ALLOWED = {
     // `createDrag`'s nested-draggable set: only the motion module creates drags; owlky.js uses
