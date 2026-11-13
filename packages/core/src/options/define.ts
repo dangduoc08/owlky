@@ -15,7 +15,12 @@
  */
 
 export interface OptionBase {
-  readonly description: string;
+  /**
+   * What the option does, for docs, Controls, the API reference and the MCP manifest. Authors
+   * write it here; the built package keeps it in `@owlky/core/option-docs.json` and leaves `""`
+   * in the schema (ADR-0068 §4): read it back with `describeOptions(schema, docs)`.
+   */
+  readonly description?: string | undefined;
   /** HTML: the option is written on these children of the root instead of the root itself. */
   readonly children?: string | undefined;
   /** Only emitted while this other flag option is on (e.g. `loadingPosition` with `loading`). */
@@ -156,6 +161,26 @@ export const defineOptions = /* @__NO_SIDE_EFFECTS__ */ <
   root: `data-ok-${string}`,
   options: O,
 ): OptionSchema<O> => ({ name, root, options });
+
+/** Option descriptions by schema name and option key: `@owlky/core/option-docs.json` (ADR-0068 §4). */
+export type OptionDocs = Readonly<
+  Record<string, Readonly<Record<string, { readonly description: string }>>>
+>;
+
+/**
+ * `schema` with the descriptions of `docs` (`@owlky/core/option-docs.json`): the built schemas
+ * carry none at run time. Options the docs don't list keep the description they have.
+ */
+export function describeOptions<S extends OptionSchema>(schema: S, docs: OptionDocs): S {
+  const own = docs[schema.name] ?? {};
+  const options = Object.fromEntries(
+    Object.entries(schema.options).map(([key, spec]) => [
+      key,
+      { ...spec, description: own[key]?.description ?? spec.description },
+    ]),
+  );
+  return { ...schema, options } as S;
+}
 
 /** `value` when it is one of `values`, otherwise `fallback` (untrusted input never reaches the DOM). */
 export const pick = <T extends string>(values: readonly T[], value: unknown, fallback: T): T =>

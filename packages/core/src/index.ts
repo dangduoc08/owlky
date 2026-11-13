@@ -1421,10 +1421,12 @@ export {
 } from "./number-field/number-field.js";
 export {
   type BehaviorOption,
+  describeOptions,
   type FlagOption,
   isStyleValue,
   type NativeOption,
   type NumberOption,
+  type OptionDocs,
   type OptionSchema,
   type OptionSpec,
   optionAttributes,

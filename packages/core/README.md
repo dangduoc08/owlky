@@ -20,6 +20,18 @@ same way. `@owlky/core/illustrations` holds the illustration set as data, one ex
 only the pictures they import (ADR-0041). It also exports the parts the pictures share
 (`backdrop()`, `groundShadow()`, `sparkle()`, `person()`, …), for your own art in the same style.
 
+Option schemas (`optionSchemas`, `buttonOptions`, …) carry no descriptions at run time, which keeps
+them small in every bundle. The descriptions ship in `@owlky/core/option-docs.json`. Pass it to
+`describeOptions` when you need a documented schema, for example to build a props table:
+
+```ts
+import { buttonOptions, describeOptions } from "@owlky/core";
+import optionDocs from "@owlky/core/option-docs.json" with { type: "json" };
+
+const documented = describeOptions(buttonOptions, optionDocs);
+console.log(documented.options.variant.description);
+```
+
 Date library adapters for the pickers (ADR-0030) are opt-in entry points that take your own copy
 of the library, so Owlky adds no dependency (the libraries are optional peer dependencies):
 

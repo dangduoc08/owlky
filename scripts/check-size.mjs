@@ -19,7 +19,8 @@ const budgets = [
   // owlky.js loads heavy components on demand since S2 of the size roadmap (ADR-0068; it was
   // 310 kB with every component, 307.6 kB measured): the runtime, the loader and the 35 light
   // components, 45.2 kB measured. Budgets only go down from here (roadmap-size.md decision 8).
-  ["packages/html/dist/owlky.js", 47_000, "HTML runtime + light components + loader (IIFE)"],
+  // 40.45 kB since S3 (option descriptions in option-docs.json, ADR-0068 §4): 47 kB before.
+  ["packages/html/dist/owlky.js", 42_000, "HTML runtime + light components + loader (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The old opt-in scripts are shims (ADR-0068 §8): they ask owlky.js's loader for their module.
   // Before: Editor 163 kB, Map 310 kB, Markdown 110 kB, Phone 47.5 kB, Code editor 12 kB and
@@ -124,24 +125,24 @@ const budgets = [
 // page downloads each chunk once). The old opt-in budgets cap their engines: the Editor 163 kB,
 // the Map 310 kB, Markdown 110 kB, the phone input 47.5 kB.
 const MODULE_BUDGETS = {
-  autocomplete: 6_100, // 5.89 kB measured
-  carousel: 21_900, // 20.86 kB (Carousel + Lightbox)
+  autocomplete: 5_450, // 5.20 kB measured (5.89 kB in S2)
+  carousel: 20_000, // 19.07 kB (Carousel + Lightbox)
   chart: 12_900, // 12.35 kB (the engine is in shared chunks: the data grid's charts use it too)
-  "code-editor": 8_300, // 7.93 kB (Monaco loads from dist/monaco/, budgeted above)
-  "data-grid": 64_300, // 61.25 kB
-  "date-picker": 32_100, // 30.58 kB (11 runtimes)
-  editor: 157_500, // 150.04 kB (Tiptap and ProseMirror, about 125 kB of it)
-  gantt: 17_300, // 16.50 kB
+  "code-editor": 7_400, // 7.08 kB (Monaco loads from dist/monaco/, budgeted above)
+  "data-grid": 61_900, // 59.00 kB
+  "date-picker": 30_900, // 29.49 kB (11 runtimes)
+  editor: 156_500, // 149.38 kB (Tiptap and ProseMirror, about 125 kB of it)
+  gantt: 16_300, // 15.59 kB
   illustration: 7_000, // 6.75 kB
   map: 310_000, // 303.98 kB (MapLibre, about 295 kB of it)
-  markdown: 105_000, // 100.15 kB (unified, micromark, parse5)
-  motion: 19_700, // 18.85 kB (6 runtimes)
-  "organization-chart": 8_800, // 8.47 kB
-  "phone-input": 43_100, // 41.13 kB (libphonenumber-js and its metadata, about 35.5 kB)
+  markdown: 104_500, // 99.61 kB (unified, micromark, parse5)
+  motion: 19_000, // 18.11 kB (6 runtimes)
+  "organization-chart": 8_000, // 7.65 kB
+  "phone-input": 42_600, // 40.64 kB (libphonenumber-js and its metadata, about 35.5 kB)
   sortable: 5_600, // 5.40 kB
   "transfer-list": 1_200, // 1.16 kB
-  "tree-view": 6_100, // 5.82 kB
-  upload: 7_700, // 7.34 kB
+  "tree-view": 5_800, // 5.55 kB
+  upload: 7_150, // 6.85 kB
   walktour: 5_700, // 5.43 kB
 };
 for (const [name, limit] of Object.entries(MODULE_BUDGETS))
@@ -150,9 +151,9 @@ for (const [name, limit] of Object.entries(MODULE_BUDGETS))
   const chunks = (await readdir("packages/html/dist/modules/chunks"))
     .filter((file) => file.endsWith(".js"))
     .map((file) => `packages/html/dist/modules/chunks/${file}`);
-  // 87.35 kB measured: the chart engine (about 71 kB, shared by the chart and the data grid), the
-  // runtime and the overlay helpers the modules share.
-  budgets.push([chunks, 91_500, "Shared chunks of the lazy modules (all of them)"]);
+  // 80.72 kB measured since S3 (87.35 kB in S2): the chart engine (shared by the chart and the
+  // data grid), the runtime and the overlay helpers the modules share.
+  budgets.push([chunks, 84_700, "Shared chunks of the lazy modules (all of them)"]);
 }
 
 // Scenarios (decision 7): what a page or an app downloads. HTML: `owlky.js`, the modules and
@@ -168,12 +169,12 @@ const page = async (...modules) => [
   "packages/styles/dist/owlky.min.css",
 ];
 budgets.push(
-  // 107.9 kB measured (45.2 kB of JavaScript); 370 kB before S2.
-  [await page(), 113_000, "Scenario: HTML page with a Dialog (light components only)"],
-  // 246.5 kB measured; 370 kB before S2.
-  [await page("data-grid"), 258_500, "Scenario: HTML page with a Data grid"],
-  // 199.1 kB measured; 370 kB before S2.
-  [await page("chart"), 209_000, "Scenario: HTML page with a Chart"],
+  // 103.15 kB measured since S3 (40.45 kB of JavaScript); 107.9 kB in S2, 370 kB before S2.
+  [await page(), 108_000, "Scenario: HTML page with a Dialog (light components only)"],
+  // 233.69 kB measured since S3; 246.5 kB in S2, 370 kB before S2.
+  [await page("data-grid"), 245_000, "Scenario: HTML page with a Data grid"],
+  // 188.52 kB measured since S3; 199.1 kB in S2, 370 kB before S2.
+  [await page("chart"), 197_500, "Scenario: HTML page with a Chart"],
 );
 
 let failed = false;
@@ -181,10 +182,11 @@ let failed = false;
 // React scenarios, from the size report's JSON.
 {
   const REACT = {
-    Button: [8_700, "React, Button only"], // 8.32 kB measured (10.2 kB before S2)
-    "Button + Dialog + TextField": [23_200, "React, Button + Dialog + TextField"], // 22.19 kB
-    DataGrid: [216_500, "React, DataGrid"], // 206.25 kB
-    Chart: [85_000, "React, Chart"], // 81.14 kB
+    // S3 measurements (descriptions out of the schemas); S2: 8.32, 22.19, 206.25 and 81.14 kB.
+    Button: [8_200, "React, Button only"], // 7.86 kB measured (10.2 kB before S2)
+    "Button + Dialog + TextField": [20_600, "React, Button + Dialog + TextField"], // 19.65 kB
+    DataGrid: [202_000, "React, DataGrid"], // 193.30 kB
+    Chart: [78_500, "React, Chart"], // 75.27 kB
   };
   let report;
   try {
@@ -215,10 +217,10 @@ let failed = false;
     "html/src/runtime/runtime.ts": true,
   };
   const duplicated = report.duplicated ?? { gzip: 0, sources: [] };
-  const okBytes = duplicated.gzip <= 12_800;
+  const okBytes = duplicated.gzip <= 11_600;
   failed ||= !okBytes;
   console.log(
-    `${okBytes ? "ok  " : "FAIL"} Code in both owlky.js and the lazy files: ${(duplicated.gzip / 1000).toFixed(2)} kB / 12.8 kB gzip (${duplicated.sources.length} files)`,
+    `${okBytes ? "ok  " : "FAIL"} Code in both owlky.js and the lazy files: ${(duplicated.gzip / 1000).toFixed(2)} kB / 11.6 kB gzip (${duplicated.sources.length} files)`,
   );
   // Module state: a top-level `let`, or a top-level Map / Set / WeakMap / WeakSet.
   const STATE =
@@ -236,6 +238,40 @@ let failed = false;
       );
     }
   }
+}
+
+// Option descriptions stay out of the runtime (ADR-0068 §4, roadmap-size.md S3): they live in
+// @owlky/core/option-docs.json, the anatomy left in owlky.js is at most 3 kB (2.95 kB measured,
+// 6.6 kB in S2), and no CDN file holds a description (short ones could match other text).
+{
+  const report = JSON.parse(await readFile("reports/size-report.json", "utf8"));
+  const share = report.anatomy?.owlkyJsShare ?? Number.POSITIVE_INFINITY;
+  const okShare = share <= 3_000;
+  failed ||= !okShare;
+  console.log(
+    `${okShare ? "ok  " : "FAIL"} Anatomy (option schemas) in owlky.js: ${(share / 1000).toFixed(2)} kB / 3 kB gzip share`,
+  );
+  const docs = JSON.parse(await readFile("packages/core/dist/option-docs.json", "utf8"));
+  const descriptions = [
+    ...new Set(
+      Object.values(docs).flatMap((options) => Object.values(options).map((o) => o.description)),
+    ),
+  ].filter((text) => text.length >= 24);
+  const files = [
+    "packages/html/dist/owlky.js",
+    ...(await readdir("packages/html/dist/modules", { recursive: true }))
+      .filter((file) => file.endsWith(".js"))
+      .map((file) => `packages/html/dist/modules/${file}`),
+  ];
+  const leaks = [];
+  for (const file of files) {
+    const code = await readFile(file, "utf8");
+    if (descriptions.some((text) => code.includes(text))) leaks.push(file);
+  }
+  failed ||= leaks.length > 0;
+  console.log(
+    `${leaks.length ? "FAIL" : "ok  "} No option description in owlky.js or the lazy modules${leaks.length ? `: ${leaks.join(", ")}` : ""}`,
+  );
 }
 
 // Opt-in engines stay out of owlky.js: the phone metadata (ADR-0061) is in the phone module only.

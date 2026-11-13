@@ -122,7 +122,12 @@ function defaultOf(spec: OptionSpec): ReactNode {
   return "Off";
 }
 
-/** Every option of a component: React prop, HTML attribute, values, default and description. */
+/**
+ * Every option of a component: React prop, HTML attribute, values, default and description. The
+ * schema must carry its descriptions (the built package's don't, ADR-0068 §4): Storybook passes
+ * the source schemas, the website the manifest's, or use `describeOptions` with
+ * `@owlky/core/option-docs.json`.
+ */
 export function OptionsTable({ schema }: { schema: OptionSchema }) {
   return (
     <TableFrame label={`${schema.name} options`}>
@@ -145,7 +150,7 @@ export function OptionsTable({ schema }: { schema: OptionSchema }) {
             <td className={td}>{valuesOf(spec)}</td>
             <td className={td}>{defaultOf(spec)}</td>
             <td className={td}>
-              <Rich text={spec.description} />
+              <Rich text={spec.description ?? ""} />
               {spec.when ? (
                 <>
                   {" "}

@@ -644,8 +644,11 @@ const schemas = Object.entries(core).filter(
     "root" in value &&
     "options" in value,
 );
-const descriptions = schemas.flatMap(([, s]) =>
-  Object.values(s.options).map((o) => o.description ?? ""),
+// The built schemas carry no descriptions since S3 (ADR-0068 §4): they are in option-docs.json, so
+// `descriptionsKept` and the "without descriptions" figure show that none reach a bundle.
+const optionDocs = JSON.parse(await readFile(at("packages/core/dist/option-docs.json"), "utf8"));
+const descriptions = Object.values(optionDocs).flatMap((options) =>
+  Object.values(options).map((o) => o.description),
 );
 const descriptionBytes = descriptions.reduce((n, d) => n + Buffer.byteLength(d), 0);
 const owlkyJs = bundles["owlky.js"];

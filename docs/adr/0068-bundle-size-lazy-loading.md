@@ -229,21 +229,34 @@ protocol gets the inactive runtime and does nothing, as today.
   `readStyle`, `optionAttributes` and the parity tests need these.
 - **Moves to the JSON file:** `description` and any later docs-only metadata, such as Controls
   hints or deprecations.
-- **How:** descriptions stay in `anatomy/<name>.ts` next to each option, so authors write them in
-  one place. Core's build runs `scripts/option-docs.mjs`, which:
-  - parses each emitted `dist/anatomy/*.js` with Vite's `parseAst`;
-  - writes `dist/option-docs.json` (`{ "<schema name>": { "<option>": { description } } }`, keys
-    sorted), exported as `@owlky/core/option-docs.json`;
-  - replaces each description literal in the emitted JS by `""`, splicing by AST position, never by
-    regular expression, and re-emits the source map.
+- **How** (amended in S3, 2026-11-12): descriptions stay in `anatomy/<name>.ts` next to each
+  option, so authors write them in one place, as the factory's string or template literal (a
+  variable fails the build). Core's build runs `packages/core/scripts/option-docs.mjs` after
+  `tsc`, which:
+  - imports the emitted `dist/anatomy/anatomy.js` and writes `dist/option-docs.json`
+    (`{ "<schema name>": { "<option>": { description } } }`, keys sorted, 1,048 descriptions of
+    115 schemas), exported as `@owlky/core/option-docs.json`; an option without a description,
+    or two schemas with one name, fails the build;
+  - parses each emitted `dist/anatomy/*.js` with acorn (a core dev dependency: core builds with
+    `tsc` and has no Vite) and blanks the description argument of every `style`, `flag`,
+    `native`, `behavior`, `state` and `number` call, by AST position, never by regular
+    expression. The literal becomes `""` padded with spaces to its old length, so every line and
+    column stay where they were and tsc's source maps stay exact: nothing is re-emitted, and
+    minifiers drop the spaces;
+  - checks in a fresh Node process that no built schema keeps a description.
 - **The `description` field becomes optional** in the types. `describeOptions(schema, docs)`
-  returns the documented schema.
-- **Readers of the JSON:** Storybook Controls (`controls.ts`), `scripts/spec-options.mjs`,
-  `scripts/api-reference.mjs` and `scripts/manifest.mjs` read the JSON. The MCP server's
-  `validate_markup` and `get_component` already read the manifest, which keeps the descriptions.
-  The docs pages' Options tables read it through docs-content.
-  `check:specs`, `check:api` and `check:manifest` must produce byte-identical output, which shows
-  that nothing was lost.
+  returns the documented schema; the factories still require the argument.
+- **Readers** (amended in S3): `scripts/spec-options.mjs`, `scripts/api-reference.mjs`,
+  `scripts/manifest.mjs` and `scripts/size-report.mjs` read the built schemas through
+  `scripts/option-schemas.mjs`, which applies `describeOptions` with the JSON. `check:api` reports
+  an option without a description (`<schema>.<option> (option) has no description`). The MCP
+  server's `validate_markup` and `get_component` read the manifest, which keeps the descriptions.
+  Storybook Controls and the docs pages' Options tables need no JSON: Storybook aliases
+  `@owlky/core` to its sources (which keep the descriptions, so `pnpm storybook` still needs no
+  build), and the website passes the manifest's schemas. `OptionsTable` documents that it needs a
+  described schema. `check:specs`, `check:api` and `check:manifest` produce byte-identical output,
+  which shows that nothing was lost. `check:size` fails when a description of 24 characters or
+  more appears in `owlky.js` or a lazy module.
 - **Effect:** about 18 kB gzip leaves the CDN code (23.3 kB gzip alone across all 115 schemas),
   of which about 5 kB is in light set B. In React, removing the descriptions and splitting the
   anatomy (section 1) cut a Button's anatomy from 2.4 kB to about 0.3 kB.
@@ -340,8 +353,26 @@ it, and it fixes React's anatomy leak before S3 measures.
 - **API reference JSON:** the `imports` field is in the MCP manifest and `get_component`; the docs
   pages show imports with S6's guides.
 
+## Implementation notes (S3, 2026-11-12)
+- **Measured** (`pnpm size:report`, against S2): `owlky.js` 45.22 → 40.45 kB gzip, its anatomy
+  6.59 → 2.95 kB (decision 10: at most 3 kB). Across `owlky.js`, the 19 lazy modules and their
+  chunks, 23.2 kB gzip left the CDN code (decision 10: about 18 kB); the anatomy share of those
+  files went from 37.3 to 16.2 kB. The shared chunks 87.35 → 80.72 kB, the data grid module 61.25
+  → 59.00 kB, the carousel 20.86 → 19.07 kB. Scenarios: HTML page with a Dialog 107.9 → 103.15
+  kB, with a Data grid 246.5 → 233.69 kB, with a Chart 199.1 → 188.52 kB; React Button 8.32 →
+  7.86 kB, Button + Dialog + TextField 22.19 → 19.65 kB, DataGrid 206.25 → 193.30 kB, Chart
+  81.14 → 75.27 kB. No React bundle keeps a description.
+- **Tree shaking:** removing the descriptions showed two module-level leftovers in `owlky.js`
+  (about 0.3 kB): object spreads of the Motion and FormControl schemas, which minifiers keep from
+  the arguments of a dropped pure call, and Motion's joined value list. The schemas are now pure
+  IIFEs and `motionVariants` a pure `concat` (an IIFE around a spread is inlined first and its
+  spread kept). `motionVariants` is typed `readonly MotionVariant[]` instead of a tuple.
+- **Budgets** (`check-size.mjs`): every changed bundle lowered to its measurement plus at most 5%
+  (`owlky.js` 42 kB), plus two checks: the anatomy share of `owlky.js` (3 kB) and no description
+  in a CDN file.
+
 ## Consequences
-- A light HTML page downloads about 45 kB of JS today (about 39 kB after S3), down from 306.6 kB,
+- A light HTML page downloads about 40 kB of JS since S3 (45 kB after S2), down from 306.6 kB,
   and about 29 kB of CSS, down from 67.4 kB. A data grid page adds about 126 kB and its sheet. A
   page with every opt-in no longer downloads the runtime and anatomy six times.
 - Lazy components cost one extra round trip, which `data-ok-preload` or `modulepreload` avoids.

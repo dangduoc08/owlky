@@ -526,6 +526,9 @@ importers:
       '@types/luxon':
         specifier: 3.7.6
         version: 3.7.6
+      acorn:
+        specifier: 8.19.0
+        version: 8.19.0
       date-fns:
         specifier: 4.4.0
         version: 4.4.0

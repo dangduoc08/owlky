@@ -2,7 +2,7 @@
 // `<!-- options:<schema> -->` markers. `--check` fails when a spec is out of date (CI).
 // Run after `pnpm build` (reads packages/core/dist).
 import { readFileSync, writeFileSync } from "node:fs";
-import { optionSchemas } from "../packages/core/dist/index.js";
+import { optionSchemas } from "./option-schemas.mjs";
 
 const SPECS = {
   accordion: "accordion.md",
