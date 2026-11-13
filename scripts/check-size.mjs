@@ -166,6 +166,8 @@ const STYLE_SHEET_BUDGETS = {
   swiss: 2_750, // 2.61 kB
   editorial: 2_830, // 2.69 kB
   "minimal-mono": 2_160, // 2.05 kB (a soft style: no shadow switch)
+  corporate: 2_760, // 2.63 kB
+  nordic: 2_180, // 2.07 kB (a soft style: no shadow switch)
 };
 for (const file of await readdir("packages/styles/dist/styles")) {
   const name = file.match(/^(.+)\.min\.css$/)?.[1];

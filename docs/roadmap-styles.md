@@ -109,13 +109,16 @@ light, light text color in dark).
 ST4b: Bauhaus takes the school's triad as blue primary, yellow secondary and red error on warm
 greys (`stone`), with Montserrat headings tracked 0.02em and labels 0.04em in capitals.
 Brutalism takes link blue with an orange secondary on `stone`, IBM Plex Mono 700 / 600 headings
-(the font stops at 700) and Plex Mono as the monospace family too.
-Editorial uses a rose primary on warm greys (`stone`
-for secondary and neutral), `extrabold` 900 for its black headings, and the full 1px ink edge
-until Paper draws per-side rules. Minimal Mono uses `zinc` primary, `slate` secondary and a
-`zinc` neutral, Inter 700 headings tracked −0.02em.
-Left for ST5: the CDN loader's `style:<id>` entries (a style
-set later by markup loads its sheet) and the Storybook **Style** menu.
+(the font stops at 700) and Plex Mono as the monospace family too. Editorial uses a rose primary
+on warm greys (`stone` for secondary and neutral), `extrabold` 900 for its black headings, and
+the full 1px ink edge until Paper draws per-side rules. Minimal Mono uses `zinc` primary, `slate`
+secondary and a `zinc` neutral, Inter 700 headings tracked −0.02em. Corporate: blue primary with
+a `slate` secondary on `slate` greys, IBM Plex Sans 700 / 600 headings (the font stops at 700, so
+`extrabold` is 700), 4px chips and labels, subtle shadows tinted `slate-900`. Nordic: teal
+primary, sky secondary, blue info, rose error on warm `stone` greys, Manrope 800 headings tracked
+−0.01em, soft shadows tinted `stone-900` instead of Soft's primary tint.
+Left for ST5: the CDN loader's `style:<id>` entries (a style set later by markup loads its sheet)
+and the Storybook **Style** menu.
 
 ## Icons and flags (owner, 2026-11-12)
 - **One icon set: Solar** (480 Design, CC BY 4.0; credit in `THIRD_PARTY_NOTICES` and the Icons

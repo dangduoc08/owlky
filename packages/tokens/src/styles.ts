@@ -10,13 +10,15 @@ import { bauhaus } from "./styles/bauhaus.js";
 import { brutalism } from "./styles/brutalism.js";
 import { editorial } from "./styles/editorial.js";
 import { minimalMono } from "./styles/minimal-mono.js";
+import { corporate } from "./styles/corporate.js";
 import { neoBrutalism } from "./styles/neo-brutalism.js";
+import { nordic } from "./styles/nordic.js";
 import { soft } from "./styles/soft.js";
 import { swiss } from "./styles/swiss.js";
 
 export { fontStack, monoStack, type StyleDefinition } from "./style-definition.js";
 export type { ShadowTreatment } from "./types.js";
-export { bauhaus, brutalism, editorial, minimalMono, neoBrutalism, soft, swiss };
+export { bauhaus, brutalism, corporate, editorial, minimalMono, neoBrutalism, nordic, soft, swiss };
 
 /**
  * Style ids (`data-ok-style`), the default first. A literal list (not `Object.keys(styles)`), so
@@ -30,6 +32,8 @@ export const styleNames = [
   "neo-brutalism",
   "editorial",
   "minimal-mono",
+  "corporate",
+  "nordic",
 ] as const;
 export type StyleName = (typeof styleNames)[number];
 
@@ -44,4 +48,6 @@ export const styles: Record<StyleName, StyleDefinition> = {
   "neo-brutalism": neoBrutalism,
   editorial,
   "minimal-mono": minimalMono,
+  corporate,
+  nordic,
 };

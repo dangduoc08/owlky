@@ -134,11 +134,16 @@ test.describe("theme scopes (shipped CSS)", () => {
     expect(neo.shadow).toMatch(/ 4px 4px 0px 0px$/);
     // Nearest style wins, through a dark scope and a nested default style.
     expect(
-      (await paper(`<div data-ok-style="swiss"><div data-ok-style="neo-brutalism" data-ok-theme="dark">${card}</div></div>`))
-        .shadow,
+      (
+        await paper(
+          `<div data-ok-style="swiss"><div data-ok-style="neo-brutalism" data-ok-theme="dark">${card}</div></div>`,
+        )
+      ).shadow,
     ).toMatch(/^rgb\(2[0-5]\d, 2[0-5]\d, 2[0-5]\d\) 4px 4px 0px 0px$/);
     expect(
-      await paper(`<div data-ok-style="neo-brutalism"><div data-ok-style="soft">${card}</div></div>`),
+      await paper(
+        `<div data-ok-style="neo-brutalism"><div data-ok-style="soft">${card}</div></div>`,
+      ),
     ).toMatchObject({ radius: "10px", border: "0px" });
   });
 

@@ -1,13 +1,16 @@
 // Each style's fonts (ADR-0070 § 1; Owlky itself doesn't bundle fonts): Soft, the default, uses
 // Nunito, Swiss Inter, Bauhaus Montserrat, Brutalism IBM Plex Mono (no variable build: one file
 // per weight), Neo-Brutalism Space Grotesk, Editorial Noto Serif Display / Source Serif 4 / Archivo,
-// Minimal Mono Inter. A browser only downloads the fonts a page renders.
+// Minimal Mono Inter, Corporate IBM Plex Sans, Nordic Manrope. A browser only downloads the fonts a
+// page renders.
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "@fontsource/ibm-plex-mono/600.css";
 import "@fontsource/ibm-plex-mono/700.css";
 import "@fontsource-variable/archivo";
+import "@fontsource-variable/ibm-plex-sans";
 import "@fontsource-variable/inter";
+import "@fontsource-variable/manrope";
 import "@fontsource-variable/montserrat";
 import "@fontsource-variable/noto-serif-display";
 import "@fontsource-variable/nunito";
