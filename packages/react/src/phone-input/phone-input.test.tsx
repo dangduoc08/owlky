@@ -279,4 +279,34 @@ describe("PhoneInput", () => {
     expect(field().value).toBe("");
     act(() => field().focus());
   });
+
+  it("draws image flags from a folder, and keeps emoji without a safe one", async () => {
+    const { container, unmount } = render(
+      <PhoneInput label="Phone number" defaultCountry="AU" flags="image" flagsPath="/flags" />,
+    );
+    const root = container.querySelector("[data-ok-phone-input]") as HTMLElement;
+    expect(root.getAttribute("data-ok-flags")).toBe("image");
+    expect(root.getAttribute("data-ok-flags-path")).toBe("/flags/");
+    const au = root.querySelector('[data-ok-value="AU"] img') as HTMLImageElement;
+    expect(au.getAttribute("src")).toBe("/flags/au.svg");
+    expect(au.getAttribute("alt")).toBe("");
+    expect(au.getAttribute("loading")).toBe("lazy");
+    expect(au.getAttribute("decoding")).toBe("async");
+    // The trigger shows the selected country's picture; International keeps the globe.
+    expect(root.querySelector("[role=combobox] img")?.getAttribute("src")).toBe("/flags/au.svg");
+    expect(root.querySelector('[data-ok-value=""] img')).toBeNull();
+    await expectNoAxeViolations(container);
+    unmount();
+
+    for (const props of [
+      { flags: "image" as const },
+      { flags: "image" as const, flagsPath: "javascript:x" },
+      { flagsPath: "/flags" },
+    ]) {
+      const view = render(<PhoneInput label="Phone number" defaultCountry="AU" {...props} />);
+      expect(view.container.querySelector("img")).toBeNull();
+      expect(view.container.querySelector("[data-ok-flags-path]")).toBeNull();
+      view.unmount();
+    }
+  });
 });

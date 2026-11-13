@@ -982,6 +982,13 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   (+1, +44) detect no country while typing: tests use unique codes (+84, +61). The API reference's
   sentence splitter cuts at "E.164" (a dot inside a word): JSDoc says "international form" instead.
   Validation tests leave the field with Shift+Tab (Firefox keeps the focus on a last control).
+  Image flags (`flags="image"`, ADR-0070 section 9): Circle Flags SVGs are copied by the html build
+  (`copy-assets.mjs`: only `^[a-z]{2}\.svg$`, `circle-flags` dev dependency, plus its license)
+  into `dist/flags/`, never into a JS bundle (`COPIES` in `check-licenses.mjs`, which also checks
+  the copied license). URLs come only from `phoneFlagSource` (sanitized folder + a two-letter
+  code); the CDN module sets the default folder (the html component's `setPhoneFlagsPath`, `../flags/`
+  from `modules/phone-input.js`), React has none (`flagsPath` or emoji). Storybook serves the folder
+  at `/flags` (`staticDirs`), so the story's relative `flags/` resolves under the e2e sub-path.
   Menu / Select typeahead (`createTypeahead`) skips `aria-hidden` descendants, so a flag emoji
   before the name doesn't stop "aus" from reaching Australia.
 - Third-party notices (legal step L5): `scripts/check-licenses.mjs` (`pnpm check:licenses`, in

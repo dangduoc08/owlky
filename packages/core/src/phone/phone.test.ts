@@ -1,6 +1,11 @@
 import maxMetadata from "libphonenumber-js/max/metadata";
 import { describe, expect, it } from "vitest";
-import { phoneInputAttributes, phoneInputOptions } from "../anatomy/anatomy.js";
+import {
+  phoneFlagFolder,
+  phoneFlagSource,
+  phoneInputAttributes,
+  phoneInputOptions,
+} from "../anatomy/anatomy.js";
 import {
   isValidPhoneValue,
   phoneCallingCode,
@@ -327,5 +332,44 @@ describe("country options", () => {
     ]);
     // A code without a display name (non-geographic "001"-style entries don't exist here): the code.
     expect(phoneCountryOptions({ countries: ["AC"] })[0]?.name).toMatch(/Ascension|AC/);
+  });
+});
+
+describe("flag images", () => {
+  it("builds a URL from a folder and a two-letter code", () => {
+    expect(phoneFlagSource("/flags", "AU")).toBe("/flags/au.svg");
+    expect(phoneFlagSource("https://cdn.example/f/", "vn")).toBe("https://cdn.example/f/vn.svg");
+    expect(phoneFlagSource("flags/", "A1")).toBeUndefined();
+    expect(phoneFlagSource("flags/", "AUS")).toBeUndefined();
+    expect(phoneFlagSource(undefined, "AU")).toBeUndefined();
+  });
+
+  it("refuses unsafe folders", () => {
+    for (const path of [
+      "javascript:alert(1)/",
+      "data:image/svg+xml,x",
+      '/x" onerror="y',
+      "/a b/",
+      "/a<b/",
+      "",
+      "  ",
+    ])
+      expect(phoneFlagFolder(path)).toBeUndefined();
+    expect(phoneFlagFolder("../flags")).toBe("../flags/");
+    expect(phoneFlagFolder("https://cdn.test:8080/f/")).toBe("https://cdn.test:8080/f/");
+  });
+
+  it("writes the attributes only for image flags with a safe folder", () => {
+    expect(phoneInputAttributes({ flags: "image", flagsPath: "/f" })).toMatchObject({
+      "data-ok-flags": "image",
+      "data-ok-flags-path": "/f/",
+    });
+    const emoji = phoneInputAttributes({ flags: "emoji", flagsPath: "/f" });
+    expect(emoji["data-ok-flags"]).toBe("emoji");
+    expect(phoneInputAttributes()).not.toHaveProperty("data-ok-flags");
+    expect(emoji).not.toHaveProperty("data-ok-flags-path");
+    expect(phoneInputAttributes({ flags: "image", flagsPath: "javascript:x" })).not.toHaveProperty(
+      "data-ok-flags-path",
+    );
   });
 });

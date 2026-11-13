@@ -23,7 +23,8 @@ div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-color][data-ok-ma
    [data-ok-phone-input][data-ok-country]?[data-ok-default-country]?[data-ok-international]?
    [data-ok-country-calling-code-editable="false"]?[data-ok-hide-select]?[data-ok-countries]?
    [data-ok-country-options-order]?[data-ok-add-international-option="false"]?[data-ok-limit-max-length]?
-   [data-ok-focus-input-on-country-selection="false"]?[data-ok-locale]?[data-ok-validate]?[data-ok-invalid-text]?
+   [data-ok-focus-input-on-country-selection="false"]?[data-ok-locale]?[data-ok-flags="image"]?[data-ok-flags-path]?
+   [data-ok-validate]?[data-ok-invalid-text]?
   label[data-ok-text-field-label][for]
   div[data-ok-text-field-control]
     div[data-ok-text-field-adornment="start"][data-ok-phone-input-country]   (omitted with hideSelect)
@@ -36,6 +37,7 @@ div[data-ok-text-field][data-ok-variant][data-ok-size][data-ok-color][data-ok-ma
           ul[data-ok-select-listbox][role=listbox]                       (empty in HTML snippets: the runtime fills it)
             li[data-ok-menu-item][role=option][tabindex=-1][aria-selected][data-ok-selected]?[data-ok-value=""|<code>]
               span[data-ok-list-item-icon][data-ok-phone-input-flag][aria-hidden=true] › emoji flag | svg (globe)
+                 | img[data-ok-phone-input-flag-image][src=<flagsPath><code>.svg][alt=""][loading=lazy][decoding=async]   (flags="image")
               span[data-ok-list-item-text] › span[data-ok-list-item-text-primary] (name)
                                              + span[data-ok-list-item-text-secondary] ("AU (+61)")?
     input[data-ok-text-field-input][type=tel][autocomplete=tel][id][placeholder][value=<formatted text>][aria-describedby]?
@@ -62,6 +64,8 @@ Root: `data-ok-phone-input`. Unknown values fall back to the default.
 | `limitMaxLength` | `data-ok-limit-max-length` | flag | boolean | off | Digits past the longest number of the country are refused. |
 | `focusInputOnCountrySelection` | `data-ok-focus-input-on-country-selection="false"` turns it off | behavior | boolean | on | Picking a country moves the focus to the input (`false` keeps it on the select). |
 | `locale` | `data-ok-locale` | state | — | — | Language of the country names, such as `fr` (default `en`). |
+| `flags` | `data-ok-flags="…"` | style | `emoji` `image` | — | How the country flags are drawn: `emoji` (no files) or `image` (one Circle Flags SVG per country, loaded from `flagsPath`). |
+| `flagsPath` | `data-ok-flags-path` | state | — | — | The folder of the flag images, such as `/flags/` (`@owlky/html/dist/flags`). HTML pages that load the CDN bundle find it next to it; elsewhere `image` flags need it. |
 | `validate` | `data-ok-validate` | flag | boolean | off | After the person leaves the field, an invalid number shows the error state and `invalidText`. |
 | `invalidText` | `data-ok-invalid-text` | state | — | — | The helper text shown while the number is invalid (with `validate`). |
 | `disabled` | `disabled` on each `[data-ok-text-field-control] > [data-ok-text-field-input]` | native | boolean | off | Native `disabled` on the input; the country select is disabled too. |
@@ -77,13 +81,31 @@ React `PhoneInput` (+ every TextField prop except `value` / `defaultValue` / `on
 `country`, `valid`, `possible`), `country`, `defaultCountry`, `onCountryChange(country)`
 (`undefined` = International), `international`, `countryCallingCodeEditable`, `hideSelect`,
 `countries`, `countryOptionsOrder`, `addInternationalOption`, `limitMaxLength`,
-`focusInputOnCountrySelection`, `labels` (`{ [code]: name, ZZ: "International", country:
+`focusInputOnCountrySelection`, `flags`, `flagsPath`, `labels` (`{ [code]: name, ZZ: "International", country:
 "Country" }`), `locale`, `metadata`, `validate`, `invalidText`. `ref` = the input.
 HTML `createPhoneInput({ metadata, labels })` for what attributes can't carry.
 
+### Image flags (ADR-0070 section 9)
+Flags are emoji by default and cost no bytes, but Windows shows flag emoji as two letters.
+`flags="image"` / `data-ok-flags="image"` draws **Circle Flags** instead (HatScripts/circle-flags,
+MIT): one round SVG per country, never a bundle. The build copies `circle-flags`' two-letter files
+(`au.svg`, lowercase ISO code, and `xx.svg`, the set's unknown-country flag) and its license into
+`@owlky/html/dist/flags/`, a folder you can host yourself. The folder is `flagsPath` /
+`data-ok-flags-path` (a relative, root-relative or `http(s)` URL; a trailing `/` is added):
+- **CDN bundle:** the phone module defaults it to `flags/` next to `owlky.js`.
+- **Bundlers and React:** there is no default (the `@owlky/html/phone` entry sets none) (`import.meta.url` does not survive bundling): copy
+  the folder and pass `flagsPath`. Without a folder (or with an unsafe one) the flags stay emoji.
+- The image URL is only `<folder><code>.svg` with a code matching `^[a-z]{2}$` (core
+  `phoneFlagSource`); folders with another scheme (`javascript:`, `data:`), whitespace, quotes or
+  angle brackets are refused. The HTML component's `setPhoneFlagsPath` sets the default folder (the CDN module does).
+- Each flag is `<img data-ok-phone-input-flag-image alt="" loading="lazy" decoding="async">`
+  inside the `data-ok-phone-input-flag` span, in the trigger and in every option; the country name
+  stays text. The International option keeps the globe. React renders the same markup as the
+  HTML runtime (built with DOM methods).
+
 ## Layout and tokens
 The TextField look. The country select sits in the start adornment: the flag (`--ok-font-size-xl`
-emoji, 24px box; the globe 20px), 4px padding, the arrow (16px, `--ok-text-secondary`) after it,
+emoji, 24px box; the globe and an image flag 20px), 4px padding, the arrow (16px, `--ok-text-secondary`) after it,
 then 8px and a 1px `--ok-divider` line before the input. A fixed country or a disabled field shows
 the flag alone (no arrow); a disabled field dims it to 0.48. The list is a Popover of MenuItems,
 320px wide (at most the viewport less 32px), at most 400px high, scrolling: each option is the
@@ -136,7 +158,8 @@ Backspace / Delete next to a formatting character remove the nearest digit (`bef
 ## Accessibility
 Two tab stops: the country combobox (named "Country", `labels.country`; its value is the selected
 option's visually hidden name and code) and the `tel` input named by the label (`autocomplete="tel"`
-for autofill). Flags are `aria-hidden` (emoji names would repeat the country). The helper text
+for autofill). Flags are `aria-hidden` (emoji names would repeat the country); image flags are `alt=""` inside
+that span. The helper text
 describes the input; with `validate`, the error state is `aria-invalid` and the helper text says
 why. A fixed country's select is `aria-disabled` and out of the tab order.
 
@@ -159,7 +182,8 @@ Upstream: react-phone-number-input's `PhoneInput` (with country select), README 
 | Minimals `hideSelect` | `hideSelect` | kept | the reference's own wrapper prop |
 | `locales` | `locale` | renamed | names from `Intl.DisplayNames`, no bundled label files |
 | `disabled`, `readOnly`, `autoComplete` (`"tel"`), `placeholder`, `name`, `onFocus`, `onBlur` | TextField / input props | kept | |
-| `flagUrl`, `flags`, `flagComponent`, `internationalIcon` | — | not applicable | emoji flags and an original globe, no images (ADR-0061) |
+| `flags`, `flagUrl` | `flags="image"`, `flagsPath` | renamed | Circle Flags files from a folder (ADR-0070 section 9) instead of a URL template; emoji by default |
+| `flagComponent`, `internationalIcon` | — | not applicable | an original globe (ADR-0061) |
 | `inputComponent`, `numberInputProps`, `countrySelectComponent`, `countrySelectProps`, `containerComponent` | — | not applicable | the parts are the TextField, Select and MenuItems (ADR-0015) |
 | `smartCaret` | — | not applicable | always on (caret after the same digit) |
 | `initialValueFormat` | — | not applicable | a value of the selected country is always shown nationally unless `international` |
@@ -169,7 +193,8 @@ Upstream: react-phone-number-input's `PhoneInput` (with country select), README 
 | — | `validate`, `invalidText` | added | the roadmap's validation state for the helper text |
 
 ### Intentional differences from the reference
-- Flags are emoji (no CDN images); Windows shows the two letters.
+- Flags are emoji by default (Windows shows the two letters); `flags="image"` draws Circle Flags
+  from a folder you host, never from a third-party CDN.
 - The country list has no search box: the Select's typeahead finds a country by name.
 - Typing `+84…` in Auto keeps the international text (upstream behavior); the reference rewrites
   it in national form. The national form is in the change details.

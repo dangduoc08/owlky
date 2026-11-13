@@ -11,6 +11,7 @@ import {
   PhoneFixedCountryDemo,
   PhoneFixedInternationalDemo,
   PhoneHideSelectDemo,
+  PhoneImageFlagsDemo,
   PhoneValidationDemo,
 } from "./phone-input-demos.js";
 import demoSource from "./phone-input-demos.tsx?raw";
@@ -31,6 +32,7 @@ const SETUP = [
   "<!-- Once per page (CDN): owlky.js loads the phone input when the page holds one. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
+  "<!-- Image flags: with the CDN bundle the images load from flags/ next to owlky.js; elsewhere host @owlky/html/dist/flags and set data-ok-flags-path. -->",
   '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/phone". -->',
 ].join("\n");
 
@@ -75,6 +77,12 @@ export const PhoneInput: StoryObj = {
     ["Fixed country + international + hideSelect", "hide-select", PhoneHideSelectDemo],
   ]),
   name: "Phone input",
+};
+
+/** Image flags (`flags="image"`): Circle Flags pictures instead of emoji, from a folder you host. */
+export const ImageFlags: StoryObj = {
+  ...story("phone-input", [["Image flags", "image-flags", PhoneImageFlagsDemo]]),
+  name: "Image flags",
 };
 
 /** Validation in the helper text, and a short, ordered country list with a length limit. */

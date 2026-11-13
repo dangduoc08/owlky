@@ -77,5 +77,24 @@ for (const impl of implementations) {
       await expect(input).not.toHaveAttribute("aria-invalid", "true");
       await expect(field.getByText("We only call about your order")).toBeVisible();
     });
+
+    test("draws image flags from the folder", async ({ page }) => {
+      await openStory(page, storyId(impl, "phone-input", "image-flags"));
+      await ready(page);
+      const field = demo(page, "phone-image-flags");
+      const trigger = field.getByRole("combobox", { name: "Country" });
+      const flag = trigger.locator("img[data-ok-phone-input-flag-image]");
+      await expect(flag).toHaveAttribute("src", "flags/au.svg");
+      await expect(flag).toHaveAttribute("alt", "");
+      await expect
+        .poll(() => flag.evaluate((img: HTMLImageElement) => img.naturalWidth))
+        .toBeGreaterThan(0);
+      await trigger.click();
+      const option = page.locator('[role="option"][data-ok-value="VN"]');
+      await option.scrollIntoViewIfNeeded();
+      await expect(option.locator("img")).toHaveAttribute("src", "flags/vn.svg");
+      await option.click();
+      await expect(trigger.locator("img")).toHaveAttribute("src", "flags/vn.svg");
+    });
   });
 }

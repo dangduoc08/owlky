@@ -5,6 +5,7 @@ import { PhoneInput } from "@owlky/react";
 import autoGroup from "../../../../../packages/html/src/components/phone-input/examples/phone-input-auto.html?raw";
 import defaultCountryGroup from "../../../../../packages/html/src/components/phone-input/examples/phone-input-default-country.html?raw";
 import fixedGroup from "../../../../../packages/html/src/components/phone-input/examples/phone-input-fixed-international.html?raw";
+import imageFlagsGroup from "../../../../../packages/html/src/components/phone-input/examples/phone-input-image-flags.html?raw";
 import validationGroup from "../../../../../packages/html/src/components/phone-input/examples/validation-invalid.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -89,6 +90,30 @@ export function Office() {
 }`,
   },
   {
+    id: "flags",
+    title: "Use image flags",
+    body: `Flags are emoji by default, which cost no bytes. Windows shows flag emoji as two letters, so set \`flags="image"\` to draw round Circle Flags pictures instead. Each picture is a separate SVG file that loads only when its country scrolls into view.
+
+The \`@owlky/html\` package ships the files in \`dist/flags/\`, one per lowercase country code (\`au.svg\`). Host that folder yourself and name it with \`flagsPath\`. A page that loads the CDN bundle finds the folder next to \`owlky.js\`, so it needs no path. Without a folder, the flags stay emoji.`,
+    html: field(imageFlagsGroup),
+    react: `import { PhoneInput } from "@owlky/react";
+
+// Copy node_modules/@owlky/html/dist/flags to your public folder first.
+export function Office() {
+  return (
+    <PhoneInput
+      id="phone-image-flags"
+      label="Phone number"
+      placeholder="Enter phone number"
+      fullWidth
+      defaultCountry="AU"
+      flags="image"
+      flagsPath="/flags/"
+    />
+  );
+}`,
+  },
+  {
     id: "values",
     title: "Read the values and validate",
     body: `The value is always E.164, which servers and phone APIs accept: store it, and send it back as \`value\` or \`defaultValue\`. The field reports the other forms with each change: \`national\`, \`international\`, the number's \`country\`, and whether it is \`valid\` (a possible length and leading digits for its country) or only \`possible\` (a possible length). An empty field has the value \`""\`.
@@ -161,13 +186,25 @@ export function Callback() {
     title: "Accessibility",
     body: `- The input is a telephone input named by its label, with \`autocomplete="tel"\` so browsers can fill in a saved number.
 - The country select is a combobox named "Country" (\`labels.country\`). Flags are hidden from screen readers: the selected country's name and calling code are read as its value.
-- Flags are emoji, so they need no images. Systems without flag emoji, such as Windows, show the two-letter country code instead.
+- Flags are emoji by default, so they need no images. Systems without flag emoji, such as Windows, show the two-letter country code instead. Image flags have empty \`alt\` text, because the country name is the text next to them.
 - With \`validate\`, the error state is \`aria-invalid\` and the helper text says what is wrong. Errors appear only after people leave the field, not while they type.`,
   },
   apiReferenceSection(phoneInputApi),
 ];
 
 const PREVIEWS = {
+  flags: () => (
+    <Preview>
+      <PhoneInput
+        label="Phone number"
+        placeholder="Enter phone number"
+        fullWidth
+        defaultCountry="AU"
+        flags="image"
+        flagsPath="flags/"
+      />
+    </Preview>
+  ),
   overview: () => (
     <Preview>
       <PhoneInput label="Phone number" placeholder="Enter phone number" />
