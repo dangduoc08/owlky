@@ -78,7 +78,7 @@
   }
 
   :where([data-ok-icon-button][data-ok-size="sm"]) {
-    --_ok-size: calc(var(--ok-spacing) * 7);
+    --_ok-size: var(--ok-control-height-xs);
     --_ok-icon-size: calc(var(--ok-spacing) * 4.5);
   }
 

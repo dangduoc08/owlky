@@ -18,11 +18,13 @@
 
 @layer components {
   :where([data-ok-illustration]) {
-    --_ok-illustration-lighter: var(--ok-palette-primary-lighter);
-    --_ok-illustration-light: var(--ok-palette-primary-light);
-    --_ok-illustration-main: var(--ok-palette-primary-main);
-    --_ok-illustration-dark: var(--ok-palette-primary-dark);
-    --_ok-illustration-darker: var(--ok-palette-primary-darker);
+    /* The [data-ok-color] binding; primary by default. */
+    --_ok-illustration-lighter: var(--ok-c-lighter, var(--ok-palette-primary-lighter));
+    --_ok-illustration-light: var(--ok-c-light, var(--ok-palette-primary-light));
+    --_ok-illustration-main: var(--ok-c-main, var(--ok-palette-primary-main));
+    --_ok-illustration-dark: var(--ok-c-hover, var(--ok-palette-primary-dark));
+    --_ok-illustration-darker: var(--ok-c-darker, var(--ok-palette-primary-darker));
+
     display: block;
     flex-shrink: 0;
     max-width: 100%;
@@ -33,46 +35,6 @@
   /* Without a `width` attribute: the size option, or 480px (the viewBox). */
   :where([data-ok-illustration]:not([width])) {
     width: var(--_ok-illustration-size, calc(var(--ok-spacing) * 120));
-  }
-
-  :where([data-ok-illustration][data-ok-color="secondary"]) {
-    --_ok-illustration-lighter: var(--ok-palette-secondary-lighter);
-    --_ok-illustration-light: var(--ok-palette-secondary-light);
-    --_ok-illustration-main: var(--ok-palette-secondary-main);
-    --_ok-illustration-dark: var(--ok-palette-secondary-dark);
-    --_ok-illustration-darker: var(--ok-palette-secondary-darker);
-  }
-
-  :where([data-ok-illustration][data-ok-color="info"]) {
-    --_ok-illustration-lighter: var(--ok-palette-info-lighter);
-    --_ok-illustration-light: var(--ok-palette-info-light);
-    --_ok-illustration-main: var(--ok-palette-info-main);
-    --_ok-illustration-dark: var(--ok-palette-info-dark);
-    --_ok-illustration-darker: var(--ok-palette-info-darker);
-  }
-
-  :where([data-ok-illustration][data-ok-color="success"]) {
-    --_ok-illustration-lighter: var(--ok-palette-success-lighter);
-    --_ok-illustration-light: var(--ok-palette-success-light);
-    --_ok-illustration-main: var(--ok-palette-success-main);
-    --_ok-illustration-dark: var(--ok-palette-success-dark);
-    --_ok-illustration-darker: var(--ok-palette-success-darker);
-  }
-
-  :where([data-ok-illustration][data-ok-color="warning"]) {
-    --_ok-illustration-lighter: var(--ok-palette-warning-lighter);
-    --_ok-illustration-light: var(--ok-palette-warning-light);
-    --_ok-illustration-main: var(--ok-palette-warning-main);
-    --_ok-illustration-dark: var(--ok-palette-warning-dark);
-    --_ok-illustration-darker: var(--ok-palette-warning-darker);
-  }
-
-  :where([data-ok-illustration][data-ok-color="error"]) {
-    --_ok-illustration-lighter: var(--ok-palette-error-lighter);
-    --_ok-illustration-light: var(--ok-palette-error-light);
-    --_ok-illustration-main: var(--ok-palette-error-main);
-    --_ok-illustration-dark: var(--ok-palette-error-dark);
-    --_ok-illustration-darker: var(--ok-palette-error-darker);
   }
 
   /* Every shape is filled with its tone; outlines (data-ok-stroke) paint it as the stroke. */

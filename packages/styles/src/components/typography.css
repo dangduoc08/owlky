@@ -27,8 +27,8 @@
     font-size: var(--ok-typography-h1-font-size);
     font-weight: var(--ok-typography-h1-font-weight);
     line-height: var(--ok-typography-h1-line-height);
-    letter-spacing: var(--ok-typography-h1-letter-spacing);
-    text-transform: var(--ok-typography-h1-text-transform);
+    letter-spacing: var(--ok-heading-letter-spacing);
+    text-transform: var(--ok-heading-text-transform);
   }
 
   :where([data-ok-typography][data-ok-variant="h2"]) {
@@ -36,8 +36,8 @@
     font-size: var(--ok-typography-h2-font-size);
     font-weight: var(--ok-typography-h2-font-weight);
     line-height: var(--ok-typography-h2-line-height);
-    letter-spacing: var(--ok-typography-h2-letter-spacing);
-    text-transform: var(--ok-typography-h2-text-transform);
+    letter-spacing: var(--ok-heading-letter-spacing);
+    text-transform: var(--ok-heading-text-transform);
   }
 
   :where([data-ok-typography][data-ok-variant="h3"]) {
@@ -45,8 +45,8 @@
     font-size: var(--ok-typography-h3-font-size);
     font-weight: var(--ok-typography-h3-font-weight);
     line-height: var(--ok-typography-h3-line-height);
-    letter-spacing: var(--ok-typography-h3-letter-spacing);
-    text-transform: var(--ok-typography-h3-text-transform);
+    letter-spacing: var(--ok-heading-letter-spacing);
+    text-transform: var(--ok-heading-text-transform);
   }
 
   :where([data-ok-typography][data-ok-variant="h4"]) {
@@ -54,8 +54,8 @@
     font-size: var(--ok-typography-h4-font-size);
     font-weight: var(--ok-typography-h4-font-weight);
     line-height: var(--ok-typography-h4-line-height);
-    letter-spacing: var(--ok-typography-h4-letter-spacing);
-    text-transform: var(--ok-typography-h4-text-transform);
+    letter-spacing: var(--ok-heading-letter-spacing);
+    text-transform: var(--ok-heading-text-transform);
   }
 
   :where([data-ok-typography][data-ok-variant="h5"]) {
@@ -63,8 +63,8 @@
     font-size: var(--ok-typography-h5-font-size);
     font-weight: var(--ok-typography-h5-font-weight);
     line-height: var(--ok-typography-h5-line-height);
-    letter-spacing: var(--ok-typography-h5-letter-spacing);
-    text-transform: var(--ok-typography-h5-text-transform);
+    letter-spacing: var(--ok-heading-letter-spacing);
+    text-transform: var(--ok-heading-text-transform);
   }
 
   :where([data-ok-typography][data-ok-variant="h6"]) {
@@ -72,8 +72,8 @@
     font-size: var(--ok-typography-h6-font-size);
     font-weight: var(--ok-typography-h6-font-weight);
     line-height: var(--ok-typography-h6-line-height);
-    letter-spacing: var(--ok-typography-h6-letter-spacing);
-    text-transform: var(--ok-typography-h6-text-transform);
+    letter-spacing: var(--ok-heading-letter-spacing);
+    text-transform: var(--ok-heading-text-transform);
   }
 
   :where([data-ok-typography][data-ok-variant="subtitle1"]) {
@@ -81,8 +81,8 @@
     font-size: var(--ok-typography-subtitle1-font-size);
     font-weight: var(--ok-typography-subtitle1-font-weight);
     line-height: var(--ok-typography-subtitle1-line-height);
-    letter-spacing: var(--ok-typography-subtitle1-letter-spacing);
-    text-transform: var(--ok-typography-subtitle1-text-transform);
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   :where([data-ok-typography][data-ok-variant="subtitle2"]) {
@@ -90,8 +90,8 @@
     font-size: var(--ok-typography-subtitle2-font-size);
     font-weight: var(--ok-typography-subtitle2-font-weight);
     line-height: var(--ok-typography-subtitle2-line-height);
-    letter-spacing: var(--ok-typography-subtitle2-letter-spacing);
-    text-transform: var(--ok-typography-subtitle2-text-transform);
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   :where([data-ok-typography][data-ok-variant="body1"]) {
@@ -99,8 +99,8 @@
     font-size: var(--ok-typography-body1-font-size);
     font-weight: var(--ok-typography-body1-font-weight);
     line-height: var(--ok-typography-body1-line-height);
-    letter-spacing: var(--ok-typography-body1-letter-spacing);
-    text-transform: var(--ok-typography-body1-text-transform);
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   :where([data-ok-typography][data-ok-variant="body2"]) {
@@ -108,8 +108,8 @@
     font-size: var(--ok-typography-body2-font-size);
     font-weight: var(--ok-typography-body2-font-weight);
     line-height: var(--ok-typography-body2-line-height);
-    letter-spacing: var(--ok-typography-body2-letter-spacing);
-    text-transform: var(--ok-typography-body2-text-transform);
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   :where([data-ok-typography][data-ok-variant="caption"]) {
@@ -117,8 +117,8 @@
     font-size: var(--ok-typography-caption-font-size);
     font-weight: var(--ok-typography-caption-font-weight);
     line-height: var(--ok-typography-caption-line-height);
-    letter-spacing: var(--ok-typography-caption-letter-spacing);
-    text-transform: var(--ok-typography-caption-text-transform);
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   :where([data-ok-typography][data-ok-variant="overline"]) {
@@ -144,9 +144,9 @@
     text-transform: inherit;
   }
 
-  /* Colors: palette `main` tones (the [data-ok-color] binding) and the text tones */
+  /* Colors: the palette's text tones (the [data-ok-color] binding, AA on the scheme's surfaces) */
   :where([data-ok-typography][data-ok-color]) {
-    color: var(--ok-c-main);
+    color: var(--ok-c-text);
   }
 
   :where([data-ok-typography][data-ok-color="textPrimary"]) {

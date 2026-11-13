@@ -165,7 +165,7 @@
     background-color: rgb(var(--ok-palette-grey-500-channel) / 0.16);
   }
 
-  /* Secondary text on the 16 % tint is below AA (ADR-0014): soft content uses the primary text. */
+  /* Secondary text on the 16 % tint is below AA (ADR-0069): soft content uses the primary text. */
   :where([data-ok-accordion][data-ok-variant="soft"] > [data-ok-accordion-details]) {
     color: var(--ok-text-primary);
   }

@@ -31,7 +31,7 @@
     padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
     overflow: visible;
     border: 0;
-    border-radius: var(--ok-radius-control-sm);
+    border-radius: var(--ok-radius-surface-sm);
     background-color: var(--_ok-tooltip-bg);
     color: var(--ok-palette-common-white);
     font-family: var(--ok-font-family);

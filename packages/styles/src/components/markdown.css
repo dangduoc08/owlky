@@ -103,15 +103,10 @@
     font-weight: var(--ok-font-weight-bold);
   }
 
+  /* Underlined: the primary text tone alone isn't 3:1 away from the body text (link-in-text-block). */
   :where([data-ok-markdown] a) {
-    color: var(--ok-palette-primary-main);
-    text-decoration: none;
-  }
-
-  @media (hover: hover) {
-    :where([data-ok-markdown] a:hover) {
-      text-decoration: underline;
-    }
+    color: var(--ok-palette-primary-text);
+    text-decoration: underline;
   }
 
   /* On secondary text (quotes, footnotes) the brand color is too close to the text: underline. */

@@ -67,7 +67,7 @@
   }
 
   :where([data-ok-menu][data-ok-dense] > [data-ok-menu-item], [data-ok-menu-item][data-ok-dense]) {
-    min-height: calc(var(--ok-spacing) * 8);
+    min-height: var(--ok-item-height-dense);
     padding-block: var(--ok-spacing);
   }
 

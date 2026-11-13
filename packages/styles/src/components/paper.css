@@ -14,6 +14,9 @@
 
 @layer components {
   :where([data-ok-paper]) {
+    /* The style's surface edge (ADR-0070 § 4.2): 0 in shadow styles, an ink line in line styles. */
+    border: var(--ok-surface-border-width) var(--ok-surface-border-style)
+      var(--ok-surface-border-color);
     border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-elevation-1);

@@ -17,8 +17,9 @@
 
 @layer components {
   :where([data-ok-slider]) {
-    --_ok-slider-main: var(--ok-palette-primary-main);
-    --_ok-slider-channel: var(--ok-palette-primary-main-channel);
+    /* The [data-ok-color] binding; primary by default. */
+    --_ok-slider-main: var(--ok-c-main, var(--ok-palette-primary-main));
+    --_ok-slider-channel: var(--ok-c-channel, var(--ok-palette-primary-main-channel));
     --_ok-slider-rail-size: calc(var(--ok-spacing) * 2.5);
     --_ok-slider-thumb: calc(var(--ok-spacing) * 5);
 
@@ -48,31 +49,6 @@
   :where([data-ok-slider][data-ok-color="inherit"]) {
     --_ok-slider-main: var(--ok-text-primary);
     --_ok-slider-channel: var(--ok-palette-grey-800-channel);
-  }
-
-  :where([data-ok-slider][data-ok-color="secondary"]) {
-    --_ok-slider-main: var(--ok-palette-secondary-main);
-    --_ok-slider-channel: var(--ok-palette-secondary-main-channel);
-  }
-
-  :where([data-ok-slider][data-ok-color="info"]) {
-    --_ok-slider-main: var(--ok-palette-info-main);
-    --_ok-slider-channel: var(--ok-palette-info-main-channel);
-  }
-
-  :where([data-ok-slider][data-ok-color="success"]) {
-    --_ok-slider-main: var(--ok-palette-success-main);
-    --_ok-slider-channel: var(--ok-palette-success-main-channel);
-  }
-
-  :where([data-ok-slider][data-ok-color="warning"]) {
-    --_ok-slider-main: var(--ok-palette-warning-main);
-    --_ok-slider-channel: var(--ok-palette-warning-main-channel);
-  }
-
-  :where([data-ok-slider][data-ok-color="error"]) {
-    --_ok-slider-main: var(--ok-palette-error-main);
-    --_ok-slider-channel: var(--ok-palette-error-main-channel);
   }
 
   /* Rail and track */

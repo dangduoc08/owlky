@@ -200,7 +200,10 @@
     --_ok-clock-slot: 330deg;
   }
 
+  /* The selected number paints the pointer's disc itself, so its text has its own background. */
   :where([data-ok-time-clock-number][aria-selected="true"]) {
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-palette-primary-main);
     color: var(--ok-palette-primary-contrast-text);
   }
 
