@@ -82,6 +82,52 @@ describe("styles source", () => {
     for (const file of components) expect(index).toContain(`@import "./components/${file}";`);
   });
 
+  describe("split sheets (ADR-0068 section 5)", () => {
+    const families = JSON.parse(read("families.json")) as Record<string, string[]>;
+    const lazyFiles = Object.values(families).flat();
+    const order = [...read("index.css").matchAll(/@import "\.\/components\/([\w-]+)\.css";/g)].map(
+      (match) => match[1] as string,
+    );
+    const table = readFileSync(join(src, "../../html/src/loader/modules.ts"), "utf8");
+
+    it("lists every file once, in families.json files", () => {
+      expect(new Set(lazyFiles).size).toBe(lazyFiles.length);
+      for (const file of lazyFiles) expect(components).toContain(`${file}.css`);
+    });
+
+    it("lists the lazy files after every core file, in families.json order", () => {
+      const core = order.filter((file) => !lazyFiles.includes(file));
+      expect(order).toEqual([...core, ...lazyFiles]);
+    });
+
+    it("follows the loader's module table: same modules, same order, all with a sheet", () => {
+      const keys = [...table.matchAll(/^ {2}"?([\w-]+)"?: \{/gm)].map((match) => match[1]);
+      expect(keys).toEqual(Object.keys(families));
+      expect([...table.matchAll(/stylesheet: true/g)]).toHaveLength(keys.length);
+    });
+
+    it("keeps lazy components out of core files (a core sheet never restyles a lazy root)", () => {
+      // Roots of the lazy modules: the `[data-ok-x]` of each selector in the table.
+      const roots = new Set(
+        [...table.matchAll(/selector:\s*"([^"]+)"/g)].flatMap((match) =>
+          [...(match[1] as string).matchAll(/data-ok-([\w-]+)\]/g)].map((root) => root[1]),
+        ),
+      );
+      // Dialog's Motion paper rules only test for the marker (`:not([data-ok-motion])`).
+      const allowed: Record<string, string[]> = { "dialog.css": ["motion"] };
+      for (const file of components) {
+        if (lazyFiles.includes(file.replace(/\.css$/, ""))) continue;
+        const css = read(`components/${file}`);
+        for (const root of roots) {
+          if (allowed[file]?.includes(root as string)) continue;
+          expect(css, `${file} names the lazy root ${root}`).not.toMatch(
+            new RegExp(`data-ok-${root}(?![\\w-])`),
+          );
+        }
+      }
+    });
+  });
+
   it.each(components)(
     "%s: every selector has zero specificity (:where, nothing after it)",
     (file) => {

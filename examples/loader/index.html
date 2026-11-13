@@ -12,9 +12,12 @@
     <!--
       One stylesheet and one script (ADR-0068): owlky.js holds the light components and loads a
       heavy one (here the Chart) from modules/ next to it when the page holds one. The e2e loader
-      spec adds a chart to #later, preloads modules and fails or slows their requests.
+      spec adds a chart to #later, preloads modules and fails or slows their requests. The chart's
+      stylesheet is linked here, as the docs advise for a heavy component on first paint: the
+      loader doesn't add it twice, and the page doesn't shift when it arrives.
     -->
     <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
+    <link rel="stylesheet" href="../../packages/html/dist/modules/chart.css" />
     <script src="../../packages/html/dist/owlky.js" defer></script>
   </head>
   <body>

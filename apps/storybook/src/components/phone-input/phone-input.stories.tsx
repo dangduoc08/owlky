@@ -31,7 +31,7 @@ const SETUP = [
   "<!-- Once per page (CDN): owlky.js loads the phone input when the page holds one. -->",
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/phone". -->',
+  '<!-- npm: import "@owlky/styles/owlky-all.css" and "@owlky/html/auto", then "@owlky/html/phone". -->',
 ].join("\n");
 
 const meta = {

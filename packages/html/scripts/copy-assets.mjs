@@ -9,9 +9,13 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const require = createRequire(import.meta.url);
 const stylesDist = dirname(require.resolve("@owlky/styles/owlky.css"));
 
-for (const file of ["owlky.css", "owlky.min.css"]) {
+// The core sheet, the one-file sheet and the lazy modules' sheets (modules/<name>.css, which the
+// loader attaches before each module, ADR-0068 section 5).
+for (const file of ["owlky.css", "owlky.min.css", "owlky-all.css", "owlky-all.min.css"]) {
   await cp(join(stylesDist, file), join(root, "dist", file));
 }
+await mkdir(join(root, "dist", "modules"), { recursive: true });
+await cp(join(stylesDist, "modules"), join(root, "dist", "modules"), { recursive: true });
 // MapLibre's worker (ADR-0025): modules/map.js finds it in the folder above itself.
 await cp(require.resolve("@owlky/core/map-worker.js"), join(root, "dist", "owlky-map-worker.js"));
 

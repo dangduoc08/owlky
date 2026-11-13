@@ -43,7 +43,7 @@ export const getStartedSections: PageSection[] = [
   {
     id: "npm-html",
     title: "Install the HTML packages with npm",
-    body: "If your project uses a bundler, install the stylesheet and the HTML runtime from npm. Import both once, in your entry file. Then write the same markup as with the CDN. To bundle only the components you use, register them one by one, as [Use with a bundler](/get-started/bundlers/) shows.",
+    body: "If your project uses a bundler, install the stylesheet and the HTML runtime from npm. Import both once, in your entry file. Then write the same markup as with the CDN. `owlky-all.css` holds every component. To bundle only the components you use, and to import only their styles, read [Use with a bundler](/get-started/bundlers/).",
     code: [
       {
         label: "Terminal",
@@ -53,7 +53,7 @@ export const getStartedSections: PageSection[] = [
       {
         label: "main.ts",
         language: "ts",
-        code: `import "@owlky/styles/owlky.css";
+        code: `import "@owlky/styles/owlky-all.css";
 // Registers every component and starts the runtime
 import "@owlky/html/auto";`,
       },
@@ -62,7 +62,7 @@ import "@owlky/html/auto";`,
   {
     id: "react",
     title: "Use the React package",
-    body: "Install the React package and the stylesheet. Import the stylesheet once, in your app's entry file, and import components where you use them. Your bundler keeps only the components you import. Components that need state in the browser are client components, so they work in server-rendered apps too. For Next.js and for loading large components on demand, read [Use with a bundler](/get-started/bundlers/).",
+    body: "Install the React package and the stylesheet. Import the stylesheet once, in your app's entry file, and import components where you use them. Your bundler keeps only the components you import. `owlky-all.css` holds the styles of every component, and [Use with a bundler](/get-started/bundlers/) shows how to import less. Components that need state in the browser are client components, so they work in server-rendered apps too. For Next.js and for loading large components on demand, read [Use with a bundler](/get-started/bundlers/).",
     code: [
       {
         label: "Terminal",
@@ -72,7 +72,7 @@ import "@owlky/html/auto";`,
       {
         label: "App.tsx",
         language: "tsx",
-        code: `import "@owlky/styles/owlky.css";
+        code: `import "@owlky/styles/owlky-all.css";
 import { Button } from "@owlky/react";
 
 export function App() {
@@ -94,7 +94,7 @@ export function App() {
         label: "app.css",
         language: "css",
         code: `@import "tailwindcss";
-@import "@owlky/styles/owlky.css";
+@import "@owlky/styles/owlky-all.css";
 @import "@owlky/styles/theme.css";`,
       },
       {

@@ -1,6 +1,8 @@
 /*
- * Full bundle entry: tokens + every component. Compiled to dist/owlky.css.
- * Every file in ./components must be imported here (enforced by styles.test.ts).
+ * Full bundle entry: tokens + every component, compiled to dist/owlky-all.css. Core files first
+ * (dist/owlky.css is tokens + these), then the lazy families of families.json (each is one
+ * dist/modules/<name>.css, ADR-0068 §5). Every file in ./components must be imported here, in
+ * that order (enforced by styles.test.ts).
  */
 @import "@owlky/tokens/tokens.css";
 @import "./components/paper.css";
@@ -36,32 +38,22 @@
 @import "./components/backdrop.css";
 @import "./components/snackbar.css";
 @import "./components/drawer.css";
-@import "./components/sortable.css";
 @import "./components/scrollbar.css";
 @import "./components/switch.css";
 @import "./components/text-field.css";
 @import "./components/select.css";
-@import "./components/phone-input.css";
 @import "./components/tabs.css";
 @import "./components/breadcrumbs.css";
 @import "./components/stepper.css";
 @import "./components/timeline.css";
-@import "./components/organization-chart.css";
-@import "./components/illustration.css";
 @import "./components/image.css";
 @import "./components/rating.css";
-@import "./components/chart.css";
-@import "./components/gantt.css";
 @import "./components/slider.css";
-@import "./components/transfer-list.css";
-@import "./components/tree-view.css";
-@import "./components/autocomplete.css";
-@import "./components/motion.css";
-@import "./components/count-up.css";
 @import "./components/countdown.css";
-@import "./components/motion-border.css";
-@import "./components/scroll-progress.css";
 @import "./components/collapse.css";
+/* Lazy families (the CDN loader's modules, in families.json order): after every core file. */
+@import "./components/chart.css";
+@import "./components/illustration.css";
 @import "./components/data-grid.css";
 @import "./components/date-field.css";
 @import "./components/date-calendar.css";
@@ -70,11 +62,22 @@
 @import "./components/digital-clock.css";
 @import "./components/date-range-calendar.css";
 @import "./components/date-range-picker.css";
-@import "./components/editor.css";
-@import "./components/markdown.css";
+@import "./components/gantt.css";
 @import "./components/carousel.css";
 @import "./components/lightbox.css";
-@import "./components/code-editor.css";
-@import "./components/map.css";
+@import "./components/motion.css";
+@import "./components/count-up.css";
+@import "./components/motion-border.css";
+@import "./components/scroll-progress.css";
+@import "./components/organization-chart.css";
 @import "./components/upload.css";
 @import "./components/walktour.css";
+@import "./components/tree-view.css";
+@import "./components/sortable.css";
+@import "./components/autocomplete.css";
+@import "./components/transfer-list.css";
+@import "./components/markdown.css";
+@import "./components/editor.css";
+@import "./components/map.css";
+@import "./components/code-editor.css";
+@import "./components/phone-input.css";

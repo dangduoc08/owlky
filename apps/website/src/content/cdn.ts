@@ -38,9 +38,9 @@ export const cdnSections: PageSection[] = [
   {
     id: "how",
     title: "How the script loads components",
-    body: `A CDN page needs one stylesheet and one script. \`owlky.js\` holds the runtime and the components that most pages use, such as dialogs, menus, tabs and form controls. It is about 40 kB gzip.
+    body: `A CDN page needs one stylesheet and one script. \`owlky.js\` holds the runtime and the components that most pages use, such as dialogs, menus, tabs and form controls. It is about 40 kB gzip. \`owlky.css\` holds the design tokens and the styles of those components, which is about 30 kB gzip.
 
-Larger components load only on the pages that use them. When the page holds one of them, \`owlky.js\` loads its module from the \`modules/\` folder next to the script. It also loads modules for markup that you add to the page later, for example with \`fetch\`, htmx or Turbo.
+Larger components load only on the pages that use them. When the page holds one of them, \`owlky.js\` loads its stylesheet and then its module from the \`modules/\` folder next to the script. The stylesheet comes first, so the component never runs on unstyled markup. The loader also handles markup that you add to the page later, for example with \`fetch\`, htmx or Turbo.
 
 These components load as modules:
 
@@ -49,7 +49,7 @@ These components load as modules:
 - **Content:** Carousel and Lightbox, Code editor, Editor, Illustrations, Map and Markdown.
 - **Behavior:** Motion, Sortable and Walktour.
 
-Until its module runs, a component shows its markup as it is without JavaScript. A chart shows its data table, and a date picker shows its text field. Nothing on the page is hidden while it waits.`,
+Until its stylesheet and module arrive, a component shows its markup as it is without JavaScript and without its own styles. A chart shows its data table, and a date picker shows its text field. Nothing on the page is hidden while it waits.`,
     code: [{ label: "index.html", language: "html", code: page(HEAD, CHART) }],
   },
   {
@@ -59,15 +59,26 @@ Until its module runs, a component shows its markup as it is without JavaScript.
 
 Each component's page lists its module name in the **Import** table of its API reference. The names are \`autocomplete\`, \`carousel\`, \`chart\`, \`code-editor\`, \`data-grid\`, \`date-picker\`, \`editor\`, \`gantt\`, \`illustration\`, \`map\`, \`markdown\`, \`motion\`, \`organization-chart\`, \`phone-input\`, \`sortable\`, \`transfer-list\`, \`tree-view\`, \`upload\` and \`walktour\`.
 
-To let the browser fetch a module even before \`owlky.js\` runs, also add a \`modulepreload\` link for it.`,
+To let the browser fetch a module even before \`owlky.js\` runs, also add a \`modulepreload\` link for its script and a \`preload\` link for its stylesheet. Both files have the module's name.
+
+A component that shows on first paint, such as a chart at the top of the page, looks different once its stylesheet arrives, so the content below it can shift. To avoid that, link the stylesheet in the \`<head>\`, after \`owlky.css\`. The loader doesn't add a stylesheet that the page links already.`,
     code: [
       {
         label: "index.html",
         language: "html",
         code: `<link rel="stylesheet" href="${CDN}/owlky.css">
-<!-- Fetch the chart module in parallel with owlky.js -->
+<!-- Fetch the chart's stylesheet and module in parallel with owlky.js -->
+<link rel="preload" as="style" href="${CDN}/modules/chart.css">
 <link rel="modulepreload" href="${CDN}/modules/chart.js">
 <script src="${CDN}/owlky.js" data-ok-preload="chart data-grid" defer></script>`,
+      },
+      {
+        label: "index.html",
+        language: "html",
+        code: `<link rel="stylesheet" href="${CDN}/owlky.css">
+<!-- A chart at the top of the page: its styles are there from the first paint -->
+<link rel="stylesheet" href="${CDN}/modules/chart.css">
+<script src="${CDN}/owlky.js" data-ok-preload="chart" defer></script>`,
       },
     ],
   },
@@ -142,13 +153,14 @@ Module scripts are deferred by default. \`data-ok-preload\` and \`data-ok-module
     title: "Host Owlky yourself",
     body: `To serve Owlky from your own site, copy the whole \`dist\` folder of the \`@owlky/html\` package. Keep its layout, because \`owlky.js\` finds the other files next to itself:
 
-- **\`owlky.css\` and \`owlky.min.css\`:** the stylesheet, readable or minified.
+- **\`owlky.css\` and \`owlky.min.css\`:** the core stylesheet, readable or minified. It holds the tokens and the styles of the components in \`owlky.js\`.
+- **\`owlky-all.css\` and \`owlky-all.min.css\`:** one stylesheet with every component, for pages that don't use the loader.
 - **\`owlky.js\` and \`owlky.mjs\`:** the script, as a classic script or as an ES module.
-- **\`modules/\`:** the modules of the larger components and the code they share.
+- **\`modules/\`:** the modules of the larger components, their stylesheets and the code they share.
 - **\`monaco/\`:** the code editor's engine, which loads only when a code editor appears.
 - **\`owlky-map-worker.js\`:** the map engine's worker, which loads only when a map appears.
 
-To serve the modules from another folder, set \`data-ok-modules\` on the script to that folder. To serve the code editor's engine from another folder, set \`data-ok-monaco-path\`. Both folders must be on the page's origin when the page has a strict Content Security Policy.`,
+To serve the modules and their stylesheets from another folder, set \`data-ok-modules\` on the script to that folder. To serve the code editor's engine from another folder, set \`data-ok-monaco-path\`. Both folders must be on the page's origin when the page has a strict Content Security Policy.`,
     code: [
       {
         label: "Terminal",

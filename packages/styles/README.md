@@ -4,7 +4,8 @@ Prebuilt CSS for [Owlky](../../README.md). No Tailwind needed to consume it.
 
 | Import                                                       | Contents                                                 |
 | ------------------------------------------------------------ | -------------------------------------------------------- |
-| `@owlky/styles/owlky.css` (`.min.css`) | tokens + all components                                  |
+| `@owlky/styles/owlky.css` (`.min.css`) | tokens + the light components (core, about 29 kB gzip) |
+| `@owlky/styles/owlky-all.css` (`.min.css`) | tokens + every component (about 63 kB gzip)          |
 | `@owlky/styles/components/<name>.css` | one component (also load `tokens.css`, and `icon.css` when it draws icons), e.g. `button.css` |
 | `@owlky/styles/tokens.css`                        | `--ok-*` design tokens, light/dark                       |
 | `@owlky/styles/base.css`                          | optional page base (font, colors)                        |

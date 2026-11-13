@@ -830,7 +830,7 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
       "Use the Owlky MCP tools instead of guessing names, props, attributes or tokens:",
       "1. Call list_components (with a query) to find the components the page needs.",
       `2. Call get_component for each one: use only the ${framework === "html" ? "data-ok-* attributes and values" : "React props and values"} it lists, and follow its anatomy, keyboard and accessibility notes.`,
-      `3. Call get_examples with framework "${framework}" and start from the closest example${framework === "html" ? " (it shows the stylesheet and the runtime script the page needs)" : " (imports come from @owlky/react, styles from @owlky/styles/owlky.css)"}.`,
+      `3. Call get_examples with framework "${framework}" and start from the closest example${framework === "html" ? " (it shows the stylesheet and the runtime script the page needs)" : " (imports come from @owlky/react, styles from @owlky/styles/owlky-all.css)"}.`,
       "4. Call search_tokens for colors, spacing, radius and shadows: use --ok-* variables (or the Tailwind utilities it lists), never hard-coded values.",
       '5. Call get_guide for foundations when you need them (for example "colors", "typography" or "settings" for themes).',
       framework === "html"
@@ -867,7 +867,7 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
         {
           role: "user",
           content: text(
-            `Build this with Owlky in React (@owlky/react components, @owlky/styles/owlky.css):\n\n${task}\n\n${steps("react")}`,
+            `Build this with Owlky in React (@owlky/react components, @owlky/styles/owlky-all.css):\n\n${task}\n\n${steps("react")}`,
           ),
         },
       ],

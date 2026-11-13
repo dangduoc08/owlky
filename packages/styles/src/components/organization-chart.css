@@ -201,6 +201,12 @@
     list-style: none;
   }
 
+  /* The list is a Collapse: closed, it is gone. This file loads after collapse.css (the lazy
+     families follow every core file), so its `display` above needs the Collapse rule again. */
+  :where([data-ok-organization-chart-children][hidden]) {
+    display: var(--_ok-collapse-closed-display, none);
+  }
+
   /* The line down from the parent's label. */
   :where([data-ok-organization-chart-children])::before {
     content: "";

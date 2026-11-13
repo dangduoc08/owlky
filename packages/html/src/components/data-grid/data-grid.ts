@@ -4555,7 +4555,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       // The Chart's helpers load with the first chart (ADR-0068 S5); draw again once they're in.
       const kit = gridChartKit();
       if (!kit) {
-        void loadGridChartKit().then(() => {
+        void loadGridChartKit(runtime).then(() => {
           if (element.isConnected) syncChart();
         });
         return;

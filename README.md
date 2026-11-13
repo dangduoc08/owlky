@@ -55,7 +55,7 @@ Add the stylesheet and the script to the `<head>` of every page, then copy a com
 ```
 
 The script holds the common components. Larger ones, such as the chart or the data grid, load
-from the `modules/` folder next to it when a page holds one. To load them ahead of use, list them
+from the `modules/` folder next to it when a page holds one, each with its own stylesheet. To load them ahead of use, list them
 in `data-ok-preload`, for example `data-ok-preload="chart"`. To host Owlky yourself, copy the
 whole `dist` folder of `@owlky/html`.
 
@@ -69,7 +69,7 @@ npm install @owlky/react @owlky/styles
 
 ```tsx
 // In your app's entry file
-import "@owlky/styles/owlky.css";
+import "@owlky/styles/owlky-all.css";
 
 // In a component
 import { Button } from "@owlky/react";
@@ -85,7 +85,10 @@ export function GetStarted() {
 
 Bundlers keep only the components you import. Each component also has its own entry, such as
 `@owlky/react/data-grid`, which you can load on demand with a dynamic `import()`. With Next.js,
-add `@owlky/react` and `@owlky/core` to `experimental.optimizePackageImports`.
+add `@owlky/react` and `@owlky/core` to `experimental.optimizePackageImports`. `owlky-all.css`
+holds every component (about 63 kB gzip). For less, import `owlky.css` (the tokens and the light
+components, about 29 kB) and the files of the large components you use, such as
+`@owlky/styles/components/data-grid.css`.
 
 ### With Tailwind CSS v4
 
@@ -94,7 +97,7 @@ Import the Owlky theme after Tailwind. Every Owlky token then becomes a utility 
 
 ```css
 @import "tailwindcss";
-@import "@owlky/styles/owlky.css";
+@import "@owlky/styles/owlky-all.css";
 @import "@owlky/styles/theme.css";
 ```
 

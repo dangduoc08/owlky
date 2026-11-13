@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, type Page, test } from "@playwright/test";
 
 /**
@@ -97,6 +98,70 @@ test.describe("CDN loader", () => {
     });
     await expect.poll(() => page.evaluate(() => window.Owlky?.loaded("motion"))).toBe(true);
     expect(requested).toEqual(["chart", "motion"]);
+    expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
+  });
+
+  test("a module's stylesheet loads before its code, after the core sheet, in module order", async ({
+    page,
+  }) => {
+    await record(page);
+    // Every request for a module's stylesheet or script, in the order the browser sent them.
+    const requests: string[] = [];
+    page.on("request", (request) => {
+      const match = /\/packages\/html\/dist\/modules\/([\w-]+\.(?:css|js))$/.exec(
+        new URL(request.url()).pathname,
+      );
+      if (match?.[1]) requests.push(match[1]);
+    });
+    await page.goto("/examples/csp/index.html");
+    const modules = [
+      "chart",
+      "illustration",
+      "date-picker",
+      "data-grid",
+      "gantt",
+      "carousel",
+      "markdown",
+      "editor",
+      "phone-input",
+      "walktour",
+    ];
+    await expect
+      .poll(() => page.evaluate((names) => names.filter((n) => !window.Owlky?.loaded(n)), modules))
+      .toEqual([]);
+    // The sheet of each module was requested before its script.
+    for (const name of modules)
+      expect(requests.indexOf(`${name}.css`), `${name}.css before ${name}.js`).toBeLessThan(
+        requests.indexOf(`${name}.js`),
+      );
+    // The core sheet comes first, then the module sheets in the order of families.json, whatever
+    // the order the modules loaded in; every sheet has loaded (`sheet` is set).
+    const sheets = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')]
+        .filter((link) => /\/(owlky|modules\/[\w-]+)\.css$/.test(link.href))
+        .map((link) => ({
+          file: /\/((?:modules\/)?[\w-]+)\.css$/.exec(link.href)?.[1] ?? "",
+          loaded: Boolean(link.sheet),
+        })),
+    );
+    const families = Object.keys(
+      JSON.parse(
+        readFileSync(new URL("../../packages/styles/src/families.json", import.meta.url), "utf8"),
+      ),
+    );
+    expect(sheets.map((sheet) => sheet.file)).toEqual([
+      "owlky",
+      ...families.filter((name) => modules.includes(name)).map((name) => `modules/${name}`),
+    ]);
+    expect(sheets.every((sheet) => sheet.loaded)).toBe(true);
+    // The core sheet doesn't hold the modules' styles: the data grid's header is styled by its own.
+    const grid = await page.evaluate(() => {
+      const sheet = [...document.styleSheets].find((each) => each.href?.endsWith("/owlky.css"));
+      return [...(sheet?.cssRules ?? [])].some((rule) =>
+        rule.cssText.includes("data-ok-data-grid"),
+      );
+    });
+    expect(grid).toBe(false);
     expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
   });
 
@@ -223,12 +288,12 @@ test.describe("CDN loader", () => {
     expect(await recorded(page)).toEqual({ violations: [], loadErrors: [] });
   });
 
-  test("a chart that loads late shifts the content below it by little", async ({
-    page,
-    browserName,
-  }) => {
-    // The Layout Instability API (layout-shift entries) exists in Chromium only.
-    test.skip(browserName !== "chromium", "layout-shift entries are Chromium-only");
+  /**
+   * The layout shift (Chromium's Layout Instability API) of the loader page while the Chart's
+   * module is held back for 500 ms, as on a slow network. `linked`: the page links the Chart's
+   * stylesheet in its head (the loader doesn't add it twice); otherwise the loader adds it.
+   */
+  async function lateChartShift(page: Page, linked: boolean): Promise<number> {
     await page.addInitScript(() => {
       const scope = window as unknown as { shift: number };
       scope.shift = 0;
@@ -240,6 +305,12 @@ test.describe("CDN loader", () => {
           if (!entry.hadRecentInput) scope.shift += entry.value;
       }).observe({ type: "layout-shift", buffered: true });
     });
+    if (!linked)
+      await page.route("**/examples/loader/index.html", async (route) => {
+        const response = await route.fetch();
+        const html = (await response.text()).replace(/<link[^>]*modules\/chart\.css[^>]*>/, "");
+        await route.fulfill({ response, body: html });
+      });
     let release: () => void = () => {};
     const held = new Promise<void>((resolve) => {
       release = resolve;
@@ -259,7 +330,27 @@ test.describe("CDN loader", () => {
     );
     const shift = await page.evaluate(() => (window as unknown as { shift: number }).shift);
     test.info().annotations.push({ type: "cumulative layout shift", description: String(shift) });
-    // Google's "good" threshold: the docs recommend data-ok-preload for charts above the fold.
-    expect(shift).toBeLessThan(0.1);
+    return shift;
+  }
+
+  test("a chart with its stylesheet linked shifts the content below it by little when it loads late", async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(browserName !== "chromium", "layout-shift entries are Chromium-only");
+    // Google's "good" threshold: the docs recommend linking the stylesheet of a heavy component
+    // that shows on first paint (and `data-ok-preload` for its module).
+    expect(await lateChartShift(page, true)).toBeLessThan(0.1);
+  });
+
+  test("a chart whose stylesheet the loader adds shifts the content once, when the sheet arrives", async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(browserName !== "chromium", "layout-shift entries are Chromium-only");
+    // Without a link, the chart's own styles arrive after the first paint (ADR-0068 S4: the core
+    // sheet no longer holds them), which shifts the figure once: about 0.107 on this page. The
+    // bound guards against more than that single shift.
+    expect(await lateChartShift(page, false)).toBeLessThan(0.15);
   });
 });

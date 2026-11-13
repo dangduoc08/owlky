@@ -1746,9 +1746,9 @@
   "cdnModule": "motion",
   "core": "@owlky/core/motion",
   "css": [
+   "@owlky/styles/components/countdown.css",
    "@owlky/styles/components/motion.css",
    "@owlky/styles/components/count-up.css",
-   "@owlky/styles/components/countdown.css",
    "@owlky/styles/components/motion-border.css"
   ],
   "html": "@owlky/html/motion",
