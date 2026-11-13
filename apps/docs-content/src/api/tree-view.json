@@ -2,14 +2,14 @@
  "css": [
   {
    "name": "--ok-action-focus",
-   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+   "value": "color-mix(in srgb, #71717B 24%, transparent)"
   },
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -35,7 +35,7 @@
   },
   {
    "name": "--ok-focus-ring-color-brand",
-   "value": "var(--ok-palette-primary-main)"
+   "value": "var(--ok-palette-primary-text)"
   },
   {
    "name": "--ok-focus-ring-inset",
@@ -47,7 +47,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-sm",
@@ -67,37 +67,37 @@
   },
   {
    "name": "--ok-palette-error-main",
-   "value": "#FF5630"
+   "value": "#E7000B"
   },
   {
-   "dark": "#FFAC82",
-   "light": "#B71D18",
+   "dark": "#FFA2A2",
+   "light": "#9F0712",
    "name": "--ok-palette-error-text"
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
+   "value": "97 95 255"
   },
   {
-   "dark": "#5BE49B",
-   "light": "#007867",
+   "dark": "#A3B3FF",
+   "light": "#4F39F6",
    "name": "--ok-palette-primary-text"
   },
   {
    "name": "--ok-palette-warning-main-channel",
-   "value": "255 171 0"
+   "value": "187 77 0"
   },
   {
    "name": "--ok-radius-control",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "name": "--ok-radius-control-sm",
@@ -116,8 +116,8 @@
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {

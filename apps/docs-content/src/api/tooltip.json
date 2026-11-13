@@ -10,7 +10,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-2xs",
@@ -26,15 +26,15 @@
   },
   {
    "name": "--ok-palette-grey-700",
-   "value": "#454F5B"
+   "value": "#3F3F46"
   },
   {
    "name": "--ok-palette-grey-800",
-   "value": "#1C252E"
+   "value": "#27272A"
   },
   {
-   "name": "--ok-radius-control-sm",
-   "value": "6px"
+   "name": "--ok-radius-surface-sm",
+   "value": "10px"
   },
   {
    "name": "--ok-spacing",

@@ -440,7 +440,10 @@ const BINDINGS = {
   "--ok-c-main": "The main color of the element's `data-ok-color`.",
   "--ok-c-channel": "The main color of the element's `data-ok-color`, as RGB channels.",
   "--ok-c-contrast": "The text color on the main color.",
-  "--ok-c-hover": "The hover color of the element's `data-ok-color`.",
+  "--ok-c-lighter": "The lighter tint of the element's `data-ok-color` (palette colors only).",
+  "--ok-c-light": "The light tint of the element's `data-ok-color` (palette colors only).",
+  "--ok-c-hover": "The hover color of the element's `data-ok-color` (its dark shade).",
+  "--ok-c-darker": "The darker shade of the element's `data-ok-color` (palette colors only).",
   "--ok-c-text": "The accessible text tone of the element's `data-ok-color`.",
   "--ok-c-shadow": "The colored shadow of the element's `data-ok-color`.",
 };

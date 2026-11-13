@@ -1,8 +1,8 @@
 {
  "css": [
   {
-   "dark": "color-mix(in srgb, #141A21 64%, transparent)",
-   "light": "color-mix(in srgb, #1C252E 48%, transparent)",
+   "dark": "color-mix(in srgb, #09090B 64%, transparent)",
+   "light": "color-mix(in srgb, #27272A 48%, transparent)",
    "name": "--ok-backdrop"
   },
   {
@@ -19,7 +19,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-palette-common-white",

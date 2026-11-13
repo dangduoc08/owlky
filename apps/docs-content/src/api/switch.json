@@ -2,7 +2,7 @@
  "css": [
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
    "description": "The main color of the element's `data-ok-color`, as RGB channels.",
@@ -38,19 +38,19 @@
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-grey-800",
-   "value": "#1C252E"
+   "value": "#27272A"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
+   "value": "97 95 255"
   },
   {
    "name": "--ok-radius-full",
@@ -58,7 +58,7 @@
   },
   {
    "name": "--ok-shadow-z1",
-   "value": "0px 1px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+   "value": "0 1px 2px 0 var(--_ok-sc10), 0 1px 3px 0 var(--_ok-sc8)"
   },
   {
    "name": "--ok-spacing",
@@ -81,13 +81,13 @@
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   }
  ],

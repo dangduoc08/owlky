@@ -2,19 +2,20 @@
  "css": [
   {
    "name": "--ok-action-focus",
-   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+   "value": "color-mix(in srgb, #71717B 24%, transparent)"
   },
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
    "name": "--ok-border-width",
    "value": "1px"
   },
   {
-   "name": "--ok-divider",
-   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+   "dark": "color-mix(in srgb, #71717B 24%, transparent)",
+   "light": "color-mix(in srgb, #71717B 20%, transparent)",
+   "name": "--ok-divider"
   },
   {
    "name": "--ok-focus-ring-color",
@@ -37,6 +38,10 @@
    "value": "2.125rem"
   },
   {
+   "name": "--ok-item-height-dense",
+   "value": "2rem"
+  },
+  {
    "name": "--ok-radius-control-sm",
    "value": "6px"
   },
@@ -45,8 +50,8 @@
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {

@@ -2,19 +2,39 @@
  "css": [
   {
    "name": "--ok-action-disabled",
-   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+   "value": "color-mix(in srgb, #71717B 80%, transparent)"
   },
   {
    "name": "--ok-action-disabled-bg",
-   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+   "value": "color-mix(in srgb, #71717B 24%, transparent)"
   },
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
    "name": "--ok-border-width",
    "value": "1px"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The text color on the main color.",
+   "name": "--ok-c-contrast"
+  },
+  {
+   "description": "The hover color of the element's `data-ok-color` (its dark shade).",
+   "name": "--ok-c-hover"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
   },
   {
    "name": "--ok-duration-shortest",
@@ -38,7 +58,7 @@
   },
   {
    "name": "--ok-font-family-label",
-   "value": "var(--ok-font-family)"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-lg",
@@ -53,18 +73,18 @@
    "value": "600"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-inherit-contrast"
   },
   {
-   "dark": "#C4CDD5",
-   "light": "#454F5B",
+   "dark": "#D4D4D8",
+   "light": "#3F3F46",
    "name": "--ok-inherit-hover"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#27272A",
    "name": "--ok-inherit-main"
   },
   {
@@ -76,138 +96,24 @@
    "value": "none"
   },
   {
-   "name": "--ok-palette-error-contrast-text",
-   "value": "#FFFFFF"
+   "name": "--ok-pagination-size-lg",
+   "value": "2.5rem"
   },
   {
-   "name": "--ok-palette-error-dark",
-   "value": "#B71D18"
+   "name": "--ok-pagination-size-md",
+   "value": "2rem"
   },
   {
-   "name": "--ok-palette-error-main",
-   "value": "#FF5630"
-  },
-  {
-   "name": "--ok-palette-error-main-channel",
-   "value": "255 86 48"
-  },
-  {
-   "dark": "#FFAC82",
-   "light": "#B71D18",
-   "name": "--ok-palette-error-text"
+   "name": "--ok-pagination-size-sm",
+   "value": "1.625rem"
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
-  },
-  {
-   "name": "--ok-palette-info-contrast-text",
-   "value": "#FFFFFF"
-  },
-  {
-   "name": "--ok-palette-info-dark",
-   "value": "#006C9C"
-  },
-  {
-   "name": "--ok-palette-info-main",
-   "value": "#00B8D9"
-  },
-  {
-   "name": "--ok-palette-info-main-channel",
-   "value": "0 184 217"
-  },
-  {
-   "dark": "#61F3F3",
-   "light": "#006C9C",
-   "name": "--ok-palette-info-text"
-  },
-  {
-   "name": "--ok-palette-primary-contrast-text",
-   "value": "#FFFFFF"
-  },
-  {
-   "name": "--ok-palette-primary-dark",
-   "value": "#007867"
-  },
-  {
-   "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
-  },
-  {
-   "name": "--ok-palette-primary-main-channel",
-   "value": "0 167 111"
-  },
-  {
-   "dark": "#5BE49B",
-   "light": "#007867",
-   "name": "--ok-palette-primary-text"
-  },
-  {
-   "name": "--ok-palette-secondary-contrast-text",
-   "value": "#FFFFFF"
-  },
-  {
-   "name": "--ok-palette-secondary-dark",
-   "value": "#5119B7"
-  },
-  {
-   "name": "--ok-palette-secondary-main",
-   "value": "#8E33FF"
-  },
-  {
-   "name": "--ok-palette-secondary-main-channel",
-   "value": "142 51 255"
-  },
-  {
-   "dark": "#C684FF",
-   "light": "#5119B7",
-   "name": "--ok-palette-secondary-text"
-  },
-  {
-   "name": "--ok-palette-success-contrast-text",
-   "value": "#FFFFFF"
-  },
-  {
-   "name": "--ok-palette-success-dark",
-   "value": "#118D57"
-  },
-  {
-   "name": "--ok-palette-success-main",
-   "value": "#22C55E"
-  },
-  {
-   "name": "--ok-palette-success-main-channel",
-   "value": "34 197 94"
-  },
-  {
-   "dark": "#77ED8B",
-   "light": "#065E49",
-   "name": "--ok-palette-success-text"
-  },
-  {
-   "name": "--ok-palette-warning-contrast-text",
-   "value": "#1C252E"
-  },
-  {
-   "name": "--ok-palette-warning-dark",
-   "value": "#B76E00"
-  },
-  {
-   "name": "--ok-palette-warning-main",
-   "value": "#FFAB00"
-  },
-  {
-   "name": "--ok-palette-warning-main-channel",
-   "value": "255 171 0"
-  },
-  {
-   "dark": "#FFD666",
-   "light": "#7A4100",
-   "name": "--ok-palette-warning-text"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-radius-control",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "name": "--ok-radius-full",
@@ -218,8 +124,8 @@
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {

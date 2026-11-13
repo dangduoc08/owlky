@@ -2,11 +2,11 @@
  "css": [
   {
    "name": "--ok-action-disabled",
-   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+   "value": "color-mix(in srgb, #71717B 80%, transparent)"
   },
   {
    "name": "--ok-action-disabled-bg",
-   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+   "value": "color-mix(in srgb, #71717B 24%, transparent)"
   },
   {
    "name": "--ok-border-width",
@@ -21,7 +21,7 @@
    "name": "--ok-c-contrast"
   },
   {
-   "description": "The hover color of the element's `data-ok-color`.",
+   "description": "The hover color of the element's `data-ok-color` (its dark shade).",
    "name": "--ok-c-hover"
   },
   {
@@ -41,6 +41,10 @@
    "value": "3rem"
   },
   {
+   "name": "--ok-control-height-md",
+   "value": "2.25rem"
+  },
+  {
    "name": "--ok-control-height-xl",
    "value": "3.5rem"
   },
@@ -53,6 +57,10 @@
    "value": "cubic-bezier(0.4, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-fab-height-sm",
+   "value": "2.5rem"
+  },
+  {
    "name": "--ok-focus-ring-offset",
    "value": "2px"
   },
@@ -62,7 +70,7 @@
   },
   {
    "name": "--ok-font-family-label",
-   "value": "var(--ok-font-family)"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-size-lg",
@@ -77,18 +85,18 @@
    "value": "0.8125rem"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-inherit-contrast"
   },
   {
-   "dark": "#C4CDD5",
-   "light": "#454F5B",
+   "dark": "#D4D4D8",
+   "light": "#3F3F46",
    "name": "--ok-inherit-hover"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#27272A",
    "name": "--ok-inherit-main"
   },
   {
@@ -101,19 +109,19 @@
   },
   {
    "name": "--ok-palette-grey-300",
-   "value": "#DFE3E8"
+   "value": "#D4D4D8"
   },
   {
    "name": "--ok-palette-grey-400",
-   "value": "#C4CDD5"
+   "value": "#9F9FA9"
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-grey-800",
-   "value": "#1C252E"
+   "value": "#27272A"
   },
   {
    "name": "--ok-radius-full",
@@ -121,20 +129,20 @@
   },
   {
    "name": "--ok-shadow-z8",
-   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+   "value": "0 1px 3px 0 var(--_ok-sc10), 0 8px 20px 0 var(--_ok-sc12)"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {

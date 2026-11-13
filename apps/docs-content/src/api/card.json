@@ -2,11 +2,11 @@
  "css": [
   {
    "name": "--ok-action-focus",
-   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+   "value": "color-mix(in srgb, #71717B 24%, transparent)"
   },
   {
    "name": "--ok-action-hover",
-   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+   "value": "color-mix(in srgb, #71717B 8%, transparent)"
   },
   {
    "name": "--ok-duration-shortest",
@@ -18,7 +18,7 @@
   },
   {
    "name": "--ok-elevation-8",
-   "value": "0px 5px 5px -3px color-mix(in srgb, var(--ok-shadow-color) 20%, transparent), 0px 8px 10px 1px color-mix(in srgb, var(--ok-shadow-color) 14%, transparent), 0px 3px 14px 2px color-mix(in srgb, var(--ok-shadow-color) 12%, transparent)"
+   "value": "0 5px 5px -3px var(--_ok-sc20), 0 8px 10px 1px var(--_ok-sc14), 0 3px 14px 2px var(--_ok-sc12)"
   },
   {
    "name": "--ok-focus-ring-color",
@@ -34,11 +34,11 @@
   },
   {
    "name": "--ok-radius-surface",
-   "value": "16px"
+   "value": "18px"
   },
   {
    "name": "--ok-shadow-card",
-   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 20%, transparent), 0px 12px 24px -4px color-mix(in srgb, var(--ok-shadow-color) 12%, transparent)"
+   "value": "0 0 2px 0 var(--_ok-sc14), 0 10px 30px -4px var(--_ok-sc12)"
   },
   {
    "name": "--ok-spacing",

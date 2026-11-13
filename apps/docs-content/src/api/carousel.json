@@ -1,12 +1,12 @@
 {
  "css": [
   {
-   "dark": "#28323D",
-   "light": "#F4F6F8",
+   "dark": "#27272A",
+   "light": "#F4F4F5",
    "name": "--ok-bg-neutral"
   },
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -27,12 +27,16 @@
    "name": "--ok-c-contrast"
   },
   {
-   "description": "The hover color of the element's `data-ok-color`.",
+   "description": "The hover color of the element's `data-ok-color` (its dark shade).",
    "name": "--ok-c-hover"
   },
   {
    "description": "The main color of the element's `data-ok-color`.",
    "name": "--ok-c-main"
+  },
+  {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
   },
   {
    "name": "--ok-duration-exit",
@@ -64,7 +68,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-weight-semibold",
@@ -80,19 +84,19 @@
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-grey-800-channel",
-   "value": "28 37 46"
+   "value": "39 39 42"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
    "name": "--ok-radius-control",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "name": "--ok-radius-full",
@@ -100,20 +104,20 @@
   },
   {
    "name": "--ok-radius-surface-md",
-   "value": "12px"
+   "value": "14px"
   },
   {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {

@@ -1,22 +1,30 @@
 {
  "css": [
   {
-   "description": "The main color of the element's `data-ok-color`.",
-   "name": "--ok-c-main"
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
   },
   {
-   "dark": "#637381",
-   "light": "#919EAB",
+   "name": "--ok-heading-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-heading-text-transform",
+   "value": "none"
+  },
+  {
+   "dark": "#52525C",
+   "light": "#9F9FA9",
    "name": "--ok-text-disabled"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {
@@ -32,16 +40,8 @@
    "value": "400"
   },
   {
-   "name": "--ok-typography-body1-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-body1-line-height",
    "value": "1.5"
-  },
-  {
-   "name": "--ok-typography-body1-text-transform",
-   "value": "none"
   },
   {
    "name": "--ok-typography-body2-font-family",
@@ -56,16 +56,8 @@
    "value": "400"
   },
   {
-   "name": "--ok-typography-body2-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-body2-line-height",
    "value": "1.5714"
-  },
-  {
-   "name": "--ok-typography-body2-text-transform",
-   "value": "none"
   },
   {
    "name": "--ok-typography-button-font-family",
@@ -104,16 +96,8 @@
    "value": "400"
   },
   {
-   "name": "--ok-typography-caption-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-caption-line-height",
    "value": "1.5"
-  },
-  {
-   "name": "--ok-typography-caption-text-transform",
-   "value": "none"
   },
   {
    "name": "--ok-typography-h1-font-family",
@@ -128,16 +112,8 @@
    "value": "800"
   },
   {
-   "name": "--ok-typography-h1-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-h1-line-height",
    "value": "1.25"
-  },
-  {
-   "name": "--ok-typography-h1-text-transform",
-   "value": "none"
   },
   {
    "name": "--ok-typography-h2-font-family",
@@ -152,16 +128,8 @@
    "value": "800"
   },
   {
-   "name": "--ok-typography-h2-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-h2-line-height",
    "value": "1.3333"
-  },
-  {
-   "name": "--ok-typography-h2-text-transform",
-   "value": "none"
   },
   {
    "name": "--ok-typography-h3-font-family",
@@ -173,23 +141,15 @@
   },
   {
    "name": "--ok-typography-h3-font-weight",
-   "value": "700"
-  },
-  {
-   "name": "--ok-typography-h3-letter-spacing",
-   "value": "normal"
+   "value": "800"
   },
   {
    "name": "--ok-typography-h3-line-height",
    "value": "1.5"
   },
   {
-   "name": "--ok-typography-h3-text-transform",
-   "value": "none"
-  },
-  {
    "name": "--ok-typography-h4-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h4-font-size",
@@ -200,20 +160,12 @@
    "value": "700"
   },
   {
-   "name": "--ok-typography-h4-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-h4-line-height",
    "value": "1.5"
   },
   {
-   "name": "--ok-typography-h4-text-transform",
-   "value": "none"
-  },
-  {
    "name": "--ok-typography-h5-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h5-font-size",
@@ -224,20 +176,12 @@
    "value": "700"
   },
   {
-   "name": "--ok-typography-h5-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-h5-line-height",
    "value": "1.5"
   },
   {
-   "name": "--ok-typography-h5-text-transform",
-   "value": "none"
-  },
-  {
    "name": "--ok-typography-h6-font-family",
-   "value": "var(--ok-font-family)"
+   "value": "var(--ok-font-family-heading)"
   },
   {
    "name": "--ok-typography-h6-font-size",
@@ -245,19 +189,11 @@
   },
   {
    "name": "--ok-typography-h6-font-weight",
-   "value": "600"
-  },
-  {
-   "name": "--ok-typography-h6-letter-spacing",
-   "value": "normal"
+   "value": "700"
   },
   {
    "name": "--ok-typography-h6-line-height",
    "value": "1.5556"
-  },
-  {
-   "name": "--ok-typography-h6-text-transform",
-   "value": "none"
   },
   {
    "name": "--ok-typography-overline-font-family",
@@ -296,16 +232,8 @@
    "value": "600"
   },
   {
-   "name": "--ok-typography-subtitle1-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-subtitle1-line-height",
    "value": "1.5"
-  },
-  {
-   "name": "--ok-typography-subtitle1-text-transform",
-   "value": "none"
   },
   {
    "name": "--ok-typography-subtitle2-font-family",
@@ -320,16 +248,8 @@
    "value": "600"
   },
   {
-   "name": "--ok-typography-subtitle2-letter-spacing",
-   "value": "normal"
-  },
-  {
    "name": "--ok-typography-subtitle2-line-height",
    "value": "1.5714"
-  },
-  {
-   "name": "--ok-typography-subtitle2-text-transform",
-   "value": "none"
   }
  ],
  "entries": [

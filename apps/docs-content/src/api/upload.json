@@ -1,7 +1,7 @@
 {
  "css": [
   {
-   "dark": "#1C252E",
+   "dark": "#18181B",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
   },
@@ -31,7 +31,7 @@
   },
   {
    "name": "--ok-font-family",
-   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+   "value": "\"Nunito Variable\", \"Nunito\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
   {
    "name": "--ok-font-weight-bold",
@@ -47,77 +47,77 @@
   },
   {
    "name": "--ok-palette-error-main",
-   "value": "#FF5630"
+   "value": "#E7000B"
   },
   {
    "name": "--ok-palette-error-main-channel",
-   "value": "255 86 48"
+   "value": "231 0 11"
   },
   {
-   "dark": "#FFAC82",
-   "light": "#B71D18",
+   "dark": "#FFA2A2",
+   "light": "#9F0712",
    "name": "--ok-palette-error-text"
   },
   {
    "name": "--ok-palette-grey-500",
-   "value": "#919EAB"
+   "value": "#71717B"
   },
   {
    "name": "--ok-palette-grey-500-channel",
-   "value": "145 158 171"
+   "value": "113 113 123"
   },
   {
    "name": "--ok-palette-grey-600",
-   "value": "#637381"
+   "value": "#52525C"
   },
   {
    "name": "--ok-palette-grey-700",
-   "value": "#454F5B"
+   "value": "#3F3F46"
   },
   {
    "name": "--ok-palette-grey-900-channel",
-   "value": "20 26 33"
+   "value": "24 24 27"
   },
   {
    "name": "--ok-palette-info-dark",
-   "value": "#006C9C"
+   "value": "#00598A"
   },
   {
    "name": "--ok-palette-info-main",
-   "value": "#00B8D9"
+   "value": "#0069A8"
   },
   {
    "name": "--ok-palette-primary-main",
-   "value": "#00A76F"
+   "value": "#615FFF"
   },
   {
-   "dark": "#5BE49B",
-   "light": "#007867",
+   "dark": "#A3B3FF",
+   "light": "#4F39F6",
    "name": "--ok-palette-primary-text"
   },
   {
    "name": "--ok-palette-secondary-main",
-   "value": "#8E33FF"
+   "value": "#7F22FE"
   },
   {
    "name": "--ok-palette-success-dark",
-   "value": "#118D57"
+   "value": "#016630"
   },
   {
    "name": "--ok-palette-success-main",
-   "value": "#22C55E"
+   "value": "#008236"
   },
   {
    "name": "--ok-palette-warning-dark",
-   "value": "#B76E00"
+   "value": "#973C00"
   },
   {
    "name": "--ok-palette-warning-main",
-   "value": "#FFAB00"
+   "value": "#BB4D00"
   },
   {
    "name": "--ok-radius-control",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "name": "--ok-radius-full",
@@ -132,13 +132,13 @@
    "value": "0.25rem"
   },
   {
-   "dark": "#FFFFFF",
-   "light": "#1C252E",
+   "dark": "#FAFAFA",
+   "light": "#18181B",
    "name": "--ok-text-primary"
   },
   {
-   "dark": "#919EAB",
-   "light": "#637381",
+   "dark": "#9F9FA9",
+   "light": "#52525C",
    "name": "--ok-text-secondary"
   },
   {
@@ -163,7 +163,7 @@
   },
   {
    "name": "--ok-typography-h6-font-weight",
-   "value": "600"
+   "value": "700"
   },
   {
    "name": "--ok-typography-h6-line-height",
