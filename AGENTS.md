@@ -1032,7 +1032,10 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `/* @vite-ignore */`, or Vite inlines the target as a data URL (it found `src/monaco.ts`).
   Pages with a strict Trusted Types policy refuse `innerHTML` in e2e too: build test markup
   with DOM methods. Firefox and WebKit hold `load` for a pending module import: `goto` with
-  `waitUntil: "domcontentloaded"` when a test holds a module request.
+  `waitUntil: "domcontentloaded"` when a test holds a module request. Design style sheets are
+  CSS-only entries `style:<id>` of the same loader (ADR-0073 § 9): a `:root` definition watches
+  `data-ok-style` attributes (the runtime observer sees added nodes only), sheets go right after
+  the core `<link>`; loader unit tests remove every `data-ok-style` they set (`afterEach`).
 - CSS split (ADR-0068 S4): `owlky.css` is the core sheet (tokens + light components); every lazy
   family is listed once in `packages/styles/src/families.json` (module → files, rank order) and
   becomes `modules/<name>.css`; `owlky-all.css` is everything. `index.css` must list the core

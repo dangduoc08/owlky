@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; require-trusted-types-for 'script'"
+    />
+    <title>Owlky — design styles</title>
+    <!--
+      Design styles on the CDN (ADR-0070 § 6): the page links owlky.css only. owlky.js finds the
+      data-ok-style below and adds owlky-style-nordic.css next to owlky.css, once; a style set
+      later (the e2e loader spec sets one on <html> and adds a section) loads its sheet too.
+      Linking the sheet yourself after owlky.css avoids the first paint in the default style.
+    -->
+    <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
+    <script src="../../packages/html/dist/owlky.js" defer></script>
+  </head>
+  <body>
+    <main id="styled" data-ok-style="nordic">
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md">
+        <span data-ok-button-label>Nordic</span>
+      </button>
+      <div id="later"></div>
+    </main>
+  </body>
+</html>

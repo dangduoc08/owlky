@@ -6,11 +6,11 @@
  * runtime.
  *
  * Script attributes (on the `<script type="module">` that loads this file): `data-ok-preload`
- * and `data-ok-modules`, as on `owlky.js`. Without that script (an `import` from another module),
+ * `data-ok-modules` and `data-ok-styles`, as on `owlky.js`. Without that script (an `import` from another module),
  * the modules come from `modules/` next to this file.
  */
 import { lightComponents } from "./components/light.js";
-import { installLoader, moduleBase, preloadNames } from "./loader/loader.js";
+import { installLoader, moduleBase, preloadNames, styleBase } from "./loader/loader.js";
 import { getRuntime } from "./runtime/global.js";
 import type { Runtime } from "./runtime/types.js";
 
@@ -27,6 +27,7 @@ if (runtime.active) {
       ? moduleBase(script)
       : new URL(/* @vite-ignore */ "modules/", import.meta.url).href,
     preload: preloadNames(script?.getAttribute("data-ok-preload")),
+    styles: styleBase(script),
   });
   runtime.start();
   if (globalThis.Owlky === undefined) globalThis.Owlky = runtime;

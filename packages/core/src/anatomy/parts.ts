@@ -31,6 +31,8 @@ export interface CommonParts {
   "data-ok-preload": Value<string>;
   /** `off` keeps the HTML runtime away from this element and everything inside it. React writes it on interactive roots. */
   "data-ok-runtime": Value<"off">;
+  /** On the `owlky.js` script: the folder of the design style sheets (`owlky-style-<id>.css`), when it isn't the folder of `owlky.css`; `none` never adds them. */
+  "data-ok-styles": Value<string>;
   /** Applies a color scheme to this element and everything inside it. */
   "data-ok-theme": Value<"light" | "dark">;
 }
