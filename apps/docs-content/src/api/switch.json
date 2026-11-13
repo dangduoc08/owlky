@@ -245,6 +245,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/switch",
+  "css": [
+   "@owlky/styles/components/switch.css"
+  ],
+  "react": "@owlky/react/switch"
+ },
  "name": "switch",
  "title": "Switch"
 }

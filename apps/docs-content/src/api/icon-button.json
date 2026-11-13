@@ -200,6 +200,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/icon-button",
+  "css": [
+   "@owlky/styles/components/icon-button.css"
+  ],
+  "react": "@owlky/react/icon-button"
+ },
  "name": "icon-button",
  "title": "Icon button"
 }

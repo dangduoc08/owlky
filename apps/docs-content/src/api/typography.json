@@ -490,6 +490,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/typography",
+  "css": [
+   "@owlky/styles/components/typography.css"
+  ],
+  "react": "@owlky/react/typography"
+ },
  "name": "typography",
  "title": "Typography",
  "types": [

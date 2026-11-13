@@ -359,6 +359,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/card",
+  "css": [
+   "@owlky/styles/components/card.css"
+  ],
+  "react": "@owlky/react/card"
+ },
  "name": "card",
  "title": "Card"
 }

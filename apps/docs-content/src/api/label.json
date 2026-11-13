@@ -211,6 +211,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/label",
+  "css": [
+   "@owlky/styles/components/label.css"
+  ],
+  "react": "@owlky/react/label"
+ },
  "name": "label",
  "title": "Label"
 }

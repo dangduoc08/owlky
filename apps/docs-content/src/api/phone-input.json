@@ -411,6 +411,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "phone-input",
+  "core": "@owlky/core/phone-input",
+  "css": [
+   "@owlky/styles/components/phone-input.css"
+  ],
+  "react": "@owlky/react/phone-input"
+ },
  "name": "phone-input",
  "title": "Phone input",
  "types": [

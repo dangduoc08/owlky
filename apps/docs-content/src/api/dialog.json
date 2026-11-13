@@ -516,6 +516,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/dialog",
+  "css": [
+   "@owlky/styles/components/dialog.css"
+  ],
+  "html": "@owlky/html/dialog",
+  "react": "@owlky/react/dialog"
+ },
  "name": "dialog",
  "title": "Dialog",
  "types": [

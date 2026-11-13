@@ -377,6 +377,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/button",
+  "css": [
+   "@owlky/styles/components/button.css"
+  ],
+  "react": "@owlky/react/button"
+ },
  "name": "button",
  "title": "Button",
  "types": [

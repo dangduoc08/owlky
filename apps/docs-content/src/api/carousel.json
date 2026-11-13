@@ -1520,6 +1520,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "carousel",
+  "core": "@owlky/core/carousel",
+  "css": [
+   "@owlky/styles/components/carousel.css"
+  ],
+  "html": "@owlky/html/carousel",
+  "react": "@owlky/react/carousel"
+ },
  "name": "carousel",
  "title": "Carousel",
  "types": [

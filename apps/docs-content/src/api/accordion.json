@@ -299,6 +299,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/accordion",
+  "css": [
+   "@owlky/styles/components/accordion.css"
+  ],
+  "html": "@owlky/html/accordion",
+  "react": "@owlky/react/accordion"
+ },
  "name": "accordion",
  "title": "Accordion"
 }

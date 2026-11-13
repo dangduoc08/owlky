@@ -516,6 +516,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/tabs",
+  "css": [
+   "@owlky/styles/components/tabs.css"
+  ],
+  "html": "@owlky/html/tabs",
+  "react": "@owlky/react/tabs"
+ },
  "name": "tabs",
  "title": "Tabs"
 }

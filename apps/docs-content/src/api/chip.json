@@ -336,6 +336,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/chip",
+  "css": [
+   "@owlky/styles/components/chip.css"
+  ],
+  "html": "@owlky/html/chip",
+  "react": "@owlky/react/chip"
+ },
  "name": "chip",
  "title": "Chip"
 }

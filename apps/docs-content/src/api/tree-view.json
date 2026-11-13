@@ -889,6 +889,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "tree-view",
+  "core": "@owlky/core/tree-view",
+  "css": [
+   "@owlky/styles/components/tree-view.css"
+  ],
+  "html": "@owlky/html/tree-view",
+  "react": "@owlky/react/tree-view"
+ },
  "name": "tree-view",
  "title": "Tree view"
 }

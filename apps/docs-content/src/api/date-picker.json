@@ -13742,6 +13742,21 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "date-picker",
+  "core": "@owlky/core/date-picker",
+  "css": [
+   "@owlky/styles/components/date-field.css",
+   "@owlky/styles/components/date-calendar.css",
+   "@owlky/styles/components/date-picker.css",
+   "@owlky/styles/components/time-clock.css",
+   "@owlky/styles/components/digital-clock.css",
+   "@owlky/styles/components/date-range-calendar.css",
+   "@owlky/styles/components/date-range-picker.css"
+  ],
+  "html": "@owlky/html/date-picker",
+  "react": "@owlky/react/date-picker"
+ },
  "name": "date-picker",
  "title": "Date pickers",
  "types": [

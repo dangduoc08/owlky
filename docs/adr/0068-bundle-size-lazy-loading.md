@@ -328,7 +328,7 @@ Nothing is published yet, so every change ships as a **minor** changeset with a 
 During S2–S5, `owlky-editor.js`, `owlky-map.js`, `owlky-markdown.js`, `owlky-phone.js`,
 `owlky-illustrations.js` and `owlky-code-editor.js` stay as one-line shims (`Owlky.load(name)`),
 so existing pages and tests keep working. S6 removes them before 0.1.0, once the docs and
-examples have moved.
+examples have moved (done 2026-11-13, see the S6 notes).
 
 The steps run in this order:
 1. **S2:** the entries and the loader.
@@ -431,6 +431,29 @@ Deferred, with the reason:
   renders every row through the grid's own render path. The ZIP writer (`grid-excel`) is 1.9 kB
   of the React grid; the HTML runtime keeps pivot and print inside one 7,000-line closure that
   would have to be cut first.
+
+## Implementation notes (S6, 2026-11-13)
+- **Shims removed:** the six opt-in scripts, their `vite build --mode` steps, sources, budgets
+  and package exports are gone. `data-ok-monaco-path` moves to the `owlky.js` script (the code
+  editor module reads it from any script). Docs, stories, specs, examples and the CSP pages load
+  one `owlky.css` and one `owlky.js`; earlier ADRs that name a shim carry a note.
+- **`owlky.mjs`** (amends section 2): light set B as one ES module, built on its own
+  (`vite build --mode esm`), **not** with the lazy modules. Built with them, it shared their
+  chunks, but rollup then moved the light code it shares with each module into the chunks: the
+  chunks grew from 80.7 to 91.8 kB gzip and the code duplicated with `owlky.js` from 12.2 to
+  12.6 kB, which every `owlky.js` page downloads, for a gain on module-script pages only. A
+  module-script page with a heavy module therefore has two runtime copies, like an `owlky.js`
+  page; the ADR-0007 slots keep them consistent. `owlky.mjs` finds its script by `src` (for
+  `data-ok-preload` / `data-ok-modules`) and resolves `modules/` against `import.meta.url`.
+- **Docs:** website pages "Load from a CDN" and "Use with a bundler" (`apps/website/src/content/
+  cdn.ts`, `bundlers.ts`), the Get started page, the Storybook Introduction ("Load only what you
+  use") and the package READMEs. Every component docs page shows an **Import** table at the top of
+  its API reference, from the `imports` field that `scripts/component-imports.mjs` computes for
+  both the API reference JSON and the MCP manifest.
+- **E2E:** the loader spec adds `owlky.mjs`, every module of the strict-CSP page (which now holds
+  a Data grid) without a violation, and the layout shift of a late chart (Chromium only: the
+  Layout Instability API). It runs in every Playwright project (Chromium, Firefox, WebKit,
+  mobile). The scenario budgets run in CI through `pnpm check:size` in the `check` job.
 
 ## Consequences
 - A light HTML page downloads about 40 kB of JS since S3 (45 kB after S2), down from 306.6 kB,

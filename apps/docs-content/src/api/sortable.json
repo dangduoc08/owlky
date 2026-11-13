@@ -436,6 +436,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "sortable",
+  "core": "@owlky/core/sortable",
+  "css": [
+   "@owlky/styles/components/sortable.css"
+  ],
+  "html": "@owlky/html/sortable",
+  "react": "@owlky/react/sortable"
+ },
  "name": "sortable",
  "title": "Sortable"
 }

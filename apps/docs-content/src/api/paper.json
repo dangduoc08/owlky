@@ -223,6 +223,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/paper",
+  "css": [
+   "@owlky/styles/components/paper.css"
+  ],
+  "react": "@owlky/react/paper"
+ },
  "name": "paper",
  "title": "Paper"
 }

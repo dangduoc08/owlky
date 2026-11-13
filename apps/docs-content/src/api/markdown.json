@@ -663,6 +663,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "markdown",
+  "core": "@owlky/core/markdown",
+  "css": [
+   "@owlky/styles/components/markdown.css"
+  ],
+  "html": "@owlky/html/markdown",
+  "react": "@owlky/react/markdown"
+ },
  "name": "markdown",
  "title": "Markdown",
  "types": [

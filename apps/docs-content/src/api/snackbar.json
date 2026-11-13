@@ -551,6 +551,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/snackbar",
+  "css": [
+   "@owlky/styles/components/snackbar.css"
+  ],
+  "html": "@owlky/html/snackbar",
+  "react": "@owlky/react/snackbar"
+ },
  "name": "snackbar",
  "title": "Snackbar",
  "types": [

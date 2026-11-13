@@ -280,6 +280,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/checkbox",
+  "css": [
+   "@owlky/styles/components/checkbox.css"
+  ],
+  "html": "@owlky/html/checkbox",
+  "react": "@owlky/react/checkbox"
+ },
  "name": "checkbox",
  "title": "Checkbox"
 }

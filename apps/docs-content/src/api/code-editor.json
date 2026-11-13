@@ -1102,6 +1102,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "code-editor",
+  "core": "@owlky/core/code-editor",
+  "css": [
+   "@owlky/styles/components/code-editor.css"
+  ],
+  "html": "@owlky/html/code-editor",
+  "react": "@owlky/react/code-editor"
+ },
  "name": "code-editor",
  "title": "Code editor",
  "types": [

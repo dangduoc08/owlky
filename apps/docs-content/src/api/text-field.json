@@ -1278,6 +1278,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/text-field",
+  "css": [
+   "@owlky/styles/components/text-field.css"
+  ],
+  "html": "@owlky/html/text-field",
+  "react": "@owlky/react/text-field"
+ },
  "name": "text-field",
  "title": "Text field",
  "types": [

@@ -743,6 +743,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/stepper",
+  "css": [
+   "@owlky/styles/components/stepper.css"
+  ],
+  "html": "@owlky/html/stepper",
+  "react": "@owlky/react/stepper"
+ },
  "name": "stepper",
  "title": "Stepper"
 }

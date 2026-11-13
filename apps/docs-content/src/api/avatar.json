@@ -263,6 +263,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/avatar",
+  "css": [
+   "@owlky/styles/components/avatar.css"
+  ],
+  "html": "@owlky/html/avatar",
+  "react": "@owlky/react/avatar"
+ },
  "name": "avatar",
  "title": "Avatar"
 }

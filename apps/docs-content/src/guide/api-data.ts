@@ -101,10 +101,24 @@ export interface ApiType {
   framework?: string;
 }
 
+/**
+ * Where the component comes from (ADR-0068): its per-component entries, its stylesheets in
+ * bundle order and the lazy CDN module that `owlky.js` loads for it. Only the keys that exist.
+ */
+export interface ApiImports {
+  react?: string;
+  html?: string;
+  core?: string;
+  css?: readonly string[];
+  /** The module name: `owlky.js` loads `modules/<name>.js` when the page holds the component. */
+  cdnModule?: string;
+}
+
 export interface ApiReferenceData {
   format: number;
   name: string;
   title: string;
+  imports?: ApiImports;
   entries: readonly ApiEntry[];
   css?: readonly ApiCssVariable[];
   types?: readonly ApiType[];
@@ -126,7 +140,7 @@ export function apiReferenceSection(
   return {
     id,
     title,
-    body: `The complete API of ${reference.title}, generated from its source code. Each React component and HTML part has its own tables:
+    body: `The complete API of ${reference.title}, generated from its source code. **Import** lists the package entries, stylesheets and CDN module to load it from. Each React component and HTML part has its own tables:
 
 - **React props:** the props of the React component, with their types and defaults. Props that aren't listed go to the native element.
 - **HTML attributes:** the options, written as \`data-ok-*\` attributes, with their values and defaults.

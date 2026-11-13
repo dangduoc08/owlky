@@ -321,6 +321,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/rating",
+  "css": [
+   "@owlky/styles/components/rating.css"
+  ],
+  "html": "@owlky/html/rating",
+  "react": "@owlky/react/rating"
+ },
  "name": "rating",
  "title": "Rating"
 }

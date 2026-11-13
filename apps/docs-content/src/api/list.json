@@ -544,6 +544,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/list",
+  "css": [
+   "@owlky/styles/components/list.css"
+  ],
+  "html": "@owlky/html/list",
+  "react": "@owlky/react/list"
+ },
  "name": "list",
  "title": "List"
 }

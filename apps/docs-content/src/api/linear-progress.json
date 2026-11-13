@@ -185,6 +185,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/linear-progress",
+  "css": [
+   "@owlky/styles/components/linear-progress.css"
+  ],
+  "html": "@owlky/html/linear-progress",
+  "react": "@owlky/react/linear-progress"
+ },
  "name": "linear-progress",
  "title": "Linear progress"
 }

@@ -5876,6 +5876,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "chart",
+  "core": "@owlky/core/chart",
+  "css": [
+   "@owlky/styles/components/chart.css"
+  ],
+  "html": "@owlky/html/chart",
+  "react": "@owlky/react/chart"
+ },
  "name": "chart",
  "title": "Chart",
  "types": [

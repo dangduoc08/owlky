@@ -3651,6 +3651,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "data-grid",
+  "core": "@owlky/core/data-grid",
+  "css": [
+   "@owlky/styles/components/data-grid.css"
+  ],
+  "html": "@owlky/html/data-grid",
+  "react": "@owlky/react/data-grid"
+ },
  "name": "data-grid",
  "title": "Data grid",
  "types": [

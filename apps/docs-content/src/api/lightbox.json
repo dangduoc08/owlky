@@ -1508,6 +1508,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "carousel",
+  "core": "@owlky/core/lightbox",
+  "css": [
+   "@owlky/styles/components/lightbox.css"
+  ],
+  "html": "@owlky/html/lightbox",
+  "react": "@owlky/react/lightbox"
+ },
  "name": "lightbox",
  "title": "Lightbox",
  "types": [

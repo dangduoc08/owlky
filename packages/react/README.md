@@ -23,6 +23,19 @@ import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup }
 </ToggleButtonGroup>
 ```
 
+Bundlers keep only the components you import: the package has no side effects. Every component
+also has its own entry, named after its docs page (`@owlky/react/button` exports `Button`,
+`IconButton`, `Fab` and `ButtonGroup`; `@owlky/react/date-picker` every picker), for tools that
+don't tree-shake and for dynamic imports:
+
+```tsx
+const DataGrid = lazy(() => import("@owlky/react/data-grid").then((m) => ({ default: m.DataGrid })));
+```
+
+With Next.js, add `@owlky/react` and `@owlky/core` to `experimental.optimizePackageImports`. Each
+component's docs page lists its entries and stylesheets in the **Import** table of its API
+reference.
+
 Theme settings (ADR-0017): `applyThemeSettings`, `readThemeSettings`, `resetThemeSettings` are
 re-exported from `@owlky/core` (call them from an effect or an event handler).
 

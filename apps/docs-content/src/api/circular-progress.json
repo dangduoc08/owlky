@@ -210,6 +210,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/circular-progress",
+  "css": [
+   "@owlky/styles/components/circular-progress.css"
+  ],
+  "html": "@owlky/html/circular-progress",
+  "react": "@owlky/react/circular-progress"
+ },
  "name": "circular-progress",
  "title": "Circular progress"
 }

@@ -253,6 +253,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "transfer-list",
+  "core": "@owlky/core/transfer-list",
+  "css": [
+   "@owlky/styles/components/transfer-list.css"
+  ],
+  "html": "@owlky/html/transfer-list",
+  "react": "@owlky/react/transfer-list"
+ },
  "name": "transfer-list",
  "title": "Transfer list",
  "types": [

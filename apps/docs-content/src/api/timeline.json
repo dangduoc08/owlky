@@ -249,6 +249,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/timeline",
+  "css": [
+   "@owlky/styles/components/timeline.css"
+  ],
+  "react": "@owlky/react/timeline"
+ },
  "name": "timeline",
  "title": "Timeline"
 }

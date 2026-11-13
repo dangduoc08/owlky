@@ -353,6 +353,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/popover",
+  "css": [
+   "@owlky/styles/components/popover.css"
+  ],
+  "html": "@owlky/html/popover",
+  "react": "@owlky/react/popover"
+ },
  "name": "popover",
  "title": "Popover",
  "types": [

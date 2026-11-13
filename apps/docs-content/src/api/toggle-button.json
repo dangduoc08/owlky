@@ -397,6 +397,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/toggle-button",
+  "css": [
+   "@owlky/styles/components/toggle-button.css"
+  ],
+  "html": "@owlky/html/toggle-button",
+  "react": "@owlky/react/toggle-button"
+ },
  "name": "toggle-button",
  "title": "Toggle button",
  "types": [

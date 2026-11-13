@@ -682,6 +682,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/table",
+  "css": [
+   "@owlky/styles/components/table.css"
+  ],
+  "html": "@owlky/html/table",
+  "react": "@owlky/react/table"
+ },
  "name": "table",
  "title": "Table",
  "types": [

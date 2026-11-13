@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { folderSpec as sharedFolderSpec } from "./component-folders.mjs";
+import { componentImports } from "./component-imports.mjs";
 import { optionSchemas } from "./option-schemas.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -193,40 +194,8 @@ for (const name of Object.keys(optionSchemas))
 const folderSpec = (folder) => sharedFolderSpec(folder, specs);
 
 // ── Imports (ADR-0068) ─────────────────────────────────────────────────────────────────────────
-// Where a component comes from: the per-component entries of each package (package.json
-// `exports`), its stylesheets in bundle order (`@owlky/styles/components/<file>.css`, the
-// component's folders mapped to the spec) and the lazy CDN module owlky.js loads for it.
-const exportKeys = (pkg) =>
-  new Set(Object.keys(JSON.parse(read(`packages/${pkg}/package.json`)).exports));
-const entryKeys = {
-  core: exportKeys("core"),
-  react: exportKeys("react"),
-  html: exportKeys("html"),
-};
-const stylesheetOrder = [
-  ...read("packages/styles/src/index.css").matchAll(/@import "\.\/components\/([\w-]+)\.css"/g),
-].map((match) => match[1]);
-const lazyModules = new Map();
-{
-  const table = read("packages/html/src/loader/modules.ts");
-  for (const [, key, body] of table.matchAll(
-    /^ {2}"?([\w-]+)"?: \{([\s\S]*?definitions: \[[^\]]*\])/gm,
-  ))
-    for (const [, definition] of body.matchAll(/"([\w-]+)"/g))
-      if (!definition.startsWith("data-ok")) lazyModules.set(definition, key);
-}
-function importsOf(name) {
-  const imports = {};
-  for (const pkg of ["react", "html", "core"])
-    if (entryKeys[pkg].has(`./${name}`)) imports[pkg] = `@owlky/${pkg}/${name}`;
-  const css = stylesheetOrder
-    .filter((file) => folderSpec(file) === name)
-    .map((file) => `@owlky/styles/components/${file}.css`);
-  if (css.length) imports.css = css;
-  const module = lazyModules.get(name);
-  if (module) imports.cdnModule = module;
-  return imports;
-}
+// Entries, stylesheets and the lazy CDN module of each component (scripts/component-imports.mjs).
+const importsOf = componentImports(root, specs);
 const reactExports = new Map([...specs.keys()].map((name) => [name, new Set()]));
 const reactIndex = read("packages/react/src/index.ts");
 for (const match of reactIndex.matchAll(

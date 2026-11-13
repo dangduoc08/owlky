@@ -1103,6 +1103,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "gantt",
+  "core": "@owlky/core/gantt",
+  "css": [
+   "@owlky/styles/components/gantt.css"
+  ],
+  "html": "@owlky/html/gantt",
+  "react": "@owlky/react/gantt"
+ },
  "name": "gantt",
  "title": "Gantt",
  "types": [

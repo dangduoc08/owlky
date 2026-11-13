@@ -307,6 +307,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/radio",
+  "css": [
+   "@owlky/styles/components/radio.css"
+  ],
+  "html": "@owlky/html/radio",
+  "react": "@owlky/react/radio"
+ },
  "name": "radio",
  "title": "Radio"
 }

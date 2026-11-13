@@ -2455,6 +2455,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "map",
+  "core": "@owlky/core/map",
+  "css": [
+   "@owlky/styles/components/map.css"
+  ],
+  "html": "@owlky/html/map",
+  "react": "@owlky/react/map"
+ },
  "name": "map",
  "title": "Map",
  "types": [

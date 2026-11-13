@@ -235,6 +235,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/badge",
+  "css": [
+   "@owlky/styles/components/badge.css"
+  ],
+  "react": "@owlky/react/badge"
+ },
  "name": "badge",
  "title": "Badge"
 }

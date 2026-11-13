@@ -595,6 +595,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/drawer",
+  "css": [
+   "@owlky/styles/components/drawer.css"
+  ],
+  "html": "@owlky/html/drawer",
+  "react": "@owlky/react/drawer"
+ },
  "name": "drawer",
  "title": "Drawer",
  "types": [

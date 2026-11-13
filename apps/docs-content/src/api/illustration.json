@@ -263,6 +263,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "illustration",
+  "core": "@owlky/core/illustration",
+  "css": [
+   "@owlky/styles/components/illustration.css"
+  ],
+  "react": "@owlky/react/illustration"
+ },
  "name": "illustration",
  "title": "Illustration"
 }

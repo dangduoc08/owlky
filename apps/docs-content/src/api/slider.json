@@ -492,6 +492,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/slider",
+  "css": [
+   "@owlky/styles/components/slider.css"
+  ],
+  "html": "@owlky/html/slider",
+  "react": "@owlky/react/slider"
+ },
  "name": "slider",
  "title": "Slider"
 }

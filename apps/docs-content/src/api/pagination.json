@@ -534,6 +534,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/pagination",
+  "css": [
+   "@owlky/styles/components/pagination.css"
+  ],
+  "html": "@owlky/html/pagination",
+  "react": "@owlky/react/pagination"
+ },
  "name": "pagination",
  "title": "Pagination",
  "types": [

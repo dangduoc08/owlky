@@ -413,6 +413,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/menu",
+  "css": [
+   "@owlky/styles/components/menu.css"
+  ],
+  "html": "@owlky/html/menu",
+  "react": "@owlky/react/menu"
+ },
  "name": "menu",
  "title": "Menu",
  "types": [

@@ -59,6 +59,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/scrollbar",
+  "css": [
+   "@owlky/styles/components/scrollbar.css"
+  ],
+  "react": "@owlky/react/scrollbar"
+ },
  "name": "scrollbar",
  "title": "Scrollbar"
 }

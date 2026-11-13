@@ -565,6 +565,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/select",
+  "css": [
+   "@owlky/styles/components/select.css"
+  ],
+  "html": "@owlky/html/select",
+  "react": "@owlky/react/select"
+ },
  "name": "select",
  "title": "Select",
  "types": [

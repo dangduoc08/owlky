@@ -1017,6 +1017,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "editor",
+  "core": "@owlky/core/editor",
+  "css": [
+   "@owlky/styles/components/editor.css"
+  ],
+  "html": "@owlky/html/editor",
+  "react": "@owlky/react/editor"
+ },
  "name": "editor",
  "title": "Editor",
  "types": [

@@ -230,6 +230,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/breadcrumbs",
+  "css": [
+   "@owlky/styles/components/breadcrumbs.css"
+  ],
+  "html": "@owlky/html/breadcrumbs",
+  "react": "@owlky/react/breadcrumbs"
+ },
  "name": "breadcrumbs",
  "title": "Breadcrumbs"
 }

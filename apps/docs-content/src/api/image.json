@@ -365,6 +365,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/image",
+  "css": [
+   "@owlky/styles/components/image.css"
+  ],
+  "html": "@owlky/html/image",
+  "react": "@owlky/react/image"
+ },
  "name": "image",
  "title": "Image",
  "types": [

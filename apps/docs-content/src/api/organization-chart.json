@@ -1001,6 +1001,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "organization-chart",
+  "core": "@owlky/core/organization-chart",
+  "css": [
+   "@owlky/styles/components/organization-chart.css"
+  ],
+  "html": "@owlky/html/organization-chart",
+  "react": "@owlky/react/organization-chart"
+ },
  "name": "organization-chart",
  "title": "Organization chart",
  "types": [

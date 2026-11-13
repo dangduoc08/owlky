@@ -138,6 +138,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/divider",
+  "css": [
+   "@owlky/styles/components/divider.css"
+  ],
+  "react": "@owlky/react/divider"
+ },
  "name": "divider",
  "title": "Divider"
 }

@@ -1563,6 +1563,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "upload",
+  "core": "@owlky/core/upload",
+  "css": [
+   "@owlky/styles/components/upload.css"
+  ],
+  "html": "@owlky/html/upload",
+  "react": "@owlky/react/upload"
+ },
  "name": "upload",
  "title": "Upload",
  "types": [

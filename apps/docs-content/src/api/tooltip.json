@@ -273,6 +273,14 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/tooltip",
+  "css": [
+   "@owlky/styles/components/tooltip.css"
+  ],
+  "html": "@owlky/html/tooltip",
+  "react": "@owlky/react/tooltip"
+ },
  "name": "tooltip",
  "title": "Tooltip"
 }

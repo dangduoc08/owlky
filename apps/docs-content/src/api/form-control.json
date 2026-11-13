@@ -463,6 +463,13 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "core": "@owlky/core/form-control",
+  "css": [
+   "@owlky/styles/components/form-control.css"
+  ],
+  "react": "@owlky/react/form-control"
+ },
  "name": "form-control",
  "title": "Form control"
 }

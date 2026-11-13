@@ -860,6 +860,15 @@
   }
  ],
  "format": 1,
+ "imports": {
+  "cdnModule": "walktour",
+  "core": "@owlky/core/walktour",
+  "css": [
+   "@owlky/styles/components/walktour.css"
+  ],
+  "html": "@owlky/html/walktour",
+  "react": "@owlky/react/walktour"
+ },
  "name": "walktour",
  "title": "Walktour",
  "types": [
