@@ -50,6 +50,12 @@ export default defineConfig(({ mode }): UserConfig => {
           { find: /^@floating-ui\/dom$/, replacement: local("src/floating-ui-stub.ts") },
           // The Code editor's loader imports Monaco from `paths.vs` at runtime (ADR-0034).
           { find: /^monaco-editor(\/.*)?$/, replacement: local("src/monaco-stub.ts") },
+          // Modules join the runtime of the owlky.js that loaded them: no second `createRuntime`
+          // (ADR-0068 S5).
+          {
+            find: /^\.\.\/runtime\/global\.js$/,
+            replacement: local("src/runtime/global-module.ts"),
+          },
         ],
       },
       build: {

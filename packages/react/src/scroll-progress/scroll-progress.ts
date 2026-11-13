@@ -5,7 +5,6 @@
  * `useScroll()` for your own drawing. Both resolve refs and ids, then hand over to core.
  */
 import {
-  createScrollProgress,
   type DataAttributes,
   observeScroll,
   type ScrollAxis,
@@ -85,7 +84,11 @@ const dependencies = (options: UseScrollOptions | boolean | undefined) => {
   ] as const;
 };
 
-/** Follows the scroll on `ref`'s element while `scroll` is set (core `createScrollProgress`). */
+/**
+ * Follows the scroll on `ref`'s element while `scroll` is set (core `createScrollProgress`). The
+ * controller and the Motion engine it runs on load on first use (ADR-0068 S5), so a progress
+ * without `scroll` (every Button loader) never bundles them.
+ */
 export function useScrollProgress(
   ref: RefObject<HTMLElement | null>,
   scroll: boolean | UseScrollOptions | undefined,
@@ -94,11 +97,20 @@ export function useScrollProgress(
   useEffect(() => {
     const node = ref.current;
     if (!on || !node) return;
-    const controller = createScrollProgress(node, {
-      ...resolve({ container, target, axis, offset: offset && JSON.parse(offset) }),
-      smooth: smooth && JSON.parse(smooth),
+    let destroy: (() => void) | undefined;
+    let cancelled = false;
+    void import("@owlky/core/motion").then(({ createScrollProgress }) => {
+      if (cancelled) return;
+      const controller = createScrollProgress(node, {
+        ...resolve({ container, target, axis, offset: offset && JSON.parse(offset) }),
+        smooth: smooth && JSON.parse(smooth),
+      });
+      destroy = () => controller.destroy();
     });
-    return () => controller.destroy();
+    return () => {
+      cancelled = true;
+      destroy?.();
+    };
   }, [ref, on, container, target, axis, offset, smooth]);
 }
 

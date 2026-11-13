@@ -5,9 +5,6 @@ import {
   arrowUpLinear,
   type ChartDataPoint,
   type ChartSelectionDetail,
-  chartAttributes,
-  chartOptions,
-  chartTextAttributes,
   checkLinear,
   clampGridWidth,
   createGridCellSelection,
@@ -226,7 +223,6 @@ import {
   readBehavior,
   readNumber,
   readStyle,
-  renderChart,
   sanitizeGridCellModes,
   sanitizeGridCellSelection,
   sanitizeGridChartModel,
@@ -253,6 +249,7 @@ import type { DatePickerInstance } from "../date-picker/date-picker.js";
 import type { PopoverInstance } from "../popover/popover.js";
 import type { SelectInstance } from "../select/select.js";
 import type { TablePaginationInstance } from "../table-pagination/table-pagination.js";
+import { gridChartKit, loadGridChartKit } from "./chart-kit.js";
 
 /** Events whose detail is `{ model }` (the model about to be set). */
 type GridModelEvent =
@@ -4555,6 +4552,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (cross) chartCross.set(chartRegion, cross);
       else chartCross.delete(chartRegion);
       if (active) chartSeriesCount = data?.series.length ?? 0;
+      // The Chart's helpers load with the first chart (ADR-0068 S5); draw again once they're in.
+      const kit = gridChartKit();
+      if (!kit) {
+        void loadGridChartKit().then(() => {
+          if (element.isConnected) syncChart();
+        });
+        return;
+      }
+      const { chartAttributes, chartOptions, chartTextAttributes, renderChart } = kit;
       const { yTitle, yaxis, ...options } = gridChartOptions(chartModel, data);
       const attributes: Record<string, string> = {
         ...chartAttributes(options),

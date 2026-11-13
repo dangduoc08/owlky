@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
 import { DataGrid, type DataGridProps, type GridColDef } from "./data-grid.js";
+import { preloadGridChart } from "./grid-chart.js";
 
 /** Resolves once `element` loses `data-ok-open` (a MutationObserver, never a polling wait). */
 const closed = (element: Element): Promise<void> =>
@@ -80,6 +81,9 @@ const grid = (props: Partial<DataGridProps<Issue>> = {}) => (
   />
 );
 const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+// The Chart loads on first use (ADR-0068 S5): load it once, so charts render synchronously.
+beforeAll(() => preloadGridChart());
 
 describe("DataGrid context menu", () => {
   it("opens at the pointer on a right click, with the default items", async () => {

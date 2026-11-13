@@ -2,10 +2,11 @@ import { type GridDataSource, type GridGetRowsParams, gridCrc32 } from "@owlky/c
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { createRef } from "react";
 import { renderToString } from "react-dom/server";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
 import { DataGrid, type DataGridProps, type GridApi, type GridColDef } from "./data-grid.js";
+import { preloadGridChart } from "./grid-chart.js";
 
 interface Sale {
   id: string;
@@ -51,6 +52,9 @@ const openMenu = (field: string) =>
       `[role="columnheader"][data-ok-field="${field}"] [data-ok-data-grid-menu-button]`,
     ) as HTMLElement,
   );
+
+// The Chart loads on first use (ADR-0068 S5): load it once, so charts render synchronously.
+beforeAll(() => preloadGridChart());
 
 describe("DataGrid row grouping and aggregation", () => {
   it("groups rows, counts them, aggregates inline and in a footer row", async () => {

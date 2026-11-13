@@ -274,7 +274,6 @@ import {
 } from "react";
 import { Autocomplete } from "../autocomplete/autocomplete.js";
 import { Button } from "../button/button.js";
-import { Chart } from "../chart/chart.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
 import { DatePicker } from "../date-picker/date-picker.js";
@@ -292,6 +291,7 @@ import { Tooltip } from "../tooltip/tooltip.js";
 import { Icon } from "../utils/icon.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
+import { GridChart } from "./grid-chart.js";
 
 export interface GridRenderCellParams<R> {
   row: R;
@@ -6930,7 +6930,7 @@ function DataGridInner<R>(
       </div>
       {chartsIntegration && !activeChartId && (
         <div data-ok-data-grid-chart="" hidden={!chartData || undefined}>
-          <Chart
+          <GridChart
             id={`${id}-chart`}
             label={labels.chartLabel}
             {...chartOptions}
@@ -6951,7 +6951,7 @@ function DataGridInner<R>(
               data-ok-chart-id={chartId}
               hidden={!one.chartData || undefined}
             >
-              <Chart
+              <GridChart
                 id={`${id}-chart-${chartId}`}
                 label={model.label ?? labels.chartLabel}
                 {...one.chartOptions}

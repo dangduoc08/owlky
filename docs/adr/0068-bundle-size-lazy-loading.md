@@ -371,6 +371,68 @@ it, and it fixes React's anatomy leak before S3 measures.
   (`owlky.js` 42 kB), plus two checks: the anatomy share of `owlky.js` (3 kB) and no description
   in a CDN file.
 
+## Implementation notes (S5, 2026-11-13)
+Measured with `pnpm size:report` against S3 (gzip). Done:
+- **React DataGrid → Chart (§6.1):** `data-grid/grid-chart.tsx` loads `../chart/chart.js` on first
+  use. Until it is in, `GridChart` renders the chart's no-JavaScript state: the root
+  (`data-ok-chart`, `data-ok-runtime="off"`, `aria-busy="true"`) and a plain data table (caption,
+  series columns, one row per category). Server renders start the import, so a second render
+  (the snippet generator renders twice) and every later client render get the Chart: snippets and
+  story markup do not change. Parity waits until no `figure[data-ok-chart][aria-busy]` is left.
+  DataGrid 193.30 → **118.34 kB** (76.1 kB in lazy chunks).
+- **HTML data grid (§6.1):** the chart helpers (`chartAttributes`, `chartOptions`,
+  `chartTextAttributes`, `renderChart`) come from `import("@owlky/core/chart")`
+  (`components/data-grid/chart-kit.ts`). The first draw starts the import and draws again when it
+  is in; later draws are synchronous. The grid keeps only `chart-model` statically (its
+  sanitizers use the value lists). Data grid module with its imports 130.5 → **67.6 kB**; the HTML
+  data grid page 233.69 → **170.79 kB** with `owlky.min.css` (238.4 → 175.5 kB with `owlky.css`). Rolldown merges the core chart
+  code that the Chart module and the dynamic entry share into the Chart module's chunk (and makes
+  `modules/chart.js` a facade of it), so loading the helpers also registers the Chart. That is
+  harmless, because the grid's chart region holds a `[data-ok-chart]` root that the loader loads
+  the Chart for anyway. `chunkOptimization: { mergeCommonChunks: false }` did not change the
+  output in Vite 8.3 lib mode. Since S4 attaches stylesheets before modules run, S4 must make the
+  grid wait for the chart sheet too, or keep the Chart's CSS in the data grid sheet.
+- **CircularProgress → ScrollProgress → Motion (§6.4):** `useScrollProgress` imports
+  `@owlky/core/motion` in its effect, only when `scroll` is set. `useScroll()` stays static
+  (calling it is the opt-in). React Button 7.86 → **3.02 kB**; Button + Dialog + TextField 19.65 →
+  **15.09 kB**; DatePicker 57.7 → **53.2 kB**. Storybook aliases every `@owlky/core/<entry>` to
+  `core/src/entries/<entry>.ts`, so lazy and static imports share one module instance.
+- **Illustrations (§2):** the CDN module builds its definition with `createIllustration(() =>
+  import("@owlky/core/illustrations"))` (the factory moved to `create-illustration.ts`, so the
+  module doesn't import the set statically). Sizing and ARIA run at once; the set loads only when
+  an SVG without artwork needs it. Module 6.75 → **1.36 kB** (6.2 kB with its imports, from 12.9
+  kB); the pictures are a 5.5 kB chunk. `@owlky/html/illustrations` and the npm `illustration`
+  definition keep the static set.
+- **Duplicated code (§2):** the modules build aliases `runtime/global.js` to `global-module.ts`,
+  which joins the slot's runtime and never creates one (no second `createRuntime`): a module
+  imported without `owlky.js` logs an error and gets the inactive runtime. 11.1 → **9.9 kB** in
+  both `owlky.js` and the lazy files. The rest is code both sides run (overlays, popover, modal,
+  focus, anatomy of shared parts); sharing it would need `owlky.js` to expose modules to the
+  chunks, which ADR-0007 forbids without a new slot.
+- **Budgets:** lowered to measurement + ≤ 5% (React Button 3.15, Button + Dialog + TextField 15.8,
+  DataGrid 124 kB; HTML data grid page 179 kB; duplicated 10.4 kB; illustration module 1.45 kB;
+  Chart module file 0.2 kB, a facade). The S3 "shared chunks, all" total (84.7 kB) can't hold:
+  code moved from modules into chunks (98.77 kB of chunks; all lazy files together 878.5 → 879.2
+  kB), so it is replaced by one budget per module **with its static imports**, which is what a
+  page downloads (the data grid's 70.9 kB, for example).
+
+Deferred, with the reason:
+- **Chart types (§6.2):** a lazy layout family needs a pending render in core, in the React Chart
+  and in the HTML runtime (draw again when the family loads), preloads in every test of those
+  types, the static opt-in entry for SSR and snippets, and an e2e wait. It also needs the type
+  modules to stop being reached statically: the anatomy imports value lists from `chart-geo`,
+  `chart-hierarchy`, `chart-sankey`, `chart-unit`, `chart-beeswarm`, `chart-violin` and
+  `chart-stream`; `chart-active` uses `chartGeoContains`, `onSankeyLink`, the tree mark helpers and
+  `chartUnitAt`; `chart-text` writes indicator and tree label text; the HTML runtime reads geo,
+  Sankey and hierarchy tables. The families with no other static importer are the tree, sunburst
+  and icicle layouts, `chart-stock`, `chart-cells`, `chart-shapes` (about 12 kB); geo and Sankey
+  first need their readers and value lists moved into small modules. This is its own step (S5b).
+- **Data grid pivot, Excel export, print (§6.3):** `getDataAsExcel()` returns the bytes
+  synchronously (an async split changes its API), the pivot is computed while rendering, and print
+  renders every row through the grid's own render path. The ZIP writer (`grid-excel`) is 1.9 kB
+  of the React grid; the HTML runtime keeps pivot and print inside one 7,000-line closure that
+  would have to be cut first.
+
 ## Consequences
 - A light HTML page downloads about 40 kB of JS since S3 (45 kB after S2), down from 306.6 kB,
   and about 29 kB of CSS, down from 67.4 kB. A data grid page adds about 126 kB and its sheet. A

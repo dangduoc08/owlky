@@ -83,7 +83,11 @@ function decodeMappings(mappings) {
 /** Splits a bundle into slices per (source, original line) through its map. */
 async function attribute(file) {
   const code = await readFile(file, "utf8");
-  return attributeCode(code, JSON.parse(await readFile(`${file}.map`, "utf8")));
+  // A facade (an entry whose code the bundler moved into a chunk: `import"./chunks/…"`) has no map.
+  const map = existsSync(`${file}.map`)
+    ? JSON.parse(await readFile(`${file}.map`, "utf8"))
+    : { mappings: "", sources: [] };
+  return attributeCode(code, map);
 }
 
 function attributeCode(code, map) {
@@ -417,15 +421,31 @@ async function bundle(name, source) {
     },
   });
   const chunks = (Array.isArray(output) ? output : [output]).flatMap((o) => o.output);
-  const main = chunks.find((c) => c.type === "chunk" && c.isEntry);
-  const lazy = chunks.filter((c) => c.type === "chunk" && !c.isEntry);
+  const byName = new Map(chunks.map((c) => [c.fileName, c]));
+  const first = chunks.find((c) => c.type === "chunk" && c.isEntry);
+  // What the app loads up front: the entry and the chunks it imports statically (an entry may be
+  // a facade of a chunk the bundler shares with a lazy import, ADR-0068 S5); the rest is lazy.
+  const eager = new Set();
+  const visit = (chunk) => {
+    if (!chunk || eager.has(chunk)) return;
+    eager.add(chunk);
+    for (const name of chunk.imports ?? []) visit(byName.get(name));
+  };
+  visit(first);
+  const main = {
+    code: [...eager].map((c) => c.code).join("\n"),
+    parts: [...eager],
+  };
+  const lazy = chunks.filter((c) => c.type === "chunk" && !eager.has(c));
   return {
     gzip: gz(main.code),
     raw: Buffer.byteLength(main.code),
     lazyGzip: lazy.reduce((n, c) => n + gz(c.code), 0),
     code: main.code,
     ...(() => {
-      const { slices } = attributeCode(main.code, main.map);
+      const slices = main.parts.flatMap(
+        (c) => attributeCode(c.code, c.map ?? { mappings: "", sources: [] }).slices,
+      );
       const total = gz(main.code);
       const families = group(slices, (s) => familyOf(s.source), total);
       const files = group(slices, (s) => s.source, total).slice(0, 25);

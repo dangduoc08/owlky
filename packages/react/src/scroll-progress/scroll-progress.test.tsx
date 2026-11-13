@@ -1,11 +1,14 @@
 import { act, render, screen } from "@testing-library/react";
 import { createRef, type RefObject, useRef } from "react";
 import { renderToString } from "react-dom/server";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
 import { expectNoAxeViolations } from "../test-utils.js";
 import { scrollProgressProps, type UseScrollOptions, useScroll } from "./scroll-progress.js";
+
+// The scroll controller loads on first use (ADR-0068 S5): load it once, so it starts at mount.
+beforeAll(() => import("@owlky/core/motion").then(() => undefined));
 
 /** Scroll events and timelines update on the next frames. */
 const frames = () =>

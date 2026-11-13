@@ -130,13 +130,15 @@ const budgets = [
 const MODULE_BUDGETS = {
   autocomplete: 5_450, // 5.20 kB measured (5.89 kB in S2)
   carousel: 20_000, // 19.07 kB (Carousel + Lightbox)
-  chart: 12_900, // 12.35 kB (the engine is in shared chunks: the data grid's charts use it too)
+  // A facade since S5 (0.06 kB): the bundler moved the module's code into a chunk it shares with
+  // the data grid's lazy chart helpers. The module with its imports is budgeted below.
+  chart: 200, // 12.35 kB in S3
   "code-editor": 7_400, // 7.08 kB (Monaco loads from dist/monaco/, budgeted above)
   "data-grid": 61_900, // 59.00 kB
   "date-picker": 30_900, // 29.49 kB (11 runtimes)
   editor: 156_500, // 149.38 kB (Tiptap and ProseMirror, about 125 kB of it)
   gantt: 16_300, // 15.59 kB
-  illustration: 7_000, // 6.75 kB
+  illustration: 1_450, // 1.36 kB since S5 (the pictures are a chunk of their own); 6.75 kB in S3
   map: 310_000, // 303.98 kB (MapLibre, about 295 kB of it)
   markdown: 104_500, // 99.61 kB (unified, micromark, parse5)
   motion: 19_000, // 18.11 kB (6 runtimes)
@@ -154,10 +156,43 @@ for (const [name, limit] of Object.entries(MODULE_BUDGETS))
   const chunks = (await readdir("packages/html/dist/modules/chunks"))
     .filter((file) => file.endsWith(".js"))
     .map((file) => `packages/html/dist/modules/chunks/${file}`);
-  // 80.72 kB measured since S3 (87.35 kB in S2): the chart engine (shared by the chart and the
-  // data grid), the runtime and the overlay helpers the modules share.
-  budgets.push([chunks, 84_700, "Shared chunks of the lazy modules (all of them)"]);
+  // 80.72 kB measured in S3 (87.35 kB in S2): the chart engine (shared by the chart and the
+  // data grid), the runtime and the overlay helpers the modules share. 98.77 kB in S5, though
+  // every page downloads less: code moved from modules into chunks (the Chart module's own code,
+  // shared with the data grid's lazy chart helpers; the illustration pictures, loaded on demand),
+  // and all the lazy files together are 879.2 kB (878.5 kB in S3). Since S5 the chunks are budgeted
+  // per module, with each module's static imports (what a page downloads), below.
+  void chunks;
 }
+// Each lazy module with the files it imports statically (roadmap-size.md S5: measured plus at
+// most 5%). S3 measurements: data grid 130.5 kB (the chart engine, now lazy), illustration 12.9 kB.
+const MODULE_PAGE_BUDGETS = {
+  autocomplete: 7_100, // 6.81 kB
+  carousel: 24_600, // 23.51 kB
+  chart: 89_700, // 85.45 kB
+  "code-editor": 9_300, // 8.88 kB
+  "data-grid": 70_900, // 67.60 kB (the charts integration loads the chart chunks on first use)
+  "date-picker": 32_800, // 31.29 kB
+  editor: 162_200, // 154.53 kB
+  gantt: 40_500, // 38.60 kB
+  illustration: 6_400, // 6.17 kB (the pictures' chunk, 5.5 kB, loads when an SVG needs it)
+  map: 325_300, // 309.89 kB
+  markdown: 106_400, // 101.37 kB
+  motion: 21_900, // 20.91 kB
+  "organization-chart": 10_600, // 10.12 kB
+  "phone-input": 44_300, // 42.26 kB
+  sortable: 6_400, // 6.16 kB
+  "transfer-list": 2_000, // 1.92 kB
+  "tree-view": 8_200, // 7.88 kB
+  upload: 8_800, // 8.47 kB
+  walktour: 13_300, // 12.76 kB
+};
+for (const [name, limit] of Object.entries(MODULE_PAGE_BUDGETS))
+  budgets.push([
+    await withImports(`packages/html/dist/modules/${name}.js`),
+    limit,
+    `Lazy module ${name} with its imports`,
+  ]);
 
 // Scenarios (decision 7): what a page or an app downloads. HTML: `owlky.js`, the modules and
 // chunks the loader fetches for the page, and `owlky.min.css`. React: Vite production builds
@@ -174,8 +209,9 @@ const page = async (...modules) => [
 budgets.push(
   // 103.15 kB measured since S3 (40.45 kB of JavaScript); 107.9 kB in S2, 370 kB before S2.
   [await page(), 108_000, "Scenario: HTML page with a Dialog (light components only)"],
-  // 233.69 kB measured since S3; 246.5 kB in S2, 370 kB before S2.
-  [await page("data-grid"), 245_000, "Scenario: HTML page with a Data grid"],
+  // 170.79 kB measured since S5 (the chart engine loads with the first chart); 233.69 kB in S3,
+  // 246.5 kB in S2, 370 kB before S2.
+  [await page("data-grid"), 179_000, "Scenario: HTML page with a Data grid"],
   // 188.52 kB measured since S3; 199.1 kB in S2, 370 kB before S2.
   [await page("chart"), 197_500, "Scenario: HTML page with a Chart"],
 );
@@ -186,9 +222,11 @@ let failed = false;
 {
   const REACT = {
     // S3 measurements (descriptions out of the schemas); S2: 8.32, 22.19, 206.25 and 81.14 kB.
-    Button: [8_200, "React, Button only"], // 7.86 kB measured (10.2 kB before S2)
-    "Button + Dialog + TextField": [20_600, "React, Button + Dialog + TextField"], // 19.65 kB
-    DataGrid: [202_000, "React, DataGrid"], // 193.30 kB
+    // S5: the scroll controller and the Motion engine (CircularProgress) and the grid's Chart
+    // load on first use: 3.02, 15.09 and 118.34 kB (S3: 7.86, 19.65 and 193.30 kB).
+    Button: [3_150, "React, Button only"], // 3.02 kB measured (10.2 kB before S2)
+    "Button + Dialog + TextField": [15_800, "React, Button + Dialog + TextField"], // 15.09 kB
+    DataGrid: [124_000, "React, DataGrid"], // 118.34 kB
     Chart: [78_500, "React, Chart"], // 75.27 kB
   };
   let report;
@@ -208,22 +246,22 @@ let failed = false;
   }
 
   // Code in both owlky.js and a lazy file has two module instances (ADR-0068 §2): its bytes are
-  // budgeted (12.2 kB measured), and it must hold no module-level state, or the two copies would
+  // budgeted (12.2 kB measured in S2, 9.93 kB in S5), and it must hold no module-level state, or the two copies would
   // disagree. Files listed here hold state that only one side ever uses.
   const STATE_ALLOWED = {
     // `createDrag`'s nested-draggable set: only the motion module creates drags; owlky.js uses
     // the file's pan helper (the swipeable Drawer).
     "core/src/motion/drag.ts": true,
     // Per-copy "reported once" warning flags (ADR-0007: each copy reports once).
-    "html/src/runtime/global.ts": true,
+    "html/src/runtime/slot.ts": true,
     // The loader of a runtime: only owlky.js installs one.
     "html/src/runtime/runtime.ts": true,
   };
   const duplicated = report.duplicated ?? { gzip: 0, sources: [] };
-  const okBytes = duplicated.gzip <= 11_600;
+  const okBytes = duplicated.gzip <= 10_400;
   failed ||= !okBytes;
   console.log(
-    `${okBytes ? "ok  " : "FAIL"} Code in both owlky.js and the lazy files: ${(duplicated.gzip / 1000).toFixed(2)} kB / 11.6 kB gzip (${duplicated.sources.length} files)`,
+    `${okBytes ? "ok  " : "FAIL"} Code in both owlky.js and the lazy files: ${(duplicated.gzip / 1000).toFixed(2)} kB / 10.4 kB gzip (${duplicated.sources.length} files)`,
   );
   // Module state: a top-level `let`, or a top-level Map / Set / WeakMap / WeakSet.
   const STATE =
