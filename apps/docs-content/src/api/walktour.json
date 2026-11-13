@@ -30,6 +30,14 @@
    "value": "2px"
   },
   {
+   "name": "--ok-heading-letter-spacing",
+   "value": "normal"
+  },
+  {
+   "name": "--ok-heading-text-transform",
+   "value": "none"
+  },
+  {
    "name": "--ok-palette-grey-900-channel",
    "value": "24 24 27"
   },
