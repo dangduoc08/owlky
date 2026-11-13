@@ -164,6 +164,24 @@
       "name": "locale"
      },
      {
+      "attr": "data-ok-flags",
+      "default": "emoji",
+      "description": "How the country flags are drawn: `emoji` (no files) or `image` (one Circle Flags SVG per country, loaded from `flagsPath`).",
+      "kind": "style",
+      "name": "flags",
+      "optional": true,
+      "values": [
+       "emoji",
+       "image"
+      ]
+     },
+     {
+      "attr": "data-ok-flags-path",
+      "description": "The folder of the flag images, such as `/flags/` (`@owlky/html/dist/flags`). HTML pages that load the CDN bundle find it next to it; elsewhere `image` flags need it.",
+      "kind": "state",
+      "name": "flagsPath"
+     },
+     {
       "attr": "data-ok-validate",
       "description": "After the person leaves the field, an invalid number shows the error state and `invalidText`.",
       "kind": "flag",
@@ -206,6 +224,14 @@
       ],
       "kind": "part",
       "name": "data-ok-phone-input-flag"
+     },
+     {
+      "description": "The picture of a flag in image mode (`flags=\"image\"`): a decorative lazy `img` of one Circle Flags SVG.",
+      "elements": [
+       "img"
+      ],
+      "kind": "part",
+      "name": "data-ok-phone-input-flag-image"
      }
     ],
     "runtime": "phone-input"
@@ -284,6 +310,16 @@
       "description": "Error colors and `aria-invalid`.",
       "name": "error",
       "type": "boolean"
+     },
+     {
+      "description": "How the flags are drawn: `\"emoji\"` (default, no files) or `\"image\"` (a Circle Flags SVG per country from `flagsPath`).",
+      "name": "flags",
+      "type": "\"emoji\" | \"image\""
+     },
+     {
+      "description": "The folder of the flag images, such as `\"/flags/\"` (copy `@owlky/html/dist/flags`). Needed with `flags=\"image\"`: without a folder the flags stay emoji.",
+      "name": "flagsPath",
+      "type": "string"
      },
      {
       "default": "true",
