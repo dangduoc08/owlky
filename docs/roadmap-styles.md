@@ -105,7 +105,10 @@ Nordic `soft`, 10 / 16px, Manrope 800.
 Decisions of ST4a (ADR-0073): Swiss uses a blue primary (a red one would read as the error
 color) on pure greys (`neutral`); Neo-Brutalism violet / pink on `neutral`, Space Grotesk 700
 headings tracked −0.01em, 2 / 3 / 4px lines, pill chips, ink shadows (dark text color in
-light, light text color in dark). Left for ST5: the CDN loader's `style:<id>` entries (a style
+light, light text color in dark). ST4b: Editorial uses a rose primary on warm greys (`stone`
+for secondary and neutral), `extrabold` 900 for its black headings, and the full 1px ink edge
+until Paper draws per-side rules. Minimal Mono uses `zinc` primary, `slate` secondary and a
+`zinc` neutral, Inter 700 headings tracked −0.02em. Left for ST5: the CDN loader's `style:<id>` entries (a style
 set later by markup loads its sheet) and the Storybook **Style** menu.
 
 ## Icons and flags (owner, 2026-11-12)
