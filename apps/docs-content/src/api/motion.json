@@ -98,7 +98,7 @@
    "value": "0.25rem"
   },
   {
-   "dark": "#9F9FA9",
+   "dark": "#A2A2AC",
    "light": "#52525C",
    "name": "--ok-text-secondary"
   },
