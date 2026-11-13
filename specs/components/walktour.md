@@ -33,7 +33,7 @@ div[data-ok-walktour][data-ok-run]? …options                    (controller: d
       CSSOM --_ok-popover-x / -y / -arrow, --_ok-walktour-width)            one per step
     span[data-ok-popover-arrow][aria-hidden="true"]
     div[data-ok-walktour-header]
-      h2[data-ok-walktour-title][id]?
+      h2[data-ok-walktour-title][id]?   (h6 type; the style's heading case and tracking, ST7)
       button[data-ok-icon-button][data-ok-size="sm"][data-ok-walktour-action="close"][aria-label="Close"] › svg
     div[data-ok-walktour-content][id]
     span[role="progressbar"][data-ok-linear-progress][data-ok-variant="determinate"][aria-valuenow][aria-hidden="true"]

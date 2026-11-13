@@ -51,8 +51,12 @@ export interface StyleDefinition {
    * indicators) and `-heavy`. Omitted: 1 / 2 / 3px.
    */
   borderWidth?: { default: string; strong: string; heavy: string };
-  /** Surface edge width; its color is `transparent` for shadow styles, else the ink color. */
-  surfaceBorder: { width: string; ink: boolean };
+  /**
+   * Surface edge width; its color is `transparent` for shadow styles, else the ink color.
+   * `sides: "top"` draws a rule above in-flow surfaces only (Editorial); floating ones (dialogs,
+   * drawers, map controls) keep the whole edge.
+   */
+  surfaceBorder: { width: string; ink: boolean; sides?: "all" | "top" };
   /** How the style draws depth; the geometry is the treatment's (`shadows.ts`). */
   shadows: ShadowTreatment;
   /**

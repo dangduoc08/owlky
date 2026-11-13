@@ -19,8 +19,8 @@ interface Expected {
   label: { textTransform: string; letterSpacing: string };
   /** `--ok-radius-control` / `--ok-radius-surface` / `--ok-radius-chip`. */
   radius: [control: string, surface: string, chip: string];
-  /** `--ok-surface-border-width` and whether its color is the ink. */
-  surfaceBorder: [width: string, ink: boolean];
+  /** `--ok-surface-border-width`, whether its color is the ink, and `--ok-surface-border-style`. */
+  surfaceBorder: [width: string, ink: boolean, style?: string];
   borderWidth: string;
   shadows: ShadowTreatment;
   iconStroke: number;
@@ -82,7 +82,7 @@ const EXPECTED: Record<StyleName, Expected> = {
     heading: { weight: 900, letterSpacing: "normal", textTransform: "none" },
     label: { textTransform: "uppercase", letterSpacing: "0.12em" },
     radius: ["0px", "0px", "0px"],
-    surfaceBorder: ["1px", true],
+    surfaceBorder: ["1px", true, "solid none none"],
     borderWidth: "1px",
     shadows: "flat",
     iconStroke: 1.25,
@@ -168,6 +168,9 @@ describe.each(styleNames)("style %s", (name) => {
       expected.radius,
     );
     expect(theme.surface.borderWidth).toBe(expected.surfaceBorder[0]);
+    expect(theme.surface.borderStyle).toBe(
+      expected.surfaceBorder[2] ?? (expected.surfaceBorder[0] === "0px" ? "none" : "solid"),
+    );
     const ink = expected.surfaceBorder[1];
     expect(theme.schemes.light.surfaceBorder).toBe(
       ink ? theme.schemes.light.text.primary : "transparent",

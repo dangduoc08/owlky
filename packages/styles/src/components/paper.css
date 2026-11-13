@@ -14,14 +14,31 @@
 
 @layer components {
   :where([data-ok-paper]) {
-    /* The style's surface edge (ADR-0070 § 4.2): 0 in shadow styles, an ink line in line styles. */
-    border: var(--ok-surface-border-width) var(--ok-surface-border-style)
-      var(--ok-surface-border-color);
+    /*
+     * The style's surface edge (ADR-0070 § 4.2): 0 in shadow styles, an ink line in line styles,
+     * a top rule in Editorial (`solid none none`: longhands, so the style may name each side).
+     */
+    border-width: var(--ok-surface-border-width);
+    border-style: var(--ok-surface-border-style);
+    border-color: var(--ok-surface-border-color);
     border-radius: var(--ok-radius-control);
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-elevation-1);
     color: var(--ok-text-primary);
     transition: box-shadow var(--ok-duration-standard) var(--ok-easing-standard);
+  }
+
+  /*
+   * Floating surfaces (all Papers, ADR-0066) keep the whole edge where a style rules only one
+   * side (Editorial). Popover roots reset their border in popover.css.
+   */
+  :where(
+    [data-ok-dialog-paper],
+    [data-ok-drawer-content],
+    [data-ok-map-control],
+    [data-ok-map-popup-content]
+  ) {
+    border-style: solid;
   }
 
   /* Elevation: MUI's 25 levels (--ok-elevation-<n>; 1 is the base rule). */

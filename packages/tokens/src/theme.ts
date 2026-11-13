@@ -159,7 +159,12 @@ export function styleTheme(style: StyleDefinition, options: StyleThemeOptions = 
     },
     surface: {
       borderWidth: style.surfaceBorder.width,
-      borderStyle: Number.parseFloat(style.surfaceBorder.width) > 0 ? "solid" : "none",
+      borderStyle:
+        Number.parseFloat(style.surfaceBorder.width) > 0
+          ? style.surfaceBorder.sides === "top"
+            ? "solid none none"
+            : "solid"
+          : "none",
     },
     typography: {
       ...baseTheme.typography,

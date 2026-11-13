@@ -155,6 +155,18 @@ describe("Walktour", () => {
     expect(open()).toBeNull();
   });
 
+  it("step titles follow the style's heading case and tracking", () => {
+    const { container } = render(<Page />);
+    const title = container.querySelector("[data-ok-walktour-title]") as HTMLElement;
+    // The default style: no case or tracking.
+    expect(getComputedStyle(title).textTransform).toBe("none");
+    expect(getComputedStyle(title).letterSpacing).toBe("normal");
+    container.style.setProperty("--ok-heading-text-transform", "uppercase");
+    container.style.setProperty("--ok-heading-letter-spacing", "2px");
+    expect(getComputedStyle(title).textTransform).toBe("uppercase");
+    expect(getComputedStyle(title).letterSpacing).toBe("2px");
+  });
+
   it("runs a continuous tour: Next, Back, the last step, focus return", async () => {
     const onStepChange = vi.fn();
     const onStatusChange = vi.fn();
