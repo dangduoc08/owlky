@@ -38,6 +38,10 @@
    "value": "0.25rem"
   },
   {
+   "name": "--ok-surface-border-width",
+   "value": "0px"
+  },
+  {
    "dark": "#FAFAFA",
    "light": "#18181B",
    "name": "--ok-text-primary"
