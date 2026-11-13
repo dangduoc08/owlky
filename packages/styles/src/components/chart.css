@@ -55,18 +55,10 @@
 @reference "../theme.css";
 
 @layer components {
+  /* The root's box and the data table are in chart-first-paint.css (core: the page shows them
+     before this sheet arrives). */
   :where([data-ok-chart]) {
     --_ok-chart-c: var(--ok-palette-primary-dark);
-
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: calc(var(--ok-spacing) * 2);
-    min-width: 0;
-    margin: 0;
-    color: var(--ok-text-primary);
-    font-family: var(--ok-font-family);
-    font-size: var(--ok-font-size-xs);
   }
 
   :where([data-ok-chart] [data-ok-color="primary"]) {
@@ -927,29 +919,6 @@
   :where([data-ok-chart-tooltip-value]) {
     margin-inline-start: auto;
     font-weight: var(--ok-font-weight-semibold);
-  }
-
-  /* Data table (and drilldown levels' tables, 4.18.68): readable without JavaScript, visually
-     hidden once the chart is drawn. */
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown])) {
-    border-collapse: collapse;
-    font-size: var(--ok-font-size-sm);
-  }
-
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(th, td)) {
-    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
-    border-bottom: var(--ok-border-width) solid var(--ok-divider);
-    text-align: end;
-  }
-
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(thead th, tbody th)) {
-    text-align: start;
-  }
-
-  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) caption) {
-    padding-block-end: var(--ok-spacing);
-    font-weight: var(--ok-font-weight-semibold);
-    text-align: start;
   }
 
   /* Tables grow to their content: a fixed layout keeps the hidden table 1px wide, and anchored

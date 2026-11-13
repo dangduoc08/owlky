@@ -5880,6 +5880,7 @@
   "cdnModule": "chart",
   "core": "@owlky/core/chart",
   "css": [
+   "@owlky/styles/components/chart-first-paint.css",
    "@owlky/styles/components/chart.css"
   ],
   "html": "@owlky/html/chart",

@@ -493,19 +493,23 @@ Deferred, with the reason:
   Chart 188.52 → 161.86 kB. Budgets lowered to measurement + at most 5% (the all-in-one file keeps
   its 63.5 kB).
 - **Layout shift:** with the Chart's styles out of the core sheet, a chart that shows on first paint
-  shifts the content below it once when its sheet arrives (0.107 on the loader page, Chromium; the
-  Chart's module held back for 500 ms; 0.008 before S4, when `owlky.css` had everything). Linking
-  the sheet in the head (the loader skips a sheet that is already linked) brings it back to 0.008,
-  and `rel=preload` alone only sometimes avoids the shift. The guide says so; the e2e loader spec
-  measures both pages (linked: under 0.1, the "good" threshold; unlinked: under 0.15).
+  shifted the content below it once when its sheet arrived (0.107 on the loader page, Chromium; the
+  Chart's module held back for 500 ms), over the 0.1 "good" limit. The core sheet therefore keeps
+  a first-paint file, `chart-first-paint.css` (the figure's box and the data table, 0.13 kB gzip;
+  `chart.css` no longer repeats them, and the Import table lists both). The unlinked page is back
+  to 0.008, the same as with the sheet linked in the head, which stays the advice for a component
+  on first paint (the loader skips a sheet that is already linked; `rel=preload` alone only
+  sometimes avoids the shift). The e2e loader spec asserts both pages under 0.1. Other lazy roots
+  that change size once their sheet loads would get the same kind of file in the core sheet; none
+  was measured to need it.
 - **Docs:** the CDN and bundler guides, Get started, the READMEs and the Import table of every
   component say which sheet holds what (`owlky.css` = core, `owlky-all.css` = everything, the
   module's file after the core one), and the CDN guide shows `<link rel="preload" as="style">`
   next to `modulepreload`. `get_component`'s CSS line says the same.
-- **Hook for the design styles (ADR-0070):** the opt-in style sheets can follow the same pattern:
-  a file in `packages/styles/src/` built to `dist/styles/<name>.css`, listed next to
-  `families.json` (a `styles` key would be the place) and copied by `copy-assets.mjs`. Nothing
-  reads such a list yet; ST3 / ST4 fill it.
+- **Hook for the design styles (ADR-0070):** `families.json` has an empty `styles` key for the
+  opt-in style sheets. ST3 / ST4 fill it (name → its files) and build them to
+  `dist/styles/<name>.css` in `build.mjs`, which today only skips the key (as do the styles test
+  and the loader e2e), and `copy-assets.mjs` copies them next to the modules.
 
 ## Consequences
 - A light HTML page downloads about 40 kB of JS since S3 (45 kB after S2), down from 306.6 kB,

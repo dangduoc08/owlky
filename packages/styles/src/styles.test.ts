@@ -83,7 +83,10 @@ describe("styles source", () => {
   });
 
   describe("split sheets (ADR-0068 section 5)", () => {
-    const families = JSON.parse(read("families.json")) as Record<string, string[]>;
+    // `styles` is the design styles' hook (ADR-0070), not a family.
+    const { styles: _styles, ...families } = JSON.parse(read("families.json")) as {
+      styles?: unknown;
+    } & Record<string, string[]>;
     const lazyFiles = Object.values(families).flat();
     const order = [...read("index.css").matchAll(/@import "\.\/components\/([\w-]+)\.css";/g)].map(
       (match) => match[1] as string,
@@ -114,7 +117,11 @@ describe("styles source", () => {
         ),
       );
       // Dialog's Motion paper rules only test for the marker (`:not([data-ok-motion])`).
-      const allowed: Record<string, string[]> = { "dialog.css": ["motion"] };
+      const allowed: Record<string, string[]> = {
+        "dialog.css": ["motion"],
+        // The chart's first-paint box and data table (chart.css leaves them out).
+        "chart-first-paint.css": ["chart"],
+      };
       for (const file of components) {
         if (lazyFiles.includes(file.replace(/\.css$/, ""))) continue;
         const css = read(`components/${file}`);

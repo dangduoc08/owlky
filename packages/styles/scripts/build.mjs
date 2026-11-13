@@ -76,7 +76,11 @@ const componentFiles = (await readdir(join(src, "components"))).filter((f) => f.
 //   owlky(.min).css        tokens + core components (what the CDN page links)
 //   owlky-all(.min).css    tokens + every component (one file, for bundlers and tests)
 //   modules/<name>.css     one lazy family (minified; the loader attaches it before its code)
-const families = JSON.parse(await readFile(join(src, "families.json"), "utf8"));
+// `styles`: the hook for the design styles' opt-in sheets (ADR-0070 delivery, filled by ST3 /
+// ST4: name -> component files or its own source). Nothing builds from it yet.
+const { styles: _styles, ...families } = JSON.parse(
+  await readFile(join(src, "families.json"), "utf8"),
+);
 const lazyFiles = new Set(Object.values(families).flat());
 const indexCss = await readFile(join(src, "index.css"), "utf8");
 const fileOf = (line) => line.match(/^@import "\.\/components\/([\w-]+)\.css";$/)?.[1];

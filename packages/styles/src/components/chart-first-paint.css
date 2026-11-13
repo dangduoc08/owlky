@@ -1,0 +1,45 @@
+/*
+ * Chart, first paint — ADR-0068 S4. The core sheet holds only what a chart needs before its own
+ * sheet (modules/chart.css) arrives: the root's box and the data table, which a page shows until
+ * the module draws the chart. Without these, the figure's default margins and the unstyled table
+ * shift the content below it once when the sheet loads (0.107 against the 0.1 "good" limit).
+ * chart.css leaves them out: a bundler that imports it imports this file first (the Import
+ * table lists both, in order).
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-chart]) {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(var(--ok-spacing) * 2);
+    min-width: 0;
+    margin: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-font-size-xs);
+  }
+
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown])) {
+    border-collapse: collapse;
+    font-size: var(--ok-font-size-sm);
+  }
+
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(th, td)) {
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+    border-bottom: var(--ok-border-width) solid var(--ok-divider);
+    text-align: end;
+  }
+
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) :is(thead th, tbody th)) {
+    text-align: start;
+  }
+
+  :where(:is([data-ok-chart-data], table[data-ok-chart-drilldown]) caption) {
+    padding-block-end: var(--ok-spacing);
+    font-weight: var(--ok-font-weight-semibold);
+    text-align: start;
+  }
+}

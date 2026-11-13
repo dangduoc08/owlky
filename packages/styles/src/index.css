@@ -51,6 +51,7 @@
 @import "./components/slider.css";
 @import "./components/countdown.css";
 @import "./components/collapse.css";
+@import "./components/chart-first-paint.css";
 /* Lazy families (the CDN loader's modules, in families.json order): after every core file. */
 @import "./components/chart.css";
 @import "./components/illustration.css";

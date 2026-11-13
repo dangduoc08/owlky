@@ -144,14 +144,13 @@ test.describe("CDN loader", () => {
           loaded: Boolean(link.sheet),
         })),
     );
-    const families = Object.keys(
-      JSON.parse(
-        readFileSync(new URL("../../packages/styles/src/families.json", import.meta.url), "utf8"),
-      ),
-    );
+    const { styles: _styles, ...families } = JSON.parse(
+      readFileSync(new URL("../../packages/styles/src/families.json", import.meta.url), "utf8"),
+    ) as Record<string, unknown>;
+    const order = Object.keys(families);
     expect(sheets.map((sheet) => sheet.file)).toEqual([
       "owlky",
-      ...families.filter((name) => modules.includes(name)).map((name) => `modules/${name}`),
+      ...order.filter((name) => modules.includes(name)).map((name) => `modules/${name}`),
     ]);
     expect(sheets.every((sheet) => sheet.loaded)).toBe(true);
     // The core sheet doesn't hold the modules' styles: the data grid's header is styled by its own.
@@ -343,14 +342,14 @@ test.describe("CDN loader", () => {
     expect(await lateChartShift(page, true)).toBeLessThan(0.1);
   });
 
-  test("a chart whose stylesheet the loader adds shifts the content once, when the sheet arrives", async ({
+  test("a chart whose stylesheet the loader adds shifts the content by little too", async ({
     page,
     browserName,
   }) => {
     test.skip(browserName !== "chromium", "layout-shift entries are Chromium-only");
-    // Without a link, the chart's own styles arrive after the first paint (ADR-0068 S4: the core
-    // sheet no longer holds them), which shifts the figure once: about 0.107 on this page. The
-    // bound guards against more than that single shift.
-    expect(await lateChartShift(page, false)).toBeLessThan(0.15);
+    // Without a link the chart's own sheet arrives after the first paint, but the core sheet
+    // already holds the figure's box and the data table (chart-first-paint.css), so the page
+    // shifts only when the chart draws: under the "good" limit, as with the link.
+    expect(await lateChartShift(page, false)).toBeLessThan(0.1);
   });
 });

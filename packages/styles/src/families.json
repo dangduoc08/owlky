@@ -1,4 +1,5 @@
 {
+  "styles": {},
   "chart": ["chart"],
   "illustration": ["illustration"],
   "data-grid": ["data-grid"],

@@ -61,7 +61,7 @@ Each component's page lists its module name in the **Import** table of its API r
 
 To let the browser fetch a module even before \`owlky.js\` runs, also add a \`modulepreload\` link for its script and a \`preload\` link for its stylesheet. Both files have the module's name.
 
-A component that shows on first paint, such as a chart at the top of the page, looks different once its stylesheet arrives, so the content below it can shift. To avoid that, link the stylesheet in the \`<head>\`, after \`owlky.css\`. The loader doesn't add a stylesheet that the page links already.`,
+A component that shows on first paint, such as a chart at the top of the page, looks different once its stylesheet arrives. \`owlky.css\` already holds a chart's box and data table, so the page barely shifts. For the best result, also link the stylesheet in the \`<head>\`, after \`owlky.css\`. The loader doesn't add a stylesheet that the page links already.`,
     code: [
       {
         label: "index.html",
