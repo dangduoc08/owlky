@@ -18,7 +18,7 @@
   },
   {
    "name": "--ok-elevation-8",
-   "value": "0 5px 5px -3px var(--_ok-sc20), 0 8px 10px 1px var(--_ok-sc14), 0 3px 14px 2px var(--_ok-sc12)"
+   "value": "var(--ok-shadow-z8)"
   },
   {
    "name": "--ok-focus-ring-color",
