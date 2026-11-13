@@ -92,6 +92,56 @@ test.describe("theme scopes (shipped CSS)", () => {
     );
   });
 
+  test("opt-in style sheets (CDN files) style their scope and nest", async ({ page }) => {
+    // The shipped minified sheets, linked after owlky.css as the docs say (ADR-0073).
+    await page.evaluate(async () => {
+      const links = ["swiss", "neo-brutalism"].map((name) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = `../../packages/html/dist/owlky-style-${name}.min.css`;
+        document.head.append(link);
+        return new Promise((resolve, reject) => {
+          link.onload = resolve;
+          link.onerror = reject;
+        });
+      });
+      await Promise.all(links);
+    });
+    const paper = (html: string) =>
+      page.evaluate((markup) => {
+        const host = document.createElement("div");
+        host.innerHTML = markup;
+        document.body.append(host);
+        const style = getComputedStyle(host.querySelector("[data-ok-paper]") as Element);
+        const result = {
+          radius: style.borderTopLeftRadius,
+          border: style.borderTopWidth,
+          shadow: style.boxShadow,
+          font: style.getPropertyValue("--ok-font-family").trim(),
+        };
+        host.remove();
+        return result;
+      }, html);
+    const card = '<div data-ok-paper data-ok-elevation="8">Card</div>';
+    const soft = await paper(card);
+    expect(soft.radius).toBe("10px");
+    expect(soft.shadow).not.toBe("none");
+    const swiss = await paper(`<div data-ok-style="swiss">${card}</div>`);
+    expect(swiss).toMatchObject({ radius: "0px", border: "1px", shadow: "none" });
+    expect(swiss.font).toMatch(/^"Inter Variable"/);
+    const neo = await paper(`<div data-ok-style="neo-brutalism">${card}</div>`);
+    expect(neo).toMatchObject({ radius: "8px", border: "2px" });
+    expect(neo.shadow).toMatch(/ 4px 4px 0px 0px$/);
+    // Nearest style wins, through a dark scope and a nested default style.
+    expect(
+      (await paper(`<div data-ok-style="swiss"><div data-ok-style="neo-brutalism" data-ok-theme="dark">${card}</div></div>`))
+        .shadow,
+    ).toMatch(/^rgb\(2[0-5]\d, 2[0-5]\d, 2[0-5]\d\) 4px 4px 0px 0px$/);
+    expect(
+      await paper(`<div data-ok-style="neo-brutalism"><div data-ok-style="soft">${card}</div></div>`),
+    ).toMatchObject({ radius: "10px", border: "0px" });
+  });
+
   test("responsive typography and color bindings", async ({ page }) => {
     await page.setViewportSize({ width: 1300, height: 800 });
     const read = (name: string, html = '<div id="probe"></div>') =>
