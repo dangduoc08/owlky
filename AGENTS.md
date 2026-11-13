@@ -125,7 +125,8 @@ the style of the Google and Microsoft developer documentation guides. Model: Fou
 - **Lists:** parallel items; definitions as "**Label:** sentence".
 - **Code:** HTML and React tabs show the same idea, as complete snippets that work when copied:
   no `…` placeholders; React is a module with its imports and an exported component (data and
-  state declared in it, icons from `lucide-react`); HTML is the markup React renders, plus what
+  state declared in it, Solar icons: `Icon` from `@iconify/react/offline`, data from
+  `@iconify-icons/solar/<name>`); HTML is the markup React renders, plus what
   only HTML needs (the CDN `<link>` / `<script>`, triggers, a `<script>` for events). Long
   markup comes from a helper in the docs file (`htmlRating()`, `htmlTransferList()`), not a
   shortened copy. Comments explain where or why, in sentence case. `pnpm check:docs` checks the
@@ -318,8 +319,8 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `stroke-width`: `icon.css` sets `--ok-icon-stroke` (a stroke attribute would lose to it anyway).
   À-la-carte CSS needs `icon.css` next to the component's file. Checkbox boxes and radio rings are
   CSS spans (`data-ok-checkbox-box`, `data-ok-radio-ring`); only the marks are icons. The Map
-  compass needle stays a component graphic (`mapCompass`). Story and docs icons (`DemoIcon`,
-  Lucide, Iconify sets) are ST7. Parity skips `svg` children: pixel parity is what checks icons.
+  compass needle stays a component graphic (`mapCompass`). Docs examples use Solar (ST7,
+  `helpers/solar-icons.tsx`); story icons (`DemoIcon`, `demo-icons.json`) are ST7b. Parity skips `svg` children: pixel parity is what checks icons.
   Solar's credit is generated (`ARTWORK` in `scripts/check-licenses.mjs`, `pnpm notices`).
 - Numeric options (Progress `value`, `size`, `thickness`) use the schema's `number` kind
   (`number(attr, default, description, { min, units })`, `parseNumber` / `readNumber`): invalid →
@@ -1127,7 +1128,9 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   long HTML comes from the canonical snippets through `snippetElement(markup, match)`
   (`apps/storybook/src/helpers/snippet-markup.ts`, snippets imported with `?raw` by relative path),
   with page helpers on top (`gridOf()` keeps a grid's first rows, `htmlLightbox()`, `htmlEditor()`).
-  An icon an example needs goes in the checker's lucide list after checking lucide.dev.
+  An icon an example needs: add its Solar name to `DOCS` in `apps/storybook/scripts/icons.mjs`, run
+  `pnpm --filter @owlky/storybook icons`, then use `SolarIcon` / `solarMarkup()` / `solarImports()`
+  (`helpers/solar-icons.tsx`); the checker rejects names that aren't in the Solar set.
 - Copy to clipboard (4.20): core `copyToClipboard` checks `navigator.userActivation` before any
   await and never throws. Tests stub every path (`Object.defineProperty(navigator, "clipboard",
   …)`, `document.execCommand`, `userActivation` getter): a real write can open a prompt that
