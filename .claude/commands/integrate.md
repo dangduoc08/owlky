@@ -108,7 +108,7 @@ Same orchestration as `/component` → "Multi-URL mode (parallel agents)" (read 
 O2 agent prompt, O3 merge, O4 after the last merge), with these differences:
 - **The unit of work is a dependent**, not a name: after step 5's combined report, group the
   auto-approved (a) items by the dependent component they change (every Table item together,
-  every Drawer item together). One agent per dependent, at most **3 at a time**, branch
+  every Drawer item together). One `owlky-builder` agent per dependent, at most **3 at a time**, branch
   `integrate/<dependent>`; two agents never edit the same dependent.
 - Each agent's prompt lists its (a) items verbatim (with the re-captured reference notes from
   step 4 and any upstream-HTML answer) and says: implement them with `/component` steps 7–11 in

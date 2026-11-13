@@ -986,7 +986,10 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while
   another session edits it put lines in the wrong places (commit 7d2e745, repaired in 6eeb0d6).
   Use the commands' multi-URL / multi-component mode: one git worktree and branch per agent, e2e on
-  its own port (`PORT=4322 pnpm test:e2e`), merged one by one by the orchestrator.
+  its own port (`PORT=4322 pnpm test:e2e`), merged one by one by the orchestrator. Verification
+  tiers (light local checks per agent behind `flock /tmp/owlky-heavy.lock`, the full matrix on
+  an integration pull request, `main` only when green, one full local run per roadmap):
+  `docs/testing.md` › "Parallel agents and verification tiers".
 - Organization chart (ADR-0036): connectors are borders on `::before` / `::after` of the children
   `ul` and each child `li` (logical properties); the last child's start half is shifted by the line
   width so every vertical line uses the same pixels. Free lengths (`lineHeight`…) are `number`

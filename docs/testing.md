@@ -63,3 +63,48 @@ Writing tests:
   the validator would reject fails there.
 - Parallel worktrees: `PORT=4322 pnpm test:e2e` serves each build on its own port (default 4321).
   Never run two e2e runs in one working tree.
+
+## Parallel agents and verification tiers (owner, 2026-11-13)
+
+Goal: several agents in parallel without exhausting the machine, while every browser and the
+mobile viewport stay green.
+
+| Tier | Where | What runs |
+|---|---|---|
+| 1. Each agent | its own git worktree, locally | lint, typecheck, `pnpm build`, `pnpm check`, unit tests of the touched packages on Chromium, e2e of the affected specs on `chromium` and `mobile` (`--workers=2`, own `PORT`) |
+| 2. Integration | branch `integration/<batch>` + a pull request to `main` | CI's full matrix (`ci.yml` runs on `pull_request`): `check`, unit × Chromium / Firefox / WebKit, e2e shards for chromium, firefox, webkit and mobile |
+| 3. Main | `main` | merged only when the integration PR is green; CI runs again on the push |
+| 4. End of a roadmap | locally, once, sequentially (overnight) | `pnpm check`, unit × 3 engines, `pnpm storybook:build`, the full e2e for all four projects, `pnpm website:build` + the website e2e; issues are fixed in follow-up commits through tiers 2–3 |
+
+- Every heavy local command (`pnpm build`, `pnpm check`, vitest, `storybook:build`,
+  `website:build`, Playwright) is wrapped in a shared lock so only one runs at a time across
+  agents: `flock /tmp/owlky-heavy.lock <command>`. WSL crashed when several agents ran full
+  suites at once.
+- Agents in parallel: **3 by default, at most 4** (owner, 2026-11-13; WSL 20 GB, 12 CPUs). The
+  limit is the `flock` queue, merge conflicts and token use, not RAM: use 4 only for truly
+  independent work (separate components or styles), 1–2 near the end of the weekly token budget
+  or when tasks depend on each other.
+- Changes to shared code (tokens, icons, shared helpers, base CSS such as `paper.css`,
+  `typography.css`, `icon.css`, generators) add a broad, cheap check to tier 1: the parity
+  **anatomy** test for every story on chromium (`parity.spec.ts -g "identical anatomy"`, no
+  screenshots). Batch 1 showed why: ST2 changed icons in 114 places, ran only some specs, and
+  CI found Chip and Transfer list out of parity.
+- A CI failure goes back to the agent that owns the area, not to whoever merged last.
+- A failure that passes 3 out of 3 when rerun alone is a flake: record it and make the test robust.
+- Visual baselines are generated in Docker by a CI `workflow_dispatch` job, never locally.
+
+## Known flaky tests
+
+A test lands here when it fails and then passes 3 out of 3 when rerun alone. Each entry is
+fixed by making the test robust (wait for the right event, never a fixed delay), then removed.
+
+| Test | Engine | Seen | Notes |
+|---|---|---|---|
+| e2e `parity` › `carousel / thumbs-y` pixels | all, under load | before Wave 8 (c18065b) | raster history of the selected thumbnail ring; `repaintFromScratch` helped, not fully |
+| e2e `data-grid.spec.ts` › range charts and cross-filtering | WebKit | 2026-11-13, PR #1 | passed on retry |
+| e2e `foundations` › chart docs fits a phone | WebKit | 2026-11-13, PR #1 | passed on retry |
+| unit `carousel-controller.test.ts` › goTo takes a direction around a loop | Chromium | 2026-11-12 | under parallel builds |
+| unit `data-grid-menu.test.tsx` | Chromium | 2026-11-12 | under load |
+| unit toaster hover test | Chromium | 2026-11-13 | under load |
+| unit `drawer.test.tsx`, `walktour.test.ts`, `tooltip.test.ts` | Chromium / WebKit | 2026-11-12 (S2) | under load |
+

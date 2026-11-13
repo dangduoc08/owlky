@@ -553,7 +553,7 @@ current branch locally**. Never push, never publish, never `--no-verify`.
    HTML decision) and continue at once (auto-approved, like step 5).
 
 ### O2 — Agent prompt (one per URL)
-Spawn with `subagent_type` omitted (general-purpose) and `isolation: "worktree"`; agents run in
+Spawn with `subagent_type: "owlky-builder"` (`.claude/agents/`, CLAUDE.md › "Agent models") and `isolation: "worktree"`; agents run in
 the background and the orchestrator is notified when each finishes (never poll, never predict a
 result). The prompt must be self-contained (the agent starts without this conversation):
 - "Run the `/component` command for `<url> <name>`: read `.claude/commands/component.md` and follow

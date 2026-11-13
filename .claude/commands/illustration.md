@@ -92,7 +92,7 @@ in English.
 
 ## Multi mode
 
-Two or more pictures: one agent per picture (max 3 at a time), each in its own git worktree and
+Two or more pictures: one `owlky-builder` agent per picture (max 3 at a time), each in its own git worktree and
 branch `illustration/<name>`, e2e on its own port (4322, 4323, …). Agents commit on their branch
 (no push); this session merges them one by one (`index.ts`, `illustration-examples.tsx` and the
 docs count conflict: keep both entries), regenerates the snippets, reruns step 6–8 on the merged
