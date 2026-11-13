@@ -121,7 +121,7 @@ function build(
 /**
  * Markdown — spec: specs/components/markdown.md (ADR-0035). Not in the default `components` list
  * (it loads unified): register it with `getRuntime().register(markdown)`, import
- * `@owlky/html/markdown`, or load `owlky-markdown.js` after `owlky.js`. `createMarkdown({ … })`
+ * `@owlky/html/markdown`; on a CDN page, `owlky.js` loads it (ADR-0068). `createMarkdown({ … })`
  * adds plugins, a highlighter, `allowElement` or `urlTransform`.
  *
  * Markup:  <div data-ok-markdown data-ok-raw-html>

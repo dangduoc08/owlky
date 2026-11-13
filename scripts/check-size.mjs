@@ -21,15 +21,11 @@ const budgets = [
   // components, 45.2 kB measured. Budgets only go down from here (roadmap-size.md decision 8).
   // 40.45 kB since S3 (option descriptions in option-docs.json, ADR-0068 §4): 47 kB before.
   ["packages/html/dist/owlky.js", 42_000, "HTML runtime + light components + loader (IIFE)"],
+  // The same as an ES module for `<script type="module">` pages (S6): 41.02 kB measured.
+  ["packages/html/dist/owlky.mjs", 43_000, "HTML runtime + light components + loader (ES module)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
-  // The old opt-in scripts are shims (ADR-0068 §8): they ask owlky.js's loader for their module.
-  // Before: Editor 163 kB, Map 310 kB, Markdown 110 kB, Phone 47.5 kB, Code editor 12 kB and
-  // Illustrations 12 kB budgets; those engines are lazy modules now (below).
-  ...["editor", "map", "markdown", "phone", "illustrations", "code-editor"].map((name) => [
-    `packages/html/dist/owlky-${name}.js`,
-    500,
-    `owlky-${name}.js shim`,
-  ]),
+  // The old opt-in scripts (owlky-editor.js, owlky-map.js…) became shims in S2 and were removed in
+  // S6 (ADR-0068 §8): owlky.js loads those engines as lazy modules (below).
   // MapLibre's tile worker, loaded by the map itself.
   ["packages/html/dist/owlky-map-worker.js", 155_000, "MapLibre tile worker (loaded by the map)"],
   // Monaco itself (0.57): the editor, its 80+ language tokenizers' registrations and its CSS are

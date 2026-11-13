@@ -71,7 +71,7 @@ overrides palette tokens) takes that scope's values. `ink` is `light-dark(grey 8
   tones are dropped (`illustrationNodeAttributes`, `illustrationChildren`).
 - HTML snippets: the full inline SVG (generated from React,
   `node apps/storybook/scripts/illustration-snippets.mjs`); CSS only, no JavaScript.
-- HTML runtime (opt-in: `owlky-illustrations.js`, `@owlky/html/illustrations`, or
+- HTML runtime (opt-in: the CDN's lazy module, ADR-0068, `@owlky/html/illustrations`, or
   `createIllustration([…])`): on `svg[data-ok-illustration]` without artwork, builds the named
   picture with `createElementNS` and sets `viewBox`; artwork already there (snippets, custom art)
   stays. Writes `aria-hidden="true"` unless the author named it (then `role="img"`), and

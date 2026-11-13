@@ -33,11 +33,10 @@ The **All** story in the sidebar shows the whole set on one page. The other stor
 In HTML, you have two options:
 
 - **Paste the SVG:** copy the snippet from the story's **Code** panel. It needs only the stylesheet.
-- **Name the picture:** write an empty \`<svg data-ok-illustration="name">\` and load \`owlky-illustrations.js\` after \`owlky.js\`. The script draws the shapes with DOM methods. Use this option when you show the same picture on many pages.`,
+- **Name the picture:** write an empty \`<svg data-ok-illustration="name">\` and load \`owlky.js\`. It loads the illustrations when the page holds one and draws the shapes with DOM methods. Use this option when you show the same picture on many pages.`,
     html: `<!-- Load once per page -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
-<script src="${CDN}/owlky-illustrations.js" defer></script>
 
 <!-- The script draws the "error-404" illustration inside this element -->
 <svg data-ok-illustration="error-404" data-ok-color="primary" aria-hidden="true"></svg>`,
@@ -117,7 +116,7 @@ export function SignInArt() {
     title: "Load only the illustrations you need",
     body: `In React and in bundled HTML apps, import the illustrations you use from \`@owlky/core/illustrations\`. Each one adds about 0.7 to 1.6 kB gzip to your bundle. Pictures that share parts, such as people and sparkles, share that code. The \`illustrations\` export lists the whole set: import it only for a catalog.
 
-\`owlky-illustrations.js\` and \`@owlky/html/illustrations\` register every illustration, about 10 kB gzip. To ship fewer, register your own set with \`createIllustration\`.`,
+On a CDN page, \`owlky.js\` loads every illustration, about 7 kB gzip, when the page holds a placeholder. \`@owlky/html/illustrations\` registers every illustration too. To ship fewer, register your own set with \`createIllustration\`.`,
     html: `<script type="module">
   import { createIllustration, getRuntime } from "@owlky/html";
   import { error404, error500 } from "@owlky/core/illustrations";

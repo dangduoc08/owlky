@@ -234,15 +234,14 @@ function group(slices, keyOf, total) {
 // --- 1. Bundles ----------------------------------------------------------------------------
 
 const dist = at("packages/html/dist");
-// `owlky.js`, the opt-in shims, and since S2 the lazy modules and their shared chunks (ADR-0068).
+// `owlky.js`, `owlky.mjs` (its ES module twin), the lazy modules and their shared chunks (ADR-0068).
 const listJs = async (dir) =>
   (await readdir(join(dist, dir)).catch(() => []))
     .filter((f) => f.endsWith(".js"))
     .map((f) => (dir ? `${dir}/${f}` : f));
 const bundleFiles = [
-  ...(await listJs("")).filter(
-    (f) => /^owlky(-[\w-]+)?\.js$/.test(f) && f !== "owlky-map-worker.js",
-  ),
+  "owlky.js",
+  ...(existsSync(join(dist, "owlky.mjs")) ? ["owlky.mjs"] : []),
   ...(await listJs("modules")),
   ...(await listJs("modules/chunks")),
 ];
@@ -523,33 +522,21 @@ async function moduleFiles(name, seen = new Set()) {
   );
   return [file, ...(await Promise.all(imports.map((each) => moduleFiles(each, seen)))).flat()];
 }
-const lazy = existsSync(join(dist, "modules"));
 const page = async (...modules) => [
   "owlky.js",
   ...new Set((await Promise.all(modules.map((m) => moduleFiles(m)))).flat()),
 ];
-const HTML_CDN = lazy
-  ? [
-      ["Light page (Button, Dialog)", await page()],
-      ["Data grid page", await page("data-grid")],
-      ["Chart page", await page("chart")],
-      ["Date picker page", await page("date-picker")],
-      ["Editor page", await page("editor")],
-      ["Markdown page", await page("markdown")],
-      ["Phone input page", await page("phone-input")],
-      ["Map page", [...(await page("map")), "owlky-map-worker.js"]],
-      ["Code editor page (Monaco loads on mount)", await page("code-editor")],
-    ]
-  : [
-      ["Light page (Button, Dialog)", ["owlky.js"]],
-      ["Data grid page", ["owlky.js"]],
-      ["Chart page", ["owlky.js"]],
-      ["Editor page", ["owlky.js", "owlky-editor.js"]],
-      ["Markdown page", ["owlky.js", "owlky-markdown.js"]],
-      ["Phone input page", ["owlky.js", "owlky-phone.js"]],
-      ["Map page", ["owlky.js", "owlky-map.js", "owlky-map-worker.js"]],
-      ["Code editor page (Monaco loads on mount)", ["owlky.js", "owlky-code-editor.js"]],
-    ];
+const HTML_CDN = [
+  ["Light page (Button, Dialog)", await page()],
+  ["Data grid page", await page("data-grid")],
+  ["Chart page", await page("chart")],
+  ["Date picker page", await page("date-picker")],
+  ["Editor page", await page("editor")],
+  ["Markdown page", await page("markdown")],
+  ["Phone input page", await page("phone-input")],
+  ["Map page", [...(await page("map")), "owlky-map-worker.js"]],
+  ["Code editor page (Monaco loads on mount)", await page("code-editor")],
+];
 // Each lazy module with the chunks it imports statically: what loading it downloads.
 const lazyModules = {};
 for (const file of await listJs("modules")) {

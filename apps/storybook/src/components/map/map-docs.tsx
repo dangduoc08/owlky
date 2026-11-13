@@ -51,11 +51,10 @@ export const mapSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: "A map shows places and data that people can pan, zoom, tilt and turn. It is drawn by MapLibre GL JS, an open-source map engine, so both versions share the same behavior and markup. Around the map, Owlky draws its own controls, markers, popups and panels, which follow your theme and work with the keyboard.\n\nThe map is a separate script so that pages without one don't download the map engine. Load `owlky-map.js` after `owlky.js`. It finds its worker, `owlky-map-worker.js`, next to itself. With npm, import `@owlky/html/map` (HTML) or use the map components of `@owlky/react`, and point `setMapWorkerUrl()` at `@owlky/core/map-worker.js`.\n\nOwlky includes no map tiles. Pass the URL of a MapLibre style, for example one of OpenFreeMap's free styles, and keep the credits that the style requires.",
-    html: `<!-- Load once per page: the styles, the runtime, then the map -->
+    body: "A map shows places and data that people can pan, zoom, tilt and turn. It is drawn by MapLibre GL JS, an open-source map engine, so both versions share the same behavior and markup. Around the map, Owlky draws its own controls, markers, popups and panels, which follow your theme and work with the keyboard.\n\nPages without a map don't download the map engine. On a CDN page, `owlky.js` loads the map when the page holds one, and the map finds its worker, `owlky-map-worker.js`, next to `owlky.js`. With npm, import `@owlky/html/map` (HTML) or use the map components of `@owlky/react`, and point `setMapWorkerUrl()` at `@owlky/core/map-worker.js`.\n\nOwlky includes no map tiles. Pass the URL of a MapLibre style, for example one of OpenFreeMap's free styles, and keep the credits that the style requires.",
+    html: `<!-- Load once per page: owlky.js loads the map when the page holds one -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
-<script src="${CDN}/owlky-map.js" defer></script>
 
 <div data-ok-map data-ok-label="Map of Europe"
   data-ok-map-style="${MAP_STYLES.light}"

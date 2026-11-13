@@ -212,7 +212,7 @@ const isAction = (value: string | null): value is EditorAction =>
 /**
  * Editor — spec: specs/components/editor.md (ADR-0023). Not in the default `components` list (it
  * loads Tiptap): register it with `getRuntime().register(editor)`, import `@owlky/html/editor`,
- * or load `owlky-editor.js` after `owlky.js`. `createEditor({ highlighter })` adds syntax
+ * or let `owlky.js` load it on a CDN page (ADR-0068). `createEditor({ highlighter })` adds syntax
  * highlighting.
  *
  * Markup:  <div data-ok-editor data-ok-full-item>

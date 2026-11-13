@@ -118,7 +118,7 @@ function option(
 
 /**
  * Phone input — spec: specs/components/phone-input.md (ADR-0061). Opt-in: import
- * `@owlky/html/phone`, or load `owlky-phone.js` after `owlky.js` (it holds the phone metadata).
+ * `@owlky/html/phone` (it holds the phone metadata); on a CDN page, `owlky.js` loads it (ADR-0068).
  * `createPhoneInput({ metadata, labels })` uses other metadata or country names.
  *
  * Markup:  <div data-ok-text-field data-ok-variant="outlined" … data-ok-phone-input data-ok-default-country="AU">

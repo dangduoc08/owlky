@@ -500,8 +500,8 @@ pitchend|click|dblclick|contextmenu|mousemove|mouseenter|mouseleave` (detail: th
 `ok:map:legendtoggle` (on the legend, `{ classIndex, active }`). Instance: `{ controller, map, viewState, flyTo, easeTo, jumpTo,
 fitBounds, exportMap(format?, options?), setSourceData(id, data), getClusterExpansionZoom(source, clusterId), openPopup(popup),
 closePopup(popup), fullscreen, setFullscreen(on), scale, greatCircle, sizeScale, hexbin, pixelGrid }` (core `mapScale`, `greatCircle`, `mapSizeScale`, `mapHexbin`, `mapPixelGrid`, for CDN pages). Worker: `setMapWorkerUrl(url)` from
-`@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; `owlky-map.js` finds
-`owlky-map-worker.js` next to itself).
+`@owlky/core/map` (bundlers: `@owlky/core/map-worker.js`; the CDN's `modules/map.js` finds
+`owlky-map-worker.js` next to `owlky.js`).
 
 ## Security
 Style, data and tile URLs go through `safeMapUrl` (`http(s)` only, relative resolved). Declarations

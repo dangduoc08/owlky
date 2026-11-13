@@ -78,8 +78,8 @@ const WATCHED = [
 
 /**
  * Code editor — spec: specs/components/code-editor.md (ADR-0034). Not in the default
- * `components` list (it loads Monaco): import `@owlky/html/code-editor` or load
- * `owlky-code-editor.js` after `owlky.js`. `createCodeEditor({ beforeMount, onMount })` adds
+ * `components` list (it loads Monaco): import `@owlky/html/code-editor`; on a CDN page,
+ * `owlky.js` loads it (ADR-0068). `createCodeEditor({ beforeMount, onMount })` adds
  * hooks for every editor.
  *
  * Markup:  <div data-ok-code-editor data-ok-language="javascript" data-ok-height="400">

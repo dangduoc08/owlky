@@ -340,7 +340,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `core/src/illustration/illustration.ts`), never a color; outlines are `stroke` in the data
   (`data-ok-stroke`). Components compose `Illustration` with their own part attribute (Upload:
   `data-ok-upload-illustration`; its size stays in the component's CSS). The data entry and the
-  runtime are opt-in (`@owlky/core/illustrations`, `owlky-illustrations.js`): `illustration` is in
+  runtime are opt-in (`@owlky/core/illustrations`, the CDN's lazy `modules/illustration.js`): `illustration` is in
   `OPT_IN` (`components.test.ts`); Storybook's `preview.tsx` registers it. Foundations stories
   with both frameworks are listed in `FRAMEWORK_FOUNDATIONS` (`e2e/tests/helpers.ts`).
 - Illustration style (`docs/illustrations-style.md`, `/illustration`): pictures compose the parts
@@ -562,7 +562,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   filter's DateTimePicker needs a column of about 280px or axe flags its squeezed sections
   (`target-size`).
 - Editor (ADR-0023): Tiptap is reached only through `@owlky/core/editor` (Storybook aliases it)
-  and the opt-in HTML entries (`@owlky/html/editor`, `owlky-editor.js`): `editor` isn't in
+  and the opt-in HTML entries (`@owlky/html/editor`, the CDN's lazy `modules/editor.js`): `editor` isn't in
   `components` (`OPT_IN` in `components.test.ts`), so `owlky.js` stays free of ProseMirror. The
   controller mounts on `[data-ok-editor-content]` itself (`element: { mount }`) with
   `injectCSS: false` (Tiptap's `<style>` uses `innerHTML`). Tiptap's trailing node appends `<p></p>`
@@ -588,7 +588,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   them (the editor runtime opens the link form from the bubble's link button itself). Tiptap's
   `commands.focus()` lands a frame later: tests and the bubble's Escape use `editor.view.focus()`
   before setting a selection. Tiptap's `isEmpty` counts a table of empty cells as empty
-  (`getValue()` checks for a table). `owlky-editor.js` aliases `@floating-ui/dom` to
+  (`getValue()` checks for a table). The CDN modules build aliases `@floating-ui/dom` to
   `src/floating-ui-stub.ts` (Suggestion only builds middleware). The Bubble menu, Table and
   Mentions snippets: `pnpm build && node apps/storybook/scripts/demo-snippets.mjs editor`.
 - Chart (ADR-0024): core `renderChart` lays out a tree of SVG nodes (`ChartNode`); React maps
@@ -741,8 +741,8 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   (axe `target-size`). In a git worktree under `.claude/`, the repo's `coverage.include`
   (`packages/*/src/**`) matches nothing: measure with an include such as `**/src/carousel/**`.
 - Code editor (ADR-0034): Monaco is reached only through `@owlky/core/code-editor` (Storybook aliases
-  it) and the opt-in HTML entries (`@owlky/html/code-editor`, `owlky-code-editor.js`, `OPT_IN` in
-  `components.test.ts`); `owlky-code-editor.js` holds no Monaco (the html build aliases
+  it) and the opt-in HTML entries (`@owlky/html/code-editor`, the CDN's lazy `modules/code-editor.js`,
+  `OPT_IN` in `components.test.ts`); the CDN module holds no Monaco (the html build aliases
   `monaco-editor` to `src/monaco-stub.ts`) and imports `dist/monaco/monaco.js` from `paths.vs`.
   Tests and Storybook give the loader Vite `?worker` imports (`test-utils.ts` per package,
   `monaco-workers.ts`); the loader is module state, so error-path tests live in their own file
@@ -793,7 +793,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   laid out by story CSS measures zero width in unit tests: give the roots a width before axe
   (`target-size` on the folded attribution otherwise).
 - Markdown (ADR-0035): unified is reached only through `@owlky/core/markdown` and the opt-in HTML
-  entries (`@owlky/html/markdown`, `owlky-markdown.js`; `markdown` is in `OPT_IN`). Both renderers
+  entries (`@owlky/html/markdown`, the CDN's lazy `modules/markdown.js`; `markdown` is in `OPT_IN`). Both renderers
   write attributes from `markdownElementAttributes` and styles from `markdownElementStyle` (CSSOM),
   so fix serialization there, never in one renderer. The finished tree holds only elements and
   text; an empty URL from `urlTransform` removes the attribute (React drops empty `href` / `src`).
@@ -970,7 +970,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   after the key), and drops it only for rows that went away. Downloads render the layout again
   without a window (`exportGantt(root, layout, format)`), colors from computed styles.
 - Phone input (ADR-0061): libphonenumber-js is reached only through `@owlky/core/phone` (Storybook
-  aliases it) and the opt-in HTML entries (`@owlky/html/phone`, `owlky-phone.js`, `phone-input` in
+  aliases it) and the opt-in HTML entries (`@owlky/html/phone`, the CDN's lazy `modules/phone-input.js`, `phone-input` in
   `OPT_IN`); `check-size.mjs` fails if `owlky.js` holds the metadata (`country_calling_codes`). The
   option schema stays in `@owlky/core` (no metadata). The root is a TextField with
   `data-ok-phone-input`; the country select is a bare Select (`SelectRoot host="select"`) in a

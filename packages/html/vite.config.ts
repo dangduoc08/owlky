@@ -5,8 +5,10 @@ import { defineConfig, type UserConfig } from "vite";
 // Builds the CDN files. The npm ESM output comes from tsc.
 // `vite build` → owlky.js (IIFE: the runtime, the light components and the loader, ADR-0068);
 // `--mode modules` → modules/<name>.js (the lazy modules owlky.js loads, ES modules with shared
-// chunks in modules/chunks/); `--mode editor|markdown|phone|illustrations|map|code-editor` →
-// owlky-<name>.js, the old opt-in scripts as shims that ask owlky.js's loader for their module.
+// chunks in modules/chunks/); `--mode esm` → owlky.mjs (owlky.js as one ES module, for `<script
+// type="module">` pages). owlky.mjs is built on its own: built with the modules, it would pull
+// the light components it shares with them into the shared chunks (about 11 kB gzip more in
+// the chunks that owlky.js pages download, ADR-0068 S6 note).
 // The Code editor (ADR-0034): `--mode monaco` → monaco/monaco.js + monaco.css (the engine, an ES
 // module the Code editor's loader imports on demand), `--mode monaco-workers` → monaco/*.worker.js.
 const TARGET = ["chrome114", "edge114", "firefox128", "safari17"];
@@ -31,16 +33,6 @@ const MODULES = Object.fromEntries(
 );
 
 export default defineConfig(({ mode }): UserConfig => {
-  // The old opt-in scripts are shims now (ADR-0068): each asks owlky.js's loader for its module.
-  if (mode === "editor") return iife("src/cdn-editor.ts", "OwlkyEditorBundle", "owlky-editor.js");
-  if (mode === "markdown")
-    return iife("src/cdn-markdown.ts", "OwlkyMarkdownBundle", "owlky-markdown.js");
-  if (mode === "phone") return iife("src/cdn-phone.ts", "OwlkyPhoneBundle", "owlky-phone.js");
-  if (mode === "illustrations")
-    return iife("src/cdn-illustrations.ts", "OwlkyIllustrationsBundle", "owlky-illustrations.js");
-  if (mode === "map") return iife("src/cdn-map.ts", "OwlkyMapBundle", "owlky-map.js");
-  if (mode === "code-editor")
-    return iife("src/cdn-code-editor.ts", "OwlkyCodeEditorBundle", "owlky-code-editor.js");
   if (mode === "modules")
     return {
       resolve: {
@@ -68,6 +60,19 @@ export default defineConfig(({ mode }): UserConfig => {
         rollupOptions: {
           output: { minify: true, chunkFileNames: "chunks/[name]-[hash].js" },
         },
+      },
+    };
+  if (mode === "esm")
+    return {
+      build: {
+        outDir: "dist",
+        emptyOutDir: false,
+        sourcemap: true,
+        minify: true,
+        target: TARGET,
+        lib: { entry: "src/cdn-module.ts", formats: ["es"], fileName: () => "owlky.mjs" },
+        // Library builds keep whitespace by default; this is a shipped file.
+        rollupOptions: { output: { minify: true } },
       },
     };
   if (mode === "monaco" || mode === "monaco-workers") {

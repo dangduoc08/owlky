@@ -2,6 +2,8 @@
 
 **Status:** Accepted (2026-11-08, auto-approved in `/component`).
 
+**Note (2026-11-13, ADR-0068 S6):** `owlky-code-editor.js` was removed before 0.1.0. On a CDN page, `owlky.js` loads this component from its lazy module (`modules/code-editor.js`) when the page holds one; the text below keeps the original decision.
+
 ## Context
 The reference (`https://monaco-react.surenatoyan.com/`) is the demo of `@monaco-editor/react`
 (MIT): an `Editor` and a `DiffEditor` around Monaco (the editor of VS Code, MIT), a `useMonaco`
