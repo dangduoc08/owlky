@@ -4,8 +4,9 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = Number(process.env["PORT"] ?? 4400);
 
 /**
- * Website e2e (ADR-0040 decision 11): runs against the static build in apps/website/out
- * (`pnpm build && pnpm website:build`), served like a static host.
+ * Website e2e (ADR-0040 decision 11, ADR-0071): runs against the production build
+ * (`pnpm build && pnpm website:build`) served by `next start`, with PGlite in memory and the mock
+ * OAuth providers (scripts/mock-oauth.mjs): no real accounts or services.
  */
 export default defineConfig({
   testDir: "./website",
@@ -24,9 +25,15 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: "node ../apps/website/scripts/serve.mjs",
+    command: "node ../apps/website/scripts/serve.mjs --mock",
     port: PORT,
     reuseExistingServer: !process.env["CI"],
-    env: { PORT: String(PORT) },
+    env: {
+      PORT: String(PORT),
+      BETTER_AUTH_URL: `http://localhost:${PORT}`,
+      BETTER_AUTH_SECRET: "e2e-secret-e2e-secret-e2e-secret-e2e-0123",
+      OWLKY_PGLITE_DIR: "memory://",
+      OWLKY_AUTH_RATE_LIMIT: "off",
+    },
   },
 });
