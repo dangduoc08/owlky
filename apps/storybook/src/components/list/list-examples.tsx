@@ -15,26 +15,18 @@ import {
   Switch,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon, type DemoIconName } from "../shared/demo-icon.js";
+import { SolarIcon, type SolarName } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { NestedDemo } from "./nested-demo.js";
 
 /** A row with an icon and one line of text, as a button. */
-function Row({
-  icon,
-  label,
-  selected,
-}: {
-  icon?: DemoIconName;
-  label: string;
-  selected?: boolean;
-}) {
+function Row({ icon, label, selected }: { icon?: SolarName; label: string; selected?: boolean }) {
   return (
     <ListItem disablePadding>
       <ListItemButton selected={selected} aria-current={selected ? "true" : undefined}>
         {icon && (
           <ListItemIcon>
-            <DemoIcon name={icon} />
+            <SolarIcon name={icon} />
           </ListItemIcon>
         )}
         <ListItemText primary={label} />
@@ -50,8 +42,8 @@ function Mailbox({ selected }: { selected?: string }) {
     <Card>
       <nav aria-label="Main mailbox folders">
         <List>
-          <Row icon="inbox" label="Inbox" selected={selected === "Inbox"} />
-          <Row icon="mail" label="Drafts" selected={selected === "Drafts"} />
+          <Row icon="inbox-linear" label="Inbox" selected={selected === "Inbox"} />
+          <Row icon="letter-linear" label="Drafts" selected={selected === "Drafts"} />
         </List>
       </nav>
       <Divider />
@@ -79,10 +71,10 @@ export const selectedGroups: ReactGroup[] = [
 /** Nested: the Inbox button opens and closes the list below it (open at first). */
 export const nestedGroups: ReactGroup[] = [{ title: "Nested", content: <NestedDemo /> }];
 
-const FOLDERS: [DemoIconName, string, string][] = [
-  ["image", "Photos", "Jan 9, 2014"],
-  ["work", "Work", "Jan 7, 2014"],
-  ["sun", "Vacation", "July 20, 2014"],
+const FOLDERS: [SolarName, string, string][] = [
+  ["gallery-linear", "Photos", "Jan 9, 2014"],
+  ["case-linear", "Work", "Jan 7, 2014"],
+  ["sun-linear", "Vacation", "July 20, 2014"],
 ];
 
 export const folderGroups: ReactGroup[] = [
@@ -95,7 +87,7 @@ export const folderGroups: ReactGroup[] = [
             <ListItem key={name}>
               <ListItemAvatar>
                 <Avatar>
-                  <DemoIcon name={icon} />
+                  <SolarIcon name={icon} />
                 </Avatar>
               </ListItemAvatar>
               <ListItemText primary={name} secondary={date} />
@@ -119,7 +111,7 @@ export const controlsGroups: ReactGroup[] = [
               key={n}
               secondaryAction={
                 <IconButton edge="end" aria-label={`Comments on line item ${n}`}>
-                  <DemoIcon name="comment" />
+                  <SolarIcon name="chat-round-line-linear" />
                 </IconButton>
               }
             >
@@ -135,9 +127,9 @@ export const controlsGroups: ReactGroup[] = [
   },
 ];
 
-const SETTINGS: [DemoIconName, string, boolean][] = [
-  ["wifi", "Wi-Fi", true],
-  ["bluetooth", "Bluetooth", false],
+const SETTINGS: [SolarName, string, boolean][] = [
+  ["wi-fi-router-linear", "Wi-Fi", true],
+  ["bluetooth-linear", "Bluetooth", false],
 ];
 
 /** Switch: each switch is labelled by its row's text. */
@@ -153,7 +145,7 @@ export const switchGroups: ReactGroup[] = [
           {SETTINGS.map(([icon, label, on]) => (
             <ListItem key={label}>
               <ListItemIcon>
-                <DemoIcon name={icon} />
+                <SolarIcon name={icon} />
               </ListItemIcon>
               <ListItemText id={`list-switch-${icon}`} primary={label} />
               <Switch edge="end" aria-labelledby={`list-switch-${icon}`} defaultChecked={on} />

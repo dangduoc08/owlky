@@ -198,7 +198,6 @@ Run it locally with `pnpm storybook`.
 | [`@owlky/html`](packages/html) | HTML snippets and the behavior script, also from a CDN |
 | [`@owlky/react`](packages/react) | React components (the first framework package) |
 | [`@owlky/core`](packages/core) | The shared behavior core, included by the other packages |
-| [`@owlky/mcp`](packages/mcp) | A Model Context Protocol server that gives coding agents the exact API, offline |
 
 ## Browser support
 

@@ -6,7 +6,7 @@ import { GuideSections } from "@owlky/docs-content/guide";
 import { type ManifestSchema, manifestOptionSchema } from "@owlky/docs-content/guide/manifest";
 import { OptionsTable } from "@owlky/docs-content/guide/tables";
 
-/** The Button guide; its Options table comes from the MCP manifest (ADR-0046). */
+/** The Button guide; its Options table comes from the MCP manifest (ADR-0071). */
 export function ButtonGuide({ schemas }: { schemas: readonly ManifestSchema[] }) {
   const previews = {
     ...buttonPreviews,

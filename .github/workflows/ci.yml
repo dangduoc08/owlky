@@ -43,9 +43,8 @@ jobs:
       # The API reference (ADR-0049) must match the code; the docs examples must work as written.
       - run: pnpm check:api
       - run: pnpm check:docs
-      # The MCP server's manifest (ADR-0046) must match the code, and its tarball must start.
+      # The MCP manifest (ADR-0071) must match the code.
       - run: pnpm check:manifest
-      - run: pnpm smoke:mcp
       # Node-only unit tests (tokens, styles, mcp) run here once; the browser projects run in the
       # unit jobs below.
       - run: pnpm test:node

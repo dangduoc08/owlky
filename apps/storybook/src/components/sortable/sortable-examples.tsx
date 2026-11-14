@@ -2,7 +2,7 @@ import { sortableOptions } from "@owlky/core";
 import { Button, Scrollbar, Sortable, type SortableLayout, Typography } from "@owlky/react";
 import { useState } from "react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 const initial = () => Array.from({ length: 12 }, (_, index) => index + 1);
 
@@ -22,7 +22,7 @@ export function SortableDemo({
     <>
       <Button
         variant="contained"
-        startIcon={<DemoIcon name="plus" />}
+        startIcon={<SolarIcon name="add-linear" />}
         onClick={() => setItems((current) => [...current, Math.max(0, ...current) + 1])}
       >
         Add item
@@ -68,8 +68,9 @@ export const sortableCode = (
   title: string,
 ) => `import "@owlky/styles/owlky-all.css";
 import { Button, Scrollbar, Sortable, Typography } from "@owlky/react";
+import { Icon } from "@iconify/react/offline";
+import addLinear from "@iconify-icons/solar/add-linear";
 import { useState } from "react";
-// PlusIcon: your own decorative SVG icon (aria-hidden="true").
 
 export function ${title}Example() {
   const [items, setItems] = useState(() => Array.from({ length: 12 }, (_, i) => i + 1));
@@ -77,7 +78,7 @@ export function ${title}Example() {
     <>
       <Button
         variant="contained"
-        startIcon={<PlusIcon />}
+        startIcon={<Icon icon={addLinear} />}
         onClick={() => setItems((current) => [...current, Math.max(0, ...current) + 1])}
       >
         Add item

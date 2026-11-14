@@ -67,13 +67,15 @@ runtime never share a page. Deploys: GitHub Actions + Vercel CLI (`website.yml`)
 
 Published packages never import apps (`check:boundaries`); apps may import every package.
 
-## MCP server (ADR-0046)
+## MCP server (ADR-0046, superseded by ADR-0071)
 
-`@owlky/mcp` gives coding agents the exact API offline. It answers only from a generated
-`packages/mcp/manifest.json` that ships in its tarball, and imports no other Owlky package.
+The MCP server gives coding agents the exact API. Its code (tools, resources, prompts, search,
+`validate_markup`) is the private workspace package `@owlky/mcp-server` (`packages/mcp`, never
+published: ADR-0071 § 1 removed the stdio CLI); the website serves it remotely at `/mcp` (M4).
+It answers only from the generated `packages/mcp/manifest.json` and imports no other Owlky package.
 
 ```
-pnpm build ─▶ scripts/manifest.mjs ─▶ packages/mcp/manifest.json ─▶ @owlky/mcp (stdio, npx -y @owlky/mcp)
+pnpm build ─▶ scripts/manifest.mjs ─▶ packages/mcp/manifest.json ─▶ @owlky/mcp-server ─▶ owlky.com/mcp (M4)
    optionSchemas (core dist) · specs/components/*.md (sections, Reference URL, options markers)
    stories (Vite SSR of *.stories.tsx: each story's Code panel for html and react)
    docs pages' *Sections exports (Storybook and apps/docs-content) · html examples/*.html · tokens.json · styles theme.css

@@ -1,7 +1,7 @@
 import { ratingOptions } from "@owlky/core";
 import { Rating, type RatingSize } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon, type DemoIconName } from "../shared/demo-icon.js";
+import { SolarIcon, type SolarName } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 /** A solid heart (decorative), filled with the rating color. */
@@ -13,7 +13,13 @@ export function HeartIcon() {
   );
 }
 
-const FACES: DemoIconName[] = ["faceVeryBad", "faceBad", "faceNeutral", "faceGood", "faceVeryGood"];
+const FACES: SolarName[] = [
+  "confounded-circle-linear",
+  "sad-circle-linear",
+  "expressionless-circle-linear",
+  "smile-circle-linear",
+  "emoji-funny-circle-linear",
+];
 const FACE_LABELS = ["Very dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very satisfied"];
 const SIZES: RatingSize[] = ["xxSmall", "xSmall", "small", "medium", "large"];
 
@@ -50,7 +56,7 @@ export const ratingStories: Record<string, ReactGroup[]> = {
             defaultValue={2}
             size="small"
             highlightSelectedOnly
-            renderIcon={(value) => <DemoIcon name={FACES[value - 1] as DemoIconName} />}
+            renderIcon={(value) => <SolarIcon name={FACES[value - 1] as SolarName} />}
             getLabelText={(value) => FACE_LABELS[value - 1] as string}
           />
         </>

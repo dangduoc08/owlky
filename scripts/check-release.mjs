@@ -15,7 +15,7 @@ if (!match) {
 const version = match[1];
 
 const problems = [];
-for (const name of ["tokens", "styles", "core", "react", "html", "mcp"]) {
+for (const name of ["tokens", "styles", "core", "react", "html"]) {
   const pkg = JSON.parse(readFileSync(`packages/${name}/package.json`, "utf8"));
   if (pkg.version !== version) problems.push(`${pkg.name} is ${pkg.version}`);
 }

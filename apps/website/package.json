@@ -15,7 +15,7 @@
     "@owlky/core": "workspace:*",
     "@owlky/docs-content": "workspace:*",
     "@owlky/html": "workspace:*",
-    "@owlky/mcp": "workspace:*",
+    "@owlky/mcp-server": "workspace:*",
     "@owlky/react": "workspace:*",
     "@owlky/styles": "workspace:*",
     "@owlky/tokens": "workspace:*",

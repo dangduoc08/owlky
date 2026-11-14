@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@owlky/react";
 import { useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 const STEPS = [
   { label: "Choose a plan", text: "Pick the plan and the billing period that suit your team." },
@@ -36,7 +36,7 @@ export function MobileDemo({ variant }: { variant: MobileStepperVariant }) {
           <Button
             size="sm"
             color="inherit"
-            startIcon={<DemoIcon name="chevronLeft" />}
+            startIcon={<SolarIcon name="alt-arrow-left-linear" />}
             disabled={active === 0}
             onClick={() => setActive(active - 1)}
           >
@@ -47,7 +47,7 @@ export function MobileDemo({ variant }: { variant: MobileStepperVariant }) {
           <Button
             size="sm"
             color="inherit"
-            endIcon={<DemoIcon name="chevronRight" />}
+            endIcon={<SolarIcon name="alt-arrow-right-linear" />}
             disabled={active === STEPS.length - 1}
             onClick={() => setActive(active + 1)}
           >

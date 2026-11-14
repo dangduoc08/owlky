@@ -42,8 +42,8 @@ overrides:
   "mdast-util-to-markdown": "2.2.0"
   "vfile-location": "5.0.3"
   "vfile-message": "4.0.3"
-  # Release age (deps ≥ 14 days): @modelcontextprotocol/sdk 1.32.2 (@owlky/mcp, ADR-0046) resolves
-  # releases from 2026-10-28 to 2026-11-07 for its HTTP server libraries (unused over stdio). Only
+  # Release age (deps ≥ 14 days): @modelcontextprotocol/sdk 1.32.2 (@owlky/mcp-server, ADR-0071) resolves
+  # releases from 2026-10-28 to 2026-11-07 for its HTTP server libraries. Only
   # the MCP server uses these packages. Remove these seven lines after 2026-11-21.
   "@modelcontextprotocol/sdk>@hono/node-server": "2.1.5"
   "@modelcontextprotocol/sdk>hono": "4.13.14"

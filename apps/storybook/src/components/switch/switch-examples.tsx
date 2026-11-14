@@ -1,8 +1,8 @@
 import { switchOptions } from "@owlky/core";
 import { FormControlLabel, Switch } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import { CONTROL_COLORS } from "../checkbox/checkbox-examples.js";
-import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const capitalize = (value: string) => value[0]?.toUpperCase() + value.slice(1);
@@ -70,17 +70,22 @@ export const customizationGroups: ReactGroup[] = [
       <Switch
         key="1"
         aria-label="Icons"
-        icon={<DemoIcon name="close" />}
-        checkedIcon={<DemoIcon name="check" />}
+        icon={<SolarIcon name="close-linear" />}
+        checkedIcon={<SolarIcon name="check-linear" />}
         defaultChecked
       />,
       <Switch
         key="2"
         aria-label="Icons off"
-        icon={<DemoIcon name="close" />}
-        checkedIcon={<DemoIcon name="check" />}
+        icon={<SolarIcon name="close-linear" />}
+        checkedIcon={<SolarIcon name="check-linear" />}
       />,
-      <Switch key="3" aria-label="Daylight" icon={<DemoIcon name="sun" />} defaultChecked />,
+      <Switch
+        key="3"
+        aria-label="Daylight"
+        icon={<SolarIcon name="sun-linear" />}
+        defaultChecked
+      />,
     ],
   },
 ];

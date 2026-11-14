@@ -13,7 +13,7 @@ import {
   Scrollbar,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const ANCHORS: [DrawerAnchor, string][] = [
@@ -30,7 +30,7 @@ function MenuList({ items }: { items: string[] }) {
         <ListItem key={item} disablePadding>
           <ListItemButton>
             <ListItemIcon>
-              <DemoIcon name="inbox" />
+              <SolarIcon name="inbox-linear" />
             </ListItemIcon>
             <ListItemText primary={item} />
           </ListItemButton>

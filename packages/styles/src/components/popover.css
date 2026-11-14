@@ -14,7 +14,8 @@
  *            through CSSOM by the controller
  *
  * Translucent paper with a blur and two soft color glows (info top-right, error bottom-left).
- * paper.css loads first: these rules restate the radius, background and shadow by source order.
+ * paper.css loads first: these rules restate the radius, background and shadow by source order;
+ * the edge stays Paper's (the style's surface edge, ADR-0073 § 12).
  * Single :where() selectors in @layer components.
  */
 @reference "../theme.css";
@@ -52,7 +53,6 @@
     margin: 0;
     padding: var(--ok-spacing);
     overflow: visible;
-    border: 0;
     border-radius: var(--ok-radius-surface-sm);
     background-color: var(--_ok-popover-bg);
     background-image: var(--_ok-popover-glow);
@@ -152,9 +152,10 @@
     clip-path: polygon(0 0, 100% 50%, 0 100%);
   }
 
+  /* Offsets are from the border box: the arrow sits outside the style's surface edge. */
   :where([data-ok-popover][data-ok-current-placement] > [data-ok-popover-arrow]) {
-    top: var(--_ok-arrow-y);
-    left: var(--_ok-arrow-x);
+    top: calc(var(--_ok-arrow-y) - var(--ok-surface-border-width));
+    left: calc(var(--_ok-arrow-x) - var(--ok-surface-border-width));
   }
 
   @keyframes ok-popover-in {

@@ -1,20 +1,14 @@
 {
-  "name": "@owlky/mcp",
+  "name": "@owlky/mcp-server",
   "version": "0.0.0",
-  "description": "Model Context Protocol server for Owlky: components, options, examples, tokens and guides for coding agents, offline.",
+  "private": true,
+  "description": "Shared Owlky MCP server code (tools, resources, prompts, search, validate_markup) and the generated manifest, for the remote MCP at owlky.com/mcp (ADR-0071). Not published.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "engines": {
     "node": ">=22.12.0"
   },
-  "bin": {
-    "owlky-mcp": "./dist/cli.js"
-  },
-  "files": [
-    "dist",
-    "manifest.json"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -30,20 +24,5 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
     "zod": "4.6.7"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dangduoc08/owlky.git",
-    "directory": "packages/mcp"
-  },
-  "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "design-system",
-    "ai"
-  ]
+  }
 }

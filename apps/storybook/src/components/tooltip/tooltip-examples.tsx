@@ -1,7 +1,7 @@
 import { type Placement, tooltipOptions } from "@owlky/core";
 import { Button, Fab, IconButton, Tooltip } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const LONG =
@@ -19,22 +19,22 @@ export const simpleGroups: ReactGroup[] = [
       <div>
         <Tooltip id="tooltip-delete" title="Delete">
           <IconButton>
-            <DemoIcon name="trash" />
+            <SolarIcon name="trash-bin-trash-linear" />
           </IconButton>
         </Tooltip>
         <Tooltip id="tooltip-add" title="Add">
           <Fab color="primary">
-            <DemoIcon name="plus" />
+            <SolarIcon name="add-linear" />
           </Fab>
         </Tooltip>
         <Tooltip id="tooltip-delete-info" title="Delete">
           <IconButton color="info">
-            <DemoIcon name="trash" />
+            <SolarIcon name="trash-bin-trash-linear" />
           </IconButton>
         </Tooltip>
         <Tooltip id="tooltip-add-info" title="Add">
           <Fab color="info">
-            <DemoIcon name="plus" />
+            <SolarIcon name="add-linear" />
           </Fab>
         </Tooltip>
         <Tooltip id="tooltip-button" title="Adds an item" describeChild>
@@ -54,7 +54,7 @@ export const arrowGroups: ReactGroup[] = [
       <div>
         <Tooltip id="tooltip-arrow" title="Add" arrow>
           <Fab color="primary">
-            <DemoIcon name="plus" />
+            <SolarIcon name="add-linear" />
           </Fab>
         </Tooltip>
       </div>

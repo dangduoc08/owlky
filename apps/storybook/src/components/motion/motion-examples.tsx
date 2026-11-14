@@ -18,7 +18,7 @@ import {
   Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { MotionLogoDemo } from "./logo-demo.js";
 import { OwlLogo } from "./owl-logo.js";
@@ -166,7 +166,7 @@ export const otherStories: Record<string, ReactGroup[]> = {
           <div className="sb-row">
             {SIZES.map(([size, label]) => (
               <Fab key={size} size={size} color="primary" animate aria-label={`Add (${label})`}>
-                <DemoIcon name="plus" />
+                <SolarIcon name="add-linear" />
               </Fab>
             ))}
           </div>
@@ -179,7 +179,7 @@ export const otherStories: Record<string, ReactGroup[]> = {
                 animate
                 aria-label={`Add (${label})`}
               >
-                <DemoIcon name="plus" />
+                <SolarIcon name="add-linear" />
               </IconButton>
             ))}
           </div>

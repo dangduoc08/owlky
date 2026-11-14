@@ -319,8 +319,11 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `stroke-width`: `icon.css` sets `--ok-icon-stroke` (a stroke attribute would lose to it anyway).
   À-la-carte CSS needs `icon.css` next to the component's file. Checkbox boxes and radio rings are
   CSS spans (`data-ok-checkbox-box`, `data-ok-radio-ring`); only the marks are icons. The Map
-  compass needle stays a component graphic (`mapCompass`). Docs examples use Solar (ST7,
-  `helpers/solar-icons.tsx`); story icons (`DemoIcon`, `demo-icons.json`) are ST7b. Parity skips `svg` children: pixel parity is what checks icons.
+  compass needle stays a component graphic (`mapCompass`). Docs examples and stories use Solar
+  (`helpers/solar-icons.tsx`, names in `DOCS` of `apps/storybook/scripts/icons.mjs`): stories render
+  `SolarIcon` (Iconify's `Icon` markup, which the HTML snippets copy: `xmlns`, `role="img"`, `1em`),
+  the Code panel prints `<Icon icon={…} />` (`jsxSource`, `solarSource` for `?raw` demos). Parity
+  skips `svg` children: pixel parity is what checks icons.
   Solar's credit is generated (`ARTWORK` in `scripts/check-licenses.mjs`, `pnpm notices`).
 - Numeric options (Progress `value`, `size`, `thickness`) use the schema's `number` kind
   (`number(attr, default, description, { min, units })`, `parseNumber` / `readNumber`): invalid →
@@ -937,7 +940,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   trigger's id (Biome `noLabelWithoutControl`; a `div` isn't labelable, `labelId` names it).
   Checkboxes inside options are `inert` (axe `nested-interactive`). `check-docs-code.mjs` greps
   **tracked** files for known `data-ok-*` names: `git add` new runtime files before running it.
-- MCP manifest (ADR-0046): `scripts/manifest.mjs` loads every `*.stories.tsx` and every file that
+- MCP manifest (ADR-0046, now the private `@owlky/mcp-server`, ADR-0071): `scripts/manifest.mjs` loads every `*.stories.tsx` and every file that
   exports `*Sections: GuideSection[]` with Vite's SSR loader in Node (Storybook, CSS, `?worker` and
   `?url` imports stubbed): story and docs modules must not touch `document` / `window` at import
   time. A story's React code is its Code panel (`transform` of `frameworkStory` with
@@ -947,8 +950,7 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   root (no `?`, no "(omit / when / with / only …)" comment) that **every** snippet instance
   contains, so a snippet without a part drops the requirement. `validate.test.ts` validates every
   story's HTML with zero issues: a number option that takes a keyword (`auto`) must name it in
-  backticks in its description, or `validate_markup` reports it. The repo's pnpm overrides for the
-  SDK's young transitive dependencies don't reach `npx` users (npm resolves the SDK's own ranges).
+  backticks in its description, or `validate_markup` reports it.
   Coverage of `packages/mcp` runs from the root: `pnpm vitest run --coverage packages/mcp`.
 - Docs content (ADR-0040): the guide UI (`GuideSections`, tables, code tabs, Copy button) lives in
   `apps/docs-content/src/guide/` and takes its prose, code block and preview frame from

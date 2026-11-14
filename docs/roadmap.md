@@ -958,7 +958,9 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    `validate_markup`, resources `owlky://components/<name>`, `owlky://tokens`,
    `owlky://guides/<id>` and prompts `build-html-page`, `build-react-page`; registered as `owlky`
    in `.mcp.json`; a packed-tarball smoke test in CI (`pnpm smoke:mcp`). A remote MCP on owlky.com
-   is deferred, so the website stays static.
+   is deferred, so the website stays static. (Superseded 2026-11-13 by ADR-0071, M0 in
+   `docs/roadmap-0.1.0.md`: the stdio CLI, bin, `npx` docs, `smoke:mcp` and the `.mcp.json` entry
+   are gone; the code stays as the private `@owlky/mcp-server`.)
 5. ✅ **Component completion** (done 2026-11-12; owner's decision 2026-11-09: finish every component before the
    website continues): tracked on its own in [`docs/roadmap-components.md`](roadmap-components.md)
    — stability, ApexCharts parity, upstream API audit with a complete API reference on every docs

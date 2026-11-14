@@ -19,7 +19,7 @@ import {
   Typography,
 } from "@owlky/react";
 import { type ReactNode, useState } from "react";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 /** Open state shared by the demos: a trigger button and its dialog. */
 function useDialog() {
@@ -80,7 +80,7 @@ export function SimpleDialogDemo() {
               <ListItemButton onClick={() => choose(email)}>
                 <ListItemAvatar>
                   <Avatar color="primary">
-                    <DemoIcon name="person" />
+                    <SolarIcon name="user-rounded-linear" />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary={email} />
@@ -91,7 +91,7 @@ export function SimpleDialogDemo() {
             <ListItemButton onClick={() => choose("A new account")}>
               <ListItemAvatar>
                 <Avatar>
-                  <DemoIcon name="plus" />
+                  <SolarIcon name="add-linear" />
                 </Avatar>
               </ListItemAvatar>
               <ListItemText primary="Add account" />
@@ -207,7 +207,7 @@ export function FullScreenDialogDemo() {
       >
         <header>
           <IconButton aria-label="Close" onClick={close}>
-            <DemoIcon name="close" />
+            <SolarIcon name="close-linear" />
           </IconButton>
           <Typography variant="h6" component={DialogTitle}>
             Sound

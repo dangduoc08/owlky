@@ -3,8 +3,9 @@
  * full collections are megabytes each):
  *   - src/foundations/icons/icon-data.json: the Icons foundation galleries (Solar variants, a
  *     few Circle Flags);
- *   - src/helpers/solar-icons.json: the Solar icons of the docs examples (`SolarIcon`,
- *     `solarMarkup`). Add a name to DOCS when an example needs another icon.
+ *   - src/helpers/solar-icons.json: the Solar icons of the docs examples and the component
+ *     stories (`SolarIcon`, `solarMarkup`). Add a name to DOCS when an example needs another
+ *     icon.
  * Edit the lists, then run `pnpm --filter @owlky/storybook icons`.
  */
 import { readFileSync, writeFileSync } from "node:fs";
@@ -29,38 +30,78 @@ const GALLERY = [
   "trash-bin-trash",
 ];
 
-/** Icons of the docs examples (Solar names with their variant). */
+/** Icons of the docs examples and the component stories (Solar names with their variant). */
 const DOCS = [
   "add-linear",
+  "add-square-linear",
+  "align-horizontal-center-linear",
+  "align-horizontal-spacing-linear",
+  "align-left-linear",
+  "align-right-linear",
+  "alt-arrow-down-linear",
   "alt-arrow-left-linear",
   "alt-arrow-right-linear",
+  "arrow-left-linear",
+  "arrow-right-linear",
+  "bluetooth-linear",
+  "bookmark-bold",
+  "bookmark-linear",
   "box-linear",
+  "calendar-linear",
+  "case-linear",
+  "chat-round-line-linear",
   "check-linear",
   "close-linear",
+  "close-square-linear",
+  "confounded-circle-linear",
   "copy-linear",
-  "eye-linear",
+  "emoji-funny-circle-linear",
+  "expressionless-circle-linear",
   "eye-closed-linear",
+  "eye-linear",
   "gallery-linear",
   "gallery-remove-linear",
+  "headphones-round-linear",
   "heart-bold",
   "heart-linear",
   "home-angle-linear",
   "inbox-linear",
   "letter-linear",
+  "list-linear",
   "magnifier-linear",
   "map-point-bold",
   "map-point-linear",
+  "menu-dots-linear",
   "menu-dots-vertical-linear",
   "minus-linear",
+  "minus-square-linear",
+  "monitor-linear",
+  "pen-linear",
   "phone-linear",
+  "plain-linear",
+  "play-linear",
+  "rocket-linear",
+  "sad-circle-linear",
   "settings-linear",
+  "share-linear",
+  "skip-next-linear",
+  "skip-previous-linear",
+  "smile-circle-linear",
   "star-bold",
   "star-linear",
+  "sun-linear",
   "text-bold-linear",
   "text-italic-linear",
   "text-underline-linear",
   "trash-bin-trash-linear",
+  "user-plus-rounded-linear",
+  "user-rounded-bold",
+  "user-rounded-linear",
+  "volume-loud-linear",
+  "volume-small-linear",
   "wi-fi-router-linear",
+  "widget-4-linear",
+  "widget-linear",
 ];
 
 const SETS = {

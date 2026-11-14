@@ -1,4 +1,4 @@
-// Writes packages/mcp/manifest.json (ADR-0046): everything the MCP server answers with, built from
+// Writes packages/mcp/manifest.json (ADR-0046 / 0071, private @owlky/mcp-server): everything the MCP server answers with, built from
 // the sources of truth — option schemas (built @owlky/core), specs, the guide sections that docs
 // pages export, every story's Code panel (HTML and React, as Storybook shows it), the HTML
 // snippets, tokens and the Tailwind theme. Output is deterministic (sorted keys, stable order).

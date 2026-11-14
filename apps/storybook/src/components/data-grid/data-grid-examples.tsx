@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { layoutGroups, validationGroups } from "./layout-examples.js";
 import { MORE_FILES, moreStories } from "./more-examples.js";
@@ -67,7 +67,7 @@ const basicColumns: GridColDef<Person>[] = [
     renderCell: ({ row }) => (
       <>
         <IconButton size="sm" tabIndex={-1} aria-label={`Edit ${row.firstName} ${row.lastName}`}>
-          <DemoIcon name="pen" />
+          <SolarIcon name="pen-linear" />
         </IconButton>
         <IconButton
           size="sm"
@@ -75,7 +75,7 @@ const basicColumns: GridColDef<Person>[] = [
           tabIndex={-1}
           aria-label={`Delete ${row.firstName} ${row.lastName}`}
         >
-          <DemoIcon name="trash" />
+          <SolarIcon name="trash-bin-trash-linear" />
         </IconButton>
       </>
     ),
@@ -201,7 +201,7 @@ const customColumns: GridColDef<Member>[] = [
     renderCell: ({ value }) =>
       value ? (
         <span className="sb-grid-check" role="img" aria-label="yes">
-          <DemoIcon name="check" />
+          <SolarIcon name="check-linear" />
         </span>
       ) : (
         <span aria-label="no" role="img">
@@ -230,7 +230,7 @@ const customColumns: GridColDef<Member>[] = [
     hideable: false,
     renderCell: ({ row }) => (
       <IconButton size="sm" tabIndex={-1} aria-label={`More actions for ${row.name}`}>
-        <DemoIcon name="moreVertical" />
+        <SolarIcon name="menu-dots-vertical-linear" />
       </IconButton>
     ),
   },
@@ -291,7 +291,7 @@ const advancedColumns: GridColDef<Employee>[] = [
     resizable: false,
     renderCell: ({ row }) => (
       <IconButton size="sm" tabIndex={-1} aria-label={`Delete ${row.firstName} ${row.lastName}`}>
-        <DemoIcon name="trash" />
+        <SolarIcon name="trash-bin-trash-linear" />
       </IconButton>
     ),
   },

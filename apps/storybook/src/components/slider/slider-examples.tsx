@@ -1,7 +1,7 @@
 import { sliderOptions } from "@owlky/core";
 import { Slider, type SliderColor } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const celsius = (value: number) => `${value}°C`;
@@ -45,9 +45,9 @@ export const sliderStories: Record<string, ReactGroup[]> = {
       title: "Volume",
       content: (
         <div className="sb-slider-volume">
-          <DemoIcon name="volumeDown" />
+          <SolarIcon name="volume-small-linear" />
           <Slider aria-label="Volume" defaultValue={30} />
-          <DemoIcon name="volumeUp" />
+          <SolarIcon name="volume-loud-linear" />
         </div>
       ),
     },

@@ -1,6 +1,7 @@
 import { checkboxOptions, type SelectionControlColor } from "@owlky/core";
 import { Checkbox, FormControlLabel } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { IndeterminateDemo } from "./indeterminate-demo.js";
 
@@ -15,24 +16,6 @@ export const CONTROL_COLORS: SelectionControlColor[] = [
   "error",
 ];
 const capitalize = (value: string) => value[0]?.toUpperCase() + value.slice(1);
-
-const HEART =
-  "M12 20s-7.5-4.6-7.5-10A4.25 4.25 0 0 1 12 7.4 4.25 4.25 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z";
-const BOOKMARK = "M6.5 4.5h11v15l-5.5-4-5.5 4z";
-
-/** Demo icon, outlined or filled (decorative, same SVG as the HTML snippets). */
-function DemoIcon({ d, filled = false }: { d: string; filled?: boolean }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      {filled ? (
-        <path d={d} fill="currentColor" />
-      ) : (
-        <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-      )}
-    </svg>
-  );
-}
-DemoIcon.displayName = "DemoIcon";
 
 /**
  * The same markup, in the same order, as
@@ -73,8 +56,8 @@ export const customIconGroups: ReactGroup[] = [
           <Checkbox
             color="info"
             size="small"
-            icon={<DemoIcon d={HEART} />}
-            checkedIcon={<DemoIcon d={HEART} filled />}
+            icon={<SolarIcon name="heart-linear" />}
+            checkedIcon={<SolarIcon name="heart-bold" />}
           />
         }
       />,
@@ -85,8 +68,8 @@ export const customIconGroups: ReactGroup[] = [
           <Checkbox
             color="error"
             size="small"
-            icon={<DemoIcon d={BOOKMARK} />}
-            checkedIcon={<DemoIcon d={BOOKMARK} filled />}
+            icon={<SolarIcon name="bookmark-linear" />}
+            checkedIcon={<SolarIcon name="bookmark-bold" />}
           />
         }
       />,

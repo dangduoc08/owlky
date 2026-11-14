@@ -18,7 +18,6 @@ import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { SolarIcon, solarMarkup } from "../../helpers/solar-icons.js";
 import { CopyButtonDemo, CopyDoubleClickDemo } from "./copy-demo.js";
-import { PersonIcon } from "./text-field-examples.js";
 
 const SEARCH_SVG = solarMarkup("magnifier-linear");
 
@@ -370,7 +369,7 @@ function PasswordPreview() {
       autoComplete="current-password"
       startAdornment={
         <InputAdornment position="start">
-          <PersonIcon />
+          <SolarIcon name="user-rounded-bold" />
         </InputAdornment>
       }
       endAdornment={

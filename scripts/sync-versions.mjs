@@ -1,5 +1,5 @@
 // After `changeset version`: copy the html package version into its runtime VERSION constant and
-// into the MCP manifest (ADR-0046), so `pnpm check:manifest` passes without a rebuild.
+// into the MCP manifest (ADR-0071), so `pnpm check:manifest` passes without a rebuild.
 import { readFile, writeFile } from "node:fs/promises";
 
 const { version } = JSON.parse(await readFile("packages/html/package.json", "utf8"));

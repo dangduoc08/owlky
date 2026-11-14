@@ -451,6 +451,7 @@
 
 [data-landing-command] {
   color: var(--ok-palette-primary-light);
+  overflow-wrap: anywhere;
 }
 
 [data-landing-tool] {

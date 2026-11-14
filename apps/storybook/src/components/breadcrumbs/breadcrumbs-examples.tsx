@@ -1,7 +1,7 @@
 import { breadcrumbsOptions } from "@owlky/core";
 import { Breadcrumbs, BreadcrumbsDot, Button, Link, Typography } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { DemoIcon } from "../shared/demo-icon.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 /** A trail with a dot separator and icons; the current page comes last. */
@@ -9,19 +9,19 @@ function DotTrail({ label }: { label: string }) {
   return (
     <Breadcrumbs separator={<BreadcrumbsDot />} aria-label={label}>
       <Link href="#home" color="inherit" underline="hover">
-        <DemoIcon name="home" />
+        <SolarIcon name="home-angle-linear" />
         Home
       </Link>
       <Link href="#products" color="inherit" underline="hover">
-        <DemoIcon name="cube" />
+        <SolarIcon name="box-linear" />
         Products
       </Link>
       <Link href="#products-lamps" color="inherit" underline="hover">
-        <DemoIcon name="cube" />
+        <SolarIcon name="box-linear" />
         Lamps
       </Link>
       <span aria-current="page">
-        <DemoIcon name="cube" />
+        <SolarIcon name="box-linear" />
         Desk lamp
       </span>
     </Breadcrumbs>
@@ -58,15 +58,15 @@ export const breadcrumbsStories: Record<string, ReactGroup[]> = {
       content: (
         <Breadcrumbs aria-label="breadcrumb with icons">
           <Link href="#home" color="inherit" underline="hover">
-            <DemoIcon name="home" />
+            <SolarIcon name="home-angle-linear" />
             Home
           </Link>
           <Link href="#catalog" color="inherit" underline="hover">
-            <DemoIcon name="cube" />
+            <SolarIcon name="box-linear" />
             Catalog
           </Link>
           <span aria-current="page">
-            <DemoIcon name="star" />
+            <SolarIcon name="star-linear" />
             Accessories
           </span>
         </Breadcrumbs>
@@ -82,12 +82,12 @@ export const breadcrumbsStories: Record<string, ReactGroup[]> = {
           <div className="sb-page-heading-title">
             <Typography variant="h4" color="textPrimary">
               <Link href="#products" color="inherit" underline="none">
-                <DemoIcon name="chevronLeft" />
+                <SolarIcon name="alt-arrow-left-linear" />
                 <span className="sr-only">Back to products</span>
               </Link>
               Desk lamp
             </Typography>
-            <Button variant="contained" color="inherit" startIcon={<DemoIcon name="plus" />}>
+            <Button variant="contained" color="inherit" startIcon={<SolarIcon name="add-linear" />}>
               Add product
             </Button>
           </div>

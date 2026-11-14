@@ -155,6 +155,26 @@ geometry inputs in the resolver would cost the core sheet bytes it doesn't have 
      script). `check-docs-code.mjs` declares one module per imported name after checking it in
      `@iconify-json/solar`. Story icons (`DemoIcon`, snippets) are ST7b: they need every snippet
      family regenerated and pixel parity.
+12. **ST7b (2026-11-13): overlay edges and story icons.**
+   - **Overlays keep the surface edge** (owner: fix now, not post-0.1.0). `popover.css` no longer
+     resets `border: 0`, so every popover root (Popover, Menu, Select and Autocomplete lists,
+     pickers, Walktour steps, Editor overlays) draws Paper's edge, and `[data-ok-popover]` joins the
+     floating Papers that restate `border-style: solid` (Editorial outlines them whole, like
+     dialogs). All styles with a surface edge get it, Neo-Brutalism too (its dialogs and cards have
+     it beside the hard shadow); Soft, Minimal Mono, Corporate and Nordic have a width of 0 and
+     don't change. The arrow is placed from the border box (`top` / `left` minus the edge width),
+     so it sits outside the edge, which runs unbroken along its base; it has no edge of its own
+     (an outlined triangle needs a second shape). Cost: about 20 B gzip in the all sheet (63.29 of
+     63.5 kB).
+   - **Tooltips stay edgeless.** A tooltip is not a Paper and has no shadow in any style: its
+     inverted fill (grey 800, 700 in dark) separates it from every surface, and an ink edge would be
+     near-invisible on it in light mode and a bright ring in dark mode.
+   - **Story icons are Solar.** `DemoIcon` / `demo-icons.json` and the hand-drawn story icons of
+     Checkbox and Text field are gone: stories render `SolarIcon` (`helpers/solar-icons.tsx`, what
+     `<Icon icon={…} />` of `@iconify/react/offline` renders), the Code panel prints the `Icon`
+     call and one `@iconify-icons/solar/<name>` import per icon (`jsxSource`; `solarSource` rewrites
+     `?raw` demos), and the HTML snippets hold the same `<svg>` markup. Story icons keep Solar's
+     own `stroke-width` (they are examples, not component icons).
 
 ## Consequences
 - Adding a style is a definition file, its lines in `styles.ts`, a row in

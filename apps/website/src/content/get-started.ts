@@ -125,6 +125,6 @@ applyThemeSettings({ mode: "dark" }, { storage: localStorage });`,
     body: `- Read [Load from a CDN](/get-started/cdn/) or [Use with a bundler](/get-started/bundlers/) to load only what your pages use.
 - Read [Colors](/foundations/colors/) to use the palette and the theme colors in your own styles.
 - Open [Button](/components/button/) for a complete component guide: examples, options, keyboard and accessibility.
-- Coding agents can look up the exact components, options and tokens of your version with the \`@owlky/mcp\` server.`,
+- Coding agents can look up the exact components, options and tokens of your version with the hosted Owlky MCP server at \`https://owlky.com/mcp\`.`,
   },
 ];
