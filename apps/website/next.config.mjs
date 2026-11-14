@@ -65,6 +65,9 @@ const nextConfig = {
   },
   images: { unoptimized: true },
   poweredByHeader: false,
+  // `OWLKY_SOURCE_MAPS=1 pnpm build`: browser source maps, to see which modules a chunk holds
+  // when `check:js` (scripts/check-js.mjs) reports a heavier page. Never on deploys.
+  productionBrowserSourceMaps: process.env.OWLKY_SOURCE_MAPS === "1",
   reactStrictMode: true,
 };
 

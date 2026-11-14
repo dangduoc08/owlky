@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/prepare.mjs && next dev --webpack -p 3000",
-    "build": "node scripts/prepare.mjs && next build --webpack && node scripts/postbuild.mjs",
+    "build": "node scripts/prepare.mjs && next build --webpack && node scripts/postbuild.mjs && node scripts/check-js.mjs",
+    "check:js": "node scripts/check-js.mjs",
     "serve": "node scripts/serve.mjs",
     "serve:mock": "node scripts/serve.mjs --mock",
     "mock:oauth": "node scripts/mock-oauth.mjs",

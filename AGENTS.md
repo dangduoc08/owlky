@@ -44,7 +44,10 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    pure (literal value lists, no calls of unannotated helpers): bundlers keep it otherwise. A
    schema whose options spread shared objects goes in a `/* @__PURE__ */ (() => defineOptions(…))()`
    IIFE, and a value list joined from others uses `/* @__PURE__ */ ([] as T[]).concat(…)`: minifiers
-   keep a bare spread (Motion, FormControl). Each option's description is the factory's string or
+   keep a bare spread (Motion, FormControl). Never put a registry of other modules' exports in a
+   component's module: webpack keeps every module it names in any bundle that imports that
+   module (`optionSchemas` in Link's anatomy put about 70 kB gzip on every website page; it lives
+   in `options/schemas.ts`). Each option's description is the factory's string or
    template literal, never a variable: the core build (`packages/core/scripts/option-docs.mjs`)
    moves every description into `dist/option-docs.json` (`@owlky/core/option-docs.json`) and
    leaves `""` in `dist`, so the runtime ships no docs (ADR-0068 §4). Build scripts read schemas

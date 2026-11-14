@@ -7,6 +7,7 @@
  */
 
 export type { DataAttributes } from "../options/define.js";
+export { optionSchemas } from "../options/schemas.js";
 export * from "./accordion.js";
 export * from "./alert.js";
 export * from "./autocomplete.js";
