@@ -9,24 +9,10 @@ import {
   useCopyToClipboard,
 } from "@owlky/react";
 import { useState } from "react";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 const TEXT =
   "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Sed aliquam, nisi quis porttitor congue, elit erat euismod orci, ac placerat dolor lectus quis orci. Cras non dolor.";
-
-function CopyIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <rect x="3.5" y="7.5" width="12" height="13" rx="2.5" fill="currentColor" />
-      <path
-        d="M8.5 4.5h8a3 3 0 0 1 3 3v9"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 /** A toast after each copy: its polite live region announces the result. */
 function notify(result: CopyResult) {
@@ -53,7 +39,7 @@ export function CopyButtonDemo() {
               aria-label="Copy"
               onClick={async () => notify(await copy(value))}
             >
-              <CopyIcon />
+              <SolarIcon name="copy-linear" />
             </IconButton>
           </InputAdornment>
         }
@@ -72,7 +58,7 @@ export function CopyDoubleClickDemo() {
         {TEXT}
       </Typography>
       <IconButton aria-label="Copy text" onClick={async () => notify(await copy(TEXT))}>
-        <CopyIcon />
+        <SolarIcon name="copy-linear" />
       </IconButton>
     </>
   );

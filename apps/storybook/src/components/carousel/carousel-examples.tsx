@@ -17,6 +17,7 @@ import {
   Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 /*
@@ -88,7 +89,7 @@ function CardSlide({ index }: { index: number }) {
           <Typography variant="h5" component="h3">
             {SLIDES[index]?.[1]}
           </Typography>
-          <Button size="sm" color="white" endIcon={<ArrowIcon />}>
+          <Button size="sm" color="white" endIcon={<SolarIcon name="arrow-right-linear" />}>
             Learn more
           </Button>
         </div>
@@ -97,23 +98,6 @@ function CardSlide({ index }: { index: number }) {
   );
 }
 CardSlide.displayName = "CardSlide";
-
-function ArrowIcon({ direction = "next" }: { direction?: "prev" | "next" }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={direction === "next" ? "M5 12h14m-6-6 6 6-6 6" : "M19 12H5m6-6-6 6 6 6"} />
-    </svg>
-  );
-}
-ArrowIcon.displayName = "ArrowIcon";
 
 const range = (count: number) => Array.from({ length: count }, (_, i) => i);
 
@@ -499,8 +483,8 @@ export const carouselStories: Record<string, ReactGroup[]> = {
             <CarouselArrows
               variant="floating"
               color="primary"
-              prevIcon={<ArrowIcon direction="prev" />}
-              nextIcon={<ArrowIcon />}
+              prevIcon={<SolarIcon name="arrow-left-linear" />}
+              nextIcon={<SolarIcon name="arrow-right-linear" />}
             />
           </CarouselStage>
           <div className="sb-carousel-panel">
@@ -508,8 +492,8 @@ export const carouselStories: Record<string, ReactGroup[]> = {
             <CarouselArrows
               variant="number"
               color="info"
-              prevIcon={<ArrowIcon direction="prev" />}
-              nextIcon={<ArrowIcon />}
+              prevIcon={<SolarIcon name="arrow-left-linear" />}
+              nextIcon={<SolarIcon name="arrow-right-linear" />}
             />
             <CarouselDots color="primary" />
             <CarouselDots variant="rounded" color="info" />

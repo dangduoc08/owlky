@@ -213,13 +213,13 @@ describe("get_component", () => {
 
 describe("get_examples", () => {
   it("returns HTML and React code with the snippets each story shows", async () => {
-    const result = await session.call("get_examples", { component: "button" });
+    const result = await session.call("get_examples", { component: "icon-button" });
     const data = structured<{
       listOnly: boolean;
       stories: { html: string; react: string; snippets: string[] }[];
     }>(result);
     expect(data.listOnly).toBe(false);
-    expect(data.stories[0]?.html).toContain("data-ok-button");
+    expect(data.stories[0]?.html).toContain("data-ok-icon-button");
     expect(data.stories[0]?.react).toContain('from "@owlky/react"');
     expect(data.stories[0]?.snippets.length).toBeGreaterThan(0);
     expect(textOf(result)).toContain("```tsx");
@@ -227,11 +227,11 @@ describe("get_examples", () => {
 
   it("returns one framework", async () => {
     const react = structured<{ stories: Record<string, unknown>[] }>(
-      await session.call("get_examples", { component: "button", framework: "react" }),
+      await session.call("get_examples", { component: "icon-button", framework: "react" }),
     );
     expect(react.stories[0]).not.toHaveProperty("html");
     const html = structured<{ stories: Record<string, unknown>[] }>(
-      await session.call("get_examples", { component: "button", framework: "html" }),
+      await session.call("get_examples", { component: "icon-button", framework: "html" }),
     );
     expect(html.stories[0]).not.toHaveProperty("react");
   });

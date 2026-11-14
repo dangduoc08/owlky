@@ -1,7 +1,8 @@
 import { type ChipColor, type ChipVariant, chipOptions } from "@owlky/core";
 import { Avatar, Chip } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { CheckIcon, FaceIcon, PEOPLE, portrait, TrashIcon } from "../avatar/display-icons.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
+import { PEOPLE, portrait } from "../avatar/display-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const COLORS: ChipColor[] = [
@@ -48,10 +49,10 @@ export function variantGroups(variant: ChipVariant): ReactGroup[] {
         <Chip
           key="1"
           variant={variant}
-          icon={<FaceIcon />}
+          icon={<SolarIcon name="smile-circle-bold" />}
           label="Custom icon"
           onDelete={noop}
-          deleteIcon={<CheckIcon />}
+          deleteIcon={<SolarIcon name="check-linear" />}
         />,
         <Chip
           key="2"
@@ -60,7 +61,7 @@ export function variantGroups(variant: ChipVariant): ReactGroup[] {
           avatar={m()}
           label="Custom icon"
           onDelete={noop}
-          deleteIcon={<TrashIcon />}
+          deleteIcon={<SolarIcon name="trash-bin-trash-bold" />}
         />,
       ],
     },
@@ -70,7 +71,7 @@ export function variantGroups(variant: ChipVariant): ReactGroup[] {
         <Chip
           key="1"
           variant={variant}
-          icon={<FaceIcon />}
+          icon={<SolarIcon name="smile-circle-bold" />}
           label="Disabled"
           onClick={noop}
           onDelete={noop}
@@ -112,7 +113,7 @@ export function variantGroups(variant: ChipVariant): ReactGroup[] {
           key="m"
           variant={variant}
           color="info"
-          icon={<FaceIcon />}
+          icon={<SolarIcon name="smile-circle-bold" />}
           label="Medium"
           onDelete={noop}
         />,

@@ -1,8 +1,9 @@
 import { type AvatarColor, avatarOptions } from "@owlky/core";
 import { Avatar, AvatarGroup, Badge } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
-import { FolderIcon, PEOPLE, portrait } from "./display-icons.js";
+import { PEOPLE, portrait } from "./display-icons.js";
 
 const PALETTE: AvatarColor[] = ["primary", "secondary", "info", "success", "warning", "error"];
 const CYCLE: AvatarColor[] = ["default", ...PALETTE];
@@ -20,7 +21,7 @@ export const iconGroups: ReactGroup[] = [
     title: "Icon",
     content: CYCLE.map((color) => (
       <Avatar key={color} color={color} role="img" aria-label="Folder">
-        <FolderIcon />
+        <SolarIcon name="folder-bold" />
       </Avatar>
     )),
   },
@@ -49,7 +50,7 @@ export const variantGroups: ReactGroup[] = [
         role="img"
         aria-label={`${variant[0]?.toUpperCase()}${variant.slice(1)} folder`}
       >
-        <FolderIcon />
+        <SolarIcon name="folder-bold" />
       </Avatar>
     )),
   },

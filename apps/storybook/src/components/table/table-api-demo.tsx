@@ -27,22 +27,6 @@ const PRODUCTS = Array.from({ length: 50 }, (_, i) => ({
   category: CATEGORIES[i % 3] as string,
 }));
 
-function SearchIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
-    </svg>
-  );
-}
-
 /**
  * Products from a paged query: a search field and a category Select build the query, the
  * TablePagination (with a listbox Select for rows per page) pages its results.
@@ -84,7 +68,7 @@ export function TableApiDemo() {
           onChange={setText}
           startAdornment={
             <InputAdornment position="start">
-              <SearchIcon />
+              <SolarIcon name="magnifier-linear" />
             </InputAdornment>
           }
         />

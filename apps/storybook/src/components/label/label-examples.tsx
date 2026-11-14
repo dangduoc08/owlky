@@ -1,7 +1,7 @@
 import type { ChipColor, LabelVariant } from "@owlky/core";
 import { Label } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { MailIcon } from "../avatar/display-icons.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const COLORS: ChipColor[] = [
@@ -33,16 +33,31 @@ export const iconGroups: ReactGroup[] = [
   {
     title: "With icon",
     content: [
-      <Label key="1" variant="filled" color="primary" startIcon={<MailIcon />}>
+      <Label
+        key="1"
+        variant="filled"
+        color="primary"
+        startIcon={<SolarIcon name="letter-linear" />}
+      >
         Start icon
       </Label>,
-      <Label key="2" variant="outlined" color="primary" startIcon={<MailIcon />}>
+      <Label
+        key="2"
+        variant="outlined"
+        color="primary"
+        startIcon={<SolarIcon name="letter-linear" />}
+      >
         Start icon
       </Label>,
-      <Label key="3" variant="soft" color="secondary" endIcon={<MailIcon />}>
+      <Label key="3" variant="soft" color="secondary" endIcon={<SolarIcon name="letter-linear" />}>
         End icon
       </Label>,
-      <Label key="4" variant="inverted" color="secondary" endIcon={<MailIcon />}>
+      <Label
+        key="4"
+        variant="inverted"
+        color="secondary"
+        endIcon={<SolarIcon name="letter-linear" />}
+      >
         End icon
       </Label>,
     ],

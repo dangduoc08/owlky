@@ -1,7 +1,7 @@
 import { fabOptions } from "@owlky/core";
 import { Fab, type FabColor, type FabVariant } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { MailIcon } from "../button/button-examples.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -31,7 +31,7 @@ export function fabGroups(variant: FabVariant): ReactGroup[] {
       title: "Round",
       content: COLORS.map((color) => (
         <Fab key={color} variant={variant} color={color} aria-label={capitalize(color)}>
-          <MailIcon />
+          <SolarIcon name="letter-linear" />
         </Fab>
       )),
     },
@@ -39,7 +39,7 @@ export function fabGroups(variant: FabVariant): ReactGroup[] {
       title: "Extended",
       content: COLORS.map((color) => (
         <Fab key={color} variant={variant} color={color} extended>
-          <MailIcon />
+          <SolarIcon name="letter-linear" />
           {capitalize(color)}
         </Fab>
       )),
@@ -50,12 +50,12 @@ export function fabGroups(variant: FabVariant): ReactGroup[] {
         <>
           {SIZES.map(([size, label]) => (
             <Fab key={size} variant={variant} color="info" size={size} aria-label={label}>
-              <MailIcon />
+              <SolarIcon name="letter-linear" />
             </Fab>
           ))}
           {SIZES.map(([size, label]) => (
             <Fab key={`x-${size}`} variant={variant} color="info" size={size} extended>
-              <MailIcon />
+              <SolarIcon name="letter-linear" />
               {label}
             </Fab>
           ))}
@@ -67,10 +67,10 @@ export function fabGroups(variant: FabVariant): ReactGroup[] {
       content: (
         <>
           <Fab variant={variant} color="info" disabled aria-label="Disabled">
-            <MailIcon />
+            <SolarIcon name="letter-linear" />
           </Fab>
           <Fab variant={variant} color="info" disabled extended>
-            <MailIcon />
+            <SolarIcon name="letter-linear" />
             Disabled
           </Fab>
         </>
@@ -84,7 +84,7 @@ export const animateGroups: ReactGroup[] = [
     title: "With animate",
     content: SIZES.map(([size, label]) => (
       <Fab key={size} variant="soft" color="info" size={size} extended animate>
-        <MailIcon />
+        <SolarIcon name="letter-linear" />
         {label}
       </Fab>
     )),

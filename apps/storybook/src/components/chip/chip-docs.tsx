@@ -6,7 +6,8 @@ import { useState } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
-const DELETE = `<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4zm-3 6h12l-1 12H7z" fill="currentColor" /></svg>`;
+// The default delete icon, as the component renders it.
+const DELETE = `<svg data-ok-icon="close-circle-linear" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><path d="M14.5 9.5L9.5 14.5M9.5 9.5L14.5 14.5" /></svg>`;
 
 export const chipSections: GuideSection[] = [
   {
