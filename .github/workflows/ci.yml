@@ -45,8 +45,8 @@ jobs:
       - run: pnpm check:docs
       # The MCP manifest (ADR-0071) must match the code.
       - run: pnpm check:manifest
-      # Node-only unit tests (tokens, styles, mcp) run here once; the browser projects run in the
-      # unit jobs below.
+      # Node-only unit tests (tokens, styles, mcp, and the website's server code with PGlite and the
+      # mock OAuth providers) run here once; the browser projects run in the unit jobs below.
       - run: pnpm test:node
 
   # Browser unit tests (core, react, html): one runner per browser. A single runner with all
@@ -146,10 +146,14 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # The website consumes the packages' dist (ADR-0040), then builds its static output.
+      # The website consumes the packages' dist (ADR-0040), then builds (static pages plus the
+      # account and MCP routes, ADR-0071). Tests run it with PGlite and the mock OAuth providers.
       - run: pnpm build
       - run: pnpm website:build
       - run: pnpm --filter @owlky/e2e exec playwright test -c website.config.ts --project ${{ matrix.project }}
+      # The remote MCP over HTTP: discovery, sign-in, tokens, OAuth with PKCE, tools (no secrets).
+      - if: matrix.project == 'chromium'
+        run: pnpm --filter @owlky/website smoke:mcp
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
