@@ -18,8 +18,13 @@ __screenshots__/
 apps/website/.next/
 apps/website/out/
 apps/website/next-env.d.ts
-apps/website/public/cdn/
-apps/website/public/sandbox/
+# public/ is written by the build scripts (CDN copy, sandboxes, Markdown pages, llms.txt, Pagefind)
+apps/website/public/
+# Local PGlite database and environment files (never commit real values; .env.example is the list)
+apps/website/.data/
+apps/website/.env
+apps/website/.env.*
+!apps/website/.env.example
 apps/website/src/generated/
 apps/website/.vercel/
 

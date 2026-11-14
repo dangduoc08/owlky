@@ -2,16 +2,25 @@
   "name": "@owlky/website",
   "version": "0.0.0",
   "private": true,
-  "description": "owlky.com: the Owlky docs website (ADR-0040). Static Next.js app, deployed to Vercel.",
+  "description": "owlky.com: the Owlky docs website (ADR-0040) with accounts and the remote MCP server (ADR-0071). Next.js, deployed to Vercel.",
   "type": "module",
   "scripts": {
     "dev": "node scripts/prepare.mjs && next dev --webpack -p 3000",
     "build": "node scripts/prepare.mjs && next build --webpack && node scripts/postbuild.mjs",
     "serve": "node scripts/serve.mjs",
+    "serve:mock": "node scripts/serve.mjs --mock",
+    "mock:oauth": "node scripts/mock-oauth.mjs",
+    "smoke:mcp": "node scripts/smoke-mcp.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate.mjs",
     "typecheck": "node scripts/prepare.mjs && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@better-auth/mcp": "1.7.14",
+    "@better-auth/oauth-provider": "1.7.14",
+    "@electric-sql/pglite": "0.5.13",
     "@fontsource-variable/nunito": "5.3.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@owlky/core": "workspace:*",
     "@owlky/docs-content": "workspace:*",
     "@owlky/html": "workspace:*",
@@ -19,16 +28,22 @@
     "@owlky/react": "workspace:*",
     "@owlky/styles": "workspace:*",
     "@owlky/tokens": "workspace:*",
+    "better-auth": "1.7.14",
+    "drizzle-orm": "0.45.4",
     "next": "16.4.3",
+    "pg": "8.23.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "shiki": "4.5.0"
+    "shiki": "4.5.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.4",
     "@types/node": "^22.19.0",
+    "@types/pg": "8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "drizzle-kit": "0.31.11",
     "pagefind": "1.5.2",
     "tailwindcss": "4.3.4"
   }
