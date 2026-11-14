@@ -139,6 +139,8 @@ fixed by making the test robust (wait for the right event, never a fixed delay),
 
 | Test | Engine | Seen | Notes |
 |---|---|---|---|
+| `html/src/components/collapse/collapse.test.ts` › collapse runtime › a button toggles the collapses it names and mirrors aria-expanded | firefox | 2026-11-14 full local run | `a.getAnimations()[0]` undefined when read: the animation hasn't started yet; wait for it instead of indexing |
+| `html/src/loader/loader.test.ts` › design style sheets › adds a style's sheet once for a data-ok-style in the page | webkit | 2026-11-14 full local run | radius read before the added sheet applied (`10px` vs `0px`): wait for the `<link>`'s `load` |
 | e2e `parity` › `carousel / thumbs-y` pixels | all, under load | before Wave 8 (c18065b) | raster history of the selected thumbnail ring; `repaintFromScratch` helped, not fully |
 | e2e `data-grid.spec.ts` › range charts and cross-filtering | WebKit | 2026-11-13, PR #1 | passed on retry |
 | e2e `foundations` › chart docs fits a phone | WebKit | 2026-11-13, PR #1 and PR #2 | passed on retry |
