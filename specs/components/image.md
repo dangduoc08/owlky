@@ -36,7 +36,7 @@ Root: `data-ok-image`. Unknown values fall back to the default.
 | `overlayFrom` | `data-ok-overlay-from="…"` | style | `primary` `secondary` `info` `success` `warning` `error` | — | With a color `overlay`: the gradient starts from this color (24%) at the bottom. |
 | `disablePlaceholder` | `data-ok-disable-placeholder` | flag | boolean | off | No placeholder while the picture loads or after an error. |
 | `visibleByDefault` | `data-ok-visible-by-default` | flag | boolean | off | Loads at once (`loading="eager"`), with no placeholder and no effect. |
-| `state` | `data-ok-state` · event `ok:image:load` | state | — | — | `loading`, `loaded` or `error`, written by the component (never in snippets). |
+| `state` | `data-ok-state` · event `ok:image:load` | state | — | — | `loading`, `loaded` or `error`, written by the component (leave it out of your markup). |
 <!-- /options:image -->
 
 Other props (go to the `img`): `src`, `srcSet`, `sizes`, `alt` (required; `""` = decorative),

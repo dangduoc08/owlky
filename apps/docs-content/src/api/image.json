@@ -190,7 +190,7 @@
      },
      {
       "attr": "data-ok-state",
-      "description": "`loading`, `loaded` or `error`, written by the component (never in snippets).",
+      "description": "`loading`, `loaded` or `error`, written by the component (leave it out of your markup).",
       "event": "ok:image:load",
       "kind": "state",
       "name": "state"

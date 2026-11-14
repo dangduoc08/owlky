@@ -64,23 +64,9 @@ export const editorSections: GuideSection[] = [
     id: "overview",
     title: "Overview",
     body: "The editor lets people write formatted text: headings, bold and italic text, lists, alignment, quotes, code, links and images. It is built on Tiptap, a framework-free editing engine, so both versions share the same behavior and markup. A toolbar sits above a text box that people type in, and the content is HTML.\n\nPages without an editor don't download the editing engine. On a CDN page, `owlky.js` loads the editor when the page holds one. With a bundler, import `@owlky/html/editor` after `@owlky/html/auto`.",
-    html: `<!-- Load once per page: owlky.js loads the editor when the page holds one -->
-<link rel="stylesheet" href="${CDN}/owlky.css">
-<script src="${CDN}/owlky.js" defer></script>
+    html: `${CDN_EDITOR}
 
-<div data-ok-editor data-ok-full-item>
-  <!-- Dims the page while the editor is fullscreen -->
-  <div data-ok-backdrop></div>
-  <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting" aria-controls="notes-content">
-    <!-- The heading menu, then one group of buttons per tool (copy them from the snippet) -->
-  </div>
-  <div data-ok-editor-body>
-    <div data-ok-editor-content id="notes-content" role="textbox" aria-multiline="true" aria-label="Notes">
-      <p>The initial content is the markup inside this element.</p>
-    </div>
-  </div>
-  <!-- The heading menu, link and image popovers -->
-</div>`,
+${htmlEditor({ id: "notes", label: "Notes", content: "<p>The initial content is the markup inside this element.</p>" })}`,
     react: `import { Editor } from "@owlky/react";
 import { useState } from "react";
 

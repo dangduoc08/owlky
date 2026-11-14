@@ -23,7 +23,7 @@ const valueTypeOption = style(
   "data-ok-value-type",
   pickerValueTypes,
   "date",
-  "What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component.",
+  "What the value holds: `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component.",
   { optional: true },
 );
 
@@ -64,7 +64,7 @@ export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field"
   valueType: valueTypeOption,
   range: flag(
     "data-ok-range",
-    "Single input range field (ADR-0028): the start and the end in one field, the value an ISO 8601 interval `start/end`. React: the component (`SingleInputDateRangeField`, `SingleInputTimeRangeField`, `SingleInputDateTimeRangeField`).",
+    "Single input range field: the start and the end in one field, the value an ISO 8601 interval `start/end`. React: the component (`SingleInputDateRangeField`, `SingleInputTimeRangeField`, `SingleInputDateTimeRangeField`).",
   ),
   value: state("data-ok-value", "Value as ISO 8601 (`value` / `defaultValue`).", "change"),
 });

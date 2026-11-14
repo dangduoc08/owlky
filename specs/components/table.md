@@ -6,7 +6,7 @@ Collapsible, Pagination with API, Table pagination with API). Upstream: MUI `Tab
 Reference URL: https://minimals.cc/components/mui/table
 
 ## Purpose
-Native `<table>` markup with the Minimal look, plus the interactive parts tables need: sortable
+Native `<table>` markup in the theme's look, plus the interactive parts tables need: sortable
 headers, row selection, collapsible detail rows and pagination. React leaves data to the app (like
 MUI); the HTML runtime sorts, selects and pages the rows already in the DOM.
 

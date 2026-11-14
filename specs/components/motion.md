@@ -40,7 +40,7 @@ Animations API instead (ADR-0062).
    viewport attributes also go on MotionGroup and MotionText roots)
 [data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)
 span[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]
-  › span[data-ok-motion-text-label] (visually hidden text)
+  › span[data-ok-motion-text-label] (visually hidden text; omit with plain text: the HTML runtime builds the label and letters)
   + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…
 span[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]
   › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,

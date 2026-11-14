@@ -193,7 +193,7 @@ export function ComposeTour() {
     id: "run",
     title: "Run and control the tour",
     body: "The tour runs while `run` is `true`. Setting it to `false` pauses the tour, and setting it back resumes it. A tour that finished or was skipped starts over. `apiRef` gives you `start`, `stop`, `reset`, `next`, `prev`, `go`, `close`, `skip` and `open`. To control the current step yourself, pass `stepIndex` and update it from `onStepChange`. In HTML, `data-ok-run` runs the tour, a button with `data-ok-walktour-start` starts it over, and the instance has the same methods.",
-    html: `<button type="button" data-ok-button data-ok-walktour-start="tour" data-ok-index="0">Start the tour</button>
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-start="tour" data-ok-index="0"><span data-ok-button-label>Start the tour</span></button>
 
 <script type="module">
   // Or from code, once the runtime has started.
