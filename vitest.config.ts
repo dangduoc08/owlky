@@ -5,7 +5,7 @@ const COMPONENT_THRESHOLDS = { statements: 95, branches: 95, functions: 100, lin
 
 export default defineConfig({
   test: {
-    projects: ["packages/*"],
+    projects: ["packages/*", "apps/website"],
     // Packages may have no tests while their first component is being built.
     passWithNoTests: true,
     coverage: {
