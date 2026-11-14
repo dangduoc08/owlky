@@ -4,15 +4,18 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { app } from "./content.mjs";
 
-const out = join(app, "out");
+// Prerendered pages live in .next/server/app; `/_next/static/…` is served from .next/static/.
+const pages = join(app, ".next/server/app");
+const out = join(app, ".next");
 for (const page of [
   "index.html",
-  "get-started/index.html",
-  "foundations/colors/index.html",
-  "components/button/index.html",
-  "search/index.html",
+  "get-started.html",
+  "foundations/colors.html",
+  "components/button.html",
+  "search.html",
+  "account.html",
 ]) {
-  const html = readFileSync(join(out, page), "utf8");
+  const html = readFileSync(join(pages, page), "utf8");
   const scripts = [
     ...new Set(
       [...html.matchAll(/(?:src|href)="(\/_next\/static\/chunks\/[^"]+\.js)"/g)].map((m) => m[1]),
@@ -21,7 +24,7 @@ for (const page of [
   let raw = 0;
   let gz = 0;
   for (const src of scripts) {
-    const file = join(out, src);
+    const file = join(out, src.replace(/^\/_next\//, ""));
     raw += statSync(file).size;
     gz += gzipSync(readFileSync(file)).length;
   }
