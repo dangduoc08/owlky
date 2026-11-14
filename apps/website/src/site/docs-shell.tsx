@@ -1,8 +1,8 @@
-import { Link } from "@owlky/react";
 import type { ReactNode } from "react";
-import { PAGES, SITE } from "../content/site.js";
+import { PAGES } from "../content/site.js";
 import { SiteHeader } from "./header.js";
 import { SiteNav } from "./nav.js";
+import { SiteFooterLinks } from "./site-frame.js";
 
 /* The docs pages' frame: header, the Docs navigation, the main column and the footer. The home
  * page has its own frame (src/site/landing/). */
@@ -22,12 +22,12 @@ export function DocsShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <footer className="border-0 border-t border-solid border-divider px-4 py-6 text-center md:px-8">
-        <p className="m-0 text-[0.8125rem] text-text-secondary">
-          Owlky is open source under the MIT license.{" "}
-          <Link href={SITE.github} color="textPrimary">
-            Source on GitHub
-          </Link>
+        <p className="m-0 mb-3 text-[0.8125rem] text-text-secondary">
+          Owlky is open source under the MIT license.
         </p>
+        <div className="text-[0.8125rem]">
+          <SiteFooterLinks />
+        </div>
       </footer>
     </>
   );
