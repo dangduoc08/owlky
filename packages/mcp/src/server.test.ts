@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Manifest } from "./manifest.js";
-import { MAX_EXAMPLES } from "./server.js";
+import { MAX_EXAMPLES, TOOL_NAMES } from "./server.js";
 import { connect, manifest, textOf } from "./test-utils.js";
 import { MAX_MARKUP } from "./validate.js";
 
@@ -19,7 +19,8 @@ const structured = <T = Record<string, unknown>>(result: { structuredContent?: u
 describe("tools/list", () => {
   it("offers the six read-only tools of ADR-0046, with input and output schemas", async () => {
     const { tools } = await session.client.listTools();
-    expect(tools.map((tool) => tool.name).sort()).toEqual([
+    expect(tools.map((tool) => tool.name).sort()).toEqual([...TOOL_NAMES].sort());
+    expect([...TOOL_NAMES].sort()).toEqual([
       "get_component",
       "get_examples",
       "get_guide",

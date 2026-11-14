@@ -127,8 +127,8 @@ export function BillingSection() {
   <summary data-ok-accordion-summary>Terms of service${PLUS}</summary>
   <div data-ok-accordion-details>You agree to the terms when you create an account.</div>
   <div data-ok-accordion-actions data-ok-disable-spacing>
-    <button data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" type="button">Cancel</button>
-    <button data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" type="button">Agree</button>
+    <button data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" type="button"><span data-ok-button-label>Cancel</span></button>
+    <button data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" type="button"><span data-ok-button-label>Agree</span></button>
   </div>
 </details>`,
     react: `import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Button } from "@owlky/react";

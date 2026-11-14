@@ -1,15 +1,18 @@
-// Runs after `next build` (ADR-0040, ADR-0046), on the static output in out/:
+// Runs after `next build` (ADR-0040, ADR-0071 § 2), writing static files into public/ that
+// `next start` (and Vercel) serve as they are:
 //   - one Markdown copy per page (`/components/button.md`…), `llms.txt` (an index of them) and
 //     `llms-full.txt` (all of them), written from the same content data as the pages;
-//   - the Pagefind search index (out/pagefind/), built from the pages' HTML.
-import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+//   - the Pagefind search index (public/pagefind/), built from the prerendered pages' HTML in
+//     .next/server/app (the pages are static; only /api, /mcp and /.well-known run on demand).
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
+import * as pagefind from "pagefind";
 import { app, loadContent, root } from "./content.mjs";
 
-const out = join(app, "out");
-if (!existsSync(join(out, "index.html"))) {
-  console.error("website: out/ has no index.html. Run `next build` first.");
+const out = join(app, "public");
+const rendered = join(app, ".next/server/app");
+if (!existsSync(join(rendered, "index.html"))) {
+  console.error("website: .next/server/app has no index.html. Run `next build` first.");
   process.exit(1);
 }
 
@@ -114,8 +117,25 @@ writeFileSync(
 );
 
 // ── Search index ───────────────────────────────────────────────────────────────────────────────
-execFileSync(join(app, "node_modules/.bin/pagefind"), ["--site", out, "--silent"], {
-  stdio: "inherit",
-});
+// `components/button.html` is served at `/components/button/` (trailingSlash).
+const urlOf = (file) => {
+  const path = relative(rendered, file)
+    .replace(/\\/g, "/")
+    .replace(/\.html$/, "");
+  return path === "index" ? "/" : `/${path}/`;
+};
+const htmlFiles = readdirSync(rendered, { recursive: true })
+  .map((file) => join(rendered, String(file)))
+  .filter(
+    (file) =>
+      file.endsWith(".html") && !/(^|\/)(_not-found|_global-error|404|500)\.html$/.test(file),
+  );
+const { index: search } = await pagefind.createIndex({});
+if (!search) throw new Error("website: Pagefind didn't start");
+for (const file of htmlFiles)
+  await search.addHTMLFile({ url: urlOf(file), content: readFileSync(file, "utf8") });
+rmSync(join(out, "pagefind"), { recursive: true, force: true });
+await search.writeFiles({ outputPath: join(out, "pagefind") });
+await pagefind.close();
 
 console.log(`website: wrote ${documents.length} Markdown pages, llms.txt and the search index`);

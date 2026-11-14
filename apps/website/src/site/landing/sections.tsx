@@ -341,6 +341,7 @@ const FOOTER = [
     title: "Docs",
     links: [
       ["Docs for AI (llms.txt)", LINKS.llms],
+      ["MCP server account", "/account/"],
       ["Roadmap", LINKS.roadmap],
     ],
   },
@@ -350,6 +351,8 @@ const FOOTER = [
       ["GitHub", LINKS.github],
       ["Issues", LINKS.issues],
       ["License", LINKS.license],
+      ["Privacy", "/privacy/"],
+      ["Terms", "/terms/"],
     ],
   },
 ] as const;

@@ -11,7 +11,9 @@
 | `pnpm check`                                        | Everything CI runs, in order.                                                                    |
 | `pnpm check:manifest`                               | Regenerates the MCP manifest (ADR-0071) and fails when the committed one differs.               |
 | `pnpm check:api`                                    | Regenerates the API reference (ADR-0049, `apps/docs-content/src/api/*.json`) and fails when a file differs or a prop, `data-ok-*` name, event or method is undocumented. `pnpm api` writes it. |
-| `pnpm website:build` then `pnpm --filter @owlky/e2e test:website` | The website's static build (ADR-0040): every page renders, axe light + dark, phone width, internal links and `.md` copies, the Copy button, search (Pagefind), **Open HTML demo**, theme menus — `e2e/website/`, config `e2e/website.config.ts` (port 4400; `PORT` for worktrees). CI job `website`. |
+| `pnpm website:build` then `pnpm --filter @owlky/e2e test:website` | The website's production build served by `next start` with PGlite in memory and the mock OAuth providers (ADR-0040, ADR-0071): every page renders, axe light + dark, phone width, internal links and `.md` copies, the Copy button, search (Pagefind), **Open HTML demo**, theme menus; accounts (`accounts.spec.ts`, serial: guests, GitHub / Google sign-in, tokens, opt-in, sign-out, deletion, an MCP client's OAuth sign-in through the login and consent pages) — `e2e/website/`, config `e2e/website.config.ts` (port 4400; `PORT` for worktrees; one project at a time, since the projects share the server's test people). CI job `website`. |
+| `pnpm vitest run --project website` | The website's server code (ADR-0071) in Node: sign-in through the mock providers, CSRF, cookies, tokens, deletion, OAuth 2.1 (registration, PKCE, consent, scopes), the MCP transport, rate limit and usage counts, discovery documents. In `pnpm test:node`. |
+| `pnpm --filter @owlky/website smoke:mcp` | HTTP smoke test of `/mcp` against the website build (starts `next start` and the mock providers itself): discovery from a 401, sign-in, a token, OAuth with PKCE, tools. No secrets; CI job `website` (chromium). |
 | `pnpm check:docs` | Checks the code of every guide section (Storybook, `apps/docs-content`, the website's `src/content`): placeholders, unknown `data-ok-*` names, React examples typecheck. In `pnpm check` and the CI `check` job; pass page names to check a few. |
 
 First run: `pnpm exec playwright install chromium firefox webkit`.
@@ -137,9 +139,9 @@ fixed by making the test robust (wait for the right event, never a fixed delay),
 
 | Test | Engine | Seen | Notes |
 |---|---|---|---|
+| `html/src/components/collapse/collapse.test.ts` › collapse runtime › a button toggles the collapses it names and mirrors aria-expanded | firefox | 2026-11-14 full local run | `a.getAnimations()[0]` undefined when read: the animation hasn't started yet; wait for it instead of indexing |
 | e2e `parity` › `carousel / thumbs-y` pixels | all, under load | before Wave 8 (c18065b) | raster history of the selected thumbnail ring; `repaintFromScratch` helped, not fully |
 | e2e `data-grid.spec.ts` › range charts and cross-filtering | WebKit | 2026-11-13, PR #1 | passed on retry |
-| e2e `foundations` › chart docs fits a phone | WebKit | 2026-11-13, PR #1 and PR #2 | passed on retry |
 | e2e `carousel.spec.ts` › html › scrolling the viewport (a swipe) selects the nearest slide | WebKit | 2026-11-13, PR #2 | 3/3 alone |
 | unit `carousel-controller.test.ts` › goTo takes a direction around a loop | Chromium | 2026-11-12 | under parallel builds |
 | unit `carousel-controller.test.ts` › ignores keys from inside slides | Chromium | 2026-11-13 (ST4a `pnpm check`) | full suite under load; 3/3 alone |

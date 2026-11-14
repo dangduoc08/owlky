@@ -310,7 +310,7 @@ export function MotionPause() {
 </div>
 
 <div data-ok-motion data-ok-variant="interactive">
-  <button type="button" data-ok-button data-ok-variant="contained">Buy now</button>
+  <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md"><span data-ok-button-label>Buy now</span></button>
 </div>`,
     react: `import { Button, Motion } from "@owlky/react";
 

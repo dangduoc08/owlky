@@ -22,6 +22,15 @@ import { createValidator, MAX_MARKUP } from "./validate.js";
 
 /** Without a `story`, `get_examples` lists the stories instead once their code is this long. */
 export const MAX_EXAMPLES = 80_000;
+/** The tools the server registers, in registration order (the remote server counts calls per tool). */
+export const TOOL_NAMES = [
+  "list_components",
+  "get_component",
+  "get_examples",
+  "search_tokens",
+  "get_guide",
+  "validate_markup",
+] as const;
 /** `CardHeader`, `card-header` and `cardheader` name the same API entry. */
 const squash = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
 /** Without a `part`, `get_component` lists the API reference's entries once it is this long. */

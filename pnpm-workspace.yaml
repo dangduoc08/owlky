@@ -7,6 +7,9 @@ allowBuilds:
   "@parcel/watcher": false
   esbuild: true
 overrides:
+  # Security fix (GHSA-67mh-4wv8-2f99, esbuild <= 0.24.2 dev server): drizzle-kit (a website dev
+  # dependency) loads its config through @esbuild-kit, which pins esbuild 0.18.
+  "@esbuild-kit/core-utils>esbuild": "0.25.12"
   # Security fix (GHSA: glob AbortSignal bypass, minimatch ReDoS). Storybook's docgen plugin
   # still pins glob ^13 upstream; remove once @storybook/react-vite ships a fixed version.
   "@joshwooding/vite-plugin-react-docgen-typescript>glob": "14.0.3"
@@ -45,8 +48,11 @@ overrides:
   # Release age (deps ≥ 14 days): @modelcontextprotocol/sdk 1.32.2 (@owlky/mcp-server, ADR-0071) resolves
   # releases from 2026-10-28 to 2026-11-07 for its HTTP server libraries. Only
   # the MCP server uses these packages. Remove these seven lines after 2026-11-21.
-  "@modelcontextprotocol/sdk>@hono/node-server": "2.1.5"
-  "@modelcontextprotocol/sdk>hono": "4.13.14"
+  # Security fixes (GHSA-3gg2-335m-rxc6 and the other hono advisories of 2026-11) move hono and
+  # @hono/node-server to their first fixed releases (younger than 14 days, allowed for security
+  # fixes). The website uses the SDK's web-standard transport, which reaches neither.
+  "@modelcontextprotocol/sdk>@hono/node-server": "2.1.6"
+  "@modelcontextprotocol/sdk>hono": "4.13.16"
   "@modelcontextprotocol/sdk>jose": "6.2.13"
   "@modelcontextprotocol/sdk>express-rate-limit": "8.7.1"
   "express-rate-limit>ip-address": "10.7.5"

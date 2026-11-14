@@ -24,15 +24,16 @@ describe("canonical markup", () => {
     expect(failures).toEqual([]);
   });
 
-  // Guides shorten markup with "…" (parts left out on purpose): only names and values count.
-  it("every guide's HTML code uses known names and valid values", () => {
+  // A guide may show one part on its own (a marker, a toolbar, a table row): `orphan-part` is the
+  // only issue it may have. Everything it shows is complete (no missing parts).
+  it("every guide's HTML code validates, parts shown on their own aside", () => {
     const failures: string[] = [];
     for (const guide of manifest().guides)
       for (const section of guide.sections) {
         if (!section.html) continue;
         const issues = validator
           .validate(section.html)
-          .issues.filter((i) => i.rule === "unknown-attribute" || i.rule === "invalid-value");
+          .issues.filter((i) => i.rule !== "orphan-part");
         if (issues.length > 0)
           failures.push(`${guide.id}#${section.id}: ${issues.map((i) => i.message).join("; ")}`);
       }

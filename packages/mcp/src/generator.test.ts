@@ -133,6 +133,50 @@ describe("manifest generator", () => {
     expect(manifest.guides.map((g) => g.id)).toContain("introduction");
   });
 
+  it("names entries that exist and only current attributes", () => {
+    const exportsOf = (pkg: string) =>
+      (
+        JSON.parse(readFileSync(join(root, `packages/${pkg}/package.json`), "utf8")) as {
+          exports: Record<string, unknown>;
+        }
+      ).exports;
+    const entries = { react: exportsOf("react"), html: exportsOf("html"), core: exportsOf("core") };
+    const styles = exportsOf("styles");
+    expect(styles["./components/*"]).toBeDefined();
+    for (const component of manifest.components) {
+      const imports = component.imports ?? {};
+      expect(imports.react ?? imports.css, component.name).toBeDefined();
+      for (const pkg of ["react", "html", "core"] as const) {
+        const path = imports[pkg];
+        if (path) expect(entries[pkg], path).toHaveProperty([`./${path.split("/")[2]}`]);
+      }
+      for (const css of imports.css ?? [])
+        expect(readdirSync(join(root, "packages/styles/dist/components"))).toContain(
+          css.replace("@owlky/styles/components/", ""),
+        );
+    }
+    // Removed by the design styles: presets and font presets.
+    const text = first;
+    expect(text).not.toMatch(/data-ok-preset|data-ok-font\b(?!-)/);
+    expect(manifest.attributes).toEqual(
+      expect.arrayContaining(["data-ok-style", "data-ok-density", "data-ok-surface"]),
+    );
+    expect(manifest.guides.map((g) => g.id)).toContain("foundations-styles");
+  });
+
+  it("keeps decision-record references and implementation notes out of the descriptions", () => {
+    for (const component of manifest.components) {
+      expect(component.summary, component.name).not.toMatch(/ADR-\d|\bcore\b|runtime|specs\//);
+      for (const section of component.sections)
+        expect(section.body, `${component.name}#${section.id}`).not.toMatch(/ADR-\d/);
+      for (const schema of component.schemas)
+        for (const option of schema.options)
+          expect(option.description, `${schema.name}.${option.name}`).not.toMatch(
+            /ADR-\d|snippet|--_ok-/,
+          );
+    }
+  });
+
   it("has every token and the Tailwind theme", () => {
     const tokens = JSON.parse(
       readFileSync(join(root, "packages/tokens/dist/tokens.json"), "utf8"),

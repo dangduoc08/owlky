@@ -157,7 +157,7 @@ Root: `data-ok-date-picker`. Unknown values fall back to the default.
 | `displayStaticWrapperAs` | `data-ok-display-static-wrapper-as="…"` | style | `mobile` `desktop` | — | Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars). |
 | `closeOnSelect` | `data-ok-close-on-select="false"` turns it off | behavior | boolean | on | Picking a day closes the picker. Default: on for desktop, off for mobile (absent attribute). |
 | `keepOpenDuringFieldFocus` | `data-ok-keep-open-during-field-focus` | flag | boolean | off | Desktop: the popover stays open while the field has focus (typing doesn't close it). |
-| `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
+| `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds: `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
 | `open` | `data-ok-open` · event `ok:date-picker:open` | state | — | — | Open state (`open` / `onOpenChange`). |
 <!-- /options:date-picker -->
 
@@ -193,8 +193,8 @@ Root: `data-ok-date-field`. Unknown values fall back to the default.
 | `openPickerButtonPosition` | `data-ok-open-picker-button-position="…"` | style | `start` `end` | — | Pickers: side of the open button. HTML: put the button in the adornment on that side. |
 | `shouldRespectLeadingZeros` | `data-ok-should-respect-leading-zeros` | flag | boolean | off | Digit sections keep the format's padding (`D` shows `5`); by default they show two digits (`05`). |
 | `readOnly` | `data-ok-read-only` | flag | boolean | off | The value can't be changed (it can still be focused and copied). |
-| `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
-| `range` | `data-ok-range` | flag | boolean | off | Single input range field (ADR-0028): the start and the end in one field, the value an ISO 8601 interval `start/end`. React: the component (`SingleInputDateRangeField`, `SingleInputTimeRangeField`, `SingleInputDateTimeRangeField`). |
+| `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds: `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
+| `range` | `data-ok-range` | flag | boolean | off | Single input range field: the start and the end in one field, the value an ISO 8601 interval `start/end`. React: the component (`SingleInputDateRangeField`, `SingleInputTimeRangeField`, `SingleInputDateTimeRangeField`). |
 | `value` | `data-ok-value` · event `ok:date-field:change` | state | — | — | Value as ISO 8601 (`value` / `defaultValue`). |
 <!-- /options:date-field -->
 
@@ -252,7 +252,7 @@ Root: `data-ok-date-range-picker`. Unknown values fall back to the default.
 | `displayStaticWrapperAs` | `data-ok-display-static-wrapper-as="…"` | style | `mobile` `desktop` | — | Static pickers: the form they show inline. `desktop`: no toolbar and no action bar by default, the desktop clocks (and two range calendars). |
 | `closeOnSelect` | `data-ok-close-on-select="false"` turns it off | behavior | boolean | on | Picking the end closes the picker. Default: on for desktop date ranges, off otherwise (absent attribute). |
 | `disableDragEditing` | `data-ok-disable-drag-editing` | flag | boolean | off | The range's start and end can't be dragged to other days. |
-| `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
+| `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds: `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
 | `open` | `data-ok-open` · event `ok:date-range-picker:open` | state | — | — | Open state (`open` / `onOpenChange`). |
 <!-- /options:date-range-picker -->
 

@@ -121,7 +121,7 @@ export const imageOptions = defineOptions("image", "data-ok-image", {
   ),
   state: state(
     "data-ok-state",
-    "`loading`, `loaded` or `error`, written by the component (never in snippets).",
+    "`loading`, `loaded` or `error`, written by the component (leave it out of your markup).",
     "load",
   ),
 });

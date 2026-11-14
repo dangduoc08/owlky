@@ -50,12 +50,63 @@ Docs traffic is measured without accounts (privacy-friendly analytics, npm downl
 |---|---|---|---|---|
 | M0 | Remove the local MCP | stop publishing `@owlky/mcp` (stdio CLI, `npx -y @owlky/mcp`, `smoke:mcp`, its README and release entries, the `owlky` entry in `.mcp.json`, docs mentions); keep the shared code the remote server needs (manifest generation `scripts/manifest.mjs`, `createOwlkyServer`, search, validate) as a private workspace package or inside the website; ADR-0046 superseded by the new ADR | no published or documented local MCP; `check:manifest` still guards the data | ✅ 2026-11-13: private `@owlky/mcp-server` in `packages/mcp` (no CLI, bin, README or `smoke:mcp`; ADR-0071 § 1) |
 | M1 | ADR (accounts and remote MCP) — **accepted 2026-11-12: [ADR-0071](adr/0071-accounts-and-remote-mcp.md)** (Better Auth, Neon + Drizzle, tokens hashed, 60 calls / min in Postgres, Vercel free plan until premium) | hosting A on Vercel; identity: GitHub and Google OAuth through one auth library (Auth.js or Better Auth), sessions, a database for users and tokens (for example Neon / Vercel Postgres); MCP authorization per the MCP spec: OAuth 2.1 with PKCE, protected-resource metadata (RFC 9728) and dynamic client registration so Claude Code, Cursor and VS Code sign in through the browser, plus personal access tokens from the account page for clients without OAuth; transport Streamable HTTP, stateless; rate limits per account; versioning (`/mcp` latest, `/mcp/v0.1` pinned); privacy (no prompt logging, no telemetry, a privacy policy and terms); room for a later paid tier (entitlements per account) | ADR accepted by the owner | ⬜ |
-| M2 | Accounts | sign-in with GitHub and Google, sign-out, an account page (tokens: create, list, revoke), account deletion; security review (CSRF, cookie flags, token hashing, scopes) | e2e for the flows with mocked providers; security checklist done | ⬜ |
-| M3 | Account-gated features | the website gates only the MCP now (and leaves room for templates and blocks in website phase 3 and premium later: an entitlement per account); docs, code samples, Copy and **Open HTML demo** stay public; sign-up asks for the minimum (name, email) with an unticked opt-in for product and marketing email; privacy-friendly analytics for docs traffic | e2e: guests read docs and copy code; MCP and gated routes require a session; consent stored per account | ⬜ |
-| M4 | Remote MCP server | `app/mcp/route.ts` with the shared server and an HTTP transport, the OAuth resource-server checks and token checks, rate limits, health check, version in server info; the same tools, resources and prompts as before | unit tests for transport and auth; an HTTP smoke test | ⬜ |
-| M5 | Data audit | the manifest checked against the code after tracks 1–2 (per-component import paths, React and HTML examples, user-facing descriptions); `validate_markup` with no false positives on every snippet | report with zero blocking gaps | ⬜ |
+| M2 | Accounts | sign-in with GitHub and Google, sign-out, an account page (tokens: create, list, revoke), account deletion; security review (CSRF, cookie flags, token hashing, scopes) | e2e for the flows with mocked providers; security checklist done | ✅ 2026-11-14: Better Auth (GitHub, Google), account page (tokens, connected clients, usage, opt-in, deletion), checklist in ADR-0071 notes; local only (PGlite, mock providers) until M7 |
+| M3 | Account-gated features | the website gates only the MCP now (and leaves room for templates and blocks in website phase 3 and premium later: an entitlement per account); docs, code samples, Copy and **Open HTML demo** stay public; sign-up asks for the minimum (name, email) with an unticked opt-in for product and marketing email; privacy-friendly analytics for docs traffic | e2e: guests read docs and copy code; MCP and gated routes require a session; consent stored per account | ✅ 2026-11-14: only `/mcp` gated; `user.entitlements`; opt-in with date; analytics deferred to M7 (needs a service) |
+| M4 | Remote MCP server | `app/mcp/route.ts` with the shared server and an HTTP transport, the OAuth resource-server checks and token checks, rate limits, health check, version in server info; the same tools, resources and prompts as before | unit tests for transport and auth; an HTTP smoke test | ✅ 2026-11-14: `/mcp` and `/mcp/[version]` (stateless Streamable HTTP, OAuth + PATs, 60 / min, `/api/health`), `smoke:mcp` in CI; pinned manifests from the 0.1.0 release commit |
+| M5 | Data audit | the manifest checked against the code after tracks 1–2 (per-component import paths, React and HTML examples, user-facing descriptions); `validate_markup` with no false positives on every snippet | report with zero blocking gaps | ✅ 2026-11-14: zero blocking gaps (report below) |
 | M6 | Clients and evaluation | sign in and connect by URL from Claude Code, Claude Desktop, Cursor and VS Code; a small eval (an agent builds pages in HTML and React with the MCP; output passes `validate_markup`, typecheck, no console errors, axe) | setup verified per client; eval results recorded | ⬜ |
 | M7 | Deploy and docs | preview deploy first, then owlky.com; a "Use Owlky with AI" page (sign in, connect, tokens, privacy, versioning) | live endpoint answering signed-in clients; docs reviewed with the owner | ⬜ |
+
+### M5 report (2026-11-14)
+
+Checked `packages/mcp/manifest.json` (65 components, 513 stories, 713 snippets, 72 guides,
+335 tokens) against the code after the size and styles roadmaps.
+
+- **Import paths:** every component's `imports` names a `@owlky/<package>/<spec>` entry that is in
+  that package's `exports` and stylesheets that exist in `@owlky/styles/components/`; the 18
+  components without `html` have no HTML runtime. Now a generator test.
+- **Examples:** no `data-ok-preset`, `data-ok-font` or preset wording anywhere; styles
+  (`data-ok-style`), the axes (`data-ok-density`, `data-ok-surface`, `data-ok-contrast`) and
+  Foundations › Styles are in; the ST2 style tokens (radius roles, border and line widths, focus
+  rings, density, label font, `--ok-icon-stroke`) are in `tokens`. React examples import from the
+  `@owlky/react` barrel (kept on purpose, roadmap-size decision 11).
+- **`validate_markup`:** zero issues on every story's HTML and every snippet (already tested). Guide
+  HTML now validates too (only `orphan-part` allowed, for sections that show one part): fixed four
+  guide examples whose Buttons lacked `data-ok-button-label` (Accordion actions, Motion effects,
+  Walktour run), the Editor overview's outline (now the complete editor), and a false positive:
+  MotionText's label is optional in HTML (the runtime builds it from plain text; spec anatomy).
+- **Descriptions:** component summaries stop at the first implementation sentence (core
+  controllers, runtimes, files); decision-record references are dropped from spec text; three
+  option descriptions (Date picker `valueType`, `range`, Image `state`) no longer cite ADRs or
+  snippets; Table's summary no longer names the reference look. Generator tests guard all three.
+- **Not blocking, left as is:** hand-drawn story icons in Button, Fab, Icon button, Chip,
+  Carousel, Divider, Avatar and Text field examples (outside ST7b's scope, `roadmap-styles.md`);
+  spec sections such as *Parity notes* and *Upstream API mapping* stay maintainer-terse (served
+  as reference detail; `parityNotes` is part of the tool's output).
+
+**Follow-ups from M2–M4.**
+- **Website client JS** (gzip of the module scripts each prerendered page loads; `check:js`, run by
+  the website build, budgets 195 kB per page and 390 kB for the landing page). The weight came
+  from `main`, not M2–M4: Link's anatomy module held `optionSchemas`, so every page that rendered
+  a Link shipped every option schema and the chart, data grid, Gantt and carousel modules they
+  import (about 70 kB). The registry now lives in `core/src/options/schemas.ts`.
+
+  | Page | `main` (b422417b) | M4 | now |
+  |---|---|---|---|
+  | `/get-started/` (and CDN, bundlers) | 231.7 | 233.7 | 164.4 |
+  | `/components/button/` | 242.7 | 244.3 | 180.1 |
+  | `/foundations/colors/` | 252.0 | 253.6 | 189.8 |
+  | `/search/` | 226.8 | 227.6 | 159.5 |
+  | `/privacy/`, `/terms/` | — | 226.4 | 157.2 |
+  | `/sign-in/` | — | 243.1 | 176.3 |
+  | `/oauth/consent/` | — | 244.5 | 175.8 |
+  | `/account/` | — | 254.4 | 188.7 |
+  | `/` (live Data grid, Chart, Motion previews) | 393.7 | 395.0 | 381.1 |
+
+  The Better Auth client loads only on `/sign-in/`, `/account/` and `/oauth/consent/`.
+- **Open client registration:** 10 registrations per address and hour and the deletion of clients
+  without consent after 24 hours, both in Postgres and run by the registration request
+  (ADR-0071 implementation note 15).
 
 ## Part 4 — Publish 0.1.0 (checklist)
 

@@ -86,7 +86,9 @@ const GENERATED = /<!-- options:([a-z-]+) [^>]*-->[\s\S]*?<!-- \/options:\1 -->/
 /**
  * Specs are maintainer documents and name the design reference they were recorded from. The
  * manifest ships on npm, so its spec text drops `Reference URL:` lines and links to the
- * reference site, and names the reference generically.
+ * reference site, and names the reference generically. References to decision records go too
+ * (readers of the manifest don't have them): a parenthesis of references only, a reference among
+ * other words, a table cell or a lead-in (`ADR-0015: CSS and composition`).
  */
 function publicText(text) {
   return text
@@ -104,7 +106,37 @@ function publicText(text) {
     .replace(/\b(the |The )Minimals\b/g, (_, the) => `${the}reference`)
     .replace(/(^|[.!?|]\s+|\n)Minimals\b/g, (_, start) => `${start}The reference`)
     .replace(/\bMinimals\b/g, "the reference")
-    .replace(/\bMinimal (?=`)/g, "the reference ");
+    .replace(/\bMinimal (?=`)/g, "the reference ")
+    .replace(/\s*\((?:ADR-\d{4}(?:\s*§\s*[\d.]+)?(?:,\s*|\s+and\s+)?)+\)/g, "")
+    .replace(/\((?:ADR-\d{4}(?:\s*§\s*[\d.]+)?[,;]\s*)+/g, "(")
+    .replace(/[,;]\s*(?:see\s+)?ADR-\d{4}(?:\s*§\s*[\d.]+)?(?=[\s,;)])/g, "")
+    .replace(/\|\s*ADR-\d{4}(?:\s*§\s*[\d.]+)?\s*\|/g, "| — |")
+    .replace(/ADR-\d{4}(?:\s*§\s*[\d.]+)?:\s*/g, "")
+    .replace(/(?:\b[Tt]he\s+)?ADR-\d{4}(?:\s*§\s*[\d.]+)?\s*/g, "");
+}
+
+/**
+ * Sentences of a spec's purpose that describe how the code is organized (core controllers,
+ * runtimes, files, who owns the state) rather than what the component does.
+ */
+const MAINTAINER_SENTENCE =
+  /\bcore\b|\bruntimes?\b|\bcontrollers?\b|\bowner\b|React (?:owns|keeps|leaves|maps)|specs\/|\.(?:ts|md)\b|module-scoped|behavior-only|\bUsed by\b|\bshared (?:by|with)\b|\bOpt-in\b|Built on \w+ \(|MUI's defaults/;
+
+/**
+ * The summary `list_components` shows: the purpose's first paragraph up to its first sentence
+ * about the implementation (the first sentence always stays).
+ */
+function userSummary(paragraph) {
+  const sentences = paragraph
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(/(?<=[.!?])\s+(?=[A-Z`(])/);
+  const kept = [sentences[0] ?? ""];
+  for (const sentence of sentences.slice(1)) {
+    if (MAINTAINER_SENTENCE.test(sentence)) break;
+    kept.push(sentence);
+  }
+  return kept.join(" ");
 }
 
 function parseSpec(name, text) {
@@ -140,7 +172,7 @@ function parseSpec(name, text) {
     };
   });
   const purpose = out.find((section) => section.id === "purpose")?.body ?? "";
-  const summary = (purpose.split(/\n\s*\n/)[0] ?? "").replace(/\s+/g, " ").trim();
+  const summary = userSummary(purpose.split(/\n\s*\n/)[0] ?? "");
   return {
     title,
     summary,
