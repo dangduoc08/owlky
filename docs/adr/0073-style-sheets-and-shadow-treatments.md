@@ -175,6 +175,10 @@ geometry inputs in the resolver would cost the core sheet bytes it doesn't have 
      call and one `@iconify-icons/solar/<name>` import per icon (`jsxSource`; `solarSource` rewrites
      `?raw` demos), and the HTML snippets hold the same `<svg>` markup. Story icons keep Solar's
      own `stroke-width` (they are examples, not component icons).
+   - **The rest of the story icons (2026-11-14).** Button, Fab, Icon button, Chip, Carousel,
+     Divider, Avatar, Badge, Label, Rating, Text field, the Table API demo and the copy and countdown
+     demos render `SolarIcon` too; the Chip guide's delete button shows the component's own default
+     icon. Hand-written snippets carry the same Iconify markup as the generated ones.
 
 ## Consequences
 - Adding a style is a definition file, its lines in `styles.ts`, a row in
