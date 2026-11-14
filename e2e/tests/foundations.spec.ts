@@ -400,7 +400,11 @@ for (const [id, lastHeading] of GUIDES) {
       await page.goto(
         `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=docs&globals=theme:${theme};a11y.manual:!true`,
       );
-      await expect(page.getByRole("heading", { name: lastHeading })).toBeVisible();
+      // The guide renders in one React commit: the chart guide draws 52 charts, about 3 s of main
+      // thread in WebKit on a fast machine, more than the default 5 s on the CI runners.
+      await expect(page.getByRole("heading", { name: lastHeading })).toBeVisible({
+        timeout: 20_000,
+      });
     };
 
     test("every token and Tailwind token class in the examples exists", async ({
