@@ -1,23 +1,7 @@
 import { buttonOptions } from "@owlky/core";
 import { Button, type ButtonVariant } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-
-/** Decorative icon used by the examples (drawn for this project). */
-export const MailIcon = () => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="5" width="18" height="14" rx="2" />
-    <path d="m3 7 9 6 9-6" />
-  </svg>
-);
-MailIcon.displayName = "MailIcon";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 
 const COLORS = ["inherit", "primary", "secondary", "info", "success", "warning", "error"] as const;
 const SIZES = [
@@ -84,10 +68,10 @@ export function buttonGroups(variant: ButtonVariant): ReactGroup[] {
       title: "With icon & loading",
       content: (
         <>
-          <Button variant={variant} color="error" startIcon={<MailIcon />}>
+          <Button variant={variant} color="error" startIcon={<SolarIcon name="letter-linear" />}>
             Icon left
           </Button>
-          <Button variant={variant} color="error" endIcon={<MailIcon />}>
+          <Button variant={variant} color="error" endIcon={<SolarIcon name="letter-linear" />}>
             Icon right
           </Button>
           <Button variant={variant} loading>
@@ -101,11 +85,17 @@ export function buttonGroups(variant: ButtonVariant): ReactGroup[] {
             size="lg"
             loading
             loadingPosition="start"
-            startIcon={<MailIcon />}
+            startIcon={<SolarIcon name="letter-linear" />}
           >
             Start
           </Button>
-          <Button variant={variant} size="lg" loading loadingPosition="end" endIcon={<MailIcon />}>
+          <Button
+            variant={variant}
+            size="lg"
+            loading
+            loadingPosition="end"
+            endIcon={<SolarIcon name="letter-linear" />}
+          >
             End
           </Button>
         </>
@@ -128,7 +118,7 @@ export function buttonGroups(variant: ButtonVariant): ReactGroup[] {
           size={size}
           loading
           loadingPosition="start"
-          startIcon={<MailIcon />}
+          startIcon={<SolarIcon name="letter-linear" />}
         >
           {label}
         </Button>
@@ -143,7 +133,7 @@ export function buttonGroups(variant: ButtonVariant): ReactGroup[] {
           size={size}
           loading
           loadingPosition="end"
-          endIcon={<MailIcon />}
+          endIcon={<SolarIcon name="letter-linear" />}
         >
           {label}
         </Button>

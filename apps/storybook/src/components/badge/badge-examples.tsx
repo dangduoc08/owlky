@@ -1,7 +1,7 @@
 import { type BadgeColor, badgeOptions } from "@owlky/core";
 import { Avatar, Badge } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
-import { MailIcon } from "../avatar/display-icons.js";
+import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const COLORS: BadgeColor[] = [
@@ -15,7 +15,7 @@ const COLORS: BadgeColor[] = [
 ];
 const mail = (
   <span role="img" aria-label="Messages">
-    <MailIcon />
+    <SolarIcon name="letter-linear" />
   </span>
 );
 const text = <span>Typography</span>;

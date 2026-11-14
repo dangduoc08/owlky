@@ -13,35 +13,6 @@ import type { ReactGroup } from "../../helpers/groups.js";
 import { SolarIcon } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
-/** Demo icons (decorative, same SVG as the HTML snippets). */
-export function EyeIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path
-        d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-export function InfoIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M12 11v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="12" cy="8" r="1" fill="currentColor" />
-    </svg>
-  );
-}
-
-EyeIcon.displayName = "EyeIcon";
-InfoIcon.displayName = "InfoIcon";
-
 const CURRENCIES = [
   ["USD", "$"],
   ["EUR", "€"],
@@ -62,7 +33,7 @@ const NAMES: Record<TextFieldVariant, string> = {
 const revealButton = (
   <InputAdornment position="end">
     <IconButton edge="end" aria-label="Show password" aria-pressed={false}>
-      <EyeIcon />
+      <SolarIcon name="eye-linear" />
     </IconButton>
   </InputAdornment>
 );
@@ -132,7 +103,7 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
           }
           helperText={
             <>
-              <InfoIcon />
+              <SolarIcon name="info-circle-linear" />
               Helper text
             </>
           }
@@ -183,7 +154,7 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
           defaultValue="Hello world"
           helperText={
             <>
-              <InfoIcon />
+              <SolarIcon name="info-circle-linear" />
               Helper text
             </>
           }

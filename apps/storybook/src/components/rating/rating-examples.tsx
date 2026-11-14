@@ -4,15 +4,6 @@ import type { ReactGroup } from "../../helpers/groups.js";
 import { SolarIcon, type SolarName } from "../../helpers/solar-icons.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
-/** A solid heart (decorative), filled with the rating color. */
-export function HeartIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M12 20.5 4.2 12.9A5 5 0 0 1 12 6.6a5 5 0 0 1 7.8 6.3Z" />
-    </svg>
-  );
-}
-
 const FACES: SolarName[] = [
   "confounded-circle-linear",
   "sad-circle-linear",
@@ -48,7 +39,7 @@ export const ratingStories: Record<string, ReactGroup[]> = {
             precision={0.5}
             color="info"
             size="small"
-            icon={<HeartIcon />}
+            icon={<SolarIcon name="heart-bold" />}
             getLabelText={(value) => `${value} Heart${value !== 1 ? "s" : ""}`}
           />
           <Rating
