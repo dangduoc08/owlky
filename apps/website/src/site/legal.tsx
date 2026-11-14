@@ -62,7 +62,7 @@ export const PRIVACY: readonly LegalSection[] = [
     id: "retention",
     title: "How long we keep it",
     paragraphs: [
-      "We keep account data until you delete the account. Sessions expire after 30 days without use. IP addresses are used in memory for the sign-in rate limits and are not written to our database.",
+      "We keep account data until you delete the account. Sessions expire after 30 days without use. IP addresses are used in memory for the sign-in rate limits and are not written to our database. To limit how many MCP clients one network registers, we store a keyed hash of the address for at most one hour, never the address itself. MCP clients that nobody approves within a day are deleted.",
     ],
   },
   {
