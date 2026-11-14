@@ -351,6 +351,19 @@ export const mcpToolUsage = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.tool] })],
 );
 
+/**
+ * Dynamic client registrations per network address and fixed window (registrations.ts). The key
+ * is an HMAC of the address with the server secret, never the address itself; rows of past
+ * windows are deleted by the next registration.
+ */
+export const oauthRegistrationWindow = pgTable("oauth_registration_window", {
+  key: text("key").primaryKey(),
+  /** Start of the window (Unix seconds, a multiple of the window length). */
+  windowStart: bigint("window_start", { mode: "number" }).notNull(),
+  /** Registrations counted in that window. */
+  windowCount: integer("window_count").notNull(),
+});
+
 /** Every table, for the Better Auth adapter and drizzle-kit. */
 export const schema = {
   user,
@@ -368,4 +381,5 @@ export const schema = {
   personalAccessToken,
   mcpUsage,
   mcpToolUsage,
+  oauthRegistrationWindow,
 };

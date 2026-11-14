@@ -1,13 +1,14 @@
 import { mcp } from "@better-auth/mcp";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { jwt } from "better-auth/plugins";
 import { accountPlugin } from "./account-plugin.js";
 import { type Db, openDb } from "./db.js";
 import { readEnv, type ServerEnv } from "./env.js";
 import { pinnedVersions } from "./manifests.js";
 import { installMockFetch, mockUrl } from "./oauth-mock.js";
+import { clientAddress, countRegistration, deleteAbandonedClients } from "./registrations.js";
 import { schema } from "./schema.js";
 import { MCP_SCOPE } from "./tokens.js";
 
@@ -19,6 +20,8 @@ import { MCP_SCOPE } from "./tokens.js";
  */
 
 export const AUTH_BASE_PATH = "/api/auth";
+/** Dynamic client registration (RFC 7591), relative to AUTH_BASE_PATH. */
+export const REGISTRATION_PATH = "/oauth2/register";
 const NO_PROVIDER_TOKENS = {
   accessToken: null,
   refreshToken: null,
@@ -89,6 +92,24 @@ export function createAuth(env: ServerEnv, db: Db) {
       },
     },
     hooks: {
+      // Open client registration: a limit per address, and clients nobody consented to are
+      // cleaned up (registrations.ts).
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== REGISTRATION_PATH) return undefined;
+        await deleteAbandonedClients(db);
+        const address = clientAddress(ctx.request?.headers ?? ctx.headers ?? new Headers());
+        const counted = await countRegistration(db, env.secret, address);
+        if (!counted.allowed)
+          throw new APIError(
+            "TOO_MANY_REQUESTS",
+            {
+              error: "too_many_requests",
+              error_description: "Too many client registrations from this address. Try later.",
+            },
+            { "Retry-After": String(counted.retryAfter) },
+          );
+        return undefined;
+      }),
       after: createAuthMiddleware(async (ctx) => {
         // Mock mode: send the browser to the mock provider instead of github.com / google.com.
         if (!env.oauthMock || ctx.path !== "/sign-in/social") return undefined;

@@ -8,6 +8,13 @@
       "when": 1794613333889,
       "tag": "0000_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794617491976,
+      "tag": "0001_oauth_registration_limits",
+      "breakpoints": true
     }
   ]
 }

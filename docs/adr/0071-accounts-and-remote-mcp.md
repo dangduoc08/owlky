@@ -134,6 +134,16 @@ account, secret or service: everything runs locally with PGlite and mock OAuth p
 13. **Health:** `GET /api/health` answers the database state and the MCP versions, nothing else.
 14. **Legal:** draft privacy policy and terms at `/privacy/` and `/terms/` (marked draft,
     `noindex`, bracketed items for the owner) for L6.
+15. **Open client registration (M5 follow-up).** `POST /api/auth/oauth2/register` takes at most
+    10 registrations per network address and hour (fixed window, one upsert in
+    `oauth_registration_window`, keyed by an HMAC-SHA256 of the address with the auth secret, so
+    no address is stored; past windows are deleted by the next registration). Over the limit:
+    HTTP 429, `Retry-After`, an OAuth-style JSON error. The same request deletes the clients
+    registered without an account more than 24 hours ago that hold no consent (nobody finished
+    the sign-in, or every account disconnected them); their tokens cascade. No cron: the
+    registration is the trigger, and the table only grows through registrations. The address
+    is `x-real-ip`, else the first `x-forwarded-for` entry (Vercel sets both); `src/server/
+    registrations.ts`, unit tests in `registrations.test.ts`.
 
 ### Security checklist (M2)
 
@@ -148,7 +158,7 @@ account, secret or service: everything runs locally with PGlite and mock OAuth p
 | Bearer only | `/mcp` ignores session cookies (no ambient authority, so CORS `*` is safe) | done, unit test |
 | Authorization | tokens and clients are scoped to the session's account (another account's id: 404) | done, unit tests |
 | Account deletion | rows removed through `on delete cascade` (sessions, accounts, tokens, usage, consents, OAuth tokens); a deleted account's PAT or JWT is refused | done, unit tests and e2e |
-| Rate limits | MCP 60 / min / account (Postgres); sign-in endpoints Better Auth defaults (memory) | done, unit test |
+| Rate limits | MCP 60 / min / account (Postgres); client registration 10 / hour / address (Postgres, HMAC of the address) with abandoned clients deleted after 24 h (decision 15); sign-in endpoints Better Auth defaults (memory) | done, unit tests |
 | Input limits | MCP body ≤ 1 MB, token names ≤ 60, ids ≤ 64 / 200 characters, zod schemas on every endpoint | done |
 | Privacy | no IP or user agent stored, no telemetry (`telemetry.enabled: false`), no request bodies logged | done |
 | Secrets | none in the repository; `.env.example` lists names only; development defaults refused on Vercel | done, unit test |
