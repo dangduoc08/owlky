@@ -272,9 +272,14 @@ describe("design style sheets (ADR-0070 § 6)", () => {
     expect(core.nextElementSibling).toBe(document.querySelector('link[href$="swiss.min.css"]'));
     expect(app.previousElementSibling?.getAttribute("href")).toContain("owlky-style-swiss");
     expect(runtime.loaded("style:swiss")).toBe(true);
-    // The sheet applies: Swiss's square controls.
+    // The sheet applies: Swiss's square controls. WebKit can fire `load` a frame before the sheet
+    // takes part in the cascade (flaky on CI and locally): wait up to a few frames for it.
     const probe = document.getElementById("a") as HTMLElement;
-    expect(getComputedStyle(probe).getPropertyValue("--ok-radius-control").trim()).toBe("0px");
+    const radius = () => getComputedStyle(probe).getPropertyValue("--ok-radius-control").trim();
+    for (let frame = 0; frame < 10 && radius() !== "0px"; frame++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    expect(radius()).toBe("0px");
     add('<p data-ok-style="swiss"></p>');
     await settle();
     expect(styleLinks()).toHaveLength(1);
