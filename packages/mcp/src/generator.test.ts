@@ -135,9 +135,11 @@ describe("manifest generator", () => {
 
   it("names entries that exist and only current attributes", () => {
     const exportsOf = (pkg: string) =>
-      (JSON.parse(readFileSync(join(root, `packages/${pkg}/package.json`), "utf8")) as {
-        exports: Record<string, unknown>;
-      }).exports;
+      (
+        JSON.parse(readFileSync(join(root, `packages/${pkg}/package.json`), "utf8")) as {
+          exports: Record<string, unknown>;
+        }
+      ).exports;
     const entries = { react: exportsOf("react"), html: exportsOf("html"), core: exportsOf("core") };
     const styles = exportsOf("styles");
     expect(styles["./components/*"]).toBeDefined();

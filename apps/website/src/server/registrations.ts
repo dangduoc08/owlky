@@ -49,9 +49,7 @@ export async function countRegistration(
   const seconds = Math.floor(now.getTime() / 1000);
   const windowStart = seconds - (seconds % REGISTRATION_WINDOW);
   const key = createHmac("sha256", secret).update(`registration:${address}`).digest("hex");
-  await db.execute(
-    sql`delete from ${oauthRegistrationWindow} where window_start < ${windowStart}`,
-  );
+  await db.execute(sql`delete from ${oauthRegistrationWindow} where window_start < ${windowStart}`);
   const result = await db.execute(sql`
     insert into ${oauthRegistrationWindow} (key, window_start, window_count)
     values (${key}, ${windowStart}, 1)
